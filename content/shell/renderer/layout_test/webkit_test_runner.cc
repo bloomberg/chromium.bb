@@ -444,6 +444,10 @@ void WebKitTestRunner::SetDeviceColorProfile(const std::string& name) {
   content::SetDeviceColorProfile(render_view(), name);
 }
 
+void WebKitTestRunner::SetBluetoothMockDataSet(const std::string& name) {
+  content::SetBluetoothMockDataSetForTesting(name);
+}
+
 void WebKitTestRunner::SetFocus(WebTestProxyBase* proxy, bool focus) {
   ProxyToRenderViewVisitor visitor(proxy);
   RenderView::ForEach(&visitor);

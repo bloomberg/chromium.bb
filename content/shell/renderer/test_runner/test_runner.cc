@@ -297,6 +297,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetMockPushClientSuccess(const std::string& endpoint,
                                 const std::string& registration_id);
   void SetMockPushClientError(const std::string& message);
+  void SetBluetoothMockDataSet(const std::string& dataset_name);
 
   std::string PlatformName();
   std::string TooltipText();
@@ -541,6 +542,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetMockPushClientSuccess)
       .SetMethod("setMockPushClientError",
                  &TestRunnerBindings::SetMockPushClientError)
+      .SetMethod("setBluetoothMockDataSet",
+                 &TestRunnerBindings::SetBluetoothMockDataSet)
 
       // Properties.
       .SetProperty("platformName", &TestRunnerBindings::PlatformName)
@@ -1276,6 +1279,11 @@ void TestRunnerBindings::SetColorProfile(
     runner_->SetColorProfile(name, callback);
 }
 
+void TestRunnerBindings::SetBluetoothMockDataSet(const std::string& name) {
+  if (runner_)
+    runner_->SetBluetoothMockDataSet(name);
+}
+
 void TestRunnerBindings::SetPOSIXLocale(const std::string& locale) {
   if (runner_)
     runner_->SetPOSIXLocale(locale);
@@ -1595,6 +1603,7 @@ void TestRunner::Reset() {
     delegate_->DisableAutoResizeMode(WebSize());
     delegate_->DeleteAllCookies();
     delegate_->ResetScreenOrientation();
+    delegate_->SetBluetoothMockDataSet("");
     ResetBatteryStatus();
     ResetDeviceLight();
   }
@@ -2728,6 +2737,10 @@ void TestRunner::SetColorProfile(const std::string& name,
                                  v8::Handle<v8::Function> callback) {
   delegate_->SetDeviceColorProfile(name);
   delegate_->PostTask(new InvokeCallbackTask(this, callback));
+}
+
+void TestRunner::SetBluetoothMockDataSet(const std::string& name) {
+  delegate_->SetBluetoothMockDataSet(name);
 }
 
 void TestRunner::SetPOSIXLocale(const std::string& locale) {

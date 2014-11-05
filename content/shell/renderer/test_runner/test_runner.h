@@ -510,6 +510,9 @@ class TestRunner : public WebTestRunner,
   void SetColorProfile(const std::string& name,
                        v8::Handle<v8::Function> callback);
 
+  // Change the bluetooth test data while running a layout test.
+  void SetBluetoothMockDataSet(const std::string& name);
+
   // Calls setlocale(LC_ALL, ...) for a specified locale.
   // Resets between tests.
   void SetPOSIXLocale(const std::string& locale);

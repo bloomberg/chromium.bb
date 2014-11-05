@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "cc/blink/web_layer_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/child/bluetooth/web_bluetooth_impl.h"
 #include "content/common/gpu/image_transport_surface.h"
 #include "content/public/common/page_state.h"
 #include "content/public/renderer/renderer_gamepad_provider.h"
@@ -308,6 +309,13 @@ void SetDeviceColorProfile(RenderView* render_view, const std::string& name) {
 
   static_cast<RenderViewImpl*>(render_view)->
       SetDeviceColorProfileForTesting(color_profile);
+}
+
+void SetBluetoothMockDataSetForTesting(const std::string& name) {
+  RenderThreadImpl::current()
+      ->blink_platform_impl()
+      ->BluetoothImplForTesting()
+      ->SetBluetoothMockDataSetForTesting(name);
 }
 
 void UseSynchronousResizeMode(RenderView* render_view, bool enable) {

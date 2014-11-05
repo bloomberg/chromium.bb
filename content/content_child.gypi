@@ -38,6 +38,8 @@
       'child/assert_matching_enums.cc',
       'child/blink_platform_impl.cc',
       'child/blink_platform_impl.h',
+      'child/bluetooth/web_bluetooth_impl.cc',
+      'child/bluetooth/web_bluetooth_impl.h',
       'child/browser_font_resource_trusted.cc',
       'child/browser_font_resource_trusted.h',
       'child/child_discardable_shared_memory_manager.cc',

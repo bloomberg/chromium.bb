@@ -93,6 +93,9 @@ void SetDeviceScaleFactor(RenderView* render_view, float factor);
 // Set the device color profile associated with the profile |name|.
 void SetDeviceColorProfile(RenderView* render_view, const std::string& name);
 
+// Change the bluetooth test data while running a layout test.
+void SetBluetoothMockDataSetForTesting(const std::string& name);
+
 // Enables or disables synchronous resize mode. When enabled, all window-sizing
 // machinery is short-circuited inside the renderer. This mode is necessary for
 // some tests that were written before browsers had multi-process architecture

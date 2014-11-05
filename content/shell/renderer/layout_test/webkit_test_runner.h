@@ -96,6 +96,7 @@ class WebKitTestRunner : public RenderViewObserver,
   void SimulateWebNotificationClick(const std::string& title) override;
   void SetDeviceScaleFactor(float factor) override;
   void SetDeviceColorProfile(const std::string& name) override;
+  void SetBluetoothMockDataSet(const std::string& name) override;
   void SetFocus(WebTestProxyBase* proxy, bool focus) override;
   void SetAcceptAllCookies(bool accept) override;
   std::string PathToLocalResource(const std::string& resource) override;
