@@ -2025,6 +2025,7 @@ internal_paladin.add_config('x86-zgb-paladin',
   boards=['x86-zgb'],
   important=False,
   paladin_builder_name='x86-zgb paladin',
+  hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
 internal_paladin.add_config('link_freon-paladin',
