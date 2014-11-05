@@ -585,7 +585,7 @@ void Parser::AssignComments(ParseNode* file) {
        ++i) {
     // Don't assign suffix comments to the function call or list, but instead
     // to the last thing inside.
-    if ((*i)->AsFunctionCall() || (*i)->AsList() || (*i)->AsEnd())
+    if ((*i)->AsFunctionCall() || (*i)->AsList())
       continue;
 
     const Location& start = (*i)->GetRange().begin();

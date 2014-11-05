@@ -496,7 +496,7 @@ void Printer::Sequence(SequenceStyle style,
 
     // Trailing comments.
     if (end->comments()) {
-      if (!list.empty())
+      if (list.size() >= 2)
         Newline();
       for (const auto& c : end->comments()->before()) {
         Newline();
@@ -506,6 +506,13 @@ void Printer::Sequence(SequenceStyle style,
 
     margin_ -= kIndentSize;
     Newline();
+
+    // Defer any end of line comment until we reach the newline.
+    if (end->comments() && !end->comments()->suffix().empty()) {
+      std::copy(end->comments()->suffix().begin(),
+        end->comments()->suffix().end(),
+        std::back_inserter(comments_));
+    }
   }
 
   if (style == kSequenceStyleList)

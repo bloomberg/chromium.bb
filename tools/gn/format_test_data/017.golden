@@ -9,7 +9,6 @@ executable("win"  # Suffix comment on arg.
 
   sources = [
     "a.cc",
-
     # End of single sources comment, should be forced multiline.
   ]
 

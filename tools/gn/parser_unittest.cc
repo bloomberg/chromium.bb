@@ -558,6 +558,7 @@ TEST(Parser, CommentsSuffix) {
     " FUNCTION(executable)\n"
     "  LIST\n"
     "   LITERAL(\"wee\")\n"
+    "   END())\n"
     "    +SUFFIX_COMMENT(\"# This is some stuff.\")\n"
     "  BLOCK\n"
     "   BINARY(=)\n"
@@ -585,6 +586,7 @@ TEST(Parser, CommentsSuffixDifferentLine) {
     "    LIST\n"
     "     LITERAL(\"a\")\n"
     "     LITERAL(\"b\")\n"
+    "     END(])\n"
     "      +SUFFIX_COMMENT(\"# Comment\")\n";
   DoParserPrintTest(input, expected);
 }
