@@ -54,6 +54,8 @@ component("events_ozone_evdev") {
     "evdev/event_modifiers_evdev.cc",
     "evdev/event_modifiers_evdev.h",
     "evdev/events_ozone_evdev_export.h",
+    "evdev/keyboard_evdev.cc",
+    "evdev/keyboard_evdev.h",
     "evdev/touch_event_converter_evdev.cc",
     "evdev/touch_event_converter_evdev.h",
   ]
@@ -84,6 +86,8 @@ component("events_ozone_evdev") {
       "evdev/libgestures_glue/gesture_interpreter_libevdev_cros.h",
       "evdev/libgestures_glue/gesture_logging.cc",
       "evdev/libgestures_glue/gesture_logging.h",
+      "evdev/libgestures_glue/gesture_property_provider.cc",
+      "evdev/libgestures_glue/gesture_property_provider.h",
       "evdev/libgestures_glue/gesture_timer_provider.cc",
       "evdev/libgestures_glue/gesture_timer_provider.h",
     ]

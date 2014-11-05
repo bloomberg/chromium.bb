@@ -45,8 +45,8 @@ component("chromeos") {
     sources -= [ "ime/ime_keyboard_ozone.cc" ]
   } else {
     sources -= [
-      "ime/keyboard_controller.cc",
       "ime/ime_keyboard_x11.cc",
+      "ime/ime_keyboard_x11.h",
     ]
   }
 }
@@ -161,6 +161,11 @@ test("chromeos_unittests") {
   }
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
+  }
+  if (use_ozone) {
+    sources -= [
+      "ime/ime_keyboard_x11_unittest.cc",
+    ]
   }
 }
 

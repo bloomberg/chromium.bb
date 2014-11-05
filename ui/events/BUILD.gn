@@ -323,6 +323,10 @@ test("events_unittests") {
       "ozone/evdev/event_converter_evdev_impl_unittest.cc",
       "ozone/evdev/touch_event_converter_evdev_unittest.cc",
     ]
+    deps += [
+      "//ui/events/ozone:events_ozone",
+      "//ui/events/ozone:events_ozone_evdev",
+    ]
   }
 
   if (use_aura) {

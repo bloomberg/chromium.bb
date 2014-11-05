@@ -159,6 +159,9 @@ source_set("common") {
     sources -= [
       "gpu/gpu_memory_buffer_factory_linux.cc",
     ]
+    deps += [
+      "//ui/ozone/gpu",
+    ]
   }
 
   if (!use_aura) {

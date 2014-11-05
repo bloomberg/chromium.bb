@@ -115,6 +115,11 @@ component("aura") {
     deps += [
       "//ui/events/platform/x11",
     ]
+  } else {
+    sources -= [
+      "window_tree_host_x11.cc",
+      "window_tree_host_x11.h",
+    ]
   }
 
   if (is_win) {
@@ -134,11 +139,10 @@ component("aura") {
       "window_tree_host_ozone.h",
     ]
 
-    # TODO(GYP) enable when these targets exist.
-    #deps += [
-    #  "//ui/events/ozone",
-    #  "//ui/ozone",
-    #]
+    deps += [
+      "//ui/events/ozone:events_ozone",
+      "//ui/ozone",
+    ]
   }
 }
 

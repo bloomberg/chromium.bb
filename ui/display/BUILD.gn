@@ -120,4 +120,12 @@ test("display_unittests") {
       "//ui/display/types",
     ]
   }
+
+  if (use_ozone) {
+    sources -= [
+      "chromeos/x11/display_util_x11_unittest.cc",
+      "chromeos/x11/native_display_event_dispatcher_x11_unittest.cc",
+    ]
+  }
+      
 }

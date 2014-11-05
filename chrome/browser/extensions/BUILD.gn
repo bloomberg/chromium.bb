@@ -224,6 +224,11 @@ static_library("extensions") {
         ".", "//chrome")
   }
 
+  if (is_chromeos && use_ozone) {
+    sources -= [
+      "global_shortcut_listener_chromeos.cc",
+    ]
+  }
   if (!use_ozone) {
     sources -= [
       "global_shortcut_listener_ozone.cc",

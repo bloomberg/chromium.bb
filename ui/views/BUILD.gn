@@ -143,6 +143,11 @@ static_library("test_support") {
   if (use_x11) {
     deps += [ "//ui/gfx/x" ]
   }
+  if (use_ozone) {
+    sources -= [
+      "test/x11_property_change_waiter.cc",
+    ]
+  }
 }
 
 test("views_unittests") {

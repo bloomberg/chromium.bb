@@ -74,6 +74,10 @@ component("ash") {
       "accelerators/magnifier_key_scroller.h",
       "accelerators/spoken_feedback_toggler.cc",
       "accelerators/spoken_feedback_toggler.h",
+      "host/ash_window_tree_host_x11.cc",
+      "host/ash_window_tree_host_x11.h",
+      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.cc",
+      "wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h",
     ]
   }
 
@@ -97,17 +101,12 @@ component("ash") {
       "system/tray/media_security/media_capture_observer.h",
       "system/tray/media_security/multi_profile_media_tray_item.cc",
       "system/tray/media_security/multi_profile_media_tray_item.h",
-      "virtual_keyboard_controller.cc",
-      "virtual_keyboard_controller.h",
-    ]
-  }
-
-  if (!use_x11 || !is_chromeos) {
-    sources -= [
       "touch/touch_transformer_controller.cc",
       "touch/touch_transformer_controller.h",
       "touch/touchscreen_util.cc",
       "touch/touchscreen_util.h",
+      "virtual_keyboard_controller.cc",
+      "virtual_keyboard_controller.h",
     ]
   }
 
@@ -301,6 +300,7 @@ test("ash_unittests") {
     sources -= [
       "accelerators/magnifier_key_scroller_unittest.cc",
       "accelerators/spoken_feedback_toggler_unittest.cc",
+      "host/ash_window_tree_host_x11_unittest.cc",
     ]
   }
   if (is_chromeos) {

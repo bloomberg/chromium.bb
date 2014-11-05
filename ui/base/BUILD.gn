@@ -757,16 +757,6 @@ test("ui_unittests") {
       "webui/web_ui_util_unittest.cc",
       "x/selection_requestor_unittest.cc",
     ]
-
-    if (!use_x11) {
-      if (is_chromeos) {
-        # These were already removed in the chromeos case.
-        sources -= [
-          "ime/chromeos/character_composer_unittest.cc",
-          "ime/input_method_chromeos_unittest.cc",
-        ]
-      }
-    }
   }
 
   if (build_ime) {
@@ -781,6 +771,13 @@ test("ui_unittests") {
     ]
     if (use_x11) {
       sources += [ "ime/composition_text_util_pango_unittest.cc" ]
+    }
+    if (!use_x11 && is_chromeos) {
+      # These were already removed in the non-chromeos case.
+      sources -= [
+        "ime/chromeos/character_composer_unittest.cc",
+        "ime/input_method_chromeos_unittest.cc",
+      ]
     }
   }
 

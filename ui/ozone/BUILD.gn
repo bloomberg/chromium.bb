@@ -109,6 +109,7 @@ component("ozone") {
     "//ipc",
     "//skia",
     "//ui/display/types",
+    "//ui/display/util",
     "//ui/events",
     "//ui/events/ozone:events_ozone",
     "//ui/gfx",
