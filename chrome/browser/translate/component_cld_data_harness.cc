@@ -27,7 +27,7 @@ ComponentCldDataHarness::ComponentCldDataHarness() {
 }
 
 ComponentCldDataHarness::~ComponentCldDataHarness() {
-  VLOG(1) << "Tearing down CLD data harness";
+  DVLOG(1) << "Tearing down CLD data harness";
   // Dynamic data mode is enabled and we are using the component updater.
   component_updater::CldComponentInstallerTraits::SetLatestCldDataFile(
       base::FilePath());
@@ -36,7 +36,7 @@ ComponentCldDataHarness::~ComponentCldDataHarness() {
 }
 
 void ComponentCldDataHarness::Init() {
-  VLOG(1) << "Initializing CLD data harness";
+  DVLOG(1) << "Initializing CLD data harness";
   // Dynamic data mode is enabled and we are using the component updater.
   ASSERT_NO_FATAL_FAILURE(CopyComponentTree());
   base::FilePath data_file;
@@ -46,7 +46,7 @@ void ComponentCldDataHarness::Init() {
 }
 
 void ComponentCldDataHarness::ClearComponentDataFileState() {
-  VLOG(1) << "Clearing component CLD data file state";
+  DVLOG(1) << "Clearing component CLD data file state";
   base::FilePath nothing;
   component_updater::CldComponentInstallerTraits::SetLatestCldDataFile(nothing);
 }
@@ -71,7 +71,7 @@ void ComponentCldDataHarness::GetComponentDataFileDestination(
 void ComponentCldDataHarness::DeleteComponentTree() {
   base::FilePath tree_path;
   ASSERT_NO_FATAL_FAILURE(GetExtractedComponentDestination(&tree_path));
-  VLOG(1) << "Deleting CLD component test files from " << tree_path.value();
+  DVLOG(1) << "Deleting CLD component test files from " << tree_path.value();
   base::DeleteFile(tree_path, true);
 }
 
@@ -81,8 +81,8 @@ void ComponentCldDataHarness::CopyComponentTree() {
   GetExtractedComponentDestination(&target_dir);
   base::FilePath source_dir;
   CldDataHarness::GetTestDataSourceDirectory(&source_dir);
-  VLOG(1) << "Copying CLD component test files from " << source_dir.value()
-          << " to " << target_dir.value();
+  DVLOG(1) << "Copying CLD component test files from " << source_dir.value()
+           << " to " << target_dir.value();
   ASSERT_TRUE(base::CreateDirectoryAndGetError(target_dir, NULL));
   ASSERT_TRUE(base::CopyDirectory(source_dir, target_dir, true));
   ASSERT_TRUE(base::PathExists(target_dir));

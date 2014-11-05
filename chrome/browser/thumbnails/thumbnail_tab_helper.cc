@@ -58,8 +58,8 @@ void UpdateThumbnail(const ThumbnailingContext& context,
                      const SkBitmap& thumbnail) {
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
   context.service->SetPageThumbnail(context, image);
-  VLOG(1) << "Thumbnail taken for " << context.url << ": "
-          << context.score.ToString();
+  DVLOG(1) << "Thumbnail taken for " << context.url << ": "
+           << context.score.ToString();
 }
 
 void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,

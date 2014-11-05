@@ -26,12 +26,12 @@ StandaloneCldDataHarness::StandaloneCldDataHarness() {
 }
 
 StandaloneCldDataHarness::~StandaloneCldDataHarness() {
-  VLOG(1) << "Tearing down CLD data harness";
+  DVLOG(1) << "Tearing down CLD data harness";
   DeleteStandaloneDataFile();
 }
 
 void StandaloneCldDataHarness::Init() {
-  VLOG(1) << "Initializing CLD data harness";
+  DVLOG(1) << "Initializing CLD data harness";
   // Dynamic data mode is enabled and we are using a standalone file.
   ASSERT_NO_FATAL_FAILURE(CopyStandaloneDataFile());
 }
@@ -56,7 +56,7 @@ void StandaloneCldDataHarness::GetStandaloneDataFileDestination(
 void StandaloneCldDataHarness::DeleteStandaloneDataFile() {
   base::FilePath path;
   ASSERT_NO_FATAL_FAILURE(GetStandaloneDataFileDestination(&path));
-  VLOG(1) << "Deleting CLD test data file from " << path.value();
+  DVLOG(1) << "Deleting CLD test data file from " << path.value();
   base::DeleteFile(path, false);
 }
 
@@ -68,8 +68,8 @@ void StandaloneCldDataHarness::CopyStandaloneDataFile() {
   ASSERT_TRUE(base::CreateDirectoryAndGetError(target_dir, NULL));
   base::FilePath source_file;
   GetStandaloneDataFileSource(&source_file);
-  VLOG(1) << "Copying CLD test data file from " << source_file.value() << " to "
-          << target_file.value();
+  DVLOG(1) << "Copying CLD test data file from " << source_file.value()
+           << " to " << target_file.value();
   ASSERT_TRUE(base::CopyFile(source_file, target_file));
   ASSERT_TRUE(base::PathExists(target_file));
 }

@@ -67,7 +67,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
   // CLD data immediately on startup.
   if (translate::CldDataSource::ShouldUseStandaloneDataFile() &&
       !g_cld_file_path_initialized_) {
-    VLOG(1) << "Initializing CLD file path for the first time.";
+    DVLOG(1) << "Initializing CLD file path for the first time.";
     base::FilePath path;
     if (!PathService::Get(chrome::DIR_USER_DATA, &path)) {
       // Chrome isn't properly installed
@@ -75,7 +75,7 @@ ChromeTranslateClient::ChromeTranslateClient(content::WebContents* web_contents)
     } else {
       g_cld_file_path_initialized_ = true;
       path = path.Append(kCldDataFileName);
-      VLOG(1) << "Setting CLD data file path: " << path.value();
+      DVLOG(1) << "Setting CLD data file path: " << path.value();
       translate::SetCldDataFilePath(path);
     }
   }
