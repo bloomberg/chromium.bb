@@ -9,6 +9,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "content/renderer/pepper/gfx_conversion.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/video_decoder_shim.h"
 #include "media/video/video_decode_accelerator.h"
@@ -314,12 +315,13 @@ void PepperVideoDecoderHost::ProvidePictureBuffers(
 }
 
 void PepperVideoDecoderHost::PictureReady(const media::Picture& picture) {
-  // So far picture.visible_rect is not used. If used, visible_rect should
-  // be validated since it comes from GPU process and may not be trustworthy.
-  host()->SendUnsolicitedReply(
-      pp_resource(),
-      PpapiPluginMsg_VideoDecoder_PictureReady(picture.bitstream_buffer_id(),
-                                               picture.picture_buffer_id()));
+  // Don't bother validating the visible rect, since the plugin process is less
+  // trusted than the gpu process.
+  PP_Rect visible_rect = PP_FromGfxRect(picture.visible_rect());
+  host()->SendUnsolicitedReply(pp_resource(),
+                               PpapiPluginMsg_VideoDecoder_PictureReady(
+                                   picture.bitstream_buffer_id(),
+                                   picture.picture_buffer_id(), visible_rect));
 }
 
 void PepperVideoDecoderHost::DismissPictureBuffer(int32 picture_buffer_id) {

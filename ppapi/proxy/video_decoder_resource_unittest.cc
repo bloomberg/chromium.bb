@@ -58,9 +58,9 @@ class MockCompletionCallback {
 class VideoDecoderResourceTest : public PluginProxyTest {
  public:
   VideoDecoderResourceTest()
-      : decoder_iface_(thunk::GetPPB_VideoDecoder_0_2_Thunk()) {}
+      : decoder_iface_(thunk::GetPPB_VideoDecoder_1_0_Thunk()) {}
 
-  const PPB_VideoDecoder_0_2* decoder_iface() const { return decoder_iface_; }
+  const PPB_VideoDecoder_1_0* decoder_iface() const { return decoder_iface_; }
 
   void SendReply(const ResourceMessageCallParams& params,
                  int32_t result,
@@ -217,10 +217,9 @@ class VideoDecoderResourceTest : public PluginProxyTest {
   void SendPictureReady(const ResourceMessageCallParams& params,
                         uint32_t decode_count,
                         uint32_t texture_id) {
-    SendReply(
-        params,
-        PP_OK,
-        PpapiPluginMsg_VideoDecoder_PictureReady(decode_count, texture_id));
+    PP_Rect visible_rect = PP_MakeRectFromXYWH(0, 0, 640, 480);
+    SendReply(params, PP_OK, PpapiPluginMsg_VideoDecoder_PictureReady(
+                                 decode_count, texture_id, visible_rect));
   }
 
   void SendFlushReply(const ResourceMessageCallParams& params) {
@@ -298,7 +297,7 @@ class VideoDecoderResourceTest : public PluginProxyTest {
     return true;
   }
 
-  const PPB_VideoDecoder_0_2* decoder_iface_;
+  const PPB_VideoDecoder_1_0* decoder_iface_;
 
   char decode_buffer_[kDecodeBufferSize];
 };

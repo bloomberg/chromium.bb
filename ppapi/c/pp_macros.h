@@ -8,8 +8,7 @@
 #ifndef PPAPI_C_PP_MACROS_H_
 #define PPAPI_C_PP_MACROS_H_
 
-
-#define PPAPI_RELEASE 39
+#define PPAPI_RELEASE 40
 
 /**
  * @file

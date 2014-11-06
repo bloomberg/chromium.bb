@@ -15,8 +15,6 @@
 /// @file
 /// This file defines the API to create and use a VideoDecoder resource.
 
-struct PP_FileInfo;
-
 namespace pp {
 
 class InstanceHandle;

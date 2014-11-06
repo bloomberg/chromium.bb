@@ -51024,6 +51024,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="588532407" label="PPB_Graphics2D;1.1"/>
   <int value="612625164" label="PPB_InputEvent;1.0"/>
   <int value="615811055" label="PPB_Flash_MessageLoop;0.1"/>
+  <int value="617438958" label="PPB_VideoDecoder;1.0"/>
   <int value="629092173" label="PPB_VideoCapture(Dev);0.3"/>
   <int value="630100238" label="PPB_AudioBuffer;0.1"/>
   <int value="631212065" label="PPB_MouseInputEvent;1.0"/>
@@ -51056,6 +51057,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="930528031" label="PPB_OpenGLES2DrawBuffers(Dev);1.0"/>
   <int value="930786862" label="PPB_Flash_Clipboard;5.0"/>
   <int value="941275733" label="PPB_Flash;12.6"/>
+  <int value="943174056" label="PPB_VideoDecoder;0.2"/>
   <int value="944161065" label="PPB_Flash_DRM;1.1"/>
   <int value="946515854" label="PPB_View(Dev);0.1"/>
   <int value="948969343" label="PPB_OpenGLES2;1.0"/>

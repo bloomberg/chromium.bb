@@ -1950,9 +1950,10 @@ IPC_MESSAGE_CONTROL4(PpapiPluginMsg_VideoDecoder_RequestTextures,
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_VideoDecoder_AssignTextures,
                      PP_Size /* size */,
                      std::vector<uint32_t> /* texture_ids */)
-IPC_MESSAGE_CONTROL2(PpapiPluginMsg_VideoDecoder_PictureReady,
+IPC_MESSAGE_CONTROL3(PpapiPluginMsg_VideoDecoder_PictureReady,
                      int32_t /* decode_id */,
-                     uint32_t /* texture_id */)
+                     uint32_t /* texture_id */,
+                     PP_Rect /* visible_rect */)
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_VideoDecoder_RecyclePicture,
                      uint32_t /* texture_id */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_VideoDecoder_DismissPicture,

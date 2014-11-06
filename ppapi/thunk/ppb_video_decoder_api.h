@@ -31,6 +31,8 @@ class PPAPI_THUNK_EXPORT PPB_VideoDecoder_API {
                          uint32_t size,
                          const void* buffer,
                          scoped_refptr<TrackedCallback> callback) = 0;
+  virtual int32_t GetPicture0_1(PP_VideoPicture_0_1* picture,
+                                scoped_refptr<TrackedCallback> callback) = 0;
   virtual int32_t GetPicture(PP_VideoPicture* picture,
                              scoped_refptr<TrackedCallback> callback) = 0;
   virtual void RecyclePicture(const PP_VideoPicture* picture) = 0;
