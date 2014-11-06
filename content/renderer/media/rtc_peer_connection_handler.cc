@@ -527,11 +527,6 @@ class RTCPeerConnectionHandler::Observer
   friend class base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>;
   virtual ~Observer() {}
 
-  void OnError() override {
-    // TODO(perkj): Remove from the PC interface?
-    NOTIMPLEMENTED();
-  }
-
   void OnSignalingChange(
       PeerConnectionInterface::SignalingState new_state) override {
     if (!main_thread_->BelongsToCurrentThread()) {
@@ -1060,7 +1055,16 @@ bool RTCPeerConnectionHandler::addStream(
                            webrtc_stream);
 
   RTCMediaConstraints constraints(options);
-  return native_peer_connection_->AddStream(webrtc_stream, &constraints);
+  if (!constraints.GetMandatory().empty() ||
+      !constraints.GetOptional().empty()) {
+    // TODO(perkj): |mediaConstraints| is the name of the optional constraints
+    // argument in RTCPeerConnection.idl. It has been removed from the spec and
+    // should be removed from blink as well.
+    LOG(WARNING)
+        << "mediaConstraints is not a supported argument to addStream.";
+  }
+
+  return native_peer_connection_->AddStream(webrtc_stream);
 }
 
 void RTCPeerConnectionHandler::removeStream(

@@ -204,9 +204,7 @@ MockPeerConnectionImpl::remote_streams() {
   return remote_streams_;
 }
 
-bool MockPeerConnectionImpl::AddStream(
-    MediaStreamInterface* local_stream,
-    const MediaConstraintsInterface* constraints) {
+bool MockPeerConnectionImpl::AddStream(MediaStreamInterface* local_stream) {
   DCHECK(stream_label_.empty());
   stream_label_ = local_stream->label();
   local_streams_->AddStream(local_stream);
