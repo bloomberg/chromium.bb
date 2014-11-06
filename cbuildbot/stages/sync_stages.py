@@ -901,8 +901,11 @@ class PreCQLauncherStage(SyncStage):
   # The CL has passed the Pre-CQ and is ready to be submitted.
   STATUS_READY_TO_SUBMIT = constants.CL_STATUS_READY_TO_SUBMIT
 
-  # The number of minutes we wait before launching Pre-CQ jobs
-  LAUNCH_DELAY = 5
+  # The number of minutes we wait before launching Pre-CQ jobs. This measures
+  # the idle time of a given patch series, so, for example, if a user takes
+  # 20 minutes to mark a series of 20 patches as ready, we won't launch a
+  # tryjob on any of the patches until the user has been idle for 2 minutes.
+  LAUNCH_DELAY = 2
 
   # The number of minutes we allow before considering a launch attempt failed.
   # If this window isn't hit in a given launcher run, the window will start
