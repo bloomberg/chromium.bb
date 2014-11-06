@@ -1636,8 +1636,7 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     int error = HotwordServiceFactory::GetCurrentError(profile);
 
     std::string function_name;
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalHotwording)) {
+    if (HotwordService::IsExperimentalHotwordingEnabled()) {
       if (HotwordServiceFactory::IsHotwordHardwareAvailable()) {
         function_name = "BrowserOptions.showHotwordAlwaysOnSection";
       } else {

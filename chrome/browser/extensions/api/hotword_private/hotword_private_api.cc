@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/hotword_private/hotword_private_api.h"
 
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -13,7 +12,6 @@
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "extensions/browser/event_router.h"
 
@@ -147,9 +145,8 @@ bool HotwordPrivateGetStatusFunction::RunSync() {
   result.always_on_enabled =
       prefs->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled);
   result.audio_logging_enabled = false;
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  result.experimental_hotword_enabled = command_line->HasSwitch(
-      switches::kEnableExperimentalHotwording);
+  result.experimental_hotword_enabled =
+      HotwordService::IsExperimentalHotwordingEnabled();
 
   SetResult(result.ToValue().release());
   return true;

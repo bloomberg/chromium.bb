@@ -4,20 +4,20 @@
 
 #include "chrome/browser/extensions/external_component_loader.h"
 
-#include "base/command_line.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/bookmarks/enhanced_bookmarks_features.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/search/hotword_service.h"
 #include "chrome/browser/search/hotword_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/command_line.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -47,8 +47,6 @@ bool ExternalComponentLoader::IsModifiable(const Extension* extension) {
 }
 
 void ExternalComponentLoader::StartLoading() {
-  CommandLine* const command_line = CommandLine::ForCurrentProcess();
-
   prefs_.reset(new base::DictionaryValue());
   std::string app_id = extension_misc::kInAppPaymentsSupportAppId;
   prefs_->SetString(app_id + ".external_update_url",
@@ -56,7 +54,7 @@ void ExternalComponentLoader::StartLoading() {
 
   if (HotwordServiceFactory::IsHotwordAllowed(profile_)) {
     std::string hotword_id = extension_misc::kHotwordExtensionId;
-    if (command_line->HasSwitch(switches::kEnableExperimentalHotwording)) {
+    if (HotwordService::IsExperimentalHotwordingEnabled()) {
       hotword_id = extension_misc::kHotwordSharedModuleId;
     }
     prefs_->SetString(hotword_id + ".external_update_url",
@@ -77,6 +75,7 @@ void ExternalComponentLoader::StartLoading() {
 
 #if defined(OS_CHROMEOS)
   {
+    CommandLine* const command_line = CommandLine::ForCurrentProcess();
     if (!command_line->HasSwitch(chromeos::switches::kDisableNewZIPUnpacker)) {
       const std::string extension_id = extension_misc::kZIPUnpackerExtensionId;
       prefs_->SetString(extension_id + ".external_update_url",
