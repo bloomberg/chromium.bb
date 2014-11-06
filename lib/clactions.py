@@ -254,20 +254,20 @@ def GetCLPreCQProgress(change, action_history):
                                       a.timestamp)
 
   # Loop through actions_for_patch several times, in order of status priority.
+  # CL_PRECQ_CONFIG_STATUS_LAUNCHED,
+  # CL_PRECQ_CONFIG_STATUS_FAILED,
+  # CL_PRECQ_CONFIG_STATUS_INFLIGHT
+  # All have the same priority
   for a in actions_for_patch:
     if (a.action == constants.CL_ACTION_TRYBOT_LAUNCHING and
         a.reason in config_status_dict):
       config_status_dict[a.reason] = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
                                       a.timestamp)
-
-  for a in actions_for_patch:
-    if (a.action == constants.CL_ACTION_PICKED_UP and
-        a.build_config in config_status_dict):
+    elif (a.action == constants.CL_ACTION_PICKED_UP and
+          a.build_config in config_status_dict):
       config_status_dict[a.build_config] = (
           constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT, a.timestamp)
-
-  for a in actions_for_patch:
-    if (a.action == constants.CL_ACTION_KICKED_OUT and
+    elif (a.action == constants.CL_ACTION_KICKED_OUT and
         (a.build_config in config_status_dict or
          a.reason in config_status_dict)):
       config = (a.build_config if a.build_config in config_status_dict else

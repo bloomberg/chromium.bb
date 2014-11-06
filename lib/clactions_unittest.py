@@ -101,7 +101,14 @@ class TestCLPreCQStatus(cros_test_lib.TestCase):
       self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_PENDING,
                        s()[c][0])
 
-    # Simulate the pre-cq-launcher launching tryjobs for all pending configs.
+    # Simulate a prior build rejecting change
+    self._Act(launcher_build_id, change,
+              constants.CL_ACTION_KICKED_OUT,
+              'pineapple-pre-cq')
+    self.assertEqual(constants.CL_PRECQ_CONFIG_STATUS_FAILED,
+                     s()['pineapple-pre-cq'][0])
+
+     # Simulate the pre-cq-launcher launching tryjobs for all pending configs.
     for c in configs:
       self._Act(launcher_build_id, change,
                 constants.CL_ACTION_TRYBOT_LAUNCHING, c)
