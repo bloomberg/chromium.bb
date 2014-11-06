@@ -134,6 +134,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   static GLSurface* GetCurrent();
 
+  virtual void SetSwapInterval(int interval);
+
  protected:
   virtual ~GLSurface();
   static bool InitializeOneOffImplementation(GLImplementation impl,

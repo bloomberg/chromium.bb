@@ -183,6 +183,8 @@ void GLContextEGL::SetSwapInterval(int interval) {
   if (!eglSwapInterval(display_, interval)) {
     LOG(ERROR) << "eglSwapInterval failed with error "
                << GetLastEGLErrorString();
+  } else {
+    GLSurface::GetCurrent()->SetSwapInterval(interval);
   }
 }
 
