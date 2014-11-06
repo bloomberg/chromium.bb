@@ -53693,6 +53693,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="SPDY 3.0"/>
   <int value="2" label="SPDY 3.1"/>
   <int value="3" label="HTTP/2 draft-14"/>
+  <int value="4" label="HTTP/2 draft-15"/>
 </enum>
 
 <enum name="SpdySessionGet" type="int">
