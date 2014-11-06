@@ -216,30 +216,6 @@ base::Value* GetContentSettingValueAndPatterns(
   return NULL;
 }
 
-base::Value* GetContentSettingValue(const ProviderInterface* provider,
-                                    const GURL& primary_url,
-                                    const GURL& secondary_url,
-                                    ContentSettingsType content_type,
-                                    const std::string& resource_identifier,
-                                    bool include_incognito) {
-  return GetContentSettingValueAndPatterns(provider, primary_url, secondary_url,
-                               content_type, resource_identifier,
-                               include_incognito, NULL, NULL);
-}
-
-ContentSetting GetContentSetting(const ProviderInterface* provider,
-                                 const GURL& primary_url,
-                                 const GURL& secondary_url,
-                                 ContentSettingsType content_type,
-                                 const std::string& resource_identifier,
-                                 bool include_incognito) {
-  scoped_ptr<base::Value> value(
-      GetContentSettingValue(provider, primary_url, secondary_url,
-                             content_type, resource_identifier,
-                             include_incognito));
-  return ValueToContentSetting(value.get());
-}
-
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,
                                     RendererContentSettingRules* rules) {
   map->GetSettingsForOneType(

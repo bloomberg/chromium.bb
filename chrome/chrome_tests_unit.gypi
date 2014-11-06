@@ -1930,6 +1930,7 @@
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
+	'../components/components.gyp:content_settings_core_test_support',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../content/content.gyp:content_app_both',
         '../crypto/crypto.gyp:crypto_test_support',

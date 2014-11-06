@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(ContentSettingsUtilsTest, ParsePatternString) {

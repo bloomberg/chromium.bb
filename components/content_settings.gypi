@@ -74,5 +74,23 @@
         'content_settings/core/common/pref_names.cc',
       ],
     },
+    {
+      # GN version: //components/content_settings/core/test:test_support
+      'target_name': 'content_settings_core_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        'content_settings_core_browser',
+        'content_settings_core_common',
+        '../base/base.gyp:base',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'content_settings/core/test/content_settings_test_utils.cc',
+        'content_settings/core/test/content_settings_test_utils.h',
+      ],
+    },
   ],
 }

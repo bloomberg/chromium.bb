@@ -5,6 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "components/content_settings/core/browser/content_settings_mock_provider.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 

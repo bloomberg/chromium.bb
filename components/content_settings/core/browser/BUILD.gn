@@ -48,6 +48,8 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    "//components/content_settings/core/test:test_support",
     "//testing/gtest",
   ]
 }
+

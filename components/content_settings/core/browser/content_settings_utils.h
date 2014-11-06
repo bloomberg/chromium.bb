@@ -68,22 +68,6 @@ base::Value* GetContentSettingValueAndPatterns(
     ContentSettingsPattern* primary_pattern,
     ContentSettingsPattern* secondary_pattern);
 
-base::Value* GetContentSettingValue(
-    const ProviderInterface* provider,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    bool include_incognito);
-
-ContentSetting GetContentSetting(
-    const ProviderInterface* provider,
-    const GURL& primary_url,
-    const GURL& secondary_url,
-    ContentSettingsType content_type,
-    const std::string& resource_identifier,
-    bool include_incognito);
-
 // Populates |rules| with content setting rules for content types that are
 // handled by the renderer.
 void GetRendererContentSettingRules(const HostContentSettingsMap* map,

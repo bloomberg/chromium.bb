@@ -323,6 +323,7 @@
             # Dependencies of content_settings
             'components.gyp:content_settings_core_browser',
             'components.gyp:content_settings_core_common',
+            'components.gyp:content_settings_core_test_support',
 
             # Dependencies of crash
             'components.gyp:crash_test_support',
