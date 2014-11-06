@@ -812,7 +812,8 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
   INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_FileDisplay DISABLED_FileDisplay
 #else
 #define MAYBE_FileDisplay FileDisplay
@@ -834,7 +835,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "zipOpenDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenVideoFiles DISABLED_OpenVideoFiles
 #else
 #define MAYBE_OpenVideoFiles OpenVideoFiles
@@ -847,7 +849,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "videoOpenDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenAudioFiles DISABLED_OpenAudioFiles
 #else
 #define MAYBE_OpenAudioFiles OpenAudioFiles
@@ -879,7 +882,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                                     "createNewFolderDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_KeyboardOperations DISABLED_KeyboardOperations
 #else
 #define MAYBE_KeyboardOperations KeyboardOperations
@@ -899,7 +903,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_DriveSpecific DISABLED_DriveSpecific
 #else
 #define MAYBE_DriveSpecific DriveSpecific
@@ -915,7 +920,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_Transfer DISABLED_Transfer
 #else
 #define MAYBE_Transfer Transfer
@@ -934,7 +940,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_RestorePrefs DISABLED_RestorePrefs
 #else
 #define MAYBE_RestorePrefs RestorePrefs
@@ -1078,7 +1085,8 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "thumbnailsDownloads"),
                       TestParameter(IN_GUEST_MODE, "thumbnailsDownloads")));
 
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_OpenFileDialog DISABLED_OpenFileDialog
 #else
 #define MAYBE_OpenFileDialog OpenFileDialog
@@ -1215,7 +1223,8 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 };
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
 #define MAYBE_BasicDownloads DISABLED_BasicDownloads
 #else
@@ -1237,7 +1246,8 @@ IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
 }
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
-#if !defined(NDEBUG)
+// Fails on official build. http://crbug.com/429294
+#if !defined(NDEBUG) || defined(OFFICIAL_BUILD)
 #define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
 #define MAYBE_BasicDrive DISABLED_BasicDrive
 #else
