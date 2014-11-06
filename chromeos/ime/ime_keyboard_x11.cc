@@ -19,54 +19,6 @@ const char kSetxkbmapCommand[] = "/usr/bin/setxkbmap";
 // A string for obtaining a mask value for Num Lock.
 const char kNumLockVirtualModifierString[] = "NumLock";
 
-const char *kISOLevel5ShiftLayoutIds[] = {
-  "ca(multix)",
-  "de(neo)",
-};
-
-const char *kAltGrLayoutIds[] = {
-  "be",
-  "be",
-  "be",
-  "bg",
-  "bg(phonetic)",
-  "br",
-  "ca",
-  "ca(eng)",
-  "ca(multix)",
-  "ch",
-  "ch(fr)",
-  "cz",
-  "de",
-  "de(neo)",
-  "dk",
-  "ee",
-  "es",
-  "es(cat)",
-  "fi",
-  "fr",
-  "gb(dvorak)",
-  "gb(extd)",
-  "gr",
-  "hr",
-  "il",
-  "it",
-  "latam",
-  "lt",
-  "no",
-  "pl",
-  "pt",
-  "ro",
-  "se",
-  "si",
-  "sk",
-  "tr",
-  "ua",
-  "us(altgr-intl)",
-  "us(intl)",
-};
-
-
 // Returns false if |layout_name| contains a bad character.
 bool CheckLayoutName(const std::string& layout_name) {
   static const char kValidLayoutNameCharacters[] =
@@ -86,6 +38,8 @@ bool CheckLayoutName(const std::string& layout_name) {
   return true;
 }
 
+}  // namespace
+
 ImeKeyboardX11::ImeKeyboardX11()
     : is_running_on_chrome_os_(base::SysInfo::IsRunningOnChromeOS()),
       weak_factory_(this) {
@@ -104,20 +58,12 @@ ImeKeyboardX11::ImeKeyboardX11()
         << "NumLock is not assigned to Mod2Mask.  : " << num_lock_mask_;
   }
 
-  current_caps_lock_status_ = CapsLockIsEnabled();
+  caps_lock_is_enabled_ = CapsLockIsEnabled();
   // Disable Num Lock on X start up for http://crosbug.com/29169.
   DisableNumLock();
 }
 
-ImeKeyboardX11::~ImeKeyboardX11() {};
-
-void ImeKeyboardX11::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void ImeKeyboardX11::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
+ImeKeyboardX11::~ImeKeyboardX11() {}
 
 unsigned int ImeKeyboardX11::GetNumLockMask() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -153,7 +99,7 @@ unsigned int ImeKeyboardX11::GetNumLockMask() {
   return real_mask;
 }
 
-void ImeKeyboardX11::SetLockedModifiers(bool caps_lock_enabled) {
+void ImeKeyboardX11::SetLockedModifiers() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Always turn off num lock.
@@ -161,8 +107,7 @@ void ImeKeyboardX11::SetLockedModifiers(bool caps_lock_enabled) {
   unsigned int value_mask = 0;
 
   affect_mask |= LockMask;
-  value_mask |= (caps_lock_enabled ? LockMask : 0);
-  current_caps_lock_status_ = caps_lock_enabled;
+  value_mask |= (caps_lock_is_enabled_ ? LockMask : 0);
 
   XkbLockModifiers(gfx::GetXDisplay(), XkbUseCoreKbd, affect_mask, value_mask);
 }
@@ -178,7 +123,7 @@ bool ImeKeyboardX11::SetLayoutInternal(const std::string& layout_name,
   if (!CheckLayoutName(layout_name))
     return false;
 
-  if (!force && (current_layout_name_ == layout_name)) {
+  if (!force && (last_layout_ == layout_name)) {
     DVLOG(1) << "The requested layout is already set: " << layout_name;
     return true;
   }
@@ -265,22 +210,6 @@ bool ImeKeyboardX11::CapsLockIsEnabled() {
   return (status.locked_mods & LockMask);
 }
 
-bool ImeKeyboardX11::IsISOLevel5ShiftAvailable() const {
-  for (size_t i = 0; i < arraysize(kISOLevel5ShiftLayoutIds); ++i) {
-    if (current_layout_name_ == kISOLevel5ShiftLayoutIds[i])
-      return true;
-  }
-  return false;
-}
-
-bool ImeKeyboardX11::IsAltGrAvailable() const {
-  for (size_t i = 0; i < arraysize(kAltGrLayoutIds); ++i) {
-    if (current_layout_name_ == kAltGrLayoutIds[i])
-      return true;
-  }
-  return false;
-}
-
 bool ImeKeyboardX11::SetAutoRepeatEnabled(bool enabled) {
   if (enabled)
     XAutoRepeatOn(gfx::GetXDisplay());
@@ -304,37 +233,33 @@ bool ImeKeyboardX11::SetAutoRepeatRate(const AutoRepeatRate& rate) {
 }
 
 void ImeKeyboardX11::SetCapsLockEnabled(bool enable_caps_lock) {
-  bool old_state = current_caps_lock_status_;
-  SetLockedModifiers(enable_caps_lock);
-  if (old_state != enable_caps_lock) {
-    FOR_EACH_OBSERVER(ImeKeyboard::Observer, observers_,
-                      OnCapsLockChanged(enable_caps_lock));
-  }
+  ImeKeyboard::SetCapsLockEnabled(enable_caps_lock);
+  SetLockedModifiers();
 }
 
 bool ImeKeyboardX11::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
   if (SetLayoutInternal(layout_name, false)) {
-    current_layout_name_ = layout_name;
+    last_layout_ = layout_name;
     return true;
   }
   return false;
 }
 
 bool ImeKeyboardX11::ReapplyCurrentKeyboardLayout() {
-  if (current_layout_name_.empty()) {
+  if (last_layout_.empty()) {
     DVLOG(1) << "Can't reapply XKB layout: layout unknown";
     return false;
   }
-  return SetLayoutInternal(current_layout_name_, true /* force */);
+  return SetLayoutInternal(last_layout_, true /* force */);
 }
 
 void ImeKeyboardX11::ReapplyCurrentModifierLockStatus() {
-  SetLockedModifiers(current_caps_lock_status_);
+  SetLockedModifiers();
 }
 
 void ImeKeyboardX11::DisableNumLock() {
-  SetCapsLockEnabled(current_caps_lock_status_);
+  SetCapsLockEnabled(caps_lock_is_enabled_);
 }
 
 void ImeKeyboardX11::OnSetLayoutFinish() {
@@ -346,8 +271,6 @@ void ImeKeyboardX11::OnSetLayoutFinish() {
   execute_queue_.pop();
   MaybeExecuteSetLayoutCommand();
 }
-
-}  // namespace
 
 // static
 bool ImeKeyboard::GetAutoRepeatEnabledForTesting() {

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROMEOS_IME_IME_KEYBOARD_X11_H_
+#define CHROMEOS_IME_IME_KEYBOARD_X11_H_
 
 #include "chromeos/ime/ime_keyboard.h"
 
@@ -31,16 +33,11 @@
 
 namespace chromeos {
 namespace input_method {
-namespace {
 
-class ImeKeyboardX11 : public ImeKeyboard {
+class CHROMEOS_EXPORT ImeKeyboardX11 : public ImeKeyboard {
  public:
   ImeKeyboardX11();
   virtual ~ImeKeyboardX11();
-
-  // Adds/removes observer.
-  virtual void AddObserver(Observer* observer) override;
-  virtual void RemoveObserver(Observer* observer) override;
 
   // ImeKeyboard:
   virtual bool SetCurrentKeyboardLayoutByName(
@@ -50,8 +47,6 @@ class ImeKeyboardX11 : public ImeKeyboard {
   virtual void DisableNumLock() override;
   virtual void SetCapsLockEnabled(bool enable_caps_lock) override;
   virtual bool CapsLockIsEnabled() override;
-  virtual bool IsISOLevel5ShiftAvailable() const override;
-  virtual bool IsAltGrAvailable() const override;
   virtual bool SetAutoRepeatEnabled(bool enabled) override;
   virtual bool SetAutoRepeatRate(const AutoRepeatRate& rate) override;
 
@@ -61,7 +56,7 @@ class ImeKeyboardX11 : public ImeKeyboard {
 
   // Sets the caps-lock status. Note that calling this function always disables
   // the num-lock.
-  void SetLockedModifiers(bool caps_lock_enabled);
+  void SetLockedModifiers();
 
   // This function is used by SetLayout() and RemapModifierKeys(). Calls
   // setxkbmap command if needed, and updates the last_full_layout_name_ cache.
@@ -81,12 +76,6 @@ class ImeKeyboardX11 : public ImeKeyboard {
   const bool is_running_on_chrome_os_;
   unsigned int num_lock_mask_;
 
-  // The current Caps Lock status. If true, enabled.
-  bool current_caps_lock_status_;
-
-  // The XKB layout name which we set last time like "us" and "us(dvorak)".
-  std::string current_layout_name_;
-
   // A queue for executing setxkbmap one by one.
   std::queue<std::string> execute_queue_;
 
@@ -94,14 +83,11 @@ class ImeKeyboardX11 : public ImeKeyboard {
 
   base::WeakPtrFactory<ImeKeyboardX11> weak_factory_;
 
-  ObserverList<Observer> observers_;
-
   DISALLOW_COPY_AND_ASSIGN(ImeKeyboardX11);
 };
 
 
-}  // namespace
-
 } // namespace input_method
 } // namespace chromeos
 
+#endif  // CHROMEOS_IME_IME_KEYBOARD_X11_H_

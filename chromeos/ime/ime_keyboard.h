@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -42,11 +43,11 @@ class CHROMEOS_EXPORT ImeKeyboard {
     virtual void OnCapsLockChanged(bool enabled) = 0;
   };
 
-  virtual ~ImeKeyboard() {}
-
+  ImeKeyboard();
+  virtual ~ImeKeyboard();
   // Adds/removes observer.
-  virtual void AddObserver(Observer* observer) = 0;
-  virtual void RemoveObserver(Observer* observer) = 0;
+  virtual void AddObserver(Observer* observer);
+  virtual void RemoveObserver(Observer* observer);
 
   // Sets the current keyboard layout to |layout_name|. This function does not
   // change the current mapping of the modifier keys. Returns true on success.
@@ -74,17 +75,17 @@ class CHROMEOS_EXPORT ImeKeyboard {
 
   // Sets the caps lock status to |enable_caps_lock|. Do not call the function
   // from non-UI threads.
-  virtual void SetCapsLockEnabled(bool enable_caps_lock) = 0;
+  virtual void SetCapsLockEnabled(bool enable_caps_lock);
 
   // Returns true if caps lock is enabled. Do not call the function from non-UI
   // threads.
-  virtual bool CapsLockIsEnabled() = 0;
+  virtual bool CapsLockIsEnabled();
 
   // Returns true if the current layout supports ISO Level 5 shift.
-  virtual bool IsISOLevel5ShiftAvailable() const = 0;
+  virtual bool IsISOLevel5ShiftAvailable() const;
 
   // Returns true if the current layout supports alt gr.
-  virtual bool IsAltGrAvailable() const = 0;
+  virtual bool IsAltGrAvailable() const;
 
   // Turns on and off the auto-repeat of the keyboard. Returns true on success.
   // Do not call the function from non-UI threads.
@@ -111,6 +112,12 @@ class CHROMEOS_EXPORT ImeKeyboard {
   // Note: At this moment, classes other than InputMethodManager should not
   // instantiate the ImeKeyboard class.
   static ImeKeyboard* Create();
+
+  bool caps_lock_is_enabled_;
+  std::string last_layout_;
+
+ private:
+  ObserverList<Observer> observers_;
 };
 
 }  // namespace input_method

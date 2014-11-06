@@ -42,7 +42,10 @@ component("chromeos") {
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [ "//ui/gfx/x" ]
-    sources -= [ "ime/ime_keyboard_ozone.cc" ]
+    sources -= [
+      "ime/ime_keyboard_ozone.cc",
+      "ime/ime_keyboard_ozone.h",
+    ]
   } else {
     sources -= [
       "ime/ime_keyboard_x11.cc",

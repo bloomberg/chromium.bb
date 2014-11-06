@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
-#define CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
+#ifndef CHROMEOS_IME_IME_KEYBOARD_OZONE_H_
+#define CHROMEOS_IME_IME_KEYBOARD_OZONE_H_
 
 #include "chromeos/ime/ime_keyboard.h"
 
@@ -15,10 +15,10 @@
 namespace chromeos {
 namespace input_method {
 
-class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
+class CHROMEOS_EXPORT ImeKeyboardOzone : public ImeKeyboard {
  public:
-  FakeImeKeyboard();
-  virtual ~FakeImeKeyboard();
+  ImeKeyboardOzone();
+  virtual ~ImeKeyboardOzone();
 
   virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name)
       override;
@@ -27,19 +27,14 @@ class CHROMEOS_EXPORT FakeImeKeyboard : public ImeKeyboard {
   virtual bool ReapplyCurrentKeyboardLayout() override;
   virtual void ReapplyCurrentModifierLockStatus() override;
   virtual void DisableNumLock() override;
-  virtual bool IsISOLevel5ShiftAvailable() const override;
-  virtual bool IsAltGrAvailable() const override;
-
-  int set_current_keyboard_layout_by_name_count_;
-  AutoRepeatRate last_auto_repeat_rate_;
-  // TODO(yusukes): Add more variables for counting the numbers of the API calls
-  bool auto_repeat_is_enabled_;
+  virtual void SetCapsLockEnabled(bool enable_caps_lock) override;
+  virtual bool CapsLockIsEnabled() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(FakeImeKeyboard);
+  DISALLOW_COPY_AND_ASSIGN(ImeKeyboardOzone);
 };
 
 }  // namespace input_method
 }  // namespace chromeos
 
-#endif  // CHROMEOS_IME_FAKE_IME_KEYBOARD_H_
+#endif  // CHROMEOS_IME_IME_KEYBOARD_OZONE_H_
