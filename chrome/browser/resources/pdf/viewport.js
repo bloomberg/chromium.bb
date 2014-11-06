@@ -413,15 +413,13 @@ Viewport.prototype = {
       if (!this.documentDimensions_)
         return;
       var page = this.getMostVisiblePage();
-      this.setZoomInternal_(this.computeFittingZoom_(
-          this.pageDimensions_[page], false));
-      // Center the document in the page by scrolling by the amount of empty
-      // space to the left of the document.
-      var xOffset =
-          (this.documentDimensions_.width - this.pageDimensions_[page].width) *
-          this.zoom_ / 2;
-      this.window_.scrollTo(xOffset,
-                            this.pageDimensions_[page].y * this.zoom_);
+      // Fit to the current page's height and the widest page's width.
+      var dimensions = {
+        width: this.documentDimensions_.width,
+        height: this.pageDimensions_[page].height,
+      };
+      this.setZoomInternal_(this.computeFittingZoom_(dimensions, false));
+      this.window_.scrollTo(0, this.pageDimensions_[page].y * this.zoom_);
       this.updateViewport_();
     }.bind(this));
   },

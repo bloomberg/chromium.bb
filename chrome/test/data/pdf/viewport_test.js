@@ -301,11 +301,11 @@ var tests = [
     chrome.test.assertEq('100px', mockSizer.style.height);
     chrome.test.assertEq(0.5, viewport.zoom);
 
-    // Test that when there are multiple pages the most visible page is sized
-    // to.
+    // Test that when there are multiple pages the height of the most visible
+    // page and the width of the widest page are sized to.
     documentDimensions.reset();
-    documentDimensions.addPage(200, 100);
-    documentDimensions.addPage(100, 400);
+    documentDimensions.addPage(100, 100);
+    documentDimensions.addPage(200, 400);
     viewport.setDocumentDimensions(documentDimensions);
     viewport.setZoom(1);
     mockWindow.scrollTo(0, 0);
@@ -339,8 +339,7 @@ var tests = [
     mockWindow.scrollTo(0, 175);
     viewport.fitToPage();
     chrome.test.assertEq(0.25, viewport.zoom);
-    // The page will be centred because it is less than the document width.
-    chrome.test.assertEq(12.5, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.x);
     chrome.test.assertEq(50, viewport.position.y);
     chrome.test.succeed();
   },
