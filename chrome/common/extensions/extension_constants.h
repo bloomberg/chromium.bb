@@ -79,6 +79,9 @@ extern const char kHotwordAudioVerificationAppId[];
 // The extension id of the hotword voice search trigger extension.
 extern const char kHotwordExtensionId[];
 
+// The extension id of the new (experimental) hotword extension.
+extern const char kHotwordNewExtensionId[];
+
 // The extension id of the hotword shared module.
 extern const char kHotwordSharedModuleId[];
 

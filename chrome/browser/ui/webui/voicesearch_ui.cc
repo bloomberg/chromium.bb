@@ -122,7 +122,17 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddAudioInfo(list.get());
     AddLanguageInfo(list.get());
     AddHotwordInfo(list.get());
-    AddHotwordExtensionInfo(list.get());
+
+    std::string extension_id = extension_misc::kHotwordExtensionId;
+    HotwordService* hotword_service =
+        HotwordServiceFactory::GetForProfile(profile_);
+    if (hotword_service && hotword_service->IsExperimentalHotwordingEnabled())
+      extension_id = extension_misc::kHotwordNewExtensionId;
+    AddExtensionInfo(extension_id, "Extension", list.get());
+
+    AddExtensionInfo(extension_misc::kHotwordSharedModuleId,
+                     "Shared Module",
+                     list.get());
     AddAppListInfo(list.get());
 
     // voiceSearchInfo will take ownership of list, and clean it up on
@@ -241,6 +251,12 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddPair(list, ASCIIToUTF16("Hotword Search Enabled"),
             ASCIIToUTF16(search_enabled));
 
+    std::string always_on_search_enabled = "No";
+    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled))
+      always_on_search_enabled = "Yes";
+    AddPair(list, ASCIIToUTF16("Always-on Hotword Search Enabled"),
+            ASCIIToUTF16(always_on_search_enabled));
+
     std::string audio_logging_enabled = "No";
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
@@ -249,15 +265,30 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     AddPair(list, ASCIIToUTF16("Hotword Audio Logging Enabled"),
             ASCIIToUTF16(audio_logging_enabled));
 
+    std::string audio_history_enabled = "No";
+    if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioHistoryEnabled))
+      audio_history_enabled = "Yes";
+    AddPair(list, ASCIIToUTF16("Audio History Enabled"),
+            ASCIIToUTF16(audio_history_enabled));
+
     std::string group = base::FieldTrialList::FindFullName(
         hotword_internal::kHotwordFieldTrialName);
     AddPair(list, ASCIIToUTF16("Field trial"), ASCIIToUTF16(group));
 
+    std::string new_hotwording_enabled = "No";
+    if (hotword_service && hotword_service->IsExperimentalHotwordingEnabled())
+      new_hotwording_enabled = "Yes";
+    AddPair(list, ASCIIToUTF16("New Hotwording Enabled"),
+            ASCIIToUTF16(new_hotwording_enabled));
+
     AddLineBreak(list);
   }
 
-  // Adds information specific to the hotword extension to the list.
-  void AddHotwordExtensionInfo(base::ListValue* list) {
+  // Adds information specific to an extension to the list.
+  void AddExtensionInfo(const std::string& extension_id,
+                        const std::string& name_prefix,
+                        base::ListValue* list) {
+    DCHECK(!name_prefix.empty());
     std::string version("undefined");
     std::string id("undefined");
     base::FilePath path;
@@ -268,26 +299,24 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
       ExtensionService* extension_service =
           extension_system->extension_service();
       const extensions::Extension* extension =
-          extension_service->GetExtensionById(
-              extension_misc::kHotwordExtensionId, true);
+          extension_service->GetExtensionById(extension_id, true);
       if (extension) {
         id = extension->id();
         version = extension->VersionString();
         path = extension->path();
       }
     }
-    AddPair(list, ASCIIToUTF16("Extension Id"),
+    AddPair(list, ASCIIToUTF16(name_prefix + " Id"),
             ASCIIToUTF16(id));
-    AddPair(list, ASCIIToUTF16("Extension Version"),
+    AddPair(list, ASCIIToUTF16(name_prefix + " Version"),
             ASCIIToUTF16(version));
-    AddPair(list, ASCIIToUTF16("Extension Path"),
+    AddPair(list, ASCIIToUTF16(name_prefix + " Path"),
             path.empty() ? ASCIIToUTF16("undefined") : path.LossyDisplayName());
 
     extensions::ExtensionPrefs* extension_prefs =
         extensions::ExtensionPrefs::Get(profile_);
     int pref_state = -1;
-    extension_prefs->ReadPrefAsInteger(extension_misc::kHotwordExtensionId,
-                                       "state", &pref_state);
+    extension_prefs->ReadPrefAsInteger(extension_id, "state", &pref_state);
     std::string state;
     switch (pref_state) {
       case extensions::Extension::DISABLED:
@@ -303,7 +332,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
         state = "undefined";
     }
 
-    AddPair(list, ASCIIToUTF16("Extension State"), ASCIIToUTF16(state));
+    AddPair(list, ASCIIToUTF16(name_prefix + " State"), ASCIIToUTF16(state));
 
     AddLineBreak(list);
   }
