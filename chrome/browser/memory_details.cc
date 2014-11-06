@@ -24,6 +24,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/bindings_policy.h"
+#include "content/public/common/content_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
@@ -487,7 +488,16 @@ void MemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.Gpu", sample);
         other_count++;
         continue;
+#if defined(ENABLE_PLUGINS)
       case content::PROCESS_TYPE_PPAPI_PLUGIN:
+        {
+          const std::vector<base::string16>& titles =
+              browser.processes[index].titles;
+          if (titles.size() == 1 &&
+              titles[0] == base::ASCIIToUTF16(content::kFlashPluginName)) {
+            UMA_HISTOGRAM_MEMORY_KB("Memory.PepperFlashPlugin", sample);
+          }
+        }
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPlugin", sample);
         pepper_plugin_count++;
         continue;
@@ -495,6 +505,7 @@ void MemoryDetails::UpdateHistograms() {
         UMA_HISTOGRAM_MEMORY_KB("Memory.PepperPluginBroker", sample);
         pepper_plugin_broker_count++;
         continue;
+#endif
       case PROCESS_TYPE_NACL_LOADER:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
         other_count++;
@@ -636,4 +647,4 @@ void MemoryDetails::UpdateSwapHistograms() {
   }
 }
 
-#endif
+#endif  // defined(OS_CHROMEOS)

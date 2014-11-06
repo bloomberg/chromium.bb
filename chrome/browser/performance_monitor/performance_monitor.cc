@@ -20,7 +20,8 @@ namespace {
 // The default interval at which PerformanceMonitor performs its timed
 // collections.
 const int kGatherIntervalInSeconds = 120;
-}
+
+}  // namespace
 
 namespace performance_monitor {
 
@@ -56,8 +57,9 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
            content::RenderProcessHost::AllHostsIterator();
        !rph_iter.IsAtEnd(); rph_iter.Advance()) {
     base::ProcessHandle handle = rph_iter.GetCurrentValue()->GetHandle();
-    MarkProcessAsAlive(handle, content::PROCESS_TYPE_RENDERER,
-                       current_update_sequence);
+    content::ChildProcessData data(content::PROCESS_TYPE_RENDERER);
+    data.handle = handle;
+    MarkProcessAsAlive(data, current_update_sequence);
   }
 
   BrowserThread::PostTask(
@@ -68,19 +70,20 @@ void PerformanceMonitor::GatherMetricsMapOnUIThread() {
                  current_update_sequence));
 }
 
-void PerformanceMonitor::MarkProcessAsAlive(const base::ProcessHandle& handle,
-                                            int process_type,
-                                            int current_update_sequence) {
-  if (handle == 0) {
+void PerformanceMonitor::MarkProcessAsAlive(
+    const content::ChildProcessData& process_data,
+    int current_update_sequence) {
+  if (process_data.handle == base::kNullProcessHandle) {
     // Process may not be valid yet.
     return;
   }
 
-  MetricsMap::iterator process_metrics_iter = metrics_map_.find(handle);
+  MetricsMap::iterator process_metrics_iter =
+      metrics_map_.find(process_data.handle);
   if (process_metrics_iter == metrics_map_.end()) {
     // If we're not already watching the process, let's initialize it.
-    metrics_map_[handle]
-        .Initialize(handle, process_type, current_update_sequence);
+    metrics_map_[process_data.handle].Initialize(process_data,
+                                                 current_update_sequence);
   } else {
     // If we are watching the process, touch it to keep it alive.
     ProcessMetricsHistory& process_metrics = process_metrics_iter->second;
@@ -94,16 +97,13 @@ void PerformanceMonitor::GatherMetricsMapOnIOThread(
 
   // Find all child processes (does not include renderers), which has to be
   // done on the IO thread.
-  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter) {
-    const content::ChildProcessData& child_process_data = iter.GetData();
-    base::ProcessHandle handle = child_process_data.handle;
-    MarkProcessAsAlive(handle, child_process_data.process_type,
-                       current_update_sequence);
-  }
+  for (content::BrowserChildProcessHostIterator iter; !iter.Done(); ++iter)
+    MarkProcessAsAlive(iter.GetData(), current_update_sequence);
 
   // Add the current (browser) process.
-  MarkProcessAsAlive(base::GetCurrentProcessHandle(),
-                     content::PROCESS_TYPE_BROWSER, current_update_sequence);
+  content::ChildProcessData browser_process_data(content::PROCESS_TYPE_BROWSER);
+  browser_process_data.handle = base::GetCurrentProcessHandle();
+  MarkProcessAsAlive(browser_process_data, current_update_sequence);
 
   double cpu_usage = 0.0;
   size_t private_memory_sum = 0;

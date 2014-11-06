@@ -7,6 +7,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/process/process_handle.h"
+#include "content/public/browser/child_process_data.h"
 
 namespace base {
 class ProcessMetrics;
@@ -20,8 +21,7 @@ class ProcessMetricsHistory {
   ~ProcessMetricsHistory();
 
   // Configure this to monitor a specific process.
-  void Initialize(base::ProcessHandle process_handle,
-                  int process_type,
+  void Initialize(const content::ChildProcessData& process_data,
                   int initial_update_sequence);
 
   // End of a measurement cycle; check for performance issues and reset
@@ -55,8 +55,9 @@ class ProcessMetricsHistory {
   void ResetCounters();
   void RunPerformanceTriggers();
 
-  base::ProcessHandle process_handle_;
-  int process_type_;
+  // May not be fully populated. e.g. no |id| and no |name| for browser and
+  // renderer processes.
+  content::ChildProcessData process_data_;
   linked_ptr<base::ProcessMetrics> process_metrics_;
   int last_update_sequence_;
 
@@ -65,6 +66,8 @@ class ProcessMetricsHistory {
   size_t accumulated_private_bytes_;
   size_t accumulated_shared_bytes_;
   int sample_count_;
+
+  DISALLOW_ASSIGN(ProcessMetricsHistory);
 };
 
 }  // namespace performance_monitor

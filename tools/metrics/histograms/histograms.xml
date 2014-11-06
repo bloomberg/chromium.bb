@@ -12816,6 +12816,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Memory.PepperFlashPlugin" units="KB">
+  <owner>thestig@chromium.org</owner>
+  <summary>
+    The private working set used by each Pepper Flash plugin process. Each
+    plugin process provides one sample.  Recorded once per UMA ping.
+  </summary>
+</histogram>
+
 <histogram name="Memory.PepperPlugin" units="KB">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
@@ -58443,11 +58451,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <histogram_suffixes name="PerformanceMonitor" separator=".">
   <suffix name="BrowserProcess"/>
-  <suffix name="RendererProcess"/>
-  <suffix name="PluginProcess"/>
-  <suffix name="WorkerProcess"/>
   <suffix name="GPUProcess"/>
+  <suffix name="PluginProcess"/>
+  <suffix name="PPAPIFlashProcess"/>
   <suffix name="PPAPIProcess"/>
+  <suffix name="RendererProcess"/>
+  <suffix name="WorkerProcess"/>
   <affected-histogram name="PerformanceMonitor.AverageCPU"/>
   <affected-histogram name="PerformanceMonitor.HighCPU"/>
 </histogram_suffixes>

@@ -14,6 +14,10 @@
 template <typename Type>
 struct DefaultSingletonTraits;
 
+namespace content {
+struct ChildProcessData;
+}
+
 namespace performance_monitor {
 
 // PerformanceMonitor is a tool which periodically monitors performance metrics
@@ -21,8 +25,6 @@ namespace performance_monitor {
 // performance degradation.
 class PerformanceMonitor {
  public:
-  typedef std::map<base::ProcessHandle, ProcessMetricsHistory> MetricsMap;
-
   // Returns the current PerformanceMonitor instance if one exists; otherwise
   // constructs a new PerformanceMonitor.
   static PerformanceMonitor* GetInstance();
@@ -31,6 +33,8 @@ class PerformanceMonitor {
   void StartGatherCycle();
 
  private:
+  typedef std::map<base::ProcessHandle, ProcessMetricsHistory> MetricsMap;
+
   friend struct DefaultSingletonTraits<PerformanceMonitor>;
 
   PerformanceMonitor();
@@ -42,8 +46,7 @@ class PerformanceMonitor {
   // Mark the given process as alive in the current update iteration.
   // This means adding an entry to the map of watched processes if it's not
   // already present.
-  void MarkProcessAsAlive(const base::ProcessHandle& handle,
-                          int process_type,
+  void MarkProcessAsAlive(const content::ChildProcessData& process_data,
                           int current_update_sequence);
 
   // Updates the ProcessMetrics map with the current list of processes and

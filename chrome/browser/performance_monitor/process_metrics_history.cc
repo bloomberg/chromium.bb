@@ -2,17 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/performance_monitor/process_metrics_history.h"
+
 #include <limits>
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process_metrics.h"
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_constants.h"
+#include "content/public/common/process_type.h"
 
-#include "chrome/browser/performance_monitor/process_metrics_history.h"
 #if defined(OS_MACOSX)
 #include "content/public/browser/browser_child_process_host.h"
 #endif
-#include "content/public/common/process_type.h"
 
 namespace performance_monitor {
 
@@ -21,8 +24,7 @@ namespace performance_monitor {
 const float kHighCPUUtilizationThreshold = 90.0f;
 
 ProcessMetricsHistory::ProcessMetricsHistory()
-    : process_handle_(0),
-      process_type_(content::PROCESS_TYPE_UNKNOWN),
+    : process_data_(content::PROCESS_TYPE_UNKNOWN),
       last_update_sequence_(0) {
   ResetCounters();
 }
@@ -37,20 +39,20 @@ void ProcessMetricsHistory::ResetCounters() {
   sample_count_ = 0;
 }
 
-void ProcessMetricsHistory::Initialize(base::ProcessHandle process_handle,
-                                       int process_type,
-                                       int initial_update_sequence) {
-  DCHECK(process_handle_ == 0);
-  process_handle_ = process_handle;
-  process_type_ = process_type;
+void ProcessMetricsHistory::Initialize(
+    const content::ChildProcessData& process_data,
+    int initial_update_sequence) {
+  DCHECK_EQ(base::kNullProcessHandle, process_data_.handle);
+  process_data_ = process_data;
   last_update_sequence_ = initial_update_sequence;
 
 #if defined(OS_MACOSX)
   process_metrics_.reset(base::ProcessMetrics::CreateProcessMetrics(
-      process_handle_, content::BrowserChildProcessHost::GetPortProvider()));
+      process_data_.handle,
+      content::BrowserChildProcessHost::GetPortProvider()));
 #else
   process_metrics_.reset(
-      base::ProcessMetrics::CreateProcessMetrics(process_handle_));
+      base::ProcessMetrics::CreateProcessMetrics(process_data_.handle));
 #endif
 }
 
@@ -89,7 +91,7 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
 
   // The histogram macros don't support variables as histogram names,
   // hence the macro duplication for each process type.
-  switch (process_type_) {
+  switch (process_data_.process_type) {
     case content::PROCESS_TYPE_BROWSER:
       UMA_HISTOGRAM_CUSTOM_COUNTS(
           "PerformanceMonitor.AverageCPU.BrowserProcess", average_cpu_usage,
@@ -130,6 +132,16 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
           kHistogramMin, kHistogramMax, kHistogramBucketCount);
       if (min_cpu_usage_ > kHighCPUUtilizationThreshold)
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIProcess", true);
+      if (process_data_.name == base::ASCIIToUTF16(content::kFlashPluginName)) {
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "PerformanceMonitor.AverageCPU.PPAPIFlashProcess",
+            average_cpu_usage, kHistogramMin, kHistogramMax,
+            kHistogramBucketCount);
+        if (min_cpu_usage_ > kHighCPUUtilizationThreshold) {
+          UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.PPAPIFlashProcess",
+                                true);
+        }
+      }
       break;
     default:
       break;
