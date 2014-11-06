@@ -9,6 +9,7 @@
 #include "ash/system/chromeos/virtual_keyboard/virtual_keyboard_observer.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "ash/system/tray_accessibility.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 
 namespace ash {
@@ -18,7 +19,8 @@ namespace ash {
 // the virtual keyboard when an external keyboard is plugged in. The default
 // view can be interacted with, it toggles the state of the keyboard lock.
 class ASH_EXPORT TrayKeyboardLock : public TrayImageItem,
-                                    public VirtualKeyboardObserver {
+                                    public VirtualKeyboardObserver,
+                                    public AccessibilityObserver {
  public:
   explicit TrayKeyboardLock(SystemTray* system_tray);
   virtual ~TrayKeyboardLock();
@@ -29,15 +31,16 @@ class ASH_EXPORT TrayKeyboardLock : public TrayImageItem,
   // SystemTrayItem:
   virtual views::View* CreateDefaultView(user::LoginStatus status) override;
 
+  // AccessibilityObserver:
+  void OnAccessibilityModeChanged(
+      ui::AccessibilityNotificationVisibility notify) override;
+
  protected:
   // TrayImageItem:
   virtual bool GetInitialVisibility() override;
 
  private:
   friend class TrayKeyboardLockTest;
-
-  // True if an external keyboard may be used instead of the virtual keyboard.
-  bool ShouldDefaultViewBeVisible();
 
   // True if the virtual keyboard is suppressed by an external keyboard.
   bool ShouldTrayBeVisible();

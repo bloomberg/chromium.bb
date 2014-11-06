@@ -4,6 +4,8 @@
 
 #include "ash/system/chromeos/virtual_keyboard/tray_keyboard_lock.h"
 
+#include "ash/accessibility_delegate.h"
+#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -27,6 +29,10 @@ class TrayKeyboardLockTest : public test::AshTestBase {
 
   // Sets up a TrayKeyboardLock, its tray view, and its default view.
   void SetUpForStatusAreaWidget(StatusAreaWidget* status_area_widget);
+
+  // Mocks enabling the a11y virtual keyboard since the actual a11y manager
+  // is not created in ash tests.
+  void SetAccessibilityKeyboardEnabled(bool enabled);
 
   // Resets |tray_| |tray_view_| and |default_view_| so that all components of
   // TrayKeyboardLock have been cleared. Tests may then call
@@ -52,6 +58,17 @@ void TrayKeyboardLockTest::SetUpForStatusAreaWidget(
       StatusAreaWidgetTestHelper::GetUserLoginStatus()));
 }
 
+void TrayKeyboardLockTest::SetAccessibilityKeyboardEnabled(bool enabled) {
+  Shell::GetInstance()->accessibility_delegate()->SetVirtualKeyboardEnabled(
+      enabled);
+  keyboard::SetAccessibilityKeyboardEnabled(enabled);
+  ui::AccessibilityNotificationVisibility notification =
+      enabled ? ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_SHOW
+              : ui::AccessibilityNotificationVisibility::A11Y_NOTIFICATION_NONE;
+  Shell::GetInstance()->system_tray_notifier()->NotifyAccessibilityModeChanged(
+      notification);
+}
+
 void TrayKeyboardLockTest::TearDownViews() {
   tray_view_.reset();
   default_view_.reset();
@@ -66,7 +83,7 @@ void TrayKeyboardLockTest::SetUp() {
 }
 
 void TrayKeyboardLockTest::TearDown() {
-  keyboard::SetAccessibilityKeyboardEnabled(false);
+  SetAccessibilityKeyboardEnabled(false);
   TearDownViews();
   test::AshTestBase::TearDown();
 }
@@ -77,12 +94,19 @@ TEST_F(TrayKeyboardLockTest, HiddenOnCreation) {
   EXPECT_FALSE(default_view()->visible());
 }
 
-// Tests that the tray does not show if the accessibility keyboard is enabled.
-TEST_F(TrayKeyboardLockTest, HiddenIfA11yEnabled) {
-  keyboard::SetAccessibilityKeyboardEnabled(true);
-  tray()->OnKeyboardSuppressionChanged(true);
+// Tests that the default view and tray are hidden when a11y is enabled.
+TEST_F(TrayKeyboardLockTest, HidesOnA11yEnabled) {
+  test::VirtualKeyboardTestHelper::SuppressKeyboard();
+  EXPECT_TRUE(tray_view()->visible());
+  EXPECT_TRUE(default_view()->visible());
+  // Enable a11y keyboard.
+  SetAccessibilityKeyboardEnabled(true);
   EXPECT_FALSE(tray_view()->visible());
   EXPECT_FALSE(default_view()->visible());
+  // Disable the a11y keyboard.
+  SetAccessibilityKeyboardEnabled(false);
+  EXPECT_TRUE(default_view()->visible());
+  EXPECT_TRUE(tray_view()->visible());
 }
 
 TEST_F(TrayKeyboardLockTest, PerformActionOnDefaultView) {
