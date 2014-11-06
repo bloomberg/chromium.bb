@@ -13,6 +13,5 @@
        <stroke android:width="1dip" android:color="#e5e5e5"/>
     </shape>
   </item>
-  <item><bitmap android:gravity="right" android:src="@drawable/page_info_arrow_down" /></item>
 
 </layer-list>

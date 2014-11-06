@@ -38,7 +38,7 @@
 
         <Button
             android:id="@+id/website_settings_copy_url_button"
-            style="?android:attr/borderlessButtonStyle"
+            android:background="?android:attr/selectableItemBackground"
             android:layout_gravity="end"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/website_settings_popup_button_height"
@@ -86,7 +86,7 @@
 
             <Button
                 android:id="@+id/website_settings_site_settings_button"
-                style="?android:attr/borderlessButtonStyle"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="@dimen/website_settings_popup_button_height"
                 android:layout_marginEnd="@dimen/website_settings_popup_button_margin_sides"
