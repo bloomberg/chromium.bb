@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PushPermissionCallback_h
-#define PushPermissionCallback_h
+#ifndef PushPermissionStatusCallback_h
+#define PushPermissionStatusCallback_h
 
 #include "public/platform/WebPushClient.h"
 #include "public/platform/WebPushPermissionStatus.h"
@@ -20,12 +20,12 @@ namespace blink {
 class ScriptPromiseResolver;
 
 // Will resolve the underlying promise depending on the permission passed to the callback.
-class PushPermissionCallback final : public WebPushPermissionCallback {
-    WTF_MAKE_NONCOPYABLE(PushPermissionCallback);
+class PushPermissionStatusCallback final : public WebPushPermissionStatusCallback {
+    WTF_MAKE_NONCOPYABLE(PushPermissionStatusCallback);
 
 public:
-    explicit PushPermissionCallback(PassRefPtr<ScriptPromiseResolver>);
-    virtual ~PushPermissionCallback();
+    explicit PushPermissionStatusCallback(PassRefPtr<ScriptPromiseResolver>);
+    virtual ~PushPermissionStatusCallback();
 
     void onSuccess(WebPushPermissionStatus*) override;
 
@@ -39,4 +39,4 @@ private:
 
 } // namespace blink
 
-#endif // PushPermissionCallback_h
+#endif // PushPermissionStatusCallback_h

@@ -16,7 +16,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
-#include "modules/push_messaging/PushPermissionCallback.h"
+#include "modules/push_messaging/PushPermissionStatusCallback.h"
 #include "modules/push_messaging/PushRegistration.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainer.h"
@@ -72,7 +72,7 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
 
-    client->getPermissionStatus(new PushPermissionCallback(resolver), serviceWorkerProvider);
+    client->getPermissionStatus(new PushPermissionStatusCallback(resolver), serviceWorkerProvider);
     return resolver->promise();
 }
 

@@ -15,7 +15,9 @@ class WebServiceWorkerProvider;
 struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
+// FIXME: Delete WebPushPermissionCallback once the embedder stops depending on it.
 typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionCallback;
+typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallback;
 
 class WebPushClient {
 public:
@@ -25,9 +27,9 @@ public:
     // client. Ownership of the WebServiceWorkerProvider is not transferred.
     virtual void registerPushMessaging(WebPushRegistrationCallbacks*, WebServiceWorkerProvider*) { }
 
-    // Ownership of the WebPushPermissionCallback is transferred to the
+    // Ownership of the WebPushPermissionStatusCallback is transferred to the
     // client. Ownership of the WebServiceWorkerProvider is not transferred.
-    virtual void getPermissionStatus(WebPushPermissionCallback*, WebServiceWorkerProvider*) { }
+    virtual void getPermissionStatus(WebPushPermissionStatusCallback*, WebServiceWorkerProvider*) { }
 };
 
 } // namespace blink

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/push_messaging/PushPermissionCallback.h"
+#include "modules/push_messaging/PushPermissionStatusCallback.h"
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExceptionCode.h"
@@ -11,27 +11,27 @@
 
 namespace blink {
 
-PushPermissionCallback::PushPermissionCallback(PassRefPtr<ScriptPromiseResolver> resolver)
+PushPermissionStatusCallback::PushPermissionStatusCallback(PassRefPtr<ScriptPromiseResolver> resolver)
     : m_resolver(resolver)
 {
 }
 
-PushPermissionCallback::~PushPermissionCallback()
+PushPermissionStatusCallback::~PushPermissionStatusCallback()
 {
 }
 
-void PushPermissionCallback::onSuccess(WebPushPermissionStatus* status)
+void PushPermissionStatusCallback::onSuccess(WebPushPermissionStatus* status)
 {
     m_resolver->resolve(permissionString(*status));
 }
 
-void PushPermissionCallback::onError()
+void PushPermissionStatusCallback::onError()
 {
     m_resolver->reject();
 }
 
 // static
-const String& PushPermissionCallback::permissionString(WebPushPermissionStatus status)
+const String& PushPermissionStatusCallback::permissionString(WebPushPermissionStatus status)
 {
     DEFINE_STATIC_LOCAL(const String, grantedPermission, ("granted"));
     DEFINE_STATIC_LOCAL(const String, deniedPermission, ("denied"));
