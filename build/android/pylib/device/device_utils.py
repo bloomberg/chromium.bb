@@ -242,8 +242,12 @@ class DeviceUtils(object):
       DeviceUnreachableError if the device becomes unresponsive.
     """
     def sd_card_ready():
-      return self.RunShellCommand(['ls', self.GetExternalStoragePath()],
-                                  check_return=True)
+      try:
+        self.RunShellCommand(['test', '-d', self.GetExternalStoragePath()],
+                             check_return=True)
+        return True
+      except device_errors.AdbShellCommandFailedError:
+        return False
 
     def pm_ready():
       try:

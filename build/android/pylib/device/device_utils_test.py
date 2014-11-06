@@ -445,7 +445,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
     with self.assertShellCallSequence([
         # sc_card_ready
         ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        ('test -d /fake/storage/path', ''),
         # pm_ready
         ('pm path android', 'package:this.is.a.test.package\r\n'),
         # boot_completed
@@ -457,7 +457,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
     with self.assertShellCallSequence([
         # sc_card_ready
         ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        ('test -d /fake/storage/path', ''),
         # pm_ready
         ('pm path android', 'package:this.is.a.test.package\r\n'),
         # boot_completed
@@ -479,11 +479,11 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
       with self.assertShellCallSequence([
           # sc_card_ready
           ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-          ('ls /fake/storage/path', ''),
+          ('test -d /fake/storage/path', _ShellError()),
           # sc_card_ready
-          ('ls /fake/storage/path', ''),
+          ('test -d /fake/storage/path', _ShellError()),
           # sc_card_ready
-          ('ls /fake/storage/path', _CmdTimeout())]):
+          ('test -d /fake/storage/path', _CmdTimeout())]):
         with self.assertRaises(device_errors.CommandTimeoutError):
           self.device.WaitUntilFullyBooted(wifi=False)
 
@@ -492,7 +492,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
       with self.assertShellCallSequence([
           # sc_card_ready
           ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          ('test -d /fake/storage/path', ''),
           # pm_ready
           ('pm path android', 'Error. Is package manager running?\r\n'),
           # pm_ready
@@ -507,7 +507,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
       with self.assertShellCallSequence([
           # sc_card_ready
           ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          ('test -d /fake/storage/path', ''),
           # pm_ready
           ('pm path android', 'package:this.is.a.test.package\r\n'),
           # boot_completed
@@ -524,7 +524,7 @@ class DeviceUtilsWaitUntilFullyBootedTest(DeviceUtilsNewImplTest):
       with self.assertShellCallSequence([
           # sc_card_ready
           ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-          ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+          ('test -d /fake/storage/path', ''),
           # pm_ready
           ('pm path android', 'package:this.is.a.test.package\r\n'),
           # boot_completed
@@ -554,7 +554,7 @@ class DeviceUtilsRebootTest(DeviceUtilsNewImplTest):
     with self.assertShellCallSequence([
         # sc_card_ready
         ('echo $EXTERNAL_STORAGE', '/fake/storage/path\r\n'),
-        ('ls /fake/storage/path', '/fake/storage/path\r\n'),
+        ('test -d /fake/storage/path', ''),
         # pm_ready
         ('pm path android', 'package:this.is.a.test.package\r\n'),
         # boot_completed
