@@ -39,6 +39,13 @@ class MergeSessionHelper : public GaiaAuthConsumer,
     // GoogleServiceAuthError::AuthErrorNone() then the merge succeeeded.
     virtual void MergeSessionCompleted(const std::string& account_id,
                                        const GoogleServiceAuthError& error) = 0;
+
+    // Called when StartFetchingExternalCcResult() completes.  From this moment
+    // forward calls to LogIn() will use the result in merge session calls.
+    // If |succeeded| is false, not all connections were checked, but some
+    // may have been.  LogIn() will proceed with whatever partial results were
+    // retrieved.
+    virtual void GetCheckConnectionInfoCompleted(bool succeeded) {}
    protected:
     virtual ~Observer() {}
   };
@@ -91,6 +98,8 @@ class MergeSessionHelper : public GaiaAuthConsumer,
     void Timeout();
 
     void CleanupTransientState();
+
+    void FireGetCheckConnectionInfoCompleted(bool succeeded);
 
     MergeSessionHelper* helper_;
     base::OneShotTimer<ExternalCcResultFetcher> timer_;

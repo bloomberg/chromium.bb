@@ -16,6 +16,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -144,6 +145,7 @@ class AccountReconcilor : public KeyedService,
   // Overriden from MergeSessionHelper::Observer.
   void MergeSessionCompleted(const std::string& account_id,
                              const GoogleServiceAuthError& error) override;
+  void GetCheckConnectionInfoCompleted(bool succeeded) override;
 
   // Overriden from OAuth2TokenService::Observer.
   void OnEndBatchChanges() override;
@@ -173,6 +175,7 @@ class AccountReconcilor : public KeyedService,
   // True while the reconcilor is busy checking or managing the accounts in
   // this profile.
   bool is_reconcile_started_;
+  base::Time m_reconcile_start_time_;
 
   // True iff this is the first time the reconcilor is executing.
   bool first_execution_;

@@ -33,6 +33,8 @@ class MockObserver : public MergeSessionHelper::Observer {
   MOCK_METHOD2(MergeSessionCompleted,
                void(const std::string&,
                     const GoogleServiceAuthError& ));
+  MOCK_METHOD1(GetCheckConnectionInfoCompleted, void(bool));
+
  private:
   MergeSessionHelper* helper_;
 
@@ -332,6 +334,8 @@ TEST_F(MergeSessionHelperTest, DoubleSignout) {
 TEST_F(MergeSessionHelperTest, ExternalCcResultFetcher) {
   InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MergeSessionHelper::ExternalCcResultFetcher result_fetcher(&helper);
+  MockObserver observer(&helper);
+  EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(true));
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.
@@ -360,6 +364,8 @@ TEST_F(MergeSessionHelperTest, ExternalCcResultFetcher) {
 TEST_F(MergeSessionHelperTest, ExternalCcResultFetcherTimeout) {
   InstrumentedMergeSessionHelper helper(token_service(), request_context());
   MergeSessionHelper::ExternalCcResultFetcher result_fetcher(&helper);
+  MockObserver observer(&helper);
+  EXPECT_CALL(observer, GetCheckConnectionInfoCompleted(false));
   result_fetcher.Start();
 
   // Simulate a successful completion of GetCheckConnctionInfo.

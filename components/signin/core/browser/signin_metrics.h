@@ -80,7 +80,10 @@ void LogSignout(ProfileSignout metric);
 
 // Tracks whether the external connection results were all fetched before
 // the reconcilor tried to use them with MergeSession.
-void LogExternalCcResultFetches(bool fetches_completed);
+// |time_to_check_connections| is the time it took to complete.
+void LogExternalCcResultFetches(
+    bool fetches_completed,
+    const base::TimeDelta& time_to_check_connections);
 
 }  // namespace signin_metrics
 

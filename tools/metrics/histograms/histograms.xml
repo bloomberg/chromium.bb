@@ -31643,6 +31643,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Signin.Reconciler.ExternalCcResultTime.Completed">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Records the time it took to successfully check all external connections
+    whenever the reconciler performs a reconciliation.
+  </summary>
+</histogram>
+
+<histogram name="Signin.Reconciler.ExternalCcResultTime.NotCompleted">
+  <owner>mlerman@chromium.org</owner>
+  <summary>
+    Records the time it took to check only a portion of external connections
+    whenever the reconciler performs a reconciliation.  This means that either a
+    network error occured while checking some sites or the site did not respond
+    before the check timeout.
+  </summary>
+</histogram>
+
 <histogram name="Signin.Reconciler.RemovedFromCookieJar">
   <owner>mlerman@chromium.org</owner>
   <summary>

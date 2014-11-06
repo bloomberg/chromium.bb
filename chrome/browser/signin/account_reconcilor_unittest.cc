@@ -101,6 +101,9 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
       const GoogleServiceAuthError& error);
 
   GURL list_accounts_url() { return list_accounts_url_; }
+  GURL get_check_connection_info_url() {
+    return get_check_connection_info_url_;
+  }
 
  private:
   content::TestBrowserThreadBundle bundle_;
@@ -112,6 +115,7 @@ class AccountReconcilorTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<TestingProfileManager> testing_profile_manager_;
   base::HistogramTester histogram_tester_;
   GURL list_accounts_url_;
+  GURL get_check_connection_info_url_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilorTest);
 };
@@ -132,6 +136,12 @@ void AccountReconcilorTest::SetUp() {
 
   list_accounts_url_ = GaiaUrls::GetInstance()->ListAccountsURLWithSource(
       GaiaConstants::kReconcilorSource);
+  get_check_connection_info_url_ =
+      GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
+          GaiaConstants::kReconcilorSource);
+
+  SetFakeResponse(get_check_connection_info_url().spec(), "[]",
+      net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   testing_profile_manager_.reset(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
@@ -607,4 +617,3 @@ TEST_F(AccountReconcilorTest, MergeSessionCompletedWithBogusAccount) {
 INSTANTIATE_TEST_CASE_P(AccountReconcilorMaybeEnabled,
                         AccountReconcilorTest,
                         testing::Bool());
-
