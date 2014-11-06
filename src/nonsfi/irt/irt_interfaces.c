@@ -37,6 +37,7 @@
 #include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/untrusted/irt/irt_dev.h"
 #include "native_client/src/untrusted/irt/irt_interfaces.h"
+#include "native_client/src/untrusted/nacl/nacl_random.h"
 
 /*
  * This is an implementation of NaCl's IRT interfaces that runs
@@ -599,6 +600,10 @@ const struct nacl_irt_futex nacl_irt_futex = {
 };
 #endif
 
+const struct nacl_irt_random nacl_irt_random = {
+  nacl_secure_random,
+};
+
 #if defined(__linux__) || defined(__native_client__)
 const struct nacl_irt_clock nacl_irt_clock = {
   irt_clock_getres,
@@ -650,6 +655,7 @@ static const struct nacl_irt_interface irt_interfaces[] = {
   { NACL_IRT_TLS_v0_1, &nacl_irt_tls, sizeof(nacl_irt_tls), NULL },
   { NACL_IRT_THREAD_v0_1, &nacl_irt_thread, sizeof(nacl_irt_thread), NULL },
   { NACL_IRT_FUTEX_v0_1, &nacl_irt_futex, sizeof(nacl_irt_futex), NULL },
+  { NACL_IRT_RANDOM_v0_1, &nacl_irt_random, sizeof(nacl_irt_random), NULL },
 #if defined(__linux__) || defined(__native_client__)
   { NACL_IRT_CLOCK_v0_1, &nacl_irt_clock, sizeof(nacl_irt_clock), NULL },
 #endif

@@ -694,6 +694,11 @@ def UnsandboxedIRT(arch):
               command.Command([
                   'gcc', '-m32', '-O2', '-Wall', '-Werror',
                   '-I%(top_srcdir)s/..',
+                  '-c', command.path.join('%(support)s', 'irt_random.c'),
+                  '-o', command.path.join('%(output)s', 'irt_random.o')]),
+              command.Command([
+                  'gcc', '-m32', '-O2', '-Wall', '-Werror',
+                  '-I%(top_srcdir)s/..',
                   '-c', command.path.join('%(untrusted)s', 'irt_query_list.c'),
                   '-o', command.path.join('%(output)s', 'irt_query_list.o')]),
           ],

@@ -14,7 +14,7 @@ if not env.Bit('linux') and not env.Bit('nonsfi_nacl'):
 # language features.
 env.FilterOut(CFLAGS='-Wdeclaration-after-statement')
 
-extra_libs = ['irt_nonsfi', 'platform']
+extra_libs = ['irt_nonsfi', 'nacl_random_private', 'platform']
 if env['NACL_BUILD_FAMILY'] == 'UNTRUSTED':
   extra_libs.append('${NONIRT_LIBS}')
 env.ComponentProgram('nonsfi_loader',

@@ -30,7 +30,7 @@
         '../linux/linux_pthread_private.c',
         '../linux/linux_sys_private.c',
         'irt_interfaces.c',
-        'irt_interfaces.h',
+        'irt_random.c',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
