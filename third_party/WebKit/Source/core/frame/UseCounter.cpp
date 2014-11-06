@@ -771,9 +771,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case OverflowChangedEvent:
         return "The 'overflowchanged' event is deprecated and may be removed. Please do not use it.";
 
-    case HTMLHeadElementProfile:
-        return "'HTMLHeadElement.profile' is deprecated. The reflected attribute has no effect.";
-
     case ElementSetPrefix:
         return "Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).";
 
