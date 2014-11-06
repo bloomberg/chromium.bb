@@ -106,7 +106,7 @@ cr.define('print_preview', function() {
           select.appendChild(selectOption);
           if (option.is_default)
             indexToSelect = index;
-        });
+        }, this);
       }
       // Try to select current ticket item.
       var valueToSelect = JSON.stringify(this.ticketItem_.getValue());
