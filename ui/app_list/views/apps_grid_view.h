@@ -163,7 +163,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void InitiateDragFromReparentItemInRootLevelGridView(
       AppListItemView* original_drag_view,
       const gfx::Rect& drag_view_rect,
-      const gfx::Point& drag_point);
+      const gfx::Point& drag_point,
+      bool has_native_drag);
 
   // Updates drag in the root level grid view when receiving the drag event
   // dispatched from the hidden grid view for reparenting a folder item.

@@ -32,7 +32,8 @@ class APP_LIST_EXPORT AppsGridViewFolderDelegate {
   // |drag_point_in_folder_grid| is the last drag point in coordinate of the
   // AppsGridView inside the folder.
   virtual void ReparentItem(AppListItemView* original_drag_view,
-                            const gfx::Point& drag_point_in_folder_grid) = 0;
+                            const gfx::Point& drag_point_in_folder_grid,
+                            bool has_native_drag) = 0;
 
   // Dispatches drag event from the hidden grid view to the root level grid view
   // for re-parenting a folder item.

@@ -188,7 +188,8 @@ class TestAppsGridViewFolderDelegate : public AppsGridViewFolderDelegate {
   }
 
   void ReparentItem(AppListItemView* original_drag_view,
-                    const gfx::Point& drag_point_in_folder_grid) override {}
+                    const gfx::Point& drag_point_in_folder_grid,
+                    bool has_native_drag) override {}
 
   void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,

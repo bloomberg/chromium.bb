@@ -178,7 +178,8 @@ void AppListFolderView::CalculateIdealBounds() {
 
 void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
     AppListItemView* original_drag_view,
-    const gfx::Point& drag_point_in_root_grid) {
+    const gfx::Point& drag_point_in_root_grid,
+    bool has_native_drag) {
   // Converts the original_drag_view's bounds to the coordinate system of
   // root level grid view.
   gfx::RectF rect_f(original_drag_view->bounds());
@@ -187,9 +188,11 @@ void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
                                    &rect_f);
   gfx::Rect rect_in_root_grid_view = gfx::ToEnclosingRect(rect_f);
 
-  container_view_->apps_grid_view()->
-      InitiateDragFromReparentItemInRootLevelGridView(
-          original_drag_view, rect_in_root_grid_view, drag_point_in_root_grid);
+  container_view_->apps_grid_view()
+      ->InitiateDragFromReparentItemInRootLevelGridView(original_drag_view,
+                                                        rect_in_root_grid_view,
+                                                        drag_point_in_root_grid,
+                                                        has_native_drag);
 }
 
 gfx::Rect AppListFolderView::GetItemIconBoundsAt(int index) {
@@ -248,13 +251,15 @@ bool AppListFolderView::IsPointOutsideOfFolderBoundary(
 // the top level grid view, until the drag ends.
 void AppListFolderView::ReparentItem(
     AppListItemView* original_drag_view,
-    const gfx::Point& drag_point_in_folder_grid) {
+    const gfx::Point& drag_point_in_folder_grid,
+    bool has_native_drag) {
   // Convert the drag point relative to the root level AppsGridView.
   gfx::Point to_root_level_grid = drag_point_in_folder_grid;
   ConvertPointToTarget(items_grid_view_,
                        container_view_->apps_grid_view(),
                        &to_root_level_grid);
-  StartSetupDragInRootLevelAppsGridView(original_drag_view, to_root_level_grid);
+  StartSetupDragInRootLevelAppsGridView(
+      original_drag_view, to_root_level_grid, has_native_drag);
   container_view_->ReparentFolderItemTransit(folder_item_);
 }
 

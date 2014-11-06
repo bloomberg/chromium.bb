@@ -78,7 +78,8 @@ class AppListFolderView : public views::View,
   // |drag_point_in_root_grid| is in the cooridnates of root level AppsGridView.
   void StartSetupDragInRootLevelAppsGridView(
       AppListItemView* original_drag_view,
-      const gfx::Point& drag_point_in_root_grid);
+      const gfx::Point& drag_point_in_root_grid,
+      bool has_native_drag);
 
   // Overridden from views::View:
   void GetAccessibleState(ui::AXViewState* state) override;
@@ -92,7 +93,8 @@ class AppListFolderView : public views::View,
   // Overridden from AppsGridViewFolderDelegate:
   void UpdateFolderViewBackground(bool show_bubble) override;
   void ReparentItem(AppListItemView* original_drag_view,
-                    const gfx::Point& drag_point_in_folder_grid) override;
+                    const gfx::Point& drag_point_in_folder_grid,
+                    bool has_native_drag) override;
   void DispatchDragEventForReparent(
       AppsGridView::Pointer pointer,
       const gfx::Point& drag_point_in_folder_grid) override;
