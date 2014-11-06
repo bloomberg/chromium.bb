@@ -649,7 +649,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Save &amp;as...
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
-            P&amp;rint...
+            &amp;Print...
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="The name of the View Page Source command in the content area context menu">
             &amp;View page source
@@ -670,13 +670,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Inspect &amp;background page
           </message>
           <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
-            Re&amp;load
+            &amp;Reload
           </message>
           <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="The name of the Restart Packaged App command in the packaged app context menu.">
             Simulate browser restart
           </message>
           <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="The name of the Reload Packaged App command in the packaged app content area context menu">
-            Re&amp;load app
+            &amp;Reload app
           </message>
           <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
             &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
@@ -689,7 +689,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Save &amp;frame as...
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="The name of the Print Frame command in the content area context menu">
-            P&amp;rint frame...
+            &amp;Print frame...
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="The name of the View Frame Source command in the content area context menu">
             &amp;View frame source
@@ -849,7 +849,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Save &amp;As...
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINT" desc="In Title Case: The name of the Print... command in the content area context menu. Brings a dialog to select the print options">
-            P&amp;rint...
+            &amp;Print...
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWPAGESOURCE" desc="In Title Case: The name of the View Page Source command in the content area context menu">
             &amp;View Page Source
@@ -870,13 +870,13 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Inspect &amp;Background Page
           </message>
           <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
-            Re&amp;load
+            &amp;Reload
           </message>
           <message name="IDS_CONTENT_CONTEXT_RESTART_APP" desc="In Title Case: The name of the Restart Packaged App command in the packaged app context menu.">
             Simulate Browser Restart
           </message>
           <message name="IDS_CONTENT_CONTEXT_RELOAD_PACKAGED_APP" desc="In Title Case: The name of the Reload Packaged App command in the packaged app content area context menu">
-            Re&amp;load App
+            &amp;Reload App
           </message>
           <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
             &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
@@ -889,7 +889,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY">$1<ex>(Ctrl+Shift+N)</ex></ph> may 
             Save &amp;Frame As...
           </message>
           <message name="IDS_CONTENT_CONTEXT_PRINTFRAME" desc="In Title Case: The name of the Print Frame command in the content area context menu">
-            P&amp;rint Frame...
+            &amp;Print Frame...
           </message>
           <message name="IDS_CONTENT_CONTEXT_VIEWFRAMESOURCE" desc="In Title Case: The name of the View Frame Source command in the content area context menu">
             &amp;View Frame Source
