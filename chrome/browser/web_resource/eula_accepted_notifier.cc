@@ -44,9 +44,9 @@ EulaAcceptedNotifier* EulaAcceptedNotifier::Create() {
     defined(OS_ANDROID) || defined(OS_IOS)
   PrefService* local_state = g_browser_process->local_state();
   // Tests that use higher-level classes that use EulaAcceptNotifier may not
-  // register this pref. In this case, return NULL which is equivalent to not
+  // have local state or may not register this pref. Return NULL to indicate not
   // needing to check the EULA.
-  if (local_state->FindPreference(prefs::kEulaAccepted) == NULL)
+  if (!local_state || !local_state->FindPreference(prefs::kEulaAccepted))
     return NULL;
   return new EulaAcceptedNotifier(local_state);
 #else
