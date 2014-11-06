@@ -2364,7 +2364,10 @@ public class ContentViewCore
      * @see View#hasFocus()
      */
     @CalledByNative
-    public boolean hasFocus() {
+    private boolean hasFocus() {
+        // If the container view is not focusable, we consider it always focused from
+        // Chromium's point of view.
+        if (!mContainerView.isFocusable()) return true;
         return mContainerView.hasFocus();
     }
 
