@@ -57,6 +57,7 @@ namespace blink {
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;
 class WebCachedURLRequest;
+class WebCallback;
 class WebColorChooser;
 class WebColorChooserClient;
 class WebContentDecryptionModule;
@@ -323,6 +324,12 @@ public:
     // Called to retrieve the provider of desktop notifications.
     // FIXME: Remove this method once the presenter is obtained through Platform.
     virtual WebNotificationPresenter* notificationPresenter() { return 0; }
+
+
+    // Push API ---------------------------------------------------
+
+    // Requests permission to use the Push API in the origin of this frame.
+    virtual void requestPushPermission(WebCallback* callback) { }
 
 
     // Editing -------------------------------------------------------------

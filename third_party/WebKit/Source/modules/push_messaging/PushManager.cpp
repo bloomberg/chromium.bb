@@ -16,6 +16,8 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
+#include "modules/push_messaging/PushPermissionClient.h"
+#include "modules/push_messaging/PushPermissionRequestCallback.h"
 #include "modules/push_messaging/PushPermissionStatusCallback.h"
 #include "modules/push_messaging/PushRegistration.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
@@ -43,12 +45,21 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     if (!serviceWorkerProvider)
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "No Service Worker installed for this document."));
 
+    // FIXME: Once everything except permission request goes through platform,
+    // delete WebPushClient and usage such as this one.
+    // See crbug.com/389194
     WebPushClient* client = PushController::clientFrom(document->page());
     ASSERT(client);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
+
+    PushPermissionClient* permissionClient = PushPermissionClient::from(scriptState->executionContext());
+    if (permissionClient)
+        permissionClient->requestPermission(scriptState->executionContext(), new PushPermissionRequestCallback(this, client, resolver, serviceWorkerProvider));
+    else
+        doRegister(client, resolver, serviceWorkerProvider);
+
     return promise;
 }
 
@@ -74,6 +85,11 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
 
     client->getPermissionStatus(new PushPermissionStatusCallback(resolver), serviceWorkerProvider);
     return resolver->promise();
+}
+
+void PushManager::doRegister(WebPushClient* client, PassRefPtr<ScriptPromiseResolver> resolver, WebServiceWorkerProvider* serviceWorkerProvider)
+{
+    client->registerPushMessaging(new CallbackPromiseAdapter<PushRegistration, PushError>(resolver), serviceWorkerProvider);
 }
 
 } // namespace blink
