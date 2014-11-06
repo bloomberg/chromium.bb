@@ -15,8 +15,6 @@ class WebServiceWorkerProvider;
 struct WebPushRegistration;
 
 typedef WebCallbacks<WebPushRegistration, WebPushError> WebPushRegistrationCallbacks;
-// FIXME: Delete WebPushPermissionCallback once the embedder stops depending on it.
-typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionCallback;
 typedef WebCallbacks<WebPushPermissionStatus, void> WebPushPermissionStatusCallback;
 
 class WebPushClient {
