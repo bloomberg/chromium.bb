@@ -100,7 +100,8 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
 }
 
 @interface BrowserActionCell (Internals)
-- (void)drawBadgeWithinFrame:(NSRect)frame;
+- (void)drawBadgeWithinFrame:(NSRect)frame
+              forWebContents:(content::WebContents*)webContents;
 @end
 
 @interface BrowserActionButton (Private)
@@ -304,7 +305,9 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
                     hints:nil];
 
   bounds.origin.y += kBrowserActionBadgeOriginYOffset;
-  [[self cell] drawBadgeWithinFrame:bounds];
+  [[self cell] drawBadgeWithinFrame:bounds
+                     forWebContents:
+                            [browserActionsController_ currentWebContents]];
 
   [image unlockFocus];
   return image;
@@ -326,7 +329,7 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
 @synthesize viewController = viewController_;
 
 - (void)drawBadgeWithinFrame:(NSRect)frame
-                 webContents:(content::WebContents*)webContents {
+              forWebContents:(content::WebContents*)webContents {
   gfx::CanvasSkiaPaint canvas(frame, false);
   canvas.set_composite_alpha(true);
   gfx::Rect boundingRect(NSRectToCGRect(frame));
@@ -354,7 +357,7 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
 
   cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
   [self drawBadgeWithinFrame:cellFrame
-                 webContents:webContents];
+              forWebContents:webContents];
 }
 
 @end

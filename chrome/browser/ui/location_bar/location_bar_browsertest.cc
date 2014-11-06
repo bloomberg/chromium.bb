@@ -84,13 +84,7 @@ const extensions::Extension* LocationBarBrowserTest::LoadPageActionExtension(
 // page action logic is more fully tested as part of the extensions system, this
 // only needs to check that they are displayed and clicking on them triggers
 // the action.
-// TODO(devlin): This flakily times out on Mac. crbug.com/410866
-#if defined(OS_MACOSX)
-#define MAYBE_PageActionUITest DISABLED_PageActionUITeset
-#else
-#define MAYBE_PageActionUITest PageActionUITest
-#endif
-IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest, MAYBE_PageActionUITest) {
+IN_PROC_BROWSER_TEST_F(LocationBarBrowserTest, PageActionUITest) {
   LocationBarTesting* location_bar =
       browser()->window()->GetLocationBar()->GetLocationBarForTesting();
 

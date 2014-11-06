@@ -293,9 +293,17 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
 }
 
 void LocationBarViewMac::TestPageActionPressed(size_t index) {
-  DCHECK_LT(index, page_action_decorations_.size());
-  if (index < page_action_decorations_.size())
-    page_action_decorations_[index]->OnMousePressed(NSZeroRect, NSZeroPoint);
+  DCHECK_LT(index, static_cast<size_t>(PageActionVisibleCount()));
+  size_t current = 0;
+  for (PageActionDecoration* decoration : page_action_decorations_) {
+    if (decoration->IsVisible()) {
+      if (current == index) {
+        decoration->OnMousePressed(NSZeroRect, NSZeroPoint);
+        return;
+      }
+      ++current;
+    }
+  }
 }
 
 bool LocationBarViewMac::GetBookmarkStarVisibility() {
