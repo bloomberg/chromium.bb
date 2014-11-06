@@ -35,16 +35,22 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
 
-  if (layer_impl->bounds().IsEmpty()) {
-    // Update may not get called for an empty layer, so resize here instead.
-    // Using layer_impl because either bounds() or paint_properties().bounds
-    // may disagree and either one could have been pushed to layer_impl.
+  int source_frame_number = layer_tree_host()->source_frame_number();
+  gfx::Size impl_bounds = layer_impl->bounds();
+  gfx::Size pile_bounds = pile_.tiling_size();
+
+  // If update called, then pile size must match bounds pushed to impl layer.
+  DCHECK_IMPLIES(update_source_frame_number_ == source_frame_number,
+                 impl_bounds == pile_bounds)
+      << " bounds " << impl_bounds.ToString() << " pile "
+      << pile_bounds.ToString();
+
+  if (update_source_frame_number_ != source_frame_number &&
+      pile_bounds != impl_bounds) {
+    // Update may not get called for the layer (if it's not in the viewport
+    // for example, even though it has resized making the pile no longer
+    // valid. In this case just destroy the pile.
     pile_.SetEmptyBounds();
-  } else {
-    // If update called, then pile size must match bounds pushed to impl layer.
-    DCHECK_IMPLIES(
-        update_source_frame_number_ == layer_tree_host()->source_frame_number(),
-        layer_impl->bounds().ToString() == pile_.tiling_size().ToString());
   }
 
   // Unlike other properties, invalidation must always be set on layer_impl.

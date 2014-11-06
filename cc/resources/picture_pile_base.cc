@@ -130,6 +130,8 @@ void PicturePileBase::SetBufferPixels(int new_buffer_pixels) {
 void PicturePileBase::Clear() {
   picture_map_.clear();
   recorded_viewport_ = gfx::Rect();
+  has_any_recordings_ = false;
+  is_solid_color_ = false;
 }
 
 bool PicturePileBase::HasRecordingAt(int x, int y) {

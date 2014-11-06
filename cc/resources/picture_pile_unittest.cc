@@ -1456,5 +1456,17 @@ TEST_F(PicturePileTest, NonSolidRectangleOnOffsettedLayerIsNonSolid) {
   EXPECT_FALSE(pile_.is_solid_color());
 }
 
+TEST_F(PicturePileTest, SetEmptyBounds) {
+  EXPECT_TRUE(pile_.is_solid_color());
+  EXPECT_FALSE(pile_.tiling_size().IsEmpty());
+  EXPECT_FALSE(pile_.picture_map().empty());
+  EXPECT_TRUE(pile_.HasRecordings());
+  pile_.SetEmptyBounds();
+  EXPECT_FALSE(pile_.is_solid_color());
+  EXPECT_TRUE(pile_.tiling_size().IsEmpty());
+  EXPECT_TRUE(pile_.picture_map().empty());
+  EXPECT_FALSE(pile_.HasRecordings());
+}
+
 }  // namespace
 }  // namespace cc

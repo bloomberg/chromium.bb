@@ -538,9 +538,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
 
 void PicturePile::SetEmptyBounds() {
   tiling_.SetTilingSize(gfx::Size());
-  picture_map_.clear();
-  has_any_recordings_ = false;
-  recorded_viewport_ = gfx::Rect();
+  Clear();
 }
 
 void PicturePile::DetermineIfSolidColor() {

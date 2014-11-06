@@ -43,6 +43,10 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
   scoped_ptr<ResourceUpdateQueue> queue(new ResourceUpdateQueue);
   layer->Update(queue.get(), &occlusion);
 
+  EXPECT_EQ(0, host->source_frame_number());
+  host->CommitComplete();
+  EXPECT_EQ(1, host->source_frame_number());
+
   layer->SetBounds(gfx::Size(0, 0));
   layer->SavePaintProperties();
   // Intentionally skipping Update since it would normally be skipped on
