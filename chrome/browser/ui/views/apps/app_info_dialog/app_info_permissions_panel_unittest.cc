@@ -89,14 +89,16 @@ TEST_F(AppInfoPermissionsPanelTest, RequiredPermissionsObtainedCorrectly) {
           .Build();
   AppInfoPermissionsPanel panel(&profile_, app.get());
 
-  const std::vector<base::string16> permission_messages =
+  const std::vector<PermissionStringAndDetailsPair> permission_messages =
       panel.GetActivePermissionMessages();
   ASSERT_EQ(2U, permission_messages.size());
   EXPECT_EQ(
       l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_DESKTOP_CAPTURE),
-      base::UTF16ToUTF8(permission_messages[0]));
+      base::UTF16ToUTF8(permission_messages[0].first));
+  EXPECT_EQ(0U, permission_messages[0].second.size());
   EXPECT_EQ(l10n_util::GetStringUTF8(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-            base::UTF16ToUTF8(permission_messages[1]));
+            base::UTF16ToUTF8(permission_messages[1].first));
+  EXPECT_EQ(0U, permission_messages[1].second.size());
 }
 
 // Tests that an app's optional permissions are detected and converted to
@@ -150,9 +152,7 @@ TEST_F(AppInfoPermissionsPanelTest, RetainedFilePermissionsObtainedCorrectly) {
   files_service->RegisterFileEntry(
       app->id(), "file_id_3", FilePath(FILE_PATH_LITERAL("file_3.ext")), false);
 
-  const std::vector<base::string16> permission_messages =
-      panel.GetActivePermissionMessages();
-  ASSERT_TRUE(permission_messages.empty());
+  ASSERT_TRUE(panel.GetActivePermissionMessages().empty());
 
   // Since we have no guarantees on the order of retained files, make sure the
   // list is the expected length and all required entries are present.

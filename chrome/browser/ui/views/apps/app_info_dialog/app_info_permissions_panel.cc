@@ -10,6 +10,7 @@
 #include "apps/app_load_service.h"
 #include "apps/saved_files_service.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/browser/api/device_permissions_manager.h"
@@ -225,13 +226,11 @@ void AppInfoPermissionsPanel::CreatePermissionsList() {
 
   BulletedPermissionsList* permissions_list = new BulletedPermissionsList();
 
-  // Add regular permission messages.
+  // Add regular and host permission messages.
   for (const auto& message : GetActivePermissionMessages()) {
     permissions_list->AddPermissionBullets(
-        message, std::vector<base::string16>(), gfx::NO_ELIDE, base::Closure());
+        message.first, message.second, gfx::ELIDE_MIDDLE, base::Closure());
   }
-
-  // TODO(sashab): Add host permission messages, if the app has any.
 
   // Add USB devices, if the app has any.
   if (GetRetainedDeviceCount() > 0) {
@@ -260,9 +259,26 @@ bool AppInfoPermissionsPanel::HasActivePermissionMessages() const {
   return !GetActivePermissionMessages().empty();
 }
 
-const std::vector<base::string16>
+const std::vector<PermissionStringAndDetailsPair>
 AppInfoPermissionsPanel::GetActivePermissionMessages() const {
-  return app_->permissions_data()->GetPermissionMessageStrings();
+  std::vector<PermissionStringAndDetailsPair> messages_with_details;
+  std::vector<base::string16> permission_messages =
+      app_->permissions_data()->GetPermissionMessageStrings();
+  std::vector<base::string16> permission_message_details =
+      app_->permissions_data()->GetPermissionMessageDetailsStrings();
+  DCHECK_EQ(permission_messages.size(), permission_message_details.size());
+
+  for (size_t i = 0; i < permission_messages.size(); i++) {
+    std::vector<base::string16> details;
+    if (!permission_message_details[i].empty()) {
+      // Make each new line in the details a separate sub-bullet.
+      base::SplitString(
+          permission_message_details[i], base::char16('\n'), &details);
+    }
+    messages_with_details.push_back(
+        PermissionStringAndDetailsPair(permission_messages[i], details));
+  }
+  return messages_with_details;
 }
 
 int AppInfoPermissionsPanel::GetRetainedFileCount() const {

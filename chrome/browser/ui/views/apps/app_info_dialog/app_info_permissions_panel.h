@@ -25,6 +25,9 @@ class GridLayout;
 class View;
 }
 
+typedef std::pair<base::string16, std::vector<base::string16>>
+    PermissionStringAndDetailsPair;
+
 // The summary panel of the app info dialog, which provides basic information
 // and controls related to the app.
 class AppInfoPermissionsPanel : public AppInfoPanel {
@@ -50,7 +53,11 @@ class AppInfoPermissionsPanel : public AppInfoPanel {
   void LayoutPermissionsList();
 
   bool HasActivePermissionMessages() const;
-  const std::vector<base::string16> GetActivePermissionMessages() const;
+  // Returns a list of active permission messages. The first entry is the title
+  // of the permission; the second is any sub-messages (such as host
+  // permissions) to be listed underneath that permission.
+  const std::vector<PermissionStringAndDetailsPair>
+  GetActivePermissionMessages() const;
 
   int GetRetainedFileCount() const;
   base::string16 GetRetainedFileHeading() const;

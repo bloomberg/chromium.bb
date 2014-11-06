@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -245,7 +246,25 @@ void ExtensionInstallPrompt::Prompt::SetPermissionsDetails(
     PermissionsType permissions_type) {
   InstallPromptPermissions& install_permissions =
       GetPermissionsForType(permissions_type);
-  install_permissions.details = details;
+
+  // Add a dash to the front of each permission detail.
+  for (const auto& details_entry : details) {
+    if (!details_entry.empty()) {
+      std::vector<base::string16> detail_lines;
+      base::SplitString(details_entry, base::char16('\n'), &detail_lines);
+
+      std::vector<base::string16> detail_lines_with_bullets;
+      for (const auto& detail_line : detail_lines)
+        detail_lines_with_bullets.push_back(base::ASCIIToUTF16("- ") +
+                                            detail_line);
+
+      install_permissions.details.push_back(
+          JoinString(detail_lines_with_bullets, '\n'));
+    } else {
+      install_permissions.details.push_back(details_entry);
+    }
+  }
+
   install_permissions.is_showing_details.clear();
   install_permissions.is_showing_details.insert(
       install_permissions.is_showing_details.begin(), details.size(), false);

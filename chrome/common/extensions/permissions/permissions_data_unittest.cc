@@ -300,7 +300,7 @@ TEST(PermissionsDataTest, GetPermissionMessages_ManyHostsPermissions) {
   ASSERT_EQ(1u, warnings_details.size());
   EXPECT_EQ("Read and change your data on a number of websites",
             UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("- www.a.com\n- www.b.com\n- www.c.com\n- www.d.com\n- www.e.com",
+  EXPECT_EQ("www.a.com\nwww.b.com\nwww.c.com\nwww.d.com\nwww.e.com",
             UTF16ToUTF8(warnings_details[0]));
 }
 

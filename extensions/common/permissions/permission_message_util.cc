@@ -78,8 +78,7 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   for (size_t i = 0; i < host_list.size(); ++i) {
     if (i > 0)
       details += base::ASCIIToUTF16("\n");
-    details += l10n_util::GetStringFUTF16(
-        IDS_EXTENSION_PROMPT_WARNING_HOST_LIST_ENTRY, host_list[i]);
+    details += host_list[i];
   }
   return PermissionMessage(
       kMessagesList[arraysize(kMessagesList) - 1].first,
