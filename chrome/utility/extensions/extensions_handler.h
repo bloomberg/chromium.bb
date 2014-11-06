@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/utility/utility_message_handler.h"
+#include "extensions/utility/utility_handler.h"
 
 #if !defined(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
@@ -31,7 +32,7 @@ class ExtensionsHandler : public UtilityMessageHandler {
   static void PreSandboxStartup();
   static void UtilityThreadStarted();
 
-  // IPC::Listener:
+  // UtilityMessageHandler:
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
@@ -40,7 +41,6 @@ class ExtensionsHandler : public UtilityMessageHandler {
                          const std::string& extension_id,
                          int location, int creation_flags);
   void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
-  void OnParseUpdateManifest(const std::string& xml);
   void OnDecodeImageBase64(const std::string& encoded_data);
   void OnParseJSON(const std::string& json);
   void OnCheckMediaFile(int64 milliseconds_of_decoding,
@@ -70,6 +70,8 @@ class ExtensionsHandler : public UtilityMessageHandler {
 #if defined(OS_WIN)
   void OnGetWiFiCredentials(const std::string& network_guid);
 #endif  // defined(OS_WIN)
+
+  UtilityHandler utility_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsHandler);
 };

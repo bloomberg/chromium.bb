@@ -31,6 +31,7 @@
         '<(DEPTH)/extensions/extensions.gyp:extensions_common',
         '<(DEPTH)/extensions/extensions.gyp:extensions_renderer',
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
+        '<(DEPTH)/extensions/extensions.gyp:extensions_utility',
         '<(DEPTH)/extensions/extensions_resources.gyp:extensions_resources',
         '<(DEPTH)/extensions/shell/browser/api/api_registration.gyp:shell_api_registration',
         '<(DEPTH)/extensions/shell/common/api/api.gyp:shell_api',
@@ -55,6 +56,8 @@
         'browser/api/shell_gcd/shell_gcd_api.h',
         'browser/api/shell_window/shell_window_api.cc',
         'browser/api/shell_window/shell_window_api.h',
+        'browser/shell_browser_context_keyed_service_factories.cc',
+        'browser/shell_browser_context_keyed_service_factories.h',
         'browser/default_shell_browser_main_delegate.cc',
         'browser/default_shell_browser_main_delegate.h',
         'browser/desktop_controller.cc',
@@ -117,6 +120,8 @@
         'renderer/shell_content_renderer_client.h',
         'renderer/shell_extensions_renderer_client.cc',
         'renderer/shell_extensions_renderer_client.h',
+        'utility/shell_content_utility_client.cc',
+        'utility/shell_content_utility_client.h',
       ],
       'conditions': [
         ['chromeos==1', {
@@ -209,6 +214,7 @@
         '../browser/guest_view/web_view/web_view_apitest.h',
         '../browser/guest_view/web_view/web_view_apitest.cc',
         '../browser/guest_view/web_view/web_view_media_access_apitest.cc',
+        '../browser/updater/update_service_browsertest.cc',
         'browser/shell_browsertest.cc',
         'test/shell_apitest.cc',
         'test/shell_apitest.h',

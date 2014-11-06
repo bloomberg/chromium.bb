@@ -38,6 +38,7 @@ static_library("utility") {
   if (enable_extensions) {
     deps += [
       "//chrome/common/extensions/api",
+      "//extensions/utility",
       #"//third_party/libexif",  TODO(GYP)
     ]
 

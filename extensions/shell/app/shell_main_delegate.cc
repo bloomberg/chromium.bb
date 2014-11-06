@@ -15,6 +15,7 @@
 #include "extensions/shell/browser/shell_content_browser_client.h"
 #include "extensions/shell/common/shell_content_client.h"
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
+#include "extensions/shell/utility/shell_content_utility_client.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -87,6 +88,11 @@ ShellMainDelegate::CreateContentRendererClient() {
   return renderer_client_.get();
 }
 
+content::ContentUtilityClient* ShellMainDelegate::CreateContentUtilityClient() {
+  utility_client_.reset(CreateShellContentUtilityClient());
+  return utility_client_.get();
+}
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void ShellMainDelegate::ZygoteStarting(
     ScopedVector<content::ZygoteForkDelegate>* delegates) {
@@ -108,6 +114,11 @@ ShellMainDelegate::CreateShellContentBrowserClient() {
 content::ContentRendererClient*
 ShellMainDelegate::CreateShellContentRendererClient() {
   return new ShellContentRendererClient();
+}
+
+content::ContentUtilityClient*
+ShellMainDelegate::CreateShellContentUtilityClient() {
+  return new ShellContentUtilityClient();
 }
 
 void ShellMainDelegate::InitializeResourceBundle() {

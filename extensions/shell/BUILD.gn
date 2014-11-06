@@ -43,6 +43,7 @@ source_set("app_shell_lib") {
     "//extensions/renderer",
     "//extensions/shell/common/api",
     "//extensions/shell/common/api:api_registration",
+    "//extensions/utility",
     "//extensions:extensions_resources",
     "//extensions:shell_and_test_pak",
     "//mojo/edk/system",
@@ -75,6 +76,8 @@ source_set("app_shell_lib") {
     "browser/shell_audio_controller_chromeos.h",
     "browser/shell_browser_context.cc",
     "browser/shell_browser_context.h",
+    "browser/shell_browser_context_keyed_service_factories.cc",
+    "browser/shell_browser_context_keyed_service_factories.h",
     "browser/shell_browser_main_delegate.h",
     "browser/shell_browser_main_parts.cc",
     "browser/shell_browser_main_parts.h",
@@ -123,6 +126,8 @@ source_set("app_shell_lib") {
     "renderer/shell_content_renderer_client.h",
     "renderer/shell_extensions_renderer_client.cc",
     "renderer/shell_extensions_renderer_client.h",
+    "utility/shell_content_utility_client.cc",
+    "utility/shell_content_utility_client.h",
   ]
   if (is_chromeos) {
     deps += [

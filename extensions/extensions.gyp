@@ -747,6 +747,10 @@
         'browser/updater/request_queue_impl.h',
         'browser/updater/safe_manifest_parser.cc',
         'browser/updater/safe_manifest_parser.h',
+        'browser/updater/update_service.cc',
+        'browser/updater/update_service.h',
+        'browser/updater/update_service_factory.cc',
+        'browser/updater/update_service_factory.h',
         'browser/url_request_util.cc',
         'browser/url_request_util.h',
         'browser/value_store/leveldb_value_store.cc',
@@ -977,6 +981,22 @@
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+    },
+    {
+      # GN version: //extensions/utility
+      'target_name': 'extensions_utility',
+      'type': 'static_library',
+      'dependencies': [
+        '../content/content.gyp:content_utility',
+        'extensions_common',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'utility/utility_handler.cc',
+        'utility/utility_handler.h',
+      ],
     },
     {
       # GN version: //extensions:test_support

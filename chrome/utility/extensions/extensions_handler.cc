@@ -19,7 +19,6 @@
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/extension_utility_messages.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/update_manifest.h"
 #include "media/base/media.h"
 #include "media/base/media_file_checker.h"
 #include "third_party/zlib/google/zip.h"
@@ -77,11 +76,9 @@ void ExtensionsHandler::PreSandboxStartup() {
     media::InitializeMediaLibrary(media_path);
 }
 
+// static
 void ExtensionsHandler::UtilityThreadStarted() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string lang = command_line->GetSwitchValueASCII(switches::kLang);
-  if (!lang.empty())
-    extension_l10n_util::SetProcessLocale(lang);
+  UtilityHandler::UtilityThreadStarted();
 }
 
 bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
@@ -116,12 +113,9 @@ bool ExtensionsHandler::OnMessageReceived(const IPC::Message& message) {
                         OnGetWiFiCredentials)
 #endif  // defined(OS_WIN)
 
-    IPC_MESSAGE_HANDLER(ExtensionUtilityMsg_ParseUpdateManifest,
-                        OnParseUpdateManifest)
-
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  return handled;
+  return handled || utility_handler_.OnMessageReceived(message);
 }
 
 void ExtensionsHandler::OnUnpackExtension(
@@ -157,18 +151,6 @@ void ExtensionsHandler::OnUnzipToDir(const base::FilePath& zip_path,
     Send(new ChromeUtilityHostMsg_UnzipToDir_Succeeded(dir));
   }
 
-  ReleaseProcessIfNeeded();
-}
-
-void ExtensionsHandler::OnParseUpdateManifest(const std::string& xml) {
-  UpdateManifest manifest;
-  if (!manifest.Parse(xml)) {
-    Send(new ExtensionUtilityHostMsg_ParseUpdateManifest_Failed(
-        manifest.errors()));
-  } else {
-    Send(new ExtensionUtilityHostMsg_ParseUpdateManifest_Succeeded(
-        manifest.results()));
-  }
   ReleaseProcessIfNeeded();
 }
 

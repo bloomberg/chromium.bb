@@ -142,6 +142,7 @@
         }],
         ['enable_extensions==1', {
           'dependencies': [
+            '../extensions/extensions.gyp:extensions_utility',
             '../third_party/libexif/libexif.gyp:libexif',
             'common/extensions/api/api.gyp:chrome_api',
           ],
