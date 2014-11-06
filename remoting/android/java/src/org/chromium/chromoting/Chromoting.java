@@ -25,8 +25,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.chromium.chromoting.jni.JniInterface;
@@ -39,7 +41,7 @@ import java.util.Arrays;
  * also requests and renews authentication tokens using the system account manager.
  */
 public class Chromoting extends Activity implements JniInterface.ConnectionListener,
-        AccountManagerCallback<Bundle>, ActionBar.OnNavigationListener, HostListLoader.Callback,
+        AccountManagerCallback<Bundle>, AdapterView.OnItemSelectedListener, HostListLoader.Callback,
         View.OnClickListener {
     /** Only accounts of this type will be selectable for authentication. */
     private static final String ACCOUNT_TYPE = "com.google";
@@ -212,16 +214,20 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         }
 
         if (mAccounts.length == 1) {
-            getActionBar().setDisplayShowTitleEnabled(true);
-            getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
+            getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE,
+                    ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
             getActionBar().setTitle(R.string.mode_me2me);
             getActionBar().setSubtitle(mAccount.name);
         } else {
             mAccountsAdapter = new AccountsAdapter(this, mAccounts);
-            getActionBar().setDisplayShowTitleEnabled(false);
-            getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-            getActionBar().setListNavigationCallbacks(mAccountsAdapter, this);
-            getActionBar().setSelectedNavigationItem(index);
+            Spinner accountsSpinner = new Spinner(getActionBar().getThemedContext(), null,
+                    android.R.attr.actionDropDownStyle);
+            accountsSpinner.setAdapter(mAccountsAdapter);
+            getActionBar().setCustomView(accountsSpinner);
+            getActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+                    ActionBar.DISPLAY_SHOW_TITLE | ActionBar.DISPLAY_SHOW_CUSTOM);
+            accountsSpinner.setOnItemSelectedListener(this);
+            accountsSpinner.setSelection(index);
         }
 
         refreshHostList();
@@ -352,7 +358,7 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
     }
 
     @Override
-    public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+    public void onItemSelected(AdapterView parent, View view, int itemPosition, long itemId) {
         mAccount = mAccounts[itemPosition];
 
         getPreferences(MODE_PRIVATE).edit().putString("account_name", mAccount.name)
@@ -362,7 +368,10 @@ public class Chromoting extends Activity implements JniInterface.ConnectionListe
         mHosts = new HostInfo[0];
         updateUi();
         refreshHostList();
-        return true;
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView parent) {
     }
 
     @Override
