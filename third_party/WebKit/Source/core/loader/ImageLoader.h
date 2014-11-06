@@ -186,6 +186,7 @@ private:
     bool m_imageComplete : 1;
     bool m_loadingImageDocument : 1;
     bool m_elementIsProtected : 1;
+    bool m_suppressErrorEvents : 1;
     unsigned m_highPriorityClientCount;
 };
 
