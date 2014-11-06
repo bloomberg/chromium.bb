@@ -36,6 +36,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -139,9 +140,14 @@ public class Tab {
 
     private boolean mIsClosing = false;
 
-    private Bitmap mFavicon = null;
+    private Bitmap mFavicon;
 
-    private String mFaviconUrl = null;
+    private String mFaviconUrl;
+
+    /**
+     * The number of pixel of 16DP.
+     */
+    private int mNumPixel16DP;
 
     /**
      * A default {@link ChromeContextMenuItemDelegate} that supports some of the context menu
@@ -360,6 +366,8 @@ public class Tab {
         mContext = context;
         mApplicationContext = context != null ? context.getApplicationContext() : null;
         mWindowAndroid = window;
+        if (mContext != null)
+            mNumPixel16DP = (int) DeviceDisplayInfo.create(mContext).getDIPScale() * 16;
     }
 
     /**
@@ -910,30 +918,10 @@ public class Tab {
      *         is specified or it requires the default favicon.
      */
     public Bitmap getFavicon() {
-        String url = getUrl();
-        // Invalidate our cached values if necessary.
-        if (url == null || !url.equals(mFaviconUrl)) {
-            mFavicon = null;
-            mFaviconUrl = null;
-        }
+        // If we have no content return null.
+        if (getNativePage() == null && getContentViewCore() == null) return null;
 
-        if (mFavicon == null) {
-            // If we have no content return null.
-            if (getNativePage() == null && getContentViewCore() == null) return null;
-
-            Bitmap favicon = nativeGetFavicon(mNativeTabAndroid);
-
-            // If the favicon is not yet valid (i.e. it's either blank or a placeholder), then do
-            // not cache the results.  We still return this though so we have something to show.
-            if (favicon != null && nativeIsFaviconValid(mNativeTabAndroid)) {
-                mFavicon = favicon;
-                mFaviconUrl = url;
-            }
-
-            return favicon;
-        }
-
-        return mFavicon;
+        return (mFavicon != null) ? mFavicon : nativeGetDefaultFavicon(mNativeTabAndroid);
     }
 
     /**
@@ -1066,13 +1054,38 @@ public class Tab {
     /**
      * Called when the favicon of the content this tab represents changes.
      */
-    @CalledByNative
+    // TODO(michaelbai): This method is overridden in downstream, remove it after refactorying
+    // downstream usages.
     protected void onFaviconUpdated() {
-        mFavicon = null;
-        mFaviconUrl = null;
-        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
     }
 
+    @CalledByNative
+    protected void onFaviconAvailable(Bitmap icon) {
+        boolean needUpdate = false;
+        String url = getUrl();
+        if (url == null) return;
+
+        boolean pageUrlChanged = !url.equals(mFaviconUrl);
+
+        // This method will be called multiple times if the page has more than one favicon.
+        // we are trying to use the 16x16 DP icon here, Bitmap.createScaledBitmap will return
+        // the origin bitmap if it is already 16x16 DP.
+        if (pageUrlChanged || (icon.getWidth() == mNumPixel16DP
+                && icon.getHeight() == mNumPixel16DP)) {
+            mFavicon = Bitmap.createScaledBitmap(icon, mNumPixel16DP, mNumPixel16DP, true);
+            needUpdate = true;
+        }
+
+        if (pageUrlChanged) {
+            mFaviconUrl = url;
+            needUpdate = true;
+        }
+
+        if (!needUpdate) return;
+
+        onFaviconUpdated();
+        for (TabObserver observer : mObservers) observer.onFaviconUpdated(this);
+    }
     /**
      * Called when the navigation entry containing the historyitem changed,
      * for example because of a scroll offset or form field change.
@@ -1212,6 +1225,5 @@ public class Tab {
     private native void nativeSetActiveNavigationEntryTitleForUrl(long nativeTabAndroid, String url,
             String title);
     private native boolean nativePrint(long nativeTabAndroid);
-    private native Bitmap nativeGetFavicon(long nativeTabAndroid);
-    private native boolean nativeIsFaviconValid(long nativeTabAndroid);
+    private native Bitmap nativeGetDefaultFavicon(long nativeTabAndroid);
 }

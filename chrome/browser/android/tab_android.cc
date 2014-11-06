@@ -336,9 +336,6 @@ void TabAndroid::Observe(int type,
       }
       break;
     }
-    case chrome::NOTIFICATION_FAVICON_UPDATED:
-      Java_Tab_onFaviconUpdated(env, weak_java_tab_.get(env).obj());
-      break;
     case content::NOTIFICATION_NAV_ENTRY_CHANGED:
       Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env).obj());
       break;
@@ -346,6 +343,21 @@ void TabAndroid::Observe(int type,
       NOTREACHED() << "Unexpected notification " << type;
       break;
   }
+}
+
+void TabAndroid::OnFaviconAvailable(const gfx::Image& image) {
+  ScopedJavaLocalRef<jobject> bitmap;
+  SkBitmap favicon = image
+          .AsImageSkia()
+          .GetRepresentation(
+               ResourceBundle::GetSharedInstance().GetMaxScaleFactor())
+          .sk_bitmap();
+
+  if (!favicon.empty()) {
+    bitmap = gfx::ConvertToJavaBitmap(&favicon);
+  }
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_Tab_onFaviconAvailable(env, weak_java_tab_.get(env).obj(), bitmap.obj());
 }
 
 void TabAndroid::Destroy(JNIEnv* env, jobject obj) {
@@ -389,13 +401,15 @@ void TabAndroid::InitWebContents(JNIEnv* env,
       content::Source<content::WebContents>(web_contents()));
   notification_registrar_.Add(
       this,
-      chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<content::WebContents>(web_contents()));
-  notification_registrar_.Add(
-      this,
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
       content::Source<content::NavigationController>(
            &web_contents()->GetController()));
+
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents_.get());
+
+  if (favicon_tab_helper)
+    favicon_tab_helper->AddObserver(this);
 
   synced_tab_delegate_->SetWebContents(web_contents());
 
@@ -415,13 +429,15 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
       content::Source<content::WebContents>(web_contents()));
   notification_registrar_.Remove(
       this,
-      chrome::NOTIFICATION_FAVICON_UPDATED,
-      content::Source<content::WebContents>(web_contents()));
-  notification_registrar_.Remove(
-      this,
       content::NOTIFICATION_NAV_ENTRY_CHANGED,
       content::Source<content::NavigationController>(
            &web_contents()->GetController()));
+
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents_.get());
+
+  if (favicon_tab_helper)
+    favicon_tab_helper->RemoveObserver(this);
 
   web_contents()->SetDelegate(NULL);
 
@@ -588,7 +604,8 @@ bool TabAndroid::Print(JNIEnv* env, jobject obj) {
   return true;
 }
 
-ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env, jobject obj) {
+ScopedJavaLocalRef<jobject> TabAndroid::GetDefaultFavicon(JNIEnv* env,
+                                                          jobject obj) {
   ScopedJavaLocalRef<jobject> bitmap;
   FaviconTabHelper* favicon_tab_helper =
       FaviconTabHelper::FromWebContents(web_contents_.get());
@@ -596,19 +613,8 @@ ScopedJavaLocalRef<jobject> TabAndroid::GetFavicon(JNIEnv* env, jobject obj) {
   if (!favicon_tab_helper)
     return bitmap;
 
-  // If the favicon isn't valid, it will return a default bitmap.
-
-  SkBitmap favicon =
-      favicon_tab_helper->GetFavicon()
-          .AsImageSkia()
-          .GetRepresentation(
-               ResourceBundle::GetSharedInstance().GetMaxScaleFactor())
-          .sk_bitmap();
-
-  if (favicon.empty()) {
-    favicon = favicon_tab_helper->GetFavicon().AsBitmap();
-  }
-
+  // Always return the default favicon in Android.
+  SkBitmap favicon = favicon_tab_helper->GetFavicon().AsBitmap();
   if (!favicon.empty()) {
     gfx::DeviceDisplayInfo device_info;
     const float device_scale_factor = device_info.GetDIPScale();
