@@ -5,6 +5,7 @@
 #include "config.h"
 #include "modules/serviceworkers/Cache.h"
 
+#include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
@@ -148,11 +149,6 @@ private:
     RefPtr<ScriptPromiseResolver> m_resolver;
 };
 
-ScriptPromise rejectForCacheError(ScriptState* scriptState, WebServiceWorkerCacheError error)
-{
-    return ScriptPromise::rejectWithDOMException(scriptState, Cache::domExceptionForCacheError(error));
-}
-
 ScriptPromise rejectAsNotImplemented(ScriptState* scriptState)
 {
     return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(NotSupportedError, "Cache is not implemented"));
@@ -170,14 +166,11 @@ ScriptPromise Cache::match(ScriptState* scriptState, Request* request, const Cac
     return matchImpl(scriptState, request, options);
 }
 
-ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options)
+ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return matchImpl(scriptState, request, options);
 }
 
@@ -186,14 +179,11 @@ ScriptPromise Cache::matchAll(ScriptState* scriptState, Request* request, const 
     return matchAllImpl(scriptState, request, options);
 }
 
-ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options)
+ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return matchAllImpl(scriptState, request, options);
 }
 
@@ -202,14 +192,11 @@ ScriptPromise Cache::add(ScriptState* scriptState, Request* request)
     return addImpl(scriptState, request);
 }
 
-ScriptPromise Cache::add(ScriptState* scriptState, const String& requestString)
+ScriptPromise Cache::add(ScriptState* scriptState, const String& requestString, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return addImpl(scriptState, request);
 }
 
@@ -224,14 +211,11 @@ ScriptPromise Cache::deleteFunction(ScriptState* scriptState, Request* request, 
     return deleteImpl(scriptState, request, options);
 }
 
-ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options)
+ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return deleteImpl(scriptState, request, options);
 }
 
@@ -240,14 +224,11 @@ ScriptPromise Cache::put(ScriptState* scriptState, Request* request, Response* r
     return putImpl(scriptState, request, response);
 }
 
-ScriptPromise Cache::put(ScriptState* scriptState, const String& requestString, Response* response)
+ScriptPromise Cache::put(ScriptState* scriptState, const String& requestString, Response* response, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return putImpl(scriptState, request, response);
 }
 
@@ -261,14 +242,11 @@ ScriptPromise Cache::keys(ScriptState* scriptState, Request* request, const Cach
     return keysImpl(scriptState, request, options);
 }
 
-ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options)
+ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    TrackExceptionState exceptionState;
     Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
-    if (exceptionState.hadException()) {
-        // FIXME: We should throw the caught error.
-        return rejectForCacheError(scriptState, WebServiceWorkerCacheErrorNotFound);
-    }
+    if (exceptionState.hadException())
+        return ScriptPromise();
     return keysImpl(scriptState, request, options);
 }
 

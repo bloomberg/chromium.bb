@@ -14,18 +14,18 @@
 
   // [CallWith=ScriptState] Promise match((Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState] Promise match(Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState] Promise match(USVString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, RaisesException] Promise match(USVString request, optional CacheQueryOptions options);
 
   // FIXME: Implement matchAll(): http://crbug.com/428363
   // FIXME: First argument of matchAll() should be optional: http://crbug.com/425459
   // [CallWith=ScriptState] Promise matchAll((Request or USVString) request, optional CacheQueryOptions options);
   // [CallWith=ScriptState] Promise matchAll(Request request, optional CacheQueryOptions options);
-  // [CallWith=ScriptState] Promise matchAll(USVString request, optional CacheQueryOptions options);
+  // [CallWith=ScriptState, RaisesException] Promise matchAll(USVString request, optional CacheQueryOptions options);
 
   // FIXME: Implement add(): http://crbug.com/427652
   // [CallWith=ScriptState] Promise add((Request or USVString) request);
   // [CallWith=ScriptState] Promise add(Request request);
-  // [CallWith=ScriptState] Promise add(USVString request);
+  // [CallWith=ScriptState, RaisesException] Promise add(USVString request);
 
   // FIXME: Implement addAll(): http://crbug.com/427652
   // FIXME: The lack of union type support together with the sequence mean we can't use overrides here, instead
@@ -35,13 +35,13 @@
 
   // [CallWith=ScriptState] Promise put((Request or USVString) request, Response response);
   [CallWith=ScriptState] Promise put(Request request, Response response);
-  [CallWith=ScriptState] Promise put(USVString request, Response response);
+  [CallWith=ScriptState, RaisesException] Promise put(USVString request, Response response);
 
   // [CallWith=ScriptState] Promise delete((Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(USVString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] Promise delete(USVString request, optional CacheQueryOptions options);
 
   // [CallWith=ScriptState] Promise keys(optional (Request or USVString) request, optional CacheQueryOptions options);
   [CallWith=ScriptState] Promise keys(optional Request request, optional CacheQueryOptions options);
-  [CallWith=ScriptState] Promise keys(USVString request, optional CacheQueryOptions options);
+  [CallWith=ScriptState, RaisesException] Promise keys(USVString request, optional CacheQueryOptions options);
 };

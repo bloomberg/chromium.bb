@@ -19,6 +19,7 @@
 
 namespace blink {
 
+class ExceptionState;
 class Response;
 class Request;
 class ScriptState;
@@ -31,19 +32,19 @@ public:
 
     // From Cache.idl:
     ScriptPromise match(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise match(ScriptState*, const String&, const CacheQueryOptions&);
+    ScriptPromise match(ScriptState*, const String&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise matchAll(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise matchAll(ScriptState*, const String&, const CacheQueryOptions&);
+    ScriptPromise matchAll(ScriptState*, const String&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise add(ScriptState*, Request*);
-    ScriptPromise add(ScriptState*, const String&);
+    ScriptPromise add(ScriptState*, const String&, ExceptionState&);
     ScriptPromise addAll(ScriptState*, const Vector<ScriptValue>&);
     ScriptPromise deleteFunction(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise deleteFunction(ScriptState*, const String&, const CacheQueryOptions&);
+    ScriptPromise deleteFunction(ScriptState*, const String&, const CacheQueryOptions&, ExceptionState&);
     ScriptPromise put(ScriptState*, Request*, Response*);
-    ScriptPromise put(ScriptState*, const String&, Response*);
+    ScriptPromise put(ScriptState*, const String&, Response*, ExceptionState&);
     ScriptPromise keys(ScriptState*);
     ScriptPromise keys(ScriptState*, Request*, const CacheQueryOptions&);
-    ScriptPromise keys(ScriptState*, const String&, const CacheQueryOptions&);
+    ScriptPromise keys(ScriptState*, const String&, const CacheQueryOptions&, ExceptionState&);
 
     static PassRefPtrWillBeRawPtr<DOMException> domExceptionForCacheError(WebServiceWorkerCacheError);
 
