@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Regression tests for FFmpeg.  Security test files can be found in the
-// internal media test data directory:
+// Regression tests for FFmpeg.  Test files can be found in the internal media
+// test data directory:
 //
-//    svn://svn.chromium.org/chrome-internal/trunk/data/media/security/
+//    svn://svn.chromium.org/chrome-internal/trunk/data/media/
 //
 // Simply add the custom_dep below to your gclient and sync:
 //
-//    "src/media/test/data/security":
-//        "svn://svn.chromium.org/chrome-internal/trunk/data/media/security"
+//    "src/media/test/data/internal":
+//        "svn://svn.chromium.org/chrome-internal/trunk/data/media"
 //
 // Many of the files here do not cause issues outside of tooling, so you'll need
 // to run this test under ASAN, TSAN, and Valgrind to ensure that all issues are
@@ -34,10 +34,14 @@
 
 #include "media/filters/pipeline_integration_test_base.h"
 
+#include <string>
+
 #include "base/bind.h"
 #include "media/base/test_data_util.h"
 
 namespace media {
+
+const char kRegressionTestDataPathPrefix[] = "internal/";
 
 struct RegressionTestData {
   RegressionTestData(const char* filename, PipelineStatus init_status,
@@ -45,14 +49,14 @@ struct RegressionTestData {
                      const char* audio_md5)
       : video_md5(video_md5),
         audio_md5(audio_md5),
-        filename(filename),
+        filename(std::string(kRegressionTestDataPathPrefix) + filename),
         init_status(init_status),
         end_status(end_status) {
   }
 
   const char* video_md5;
   const char* audio_md5;
-  const char* filename;
+  std::string filename;
   PipelineStatus init_status;
   PipelineStatus end_status;
 };
@@ -61,10 +65,10 @@ struct RegressionTestData {
 // which may have undefined behavior for hashing, etc.
 struct FlakyRegressionTestData {
   FlakyRegressionTestData(const char* filename)
-      : filename(filename) {
+      : filename(std::string(kRegressionTestDataPathPrefix) + filename) {
   }
 
-  const char* filename;
+  std::string filename;
 };
 
 class FFmpegRegressionTest
@@ -94,13 +98,13 @@ class FlakyFFmpegRegressionTest
 FFMPEG_TEST_CASE(Cr47325, "security/47325.mp4", PIPELINE_OK, PIPELINE_OK,
                  "2a7a938c6b5979621cec998f02d9bbb6",
                  "3.61,1.64,-3.24,0.12,1.50,-0.86,");
-FFMPEG_TEST_CASE(Cr47761, "content/crbug47761.ogg", PIPELINE_OK, PIPELINE_OK,
+FFMPEG_TEST_CASE(Cr47761, "crbug47761.ogg", PIPELINE_OK, PIPELINE_OK,
                  kNullVideoHash,
                  "8.89,8.55,8.88,8.01,8.23,7.69,");
-FFMPEG_TEST_CASE(Cr50045, "content/crbug50045.mp4", PIPELINE_OK, PIPELINE_OK,
+FFMPEG_TEST_CASE(Cr50045, "crbug50045.mp4", PIPELINE_OK, PIPELINE_OK,
                  "c345e9ef9ebfc6bfbcbe3f0ddc3125ba",
                  "2.72,-6.27,-6.11,-3.17,-5.58,1.26,");
-FFMPEG_TEST_CASE(Cr62127, "content/crbug62127.webm", PIPELINE_OK,
+FFMPEG_TEST_CASE(Cr62127, "crbug62127.webm", PIPELINE_OK,
                  PIPELINE_OK, "a064b2776fc5aef3e9cba47967a75db9",
                  kNullAudioHash);
 FFMPEG_TEST_CASE(Cr93620, "security/93620.ogg", PIPELINE_OK, PIPELINE_OK,
@@ -135,7 +139,7 @@ FFMPEG_TEST_CASE(Cr140165, "security/140165.ogg", PIPELINE_ERROR_DECODE,
                  PIPELINE_ERROR_DECODE, kNullVideoHash, kNullAudioHash);
 FFMPEG_TEST_CASE(Cr140647, "security/140647.ogv", DEMUXER_ERROR_COULD_NOT_OPEN,
                  DEMUXER_ERROR_COULD_NOT_OPEN, kNullVideoHash, kNullAudioHash);
-FFMPEG_TEST_CASE(Cr142738, "content/crbug142738.ogg", PIPELINE_OK, PIPELINE_OK,
+FFMPEG_TEST_CASE(Cr142738, "crbug142738.ogg", PIPELINE_OK, PIPELINE_OK,
                  kNullVideoHash,
                  "-1.22,0.45,1.79,1.80,-0.30,-1.21,");
 FFMPEG_TEST_CASE(Cr152691, "security/152691.mp3", PIPELINE_ERROR_DECODE,
@@ -241,66 +245,66 @@ FFMPEG_TEST_CASE(WEBM_3, "security/out.webm.139771.2965",
 FFMPEG_TEST_CASE(WEBM_4, "security/out.webm.68798.1929",
                  DECODER_ERROR_NOT_SUPPORTED, DECODER_ERROR_NOT_SUPPORTED,
                  kNullVideoHash, kNullAudioHash);
-FFMPEG_TEST_CASE(WEBM_5, "content/frame_size_change.webm", PIPELINE_OK,
+FFMPEG_TEST_CASE(WEBM_5, "frame_size_change.webm", PIPELINE_OK,
                  PIPELINE_OK, "d8fcf2896b7400a2261bac9e9ea930f8",
                  kNullAudioHash);
 
 // Audio Functional Tests
-FFMPEG_TEST_CASE(AUDIO_GAMING_0, "content/gaming/a_220_00.mp3", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_0, "gaming/a_220_00.mp3", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "0.36,1.25,2.98,4.29,4.19,2.76,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_1, "content/gaming/a_220_00_v2.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_1, "gaming/a_220_00_v2.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "2.17,3.31,5.15,6.33,5.97,4.35,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_2, "content/gaming/ai_laser1.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_2, "gaming/ai_laser1.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "7.70,10.81,13.19,10.07,7.39,7.56,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_3, "content/gaming/ai_laser2.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_3, "gaming/ai_laser2.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "5.99,8.04,9.71,8.69,7.81,7.52,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_4, "content/gaming/ai_laser3.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_4, "gaming/ai_laser3.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-0.32,1.44,3.75,5.88,6.32,3.22,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_5, "content/gaming/ai_laser4.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_5, "gaming/ai_laser4.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "4.75,4.16,2.21,3.01,5.51,6.11,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_6, "content/gaming/ai_laser5.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_6, "gaming/ai_laser5.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "6.04,7.46,8.78,7.32,4.16,3.97,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_7, "content/gaming/footstep1.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_7, "gaming/footstep1.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-0.50,0.29,2.35,4.79,5.14,2.24,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_8, "content/gaming/footstep3.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_8, "gaming/footstep3.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-2.87,-3.05,-4.10,-3.20,-2.20,-2.20,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_9, "content/gaming/footstep4.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_9, "gaming/footstep4.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "10.35,10.74,11.60,12.83,12.69,10.67,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_10, "content/gaming/laser1.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_10, "gaming/laser1.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-9.48,-12.94,-1.75,7.66,5.61,-0.58,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_11, "content/gaming/laser2.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_11, "gaming/laser2.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-7.53,-6.28,3.37,0.73,-5.83,-4.70,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_12, "content/gaming/laser3.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_12, "gaming/laser3.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-13.62,-6.55,2.52,-10.10,-10.68,-5.43,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_13, "content/gaming/leg1.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_13, "gaming/leg1.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "5.62,5.79,5.81,5.60,6.18,6.15,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_14, "content/gaming/leg2.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_14, "gaming/leg2.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "-0.88,1.32,2.74,3.07,0.88,-0.03,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_15, "content/gaming/leg3.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_15, "gaming/leg3.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "17.77,18.59,19.57,18.84,17.62,17.22,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_16, "content/gaming/lock_on.ogg", PIPELINE_OK,
+FFMPEG_TEST_CASE(AUDIO_GAMING_16, "gaming/lock_on.ogg", PIPELINE_OK,
                  PIPELINE_OK, kNullVideoHash,
                  "3.08,-4.33,-5.04,-0.24,1.83,5.16,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_17, "content/gaming/enemy_lock_on.ogg",
+FFMPEG_TEST_CASE(AUDIO_GAMING_17, "gaming/enemy_lock_on.ogg",
                  PIPELINE_OK, PIPELINE_OK, kNullVideoHash,
                  "-2.24,-1.00,-2.75,-0.87,1.11,-0.58,");
-FFMPEG_TEST_CASE(AUDIO_GAMING_18, "content/gaming/rocket_launcher.mp3",
+FFMPEG_TEST_CASE(AUDIO_GAMING_18, "gaming/rocket_launcher.mp3",
                  PIPELINE_OK, PIPELINE_OK, kNullVideoHash,
                  "-3.08,0.18,2.49,1.98,-2.20,-4.74,");
 
