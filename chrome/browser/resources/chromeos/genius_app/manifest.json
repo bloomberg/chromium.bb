@@ -6,7 +6,6 @@
   "version": "0.2",
   "minimum_chrome_version": "28",
   "default_locale": "en",
-  "incognito" : "split",
   "icons": {
     "16": "icon/16.png",
     "32": "icon/32.png",
@@ -48,6 +47,8 @@
     "client_id": "929143421683.apps.googleusercontent.com",
     "scopes": [
         "https://www.googleapis.com/auth/supportcontent",
+        "https://www.googleapis.com/auth/cases",
+        "https://www.googleapis.com/auth/cases.readonly",
         "https://www.google.com/accounts/OAuthLogin"
     ]
   },
