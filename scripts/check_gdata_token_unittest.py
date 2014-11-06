@@ -11,17 +11,23 @@ import filecmp
 import mox
 import os
 import shutil
+import sys
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'third_party', 'gdata', 'src'))
 import gdata.service
 from gdata.projecthosting import client as gdata_ph_client
 from gdata.spreadsheet import service as gdata_ss_service
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
 from chromite.lib import cros_build_lib as build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.scripts import check_gdata_token as cgt
 
-# pylint: disable=W0212,R0904,E1120,E1101
+
+# pylint: disable=W0212,E1101
 
 
 class MainTest(cros_test_lib.MoxOutputTestCase):

@@ -13,20 +13,20 @@ import os
 import re
 import sys
 
-# pylint: disable=F0401
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__))), 'third_party', 'gdata', 'src'))
 import atom.service
 import gdata.projecthosting.client as gd_ph_client
 import gdata.spreadsheet.service
-# pylint: enable=F0401
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
-
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.lib import osutils
 
-# pylint: disable=W0201,W0212,E1101,R0904
+
+# pylint: disable=W0212,E1101
 
 
 class GdataLibTest(cros_test_lib.OutputTestCase):

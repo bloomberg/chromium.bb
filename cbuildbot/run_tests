@@ -34,13 +34,6 @@ special_tests=(
   # Tests that need to run outside the chroot.
   ['lib/cgroups_unittest.py']=outside
 
-  # Tests that are presently broken.
-  ['lib/gdata_lib_unittest.py']=skip
-  ['scripts/chrome_set_ver_unittest.py']=skip
-  ['scripts/check_gdata_token_unittest.py']=skip
-  ['scripts/merge_package_status_unittest.py']=skip
-  ['scripts/upload_package_status_unittest.py']=skip
-
   # Tests that take >2 minutes to run.  All the slow tests are
   # disabled atm though ...
   #['scripts/cros_portage_upgrade_unittest.py']=skip
@@ -210,6 +203,15 @@ main() {
   # that "repo list" looks at the right repo, and sets up a consistent test
   # environment.
   cd "${CHROMITE_PATH}"
+
+  # Make sure the index doesn't fall out of date.
+  local k
+  for k in "${!special_tests[@]}"; do
+    if [[ ! -e ${k} ]]; then
+      echo "ERROR: test '${k}' listed in \${special_tests} but does not exist."
+      return 1
+    fi
+  done
 
   SKIP_CHROOT_TESTS=false
   if ! repo list 2>/dev/null | grep -q chromiumos-overlay; then

@@ -10,13 +10,18 @@ from __future__ import print_function
 import exceptions
 import mox
 import os
+import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
 from chromite.lib import cros_test_lib
 from chromite.lib import table
 from chromite.scripts import merge_package_status as mps
 
+
 # pylint: disable=W0212,R0904
+
 
 class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
   """Test the functionality of merge_package_status."""

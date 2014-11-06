@@ -9,13 +9,18 @@ from __future__ import print_function
 
 import exceptions
 import mox
+import os
+import sys
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
+    os.path.abspath(__file__)))))
 from chromite.lib import cros_test_lib
 from chromite.lib import gdata_lib
 from chromite.lib import osutils
 from chromite.lib import table as tablelib
 from chromite.scripts import merge_package_status as mps
 from chromite.scripts import upload_package_status as ups
+
 
 # pylint: disable=W0212,R0904,E1120,E1101
 
