@@ -673,28 +673,64 @@ void LayerPainter::paintChildLayerIntoColumns(RenderLayer* childLayer, GraphicsC
     }
 }
 
+void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment& fragment, GraphicsContext* context, const ClipRect& clipRect, const LayerPaintingInfo& paintingInfo, PaintBehavior paintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags, ClipState clipState)
+{
+    OwnPtr<ClipRecorder> clipRecorder;
+    if (clipState != HasClipped && paintingInfo.clipToDirtyRect && needsToClip(paintingInfo, clipRect)) {
+        BorderRadiusClippingRule clippingRule = IncludeSelfForBorderRadius;
+        DisplayItem::Type clipType = DisplayItem::ClipLayerFragmentFloat;
+        switch (phase) {
+        case PaintPhaseFloat:
+            break;
+        case PaintPhaseForeground:
+            clipType = DisplayItem::ClipLayerFragmentForeground;
+            break;
+        case PaintPhaseChildOutlines:
+            clipType = DisplayItem::ClipLayerFragmentChildOutline;
+            break;
+        case PaintPhaseSelection:
+            clipType = DisplayItem::ClipLayerFragmentSelection;
+            break;
+        case PaintPhaseChildBlockBackgrounds:
+            clipType = DisplayItem::ClipLayerFragmentChildBlockBackgrounds;
+            break;
+        case PaintPhaseBlockBackground:
+            clipType = DisplayItem::ClipLayerBackground;
+            clippingRule = DoNotIncludeSelfForBorderRadius; // Background painting will handle clipping to self.
+            break;
+        case PaintPhaseSelfOutline:
+            clipType = DisplayItem::ClipLayerFragmentOutline;
+            clippingRule = DoNotIncludeSelfForBorderRadius;
+            break;
+        case PaintPhaseMask:
+            clipType = DisplayItem::ClipLayerFragmentMask;
+            clippingRule = DoNotIncludeSelfForBorderRadius; // Mask painting will handle clipping to self.
+            break;
+        case PaintPhaseClippingMask:
+            clipType = DisplayItem::ClipLayerFragmentClippingMask;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
+
+        clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, clipType, clipRect));
+        applyRoundedRectClips(paintingInfo, context, clipRect, paintFlags, *clipRecorder, clippingRule);
+    }
+
+    PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->renderer());
+    m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(paintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+}
+
 void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragments, GraphicsContext* context,
     const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior,
     RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (size_t i = 0; i < layerFragments.size(); ++i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-
+    for (const auto& fragment: layerFragments) {
         // Begin transparency layers lazily now that we know we have to paint something.
         if (haveTransparency)
             beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
 
-        OwnPtr<ClipRecorder> clipRecorder;
-
-        if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerBackground, fragment.backgroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.backgroundRect, paintFlags, *clipRecorder, DoNotIncludeSelfForBorderRadius); // Background painting will handle clipping to self.
-        }
-
-        // Paint the background.
-        // FIXME: Eventually we will collect the region from the fragment itself instead of just from the paint info.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseBlockBackground, paintBehavior, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
-        m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+        paintFragmentWithPhase(PaintPhaseBlockBackground, fragment, context, fragment.backgroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
 
@@ -715,120 +751,56 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
 
     // Optimize clipping for the single fragment case.
     bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() == 1 && !layerFragments[0].foregroundRect.isEmpty();
-
+    ClipState clipState = HasNotClipped;
     OwnPtr<ClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
         clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect));
         applyRoundedRectClips(localPaintingInfo, context, layerFragments[0].foregroundRect, paintFlags, *clipRecorder);
+        clipState = HasClipped;
     }
 
     // We have to loop through every fragment multiple times, since we have to issue paint invalidations in each specific phase in order for
     // interleaving of the fragments to work properly.
     paintForegroundForFragmentsWithPhase(selectionOnly ? PaintPhaseSelection : PaintPhaseChildBlockBackgrounds, layerFragments,
-        context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
+        context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
 
     if (!selectionOnly) {
-        paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
-        paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
-        paintForegroundForFragmentsWithPhase(PaintPhaseChildOutlines, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags);
+        paintForegroundForFragmentsWithPhase(PaintPhaseFloat, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
+        paintForegroundForFragmentsWithPhase(PaintPhaseForeground, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
+        paintForegroundForFragmentsWithPhase(PaintPhaseChildOutlines, layerFragments, context, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
     }
 }
 
 void LayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase, const LayerFragments& layerFragments, GraphicsContext* context,
-    const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
+    const LayerPaintingInfo& localPaintingInfo, PaintBehavior paintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags, ClipState clipState)
 {
-    bool shouldClip = localPaintingInfo.clipToDirtyRect && layerFragments.size() > 1;
-
-    for (size_t i = 0; i < layerFragments.size(); ++i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-        if (fragment.foregroundRect.isEmpty())
-            continue;
-
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (shouldClip && needsToClip(localPaintingInfo, fragment.foregroundRect)) {
-            // Note: this method only clips when there is more than one fragment.
-            DisplayItem::Type clipType = DisplayItem::ClipLayerFragmentFloat;
-            switch (phase) {
-            case PaintPhaseFloat:
-                break;
-            case PaintPhaseForeground:
-                clipType = DisplayItem::ClipLayerFragmentForeground;
-                break;
-            case PaintPhaseChildOutlines:
-                clipType = DisplayItem::ClipLayerFragmentChildOutline;
-                break;
-            case PaintPhaseSelection:
-                clipType = DisplayItem::ClipLayerFragmentSelection;
-                break;
-            case PaintPhaseChildBlockBackgrounds:
-                clipType = DisplayItem::ClipLayerFragmentChildBlockBackgrounds;
-                break;
-            default:
-                ASSERT_NOT_REACHED();
-            }
-
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, clipType, fragment.foregroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.foregroundRect, paintFlags, *clipRecorder);
-        }
-
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.foregroundRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
-        m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+    for (const auto& fragment: layerFragments) {
+        if (!fragment.foregroundRect.isEmpty())
+            paintFragmentWithPhase(phase, fragment, context, fragment.foregroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, clipState);
     }
 }
 
 void LayerPainter::paintOutlineForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
     PaintBehavior paintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (size_t i = 0; i < layerFragments.size(); ++i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-        if (fragment.outlineRect.isEmpty())
-            continue;
-
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (needsToClip(localPaintingInfo, fragment.outlineRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerFragmentOutline, fragment.outlineRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.outlineRect, paintFlags, *clipRecorder, DoNotIncludeSelfForBorderRadius);
-        }
-
-        // Paint our own outline
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.outlineRect.rect()), PaintPhaseSelfOutline, paintBehavior, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
-        m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
+    for (const auto& fragment: layerFragments) {
+        if (!fragment.outlineRect.isEmpty())
+            paintFragmentWithPhase(PaintPhaseSelfOutline, fragment, context, fragment.outlineRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
 }
 
 void LayerPainter::paintMaskForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
     RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (size_t i = 0; i < layerFragments.size(); ++i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerFragmentMask, fragment.backgroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.backgroundRect, paintFlags, *clipRecorder, DoNotIncludeSelfForBorderRadius); // Mask painting will handle clipping to self.
-        }
-
-        // Paint the mask.
-        // FIXME: Eventually we will collect the region from the fragment itself instead of just from the paint info.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseMask, PaintBehaviorNormal, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
-        m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
-    }
+    for (const auto& fragment: layerFragments)
+        paintFragmentWithPhase(PaintPhaseMask, fragment, context, fragment.backgroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
 }
 
 void LayerPainter::paintChildClippingMaskForFragments(const LayerFragments& layerFragments, GraphicsContext* context, const LayerPaintingInfo& localPaintingInfo,
     RenderObject* paintingRootForRenderer, PaintLayerFlags paintFlags)
 {
-    for (size_t i = 0; i < layerFragments.size(); ++i) {
-        const LayerFragment& fragment = layerFragments.at(i);
-        OwnPtr<ClipRecorder> clipRecorder;
-        if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.foregroundRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerFragmentClippingMask, fragment.foregroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.foregroundRect, paintFlags, *clipRecorder, IncludeSelfForBorderRadius);
-        }
-
-        // Paint the the clipped mask.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.foregroundRect.rect()), PaintPhaseClippingMask, PaintBehaviorNormal, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
-        m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
-    }
+    for (const auto& fragment: layerFragments)
+        paintFragmentWithPhase(PaintPhaseClippingMask, fragment, context, fragment.foregroundRect, localPaintingInfo, PaintBehaviorNormal, paintingRootForRenderer, paintFlags, HasNotClipped);
 }
 
 void LayerPainter::paintOverlayScrollbars(GraphicsContext* context, const LayoutRect& damageRect, PaintBehavior paintBehavior, RenderObject* paintingRoot)
