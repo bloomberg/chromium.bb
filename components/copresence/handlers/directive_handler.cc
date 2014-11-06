@@ -14,9 +14,10 @@ namespace copresence {
 
 // Public functions
 
-DirectiveHandler::DirectiveHandler()
-  : audio_handler_(new AudioDirectiveHandlerImpl),
-    whispernet_client_(nullptr) {}
+DirectiveHandler::DirectiveHandler(
+    scoped_ptr<AudioDirectiveHandler> audio_handler)
+    : audio_handler_(audio_handler.Pass()),
+      whispernet_client_(nullptr) {}
 
 DirectiveHandler::~DirectiveHandler() {}
 
@@ -46,12 +47,10 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
   // WiFi and BLE scans aren't implemented.
   DCHECK_EQ(directive.instruction_type(), TOKEN);
 
-  std::string op_id;
-  if (directive.has_published_message_id()) {
-    op_id = directive.published_message_id();
-  } else if (directive.has_subscription_id()) {
+  std::string op_id = directive.published_message_id();
+  if (op_id.empty())
     op_id = directive.subscription_id();
-  } else {
+  if (op_id.empty()) {
     NOTREACHED() << "No operation associated with directive!";
     return;
   }
@@ -82,6 +81,7 @@ const std::string DirectiveHandler::GetCurrentAudioToken(AudioType type) const {
 
 void DirectiveHandler::StartDirective(const std::string& op_id,
                                       const Directive& directive) {
+  DCHECK(whispernet_client_);
   const TokenInstruction& ti = directive.token_instruction();
   if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||
       ti.medium() == AUDIO_AUDIBLE_DTMF) {

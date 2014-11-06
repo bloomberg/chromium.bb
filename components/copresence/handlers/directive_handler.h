@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/public/whispernet_client.h"
 
 namespace copresence {
@@ -19,11 +20,11 @@ class AudioDirectiveHandler;
 class Directive;
 
 // The directive handler manages transmit and receive directives.
-// TODO(ckehoe): Add tests for this class.
 // TODO(ckehoe): Turn this into an interface.
 class DirectiveHandler {
  public:
-  DirectiveHandler();
+  explicit DirectiveHandler(scoped_ptr<AudioDirectiveHandler> audio_handler =
+      make_scoped_ptr(new AudioDirectiveHandlerImpl));
   virtual ~DirectiveHandler();
 
   // Starts processing directives with the provided Whispernet client.
