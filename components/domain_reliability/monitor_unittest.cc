@@ -255,6 +255,10 @@ TEST_F(DomainReliabilityMonitorTest, WasFetchedViaProxy) {
   EXPECT_TRUE(CheckRequestCounts(kAlwaysReportIndex, 1u, 0u));
 }
 
+TEST_F(DomainReliabilityMonitorTest, AtLeastOneBakedInConfig) {
+  DCHECK(kBakedInJsonConfigs[0] != NULL);
+}
+
 // Will fail when baked-in configs expire, as a reminder to update them.
 // (Contact ttuttle@chromium.org if this starts failing.)
 TEST_F(DomainReliabilityMonitorTest, AddBakedInConfigs) {
