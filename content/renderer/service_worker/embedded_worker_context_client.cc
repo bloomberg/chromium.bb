@@ -194,6 +194,11 @@ void EmbeddedWorkerContextClient::workerContextStarted(
       "ExecuteScript");
 }
 
+void EmbeddedWorkerContextClient::didEvaluateWorkerScript(bool success) {
+  Send(new EmbeddedWorkerHostMsg_WorkerScriptEvaluated(
+      embedded_worker_id_, success));
+}
+
 void EmbeddedWorkerContextClient::willDestroyWorkerContext() {
   // At this point OnWorkerRunLoopStopped is already called, so
   // worker_task_runner_->RunsTasksOnCurrentThread() returns false

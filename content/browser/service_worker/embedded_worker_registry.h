@@ -56,9 +56,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   scoped_ptr<EmbeddedWorkerInstance> CreateWorker();
 
   // Called from EmbeddedWorkerInstance, relayed to the child process.
-  void SendStartWorker(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
-                       const StatusCallback& callback,
-                       int process_id);
+  ServiceWorkerStatusCode SendStartWorker(
+      scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+      int process_id);
   ServiceWorkerStatusCode StopWorker(int process_id,
                                      int embedded_worker_id);
 
@@ -72,6 +72,9 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
                             int thread_id,
                             int embedded_worker_id);
   void OnWorkerScriptLoadFailed(int process_id, int embedded_worker_id);
+  void OnWorkerScriptEvaluated(int process_id,
+                               int embedded_worker_id,
+                               bool success);
   void OnWorkerStarted(int process_id, int embedded_worker_id);
   void OnWorkerStopped(int process_id, int embedded_worker_id);
   void OnPausedAfterDownload(int process_id, int embedded_worker_id);

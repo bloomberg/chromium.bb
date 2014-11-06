@@ -72,6 +72,12 @@ IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_WorkerScriptLoaded,
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
                      int /* embedded_worker_id */)
 
+// Renderer -> Browser message to indicate that the worker has evaluated the
+// script.
+IPC_MESSAGE_CONTROL2(EmbeddedWorkerHostMsg_WorkerScriptEvaluated,
+                     int /* embedded_worker_id */,
+                     bool /* success */)
+
 // Renderer -> Browser message to indicate that the worker is started.
 IPC_MESSAGE_CONTROL1(EmbeddedWorkerHostMsg_WorkerStarted,
                      int /* embedded_worker_id */)

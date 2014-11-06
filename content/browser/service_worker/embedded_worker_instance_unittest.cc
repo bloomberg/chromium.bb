@@ -74,12 +74,12 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
       url,
       false,
       base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()));
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
   run_loop.Run();
   EXPECT_EQ(SERVICE_WORKER_OK, status);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, worker->status());
-  base::RunLoop().RunUntilIdle();
 
-  // Worker started message should be notified (by EmbeddedWorkerTestHelper).
+  // The 'WorkerStarted' message should have been sent by
+  // EmbeddedWorkerTestHelper.
   EXPECT_EQ(EmbeddedWorkerInstance::RUNNING, worker->status());
   EXPECT_EQ(kRenderProcessId, worker->process_id());
 
@@ -88,7 +88,8 @@ TEST_F(EmbeddedWorkerInstanceTest, StartAndStop) {
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPING, worker->status());
   base::RunLoop().RunUntilIdle();
 
-  // Worker stopped message should be notified (by EmbeddedWorkerTestHelper).
+  // The 'WorkerStopped' message should have been sent by
+  // EmbeddedWorkerTestHelper.
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
 
   // Verify that we've sent two messages to start and terminate the worker.

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
@@ -145,6 +146,10 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   void OnScriptLoadFailed();
 
   // Called back from Registry when the worker instance has ack'ed that
+  // it finished evaluating the script.
+  void OnScriptEvaluated(bool success);
+
+  // Called back from Registry when the worker instance has ack'ed that
   // its WorkerGlobalScope is actually started and parsed.
   // This will change the internal status from STARTING to RUNNING.
   void OnStarted();
@@ -184,6 +189,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
   int process_id_;
   int thread_id_;
   int worker_devtools_agent_route_id_;
+
+  StatusCallback start_callback_;
 
   ListenerList listener_list_;
 

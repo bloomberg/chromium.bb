@@ -164,6 +164,8 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
                         OnWorkerScriptLoaded)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptLoadFailed,
                         OnWorkerScriptLoadFailed)
+    IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerScriptEvaluated,
+                        OnWorkerScriptEvaluated)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStarted,
                         OnWorkerStarted)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_WorkerStopped,
@@ -613,6 +615,20 @@ void ServiceWorkerDispatcherHost::OnWorkerScriptLoadFailed(
   if (!registry->CanHandle(embedded_worker_id))
     return;
   registry->OnWorkerScriptLoadFailed(render_process_id_, embedded_worker_id);
+}
+
+void ServiceWorkerDispatcherHost::OnWorkerScriptEvaluated(
+    int embedded_worker_id,
+    bool success) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerDispatcherHost::OnWorkerScriptEvaluated");
+  if (!GetContext())
+    return;
+  EmbeddedWorkerRegistry* registry = GetContext()->embedded_worker_registry();
+  if (!registry->CanHandle(embedded_worker_id))
+    return;
+  registry->OnWorkerScriptEvaluated(
+      render_process_id_, embedded_worker_id, success);
 }
 
 void ServiceWorkerDispatcherHost::OnWorkerStarted(int embedded_worker_id) {

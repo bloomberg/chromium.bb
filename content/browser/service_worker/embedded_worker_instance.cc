@@ -247,7 +247,14 @@ void EmbeddedWorkerInstance::SendStartWorker(
   worker_devtools_agent_route_id_ = worker_devtools_agent_route_id;
   params->worker_devtools_agent_route_id = worker_devtools_agent_route_id;
   params->wait_for_debugger = wait_for_debugger;
-  registry_->SendStartWorker(params.Pass(), callback, process_id_);
+  ServiceWorkerStatusCode status =
+      registry_->SendStartWorker(params.Pass(), process_id_);
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(status);
+    return;
+  }
+  DCHECK(start_callback_.is_null());
+  start_callback_ = callback;
 }
 
 void EmbeddedWorkerInstance::OnReadyForInspection() {
@@ -261,6 +268,13 @@ void EmbeddedWorkerInstance::OnScriptLoaded(int thread_id) {
 }
 
 void EmbeddedWorkerInstance::OnScriptLoadFailed() {
+}
+
+void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
+  DCHECK(!start_callback_.is_null());
+  start_callback_.Run(success ? SERVICE_WORKER_OK
+                              : SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+  start_callback_.Reset();
 }
 
 void EmbeddedWorkerInstance::OnStarted() {
@@ -281,6 +295,7 @@ void EmbeddedWorkerInstance::OnStopped() {
   process_id_ = -1;
   thread_id_ = -1;
   worker_devtools_agent_route_id_ = MSG_ROUTING_NONE;
+  start_callback_.Reset();
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStopped());
 }
 

@@ -100,6 +100,17 @@ void EmbeddedWorkerRegistry::OnWorkerScriptLoadFailed(int process_id,
   found->second->OnScriptLoadFailed();
 }
 
+void EmbeddedWorkerRegistry::OnWorkerScriptEvaluated(int process_id,
+                                                     int embedded_worker_id,
+                                                     bool success) {
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  DCHECK(found != worker_map_.end());
+  DCHECK_EQ(found->second->process_id(), process_id);
+  if (found == worker_map_.end() || found->second->process_id() != process_id)
+    return;
+  found->second->OnScriptEvaluated(success);
+}
+
 void EmbeddedWorkerRegistry::OnWorkerStarted(
     int process_id, int embedded_worker_id) {
   DCHECK(!ContainsKey(worker_process_map_, process_id) ||
@@ -214,15 +225,14 @@ EmbeddedWorkerRegistry::~EmbeddedWorkerRegistry() {
   Shutdown();
 }
 
-void EmbeddedWorkerRegistry::SendStartWorker(
+ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
     scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
-    const StatusCallback& callback,
     int process_id) {
   // The ServiceWorkerDispatcherHost is supposed to be created when the process
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.
   DCHECK(ContainsKey(process_sender_map_, process_id));
-  callback.Run(Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params)));
+  return Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(
