@@ -109,7 +109,7 @@ TRANSLATOR_ARCHES = ('x86-32', 'x86-64', 'arm', 'mips32',
 BITCODE_BIASES = tuple(
     bias for bias in ('le32', 'i686_bc', 'x86_64_bc', 'arm_bc'))
 
-DIRECT_TO_NACL_ARCHES = ('x86_64', 'i686')
+DIRECT_TO_NACL_ARCHES = ['x86_64', 'i686']
 
 MAKE_DESTDIR_CMD = ['make', 'DESTDIR=%(abs_output)s']
 
@@ -842,11 +842,15 @@ def GetUploadPackageTargets():
     common_packages.append('libstdcxx_%s' % legal_bias)
     common_packages.append('libs_support_%s' % legal_bias)
 
+  # Portable core sdk libs. For now, no biased libs.
+  common_packages.append('core_sdk_libs_le32')
+
   # Direct-to-nacl target libraries
   for arch in DIRECT_TO_NACL_ARCHES:
     common_packages.append('newlib_%s' % arch)
     common_packages.append('libcxx_%s' % arch)
     common_packages.append('libs_support_%s' % arch)
+    common_packages.append('core_sdk_libs_%s' % arch)
 
   # Host components
   host_packages = {}
@@ -954,9 +958,13 @@ if __name__ == '__main__':
         packages.update(pnacl_targetlibs.TargetLibs(bias, is_canonical))
       for arch in DIRECT_TO_NACL_ARCHES:
         packages.update(pnacl_targetlibs.TargetLibs(arch, is_canonical))
+        packages.update(pnacl_targetlibs.SDKLibs(arch, is_canonical))
       for arch in TRANSLATOR_ARCHES:
         packages.update(pnacl_targetlibs.TranslatorLibs(arch, is_canonical))
       packages.update(Metadata(rev))
+      packages.update(pnacl_targetlibs.SDKCompiler(
+                      ['le32'] + DIRECT_TO_NACL_ARCHES))
+      packages.update(pnacl_targetlibs.SDKLibs('le32', is_canonical))
     if pynacl.platform.IsLinux() or pynacl.platform.IsMac():
       packages.update(pnacl_targetlibs.UnsandboxedIRT(
           'x86-32-%s' % pynacl.platform.GetOS()))

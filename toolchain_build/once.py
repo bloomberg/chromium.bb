@@ -340,7 +340,10 @@ class Once(object):
 
       for command in commands:
         paths = inputs.copy()
+        # Add the extra paths supplied by our caller, and the original working
+        # directory
         paths.update(self._extra_paths)
+        paths.update({'work_dir': work_dir})
         paths['output'] = subdir if subdir else output
         nonpath_subst['build_signature'] = build_signature
         subst = substituter.Substituter(work_dir, paths, nonpath_subst)

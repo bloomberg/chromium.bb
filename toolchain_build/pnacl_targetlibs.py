@@ -705,3 +705,60 @@ def UnsandboxedIRT(arch):
       },
   }
   return libs
+
+
+def SDKCompiler(arches):
+  arch_packages = ([GSDJoin('newlib', arch) for arch in arches] +
+                   [GSDJoin('libcxx', arch) for arch in arches])
+  compiler = {
+      # TODO(dschuff): When we get a sandboxed translator build, move this
+      # target out to somewhere shareable. It's necessary for now because
+      # there's no way to inject the right -i and -L flags into SCons to find
+      # newlib.
+      'sdk_compiler': {
+          'type': 'work',
+          'output_subdir': 'sdk_compiler',
+          'dependencies': ['target_lib_compiler'] + arch_packages,
+          'commands': [
+              command.CopyRecursive('%(' + t + ')s', '%(output)s')
+              for t in ['target_lib_compiler'] + arch_packages],
+      },
+  }
+  return compiler
+
+
+def SDKLibs(arch, is_canonical):
+  scons_flags = ['--verbose', 'MODE=nacl', '-j%(cores)s', 'naclsdk_validate=0',
+                 'pnacl_newlib_dir=%(abs_sdk_compiler)s',
+                 'DESTINATION_ROOT=%(work_dir)s']
+  if arch == 'le32':
+    scons_flags.append('bitcode=1')
+  elif not IsBCArch(arch):
+    scons_flags.append('nacl_clang=1')
+  else:
+    raise ValueError('Should not be building SDK libs for', arch)
+  libs = {
+      GSDJoin('core_sdk_libs', arch): {
+          'type': 'build' if is_canonical else 'work',
+          'dependencies': ['sdk_compiler', 'target_lib_compiler'],
+          'inputs': {
+              'src_untrusted': os.path.join(NACL_DIR, 'src', 'untrusted'),
+              'src_include': os.path.join(NACL_DIR, 'src', 'include'),
+              'scons.py': os.path.join(NACL_DIR, 'scons.py'),
+              'site_scons': os.path.join(NACL_DIR, 'site_scons'),
+              'prep_nacl_sdk':
+                  os.path.join(NACL_DIR, 'build', 'prep_nacl_sdk.py'),
+          },
+          'commands': [
+            command.Command(
+                [sys.executable, '%(scons.py)s',
+                 'includedir=' +os.path.join('%(output)s',
+                                             TripleFromArch(MultilibArch(arch)),
+                                             'include'),
+                 'libdir=' + os.path.join('%(output)s', MultilibLibDir(arch)),
+                 'install'] + scons_flags,
+                cwd=NACL_DIR),
+          ],
+      }
+  }
+  return libs
