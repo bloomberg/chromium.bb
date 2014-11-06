@@ -278,10 +278,7 @@ TEST_F(HomeCardTest, DontMinimizeWithModalWindow) {
   modal.reset();
 
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
-
-  // TODO(oshima): The focus should be set to home card. Flip the
-  // condition once crbug.com/424750 is fixed.a
-  EXPECT_FALSE(wm::IsActiveWindow(home_card));
+  EXPECT_TRUE(wm::IsActiveWindow(home_card));
 }
 
 }  // namespace athena

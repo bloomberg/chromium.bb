@@ -111,6 +111,12 @@ void ModalWindowController::UpdateDimming(aura::Window* ignore) {
     // invisible, but don't delete it until next event execution
     // because the call stack may still have and use the pointer.
     modal_container_->RemoveObserver(this);
+
+    // Hide the window before removing it, so the focus manager which will run
+    // in RemoveChild handler can know that this container is no longer
+    // available.
+    modal_container_->Hide();
+
     modal_container_->parent()->RemoveChild(modal_container_);
     base::MessageLoopForUI::current()->DeleteSoon(FROM_HERE, modal_container_);
     modal_container_ = nullptr;

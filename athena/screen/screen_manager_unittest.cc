@@ -15,7 +15,8 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/wm/core/window_util.h"
 
-typedef athena::test::AthenaTestBase ScreenManagerTest;
+using ScreenManagerTest = athena::test::AthenaTestBase;
+using AthenaFocusRuleTest = athena::test::AthenaTestBase;
 
 namespace athena {
 namespace {
@@ -161,6 +162,91 @@ TEST_F(ScreenManagerTest, DefaultContainer) {
 
   // Add the original back to shutdown properly.
   parent->AddChild(original_default);
+}
+
+TEST_F(AthenaFocusRuleTest, FocusTravarsalFromSameContainer) {
+  ScreenManager::ContainerParams params("contaier", kTestZOrderPriority);
+  params.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container(ScreenManager::Get()->CreateContainer(params));
+
+  scoped_ptr<aura::Window> w1(CreateWindow(
+      container.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  wm::ActivateWindow(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  scoped_ptr<aura::Window> w2(CreateWindow(
+      container.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+
+  container->RemoveChild(w1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+}
+
+TEST_F(AthenaFocusRuleTest, FocusTravarsalFromOtherContainer) {
+  ScreenManager::ContainerParams params2("contaier2", kTestZOrderPriority + 1);
+  params2.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container2(ScreenManager::Get()->CreateContainer(params2));
+  scoped_ptr<aura::Window> w2(CreateWindow(
+      container2.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  ScreenManager::ContainerParams params1("contaier1", kTestZOrderPriority);
+  params1.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container1(ScreenManager::Get()->CreateContainer(params1));
+  ScreenManager::ContainerParams params3("contaier3", kTestZOrderPriority + 2);
+  params3.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container3(ScreenManager::Get()->CreateContainer(params3));
+  scoped_ptr<aura::Window> w1(CreateWindow(
+      container1.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> w3(CreateWindow(
+      container3.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  container2->RemoveChild(w2.get());
+  // Focus moves to a window in the front contaier.
+  EXPECT_TRUE(wm::IsActiveWindow(w3.get()));
+
+  container3->RemoveChild(w3.get());
+  // Focus moves to a window in the back contaier.
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
+}
+
+TEST_F(AthenaFocusRuleTest, FocusTravarsalFromEventBlockedContainer) {
+  ScreenManager::ContainerParams params1("contaier1", kTestZOrderPriority + 1);
+  params1.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container1(ScreenManager::Get()->CreateContainer(params1));
+
+  ScreenManager::ContainerParams params2("contaier2", kTestZOrderPriority + 2);
+  params2.can_activate_children = true;
+  params2.block_events = true;
+  scoped_ptr<aura::Window>
+      container2(ScreenManager::Get()->CreateContainer(params2));
+
+  scoped_ptr<aura::Window> w1(CreateWindow(
+      container1.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  scoped_ptr<aura::Window> w2(CreateWindow(
+      container2.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+
+  wm::ActivateWindow(w2.get());
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  // Confirm that w1 can't get the focus.
+  wm::ActivateWindow(w1.get());
+  EXPECT_FALSE(wm::IsActiveWindow(w1.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
+
+  container2->Hide();
+  w2.reset();
+  container2.reset();
+
+  EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
 namespace {

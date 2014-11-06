@@ -51,7 +51,7 @@ struct HigherPriorityFinder {
 bool BlockEvents(aura::Window* container) {
   ScreenManager::ContainerParams* params =
       container->GetProperty(kContainerParamsKey);
-  return params && params->block_events;
+  return params && params->block_events && container->IsVisible();
 }
 
 bool DefaultContainer(aura::Window* container) {
@@ -109,11 +109,47 @@ class AthenaFocusRules : public wm::BaseFocusRules {
     return BaseFocusRules::CanActivateWindow(window);
   }
 
+  aura::Window* GetTopmostWindowToActivateInContainer(
+      aura::Window* container,
+      aura::Window* ignore) const {
+    for (aura::Window::Windows::const_reverse_iterator i =
+             container->children().rbegin();
+         i != container->children().rend();
+         ++i) {
+      if (*i != ignore && CanActivateWindow(*i))
+        return *i;
+    }
+    return NULL;
+  }
+
   virtual aura::Window* GetNextActivatableWindow(
       aura::Window* ignore) const override {
-    aura::Window* next = wm::BaseFocusRules::GetNextActivatableWindow(ignore);
-    // TODO(oshima): Search from activatable containers if |next| is nullptr.
-    // crbug.com/424750.
+    const aura::Window::Windows& containers =
+        ignore->GetRootWindow()->children();
+    auto starting_container_iter = containers.begin();
+    for (auto container_iter = containers.begin();
+         container_iter != containers.end();
+         container_iter++) {
+      if ((*container_iter)->Contains(ignore)) {
+        starting_container_iter = container_iter;
+        break;
+      }
+    }
+
+    // Find next window from the front containers.
+    aura::Window* next = nullptr;
+    for (auto container_iter = starting_container_iter;
+         !next && container_iter != containers.end();
+         container_iter++) {
+      next = GetTopmostWindowToActivateInContainer(*container_iter, ignore);
+    }
+
+    // Find next window from the back containers.
+    auto container_iter = starting_container_iter;
+    while (!next && container_iter != containers.begin()) {
+      container_iter--;
+      next = GetTopmostWindowToActivateInContainer(*container_iter, ignore);
+    }
     return next;
   }
 
