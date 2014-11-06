@@ -7,6 +7,7 @@ import logging
 import os
 
 from integration_tests import network_metrics
+from telemetry.core import util
 from telemetry.page import page_test
 from telemetry.value import scalar
 
@@ -36,6 +37,15 @@ def GetProxyInfoFromNetworkInternals(tab, url='chrome://net-internals#proxy'):
     js = f.read()
     tab.ExecuteJavaScript(js)
   tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
+
+  # Sometimes, the proxy information on net_internals#proxy is slow to come up.
+  # In order to prevent this from causing tests to flake frequently, wait for
+  # up to 10 seconds for this information to appear.
+  def IsDataReductionProxyEnabled():
+    info = tab.EvaluateJavaScript('window.__getChromeProxyInfo()')
+    return info['enabled']
+
+  util.WaitFor(IsDataReductionProxyEnabled, 10)
   info = tab.EvaluateJavaScript('window.__getChromeProxyInfo()')
   return info
 
