@@ -19,6 +19,7 @@
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_conversion_helper.h"
+#include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/notifications/screen_lock_notification_blocker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/notification_provider.h"
@@ -49,23 +50,6 @@
 // popups go away and the user has notifications in the message center.
 const int kFirstRunIdleDelaySeconds = 1;
 #endif
-
-namespace {
-
-// Returns a string that uniquely identifies a profile + delegate_id pair.
-// The profile_id is used as an identifier to identify a profile instance; it
-// cannot be NULL. The returned ID becomes invalid when a profile is destroyed,
-// therefore CancelAllByProfile() must be called in that case.
-std::string GetProfileNotificationId(const std::string& delegate_id,
-                                     ProfileID profile_id) {
-  DCHECK(profile_id);
-  return base::StringPrintf("notification-ui-manager#%p#%s",
-                            profile_id,  // Each profile has its unique instance
-                                         // including incognito profile.
-                            delegate_id.c_str());
-}
-
-}  // namespace
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
@@ -133,7 +117,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
     return;
 
   ProfileNotification* profile_notification =
-      new ProfileNotification(profile, notification, message_center_);
+      new ProfileNotification(profile, notification);
 
   ExtensionWelcomeNotificationFactory::GetForBrowserContext(profile)->
       ShowWelcomeNotificationIfNecessary(profile_notification->notification());
@@ -154,7 +138,7 @@ void MessageCenterNotificationManager::Add(const Notification& notification,
   // route notifications to one of the apps/extensions.
   std::string extension_id = GetExtensionTakingOverNotifications(profile);
   if (!extension_id.empty())
-    profile_notification->AddToAlternateProvider(extension_id);
+    AddNotificationToAlternateProvider(profile_notification, extension_id);
 
   message_center_->AddNotification(make_scoped_ptr(
       new message_center::Notification(profile_notification->notification())));
@@ -187,7 +171,7 @@ bool MessageCenterNotificationManager::Update(const Notification& notification,
       delete old_notification;
       profile_notifications_.erase(old_id);
       ProfileNotification* new_notification =
-          new ProfileNotification(profile, notification, message_center_);
+          new ProfileNotification(profile, notification);
       profile_notifications_[new_notification->notification().id()] =
           new_notification;
 
@@ -215,7 +199,7 @@ const Notification* MessageCenterNotificationManager::FindById(
   // no profile method should be called inside this function.
 
   std::string profile_notification_id =
-      GetProfileNotificationId(delegate_id, profile_id);
+      ProfileNotification::GetProfileNotificationId(delegate_id, profile_id);
   NotificationMap::const_iterator iter =
       profile_notifications_.find(profile_notification_id);
   if (iter == profile_notifications_.end())
@@ -230,7 +214,7 @@ bool MessageCenterNotificationManager::CancelById(
   // no profile method should be called inside this function.
 
   std::string profile_notification_id =
-      GetProfileNotificationId(delegate_id, profile_id);
+      ProfileNotification::GetProfileNotificationId(delegate_id, profile_id);
   // See if this ID hasn't been shown yet.
   // If it has been shown, remove it.
   NotificationMap::iterator iter =
@@ -356,50 +340,31 @@ std::string
 MessageCenterNotificationManager::GetMessageCenterNotificationIdForTest(
     const std::string& delegate_id,
     Profile* profile) {
-  return GetProfileNotificationId(delegate_id, GetProfileID(profile));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ProfileNotification
-
-MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
-    Profile* profile,
-    const Notification& notification,
-    message_center::MessageCenter* message_center)
-    : profile_(profile),
-      notification_(
-          // Uses Notification's copy constructor to assign the message center
-          // id, which should be unique for every profile + Notification pair.
-          GetProfileNotificationId(notification.delegate_id(),
-                                   GetProfileID(profile)),
-          notification) {
-  DCHECK(profile);
-#if defined(OS_CHROMEOS)
-  notification_.set_profile_id(multi_user_util::GetUserIDFromProfile(profile));
-#endif
-}
-
-MessageCenterNotificationManager::ProfileNotification::~ProfileNotification() {
-}
-
-void
-MessageCenterNotificationManager::ProfileNotification::AddToAlternateProvider(
-    const std::string extension_id) {
-  // Convert data from Notification type to NotificationOptions type.
-  extensions::api::notifications::NotificationOptions options;
-  NotificationConversionHelper::NotificationToNotificationOptions(notification_,
-                                                                  &options);
-
-  // Send the notification to the alternate provider extension/app.
-  extensions::NotificationProviderEventRouter event_router(profile_);
-  event_router.CreateNotification(extension_id,
-                                  notification_.notifier_id().id,
-                                  notification_.delegate_id(),
-                                  options);
+  return ProfileNotification::GetProfileNotificationId(delegate_id,
+                                                       GetProfileID(profile));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // private
+
+void MessageCenterNotificationManager::AddNotificationToAlternateProvider(
+    ProfileNotification* profile_notification,
+    const std::string& extension_id) const {
+  const Notification& notification = profile_notification->notification();
+
+  // Convert data from Notification type to NotificationOptions type.
+  extensions::api::notifications::NotificationOptions options;
+  NotificationConversionHelper::NotificationToNotificationOptions(notification,
+                                                                  &options);
+
+  // Send the notification to the alternate provider extension/app.
+  extensions::NotificationProviderEventRouter event_router(
+      profile_notification->profile());
+  event_router.CreateNotification(extension_id,
+                                  notification.notifier_id().id,
+                                  notification.delegate_id(),
+                                  options);
+}
 
 void MessageCenterNotificationManager::AddProfileNotification(
     ProfileNotification* profile_notification) {
@@ -417,9 +382,8 @@ void MessageCenterNotificationManager::RemoveProfileNotification(
   delete profile_notification;
 }
 
-MessageCenterNotificationManager::ProfileNotification*
-    MessageCenterNotificationManager::FindProfileNotification(
-        const std::string& id) const {
+ProfileNotification* MessageCenterNotificationManager::FindProfileNotification(
+    const std::string& id) const {
   NotificationMap::const_iterator iter = profile_notifications_.find(id);
   if (iter == profile_notifications_.end())
     return NULL;

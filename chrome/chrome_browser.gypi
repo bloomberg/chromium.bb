@@ -1772,6 +1772,8 @@
       'browser/notifications/message_center_notification_manager_win.cc',
       'browser/notifications/notification.cc',
       'browser/notifications/notification.h',
+      'browser/notifications/profile_notification.cc',
+      'browser/notifications/profile_notification.h',
       'browser/notifications/screen_lock_notification_blocker.cc',
       'browser/notifications/screen_lock_notification_blocker.h',
       'browser/notifications/fullscreen_notification_blocker.cc',

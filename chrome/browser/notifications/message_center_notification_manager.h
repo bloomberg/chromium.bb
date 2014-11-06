@@ -29,6 +29,7 @@ class Notification;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
+class ProfileNotification;
 
 namespace message_center {
 class NotificationBlocker;
@@ -92,39 +93,13 @@ class MessageCenterNotificationManager
       const std::string& delegate_id, Profile* profile);
 
  private:
+  // Adds |profile_notification| to an alternative provider extension or app.
+  void AddNotificationToAlternateProvider(
+      ProfileNotification* profile_notification,
+      const std::string& extension_id) const;
+
   FRIEND_TEST_ALL_PREFIXES(message_center::WebNotificationTrayTest,
                            ManuallyCloseMessageCenter);
-
-  // This class keeps a set of original Notification objects and corresponding
-  // Profiles, so when MessageCenter calls back with a notification_id, this
-  // class has necessary mapping to other source info - for example, it calls
-  // NotificationDelegate supplied by client when someone clicks on a
-  // Notification in MessageCenter. Likewise, if a Profile or Extension is
-  // being removed, the  map makes it possible to revoke the notifications from
-  // MessageCenter.   To keep that set, we use the private ProfileNotification
-  // class that stores  a superset of all information about a notification.
-
-  // TODO(dimich): Consider merging all 4 types (Notification,
-  // QueuedNotification, ProfileNotification and NotificationList::Notification)
-  // into a single class.
-  class ProfileNotification {
-   public:
-    ProfileNotification(Profile* profile,
-                        const Notification& notification,
-                        message_center::MessageCenter* message_center);
-    virtual ~ProfileNotification();
-
-    Profile* profile() const { return profile_; }
-    const Notification& notification() const { return notification_; }
-
-    // Route a new notification to an app/extension.
-    void AddToAlternateProvider(const std::string extension_id);
-
-   private:
-    // Weak, guaranteed not to be used after profile removal by parent class.
-    Profile* profile_;
-    Notification notification_;
-  };
 
   scoped_ptr<message_center::MessageCenterTrayDelegate> tray_;
   message_center::MessageCenter* message_center_;  // Weak, global.
