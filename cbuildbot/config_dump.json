@@ -4709,12 +4709,10 @@
         "usepkg_toolchain": false
     },
     "butterfly-paladin": {
-        "board_replace": true,
         "boards": [
             "butterfly"
         ],
         "build_type": "paladin",
-        "chrome_binhost_only": true,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
@@ -8632,6 +8630,7 @@
         "build_type": "paladin",
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
         "description": "Commit Queue (internal)",
         "important": true,
         "internal": true,
@@ -10325,7 +10324,6 @@
         "chrome_binhost_only": true,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
-        "chroot_replace": true,
         "description": "Commit Queue (internal)",
         "important": true,
         "internal": true,
@@ -17554,7 +17552,6 @@
         "chrome_binhost_only": true,
         "chrome_sdk": true,
         "chrome_sdk_build_chrome": false,
-        "chroot_replace": true,
         "description": "Commit Queue (internal)",
         "important": true,
         "internal": true,

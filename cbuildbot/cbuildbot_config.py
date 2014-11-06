@@ -1003,7 +1003,6 @@ paladin = _config(
 # Used for paladin builders that build from source.
 full_paladin = _config(
   board_replace=True,
-  chroot_replace=True,
   chrome_binhost_only=True,
 )
 
@@ -1815,6 +1814,8 @@ internal_paladin.add_config('x86-mario-paladin',
 internal_paladin.add_config('x86-alex-paladin',
   boards=['x86-alex'],
   paladin_builder_name='x86-alex paladin',
+  # Note: x86-zgb-paladin runs bvt-inline while x86-alex-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -1824,7 +1825,6 @@ internal_paladin.add_config('beltino-paladin',
   important=False,
 )
 
-# x86 full compile
 internal_paladin.add_config('auron-paladin',
   boards=['auron'],
   paladin_builder_name='auron paladin',
@@ -1838,9 +1838,10 @@ internal_paladin.add_config('bobcat-paladin',
 )
 
 internal_paladin.add_config('butterfly-paladin',
-  full_paladin,
   boards=['butterfly'],
   paladin_builder_name='butterfly paladin',
+  # Test replacing the chroot (amd64)
+  chroot_replace=True,
 )
 
 internal_paladin.add_config('candy-paladin',
@@ -2029,6 +2030,8 @@ internal_paladin.add_config('wolf-paladin',
 internal_paladin.add_config('x86-zgb-paladin',
   boards=['x86-zgb'],
   paladin_builder_name='x86-zgb paladin',
+  # Note: x86-zgb-paladin runs bvt-inline while x86-alex-paladin runs bvt-cq.
+  # See ShardHWTestsBetweenBuilders below.
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
@@ -2074,6 +2077,8 @@ internal_notest_paladin.add_config('daisy_freon-paladin',
 internal_notest_paladin.add_config('daisy_spring-paladin',
   boards=['daisy_spring'],
   paladin_builder_name='daisy_spring paladin',
+  # Test replacing the chroot (arm)
+  chroot_replace=True,
 )
 
 internal_notest_paladin.add_config('kayle-paladin',
@@ -2095,6 +2100,7 @@ internal_notest_paladin.add_config('peach_pit-paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
 
+# arm full compile
 internal_notest_paladin.add_config('nyan-paladin',
   full_paladin,
   boards=['nyan'],
