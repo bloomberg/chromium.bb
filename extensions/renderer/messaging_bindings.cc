@@ -316,7 +316,7 @@ void DispatchOnConnectToScriptContext(
 void DeliverMessageToScriptContext(const std::string& message_data,
                                    int target_port_id,
                                    ScriptContext* script_context) {
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
+  v8::Isolate* isolate = script_context->isolate();
   v8::HandleScope handle_scope(isolate);
 
   // Check to see whether the context has this port before bothering to create

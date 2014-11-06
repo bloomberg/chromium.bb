@@ -49,7 +49,7 @@ void AddMessage(v8::Handle<v8::Context> context,
 // bound to respective debug/log/warn/error methods. This is a direct drop-in
 // replacement for the standard devtools console.* methods usually accessible
 // from JS.
-v8::Local<v8::Object> AsV8Object();
+v8::Local<v8::Object> AsV8Object(v8::Isolate* isolate);
 
 }  // namespace console
 

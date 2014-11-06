@@ -38,14 +38,11 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
     // Don't attempt to inject the titlebar into iframes.
     if (frame->parent())
       return;
-    v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
     ScriptContext* script_context =
         dispatcher_->script_context_set().GetByV8Context(
             frame->mainWorldScriptContext());
-
     if (!script_context)
       return;
-    v8::Context::Scope context_scope(script_context->v8_context());
     script_context->module_system()->CallModuleMethod(
         "injectAppTitlebar", "didCreateDocumentElement");
   }

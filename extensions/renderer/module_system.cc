@@ -625,7 +625,7 @@ v8::Handle<v8::Value> ModuleSystem::LoadModule(const std::string& module_name) {
           GetIsolate(), "requireAsync", v8::String::kInternalizedString)),
       exports,
       // Libraries that we magically expose to every module.
-      console::AsV8Object(),
+      console::AsV8Object(GetIsolate()),
       natives->Get(v8::String::NewFromUtf8(
           GetIsolate(), "privates", v8::String::kInternalizedString)),
       // Each safe builtin. Keep in order with the arguments in WrapSource.
