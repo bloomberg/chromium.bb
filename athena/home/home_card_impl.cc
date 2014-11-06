@@ -9,14 +9,14 @@
 
 #include "athena/env/public/athena_env.h"
 #include "athena/home/app_list_view_delegate.h"
-#include "athena/home/athena_start_page_view.h"
 #include "athena/home/home_card_constants.h"
 #include "athena/home/public/app_model_builder.h"
 #include "athena/screen/public/screen_manager.h"
 #include "athena/util/container_priorities.h"
 #include "athena/wm/public/window_manager.h"
+#include "ui/app_list/search_box_model.h"
 #include "ui/app_list/views/app_list_main_view.h"
-#include "ui/app_list/views/contents_view.h"
+#include "ui/app_list/views/search_box_view.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -36,6 +36,8 @@ namespace {
 HomeCard* instance = nullptr;
 
 const float kMinimizedHomeOpacity = 0.65f;
+const int kIndicatorOffset = 24;
+const int kAppListOffset = -128;
 
 gfx::Rect GetBoundsForState(const gfx::Rect& screen_bounds,
                             HomeCard::State state) {
@@ -122,14 +124,15 @@ class HomeCardLayoutManager : public aura::LayoutManager {
 };
 
 // The container view of home card contents of each state.
-class HomeCardView : public views::WidgetDelegateView,
-                     public AthenaStartPageView::Observer {
+class HomeCardView : public views::WidgetDelegateView {
  public:
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                aura::Window* container,
                HomeCardGestureManager::Delegate* gesture_delegate)
       : background_(new views::View),
-        main_view_(new AthenaStartPageView(view_delegate)),
+        main_view_(new app_list::AppListMainView(view_delegate)),
+        search_box_view_(
+            new app_list::SearchBoxView(main_view_, view_delegate)),
         minimized_background_(new views::View()),
         drag_indicator_(new views::View()),
         gesture_delegate_(gesture_delegate),
@@ -141,12 +144,15 @@ class HomeCardView : public views::WidgetDelegateView,
     background_->SetFillsBoundsOpaquely(false);
     AddChildView(background_);
 
-    // Ideally AppListMainView should be used here and have AthenaStartPageView
-    // as its child view, so that custom pages and apps grid are available in
-    // the home card.
-    // TODO(mukai): make it so after the detailed UI has been fixed.
-    main_view_->AddObserver(this);
+    main_view_->SetPaintToLayer(true);
+    main_view_->SetFillsBoundsOpaquely(false);
+    main_view_->layer()->SetMasksToBounds(true);
     AddChildView(main_view_);
+
+    search_box_view_->SetPaintToLayer(true);
+    search_box_view_->SetFillsBoundsOpaquely(false);
+    search_box_view_->layer()->SetMasksToBounds(true);
+    AddChildView(search_box_view_);
 
     minimized_background_->set_background(
         views::Background::CreateSolidBackground(
@@ -162,17 +168,28 @@ class HomeCardView : public views::WidgetDelegateView,
     AddChildView(drag_indicator_);
   }
 
-  ~HomeCardView() override { main_view_->RemoveObserver(this); }
+  void Init() {
+    main_view_->Init(GetWidget()->GetNativeView(), -1, search_box_view_);
+  }
 
   void SetStateProgress(HomeCard::State from_state,
                         HomeCard::State to_state,
                         float progress) {
     // TODO(mukai): not clear the focus, but simply close the virtual keyboard.
     GetFocusManager()->ClearFocus();
-    if (from_state == HomeCard::VISIBLE_CENTERED)
-      main_view_->SetLayoutState(1.0f - progress);
-    else if (to_state == HomeCard::VISIBLE_CENTERED)
-      main_view_->SetLayoutState(progress);
+
+    gfx::Rect from_main_bounds = GetMainViewBounds(from_state);
+    gfx::Rect to_main_bounds = GetMainViewBounds(to_state);
+    if (from_main_bounds != to_main_bounds) {
+      DCHECK_EQ(from_main_bounds.size().ToString(),
+                to_main_bounds.size().ToString());
+      gfx::Rect main_bounds = gfx::Tween::RectValueBetween(
+          progress, from_main_bounds, to_main_bounds);
+      main_view_->SetBoundsRect(main_bounds);
+      main_bounds.set_height(
+          search_box_view_->GetHeightForWidth(main_bounds.width()));
+      search_box_view_->SetBoundsRect(main_bounds);
+    }
 
     float background_opacity = 1.0f;
     if (from_state == HomeCard::VISIBLE_MINIMIZED ||
@@ -207,7 +224,8 @@ class HomeCardView : public views::WidgetDelegateView,
   }
 
   void SetStateWithAnimation(HomeCard::State state,
-                             gfx::Tween::Type tween_type) {
+                             gfx::Tween::Type tween_type,
+                             const base::Closure& on_animation_ended) {
     float minimized_opacity =
         (state == HomeCard::VISIBLE_MINIMIZED) ? 1.0f : 0.0f;
     // |minimized_background_| needs to be visible before scheduling animation.
@@ -241,20 +259,27 @@ class HomeCardView : public views::WidgetDelegateView,
       background_->layer()->SetOpacity(background_opacity);
     }
 
-    if (state == HomeCard::VISIBLE_CENTERED)
-      main_view_->RequestFocusOnSearchBox();
-    else
-      GetWidget()->GetFocusManager()->ClearFocus();
-
     {
       ui::ScopedLayerAnimationSettings settings(
           drag_indicator_->layer()->GetAnimator());
-      settings.SetTweenType(gfx::Tween::EASE_IN_OUT);
+      settings.SetTweenType(tween_type);
       drag_indicator_->SetBoundsRect(GetDragIndicatorBounds(state));
     }
 
-    main_view_->SetLayoutStateWithAnimation(
-        (state == HomeCard::VISIBLE_CENTERED) ? 1.0f : 0.0f, tween_type);
+    {
+      ui::ScopedLayerAnimationSettings settings(
+          main_view_->layer()->GetAnimator());
+      settings.SetTweenType(tween_type);
+      settings.AddObserver(
+          new ui::ClosureAnimationObserver(on_animation_ended));
+      gfx::Rect main_bounds = GetMainViewBounds(state);
+      main_view_->SetBoundsRect(main_bounds);
+      main_bounds.set_height(
+          search_box_view_->GetHeightForWidth(main_bounds.width()));
+      search_box_view_->SetBoundsRect(main_bounds);
+    }
+
+    main_view_->UpdateSearchBoxVisibility();
   }
 
   void ClearGesture() {
@@ -282,6 +307,23 @@ class HomeCardView : public views::WidgetDelegateView,
     return false;
   }
 
+  void Layout() override {
+    const gfx::Rect contents_bounds = GetContentsBounds();
+    background_->SetBoundsRect(contents_bounds);
+    minimized_background_->SetBoundsRect(contents_bounds);
+    const gfx::Rect drag_indicator_bounds =
+        GetDragIndicatorBounds(HomeCard::Get()->GetState());
+    drag_indicator_->SetBoundsRect(drag_indicator_bounds);
+
+    gfx::Rect main_bounds(GetMainViewBounds(HomeCard::Get()->GetState()));
+    main_view_->SetBoundsRect(main_bounds);
+
+    main_bounds.set_height(
+        search_box_view_->GetHeightForWidth(main_bounds.width()));
+    search_box_view_->SetBoundsRect(main_bounds);
+  }
+
+ private:
   gfx::Rect GetDragIndicatorBounds(HomeCard::State state) {
     gfx::Rect drag_indicator_bounds(
         GetContentsBounds().CenterPoint().x() - kHomeCardDragIndicatorWidth / 2,
@@ -293,13 +335,19 @@ class HomeCardView : public views::WidgetDelegateView,
     return drag_indicator_bounds;
   }
 
-  void Layout() override {
-    gfx::Rect contents_bounds = GetContentsBounds();
-    background_->SetBoundsRect(contents_bounds);
-    main_view_->SetBoundsRect(contents_bounds);
-    minimized_background_->SetBoundsRect(contents_bounds);
-    drag_indicator_->SetBoundsRect(
-        GetDragIndicatorBounds(HomeCard::Get()->GetState()));
+  gfx::Rect GetMainViewBounds(HomeCard::State state) {
+    const gfx::Rect contents_bounds = GetContentsBounds();
+    const int main_width = main_view_->GetPreferredSize().width();
+    gfx::Rect main_bounds(
+        contents_bounds.CenterPoint().x() - main_width / 2,
+        GetDragIndicatorBounds(state).bottom() + kIndicatorOffset,
+        main_width,
+        contents_bounds.height());
+    // This is a bit hacky but slightly shifting up the main_view to fit
+    // the search box and app icons in the home card.
+    if (state != HomeCard::VISIBLE_CENTERED)
+      main_bounds.set_y(kAppListOffset);
+    return main_bounds;
   }
 
  private:
@@ -311,14 +359,9 @@ class HomeCardView : public views::WidgetDelegateView,
   // views::WidgetDelegate:
   views::View* GetContentsView() override { return this; }
 
-  // AthenaStartPageView::Observer:
-  void OnLayoutStateChanged(float new_state) override {
-    if (new_state == 1.0f)
-      HomeCard::Get()->SetState(HomeCard::VISIBLE_CENTERED);
-  }
-
   views::View* background_;
-  AthenaStartPageView* main_view_;
+  app_list::AppListMainView* main_view_;
+  app_list::SearchBoxView* search_box_view_;
   views::View* minimized_background_;
   views::View* drag_indicator_;
   HomeCard::State state_;
@@ -376,7 +419,9 @@ void HomeCardImpl::Init() {
   widget_params.delegate = home_card_view_;
   widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   home_card_widget_->Init(widget_params);
+  home_card_widget_->GetNativeWindow()->layer()->SetMasksToBounds(true);
 
+  home_card_view_->Init();
   SetState(VISIBLE_MINIMIZED);
   home_card_view_->Layout();
 
@@ -386,6 +431,10 @@ void HomeCardImpl::Init() {
 
 aura::Window* HomeCardImpl::GetHomeCardWindowForTest() const {
   return home_card_widget_ ? home_card_widget_->GetNativeWindow() : nullptr;
+}
+
+void HomeCardImpl::ResetQuery() {
+  view_delegate_->GetModel()->search_box()->SetText(base::string16());
 }
 
 void HomeCardImpl::InstallAccelerators() {
@@ -413,7 +462,13 @@ void HomeCardImpl::SetState(HomeCard::State state) {
       home_card_widget_->ShowInactive();
     else
       home_card_widget_->Show();
-    home_card_view_->SetStateWithAnimation(state, gfx::Tween::EASE_IN_OUT);
+
+    // Query should be reset on state change to reset the main_view. Also it's
+    // not possible to invoke ResetQuery() here, it causes a crash on search.
+    home_card_view_->SetStateWithAnimation(
+        state,
+        gfx::Tween::EASE_IN_OUT,
+        base::Bind(&HomeCardImpl::ResetQuery, base::Unretained(this)));
     layout_manager_->Layout(true, gfx::Tween::EASE_IN_OUT);
   }
 }
@@ -469,7 +524,10 @@ void HomeCardImpl::OnGestureEnded(State final_state, bool is_fling) {
     // EASE_OUT is better.
     gfx::Tween::Type tween_type =
         is_fling ? gfx::Tween::EASE_OUT : gfx::Tween::EASE_IN_OUT;
-    home_card_view_->SetStateWithAnimation(state_, tween_type);
+    home_card_view_->SetStateWithAnimation(
+        state_,
+        tween_type,
+        base::Bind(&HomeCardImpl::ResetQuery, base::Unretained(this)));
     layout_manager_->Layout(true, tween_type);
   }
 }

@@ -186,8 +186,8 @@ TEST_F(HomeCardGestureManagerTest, StartCentered) {
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, last_to_state_);
   EXPECT_EQ(1.0f, last_progress_);
 
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 900);
-  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 910);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 700);
+  ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 710);
   EXPECT_EQ(2, GetProgressCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, last_from_state_);
   EXPECT_EQ(HomeCard::VISIBLE_CENTERED, last_to_state_);
@@ -218,13 +218,13 @@ TEST_F(HomeCardGestureManagerTest, StartBottom) {
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, final_state_);
 
   // State change for the bigger moves.
-  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 850));
   ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 1000);
   EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 1000));
   EXPECT_EQ(1, GetEndCountAndReset());
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, final_state_);
 
-  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 950));
+  EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_BEGIN, 850));
   ProcessGestureEvent(ui::ET_GESTURE_SCROLL_UPDATE, 300);
   EXPECT_TRUE(ProcessGestureEvent(ui::ET_GESTURE_SCROLL_END, 300));
   EXPECT_EQ(1, GetEndCountAndReset());

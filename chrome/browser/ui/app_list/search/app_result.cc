@@ -38,12 +38,8 @@ AppResult::AppResult(Profile* profile,
       controller_(controller),
       extension_registry_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
-#if !defined(USE_ATHENA)
-  // TODO(mukai): Athena also needs to use tile-styled search results for apps.
-  // Implement it and then remove this ifdef.
   if (app_list::switches::IsExperimentalAppListEnabled())
     set_display_type(DISPLAY_TILE);
-#endif
 
   const extensions::Extension* extension =
       extensions::ExtensionSystem::Get(profile_)->extension_service()

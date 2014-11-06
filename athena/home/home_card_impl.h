@@ -12,6 +12,10 @@
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
 
+namespace app_list {
+class AppListViewDelegate;
+}
+
 namespace aura {
 class Window;
 }
@@ -30,7 +34,6 @@ class Widget;
 
 namespace athena {
 class AppModelBuilder;
-class AppListViewDelegate;
 class HomeCardLayoutManager;
 class HomeCardView;
 
@@ -52,6 +55,8 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
     COMMAND_SHOW_HOME_CARD,
   };
   void InstallAccelerators();
+
+  void ResetQuery();
 
   // Overridden from HomeCard:
   void SetState(HomeCard::State state) override;
@@ -86,7 +91,7 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
 
   views::Widget* home_card_widget_;
   HomeCardView* home_card_view_;
-  scoped_ptr<AppListViewDelegate> view_delegate_;
+  scoped_ptr<app_list::AppListViewDelegate> view_delegate_;
   HomeCardLayoutManager* layout_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(HomeCardImpl);
