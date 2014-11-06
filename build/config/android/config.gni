@@ -37,6 +37,23 @@ if (is_android) {
     android_chrome_build_id = "\"\""
   }
 
+  # ABI ------------------------------------------------------------------------
+
+  if (cpu_arch == "x86") {
+    android_app_abi = "x86"
+  } else if (cpu_arch == "arm") {
+    import("//build/config/arm.gni")
+    if (arm_version < 7) {
+      android_app_abi = "armeabi"
+    } else {
+      android_app_abi = "armeabi-v7a"
+    }
+  } else if (cpu_arch == "mipsel") {
+    android_app_abi = "mips"
+  } else {
+    assert(false, "Unknown Android ABI: " + cpu_arch)
+  }
+
   # Host stuff -----------------------------------------------------------------
 
   # Defines the name the Android build gives to the current host CPU
@@ -106,8 +123,13 @@ if (is_android) {
     android_prebuilt_arch = "android-arm"
     _binary_prefix = "arm-linux-androideabi"
     android_toolchain_root = "$arm_android_toolchain_root"
-    android_libgcc_file =
-      "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+    if (arm_use_thumb) {
+      android_libgcc_file =
+        "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/thumb/libgcc.a"
+    } else {
+      android_libgcc_file =
+        "$android_toolchain_root/lib/gcc/arm-linux-androideabi/${_android_toolchain_version}/libgcc.a"
+    }
   } else if (cpu_arch == "mipsel") {
     android_prebuilt_arch = "android-mips"
     _binary_prefix = "mipsel-linux-android"
@@ -129,23 +151,6 @@ if (is_android) {
     android_stlport_library = "stlport_shared"
   } else {
     android_stlport_library = "stlport_static"
-  }
-
-  # ABI ------------------------------------------------------------------------
-
-  if (cpu_arch == "x86") {
-    android_app_abi = "x86"
-  } else if (cpu_arch == "arm") {
-    import("//build/config/arm.gni")
-    if (arm_version < 7) {
-      android_app_abi = "armeabi"
-    } else {
-      android_app_abi = "armeabi-v7a"
-    }
-  } else if (cpu_arch == "mipsel") {
-    android_app_abi = "mips"
-  } else {
-    assert(false, "Unknown Android ABI: " + cpu_arch)
   }
 } else {
   if (!defined(is_android_webview_build)) {
