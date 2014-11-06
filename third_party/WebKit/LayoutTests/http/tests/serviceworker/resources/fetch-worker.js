@@ -73,7 +73,7 @@ async_test(function(t) {
   }, 'Fetch with string body test in ServiceWorkerGlobalScope');
 
 async_test(function(t) {
-    var text = "Test ArrayBuffer";
+    var text = 'Test ArrayBuffer';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
       array[i] = text.charCodeAt(i);
@@ -91,7 +91,7 @@ async_test(function(t) {
   }, 'Fetch with ArrayBuffer body test in ServiceWorkerGlobalScope');
 
 async_test(function(t) {
-    var text = "Test ArrayBufferView";
+    var text = 'Test ArrayBufferView';
     var array = new Uint8Array(text.length);
     for (var i = 0; i < text.length; ++i)
       array[i] = text.charCodeAt(i);

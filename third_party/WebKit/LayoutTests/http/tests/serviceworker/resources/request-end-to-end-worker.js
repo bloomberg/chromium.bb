@@ -19,4 +19,4 @@ onfetch = function(e) {
         headers: headers,
         headerSize: e.request.headers.size
     });
-}
+};

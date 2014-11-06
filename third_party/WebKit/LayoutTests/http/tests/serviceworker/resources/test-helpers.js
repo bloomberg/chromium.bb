@@ -232,7 +232,7 @@ function get_host_info() {
         HTTPS_PORT = eval('{{ports[https][0]}}');
         ORIGINAL_HOST = eval('\'{{host}}\'');
         REMOTE_HOST = 'www1.' + ORIGINAL_HOST;
-    } catch(e) {
+    } catch (e) {
     }
     return {
         HTTP_ORIGIN: 'http://' + ORIGINAL_HOST + ':' + HTTP_PORT,

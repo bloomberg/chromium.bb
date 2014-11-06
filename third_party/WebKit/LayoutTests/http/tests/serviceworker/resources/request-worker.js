@@ -102,9 +102,9 @@ test(function() {
             if (mode1 != undefined) { init1['mode'] = mode1; }
             if (!isSimpleMethod(method1) && mode1 == 'no-cors') {
                 assert_throws(
-                    {name:'TypeError'},
+                    {name: 'TypeError'},
                     function() { request1 = new Request(URL, init1); },
-                    'new no-cors Request with non simple method (' + method1 +') should throw');
+                    'new no-cors Request with non simple method (' + method1 + ') should throw');
                 return;
             }
             request1 = new Request(URL, init1);
@@ -124,7 +124,7 @@ test(function() {
                     if (mode2 != undefined) { init2['mode'] = mode2; }
                     if (!isSimpleMethod(effectiveMethod(method1, method2)) && effectiveMode(mode1, mode2) == 'no-cors') {
                         assert_throws(
-                            {name:'TypeError'},
+                            {name: 'TypeError'},
                             function() { request2 = new Request(request1, init2); },
                             'new no-cors Request with non simple method should throw');
                         return;
@@ -170,18 +170,18 @@ test(function() {
         var forbiddenMethods = ['TRACE', 'TRACK', 'CONNECT'];
         forbiddenMethods.forEach(function(method) {
             assert_throws(
-                {name:'TypeError'},
+                {name: 'TypeError'},
                 function() { var request = new Request(URL, {mode: mode, method: method}); },
-                'new Request with a forbidden method (' + method +') should throw');
+                'new Request with a forbidden method (' + method + ') should throw');
         });
         var invalidNames = ['(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
                             '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b',
                             'invalid name'];
         invalidNames.forEach(function(name) {
             assert_throws(
-                {name:'TypeError'},
+                {name: 'TypeError'},
                 function() { var request = new Request(URL, {mode: mode, method: name}); },
-                'new Request with an invalid method (' + name +') should throw');
+                'new Request with an invalid method (' + name + ') should throw');
         });
     });
 }, 'Request method name test in ServiceWorkerGlobalScope');
@@ -310,15 +310,15 @@ test(function() {
 test(function() {
     var req = new Request(URL);
     assert_false(req.bodyUsed,
-      "Request should not be flagged as used if it has not been consumed.");
+      'Request should not be flagged as used if it has not been consumed.');
     var req2 = new Request(req);
     assert_true(req.bodyUsed,
-      "Request should be flagged as used if it is used as a construction " +
-      "argument of another Request.");
+      'Request should be flagged as used if it is used as a construction ' +
+      'argument of another Request.');
     assert_false(req2.bodyUsed,
-      "Request should not be flagged as used if it has not been consumed.");
+      'Request should not be flagged as used if it has not been consumed.');
     assert_throws(new TypeError(), function() { new Request(req); },
-      "Request cannot be constructed with a request that has been flagged as used.");
+      'Request cannot be constructed with a request that has been flagged as used.');
   }, 'Request construction behavior regarding "used" body flag and exceptions.');
 
 promise_test(function() {
@@ -381,7 +381,7 @@ async_test(function(t) {
           assert_equals(result, 'Test String',
                         'Creating a Request with string body should success.');
 
-          var text = "Test ArrayBuffer";
+          var text = 'Test ArrayBuffer';
           var array = new Uint8Array(text.length);
           for (var i = 0; i < text.length; ++i)
             array[i] = text.charCodeAt(i);
@@ -393,7 +393,7 @@ async_test(function(t) {
             result, 'Test ArrayBuffer',
             'Creating a Request with ArrayBuffer body should success.');
 
-          var text = "Test ArrayBufferView";
+          var text = 'Test ArrayBufferView';
           var array = new Uint8Array(text.length);
           for (var i = 0; i < text.length; ++i)
             array[i] = text.charCodeAt(i);

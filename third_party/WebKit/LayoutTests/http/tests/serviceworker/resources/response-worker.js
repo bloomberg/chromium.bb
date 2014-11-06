@@ -86,13 +86,13 @@ test(function() {
 }, 'Response constructor test in ServiceWorkerGlobalScope');
 
 test(function() {
-    var response = new Response(new Blob(['dummy'], {type :'audio/wav'}));
+    var response = new Response(new Blob(['dummy'], {type: 'audio/wav'}));
     assert_equals(size(response.headers), 1, 'Response.headers should have Content-Type');
     assert_equals(response.headers.get('Content-Type'), 'audio/wav',
                   'Content-Type of Response.headers should be set');
 
-    response = new Response(new Blob(['dummy'], {type :'audio/wav'}),
-                            {headers:{'Content-Type': 'text/html; charset=UTF-8'}});
+    response = new Response(new Blob(['dummy'], {type: 'audio/wav'}),
+                            {headers: {'Content-Type': 'text/html; charset=UTF-8'}});
     assert_equals(size(response.headers), 1, 'Response.headers should have Content-Type');
     assert_equals(response.headers.get('Content-Type'), 'text/html; charset=UTF-8',
                   'Content-Type of Response.headers should be overridden');
@@ -100,7 +100,7 @@ test(function() {
 
 test(function() {
     [0, 1, 100, 199, 600, 700].forEach(function(status) {
-        assert_throws({name:'RangeError'},
+        assert_throws({name: 'RangeError'},
                       function() { new Response(new Blob(), {status: status}); },
                       'new Response with status = ' + status + ' should throw');
     });
@@ -112,28 +112,28 @@ test(function() {
     var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
                         '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
     invalidNames.forEach(function(name) {
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() {
                           var obj = {};
                           obj[name] = 'a';
                           new Response(new Blob(), {headers: obj});
                       },
-                      'new Response with headers with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'new Response with headers with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() {
                           new Response(new Blob(), {headers: [[name, 'a']]});
                       },
-                      'new Response with headers with an invalid name (' + name +') should throw');
+                      'new Response with headers with an invalid name (' + name + ') should throw');
     });
     var invalidValues = ['test \r data', 'test \n data'];
     invalidValues.forEach(function(value) {
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() {
                           new Response(new Blob(),
                                        {headers: {'X-ServiceWorker-Test': value}});
                       },
                       'new Response with headers with an invalid value should throw');
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() {
                           new Response(new Blob(),
                                        {headers: [['X-ServiceWorker-Test', value]]});

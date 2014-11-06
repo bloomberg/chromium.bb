@@ -24,7 +24,7 @@ function handleFormPost(event) {
       event.request.text()
         .then(function(result) {
             resolve(new Response(event.request.method + ':' + result));
-          })
+          });
     }));
 }
 

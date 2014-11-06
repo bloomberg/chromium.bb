@@ -37,7 +37,7 @@ function getRequestInit(params) {
     init['credentials'] = params['credentials'];
   }
   if (params['headers'] === 'CUSTOM') {
-    init['headers'] = {"X-ServiceWorker-Test": "test"};
+    init['headers'] = {'X-ServiceWorker-Test': 'test'};
   } else if (params['headers'] === '{}') {
     init['headers'] = {};
   }

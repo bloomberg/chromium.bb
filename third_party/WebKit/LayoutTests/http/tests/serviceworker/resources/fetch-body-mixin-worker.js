@@ -54,7 +54,7 @@ function doBlobTest(port) {
     .then(function(response) {
         response.blob()
         .then(function(blob) {
-            port.postMessage('Blob: ' + blob.size + " : " + blob.type);
+            port.postMessage('Blob: ' + blob.size + ' : ' + blob.type);
             doArrayBufferTest(port);
         });
     });

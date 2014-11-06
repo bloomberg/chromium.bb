@@ -7,10 +7,10 @@ var WORKER_URL = 'http://127.0.0.1:8000/serviceworker/resources/fetch-access-con
 var IFRAME_ORIGIN = 'http://127.0.0.1:8000';
 
 // Functions to check the result from the ServiceWorker.
-var checkFetchResult = function (expected, url, data) {
+var checkFetchResult = function(expected, url, data) {
   assert_equals(data.fetchResult, expected, url + ' should be ' + expected);
 };
-var checkFetchResponseBody = function (hasBody, url, data) {
+var checkFetchResponseBody = function(hasBody, url, data) {
   assert_equals(data.fetchResult,
                 'resolved',
                 'fetchResult must be resolved. url: ' + url);
@@ -22,7 +22,7 @@ var checkFetchResponseBody = function (hasBody, url, data) {
                   'response must not have body. url: ' + url);
   }
 };
-var checkFetchResponseHeader = function (name, expected, url, data) {
+var checkFetchResponseHeader = function(name, expected, url, data) {
   assert_equals(data.fetchResult,
                 'resolved',
                 'fetchResult must be resolved. url: ' + url);
@@ -36,7 +36,7 @@ var checkFetchResponseHeader = function (name, expected, url, data) {
                 expected,
                 'header check failed url: ' + url + ' name: ' + name);
 };
-var checkFetchResponseType = function (type, url, data) {
+var checkFetchResponseType = function(type, url, data) {
   assert_equals(data.fetchResult,
                 'resolved',
                 'fetchResult must be resolved. url = ' + url);
@@ -64,12 +64,12 @@ var typeOpaque = checkFetchResponseType.bind(this, 'opaque');
 
 // Functions to check the result of JSONP which is evaluated in
 // fetch-access-control-iframe.html by appending <script> element.
-var checkJsonpResult = function (expected, url, data) {
+var checkJsonpResult = function(expected, url, data) {
   assert_equals(data.jsonpResult,
                 expected,
                 url + ' jsonpResult should match');
 };
-var checkJsonpHeader = function (name, value, url, data) {
+var checkJsonpHeader = function(name, value, url, data) {
   assert_equals(data.jsonpResult,
                 'success',
                 url + ' jsonpResult must be success');
@@ -77,7 +77,7 @@ var checkJsonpHeader = function (name, value, url, data) {
                 value,
                 'Request header check failed url:' + url + ' name:' + name);
 };
-var checkJsonpMethod = function (method, url, data) {
+var checkJsonpMethod = function(method, url, data) {
   assert_equals(data.jsonpResult,
                 'success',
                 url + ' jsonpResult must be success');
@@ -85,7 +85,7 @@ var checkJsonpMethod = function (method, url, data) {
                 method,
                 'Method must match url:' + url);
 };
-var checkJsonpAuth = function (username, password, url, data) {
+var checkJsonpAuth = function(username, password, url, data) {
   assert_equals(data.jsonpResult,
                 'success',
                 url + ' jsonpResult must be success');

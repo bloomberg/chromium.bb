@@ -111,9 +111,9 @@ test(function() {
     assert_equals(allValues.length, 1, 'the second header should be deleted');
     assert_equals(allValues[0], 'response test field - set');
     headers.append('X-ServiceWorker-TEST', 'response test field - append');
-    assert_equals(size(headers), 5, 'headers size should increase by 1.')
+    assert_equals(size(headers), 5, 'headers size should increase by 1.');
     headers.delete('X-ServiceWORKER-Test');
-    assert_equals(size(headers), 3, 'two headers should be deleted.')
+    assert_equals(size(headers), 3, 'two headers should be deleted.');
 
     // new Headers with sequence<sequence<ByteString>>
     headers = new Headers([['a', 'b'], ['c', 'd'], ['c', 'e']]);
@@ -144,62 +144,62 @@ test(function() {
     var invalidNames = ['', '(', ')', '<', '>', '@', ',', ';', ':', '\\', '"',
                         '/', '[', ']', '?', '=', '{', '}', '\u3042', 'a(b'];
     invalidNames.forEach(function(name) {
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() { headers.append(name, 'a'); },
-                      'Headers.append with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.append with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { headers.delete(name); },
-                      'Headers.delete with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.delete with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { headers.get(name); },
-                      'Headers.get with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.get with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { headers.getAll(name); },
-                      'Headers.getAll with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.getAll with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { headers.has(name); },
-                      'Headers.has with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.has with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { headers.set(name, 'a'); },
-                      'Headers.set with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'Headers.set with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() {
                         var obj = {};
                         obj[name] = 'a';
                         var headers = new Headers(obj);
                       },
-                      'new Headers with an invalid name (' + name +') should throw');
-        assert_throws({name:'TypeError'},
+                      'new Headers with an invalid name (' + name + ') should throw');
+        assert_throws({name: 'TypeError'},
                       function() { var headers = new Headers([[name, 'a']]); },
-                      'new Headers with an invalid name (' + name +') should throw');
+                      'new Headers with an invalid name (' + name + ') should throw');
     });
 
     var invalidValues = ['test \r data', 'test \n data'];
     invalidValues.forEach(function(value) {
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() { headers.append('a', value); },
                       'Headers.append with an invalid value should throw');
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() { headers.set('a', value); },
                       'Headers.set with an invalid value should throw');
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() { var headers = new Headers({'a': value}); },
                       'new Headers with an invalid value should throw');
-        assert_throws({name:'TypeError'},
+        assert_throws({name: 'TypeError'},
                       function() { var headers = new Headers([['a', value]]); },
                       'new Headers with an invalid value should throw');
     });
 
-    assert_throws({name:'TypeError'},
+    assert_throws({name: 'TypeError'},
                   function() { var headers = new Headers([[]]); },
                   'new Headers with a sequence with less than two strings should throw');
-    assert_throws({name:'TypeError'},
+    assert_throws({name: 'TypeError'},
                   function() { var headers = new Headers([['a']]); },
                   'new Headers with a sequence with less than two strings should throw');
-    assert_throws({name:'TypeError'},
+    assert_throws({name: 'TypeError'},
                   function() { var headers = new Headers([['a', 'b'], []]); },
                   'new Headers with a sequence with less than two strings should throw');
-    assert_throws({name:'TypeError'},
+    assert_throws({name: 'TypeError'},
                   function() { var headers = new Headers([['a', 'b'], ['x', 'y', 'z']]); },
                   'new Headers with a sequence with more than two strings should throw');
 }, 'Headers in ServiceWorkerGlobalScope');

@@ -12,7 +12,7 @@ self.addEventListener('fetch', function(event) {
     }
     requests.push({
       url: url,
-      headers: headers,
+      headers: headers
     });
     event.respondWith(fetch(event.request));
   });

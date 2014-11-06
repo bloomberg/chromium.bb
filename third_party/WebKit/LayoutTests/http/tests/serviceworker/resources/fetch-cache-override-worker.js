@@ -194,5 +194,5 @@ promise_test(function() {
             res.status, 304 ,
             'When the server returns 304 and there\'s a cache miss, the ' +
                 'response status must be 304.');
-        })
+        });
   }, '304 handling for fetch().');
