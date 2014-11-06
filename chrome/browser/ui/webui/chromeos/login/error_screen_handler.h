@@ -18,7 +18,10 @@ class DictionaryValue;
 
 namespace chromeos {
 
+#if !defined(USE_ATHENA)
 class CaptivePortalWindowProxy;
+#endif
+
 class NativeWindowDelegate;
 class NetworkStateInformer;
 
@@ -76,8 +79,10 @@ class ErrorScreenHandler : public BaseScreenHandler,
   // Non-owning ptr.
   ErrorScreenActorDelegate* delegate_;
 
+#if !defined(USE_ATHENA)
   // Proxy which manages showing of the window for captive portal entering.
   scoped_ptr<CaptivePortalWindowProxy> captive_portal_window_proxy_;
+#endif
 
   // Network state informer used to keep error screen up.
   scoped_refptr<NetworkStateInformer> network_state_informer_;
