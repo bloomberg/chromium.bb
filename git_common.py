@@ -81,11 +81,12 @@ GIT_TRANSIENT_ERRORS = (
     # crbug.com/187444
     r'RPC failed; result=\d+, HTTP code = \d+',
 
-    # crbug.com/315421
-    r'The requested URL returned error: 500 while accessing',
-
     # crbug.com/388876
     r'Connection timed out',
+
+    # crbug.com/430343
+    # TODO(dnj): Resync with Chromite.
+    r'The requested URL returned error: 5\d+',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
