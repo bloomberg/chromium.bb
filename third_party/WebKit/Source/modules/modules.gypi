@@ -351,6 +351,8 @@
       'bluetooth/BluetoothDevice.h',
       'bluetooth/BluetoothDiscovery.cpp',
       'bluetooth/BluetoothDiscovery.h',
+      'bluetooth/BluetoothError.cpp',
+      'bluetooth/BluetoothError.h',
       'bluetooth/NavigatorBluetooth.cpp',
       'bluetooth/NavigatorBluetooth.h',
       'credentialmanager/Credential.cpp',

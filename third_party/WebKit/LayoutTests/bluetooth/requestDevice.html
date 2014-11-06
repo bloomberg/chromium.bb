@@ -2,11 +2,38 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script>
+
+test(function(t) { assert_exists(window, "testRunner"); t.done(); },
+     "window.testRunner is required for these tests.");
+
 async_test(function(t) {
+  testRunner.setBluetoothMockDataSet('RejectRequestDevice_NotFoundError');
   navigator.bluetooth.requestDevice()
     .then(
-      t.step_func(function() { assert_unreached(
-        'bluetooth.requestDevice() should not succeed until implemented.'); }),
-      t.step_func(function() { t.done() }));
-}, 'navigator.bluetooth.requestDevice not yet supported');
+      t.step_func(function() { assert_unreached('Mock was set to reject.'); }),
+      t.step_func(function(e) {
+        assert_equals(e.name, 'NotFoundError');
+        t.done();
+  }));
+}, 'Reject with NotFoundError.');
+
+async_test(function(t) {
+  testRunner.setBluetoothMockDataSet('RejectRequestDevice_SecurityError');
+  navigator.bluetooth.requestDevice()
+    .then(
+      t.step_func(function() { assert_unreached('Mock was set to reject.'); }),
+      t.step_func(function(e) {
+        assert_equals(e.name, 'SecurityError');
+        t.done();
+  }));
+}, 'Reject with SecurityError.');
+
+async_test(function(t) {
+  testRunner.setBluetoothMockDataSet('ResolveRequestDevice_Empty');
+  navigator.bluetooth.requestDevice()
+    .then(
+      t.step_func(function() { t.done() }),
+      t.step_func(function() { assert_unreached('Mock was set to resolve.'); }));
+}, 'Mock will resolve.');
+
 </script>
