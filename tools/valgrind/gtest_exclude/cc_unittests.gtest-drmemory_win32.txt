@@ -13,3 +13,4 @@ LayerTreeHostCopyRequestTestMultipleRequests.SoftwareRenderer_RunSingleThread
 
 # http://crbug.com/430400
 PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfLayer/5
+PixelResourceTest/LayerTreeHostMasksPixelTest.MaskOfLayer/6
