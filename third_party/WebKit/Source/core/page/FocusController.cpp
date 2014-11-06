@@ -549,7 +549,7 @@ static Node* nextNodeWithGreaterTabIndex(Node* start, int tabIndex)
         int currentTabIndex = adjustedTabIndex(&node);
         if (shouldVisit(&node) && currentTabIndex > tabIndex && currentTabIndex < winningTabIndex) {
             winner = &node;
-            winningTabIndex = node.tabIndex();
+            winningTabIndex = currentTabIndex;
         }
     }
 
@@ -563,7 +563,7 @@ static Node* previousNodeWithLowerTabIndex(Node* start, int tabIndex)
     Node* winner = nullptr;
     for (Node* node = start; node; node = NodeTraversal::previous(*node)) {
         int currentTabIndex = adjustedTabIndex(node);
-        if ((shouldVisit(node) || isNonKeyboardFocusableShadowHost(node)) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
+        if (shouldVisit(node) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
             winner = node;
             winningTabIndex = currentTabIndex;
         }
