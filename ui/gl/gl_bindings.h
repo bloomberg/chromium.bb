@@ -143,6 +143,10 @@
 #define GL_OVERLAY_TRANSFORM_ROTATE_180_CHROMIUM         0x9249
 #define GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM         0x924A
 
+// GL_CHROMIUM_subscribe_uniforms
+#define GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM             0x924B
+#define GL_MOUSE_POSITION_CHROMIUM                       0x924C
+
 // GL_OES_texure_3D
 #define GL_SAMPLER_3D_OES                                0x8B5F
 

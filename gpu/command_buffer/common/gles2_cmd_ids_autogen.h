@@ -193,24 +193,31 @@
   OP(ConsumeTextureCHROMIUMImmediate)          /* 434 */ \
   OP(CreateAndConsumeTextureCHROMIUMImmediate) /* 435 */ \
   OP(BindUniformLocationCHROMIUMBucket)        /* 436 */ \
-  OP(BindTexImage2DCHROMIUM)                   /* 437 */ \
-  OP(ReleaseTexImage2DCHROMIUM)                /* 438 */ \
-  OP(TraceBeginCHROMIUM)                       /* 439 */ \
-  OP(TraceEndCHROMIUM)                         /* 440 */ \
-  OP(AsyncTexSubImage2DCHROMIUM)               /* 441 */ \
-  OP(AsyncTexImage2DCHROMIUM)                  /* 442 */ \
-  OP(WaitAsyncTexImage2DCHROMIUM)              /* 443 */ \
-  OP(WaitAllAsyncTexImage2DCHROMIUM)           /* 444 */ \
-  OP(DiscardFramebufferEXTImmediate)           /* 445 */ \
-  OP(LoseContextCHROMIUM)                      /* 446 */ \
-  OP(InsertSyncPointCHROMIUM)                  /* 447 */ \
-  OP(WaitSyncPointCHROMIUM)                    /* 448 */ \
-  OP(DrawBuffersEXTImmediate)                  /* 449 */ \
-  OP(DiscardBackbufferCHROMIUM)                /* 450 */ \
-  OP(ScheduleOverlayPlaneCHROMIUM)             /* 451 */ \
-  OP(MatrixLoadfCHROMIUMImmediate)             /* 452 */ \
-  OP(MatrixLoadIdentityCHROMIUM)               /* 453 */ \
-  OP(BlendBarrierKHR)                          /* 454 */
+  OP(GenValuebuffersCHROMIUMImmediate)         /* 437 */ \
+  OP(DeleteValuebuffersCHROMIUMImmediate)      /* 438 */ \
+  OP(IsValuebufferCHROMIUM)                    /* 439 */ \
+  OP(BindValuebufferCHROMIUM)                  /* 440 */ \
+  OP(SubscribeValueCHROMIUM)                   /* 441 */ \
+  OP(PopulateSubscribedValuesCHROMIUM)         /* 442 */ \
+  OP(UniformValuebufferCHROMIUM)               /* 443 */ \
+  OP(BindTexImage2DCHROMIUM)                   /* 444 */ \
+  OP(ReleaseTexImage2DCHROMIUM)                /* 445 */ \
+  OP(TraceBeginCHROMIUM)                       /* 446 */ \
+  OP(TraceEndCHROMIUM)                         /* 447 */ \
+  OP(AsyncTexSubImage2DCHROMIUM)               /* 448 */ \
+  OP(AsyncTexImage2DCHROMIUM)                  /* 449 */ \
+  OP(WaitAsyncTexImage2DCHROMIUM)              /* 450 */ \
+  OP(WaitAllAsyncTexImage2DCHROMIUM)           /* 451 */ \
+  OP(DiscardFramebufferEXTImmediate)           /* 452 */ \
+  OP(LoseContextCHROMIUM)                      /* 453 */ \
+  OP(InsertSyncPointCHROMIUM)                  /* 454 */ \
+  OP(WaitSyncPointCHROMIUM)                    /* 455 */ \
+  OP(DrawBuffersEXTImmediate)                  /* 456 */ \
+  OP(DiscardBackbufferCHROMIUM)                /* 457 */ \
+  OP(ScheduleOverlayPlaneCHROMIUM)             /* 458 */ \
+  OP(MatrixLoadfCHROMIUMImmediate)             /* 459 */ \
+  OP(MatrixLoadIdentityCHROMIUM)               /* 460 */ \
+  OP(BlendBarrierKHR)                          /* 461 */
 
 enum CommandId {
   kStartPoint = cmd::kLastCommonId,  // All GLES2 commands start after this.

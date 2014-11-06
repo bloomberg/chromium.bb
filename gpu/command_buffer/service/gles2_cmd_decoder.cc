@@ -56,6 +56,7 @@
 #include "gpu/command_buffer/service/shader_translator.h"
 #include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "third_party/smhasher/src/City.h"
@@ -727,6 +728,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DeleteFramebuffersHelper(GLsizei n, const GLuint* client_ids);
   bool GenRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
   void DeleteRenderbuffersHelper(GLsizei n, const GLuint* client_ids);
+  bool GenValuebuffersCHROMIUMHelper(GLsizei n, const GLuint* client_ids);
+  void DeleteValuebuffersCHROMIUMHelper(GLsizei n, const GLuint* client_ids);
   bool GenQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   void DeleteQueriesEXTHelper(GLsizei n, const GLuint* client_ids);
   bool GenVertexArraysOESHelper(GLsizei n, const GLuint* client_ids);
@@ -754,6 +757,10 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   FramebufferManager* framebuffer_manager() {
     return group_->framebuffer_manager();
+  }
+
+  ValuebufferManager* valuebuffer_manager() {
+    return group_->valuebuffer_manager();
   }
 
   ProgramManager* program_manager() {
@@ -944,6 +951,14 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoCreateAndConsumeTextureCHROMIUM(GLenum target, const GLbyte* key,
     GLuint client_id);
 
+  bool DoIsValuebufferCHROMIUM(GLuint client_id);
+  void DoBindValueBufferCHROMIUM(GLenum target, GLuint valuebuffer);
+  void DoSubscribeValueCHROMIUM(GLenum target, GLenum subscription);
+  void DoPopulateSubscribedValuesCHROMIUM(GLenum target);
+  void DoUniformValueBufferCHROMIUM(GLint location,
+                                    GLenum target,
+                                    GLenum subscription);
+
   void DoBindTexImage2DCHROMIUM(
       GLenum target,
       GLint image_id);
@@ -1096,6 +1111,21 @@ class GLES2DecoderImpl : public GLES2Decoder,
     renderbuffer_manager()->RemoveRenderbuffer(client_id);
   }
 
+  // Creates a valuebuffer info for the given valuebuffer.
+  void CreateValuebuffer(GLuint client_id) {
+    return valuebuffer_manager()->CreateValuebuffer(client_id);
+  }
+
+  // Gets the valuebuffer info for a given valuebuffer.
+  Valuebuffer* GetValuebuffer(GLuint client_id) {
+    return valuebuffer_manager()->GetValuebuffer(client_id);
+  }
+
+  // Removes the valuebuffer info for the given valuebuffer.
+  void RemoveValuebuffer(GLuint client_id) {
+    valuebuffer_manager()->RemoveValuebuffer(client_id);
+  }
+
   // Gets the vertex attrib manager for the given vertex array.
   VertexAttribManager* GetVertexAttribManager(GLuint client_id) {
     VertexAttribManager* info =
@@ -1177,6 +1207,22 @@ class GLES2DecoderImpl : public GLES2Decoder,
       GLenum target,
       const char* func_name);
 
+  // Check if the current valuebuffer exists and is valid. If not generates
+  // the appropriate GL error. Returns true if the current valuebuffer is in
+  // a usable state.
+  bool CheckCurrentValuebuffer(const char* function_name);
+
+  // Check if the current valuebuffer exists and is valiud and that the
+  // value buffer is actually subscribed to the given subscription
+  bool CheckCurrentValuebufferForSubscription(GLenum subscription,
+                                              const char* function_name);
+
+  // Check if the location can be used for the given subscription target. If not
+  // generates the appropriate GL error. Returns true if the location is usable
+  bool CheckSubscriptionTarget(GLint location,
+                               GLenum subscription,
+                               const char* function_name);
+
   // Checks if the current program exists and is valid. If not generates the
   // appropriate GL error.  Returns true if the current program is in a usable
   // state.
@@ -1192,6 +1238,13 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // image of the current bound framebuffer, i.e., the source and destination
   // of the draw operation are the same.
   bool CheckDrawingFeedbackLoops();
+
+  // Checks if |api_type| is valid for the given uniform
+  // If the api type is not valid generates the appropriate GL
+  // error. Returns true if |api_type| is valid for the uniform
+  bool CheckUniformForApiType(const Program::UniformInfo* info,
+                              const char* function_name,
+                              Program::UniformApiType api_type);
 
   // Gets the type of a uniform for a location in the current program. Sets GL
   // errors if the current program is not valid. Returns true if the current
@@ -2670,6 +2723,7 @@ bool GLES2DecoderImpl::Initialize(
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
+  DoBindValueBufferCHROMIUM(GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM, 0);
 
   bool call_gl_clear = !surfaceless_;
 #if defined(OS_ANDROID)
@@ -2907,6 +2961,19 @@ bool GLES2DecoderImpl::GenRenderbuffersHelper(
   return true;
 }
 
+bool GLES2DecoderImpl::GenValuebuffersCHROMIUMHelper(GLsizei n,
+                                                     const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (GetValuebuffer(client_ids[ii])) {
+      return false;
+    }
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    CreateValuebuffer(client_ids[ii]);
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::GenTexturesHelper(GLsizei n, const GLuint* client_ids) {
   for (GLsizei ii = 0; ii < n; ++ii) {
     if (GetTexture(client_ids[ii])) {
@@ -2992,6 +3059,20 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
       }
       framebuffer_state_.clear_state_dirty = true;
       RemoveRenderbuffer(client_ids[ii]);
+    }
+  }
+}
+
+void GLES2DecoderImpl::DeleteValuebuffersCHROMIUMHelper(
+    GLsizei n,
+    const GLuint* client_ids) {
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    Valuebuffer* valuebuffer = GetValuebuffer(client_ids[ii]);
+    if (valuebuffer) {
+      if (state_.bound_valuebuffer.get() == valuebuffer) {
+        state_.bound_valuebuffer = NULL;
+      }
+      RemoveValuebuffer(client_ids[ii]);
     }
   }
 }
@@ -3425,6 +3506,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   framebuffer_state_.bound_read_framebuffer = NULL;
   framebuffer_state_.bound_draw_framebuffer = NULL;
   state_.bound_renderbuffer = NULL;
+  state_.bound_valuebuffer = NULL;
 
   if (offscreen_saved_color_texture_info_.get()) {
     DCHECK(offscreen_target_color_texture_);
@@ -5722,6 +5804,55 @@ void GLES2DecoderImpl::DoTexParameteriv(
       "glTexParameteriv", GetErrorState(), texture, pname, *params);
 }
 
+bool GLES2DecoderImpl::CheckCurrentValuebuffer(const char* function_name) {
+  if (!state_.bound_valuebuffer.get()) {
+    // There is no valuebuffer bound
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "no valuebuffer in use");
+    return false;
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::CheckCurrentValuebufferForSubscription(
+    GLenum subscription,
+    const char* function_name) {
+  if (!CheckCurrentValuebuffer(function_name)) {
+    return false;
+  }
+  if (!state_.bound_valuebuffer.get()->IsSubscribed(subscription)) {
+    // The valuebuffer is not subscribed to the target
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "valuebuffer is not subscribed");
+    return false;
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::CheckSubscriptionTarget(GLint location,
+                                               GLenum subscription,
+                                               const char* function_name) {
+  if (!CheckCurrentProgramForUniform(location, function_name)) {
+    return false;
+  }
+  GLint real_location = -1;
+  GLint array_index = -1;
+  const Program::UniformInfo* info =
+      state_.current_program->GetUniformInfoByFakeLocation(
+          location, &real_location, &array_index);
+  if (!info) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name, "unknown location");
+    return false;
+  }
+  if ((ValuebufferManager::ApiTypeForSubscriptionTarget(subscription) &
+       info->accepts_api_type) == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "wrong type for subscription");
+    return false;
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::CheckCurrentProgram(const char* function_name) {
   if (!state_.current_program.get()) {
     // The program does not exist.
@@ -5777,6 +5908,19 @@ bool GLES2DecoderImpl::CheckDrawingFeedbackLoops() {
   return false;
 }
 
+bool GLES2DecoderImpl::CheckUniformForApiType(
+    const Program::UniformInfo* info,
+    const char* function_name,
+    Program::UniformApiType api_type) {
+  DCHECK(info);
+  if ((api_type & info->accepts_api_type) == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       "wrong uniform function for type");
+    return false;
+  }
+  return true;
+}
+
 bool GLES2DecoderImpl::PrepForSetUniformByLocation(
     GLint fake_location,
     const char* function_name,
@@ -5800,11 +5944,7 @@ bool GLES2DecoderImpl::PrepForSetUniformByLocation(
         GL_INVALID_OPERATION, function_name, "unknown location");
     return false;
   }
-
-  if ((api_type & info->accepts_api_type) == 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, function_name,
-        "wrong uniform function for type");
+  if (!CheckUniformForApiType(info, function_name, api_type)) {
     return false;
   }
   if (*count > 1 && !info->is_array) {
@@ -10694,6 +10834,73 @@ void GLES2DecoderImpl::DoCreateAndConsumeTextureCHROMIUM(GLenum target,
   }
 
   texture_ref = texture_manager()->Consume(client_id, texture);
+}
+
+bool GLES2DecoderImpl::DoIsValuebufferCHROMIUM(GLuint client_id) {
+  const Valuebuffer* valuebuffer = GetValuebuffer(client_id);
+  return valuebuffer && valuebuffer->IsValid();
+}
+
+void GLES2DecoderImpl::DoBindValueBufferCHROMIUM(GLenum target,
+                                                 GLuint client_id) {
+  Valuebuffer* valuebuffer = NULL;
+  if (client_id != 0) {
+    valuebuffer = GetValuebuffer(client_id);
+    if (!valuebuffer) {
+      if (!group_->bind_generates_resource()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBindValuebufferCHROMIUM",
+                           "id not generated by glBindValuebufferCHROMIUM");
+        return;
+      }
+
+      // It's a new id so make a valuebuffer for it.
+      CreateValuebuffer(client_id);
+      valuebuffer = GetValuebuffer(client_id);
+    }
+    valuebuffer->MarkAsValid();
+  }
+  state_.bound_valuebuffer = valuebuffer;
+}
+
+void GLES2DecoderImpl::DoSubscribeValueCHROMIUM(GLenum target,
+                                                GLenum subscription) {
+  if (!CheckCurrentValuebuffer("glSubscribeValueCHROMIUM")) {
+    return;
+  }
+  state_.bound_valuebuffer.get()->AddSubscription(subscription);
+}
+
+void GLES2DecoderImpl::DoPopulateSubscribedValuesCHROMIUM(GLenum target) {
+  if (!CheckCurrentValuebuffer("glPopulateSubscribedValuesCHROMIUM")) {
+    return;
+  }
+  valuebuffer_manager()->UpdateValuebufferState(state_.bound_valuebuffer.get());
+}
+
+void GLES2DecoderImpl::DoUniformValueBufferCHROMIUM(GLint location,
+                                                    GLenum target,
+                                                    GLenum subscription) {
+  if (!CheckCurrentValuebufferForSubscription(
+          subscription, "glPopulateSubscribedValuesCHROMIUM")) {
+    return;
+  }
+  if (!CheckSubscriptionTarget(location, subscription,
+                               "glPopulateSubscribedValuesCHROMIUM")) {
+    return;
+  }
+  const ValueState* state =
+      state_.bound_valuebuffer.get()->GetState(subscription);
+  if (state) {
+    switch (subscription) {
+      case GL_MOUSE_POSITION_CHROMIUM:
+        DoUniform2iv(location, 1, state->int_value);
+        break;
+      default:
+        NOTREACHED() << "Unhandled uniform subscription target "
+                     << subscription;
+        break;
+    }
+  }
 }
 
 void GLES2DecoderImpl::DoInsertEventMarkerEXT(
