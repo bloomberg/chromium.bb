@@ -8,15 +8,52 @@ from __future__ import print_function
 
 import glob
 import json
+import logging
 import os
 
 from chromite.cbuildbot import commands
 from chromite.cbuildbot import constants
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
-from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import portage_util
+
+
+class SDKBuildToolchainsStage(generic_stages.BuilderStage):
+  """Stage that builds all the cross-compilers we care about"""
+
+  def PerformStage(self):
+    chroot_location = os.path.join(self._build_root,
+                                   constants.DEFAULT_CHROOT_DIR)
+
+    # Build the toolchains first.  Since we're building & installing the
+    # compilers, need to run as root.
+    self.CrosSetupToolchains([], sudo=True)
+
+    # Create toolchain packages.
+    self.CreateRedistributableToolchains(chroot_location)
+
+  def CrosSetupToolchains(self, cmd_args, **kwargs):
+    """Wrapper around cros_setup_toolchains to simplify things."""
+    commands.RunBuildScript(self._build_root,
+                            ['cros_setup_toolchains'] + list(cmd_args),
+                            chromite_cmd=True, enter_chroot=True, **kwargs)
+
+  def CreateRedistributableToolchains(self, chroot_location):
+    """Create the toolchain packages"""
+    osutils.RmDir(os.path.join(chroot_location,
+                               constants.SDK_TOOLCHAINS_OUTPUT),
+                  ignore_missing=True)
+
+    # We need to run this as root because the tool creates hard links to root
+    # owned files and our bots enable security features which disallow that.
+    # Specifically, these features cause problems:
+    #  /proc/sys/kernel/yama/protected_nonaccess_hardlinks
+    #  /proc/sys/fs/protected_hardlinks
+    self.CrosSetupToolchains([
+        '--create-packages',
+        '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
+    ], sudo=True)
 
 
 class SDKPackageStage(generic_stages.BuilderStage):
@@ -43,31 +80,9 @@ class SDKPackageStage(generic_stages.BuilderStage):
     # Create a package manifest for the tarball.
     self.CreateManifestFromSDK(board_location, manifest_location)
 
-    # Create toolchain packages.
-    self.CreateRedistributableToolchains(chroot_location)
-
     # Make sure the regular user has the permission to read.
     cmd = ['chmod', 'a+r', tarball_location]
     cros_build_lib.SudoRunCommand(cmd, cwd=board_location)
-
-  def CreateRedistributableToolchains(self, chroot_location):
-    """Create the toolchain packages"""
-    osutils.RmDir(os.path.join(chroot_location,
-                               constants.SDK_TOOLCHAINS_OUTPUT),
-                  ignore_missing=True)
-
-    # We need to run this as root because the tool creates hard links to root
-    # owned files and our bots enable security features which disallow that.
-    # Specifically, these features cause problems:
-    #  /proc/sys/kernel/yama/protected_nonaccess_hardlinks
-    #  /proc/sys/fs/protected_hardlinks
-    cmd = [
-        git.ReinterpretPathForChroot(os.path.join(
-            constants.CHROMITE_BIN_DIR, 'cros_setup_toolchains')),
-        '--create-packages',
-        '--output-dir', os.path.join('/', constants.SDK_TOOLCHAINS_OUTPUT),
-    ]
-    cros_build_lib.SudoRunCommand(cmd, enter_chroot=True)
 
   def CreateSDKTarball(self, _chroot, sdk_path, dest_tarball):
     """Creates an SDK tarball from a given source chroot.
@@ -84,7 +99,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
     extra_env = { 'XZ_OPT' : '-e9' }
     cros_build_lib.CreateTarball(
         dest_tarball, sdk_path, sudo=True, extra_args=extra_args,
-        extra_env=extra_env)
+        debug_level=logging.INFO, extra_env=extra_env)
 
   def CreateManifestFromSDK(self, sdk_path, dest_manifest):
     """Creates a manifest from a given source chroot.
@@ -93,6 +108,7 @@ class SDKPackageStage(generic_stages.BuilderStage):
       sdk_path: Path to the root of the SDK to describe.
       dest_manifest: Path to the manifest that should be generated.
     """
+    cros_build_lib.Info('Generating manifest for new sdk')
     package_data = {}
     for key, version in portage_util.ListInstalledPackages(sdk_path):
       package_data.setdefault(key, []).append((version, {}))

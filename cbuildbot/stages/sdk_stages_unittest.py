@@ -12,6 +12,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
+from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import sdk_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib import cros_build_lib
@@ -21,8 +22,36 @@ from chromite.lib import portage_util
 
 
 # pylint: disable=R0901
+
+
+class SDKBuildToolchainsStageTest(generic_stages_unittest.AbstractStageTest):
+  """Tests SDK toolchain building."""
+
+  def setUp(self):
+    # This code has its own unit tests, so no need to go testing it here.
+    self.run_mock = self.PatchObject(commands, 'RunBuildScript')
+
+  def ConstructStage(self):
+    return sdk_stages.SDKBuildToolchainsStage(self._run)
+
+  def testNormal(self):
+    """Basic run through the main code."""
+    self._Prepare('chromiumos-sdk')
+    self.RunStage()
+    self.assertEqual(self.run_mock.call_count, 2)
+
+    # Sanity check args passed to RunBuildScript.
+    for call in self.run_mock.call_args_list:
+      buildroot, cmd = call[0]
+      self.assertTrue(isinstance(buildroot, basestring))
+      self.assertTrue(isinstance(cmd, (tuple, list)))
+      for ele in cmd:
+        self.assertTrue(isinstance(ele, basestring))
+
+
 class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests SDK package and Manifest creation."""
+
   fake_packages = [('cat1/package', '1'), ('cat1/package', '2'),
                    ('cat2/package', '3'), ('cat2/package', '4')]
   fake_json_data = {}
@@ -30,8 +59,8 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
 
   def setUp(self):
     # Replace SudoRunCommand, since we don't care about sudo.
-    self._OriginalSudoRunCommand = cros_build_lib.SudoRunCommand
-    cros_build_lib.SudoRunCommand = cros_build_lib.RunCommand
+    self.PatchObject(cros_build_lib, 'SudoRunCommand',
+                     wraps=cros_build_lib.RunCommand)
 
     # Prepare a fake chroot.
     self.fake_chroot = os.path.join(self.build_root, 'chroot/build/amd64-host')
@@ -41,9 +70,6 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
       cpv = portage_util.SplitCPV('%s-%s' % (package, v))
       key = '%s/%s' % (cpv.category, cpv.package)
       self.fake_json_data.setdefault(key, []).append([v, {}])
-
-  def tearDown(self):
-    cros_build_lib.SudoRunCommand = self._OriginalSudoRunCommand
 
   def ConstructStage(self):
     return sdk_stages.SDKPackageStage(self._run)
@@ -57,9 +83,6 @@ class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
 
     self.PatchObject(portage_util, 'ListInstalledPackages',
                      return_value=self.fake_packages)
-    # This code has its own unit tests, so no need to go testing it here.
-    self.PatchObject(sdk_stages.SDKPackageStage,
-                     'CreateRedistributableToolchains')
 
     self.RunStage()
 

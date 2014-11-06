@@ -588,6 +588,7 @@ class SimpleBuilder(Builder):
     self._RunStage(build_stages.SetupBoardStage, constants.CHROOT_BUILDER_BOARD)
     self._RunStage(chrome_stages.SyncChromeStage)
     self._RunStage(chrome_stages.PatchChromeStage)
+    self._RunStage(sdk_stages.SDKBuildToolchainsStage)
     self._RunStage(sdk_stages.SDKPackageStage)
     self._RunStage(sdk_stages.SDKTestStage)
     self._RunStage(artifact_stages.UploadPrebuiltsStage,
