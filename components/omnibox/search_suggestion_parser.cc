@@ -8,6 +8,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -494,10 +495,11 @@ bool SearchSuggestionParser::ParseSuggestResults(
           const base::DictionaryValue* answer_json = NULL;
           if (suggestion_detail->GetDictionary("ansa", &answer_json) &&
               suggestion_detail->GetString("ansb", &answer_type_str)) {
+            bool answer_parsed_successfully = false;
             answer = SuggestionAnswer::ParseAnswer(answer_json);
-
             int answer_type = 0;
             if (answer && base::StringToInt(answer_type_str, &answer_type)) {
+              answer_parsed_successfully = true;
               match_type = AutocompleteMatchType::SEARCH_SUGGEST_ANSWER;
 
               answer->set_type(answer_type);
@@ -509,6 +511,8 @@ bool SearchSuggestionParser::ParseSuggestResults(
             } else {
               answer_type_str = base::string16();
             }
+            UMA_HISTOGRAM_BOOLEAN("Omnibox.AnswerParseSuccess",
+                                  answer_parsed_successfully);
           }
         }
       }
