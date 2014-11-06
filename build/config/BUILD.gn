@@ -57,10 +57,17 @@ config("feature_flags") {
   if (enable_plugins) {
     defines += [ "ENABLE_PLUGINS=1" ]
   }
-  if (enable_printing > 0) {
+  if (enable_basic_printing || enable_print_preview) {
+    # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.
     defines += [ "ENABLE_PRINTING=1" ]
-    if (enable_printing < 2) {
-      defines += [ "ENABLE_FULL_PRINTING=1" ]
+    if (enable_basic_printing) {
+      # Enable basic printing support and UI.
+      defines += [ "ENABLE_BASIC_PRINTING=1" ]
+    }
+    if (enable_print_preview) {
+      # Enable printing with print preview.
+      # Can be defined without ENABLE_BASIC_PRINTING.
+      defines += [ "ENABLE_PRINT_PREVIEW=1" ]
     }
   }
   if (enable_spellcheck) {
