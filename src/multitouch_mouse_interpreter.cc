@@ -111,6 +111,8 @@ void MultitouchMouseInterpreter::SyncInterpretImpl(HardwareState* hwstate,
   for (size_t i = 0; i < num_fingers; i++)
     gs_fingers_.insert(fs[i].tracking_id);
 
+  InterpretScrollWheelEvent(*hwstate, true);
+  InterpretScrollWheelEvent(*hwstate, false);
   InterpretMouseButtonEvent(prev_state_, *state_buffer_.Get(0));
   InterpretMouseMotionEvent(prev_state_, *state_buffer_.Get(0));
 

@@ -33,6 +33,9 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
 
   void InterpretMouseMotionEvent(const HardwareState& prev_state,
                                  const HardwareState& hwstate);
+  // Check for scroll wheel events and produce scroll gestures.
+  void InterpretScrollWheelEvent(const HardwareState& hwstate,
+                                 bool is_vertical);
   bool EmulateScrollWheel(const HardwareState& hwstate);
  private:
   struct WheelRecord {
@@ -45,10 +48,6 @@ class MouseInterpreter : public Interpreter, public PropertyDelegate {
   // Accelerate mouse scroll offsets so that it is larger when the user scroll
   // the mouse wheel faster.
   double ComputeScroll(double input_speed);
-
-  // Check for scroll wheel events and produce scroll gestures.
-  void InterpretScrollWheelEvent(const HardwareState& hwstate,
-                                 bool is_vertical);
 
   HardwareState prev_state_;
 
