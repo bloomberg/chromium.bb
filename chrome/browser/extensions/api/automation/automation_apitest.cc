@@ -57,12 +57,6 @@ class AutomationApiTest : public ExtensionApiTest {
     host_resolver()->AddRule("*", embedded_test_server()->base_url().host());
   }
 
-  void LoadPage() {
-    StartEmbeddedTestServer();
-    const GURL url = GetURLForPath(kDomain, "/index.html");
-    ui_test_utils::NavigateToURL(browser(), url);
-  }
-
  public:
   virtual void SetUpInProcessBrowserTestFixture() override {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -70,7 +64,9 @@ class AutomationApiTest : public ExtensionApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TestRendererAccessibilityEnabled) {
-  LoadPage();
+  StartEmbeddedTestServer();
+  const GURL url = GetURLForPath(kDomain, "/index.html");
+  ui_test_utils::NavigateToURL(browser(), url);
 
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   content::WebContents* const tab =
@@ -174,6 +170,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, DesktopNotSupported) {
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, CloseTab) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "close_tab.html"))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, QuerySelector) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "queryselector.html"))
       << message_;
 }
 

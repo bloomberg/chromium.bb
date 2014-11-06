@@ -93,6 +93,14 @@ AutomationNodeImpl.prototype = {
                           endIndex: endIndex });
   },
 
+  querySelector: function(selector, callback) {
+    automationInternal.querySelector(
+      { treeID: this.rootImpl.treeID,
+        automationNodeID: this.id,
+        selector: selector },
+      this.querySelectorCallback_.bind(this, callback));
+  },
+
   addEventListener: function(eventType, callback, capture) {
     this.removeEventListener(eventType, callback);
     if (!this.listeners[eventType])
@@ -140,11 +148,14 @@ AutomationNodeImpl.prototype = {
   },
 
   toString: function() {
-    return 'node id=' + this.id +
+    var impl = privates(this).impl;
+    if (!impl)
+      impl = this;
+    return 'node id=' + impl.id +
         ' role=' + this.role +
         ' state=' + $JSON.stringify(this.state) +
-        ' parentID=' + this.parentID +
-        ' childIds=' + $JSON.stringify(this.childIds) +
+        ' parentID=' + impl.parentID +
+        ' childIds=' + $JSON.stringify(impl.childIds) +
         ' attributes=' + $JSON.stringify(this.attributes);
   },
 
@@ -213,6 +224,23 @@ AutomationNodeImpl.prototype = {
                                        automationNodeID: this.id,
                                        actionType: actionType },
                                      opt_args || {});
+  },
+
+  querySelectorCallback_: function(userCallback, resultAutomationNodeID) {
+    // resultAutomationNodeID could be zero or undefined or (unlikely) null;
+    // they all amount to the same thing here, which is that no node was
+    // returned.
+    if (!resultAutomationNodeID) {
+      userCallback(null);
+      return;
+    }
+    var resultNode = this.rootImpl.get(resultAutomationNodeID);
+    if (!resultNode) {
+      logging.WARNING('Query selector result not in tree: ' +
+                      resultAutomationNodeID);
+      userCallback(null);
+    }
+    userCallback(resultNode);
   }
 };
 
@@ -615,6 +643,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'setSelection',
                                                 'addEventListener',
                                                 'removeEventListener',
+                                                'querySelector',
                                                 'toJSON'],
                                     readonly: ['isRootNode',
                                                'role',

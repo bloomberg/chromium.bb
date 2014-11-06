@@ -6,7 +6,9 @@
 
 #include <vector>
 
+#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/accessibility/ax_tree_id_registry.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_action_adapter.h"
 #include "chrome/browser/extensions/api/automation_internal/automation_util.h"
@@ -21,9 +23,11 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/extension_messages.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
@@ -36,14 +40,93 @@ class AutomationWebContentsObserver;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::AutomationWebContentsObserver);
 
+namespace extensions {
+
 namespace {
 const int kDesktopTreeID = 0;
 const char kCannotRequestAutomationOnPage[] =
     "Cannot request automation tree on url \"*\". "
     "Extension manifest must request permission to access this host.";
-}  // namespace
+const char kRendererDestroyed[] = "The tab was closed.";
+const char kNoMainFrame[] = "No main frame.";
+const char kNoDocument[] = "No document.";
+const char kNodeDestroyed[] =
+    "querySelector sent on node which is no longer in the tree.";
 
-namespace extensions {
+// Handles sending and receiving IPCs for a single querySelector request. On
+// creation, sends the request IPC, and is destroyed either when the response is
+// received or the renderer is destroyed.
+class QuerySelectorHandler : public content::WebContentsObserver {
+ public:
+  QuerySelectorHandler(
+      content::WebContents* web_contents,
+      int request_id,
+      int acc_obj_id,
+      const base::string16& query,
+      const extensions::AutomationInternalQuerySelectorFunction::Callback&
+          callback)
+      : content::WebContentsObserver(web_contents),
+        request_id_(request_id),
+        callback_(callback) {
+    content::RenderViewHost* rvh = web_contents->GetRenderViewHost();
+
+    rvh->Send(new ExtensionMsg_AutomationQuerySelector(
+        rvh->GetRoutingID(), request_id, acc_obj_id, query));
+  }
+
+  ~QuerySelectorHandler() override {}
+
+  bool OnMessageReceived(const IPC::Message& message) override {
+    if (message.type() != ExtensionHostMsg_AutomationQuerySelector_Result::ID)
+      return false;
+
+    // There may be several requests in flight; check this response matches.
+    int message_request_id = 0;
+    PickleIterator iter(message);
+    if (!message.ReadInt(&iter, &message_request_id))
+      return false;
+
+    if (message_request_id != request_id_)
+      return false;
+
+    IPC_BEGIN_MESSAGE_MAP(QuerySelectorHandler, message)
+      IPC_MESSAGE_HANDLER(ExtensionHostMsg_AutomationQuerySelector_Result,
+                          OnQueryResponse)
+    IPC_END_MESSAGE_MAP()
+    return true;
+  }
+
+  void WebContentsDestroyed() override {
+    callback_.Run(kRendererDestroyed, 0);
+    delete this;
+  }
+
+ private:
+  void OnQueryResponse(int request_id,
+                       ExtensionHostMsg_AutomationQuerySelector_Error error,
+                       int result_acc_obj_id) {
+    std::string error_string;
+    switch (error.value) {
+    case ExtensionHostMsg_AutomationQuerySelector_Error::kNone:
+      error_string = "";
+      break;
+    case ExtensionHostMsg_AutomationQuerySelector_Error::kNoMainFrame:
+      error_string = kNoMainFrame;
+      break;
+    case ExtensionHostMsg_AutomationQuerySelector_Error::kNoDocument:
+      error_string = kNoDocument;
+      break;
+    case ExtensionHostMsg_AutomationQuerySelector_Error::kNodeDestroyed:
+      error_string = kNodeDestroyed;
+      break;
+    }
+    callback_.Run(error_string, result_acc_obj_id);
+    delete this;
+  }
+
+  int request_id_;
+  const extensions::AutomationInternalQuerySelectorFunction::Callback callback_;
+};
 
 bool CanRequestAutomation(const Extension* extension,
                           const AutomationInfo* automation_info,
@@ -63,6 +146,35 @@ bool CanRequestAutomation(const Extension* extension,
   return extension->permissions_data()->CanAccessPage(
       extension, url, url, tab_id, process_id, &unused_error);
 }
+
+// Helper class that implements an action adapter for a |RenderFrameHost|.
+class RenderFrameHostActionAdapter : public AutomationActionAdapter {
+ public:
+  explicit RenderFrameHostActionAdapter(content::RenderFrameHost* rfh)
+      : rfh_(rfh) {}
+
+  virtual ~RenderFrameHostActionAdapter() {}
+
+  // AutomationActionAdapter implementation.
+  void DoDefault(int32 id) override { rfh_->AccessibilityDoDefaultAction(id); }
+
+  void Focus(int32 id) override { rfh_->AccessibilitySetFocus(id); }
+
+  void MakeVisible(int32 id) override {
+    rfh_->AccessibilityScrollToMakeVisible(id, gfx::Rect());
+  }
+
+  void SetSelection(int32 id, int32 start, int32 end) override {
+    rfh_->AccessibilitySetTextSelection(id, start, end);
+  }
+
+ private:
+  content::RenderFrameHost* rfh_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostActionAdapter);
+};
+
+}  // namespace
 
 // Helper class that receives accessibility data from |WebContents|.
 class AutomationWebContentsObserver
@@ -99,33 +211,6 @@ class AutomationWebContentsObserver
   content::BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationWebContentsObserver);
-};
-
-// Helper class that implements an action adapter for a |RenderFrameHost|.
-class RenderFrameHostActionAdapter : public AutomationActionAdapter {
- public:
-  explicit RenderFrameHostActionAdapter(content::RenderFrameHost* rfh)
-      : rfh_(rfh) {}
-
-  virtual ~RenderFrameHostActionAdapter() {}
-
-  // AutomationActionAdapter implementation.
-  void DoDefault(int32 id) override { rfh_->AccessibilityDoDefaultAction(id); }
-
-  void Focus(int32 id) override { rfh_->AccessibilitySetFocus(id); }
-
-  void MakeVisible(int32 id) override {
-    rfh_->AccessibilityScrollToMakeVisible(id, gfx::Rect());
-  }
-
-  void SetSelection(int32 id, int32 start, int32 end) override {
-    rfh_->AccessibilitySetTextSelection(id, start, end);
-  }
-
- private:
-  content::RenderFrameHost* rfh_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderFrameHostActionAdapter);
 };
 
 ExtensionFunction::ResponseAction
@@ -274,6 +359,54 @@ AutomationInternalEnableDesktopFunction::Run() {
 #else
   return RespondNow(Error("getDesktop is unsupported by this platform"));
 #endif  // defined(OS_CHROMEOS)
+}
+
+// static
+int AutomationInternalQuerySelectorFunction::query_request_id_counter_ = 0;
+
+ExtensionFunction::ResponseAction
+AutomationInternalQuerySelectorFunction::Run() {
+  const AutomationInfo* automation_info = AutomationInfo::Get(extension());
+  EXTENSION_FUNCTION_VALIDATE(automation_info);
+
+  using api::automation_internal::QuerySelector::Params;
+  scoped_ptr<Params> params(Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  if (params->args.tree_id == kDesktopTreeID) {
+    return RespondNow(
+        Error("querySelector queries may not be used on the desktop."));
+  }
+  AXTreeIDRegistry::FrameID frame_id =
+      AXTreeIDRegistry::GetInstance()->GetFrameID(params->args.tree_id);
+  content::RenderFrameHost* rfh =
+      content::RenderFrameHost::FromID(frame_id.first, frame_id.second);
+  if (!rfh)
+    return RespondNow(Error("querySelector query sent on destroyed tree."));
+
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+
+  int request_id = query_request_id_counter_++;
+  base::string16 selector = base::UTF8ToUTF16(params->args.selector);
+
+  // QuerySelectorHandler handles IPCs and deletes itself on completion.
+  new QuerySelectorHandler(
+      contents, request_id, params->args.automation_node_id, selector,
+      base::Bind(&AutomationInternalQuerySelectorFunction::OnResponse, this));
+
+  return RespondLater();
+}
+
+void AutomationInternalQuerySelectorFunction::OnResponse(
+    const std::string& error,
+    int result_acc_obj_id) {
+  if (!error.empty()) {
+    Respond(Error(error));
+    return;
+  }
+
+  Respond(OneArgument(new base::FundamentalValue(result_acc_obj_id)));
 }
 
 }  // namespace extensions

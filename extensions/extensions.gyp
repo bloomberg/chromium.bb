@@ -829,6 +829,8 @@
         # Note: sources list duplicated in GN build.
         'renderer/activity_log_converter_strategy.cc',
         'renderer/activity_log_converter_strategy.h',
+        'renderer/api/automation/automation_api_helper.cc',
+        'renderer/api/automation/automation_api_helper.h',
         'renderer/api_activity_logger.cc',
         'renderer/api_activity_logger.h',
         'renderer/api_definitions_natives.cc',

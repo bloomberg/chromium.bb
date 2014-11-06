@@ -81,12 +81,22 @@ namespace automationInternal {
     long endIndex;
   };
 
+  // Arguments for the querySelector function.
+  dictionary QuerySelectorRequiredParams {
+    long treeID;
+    long automationNodeID;
+    DOMString selector;
+  };
+
   // Returns the accessibility tree id of the web contents who's accessibility
   // was enabled using enableTab().
   callback EnableTabCallback = void(long tree_id);
 
   // Callback called when enableDesktop() returns.
   callback EnableDesktopCallback = void();
+
+  // Callback called when querySelector() returns.
+  callback QuerySelectorCallback = void(long resultAutomationNodeID);
 
   interface Functions {
     // Enable automation of the tab with the given id, or the active tab if no
@@ -103,6 +113,10 @@ namespace automationInternal {
     // Performs an action on an automation node.
     static void performAction(PerformActionRequiredParams args,
                               object opt_args);
+
+    // Performs a query selector query.
+    static void querySelector(QuerySelectorRequiredParams args,
+                              QuerySelectorCallback callback);
   };
 
   interface Events {

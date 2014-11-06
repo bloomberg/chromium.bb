@@ -9,6 +9,7 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/renderer/api/automation/automation_api_helper.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/messaging_bindings.h"
@@ -122,6 +123,8 @@ ExtensionHelper::ExtensionHelper(content::RenderView* render_view,
       view_type_(VIEW_TYPE_INVALID),
       tab_id_(-1),
       browser_window_id_(-1) {
+  // Lifecycle managed by RenderViewObserver.
+  new AutomationApiHelper(render_view);
 }
 
 ExtensionHelper::~ExtensionHelper() {

@@ -258,6 +258,14 @@ struct ExtensionMsg_Loaded_Params {
   int creation_flags;
 };
 
+struct ExtensionHostMsg_AutomationQuerySelector_Error {
+  enum Value { kNone, kNoMainFrame, kNoDocument, kNodeDestroyed };
+
+  ExtensionHostMsg_AutomationQuerySelector_Error() : value(kNone) {}
+
+  Value value;
+};
+
 namespace IPC {
 
 template <>
@@ -319,6 +327,14 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 }  // namespace IPC
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+
+IPC_ENUM_TRAITS_MAX_VALUE(
+    ExtensionHostMsg_AutomationQuerySelector_Error::Value,
+    ExtensionHostMsg_AutomationQuerySelector_Error::kNodeDestroyed)
+
+IPC_STRUCT_TRAITS_BEGIN(ExtensionHostMsg_AutomationQuerySelector_Error)
+IPC_STRUCT_TRAITS_MEMBER(value)
+IPC_STRUCT_TRAITS_END()
 
 // Parameters structure for ExtensionMsg_UpdatePermissions.
 IPC_STRUCT_BEGIN(ExtensionMsg_UpdatePermissions_Params)
@@ -750,3 +766,18 @@ IPC_MESSAGE_CONTROL4(ExtensionHostMsg_CreateMimeHandlerViewGuest,
                      std::string /* embedder_url */,
                      std::string /* mime_type */,
                      int /* element_instance_id */)
+
+// Sent when a query selector request is made from the automation API.
+// acc_obj_id is the accessibility tree ID of the starting element.
+IPC_MESSAGE_ROUTED3(ExtensionMsg_AutomationQuerySelector,
+                    int /* request_id */,
+                    int /* acc_obj_id */,
+                    base::string16 /* selector */)
+
+// Result of a query selector request.
+// result_acc_obj_id is the accessibility tree ID of the result element; 0
+// indicates no result.
+IPC_MESSAGE_ROUTED3(ExtensionHostMsg_AutomationQuerySelector_Result,
+                    int /* request_id */,
+                    ExtensionHostMsg_AutomationQuerySelector_Error /* error */,
+                    int /* result_acc_obj_id */)

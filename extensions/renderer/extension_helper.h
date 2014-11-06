@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "content/public/common/console_message_level.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_observer_tracker.h"
@@ -22,7 +23,9 @@ class ListValue;
 }
 
 namespace extensions {
+class AutomationApiHelper;
 class Dispatcher;
+
 struct Message;
 
 // RenderView-level plumbing for extension features.

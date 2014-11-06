@@ -4,7 +4,7 @@
 
 var allTests = [
   function testCloseTab() {
-    getUrlFromConfig(function(url) {
+    getUrlFromConfig('index.html', function(url) {
       chrome.tabs.create({'url': url}, function(tab) {
         chrome.automation.getTree(function(rootNode) {
           rootNode.addEventListener(EventType.destroyed, function() {
