@@ -4,6 +4,7 @@
 
 #include "extensions/shell/renderer/shell_content_renderer_client.h"
 
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
@@ -12,7 +13,8 @@
 #include "extensions/renderer/default_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
-#include "extensions/renderer/guest_view/guest_view_container.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view_container.h"
 #include "extensions/shell/common/shell_extensions_client.h"
 #include "extensions/shell/renderer/shell_extensions_renderer_client.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -178,7 +180,10 @@ content::BrowserPluginDelegate*
 ShellContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
     const std::string& mime_type) {
-  return new extensions::GuestViewContainer(render_frame, mime_type);
+  if (mime_type == content::kBrowserPluginMimeType)
+    return new extensions::ExtensionsGuestViewContainer(render_frame);
+  else
+    return new extensions::MimeHandlerViewContainer(render_frame, mime_type);
 }
 
 }  // namespace extensions

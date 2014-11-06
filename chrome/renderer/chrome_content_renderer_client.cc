@@ -121,7 +121,8 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/extension_helper.h"
 #include "extensions/renderer/extensions_render_frame_observer.h"
-#include "extensions/renderer/guest_view/guest_view_container.h"
+#include "extensions/renderer/guest_view/extensions_guest_view_container.h"
+#include "extensions/renderer/guest_view/mime_handler_view_container.h"
 #include "extensions/renderer/script_context.h"
 #endif
 
@@ -1597,7 +1598,10 @@ ChromeContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
     const std::string& mime_type) {
 #if defined(ENABLE_EXTENSIONS)
-  return new extensions::GuestViewContainer(render_frame, mime_type);
+  if (mime_type == content::kBrowserPluginMimeType)
+    return new extensions::ExtensionsGuestViewContainer(render_frame);
+  else
+    return new extensions::MimeHandlerViewContainer(render_frame, mime_type);
 #else
   return NULL;
 #endif

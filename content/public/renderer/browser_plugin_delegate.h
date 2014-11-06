@@ -18,8 +18,6 @@ class RenderFrame;
 // behavior of the plugin.
 class CONTENT_EXPORT BrowserPluginDelegate {
  public:
-  BrowserPluginDelegate(RenderFrame* render_frame,
-                        const std::string& mime_type) {}
   virtual ~BrowserPluginDelegate() {}
 
   // Called when the BrowserPlugin's geometry has been computed for the first

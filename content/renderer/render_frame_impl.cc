@@ -1672,8 +1672,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 
   if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
-        GetContentClient()->renderer()->CreateBrowserPluginDelegate(
-            this, std::string()));
+        GetContentClient()->renderer()->CreateBrowserPluginDelegate(this,
+            kBrowserPluginMimeType));
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
         render_view_.get(), frame, browser_plugin_delegate.Pass());
   }
