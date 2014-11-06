@@ -9,6 +9,9 @@
     # _mac.h or _mac.cc are only compiled on MacOSX).
     'chromium_code': 1,
   },
+  'includes': [
+    'javascript_dialog_extensions_client.gypi',
+  ],
   'conditions': [
     ['toolkit_views==1', {
       'includes': [

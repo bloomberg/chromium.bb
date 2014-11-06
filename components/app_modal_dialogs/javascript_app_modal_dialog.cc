@@ -4,7 +4,8 @@
 
 #include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
 
-#include "components/app_modal_dialogs/native_app_modal_dialog.h"
+#include "components/app_modal_dialogs/javascript_dialog_manager_impl.h"
+#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/text_elider.h"
 
@@ -94,9 +95,8 @@ NativeAppModalDialog* JavaScriptAppModalDialog::CreateNativeDialog() {
     parent_window = NULL;
   }
 #endif  // defined(USE_AURA)
-
-  return NativeAppModalDialog::CreateNativeJavaScriptPrompt(this,
-                                                            parent_window);
+  return JavaScriptDialogManagerImpl::GetInstance()->native_dialog_factory()->
+      CreateNativeJavaScriptDialog(this, parent_window);
 }
 
 bool JavaScriptAppModalDialog::IsJavaScriptModalDialog() {

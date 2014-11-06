@@ -8,21 +8,35 @@ static_library("app_modal_dialogs") {
   sources = [
     "app_modal_dialog.cc",
     "app_modal_dialog.h",
-    "app_modal_dialog_test_util.h",
     "app_modal_dialog_queue.cc",
     "app_modal_dialog_queue.h",
+    "app_modal_dialog_test_util.h",
     "javascript_app_modal_dialog.cc",
     "javascript_app_modal_dialog.h",
+    "javascript_dialog_extension_client.h",
+    "javascript_dialog_manager.cc",
+    "javascript_dialog_manager.h",
+    "javascript_dialog_manager_impl.cc",
+    "javascript_dialog_manager_impl.h",
+    "javascript_native_dialog_factory.h",
     "native_app_modal_dialog.h"
   ]
 
   deps = [
     "//components/strings",
     "//content/public/browser",
+    "//content/public/common",
     "//skia",
   ]
 
   if (use_aura) {
     deps += [ "//ui/aura" ]
+  }
+
+  if (toolkit_views && !is_mac) {
+    sources += [
+      "views/javascript_app_modal_dialog_views.h",
+      "views/javascript_app_modal_dialog_views.cc",
+    ]
   }
 }

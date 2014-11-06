@@ -27,11 +27,6 @@ class NativeAppModalDialog {
   // Accepts or cancels the dialog.
   virtual void AcceptAppModalDialog() = 0;
   virtual void CancelAppModalDialog() = 0;
-
-  // Creates an app modal dialog for a JavaScript prompt.
-  static NativeAppModalDialog* CreateNativeJavaScriptPrompt(
-      JavaScriptAppModalDialog* dialog,
-      gfx::NativeWindow parent_window);
 };
 
 #endif  // COMPONENTS_APP_MODAL_DIALOGS_NATIVE_APP_MODAL_DIALOG_H_

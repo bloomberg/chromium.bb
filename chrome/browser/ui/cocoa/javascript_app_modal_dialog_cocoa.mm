@@ -11,8 +11,10 @@
 #import "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/chrome_browser_application_mac.h"
-#include "chrome/grit/generated_resources.h"
+#include "chrome/browser/ui/app_modal_dialogs/chrome_javascript_native_dialog_factory.h"
 #include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
+#include "components/app_modal_dialogs/javascript_dialog_manager.h"
+#include "components/app_modal_dialogs/javascript_native_dialog_factory.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/ui_base_types.h"
@@ -435,12 +437,27 @@ void JavaScriptAppModalDialogCocoa::CancelAppModalDialog() {
   [helper_ playOrQueueAction:ACTION_CANCEL];
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// NativeAppModalDialog, public:
+namespace {
 
-// static
-NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
-    JavaScriptAppModalDialog* dialog,
-    gfx::NativeWindow parent_window) {
-  return new JavaScriptAppModalDialogCocoa(dialog);
+class ChromeJavaScritpNativeDialogCocoaFactory
+    : public JavaScriptNativeDialogFactory {
+ public:
+  ChromeJavaScritpNativeDialogCocoaFactory() {}
+  ~ChromeJavaScritpNativeDialogCocoaFactory() override {}
+
+ private:
+  NativeAppModalDialog* CreateNativeJavaScriptDialog(
+      JavaScriptAppModalDialog* dialog,
+      gfx::NativeWindow parent_window) override {
+    return new JavaScriptAppModalDialogCocoa(dialog);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeJavaScritpNativeDialogCocoaFactory);
+};
+
+}  // namespace
+
+void InstallChromeJavaScriptNativeDialogFactory() {
+  SetJavaScriptNativeDialogFactory(
+      make_scoped_ptr(new ChromeJavaScritpNativeDialogCocoaFactory));
 }

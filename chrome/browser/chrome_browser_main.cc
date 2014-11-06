@@ -182,6 +182,10 @@
 #include "chrome/browser/mac/keystone_glue.h"
 #endif
 
+#if !defined(OS_IOS)
+#include "chrome/browser/ui/app_modal_dialogs/chrome_javascript_native_dialog_factory.h"
+#endif
+
 #if !defined(DISABLE_NACL)
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
 #include "components/nacl/browser/nacl_process_host.h"
@@ -190,6 +194,7 @@
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/startup_helper.h"
 #include "extensions/browser/extension_protocols.h"
+#include "extensions/components/javascript_dialog_extensions_client/javascript_dialog_extension_client_impl.h"
 #endif
 
 #if defined(ENABLE_PRINT_PREVIEW) && !defined(OFFICIAL_BUILD)
@@ -1061,6 +1066,14 @@ void ChromeBrowserMainParts::PreProfileInit() {
         base::Bind(&ProfileManager::CleanUpStaleProfiles, profiles_to_delete));
   }
 #endif  // OS_ANDROID
+
+#if defined(ENABLE_EXTENSIONS)
+  InstallJavaScriptDialogExtensionsClient();
+#endif
+
+#if !defined(OS_IOS)
+  InstallChromeJavaScriptNativeDialogFactory();
+#endif
 }
 
 void ChromeBrowserMainParts::PostProfileInit() {

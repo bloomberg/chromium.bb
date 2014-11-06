@@ -167,6 +167,7 @@ static_library("browser") {
       "//cc",
       "//chrome/browser/devtools",
       "//chrome/installer/util",
+      "//components/app_modal_dialogs",
       "//components/autofill/content/browser",
       "//components/dom_distiller/content",
       "//components/keyed_service/content",
@@ -264,6 +265,7 @@ static_library("browser") {
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
+      "//extensions/components/javascript_dialog_extensions_client",
     ]
     sources += rebase_path(gypi_values.chrome_browser_extensions_sources,
                            ".", "//chrome")

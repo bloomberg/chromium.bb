@@ -89,6 +89,7 @@ include_rules = [
   "+device/media_transfer_protocol",
   "+extensions/browser",
   "+extensions/common",
+  "+extensions/components/javascript_dialog_extensions_client",
   "+extensions/grit",
   "+extensions/test",
   "+google/cacheinvalidation",  # Sync invalidation API protobuf files.

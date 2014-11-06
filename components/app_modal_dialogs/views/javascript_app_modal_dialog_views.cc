@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/javascript_app_modal_dialog_views.h"
+#include "components/app_modal_dialogs/views/javascript_app_modal_dialog_views.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
@@ -14,10 +14,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
-
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-#include "chrome/browser/ui/views/javascript_app_modal_event_blocker_x11.h"
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // JavaScriptAppModalDialogViews, public:
@@ -55,19 +51,6 @@ int JavaScriptAppModalDialogViews::GetAppModalDialogButtons() const {
 }
 
 void JavaScriptAppModalDialogViews::ShowAppModalDialog() {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  // BrowserView::CanActivate() ensures that other browser windows cannot be
-  // activated for long while the dialog is visible. Block events to other
-  // browser windows so that the user cannot interact with other browser windows
-  // in the short time that the other browser windows are active. This hack is
-  // unnecessary on Windows and Chrome OS.
-  // TODO(pkotwicz): Find a better way of doing this and remove this hack.
-  if (!event_blocker_x11_.get()) {
-    event_blocker_x11_.reset(
-        new JavascriptAppModalEventBlockerX11(GetWidget()->GetNativeView()));
-  }
-#endif
-
   GetWidget()->Show();
 }
 
@@ -105,12 +88,6 @@ int JavaScriptAppModalDialogViews::GetDialogButtons() const {
 
 base::string16 JavaScriptAppModalDialogViews::GetWindowTitle() const {
   return parent_->title();
-}
-
-void JavaScriptAppModalDialogViews::WindowClosing() {
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  event_blocker_x11_.reset();
-#endif
 }
 
 void JavaScriptAppModalDialogViews::DeleteDelegate() {
@@ -173,16 +150,4 @@ views::View* JavaScriptAppModalDialogViews::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// NativeAppModalDialog, public:
-
-// static
-NativeAppModalDialog* NativeAppModalDialog::CreateNativeJavaScriptPrompt(
-    JavaScriptAppModalDialog* dialog,
-    gfx::NativeWindow parent_window) {
-  JavaScriptAppModalDialogViews* d = new JavaScriptAppModalDialogViews(dialog);
-  CreateBrowserModalDialogViews(d, parent_window);
-  return d;
 }
