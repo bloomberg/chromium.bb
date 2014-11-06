@@ -872,6 +872,49 @@ TEST(HttpUtilTest, ParseRanges) {
   }
 }
 
+TEST(HttpUtilTest, ParseRetryAfterHeader) {
+  base::Time::Exploded now_exploded = { 2014, 11, -1, 5, 22, 39, 30, 0 };
+  base::Time now = base::Time::FromUTCExploded(now_exploded);
+
+  base::Time::Exploded later_exploded = { 2015, 1, -1, 1, 12, 34, 56, 0 };
+  base::Time later = base::Time::FromUTCExploded(later_exploded);
+
+  const struct {
+    const char* retry_after_string;
+    bool expected_return_value;
+    base::TimeDelta expected_retry_after;
+  } tests[] = {
+    { "", false, base::TimeDelta() },
+    { "-3", false, base::TimeDelta() },
+    { "-2", false, base::TimeDelta() },
+    { "-1", false, base::TimeDelta() },
+    { "0", true, base::TimeDelta::FromSeconds(0) },
+    { "1", true, base::TimeDelta::FromSeconds(1) },
+    { "2", true, base::TimeDelta::FromSeconds(2) },
+    { "3", true, base::TimeDelta::FromSeconds(3) },
+    { "60", true, base::TimeDelta::FromSeconds(60) },
+    { "3600", true, base::TimeDelta::FromSeconds(3600) },
+    { "86400", true, base::TimeDelta::FromSeconds(86400) },
+    { "Thu, 1 Jan 2015 12:34:56 GMT", true, later - now },
+    { "Mon, 1 Jan 1900 12:34:56 GMT", false, base::TimeDelta() }
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::TimeDelta retry_after;
+    bool return_value = HttpUtil::ParseRetryAfterHeader(
+        tests[i].retry_after_string, now, &retry_after);
+    EXPECT_EQ(tests[i].expected_return_value, return_value)
+        << "Test case " << i << ": expected " << tests[i].expected_return_value
+        << " but got " << return_value << ".";
+    if (tests[i].expected_return_value && return_value) {
+      EXPECT_EQ(tests[i].expected_retry_after, retry_after)
+          << "Test case " << i << ": expected "
+          << tests[i].expected_retry_after.InSeconds() << "s but got "
+          << retry_after.InSeconds() << "s.";
+    }
+  }
+}
+
 namespace {
 void CheckCurrentNameValuePair(HttpUtil::NameValuePairsIterator* parser,
                                bool expect_valid,

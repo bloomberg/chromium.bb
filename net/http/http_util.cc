@@ -275,6 +275,29 @@ bool HttpUtil::ParseRangeHeader(const std::string& ranges_specifier,
 }
 
 // static
+bool HttpUtil::ParseRetryAfterHeader(const std::string& retry_after_string,
+                                     base::Time now,
+                                     base::TimeDelta* retry_after) {
+  int seconds;
+  base::Time time;
+  base::TimeDelta interval;
+
+  if (base::StringToInt(retry_after_string, &seconds)) {
+    interval = base::TimeDelta::FromSeconds(seconds);
+  } else if (base::Time::FromUTCString(retry_after_string.c_str(), &time)) {
+    interval = time - now;
+  } else {
+    return false;
+  }
+
+  if (interval < base::TimeDelta::FromSeconds(0))
+    return false;
+
+  *retry_after = interval;
+  return true;
+}
+
+// static
 bool HttpUtil::HasHeader(const std::string& headers, const char* name) {
   size_t name_len = strlen(name);
   std::string::const_iterator it =

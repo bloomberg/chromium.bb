@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_request_status.h"
 
 namespace captive_portal {
@@ -99,16 +100,13 @@ void CaptivePortalDetector::GetCaptivePortalResultFromResponse(
     if (!headers->EnumerateHeader(NULL, "Retry-After", &retry_after_string))
       return;
 
-    // Otherwise, try parsing it as an integer (seconds) or as an HTTP date.
-    int seconds;
-    base::Time full_date;
-    if (base::StringToInt(retry_after_string, &seconds)) {
-      results->retry_after_delta = base::TimeDelta::FromSeconds(seconds);
-    } else if (headers->GetTimeValuedHeader("Retry-After", &full_date)) {
-      base::Time now = GetCurrentTime();
-      if (full_date > now)
-        results->retry_after_delta = full_date - now;
+    base::TimeDelta retry_after_delta;
+    if (net::HttpUtil::ParseRetryAfterHeader(retry_after_string,
+                                             GetCurrentTime(),
+                                             &retry_after_delta)) {
+      results->retry_after_delta = retry_after_delta;
     }
+
     return;
   }
 
