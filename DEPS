@@ -25,7 +25,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  "buildtools_revision": "59b93247766e1cdac6e482637ad493df38f7aeb7"
+  "buildtools_revision": "c27f95bd1d9baaef70c879dea375090dd1496147"
 }
 
 deps = {

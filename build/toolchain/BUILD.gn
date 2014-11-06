@@ -97,7 +97,7 @@ template("toolchain_copies") {
       "//native_client/src/untrusted/nacl/nacl_thread.h",
       "//native_client/src/untrusted/valgrind/dynamic_annotations.h",
     ]
-    outputs = [ "${install_dir}/include//nacl/{{source_file_part}}" ]
+    outputs = [ "${install_dir}/include/nacl/{{source_file_part}}" ]
     deps = [
       "//native_client/build/toolchain:${package}_untar"
     ]
