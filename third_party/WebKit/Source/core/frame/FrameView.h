@@ -247,6 +247,14 @@ public:
 
     bool isFrameViewScrollCorner(RenderScrollbarPart* scrollCorner) const { return m_scrollCorner == scrollCorner; }
 
+    enum ScrollingReasons {
+        Scrollable,
+        NotScrollableNoOverflow,
+        NotScrollableNotVisible,
+        NotScrollableExplicitlyDisabled
+    };
+
+    ScrollingReasons scrollingReasons();
     bool isScrollable();
 
     enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };

@@ -2269,7 +2269,13 @@ IntRect FrameView::scrollableAreaBoundingBox() const
     return ownerRenderer->absoluteContentQuad().enclosingBoundingBox();
 }
 
+
 bool FrameView::isScrollable()
+{
+    return scrollingReasons() == Scrollable;
+}
+
+FrameView::ScrollingReasons FrameView::scrollingReasons()
 {
     // Check for:
     // 1) If there an actual overflow.
@@ -2281,22 +2287,22 @@ bool FrameView::isScrollable()
     IntSize contentsSize = this->contentsSize();
     IntSize visibleContentSize = visibleContentRect().size();
     if ((contentsSize.height() <= visibleContentSize.height() && contentsSize.width() <= visibleContentSize.width()))
-        return false;
+        return NotScrollableNoOverflow;
 
     // Covers #2.
     // FIXME: Do we need to fix this for OOPI?
     HTMLFrameOwnerElement* owner = m_frame->deprecatedLocalOwner();
     if (owner && (!owner->renderer() || !owner->renderer()->visibleToHitTesting()))
-        return false;
+        return NotScrollableNotVisible;
 
     // Cover #3 and #4.
     ScrollbarMode horizontalMode;
     ScrollbarMode verticalMode;
     calculateScrollbarModesForLayoutAndSetViewportRenderer(horizontalMode, verticalMode, RulesFromWebContentOnly);
     if (horizontalMode == ScrollbarAlwaysOff && verticalMode == ScrollbarAlwaysOff)
-        return false;
+        return NotScrollableExplicitlyDisabled;
 
-    return true;
+    return Scrollable;
 }
 
 void FrameView::updateScrollableAreaSet()
