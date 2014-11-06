@@ -61,11 +61,65 @@ struct FormElements {
 
 typedef std::vector<FormElements*> FormElementsList;
 
-// Helper to search the given form element for the specified input elements
-// in |data|, and add results to |result|.
-static bool FindFormInputElements(blink::WebFormElement* fe,
-                                  const FormData& data,
-                                  FormElements* result) {
+// Utility function to find the unique entry of the |form_element| for the
+// specified input |field|. On successful find, adds it to |result| and returns
+// |true|. Otherwise clears the references from each |HTMLInputElement| from
+// |result| and returns |false|.
+bool FindFormInputElement(blink::WebFormElement* form_element,
+                          const FormFieldData& field,
+                          FormElements* result) {
+  blink::WebVector<blink::WebNode> temp_elements;
+  form_element->getNamedElements(field.name, temp_elements);
+
+  // Match the first input element, if any.
+  // |getNamedElements| may return non-input elements where the names match,
+  // so the results are filtered for input elements.
+  // If more than one match is made, then we have ambiguity (due to misuse
+  // of "name" attribute) so is it considered not found.
+  bool found_input = false;
+  for (size_t i = 0; i < temp_elements.size(); ++i) {
+    if (temp_elements[i].to<blink::WebElement>().hasHTMLTagName("input")) {
+      // Check for a non-unique match.
+      if (found_input) {
+        found_input = false;
+        break;
+      }
+
+      // Only fill saved passwords into password fields and usernames into
+      // text fields.
+      blink::WebInputElement input_element =
+          temp_elements[i].to<blink::WebInputElement>();
+      if (input_element.isPasswordField() !=
+          (field.form_control_type == "password"))
+        continue;
+
+      // This element matched, add it to our temporary result. It's possible
+      // there are multiple matches, but for purposes of identifying the form
+      // one suffices and if some function needs to deal with multiple
+      // matching elements it can get at them through the FormElement*.
+      // Note: This assignment adds a reference to the InputElement.
+      result->input_elements[field.name] = input_element;
+      found_input = true;
+    }
+  }
+
+  // A required element was not found. This is not the right form.
+  // Make sure no input elements from a partially matched form in this
+  // iteration remain in the result set.
+  // Note: clear will remove a reference from each InputElement.
+  if (!found_input) {
+    result->input_elements.clear();
+    return false;
+  }
+
+  return true;
+}
+
+// Helper to search the given form element for the specified input elements in
+// |data|, and add results to |result|.
+bool FindFormInputElements(blink::WebFormElement* form_element,
+                           const FormData& data,
+                           FormElements* result) {
   const bool username_is_present = !data.fields[0].name.empty();
 
   // Loop through the list of elements we need to find on the form in order to
@@ -73,50 +127,10 @@ static bool FindFormInputElements(blink::WebFormElement* fe,
   // form; it can't be the right one.
   // First field is the username, skip it if not present.
   for (size_t j = (username_is_present ? 0 : 1); j < data.fields.size(); ++j) {
-    blink::WebVector<blink::WebNode> temp_elements;
-    fe->getNamedElements(data.fields[j].name, temp_elements);
-
-    // Match the first input element, if any.
-    // |getNamedElements| may return non-input elements where the names match,
-    // so the results are filtered for input elements.
-    // If more than one match is made, then we have ambiguity (due to misuse
-    // of "name" attribute) so is it considered not found.
-    bool found_input = false;
-    for (size_t i = 0; i < temp_elements.size(); ++i) {
-      if (temp_elements[i].to<blink::WebElement>().hasHTMLTagName("input")) {
-        // Check for a non-unique match.
-        if (found_input) {
-          found_input = false;
-          break;
-        }
-
-        // Only fill saved passwords into password fields and usernames into
-        // text fields.
-        blink::WebInputElement input_element =
-            temp_elements[i].to<blink::WebInputElement>();
-        if (input_element.isPasswordField() !=
-            (data.fields[j].form_control_type == "password"))
-          continue;
-
-        // This element matched, add it to our temporary result. It's possible
-        // there are multiple matches, but for purposes of identifying the form
-        // one suffices and if some function needs to deal with multiple
-        // matching elements it can get at them through the FormElement*.
-        // Note: This assignment adds a reference to the InputElement.
-        result->input_elements[data.fields[j].name] = input_element;
-        found_input = true;
-      }
-    }
-
-    // A required element was not found. This is not the right form.
-    // Make sure no input elements from a partially matched form in this
-    // iteration remain in the result set.
-    // Note: clear will remove a reference from each InputElement.
-    if (!found_input) {
-      result->input_elements.clear();
+    if (!FindFormInputElement(form_element, data.fields[j], result))
       return false;
-    }
   }
+
   return true;
 }
 
