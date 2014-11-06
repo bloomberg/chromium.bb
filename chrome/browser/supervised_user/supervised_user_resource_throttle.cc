@@ -102,6 +102,8 @@ SupervisedUserResourceThrottle::SupervisedUserResourceThrottle(
     : request_(request),
       is_main_frame_(is_main_frame),
       url_filter_(url_filter),
+      deferred_(false),
+      behavior_(SupervisedUserURLFilter::HISTOGRAM_BOUNDING_VALUE),
       weak_ptr_factory_(this) {}
 
 SupervisedUserResourceThrottle::~SupervisedUserResourceThrottle() {}
@@ -114,16 +116,18 @@ void SupervisedUserResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
     return;
 
   deferred_ = false;
+  DCHECK_EQ(SupervisedUserURLFilter::HISTOGRAM_BOUNDING_VALUE, behavior_);
   bool got_result = url_filter_->GetFilteringBehaviorForURLWithAsyncChecks(
       url,
       base::Bind(&SupervisedUserResourceThrottle::OnCheckDone,
                  weak_ptr_factory_.GetWeakPtr(), url));
+  DCHECK_EQ(got_result,
+            (behavior_ != SupervisedUserURLFilter::HISTOGRAM_BOUNDING_VALUE));
   // If we got a "not blocked" result synchronously, don't defer.
-  if (got_result && behavior_ != SupervisedUserURLFilter::BLOCK)
-    return;
-
-  *defer = true;
-  deferred_ = true;
+  *defer = deferred_ = !got_result ||
+                       (behavior_ == SupervisedUserURLFilter::BLOCK);
+  if (got_result)
+    behavior_ = SupervisedUserURLFilter::HISTOGRAM_BOUNDING_VALUE;
 }
 
 void SupervisedUserResourceThrottle::ShowInterstitial(const GURL& url) {
@@ -155,7 +159,10 @@ void SupervisedUserResourceThrottle::OnCheckDone(
     SupervisedUserURLFilter::FilteringBehavior behavior,
     SupervisedUserURLFilter::FilteringBehaviorSource source,
     bool uncertain) {
-  behavior_ = behavior;
+  DCHECK_EQ(SupervisedUserURLFilter::HISTOGRAM_BOUNDING_VALUE, behavior_);
+  // If we got a result synchronously, pass it back to ShowInterstitialIfNeeded.
+  if (!deferred_)
+    behavior_ = behavior;
 
   // If both the static blacklist and SafeSites are enabled, record UMA events.
   if (url_filter_->HasBlacklist() && url_filter_->HasAsyncURLChecker() &&
@@ -166,11 +173,10 @@ void SupervisedUserResourceThrottle::OnCheckDone(
                             info->GetPageTransition());
   }
 
-  if (behavior == SupervisedUserURLFilter::BLOCK) {
+  if (behavior == SupervisedUserURLFilter::BLOCK)
     ShowInterstitial(url);
-  } else if (deferred_) {
+  else if (deferred_)
     controller()->Resume();
-  }
 }
 
 void SupervisedUserResourceThrottle::OnInterstitialResult(

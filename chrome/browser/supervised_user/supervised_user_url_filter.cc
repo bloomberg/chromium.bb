@@ -450,8 +450,10 @@ void SupervisedUserURLFilter::CheckCallback(
     bool uncertain) const {
   // If we passed the async checker, but the default is to block, fall back to
   // the default behavior.
-  if (behavior != BLOCK && default_behavior_ == BLOCK)
+  if (behavior != BLOCK && default_behavior_ == BLOCK) {
     callback.Run(default_behavior_, DEFAULT, uncertain);
+    return;
+  }
 
   callback.Run(behavior, ASYNC_CHECKER, uncertain);
 }
