@@ -7,7 +7,7 @@
 <body>
 <script>
 
-description("Test to make sure border-width property returns CSSValueList properly.")
+description("Tests that the border-width shorthand is computed properly.")
 
 var testContainer = document.createElement("div");
 testContainer.contentEditable = true;
@@ -19,50 +19,22 @@ e = document.getElementById('test');
 computedStyle = window.getComputedStyle(e, null);
 
 shouldBe("computedStyle.getPropertyValue('border-width')", "'10px 5px 4px 3px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').cssText", "'10px 5px 4px 3px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').length", "4");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(0).getFloatValue(CSSPrimitiveValue.CSS_PX)", "10");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(1).getFloatValue(CSSPrimitiveValue.CSS_PX)", "5");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(2).getFloatValue(CSSPrimitiveValue.CSS_PX)", "4");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(3).getFloatValue(CSSPrimitiveValue.CSS_PX)", "3");
 
 e.style.borderWidth="20em 10em 4em 5em";
 shouldBe("computedStyle.getPropertyValue('border-width')", "'320px 160px 64px 80px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').cssText", "'320px 160px 64px 80px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').length", "4");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(0).getFloatValue(CSSPrimitiveValue.CSS_PX)", "320");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(1).getFloatValue(CSSPrimitiveValue.CSS_PX)", "160");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(2).getFloatValue(CSSPrimitiveValue.CSS_PX)", "64");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(3).getFloatValue(CSSPrimitiveValue.CSS_PX)", "80");
 
 e.style.borderWidth=""
 e.style.borderStyle=""
 e.style.borderTop = "10px solid"
 shouldBe("computedStyle.getPropertyValue('border-width')", "'10px 0px 0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').cssText", "'10px 0px 0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').length", "3");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(0).getFloatValue(CSSPrimitiveValue.CSS_PX)", "10");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(1).getFloatValue(CSSPrimitiveValue.CSS_PX)", "0");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(2).getFloatValue(CSSPrimitiveValue.CSS_PX)", "0");
 
 e.style.borderTop=""
 e.style.borderWidth="10px 5px 4px 3px"
 e.style.borderStyle="none";
 shouldBe("computedStyle.getPropertyValue('border-width')", "'0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').cssText", "'0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').length", "1");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(0).getFloatValue(CSSPrimitiveValue.CSS_PX)", "0");
 
 e.style.borderStyle="hidden";
 shouldBe("computedStyle.getPropertyValue('border-width')", "'0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').cssText", "'0px'");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').length", "1");
-shouldBe("computedStyle.getPropertyCSSValue('border-width').item(0).getFloatValue(CSSPrimitiveValue.CSS_PX)", "0");
 
 document.body.removeChild(testContainer);
 

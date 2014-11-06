@@ -7,7 +7,7 @@
 <body>
 <script>
 
-description("Test to make sure padding shorthand property returns CSSValueList properly.")
+description("Tests that the padding shorthand is computed properly.")
 
 var testContainer = document.createElement("div");
 testContainer.contentEditable = true;
@@ -20,33 +20,12 @@ computedStyle = window.getComputedStyle(e, null);
 
 e.style.padding = "10px 5px 4px 3px";
 shouldBe("computedStyle.getPropertyValue('padding')", "'10px 5px 4px 3px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').length", "4");
-shouldBe("computedStyle.getPropertyCSSValue('padding').cssText", "'10px 5px 4px 3px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(0).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "10");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(1).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "5");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(2).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "4");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(3).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "3");
 
 e.style.padding = "4em 5em 6em 7em";
 shouldBe("computedStyle.getPropertyValue('padding')", "'64px 80px 96px 112px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').length", "4");
-shouldBe("computedStyle.getPropertyCSSValue('padding').cssText", "'64px 80px 96px 112px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(0).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "64");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(1).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "80");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(2).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "96");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(3).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "112");
 
 e.style.padding = "5% 6% 7% 8%";
 shouldBe("computedStyle.getPropertyValue('padding')", "'5px 6px 7px 8px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').toString()", "'[object CSSValueList]'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').length", "4");
-shouldBe("computedStyle.getPropertyCSSValue('padding').cssText", "'5px 6px 7px 8px'");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(0).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "5");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(1).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "6");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(2).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "7");
-shouldBe("computedStyle.getPropertyCSSValue('padding').item(3).getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "8");
 
 document.body.removeChild(testContainer);
 
