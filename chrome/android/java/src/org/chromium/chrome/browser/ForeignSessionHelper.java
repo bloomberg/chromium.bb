@@ -148,6 +148,13 @@ public class ForeignSessionHelper {
     }
 
     /**
+     * Force a sync for sessions.
+     */
+    public void triggerSessionSync() {
+        nativeTriggerSessionSync(mNativeForeignSessionHelper);
+    }
+
+    /**
      * Sets callback instance that will be called on every foreign session sync update.
      * @param callback The callback to be invoked.
      */
@@ -206,6 +213,7 @@ public class ForeignSessionHelper {
     private static native long nativeInit(Profile profile);
     private static native void nativeDestroy(long nativeForeignSessionHelper);
     private static native boolean nativeIsTabSyncEnabled(long nativeForeignSessionHelper);
+    private static native void nativeTriggerSessionSync(long nativeForeignSessionHelper);
     private static native void nativeSetOnForeignSessionCallback(
             long nativeForeignSessionHelper, ForeignSessionCallback callback);
     private static native boolean nativeGetForeignSessions(long nativeForeignSessionHelper,

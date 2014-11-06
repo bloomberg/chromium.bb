@@ -25,6 +25,7 @@ class ForeignSessionHelper : public content::NotificationObserver {
   explicit ForeignSessionHelper(Profile* profile);
   void Destroy(JNIEnv* env, jobject obj);
   jboolean IsTabSyncEnabled(JNIEnv* env, jobject obj);
+  void TriggerSessionSync(JNIEnv* env, jobject obj);
   void SetOnForeignSessionCallback(JNIEnv* env, jobject obj, jobject callback);
   jboolean GetForeignSessions(JNIEnv* env, jobject obj, jobject result);
   jboolean OpenForeignSessionTab(JNIEnv* env,

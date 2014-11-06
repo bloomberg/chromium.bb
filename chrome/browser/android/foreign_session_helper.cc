@@ -20,6 +20,8 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ForeignSessionHelper_jni.h"
@@ -162,6 +164,14 @@ jboolean ForeignSessionHelper::IsTabSyncEnabled(JNIEnv* env, jobject obj) {
   ProfileSyncService* service = ProfileSyncServiceFactory::GetInstance()->
       GetForProfile(profile_);
   return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
+}
+
+void ForeignSessionHelper::TriggerSessionSync(JNIEnv* env, jobject obj) {
+  const syncer::ModelTypeSet types(syncer::SESSIONS);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_SYNC_REFRESH_LOCAL,
+      content::Source<Profile>(profile_),
+      content::Details<const syncer::ModelTypeSet>(&types));
 }
 
 void ForeignSessionHelper::SetOnForeignSessionCallback(JNIEnv* env,
