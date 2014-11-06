@@ -455,7 +455,7 @@ CommandHandler.COMMANDS_['new-folder'] = /** @type {Command} */ ({
   canExecute: function(event, fileManager) {
     var directoryModel = fileManager.directoryModel;
     event.canExecute = !fileManager.isOnReadonlyDirectory() &&
-                       !fileManager.isRenamingInProgress() &&
+                       !fileManager.namingController.isRenamingInProgress() &&
                        !directoryModel.isSearching() &&
                        !directoryModel.isScanning();
   }
@@ -642,7 +642,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   execute: function(event, fileManager) {
-    fileManager.initiateRename();
+    fileManager.namingController.initiateRename();
   },
   /**
    * @param {!Event} event Command event.
@@ -650,7 +650,7 @@ CommandHandler.COMMANDS_['rename'] = /** @type {Command} */ ({
    */
   canExecute: function(event, fileManager) {
     var selection = fileManager.getSelection();
-    event.canExecute = !fileManager.isRenamingInProgress() &&
+    event.canExecute = !fileManager.namingController.isRenamingInProgress() &&
                        !fileManager.isOnReadonlyDirectory() &&
                        selection &&
                        selection.totalCount == 1;
@@ -768,7 +768,7 @@ CommandHandler.COMMANDS_['search'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    event.canExecute = !fileManager.isRenamingInProgress();
+    event.canExecute = !fileManager.namingController.isRenamingInProgress();
   }
 });
 

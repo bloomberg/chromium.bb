@@ -295,13 +295,6 @@ function FileManager() {
   this.taskItems_ = null;
 
   /**
-   * The input element to rename entry.
-   * @type {HTMLInputElement}
-   * @private
-   */
-  this.renameInput_ = null;
-
-  /**
    * The container element of the dialog.
    * @type {HTMLDivElement}
    * @private
@@ -491,6 +484,12 @@ FileManager.prototype = /** @struct */ {
    */
   get fileTransferController() {
     return this.fileTransferController_;
+  },
+  /**
+   * @return {NamingController}
+   */
+  get namingController() {
+    return this.namingController_;
   },
   /**
    * @return {FileOperationManager}
@@ -710,7 +709,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       listBeingUpdated = self.ui_.listContainer.currentList;
     });
     dm.addEventListener('end-update-files', function() {
-      self.restoreItemBeingRenamed_();
+      self.namingController_.restoreItemBeingRenamed();
       listBeingUpdated.endBatchUpdates();
       listBeingUpdated = null;
     });
@@ -751,12 +750,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
 
     this.initDataTransferOperations_();
-
     this.initContextMenus_();
     this.initCommands_();
 
     this.updateFileTypeFilter_();
-
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
@@ -962,7 +959,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.initCommands_ = function() {
     assert(this.textContextMenu_);
-    assert(this.renameInput_);
 
     this.commandHandler = new CommandHandler(this);
 
@@ -978,9 +974,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.registerInputCommands_(inputs[i]);
     }
 
-    cr.ui.contextMenuHandler.setContextMenu(this.renameInput_,
+    cr.ui.contextMenuHandler.setContextMenu(this.ui_.listContainer.renameInput,
                                             this.textContextMenu_);
-    this.registerInputCommands_(this.renameInput_);
+    this.registerInputCommands_(this.ui_.listContainer.renameInput);
     this.document_.addEventListener(
         'command',
         this.ui_.listContainer.clearHover.bind(this.ui_.listContainer));
@@ -1218,8 +1214,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var taskItems = queryRequiredElement(dom, '#tasks');
     this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
 
-    var fullPage = this.dialogType == DialogType.FULL_PAGE;
-
     this.ui_.locationLine = new LocationLine(
         queryRequiredElement(dom, '#location-breadcrumbs'),
         queryRequiredElement(dom, '#location-volume-icon'),
@@ -1241,15 +1235,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'keydown', this.onListKeyDown_.bind(this));
     this.ui_.listContainer.element.addEventListener(
         ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
-
-    this.renameInput_ = /** @type {HTMLInputElement} */
-        (this.document_.createElement('input'));
-    this.renameInput_.className = 'rename entry-name';
-
-    this.renameInput_.addEventListener(
-        'keydown', this.onRenameInputKeyDown_.bind(this));
-    this.renameInput_.addEventListener(
-        'blur', this.onRenameInputBlur_.bind(this));
 
     // TODO(hirono): Rename the handler after creating the DialogFooter class.
     this.ui_.dialogFooter.filenameInput.addEventListener(
@@ -1439,8 +1424,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Create naming controller.
     assert(this.ui_.alertDialog);
     this.namingController_ = new NamingController(
-        this.fileFilter_,
-        this.ui_.alertDialog);
+        this.ui_.listContainer,
+        this.ui_.alertDialog,
+        this.directoryModel_,
+        this.fileFilter_);
 
     // Create spinner controller.
     this.spinnerController_ = new SpinnerController(
@@ -1964,37 +1951,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Restore the item which is being renamed while refreshing the file list. Do
-   * nothing if no item is being renamed or such an item disappeared.
-   *
-   * While refreshing file list it gets repopulated with new file entries.
-   * There is not a big difference whether DOM items stay the same or not.
-   * Except for the item that the user is renaming.
-   *
-   * @private
-   */
-  FileManager.prototype.restoreItemBeingRenamed_ = function() {
-    if (!this.isRenamingInProgress())
-      return;
-
-    var dm = this.directoryModel_;
-    var leadIndex = dm.getFileListSelection().leadIndex;
-    if (leadIndex < 0)
-      return;
-
-    var leadEntry = /** @type {Entry} */ (dm.getFileList().item(leadIndex));
-    if (!leadEntry)
-      return;
-    if (!util.isSameEntry(this.renameInput_.currentEntry, leadEntry))
-      return;
-
-    var leadListItem = this.findListItemForNode_(this.renameInput_);
-    if (this.ui.listContainer.currentListType === ListContainer.ListType.DETAIL)
-      this.ui.listContainer.table.updateFileMetadata(leadListItem, leadEntry);
-    this.ui.listContainer.currentList.restoreLeadItem(leadListItem);
-  };
-
-  /**
    * TODO(mtomasz): Move this to a utility function working on the root type.
    * @return {boolean} True if the current directory content is from Google
    *     Drive.
@@ -2163,10 +2119,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     return this.directoryModel_.getFileList().slice();
   };
 
-  FileManager.prototype.isRenamingInProgress = function() {
-    return !!this.renameInput_.currentEntry;
-  };
-
   /**
    * Return DirectoryEntry of the current directory or null.
    * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
@@ -2273,12 +2225,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onDetailClick_ = function(event) {
-    if (this.isRenamingInProgress()) {
+    if (this.namingController_.isRenamingInProgress()) {
       // Don't pay attention to clicks during a rename.
       return;
     }
 
-    var listItem = this.findListItemForEvent_(event);
+    var listItem = this.ui_.listContainer.findListItemForNode(
+        event.touchedElement || event.srcElement);
     var selection = this.getSelection();
     if (!listItem || !listItem.selected || selection.totalCount != 1) {
       return;
@@ -2556,16 +2509,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
   };
 
-  FileManager.prototype.findListItemForEvent_ = function(event) {
-    return this.findListItemForNode_(event.touchedElement || event.srcElement);
-  };
-
-  FileManager.prototype.findListItemForNode_ = function(node) {
-    var item = this.ui.listContainer.currentList.getListItemAncestor(node);
-    // TODO(serya): list should check that.
-    return item && this.ui.listContainer.currentList.isItem(item) ? item : null;
-  };
-
   /**
    * Unload handler for the page.
    * @private
@@ -2604,179 +2547,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     window.closing = true;
     if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();
-  };
-
-  FileManager.prototype.initiateRename = function() {
-    var item = this.ui.listContainer.currentList.ensureLeadItemExists();
-    if (!item)
-      return;
-    var label = item.querySelector('.filename-label');
-    var input = this.renameInput_;
-    var currentEntry = this.ui.listContainer.currentList.dataModel.item(
-        item.listIndex);
-
-    input.value = label.textContent;
-    item.setAttribute('renaming', '');
-    label.parentNode.appendChild(input);
-    input.focus();
-
-    var selectionEnd = input.value.lastIndexOf('.');
-    if (currentEntry.isFile && selectionEnd !== -1) {
-      input.selectionStart = 0;
-      input.selectionEnd = selectionEnd;
-    } else {
-      input.select();
-    }
-
-    // This has to be set late in the process so we don't handle spurious
-    // blur events.
-    input.currentEntry = currentEntry;
-    this.ui_.listContainer.startBatchUpdates();
-  };
-
-  /**
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onRenameInputKeyDown_ = function(event) {
-    if (!this.isRenamingInProgress())
-      return;
-
-    // Do not move selection or lead item in list during rename.
-    if (event.keyIdentifier == 'Up' || event.keyIdentifier == 'Down') {
-      event.stopPropagation();
-    }
-
-    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
-      case 'U+001B':  // Escape
-        this.cancelRename_();
-        event.preventDefault();
-        break;
-
-      case 'Enter':
-        this.commitRename_();
-        event.preventDefault();
-        break;
-    }
-  };
-
-  /**
-   * @param {Event} event Blur event.
-   * @private
-   */
-  FileManager.prototype.onRenameInputBlur_ = function(event) {
-    if (this.isRenamingInProgress() && !this.renameInput_.validation_)
-      this.commitRename_();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.commitRename_ = function() {
-    var input = this.renameInput_;
-    var entry = input.currentEntry;
-    var newName = input.value;
-
-    if (newName == entry.name) {
-      this.cancelRename_();
-      return;
-    }
-
-    var renamedItemElement = this.findListItemForNode_(this.renameInput_);
-    var nameNode = renamedItemElement.querySelector('.filename-label');
-
-    input.validation_ = true;
-    var validationDone = function(valid) {
-      input.validation_ = false;
-
-      if (!valid) {
-        // Cancel rename if it fails to restore focus from alert dialog.
-        // Otherwise, just cancel the commitment and continue to rename.
-        if (this.document_.activeElement != input)
-          this.cancelRename_();
-        return;
-      }
-
-      // Validation succeeded. Do renaming.
-      this.renameInput_.currentEntry = null;
-      if (this.renameInput_.parentNode)
-        this.renameInput_.parentNode.removeChild(this.renameInput_);
-      renamedItemElement.setAttribute('renaming', 'provisional');
-
-      // Optimistically apply new name immediately to avoid flickering in
-      // case of success.
-      nameNode.textContent = newName;
-
-      util.rename(
-          entry, newName,
-          function(newEntry) {
-            this.directoryModel_.onRenameEntry(entry, newEntry);
-            renamedItemElement.removeAttribute('renaming');
-            this.ui_.listContainer.endBatchUpdates();
-            // Focus may go out of the list. Back it to the list.
-            this.ui.listContainer.currentList.focus();
-          }.bind(this),
-          function(error) {
-            // Write back to the old name.
-            nameNode.textContent = entry.name;
-            renamedItemElement.removeAttribute('renaming');
-            this.ui_.listContainer.endBatchUpdates();
-
-            // Show error dialog.
-            var message;
-            if (error.name == util.FileError.PATH_EXISTS_ERR ||
-                error.name == util.FileError.TYPE_MISMATCH_ERR) {
-              // Check the existing entry is file or not.
-              // 1) If the entry is a file:
-              //   a) If we get PATH_EXISTS_ERR, a file exists.
-              //   b) If we get TYPE_MISMATCH_ERR, a directory exists.
-              // 2) If the entry is a directory:
-              //   a) If we get PATH_EXISTS_ERR, a directory exists.
-              //   b) If we get TYPE_MISMATCH_ERR, a file exists.
-              message = strf(
-                  (entry.isFile && error.name ==
-                      util.FileError.PATH_EXISTS_ERR) ||
-                  (!entry.isFile && error.name ==
-                      util.FileError.TYPE_MISMATCH_ERR) ?
-                      'FILE_ALREADY_EXISTS' :
-                      'DIRECTORY_ALREADY_EXISTS',
-                  newName);
-            } else {
-              message = strf('ERROR_RENAMING', entry.name,
-                             util.getFileErrorString(error.name));
-            }
-
-            this.alert.show(message);
-          }.bind(this));
-    };
-
-    // TODO(haruki): this.getCurrentDirectoryEntry() might not return the actual
-    // parent if the directory content is a search result. Fix it to do proper
-    // validation.
-    this.namingController_.validateFileName(
-        this.getCurrentDirectoryEntry(),
-        newName,
-        validationDone.bind(this));
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.cancelRename_ = function() {
-    this.renameInput_.currentEntry = null;
-
-    var item = this.findListItemForNode_(this.renameInput_);
-    if (item)
-      item.removeAttribute('renaming');
-
-    var parent = this.renameInput_.parentNode;
-    if (parent)
-      parent.removeChild(this.renameInput_);
-
-    this.ui_.listContainer.endBatchUpdates();
-
-    // Focus may go out of the list. Back it to the list.
-    this.ui.listContainer.currentList.focus();
   };
 
   /**
@@ -2985,7 +2755,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
       self.ui_.listContainer.endBatchUpdates();
 
-      self.initiateRename();
+      self.namingController_.initiateRename();
     };
 
     var onError = function(error) {
@@ -3033,7 +2803,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (event.keyCode === 17)  // Ctrl
       this.pressingCtrl_ = true;
 
-    if (event.srcElement === this.renameInput_) {
+    if (event.srcElement === this.ui_.listContainer.renameInput) {
       // Ignore keydown handler in the rename input box.
       return;
     }

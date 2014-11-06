@@ -55,6 +55,15 @@ function ListContainer(element, table, grid) {
   this.currentListType = ListContainer.ListType.UNINITIALIZED;
 
   /**
+   * The input element to rename entry.
+   * @type {!HTMLInputElement}
+   * @const
+   */
+  this.renameInput =
+      assertInstanceof(document.createElement('input'), HTMLInputElement);
+  this.renameInput.className = 'rename entry-name';
+
+  /**
    * Spinner on file list which is shown while loading.
    * @type {!HTMLElement}
    * @const
@@ -213,6 +222,18 @@ ListContainer.prototype.setCurrentListType = function(listType) {
  */
 ListContainer.prototype.clearHover = function() {
   this.element.classList.add('nohover');
+};
+
+/**
+ * Finds list item element from the ancestor node.
+ * @param {!HTMLElement} node
+ * @return {cr.ui.ListItem}
+ */
+ListContainer.prototype.findListItemForNode = function(node) {
+  var item = this.currentList.getListItemAncestor(node);
+  // TODO(serya): list should check that.
+  return item && this.currentList.isItem(item) ?
+      assertInstanceof(item, cr.ui.ListItem) : null;
 };
 
 /**
