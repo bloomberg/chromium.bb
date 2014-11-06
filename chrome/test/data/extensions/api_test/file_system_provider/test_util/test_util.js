@@ -81,6 +81,11 @@ test_util.mountFileSystem = function(callback) {
         writable: true
       },
       function() {
+        // Note that chrome.test.callbackPass() cannot be used, as it would
+        // prematurely finish the test at the setUp() stage.
+        if (chrome.runtime.lastError)
+          chrome.test.fail(chrome.runtime.lastError.message);
+
         var volumeId =
             'provided:' + chrome.runtime.id + '-' + test_util.FILE_SYSTEM_ID +
             '-user';
@@ -95,8 +100,6 @@ test_util.mountFileSystem = function(callback) {
                 callback();
               });
         });
-      }, function() {
-        chrome.test.fail();
       });
 };
 

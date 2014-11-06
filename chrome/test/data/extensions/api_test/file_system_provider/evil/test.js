@@ -199,27 +199,24 @@ function runTests() {
     // Tests that returning a too big chunk (4 times larger than the file size,
     // and also much more than requested 1 KB of data).
     function returnTooLargeChunk() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_TOO_LARGE_CHUNK_FILE.name,
           {create: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               // Read 1 KB of data.
               var fileSlice = file.slice(0, 1024);
               var fileReader = new FileReader();
               fileReader.onload = function(e) {
                 chrome.test.fail('Reading should fail.');
               };
-              fileReader.onerror = function(e) {
-                onTestSuccess();
-              };
+              fileReader.onerror = chrome.test.callbackPass();
               fileReader.readAsText(fileSlice);
-            },
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -228,27 +225,24 @@ function runTests() {
     // Tests that calling a success callback with a non-existing request id
     // doesn't cause any harm.
     function invalidCallback() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_INVALID_CALLBACK_FILE.name,
           {create: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               // Read 1 KB of data.
               var fileSlice = file.slice(0, 1024);
               var fileReader = new FileReader();
               fileReader.onload = function(e) {
                 chrome.test.fail('Reading should fail.');
               };
-              fileReader.onerror = function(e) {
-                onTestSuccess();
-              };
+              fileReader.onerror = chrome.test.callbackPass();
               fileReader.readAsText(fileSlice);
-            },
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -256,29 +250,24 @@ function runTests() {
 
     // Test that reading from files with negative size is not allowed.
     function negativeSize() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_NEGATIVE_SIZE_FILE.name,
           {create: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               // Read 1 KB of data.
               var fileSlice = file.slice(0, 1024);
               var fileReader = new FileReader();
-              fileReader.onload = function(e) {
+              fileReader.onload = chrome.test.callbackPass(function(e) {
                 var text = fileReader.result;
                 chrome.test.assertEq(0, text.length);
-                onTestSuccess();
-              };
-              fileReader.onerror = function(e) {
-                onTestSuccess();
-              };
+              });
               fileReader.readAsText(fileSlice);
-            },
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -287,16 +276,15 @@ function runTests() {
     // Tests that URLs generated from a file containing .. inside is properly
     // escaped.
     function relativeName() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_RELATIVE_NAME_FILE.name,
           {create: false},
           function(fileEntry) {
             chrome.test.fail('Opening a file should fail.');
           },
-          function(error) {
-            onTestSuccess();
-          });
+          chrome.test.callbackPass(function(error) {
+            chrome.test.assertEq('NotFoundError', error.name);
+          }));
     }
   ]);
 }

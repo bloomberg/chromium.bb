@@ -27,17 +27,15 @@ function setUp(callback) {
     new Promise(function(fulfill, reject) {
       chrome.fileSystemProvider.mount(
           {fileSystemId: FIRST_FILE_SYSTEM_ID, displayName: 'vanilla.zip'},
-          function() { fulfill(); },
-          function(error) { reject(error); });
+          chrome.test.callbackPass(fulfill));
     }),
     new Promise(function(fulfill, reject) {
       chrome.fileSystemProvider.mount(
           {fileSystemId: SECOND_FILE_SYSTEM_ID, displayName: 'ice-cream.zip'},
-          function() { fulfill(); },
-          function(error) { reject(error); });
+          chrome.test.callbackPass(fulfill));
     })
   ]).then(callback).catch(function(error) {
-    chrome.test.fail(error.name);
+    chrome.test.fail(error.stack || error);
   });
 }
 
@@ -49,8 +47,6 @@ function runTests() {
     // Tests the fileSystemProvider.unmount(). Verifies if the unmount event
     // is emitted by VolumeManager.
     function unmount() {
-      var onTestSuccess = chrome.test.callbackPass();
-
       var onMountCompleted = function(event) {
         chrome.test.assertEq('unmount', event.eventType);
         chrome.test.assertEq('success', event.status);
@@ -60,50 +56,35 @@ function runTests() {
             FIRST_FILE_SYSTEM_ID, event.volumeMetadata.fileSystemId);
         chrome.fileManagerPrivate.onMountCompleted.removeListener(
             onMountCompleted);
-        onTestSuccess();
       };
 
       chrome.fileManagerPrivate.onMountCompleted.addListener(
           onMountCompleted);
       chrome.fileSystemProvider.unmount(
           {fileSystemId: FIRST_FILE_SYSTEM_ID},
-          function() {
-            // Wait for the unmount event.
-          },
-          function(error) {
-            chrome.test.fail(error.name);
-          });
+          chrome.test.callbackPass());
     },
 
     // Tests the fileSystemProvider.unmount() with a wrong id. Verifies that
     // it fails with a correct error code.
     function unmountWrongId() {
-      var onTestSuccess = chrome.test.callbackPass();
       chrome.fileSystemProvider.unmount(
           {fileSystemId: 'wrong-fs-id'},
-          function() {
-            chrome.test.fail();
-          },
-          function(error) {
-            chrome.test.assertEq('SecurityError', error.name);
-            onTestSuccess();
-          });
+          chrome.test.callbackFail('SECURITY'));
     },
 
     // Tests if fileManagerPrivate.removeMount() for provided file systems emits
     // the onMountRequested() event with correct arguments.
     function requestUnmountSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
-
-      var onUnmountRequested = function(options, onSuccess, onError) {
+      var onUnmountRequested = chrome.test.callbackPass(
+          function(options, onSuccess, onError) {
         chrome.test.assertEq(SECOND_FILE_SYSTEM_ID, options.fileSystemId);
-        onSuccess();
         // Not calling fileSystemProvider.unmount(), so the onMountCompleted
         // event will not be raised.
         chrome.fileSystemProvider.onUnmountRequested.removeListener(
             onUnmountRequested);
-        onTestSuccess();
-      };
+        onSuccess();
+      });
 
       chrome.fileSystemProvider.onUnmountRequested.addListener(
           onUnmountRequested);
@@ -119,7 +100,6 @@ function runTests() {
     // event is called with correct aguments, and (2) if calling onError(),
     // results in an unmount event fired from the VolumeManager instance.
     function requestUnmountError() {
-      var onTestSuccess = chrome.test.callbackPass();
       var unmountRequested = false;
 
       var onUnmountRequested = function(options, onSuccess, onError) {
@@ -131,7 +111,7 @@ function runTests() {
             onUnmountRequested);
       };
 
-      var onMountCompleted = function(event) {
+      var onMountCompleted = chrome.test.callbackPass(function(event) {
         chrome.test.assertEq('unmount', event.eventType);
         chrome.test.assertEq('error_unknown', event.status);
         chrome.test.assertEq(
@@ -144,8 +124,7 @@ function runTests() {
         chrome.fileManagerPrivate.removeMount(SECOND_FILE_SYSTEM_ID);
         chrome.fileManagerPrivate.onMountCompleted.removeListener(
             onMountCompleted);
-        onTestSuccess();
-      };
+      });
 
       chrome.fileSystemProvider.onUnmountRequested.addListener(
           onUnmountRequested);

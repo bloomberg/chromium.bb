@@ -68,14 +68,12 @@ function runTests() {
   chrome.test.runTests([
     // Create a directory (not exclusive). Should succeed.
     function createDirectorySuccessSimple() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           TESTING_DIRECTORY.name, {create: true, exclusive: false},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_DIRECTORY.name, entry.name);
             chrome.test.assertTrue(entry.isDirectory);
-            onSuccess();
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
@@ -83,15 +81,13 @@ function runTests() {
     // Create a directory (exclusive). Should fail, since the directory already
     // exists.
     function createDirectoryErrorExists() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           TESTING_DIRECTORY.name, {create: true, exclusive: true},
           function(entry) {
             chrome.test.fail('Created a directory, but should fail.');
-          }, function(error) {
+          }, chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('InvalidModificationError', error.name);
-            onSuccess();
-          });
+          }));
     }
   ]);
 }

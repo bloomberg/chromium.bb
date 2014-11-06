@@ -76,31 +76,31 @@ function runTests() {
   chrome.test.runTests([
     // Truncate a file. It should succeed.
     function truncateFileSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_TIRAMISU_FILE_NAME,
           {create: false, exclusive: true},
-          function(fileEntry) {
-            fileEntry.createWriter(function(fileWriter) {
-              fileWriter.onwriteend = function(e) {
-                // Note that onwriteend() is called even if an error happened.
-                if (fileWriter.error)
-                  return;
-                chrome.test.assertEq(
-                    64,
-                    test_util.defaultMetadata[
-                        '/' + TESTING_TIRAMISU_FILE_NAME].size);
-                onTestSuccess();
-              };
-              fileWriter.onerror = function(e) {
-                chrome.test.fail(fileWriter.error.name);
-              };
-              fileWriter.truncate(64);
-            },
-            function(error) {
-              chrome.test.fail(error.name);
-            });
-          },
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.createWriter(
+                chrome.test.callbackPass(function(fileWriter) {
+                  fileWriter.onwriteend = chrome.test.callbackPass(function(e) {
+                    // Note that onwriteend() is called even if an error
+                    // happened.
+                    if (fileWriter.error)
+                      return;
+                    chrome.test.assertEq(
+                        64,
+                        test_util.defaultMetadata[
+                            '/' + TESTING_TIRAMISU_FILE_NAME].size);
+                  });
+                  fileWriter.onerror = function(e) {
+                    chrome.test.fail(fileWriter.error.name);
+                  };
+                  fileWriter.truncate(64);
+                }),
+                function(error) {
+                  chrome.test.fail(error.name);
+                });
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -109,30 +109,29 @@ function runTests() {
     // Truncate a file to a length larger than size. This should result in an
     // error.
     function truncateBeyondFileError() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_TIRAMISU_FILE_NAME,
           {create: false, exclusive: false},
-          function(fileEntry) {
-            fileEntry.createWriter(function(fileWriter) {
-              fileWriter.onwriteend = function(e) {
-                if (fileWriter.error)
-                  return;
-                chrome.test.fail(
-                    'Unexpectedly succeeded to truncate beyond a fiile.');
-              };
-              fileWriter.onerror = function(e) {
-                chrome.test.assertEq(
-                    'InvalidModificationError', fileWriter.error.name);
-                onTestSuccess();
-              };
-              fileWriter.truncate(test_util.defaultMetadata[
-                  '/' + TESTING_TIRAMISU_FILE_NAME].size * 2);
-            },
-            function(error) {
-              chrome.test.fail();
-            });
-          },
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.createWriter(
+                chrome.test.callbackPass(function(fileWriter) {
+                  fileWriter.onwriteend = chrome.test.callbackPass(function(e) {
+                    if (fileWriter.error)
+                      return;
+                    chrome.test.fail(
+                        'Unexpectedly succeeded to truncate beyond a fiile.');
+                  });
+                  fileWriter.onerror = chrome.test.callbackPass(function(e) {
+                    chrome.test.assertEq(
+                        'InvalidModificationError', fileWriter.error.name);
+                  });
+                  fileWriter.truncate(test_util.defaultMetadata[
+                      '/' + TESTING_TIRAMISU_FILE_NAME].size * 2);
+                }),
+                function(error) {
+                  chrome.test.fail();
+                });
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });

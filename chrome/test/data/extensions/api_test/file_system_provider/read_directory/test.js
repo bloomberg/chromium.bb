@@ -91,36 +91,36 @@ function runTests() {
     // Read contents of the /hello directory. This directory exists, so it
     // should succeed.
     function readEntriesSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           'hello',
           {create: false},
-          function(dirEntry) {
+          chrome.test.callbackPass(function(dirEntry) {
             var dirReader = dirEntry.createReader();
             var entries = [];
             var readEntriesNext = function() {
-              dirReader.readEntries(function(inEntries) {
-                Array.prototype.push.apply(entries, inEntries);
-                if (!inEntries.length) {
-                  // No more entries, so verify.
-                  chrome.test.assertEq(2, entries.length);
-                  chrome.test.assertTrue(entries[0].isFile);
-                  chrome.test.assertEq('tiramisu.txt', entries[0].name);
-                  chrome.test.assertEq(
-                      '/hello/tiramisu.txt', entries[0].fullPath);
-                  chrome.test.assertTrue(entries[1].isDirectory);
-                  chrome.test.assertEq('candies', entries[1].name);
-                  chrome.test.assertEq('/hello/candies', entries[1].fullPath);
-                  onTestSuccess();
-                } else {
-                  readEntriesNext();
-                }
-              }, function(error) {
-                chrome.test.fail();
-              });
+              dirReader.readEntries(
+                  chrome.test.callbackPass(function(inEntries) {
+                    Array.prototype.push.apply(entries, inEntries);
+                    if (!inEntries.length) {
+                      // No more entries, so verify.
+                      chrome.test.assertEq(2, entries.length);
+                      chrome.test.assertTrue(entries[0].isFile);
+                      chrome.test.assertEq('tiramisu.txt', entries[0].name);
+                      chrome.test.assertEq(
+                          '/hello/tiramisu.txt', entries[0].fullPath);
+                      chrome.test.assertTrue(entries[1].isDirectory);
+                      chrome.test.assertEq('candies', entries[1].name);
+                      chrome.test.assertEq(
+                          '/hello/candies', entries[1].fullPath);
+                    } else {
+                      readEntriesNext();
+                    }
+                  }), function(error) {
+                    chrome.test.fail();
+                  });
             };
             readEntriesNext();
-          },
+          }),
           function(error) {
             chrome.test.fail();
           });
@@ -128,17 +128,15 @@ function runTests() {
     // Read contents of a directory which does not exist, what should return an
     // error.
     function readEntriesError() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           'cranberries',
           {create: false},
           function(dirEntry) {
             chrome.test.fail();
           },
-          function(error) {
+          chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('NotFoundError', error.name);
-            onTestSuccess();
-          });
+          }));
     }
   ]);
 }

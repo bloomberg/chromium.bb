@@ -83,23 +83,21 @@ function runTests() {
   chrome.test.runTests([
     // Copy an existing file to a non-existing destination. Should succeed.
     function copyEntrySuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name, {create: false},
-          function(sourceEntry) {
+          chrome.test.callbackPass(function(sourceEntry) {
             chrome.test.assertEq(TESTING_FILE.name, sourceEntry.name);
             chrome.test.assertFalse(sourceEntry.isDirectory);
             sourceEntry.copyTo(
                 test_util.fileSystem.root,
                 TESTING_NEW_FILE_NAME,
-                function(targetEntry) {
+                chrome.test.callbackPass(function(targetEntry) {
                   chrome.test.assertEq(TESTING_NEW_FILE_NAME, targetEntry.name);
                   chrome.test.assertFalse(targetEntry.isDirectory);
-                  onSuccess();
-                }, function(error) {
+                }), function(error) {
                   chrome.test.fail(error.name);
                 });
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
@@ -107,10 +105,9 @@ function runTests() {
     // Copy an existing file to a location which already holds a file.
     // Should fail.
     function copyEntryExistsError() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name, {create: false},
-          function(sourceEntry) {
+          chrome.test.callbackPass(function(sourceEntry) {
             chrome.test.assertEq(TESTING_FILE.name, sourceEntry.name);
             chrome.test.assertFalse(sourceEntry.isDirectory);
             sourceEntry.copyTo(
@@ -118,11 +115,10 @@ function runTests() {
                 TESTING_NEW_FILE_NAME,
                 function(targetEntry) {
                   chrome.test.fail('Succeeded, but should fail.');
-                }, function(error) {
+                }, chrome.test.callbackPass(function(error) {
                   chrome.test.assertEq('InvalidModificationError', error.name);
-                  onSuccess();
-                });
-          }, function(error) {
+                }));
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     }

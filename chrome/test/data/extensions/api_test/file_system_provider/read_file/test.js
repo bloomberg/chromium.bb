@@ -167,26 +167,24 @@ function runTests() {
     // Read contents of a file,  but with an error on the way. This should
     // result in an error.
     function readEntriesError() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_BROKEN_TIRAMISU_FILE.name,
           {create: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               var fileReader = new FileReader();
               fileReader.onload = function(e) {
                 chrome.test.fail();
               };
-              fileReader.onerror = function(e) {
+              fileReader.onerror = chrome.test.callbackPass(function(e) {
                 chrome.test.assertEq('NotReadableError', fileReader.error.name);
-                onTestSuccess();
-              };
+              });
               fileReader.readAsText(file);
-            },
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -195,14 +193,11 @@ function runTests() {
     // Abort reading a file with a registered abort handler. Should result in a
     // gracefully terminated reading operation.
     function abortReadingSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
-
-      var onAbortRequested = function(options, onSuccess, onError) {
-        chrome.fileSystemProvider.onAbortRequested.removeListener(
-            onAbortRequested);
-        onSuccess();
-        onTestSuccess();
-      };
+      var onAbortRequested = chrome.test.callbackPass(
+          function(options, onSuccess, onError) {
+            chrome.fileSystemProvider.onAbortRequested.removeListener(
+                onAbortRequested);
+          });
 
       chrome.fileSystemProvider.onAbortRequested.addListener(
           onAbortRequested);
@@ -210,8 +205,8 @@ function runTests() {
       test_util.fileSystem.root.getFile(
           TESTING_VANILLA_FOR_ABORT_FILE.name,
           {create: false, exclusive: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               var hadAbort = false;
               var fileReader = new FileReader();
               fileReader.onload = function(e) {
@@ -220,22 +215,21 @@ function runTests() {
                       'Unexpectedly finished writing, despite aborting.');
                   return;
                 }
-                chrome.test.fail();
               };
-              fileReader.onerror = function(e) {
+              fileReader.onerror = chrome.test.callbackPass(function(e) {
                 chrome.test.assertEq(
                     'AbortError', fileReader.error.name);
-              };
+              });
               fileReader.readAsText(file);
-              setTimeout(function() {
+              setTimeout(chrome.test.callbackPass(function() {
                 // Abort the operation after it's started.
                 fileReader.abort();
-              }, 0);
-            },
+              }), 0);
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });

@@ -50,43 +50,37 @@ function runTests() {
   chrome.test.runTests([
     // Create a file which doesn't exist. Should succeed.
     function createFileSuccessSimple() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_NEW_FILE.name, {create: true},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_NEW_FILE.name, entry.name);
             chrome.test.assertFalse(entry.isDirectory);
-            onSuccess();
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
 
     // Create a file which exists, non-exclusively. Should succeed.
     function createFileOrOpenSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name, {create: true, exclusive: false},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_FILE.name, entry.name);
             chrome.test.assertFalse(entry.isDirectory);
-            onSuccess();
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
 
     // Create a file which exists, exclusively. Should fail.
     function createFileExistsError() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name, {create: true, exclusive: true},
           function(entry) {
             chrome.test.fail('Created a file, but should fail.');
-          }, function(error) {
+          }, chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('InvalidModificationError', error.name);
-            onSuccess();
-          });
+          }));
     }
   ]);
 }

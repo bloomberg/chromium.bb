@@ -157,31 +157,29 @@ function runTests() {
     // next one would be 64bit. File System Provider API should support files
     // with size greater or equal to 2^53.
     function readBigFileSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_6GB_FILE.name,
           {create: false},
-          function(fileEntry) {
-            fileEntry.file(function(file) {
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.file(chrome.test.callbackPass(function(file) {
               // Read 10 bytes from the 5th GB.
               var fileSlice =
                   file.slice(TESTING_TEXT_OFFSET,
                              TESTING_TEXT_OFFSET + TESTING_TEXT.length);
               var fileReader = new FileReader();
-              fileReader.onload = function(e) {
+              fileReader.onload = chrome.test.callbackPass(function(e) {
                 var text = fileReader.result;
                 chrome.test.assertEq(TESTING_TEXT, text);
-                onTestSuccess();
-              };
+              });
               fileReader.onerror = function(e) {
                 chrome.test.fail(fileReader.error.name);
               };
               fileReader.readAsText(fileSlice);
-            },
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });

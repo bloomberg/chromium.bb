@@ -164,32 +164,32 @@ function runTests() {
   chrome.test.runTests([
     // Write contents to a non-existing file. It should succeed.
     function writeNewFileSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_NEW_FILE_NAME,
           {create: true, exclusive: true},
-          function(fileEntry) {
-            fileEntry.createWriter(function(fileWriter) {
-              fileWriter.onwriteend = function(e) {
-                // Note that onwriteend() is called even if an error happened.
-                if (fileWriter.error)
-                  return;
-                chrome.test.assertEq(
-                    TESTING_TEXT_TO_WRITE,
-                    fileContents['/' + TESTING_NEW_FILE_NAME]);
-                onTestSuccess();
-              };
-              fileWriter.onerror = function(e) {
-                chrome.test.fail(fileWriter.error.name);
-              };
-              var blob = new Blob(
-                  [TESTING_TEXT_TO_WRITE], {type: 'text/plain'});
-              fileWriter.write(blob);
-            },
-            function(error) {
-              chrome.test.fail(error.name);
-            });
-          },
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.createWriter(
+                chrome.test.callbackPass(function(fileWriter) {
+                  fileWriter.onwriteend = chrome.test.callbackPass(function(e) {
+                    // Note that onwriteend() is called even if an error
+                    // happened.
+                    if (fileWriter.error)
+                      return;
+                    chrome.test.assertEq(
+                        TESTING_TEXT_TO_WRITE,
+                        fileContents['/' + TESTING_NEW_FILE_NAME]);
+                  });
+                  fileWriter.onerror = function(e) {
+                    chrome.test.fail(fileWriter.error.name);
+                  };
+                  var blob = new Blob(
+                      [TESTING_TEXT_TO_WRITE], {type: 'text/plain'});
+                  fileWriter.write(blob);
+                }),
+                function(error) {
+                  chrome.test.fail(error.name);
+                });
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
@@ -197,31 +197,30 @@ function runTests() {
 
     // Overwrite contents in an existing file. It should succeed.
     function overwriteFileSuccess() {
-      var onTestSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_TIRAMISU_FILE_NAME,
           {create: true, exclusive: false},
-          function(fileEntry) {
-            fileEntry.createWriter(function(fileWriter) {
-              fileWriter.onwriteend = function(e) {
-                if (fileWriter.error)
-                  return;
-                chrome.test.assertEq(
-                    TESTING_TEXT_TO_WRITE,
-                    fileContents['/' + TESTING_TIRAMISU_FILE_NAME]);
-                onTestSuccess();
-              };
-              fileWriter.onerror = function(e) {
-                chrome.test.fail(fileWriter.error.name);
-              };
-              var blob = new Blob(
-                  [TESTING_TEXT_TO_WRITE], {type: 'text/plain'});
-              fileWriter.write(blob);
-            },
-            function(error) {
-              chrome.test.fail(error.name);
-            });
-          },
+          chrome.test.callbackPass(function(fileEntry) {
+            fileEntry.createWriter(
+                chrome.test.callbackPass(function(fileWriter) {
+                fileWriter.onwriteend = chrome.test.callbackPass(function(e) {
+                  if (fileWriter.error)
+                    return;
+                  chrome.test.assertEq(
+                      TESTING_TEXT_TO_WRITE,
+                      fileContents['/' + TESTING_TIRAMISU_FILE_NAME]);
+                });
+                fileWriter.onerror = function(e) {
+                  chrome.test.fail(fileWriter.error.name);
+                };
+                var blob = new Blob(
+                    [TESTING_TEXT_TO_WRITE], {type: 'text/plain'});
+                fileWriter.write(blob);
+              }),
+              function(error) {
+                chrome.test.fail(error.name);
+              });
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });

@@ -131,13 +131,11 @@ function runTests() {
     // Test if providers are notified that no thumbnail is requested when normal
     // metadata is requested.
     function notRequestedAndNotProvidedThumbnailSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_WITH_VALID_THUMBNAIL_FILE.name,
           {create: false},
-          function(fileEntry) {
-            onSuccess();
-          }, function(error) {
+          chrome.test.callbackPass(),
+          function(error) {
             chrome.test.fail(error.name);
           });
     },
@@ -145,7 +143,6 @@ function runTests() {
     // If providers return a thumbnail data despite not being requested for
     // that, then the operation must fail.
     function notRequestedButProvidedThumbnailError() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_ALWAYS_WITH_THUMBNAIL_FILE.name,
           {create: false},
@@ -153,22 +150,20 @@ function runTests() {
             chrome.test.fail(
                 'Thumbnail returned when not requested should result in an ' +
                 'error, but the operation succeeded.');
-          }, function(error) {
+          }, chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('InvalidStateError', error.name);
-            onSuccess();
-          });
+          }));
     },
 
     // Thumbnails should be returned when available for private API request.
     function getEntryPropertiesWithThumbnailSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_WITH_VALID_THUMBNAIL_FILE.name,
           {create: false},
-          function(fileEntry) {
+          chrome.test.callbackPass(function(fileEntry) {
             chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
-                function(fileProperties) {
+                chrome.test.callbackPass(function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);
                   chrome.test.assertEq(
                       TESTING_WITH_VALID_THUMBNAIL_FILE.thumbnail,
@@ -179,9 +174,8 @@ function runTests() {
                   chrome.test.assertEq(
                       TESTING_WITH_VALID_THUMBNAIL_FILE.modificationTime,
                       new Date(fileProperties[0].lastModifiedTime));
-                  onSuccess();
-                });
-            },
+                }));
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });
@@ -190,22 +184,20 @@ function runTests() {
     // Confirm that extensions are not able to pass an invalid thumbnail url,
     // including evil urls.
     function getEntryPropertiesWithInvalidThumbnail() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_WITH_INVALID_THUMBNAIL_FILE.name,
           {create: false},
-          function(fileEntry) {
+          chrome.test.callbackPass(function(fileEntry) {
             chrome.fileManagerPrivate.getEntryProperties(
                 [fileEntry.toURL()],
-                function(fileProperties) {
+                chrome.test.callbackPass(function(fileProperties) {
                   chrome.test.assertEq(1, fileProperties.length);
                   // The results for an entry is an empty dictionary in case of
                   // an error.
                   chrome.test.assertEq(
                       0, Object.keys(fileProperties[0]).length);
-                  onSuccess();
-                });
-            },
+                }));
+            }),
             function(error) {
               chrome.test.fail(error.name);
             });

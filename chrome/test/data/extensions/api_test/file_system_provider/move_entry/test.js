@@ -69,7 +69,7 @@ function onMoveEntryRequested(options, onSuccess, onError) {
   // Remove the source file.
   delete test_util.defaultMetadata[options.sourcePath];
 
-  onSuccess();  // enum ProviderError.
+  onSuccess();
 }
 
 /**
@@ -99,16 +99,15 @@ function runTests() {
   chrome.test.runTests([
     // Move an existing file to a non-existing destination. Should succeed.
     function moveEntrySuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name, {create: false},
-          function(sourceEntry) {
+          chrome.test.callbackPass(function(sourceEntry) {
             chrome.test.assertEq(TESTING_FILE.name, sourceEntry.name);
             chrome.test.assertFalse(sourceEntry.isDirectory);
             sourceEntry.moveTo(
                 test_util.fileSystem.root,
                 TESTING_NEW_FILE_NAME,
-                function(targetEntry) {
+                chrome.test.callbackPass(function(targetEntry) {
                   chrome.test.assertEq(TESTING_NEW_FILE_NAME, targetEntry.name);
                   chrome.test.assertFalse(targetEntry.isDirectory);
                   // The source file should be deleted.
@@ -117,14 +116,13 @@ function runTests() {
                       function(newSourceEntry) {
                         chrome.test.fail('Source file not deleted.');
                       },
-                      function(error) {
+                      chrome.test.callbackPass(function(error) {
                         chrome.test.assertEq('NotFoundError', error.name);
-                        onSuccess();
-                      });
-                }, function(error) {
+                      }))
+                }), function(error) {
                   chrome.test.fail(error.name);
                 });
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
@@ -132,10 +130,9 @@ function runTests() {
     // Move an existing file to a location which already holds a file.
     // Should fail.
     function moveEntryExistsError() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_ANOTHER_FILE.name, {create: false},
-          function(sourceEntry) {
+          chrome.test.callbackPass(function(sourceEntry) {
             chrome.test.assertEq(TESTING_ANOTHER_FILE.name, sourceEntry.name);
             chrome.test.assertFalse(sourceEntry.isDirectory);
             sourceEntry.moveTo(
@@ -143,11 +140,10 @@ function runTests() {
                 TESTING_NEW_FILE_NAME,
                 function(targetEntry) {
                   chrome.test.fail('Succeeded, but should fail.');
-                }, function(error) {
+                }, chrome.test.callbackPass(function(error) {
                   chrome.test.assertEq('InvalidModificationError', error.name);
-                  onSuccess();
-                });
-          }, function(error) {
+                }));
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     }

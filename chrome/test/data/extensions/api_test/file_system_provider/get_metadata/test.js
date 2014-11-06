@@ -88,94 +88,88 @@ function runTests() {
   chrome.test.runTests([
     // Read metadata of the root.
     function getFileMetadataSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getMetadata(
-        function(metadata) {
+        chrome.test.callbackPass(function(metadata) {
           chrome.test.assertEq(TESTING_ROOT.size, metadata.size);
           chrome.test.assertEq(
               TESTING_ROOT.modificationTime.toString(),
               metadata.modificationTime.toString());
-          onSuccess();
-        }, function(error) {
+        }), function(error) {
           chrome.test.fail(error.name);
         });
     },
+
     // Read metadata of an existing testing file.
     function getFileMetadataSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_FILE.name,
           {create: false},
-          function(fileEntry) {
+          chrome.test.callbackPass(function(fileEntry) {
             chrome.test.assertEq(TESTING_FILE.name, fileEntry.name);
             chrome.test.assertEq(
                 TESTING_FILE.isDirectory, fileEntry.isDirectory);
-            fileEntry.getMetadata(function(metadata) {
+            fileEntry.getMetadata(chrome.test.callbackPass(function(metadata) {
               chrome.test.assertEq(TESTING_FILE.size, metadata.size);
               chrome.test.assertEq(
                   TESTING_FILE.modificationTime.toString(),
                   metadata.modificationTime.toString());
-              onSuccess();
-            }, function(error) {
+            }), function(error) {
               chrome.test.fail(error.name);
             });
-          },
+          }),
           function(error) {
             chrome.test.fail(error.name);
           });
     },
+
     // Read metadata of an existing testing file, which however has an invalid
     // modification time. It should not cause an error, but an invalid date
     // should be passed to fileapi instead. The reason is, that there is no
     // easy way to verify an incorrect modification time at early stage.
     function getFileMetadataWrongTimeSuccess() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_WRONG_TIME_FILE.name,
           {create: false},
-          function(fileEntry) {
+          chrome.test.callbackPass(function(fileEntry) {
             chrome.test.assertEq(TESTING_WRONG_TIME_FILE.name, fileEntry.name);
-            fileEntry.getMetadata(function(metadata) {
+            fileEntry.getMetadata(chrome.test.callbackPass(function(metadata) {
               chrome.test.assertTrue(
                   Number.isNaN(metadata.modificationTime.getTime()));
-              onSuccess();
-            }, function(error) {
+            }), function(error) {
               chrome.test.fail(error.name);
             });
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
+
     // Read metadata of a directory which does not exist, what should return an
     // error. DirectoryEntry.getDirectory() causes fetching metadata.
     function getFileMetadataNotFound() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           'cranberries',
           {create: false},
           function(dirEntry) {
             chrome.test.fail();
           },
-          function(error) {
+          chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('NotFoundError', error.name);
-            onSuccess();
-          });
+          }));
     },
+
     // Read metadata of a file using getDirectory(). An error should be returned
     // because of type mismatching. DirectoryEntry.getDirectory() causes
     // fetching metadata.
     function getFileMetadataWrongType() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           TESTING_FILE.name,
           {create: false},
           function(fileEntry) {
             chrome.test.fail();
           },
-          function(error) {
+          chrome.test.callbackPass(function(error) {
             chrome.test.assertEq('TypeMismatchError', error.name);
-            onSuccess();
-          });
+          }));
     }
   ]);
 }

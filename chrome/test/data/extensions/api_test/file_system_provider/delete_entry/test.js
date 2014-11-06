@@ -103,46 +103,45 @@ function runTests() {
   chrome.test.runTests([
     // Delete a file. Should succeed.
     function deleteDirectorySuccessSimple() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getFile(
           TESTING_C_FILE.name, {create: false},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_C_FILE.name, entry.name);
             chrome.test.assertFalse(entry.isDirectory);
-            entry.remove(onSuccess, function(error) {
+            entry.remove(chrome.test.callbackPass(), function(error) {
               chrome.test.fail(error.name);
             });
-          }, function(error) {
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
     // Delete a directory which has contents, non-recursively. Should fail.
     function deleteDirectoryErrorNotEmpty() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           TESTING_A_DIRECTORY.name, {create: false},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_A_DIRECTORY.name, entry.name);
             chrome.test.assertTrue(entry.isDirectory);
             entry.remove(function() {
               chrome.test.fail('Unexpectedly succeded to remove a directory.');
-            }, onSuccess);
-          }, function(error) {
+            }, chrome.test.callbackPass);
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     },
     // Delete a directory which has contents, recursively. Should succeed.
     function deleteDirectoryRecursively() {
-      var onSuccess = chrome.test.callbackPass();
       test_util.fileSystem.root.getDirectory(
           TESTING_A_DIRECTORY.name, {create: false},
-          function(entry) {
+          chrome.test.callbackPass(function(entry) {
             chrome.test.assertEq(TESTING_A_DIRECTORY.name, entry.name);
             chrome.test.assertTrue(entry.isDirectory);
-            entry.removeRecursively(onSuccess, function(error) {
-              chrome.test.fail(error);
-            });
-          }, function(error) {
+            entry.removeRecursively(
+                chrome.test.callbackPass(),
+                function(error) {
+                  chrome.test.fail(error);
+                });
+          }), function(error) {
             chrome.test.fail(error.name);
           });
     }

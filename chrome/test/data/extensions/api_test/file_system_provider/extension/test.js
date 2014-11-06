@@ -8,14 +8,8 @@ chrome.test.runTests([
   // Tests if mounting succeeds when invoked from an extension. Note that all
   // other tests are implemented as apps.
   function mount() {
-    var onTestSuccess = chrome.test.callbackPass();
     chrome.fileSystemProvider.mount(
         {fileSystemId: 'file-system-id', displayName: 'file-system-name'},
-        function() {
-          onTestSuccess();
-        },
-        function(error) {
-          chrome.test.fail();
-        });
+        chrome.test.callbackPass());
   },
 ]);

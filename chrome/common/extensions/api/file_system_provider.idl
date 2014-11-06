@@ -7,8 +7,9 @@
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
 namespace fileSystemProvider {
-  // Error codes used by providing extensions in response to requests. For
-  // success, <code>OK</code> must be used.
+  // Error codes used by providing extensions in response to requests as well
+  // as in case of errors when calling methods of the API. For success, <code>
+  // OK</code> must be used.
   enum ProviderError {
     OK,
     FAILED,
@@ -22,6 +23,7 @@ namespace fileSystemProvider {
     NOT_A_DIRECTORY,
     INVALID_OPERATION,
     SECURITY,
+    ABORT,
     NOT_A_FILE,
     NOT_EMPTY,
     INVALID_URL,
@@ -385,17 +387,8 @@ namespace fileSystemProvider {
     DOMString? tag;
   };
 
-  // Callback to receive the result of mount() function.
-  callback MountCallback = void([nodoc, instanceOf=DOMError] object error);
-
-  // Callback to receive the result of unmount() function.
-  callback UnmountCallback = void([nodoc, instanceOf=DOMError] object error);
-
   // Callback to receive the result of getAll() function.
   callback GetAllCallback = void(FileSystemInfo[] fileSystems);
-
-  // Callback to handle an error raised from the browser.
-  [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
 
   // Callback to be called by the providing extension in case of a success.
   [nocompile] callback ProviderSuccessCallback = void();
@@ -421,31 +414,31 @@ namespace fileSystemProvider {
   [nocompile] callback FileDataCallback = void(
       ArrayBuffer data, boolean hasMore);
 
+  // A generic result callback to indicate success or failure.
+  callback ResultCallback = void();
+
   interface Functions {
     // Mounts a file system with the given <code>fileSystemId</code> and <code>
     // displayName</code>. <code>displayName</code> will be shown in the left
     // panel of Files.app. <code>displayName</code> can contain any characters
     // including '/', but cannot be an empty string. <code>displayName</code>
-    // must be descriptive but doesn't have to be unique. Duplicate display
-    // names are uniquified by adding suffix like "(1)" in the Files app UI.
-    //
-    // If a file system with the passed <code>fileSystemId</code> is already
-    // mounted by this extension, then <code>errorCallback</code> will be called
-    // with <code>ProviderError.EXISTS</code> value. The <code>fileSystemId
+    // must be descriptive but doesn't have to be unique. The <code>fileSystemId
     // </code> must not be an empty string.
+    //
+    // In case of an error, <code>chrome.runtime.lastError</code> will be set
+    // will a corresponding error code.
     static void mount(MountOptions options,
-                      MountCallback successCallback,
-                      [nocompile] ErrorCallback errorCallback);
+                      optional ResultCallback callback);
 
     // Unmounts a file system with the given <code>fileSystemId</code>. It
     // must be called after <code>onUnmountRequested</code> is invoked. Also,
     // the providing extension can decide to perform unmounting if not requested
-    // (eg. in case of lost connection, or a file error). If there is no file
-    // system with the requested id, or unmounting fails, then the
-    // <code>errorCallback</code> will be called.
+    // (eg. in case of lost connection, or a file error).
+    //
+    // In case of an error, <code>chrome.runtime.lastError</code> will be set
+    // will a corresponding error code.
     static void unmount(UnmountOptions options,
-                        UnmountCallback successCallback,
-                        [nocompile] ErrorCallback errorCallback);
+                        optional ResultCallback callback);
 
     // Returns all file systems mounted by the extension.
     static void getAll(GetAllCallback callback);
@@ -467,7 +460,11 @@ namespace fileSystemProvider {
     // Not all providers are able to provide a tag, but if the file system has
     // a changelog, then the tag can be eg. a change number, or a revision
     // number.
-    [nodoc] static void notify(NotifyOptions options);
+    //
+    // In case of an error, <code>chrome.runtime.lastError</code> will be set
+    // will a corresponding error code.
+    [nodoc] static void notify(NotifyOptions options,
+                               optional ResultCallback callback);
   };
 
   interface Events {

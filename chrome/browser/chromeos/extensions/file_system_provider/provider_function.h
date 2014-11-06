@@ -39,11 +39,9 @@ extern const char kMountFailedErrorMessage[];
 extern const char kUnmountFailedErrorMessage[];
 extern const char kResponseFailedErrorMessage[];
 
-// Creates a dictionary, which looks like a DOMError. The returned dictionary
-// will be converted to a real DOMError object in
-// file_system_provier_custom_bindings.js.
-base::DictionaryValue* CreateError(const std::string& name,
-                                   const std::string& message);
+// Creates an identifier from |error|. For FILE_OK, an empty string is returned.
+// These values are passed to JavaScript as lastError.message value.
+std::string FileErrorToString(base::File::Error error);
 
 // Converts ProviderError to base::File::Error. This could be redundant, if it
 // was possible to create DOMError instances in Javascript easily.
@@ -59,16 +57,17 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
  protected:
   virtual ~FileSystemProviderInternalFunction() {}
 
-  // Rejects the request and sets a response for this API function.
-  void RejectRequest(
+  // Rejects the request and sets a response for this API function. Returns true
+  // on success, and false on failure.
+  bool RejectRequest(
       scoped_ptr<chromeos::file_system_provider::RequestValue> value,
       base::File::Error error);
 
   // Fulfills the request with parsed arguments of this API function
   // encapsulated as a RequestValue instance. Also, sets a response.
   // If |has_more| is set to true, then the function will be called again for
-  // this request.
-  void FulfillRequest(
+  // this request. Returns true on success, and false on failure.
+  bool FulfillRequest(
       scoped_ptr<chromeos::file_system_provider::RequestValue> value,
       bool has_more);
 
@@ -84,9 +83,6 @@ class FileSystemProviderInternalFunction : public ChromeSyncExtensionFunction {
   // Parses the request in order to extract the request manager. If fails, then
   // sets a response and returns false.
   bool Parse();
-
-  // Sets an error message in case of a failure.
-  void SetErrorResponse(const std::string& name, const std::string& message);
 
   int request_id_;
   chromeos::file_system_provider::RequestManager* request_manager_;
