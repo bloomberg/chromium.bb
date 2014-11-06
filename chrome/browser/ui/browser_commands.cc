@@ -268,6 +268,7 @@ bool IsShowingWebContentsModalDialog(Browser* browser) {
   return browser->popup_manager()->IsWebModalDialogActive(web_contents);
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
 bool PrintPreviewShowing(const Browser* browser) {
 #if defined(ENABLE_PRINT_PREVIEW)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
@@ -279,6 +280,7 @@ bool PrintPreviewShowing(const Browser* browser) {
   return false;
 #endif
 }
+#endif  // ENABLE_BASIC_PRINTING
 
 }  // namespace
 

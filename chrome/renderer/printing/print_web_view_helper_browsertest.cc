@@ -31,10 +31,10 @@ namespace printing {
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
+
 // A simple web page.
 const char kHelloWorldHTML[] = "<body><p>Hello World!</p></body>";
-
-#if !defined(OS_CHROMEOS)
 
 // A simple webpage with a button to print itself with.
 const char kPrintOnUserAction[] =

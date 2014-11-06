@@ -907,6 +907,8 @@
         }],
 
         ['chromeos==1', {
+          'enable_basic_printing%': 0,
+          'enable_print_preview%': 1,
           # When building for ChromeOS we dont want Chromium to use libjpeg_turbo.
           'use_libjpeg_turbo%': 0,
         }],

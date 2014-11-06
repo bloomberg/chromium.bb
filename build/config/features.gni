@@ -64,7 +64,7 @@ enable_pepper_cdms = enable_plugins && (is_linux || is_mac || is_win)
 enable_browser_cdms = is_android
 
 # Enable basic printing support and UI.
-enable_basic_printing = true
+enable_basic_printing = !is_chromeos
 
 # Enable printing with print preview. It does not imply
 # enable_basic_printing. It's possible to build Chrome with preview only.
