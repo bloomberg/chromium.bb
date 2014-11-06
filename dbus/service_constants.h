@@ -336,6 +336,8 @@ const char kFlimflamIPConfigInterface[] = "org.chromium.flimflam.IPConfig";
 const char kFlimflamDeviceInterface[] = "org.chromium.flimflam.Device";
 const char kFlimflamProfileInterface[] = "org.chromium.flimflam.Profile";
 const char kFlimflamNetworkInterface[] = "org.chromium.flimflam.Network";
+const char kFlimflamThirdPartyVpnInterface[] =
+    "org.chromium.flimflam.ThirdPartyVpn";
 
 // Flimflam function names.
 const char kGetPropertiesFunction[] = "GetProperties";
@@ -801,6 +803,13 @@ const char kVerifyAndEncryptCredentialsFunction[] =
 const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
 const char kVerifyDestinationFunction[] = "VerifyDestination";
 
+// ThirdPartyVpn functions.
+const char kSetParametersFunction[] = "SetParameters";
+const char kSendPacketFunction[] = "SendPacket";
+const char kUpdateConnectionStateFunction[] = "UpdateConnectionState";
+const char kOnPacketReceivedFunction[] = "OnPacketReceived";
+const char kOnPlatformMessageFunction[] = "OnPlatformMessage";
+
 // Device property names.
 const char kEapAuthenticationCompletedProperty[] = "EapAuthenticationCompleted";
 const char kEapAuthenticatorDetectedProperty[] = "EapAuthenticatorDetected";
@@ -971,6 +980,17 @@ const char kGeoSignalToNoiseRatioProperty[] = "signalToNoiseRatio";
 // Common property names for geolocation objects.
 const char kGeoAgeProperty[] = "age";
 const char kGeoSignalStrengthProperty[] = "signalStrength";
+// ThirdPartyVpn parameters, properties and constants.
+const char kAddressParameterThirdPartyVpn[] = "address";
+const char kBroadcastAddressParameterThirdPartyVpn[] = "broadcast_address";
+const char kGatewayParameterThirdPartyVpn[] = "gateway";
+const char kBypassTunnelForIpParameterThirdPartyVpn[] = "bypass_tunnel_for_ip";
+const char kSubnetPrefixParameterThirdPartyVpn[] = "subnet_prefix";
+const char kMtuParameterThirdPartyVpn[] = "mtu";
+const char kDomainSearchParameterThirdPartyVpn[] = "domain_search";
+const char kDnsServersParameterThirdPartyVpn[] = "dns_servers";
+const char kExtensionIDProperty[] = "ExtensionId";
+const char kObjectPathBase[] = "/thirdpartyvpn/";
 }  // namespace shill
 
 namespace cromo {
