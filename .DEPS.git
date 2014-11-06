@@ -27,7 +27,7 @@ vars = {
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
     'buildtools_revision':
-         '59b93247766e1cdac6e482637ad493df38f7aeb7',
+         'c27f95bd1d9baaef70c879dea375090dd1496147',
     'validator_snapshots_rev':
          '14026',
     'chrome_rev':
@@ -40,7 +40,7 @@ deps = {
     'breakpad':
         Var('git_url') + '/external/google-breakpad.git@fe34e3f9fef1eb425b25a79f0da84e2f277d433b',
     'buildtools':
-        Var('git_url') + '/chromium/buildtools.git@59b93247766e1cdac6e482637ad493df38f7aeb7',
+        Var('git_url') + '/chromium/buildtools.git@c27f95bd1d9baaef70c879dea375090dd1496147',
     'testing/gtest':
         Var('git_url') + '/external/googletest.git@74de57c951aedebc5dfe26a27604353432392b98',
     'third_party':
