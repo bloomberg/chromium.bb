@@ -14,6 +14,7 @@ def _CheckNoInterfacesInBase(input_api, output_api):
   files = []
   for f in input_api.AffectedSourceFiles(input_api.FilterSourceFile):
     if (f.LocalPath().startswith('base/') and
+        not "/ios/" in f.LocalPath() and
         not "/test/" in f.LocalPath() and
         not f.LocalPath().endswith('_unittest.mm') and
         not f.LocalPath().endswith('mac/sdk_forward_declarations.h')):
