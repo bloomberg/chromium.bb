@@ -55,3 +55,20 @@ def XmmYmmOrMemory3operand(mnemonic_name, bitness):
 
   return (proof_tools.OpsProd(mnemonic, (xmm | mem), xmm, xmm) |
           proof_tools.OpsProd(mnemonic, (ymm | mem), ymm, ymm))
+
+def XmmOrMemory3operand(mnemonic_name, bitness):
+  """Set of 3 operand xmm/memory ops (memory is a possible source operand).
+
+  e.g.  instr xmm1/mem, xmm2, xmm3
+
+  Args:
+    mnemonic_name: the mnemonic we are producing the pattern for.
+    bitness: the bitness of the architecture (32 or 64)
+  Returns:
+    All possible disassembly sequences that follow the pattern.
+  """
+  xmm = proof_tools.AllXMMOperands(bitness)
+  mem = proof_tools.AllMemoryOperands(bitness)
+  mnemonic = proof_tools.MnemonicOp(mnemonic_name)
+
+  return (proof_tools.OpsProd(mnemonic, (xmm | mem), xmm, xmm))
