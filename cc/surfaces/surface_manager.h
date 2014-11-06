@@ -6,7 +6,6 @@
 #define CC_SURFACES_SURFACE_MANAGER_H_
 
 #include <list>
-#include <set>
 #include <vector>
 
 #include "base/containers/hash_tables.h"
@@ -31,8 +30,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void DeregisterSurface(SurfaceId surface_id);
 
   // Destroy the Surface once a set of sequence numbers has been satisfied.
-  void DestroyOnSequence(scoped_ptr<Surface> surface,
-                         const std::set<SurfaceSequence>& dependency_set);
+  void Destroy(scoped_ptr<Surface> surface);
 
   Surface* GetSurfaceForId(SurfaceId surface_id);
 
@@ -46,8 +44,10 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   void SurfaceModified(SurfaceId surface_id);
 
-  // A frame for a surface satisfies a set of sequence numbers.
-  void DidSatisfySequences(SurfaceId id, std::vector<uint32_t>* sequence);
+  // A frame for a surface satisfies a set of sequence numbers in a particular
+  // id namespace.
+  void DidSatisfySequences(uint32_t id_namespace,
+                           std::vector<uint32_t>* sequence);
 
  private:
   void SearchForSatisfaction();
@@ -59,13 +59,12 @@ class CC_SURFACES_EXPORT SurfaceManager {
 
   // List of surfaces to be destroyed, along with what sequences they're still
   // waiting on.
-  typedef std::list<std::pair<Surface*, std::set<SurfaceSequence>>>
-      SurfaceDestroyList;
+  typedef std::list<Surface*> SurfaceDestroyList;
   SurfaceDestroyList surfaces_to_destroy_;
 
   // Set of SurfaceSequences that have been satisfied by a frame but not yet
   // waited on.
-  std::set<SurfaceSequence> satisfied_sequences_;
+  base::hash_set<SurfaceSequence> satisfied_sequences_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

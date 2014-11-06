@@ -50,6 +50,7 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -1381,6 +1382,35 @@ TEST_F(RenderWidgetHostViewAuraTest, SwapNotifiesWindow) {
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   view_->window_->RemoveObserver(&observer);
+}
+
+// Recreating the layers for a window should cause Surface destruction to
+// depend on both layers.
+TEST_F(RenderWidgetHostViewAuraTest, RecreateLayers) {
+  gfx::Size view_size(100, 100);
+  gfx::Rect view_rect(view_size);
+
+  view_->InitAsChild(NULL);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_size);
+  view_->WasShown();
+
+  view_->OnSwapCompositorFrame(0,
+                               MakeDelegatedFrame(1.f, view_size, view_rect));
+  scoped_ptr<ui::LayerTreeOwner> cloned_owner(
+      wm::RecreateLayers(view_->GetNativeView()));
+
+  cc::SurfaceId id = view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
+  if (!id.is_null()) {
+    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+    cc::SurfaceManager* manager = factory->GetSurfaceManager();
+    cc::Surface* surface = manager->GetSurfaceForId(id);
+    EXPECT_TRUE(surface);
+    // Should be a SurfaceSequence for both the original and new layers.
+    EXPECT_EQ(2u, surface->GetDestructionDependencyCount());
+  }
 }
 
 TEST_F(RenderWidgetHostViewAuraTest, Resize) {

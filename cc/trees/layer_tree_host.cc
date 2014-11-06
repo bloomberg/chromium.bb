@@ -128,7 +128,9 @@ LayerTreeHost::LayerTreeHost(
       id_(s_layer_tree_host_sequence_number.GetNext() + 1),
       next_commit_forces_redraw_(false),
       shared_bitmap_manager_(shared_bitmap_manager),
-      gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
+      gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
+      surface_id_namespace_(0u),
+      next_surface_sequence_(1u) {
   if (settings_.accelerated_animation_enabled)
     animation_registrar_ = AnimationRegistrar::Create();
   rendering_stats_instrumentation_->set_record_rendering_stats(
@@ -167,14 +169,14 @@ void LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
 LayerTreeHost::~LayerTreeHost() {
   TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
 
-  DCHECK(swap_promise_monitor_.empty());
-
-  BreakSwapPromises(SwapPromise::COMMIT_FAILS);
-
   overhang_ui_resource_ = nullptr;
 
   if (root_layer_.get())
     root_layer_->SetLayerTreeHost(NULL);
+
+  DCHECK(swap_promise_monitor_.empty());
+
+  BreakSwapPromises(SwapPromise::COMMIT_FAILS);
 
   if (proxy_) {
     DCHECK(proxy_->IsMainThread());
@@ -1334,6 +1336,14 @@ void LayerTreeHost::BreakSwapPromises(SwapPromise::DidNotSwapReason reason) {
   for (size_t i = 0; i < swap_promise_list_.size(); i++)
     swap_promise_list_[i]->DidNotSwap(reason);
   swap_promise_list_.clear();
+}
+
+void LayerTreeHost::set_surface_id_namespace(uint32_t id_namespace) {
+  surface_id_namespace_ = id_namespace;
+}
+
+SurfaceSequence LayerTreeHost::CreateSurfaceSequence() {
+  return SurfaceSequence(surface_id_namespace_, next_surface_sequence_++);
 }
 
 }  // namespace cc

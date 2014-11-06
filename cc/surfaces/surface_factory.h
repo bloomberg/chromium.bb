@@ -40,8 +40,6 @@ class CC_SURFACES_EXPORT SurfaceFactory
 
   void Create(SurfaceId surface_id, const gfx::Size& size);
   void Destroy(SurfaceId surface_id);
-  void DestroyOnSequence(SurfaceId surface_id,
-                         const std::set<SurfaceSequence>& dependency_set);
   void DestroyAll();
   // A frame can only be submitted to a surface created by this factory,
   // although the frame may reference surfaces created by other factories.

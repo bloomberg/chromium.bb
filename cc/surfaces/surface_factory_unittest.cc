@@ -381,9 +381,9 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   factory_.Create(id2, gfx::Size(5, 5));
 
   // Check that waiting before the sequence is satisfied works.
-  std::set<SurfaceSequence> sequence;
-  sequence.insert(SurfaceSequence(0, 4));
-  factory_.DestroyOnSequence(id2, sequence);
+  manager_.GetSurfaceForId(id2)
+      ->AddDestructionDependency(SurfaceSequence(0, 4));
+  factory_.Destroy(id2);
 
   scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);
   scoped_ptr<CompositorFrame> frame(new CompositorFrame);
@@ -396,10 +396,10 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
 
   // Check that waiting after the sequence is satisfied works.
   factory_.Create(id2, gfx::Size(5, 5));
-  sequence.clear();
-  sequence.insert(SurfaceSequence(0, 6));
   DCHECK(manager_.GetSurfaceForId(id2));
-  factory_.DestroyOnSequence(id2, sequence);
+  manager_.GetSurfaceForId(id2)
+      ->AddDestructionDependency(SurfaceSequence(0, 6));
+  factory_.Destroy(id2);
   DCHECK(!manager_.GetSurfaceForId(id2));
 }
 

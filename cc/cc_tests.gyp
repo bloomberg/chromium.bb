@@ -50,6 +50,7 @@
       'layers/scrollbar_layer_unittest.cc',
       'layers/solid_color_layer_impl_unittest.cc',
       'layers/solid_color_scrollbar_layer_impl_unittest.cc',
+      'layers/surface_layer_unittest.cc',
       'layers/surface_layer_impl_unittest.cc',
       'layers/texture_layer_unittest.cc',
       'layers/texture_layer_impl_unittest.cc',

@@ -5,6 +5,8 @@
 #ifndef CC_SURFACES_SURFACE_SEQUENCE_H_
 #define CC_SURFACES_SURFACE_SEQUENCE_H_
 
+#include "base/containers/hash_tables.h"
+
 namespace cc {
 
 // A per-surface-namespace sequence number that's used to coordinate
@@ -14,6 +16,7 @@ struct SurfaceSequence {
   SurfaceSequence() : id_namespace(0u), sequence(0u) {}
   SurfaceSequence(uint32_t id_namespace, uint32_t sequence)
       : id_namespace(id_namespace), sequence(sequence) {}
+  bool is_null() const { return id_namespace == 0u && sequence == 0u; }
 
   uint32_t id_namespace;
   uint32_t sequence;
@@ -34,5 +37,14 @@ inline bool operator<(const SurfaceSequence& a, const SurfaceSequence& b) {
 }
 
 }  // namespace cc
+
+namespace BASE_HASH_NAMESPACE {
+template <>
+struct hash<cc::SurfaceSequence> {
+  size_t operator()(cc::SurfaceSequence key) const {
+    return base::HashPair(key.id_namespace, key.sequence);
+  }
+};
+}  // namespace BASE_HASH_NAMESPACE
 
 #endif  // CC_SURFACES_SURFACE_SEQUENCE_H_

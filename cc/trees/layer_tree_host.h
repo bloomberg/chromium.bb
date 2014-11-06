@@ -34,6 +34,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -307,6 +308,9 @@ class CC_EXPORT LayerTreeHost {
 
   size_t num_queued_swap_promises() const { return swap_promise_list_.size(); }
 
+  void set_surface_id_namespace(uint32_t id_namespace);
+  SurfaceSequence CreateSurfaceSequence();
+
  protected:
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* shared_bitmap_manager,
@@ -463,6 +467,9 @@ class CC_EXPORT LayerTreeHost {
 
   ScopedPtrVector<SwapPromise> swap_promise_list_;
   std::set<SwapPromiseMonitor*> swap_promise_monitor_;
+
+  uint32_t surface_id_namespace_;
+  uint32_t next_surface_sequence_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

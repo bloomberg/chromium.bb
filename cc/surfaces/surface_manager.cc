@@ -19,8 +19,8 @@ SurfaceManager::~SurfaceManager() {
   for (SurfaceDestroyList::iterator it = surfaces_to_destroy_.begin();
        it != surfaces_to_destroy_.end();
        ++it) {
-    DeregisterSurface(it->first->surface_id());
-    delete it->first;
+    DeregisterSurface((*it)->surface_id());
+    delete *it;
   }
 }
 
@@ -38,20 +38,19 @@ void SurfaceManager::DeregisterSurface(SurfaceId surface_id) {
   surface_map_.erase(it);
 }
 
-void SurfaceManager::DestroyOnSequence(
-    scoped_ptr<Surface> surface,
-    const std::set<SurfaceSequence>& dependency_set) {
-  surfaces_to_destroy_.push_back(make_pair(surface.release(), dependency_set));
+void SurfaceManager::Destroy(scoped_ptr<Surface> surface) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  surfaces_to_destroy_.push_back(surface.release());
   SearchForSatisfaction();
 }
 
-void SurfaceManager::DidSatisfySequences(SurfaceId id,
+void SurfaceManager::DidSatisfySequences(uint32_t id_namespace,
                                          std::vector<uint32_t>* sequence) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (std::vector<uint32_t>::iterator it = sequence->begin();
        it != sequence->end();
        ++it) {
-    satisfied_sequences_.insert(
-        SurfaceSequence(SurfaceIdAllocator::NamespaceForId(id), *it));
+    satisfied_sequences_.insert(SurfaceSequence(id_namespace, *it));
   }
   sequence->clear();
   SearchForSatisfaction();
@@ -60,21 +59,9 @@ void SurfaceManager::DidSatisfySequences(SurfaceId id,
 void SurfaceManager::SearchForSatisfaction() {
   for (SurfaceDestroyList::iterator dest_it = surfaces_to_destroy_.begin();
        dest_it != surfaces_to_destroy_.end();) {
-    std::set<SurfaceSequence>& dependency_set = dest_it->second;
-
-    for (std::set<SurfaceSequence>::iterator it = dependency_set.begin();
-         it != dependency_set.end();) {
-      if (satisfied_sequences_.count(*it) > 0) {
-        satisfied_sequences_.erase(*it);
-        std::set<SurfaceSequence>::iterator old_it = it;
-        ++it;
-        dependency_set.erase(old_it);
-      } else {
-        ++it;
-      }
-    }
-    if (dependency_set.empty()) {
-      scoped_ptr<Surface> surf(dest_it->first);
+    (*dest_it)->SatisfyDestructionDependencies(&satisfied_sequences_);
+    if (!(*dest_it)->GetDestructionDependencyCount()) {
+      scoped_ptr<Surface> surf(*dest_it);
       DeregisterSurface(surf->surface_id());
       dest_it = surfaces_to_destroy_.erase(dest_it);
     } else {

@@ -17,6 +17,7 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/quads/render_pass_id.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -57,6 +58,18 @@ class CC_SURFACES_EXPORT Surface {
 
   base::WeakPtr<SurfaceFactory> factory() { return factory_; }
 
+  // Add a SurfaceSequence that must be satisfied before the Surface is
+  // destroyed.
+  void AddDestructionDependency(SurfaceSequence sequence);
+
+  // Satisfy all destruction dependencies that are contained in sequences, and
+  // remove them from sequences.
+  void SatisfyDestructionDependencies(
+      base::hash_set<SurfaceSequence>* sequences);
+  size_t GetDestructionDependencyCount() const {
+    return destruction_dependencies_.size();
+  }
+
  private:
   void ClearCopyRequests();
 
@@ -66,6 +79,7 @@ class CC_SURFACES_EXPORT Surface {
   // TODO(jamesr): Support multiple frames in flight.
   scoped_ptr<CompositorFrame> current_frame_;
   int frame_index_;
+  std::vector<SurfaceSequence> destruction_dependencies_;
 
   base::Closure draw_callback_;
 

@@ -25,8 +25,8 @@ SurfaceFactory::~SurfaceFactory() {
 }
 
 void SurfaceFactory::DestroyAll() {
-  for (auto& surface : surface_map_)
-    manager_->DeregisterSurface(surface.first);
+  for (auto it = surface_map_.begin(); it != surface_map_.end(); ++it)
+    manager_->Destroy(surface_map_.take(it));
   surface_map_.clear();
 }
 
@@ -41,17 +41,7 @@ void SurfaceFactory::Destroy(SurfaceId surface_id) {
   OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
   DCHECK(it != surface_map_.end());
   DCHECK(it->second->factory().get() == this);
-  manager_->DeregisterSurface(surface_id);
-  surface_map_.erase(it);
-}
-
-void SurfaceFactory::DestroyOnSequence(
-    SurfaceId surface_id,
-    const std::set<SurfaceSequence>& dependency_set) {
-  OwningSurfaceMap::iterator it = surface_map_.find(surface_id);
-  DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory().get() == this);
-  manager_->DestroyOnSequence(surface_map_.take_and_erase(it), dependency_set);
+  manager_->Destroy(surface_map_.take_and_erase(it));
 }
 
 void SurfaceFactory::SubmitFrame(SurfaceId surface_id,

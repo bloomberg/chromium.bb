@@ -9,6 +9,7 @@
 #include "cc/output/compositor_frame.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 
 namespace cc {
@@ -57,7 +58,8 @@ void Surface::QueueFrame(scoped_ptr<CompositorFrame> frame,
     draw_callback_.Run();
   draw_callback_ = callback;
   factory_->manager()->DidSatisfySequences(
-      surface_id_, &current_frame_->metadata.satisfies_sequences);
+      SurfaceIdAllocator::NamespaceForId(surface_id_),
+      &current_frame_->metadata.satisfies_sequences);
 }
 
 void Surface::RequestCopyOfOutput(scoped_ptr<CopyOutputRequest> copy_request) {
@@ -109,6 +111,19 @@ void Surface::RunDrawCallbacks() {
     draw_callback_ = base::Closure();
     callback.Run();
   }
+}
+
+void Surface::AddDestructionDependency(SurfaceSequence sequence) {
+  destruction_dependencies_.push_back(sequence);
+}
+
+void Surface::SatisfyDestructionDependencies(
+    base::hash_set<SurfaceSequence>* sequences) {
+  destruction_dependencies_.erase(
+      std::remove_if(
+          destruction_dependencies_.begin(), destruction_dependencies_.end(),
+          [sequences](SurfaceSequence seq) { return !!sequences->erase(seq); }),
+      destruction_dependencies_.end());
 }
 
 void Surface::ClearCopyRequests() {
