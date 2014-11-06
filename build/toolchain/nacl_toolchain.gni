@@ -18,27 +18,34 @@
 #                         build using this toolchain.)
 
 template("nacl_toolchain") {
+  assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
+  assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
+  assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
+  assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
+  assert(defined(invoker.toolchain_cpu_arch),
+         "nacl_toolchain() must specify a \"toolchain_cpu_arch\"")
+  #assert(defined(invoker.toolchain_os),
+  #       "nacl_toolchain() must specify a \"toolchain_os\"")
+  assert(defined(invoker.package), "nacl_toolchain() must specify a \"package\" value")
+  assert(defined(invoker.nacl_libc), "nacl_toolchain() must specify a \"nacl_libc\" value")
+
+  if (defined(invoker.executable_extension)) {
+    executable_extension = invoker.executable_extension
+  } else {
+    executable_extension = ".nexe"
+  }
+
+  # We can't do string interpolation ($ in strings) on things with dots in
+  # them. To allow us to use $cc below, for example, we create copies of
+  # these values in our scope.
+  cc = invoker.toolprefix + invoker.cc
+  cxx = invoker.toolprefix + invoker.cxx
+  ar = invoker.toolprefix + invoker.ar
+  ld = invoker.toolprefix + invoker.ld
+
+  package = invoker.package
+
   toolchain("raw_" + target_name) {
-    assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
-    assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
-    assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
-    assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
-    assert(defined(invoker.toolchain_cpu_arch),
-           "nacl_toolchain() must specify a \"toolchain_cpu_arch\"")
-    #assert(defined(invoker.toolchain_os),
-    #       "nacl_toolchain() must specify a \"toolchain_os\"")
-    assert(defined(invoker.nacl_libc), "nacl_toolchain() must specify a \"nacl_libc\" value")
-
-    # We can't do string interpolation ($ in strings) on things with dots in
-    # them. To allow us to use $cc below, for example, we create copies of
-    # these values in our scope.
-    cc = invoker.toolprefix + invoker.cc
-    cxx = invoker.toolprefix + invoker.cxx
-    ar = invoker.toolprefix + invoker.ar
-    ld = invoker.toolprefix + invoker.ld
-
-    package = "nacl_" + invoker.package_arch + "_" + invoker.nacl_libc
-
     # Bring these into our scope for string interpolation with default values.
     if (defined(invoker.libs_section_prefix)) {
       libs_section_prefix = invoker.libs_section_prefix
@@ -160,6 +167,8 @@ template("nacl_toolchain") {
     }
 
     tool("link") {
+      default_output_extension = executable_extension
+
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
@@ -185,41 +194,25 @@ template("nacl_toolchain") {
       }
     }
 
+    tool("copy") {
+      command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
+      description = "COPY {{source}} {{output}}"
+    }
+
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
       cpu_arch = invoker.toolchain_cpu_arch
       os = "nacl"
       nacl_libc = invoker.nacl_libc
-      nacl_prep = "raw"
     }
     deps = [
-      "//native_client/build/toolchain:${package}_untar",
-      "//native_client/build/toolchain:${package}_copies"
+      "//native_client/build/toolchain:${package}_untar(//native_client/build/toolchain/nacl:toolchain_prep)",
+      "//native_client/build/toolchain:${package}_copies(//native_client/build/toolchain/nacl:toolchain_prep)"
     ]
   }
 
   toolchain(target_name) {
-    assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
-    assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
-    assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
-    assert(defined(invoker.ld), "nacl_toolchain() must specify a \"ld\" value")
-    assert(defined(invoker.toolchain_cpu_arch),
-           "nacl_toolchain() must specify a \"toolchain_cpu_arch\"")
-    #assert(defined(invoker.toolchain_os),
-    #       "nacl_toolchain() must specify a \"toolchain_os\"")
-    assert(defined(invoker.nacl_libc), "nacl_toolchain() must specify a \"nacl_libc\" value")
-
-    # We can't do string interpolation ($ in strings) on things with dots in
-    # them. To allow us to use $cc below, for example, we create copies of
-    # these values in our scope.
-    cc = invoker.toolprefix + invoker.cc
-    cxx = invoker.toolprefix + invoker.cxx
-    ar = invoker.toolprefix + invoker.ar
-    ld = invoker.toolprefix + invoker.ld
-
-    package = "nacl_" + invoker.package_arch + "_" + invoker.nacl_libc
-
     # Bring these into our scope for string interpolation with default values.
     if (defined(invoker.libs_section_prefix)) {
       libs_section_prefix = invoker.libs_section_prefix
@@ -341,6 +334,8 @@ template("nacl_toolchain") {
     }
 
     tool("link") {
+      default_output_extension = executable_extension
+
       outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
       rspfile = "$outfile.rsp"
       command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
@@ -366,16 +361,20 @@ template("nacl_toolchain") {
       }
     }
 
+    tool("copy") {
+      command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
+      description = "COPY {{source}} {{output}}"
+    }
+
     # When invoking this toolchain not as the default one, these args will be
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
       cpu_arch = invoker.toolchain_cpu_arch
       os = "nacl"
       nacl_libc = invoker.nacl_libc
-      nacl_prep = "cooked"
     }
     deps = [
-      "//native_client/build/toolchain:prep_${package}"
+      "//native_client/build/toolchain:prep_${package}(//native_client/build/toolchain/nacl:toolchain_prep)"
     ]
   }
 }

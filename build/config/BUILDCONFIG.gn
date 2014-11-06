@@ -19,7 +19,6 @@
 declare_args() {
   # The current NaCl libc and preps stage, none for trusted toolchains.
   nacl_libc = "none"
-  nacl_prep = "none"
 
   use_newlib = true
   use_glibc = false

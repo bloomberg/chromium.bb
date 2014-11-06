@@ -40,20 +40,39 @@ group("trusted_64") {
 #
 group("untrusted") {
   deps = []
-  if (use_newlib) {
-    if (use_nacl_x86) {
+  if (use_nacl_x86) {
+    if (use_newlib) {
       deps += [
-        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)"
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)",
+        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_x86)"
       ]
     }
-    if (use_nacl_x64) {
+    if (use_glibc) {
+      deps += [
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x86)"
+      ]
+    }
+  }
+  if (use_nacl_x64) {
+    if (use_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)",
+        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_x64)"
       ]
     }
-    if (use_nacl_arm) {
-      deps += [ "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
+    if (use_glibc) {
+      deps += [
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x64)"
       ]
     }
+  }
+  if (use_nacl_arm) {
+    if (use_newlib) {
+      deps += [
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
+        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_arm)"
+      ]
+    }
+    # No gcc build, yet.
   }
 }

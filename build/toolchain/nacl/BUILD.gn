@@ -3,11 +3,12 @@
 # found in the LICENSE file.
 
 import("//native_client/build/config/sysroot.gni")
+import("//native_client/build/toolchain/gcc_toolchain.gni")
 import("//native_client/build/toolchain/nacl_toolchain.gni")
 
 nacl_toolchain("newlib_arm") {
+  package = "nacl_arm_newlib"
   nacl_libc = "newlib"
-  package_arch = "arm"
   toolchain_cpu_arch = "arm"
   toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
 
@@ -18,8 +19,8 @@ nacl_toolchain("newlib_arm") {
 }
 
 nacl_toolchain("newlib_x86") {
+  package = "nacl_x86_newlib"
   nacl_libc = "newlib"
-  package_arch = "x86"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
 
@@ -30,8 +31,8 @@ nacl_toolchain("newlib_x86") {
 }
 
 nacl_toolchain("newlib_x64") {
+  package = "nacl_x86_newlib"
   nacl_libc = "newlib"
-  package_arch = "x86"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
 
@@ -42,8 +43,8 @@ nacl_toolchain("newlib_x64") {
 }
 
 nacl_toolchain("glibc_x86") {
+  package = "nacl_x86_glibc"
   nacl_libc = "glibc"
-  package_arch = "x86"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/i686-nacl-"
 
@@ -54,8 +55,8 @@ nacl_toolchain("glibc_x86") {
 }
 
 nacl_toolchain("glibc_x64") {
+  package = "nacl_x86_glibc"
   nacl_libc = "glibc"
-  package_arch = "x86"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/x86_64-nacl-"
 
@@ -65,3 +66,15 @@ nacl_toolchain("glibc_x64") {
   ld = cxx
 }
 
+# A fake toolchain to namespace the toolchain prep.
+# Doing toolchain prep inside a non-default toolchain prevents it from becoming
+# a default target, which means that it will only trigger if explicitly depended
+# upon.
+gcc_toolchain("toolchain_prep") {
+  cc = "clang"
+  cxx = "clang++"
+  ar = "ar"
+  ld = cxx
+  toolchain_cpu_arch = cpu_arch
+  toolchain_os = os
+}
