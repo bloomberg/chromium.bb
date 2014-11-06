@@ -199,6 +199,18 @@
             }],
           ],
         }],
+        # ExternalMetrics not necessary on Android and (as of this writing) uses
+        # non-portable filesystem operations. Also webcrypto is not used on
+        # Android either.
+        ['OS=="linux"', {
+          'sources': [
+            'browser/metrics/external_metrics.cc',
+            'browser/metrics/external_metrics.h',
+          ],
+          'dependencies': [
+            '../components/components.gyp:metrics_serialization',
+          ],
+        }],
       ],
     },
     {

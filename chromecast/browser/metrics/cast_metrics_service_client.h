@@ -30,6 +30,7 @@ class URLRequestContextGetter;
 
 namespace chromecast {
 namespace metrics {
+class ExternalMetrics;
 
 class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
  public:
@@ -69,6 +70,9 @@ class CastMetricsServiceClient : public ::metrics::MetricsServiceClient {
   // Returns whether or not metrics reporting is enabled.
   bool IsReportingEnabled();
 
+#if defined(OS_LINUX)
+  scoped_ptr<ExternalMetrics> external_metrics_;
+#endif  // defined(OS_LINUX)
   scoped_ptr< ::metrics::MetricsStateManager> metrics_state_manager_;
   scoped_ptr< ::metrics::MetricsService> metrics_service_;
   scoped_refptr<base::MessageLoopProxy> metrics_service_loop_;

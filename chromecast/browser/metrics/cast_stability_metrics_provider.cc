@@ -14,6 +14,7 @@
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "chromecast/common/chromecast_config.h"
 #include "chromecast/common/pref_names.h"
+#include "components/metrics/metrics_service.h"
 #include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/navigation_controller.h"
@@ -49,7 +50,9 @@ void CastStabilityMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kStabilityChildProcessCrashCount, 0);
 }
 
-CastStabilityMetricsProvider::CastStabilityMetricsProvider() {
+CastStabilityMetricsProvider::CastStabilityMetricsProvider(
+    ::metrics::MetricsService* metrics_service)
+    : metrics_service_(metrics_service) {
   BrowserChildProcessObserver::Add(this);
 }
 
@@ -93,6 +96,22 @@ void CastStabilityMetricsProvider::ProvideStabilityMetrics(
     stability_proto->set_renderer_hang_count(count);
     pref->SetInteger(prefs::kStabilityRendererHangCount, 0);
   }
+}
+
+void CastStabilityMetricsProvider::LogExternalCrash(
+    const std::string& crash_type) {
+  if (crash_type == "user")
+    IncrementPrefValue(prefs::kStabilityOtherUserCrashCount);
+  else if (crash_type == "kernel")
+    IncrementPrefValue(prefs::kStabilityKernelCrashCount);
+  else if (crash_type == "uncleanshutdown")
+    IncrementPrefValue(prefs::kStabilitySystemUncleanShutdownCount);
+  else
+    NOTREACHED() << "Unexpected crash type " << crash_type;
+
+  // Wake up metrics logs sending if necessary now that new
+  // log data is available.
+  metrics_service_->OnApplicationNotIdle();
 }
 
 void CastStabilityMetricsProvider::Observe(

@@ -13,12 +13,15 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class MetricsService;
 class PrefRegistrySimple;
 
 namespace content {
 class RenderProcessHost;
 class WebContents;
+}
+
+namespace metrics {
+class MetricsService;
 }
 
 namespace chromecast {
@@ -34,7 +37,8 @@ class CastStabilityMetricsProvider
   // Registers local state prefs used by this class.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  CastStabilityMetricsProvider();
+  explicit CastStabilityMetricsProvider(
+      ::metrics::MetricsService* metrics_service);
   virtual ~CastStabilityMetricsProvider();
 
   // metrics::MetricsDataProvider implementation:
@@ -42,6 +46,9 @@ class CastStabilityMetricsProvider
   virtual void OnRecordingDisabled() override;
   virtual void ProvideStabilityMetrics(
       ::metrics::SystemProfileProto* system_profile_proto) override;
+
+  // Logs an external crash, presumably from the ExternalMetrics service.
+  void LogExternalCrash(const std::string& crash_type);
 
  private:
   // content::NotificationObserver implementation:
@@ -63,6 +70,11 @@ class CastStabilityMetricsProvider
 
   // Registrar for receiving stability-related notifications.
   content::NotificationRegistrar registrar_;
+
+  // Reference to the current MetricsService. Raw pointer is safe, since
+  // MetricsService is responsible for the lifetime of
+  // CastStabilityMetricsProvider.
+  ::metrics::MetricsService* metrics_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CastStabilityMetricsProvider);
 };
