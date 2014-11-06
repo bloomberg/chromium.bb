@@ -26,4 +26,10 @@ public interface AppMenuPropertiesDelegate {
      * @return The theme resource to use for displaying the App Menu.
      */
     int getMenuThemeResourceId();
+
+    /**
+     * @return The dimension resource to be used to determine the start padding of the menu
+     *         button (within the menu itself).  If 0 is passed, no padding will be applied.
+     */
+    int getMenuButtonStartPaddingDimenId();
 }

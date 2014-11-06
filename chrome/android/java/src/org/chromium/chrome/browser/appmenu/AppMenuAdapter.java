@@ -75,23 +75,24 @@ class AppMenuAdapter extends BaseAdapter {
 
     /** Menu Button Layout Constants */
     private static final float MENU_BUTTON_WIDTH_DP = 59.f;
-    private static final float MENU_BUTTON_START_PADDING_DP = 21.f;
 
     private final AppMenu mAppMenu;
     private final LayoutInflater mInflater;
     private final List<MenuItem> mMenuItems;
     private final int mNumMenuItems;
     private final boolean mShowMenuButton;
+    private final int mMenuButtonStartPaddingPx;
     private final float mDpToPx;
 
     public AppMenuAdapter(AppMenu appMenu, List<MenuItem> menuItems, LayoutInflater inflater,
-            boolean showMenuButton) {
+            boolean showMenuButton, int menuButtonStartPaddingPx) {
         mAppMenu = appMenu;
         mMenuItems = menuItems;
         mInflater = inflater;
         mNumMenuItems = menuItems.size();
         mShowMenuButton = showMenuButton;
         mDpToPx = inflater.getContext().getResources().getDisplayMetrics().density;
+        mMenuButtonStartPaddingPx = menuButtonStartPaddingPx;
     }
 
     @Override
@@ -346,7 +347,7 @@ class AppMenuAdapter extends BaseAdapter {
 
         // Set the button layout to make it properly line up with any underlying menu button
         ApiCompatibilityUtils.setPaddingRelative(
-                button, (int) (MENU_BUTTON_START_PADDING_DP * mDpToPx), 0, 0, 0);
+                button, mMenuButtonStartPaddingPx, 0, 0, 0);
         button.getLayoutParams().width = (int) (MENU_BUTTON_WIDTH_DP * mDpToPx);
         ((LinearLayout.LayoutParams) button.getLayoutParams()).weight = 0;
         button.setScaleType(ScaleType.CENTER);

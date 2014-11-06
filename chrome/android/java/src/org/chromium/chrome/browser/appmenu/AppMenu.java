@@ -82,17 +82,17 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
     /**
      * Creates and shows the app menu anchored to the specified view.
      *
-     * @param context             The context of the AppMenu (ensure the proper theme is set on
-     *                            this context).
-     * @param anchorView          The anchor {@link View} of the {@link ListPopupWindow}.
-     * @param isByHardwareButton  Whether or not hardware button triggered it. (oppose to software
-     *                            button)
-     * @param screenRotation      Current device screen rotation.
+     * @param context The context of the AppMenu (ensure the proper theme is set on this context).
+     * @param anchorView The anchor {@link View} of the {@link ListPopupWindow}.
+     * @param isByHardwareButton Whether or not hardware button triggered it. (oppose to software
+     *                           button).
+     * @param screenRotation Current device screen rotation.
      * @param visibleDisplayFrame The display area rect in which AppMenu is supposed to fit in.
-     * @param screenHeight        Current device screen height.
+     * @param screenHeight Current device screen height.
+     * @param menuButtonStartPaddingPx The start padding that should be applied to the menu button.
      */
     void show(Context context, View anchorView, boolean isByHardwareButton, int screenRotation,
-            Rect visibleDisplayFrame, int screenHeight) {
+            Rect visibleDisplayFrame, int screenHeight, int menuButtonStartPaddingPx) {
         mPopup = new ListPopupWindow(context, null, android.R.attr.popupMenuStyle);
         mPopup.setModal(true);
         mPopup.setAnchorView(anchorView);
@@ -128,8 +128,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         Rect bgPadding = new Rect();
         mPopup.getBackground().getPadding(bgPadding);
 
-        int popupWidth = context.getResources().getDimensionPixelSize(R.dimen.menu_width) +
-                bgPadding.left + bgPadding.right;
+        int popupWidth = context.getResources().getDimensionPixelSize(R.dimen.menu_width)
+                + bgPadding.left + bgPadding.right;
 
         mPopup.setWidth(popupWidth);
 
@@ -159,7 +159,8 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
         // A List adapter for visible items in the Menu. The first row is added as a header to the
         // list view.
         mAdapter = new AppMenuAdapter(
-                this, menuItems, LayoutInflater.from(context), showMenuButton);
+                this, menuItems, LayoutInflater.from(context),
+                showMenuButton, menuButtonStartPaddingPx);
         mPopup.setAdapter(mAdapter);
 
         setMenuHeight(menuItems.size(), visibleDisplayFrame, screenHeight, sizingPadding);
@@ -314,11 +315,11 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             int spaceForPartialItem = (int) (LAST_ITEM_SHOW_FRACTION * mItemRowHeight);
             // Determine which item needs hiding.
             if (spaceForFullItems + spaceForPartialItem < availableScreenSpace) {
-                mPopup.setHeight(spaceForFullItems + spaceForPartialItem +
-                        padding.top + padding.bottom);
+                mPopup.setHeight(spaceForFullItems + spaceForPartialItem
+                        + padding.top + padding.bottom);
             } else {
-                mPopup.setHeight(spaceForFullItems - mItemRowHeight + spaceForPartialItem +
-                        padding.top + padding.bottom);
+                mPopup.setHeight(spaceForFullItems - mItemRowHeight + spaceForPartialItem
+                        + padding.top + padding.bottom);
             }
         } else {
             mPopup.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);

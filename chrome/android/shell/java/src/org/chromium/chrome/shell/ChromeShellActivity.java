@@ -425,6 +425,11 @@ public class ChromeShellActivity extends Activity implements AppMenuPropertiesDe
         return R.style.OverflowMenuTheme;
     }
 
+    @Override
+    public int getMenuButtonStartPaddingDimenId() {
+        return 0;
+    }
+
     @VisibleForTesting
     public static void setActivityWindowAndroidFactory(ActivityWindowAndroidFactory factory) {
         sWindowAndroidFactory = factory;
