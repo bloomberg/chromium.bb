@@ -134,6 +134,12 @@ void crazy_context_get_java_vm(crazy_context_t* context,
                                void** java_vm,
                                int* minimum_jni_version);
 
+// Set the flag whether the fallback due to lack of support for mapping the
+// APK file with executable permission is enabled.
+void crazy_context_set_no_map_exec_support_fallback_enabled(
+    crazy_context_t* context,
+    bool no_map_exec_support_fallback_enabled) _CRAZY_PUBLIC;
+
 // Destroy a given context object.
 void crazy_context_destroy(crazy_context_t* context) _CRAZY_PUBLIC;
 

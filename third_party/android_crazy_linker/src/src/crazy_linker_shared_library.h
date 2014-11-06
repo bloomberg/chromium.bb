@@ -45,6 +45,9 @@ class SharedLibrary {
   // |full_path| if the file full path.
   // |load_address| is the page-aligned load address in memory, or 0.
   // |file_offset| is the page-aligned file offset.
+  // |no_map_exec_support_fallback_enabled| is a flag whether the fallback due
+  // to lack of support for mapping the APK file with executable permission is
+  // enabled.
   // On failure, return false and set |error| message.
   //
   // After this, the caller should load all library dependencies,
@@ -53,6 +56,7 @@ class SharedLibrary {
   bool Load(const char* full_path,
             size_t load_address,
             size_t file_offset,
+            bool no_map_exec_support_fallback_enabled,
             Error* error);
 
   // Relocate this library, assuming all its dependencies are already

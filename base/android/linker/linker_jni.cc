@@ -386,6 +386,17 @@ jboolean LoadLibraryInZipFile(JNIEnv* env,
       static_cast<size_t>(load_address), lib_info_obj, opener);
 }
 
+// Enable the fallback due to lack of support for mapping the APK file with
+// executable permission in the crazy linker.
+//
+// |env| is the current JNI environment handle and is ignored here.
+// |clazz| is the static class handle for org.chromium.base.Linker,
+// and is ignored here.
+void EnableNoMapExecSupportFallback(JNIEnv* env, jclass clazz) {
+  crazy_context_t* context = GetCrazyContext();
+  crazy_context_set_no_map_exec_support_fallback_enabled(context, true);
+}
+
 // Class holding the Java class and method ID for the Java side Linker
 // postCallbackOnMainThread method.
 struct JavaCallbackBindings_class {
@@ -598,15 +609,14 @@ jstring GetLibraryFilePathInZipFile(JNIEnv* env,
   return env->NewStringUTF(buffer);
 }
 
-// Check whether the device supports loading a library directly from the APK
-// file.
+// Check whether the device supports mapping the APK file with executable
+// permission.
 //
 // |env| is the current JNI environment handle.
 // |clazz| is the static class handle which is not used here.
 // |apkfile_name| is the filename of the APK.
 // Returns true if supported.
-jboolean CheckLibraryLoadFromApkSupport(JNIEnv* env, jclass clazz,
-                                        jstring apkfile_name) {
+jboolean CheckMapExecSupport(JNIEnv* env, jclass clazz, jstring apkfile_name) {
   String apkfile_name_str(env, apkfile_name);
   const char* apkfile_name_c_str = apkfile_name_str.c_str();
 
@@ -676,6 +686,11 @@ const JNINativeMethod kNativeMethods[] = {
      ")"
      "Z",
      reinterpret_cast<void*>(&LoadLibraryInZipFile)},
+    {"nativeEnableNoMapExecSupportFallback",
+     "("
+     ")"
+     "V",
+     reinterpret_cast<void*>(&EnableNoMapExecSupportFallback)},
     {"nativeRunCallbackOnUiThread",
      "("
      "J"
@@ -714,12 +729,12 @@ const JNINativeMethod kNativeMethods[] = {
      ")"
      "Ljava/lang/String;",
      reinterpret_cast<void*>(&GetLibraryFilePathInZipFile)},
-    {"nativeCheckLibraryLoadFromApkSupport",
+    {"nativeCheckMapExecSupport",
      "("
      "Ljava/lang/String;"
      ")"
      "Z",
-     reinterpret_cast<void*>(&CheckLibraryLoadFromApkSupport)},
+     reinterpret_cast<void*>(&CheckMapExecSupport)},
     {"nativeCheckLibraryAlignedInApk",
      "("
      "Ljava/lang/String;"

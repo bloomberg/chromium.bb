@@ -55,9 +55,9 @@ public class LibraryLoader {
     private static boolean sIsUsingBrowserSharedRelros = false;
     private static boolean sLoadAtFixedAddressFailed = false;
 
-    // One-way switch becomes true if the device supports loading the Chromium
-    // library directly from the APK.
-    private static boolean sLibraryLoadFromApkSupported = false;
+    // One-way switch becomes true if the device supports memory mapping the
+    // APK file with executable permissions.
+    private static boolean sMapApkWithExecPermission = false;
 
     // One-way switch becomes true if the Chromium library was loaded from the
     // APK file directly.
@@ -176,12 +176,20 @@ public class LibraryLoader {
 
                 if (useChromiumLinker) {
                     String apkFilePath = null;
+                    boolean useMapExecSupportFallback = false;
 
-                    // Check if the device supports loading a library directly from the APK file.
+                    // Check if the device supports memory mapping the APK file
+                    // with executable permissions.
                     if (context != null) {
                         apkFilePath = context.getApplicationInfo().sourceDir;
-                        sLibraryLoadFromApkSupported = Linker.checkLibraryLoadFromApkSupport(
-                                apkFilePath);
+                        sMapApkWithExecPermission = Linker.checkMapExecSupport(apkFilePath);
+                        if (!sMapApkWithExecPermission && Linker.isInZipFile()) {
+                            Log.w(TAG, "the no map executable support fallback will be used because"
+                                    + " memory mapping the APK file with executable permissions is"
+                                    + " not supported");
+                            Linker.enableNoMapExecSupportFallback();
+                            useMapExecSupportFallback = true;
+                        }
                     } else {
                         Log.w(TAG, "could not check load from APK support due to null context");
                     }
@@ -206,16 +214,19 @@ public class LibraryLoader {
                             if (!Linker.checkLibraryAlignedInApk(apkFilePath, libFilePath)) {
                                 sLibraryWasAlignedInApk = false;
                             }
-                            if (!sLibraryLoadFromApkSupported || sLibraryWasAlignedInApk) {
-                                // Load directly from the APK (or use memory fallback, see
-                                // crazy_linker_elf_loader.cpp).
-                                Log.i(TAG, "Loading " + library + " directly from within "
-                                        + apkFilePath);
+                            if (sLibraryWasAlignedInApk || useMapExecSupportFallback) {
+                                // Load directly from the APK (or use the no map executable
+                                // support fallback, see crazy_linker_elf_loader.cpp).
                                 zipFilePath = apkFilePath;
+                                Log.i(TAG, "Loading " + library + " "
+                                        + (useMapExecSupportFallback
+                                                ? "using no map executable support fallback"
+                                                : "directly")
+                                        + " from within " + apkFilePath);
                             } else {
                                 // Fallback.
-                                Log.i(TAG, "Loading " + library + " using fallback from within "
-                                        + apkFilePath);
+                                Log.i(TAG, "Loading " + library
+                                        + " using unpacking fallback from within " + apkFilePath);
                                 libFilePath = LibraryLoaderHelper.buildFallbackLibrary(
                                         context, library);
                                 fallbackWasUsed = true;
@@ -299,10 +310,10 @@ public class LibraryLoader {
     // Load a native shared library with the Chromium linker. If the zip file
     // path is not null, the library is loaded directly from the zip file.
     private static void loadLibrary(@Nullable String zipFilePath, String libFilePath) {
+        Linker.loadLibrary(zipFilePath, libFilePath);
         if (zipFilePath != null) {
             sLibraryWasLoadedFromApk = true;
         }
-        Linker.loadLibrary(zipFilePath, libFilePath);
     }
 
     // The WebView requires the Command Line to be switched over before
@@ -380,7 +391,9 @@ public class LibraryLoader {
         assert Linker.isUsed();
 
         if (sLibraryWasLoadedFromApk) {
-            return LibraryLoadFromApkStatusCodes.SUCCESSFUL;
+            return sMapApkWithExecPermission
+                    ? LibraryLoadFromApkStatusCodes.SUCCESSFUL
+                    : LibraryLoadFromApkStatusCodes.USED_NO_MAP_EXEC_SUPPORT_FALLBACK;
         }
 
         if (!sLibraryWasAlignedInApk) {
@@ -392,7 +405,7 @@ public class LibraryLoader {
             return LibraryLoadFromApkStatusCodes.UNKNOWN;
         }
 
-        return Linker.checkLibraryLoadFromApkSupport(context.getApplicationInfo().sourceDir)
+        return sMapApkWithExecPermission
                 ? LibraryLoadFromApkStatusCodes.SUPPORTED
                 : LibraryLoadFromApkStatusCodes.NOT_SUPPORTED;
     }

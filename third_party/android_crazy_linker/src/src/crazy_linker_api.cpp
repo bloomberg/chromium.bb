@@ -39,7 +39,8 @@ struct crazy_context_t {
         java_vm(NULL),
         minimum_jni_version(0),
         callback_poster(NULL),
-        callback_poster_opaque(NULL) {
+        callback_poster_opaque(NULL),
+        no_map_exec_support_fallback_enabled(false) {
     ResetSearchPaths();
   }
 
@@ -53,6 +54,7 @@ struct crazy_context_t {
   int minimum_jni_version;
   crazy_callback_poster_t callback_poster;
   void* callback_poster_opaque;
+  bool no_map_exec_support_fallback_enabled;
 };
 
 void crazy_context_t::ResetSearchPaths() {
@@ -137,6 +139,12 @@ void crazy_context_get_java_vm(crazy_context_t* context,
   *minimum_jni_version = context->minimum_jni_version;
 }
 
+void crazy_context_set_no_map_exec_support_fallback_enabled(
+    crazy_context_t* context, bool no_map_exec_support_fallback_enabled) {
+  context->no_map_exec_support_fallback_enabled =
+      no_map_exec_support_fallback_enabled;
+}
+
 void crazy_context_set_callback_poster(crazy_context_t* context,
                                        crazy_callback_poster_t poster,
                                        void* poster_opaque) {
@@ -205,6 +213,7 @@ crazy_status_t crazy_library_open(crazy_library_t** library,
                                                   context->load_address,
                                                   context->file_offset,
                                                   &context->search_paths,
+                                                  false,
                                                   &context->error);
 
   if (!wrap)
@@ -237,6 +246,7 @@ crazy_status_t crazy_library_open_in_zip_file(crazy_library_t** library,
           RTLD_NOW,
           context->load_address,
           &context->search_paths,
+          context->no_map_exec_support_fallback_enabled,
           &context->error);
 
   if (!wrap)

@@ -10,6 +10,8 @@ namespace android {
 
 namespace {
 
+// This enum must be kept in sync with the LibraryLoadFromApkStatus enum in
+// tools/metrics/histograms/histograms.xml.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.base.library_loader
 enum LibraryLoadFromApkStatusCodes {
   // The loader was unable to determine whether the functionality is supported.
@@ -27,8 +29,12 @@ enum LibraryLoadFromApkStatusCodes {
   // The Chromium library was not page aligned in the APK file.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_NOT_ALIGNED = 4,
 
+  // The Chromium library was successfully loaded using the no map executable
+  // support fallback.
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_USED_NO_MAP_EXEC_SUPPORT_FALLBACK = 5,
+
   // End sentinel.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX = 5,
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_MAX = 6,
 };
 
 }  // namespace

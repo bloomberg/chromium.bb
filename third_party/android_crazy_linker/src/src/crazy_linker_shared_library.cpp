@@ -228,6 +228,7 @@ SharedLibrary::~SharedLibrary() {
 bool SharedLibrary::Load(const char* full_path,
                          size_t load_address,
                          size_t file_offset,
+                         bool no_map_exec_support_fallback_enabled,
                          Error* error) {
   // First, record the path.
   LOG("%s: full path '%s'\n", __FUNCTION__, full_path);
@@ -245,7 +246,7 @@ bool SharedLibrary::Load(const char* full_path,
   LOG("%s: Loading ELF segments for %s\n", __FUNCTION__, base_name_);
 
   {
-    ElfLoader loader;
+    ElfLoader loader(no_map_exec_support_fallback_enabled);
     if (!loader.LoadAt(full_path_, file_offset, load_address, error)) {
       return false;
     }

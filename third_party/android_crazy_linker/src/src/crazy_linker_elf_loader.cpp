@@ -21,7 +21,7 @@ namespace crazy {
    MAYBE_MAP_FLAG((x), PF_R, PROT_READ) | \
    MAYBE_MAP_FLAG((x), PF_W, PROT_WRITE))
 
-ElfLoader::ElfLoader()
+ElfLoader::ElfLoader(bool no_map_exec_support_fallback_enabled)
     : fd_(),
       path_(NULL),
       phdr_num_(0),
@@ -33,7 +33,9 @@ ElfLoader::ElfLoader()
       load_start_(NULL),
       load_size_(0),
       load_bias_(0),
-      loaded_phdr_(NULL) {}
+      loaded_phdr_(NULL),
+      no_map_exec_support_fallback_enabled_(
+          no_map_exec_support_fallback_enabled) {}
 
 ElfLoader::~ElfLoader() {
   if (phdr_mmap_) {
@@ -313,7 +315,8 @@ bool ElfLoader::LoadSegments(Error* error) {
                                MAP_FIXED | MAP_PRIVATE,
                                file_page_start + file_offset_);
       if (seg_addr == MAP_FAILED) {
-        if (errno != EACCES || !(prot_flags & PROT_EXEC)) {
+        if (!no_map_exec_support_fallback_enabled_ || errno != EACCES ||
+            !(prot_flags & PROT_EXEC)) {
           // We don't have a fallback in this case.
           error->Format("Could not map segment %d: %s", i, strerror(errno));
           return false;

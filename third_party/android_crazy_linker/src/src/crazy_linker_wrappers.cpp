@@ -81,6 +81,7 @@ void* WrapDlopen(const char* path, int mode) {
                                               0U /* load_address */,
                                               0U /* file_offset */,
                                               Globals::GetSearchPaths(),
+                                              false,
                                               &error);
     if (wrap)
       return wrap;
