@@ -94,11 +94,15 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
         // This might be the first time we notice that the WebGraphicsContext3D is lost.
         return nullptr;
     }
-    bool multisampleSupported = extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample")
+    bool multisampleSupported = (extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample")
+        || extensionsUtil->supportsExtension("GL_EXT_multisampled_render_to_texture"))
         && extensionsUtil->supportsExtension("GL_OES_rgb8_rgba8");
     if (multisampleSupported) {
-        extensionsUtil->ensureExtensionEnabled("GL_CHROMIUM_framebuffer_multisample");
         extensionsUtil->ensureExtensionEnabled("GL_OES_rgb8_rgba8");
+        if (extensionsUtil->supportsExtension("GL_CHROMIUM_framebuffer_multisample"))
+            extensionsUtil->ensureExtensionEnabled("GL_CHROMIUM_framebuffer_multisample");
+        else
+            extensionsUtil->ensureExtensionEnabled("GL_EXT_multisampled_render_to_texture");
     }
     bool packedDepthStencilSupported = extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil");
     if (packedDepthStencilSupported)
