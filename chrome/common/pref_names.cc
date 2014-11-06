@@ -1207,17 +1207,21 @@ const char kGCMChannelEnabled[] = "gcm.channel_enabled";
 const char kPushMessagingRegistrationCount[] =
     "gcm.push_messaging_registration_count";
 
+// Whether a user is allowed to use Easy Unlock.
+const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
+
 // Whether Easy Unlock is enabled.
 const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
-
-// Whether to show the Easy Unlock first run tutorial.
-const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 
 // Preference storing Easy Unlock pairing data.
 const char kEasyUnlockPairing[] = "easy_unlock.pairing";
 
-// Whether a user is allowed to use Easy Unlock.
-const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
+// Whether close proximity between the remote and the local device is required
+// in order to use Easy Unlock.
+const char kEasyUnlockProximityRequired[] = "easy_unlock.proximity_required";
+
+// Whether to show the Easy Unlock first run tutorial.
+const char kEasyUnlockShowTutorial[] = "easy_unlock.show_tutorial";
 
 // A cache of zero suggest results using JSON serialized into a string.
 const char kZeroSuggestCachedResults[] = "zerosuggest.cachedresults";

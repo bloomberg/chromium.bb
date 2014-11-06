@@ -37,6 +37,8 @@
         "proximity_auth/remote_device.h",
         "proximity_auth/remote_status_update.cc",
         "proximity_auth/remote_status_update.h",
+        "proximity_auth/switches.cc",
+        "proximity_auth/switches.h",
         "proximity_auth/secure_context.h",
         "proximity_auth/wire_message.cc",
         "proximity_auth/wire_message.h",

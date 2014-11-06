@@ -536,7 +536,7 @@
   <section id="easy-unlock-section" guest-visibility="hidden" hidden>
     <h3 i18n-content="easyUnlockSectionTitle"></h3>
     <!-- Options shown when the user has not set up Easy Unlock -->
-    <div id='easy-unlock-setup' hidden>
+    <div id="easy-unlock-setup" hidden>
       <div class="settings-row">
         <span i18n-content="easyUnlockSetupIntro"></span>
         <a target="_blank" i18n-content="learnMore"
@@ -546,11 +546,20 @@
           i18n-content="easyUnlockSetupButton"></button>
     </div>
     <!-- Options shown when the user has set up Easy Unlock -->
-    <div id='easy-unlock-enable' hidden>
+    <div id="easy-unlock-enable" hidden>
       <div class="settings-row">
         <span i18n-content="easyUnlockDescription"></span>
         <a target="_blank" i18n-content="learnMore"
             i18n-values="href:easyUnlockLearnMoreURL"></a>
+        <div id="easy-unlock-enable-proximity-detection" class="checkbox"
+            hidden>
+          <label>
+            <input type="checkbox"
+                metric="Options_EasyUnlockRequireProximity"
+                pref="easy_unlock.proximity_required">
+            <span i18n-content="easyUnlockRequireProximityLabel"></span>
+          </label>
+        </div>
       </div>
       <button id="easy-unlock-turn-off-button"
           i18n-content="easyUnlockTurnOffButton"></button>

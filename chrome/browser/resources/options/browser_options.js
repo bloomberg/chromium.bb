@@ -541,6 +541,8 @@ cr.define('options', function() {
           PageManager.showPageByName('easyUnlockTurnOffOverlay');
         };
       }
+      $('easy-unlock-enable-proximity-detection').hidden =
+          !loadTimeData.getBoolean('easyUnlockProximityDetectionAllowed');
 
       // Website Settings section.
       if (loadTimeData.getBoolean('websiteSettingsManagerEnabled')) {

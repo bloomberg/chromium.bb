@@ -6719,6 +6719,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_TAB_AUDIO_MUTING_DESCRIPTION" desc="Description of the flag that enables the tab audio muting UI experiment in chrome://extensions.">
         When enabled, the audio indicators in the tab strip double as tab audio mute controls.  This also adds commands in the tab context menu for quickly muting multiple selected tabs.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME" desc="Title for the flag to enable Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
+        Enable Smart Lock proximity detection.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION" desc="Description for the flag that enables Smart Lock to require close proximity between the phone and the Chromebook in order to unlock the Chromebook.">
+        Enables a Smart Lock setting that restricts unlocking to only work when your phone is very close to (roughly, within an arm's length of) the Chrome device.
+      </message>
+
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">
@@ -10131,8 +10138,11 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON" desc="The label of the button to set up Easy Unlock section on the settings page.">
           Set up Smart Lock
         </message>
-        <message name="IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION" desc="The text that describs what Easy Unlock does.">
+        <message name="IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION" desc="The text that describes what Easy Unlock does.">
           Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be unlocked when your Android phone is unlocked and nearby.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL" desc="The text label that describes the checkbox that controls whether the user's Android phone must be in close proximity to the Chromebook in order to unlock it..">
+          Allow unlocking this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> only when the phone is within an arm's length away.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
           Turn off

@@ -70,6 +70,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/proximity_auth/switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -251,6 +252,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "enableLogging", IDS_OPTIONS_ENABLE_LOGGING },
     { "metricsReportingResetRestart", IDS_OPTIONS_ENABLE_LOGGING_RESTART },
     { "easyUnlockDescription", IDS_OPTIONS_EASY_UNLOCK_DESCRIPTION,
+      device_type_resource_id },
+    { "easyUnlockRequireProximityLabel",
+      IDS_OPTIONS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL,
       device_type_resource_id },
     { "easyUnlockSectionTitle", IDS_OPTIONS_EASY_UNLOCK_SECTION_TITLE },
     { "easyUnlockSetupButton", IDS_OPTIONS_EASY_UNLOCK_SETUP_BUTTON },
@@ -623,6 +627,10 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
       "easyUnlockAllowed",
       EasyUnlockService::Get(Profile::FromWebUI(web_ui()))->IsAllowed());
   values->SetString("easyUnlockLearnMoreURL", chrome::kEasyUnlockLearnMoreUrl);
+  values->SetBoolean(
+      "easyUnlockProximityDetectionAllowed",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          proximity_auth::switches::kEnableProximityDetection));
 
 #if defined(OS_CHROMEOS)
   values->SetBoolean(

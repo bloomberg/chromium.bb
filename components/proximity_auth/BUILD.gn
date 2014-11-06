@@ -26,6 +26,8 @@ source_set("proximity_auth") {
     "remote_status_update.cc",
     "remote_status_update.h",
     "secure_context.h",
+    "switches.cc",
+    "switches.h",
     "wire_message.cc",
     "wire_message.h",
   ]

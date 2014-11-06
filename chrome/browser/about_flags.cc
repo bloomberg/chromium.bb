@@ -28,6 +28,7 @@
 #include "components/cloud_devices/common/cloud_devices_switches.h"
 #include "components/metrics/metrics_hashes.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/proximity_auth/switches.h"
 #include "components/search/search_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "media/base/media_switches.h"
@@ -939,6 +940,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_EASY_SIGNIN_DESCRIPTION,
     kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableEasySignin),
+  },
+  {
+    "enable-easy-unlock-proximity-detection",
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_NAME,
+    IDS_FLAGS_ENABLE_EASY_UNLOCK_PROXIMITY_DETECTION_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(proximity_auth::switches::kEnableProximityDetection)
   },
 #endif
 #if defined(USE_ASH)
