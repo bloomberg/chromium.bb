@@ -16,6 +16,7 @@ import json
 GS_PATH_DEFAULT = 'default' # Means gs://chromeos-image-archive/ + bot_id
 
 # Contains the valid build config suffixes in the order that they are dumped.
+CONFIG_TYPE_PRECQ = 'pre-cq'
 CONFIG_TYPE_PALADIN = 'paladin'
 CONFIG_TYPE_RELEASE = 'release'
 CONFIG_TYPE_FULL = 'full'
@@ -25,7 +26,7 @@ CONFIG_TYPE_RELEASE_AFDO = 'release-afdo'
 CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_PALADIN,
     constants.PRE_CQ_GROUP_CONFIG,
-    'pre-cq',
+    CONFIG_TYPE_PRECQ,
     constants.PRE_CQ_LAUNCHER_CONFIG,
     'incremental',
     'telemetry',
@@ -1654,6 +1655,11 @@ pre_cq = internal_paladin.derive(
   description='Verifies compilation, vm/unit tests, and building an image',
 )
 
+non_testable_pre_cq = pre_cq.derive(
+  non_testable_builder,
+  description='Verifies compilation and building an image.'
+)
+
 # Pre-CQ targets that only check compilation and unit tests.
 unittest_only_pre_cq = pre_cq.derive(
   description='Verifies compilation and unit tests only',
@@ -1666,6 +1672,23 @@ compile_only_pre_cq = unittest_only_pre_cq.derive(
   unittests=False,
 )
 
+
+unittest_only_pre_cq.add_config('duck-pre-cq', brillo,
+                                 boards=['duck'])
+
+def _AddPreCQConfigs():
+  for board in _all_release_boards:
+    if board in _x86_release_boards:
+      base = pre_cq
+    else:
+      base = non_testable_pre_cq
+    config_name = '%s-%s' % (board, CONFIG_TYPE_PRECQ)
+    if config_name not in config:
+      base.add_config(config_name, boards=(board,))
+
+_AddPreCQConfigs()
+
+
 # The Pre-CQ tests 6 platforms. Because we test so many platforms in parallel,
 # it is important to delay the launch of some builds in order to conserve RAM.
 # We build rambi and daisy_spring and duck in parallel first. When duck finishes
@@ -1677,27 +1700,28 @@ compile_only_pre_cq = unittest_only_pre_cq.derive(
 _config.add_group(constants.PRE_CQ_GROUP_CONFIG,
   # amd64 w/kernel 3.10. This builder runs VMTest so it's going to be
   # the slowest one.
-  pre_cq.add_config('rambi-pre-cq', boards=['rambi']),
+  pre_cq.add_config('rambi-grouped-pre-cq', boards=['rambi']),
 
   # daisy_spring w/kernel 3.8.
-  compile_only_pre_cq.add_config('daisy_spring-pre-cq', non_testable_builder,
+  compile_only_pre_cq.add_config('daisy_spring-grouped-pre-cq',
+                                 non_testable_builder,
                                  boards=['daisy_spring']),
 
   # brillo config. We set build_packages_in_background=False here, so
   # that subsequent boards (samus, lumpy, parrot) don't get launched until
   # after duck finishes BuildPackages.
-  unittest_only_pre_cq.add_config('duck-pre-cq', brillo,
+  unittest_only_pre_cq.add_config('duck-grouped-pre-cq', brillo,
                                   boards=['duck'],
                                   build_packages_in_background=False),
 
   # samus w/kernel 3.14.
-  compile_only_pre_cq.add_config('samus-pre-cq', boards=['samus']),
+  compile_only_pre_cq.add_config('samus-grouped-pre-cq', boards=['samus']),
 
   # lumpy w/kernel 3.8.
-  compile_only_pre_cq.add_config('lumpy-pre-cq', boards=['lumpy']),
+  compile_only_pre_cq.add_config('lumpy-grouped-pre-cq', boards=['lumpy']),
 
   # amd64 w/kernel 3.4.
-  compile_only_pre_cq.add_config('parrot-pre-cq', boards=['parrot']),
+  compile_only_pre_cq.add_config('parrot-grouped-pre-cq', boards=['parrot']),
 )
 
 internal_paladin.add_config('pre-cq-launcher',

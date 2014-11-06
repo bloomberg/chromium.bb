@@ -969,6 +969,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "auron-pre-cq": {
+        "archive": false,
+        "boards": [
+            "auron"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "auron-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "auron-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -1602,6 +1631,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "auron_paine-pre-cq": {
+        "archive": false,
+        "boards": [
+            "auron_paine"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "auron_paine-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "auron_paine-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -2022,6 +2080,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "auron_yuna-pre-cq": {
+        "archive": false,
+        "boards": [
+            "auron_yuna"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "auron_yuna-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "auron_yuna-release": {
         "afdo_use": true,
@@ -2538,6 +2625,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "bayleybay-pre-cq": {
+        "archive": false,
+        "boards": [
+            "bayleybay"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "bayleybay-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "bayleybay-release": {
         "afdo_use": true,
@@ -3831,6 +3947,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "beltino-pre-cq": {
+        "archive": false,
+        "boards": [
+            "beltino"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "beltino-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "beltino-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -4250,6 +4395,35 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "bobcat-pre-cq": {
+        "archive": false,
+        "boards": [
+            "bobcat"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "bobcat-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "bobcat-release": {
         "afdo_use": true,
@@ -4747,6 +4921,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "butterfly-pre-cq": {
+        "archive": false,
+        "boards": [
+            "butterfly"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "butterfly-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "butterfly-release": {
         "afdo_use": true,
@@ -5286,6 +5489,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "candy-pre-cq": {
+        "archive": false,
+        "boards": [
+            "candy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "candy-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "candy-release": {
         "afdo_use": true,
@@ -5851,6 +6083,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "clapper-pre-cq": {
+        "archive": false,
+        "boards": [
+            "clapper"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "clapper-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "clapper-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -6351,6 +6612,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "cranky-pre-cq": {
+        "archive": false,
+        "boards": [
+            "cranky"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "cranky-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "cranky-release": {
         "afdo_use": true,
@@ -7035,6 +7325,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "daisy-pre-cq": {
+        "archive": false,
+        "boards": [
+            "daisy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "daisy-release": {
@@ -7724,6 +8043,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "daisy_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "daisy_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "daisy_freon-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -8183,6 +8531,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "daisy_skate-pre-cq": {
+        "archive": false,
+        "boards": [
+            "daisy_skate"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_skate-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "daisy_skate-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -8623,6 +9000,36 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "daisy_spring-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "daisy_spring"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "daisy_spring-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "daisy_spring-paladin": {
         "boards": [
             "daisy_spring"
@@ -8674,10 +9081,9 @@
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation only",
+        "description": "Verifies compilation and building an image.",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -9029,6 +9435,34 @@
         "use_lkgm": true,
         "vm_tests": []
     },
+    "duck-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "duck"
+        ],
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and unit tests only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "duck-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "sync_chrome": false,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "duck-paladin": {
         "boards": [
             "duck"
@@ -9073,6 +9507,7 @@
         "boards": [
             "duck"
         ],
+        "build_packages_in_background": true,
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
@@ -9329,6 +9764,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "enguarde-pre-cq": {
+        "archive": false,
+        "boards": [
+            "enguarde"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "enguarde-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "enguarde-release": {
         "afdo_use": true,
@@ -9869,6 +10333,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "expresso-pre-cq": {
+        "archive": false,
+        "boards": [
+            "expresso"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "expresso-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "expresso-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -10356,6 +10849,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "falco-pre-cq": {
+        "archive": false,
+        "boards": [
+            "falco"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "falco-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "falco-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -10776,6 +11298,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "falco_li-pre-cq": {
+        "archive": false,
+        "boards": [
+            "falco_li"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "falco_li-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "falco_li-release": {
         "afdo_use": true,
@@ -11504,6 +12055,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "glimmer-pre-cq": {
+        "archive": false,
+        "boards": [
+            "glimmer"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "glimmer-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "glimmer-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -12042,6 +12622,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "gnawty-pre-cq": {
+        "archive": false,
+        "boards": [
+            "gnawty"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "gnawty-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "gnawty-release": {
         "afdo_use": true,
@@ -12948,6 +13557,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "kip-pre-cq": {
+        "archive": false,
+        "boards": [
+            "kip"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "kip-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "kip-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -13376,6 +14014,35 @@
             "chrome_internal"
         ],
         "vm_tests": []
+    },
+    "lemmings-pre-cq": {
+        "archive": false,
+        "boards": [
+            "lemmings"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "lemmings-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "lemmings-release": {
         "archive_build_debug": true,
@@ -13903,6 +14570,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "leon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "leon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "leon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "leon-release": {
         "afdo_use": true,
@@ -14448,6 +15144,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "link-pre-cq": {
+        "archive": false,
+        "boards": [
+            "link"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "link-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "link-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -14920,6 +15645,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "link_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "link_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "link_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "link_freon-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -15387,6 +16141,37 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "lumpy-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "lumpy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "lumpy-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "lumpy-incremental-paladin": {
         "boards": [
             "lumpy"
@@ -15464,10 +16249,9 @@
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation only",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -15477,7 +16261,6 @@
         "overlays": "both",
         "pre_cq": true,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -16073,6 +16856,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "mccloud-pre-cq": {
+        "archive": false,
+        "boards": [
+            "mccloud"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "mccloud-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "mccloud-release": {
         "afdo_use": true,
@@ -16991,6 +17803,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "monroe-pre-cq": {
+        "archive": false,
+        "boards": [
+            "monroe"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "monroe-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "monroe-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -17584,6 +18425,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "nyan-pre-cq": {
+        "archive": false,
+        "boards": [
+            "nyan"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan-release": {
@@ -18272,6 +19142,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "nyan_big-pre-cq": {
+        "archive": false,
+        "boards": [
+            "nyan_big"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_big-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "nyan_big-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -18689,6 +19588,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "nyan_blaze-pre-cq": {
+        "archive": false,
+        "boards": [
+            "nyan_blaze"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_blaze-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_blaze-release": {
@@ -19135,6 +20063,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "nyan_freon-pre-cq": {
+        "archive": false,
+        "boards": [
+            "nyan_freon"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_freon-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "nyan_freon-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -19551,6 +20508,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "nyan_kitty-pre-cq": {
+        "archive": false,
+        "boards": [
+            "nyan_kitty"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "nyan_kitty-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "nyan_kitty-release": {
@@ -20020,6 +21006,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "panther-pre-cq": {
+        "archive": false,
+        "boards": [
+            "panther"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "panther-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "panther-release": {
         "afdo_use": true,
@@ -20533,6 +21548,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "panther_moblab-pre-cq": {
+        "archive": false,
+        "boards": [
+            "panther_moblab"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "panther_moblab-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "panther_moblab-release": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -20994,6 +22038,37 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "parrot-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "parrot"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "parrot-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "parrot-paladin": {
         "boards": [
             "parrot"
@@ -21044,10 +22119,9 @@
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation only",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -21057,7 +22131,6 @@
         "overlays": "both",
         "pre_cq": true,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -21648,6 +22721,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "parrot_ivb-pre-cq": {
+        "archive": false,
+        "boards": [
+            "parrot_ivb"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "parrot_ivb-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "parrot_ivb-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -22184,6 +23286,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "parry-pre-cq": {
+        "archive": false,
+        "boards": [
+            "parry"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "parry-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "parry-release": {
         "afdo_use": true,
@@ -22890,6 +24021,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "peach_pi-pre-cq": {
+        "archive": false,
+        "boards": [
+            "peach_pi"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "peach_pi-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "peach_pi-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -23374,6 +24534,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "peach_pit-pre-cq": {
+        "archive": false,
+        "boards": [
+            "peach_pit"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "peach_pit-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "peach_pit-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -23844,6 +25033,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "peppy-pre-cq": {
+        "archive": false,
+        "boards": [
+            "peppy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "peppy-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "peppy-release": {
         "afdo_use": true,
@@ -24676,7 +25894,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "rambi-pre-cq",
+                "name": "rambi-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "trybot_list": true,
@@ -24707,7 +25925,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "daisy_spring-pre-cq",
+                "name": "daisy_spring-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "tests_supported": false,
@@ -24737,7 +25955,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "duck-pre-cq",
+                "name": "duck-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "sync_chrome": false,
@@ -24767,7 +25985,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "samus-pre-cq",
+                "name": "samus-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "trybot_list": true,
@@ -24799,7 +26017,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "lumpy-pre-cq",
+                "name": "lumpy-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "trybot_list": true,
@@ -24831,7 +26049,7 @@
                 "manifest": "official.xml",
                 "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
                 "manifest_version": true,
-                "name": "parrot-pre-cq",
+                "name": "parrot-grouped-pre-cq",
                 "overlays": "both",
                 "pre_cq": true,
                 "trybot_list": true,
@@ -25084,6 +26302,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "quawks-pre-cq": {
+        "archive": false,
+        "boards": [
+            "quawks"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "quawks-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "quawks-release": {
         "afdo_use": true,
@@ -26998,6 +28245,35 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "rambi-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "rambi"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "rambi-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "rambi-paladin": {
         "boards": [
             "rambi"
@@ -27492,6 +28768,35 @@
         "usepkg_toolchain": false,
         "vm_tests": []
     },
+    "rush-pre-cq": {
+        "archive": false,
+        "boards": [
+            "rush"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "rush-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "rush-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -27928,6 +29233,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "rush_ryu-pre-cq": {
+        "archive": false,
+        "boards": [
+            "rush_ryu"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "rush_ryu-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "rush_ryu-release": {
@@ -28414,6 +29748,37 @@
         "usepkg_build_packages": false,
         "usepkg_toolchain": false
     },
+    "samus-grouped-pre-cq": {
+        "archive": false,
+        "boards": [
+            "samus"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "compilecheck": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation only",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "samus-grouped-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "samus-paladin": {
         "boards": [
             "samus"
@@ -28462,10 +29827,9 @@
         "build_type": "binary",
         "chrome_sdk_build_chrome": false,
         "chroot_replace": true,
-        "compilecheck": true,
         "cpe_export": false,
         "debug_symbols": false,
-        "description": "Verifies compilation only",
+        "description": "Verifies compilation, vm/unit tests, and building an image",
         "important": true,
         "internal": true,
         "manifest": "official.xml",
@@ -28475,7 +29839,6 @@
         "overlays": "both",
         "pre_cq": true,
         "trybot_list": true,
-        "unittests": false,
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
@@ -29514,6 +30877,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "slippy-pre-cq": {
+        "archive": false,
+        "boards": [
+            "slippy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "slippy-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "slippy-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -30368,6 +31760,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "squawks-pre-cq": {
+        "archive": false,
+        "boards": [
+            "squawks"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "squawks-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "squawks-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -30970,6 +32391,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "stout-pre-cq": {
+        "archive": false,
+        "boards": [
+            "stout"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stout-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "stout-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -31452,6 +32902,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "stumpy-pre-cq": {
+        "archive": false,
+        "boards": [
+            "stumpy"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "stumpy-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "stumpy-release": {
         "afdo_use": true,
@@ -32090,6 +33569,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "swanky-pre-cq": {
+        "archive": false,
+        "boards": [
+            "swanky"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "swanky-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "swanky-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -32601,6 +34109,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "tricky-pre-cq": {
+        "archive": false,
+        "boards": [
+            "tricky"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "tricky-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "tricky-release": {
         "afdo_use": true,
@@ -33335,6 +34872,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "veyron_jerry-pre-cq": {
+        "archive": false,
+        "boards": [
+            "veyron_jerry"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "veyron_jerry-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "veyron_jerry-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -33777,6 +35343,35 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "veyron_pinky-pre-cq": {
+        "archive": false,
+        "boards": [
+            "veyron_pinky"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "veyron_pinky-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "veyron_pinky-release": {
@@ -34388,6 +35983,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "winky-pre-cq": {
+        "archive": false,
+        "boards": [
+            "winky"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "winky-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "winky-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -34870,6 +36494,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "wolf-pre-cq": {
+        "archive": false,
+        "boards": [
+            "wolf"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "wolf-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "wolf-release": {
         "afdo_use": true,
@@ -35440,6 +37093,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "x86-alex-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-alex-release": {
         "afdo_use": true,
@@ -36015,6 +37697,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "x86-alex_he-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-alex_he"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-alex_he-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-alex_he-release": {
         "afdo_use": true,
@@ -36760,6 +38471,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "x86-mario-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-mario"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-mario-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-mario-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -37277,6 +39017,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "x86-zgb-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-zgb-release": {
         "afdo_use": true,
@@ -37853,6 +39622,35 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "x86-zgb_he-pre-cq": {
+        "archive": false,
+        "boards": [
+            "x86-zgb_he"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "x86-zgb_he-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
+    },
     "x86-zgb_he-release": {
         "afdo_use": true,
         "archive_build_debug": true,
@@ -38362,6 +40160,35 @@
         "paygen": true,
         "upload_hw_test_artifacts": false,
         "vm_tests": []
+    },
+    "zako-pre-cq": {
+        "archive": false,
+        "boards": [
+            "zako"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation, vm/unit tests, and building an image",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "zako-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "trybot_list": true,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "zako-release": {
         "afdo_use": true,
