@@ -470,6 +470,13 @@ class CONTENT_EXPORT RenderFrameImpl
   virtual int64_t serviceWorkerID(blink::WebDataSource& data_source);
   virtual void postAccessibilityEvent(const blink::WebAXObject& obj,
                                       blink::WebAXEvent event);
+  virtual void handleAccessibilityFindInPageResult(
+        int identifier,
+        int match_index,
+        const blink::WebAXObject& start_object,
+        int start_offset,
+        const blink::WebAXObject& end_object,
+        int end_offset);
   virtual void didChangeManifest(blink::WebLocalFrame*);
 
   // WebMediaPlayerDelegate implementation:

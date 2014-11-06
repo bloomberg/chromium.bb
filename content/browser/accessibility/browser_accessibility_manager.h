@@ -86,6 +86,26 @@ class CONTENT_EXPORT BrowserAccessibilityFactory {
   virtual BrowserAccessibility* Create();
 };
 
+// This is all of the information about the current find in page result,
+// so we can activate it if requested.
+struct BrowserAccessibilityFindInPageInfo {
+  BrowserAccessibilityFindInPageInfo();
+
+  // This data about find in text results is updated as the user types.
+  int request_id;
+  int match_index;
+  int start_id;
+  int start_offset;
+  int end_id;
+  int end_offset;
+
+  // The active request id indicates that the user committed to a find query,
+  // e.g. by pressing enter or pressing the next or previous buttons. If
+  // |active_request_id| == |request_id|, we fire an accessibility event
+  // to move screen reader focus to that event.
+  int active_request_id;
+};
+
 // Manages a tree of BrowserAccessibility objects.
 class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
  public:
@@ -159,6 +179,10 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // Retrieve the bounds of the parent View in screen coordinates.
   gfx::Rect GetViewBounds();
 
+  // Fire an event telling native assistive technology to move focus to the
+  // given find in page result.
+  void ActivateFindInPageResult(int request_id, int match_index);
+
   // Called when the renderer process has notified us of about tree changes.
   void OnAccessibilityEvents(
       const std::vector<AccessibilityHostMsg_EventParams>& params);
@@ -167,6 +191,20 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // objects.
   void OnLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
+
+  // Called when a new find in page result is received. We hold on to this
+  // information and don't activate it until the user requests it.
+  void OnFindInPageResult(
+      int request_id, int match_index, int start_id, int start_offset,
+      int end_id, int end_offset);
+
+  // This is called when the user has committed to a find in page query,
+  // e.g. by pressing enter or tapping on the next / previous result buttons.
+  // If a match has already been received for this request id,
+  // activate the result now by firing an accessibility event. If a match
+  // has not been received, we hold onto this request id and update it
+  // when OnFindInPageResult is called.
+  void ActivateFindInPageResult(int request_id);
 
 #if defined(OS_WIN)
   BrowserAccessibilityManagerWin* ToBrowserAccessibilityManagerWin();
@@ -262,6 +300,8 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // The on-screen keyboard state.
   OnScreenKeyboardState osk_state_;
+
+  BrowserAccessibilityFindInPageInfo find_in_page_info_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };

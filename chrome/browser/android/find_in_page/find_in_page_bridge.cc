@@ -60,6 +60,12 @@ void FindInPageBridge::ActivateNearestFindResult(JNIEnv* env,
       ActivateNearestFindResult(x, y);
 }
 
+void FindInPageBridge::ActivateFindInPageResultForAccessibility(
+    JNIEnv* env, jobject obj) {
+  FindTabHelper::FromWebContents(web_contents_)->
+      ActivateFindInPageResultForAccessibility();
+}
+
 // static
 static jlong Init(JNIEnv* env, jobject obj, jobject j_web_contents) {
   FindInPageBridge* bridge = new FindInPageBridge(env, obj, j_web_contents);

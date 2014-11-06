@@ -37,6 +37,15 @@ public class FindInPageBridge {
         nativeStartFinding(mNativeFindInPageBridge, searchString, forwardDirection, caseSensitive);
     }
 
+    /**
+     * When the user commits to a search query or jumps from one result
+     * to the next, move accessibility focus to the next find result.
+     */
+    public void activateFindInPageResultForAccessibility() {
+        assert mNativeFindInPageBridge != 0;
+        nativeActivateFindInPageResultForAccessibility(mNativeFindInPageBridge);
+    }
+
     /** Stops the current find operation. */
     public void stopFinding() {
         assert mNativeFindInPageBridge != 0;
@@ -81,4 +90,6 @@ public class FindInPageBridge {
     private native void nativeActivateNearestFindResult(
             long nativeFindInPageBridge, float x, float y);
 
+    private native void nativeActivateFindInPageResultForAccessibility(
+            long nativeFindInPageBridge);
 }

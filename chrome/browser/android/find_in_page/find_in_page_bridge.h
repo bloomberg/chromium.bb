@@ -30,6 +30,8 @@ class FindInPageBridge {
 
   void ActivateNearestFindResult(JNIEnv* env, jobject obj, jfloat x, jfloat y);
 
+  void ActivateFindInPageResultForAccessibility(JNIEnv* env, jobject obj);
+
   static bool RegisterFindInPageBridge(JNIEnv* env);
 
  private:

@@ -32,6 +32,7 @@
 
 class GURL;
 struct AccessibilityHostMsg_EventParams;
+struct AccessibilityHostMsg_FindInPageResultParams;
 struct AccessibilityHostMsg_LocationChangeParams;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
@@ -116,6 +117,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ExecuteJavaScriptForTests(const base::string16& javascript) override;
   RenderViewHost* GetRenderViewHost() override;
   ServiceRegistry* GetServiceRegistry() override;
+  void ActivateFindInPageResultForAccessibility(int request_id) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
@@ -447,6 +449,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int reset_token);
   void OnAccessibilityLocationChanges(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
+  void OnAccessibilityFindInPageResult(
+      const AccessibilityHostMsg_FindInPageResultParams& params);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);

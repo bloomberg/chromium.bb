@@ -390,6 +390,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Events, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
+    IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
+                        OnAccessibilityFindInPageResult)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1195,6 +1197,20 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
   }
 }
 
+void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
+    const AccessibilityHostMsg_FindInPageResultParams& params) {
+  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode & AccessibilityModeFlagPlatform) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager) {
+      manager->OnFindInPageResult(
+          params.request_id, params.match_index, params.start_id,
+          params.start_offset, params.end_id, params.end_offset);
+    }
+  }
+}
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
@@ -1560,6 +1576,17 @@ BrowserAccessibilityManager*
       UMA_HISTOGRAM_COUNTS("Accessibility.FrameDidNotEnableCount", 1);
   }
   return browser_accessibility_manager_.get();
+}
+
+void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
+    int request_id) {
+  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
+  if (accessibility_mode & AccessibilityModeFlagPlatform) {
+    BrowserAccessibilityManager* manager =
+        GetOrCreateBrowserAccessibilityManager();
+    if (manager)
+      manager->ActivateFindInPageResult(request_id);
+  }
 }
 
 #if defined(OS_WIN)

@@ -34,6 +34,10 @@ class FindTabHelper : public content::WebContentsObserver,
   // Stops the current Find operation.
   void StopFinding(FindBarController::SelectionAction selection_action);
 
+  // When the user commits to a search query or jumps from one result
+  // to the next, move accessibility focus to the next find result.
+  void ActivateFindInPageResultForAccessibility();
+
   // Accessors/Setters for find_ui_active_.
   bool find_ui_active() const { return find_ui_active_; }
   void set_find_ui_active(bool find_ui_active) {

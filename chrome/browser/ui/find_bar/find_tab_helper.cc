@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/stop_find_action.h"
@@ -128,6 +129,11 @@ void FindTabHelper::StopFinding(
       action = content::STOP_FIND_ACTION_KEEP_SELECTION;
   }
   web_contents()->StopFinding(action);
+}
+
+void FindTabHelper::ActivateFindInPageResultForAccessibility() {
+  web_contents()->GetMainFrame()->ActivateFindInPageResultForAccessibility(
+      current_find_request_id_);
 }
 
 #if defined(OS_ANDROID)

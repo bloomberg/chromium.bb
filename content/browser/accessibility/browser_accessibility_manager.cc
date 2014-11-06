@@ -49,6 +49,15 @@ BrowserAccessibility* BrowserAccessibilityFactory::Create() {
   return BrowserAccessibility::Create();
 }
 
+BrowserAccessibilityFindInPageInfo::BrowserAccessibilityFindInPageInfo()
+    : request_id(-1),
+      match_index(-1),
+      start_id(-1),
+      start_offset(0),
+      end_id(-1),
+      end_offset(-1),
+      active_request_id(-1) {}
+
 #if !defined(OS_MACOSX) && \
     !defined(OS_WIN) && \
     !defined(OS_ANDROID) \
@@ -223,6 +232,43 @@ void BrowserAccessibilityManager::OnLocationChanges(
     node->SetLocation(params[i].new_location);
     obj->OnLocationChanged();
   }
+}
+
+void BrowserAccessibilityManager::OnFindInPageResult(
+    int request_id, int match_index, int start_id, int start_offset,
+    int end_id, int end_offset) {
+  find_in_page_info_.request_id = request_id;
+  find_in_page_info_.match_index = match_index;
+  find_in_page_info_.start_id = start_id;
+  find_in_page_info_.start_offset = start_offset;
+  find_in_page_info_.end_id = end_id;
+  find_in_page_info_.end_offset = end_offset;
+
+  if (find_in_page_info_.active_request_id == request_id)
+    ActivateFindInPageResult(request_id);
+}
+
+void BrowserAccessibilityManager::ActivateFindInPageResult(
+    int request_id) {
+  find_in_page_info_.active_request_id = request_id;
+  if (find_in_page_info_.request_id != request_id)
+    return;
+
+  BrowserAccessibility* node = GetFromID(find_in_page_info_.start_id);
+  if (!node)
+    return;
+
+  // If an ancestor of this node is a leaf node, fire the notification on that.
+  BrowserAccessibility* ancestor = node->GetParent();
+  while (ancestor && ancestor != GetRoot()) {
+    if (ancestor->PlatformIsLeaf())
+      node = ancestor;
+    ancestor = ancestor->GetParent();
+  }
+
+  // The "scrolled to anchor" notification is a great way to get a
+  // screen reader to jump directly to a specific location in a document.
+  NotifyAccessibilityEvent(ui::AX_EVENT_SCROLLED_TO_ANCHOR, node);
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::GetActiveDescendantFocus(

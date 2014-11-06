@@ -86,6 +86,23 @@ void RendererAccessibility::HandleWebAccessibilityEvent(
   HandleAXEvent(obj, AXEventFromBlink(event));
 }
 
+void RendererAccessibility::HandleAccessibilityFindInPageResult(
+    int identifier,
+    int match_index,
+    const blink::WebAXObject& start_object,
+    int start_offset,
+    const blink::WebAXObject& end_object,
+    int end_offset) {
+  AccessibilityHostMsg_FindInPageResultParams params;
+  params.request_id = identifier;
+  params.match_index = match_index;
+  params.start_id = start_object.axID();
+  params.start_offset = start_offset;
+  params.end_id = end_object.axID();
+  params.end_offset = end_offset;
+  Send(new AccessibilityHostMsg_FindInPageResult(routing_id(), params));
+}
+
 void RendererAccessibility::FocusedNodeChanged(const WebNode& node) {
   const WebDocument& document = GetMainDocument();
   if (document.isNull())

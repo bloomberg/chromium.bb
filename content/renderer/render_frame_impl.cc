@@ -3347,6 +3347,20 @@ void RenderFrameImpl::postAccessibilityEvent(const blink::WebAXObject& obj,
   HandleWebAccessibilityEvent(obj, event);
 }
 
+void RenderFrameImpl::handleAccessibilityFindInPageResult(
+    int identifier,
+    int match_index,
+    const blink::WebAXObject& start_object,
+    int start_offset,
+    const blink::WebAXObject& end_object,
+    int end_offset) {
+  if (renderer_accessibility_) {
+    renderer_accessibility_->HandleAccessibilityFindInPageResult(
+        identifier, match_index, start_object, start_offset,
+        end_object, end_offset);
+  }
+}
+
 void RenderFrameImpl::didChangeManifest(blink::WebLocalFrame* frame)
 {
   DCHECK(!frame_ || frame_ == frame);
