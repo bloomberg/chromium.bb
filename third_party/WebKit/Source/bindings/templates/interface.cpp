@@ -940,43 +940,6 @@ v8::Handle<v8::ObjectTemplate> V8Window::getShadowObjectTemplate(v8::Isolate* is
 
 
 {##############################################################################}
-{% block wrap %}
-{% if not is_script_wrappable %}
-{% if not has_custom_to_v8 and not has_custom_wrap %}
-v8::Handle<v8::Object> wrap({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl, isolate));
-    return {{v8_class}}::createWrapper(impl, creationContext, isolate);
-}
-
-{% endif %}
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
-{% block create_wrapper %}
-{% if not has_custom_to_v8 and not is_script_wrappable %}
-v8::Handle<v8::Object> {{v8_class}}::createWrapper({{pass_cpp_type}} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<{{v8_class}}>(impl.get(), isolate));
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, impl->toScriptWrappableBase(), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<{{v8_class}}>(isolate, impl, &wrapperTypeInfo, wrapper);
-    return wrapper;
-}
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
 {% block deref_object_and_to_v8_no_inline %}
 void {{v8_class}}::refObject(ScriptWrappableBase* scriptWrappableBase)
 {

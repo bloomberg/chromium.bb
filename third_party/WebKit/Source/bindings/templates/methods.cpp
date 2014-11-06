@@ -570,7 +570,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {##############################################################################}
 {% macro generate_constructor_wrapper(constructor) %}
 {% if has_custom_wrap %}
-v8::Handle<v8::Object> wrapper = wrap(impl.get(), info.Holder(), info.GetIsolate());
+v8::Handle<v8::Object> wrapper = wrapCustom(impl.get(), info.Holder(), info.GetIsolate());
 {% else %}
 {% set constructor_class = v8_class + ('Constructor'
                                        if constructor.is_named_constructor else

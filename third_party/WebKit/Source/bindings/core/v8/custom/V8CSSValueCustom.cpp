@@ -38,18 +38,18 @@
 
 namespace blink {
 
-v8::Handle<v8::Object> wrap(CSSValue* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrapCustom(CSSValue* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     if (impl->isTransformValue())
-        return wrap(toCSSTransformValue(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8WebKitCSSTransformValue::wrapperTypeInfo);
     if (impl->isFilterValue())
-        return wrap(toCSSFilterValue(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8WebKitCSSFilterValue::wrapperTypeInfo);
     if (impl->isValueList())
-        return wrap(toCSSValueList(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSValueList::wrapperTypeInfo);
     if (impl->isPrimitiveValue())
-        return wrap(toCSSPrimitiveValue(impl), creationContext, isolate);
-    return V8CSSValue::createWrapper(impl, creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSPrimitiveValue::wrapperTypeInfo);
+    return impl->wrap(creationContext, isolate, &V8CSSValue::wrapperTypeInfo);
 }
 
 } // namespace blink

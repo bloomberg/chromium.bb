@@ -84,10 +84,19 @@ public:
     }
     ScriptWrappableBase* toScriptWrappableBase()
     {
+        ASSERT(this);
         // The internal pointers must be aligned to at least 4 byte alignment.
         ASSERT((reinterpret_cast<intptr_t>(this) & 0x3) == 0);
         return this;
     }
+
+    // Creates and returns a new wrapper object.
+    // Do not call this method for a ScriptWrappable or its subclasses. This
+    // non-virtual version of "wrap" is meant only for non-ScriptWrappable
+    // objects. This wrap takes an extra third argument of type WrapperTypeInfo
+    // because ScriptWrappableBase doesn't have wrapperTypeInfo() method unlike
+    // ScriptWrappable.
+    v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*, const WrapperTypeInfo*);
 
     void assertWrapperSanity(v8::Local<v8::Object> object)
     {

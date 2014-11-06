@@ -56,6 +56,7 @@ public:
     }
     template<typename V8T, typename T>
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, T*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
+    static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(v8::Isolate*, ScriptWrappableBase* impl, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper);
     static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
     static v8::Handle<v8::Object> associateObjectWithWrapperNonTemplate(v8::Isolate*, Node*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
     static void setNativeInfo(v8::Handle<v8::Object>, const WrapperTypeInfo*, ScriptWrappableBase*);
@@ -98,6 +99,15 @@ inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isola
     setNativeInfo(wrapper, wrapperTypeInfo, V8T::toScriptWrappableBase(object));
     ASSERT(isDOMWrapper(wrapper));
     DOMDataStore::setWrapper<V8T>(object, wrapper, isolate, wrapperTypeInfo);
+    return wrapper;
+}
+
+inline v8::Handle<v8::Object> V8DOMWrapper::associateObjectWithWrapperNonTemplate(v8::Isolate* isolate, ScriptWrappableBase* impl, const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper)
+{
+    wrapperTypeInfo->refObject(impl);
+    setNativeInfo(wrapper, wrapperTypeInfo, impl);
+    ASSERT(isDOMWrapper(wrapper));
+    DOMDataStore::setWrapperNonTemplate(impl, wrapper, isolate, wrapperTypeInfo);
     return wrapper;
 }
 

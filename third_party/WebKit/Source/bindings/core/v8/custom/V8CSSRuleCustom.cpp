@@ -45,7 +45,7 @@
 
 namespace blink {
 
-v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Object> wrapCustom(CSSRule* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
     switch (impl->type()) {
@@ -53,31 +53,31 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         // CSSUnknownRule.idl is explicitly excluded as it doesn't add anything
         // over CSSRule.idl (see core/core.gypi: 'core_idl_files').
         // -> Use the base class wrapper here.
-        return V8CSSRule::createWrapper(impl, creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSRule::wrapperTypeInfo);
     case CSSRule::STYLE_RULE:
-        return wrap(toCSSStyleRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSStyleRule::wrapperTypeInfo);
     case CSSRule::CHARSET_RULE:
-        return wrap(toCSSCharsetRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSCharsetRule::wrapperTypeInfo);
     case CSSRule::IMPORT_RULE:
-        return wrap(toCSSImportRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSImportRule::wrapperTypeInfo);
     case CSSRule::MEDIA_RULE:
-        return wrap(toCSSMediaRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSMediaRule::wrapperTypeInfo);
     case CSSRule::FONT_FACE_RULE:
-        return wrap(toCSSFontFaceRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSFontFaceRule::wrapperTypeInfo);
     case CSSRule::PAGE_RULE:
-        return wrap(toCSSPageRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSPageRule::wrapperTypeInfo);
     case CSSRule::KEYFRAME_RULE:
-        return wrap(toCSSKeyframeRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSKeyframeRule::wrapperTypeInfo);
     case CSSRule::KEYFRAMES_RULE:
-        return wrap(toCSSKeyframesRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSKeyframesRule::wrapperTypeInfo);
     case CSSRule::SUPPORTS_RULE:
-        return wrap(toCSSSupportsRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSSupportsRule::wrapperTypeInfo);
     case CSSRule::VIEWPORT_RULE:
-        return wrap(toCSSViewportRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8CSSViewportRule::wrapperTypeInfo);
     case CSSRule::WEBKIT_FILTER_RULE:
-        return wrap(toCSSFilterRule(impl), creationContext, isolate);
+        return impl->wrap(creationContext, isolate, &V8WebKitCSSFilterRule::wrapperTypeInfo);
     }
-    return V8CSSRule::createWrapper(impl, creationContext, isolate);
+    return impl->wrap(creationContext, isolate, &V8CSSRule::wrapperTypeInfo);
 }
 
 } // namespace blink

@@ -43,6 +43,45 @@ public:
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 };
 
+v8::Handle<v8::Object> wrapCustom(TestInterface2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
+
+inline v8::Handle<v8::Value> toV8(TestInterface2* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    if (UNLIKELY(!impl))
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+
+    return wrapCustom(impl, creationContext, isolate);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2* impl)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = wrapCustom(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestInterface2* impl)
+{
+    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
+    return v8SetReturnValue(callbackInfo, impl);
+}
+
+template<typename CallbackInfo, class Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface2* impl, Wrappable* wrappable)
+{
+    return v8SetReturnValue(callbackInfo, impl);
+}
+
 } // namespace blink
 
 #endif // V8TestInterface2_h

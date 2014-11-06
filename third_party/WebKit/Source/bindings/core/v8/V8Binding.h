@@ -176,6 +176,19 @@ inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const St
 }
 
 template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappableBase* impl, const WrapperTypeInfo* wrapperTypeInfo)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate(), wrapperTypeInfo);
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
 {
     if (UNLIKELY(!impl)) {
@@ -370,6 +383,17 @@ inline v8::Handle<v8::String> v8AtomicString(v8::Isolate* isolate, const char* s
 inline v8::Handle<v8::Value> v8Undefined()
 {
     return v8::Handle<v8::Value>();
+}
+
+inline v8::Handle<v8::Value> toV8(ScriptWrappableBase* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
+{
+    if (UNLIKELY(!impl))
+        return v8::Null(isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    if (!wrapper.IsEmpty())
+        return wrapper;
+
+    return impl->wrap(creationContext, isolate, wrapperTypeInfo);
 }
 
 inline v8::Handle<v8::Value> toV8(ScriptWrappable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

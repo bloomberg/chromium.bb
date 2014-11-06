@@ -124,27 +124,6 @@ TestInterfaceNotScriptWrappable* V8TestInterfaceNotScriptWrappable::toImplWithTy
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceNotScriptWrappable>() : 0;
 }
 
-v8::Handle<v8::Object> wrap(TestInterfaceNotScriptWrappable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceNotScriptWrappable>(impl, isolate));
-    return V8TestInterfaceNotScriptWrappable::createWrapper(impl, creationContext, isolate);
-}
-
-v8::Handle<v8::Object> V8TestInterfaceNotScriptWrappable::createWrapper(PassRefPtr<TestInterfaceNotScriptWrappable> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceNotScriptWrappable>(impl.get(), isolate));
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &wrapperTypeInfo, impl->toScriptWrappableBase(), isolate);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    installConditionallyEnabledProperties(wrapper, isolate);
-    V8DOMWrapper::associateObjectWithWrapper<V8TestInterfaceNotScriptWrappable>(isolate, impl, &wrapperTypeInfo, wrapper);
-    return wrapper;
-}
-
 void V8TestInterfaceNotScriptWrappable::refObject(ScriptWrappableBase* scriptWrappableBase)
 {
     scriptWrappableBase->toImpl<TestInterfaceNotScriptWrappable>()->ref();
