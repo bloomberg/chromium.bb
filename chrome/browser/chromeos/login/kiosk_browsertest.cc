@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -53,6 +54,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -595,6 +597,11 @@ class KioskTest : public OobeBaseTest {
     return auto_lock.Pass();
   }
 
+  void MakeCrosSettingsPermanentlyUntrusted() {
+    policy::DevicePolicyCrosTestHelper().InstallOwnerKey();
+    DeviceSettingsService::Get()->OwnerKeySet(true);
+  }
+
   MockUserManager* mock_user_manager() { return mock_user_manager_.get(); }
 
   void set_test_app_id(const std::string& test_app_id) {
@@ -1052,6 +1059,54 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_KIOSK_ENABLE_WARNING_VISIBLE,
       content::NotificationService::AllSources()).Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, DoNotLaunchWhenUntrusted) {
+  PrepareAppLaunch();
+  SimulateNetworkOnline();
+
+  // Make cros settings untrusted.
+  MakeCrosSettingsPermanentlyUntrusted();
+
+  // Check that the attempt to start a kiosk app fails with an error.
+  LaunchApp(test_app_id(), false);
+  bool ignored = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      GetLoginUI()->GetWebContents(),
+      "if (cr.ui.Oobe.getInstance().errorMessageWasShownForTesting_) {"
+      "  window.domAutomationController.send(true);"
+      "} else {"
+      "  cr.ui.Oobe.showSignInError = function("
+      "      loginAttempts, message, link, helpId) {"
+      "    window.domAutomationController.send(true);"
+      "  };"
+      "}",
+      &ignored));
+}
+
+IN_PROC_BROWSER_TEST_F(KioskTest, NoAutoLaunchWhenUntrusted) {
+  EnableConsumerKioskMode();
+
+  // Wait for and confirm the auto-launch warning.
+  chromeos::WizardController::SkipPostLoginScreensForTesting();
+  chromeos::WizardController* wizard_controller =
+      chromeos::WizardController::default_controller();
+  ASSERT_TRUE(wizard_controller);
+  wizard_controller->AdvanceToScreen(WizardController::kNetworkScreenName);
+  ReloadAutolaunchKioskApps();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
+  content::WindowedNotificationObserver(
+      chrome::NOTIFICATION_KIOSK_AUTOLAUNCH_WARNING_VISIBLE,
+      content::NotificationService::AllSources()).Wait();
+  GetLoginUI()->CallJavascriptFunction(
+      "login.AutolaunchScreen.confirmAutoLaunchForTesting",
+      base::FundamentalValue(true));
+
+  // Make cros settings untrusted.
+  MakeCrosSettingsPermanentlyUntrusted();
+
+  // Check that the attempt to auto-launch a kiosk app fails with an error.
+  OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
 }
 
 class KioskUpdateTest : public KioskTest {

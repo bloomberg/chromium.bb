@@ -98,11 +98,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void ShowWrongHWIDScreen() override;
   virtual void Signout() override;
 
-  void LoginAsRetailModeUser();
-  void LoginAsGuest();
-  void LoginAsPublicSession(const UserContext& user_context);
-  void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -138,6 +133,11 @@ class ExistingUserController : public LoginDisplay::Delegate,
   friend class ExistingUserControllerAutoLoginTest;
   friend class ExistingUserControllerPublicSessionTest;
   friend class MockLoginPerformerDelegate;
+
+  void LoginAsRetailModeUser();
+  void LoginAsGuest();
+  void LoginAsPublicSession(const UserContext& user_context);
+  void LoginAsKioskApp(const std::string& app_id, bool diagnostic_mode);
 
   // Retrieve public session auto-login policy and update the timer.
   void ConfigurePublicSessionAutoLogin();

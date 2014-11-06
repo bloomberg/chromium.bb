@@ -13,6 +13,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -22,7 +23,10 @@
 #include "chrome/browser/extensions/sandboxed_unpacker.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chromeos/login/auth/user_context.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/login/user_names.h"
+#include "components/user_manager/user_type.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
@@ -287,8 +291,11 @@ void KioskModeScreensaver::OnUserActivity(const ui::Event* event) {
     // Log us in.
     ExistingUserController* controller =
         ExistingUserController::current_controller();
-    if (controller && !chromeos::LoginState::Get()->IsUserLoggedIn())
-      controller->LoginAsRetailModeUser();
+    if (controller && !chromeos::LoginState::Get()->IsUserLoggedIn()) {
+      controller->Login(UserContext(user_manager::USER_TYPE_RETAIL_MODE,
+                                    chromeos::login::kRetailModeUserName),
+                        SigninSpecifics());
+    }
   } else {
     // No default host for the WebUiLoginDisplay means that we're already in the
     // process of logging in - shut down screensaver and do nothing else.

@@ -30,6 +30,7 @@
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
@@ -344,7 +345,8 @@ void ExistingUserController::CreateAccount() {
   content::RecordAction(base::UserMetricsAction("Login.CreateAccount"));
   guest_mode_url_ = google_util::AppendGoogleLocaleParam(
       GURL(kCreateAccountURL), g_browser_process->GetApplicationLocale());
-  LoginAsGuest();
+  Login(UserContext(user_manager::USER_TYPE_GUEST, std::string()),
+        SigninSpecifics());
 }
 
 void ExistingUserController::CompleteLogin(const UserContext& user_context) {
@@ -409,6 +411,53 @@ bool ExistingUserController::IsSigninInProgress() const {
 
 void ExistingUserController::Login(const UserContext& user_context,
                                    const SigninSpecifics& specifics) {
+  // Disable clicking on other windows and status tray.
+  login_display_->SetUIEnabled(false);
+
+  // Stop the auto-login timer.
+  StopPublicSessionAutoLoginTimer();
+
+  // Wait for the |cros_settings_| to become either trusted or permanently
+  // untrusted.
+  const CrosSettingsProvider::TrustedStatus status =
+      cros_settings_->PrepareTrustedValues(base::Bind(
+          &ExistingUserController::Login,
+          weak_factory_.GetWeakPtr(),
+          user_context,
+          specifics));
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED)
+    return;
+
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // If the |cros_settings_| are permanently untrusted, show an error message
+    // and refuse to log in.
+    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST,
+                              1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+
+    // Reenable clicking on other windows and the status area. Do not start the
+    // auto-login timer though. Without trusted |cros_settings_|, no auto-login
+    // can succeed.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  if (is_login_in_progress_) {
+    // If there is another login in progress, bail out. Do not re-enable
+    // clicking on other windows and the status area. Do not start the
+    // auto-login timer.
+    return;
+  }
+
+  if (user_context.GetUserType() != user_manager::USER_TYPE_REGULAR &&
+      user_manager::UserManager::Get()->IsUserLoggedIn()) {
+    // Multi-login is only allowed for regular users. If we are attempting to
+    // do multi-login as another type of user somehow, bail out. Do not
+    // re-enable clicking on other windows and the status area. Do not start the
+    // auto-login timer.
+    return;
+  }
+
   if (user_context.GetUserType() == user_manager::USER_TYPE_GUEST) {
     if (!specifics.guest_mode_url.empty()) {
       guest_mode_url_ = GURL(specifics.guest_mode_url);
@@ -418,24 +467,32 @@ void ExistingUserController::Login(const UserContext& user_context,
     }
     LoginAsGuest();
     return;
-  } else if (user_context.GetUserType() ==
-             user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
     LoginAsPublicSession(user_context);
     return;
-  } else if (user_context.GetUserType() ==
-             user_manager::USER_TYPE_RETAIL_MODE) {
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_RETAIL_MODE) {
     LoginAsRetailModeUser();
     return;
-  } else if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
+  }
+
+  if (user_context.GetUserType() == user_manager::USER_TYPE_KIOSK_APP) {
     LoginAsKioskApp(user_context.GetUserID(), specifics.kiosk_diagnostic_mode);
     return;
   }
 
+  // Regular user or supervised user login.
+
   if (!user_context.HasCredentials()) {
-    // For easy unlock auth, login UI gets disabled prior to attempting login.
-    if (user_context.GetAuthFlow() == UserContext::AUTH_FLOW_EASY_UNLOCK)
-      login_display_->SetUIEnabled(true);
-    return;
+    // If credentials are missing, refuse to log in.
+
+    // Reenable clicking on other windows and status area.
+    login_display_->SetUIEnabled(true);
+    // Restart the auto-login timer.
+    StartPublicSessionAutoLoginTimer();
   }
 
   PerformPreLoginActions(user_context);
@@ -474,168 +531,12 @@ void ExistingUserController::PerformLogin(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
-void ExistingUserController::LoginAsRetailModeUser() {
-  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_RETAIL_MODE,
-                                     chromeos::login::kRetailModeUserName));
-
-  // TODO(rkc): Add a CHECK to make sure retail mode logins are allowed once
-  // the enterprise policy wiring is done for retail mode.
-
-  // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
-  login_performer_.reset(new ChromeLoginPerformer(this));
-  login_performer_->LoginRetailMode();
-  SendAccessibilityAlert(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER));
-}
-
-void ExistingUserController::LoginAsGuest() {
-  if (is_login_in_progress_ ||
-      user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    return;
-  }
-
-  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
-                                     chromeos::login::kGuestUserName));
-
-  CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(
-          base::Bind(&ExistingUserController::LoginAsGuest,
-                     weak_factory_.GetWeakPtr()));
-  // Must not proceed without signature verification.
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-    PerformLoginFinishedActions(false /* don't start public session timer */);
-    display_email_.clear();
-    return;
-  } else if (status != CrosSettingsProvider::TRUSTED) {
-    // Value of AllowNewUser setting is still not verified.
-    // Another attempt will be invoked after verification completion.
-    return;
-  }
-
-  bool allow_guest;
-  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
-  if (!allow_guest) {
-    // Disallowed. The UI should normally not show the guest pod but if for some
-    // reason this has been made available to the user here is the time to tell
-    // this nicely.
-    login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-    PerformLoginFinishedActions(true /* start public session timer */);
-    display_email_.clear();
-    return;
-  }
-
-  // Only one instance of LoginPerformer should exist at a time.
-  login_performer_.reset(NULL);
-  login_performer_.reset(new ChromeLoginPerformer(this));
-  login_performer_->LoginOffTheRecord();
-  SendAccessibilityAlert(
-      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
-}
-
 void ExistingUserController::MigrateUserData(const std::string& old_password) {
   // LoginPerformer instance has state of the user so it should exist.
   if (login_performer_.get())
     login_performer_->RecoverEncryptedData(old_password);
 }
 
-void ExistingUserController::LoginAsPublicSession(
-    const UserContext& user_context) {
-  if (is_login_in_progress_ ||
-      user_manager::UserManager::Get()->IsUserLoggedIn()) {
-    return;
-  }
-
-  PerformPreLoginActions(user_context);
-
-  CrosSettingsProvider::TrustedStatus status =
-      cros_settings_->PrepareTrustedValues(
-          base::Bind(&ExistingUserController::LoginAsPublicSession,
-                     weak_factory_.GetWeakPtr(),
-                     user_context));
-  // If device policy is permanently unavailable, logging into public accounts
-  // is not possible.
-  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-    login_display_->ShowError(IDS_LOGIN_ERROR_OWNER_KEY_LOST, 1,
-                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
-    PerformLoginFinishedActions(false /* don't start public session timer */);
-    return;
-  }
-
-  // If device policy is not verified yet, this function will be called again
-  // when verification finishes.
-  if (status != CrosSettingsProvider::TRUSTED)
-    return;
-
-  // If there is no public account with the given user ID, logging in is not
-  // possible.
-  const user_manager::User* user =
-      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
-  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
-    PerformLoginFinishedActions(true /* start public session timer */);
-    return;
-  }
-
-  UserContext new_user_context = user_context;
-  std::string locale = user_context.GetPublicSessionLocale();
-  if (locale.empty()) {
-    // When performing auto-login, no locale is chosen by the user. Check
-    // whether a list of recommended locales was set by policy. If so, use its
-    // first entry. Otherwise, |locale| will remain blank, indicating that the
-    // public session should use the current UI locale.
-    const policy::PolicyMap::Entry* entry = g_browser_process->platform_part()->
-        browser_policy_connector_chromeos()->
-            GetDeviceLocalAccountPolicyService()->
-                GetBrokerForUser(user_context.GetUserID())->core()->store()->
-                    policy_map().Get(policy::key::kSessionLocales);
-    base::ListValue const* list = NULL;
-    if (entry &&
-        entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-        entry->value &&
-        entry->value->GetAsList(&list)) {
-      if (list->GetString(0, &locale))
-        new_user_context.SetPublicSessionLocale(locale);
-    }
-  }
-
-  if (!locale.empty() &&
-      new_user_context.GetPublicSessionInputMethod().empty()) {
-    // When |locale| is set, a suitable keyboard layout should be chosen. In
-    // most cases, this will already be the case because the UI shows a list of
-    // keyboard layouts suitable for the |locale| and ensures that one of them
-    // us selected. However, it is still possible that |locale| is set but no
-    // keyboard layout was chosen:
-    // * The list of keyboard layouts is updated asynchronously. If the user
-    //   enters the public session before the list of keyboard layouts for the
-    //   |locale| has been retrieved, the UI will indicate that no keyboard
-    //   layout was chosen.
-    // * During auto-login, the |locale| is set in this method and a suitable
-    //   keyboard layout must be chosen next.
-    //
-    // The list of suitable keyboard layouts is constructed asynchronously. Once
-    // it has been retrieved, |SetPublicSessionKeyboardLayoutAndLogin| will
-    // select the first layout from the list and continue login.
-    GetKeyboardLayoutsForLocale(
-        base::Bind(
-            &ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin,
-            weak_factory_.GetWeakPtr(),
-            new_user_context),
-        locale);
-    return;
-  }
-
-  // The user chose a locale and a suitable keyboard layout or left both unset.
-  // Login can continue immediately.
-  LoginAsPublicSessionInternal(new_user_context);
-}
-
-void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
-                                             bool diagnostic_mode) {
-  host_->StartAppLaunch(app_id, diagnostic_mode);
-}
 
 void ExistingUserController::OnSigninScreenReady() {
   signin_screen_ready_ = true;
@@ -991,6 +892,117 @@ bool ExistingUserController::password_changed() const {
   return password_changed_;
 }
 
+void ExistingUserController::LoginAsRetailModeUser() {
+  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_RETAIL_MODE,
+                                     chromeos::login::kRetailModeUserName));
+
+  // TODO(rkc): Add a CHECK to make sure retail mode logins are allowed once
+  // the enterprise policy wiring is done for retail mode.
+
+  // Only one instance of LoginPerformer should exist at a time.
+  login_performer_.reset(NULL);
+  login_performer_.reset(new ChromeLoginPerformer(this));
+  login_performer_->LoginRetailMode();
+  SendAccessibilityAlert(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER));
+}
+
+void ExistingUserController::LoginAsGuest() {
+  PerformPreLoginActions(UserContext(user_manager::USER_TYPE_GUEST,
+                                     chromeos::login::kGuestUserName));
+
+  bool allow_guest;
+  cros_settings_->GetBoolean(kAccountsPrefAllowGuest, &allow_guest);
+  if (!allow_guest) {
+    // Disallowed. The UI should normally not show the guest pod but if for some
+    // reason this has been made available to the user here is the time to tell
+    // this nicely.
+    login_display_->ShowError(IDS_LOGIN_ERROR_WHITELIST, 1,
+                              HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
+    PerformLoginFinishedActions(true /* start public session timer */);
+    display_email_.clear();
+    return;
+  }
+
+  // Only one instance of LoginPerformer should exist at a time.
+  login_performer_.reset(NULL);
+  login_performer_.reset(new ChromeLoginPerformer(this));
+  login_performer_->LoginOffTheRecord();
+  SendAccessibilityAlert(
+      l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
+}
+
+void ExistingUserController::LoginAsPublicSession(
+    const UserContext& user_context) {
+  PerformPreLoginActions(user_context);
+
+  // If there is no public account with the given user ID, logging in is not
+  // possible.
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(user_context.GetUserID());
+  if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    PerformLoginFinishedActions(true /* start public session timer */);
+    return;
+  }
+
+  UserContext new_user_context = user_context;
+  std::string locale = user_context.GetPublicSessionLocale();
+  if (locale.empty()) {
+    // When performing auto-login, no locale is chosen by the user. Check
+    // whether a list of recommended locales was set by policy. If so, use its
+    // first entry. Otherwise, |locale| will remain blank, indicating that the
+    // public session should use the current UI locale.
+    const policy::PolicyMap::Entry* entry = g_browser_process->platform_part()->
+        browser_policy_connector_chromeos()->
+            GetDeviceLocalAccountPolicyService()->
+                GetBrokerForUser(user_context.GetUserID())->core()->store()->
+                    policy_map().Get(policy::key::kSessionLocales);
+    base::ListValue const* list = NULL;
+    if (entry &&
+        entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
+        entry->value &&
+        entry->value->GetAsList(&list)) {
+      if (list->GetString(0, &locale))
+        new_user_context.SetPublicSessionLocale(locale);
+    }
+  }
+
+  if (!locale.empty() &&
+      new_user_context.GetPublicSessionInputMethod().empty()) {
+    // When |locale| is set, a suitable keyboard layout should be chosen. In
+    // most cases, this will already be the case because the UI shows a list of
+    // keyboard layouts suitable for the |locale| and ensures that one of them
+    // us selected. However, it is still possible that |locale| is set but no
+    // keyboard layout was chosen:
+    // * The list of keyboard layouts is updated asynchronously. If the user
+    //   enters the public session before the list of keyboard layouts for the
+    //   |locale| has been retrieved, the UI will indicate that no keyboard
+    //   layout was chosen.
+    // * During auto-login, the |locale| is set in this method and a suitable
+    //   keyboard layout must be chosen next.
+    //
+    // The list of suitable keyboard layouts is constructed asynchronously. Once
+    // it has been retrieved, |SetPublicSessionKeyboardLayoutAndLogin| will
+    // select the first layout from the list and continue login.
+    GetKeyboardLayoutsForLocale(
+        base::Bind(
+            &ExistingUserController::SetPublicSessionKeyboardLayoutAndLogin,
+            weak_factory_.GetWeakPtr(),
+            new_user_context),
+        locale);
+    return;
+  }
+
+  // The user chose a locale and a suitable keyboard layout or left both unset.
+  // Login can continue immediately.
+  LoginAsPublicSessionInternal(new_user_context);
+}
+
+void ExistingUserController::LoginAsKioskApp(const std::string& app_id,
+                                             bool diagnostic_mode) {
+  host_->StartAppLaunch(app_id, diagnostic_mode);
+}
+
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {
   std::string auto_login_account_id;
   cros_settings_->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
@@ -1034,12 +1046,10 @@ void ExistingUserController::ResetPublicSessionAutoLoginTimer() {
 }
 
 void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
-  CHECK(signin_screen_ready_ &&
-        !is_login_in_progress_ &&
-        !public_session_auto_login_username_.empty());
-  // TODO(bartfab): Set the UI language and initial locale.
-  LoginAsPublicSession(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
-                                   public_session_auto_login_username_));
+  CHECK(signin_screen_ready_ && !public_session_auto_login_username_.empty());
+  Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
+                    public_session_auto_login_username_),
+        SigninSpecifics());
 }
 
 void ExistingUserController::StopPublicSessionAutoLoginTimer() {

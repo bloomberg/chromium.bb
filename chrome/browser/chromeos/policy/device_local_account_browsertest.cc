@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
@@ -702,7 +703,7 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest,
                                        user_id_1_);
     user_context.SetPublicSessionLocale(locale);
     user_context.SetPublicSessionInputMethod(input_method);
-    controller->LoginAsPublicSession(user_context);
+    controller->Login(user_context, chromeos::SigninSpecifics());
   }
 
   void WaitForSessionStart() {
