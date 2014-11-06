@@ -1735,6 +1735,13 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kOutOfProcessPdf)
   },
+  {
+    "disable-cast-streaming-hw-encoding",
+    IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_NAME,
+    IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableCastStreamingHWEncoding)
+  },
 #if defined(OS_ANDROID)
   {
     "disable-cast",

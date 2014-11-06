@@ -14976,6 +14976,12 @@ Do you accept?
     <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SELECT" desc="Button confirming the devices selected for access by the app.">
       Select
     </message>
+    <message name="IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_NAME" desc="Name of chrome:flags option to turn off Cast Streaming hardware video encoding support.">
+      Disable support for Cast Streaming hardware video encoding.
+    </message>
+    <message name="IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off Cast Streaming hardware video encoding support.">
+      This option disables support in Cast Streaming for encoding video streams using platform hardware.
+    </message>
   </messages>
   </release>
 </grit>

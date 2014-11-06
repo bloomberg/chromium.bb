@@ -105,6 +105,7 @@ CastRtpPayloadParams DefaultH264Payload() {
 bool IsHardwareVP8EncodingSupported() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    VLOG(1) << "Disabled hardware VP8 support for Cast Streaming.";
     return false;
   }
 
@@ -123,6 +124,7 @@ bool IsHardwareVP8EncodingSupported() {
 bool IsHardwareH264EncodingSupported() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   if (cmd_line->HasSwitch(switches::kDisableCastStreamingHWEncoding)) {
+    VLOG(1) << "Disabled hardware h264 support for Cast Streaming.";
     return false;
   }
 

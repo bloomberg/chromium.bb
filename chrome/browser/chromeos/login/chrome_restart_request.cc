@@ -75,6 +75,7 @@ std::string DeriveCommandLine(const GURL& start_url,
   static const char* const kForwardSwitches[] = {
     ::switches::kDisableAccelerated2dCanvas,
     ::switches::kDisableAcceleratedVideoDecode,
+    ::switches::kDisableCastStreamingHWEncoding,
     ::switches::kDisableDelegatedRenderer,
     ::switches::kDisableDistanceFieldText,
     ::switches::kDisableGpu,
