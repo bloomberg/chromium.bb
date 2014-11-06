@@ -664,6 +664,32 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
   return Status::Success();
 }
 
+blink::WebCryptoKeyFormat GetKeyFormatFromJsonTestCase(
+    const base::DictionaryValue* test) {
+  std::string format;
+  EXPECT_TRUE(test->GetString("key_format", &format));
+  if (format == "jwk")
+    return blink::WebCryptoKeyFormatJwk;
+  else if (format == "pkcs8")
+    return blink::WebCryptoKeyFormatPkcs8;
+  else if (format == "spki")
+    return blink::WebCryptoKeyFormatSpki;
+
+  EXPECT_TRUE(false) << "Unrecognized key format: " << format;
+  return blink::WebCryptoKeyFormatRaw;
+}
+
+std::vector<uint8_t> GetKeyDataFromJsonTestCase(
+    const base::DictionaryValue* test,
+    blink::WebCryptoKeyFormat key_format) {
+  if (key_format == blink::WebCryptoKeyFormatJwk) {
+    const base::DictionaryValue* json;
+    EXPECT_TRUE(test->GetDictionary("key", &json));
+    return MakeJsonVector(*json);
+  }
+  return GetBytesFromHexString(test, "key");
+}
+
 }  // namespace webcrypto
 
 }  // namesapce content

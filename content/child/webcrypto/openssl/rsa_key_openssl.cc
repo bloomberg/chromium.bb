@@ -90,18 +90,6 @@ Status CreateWebCryptoRsaPublicKey(
                                   usages, key);
 }
 
-// Converts a BIGNUM to a big endian byte array.
-std::vector<uint8_t> BIGNUMToVector(BIGNUM* n) {
-  std::vector<uint8_t> v(BN_num_bytes(n));
-  BN_bn2bin(n, vector_as_array(&v));
-  return v;
-}
-
-// Allocates a new BIGNUM given a std::string big-endian representation.
-BIGNUM* CreateBIGNUM(const std::string& n) {
-  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(), NULL);
-}
-
 Status ImportRsaPrivateKey(const blink::WebCryptoAlgorithm& algorithm,
                            bool extractable,
                            blink::WebCryptoKeyUsageMask usages,

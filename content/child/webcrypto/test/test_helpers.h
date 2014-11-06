@@ -190,6 +190,16 @@ Status GenerateKeyPair(const blink::WebCryptoAlgorithm& algorithm,
                        blink::WebCryptoKey* public_key,
                        blink::WebCryptoKey* private_key);
 
+// Reads a key format string as used in some JSON test files and converts it to
+// a WebCryptoKeyFormat.
+blink::WebCryptoKeyFormat GetKeyFormatFromJsonTestCase(
+    const base::DictionaryValue* test);
+
+// Extracts the key data bytes from |test| as used insome JSON test files.
+std::vector<uint8_t> GetKeyDataFromJsonTestCase(
+    const base::DictionaryValue* test,
+    blink::WebCryptoKeyFormat key_format);
+
 }  // namespace webcrypto
 
 }  // namesapce content

@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEBCRYPTO_OPENSSL_UTIL_OPENSSL_H_
 #define CONTENT_CHILD_WEBCRYPTO_OPENSSL_UTIL_OPENSSL_H_
 
+#include <string>
 #include <vector>
 
 #include <openssl/ossl_typ.h>
@@ -72,6 +73,12 @@ Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
 Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
                                      int expected_pkey_id,
                                      crypto::ScopedEVP_PKEY* pkey);
+
+// Allocates a new BIGNUM given a std::string big-endian representation.
+BIGNUM* CreateBIGNUM(const std::string& n);
+
+// Converts a BIGNUM to a big endian byte array.
+std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n);
 
 }  // namespace webcrypto
 

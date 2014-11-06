@@ -234,6 +234,16 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
   return Status::Success();
 }
 
+BIGNUM* CreateBIGNUM(const std::string& n) {
+  return BN_bin2bn(reinterpret_cast<const uint8_t*>(n.data()), n.size(), NULL);
+}
+
+std::vector<uint8_t> BIGNUMToVector(const BIGNUM* n) {
+  std::vector<uint8_t> v(BN_num_bytes(n));
+  BN_bn2bin(n, vector_as_array(&v));
+  return v;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

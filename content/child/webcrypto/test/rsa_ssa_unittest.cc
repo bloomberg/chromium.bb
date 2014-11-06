@@ -1031,35 +1031,6 @@ TEST(WebCryptoRsaSsaTest, ImportRsaSsaJwkBadUsageFailFast) {
                 &key));
 }
 
-// Reads a key format string as used in bad_rsa_keys.json, and converts to a
-// WebCryptoKeyFormat.
-blink::WebCryptoKeyFormat GetKeyFormatForTestCase(
-    const base::DictionaryValue* test) {
-  std::string format;
-  EXPECT_TRUE(test->GetString("format", &format));
-  if (format == "jwk")
-    return blink::WebCryptoKeyFormatJwk;
-  else if (format == "pkcs8")
-    return blink::WebCryptoKeyFormatPkcs8;
-  else if (format == "spki")
-    return blink::WebCryptoKeyFormatSpki;
-
-  EXPECT_TRUE(false) << "Unrecognized key format: " << format;
-  return blink::WebCryptoKeyFormatRaw;
-}
-
-// Extracts the key data bytes from |test|, as it appears in bad_rsa_keys.json.
-std::vector<uint8_t> GetKeyDataForTestCase(
-    const base::DictionaryValue* test,
-    blink::WebCryptoKeyFormat key_format) {
-  if (key_format == blink::WebCryptoKeyFormatJwk) {
-    const base::DictionaryValue* json;
-    EXPECT_TRUE(test->GetDictionary("data", &json));
-    return MakeJsonVector(*json);
-  }
-  return GetBytesFromHexString(test, "data");
-}
-
 // Imports invalid JWK/SPKI/PKCS8 data and verifies that it fails as expected.
 TEST(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
   if (!SupportsRsaPrivateKeyImport())
@@ -1074,8 +1045,9 @@ TEST(WebCryptoRsaSsaTest, ImportInvalidKeyData) {
     const base::DictionaryValue* test;
     ASSERT_TRUE(tests->GetDictionary(test_index, &test));
 
-    blink::WebCryptoKeyFormat key_format = GetKeyFormatForTestCase(test);
-    std::vector<uint8_t> key_data = GetKeyDataForTestCase(test, key_format);
+    blink::WebCryptoKeyFormat key_format = GetKeyFormatFromJsonTestCase(test);
+    std::vector<uint8_t> key_data =
+        GetKeyDataFromJsonTestCase(test, key_format);
     std::string test_error;
     ASSERT_TRUE(test->GetString("error", &test_error));
 
