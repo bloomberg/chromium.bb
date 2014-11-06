@@ -370,20 +370,18 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     self.AssertOutputEndsInError(check_stdout=True)
 
   def testPrepareCredsEmailPassword(self):
+    """Verify that creating creds w/an e-mail is used over other args."""
     email = 'foo@g.com'
     password = 'shh'
     creds_file = 'bogus'
     token_file = 'boguser'
 
-    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
-    self.mox.StubOutWithMock(gdata_lib.Creds, '__new__')
+    creds = gdata_lib.Creds()
+    creds.SetCreds(email, password)
 
-    gdata_lib.Creds.__new__(gdata_lib.Creds).AndReturn(mocked_creds)
-    mocked_creds.SetCreds(email, password)
-    self.mox.ReplayAll()
-
-    ups.PrepareCreds(creds_file, token_file, email, password)
-    self.mox.VerifyAll()
+    creds = ups.PrepareCreds(creds_file, token_file, email, password)
+    self.assertEqual(creds.user, email)
+    self.assertEqual(creds.password, password)
 
   def testMainEmailPassword(self):
     """Verify that running main with email/password follows flow."""
@@ -391,7 +389,7 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     email = 'foo@g.com'
     password = '123'
 
-    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
+    creds = gdata_lib.Creds()
     creds_file = 'non-existing-file'
 
     self.mox.StubOutWithMock(ups, 'PrepareCreds')
@@ -399,12 +397,11 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
-    ups.PrepareCreds(creds_file, None, email, password).AndReturn(mocked_creds)
+    ups.PrepareCreds(creds_file, None, email, password).AndReturn(creds)
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Packages')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name='Dependencies')
-    mocked_creds.StoreCredsIfNeeded(creds_file)
     self.mox.ReplayAll()
 
     ups.main(['--email=%s' % email,
@@ -421,21 +418,18 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     creds_file = self.tempfile
     token_file = 'non-existing-file'
 
-    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
-    mocked_creds.auth_token_loaded = False
+    creds = gdata_lib.Creds()
 
     self.mox.StubOutWithMock(ups, 'PrepareCreds')
     self.mox.StubOutWithMock(ups, 'LoadTable')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
-    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(mocked_creds)
+    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(creds)
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
-    mocked_creds.StoreCredsIfNeeded(creds_file)
-    mocked_creds.StoreAuthTokenIfNeeded(token_file)
     self.mox.ReplayAll()
 
     ups.main(['--cred-file=%s' % creds_file,
@@ -444,7 +438,6 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
 
     self.mox.VerifyAll()
 
-
   @osutils.TempFileDecorator
   def testMainTokenFile(self):
     """Verify that running main with token file follows flow."""
@@ -452,21 +445,18 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
     token_file = self.tempfile
     creds_file = 'non-existing-file'
 
-    mocked_creds = self.mox.CreateMock(gdata_lib.Creds)
-    mocked_creds.auth_token_loaded = True
+    creds = gdata_lib.Creds()
 
     self.mox.StubOutWithMock(ups, 'PrepareCreds')
     self.mox.StubOutWithMock(ups, 'LoadTable')
     self.mox.StubOutWithMock(mps, 'FinalizeTable')
     self.mox.StubOutWithMock(ups.Uploader, 'Upload')
 
-    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(mocked_creds)
+    ups.PrepareCreds(creds_file, token_file, None, None).AndReturn(creds)
     ups.LoadTable(csv).AndReturn('csv_table')
     mps.FinalizeTable('csv_table')
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.PKGS_WS_NAME)
     ups.Uploader.Upload(mox.IgnoreArg(), ws_name=ups.DEPS_WS_NAME)
-    mocked_creds.StoreCredsIfNeeded(creds_file)
-    mocked_creds.StoreAuthTokenIfNeeded(token_file)
     self.mox.ReplayAll()
 
     ups.main(['--cred-file=%s' % creds_file,
