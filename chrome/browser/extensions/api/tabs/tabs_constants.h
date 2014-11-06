@@ -86,7 +86,6 @@ extern const char kIncognitoModeIsDisabled[];
 extern const char kIncognitoModeIsForced[];
 extern const char kURLsNotAllowedInIncognitoError[];
 extern const char kInvalidUrlError[];
-extern const char kInternalVisibleTabCaptureError[];
 extern const char kNotImplementedError[];
 extern const char kSupportedInWindowsOnlyError[];
 extern const char kInvalidWindowTypeError[];

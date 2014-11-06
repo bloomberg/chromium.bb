@@ -91,8 +91,6 @@ const char kIncognitoModeIsForced[] = "Incognito mode is forced. "
 const char kURLsNotAllowedInIncognitoError[] = "Cannot open URL \"*\" "
     "in an incognito window.";
 const char kInvalidUrlError[] = "Invalid url: \"*\".";
-const char kInternalVisibleTabCaptureError[] =
-    "Internal error while trying to capture visible region of the current tab";
 const char kNotImplementedError[] = "This call is not yet implemented";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 const char kInvalidWindowTypeError[] = "Invalid value for type";

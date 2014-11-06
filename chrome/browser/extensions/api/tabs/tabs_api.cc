@@ -1545,7 +1545,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
 
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   if (!contents) {
-    error_ = keys::kInternalVisibleTabCaptureError;
+    error_ = "No active web contents to capture";
     return NULL;
   }
 
@@ -1557,7 +1557,20 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(int window_id) {
 }
 
 void TabsCaptureVisibleTabFunction::OnCaptureFailure(FailureReason reason) {
-  error_ = keys::kInternalVisibleTabCaptureError;
+  const char* reason_description = "internal error";
+  switch (reason) {
+    case FAILURE_REASON_UNKNOWN:
+      reason_description = "unknown error";
+      break;
+    case FAILURE_REASON_ENCODING_FAILED:
+      reason_description = "encoding failed";
+      break;
+    case FAILURE_REASON_VIEW_INVISIBLE:
+      reason_description = "view is invisible";
+      break;
+  }
+  error_ = ErrorUtils::FormatErrorMessage("Failed to capture tab: *",
+                                          reason_description);
   SendResponse(false);
 }
 
