@@ -17,10 +17,8 @@
         {
             var ob = document.getElementById(id + 'Pair');
             log('getPropertyValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyValue(prop));
-            log('getPropertyCSSValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyCSSValue(prop));
             ob = document.getElementById(id + 'Single');
             log('getPropertyValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyValue(prop));
-            log('getPropertyCSSValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyCSSValue(prop));
         }
 
         function runTests()
@@ -40,7 +38,6 @@
             log('Test getting initial value of the background size.')
             var ob = document.getElementById('spacingInit');
             log('getPropertyValue(border-spacing): ' + document.defaultView.getComputedStyle(ob, null).getPropertyValue('border-spacing'));
-            log('getPropertyCSSValue(border-spacing): ' + document.defaultView.getComputedStyle(ob, null).getPropertyCSSValue('border-spacing'));
         }
     </script>
 </head>

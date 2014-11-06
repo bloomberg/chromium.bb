@@ -25,7 +25,6 @@ for (i = 0; i < testValues.length; i++) {
     e.style.borderImageSlice = "";
     e.style.borderImageSlice = testValues[i];
     shouldBe("computedStyle.getPropertyValue('border-image-slice')", expectedValues[i]);
-    shouldBe("computedStyle.getPropertyCSSValue('border-image-slice').cssText", expectedValues[i]);
 }
 document.body.removeChild(testContainer);
 

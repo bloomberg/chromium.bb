@@ -22,10 +22,8 @@
         {
             var ob = document.getElementById(id + 'Diff');
             log('getPropertyValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyValue(prop));
-            log('getPropertyCSSValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyCSSValue(prop));
             ob = document.getElementById(id + 'Same');
             log('getPropertyValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyValue(prop));
-            log('getPropertyCSSValue(' + prop + '): ' + document.defaultView.getComputedStyle(ob, null).getPropertyCSSValue(prop));
         }
 
         function runTests()

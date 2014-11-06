@@ -20,7 +20,6 @@ e.contentEditable = true;
 e.style.outlineOffset = "2px";
 computedStyle = window.getComputedStyle(e);
 shouldBe("computedStyle.getPropertyValue('outline-offset')", "'2px'");
-shouldBe("computedStyle.getPropertyCSSValue('outline-offset').getFloatValue(CSSPrimitiveValue.CSS_PX)", "2");
 
 document.body.removeChild(testContainer);
 

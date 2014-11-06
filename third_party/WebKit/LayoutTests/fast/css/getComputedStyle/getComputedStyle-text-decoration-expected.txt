@@ -4,76 +4,40 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 Initial value:
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'none solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'none solid rgb(0, 0, 0)'
 
 Initial value (explicit):
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'none solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'none solid rgb(0, 0, 0)'
 
 Value 'none':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'none solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'none solid rgb(0, 0, 0)'
 
 Value 'underline':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'underline solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'underline solid rgb(0, 0, 0)'
 
 Value 'overline':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'overline solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'overline solid rgb(0, 0, 0)'
 
 Value 'line-through':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'line-through solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'line-through solid rgb(0, 0, 0)'
 
 Value 'underline overline line-through':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'underline overline line-through solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'underline overline line-through solid rgb(0, 0, 0)'
 
 Value 'blink' (valid but ignored):
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'none solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'none solid rgb(0, 0, 0)'
 
 Value '':
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'none solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'none solid rgb(0, 0, 0)'
 
 Parent gets 'underline' value:
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'underline solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'underline solid rgb(0, 0, 0)'
 
 Ancestor should explicitly inherit value from parent when 'inherit' value is used:
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 PASS computedStyle.textDecoration is 'underline solid rgb(0, 0, 0)'
-PASS computedStyle.getPropertyCSSValue('text-decoration').toString() is '[object CSSValueList]'
-PASS computedStyle.getPropertyCSSValue('text-decoration').cssText is 'underline solid rgb(0, 0, 0)'
 
 Ancestor should not implicitly inherit value from parent (i.e. when value is void):
-PASS e.style.getPropertyCSSValue('text-decoration') is null
 FAIL computedStyle.textDecoration should be none. Was none solid rgb(0, 0, 0).
-FAIL computedStyle.getPropertyCSSValue('text-decoration').toString() should be [object CSSPrimitiveValue]. Was [object CSSValueList].
-FAIL computedStyle.getPropertyCSSValue('text-decoration').cssText should be none. Was none solid rgb(0, 0, 0).
 
 PASS successfullyParsed is true
 
