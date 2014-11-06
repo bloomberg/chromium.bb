@@ -45,11 +45,14 @@ views::Widget* ShowWebModalDialogViews(
     content::WebContents* initiator_web_contents);
 
 // Create a widget for |dialog| that is modal to |web_contents|.
+// The modal type of |dialog->GetModalType()| must be ui::MODAL_TYPE_CHILD.
 views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
                                          content::WebContents* web_contents);
 
-// Create a widget for |dialog| that is modal to the browser window |parent|.
-// This places the dialog appropriately if |parent| is a valid browser window.
+// Create a widget for |dialog| that has a modality given by
+// |dialog->GetModalType()|.  The modal type must be either
+// ui::MODAL_TYPE_SYSTEM or ui::MODAL_TYPE_WINDOW.  This places the
+// dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeView parent);
 
