@@ -4,8 +4,6 @@
 
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -33,19 +31,6 @@ int GetFieldWidth(FieldType type) {
       .GetFontList(ui::ResourceBundle::SmallFont)
       .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
                                                    : kPasswordFieldSize);
-}
-
-void SetupLinkifiedText(const base::string16& string_with_separator,
-                        base::string16* text,
-                        gfx::Range* link_range) {
-  std::vector<base::string16> pieces;
-  base::SplitStringDontTrim(string_with_separator,
-                            '|',  // separator
-                            &pieces);
-  DCHECK_EQ(3u, pieces.size());
-  *link_range = gfx::Range(pieces[0].size(),
-                           pieces[0].size() + pieces[1].size());
-  *text = JoinString(pieces, base::string16());
 }
 
 }  // namespace
@@ -78,10 +63,14 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     title_ = l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_TITLE);
   }
 
-  SetupLinkifiedText(
-      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT),
-      &save_confirmation_text_,
-      &save_confirmation_link_range_);
+  base::string16 save_confirmation_link =
+      l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_LINK);
+  size_t offset;
+  save_confirmation_text_ =
+      l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
+                                 save_confirmation_link, &offset);
+  save_confirmation_link_range_ =
+      gfx::Range(offset, offset + save_confirmation_link.length());
 
   manage_link_ =
       l10n_util::GetStringUTF16(IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS_LINK);
