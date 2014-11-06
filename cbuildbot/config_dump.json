@@ -91,6 +91,7 @@
         "usepkg_toolchain": true,
         "vm_test_runs": 1,
         "vm_tests": [
+            "smoke_suite",
             "pfq_suite"
         ]
     },
@@ -280,7 +281,10 @@
         "paladin_builder_name": "amd64-generic paladin",
         "prebuilts": "public",
         "trybot_list": true,
-        "upload_standalone_images": false
+        "upload_standalone_images": false,
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "amd64-generic-telem-chrome-pfq-informational": {
         "boards": [
@@ -27019,7 +27023,9 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [
+            "pfq_suite"
+        ]
     },
     "rambi-payloads": {
         "boards": [
@@ -36477,7 +36483,10 @@
         "paladin_builder_name": "x86-generic paladin",
         "prebuilts": "public",
         "trybot_list": true,
-        "upload_standalone_images": false
+        "upload_standalone_images": false,
+        "vm_tests": [
+            "smoke_suite"
+        ]
     },
     "x86-generic-telem-chrome-pfq-informational": {
         "boards": [
@@ -36735,6 +36744,9 @@
         "upload_standalone_images": false,
         "useflags": [
             "chrome_internal"
+        ],
+        "vm_tests": [
+            "pfq_suite"
         ]
     },
     "x86-mario-payloads": {

@@ -116,7 +116,8 @@ def OverrideConfigForTrybot(build_config, options):
     if (my_config['build_type'] == constants.PALADIN_TYPE
         and my_config['tests_supported']
         and build_config['vm_tests'] is not None):
-      my_config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE,
+      my_config['vm_tests'] = [constants.SMOKE_SUITE_TEST_TYPE,
+                               constants.SIMPLE_AU_TEST_TYPE,
                                constants.CROS_VM_TEST_TYPE]
       my_config['quick_unit'] = False
 
@@ -454,7 +455,8 @@ _settings = dict(
   afdo_use=False,
 
 # vm_tests -- A list of vm tests to run.
-  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
+            constants.SIMPLE_AU_TEST_TYPE],
 
 # vm_test_runs -- The number of times to run the VMTest stage. If this is >1,
 #                 then we will run the stage this many times, stopping if we
@@ -1110,11 +1112,13 @@ incremental.add_config('x32-generic-incremental',
 paladin.add_config('x86-generic-paladin',
   boards=['x86-generic'],
   paladin_builder_name='x86-generic paladin',
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
 paladin.add_config('amd64-generic-paladin',
   boards=['amd64-generic'],
   paladin_builder_name='amd64-generic paladin',
+  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
 )
 
 paladin.add_config('amd64-generic_freon-paladin',
@@ -1944,6 +1948,7 @@ internal_paladin.add_config('parry-paladin',
 internal_paladin.add_config('rambi-paladin',
   boards=['rambi'],
   paladin_builder_name='rambi paladin',
+  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
 )
 
 internal_paladin.add_config('samus-paladin',

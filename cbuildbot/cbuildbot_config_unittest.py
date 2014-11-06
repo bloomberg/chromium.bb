@@ -649,7 +649,8 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     mock_options = mock.Mock()
     old = cbuildbot_config.config['x86-mario-paladin']
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)
-    self.assertEquals(new['vm_tests'], [constants.SIMPLE_AU_TEST_TYPE,
+    self.assertEquals(new['vm_tests'], [constants.SMOKE_SUITE_TEST_TYPE,
+                                        constants.SIMPLE_AU_TEST_TYPE,
                                         constants.CROS_VM_TEST_TYPE])
     old['vm_tests'] = None
     new = cbuildbot_config.OverrideConfigForTrybot(old, mock_options)

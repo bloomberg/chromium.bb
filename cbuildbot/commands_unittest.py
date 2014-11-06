@@ -133,12 +133,12 @@ class RunTestSuiteTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   def testSimple(self):
     """Test SIMPLE config."""
     self._RunTestSuite(constants.SIMPLE_AU_TEST_TYPE)
-    self.assertCommandContains(['--quick'])
+    self.assertCommandContains(['--quick_update'])
 
   def testSmoke(self):
     """Test SMOKE config."""
     self._RunTestSuite(constants.SMOKE_SUITE_TEST_TYPE)
-    self.assertCommandContains(['--quick', '--only_verify'])
+    self.assertCommandContains(['--only_verify'])
 
 
 class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
