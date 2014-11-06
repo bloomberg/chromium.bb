@@ -25,7 +25,7 @@ BinaryFeatureExtractor::~BinaryFeatureExtractor() {}
 void BinaryFeatureExtractor::CheckSignature(
     const base::FilePath& file_path,
     ClientDownloadRequest_SignatureInfo* signature_info) {
-  VLOG(2) << "Checking signature for " << file_path.value();
+  DVLOG(2) << "Checking signature for " << file_path.value();
 
   WINTRUST_FILE_INFO file_info = {0};
   file_info.cbStruct = sizeof(file_info);

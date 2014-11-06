@@ -94,32 +94,32 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // Only classify [X]HTML documents.
     if (params_.contents_mime_type != "text/html" &&
         params_.contents_mime_type != "application/xhtml+xml") {
-      VLOG(1) << "Skipping phishing classification for URL: " << params_.url
-              << " because it has an unsupported MIME type: "
-              << params_.contents_mime_type;
+      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+               << " because it has an unsupported MIME type: "
+               << params_.contents_mime_type;
       DontClassifyForPhishing(NO_CLASSIFY_UNSUPPORTED_MIME_TYPE);
     }
 
     if (csd_service_->IsPrivateIPAddress(params_.socket_address.host())) {
-      VLOG(1) << "Skipping phishing classification for URL: " << params_.url
-              << " because of hosting on private IP: "
-              << params_.socket_address.host();
+      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+               << " because of hosting on private IP: "
+               << params_.socket_address.host();
       DontClassifyForPhishing(NO_CLASSIFY_PRIVATE_IP);
       DontClassifyForMalware(NO_CLASSIFY_PRIVATE_IP);
     }
 
     // For phishing we only classify HTTP pages.
     if (!params_.url.SchemeIs(url::kHttpScheme)) {
-      VLOG(1) << "Skipping phishing classification for URL: " << params_.url
-              << " because it is not HTTP: "
-              << params_.socket_address.host();
+      DVLOG(1) << "Skipping phishing classification for URL: " << params_.url
+               << " because it is not HTTP: "
+               << params_.socket_address.host();
       DontClassifyForPhishing(NO_CLASSIFY_NOT_HTTP_URL);
     }
 
     // Don't run any classifier if the tab is incognito.
     if (web_contents_->GetBrowserContext()->IsOffTheRecord()) {
-      VLOG(1) << "Skipping phishing and malware classification for URL: "
-              << params_.url << " because we're browsing incognito.";
+      DVLOG(1) << "Skipping phishing and malware classification for URL: "
+               << params_.url << " because we're browsing incognito.";
       DontClassifyForPhishing(NO_CLASSIFY_OFF_THE_RECORD);
       DontClassifyForMalware(NO_CLASSIFY_OFF_THE_RECORD);
     }
@@ -222,8 +222,8 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
       malware_reason = phishing_reason = NO_CLASSIFY_NO_DATABASE_MANAGER;
     } else {
       if (database_manager_->MatchCsdWhitelistUrl(url)) {
-        VLOG(1) << "Skipping phishing classification for URL: " << url
-                << " because it matches the csd whitelist";
+        DVLOG(1) << "Skipping phishing classification for URL: " << url
+                 << " because it matches the csd whitelist";
         phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
       }
       if (database_manager_->IsMalwareKillSwitchOn()) {
@@ -253,7 +253,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // In that case we're just trying to show the warning.
     bool is_phishing;
     if (csd_service_->GetValidCachedResult(params_.url, &is_phishing)) {
-      VLOG(1) << "Satisfying request for " << params_.url << " from cache";
+      DVLOG(1) << "Satisfying request for " << params_.url << " from cache";
       UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.RequestSatisfiedFromCache", 1);
       // Since we are already on the UI thread, this is safe.
       host_->MaybeShowPhishingWarning(params_.url, is_phishing);
@@ -266,12 +266,12 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // phishing we want to send a request to the server to give ourselves
     // a chance to fix misclassifications.
     if (csd_service_->IsInCache(params_.url)) {
-      VLOG(1) << "Reporting limit skipped for " << params_.url
-              << " as it was in the cache.";
+      DVLOG(1) << "Reporting limit skipped for " << params_.url
+               << " as it was in the cache.";
       UMA_HISTOGRAM_BOOLEAN("SBClientPhishing.ReportLimitSkipped", 1);
     } else if (csd_service_->OverPhishingReportLimit()) {
-      VLOG(1) << "Too many report phishing requests sent recently, "
-              << "not running classification for " << params_.url;
+      DVLOG(1) << "Too many report phishing requests sent recently, "
+               << "not running classification for " << params_.url;
       DontClassifyForPhishing(NO_CLASSIFY_TOO_MANY_REPORTS);
     }
     if (csd_service_->OverMalwareReportLimit()) {
@@ -492,8 +492,8 @@ void ClientSideDetectionHost::OnPhishingPreClassificationDone(
     bool should_classify) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (browse_info_.get() && should_classify) {
-    VLOG(1) << "Instruct renderer to start phishing detection for URL: "
-            << browse_info_->url;
+    DVLOG(1) << "Instruct renderer to start phishing detection for URL: "
+             << browse_info_->url;
     content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
     rvh->Send(new SafeBrowsingMsg_StartPhishingDetection(
         rvh->GetRoutingID(), browse_info_->url));
@@ -669,7 +669,7 @@ void ClientSideDetectionHost::MalwareFeatureExtractionDone(
 
   // Send ping if there is matching features.
   if (feature_extraction_success && request->bad_ip_url_info_size() > 0) {
-    VLOG(1) << "Start sending client malware request.";
+    DVLOG(1) << "Start sending client malware request.";
     ClientSideDetectionService::ClientReportMalwareRequestCallback callback;
     callback = base::Bind(&ClientSideDetectionHost::MaybeShowMalwareWarning,
                           weak_factory_.GetWeakPtr());

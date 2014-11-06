@@ -300,8 +300,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
   void Start() {
-    VLOG(2) << "Starting SafeBrowsing download check for: "
-            << item_->DebugString(true);
+    DVLOG(2) << "Starting SafeBrowsing download check for: "
+             << item_->DebugString(true);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     // TODO(noelutz): implement some cache to make sure we don't issue the same
     // request over and over again if a user downloads the same binary multiple
@@ -387,10 +387,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
   void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     DCHECK_EQ(source, fetcher_.get());
-    VLOG(2) << "Received a response for URL: "
-            << item_->GetUrlChain().back() << ": success="
-            << source->GetStatus().is_success() << " response_code="
-            << source->GetResponseCode();
+    DVLOG(2) << "Received a response for URL: "
+             << item_->GetUrlChain().back() << ": success="
+             << source->GetStatus().is_success() << " response_code="
+             << source->GetResponseCode();
     if (source->GetStatus().is_success()) {
       UMA_HISTOGRAM_SPARSE_SLOWLY(
           "SBClientDownload.DownloadRequestResponseCode",
@@ -521,10 +521,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     binary_feature_extractor_->CheckSignature(file_path, &signature_info_);
     bool is_signed = (signature_info_.certificate_chain_size() > 0);
     if (is_signed) {
-      VLOG(2) << "Downloaded a signed binary: " << file_path.value();
+      DVLOG(2) << "Downloaded a signed binary: " << file_path.value();
     } else {
-      VLOG(2) << "Downloaded an unsigned binary: "
-              << file_path.value();
+      DVLOG(2) << "Downloaded an unsigned binary: "
+               << file_path.value();
     }
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
@@ -557,11 +557,11 @@ class DownloadProtectionService::CheckClientDownloadRequest
       return;
     if (results.success) {
       zipped_executable_ = results.has_executable;
-      VLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
-              << ", has_executable=" << results.has_executable
-              << " has_archive=" << results.has_archive;
+      DVLOG(1) << "Zip analysis finished for " << item_->GetFullPath().value()
+               << ", has_executable=" << results.has_executable
+               << " has_archive=" << results.has_archive;
     } else {
-      VLOG(1) << "Zip analysis failed for " << item_->GetFullPath().value();
+      DVLOG(1) << "Zip analysis failed for " << item_->GetFullPath().value();
     }
     UMA_HISTOGRAM_BOOLEAN("SBClientDownload.ZipFileHasExecutable",
                           zipped_executable_);
@@ -591,7 +591,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     const GURL& url = url_chain_.back();
     if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
-      VLOG(2) << url << " is on the download whitelist.";
+      DVLOG(2) << url << " is on the download whitelist.";
       RecordCountOfSignedOrWhitelistedDownload();
       // TODO(grt): Continue processing without uploading so that
       // ClientDownloadRequest callbacks can be run even for this type of safe
@@ -740,8 +740,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
 
     service_->client_download_request_callbacks_.Notify(item_, &request);
 
-    VLOG(2) << "Sending a request for URL: "
-            << item_->GetUrlChain().back();
+    DVLOG(2) << "Sending a request for URL: "
+             << item_->GetUrlChain().back();
     fetcher_.reset(net::URLFetcher::Create(0 /* ID used for testing */,
                                            GetDownloadRequestUrl(),
                                            net::URLFetcher::POST,
@@ -800,9 +800,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       service_->client_download_request_callbacks_.Notify(item_, nullptr);
     }
     if (service_) {
-      VLOG(2) << "SafeBrowsing download verdict for: "
-              << item_->DebugString(true) << " verdict:" << reason
-              << " result:" << result;
+      DVLOG(2) << "SafeBrowsing download verdict for: "
+               << item_->DebugString(true) << " verdict:" << reason
+               << " result:" << result;
       UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckDownloadStats",
                                 reason,
                                 REASON_MAX);
@@ -856,9 +856,9 @@ class DownloadProtectionService::CheckClientDownloadRequest
       for (size_t j = 0; j < whitelist_strings.size(); ++j) {
         if (database_manager_->MatchDownloadWhitelistString(
                 whitelist_strings[j])) {
-          VLOG(2) << "Certificate matched whitelist, cert="
-                  << cert->subject().GetDisplayName()
-                  << " issuer=" << issuer->subject().GetDisplayName();
+          DVLOG(2) << "Certificate matched whitelist, cert="
+                   << cert->subject().GetDisplayName()
+                   << " issuer=" << issuer->subject().GetDisplayName();
           return true;
         }
       }

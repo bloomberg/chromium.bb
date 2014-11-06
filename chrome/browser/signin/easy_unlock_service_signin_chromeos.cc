@@ -179,7 +179,7 @@ void EasyUnlockServiceSignin::RecordEasySignInOutcome(
   chromeos::RecordEasyUnlockLoginEvent(success
                                            ? chromeos::EASY_SIGN_IN_SUCCESS
                                            : chromeos::EASY_SIGN_IN_FAILURE);
-  VLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
+  DVLOG(1) << "Easy sign-in " << (success ? "success" : "failure");
 }
 
 void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
@@ -235,7 +235,7 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
   }
 
   chromeos::RecordEasyUnlockLoginEvent(event);
-  VLOG(1) << "EasySignIn password login event, event=" << event;
+  DVLOG(1) << "EasySignIn password login event, event=" << event;
 }
 
 void EasyUnlockServiceSignin::InitializeInternal() {

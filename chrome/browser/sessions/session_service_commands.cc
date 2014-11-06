@@ -267,8 +267,8 @@ void SortTabsBasedOnVisualOrderAndPrune(
 // ignores tabs with no navigations.
 void AddTabsToWindows(std::map<int, SessionTab*>* tabs,
                       std::map<int, SessionWindow*>* windows) {
-  VLOG(1) << "AddTabsToWindws";
-  VLOG(1) << "Tabs " << tabs->size() << ", windows " << windows->size();
+  DVLOG(1) << "AddTabsToWindws";
+  DVLOG(1) << "Tabs " << tabs->size() << ", windows " << windows->size();
   std::map<int, SessionTab*>::iterator i = tabs->begin();
   while (i != tabs->end()) {
     SessionTab* tab = i->second;
@@ -309,19 +309,19 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
                           SessionID::id_type* active_window_id) {
   // If the file is corrupt (command with wrong size, or unknown command), we
   // still return true and attempt to restore what we we can.
-  VLOG(1) << "CreateTabsAndWindows";
+  DVLOG(1) << "CreateTabsAndWindows";
 
   for (std::vector<SessionCommand*>::const_iterator i = data.begin();
        i != data.end(); ++i) {
     const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
     const SessionCommand* command = *i;
 
-    VLOG(1) << "Read command " << (int) command->id();
+    DVLOG(1) << "Read command " << (int) command->id();
     switch (command->id()) {
       case kCommandSetTabWindow: {
         SessionID::id_type payload[2];
         if (!command->GetPayload(payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetTab(payload[1], tabs)->window_id.set_id(payload[0]);
@@ -333,7 +333,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetWindowBounds2: {
         WindowBoundsPayload2 payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetWindow(payload.window_id, windows)->bounds.SetRect(payload.x,
@@ -349,7 +349,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetWindowBounds3: {
         WindowBoundsPayload3 payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetWindow(payload.window_id, windows)->bounds.SetRect(payload.x,
@@ -364,7 +364,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetTabIndexInWindow: {
         TabIndexInWindowPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetTab(payload.id, tabs)->tab_visual_index = payload.index;
@@ -375,7 +375,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandWindowClosed: {
         ClosedPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         if (command->id() == kCommandTabClosed) {
@@ -391,7 +391,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandTabNavigationPathPrunedFromBack: {
         TabNavigationPathPrunedFromBackPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         SessionTab* tab = GetTab(payload.id, tabs);
@@ -405,7 +405,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         TabNavigationPathPrunedFromFrontPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload)) ||
             payload.index <= 0) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         SessionTab* tab = GetTab(payload.id, tabs);
@@ -433,7 +433,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         if (!RestoreUpdateTabNavigationCommand(*command,
                                                &navigation,
                                                &tab_id)) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         SessionTab* tab = GetTab(tab_id, tabs);
@@ -450,7 +450,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetSelectedNavigationIndex: {
         SelectedNavigationIndexPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetTab(payload.id, tabs)->current_navigation_index = payload.index;
@@ -460,7 +460,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetSelectedTabInIndex: {
         SelectedTabInIndexPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetWindow(payload.id, windows)->selected_tab_index = payload.index;
@@ -470,7 +470,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetWindowType: {
         WindowTypePayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetWindow(payload.id, windows)->is_constrained = false;
@@ -482,7 +482,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetPinnedState: {
         PinnedStatePayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         GetTab(payload.tab_id, tabs)->pinned = payload.pinned_state;
@@ -505,7 +505,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
         if (!RestoreSetTabExtensionAppIDCommand(*command,
                                                 &tab_id,
                                                 &extension_app_id)) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
 
@@ -544,7 +544,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       case kCommandSetActiveWindow: {
         ActiveWindowPayload payload;
         if (!command->GetPayload(&payload, sizeof(payload))) {
-          VLOG(1) << "Failed reading command " << command->id();
+          DVLOG(1) << "Failed reading command " << command->id();
           return true;
         }
         *active_window_id = payload;
@@ -554,7 +554,7 @@ bool CreateTabsAndWindows(const ScopedVector<SessionCommand>& data,
       default:
         // TODO(skuhne): This might call back into a callback handler to extend
         // the command set for specific implementations.
-        VLOG(1) << "Failed reading an unknown command " << command->id();
+        DVLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
     }
   }
@@ -821,7 +821,7 @@ void RestoreSessionFromCommands(const ScopedVector<SessionCommand>& commands,
   std::map<int, SessionTab*> tabs;
   std::map<int, SessionWindow*> windows;
 
-  VLOG(1) << "RestoreSessionFromCommands " << commands.size();
+  DVLOG(1) << "RestoreSessionFromCommands " << commands.size();
   if (CreateTabsAndWindows(commands, &tabs, &windows, active_window_id)) {
     AddTabsToWindows(&tabs, &windows);
     SortTabsBasedOnVisualOrderAndPrune(&windows, valid_windows);

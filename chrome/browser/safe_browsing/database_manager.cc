@@ -1058,7 +1058,7 @@ void SafeBrowsingDatabaseManager::SafeBrowsingCheckDone(
   if (!enabled_)
     return;
 
-  VLOG(1) << "SafeBrowsingCheckDone";
+  DVLOG(1) << "SafeBrowsingCheckDone";
   DCHECK(checks_.find(check) != checks_.end());
   if (check->client)
     check->client->OnSafeBrowsingResult(*check);

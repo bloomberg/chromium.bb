@@ -51,7 +51,7 @@ void SandboxedZipAnalyzer::AnalyzeInSandbox() {
   zip_file_.Initialize(zip_file_name_,
                        base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!zip_file_.IsValid()) {
-    VLOG(1) << "Could not open zip file: " << zip_file_name_.value();
+    DVLOG(1) << "Could not open zip file: " << zip_file_name_.value();
     if (!BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             base::Bind(&SandboxedZipAnalyzer::OnAnalyzeZipFileFinished, this,

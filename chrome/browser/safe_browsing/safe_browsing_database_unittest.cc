@@ -1088,7 +1088,7 @@ TEST_F(SafeBrowsingDatabaseTest, DISABLED_FileCorruptionHandling) {
     EXPECT_TRUE(base::PathExists(database_filename_));
 
     // Flush through the corruption-handler task.
-    VLOG(1) << "Expect failed check on: SafeBrowsing database reset";
+    DVLOG(1) << "Expect failed check on: SafeBrowsing database reset";
     base::MessageLoop::current()->RunUntilIdle();
   }
 

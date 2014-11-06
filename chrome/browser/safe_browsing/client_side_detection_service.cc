@@ -188,7 +188,7 @@ bool ClientSideDetectionService::IsPrivateIPAddress(
     const std::string& ip_address) const {
   net::IPAddressNumber ip_number;
   if (!net::ParseIPLiteralToNumber(ip_address, &ip_number)) {
-    VLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
+    DVLOG(2) << "Unable to parse IP address: '" << ip_address << "'";
     // Err on the side of safety and assume this might be private.
     return true;
   }
@@ -241,11 +241,11 @@ void ClientSideDetectionService::SendModelToProcess(
   Profile* profile = Profile::FromBrowserContext(process->GetBrowserContext());
   std::string model;
   if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
-    VLOG(2) << "Sending phishing model to RenderProcessHost @" << process;
+    DVLOG(2) << "Sending phishing model to RenderProcessHost @" << process;
     model = model_str_;
   } else {
-    VLOG(2) << "Disabling client-side phishing detection for "
-            << "RenderProcessHost @" << process;
+    DVLOG(2) << "Disabling client-side phishing detection for "
+             << "RenderProcessHost @" << process;
   }
   process->Send(new SafeBrowsingMsg_SetPhishingModel(model));
 }
@@ -320,7 +320,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
     UMA_HISTOGRAM_COUNTS("SBClientPhishing.RequestNotSerialized", 1);
-    VLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
+    DVLOG(1) << "Unable to serialize the CSD request. Proto file changed?";
     if (!callback.is_null())
       callback.Run(GURL(request->url()), false);
     return;

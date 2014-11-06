@@ -80,7 +80,7 @@ static void AddFeature(const std::string& feature_name,
       request->add_non_model_feature_map();
   feature->set_name(feature_name);
   feature->set_value(feature_value);
-  VLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
+  DVLOG(2) << "Browser feature: " << feature->name() << " " << feature->value();
 }
 
 static void AddMalwareIpUrlInfo(const std::string& ip,
@@ -464,7 +464,7 @@ bool BrowserFeatureExtractor::GetHistoryService(HistoryService** history) {
       return true;
     }
   }
-  VLOG(2) << "Unable to query history.  No history service available.";
+  DVLOG(2) << "Unable to query history.  No history service available.";
   return false;
 }
 
