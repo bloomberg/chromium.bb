@@ -696,8 +696,6 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exceptionState)
 
         // FIXME: This should use value of document.inputEncoding to determine the encoding to use.
         httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
-        if (m_upload)
-            httpBody->setAlwaysStream(true);
     }
 
     createRequest(httpBody.release(), exceptionState);
@@ -722,8 +720,6 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exceptionState)
         }
 
         httpBody = FormData::create(UTF8Encoding().encode(body, WTF::EntitiesForUnencodables));
-        if (m_upload)
-            httpBody->setAlwaysStream(true);
     }
 
     createRequest(httpBody.release(), exceptionState);
@@ -812,8 +808,6 @@ void XMLHttpRequest::sendBytesData(const void* data, size_t length, ExceptionSta
 
     if (areMethodAndURLValidForSend()) {
         httpBody = FormData::create(data, length);
-        if (m_upload)
-            httpBody->setAlwaysStream(true);
     }
 
     createRequest(httpBody.release(), exceptionState);

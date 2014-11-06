@@ -31,7 +31,6 @@ namespace blink {
 
 inline FormData::FormData()
     : m_identifier(0)
-    , m_alwaysStream(false)
     , m_containsPasswordData(false)
 {
 }
@@ -40,7 +39,6 @@ inline FormData::FormData(const FormData& data)
     : RefCounted<FormData>()
     , m_elements(data.m_elements)
     , m_identifier(data.m_identifier)
-    , m_alwaysStream(false)
     , m_containsPasswordData(data.m_containsPasswordData)
 {
 }
@@ -83,8 +81,6 @@ PassRefPtr<FormData> FormData::copy() const
 PassRefPtr<FormData> FormData::deepCopy() const
 {
     RefPtr<FormData> formData(create());
-
-    formData->m_alwaysStream = m_alwaysStream;
 
     size_t n = m_elements.size();
     formData->m_elements.reserveInitialCapacity(n);
