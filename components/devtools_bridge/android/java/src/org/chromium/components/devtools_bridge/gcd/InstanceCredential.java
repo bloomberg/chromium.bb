@@ -4,6 +4,8 @@
 
 package org.chromium.components.devtools_bridge.gcd;
 
+import android.content.SharedPreferences;
+
 /**
  * Information provided by GCD when instance has registered. Instance id
  * can be used for:
@@ -15,6 +17,9 @@ package org.chromium.components.devtools_bridge.gcd;
  * (it has no user credentials).
  */
 public final class InstanceCredential {
+    public static final String PREF_ID = "gcd.ID";
+    public static final String PREF_SECRET = "gcd.SECRET";
+
     public final String id;
     public final String secret;
 
@@ -24,5 +29,21 @@ public final class InstanceCredential {
 
         this.id = id;
         this.secret = secret;
+    }
+
+    public static InstanceCredential get(SharedPreferences preferences) {
+        String id = preferences.getString(PREF_ID, null);
+        String secret = preferences.getString(PREF_SECRET, null);
+        return id != null && secret != null ? new InstanceCredential(id, secret) : null;
+    }
+
+    public void put(SharedPreferences.Editor editor) {
+        editor.putString(PREF_ID, id);
+        editor.putString(PREF_SECRET, secret);
+    }
+
+    public static void remove(SharedPreferences.Editor editor) {
+        editor.remove(PREF_ID);
+        editor.remove(PREF_SECRET);
     }
 }

@@ -14,11 +14,13 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.chromium.components.devtools_bridge.DevToolsBridgeServer;
 import org.chromium.components.devtools_bridge.apiary.ApiaryClientFactory;
 import org.chromium.components.devtools_bridge.apiary.OAuthResult;
 import org.chromium.components.devtools_bridge.gcd.InstanceCredential;
@@ -36,26 +38,48 @@ import java.io.IOException;
  * It also should have actionable item for registration/unregistration which invokes
  * appropriate methods.
  */
-public abstract class GCDRegistrationFragment extends Fragment {
+public abstract class GCDRegistrationFragment extends Fragment
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String TAG = "GCDRegistrationFragment";
+    private static final String PREF_OWNER_EMAIL = "ui.OWNER_EMAIL";
+    private static final String PREF_DISPLAY_NAME = "ui.OWNER_EMAIL";
     private static final int CODE_ACCOUNT_SELECTED = 1;
 
     private ApiaryClientFactory mClientFactory;
     private Account mSelectedAccount = null;
 
+    private SharedPreferences mPreferences;
+
     private InstanceCredential mInstanceCredential;
-    private String mOwnerEmail;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         mClientFactory = newClientFactory();
+        mPreferences = DevToolsBridgeServer.getPreferences(getActivity());
+        mPreferences.registerOnSharedPreferenceChangeListener(this);
+        mInstanceCredential = InstanceCredential.get(mPreferences);
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mClientFactory.close();
+        mPreferences.unregisterOnSharedPreferenceChangeListener(this);
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... args) {
+                mClientFactory.close();
+                return null;
+            }
+        }.execute();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals(InstanceCredential.PREF_ID)) {
+            mInstanceCredential = InstanceCredential.get(mPreferences);
+            onRegistrationStatusChange();
+        }
     }
 
     public void register() {
@@ -112,7 +136,11 @@ public abstract class GCDRegistrationFragment extends Fragment {
     }
 
     public String getOwner() {
-        return mOwnerEmail;
+        return mPreferences.getString(PREF_OWNER_EMAIL, "");
+    }
+
+    public String getDisplayName() {
+        return mPreferences.getString(PREF_DISPLAY_NAME, "");
     }
 
     public void queryOAuthToken() {
@@ -209,8 +237,18 @@ public abstract class GCDRegistrationFragment extends Fragment {
             InstanceDescription description, InstanceCredential credential, String ownerEmail) {
         // TODO(serya): Make registration persistant.
         mInstanceCredential = credential;
-        mOwnerEmail = ownerEmail;
-        onRegistrationStatusChange();
+
+        SharedPreferences.Editor editor = mPreferences.edit();
+        if (description != null && credential != null && ownerEmail != null) {
+            credential.put(editor);
+            editor.putString(PREF_DISPLAY_NAME, description.displayName);
+            editor.putString(PREF_OWNER_EMAIL, ownerEmail);
+        } else {
+            InstanceCredential.remove(editor);
+            editor.remove(PREF_DISPLAY_NAME);
+            editor.remove(PREF_OWNER_EMAIL);
+        }
+        editor.commit();
     }
 
     protected abstract void onRegistrationStatusChange();

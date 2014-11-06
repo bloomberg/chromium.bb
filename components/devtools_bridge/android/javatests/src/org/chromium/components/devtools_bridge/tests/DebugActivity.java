@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +28,9 @@ import org.chromium.components.devtools_bridge.ui.RemoteInstanceListFragment;
  */
 public class DebugActivity extends Activity {
     private static final int LAYOUT_ID = 1000;
+    private static final String DOC_HREF =
+            "https://docs.google.com/a/chromium.org/document/d/"
+            + "188V6TWV8ivbjAPIp6aqwffWrY78xN2an5REajZHpunk/edit?usp=sharing";
 
     private LinearLayout mLayout;
 
@@ -37,17 +42,10 @@ public class DebugActivity extends Activity {
         mLayout.setId(LAYOUT_ID);
         mLayout.setOrientation(LinearLayout.VERTICAL);
 
-        String intro =
-                "To test LocalTunnelBridge manually: \n"
-                + "1. Enable USB debugging.\n"
-                + "2. Run ChromeShell along with this app.\n"
-                + "3. Start the LocalTunnelBridge.\n"
-                + "4. Connect the device to a desktop via USB.\n"
-                + "5. Open chrome://inspect#devices on desktop Chrome.\n"
-                + "6. Observe 2 identical Chrome Shells on the device.";
-
         TextView textView = new TextView(this);
-        textView.setText(intro);
+        textView.setText(Html.fromHtml(
+                "See <a href=\"" + DOC_HREF + "\">testing instructions</a>."));
+        textView.setMovementMethod(LinkMovementMethod.getInstance());
         mLayout.addView(textView);
 
         addActionButton("Start LocalTunnelBridge", DebugService.START_TUNNEL_BRIDGE_ACTION);

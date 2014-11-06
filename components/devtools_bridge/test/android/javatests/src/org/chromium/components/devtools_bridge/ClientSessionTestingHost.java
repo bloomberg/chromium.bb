@@ -4,6 +4,8 @@
 
 package org.chromium.components.devtools_bridge;
 
+import android.util.Log;
+
 import java.io.IOException;
 
 /**
@@ -12,6 +14,7 @@ import java.io.IOException;
  * between them to satisfy theading requirements.
  */
 public class ClientSessionTestingHost {
+    private static final String TAG = "ClientSessionTestingHost";
     private static final String SESSION_ID = "ID";
 
     private final SignalingReceiver mTarget;
@@ -38,7 +41,25 @@ public class ClientSessionTestingHost {
                 factory,
                 mClientExecutor,
                 proxy.asServerSession(SESSION_ID),
-                clientSocketName);
+                clientSocketName) {
+            @Override
+            protected void closeSelf() {
+                Log.d(TAG, "Closed self");
+                super.closeSelf();
+            }
+
+            @Override
+            protected void onControlChannelOpened() {
+                Log.d(TAG, "Control channel opened");
+                super.onControlChannelOpened();
+            }
+
+            @Override
+            protected void onControlChannelClosed() {
+                Log.d(TAG, "Control channel closed");
+                super.onControlChannelClosed();
+            }
+        };
     }
 
     public void dispose() {

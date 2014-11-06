@@ -17,6 +17,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 
+import org.chromium.components.devtools_bridge.commands.Command;
 import org.chromium.components.devtools_bridge.gcd.InstanceCredential;
 import org.chromium.components.devtools_bridge.gcd.InstanceDescription;
 import org.chromium.components.devtools_bridge.gcd.MessageReader;
@@ -102,6 +103,18 @@ public class GCDClient {
     public void deleteInstance(String instanceId) throws IOException {
         mHttpClient.execute(
                 newHttpDelete("/devices/" + instanceId),
+                new EmptyResponseHandler());
+    }
+
+    /**
+     * Patches the command (previously received with Notification) with out-parameters or
+     * an error message.
+     */
+    public final void patchCommand(Command command) throws IOException {
+        String content = new MessageWriter().writeCommandPatch(command).close().toString();
+
+        mHttpClient.execute(
+                newHttpPatch("/commands/" + command.id, content),
                 new EmptyResponseHandler());
     }
 

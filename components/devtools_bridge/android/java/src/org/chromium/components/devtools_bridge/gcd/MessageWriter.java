@@ -39,7 +39,7 @@ public final class MessageWriter {
     }
 
     /**
-     * Write body of registrationTicket PATCH request.
+     * Writes body of registrationTicket PATCH request.
      */
     public MessageWriter writeTicketPatch(InstanceDescription description) throws IOException {
         mWriter.beginObject();
@@ -105,5 +105,39 @@ public final class MessageWriter {
         mWriter.beginObject();
         mWriter.name("type").value(type);
         mWriter.endObject();
+    }
+
+    /**
+     * Writes body of command PATCH request. Updates command status and out parametes
+     * when the command has processed.
+     */
+    public MessageWriter writeCommandPatch(Command command) throws IOException {
+        mWriter.beginObject();
+        if (command.state() == Command.State.DONE) {
+            mWriter.name("state").value("done");
+            mWriter.name("results");
+            mWriter.beginObject();
+            command.visitOutParams(new ParamWriter());
+            mWriter.endObject();
+        } else if (command.state() == Command.State.ERROR) {
+            mWriter.name("state").value("error");
+            mWriter.name("error");
+            mWriter.beginObject();
+            mWriter.name("message").value(command.getErrorMessage());
+            mWriter.endObject();
+        }
+        mWriter.endObject();
+        return this;
+    }
+
+    private class ParamWriter implements Command.ParamVisitor {
+        @Override
+        public void visit(ParamDefinition<?> param, String value) {
+            try {
+                mWriter.name(param.name()).value(value);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

@@ -23,8 +23,12 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import org.chromium.components.devtools_bridge.RTCConfiguration;
+import org.chromium.components.devtools_bridge.SessionBase;
 import org.chromium.components.devtools_bridge.apiary.ApiaryClientFactory;
 import org.chromium.components.devtools_bridge.apiary.TestApiaryClientFactory;
+import org.chromium.components.devtools_bridge.commands.Command;
+import org.chromium.components.devtools_bridge.commands.CommandSender;
 import org.chromium.components.devtools_bridge.gcd.RemoteInstance;
 
 import java.io.IOException;
@@ -92,6 +96,9 @@ public abstract class RemoteInstanceListFragment extends ListFragment {
 
         menu.add("Connect")
                 .setOnMenuItemClickListener(new ConnectAction())
+                .setEnabled(mSelected != null);
+        menu.add("Send invalid offer")
+                .setOnMenuItemClickListener(new SendInvalidOfferAction())
                 .setEnabled(mSelected != null);
         menu.add("Delete")
                 .setOnMenuItemClickListener(new DeleteInstanceAction(mSelected))
@@ -206,6 +213,61 @@ public abstract class RemoteInstanceListFragment extends ListFragment {
         protected abstract void doInBackgroundImpl() throws IOException;
         protected abstract void onSuccess();
         protected void onFailure() {}
+    }
+
+    private final class SendInvalidOfferAction extends AsyncAction {
+        private final String mOAuthTokenCopy = mOAuthToken;
+        private final RemoteInstance mSelectedCopy = mSelected;
+        private IOException mException;
+
+        public SendInvalidOfferAction() {
+            super("Sending invalid offer");
+        }
+
+        @Override
+        protected final void doInBackgroundImpl() throws IOException {
+            if (mOAuthTokenCopy == null || mSelected == null) {
+                throw new IOException("Action cann't be applied.");
+            }
+
+            final String sessionId = "sessionId";
+            final String offer = "INVALID_OFFER";
+            final RTCConfiguration config = new RTCConfiguration();
+
+            CommandSender sender = new CommandSender() {
+                @Override
+                protected void send(Command command, Runnable completionCallback) {
+                    try {
+                        mClientFactory.newTestGCDClient(mOAuthTokenCopy)
+                                .send(mSelectedCopy.id, command);
+                    } catch (IOException e) {
+                        mException = e;
+                        command.setFailure("IO exception");
+                    } finally {
+                        completionCallback.run();
+                    }
+                }
+            };
+
+            sender.startSession(sessionId, config, offer, new SessionBase.NegotiationCallback() {
+                @Override
+                public void onSuccess(String answer) {
+                    mException = new IOException("Unexpected success");
+                }
+
+                @Override
+                public void onFailure(String errorMessage) {
+                    Log.i(TAG, "Expected failure: " + errorMessage);
+                }
+            });
+
+            if (mException != null)
+                throw mException;
+        }
+
+        @Override
+        protected void onSuccess() {
+        }
     }
 
     private final class UpdateListAction extends AsyncAction {

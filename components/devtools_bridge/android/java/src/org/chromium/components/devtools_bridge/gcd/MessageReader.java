@@ -6,6 +6,9 @@ package org.chromium.components.devtools_bridge.gcd;
 
 import android.util.JsonReader;
 
+import org.chromium.components.devtools_bridge.commands.Command;
+import org.chromium.components.devtools_bridge.commands.CommandFormatException;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +36,10 @@ public final class MessageReader {
      */
     public InstanceCredential readInstanceCredential() throws IOException {
         return new TicketReader().readCredential();
+    }
+
+    Notification readNotification() throws IOException, CommandFormatException {
+        return new NotificationReader().read();
     }
 
     private abstract class ObjectReader {
@@ -81,6 +88,82 @@ public final class MessageReader {
             } else {
                 super.readItem(name);
             }
+        }
+    }
+
+    private class NotificationReader extends ObjectReader {
+        private String mDeviceId;
+        private String mType;
+        private String mCommandId;
+        private CommandReader mCommandReader;
+
+        public Notification read() throws IOException, CommandFormatException {
+            readObject();
+            if (mDeviceId == null || mType == null) return null;
+            if (mType.equals("COMMAND_CREATED")) {
+                if (mCommandReader == null) {
+                    throw new CommandFormatException("Command missing");
+                }
+                if (mCommandId == null) {
+                    throw new CommandFormatException("Command id missing");
+                }
+                return new Notification(
+                        mDeviceId, Notification.Type.COMMAND_CREATED,
+                        mCommandReader.newCommand(mCommandId));
+            } else if (mType.equals("DEVICE_DELETED")) {
+                return new Notification(mDeviceId, Notification.Type.INSTANCE_UNREGISTERED, null);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        protected void readItem(String name) throws IOException {
+            if (name.equals("deviceId")) {
+                mDeviceId = mReader.nextString();
+            } else if (name.equals("type")) {
+                mType = mReader.nextString();
+            } else if (name.equals("commandId")) {
+                mCommandId = mReader.nextString();
+            } else if (name.equals("command")) {
+                mCommandReader = new CommandReader();
+                mCommandReader.readObject();
+            } else {
+                super.readItem(name);
+            }
+        }
+    }
+
+    private class CommandReader extends ObjectReader {
+        private String mType;
+        private Map<String, String> mParameters;
+
+        public Command newCommand(String id) throws CommandFormatException {
+            if (mType == null) {
+                throw new CommandFormatException("Missing command type");
+            }
+            if (mParameters == null) {
+                throw new CommandFormatException("Missing parameters");
+            }
+            return convertType(mType).definition.newCommand(id, mParameters);
+        }
+
+        @Override
+        protected void readItem(String name) throws IOException {
+            if (name.equals("name")) {
+                mType = mReader.nextString();
+            } else if (name.equals("parameters")) {
+                mParameters = readStringMap(mReader);
+            } else {
+                super.readItem(name);
+            }
+        }
+
+        private Command.Type convertType(String name) throws CommandFormatException {
+            for (Command.Type type : Command.Type.values()) {
+                if (type.definition.fullName().equals(name)) return type;
+            }
+            throw new CommandFormatException("Invalid type: " + name);
         }
     }
 

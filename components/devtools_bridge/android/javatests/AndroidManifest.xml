@@ -9,29 +9,50 @@
     <application>
         <uses-library android:name="android.test.runner" />
         <service
-            android:name=".DebugService" >
+                android:name=".DebugService" >
         </service>
         <service
-            android:name="org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox$Service" />
+                android:name="org.chromium.components.devtools_bridge.DevToolsBridgeServerSandbox$Service" />
+        <service
+                android:name="org.chromium.components.devtools_bridge.GCDHostService" />
         <activity
-            android:name=".DebugActivity"
-            android:label="DevToolsBridge tests" >
+                android:name=".DebugActivity"
+                android:label="DevToolsBridge tests" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <receiver
+                android:name="org.chromium.components.devtools_bridge.GCDHostService$Receiver"
+                android:permission="com.google.android.c2dm.permission.SEND" >
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="org.chromium.components.devtools_bridge.tests" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <category android:name="org.chromium.components.devtools_bridge.tests" />
+            </intent-filter>
+        </receiver>
     </application>
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="21" />
     <instrumentation android:name="android.test.InstrumentationTestRunner"
-        android:targetPackage="org.chromium.components.devtools_bridge.tests"
-        android:label="Tests for org.chromium.components.devtools_bridge"/>
+            android:targetPackage="org.chromium.components.devtools_bridge.tests"
+            android:label="Tests for org.chromium.components.devtools_bridge"/>
+
+    <permission
+            android:name="org.chromium.components.devtools_bridge.tests.permission.C2D_MESSAGE"
+            android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.RUN_INSTRUMENTATION" />
     <uses-permission android:name="android.permission.INJECT_EVENTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission
+            android:name="org.chromium.components.devtools_bridge.tests.permission.C2D_MESSAGE" />
 
     <!-- For manual testing with Chrome Shell -->
     <uses-permission android:name="org.chromium.chrome.shell.permission.DEBUG" />

@@ -71,7 +71,7 @@ public class GCDClientSessionTestingHost {
         mIOExecutor.runSynchronously(new Runnable() {
             @Override
             public void run() {
-                // All prevoisly scheduled operations have completed.
+                // All previously scheduled operations have completed.
                 mClientFactory.close();
             }
         });

@@ -7,6 +7,7 @@ package org.chromium.components.devtools_bridge;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.PowerManager;
 
 import org.chromium.components.devtools_bridge.ui.ServiceUIFactory;
@@ -60,6 +61,15 @@ public class DevToolsBridgeServer implements SignalingReceiver {
         return mHost;
     }
 
+    public SharedPreferences getPreferences() {
+        return getPreferences(mHost);
+    }
+
+    public static SharedPreferences getPreferences(Context context) {
+        return context.getSharedPreferences(
+                DevToolsBridgeServer.class.getName(), Context.MODE_PRIVATE);
+    }
+
     /**
      * Should be called in service's onStartCommand. If it can handle then the method should
      * delegate the work to the server.
@@ -98,8 +108,8 @@ public class DevToolsBridgeServer implements SignalingReceiver {
             SessionBase.NegotiationCallback callback) {
         checkCalledOnHostServiceThread();
         if (mSessions.containsKey(sessionId)) {
-           callback.onFailure("Session already exists");
-           return;
+            callback.onFailure("Session already exists");
+            return;
         }
 
         ServerSession session = new ServerSession(mFactory, mExecutor, mSocketName);
@@ -126,9 +136,9 @@ public class DevToolsBridgeServer implements SignalingReceiver {
 
     @Override
     public void iceExchange(
-           String sessionId,
-           List<String> clientCandidates,
-           SessionBase.IceExchangeCallback callback) {
+            String sessionId,
+            List<String> clientCandidates,
+            SessionBase.IceExchangeCallback callback) {
         checkCalledOnHostServiceThread();
         if (!mSessions.containsKey(sessionId)) {
             callback.onFailure("Session does not exist");
