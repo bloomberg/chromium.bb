@@ -81,8 +81,9 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         void cancelWithError(const ResourceError&);
 
-        // Notify Inspector about resource response. Use this method if response is not going to be finished normally.
-        void notifyResponseReceived(unsigned long identifier, const ResourceResponse&);
+        // Notify Inspector and log to console about resource response. Use
+        // this method if response is not going to be finished normally.
+        void reportResponseReceived(unsigned long identifier, const ResourceResponse&);
 
         // Methods containing code to handle resource fetch results which is
         // common to both sync and async mode.

@@ -380,7 +380,7 @@ void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& r
     CrossOriginPreflightResultCache::shared().appendEntry(securityOrigin()->toString(), m_actualRequest->url(), preflightResult.release());
 }
 
-void DocumentThreadableLoader::notifyResponseReceived(unsigned long identifier, const ResourceResponse& response)
+void DocumentThreadableLoader::reportResponseReceived(unsigned long identifier, const ResourceResponse& response)
 {
     DocumentLoader* loader = m_document.frame()->loader().documentLoader();
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ResourceReceiveResponse", "data", InspectorReceiveResponseEvent::data(identifier, m_document.frame(), response));
@@ -395,7 +395,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     ASSERT(m_client);
 
     if (m_actualRequest) {
-        notifyResponseReceived(identifier, response);
+        reportResponseReceived(identifier, response);
         handlePreflightResponse(response);
         return;
     }
@@ -416,7 +416,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
     if (!m_sameOriginRequest && m_options.crossOriginRequestPolicy == UseAccessControl) {
         String accessControlErrorDescription;
         if (!passesAccessControlCheck(response, effectiveAllowCredentials(), securityOrigin(), accessControlErrorDescription)) {
-            notifyResponseReceived(identifier, response);
+            reportResponseReceived(identifier, response);
             m_client->didFailAccessControlCheck(ResourceError(errorDomainBlinkInternal, 0, response.url().string(), accessControlErrorDescription));
             return;
         }
