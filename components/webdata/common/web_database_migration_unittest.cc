@@ -248,7 +248,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 58;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 59;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -2717,5 +2717,61 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion57ToCurrent) {
     EXPECT_FALSE(connection.DoesTableExist("web_app_icons"));
     EXPECT_FALSE(connection.DoesTableExist("web_intents"));
     EXPECT_FALSE(connection.DoesTableExist("web_intents_defaults"));
+  }
+}
+
+// Tests that migrating from version 58 to version 59 drops the omnibox
+// extension keywords.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion58ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_58.sql")));
+
+  const char query_extensions[] = "SELECT * FROM keywords "
+      "WHERE url='chrome-extension://iphchnegaodmijmkdlbhbanjhfphhikp/"
+      "?q={searchTerms}'";
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 58, 58));
+
+    sql::Statement s(connection.GetUniqueStatement(query_extensions));
+    ASSERT_TRUE(s.is_valid());
+    int count = 0;
+    while (s.Step()) {
+      ++count;
+    }
+    EXPECT_EQ(1, count);
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    sql::Statement s(connection.GetUniqueStatement(query_extensions));
+    ASSERT_TRUE(s.is_valid());
+    int count = 0;
+    while (s.Step()) {
+      ++count;
+    }
+    EXPECT_EQ(0, count);
+
+    s.Assign(connection.GetUniqueStatement("SELECT * FROM keywords "
+        "WHERE short_name='Google'"));
+    ASSERT_TRUE(s.is_valid());
+    count = 0;
+    while (s.Step()) {
+      ++count;
+    }
+    EXPECT_EQ(1, count);
   }
 }

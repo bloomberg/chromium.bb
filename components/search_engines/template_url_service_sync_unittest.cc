@@ -32,6 +32,8 @@ using base::Time;
 
 namespace {
 
+const char kOmniboxScheme[] = "omnibox";
+
 // Extract the GUID from a search engine syncer::SyncData.
 std::string GetGUID(const syncer::SyncData& sync_data) {
   return sync_data.GetSpecifics().search_engine().sync_guid();
@@ -141,6 +143,33 @@ syncer::SyncError TestChangeProcessor::ProcessSyncChanges(
   return syncer::SyncError();
 }
 
+class TestTemplateURLServiceClient : public TemplateURLServiceClient {
+ public:
+   ~TestTemplateURLServiceClient() override {}
+
+   void Shutdown() override {}
+   void SetOwner(TemplateURLService* owner) override {}
+   void DeleteAllSearchTermsForKeyword(TemplateURLID id) override {}
+   void SetKeywordSearchTermsForURL(
+       const GURL& url,
+       TemplateURLID id,
+       const base::string16& term) override {}
+   void AddKeywordGeneratedVisit(const GURL& url) override {}
+
+   void RestoreExtensionInfoIfNecessary(TemplateURL* template_url) override;
+};
+
+void TestTemplateURLServiceClient::RestoreExtensionInfoIfNecessary(
+    TemplateURL* template_url) {
+  const TemplateURLData& data = template_url->data();
+  GURL url(data.url());
+  if (url.SchemeIs(kOmniboxScheme)) {
+    const std::string& extension_id = url.host();
+    template_url->set_extension_info(make_scoped_ptr(
+        new TemplateURL::AssociatedExtensionInfo(
+            TemplateURL::OMNIBOX_API_EXTENSION, extension_id)));
+  }
+}
 
 }  // namespace
 
@@ -197,7 +226,7 @@ class TemplateURLServiceSyncTest : public testing::Test {
   syncer::SyncDataList CreateInitialSyncData() const;
 
   // Syntactic sugar.
-  TemplateURL* Deserialize(const syncer::SyncData& sync_data);
+  scoped_ptr<TemplateURL> Deserialize(const syncer::SyncData& sync_data);
 
   // Creates a new TemplateURL copying the fields of |turl| but replacing
   // the |url| and |guid| and initializing the date_created and last_modified
@@ -335,11 +364,12 @@ syncer::SyncDataList TemplateURLServiceSyncTest::CreateInitialSyncData() const {
   return list;
 }
 
-TemplateURL* TemplateURLServiceSyncTest::Deserialize(
+scoped_ptr<TemplateURL> TemplateURLServiceSyncTest::Deserialize(
     const syncer::SyncData& sync_data) {
   syncer::SyncChangeList dummy;
+  TestTemplateURLServiceClient client;
   return TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
-      NULL, SearchTermsData(), NULL, sync_data, &dummy);
+      &client, NULL, SearchTermsData(), NULL, sync_data, &dummy);
 }
 
 TemplateURL* TemplateURLServiceSyncTest::CopyTemplateURL(
@@ -391,12 +421,13 @@ TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataBasic) {
 TEST_F(TemplateURLServiceSyncTest, GetAllSyncDataWithExtension) {
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key1"), "http://key1.com"));
   model()->Add(CreateTestTemplateURL(ASCIIToUTF16("key2"), "http://key2.com"));
-  model()->RegisterOmniboxKeyword("blahblahblah", "unittest", "key3",
-                                  "http://blahblahblah");
+  std::string fake_id("blahblahblah");
+  std::string fake_url = std::string(kOmniboxScheme) + "://" + fake_id;
+  model()->RegisterOmniboxKeyword(fake_id, "unittest", "key3", fake_url);
   syncer::SyncDataList all_sync_data =
       model()->GetAllSyncData(syncer::SEARCH_ENGINES);
 
-  EXPECT_EQ(3U, all_sync_data.size());
+  EXPECT_EQ(2U, all_sync_data.size());
 
   for (syncer::SyncDataList::const_iterator iter = all_sync_data.begin();
       iter != all_sync_data.end(); ++iter) {
@@ -668,8 +699,8 @@ TEST_F(TemplateURLServiceSyncTest, MergeSyncIsTheSame) {
   syncer::SyncDataList initial_data = CreateInitialSyncData();
   for (syncer::SyncDataList::const_iterator iter = initial_data.begin();
       iter != initial_data.end(); ++iter) {
-    TemplateURL* converted = Deserialize(*iter);
-    model()->Add(converted);
+    scoped_ptr<TemplateURL> converted(Deserialize(*iter));
+    model()->Add(converted.release());
   }
 
   syncer::SyncMergeResult merge_result = model()->MergeDataAndStartSyncing(
@@ -1062,14 +1093,14 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
   TemplateURL* extension1 =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1"));
   ASSERT_TRUE(extension1);
-  EXPECT_EQ(1U, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 
   model()->RegisterOmniboxKeyword("extension2", "unittest", "keyword2",
                                   "http://extension2");
   TemplateURL* extension2 =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
   ASSERT_TRUE(extension2);
-  EXPECT_EQ(1U, processor()->change_list_size());
+  EXPECT_EQ(0U, processor()->change_list_size());
 
   // Create some sync changes that will conflict with the extension keywords.
   syncer::SyncChangeList changes;
@@ -1080,20 +1111,18 @@ TEST_F(TemplateURLServiceSyncTest, ProcessChangesWithLocalExtensions) {
     CreateTestTemplateURL(ASCIIToUTF16("keyword2"), "http://bbb.com")));
   model()->ProcessSyncChanges(FROM_HERE, changes);
 
-  // The existing extension keywords should be uniquified.
   EXPECT_FALSE(model()->GetTemplateURLForHost("aaa.com") == NULL);
-  EXPECT_EQ(model()->GetTemplateURLForHost("aaa.com"),
+  EXPECT_EQ(extension1,
             model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
   TemplateURL* url_for_keyword2 =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2"));
   EXPECT_NE(extension2, url_for_keyword2);
   EXPECT_EQ("http://bbb.com", url_for_keyword2->url());
 
-  // Replaced extension keywords should be uniquified.
   EXPECT_EQ(extension1,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1_")));
-  EXPECT_EQ(extension2,
-            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2_")));
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword1")));
+  EXPECT_EQ(model()->GetTemplateURLForHost("bbb.com"),
+            model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword2")));
 }
 
 TEST_F(TemplateURLServiceSyncTest, AutogeneratedKeywordMigrated) {

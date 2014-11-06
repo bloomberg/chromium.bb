@@ -235,6 +235,9 @@ bool KeywordTable::MigrateToVersion(int version,
     case 53:
       *update_compatible_version = true;
       return MigrateToVersion53AddNewTabURLColumn();
+    case 59:
+      *update_compatible_version = true;
+      return MigrateToVersion59RemoveExtensionKeywords();
   }
 
   return true;
@@ -449,6 +452,11 @@ bool KeywordTable::MigrateToVersion52AddImageSearchAndPOSTSupport() {
 bool KeywordTable::MigrateToVersion53AddNewTabURLColumn() {
   return db_->Execute("ALTER TABLE keywords ADD COLUMN new_tab_url "
                       "VARCHAR DEFAULT ''");
+}
+
+bool KeywordTable::MigrateToVersion59RemoveExtensionKeywords() {
+  return db_->Execute("DELETE FROM keywords "
+                      "WHERE url LIKE 'chrome-extension://%'");
 }
 
 // static

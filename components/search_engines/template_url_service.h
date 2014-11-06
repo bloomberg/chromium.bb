@@ -353,7 +353,8 @@ class TemplateURLService : public WebDataServiceConsumer,
   // data, an appropriate SyncChange is added to |change_list|.  If the sync
   // data is bad for some reason, an ACTION_DELETE change is added and the
   // function returns NULL.
-  static TemplateURL* CreateTemplateURLFromTemplateURLAndSyncData(
+  static scoped_ptr<TemplateURL> CreateTemplateURLFromTemplateURLAndSyncData(
+      TemplateURLServiceClient* client,
       PrefService* prefs,
       const SearchTermsData& search_terms_data,
       TemplateURL* existing_turl,
@@ -380,6 +381,7 @@ class TemplateURLService : public WebDataServiceConsumer,
                            DontUpdateKeywordSearchForNonReplaceable);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, AddExtensionKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            IsLocalTemplateURLBetter);

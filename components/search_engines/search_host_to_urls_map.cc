@@ -26,6 +26,7 @@ void SearchHostToURLsMap::Add(TemplateURL* template_url,
                               const SearchTermsData& search_terms_data) {
   DCHECK(initialized_);
   DCHECK(template_url);
+  DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, template_url->GetType());
 
   const GURL url(template_url->GenerateSearchURL(search_terms_data));
   if (!url.is_valid() || !url.has_host())
@@ -37,6 +38,7 @@ void SearchHostToURLsMap::Add(TemplateURL* template_url,
 void SearchHostToURLsMap::Remove(TemplateURL* template_url) {
   DCHECK(initialized_);
   DCHECK(template_url);
+  DCHECK_NE(TemplateURL::OMNIBOX_API_EXTENSION, template_url->GetType());
 
   for (HostToURLsMap::iterator i = host_to_urls_map_.begin();
        i != host_to_urls_map_.end(); ++i) {

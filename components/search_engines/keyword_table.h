@@ -140,6 +140,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion49AddSearchTermsReplacementKeyColumn();
   bool MigrateToVersion52AddImageSearchAndPOSTSupport();
   bool MigrateToVersion53AddNewTabURLColumn();
+  bool MigrateToVersion59RemoveExtensionKeywords();
 
  private:
   friend class KeywordTableTest;

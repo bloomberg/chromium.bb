@@ -10,7 +10,7 @@
  *            displayName: string,
  *            extension: (Object|undefined),
  *            iconURL: (string|undefined),
- *            isExtension: boolean,
+ *            isOmniboxExtension: boolean,
  *            keyword: string,
  *            modelIndex: string,
  *            name: string,
@@ -141,7 +141,7 @@ cr.define('options.search_engines', function() {
       // And the URL column.
       var urlEl = this.createEditableTextCell(engine.url);
       // Extensions should not display a URL column.
-      if (!engine.isExtension) {
+      if (!engine.isOmniboxExtension) {
         var urlWithButtonEl = this.ownerDocument.createElement('div');
         urlWithButtonEl.appendChild(urlEl);
         urlWithButtonEl.className = 'url-column';
@@ -180,9 +180,6 @@ cr.define('options.search_engines', function() {
 
       if (engine.urlLocked)
         this.urlField_.disabled = true;
-
-      if (engine.isExtension)
-        this.nameField_.disabled = true;
 
       if (this.isPlaceholder) {
         this.nameField_.placeholder =
