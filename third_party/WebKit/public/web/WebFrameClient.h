@@ -560,6 +560,15 @@ public:
     // Notifies embedder about an accessibility event.
     virtual void postAccessibilityEvent(const WebAXObject&, WebAXEvent) { }
 
+    // Provides accessibility information about a find in page result.
+    virtual void handleAccessibilityFindInPageResult(
+        int identifier,
+        int matchIndex,
+        const WebAXObject& startObject,
+        int startOffset,
+        const WebAXObject& endObject,
+        int endOffset) { }
+
     // ServiceWorker -------------------------------------------------------
 
     // Whether the document associated with WebDataSource is controlled by the

@@ -117,6 +117,8 @@ private:
     void reportFindInPageSelection(
         const WebRect& selectionRect, int activeMatchOrdinal, int identifier);
 
+    void reportFindInPageResultToAccessibility(int identifier);
+
     // Clear the find-in-page matches cache forcing rects to be fully
     // calculated again next time updateFindMatchRects is called.
     void clearFindMatchesCache();

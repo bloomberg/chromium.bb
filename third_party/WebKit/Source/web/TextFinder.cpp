@@ -32,6 +32,8 @@
 #include "config.h"
 #include "web/TextFinder.h"
 
+#include "core/accessibility/AXObject.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/Range.h"
@@ -44,6 +46,7 @@
 #include "core/rendering/RenderObject.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
+#include "public/web/WebAXObject.h"
 #include "public/web/WebFindOptions.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
@@ -188,6 +191,7 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         if (selectionRect) {
             *selectionRect = ownerFrame().frameView()->contentsToWindow(m_activeMatch->boundingBox());
             reportFindInPageSelection(*selectionRect, m_activeMatchIndexInCurrentFrame + 1, identifier);
+            reportFindInPageResultToAccessibility(identifier);
         }
     }
 
@@ -205,6 +209,26 @@ void TextFinder::stopFindingAndClearSelection()
 
     // Let the frame know that we don't want tickmarks or highlighting anymore.
     ownerFrame().invalidateAll();
+}
+
+void TextFinder::reportFindInPageResultToAccessibility(int identifier)
+{
+    AXObjectCache* axObjectCache = ownerFrame().frame()->document()->existingAXObjectCache();
+    if (!axObjectCache)
+        return;
+
+    AXObject* startObject = axObjectCache->get(m_activeMatch->startContainer());
+    AXObject* endObject = axObjectCache->get(m_activeMatch->endContainer());
+    if (!startObject || !endObject)
+        return;
+
+    WebLocalFrameImpl* mainFrameImpl = ownerFrame().viewImpl()->mainFrameImpl();
+    if (mainFrameImpl && mainFrameImpl->client()) {
+        mainFrameImpl->client()->handleAccessibilityFindInPageResult(
+            identifier, m_activeMatchIndexInCurrentFrame + 1,
+            WebAXObject(startObject), m_activeMatch->startOffset(),
+            WebAXObject(endObject), m_activeMatch->endOffset());
+    }
 }
 
 void TextFinder::scopeStringMatches(int identifier, const WebString& searchText, const WebFindOptions& options, bool reset)
