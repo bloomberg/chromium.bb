@@ -11,7 +11,6 @@ updates, verbose text display and perhaps some errors.
 from __future__ import print_function
 
 import contextlib
-import os
 import re
 import sys
 
@@ -55,18 +54,14 @@ class Operation(object):
     disabled it. This is used by commands that the user issues with the
     expectation that output would ordinarily be visible.
   """
-  # Force color on/off, or use color only if stdout is a terminal.
-  COLOR_OFF, COLOR_ON, COLOR_IF_TERMINAL = range(3)
 
-  def __init__(self, name, color=COLOR_IF_TERMINAL):
+  def __init__(self, name, color=None):
     """Create a new operation.
 
     Args:
       name: Operation name in a form to be displayed for the user.
-      color: Determines policy for sending color to stdout:
-        COLOR_OFF: never send color.
-        COLOR_ON: always send color.
-        COLOR_IF_TERMINAL: send color if output apperas to be a terminal.
+      color: Determines policy for sending color to stdout; see terminal.Color
+        for details on interpretation on the value.
     """
     self._name = name   # Operation name.
     self.verbose = False   # True to echo subprocess output.
@@ -76,12 +71,7 @@ class Operation(object):
     self._line = ''   # text of current line, so far
     self.explicit_verbose = False
 
-    # By default, we display ANSI colors unless output is redirected.
-    want_color = (color == self.COLOR_ON or
-                  (color == self.COLOR_IF_TERMINAL and
-                   hasattr(sys.stdout, 'fileno') and
-                   os.isatty(sys.stdout.fileno())))
-    self._color = Color(want_color)
+    self._color = Color(enabled=color)
 
     # -1 = no newline pending
     #  n = newline pending, and line length of last line was n
