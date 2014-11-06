@@ -34,11 +34,6 @@ function WebView(webviewNode) {
 
   this.beforeFirstNavigation = true;
   this.contentWindow = null;
-  // Used to save some state upon deferred attachment.
-  // If <object> bindings is not available, we defer attachment.
-  // This state contains whether or not the attachment request was for
-  // newwindow.
-  this.deferredAttachState = null;
 
   // on* Event handlers.
   this.on = {};
@@ -275,21 +270,17 @@ WebView.prototype.handleBrowserPluginAttributeMutation =
         WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID);
     this.internalInstanceId = parseInt(newValue);
 
-    if (!!this.guestInstanceId && this.guestInstanceId != 0) {
-      var isNewWindow = this.deferredAttachState ?
-          this.deferredAttachState.isNewWindow : false;
-      var params = this.buildAttachParams(isNewWindow);
-      guestViewInternalNatives.AttachGuest(
-          this.internalInstanceId,
-          this.guestInstanceId,
-          params,
-          function(w) {
-            this.contentWindow = w;
-          }.bind(this)
-      );
+    if (!this.guestInstanceId) {
+      return;
     }
-
-    return;
+    guestViewInternalNatives.AttachGuest(
+        this.internalInstanceId,
+        this.guestInstanceId,
+        this.buildAttachParams(),
+        function(w) {
+          this.contentWindow = w;
+        }.bind(this)
+    );
   }
 };
 
@@ -408,7 +399,7 @@ WebView.prototype.createGuest = function() {
           GuestViewInternal.destroyGuest(guestInstanceId);
           return;
         }
-        this.attachWindow(guestInstanceId, false);
+        this.attachWindow(guestInstanceId);
       }.bind(this)
   );
   this.pendingGuestCreation = true;
@@ -470,12 +461,14 @@ WebView.prototype.onAttach = function(storagePartitionId) {
       storagePartitionId);
 };
 
-WebView.prototype.buildAttachParams = function(isNewWindow) {
-  var params = {
-    'allowtransparency': this.attributes[
-      WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue(),
-    'autosize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
+WebView.prototype.buildAttachParams = function() {
+  return {
     'instanceId': this.viewInstanceId,
+    'userAgentOverride': this.userAgentOverride,
+    // Attributes:
+    'allowtransparency': this.attributes[
+        WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue(),
+    'autosize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
     'maxheight': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MAXHEIGHT].
         getValue() || 0),
     'maxwidth': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MAXWIDTH].
@@ -485,29 +478,18 @@ WebView.prototype.buildAttachParams = function(isNewWindow) {
     'minwidth': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MINWIDTH].
         getValue() || 0),
     'name': this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue(),
-    // We don't need to navigate new window from here.
-    'src': isNewWindow ? undefined :
-        this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue(),
-    // If we have a partition from the opener, that will also be already
-    // set via this.onAttach().
-    'storagePartitionId': this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].
-        getValue(),
-    'userAgentOverride': this.userAgentOverride
+    'src':  this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue(),
   };
-  return params;
 };
 
-WebView.prototype.attachWindow = function(guestInstanceId,
-                                          isNewWindow) {
+WebView.prototype.attachWindow = function(guestInstanceId) {
   this.guestInstanceId = guestInstanceId;
-  var params = this.buildAttachParams(isNewWindow);
+  var params = this.buildAttachParams();
 
   if (!this.isPluginInRenderTree()) {
-    this.deferredAttachState = {isNewWindow: isNewWindow};
     return true;
   }
 
-  this.deferredAttachState = null;
   return guestViewInternalNatives.AttachGuest(
       this.internalInstanceId,
       this.guestInstanceId,

@@ -285,10 +285,7 @@ void WebViewGuest::DidAttachToEmbedder() {
     SetUserAgentOverride("");
   }
 
-  std::string src;
-  if (attach_params()->GetString(webview::kAttributeSrc, &src) && !src.empty())
-    NavigateGuest(src, false /* force_navigation */);
-
+  bool is_pending_new_window = false;
   if (GetOpener()) {
     // We need to do a navigation here if the target URL has changed between
     // the time the WebContents was created and the time it was attached.
@@ -300,13 +297,22 @@ void WebViewGuest::DidAttachToEmbedder() {
       const NewWindowInfo& new_window_info = it->second;
       if (new_window_info.changed || !web_contents()->HasOpener())
         NavigateGuest(new_window_info.url.spec(), false /* force_navigation */);
-    } else {
-      NOTREACHED();
-    }
 
-    // Once a new guest is attached to the DOM of the embedder page, then the
-    // lifetime of the new guest is no longer managed by the opener guest.
-    GetOpener()->pending_new_windows_.erase(this);
+      // Once a new guest is attached to the DOM of the embedder page, then the
+      // lifetime of the new guest is no longer managed by the opener guest.
+      GetOpener()->pending_new_windows_.erase(this);
+
+      is_pending_new_window = true;
+    }
+  }
+
+  // Only read the src attribute if this is not a New Window API flow.
+  if (!is_pending_new_window) {
+    std::string src;
+    if (attach_params()->GetString(webview::kAttributeSrc, &src) &&
+        !src.empty()) {
+      NavigateGuest(src, false /* force_navigation */);
+    }
   }
 
   bool allow_transparency = false;

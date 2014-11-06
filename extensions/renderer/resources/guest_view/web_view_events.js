@@ -441,7 +441,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
           webViewInternal.onAttach(event.storagePartitionId);
         }
 
-        var attached = webViewInternal.attachWindow(event.windowId, true);
+        var attached = webViewInternal.attachWindow(event.windowId);
 
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
