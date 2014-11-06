@@ -37,7 +37,6 @@ enum ResourceRequestAction {
 class CONTENT_EXPORT InterstitialPageImpl
     : public NON_EXPORTED_BASE(InterstitialPage),
       public NotificationObserver,
-      public WebContentsObserver,
       public NON_EXPORTED_BASE(RenderFrameHostDelegate),
       public RenderViewHostDelegate,
       public RenderWidgetHostDelegate,
@@ -102,14 +101,6 @@ class CONTENT_EXPORT InterstitialPageImpl
   void Observe(int type,
                const NotificationSource& source,
                const NotificationDetails& details) override;
-
-  // WebContentsObserver implementation:
-  bool OnMessageReceived(const IPC::Message& message,
-                         RenderFrameHost* render_frame_host) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
-  void WebContentsDestroyed() override;
-  void NavigationEntryCommitted(
-      const LoadCommittedDetails& load_details) override;
 
   // RenderFrameHostDelegate implementation:
   bool OnMessageReceived(RenderFrameHost* render_frame_host,
@@ -177,6 +168,27 @@ class CONTENT_EXPORT InterstitialPageImpl
 
  private:
   class InterstitialPageRVHDelegateView;
+  class UnderlyingContentObserver : public WebContentsObserver {
+   public:
+    UnderlyingContentObserver(WebContents* web_contents,
+                              InterstitialPageImpl* interstitial);
+
+    // WebContentsObserver implementation:
+    void WebContentsDestroyed() override;
+    void NavigationEntryCommitted(
+        const LoadCommittedDetails& load_details) override;
+
+    // This observer does not override OnMessageReceived or otherwise handle
+    // messages from the underlying content, because the interstitial should not
+    // care about them. Messages from the interstitial page (which has its own
+    // FrameTree) arrive through the RenderFrameHostDelegate interface, not
+    // WebContentsObserver.
+
+   private:
+    InterstitialPageImpl* const interstitial_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnderlyingContentObserver);
+  };
 
   // Disable the interstitial:
   // - if it is not yet showing, then it won't be shown.
@@ -199,6 +211,9 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // Creates the RenderViewHost containing the interstitial content.
   RenderViewHostImpl* CreateRenderViewHost();
+
+  // Watches the underlying WebContents for reasons to cancel the interstitial.
+  UnderlyingContentObserver underlying_content_observer_;
 
   // The contents in which we are displayed.  This is valid until Hide is
   // called, at which point it will be set to NULL because the WebContents

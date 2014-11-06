@@ -149,7 +149,7 @@ InterstitialPageImpl::InterstitialPageImpl(
     bool new_navigation,
     const GURL& url,
     InterstitialPageDelegate* delegate)
-    : WebContentsObserver(web_contents),
+    : underlying_content_observer_(web_contents, this),
       web_contents_(web_contents),
       controller_(static_cast<NavigationControllerImpl*>(
           &web_contents->GetController())),
@@ -352,32 +352,13 @@ void InterstitialPageImpl::Observe(
   }
 }
 
-void InterstitialPageImpl::NavigationEntryCommitted(
-    const LoadCommittedDetails& load_details) {
-  OnNavigatingAwayOrTabClosing();
-}
-
-void InterstitialPageImpl::WebContentsDestroyed() {
-  OnNavigatingAwayOrTabClosing();
-}
-
-bool InterstitialPageImpl::OnMessageReceived(
-    const IPC::Message& message,
-    RenderFrameHost* render_frame_host) {
-  return OnMessageReceived(message);
-}
-
 bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
                                              const IPC::Message& message) {
-  return OnMessageReceived(message);
-}
-
-bool InterstitialPageImpl::OnMessageReceived(RenderViewHost* render_view_host,
-                                             const IPC::Message& message) {
-  return OnMessageReceived(message);
-}
-
-bool InterstitialPageImpl::OnMessageReceived(const IPC::Message& message) {
+  if (render_frame_host->GetRenderViewHost() != render_view_host_) {
+    DCHECK(!render_view_host_)
+        << "We expect an interstitial page to have only a single RVH";
+    return false;
+  }
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(InterstitialPageImpl, message)
@@ -387,6 +368,11 @@ bool InterstitialPageImpl::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
+}
+
+bool InterstitialPageImpl::OnMessageReceived(RenderViewHost* render_view_host,
+                                             const IPC::Message& message) {
+  return false;
 }
 
 void InterstitialPageImpl::RenderFrameCreated(
@@ -916,6 +902,21 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::TakeFocus(
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::OnFindReply(
     int request_id, int number_of_matches, const gfx::Rect& selection_rect,
     int active_match_ordinal, bool final_update) {
+}
+
+InterstitialPageImpl::UnderlyingContentObserver::UnderlyingContentObserver(
+    WebContents* web_contents,
+    InterstitialPageImpl* interstitial)
+    : WebContentsObserver(web_contents), interstitial_(interstitial) {
+}
+
+void InterstitialPageImpl::UnderlyingContentObserver::NavigationEntryCommitted(
+    const LoadCommittedDetails& load_details) {
+  interstitial_->OnNavigatingAwayOrTabClosing();
+}
+
+void InterstitialPageImpl::UnderlyingContentObserver::WebContentsDestroyed() {
+  interstitial_->OnNavigatingAwayOrTabClosing();
 }
 
 }  // namespace content
