@@ -425,6 +425,8 @@ private:
     // This does not check user gesture restrictions.
     void playInternal();
 
+    void gesturelessInitialPlayHalted();
+    void autoplayMediaEncountered();
     void allowVideoRendering();
 
     void updateVolume();
@@ -580,6 +582,8 @@ private:
     bool m_closeMediaSourceWhenFinalizing : 1;
 #endif
     double m_lastTextTrackUpdateTime;
+    bool m_initialPlayWithoutUserGestures : 1;
+    bool m_autoplayMediaCounted : 1;
 
     RefPtrWillBeMember<AudioTrackList> m_audioTracks;
     RefPtrWillBeMember<VideoTrackList> m_videoTracks;

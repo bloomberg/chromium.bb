@@ -266,6 +266,25 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
     return false;
 }
 
+// These values are used for a histogram. Do not reorder.
+enum AutoplayMetrics {
+    // Media element with autoplay seen.
+    AutoplayMediaFound = 0,
+    // Autoplay enabled and user stopped media play at any point.
+    AutoplayStopped = 1,
+    // Autoplay enabled but user bailed out on media play early.
+    AutoplayBailout = 2,
+    // Autoplay disabled but user manually started media.
+    AutoplayManualStart = 3,
+    // This enum value must be last.
+    NumberOfAutoplayMetrics,
+};
+
+static void recordAutoplayMetric(AutoplayMetrics metric)
+{
+    blink::Platform::current()->histogramEnumeration("Blink.MediaElement.Autoplay", metric, NumberOfAutoplayMetrics);
+}
+
 WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)
 {
     DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
@@ -357,6 +376,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_closeMediaSourceWhenFinalizing(false)
 #endif
     , m_lastTextTrackUpdateTime(-1)
+    , m_initialPlayWithoutUserGestures(false)
+    , m_autoplayMediaCounted(false)
     , m_audioTracks(AudioTrackList::create(*this))
     , m_videoTracks(VideoTrackList::create(*this))
     , m_textTracks(nullptr)
@@ -1872,11 +1893,15 @@ void HTMLMediaElement::setReadyState(ReadyState state)
                 scheduleEvent(EventTypeNames::playing);
         }
 
-        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures) && !m_userGestureRequiredForPlay) {
-            m_paused = false;
-            invalidateCachedTime();
-            scheduleEvent(EventTypeNames::play);
-            scheduleEvent(EventTypeNames::playing);
+        if (m_autoplaying && m_paused && autoplay() && !document().isSandboxed(SandboxAutomaticFeatures)) {
+            autoplayMediaEncountered();
+            if (!m_userGestureRequiredForPlay) {
+                m_initialPlayWithoutUserGestures = true;
+                m_paused = false;
+                invalidateCachedTime();
+                scheduleEvent(EventTypeNames::play);
+                scheduleEvent(EventTypeNames::playing);
+            }
         }
 
         scheduleEvent(EventTypeNames::canplaythrough);
@@ -2024,6 +2049,8 @@ void HTMLMediaElement::seek(double time)
 
     // 11 - Set the current playback position to the given new playback position.
     webMediaPlayer()->seek(time);
+
+    m_initialPlayWithoutUserGestures = false;
 
     // 14-17 are handled, if necessary, when the engine signals a readystate change or otherwise
     // satisfies seek completion and signals a time change.
@@ -2239,10 +2266,17 @@ void HTMLMediaElement::play()
 {
     WTF_LOG(Media, "HTMLMediaElement::play(%p)", this);
 
-    if (m_userGestureRequiredForPlay && !UserGestureIndicator::processingUserGesture())
-        return;
-    if (UserGestureIndicator::processingUserGesture())
+    if (!UserGestureIndicator::processingUserGesture()) {
+        autoplayMediaEncountered();
+        if (m_userGestureRequiredForPlay)
+            return;
+        if (m_autoplaying)
+            m_initialPlayWithoutUserGestures = true;
+    } else {
+        if (m_userGestureRequiredForPlay)
+            recordAutoplayMetric(AutoplayManualStart);
         m_userGestureRequiredForPlay = false;
+    }
 
     playInternal();
 }
@@ -2277,6 +2311,31 @@ void HTMLMediaElement::playInternal()
     updateMediaController();
 }
 
+void HTMLMediaElement::autoplayMediaEncountered()
+{
+    if (!m_autoplayMediaCounted) {
+        m_autoplayMediaCounted = true;
+        recordAutoplayMetric(AutoplayMediaFound);
+    }
+}
+
+void HTMLMediaElement::gesturelessInitialPlayHalted()
+{
+    ASSERT(m_initialPlayWithoutUserGestures);
+    m_initialPlayWithoutUserGestures = false;
+
+    recordAutoplayMetric(AutoplayStopped);
+
+    // We count the user as having bailed-out on the video if they watched
+    // less than one minute and less than 50% of it.
+    double playedTime = currentTime();
+    if (playedTime < 60) {
+        double progress = playedTime / duration();
+        if (progress < 0.5)
+            recordAutoplayMetric(AutoplayBailout);
+    }
+}
+
 void HTMLMediaElement::pause()
 {
     WTF_LOG(Media, "HTMLMediaElement::pause(%p)", this);
@@ -2287,6 +2346,9 @@ void HTMLMediaElement::pause()
     m_autoplaying = false;
 
     if (!m_paused) {
+        if (m_initialPlayWithoutUserGestures)
+            gesturelessInitialPlayHalted();
+
         m_paused = true;
         scheduleTimeupdateEvent(false);
         scheduleEvent(EventTypeNames::pause);
@@ -3488,6 +3550,9 @@ void HTMLMediaElement::clearMediaPlayer(int flags)
 void HTMLMediaElement::stop()
 {
     WTF_LOG(Media, "HTMLMediaElement::stop(%p)", this);
+
+    if (m_playing && m_initialPlayWithoutUserGestures)
+        gesturelessInitialPlayHalted();
 
     m_active = false;
     userCancelledLoad();
