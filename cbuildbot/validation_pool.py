@@ -1694,7 +1694,9 @@ class ValidationPool(object):
     self.PrintLinksToChanges(applied)
 
     if self.is_master:
-      inputs = [[change] for change in applied]
+      _, db = self._run.GetCIDBHandle()
+      action_history = db.GetActionsForChanges(applied)
+      inputs = [[change, action_history] for change in applied]
       parallel.RunTasksInProcessPool(self._HandleApplySuccess, inputs)
 
     failed_tot = self._FilterDependencyErrors(failed_tot)
@@ -2470,7 +2472,7 @@ class ValidationPool(object):
     self.SendNotification(change, msg)
     self.RemoveCommitReady(change)
 
-  def _HandleApplySuccess(self, change):
+  def _HandleApplySuccess(self, change, action_history):
     """Handler for when Paladin successfully applies (picks up) a change.
 
     This handler notifies a developer that their change is being tried as
@@ -2478,9 +2480,8 @@ class ValidationPool(object):
 
     Args:
       change: GerritPatch instance to operate upon.
+      action_history: List of CLAction instances.
     """
-    _, db = self._run.GetCIDBHandle()
-    action_history = db.GetActionsForChanges([change])
     if self.pre_cq:
       status = clactions.GetCLPreCQStatus(change, action_history)
       if status == constants.CL_STATUS_PASSED:

@@ -775,7 +775,7 @@ class TestCoreLogic(MoxBase):
         ).AndReturn((applied, tot, inflight))
 
     for patch in applied:
-      pool._HandleApplySuccess(patch).AndReturn(None)
+      pool._HandleApplySuccess(patch, []).AndReturn(None)
 
     if tot:
       pool._HandleApplyFailure(tot).AndReturn(None)
@@ -844,7 +844,7 @@ class TestCoreLogic(MoxBase):
     pool = self.MakePool(fake_db=self.fake_db)
     pool.SendNotification(patch, mox.StrContains('has picked up your change'))
     self.mox.ReplayAll()
-    pool._HandleApplySuccess(patch)
+    pool._HandleApplySuccess(patch, [])
     self.mox.VerifyAll()
 
   def testHandleApplyFailure(self):
