@@ -364,7 +364,9 @@ void PasswordManager::DidNavigateMainFrame(bool is_in_page) {
   // different page.
   if (!is_in_page) {
     pending_login_managers_.clear();
-    driver_->GetPasswordAutofillManager()->Reset();
+    // There is no PasswordAutofillManager on iOS.
+    if (driver_->GetPasswordAutofillManager())
+      driver_->GetPasswordAutofillManager()->Reset();
   }
 }
 
