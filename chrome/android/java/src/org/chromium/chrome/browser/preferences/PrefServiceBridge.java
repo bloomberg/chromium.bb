@@ -156,6 +156,17 @@ public final class PrefServiceBridge {
         return nativeGetAcceptCookiesManaged();
     }
 
+    public boolean isBlockThirdPartyCookiesEnabled() {
+        return nativeGetBlockThirdPartyCookiesEnabled();
+    }
+
+    /**
+     * @return whether third-party cookie blocking is configured by policy
+     */
+    public boolean isBlockThirdPartyCookiesManaged() {
+        return nativeGetBlockThirdPartyCookiesManaged();
+    }
+
     public boolean isRememberPasswordsEnabled() {
         return nativeGetRememberPasswordsEnabled();
     }
@@ -472,6 +483,10 @@ public final class PrefServiceBridge {
         nativeSetAllowCookiesEnabled(allow);
     }
 
+    public void setBlockThirdPartyCookiesEnabled(boolean enabled) {
+        nativeSetBlockThirdPartyCookiesEnabled(enabled);
+    }
+
     public void setDoNotTrackEnabled(boolean enabled) {
         nativeSetDoNotTrackEnabled(enabled);
     }
@@ -642,6 +657,8 @@ public final class PrefServiceBridge {
 
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesManaged();
+    private native boolean nativeGetBlockThirdPartyCookiesEnabled();
+    private native boolean nativeGetBlockThirdPartyCookiesManaged();
     private native boolean nativeGetRememberPasswordsEnabled();
     private native boolean nativeGetRememberPasswordsManaged();
     private native boolean nativeGetAllowLocationManaged();
@@ -666,8 +683,8 @@ public final class PrefServiceBridge {
     private native void nativeSetJavaScriptEnabled(boolean enabled);
     private native void nativeClearBrowsingData(boolean history, boolean cache,
             boolean cookiesAndSiteData, boolean passwords, boolean formData);
-    private native boolean nativeGetAllowCookiesEnabled();
     private native void nativeSetAllowCookiesEnabled(boolean allow);
+    private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);

@@ -192,6 +192,14 @@ static jboolean GetAcceptCookiesManaged(JNIEnv* env, jobject obj) {
       CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
+static jboolean GetBlockThirdPartyCookiesEnabled(JNIEnv* env, jobject obj) {
+  return GetPrefService()->GetBoolean(prefs::kBlockThirdPartyCookies);
+}
+
+static jboolean GetBlockThirdPartyCookiesManaged(JNIEnv* env, jobject obj) {
+  return GetPrefService()->IsManagedPreference(prefs::kBlockThirdPartyCookies);
+}
+
 static jboolean GetRememberPasswordsEnabled(JNIEnv* env, jobject obj) {
   return GetPrefService()->GetBoolean(
       password_manager::prefs::kPasswordManagerSavingEnabled);
@@ -358,19 +366,17 @@ static void ClearBrowsingData(JNIEnv* env, jobject obj, jboolean history,
                                 BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
-static jboolean GetAllowCookiesEnabled(JNIEnv* env, jobject obj) {
-  HostContentSettingsMap* content_settings =
-      GetOriginalProfile()->GetHostContentSettingsMap();
-  return GetBooleanForContentSetting(
-      content_settings, CONTENT_SETTINGS_TYPE_COOKIES);
-}
-
 static void SetAllowCookiesEnabled(JNIEnv* env, jobject obj, jboolean allow) {
   HostContentSettingsMap* host_content_settings_map =
       GetOriginalProfile()->GetHostContentSettingsMap();
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_COOKIES,
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
+}
+
+static void SetBlockThirdPartyCookiesEnabled(JNIEnv* env, jobject obj,
+                                             jboolean enabled) {
+  GetPrefService()->SetBoolean(prefs::kBlockThirdPartyCookies, enabled);
 }
 
 static void SetRememberPasswordsEnabled(JNIEnv* env, jobject obj,
