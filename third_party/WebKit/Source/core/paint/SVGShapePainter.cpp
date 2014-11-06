@@ -6,10 +6,11 @@
 #include "core/paint/SVGShapePainter.h"
 
 #include "core/paint/ObjectPainter.h"
-#include "core/paint/SVGMarkerPainter.h"
+#include "core/paint/SVGContainerPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGShape.h"
 #include "core/rendering/svg/SVGMarkerData.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
@@ -162,8 +163,28 @@ void SVGShapePainter::paintMarkers(PaintInfo& paintInfo)
     unsigned size = markerPositions->size();
     for (unsigned i = 0; i < size; ++i) {
         if (RenderSVGResourceMarker* marker = SVGMarkerData::markerForType((*markerPositions)[i].type, markerStart, markerMid, markerEnd))
-            SVGMarkerPainter(*marker).paint(paintInfo, (*markerPositions)[i], strokeWidth);
+            paintMarker(paintInfo, *marker, (*markerPositions)[i], strokeWidth);
     }
+}
+
+void SVGShapePainter::paintMarker(PaintInfo& paintInfo, RenderSVGResourceMarker& marker, const MarkerPosition& position, float strokeWidth)
+{
+    // An empty viewBox disables rendering.
+    SVGMarkerElement* markerElement = toSVGMarkerElement(marker.element());
+    ASSERT(markerElement);
+    if (markerElement->hasAttribute(SVGNames::viewBoxAttr) && markerElement->viewBox()->currentValue()->isValid() && markerElement->viewBox()->currentValue()->value().isEmpty())
+        return;
+
+    PaintInfo info(paintInfo);
+    GraphicsContextStateSaver stateSaver(*info.context, false);
+    info.applyTransform(marker.markerTransformation(position.origin, position.angle, strokeWidth), &stateSaver);
+
+    if (SVGRenderSupport::isOverflowHidden(&marker)) {
+        stateSaver.saveIfNeeded();
+        info.context->clip(marker.viewport());
+    }
+
+    SVGContainerPainter(marker).paint(info);
 }
 
 void SVGShapePainter::strokeZeroLengthLineCaps(GraphicsContext* context)

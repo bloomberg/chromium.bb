@@ -7,10 +7,12 @@
 
 namespace blink {
 
+struct MarkerPosition;
 struct PaintInfo;
 class FloatPoint;
 class GraphicsContext;
 class Path;
+class RenderSVGResourceMarker;
 class RenderSVGShape;
 
 class SVGShapePainter {
@@ -24,6 +26,7 @@ private:
     void strokeShape(GraphicsContext*);
 
     void paintMarkers(PaintInfo&);
+    void paintMarker(PaintInfo&, RenderSVGResourceMarker&, const MarkerPosition&, float);
     void strokeZeroLengthLineCaps(GraphicsContext*);
     Path* zeroLengthLinecapPath(const FloatPoint&) const;
 
