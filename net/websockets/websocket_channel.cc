@@ -582,7 +582,8 @@ void WebSocketChannel::OnConnectFailure(const std::string& message) {
     // |this| has been deleted.
     return;
   }
-  ignore_result(event_interface_->OnFailChannel(message_copy));
+  ChannelState result = event_interface_->OnFailChannel(message_copy);
+  DCHECK_EQ(CHANNEL_DELETED, result);
   // |this| has been deleted.
 }
 
@@ -1000,7 +1001,9 @@ ChannelState WebSocketChannel::FailChannel(const std::string& message,
   // handshake.
   stream_->Close();
   SetState(CLOSED);
-  return event_interface_->OnFailChannel(message);
+  ChannelState result = event_interface_->OnFailChannel(message);
+  DCHECK_EQ(CHANNEL_DELETED, result);
+  return result;
 }
 
 ChannelState WebSocketChannel::SendClose(uint16 code,
