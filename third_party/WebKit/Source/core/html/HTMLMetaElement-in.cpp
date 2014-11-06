@@ -472,7 +472,7 @@ void HTMLMetaElement::process()
             processViewportContentAttribute("width=device-width", ViewportDescription::HandheldFriendlyMeta);
         else if (equalIgnoringCase(nameValue, "mobileoptimized"))
             processViewportContentAttribute("width=device-width, initial-scale=1", ViewportDescription::MobileOptimizedMeta);
-        else if (RuntimeEnabledFeatures::themeColorEnabled() && equalIgnoringCase(nameValue, "theme-color") && document().frame())
+        else if (equalIgnoringCase(nameValue, "theme-color") && document().frame())
             document().frame()->loader().client()->dispatchDidChangeThemeColor();
     }
 

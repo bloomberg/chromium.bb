@@ -126,7 +126,6 @@ Stream status=experimental
 SubpixelFontScaling status=stable
 SubresourceIntegrity status=experimental
 TextBlob
-ThemeColor status=stable
 ThreadedParserDataReceiver status=experimental
 // Many websites disable mouse support when touch APIs are available.  We'd
 // like to enable this always but can't until more websites fix this bug.
