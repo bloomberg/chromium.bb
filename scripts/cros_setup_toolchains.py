@@ -933,50 +933,46 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
 
 
 def main(argv):
-  usage = """usage: %prog [options]
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('-u', '--nousepkg',
+                      action='store_false', dest='usepkg', default=True,
+                      help='Use prebuilt packages if possible')
+  parser.add_argument('-d', '--deleteold',
+                      action='store_true', dest='deleteold', default=False,
+                      help='Unmerge deprecated packages')
+  parser.add_argument('-t', '--targets',
+                      dest='targets', default='sdk',
+                      help='Comma separated list of tuples. '
+                           'Special keyword \'host\' is allowed. Default: sdk')
+  parser.add_argument('--include-boards',
+                      dest='include_boards', default='',
+                      help='Comma separated list of boards whose toolchains we'
+                           ' will always include. Default: none')
+  parser.add_argument('--hostonly',
+                      dest='hostonly', default=False, action='store_true',
+                      help='Only setup the host toolchain. '
+                           'Useful for bootstrapping chroot')
+  parser.add_argument('--show-board-cfg',
+                      dest='board_cfg', default=None,
+                      help='Board to list toolchain tuples for')
+  parser.add_argument('--create-packages',
+                      action='store_true', default=False,
+                      help='Build redistributable packages')
+  parser.add_argument('--output-dir', default=os.getcwd(), type='path',
+                      help='Output directory')
+  parser.add_argument('--reconfig', default=False, action='store_true',
+                      help='Reload crossdev config and reselect toolchains')
 
-  The script installs and updates the toolchains in your chroot."""
-  parser = commandline.OptionParser(usage)
-  parser.add_option('-u', '--nousepkg',
-                    action='store_false', dest='usepkg', default=True,
-                    help='Use prebuilt packages if possible')
-  parser.add_option('-d', '--deleteold',
-                    action='store_true', dest='deleteold', default=False,
-                    help='Unmerge deprecated packages')
-  parser.add_option('-t', '--targets',
-                    dest='targets', default='sdk',
-                    help='Comma separated list of tuples. '
-                         'Special keyword \'host\' is allowed. Default: sdk')
-  parser.add_option('--include-boards',
-                    dest='include_boards', default='',
-                    help='Comma separated list of boards whose toolchains we'
-                         ' will always include. Default: none')
-  parser.add_option('--hostonly',
-                    dest='hostonly', default=False, action='store_true',
-                    help='Only setup the host toolchain. '
-                         'Useful for bootstrapping chroot')
-  parser.add_option('--show-board-cfg',
-                    dest='board_cfg', default=None,
-                    help='Board to list toolchain tuples for')
-  parser.add_option('--create-packages',
-                    action='store_true', default=False,
-                    help='Build redistributable packages')
-  parser.add_option('--output-dir', default=os.getcwd(), type='path',
-                    help='Output directory')
-  parser.add_option('--reconfig', default=False, action='store_true',
-                    help='Reload crossdev config and reselect toolchains')
-
-  (options, remaining_arguments) = parser.parse_args(argv)
-  if len(remaining_arguments):
-    parser.error('script does not take arguments: %s' % remaining_arguments)
+  options = parser.parse_args(argv)
+  options.Freeze()
 
   # Figure out what we're supposed to do and reject conflicting options.
   if options.board_cfg and options.create_packages:
     parser.error('conflicting options: create-packages & show-board-cfg')
 
   targets = set(options.targets.split(','))
-  boards = set(options.include_boards.split(',')) if options.include_boards \
-      else set()
+  boards = (set(options.include_boards.split(',')) if options.include_boards
+            else set())
 
   if options.board_cfg:
     ShowBoardConfig(options.board_cfg)
