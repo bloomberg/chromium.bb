@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/shell/browser/shell_devtools_delegate.h"
+#include "content/shell/browser/shell_devtools_manager_delegate.h"
 
 #include <vector>
 
@@ -32,9 +32,7 @@
 #include "net/socket/unix_domain_server_socket_posix.h"
 #endif
 
-using content::DevToolsAgentHost;
-using content::RenderViewHost;
-using content::WebContents;
+namespace content {
 
 namespace {
 
@@ -48,17 +46,17 @@ const char kTargetTypeOther[] = "other";
 
 #if defined(OS_ANDROID)
 class UnixDomainServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   explicit UnixDomainServerSocketFactory(const std::string& socket_name)
-      : content::DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
+      : DevToolsHttpHandler::ServerSocketFactory(socket_name, 0, 1) {}
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // DevToolsHttpHandler::ServerSocketFactory.
   virtual scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::UnixDomainServerSocket(
-            base::Bind(&content::CanUserConnectToDevTools),
+            base::Bind(&CanUserConnectToDevTools),
             true /* use_abstract_namespace */));
   }
 
@@ -66,14 +64,14 @@ class UnixDomainServerSocketFactory
 };
 #else
 class TCPServerSocketFactory
-    : public content::DevToolsHttpHandler::ServerSocketFactory {
+    : public DevToolsHttpHandler::ServerSocketFactory {
  public:
   TCPServerSocketFactory(const std::string& address, int port, int backlog)
-      : content::DevToolsHttpHandler::ServerSocketFactory(
+      : DevToolsHttpHandler::ServerSocketFactory(
             address, port, backlog) {}
 
  private:
-  // content::DevToolsHttpHandler::ServerSocketFactory.
+  // DevToolsHttpHandler::ServerSocketFactory.
   scoped_ptr<net::ServerSocket> Create() const override {
     return scoped_ptr<net::ServerSocket>(
         new net::TCPServerSocket(NULL, net::NetLog::Source()));
@@ -83,7 +81,7 @@ class TCPServerSocketFactory
 };
 #endif
 
-scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>
+scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>
 CreateSocketFactory() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
@@ -92,7 +90,7 @@ CreateSocketFactory() {
     socket_name = command_line.GetSwitchValueASCII(
         switches::kRemoteDebuggingSocketName);
   }
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
+  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new UnixDomainServerSocketFactory(socket_name));
 #else
   // See if the user specified a port on the command line (useful for
@@ -109,12 +107,12 @@ CreateSocketFactory() {
       DLOG(WARNING) << "Invalid http debugger port number " << temp_port;
     }
   }
-  return scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory>(
+  return scoped_ptr<DevToolsHttpHandler::ServerSocketFactory>(
       new TCPServerSocketFactory("127.0.0.1", port, 1));
 #endif
 }
 
-class Target : public content::DevToolsTarget {
+class Target : public DevToolsTarget {
  public:
   explicit Target(scoped_refptr<DevToolsAgentHost> agent_host);
 
@@ -154,8 +152,8 @@ class Target : public content::DevToolsTarget {
 Target::Target(scoped_refptr<DevToolsAgentHost> agent_host)
     : agent_host_(agent_host) {
   if (WebContents* web_contents = agent_host_->GetWebContents()) {
-    content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
+    NavigationController& controller = web_contents->GetController();
+    NavigationEntry* entry = controller.GetActiveEntry();
     if (entry != NULL && entry->GetURL().is_valid())
       favicon_url_ = entry->GetFavicon().url;
     last_activity_time_ = web_contents->GetLastActiveTime();
@@ -170,29 +168,32 @@ bool Target::Close() const {
   return agent_host_->Close();
 }
 
-}  // namespace
-
-namespace content {
-
 // ShellDevToolsDelegate ----------------------------------------------------
+
+class ShellDevToolsDelegate : public DevToolsHttpHandlerDelegate {
+ public:
+  explicit ShellDevToolsDelegate(BrowserContext* browser_context);
+  ~ShellDevToolsDelegate() override;
+
+  // DevToolsHttpHandlerDelegate implementation.
+  std::string GetDiscoveryPageHTML() override;
+  bool BundlesFrontendResources() override;
+  base::FilePath GetDebugFrontendDir() override;
+  scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
+      net::StreamListenSocket::Delegate* delegate,
+      std::string* name) override;
+
+ private:
+  BrowserContext* browser_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
+};
 
 ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
     : browser_context_(browser_context) {
-  std::string frontend_url;
-#if defined(OS_ANDROID)
-  frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
-#endif
-  devtools_http_handler_ =
-      DevToolsHttpHandler::Start(CreateSocketFactory(), frontend_url, this,
-                                 base::FilePath());
 }
 
 ShellDevToolsDelegate::~ShellDevToolsDelegate() {
-}
-
-void ShellDevToolsDelegate::Stop() {
-  // The call below destroys this.
-  devtools_http_handler_->Stop();
 }
 
 std::string ShellDevToolsDelegate::GetDiscoveryPageHTML() {
@@ -223,7 +224,23 @@ ShellDevToolsDelegate::CreateSocketForTethering(
   return scoped_ptr<net::StreamListenSocket>();
 }
 
+}  // namespace
+
 // ShellDevToolsManagerDelegate ----------------------------------------------
+
+// static
+DevToolsHttpHandler*
+ShellDevToolsManagerDelegate::CreateHttpHandler(
+    BrowserContext* browser_context) {
+  std::string frontend_url;
+#if defined(OS_ANDROID)
+  frontend_url = base::StringPrintf(kFrontEndURL, GetWebKitRevision().c_str());
+#endif
+  return DevToolsHttpHandler::Start(CreateSocketFactory(),
+                                    frontend_url,
+                                    new ShellDevToolsDelegate(browser_context),
+                                    base::FilePath());
+}
 
 ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
     BrowserContext* browser_context)
@@ -257,11 +274,8 @@ ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
 
 void ShellDevToolsManagerDelegate::EnumerateTargets(TargetCallback callback) {
   TargetList targets;
-  content::DevToolsAgentHost::List agents =
-      content::DevToolsAgentHost::GetOrCreateAll();
-  for (content::DevToolsAgentHost::List::iterator it = agents.begin();
-       it != agents.end(); ++it) {
-    targets.push_back(new Target(*it));
+  for (const auto& agent_host : DevToolsAgentHost::GetOrCreateAll()) {
+    targets.push_back(new Target(agent_host));
   }
   callback.Run(targets);
 }

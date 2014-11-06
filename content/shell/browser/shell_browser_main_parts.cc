@@ -12,6 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -19,7 +20,7 @@
 #include "content/shell/browser/layout_test/layout_test_browser_context.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
-#include "content/shell/browser/shell_devtools_delegate.h"
+#include "content/shell/browser/shell_devtools_manager_delegate.h"
 #include "content/shell/browser/shell_net_log.h"
 #include "content/shell/common/shell_switches.h"
 #include "net/base/filename_util.h"
@@ -80,9 +81,16 @@ base::StringPiece PlatformResourceProvider(int key) {
 
 ShellBrowserMainParts::ShellBrowserMainParts(
     const MainFunctionParams& parameters)
-    : BrowserMainParts(), parameters_(parameters), run_message_loop_(true) {}
+    : parameters_(parameters),
+      run_message_loop_(true),
+      devtools_http_handler_(nullptr) {
+}
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
+  if (devtools_http_handler_) {
+    // Note that Stop destroys devtools_http_handler_.
+    devtools_http_handler_->Stop();
+  }
 }
 
 #if !defined(OS_MACOSX)
@@ -139,7 +147,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
-  devtools_delegate_.reset(new ShellDevToolsDelegate(browser_context_.get()));
+  // CreateHttpHandler retains ownership over DevToolsHttpHandler.
+  devtools_http_handler_ =
+      ShellDevToolsManagerDelegate::CreateHttpHandler(browser_context_.get());
 
   InitializeMessageLoopContext();
 
@@ -155,8 +165,11 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  if (devtools_delegate_)
-    devtools_delegate_->Stop();
+  if (devtools_http_handler_) {
+    // Note that Stop destroys devtools_http_handler_.
+    devtools_http_handler_->Stop();
+    devtools_http_handler_ = nullptr;
+  }
   browser_context_.reset();
   off_the_record_browser_context_.reset();
 }

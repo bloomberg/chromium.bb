@@ -14,7 +14,7 @@
 #include "ui/aura/window_tree_host_observer.h"
 
 namespace content {
-class ShellDevToolsDelegate;
+class DevToolsHttpHandler;
 struct MainFunctionParams;
 }
 
@@ -80,7 +80,7 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   scoped_ptr<ShellExtensionsClient> extensions_client_;
   scoped_ptr<ShellExtensionsBrowserClient> extensions_browser_client_;
   scoped_ptr<net::NetLog> net_log_;
-  scoped_ptr<content::ShellDevToolsDelegate> devtools_delegate_;
+  content::DevToolsHttpHandler* devtools_http_handler_;
   scoped_ptr<ShellOmahaQueryParamsDelegate> omaha_query_params_delegate_;
   scoped_ptr<ShellOAuth2TokenService> oauth2_token_service_;
 

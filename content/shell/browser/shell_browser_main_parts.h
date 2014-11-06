@@ -27,7 +27,7 @@ class NetLog;
 
 namespace content {
 
-class ShellDevToolsDelegate;
+class DevToolsHttpHandler;
 
 class ShellBrowserMainParts : public BrowserMainParts {
  public:
@@ -42,8 +42,8 @@ class ShellBrowserMainParts : public BrowserMainParts {
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
 
-  ShellDevToolsDelegate* devtools_delegate() {
-    return devtools_delegate_.get();
+  DevToolsHttpHandler* devtools_http_handler() {
+    return devtools_http_handler_;
   }
 
   ShellBrowserContext* browser_context() { return browser_context_.get(); }
@@ -76,7 +76,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   const MainFunctionParams parameters_;
   bool run_message_loop_;
 
-  scoped_ptr<ShellDevToolsDelegate> devtools_delegate_;
+  DevToolsHttpHandler* devtools_http_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };
