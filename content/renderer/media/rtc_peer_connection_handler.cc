@@ -661,6 +661,9 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
 
 RTCPeerConnectionHandler::~RTCPeerConnectionHandler() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  stop();
+
   g_peer_connection_handlers.Get().erase(this);
   if (peer_connection_tracker_)
     peer_connection_tracker_->UnregisterPeerConnection(this);
@@ -1201,7 +1204,7 @@ void RTCPeerConnectionHandler::stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "RTCPeerConnectionHandler::stop";
 
-  if (!client_)
+  if (!client_ || !native_peer_connection_.get())
     return;  // Already stopped.
 
   if (peer_connection_tracker_)

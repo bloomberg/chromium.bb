@@ -233,9 +233,12 @@ class CONTENT_EXPORT RTCPeerConnectionHandler
   int num_local_candidates_ipv4_;
   int num_local_candidates_ipv6_;
 
+  // To make sure the observer is released after the native_peer_connection_,
+  // it has to come first.
+  scoped_refptr<Observer> peer_connection_observer_;
+
   // |native_peer_connection_| is the libjingle native PeerConnection object.
   scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
-  scoped_refptr<Observer> peer_connection_observer_;
 
   typedef std::map<webrtc::MediaStreamInterface*,
       content::RemoteMediaStreamImpl*> RemoteStreamMap;
