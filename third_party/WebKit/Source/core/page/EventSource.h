@@ -93,7 +93,7 @@ public:
 private:
     EventSource(ExecutionContext*, const KURL&, const EventSourceInit&);
 
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void didReceiveData(const char*, unsigned) override;
     virtual void didFinishLoading(unsigned long, double) override;
     virtual void didFail(const ResourceError&) override;

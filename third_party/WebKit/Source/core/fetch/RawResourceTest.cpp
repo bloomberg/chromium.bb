@@ -80,7 +80,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     // we shouldn't hit any ASSERTs.
     ResourceResponse response;
     response.setHTTPStatusCode(304);
-    newResource->responseReceived(response);
+    newResource->responseReceived(response, nullptr);
     EXPECT_EQ(memoryCache()->resourceForURL(KURL(ParsedURLString, "data:text/html,")), oldResource.get());
     EXPECT_EQ(oldResource.get(), newResource.get());
     EXPECT_NE(newResource.get(), newResourcePointer);

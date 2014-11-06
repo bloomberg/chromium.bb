@@ -170,7 +170,8 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request, cons
 
     Resource* resource = createResource(Resource::Image, request, charset);
     resource->setOptions(resourceOptions);
-    resource->responseReceived(response);
+    // FIXME: We should provide a body stream here.
+    resource->responseReceived(response, nullptr);
     if (data->size())
         resource->setResourceBuffer(data);
     resource->setCacheIdentifier(cacheIdentifier);
@@ -436,7 +437,7 @@ void ResourceFetcher::preCacheSubstituteDataForMainResource(const FetchRequest& 
     resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
     resource->setOptions(request.options());
     resource->setDataBufferingPolicy(BufferData);
-    resource->responseReceived(response);
+    resource->responseReceived(response, nullptr);
     if (substituteData.content()->size())
         resource->setResourceBuffer(substituteData.content());
     resource->setCacheIdentifier(cacheIdentifier);

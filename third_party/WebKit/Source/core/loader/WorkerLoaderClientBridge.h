@@ -49,7 +49,7 @@ public:
     virtual ~WorkerLoaderClientBridge();
 
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void didReceiveData(const char*, unsigned dataLength) override;
     virtual void didDownloadData(int dataLength) override;
     virtual void didReceiveCachedMetadata(const char*, int dataLength) override;

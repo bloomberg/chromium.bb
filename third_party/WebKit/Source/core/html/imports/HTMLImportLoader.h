@@ -103,7 +103,7 @@ private:
     HTMLImportLoader(HTMLImportsController*);
 
     // RawResourceClient
-    virtual void responseReceived(Resource*, const ResourceResponse&) override;
+    virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void dataReceived(Resource*, const char* data, unsigned length) override;
     virtual void notifyFinished(Resource*) override;
 

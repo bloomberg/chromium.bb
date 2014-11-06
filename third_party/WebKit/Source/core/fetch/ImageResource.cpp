@@ -414,7 +414,7 @@ void ImageResource::error(Resource::Status status)
     notifyObservers();
 }
 
-void ImageResource::responseReceived(const ResourceResponse& response)
+void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     if (m_loadingMultipartContent && m_data)
         finishOnePart();
@@ -427,7 +427,7 @@ void ImageResource::responseReceived(const ResourceResponse& response)
             m_hasDevicePixelRatioHeaderValue = false;
         }
     }
-    Resource::responseReceived(response);
+    Resource::responseReceived(response, handle);
 }
 
 void ImageResource::decodedSizeChanged(const blink::Image* image, int delta)

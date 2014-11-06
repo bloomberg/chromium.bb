@@ -124,7 +124,7 @@ public:
 
     // ThreadableLoaderClient
     void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) override;
-    void didReceiveResponse(unsigned long, const ResourceResponse&) override;
+    void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didDownloadData(int /*dataLength*/) override;
     void didReceiveData(const char*, unsigned /*dataLength*/) override;
     void didReceiveCachedMetadata(const char*, int /*dataLength*/) override;
@@ -194,8 +194,9 @@ void AssociatedURLLoader::ClientAdapter::didSendData(unsigned long long bytesSen
     m_client->didSendData(m_loader, bytesSent, totalBytesToBeSent);
 }
 
-void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const ResourceResponse& response)
+void AssociatedURLLoader::ClientAdapter::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    ASSERT_UNUSED(handle, !handle);
     if (!m_client)
         return;
 

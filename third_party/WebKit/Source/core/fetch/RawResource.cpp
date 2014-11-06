@@ -65,7 +65,7 @@ void RawResource::didAddClient(ResourceClient* c)
     }
 
     if (!m_response.isNull())
-        client->responseReceived(this, m_response);
+        client->responseReceived(this, m_response, nullptr);
     if (!hasClient(c))
         return;
     if (m_data)
@@ -94,13 +94,17 @@ void RawResource::updateRequest(const ResourceRequest& request)
         c->updateRequest(this, request);
 }
 
-void RawResource::responseReceived(const ResourceResponse& response)
+void RawResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     InternalResourcePtr protect(this);
-    Resource::responseReceived(response);
+    Resource::responseReceived(response, nullptr);
     ResourceClientWalker<RawResourceClient> w(m_clients);
-    while (RawResourceClient* c = w.next())
-        c->responseReceived(this, m_response);
+    ASSERT(count() <= 1 || !handle);
+    while (RawResourceClient* c = w.next()) {
+        // |handle| is cleared when passed, but it's not a problem because
+        // |handle| is null when there are two or more clients, as asserted.
+        c->responseReceived(this, m_response, handle);
+    }
 }
 
 void RawResource::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

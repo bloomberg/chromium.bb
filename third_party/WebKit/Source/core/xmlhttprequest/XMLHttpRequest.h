@@ -158,7 +158,7 @@ private:
     SecurityOrigin* securityOrigin() const;
 
     virtual void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&) override;
+    virtual void didReceiveResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void didReceiveData(const char* data, unsigned dataLength) override;
     // When responseType is set to "blob", didDownloadData() is called instead
     // of didReceiveData().

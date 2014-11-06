@@ -212,9 +212,9 @@ void WorkerThreadableLoader::MainThreadBridge::didSendData(unsigned long long by
     m_clientBridge->didSendData(bytesSent, totalBytesToBeSent);
 }
 
-void WorkerThreadableLoader::MainThreadBridge::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+void WorkerThreadableLoader::MainThreadBridge::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
-    m_clientBridge->didReceiveResponse(identifier, response);
+    m_clientBridge->didReceiveResponse(identifier, response, handle);
 }
 
 void WorkerThreadableLoader::MainThreadBridge::didReceiveData(const char* data, unsigned dataLength)

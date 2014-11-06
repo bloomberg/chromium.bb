@@ -67,16 +67,16 @@ void WorkerLoaderClientBridgeSyncHelper::didSendData(unsigned long long bytesSen
     m_clientTasks.append(bind(&ThreadableLoaderClient::didSendData, &m_client, bytesSent, totalBytesToBeSent));
 }
 
-static void didReceiveResponseAdapter(ThreadableLoaderClient* client, unsigned long identifier, PassOwnPtr<CrossThreadResourceResponseData> responseData)
+static void didReceiveResponseAdapter(ThreadableLoaderClient* client, unsigned long identifier, PassOwnPtr<CrossThreadResourceResponseData> responseData, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     OwnPtr<ResourceResponse> response(ResourceResponse::adopt(responseData));
-    client->didReceiveResponse(identifier, *response);
+    client->didReceiveResponse(identifier, *response, handle);
 }
 
-void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+void WorkerLoaderClientBridgeSyncHelper::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT(isMainThread());
-    m_clientTasks.append(bind(&didReceiveResponseAdapter, &m_client, identifier, response.copyData()));
+    m_clientTasks.append(bind(&didReceiveResponseAdapter, &m_client, identifier, response.copyData(), handle));
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didReceiveData(const char* data, unsigned dataLength)

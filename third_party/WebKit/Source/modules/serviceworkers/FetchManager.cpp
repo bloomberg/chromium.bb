@@ -28,7 +28,7 @@ class FetchManager::Loader : public ThreadableLoaderClient {
 public:
     Loader(ExecutionContext*, FetchManager*, PassRefPtr<ScriptPromiseResolver>, const FetchRequestData*);
     ~Loader();
-    virtual void didReceiveResponse(unsigned long, const ResourceResponse&);
+    virtual void didReceiveResponse(unsigned long, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
     virtual void didFinishLoading(unsigned long, double);
     virtual void didFail(const ResourceError&);
     virtual void didFailAccessControlCheck(const ResourceError&);
@@ -75,8 +75,10 @@ FetchManager::Loader::~Loader()
         m_loader->cancel();
 }
 
-void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response)
+void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    // FIXME: Use |handle|.
+    ASSERT_UNUSED(handle, !handle);
     m_response = response;
 }
 

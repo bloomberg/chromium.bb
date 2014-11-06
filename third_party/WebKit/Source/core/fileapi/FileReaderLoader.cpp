@@ -171,8 +171,9 @@ void FileReaderLoader::cleanup()
     }
 }
 
-void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse& response)
+void FileReaderLoader::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    ASSERT_UNUSED(handle, !handle);
     if (response.httpStatusCode() != 200) {
         failed(httpStatusCodeToErrorCode(response.httpStatusCode()));
         return;

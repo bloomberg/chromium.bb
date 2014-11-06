@@ -71,7 +71,7 @@ public:
     bool failed() const { return m_failed; }
     unsigned long identifier() const { return m_identifier; }
 
-    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) override;
+    virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void didReceiveData(const char* data, unsigned dataLength) override;
     virtual void didFinishLoading(unsigned long identifier, double) override;
     virtual void didFail(const ResourceError&) override;

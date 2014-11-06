@@ -80,8 +80,9 @@ void HTMLImportLoader::startLoading(const ResourcePtr<RawResource>& resource)
     setResource(resource);
 }
 
-void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response)
+void HTMLImportLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    ASSERT_UNUSED(handle, !handle);
     // Resource may already have been loaded with the import loader
     // being added as a client later & now being notified. Fail early.
     if (resource->loadFailedOrCanceled() || response.httpStatusCode() >= 400) {

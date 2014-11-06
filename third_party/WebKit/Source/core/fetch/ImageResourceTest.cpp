@@ -92,7 +92,7 @@ TEST(ImageResourceTest, MultipartImage)
     cachedImage->addClient(&client);
 
     // Send the multipart response. No image or data buffer is created.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
@@ -101,7 +101,7 @@ TEST(ImageResourceTest, MultipartImage)
     // Send the response for the first real part. No image or data buffer is created.
     const char* svgData = "<svg xmlns='http://www.w3.org/2000/svg' width='1' height='1'><rect width='1' height='1' fill='green'/></svg>";
     unsigned svgDataLength = strlen(svgData);
-    cachedImage->responseReceived(ResourceResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "image/svg+xml", svgDataLength, nullAtom, String()), nullptr);
     ASSERT_FALSE(cachedImage->resourceBuffer());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
@@ -169,10 +169,10 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
     cachedImage->addClient(&client);
 
     // Send the image response.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
 
     Vector<unsigned char> jpeg = jpegImage();
-    cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()), nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());
@@ -203,10 +203,10 @@ TEST(ImageResourceTest, UpdateBitmapImages)
     cachedImage->addClient(&client);
 
     // Send the image response.
-    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "multipart/x-mixed-replace", 0, nullAtom, String()), nullptr);
 
     Vector<unsigned char> jpeg = jpegImage();
-    cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()));
+    cachedImage->responseReceived(ResourceResponse(KURL(), "image/jpeg", jpeg.size(), nullAtom, String()), nullptr);
     cachedImage->appendData(reinterpret_cast<const char*>(jpeg.data()), jpeg.size());
     cachedImage->finish();
     ASSERT_FALSE(cachedImage->errorOccurred());

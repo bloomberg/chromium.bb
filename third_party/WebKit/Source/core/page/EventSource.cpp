@@ -220,8 +220,9 @@ ExecutionContext* EventSource::executionContext() const
     return ActiveDOMObject::executionContext();
 }
 
-void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response)
+void EventSource::didReceiveResponse(unsigned long, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    ASSERT_UNUSED(handle, !handle);
     ASSERT(m_state == CONNECTING);
     ASSERT(m_requestInFlight);
 

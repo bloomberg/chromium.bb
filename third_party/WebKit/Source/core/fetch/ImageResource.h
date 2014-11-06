@@ -92,7 +92,7 @@ public:
 
     virtual void appendData(const char*, unsigned) override;
     virtual void error(Resource::Status) override;
-    virtual void responseReceived(const ResourceResponse&) override;
+    virtual void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     virtual void finishOnePart() override;
 
     // For compatibility, images keep loading even if there are HTTP errors.

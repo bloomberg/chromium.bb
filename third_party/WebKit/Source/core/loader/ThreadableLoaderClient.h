@@ -32,8 +32,10 @@
 #define ThreadableLoaderClient_h
 
 #include "platform/heap/Handle.h"
+#include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -46,7 +48,7 @@ namespace blink {
     public:
         virtual void didSendData(unsigned long long /*bytesSent*/, unsigned long long /*totalBytesToBeSent*/) { }
 
-        virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&) { }
+        virtual void didReceiveResponse(unsigned long /*identifier*/, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
         virtual void didReceiveData(const char*, unsigned /*dataLength*/) { }
         virtual void didReceiveCachedMetadata(const char*, int /*dataLength*/) { }
         virtual void didFinishLoading(unsigned long /*identifier*/, double /*finishTime*/) { }

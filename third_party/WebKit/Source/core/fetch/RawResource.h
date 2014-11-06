@@ -25,6 +25,8 @@
 
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourcePtr.h"
+#include "public/platform/WebDataConsumerHandle.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 class RawResourceClient;
@@ -50,7 +52,7 @@ private:
 
     void willFollowRedirect(ResourceRequest&, const ResourceResponse&) override;
     void updateRequest(const ResourceRequest&) override;
-    void responseReceived(const ResourceResponse&) override;
+    void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
     void didDownloadData(int) override;
 };
@@ -75,7 +77,7 @@ public:
     virtual ResourceClientType resourceClientType() const override final { return expectedType(); }
 
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
-    virtual void responseReceived(Resource*, const ResourceResponse&) { }
+    virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
     virtual void dataReceived(Resource*, const char* /* data */, unsigned /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
     virtual void updateRequest(Resource*, const ResourceRequest&) { }

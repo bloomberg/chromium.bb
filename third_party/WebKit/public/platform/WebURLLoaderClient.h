@@ -31,6 +31,8 @@
 #ifndef WebURLLoaderClient_h
 #define WebURLLoaderClient_h
 
+#include "public/platform/WebDataConsumerHandle.h"
+
 namespace blink {
 
 class WebURLLoader;
@@ -52,6 +54,14 @@ public:
 
     // Called when response headers are received.
     virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&) { }
+
+    // Called when response headers are received.
+    // The ownership of |handle| is transferred to the callee.
+    virtual void didReceiveResponse(WebURLLoader* loader, const WebURLResponse& response, WebDataConsumerHandle* handle)
+    {
+        delete handle;
+        didReceiveResponse(loader, response);
+    }
 
     // Called when a chunk of response data is downloaded. This is only called
     // if WebURLRequest's downloadToFile flag was set to true.

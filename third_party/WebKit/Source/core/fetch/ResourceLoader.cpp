@@ -346,10 +346,12 @@ bool ResourceLoader::responseNeedsAccessControlCheck() const
     return m_options.corsEnabled == IsCORSEnabled;
 }
 
-void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response)
+void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebURLResponse& response, WebDataConsumerHandle* rawHandle)
 {
     ASSERT(!response.isNull());
     ASSERT(m_state == Initialized);
+    // |rawHandle|'s ownership is transferred to the callee.
+    OwnPtr<WebDataConsumerHandle> handle = adoptPtr(rawHandle);
 
     bool isMultipartPayload = response.isMultipartPayload();
     bool isValidStateTransition = (m_connectionState == ConnectionStateStarted || m_connectionState == ConnectionStateReceivedResponse);
@@ -393,7 +395,7 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     // Reference the object in this method since the additional processing can do
     // anything including removing the last reference to this object.
     RefPtrWillBeRawPtr<ResourceLoader> protect(this);
-    m_resource->responseReceived(resourceResponse);
+    m_resource->responseReceived(resourceResponse, handle.release());
     if (m_state == Terminated)
         return;
 
@@ -430,6 +432,11 @@ void ResourceLoader::didReceiveResponse(blink::WebURLLoader*, const blink::WebUR
     ASSERT(m_state != Terminated);
     m_resource->error(Resource::LoadError);
     cancel();
+}
+
+void ResourceLoader::didReceiveResponse(blink::WebURLLoader* loader, const blink::WebURLResponse& response)
+{
+    didReceiveResponse(loader, response, nullptr);
 }
 
 void ResourceLoader::didReceiveData(blink::WebURLLoader*, const char* data, int length, int encodedDataLength)

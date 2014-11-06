@@ -349,10 +349,10 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
     m_client->didDownloadData(dataLength);
 }
 
-void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response)
+void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
-    handleResponse(resource->identifier(), response);
+    handleResponse(resource->identifier(), response, handle);
 }
 
 void DocumentThreadableLoader::handlePreflightResponse(const ResourceResponse& response)
@@ -390,7 +390,7 @@ void DocumentThreadableLoader::notifyResponseReceived(unsigned long identifier, 
     frame->console().reportResourceResponseReceived(loader, identifier, response);
 }
 
-void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response)
+void DocumentThreadableLoader::handleResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT(m_client);
 
@@ -407,7 +407,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
             return;
         }
         m_fallbackRequestForServiceWorker = nullptr;
-        m_client->didReceiveResponse(identifier, response);
+        m_client->didReceiveResponse(identifier, response, handle);
         return;
     }
 
@@ -422,7 +422,7 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
         }
     }
 
-    m_client->didReceiveResponse(identifier, response);
+    m_client->didReceiveResponse(identifier, response, handle);
 }
 
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, unsigned dataLength)
@@ -580,7 +580,7 @@ void DocumentThreadableLoader::loadRequest(const ResourceRequest& request, Resou
         return;
     }
 
-    handleResponse(identifier, response);
+    handleResponse(identifier, response, nullptr);
 
     SharedBuffer* data = resource->resourceBuffer();
     if (data)

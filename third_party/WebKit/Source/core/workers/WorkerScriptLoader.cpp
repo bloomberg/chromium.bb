@@ -110,8 +110,9 @@ PassOwnPtr<ResourceRequest> WorkerScriptLoader::createResourceRequest()
     return request.release();
 }
 
-void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response)
+void WorkerScriptLoader::didReceiveResponse(unsigned long identifier, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
+    ASSERT_UNUSED(handle, !handle);
     if (response.httpStatusCode() / 100 != 2 && response.httpStatusCode()) {
         m_failed = true;
         return;
