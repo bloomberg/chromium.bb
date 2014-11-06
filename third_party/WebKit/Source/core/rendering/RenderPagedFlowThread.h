@@ -25,6 +25,9 @@ public:
     virtual bool needsNewWidth() const override;
     virtual void updateLogicalWidth() override;
     virtual void layout();
+
+private:
+    virtual bool descendantIsValidColumnSpanner(RenderObject* /*descendant*/) const override { return false; }
 };
 
 } // namespace blink

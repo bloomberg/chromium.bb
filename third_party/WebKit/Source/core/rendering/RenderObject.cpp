@@ -2402,6 +2402,9 @@ void RenderObject::insertedIntoTree()
 
     if (!isFloating() && parent()->childrenInline())
         parent()->dirtyLinesFromChangedChild(this);
+
+    if (RenderFlowThread* flowThread = parent()->flowThreadContainingBlock())
+        flowThread->flowThreadDescendantWasInserted(this);
 }
 
 void RenderObject::willBeRemovedFromTree()
@@ -2451,7 +2454,6 @@ void RenderObject::removeFromRenderFlowThreadRecursive(RenderFlowThread* renderF
         for (RenderObject* child = children->firstChild(); child; child = child->nextSibling())
             child->removeFromRenderFlowThreadRecursive(renderFlowThread);
     }
-
     setFlowThreadState(NotInsideFlowThread);
 }
 

@@ -357,6 +357,7 @@ public:
     bool isRenderIFrame() const { return isOfType(RenderObjectRenderIFrame); }
     bool isRenderImage() const { return isOfType(RenderObjectRenderImage); }
     bool isRenderMultiColumnSet() const { return isOfType(RenderObjectRenderMultiColumnSet); }
+    bool isRenderMultiColumnSpannerSet() const { return isOfType(RenderObjectRenderMultiColumnSpannerSet); }
     bool isRenderRegion() const { return isOfType(RenderObjectRenderRegion); }
     bool isRenderScrollbarPart() const { return isOfType(RenderObjectRenderScrollbarPart); }
     bool isRenderTableCol() const { return isOfType(RenderObjectRenderTableCol); }
@@ -507,7 +508,7 @@ public:
         // RenderBlock::createAnonymousBlock(). This includes creating an anonymous
         // RenderBlock having a BLOCK or BOX display. Other classes such as RenderTextFragment
         // are not RenderBlocks and will return false. See https://bugs.webkit.org/show_bug.cgi?id=56709.
-        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread()
+        return isAnonymous() && (style()->display() == BLOCK || style()->display() == BOX) && style()->styleType() == NOPSEUDO && isRenderBlock() && !isListMarker() && !isRenderFlowThread() && !isRenderMultiColumnSet()
             && !isRenderFullScreen()
             && !isRenderFullScreenPlaceholder();
     }
@@ -1083,6 +1084,7 @@ protected:
         RenderObjectRenderImage,
         RenderObjectRenderInline,
         RenderObjectRenderMultiColumnSet,
+        RenderObjectRenderMultiColumnSpannerSet,
         RenderObjectRenderPart,
         RenderObjectRenderRegion,
         RenderObjectRenderScrollbarPart,

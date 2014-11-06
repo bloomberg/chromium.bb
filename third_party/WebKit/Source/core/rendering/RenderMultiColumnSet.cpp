@@ -206,6 +206,12 @@ void RenderMultiColumnSet::addContentRun(LayoutUnit endOffsetFromFirstPage)
 
 bool RenderMultiColumnSet::recalculateColumnHeight(BalancedHeightCalculation calculationMode)
 {
+    if (previousSiblingMultiColumnSet()) {
+        // FIXME: column spanner layout is not yet implemented. Until it's in place, we only operate
+        // on the first set during layout. We need to ignore the others here, or assertions will
+        // fail.
+        return false;
+    }
     ASSERT(multiColumnFlowThread()->heightIsAuto());
 
     LayoutUnit oldColumnHeight = m_columnHeight;

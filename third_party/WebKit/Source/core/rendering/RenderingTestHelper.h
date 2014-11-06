@@ -4,6 +4,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "wtf/OwnPtr.h"
@@ -17,6 +18,8 @@ protected:
     {
         m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
 
+        document().settings()->setRegionBasedColumnsEnabled(true);
+
         // This ensures that the minimal DOM tree gets attached
         // correctly for tests that don't call setBodyInnerHTML.
         document().view()->updateLayoutAndStyleIfNeededRecursive();
@@ -24,9 +27,9 @@ protected:
 
     Document& document() const { return m_pageHolder->document(); }
 
-    void setBodyInnerHTML(const char* htmlContent)
+    void setBodyInnerHTML(const String& htmlContent)
     {
-        document().body()->setInnerHTML(String::fromUTF8(htmlContent), ASSERT_NO_EXCEPTION);
+        document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
         document().view()->updateLayoutAndStyleIfNeededRecursive();
     }
 

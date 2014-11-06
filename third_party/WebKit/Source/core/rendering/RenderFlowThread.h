@@ -67,6 +67,8 @@ public:
     // can easily avoid drawing the children directly.
     virtual LayerType layerTypeRequired() const override final { return NormalLayer; }
 
+    virtual void flowThreadDescendantWasInserted(RenderObject*) { }
+
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) override final;
 
     virtual void addRegionToThread(RenderMultiColumnSet*) = 0;

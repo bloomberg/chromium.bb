@@ -28,10 +28,12 @@
 #define RenderMultiColumnFlowThread_h
 
 #include "core/rendering/RenderFlowThread.h"
+#include "wtf/HashMap.h"
 
 namespace blink {
 
 class RenderMultiColumnSet;
+class RenderMultiColumnSpannerSet;
 
 // Flow thread implementation for CSS multicol. This will be inserted as an anonymous child block of
 // the actual multicol container (i.e. the RenderBlockFlow whose style computes to non-auto
@@ -51,17 +53,24 @@ class RenderMultiColumnSet;
 // container. It's the RenderMultiColumnSet objects that take up the necessary amount of space, and
 // make sure that the columns are painted and hit-tested correctly.
 //
+// If there is any column content inside the multicol container, we create a
+// RenderMultiColumnSet. We only need to create multiple sets if there are spanners
+// (column-span:all) in the multicol container. When a spanner is inserted, content preceding it
+// gets its own set, and content succeeding it will get another set. The spanner itself will also
+// get its own set (RenderMultiColumnSpannerSet).
+//
 // The width of the flow thread is the same as the column width. The width of a column set is the
 // same as the content box width of the multicol container; in other words exactly enough to hold
 // the number of columns to be used, stacked horizontally, plus column gaps between them.
 //
 // Since it's the first child of the multicol container, the flow thread is laid out first, albeit
 // in a slightly special way, since it's not to take up any space in its ancestors. Afterwards, the
-// column sets are laid out. They get their height from the columns that they hold. In single
-// column-row constrained height non-balancing cases this will simply be the same as the content
-// height of the multicol container itself. In most other cases we'll have to calculate optimal
-// column heights ourselves, though. This process is referred to as column balancing, and then we
-// infer the column set height from the flow thread's height.
+// column sets are laid out. Column sets get their height from the columns that they hold. In single
+// column-row constrained height non-balancing cases without spanners this will simply be the same
+// as the content height of the multicol container itself. In most other cases we'll have to
+// calculate optimal column heights ourselves, though. This process is referred to as column
+// balancing, and then we infer the column set height from the height of the flow thread portion
+// occupied by each set.
 //
 // More on column balancing: the columns' height is unknown in the first layout pass when
 // balancing. This means that we cannot insert any implicit (soft / unforced) breaks (and pagination
@@ -97,7 +106,9 @@ public:
     RenderMultiColumnSet* firstMultiColumnSet() const;
     RenderMultiColumnSet* lastMultiColumnSet() const;
 
-    virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override;
+    // Return the spanner set (if any) that contains the specified renderer. This includes the
+    // renderer for the element that actually establishes the spanner too.
+    RenderMultiColumnSpannerSet* containingColumnSpannerSet(const RenderObject* descendant) const;
 
     // Populate the flow thread with what's currently its siblings. Called when a regular block
     // becomes a multicol container.
@@ -131,10 +142,14 @@ protected:
 
 private:
     void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
+    void createAndInsertMultiColumnSet();
+    void createAndInsertSpannerSet(RenderBox* spanner);
+    virtual bool descendantIsValidColumnSpanner(RenderObject* descendant) const;
 
     virtual const char* renderName() const override;
     virtual void addRegionToThread(RenderMultiColumnSet*) override;
     virtual void willBeRemovedFromTree() override;
+    virtual void flowThreadDescendantWasInserted(RenderObject*) override;
     virtual void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     virtual void updateLogicalWidth() override;
     virtual void setPageBreak(LayoutUnit offset, LayoutUnit spaceShortage) override;
@@ -142,6 +157,9 @@ private:
     virtual RenderMultiColumnSet* columnSetAtBlockOffset(LayoutUnit) const override;
     virtual bool addForcedRegionBreak(LayoutUnit, RenderObject* breakChild, bool isBefore, LayoutUnit* offsetBreakAdjustment = 0) override;
     virtual bool isPageLogicalHeightKnown() const override;
+
+    typedef HashMap<const RenderObject*, RenderMultiColumnSpannerSet*> SpannerMap;
+    SpannerMap m_spannerMap;
 
     unsigned m_columnCount; // The used value of column-count
     LayoutUnit m_columnHeightAvailable; // Total height available to columns, or 0 if auto.
