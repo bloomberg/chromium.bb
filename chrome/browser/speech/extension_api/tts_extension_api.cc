@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/lazy_instance.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
@@ -83,8 +82,7 @@ namespace extensions {
 // One of these is constructed for each utterance, and deleted
 // when the utterance gets any final event.
 class TtsExtensionEventHandler
-    : public UtteranceEventDelegate,
-      public base::SupportsWeakPtr<TtsExtensionEventHandler> {
+    : public UtteranceEventDelegate {
  public:
   explicit TtsExtensionEventHandler(const std::string& src_extension_id);
 
@@ -289,8 +287,7 @@ bool TtsSpeakFunction::RunAsync() {
   utterance->set_desired_event_types(desired_event_types);
   utterance->set_extension_id(voice_extension_id);
   utterance->set_options(options.get());
-  utterance->set_event_delegate(
-      (new TtsExtensionEventHandler(extension_id()))->AsWeakPtr());
+  utterance->set_event_delegate(new TtsExtensionEventHandler(extension_id()));
 
   TtsController* controller = TtsController::GetInstance();
   controller->SpeakOrEnqueue(utterance);

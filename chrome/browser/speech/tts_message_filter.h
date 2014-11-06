@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SPEECH_TTS_MESSAGE_FILTER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/common/tts_messages.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -52,10 +53,16 @@ class TtsMessageFilter
 
   void OnChannelClosingInUIThread();
 
+  void Cleanup();
+
+  // Thread-safe check to make sure this class is still valid and not
+  // about to be deleted.
+  bool Valid();
+
   int render_process_id_;
   content::BrowserContext* browser_context_;
-
-  base::WeakPtrFactory<TtsMessageFilter> weak_ptr_factory_;
+  mutable base::Lock mutex_;
+  mutable bool valid_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsMessageFilter);
 };

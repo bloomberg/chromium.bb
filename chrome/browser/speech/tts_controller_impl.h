@@ -12,7 +12,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "url/gurl.h"
 
@@ -43,6 +42,7 @@ class TtsControllerImpl : public TtsController {
   void VoicesChanged() override;
   void AddVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
   void RemoveVoicesChangedDelegate(VoicesChangedDelegate* delegate) override;
+  void RemoveUtteranceEventDelegate(UtteranceEventDelegate* delegate) override;
   void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
   TtsEngineDelegate* GetTtsEngineDelegate() override;
   void SetPlatformImpl(TtsPlatformImpl* platform_impl) override;

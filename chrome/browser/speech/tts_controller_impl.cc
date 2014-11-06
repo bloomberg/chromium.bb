@@ -91,7 +91,7 @@ void Utterance::OnTtsEvent(TtsEventType event_type,
   if (event_delegate_)
     event_delegate_->OnTtsEvent(this, event_type, char_index, error_message);
   if (finished_)
-    event_delegate_.reset();
+    event_delegate_ = NULL;
 }
 
 void Utterance::Finish() {
@@ -244,10 +244,8 @@ void TtsControllerImpl::SpeakNow(Utterance* utterance) {
 void TtsControllerImpl::Stop() {
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-#if !defined(OS_ANDROID)
     if (tts_engine_delegate_)
       tts_engine_delegate_->Stop(current_utterance_);
-#endif
   } else {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->StopSpeaking();
@@ -263,10 +261,8 @@ void TtsControllerImpl::Stop() {
 void TtsControllerImpl::Pause() {
   paused_ = true;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-#if !defined(OS_ANDROID)
     if (tts_engine_delegate_)
       tts_engine_delegate_->Pause(current_utterance_);
-#endif
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Pause();
@@ -276,10 +272,8 @@ void TtsControllerImpl::Pause() {
 void TtsControllerImpl::Resume() {
   paused_ = false;
   if (current_utterance_ && !current_utterance_->extension_id().empty()) {
-#if !defined(OS_ANDROID)
     if (tts_engine_delegate_)
       tts_engine_delegate_->Resume(current_utterance_);
-#endif
   } else if (current_utterance_) {
     GetPlatformImpl()->clear_error();
     GetPlatformImpl()->Resume();
@@ -308,10 +302,8 @@ void TtsControllerImpl::OnTtsEvent(int utterance_id,
 
 void TtsControllerImpl::GetVoices(content::BrowserContext* browser_context,
                               std::vector<VoiceData>* out_voices) {
-#if !defined(OS_ANDROID)
   if (browser_context && tts_engine_delegate_)
     tts_engine_delegate_->GetVoices(browser_context, out_voices);
-#endif
 
   TtsPlatformImpl* platform_impl = GetPlatformImpl();
   if (platform_impl) {
@@ -457,6 +449,36 @@ void TtsControllerImpl::AddVoicesChangedDelegate(
 void TtsControllerImpl::RemoveVoicesChangedDelegate(
     VoicesChangedDelegate* delegate) {
   voices_changed_delegates_.erase(delegate);
+}
+
+void TtsControllerImpl::RemoveUtteranceEventDelegate(
+    UtteranceEventDelegate* delegate) {
+  // First clear any pending utterances with this delegate.
+  std::queue<Utterance*> old_queue = utterance_queue_;
+  utterance_queue_ = std::queue<Utterance*>();
+  while (!old_queue.empty()) {
+    Utterance* utterance = old_queue.front();
+    old_queue.pop();
+    if (utterance->event_delegate() != delegate)
+      utterance_queue_.push(utterance);
+    else
+      delete utterance;
+  }
+
+  if (current_utterance_ && current_utterance_->event_delegate() == delegate) {
+    current_utterance_->set_event_delegate(NULL);
+    if (!current_utterance_->extension_id().empty()) {
+      if (tts_engine_delegate_)
+        tts_engine_delegate_->Stop(current_utterance_);
+    } else {
+      GetPlatformImpl()->clear_error();
+      GetPlatformImpl()->StopSpeaking();
+    }
+
+    FinishCurrentUtterance();
+    if (!paused_)
+      SpeakNextUtterance();
+  }
 }
 
 void TtsControllerImpl::SetTtsEngineDelegate(
