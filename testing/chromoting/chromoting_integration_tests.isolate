@@ -57,6 +57,15 @@
         ],
       },
     }],
+    ['OS=="mac"', {
+      'variables': {
+        'files': [
+          '<(PRODUCT_DIR)/<(mac_product_name).app/',
+          '<(PRODUCT_DIR)/exif.so',
+          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        ],
+      },
+    }],
     ['OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
