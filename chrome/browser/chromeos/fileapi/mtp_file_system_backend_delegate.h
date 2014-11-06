@@ -47,7 +47,7 @@ class MTPFileSystemBackendDelegate : public FileSystemBackendDelegate {
       int64 offset,
       storage::FileSystemContext* context) override;
   virtual storage::WatcherManager* GetWatcherManager(
-      const storage::FileSystemURL& url) override;
+      storage::FileSystemType type) override;
   virtual void GetRedirectURLForContents(
       const storage::FileSystemURL& url,
       const storage::URLCallback& callback) override;

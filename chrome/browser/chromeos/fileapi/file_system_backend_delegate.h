@@ -55,7 +55,7 @@ class FileSystemBackendDelegate {
   // Called from the FileSystemWatcherService class. The returned pointer must
   // stay valid until shutdown.
   virtual storage::WatcherManager* GetWatcherManager(
-      const storage::FileSystemURL& url) = 0;
+      storage::FileSystemType type) = 0;
 
   // Called from FileSystemBackend::GetRedirectURLForContents.  Please ensure
   // that the returned URL is secure to be opened in a browser tab, or referred

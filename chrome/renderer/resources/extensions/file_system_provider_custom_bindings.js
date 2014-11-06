@@ -249,4 +249,12 @@ eventBindings.registerArgumentMassager(
     'fileSystemProvider.onUnobserveEntryRequested',
     massageArgumentsDefault);
 
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onAddWatcherRequested',
+    massageArgumentsDefault);
+
+eventBindings.registerArgumentMassager(
+    'fileSystemProvider.onRemoveWatcherRequested',
+    massageArgumentsDefault);
+
 exports.binding = binding.generate();

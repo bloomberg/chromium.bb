@@ -52,7 +52,7 @@ MTPFileSystemBackendDelegate::CreateFileStreamWriter(
 }
 
 storage::WatcherManager* MTPFileSystemBackendDelegate::GetWatcherManager(
-    const storage::FileSystemURL& url) {
+    storage::FileSystemType type) {
   NOTIMPLEMENTED();
   return NULL;
 }

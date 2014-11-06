@@ -602,6 +602,17 @@ void EventRouter::OnCopyProgress(
       file_manager_private::OnCopyProgress::Create(copy_id, status));
 }
 
+void EventRouter::OnWatcherManagerNotification(
+    const storage::FileSystemURL& file_system_url,
+    const std::string& extension_id,
+    storage::WatcherManager::ChangeType /* change_type */) {
+  std::vector<std::string> extension_ids;
+  extension_ids.push_back(extension_id);
+
+  DispatchDirectoryChangeEvent(file_system_url.virtual_path(), NULL,
+                               false /* error */, extension_ids);
+}
+
 void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
   if (!profile_ || !extensions::EventRouter::Get(profile_)) {
     NOTREACHED();
@@ -855,6 +866,8 @@ void EventRouter::DispatchDirectoryChangeEventImpl(
 
     FileDefinition file_definition;
     file_definition.virtual_path = virtual_path;
+    // TODO(mtomasz): Add support for watching files in File System Provider
+    // API.
     file_definition.is_directory = true;
 
     file_manager::util::ConvertFileDefinitionToEntryDefinition(
@@ -877,6 +890,7 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
     const EntryDefinition& entry_definition) {
   typedef std::map<base::FilePath, drive::FileChange::ChangeList> ChangeListMap;
 
+  // TODO(mtomasz): Add support for watching files in File System Provider API.
   if (entry_definition.error != base::File::FILE_OK ||
       !entry_definition.is_directory) {
     DVLOG(1) << "Unable to dispatch event because resolving the directory "
@@ -1021,6 +1035,10 @@ void EventRouter::Observe(int type,
 void EventRouter::SetDispatchDirectoryChangeEventImplForTesting(
     const DispatchDirectoryChangeEventImplCallback& callback) {
   dispatch_directory_change_event_impl_ = callback;
+}
+
+base::WeakPtr<EventRouter> EventRouter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace file_manager

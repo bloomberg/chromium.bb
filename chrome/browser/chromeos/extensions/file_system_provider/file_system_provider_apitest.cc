@@ -131,6 +131,24 @@ IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Thumbnail) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, AddWatcher) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/add_watcher",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, RemoveWatcher) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/remove_watcher",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Notify) {
+  ASSERT_TRUE(RunPlatformAppTestWithFlags("file_system_provider/notify",
+                                          kFlagLoadAsComponent))
+      << message_;
+}
+
 // TODO(mtomasz): Add a test for Notify() once it's wired to
 // chrome.fileManagerPrivate.
 

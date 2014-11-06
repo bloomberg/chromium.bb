@@ -169,7 +169,7 @@ test_util.onCloseFileRequested = function(options, onSuccess, onError) {
 };
 
 /**
- * Default implementation for the file create request event..
+ * Default implementation for the file create request event.
  *
  * @param {CreateFileRequestedOptions} options Options.
  * @param {function(Object)} onSuccess Success callback
@@ -201,3 +201,44 @@ test_util.onCreateFileRequested = function(options, onSuccess, onError) {
   onSuccess();  // enum ProviderError.
 };
 
+/**
+ * Default implementation for adding an entry watcher.
+ *
+ * @param {AddWatcherRequestedOptions} options Options.
+ * @param {function()} onSuccess Success callback.
+ * @param {function(string)} onError Error callback with an error code.
+ */
+test_util.onAddWatcherRequested = function(options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  if (options.entryPath in test_util.defaultMetadata) {
+    onSuccess();
+    return;
+  }
+
+  onError('NOT_FOUND');  // enum ProviderError.
+};
+
+/**
+ * Default implementation for removing an entry watcher.
+ *
+ * @param {AddWatcherRequestedOptions} options Options.
+ * @param {function()} onSuccess Success callback.
+ * @param {function(string)} onError Error callback with an error code.
+ */
+test_util.onRemoveWatcherRequested = function(options, onSuccess, onError) {
+  if (options.fileSystemId != test_util.FILE_SYSTEM_ID) {
+    onError('SECURITY');  // enum ProviderError.
+    return;
+  }
+
+  if (options.entryPath in test_util.defaultMetadata) {
+    onSuccess();
+    return;
+  }
+
+  onError('NOT_FOUND');  // enum ProviderError.
+};

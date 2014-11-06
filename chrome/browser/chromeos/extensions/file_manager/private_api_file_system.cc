@@ -201,6 +201,13 @@ void CancelCopyOnIOThread(
       operation_id, base::Bind(&OnCopyCancelled));
 }
 
+// Converts a status code to a bool value and calls the |callback| with it.
+void StatusCallbackToResponseCallback(
+    const base::Callback<void(bool)>& callback,
+    base::File::Error result) {
+  callback.Run(result == base::File::FILE_OK);
+}
+
 }  // namespace
 
 void FileManagerPrivateRequestFileSystemFunction::DidFail(
@@ -267,7 +274,7 @@ bool FileManagerPrivateRequestFileSystemFunction::RunAsync() {
 
   using file_manager::VolumeManager;
   using file_manager::VolumeInfo;
-  VolumeManager* volume_manager = VolumeManager::Get(GetProfile());
+  VolumeManager* const volume_manager = VolumeManager::Get(GetProfile());
   if (!volume_manager)
     return false;
 
@@ -354,42 +361,67 @@ bool FileWatchFunctionBase::RunAsync() {
       file_manager::util::GetFileSystemContextForRenderViewHost(
           GetProfile(), render_view_host());
 
-  FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
-  base::FilePath local_path = file_watch_url.path();
-  base::FilePath virtual_path = file_watch_url.virtual_path();
-  if (local_path.empty()) {
+  const FileSystemURL file_system_url =
+      file_system_context->CrackURL(GURL(url));
+  if (file_system_url.path().empty()) {
     Respond(false);
     return true;
   }
-  PerformFileWatchOperation(local_path, virtual_path, extension_id());
 
+  PerformFileWatchOperation(file_system_context, file_system_url,
+                            extension_id());
   return true;
 }
 
 void FileManagerPrivateAddFileWatchFunction::PerformFileWatchOperation(
-    const base::FilePath& local_path,
-    const base::FilePath& virtual_path,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& file_system_url,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_manager::EventRouter* event_router =
+  file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(GetProfile());
+
+  storage::WatcherManager* const watcher_manager =
+      file_system_context->GetWatcherManager(file_system_url.type());
+  if (watcher_manager) {
+    watcher_manager->AddWatcher(
+        file_system_url, false /* recursive */,
+        base::Bind(
+            &StatusCallbackToResponseCallback,
+            base::Bind(&FileManagerPrivateAddFileWatchFunction::Respond, this)),
+        base::Bind(&file_manager::EventRouter::OnWatcherManagerNotification,
+                   event_router->GetWeakPtr(), file_system_url, extension_id));
+    return;
+  }
+
+  // Obsolete. Fallback code if storage::WatcherManager is not implemented.
   event_router->AddFileWatch(
-      local_path,
-      virtual_path,
-      extension_id,
+      file_system_url.path(), file_system_url.virtual_path(), extension_id,
       base::Bind(&FileManagerPrivateAddFileWatchFunction::Respond, this));
 }
 
 void FileManagerPrivateRemoveFileWatchFunction::PerformFileWatchOperation(
-    const base::FilePath& local_path,
-    const base::FilePath& unused,
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& file_system_url,
     const std::string& extension_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  file_manager::EventRouter* event_router =
+  file_manager::EventRouter* const event_router =
       file_manager::EventRouterFactory::GetForProfile(GetProfile());
-  event_router->RemoveFileWatch(local_path, extension_id);
+
+  storage::WatcherManager* const watcher_manager =
+      file_system_context->GetWatcherManager(file_system_url.type());
+  if (watcher_manager) {
+    watcher_manager->RemoveWatcher(
+        file_system_url, false /* recursive */,
+        base::Bind(&StatusCallbackToResponseCallback,
+                   base::Bind(&FileWatchFunctionBase::Respond, this)));
+    return;
+  }
+
+  // Obsolete. Fallback code if storage::WatcherManager is not implemented.
+  event_router->RemoveFileWatch(file_system_url.path(), extension_id);
   Respond(true);
 }
 

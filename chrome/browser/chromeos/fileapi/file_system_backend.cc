@@ -267,6 +267,10 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
 
 storage::WatcherManager* FileSystemBackend::GetWatcherManager(
     storage::FileSystemType type) {
+  if (type == storage::kFileSystemTypeProvided)
+    return file_system_provider_delegate_->GetWatcherManager(type);
+
+  // TODO(mtomasz): Add support for other backends.
   return NULL;
 }
 

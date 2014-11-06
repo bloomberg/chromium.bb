@@ -77,12 +77,18 @@ class EventRouter : public KeyedService,
   //
   // |callback| will be called with true on success, or false on failure.
   // |callback| must not be null.
+  //
+  // Obsolete. Used as fallback for files which backends do not implement the
+  // storage::WatcherManager interface.
   void AddFileWatch(const base::FilePath& local_path,
                     const base::FilePath& virtual_path,
                     const std::string& extension_id,
                     const BoolCallback& callback);
 
   // Removes a file watch at |local_path| for an extension with |extension_id|.
+  //
+  // Obsolete. Used as fallback for files which backends do not implement the
+  // storage::WatcherManager interface.
   void RemoveFileWatch(const base::FilePath& local_path,
                        const std::string& extension_id);
 
@@ -97,6 +103,12 @@ class EventRouter : public KeyedService,
                       const GURL& source_url,
                       const GURL& destination_url,
                       int64 size);
+
+  // Called when a notification from a watcher manager arrives.
+  void OnWatcherManagerNotification(
+      const storage::FileSystemURL& file_system_url,
+      const std::string& extension_id,
+      storage::WatcherManager::ChangeType change_type);
 
   // chromeos::NetworkStateHandlerObserver overrides.
   virtual void DefaultNetworkChanged(
@@ -142,6 +154,9 @@ class EventRouter : public KeyedService,
   // Set custom dispatch directory change event implementation for testing.
   void SetDispatchDirectoryChangeEventImplForTesting(
       const DispatchDirectoryChangeEventImplCallback& callback);
+
+  // Returns a weak pointer for the event router.
+  base::WeakPtr<EventRouter> GetWeakPtr();
 
  private:
   typedef std::map<base::FilePath, FileWatcher*> WatcherMap;
