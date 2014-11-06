@@ -46,13 +46,14 @@ void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
 // TODO(ckehoe): Make DirectiveHandler an interface.
 class FakeDirectiveHandler final : public DirectiveHandler {
  public:
-  FakeDirectiveHandler() {}
+  FakeDirectiveHandler() : DirectiveHandler(nullptr) {}
 
   const std::vector<std::string>& added_directives() const {
     return added_directives_;
   }
 
-  void Start(WhispernetClient* /* whispernet_client */) override {
+  void Start(WhispernetClient* /* whispernet_client */,
+             const TokensCallback& /* tokens_cb */) override {
     NOTREACHED();
   }
 
@@ -68,6 +69,8 @@ class FakeDirectiveHandler final : public DirectiveHandler {
     return type == AUDIBLE ? "current audible" : "current inaudible";
   }
 
+  bool IsAudioTokenHeard(AudioType type) const override { return true; }
+
  private:
   std::vector<std::string> added_directives_;
 
@@ -79,12 +82,12 @@ class FakeDirectiveHandler final : public DirectiveHandler {
 class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
  public:
   RpcHandlerTest()
-    : whispernet_client_(new StubWhispernetClient),
-      rpc_handler_(this,
-                   &directive_handler_,
-                   base::Bind(&RpcHandlerTest::CaptureHttpPost,
-                              base::Unretained(this))),
-      status_(SUCCESS) {}
+      : whispernet_client_(new StubWhispernetClient),
+        rpc_handler_(this,
+                     &directive_handler_,
+                     base::Bind(&RpcHandlerTest::CaptureHttpPost,
+                                base::Unretained(this))),
+        status_(SUCCESS) {}
 
   // CopresenceDelegate implementation
 
@@ -96,6 +99,8 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
       messages_by_subscription_[subscription_id].push_back(message.payload());
     }
   }
+
+  void HandleStatusUpdate(CopresenceStatus /* status */) override {}
 
   net::URLRequestContextGetter* GetRequestContext() const override {
     return nullptr;

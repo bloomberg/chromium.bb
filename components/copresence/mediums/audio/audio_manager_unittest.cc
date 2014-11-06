@@ -9,9 +9,8 @@
 #include "components/copresence/mediums/audio/audio_manager_impl.h"
 #include "components/copresence/mediums/audio/audio_player.h"
 #include "components/copresence/mediums/audio/audio_recorder.h"
-#include "components/copresence/test/audio_test_support.h"
+#include "components/copresence/test/stub_whispernet_client.h"
 #include "media/base/audio_bus.h"
-//#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace copresence {
@@ -62,7 +61,8 @@ class AudioRecorderStub final : public AudioRecorder {
 class AudioManagerTest : public testing::Test {
  public:
   AudioManagerTest()
-      : audio_manager_(new AudioManagerImpl()),
+      : whispernet_client_(new StubWhispernetClient),
+        audio_manager_(new AudioManagerImpl()),
         audible_player_(new AudioPlayerStub),
         inaudible_player_(new AudioPlayerStub),
         recorder_(new AudioRecorderStub),
@@ -71,24 +71,32 @@ class AudioManagerTest : public testing::Test {
     audio_manager_->set_player_for_testing(INAUDIBLE, inaudible_player_);
     audio_manager_->set_recorder_for_testing(recorder_);
     audio_manager_->Initialize(
-        base::Bind(&AudioManagerTest::DecodeSamples, base::Unretained(this)),
-        base::Bind(&AudioManagerTest::EncodeToken, base::Unretained(this)));
+        whispernet_client_.get(),
+        base::Bind(&AudioManagerTest::GetTokens, base::Unretained(this)));
   }
+
   ~AudioManagerTest() override {}
 
  protected:
-  void EncodeToken(const std::string& token,
-                   AudioType audible,
-                   const AudioManager::SamplesCallback& callback) {
-    callback.Run(
-        token, audible, CreateRandomAudioRefCounted(0x1337, 1, 0x7331));
-  }
-
-  void DecodeSamples(AudioType type, const std::string& /* samples */) {
-    last_received_decode_type_ = type;
+  void GetTokens(const std::vector<AudioToken>& tokens) {
+    last_received_decode_type_ = AUDIO_TYPE_UNKNOWN;
+    for (const auto& token : tokens) {
+      if (token.audible && last_received_decode_type_ == INAUDIBLE) {
+        last_received_decode_type_ = BOTH;
+      } else if (!token.audible && last_received_decode_type_ == AUDIBLE) {
+        last_received_decode_type_ = BOTH;
+      } else if (token.audible) {
+        last_received_decode_type_ = AUDIBLE;
+      } else {
+        last_received_decode_type_ = INAUDIBLE;
+      }
+    }
   }
 
   base::MessageLoop message_loop_;
+  // Order is important, |whispernet_client_| needs to get destructed *after*
+  // |audio_manager_|.
+  scoped_ptr<WhispernetClient> whispernet_client_;
   scoped_ptr<AudioManagerImpl> audio_manager_;
 
   // These will be deleted by |audio_manager_|'s dtor calling finalize on them.

@@ -19,29 +19,12 @@ class AudioBusRefCounted;
 
 namespace copresence {
 
-struct AudioToken {
-  AudioToken(const std::string& token, bool audible)
-      : token(token), audible(audible) {}
-  std::string token;
-  bool audible;
-};
-
 // The interface that the whispernet client needs to implement. These methods
 // provide us the ability to use the audio medium in copresence. Currently since
 // the only medium that copresence uses is audio, the implementation of this
 // interface is required.
 class WhispernetClient {
  public:
-  // Generic callback to indicate a boolean success or failure.
-  typedef base::Callback<void(bool)> SuccessCallback;
-  // Callback that returns detected tokens.
-  typedef base::Callback<void(const std::vector<AudioToken>&)> TokensCallback;
-  // Callback that returns encoded samples for a given token.
-  typedef base::Callback<void(const std::string&,
-                              AudioType,
-                              const scoped_refptr<media::AudioBusRefCounted>&)>
-      SamplesCallback;
-
   // Initialize the whispernet client and call the callback when done. The
   // parameter indicates whether we succeeded or failed.
   virtual void Initialize(const SuccessCallback& init_callback) = 0;

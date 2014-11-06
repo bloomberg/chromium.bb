@@ -38,7 +38,7 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
   ~ChromeWhispernetClient() override;
 
   // WhispernetClient overrides:
-  void Initialize(const SuccessCallback& init_callback) override;
+  void Initialize(const copresence::SuccessCallback& init_callback) override;
   void Shutdown() override;
 
   void EncodeToken(const std::string& token,
@@ -47,16 +47,17 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
                      const std::string& samples) override;
   void DetectBroadcast() override;
 
-  void RegisterTokensCallback(const TokensCallback& tokens_callback) override;
+  void RegisterTokensCallback(
+      const copresence::TokensCallback& tokens_callback) override;
   void RegisterSamplesCallback(
-      const SamplesCallback& samples_callback) override;
+      const copresence::SamplesCallback& samples_callback) override;
   void RegisterDetectBroadcastCallback(
-      const SuccessCallback& db_callback) override;
+      const copresence::SuccessCallback& db_callback) override;
 
-  TokensCallback GetTokensCallback() override;
-  SamplesCallback GetSamplesCallback() override;
-  SuccessCallback GetDetectBroadcastCallback() override;
-  SuccessCallback GetInitializedCallback() override;
+  copresence::TokensCallback GetTokensCallback() override;
+  copresence::SamplesCallback GetSamplesCallback() override;
+  copresence::SuccessCallback GetDetectBroadcastCallback() override;
+  copresence::SuccessCallback GetInitializedCallback() override;
 
   static const char kWhispernetProxyExtensionId[];
 
@@ -71,12 +72,12 @@ class ChromeWhispernetClient final : public copresence::WhispernetClient {
 
   content::BrowserContext* browser_context_;
 
-  SuccessCallback extension_loaded_callback_;
-  SuccessCallback init_callback_;
+  copresence::SuccessCallback extension_loaded_callback_;
+  copresence::SuccessCallback init_callback_;
 
-  TokensCallback tokens_callback_;
-  SamplesCallback samples_callback_;
-  SuccessCallback db_callback_;
+  copresence::TokensCallback tokens_callback_;
+  copresence::SamplesCallback samples_callback_;
+  copresence::SuccessCallback db_callback_;
 
   bool extension_loaded_;
 

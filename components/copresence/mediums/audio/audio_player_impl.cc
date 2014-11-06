@@ -110,6 +110,7 @@ void AudioPlayerImpl::PlayOnAudioThread(
       return;
   }
 
+  VLOG(3) << "Starting playback.";
   is_playing_ = true;
   stream_->Start(this);
 }
@@ -119,6 +120,7 @@ void AudioPlayerImpl::StopOnAudioThread() {
   if (!stream_)
     return;
 
+  VLOG(3) << "Stopping playback.";
   stream_->Stop();
   is_playing_ = false;
 }

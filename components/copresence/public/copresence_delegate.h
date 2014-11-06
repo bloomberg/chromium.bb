@@ -19,7 +19,9 @@ namespace copresence {
 class Message;
 class WhispernetClient;
 
-enum CopresenceStatus { SUCCESS, FAIL };
+// AUDIO_FAIL indicates that we weren't able to hear the audio token that
+// we were playing.
+enum CopresenceStatus { SUCCESS, FAIL, AUDIO_FAIL };
 
 // Callback type to send a status.
 typedef base::Callback<void(CopresenceStatus)> StatusCallback;
@@ -35,6 +37,8 @@ class CopresenceDelegate {
       const std::string& app_id,
       const std::string& subscription_id,
       const std::vector<Message>& message) = 0;
+
+  virtual void HandleStatusUpdate(CopresenceStatus status) = 0;
 
   // Thw URLRequestContextGetter must outlive the CopresenceManager.
   virtual net::URLRequestContextGetter* GetRequestContext() const = 0;

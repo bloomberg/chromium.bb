@@ -35,9 +35,8 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
  public:
   FakeAudioDirectiveHandler() {}
 
-  void Initialize(
-      const AudioManager::DecodeSamplesCallback& /* decode_cb */,
-      const AudioManager::EncodeTokenCallback& /* encode_cb */) override {}
+  void Initialize(WhispernetClient* /* whispernet_client */,
+                  const TokensCallback& /* tokens_cb */) override {}
 
   void AddInstruction(const TokenInstruction& instruction,
                       const std::string& /* op_id */,
@@ -52,6 +51,11 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
   const std::string PlayingToken(AudioType /* type */) const override {
     NOTREACHED();
     return "";
+  }
+
+  bool IsPlayingTokenHeard(AudioType /* type */) const override {
+    NOTREACHED();
+    return false;
   }
 
   const std::vector<std::string>& added_tokens() const {
@@ -90,7 +94,7 @@ TEST_F(DirectiveHandlerTest, Queuing) {
   EXPECT_THAT(audio_handler_->added_tokens(), IsEmpty());
   EXPECT_THAT(audio_handler_->removed_operations(), IsEmpty());
 
-  directive_handler_.Start(whispernet_client_.get());
+  directive_handler_.Start(whispernet_client_.get(), TokensCallback());
   directive_handler_.RemoveDirectives("id 3");
 
   EXPECT_THAT(audio_handler_->added_tokens(), ElementsAre("token 3"));

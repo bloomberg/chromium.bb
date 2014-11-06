@@ -16,28 +16,21 @@ namespace copresence {
 
 DirectiveHandler::DirectiveHandler(
     scoped_ptr<AudioDirectiveHandler> audio_handler)
-    : audio_handler_(audio_handler.Pass()),
-      whispernet_client_(nullptr) {}
+    : audio_handler_(audio_handler.Pass()), is_started_(false) {
+}
 
 DirectiveHandler::~DirectiveHandler() {}
 
-void DirectiveHandler::Start(WhispernetClient* whispernet_client) {
-  DCHECK(whispernet_client);
-  whispernet_client_ = whispernet_client;
+void DirectiveHandler::Start(WhispernetClient* whispernet_client,
+                             const TokensCallback& tokens_cb) {
+  audio_handler_->Initialize(whispernet_client, tokens_cb);
 
-  // TODO(ckehoe): Just pass Whispernet all the way down to the AudioManager.
-  //               We shouldn't be concerned with these details here.
-  audio_handler_->Initialize(
-      base::Bind(&WhispernetClient::DecodeSamples,
-                 base::Unretained(whispernet_client_)),
-      base::Bind(&DirectiveHandler::EncodeToken,
-                 base::Unretained(this)));
+  is_started_ = true;
 
   // Run all the queued directives.
   for (const auto& op_id : pending_directives_) {
-    for (const Directive& directive : op_id.second) {
+    for (const Directive& directive : op_id.second)
       StartDirective(op_id.first, directive);
-    }
   }
   pending_directives_.clear();
 }
@@ -55,7 +48,7 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
     return;
   }
 
-  if (!whispernet_client_) {
+  if (!is_started_) {
     pending_directives_[op_id].push_back(directive);
   } else {
     StartDirective(op_id, directive);
@@ -64,7 +57,7 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
 
 void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
   // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
-  if (whispernet_client_) {
+  if (is_started_) {
     audio_handler_->RemoveInstructions(op_id);
   } else {
     pending_directives_.erase(op_id);
@@ -73,15 +66,18 @@ void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
 
 const std::string DirectiveHandler::GetCurrentAudioToken(AudioType type) const {
   // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
-  return whispernet_client_ ? audio_handler_->PlayingToken(type) : "";
+  return is_started_ ? audio_handler_->PlayingToken(type) : "";
 }
 
+bool DirectiveHandler::IsAudioTokenHeard(AudioType type) const {
+  return is_started_ ? audio_handler_->IsPlayingTokenHeard(type) : false;
+}
 
 // Private functions
 
 void DirectiveHandler::StartDirective(const std::string& op_id,
                                       const Directive& directive) {
-  DCHECK(whispernet_client_);
+  DCHECK(is_started_);
   const TokenInstruction& ti = directive.token_instruction();
   if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||
       ti.medium() == AUDIO_AUDIBLE_DTMF) {
@@ -91,21 +87,6 @@ void DirectiveHandler::StartDirective(const std::string& op_id,
     // We should only get audio directives.
     NOTREACHED() << "Received directive for unimplemented medium "
                  << ti.medium();
-  }
-}
-
-// TODO(ckehoe): We don't need to re-register the samples callback
-// every time. Which means this whole function is unnecessary.
-void DirectiveHandler::EncodeToken(
-    const std::string& token,
-    AudioType type,
-    const WhispernetClient::SamplesCallback& samples_callback) {
-  DCHECK(type == AUDIBLE || type == INAUDIBLE);
-  // TODO(ckehoe): This null check shouldn't be necessary.
-  // It's only here for tests.
-  if (whispernet_client_) {
-    whispernet_client_->RegisterSamplesCallback(samples_callback);
-    whispernet_client_->EncodeToken(token, type);
   }
 }
 

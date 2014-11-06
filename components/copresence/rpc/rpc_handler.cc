@@ -27,7 +27,6 @@
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/copresence_constants.h"
 #include "components/copresence/public/copresence_delegate.h"
-#include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/http_post.h"
 #include "net/http/http_status_code.h"
 
@@ -171,15 +170,10 @@ RpcHandler::RpcHandler(CopresenceDelegate* delegate,
   }
 
 RpcHandler::~RpcHandler() {
-  for (HttpPost* post : pending_posts_) {
+  // Do not use |directive_handler_| here, it will already have been
+  // destructed.
+  for (HttpPost* post : pending_posts_)
     delete post;
-  }
-
-  // TODO(ckehoe): Register and cancel these callbacks in the same class.
-  delegate_->GetWhispernetClient()->RegisterTokensCallback(
-      WhispernetClient::TokensCallback());
-  delegate_->GetWhispernetClient()->RegisterSamplesCallback(
-      WhispernetClient::SamplesCallback());
 }
 
 void RpcHandler::RegisterForToken(const std::string& auth_token,

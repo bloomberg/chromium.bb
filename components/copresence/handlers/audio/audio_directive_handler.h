@@ -17,6 +17,7 @@ class TimeDelta;
 namespace copresence {
 
 class TokenInstruction;
+class WhispernetClient;
 
 // The AudioDirectiveHandler handles audio transmit and receive instructions.
 class AudioDirectiveHandler {
@@ -24,9 +25,8 @@ class AudioDirectiveHandler {
   virtual ~AudioDirectiveHandler() {}
 
   // Do not use this class before calling this.
-  virtual void Initialize(
-      const AudioManager::DecodeSamplesCallback& decode_cb,
-      const AudioManager::EncodeTokenCallback& encode_cb) = 0;
+  virtual void Initialize(WhispernetClient* whispernet_client,
+                          const TokensCallback& tokens_cb) = 0;
 
   // Adds an instruction to our handler. The instruction will execute and be
   // removed after the ttl expires.
@@ -39,6 +39,9 @@ class AudioDirectiveHandler {
 
   // Returns the currently playing token.
   virtual const std::string PlayingToken(AudioType type) const = 0;
+
+  // Returns if we have heard the currently playing audio token.
+  virtual bool IsPlayingTokenHeard(AudioType type) const = 0;
 };
 
 }  // namespace copresence

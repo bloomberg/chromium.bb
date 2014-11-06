@@ -131,8 +131,8 @@ class ChromeWhispernetClientTest : public ExtensionBrowserTest {
   }
 
   void SamplesCallback(
-      const std::string& token,
       copresence::AudioType type,
+      const std::string& token,
       const scoped_refptr<media::AudioBusRefCounted>& samples) {
     EXPECT_EQ(expected_token_, token);
     EXPECT_EQ(expected_audible_, type == copresence::AUDIBLE);

@@ -115,6 +115,17 @@ void CopresenceService::HandleMessages(
            << app_id << "\" for subscription \"" << subscription_id << "\"";
 }
 
+void CopresenceService::HandleStatusUpdate(
+    copresence::CopresenceStatus status) {
+  scoped_ptr<Event> event(
+      new Event(api::copresence::OnStatusUpdated::kEventName,
+                api::copresence::OnStatusUpdated::Create(
+                    api::copresence::STATUS_AUDIOFAILED),
+                browser_context_));
+  EventRouter::Get(browser_context_)->BroadcastEvent(event.Pass());
+  DVLOG(2) << "Sent Audio Failed status update.";
+}
+
 net::URLRequestContextGetter* CopresenceService::GetRequestContext() const {
   return browser_context_->GetRequestContext();
 }

@@ -13,6 +13,10 @@
 #include "base/memory/scoped_vector.h"
 #include "components/copresence/public/copresence_manager.h"
 
+namespace base {
+class Timer;
+}
+
 namespace net {
 class URLContextGetter;
 }
@@ -39,6 +43,7 @@ struct PendingRequest {
 // The implementation for CopresenceManager. Responsible primarily for
 // client-side initialization. The RpcHandler handles all the details
 // of interacting with the server.
+// TODO(rkc): Add tests for this class.
 class CopresenceManagerImpl : public CopresenceManager {
  public:
   ~CopresenceManagerImpl() override;
@@ -54,6 +59,14 @@ class CopresenceManagerImpl : public CopresenceManager {
   void CompleteInitialization();
   void InitStepComplete(const std::string& step, bool success);
 
+  // This function will be called every kPollTimerIntervalMs milliseconds to
+  // poll the server for new messages.
+  void PollForMessages();
+
+  // This function will verify that we can hear the audio we're playing every
+  // kAudioCheckIntervalMs milliseconds.
+  void AudioCheck();
+
   // Belongs to the caller.
   CopresenceDelegate* const delegate_;
 
@@ -63,9 +76,13 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   ScopedVector<PendingRequest> pending_requests_queue_;
 
-  // The RpcHandler depends on the directive handler.
-  scoped_ptr<DirectiveHandler> directive_handler_;
+  // The |directive handler_| needs to destruct before |rpc_handler_|, do not
+  // change this order.
   scoped_ptr<RpcHandler> rpc_handler_;
+  scoped_ptr<DirectiveHandler> directive_handler_;
+
+  scoped_ptr<base::Timer> poll_timer_;
+  scoped_ptr<base::Timer> audio_check_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceManagerImpl);
 };

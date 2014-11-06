@@ -43,21 +43,15 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
 
   ~AudioDirectiveHandlerImpl();
 
-  // Do not use this class before calling this.
-  void Initialize(const AudioManager::DecodeSamplesCallback& decode_cb,
-                  const AudioManager::EncodeTokenCallback& encode_cb) override;
-
-  // Adds an instruction to our handler. The instruction will execute and be
-  // removed after the ttl expires.
+  // AudioDirectiveHandler overrides:
+  void Initialize(WhispernetClient* whispernet_client,
+                  const TokensCallback& tokens_cb) override;
   void AddInstruction(const copresence::TokenInstruction& instruction,
                       const std::string& op_id,
                       base::TimeDelta ttl_ms) override;
-
-  // Removes all instructions associated with this operation id.
   void RemoveInstructions(const std::string& op_id) override;
-
-  // Returns the currently playing token.
   const std::string PlayingToken(AudioType type) const override;
+  bool IsPlayingTokenHeard(AudioType type) const override;
 
  private:
   // Processes the next active instruction,

@@ -12,12 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
-#include "components/copresence/public/whispernet_client.h"
+#include "components/copresence/public/copresence_constants.h"
 
 namespace copresence {
 
 class AudioDirectiveHandler;
 class Directive;
+class WhispernetClient;
 
 // The directive handler manages transmit and receive directives.
 // TODO(ckehoe): Turn this into an interface.
@@ -29,9 +30,11 @@ class DirectiveHandler {
 
   // Starts processing directives with the provided Whispernet client.
   // Directives will be queued until this function is called.
-  // |whispernet_client| is owned by the caller
-  // and must outlive the DirectiveHandler.
-  virtual void Start(WhispernetClient* whispernet_client);
+  // |whispernet_client| is owned by the caller and must outlive the
+  // DirectiveHandler.
+  // |tokens_cb| is called for all audio tokens found in recorded audio.
+  virtual void Start(WhispernetClient* whispernet_client,
+                     const TokensCallback& tokens_cb);
 
   // Adds a directive to handle.
   virtual void AddDirective(const Directive& directive);
@@ -39,24 +42,19 @@ class DirectiveHandler {
   // Removes any directives associated with the given operation id.
   virtual void RemoveDirectives(const std::string& op_id);
 
+  // TODO(rkc): Too many audio specific functions here, find a better way to
+  // get this information to the copresence manager.
   virtual const std::string GetCurrentAudioToken(AudioType type) const;
+  virtual bool IsAudioTokenHeard(AudioType type) const;
 
  private:
   // Starts actually running a directive.
   void StartDirective(const std::string& op_id, const Directive& directive);
 
-  // Forwards the request to encode a token to whispernet,
-  // and instructs it to call samples_callback when encoding is complete.
-  void EncodeToken(
-      const std::string& token,
-      AudioType type,
-      const WhispernetClient::SamplesCallback& samples_callback);
-
   scoped_ptr<AudioDirectiveHandler> audio_handler_;
   std::map<std::string, std::vector<Directive>> pending_directives_;
 
-  // Belongs to the caller.
-  WhispernetClient* whispernet_client_;
+  bool is_started_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectiveHandler);
 };

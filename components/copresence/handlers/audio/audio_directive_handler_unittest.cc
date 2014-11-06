@@ -16,26 +16,14 @@
 
 namespace copresence {
 
-namespace {
-
-// Callback stubs to pass into the directive handler.
-void DecodeSamples(AudioType, const std::string&) {
-}
-void EncodeToken(const std::string&,
-                 AudioType,
-                 const AudioManager::SamplesCallback&) {
-}
-
-}  // namespace
-
 class AudioManagerStub final : public AudioManager {
  public:
   AudioManagerStub() {}
   ~AudioManagerStub() override {}
 
   // AudioManager overrides:
-  void Initialize(const DecodeSamplesCallback& decode_cb,
-                  const EncodeTokenCallback& encode_cb) override {}
+  void Initialize(WhispernetClient* whispernet_client,
+                  const TokensCallback& tokens_cb) override {}
   void StartPlaying(AudioType type) override { playing_[type] = true; }
   void StopPlaying(AudioType type) override { playing_[type] = false; }
   void StartRecording(AudioType type) override { recording_[type] = true; }
@@ -44,6 +32,7 @@ class AudioManagerStub final : public AudioManager {
   const std::string GetToken(AudioType type) override { return std::string(); }
   bool IsRecording(AudioType type) override { return recording_[type]; }
   bool IsPlaying(AudioType type) override { return playing_[type]; }
+  bool IsPlayingTokenHeard(AudioType type) override { return false; }
 
  private:
   // Indexed using enum AudioType.
@@ -64,8 +53,7 @@ class AudioDirectiveHandlerTest : public testing::Test {
         make_scoped_ptr<AudioManager>(manager_ptr_),
         make_scoped_ptr<base::Timer>(timer_ptr_),
         make_scoped_refptr(new TickClockRefCounted(clock_ptr_))));
-    directive_handler_->Initialize(base::Bind(&DecodeSamples),
-                                   base::Bind(&EncodeToken));
+    directive_handler_->Initialize(nullptr, TokensCallback());
   }
   ~AudioDirectiveHandlerTest() override {}
 

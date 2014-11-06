@@ -20,6 +20,7 @@ namespace copresence {
 
 class AudioPlayer;
 class AudioRecorder;
+class WhispernetClient;
 
 // The AudioManagerImpl class manages the playback and recording of tokens. Once
 // playback or recording is started, it is up to the audio manager to handle
@@ -31,8 +32,8 @@ class AudioManagerImpl final : public AudioManager {
   ~AudioManagerImpl() override;
 
   // AudioManager overrides:
-  void Initialize(const DecodeSamplesCallback& decode_cb,
-                  const EncodeTokenCallback& encode_cb) override;
+  void Initialize(WhispernetClient* whispernet_client,
+                  const TokensCallback& tokens_cb) override;
   void StartPlaying(AudioType type) override;
   void StopPlaying(AudioType type) override;
   void StartRecording(AudioType type) override;
@@ -41,6 +42,7 @@ class AudioManagerImpl final : public AudioManager {
   const std::string GetToken(AudioType type) override;
   bool IsRecording(AudioType type) override;
   bool IsPlaying(AudioType type) override;
+  bool IsPlayingTokenHeard(AudioType type) override;
 
   void set_player_for_testing(AudioType type, AudioPlayer* player) {
     player_[type] = player;
@@ -53,24 +55,23 @@ class AudioManagerImpl final : public AudioManager {
   typedef TimedMap<std::string, scoped_refptr<media::AudioBusRefCounted>>
       SamplesMap;
 
-  // This is the method that the whispernet client needs to call to return
-  // samples to us.
-  void OnTokenEncoded(const std::string& token,
-                      AudioType type,
+  // Receives the audio samples from encoding a token.
+  void OnTokenEncoded(AudioType type,
+                      const std::string& token,
                       const scoped_refptr<media::AudioBusRefCounted>& samples);
+
+  // Receives any tokens found by decoding audio samples.
+  void OnTokensFound(const std::vector<AudioToken>& tokens);
 
   // Update our currently playing token with the new token. Change the playing
   // samples if needed. Prerequisite: Samples corresponding to this token
   // should already be in the samples cache.
   void UpdateToken(AudioType type, const std::string& token);
 
-  // Connector callback to forward the audio samples to Whispernet, based on
-  // the type of recording we've been instructed to do.
-  void DecodeSamplesConnector(const std::string& samples);
+  WhispernetClient* whispernet_client_;
 
-  // Callbacks to speak with whispernet.
-  DecodeSamplesCallback decode_cb_;
-  EncodeTokenCallback encode_cb_;
+  // Callbacks to send tokens back to the CopresenceManager.
+  TokensCallback tokens_cb_;
 
   // This cancelable callback is passed to the recorder. The recorder's
   // destruction will happen on the audio thread, so it can outlive us.
@@ -92,7 +93,8 @@ class AudioManagerImpl final : public AudioManager {
   AudioRecorder* recorder_;
 
   // Indexed using enum AudioType.
-  std::string token_[2];
+  std::string playing_token_[2];
+  bool heard_own_token_[2];
 
   // Cache that holds the encoded samples. After reaching its limit, the cache
   // expires the oldest samples first.

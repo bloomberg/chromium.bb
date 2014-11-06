@@ -55,12 +55,11 @@ AudioDirectiveHandlerImpl::AudioDirectiveHandlerImpl(
 
 AudioDirectiveHandlerImpl::~AudioDirectiveHandlerImpl() {}
 
-void AudioDirectiveHandlerImpl::Initialize(
-    const AudioManager::DecodeSamplesCallback& decode_cb,
-    const AudioManager::EncodeTokenCallback& encode_cb) {
+void AudioDirectiveHandlerImpl::Initialize(WhispernetClient* whispernet_client,
+                                           const TokensCallback& tokens_cb) {
   if (!audio_manager_)
     audio_manager_.reset(new AudioManagerImpl());
-  audio_manager_->Initialize(decode_cb, encode_cb);
+  audio_manager_->Initialize(whispernet_client, tokens_cb);
 
   DCHECK(transmits_lists_.empty());
   transmits_lists_.push_back(new AudioDirectiveList(clock_));
@@ -137,6 +136,9 @@ const std::string AudioDirectiveHandlerImpl::PlayingToken(
   return audio_manager_->GetToken(type);
 }
 
+bool AudioDirectiveHandlerImpl::IsPlayingTokenHeard(AudioType type) const {
+  return audio_manager_->IsPlayingTokenHeard(type);
+}
 
 // Private functions.
 

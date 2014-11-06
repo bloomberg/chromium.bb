@@ -144,6 +144,7 @@ void AudioRecorderImpl::RecordOnAudioThread() {
   if (!stream_ || is_recording_)
     return;
 
+  VLOG(3) << "Starting recording.";
   converter_->Reset();
   stream_->Start(this);
   is_recording_ = true;
@@ -154,6 +155,7 @@ void AudioRecorderImpl::StopOnAudioThread() {
   if (!stream_ || !is_recording_)
     return;
 
+  VLOG(3) << "Stopping recording.";
   stream_->Stop();
   is_recording_ = false;
 }

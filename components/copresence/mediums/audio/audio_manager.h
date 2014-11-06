@@ -10,29 +10,17 @@
 #include "base/callback.h"
 #include "components/copresence/public/copresence_constants.h"
 
-namespace media {
-class AudioBusRefCounted;
-}
-
 namespace copresence {
+
+class WhispernetClient;
 
 class AudioManager {
  public:
-  typedef base::Callback<void(const std::string&,
-                              AudioType,
-                              const scoped_refptr<media::AudioBusRefCounted>&)>
-      SamplesCallback;
-  typedef base::Callback<void(const std::string&,
-                              AudioType,
-                              const SamplesCallback&)> EncodeTokenCallback;
-  typedef base::Callback<void(AudioType, const std::string&)>
-      DecodeSamplesCallback;
-
   virtual ~AudioManager() {}
 
   // Initializes the object. Do not use this object before calling this method.
-  virtual void Initialize(const DecodeSamplesCallback& decode_cb,
-                          const EncodeTokenCallback& encode_cb) = 0;
+  virtual void Initialize(WhispernetClient* whispernet_client,
+                          const TokensCallback& tokens_cb) = 0;
 
   virtual void StartPlaying(AudioType type) = 0;
   virtual void StopPlaying(AudioType type) = 0;
@@ -47,6 +35,8 @@ class AudioManager {
 
   virtual bool IsRecording(AudioType type) = 0;
   virtual bool IsPlaying(AudioType type) = 0;
+
+  virtual bool IsPlayingTokenHeard(AudioType type) = 0;
 };
 
 }  // namespace copresence

@@ -28,7 +28,8 @@ ChromeWhispernetClient::ChromeWhispernetClient(
 ChromeWhispernetClient::~ChromeWhispernetClient() {
 }
 
-void ChromeWhispernetClient::Initialize(const SuccessCallback& init_callback) {
+void ChromeWhispernetClient::Initialize(
+    const copresence::SuccessCallback& init_callback) {
   DVLOG(3) << "Initializing whispernet proxy client.";
   init_callback_ = init_callback;
 
@@ -116,37 +117,34 @@ void ChromeWhispernetClient::DetectBroadcast() {
 }
 
 void ChromeWhispernetClient::RegisterTokensCallback(
-    const TokensCallback& tokens_callback) {
+    const copresence::TokensCallback& tokens_callback) {
   tokens_callback_ = tokens_callback;
 }
 
 void ChromeWhispernetClient::RegisterSamplesCallback(
-    const SamplesCallback& samples_callback) {
+    const copresence::SamplesCallback& samples_callback) {
   samples_callback_ = samples_callback;
 }
 
 void ChromeWhispernetClient::RegisterDetectBroadcastCallback(
-    const SuccessCallback& db_callback) {
+    const copresence::SuccessCallback& db_callback) {
   db_callback_ = db_callback;
 }
 
-ChromeWhispernetClient::TokensCallback
-ChromeWhispernetClient::GetTokensCallback() {
+copresence::TokensCallback ChromeWhispernetClient::GetTokensCallback() {
   return tokens_callback_;
 }
 
-ChromeWhispernetClient::SamplesCallback
-ChromeWhispernetClient::GetSamplesCallback() {
+copresence::SamplesCallback ChromeWhispernetClient::GetSamplesCallback() {
   return samples_callback_;
 }
 
-ChromeWhispernetClient::SuccessCallback
+copresence::SuccessCallback
 ChromeWhispernetClient::GetDetectBroadcastCallback() {
   return db_callback_;
 }
 
-ChromeWhispernetClient::SuccessCallback
-ChromeWhispernetClient::GetInitializedCallback() {
+copresence::SuccessCallback ChromeWhispernetClient::GetInitializedCallback() {
   return extension_loaded_callback_;
 }
 

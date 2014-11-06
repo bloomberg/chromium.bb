@@ -64,9 +64,8 @@ ExtensionFunction::ResponseAction CopresencePrivateSendSamplesFunction::Run() {
          params->samples.size());
 
   GetWhispernetClient()->GetSamplesCallback().Run(
-      params->token.token,
       params->token.audible ? copresence::AUDIBLE : copresence::INAUDIBLE,
-      samples);
+      params->token.token, samples);
   return RespondNow(NoArguments());
 }
 

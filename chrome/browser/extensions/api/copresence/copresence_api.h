@@ -63,6 +63,7 @@ class CopresenceService : public BrowserContextKeyedAPI,
   void HandleMessages(const std::string& app_id,
                       const std::string& subscription_id,
                       const std::vector<copresence::Message>& message) override;
+  void HandleStatusUpdate(copresence::CopresenceStatus status) override;
   net::URLRequestContextGetter* GetRequestContext() const override;
   const std::string GetPlatformVersionString() const override;
   const std::string GetAPIKey(const std::string& app_id) const override;
