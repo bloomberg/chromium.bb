@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/app_modal_dialogs/javascript_dialog_manager.h"
 #include "components/favicon_base/select_favicon_frames.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/navigation_controller.h"
@@ -365,8 +366,7 @@ class AthenaWebView : public views::WebView {
   }
 
   content::JavaScriptDialogManager* GetJavaScriptDialogManager() override {
-    NOTIMPLEMENTED();
-    return nullptr;
+    return GetJavaScriptDialogManagerInstance();
   }
 
   content::ColorChooser* OpenColorChooser(
