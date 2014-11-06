@@ -826,9 +826,19 @@ inline bool isShadowHost(const Node* node)
     return node && node->isElementNode() && toElement(node)->shadow();
 }
 
+inline bool isShadowHost(const Node& node)
+{
+    return node.isElementNode() && toElement(node).shadow();
+}
+
 inline bool isShadowHost(const Element* element)
 {
     return element && element->shadow();
+}
+
+inline bool isShadowHost(const Element& element)
+{
+    return element.shadow();
 }
 
 inline bool isAtShadowBoundary(const Element* element)
