@@ -278,6 +278,7 @@ class ManagementAPI : public BrowserContextKeyedAPI,
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "ManagementAPI"; }
   static const bool kServiceIsNULLWhileTesting = true;
+  static const bool kServiceRedirectedInIncognito = true;
 
   // Created lazily upon OnListenerAdded.
   scoped_ptr<ManagementEventRouter> management_event_router_;
