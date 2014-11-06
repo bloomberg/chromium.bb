@@ -15,6 +15,9 @@ Performs the following steps:
   collection until there are no tests left.
 """
 
+# TODO(jbudorick) Deprecate and remove this class after any relevant parts have
+# been ported to the new environment / test instance model.
+
 import logging
 import threading
 

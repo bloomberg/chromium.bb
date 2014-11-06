@@ -198,6 +198,9 @@ PYTHON_UNIT_TEST_SUITES = {
 # },
 }
 
+LOCAL_MACHINE_TESTS = ['junit', 'python']
+VALID_ENVIRONMENTS = ['local']
+
 
 def GetBuildType():
   try:

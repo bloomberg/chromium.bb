@@ -4,6 +4,10 @@
 
 """Base class for running tests on a single device."""
 
+# TODO(jbudorick) Deprecate and remove this class and all subclasses after
+# any relevant parts have been ported to the new environment + test instance
+# model.
+
 import logging
 import time
 

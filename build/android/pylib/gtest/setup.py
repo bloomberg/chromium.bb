@@ -143,11 +143,16 @@ def _GetTests(test_options, test_package, devices):
   Returns:
     A list of all the tests in the test suite.
   """
+  class TestListResult(base_test_result.BaseTestResult):
+    def __init__(self):
+      super(TestListResult, self).__init__(
+          'gtest_list_tests', base_test_result.ResultType.PASS)
+      self.test_list = []
+
   def TestListerRunnerFactory(device, _shard_index):
     class TestListerRunner(test_runner.TestRunner):
       def RunTest(self, _test):
-        result = base_test_result.BaseTestResult(
-            'gtest_list_tests', base_test_result.ResultType.PASS)
+        result = TestListResult()
         self.test_package.Install(self.device)
         result.test_list = self.test_package.GetAllTests(self.device)
         results = base_test_result.TestRunResults()
