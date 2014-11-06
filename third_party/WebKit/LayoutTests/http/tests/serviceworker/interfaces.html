@@ -7,7 +7,7 @@
 <script>
 
 test(function() {
-    verifyInterface(
+    verify_interface(
       'ServiceWorkerContainer', navigator.serviceWorker,
       {
         register: 'function',
@@ -24,7 +24,7 @@ async_test(function(t) {
         t, 'resources/empty-worker.js', scope)
       .then(function(r) {
           registration = r;
-          verifyInterface(
+          verify_interface(
             'ServiceWorkerRegistration', registration,
             {
               installing: 'object',
@@ -37,7 +37,7 @@ async_test(function(t) {
           return wait_for_update(t, registration);
         })
       .then(function(worker) {
-          verifyInterface(
+          verify_interface(
             'ServiceWorker', worker,
             {
               scriptURL: 'string',

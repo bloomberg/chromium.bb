@@ -2,56 +2,62 @@ importScripts('interfaces.js');
 importScripts('worker-testharness.js');
 importScripts('/resources/testharness-helpers.js');
 
+var EVENT_HANDLER = 'object';
+
 test(function() {
-    var EVENT_HANDLER = 'object';
+    verify_interface('ServiceWorkerGlobalScope',
+                     self,
+                     {
+                       scope: 'string',
+                       clients: 'object',
+                       close: 'function',
 
-    verifyInterface('ServiceWorkerGlobalScope',
-                    self,
-                    {
-                        scope: 'string',
-                        clients: 'object',
-                        close: 'function',
+                       onactivate: EVENT_HANDLER,
+                       onfetch: EVENT_HANDLER,
+                       oninstall: EVENT_HANDLER,
+                       onmessage: EVENT_HANDLER
+                     });
+  }, 'ServiceWorkerGlobalScope');
 
-                        onactivate: EVENT_HANDLER,
-                        onfetch: EVENT_HANDLER,
-                        oninstall: EVENT_HANDLER,
-                        onmessage: EVENT_HANDLER
-                    });
+test(function() {
+    verify_interface('ServiceWorkerClients',
+                     self.clients,
+                     {
+                       getAll: 'function'
+                     });
+  }, 'ServiceWorkerClients');
 
-    verifyInterface('ServiceWorkerClients',
-                    self.clients,
-                    {
-                        getAll: 'function'
-                    });
-
-    verifyInterface('ServiceWorkerClient');
+test(function() {
+    verify_interface('ServiceWorkerClient');
     // FIXME: Get an instance and test it, or ensure property exists on prototype.
+  }, 'ServiceWorkerClient');
 
-    verifyInterface('CacheStorage',
-                    self.caches,
-                    {
-                      match: 'function',
-                      get: 'function',
-                      has: 'function',
-                      create: 'function',
-                      delete: 'function',
-                      keys: 'function'
-                    });
-  }, 'Interfaces and attributes in ServiceWorkerGlobalScope');
+test(function() {
+    verify_interface('CacheStorage',
+                     self.caches,
+                     {
+                       match: 'function',
+                       get: 'function',
+                       has: 'function',
+                       create: 'function',
+                       delete: 'function',
+                       keys: 'function'
+                     });
+  }, 'CacheStorage');
 
 promise_test(function(t) {
     return create_temporary_cache(t)
       .then(function(cache) {
-          verifyInterface('Cache',
-                          cache,
-                          {
-                            match: 'function',
-                            matchAll: 'function',
-                            add: 'function',
-                            addAll: 'function',
-                            put: 'function',
-                            delete: 'function',
-                            keys: 'function'
-                          });
+          verify_interface('Cache',
+                           cache,
+                           {
+                             match: 'function',
+                             matchAll: 'function',
+                             add: 'function',
+                             addAll: 'function',
+                             put: 'function',
+                             delete: 'function',
+                             keys: 'function'
+                           });
         });
   }, 'Cache');
