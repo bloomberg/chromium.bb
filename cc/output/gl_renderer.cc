@@ -870,7 +870,7 @@ scoped_ptr<ScopedResource>
 GLRenderer::ApplyInverseTransformForBackgroundFilters(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
-    const gfx::Transform& contents_device_transform_inverse,
+    const gfx::Transform& contents_device_transform,
     skia::RefPtr<SkImage> filtered_device_background,
     const gfx::Rect& backdrop_bounding_rect) {
   // This method draws a background filter, which applies a filter to any pixels
@@ -915,6 +915,12 @@ GLRenderer::ApplyInverseTransformForBackgroundFilters(
   if (using_background_texture) {
     // Copy the readback pixels from device to the background texture for the
     // surface.
+
+    gfx::Transform contents_device_transform_inverse(
+        gfx::Transform::kSkipInitialization);
+    bool did_invert = contents_device_transform.GetInverse(
+        &contents_device_transform_inverse);
+    DCHECK(did_invert);
     gfx::Transform device_to_framebuffer_transform;
     QuadRectTransform(
         &device_to_framebuffer_transform, gfx::Transform(), quad->rect);
@@ -965,20 +971,15 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   contents_device_transform.FlattenTo2d();
 
   // Can only draw surface if device matrix is invertible.
-  gfx::Transform contents_device_transform_inverse(
-      gfx::Transform::kSkipInitialization);
-  if (!contents_device_transform.GetInverse(&contents_device_transform_inverse))
+  if (!contents_device_transform.IsInvertible())
     return;
 
-  bool clipped = false;
-  gfx::QuadF device_quad = MathUtil::MapQuad(
-      contents_device_transform, SharedGeometryQuad(), &clipped);
-  // Use anti-aliasing programs only when necessary.
-  bool use_aa =
-      !clipped &&
-      (settings_->force_antialiasing || !device_quad.IsRectilinear() ||
-       !gfx::IsNearestRectWithinDistance(device_quad.BoundingBox(),
-                                         kAntiAliasingEpsilon));
+  gfx::QuadF surface_quad = SharedGeometryQuad();
+  float edge[24];
+  bool use_aa = settings_->allow_antialiasing &&
+                SetupQuadForAntialiasing(contents_device_transform, quad,
+                                         settings_->force_antialiasing,
+                                         &surface_quad, edge);
 
   bool need_background_texture = !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
                                  ShouldApplyBackgroundFilters(frame, quad);
@@ -1021,10 +1022,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       // the quad since the destination texture has bounds matching the quad's
       // content.
       background_texture = ApplyInverseTransformForBackgroundFilters(
-          frame,
-          quad,
-          contents_device_transform_inverse,
-          background_with_filters,
+          frame, quad, contents_device_transform, background_with_filters,
           background_rect);
     } else if (!CanApplyBlendModeUsingBlendFunc(blend_mode)) {
       if (background_with_filters) {
@@ -1088,13 +1086,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                              quad->rect,
                              quad->quadTransform(),
                              flip_vertically);
-  }
-
-  LayerQuad device_layer_bounds(gfx::QuadF(device_quad.BoundingBox()));
-  LayerQuad device_layer_edges(device_quad);
-  if (use_aa) {
-    device_layer_bounds.InflateAntiAliasingDistance();
-    device_layer_edges.InflateAntiAliasingDistance();
   }
 
   scoped_ptr<ResourceProvider::ScopedSamplerGL> mask_resource_lock;
@@ -1360,12 +1351,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     last_texture_unit = 1;
   }
 
-  if (shader_edge_location != -1) {
-    float edge[24];
-    device_layer_edges.ToFloatArray(edge);
-    device_layer_bounds.ToFloatArray(&edge[12]);
+  if (shader_edge_location != -1)
     GLC(gl_, gl_->Uniform3fv(shader_edge_location, 8, edge));
-  }
 
   if (shader_viewport_location != -1) {
     float viewport[4] = {static_cast<float>(viewport_.x()),
@@ -1424,12 +1411,6 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     }
   }
 
-  // Map device space quad to surface space. contents_device_transform has no 3d
-  // component since it was flattened, so we don't need to project.
-  gfx::QuadF surface_quad = MathUtil::MapQuad(contents_device_transform_inverse,
-                                              device_layer_edges.ToQuadF(),
-                                              &clipped);
-
   SetShaderOpacity(quad->opacity(), shader_alpha_location);
   SetShaderQuadF(surface_quad, shader_quad_location);
   DrawQuadGeometry(
@@ -1464,41 +1445,16 @@ static void SolidColorUniformLocation(T program,
   uniforms->color_location = program->fragment_shader().color_location();
 }
 
-// static
-bool GLRenderer::SetupQuadForAntialiasing(
+static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
+    const LayerQuad& device_layer_edges,
     const gfx::Transform& device_transform,
-    const DrawQuad* quad,
-    gfx::QuadF* local_quad,
-    float edge[24]) {
+    const DrawQuad* quad) {
   gfx::Rect tile_rect = quad->visible_rect;
-
-  bool clipped = false;
-  gfx::QuadF device_layer_quad = MathUtil::MapQuad(
-      device_transform, gfx::QuadF(quad->visibleContentRect()), &clipped);
-
-  bool is_axis_aligned_in_target = device_layer_quad.IsRectilinear();
-  bool is_nearest_rect_within_epsilon =
-      is_axis_aligned_in_target &&
-      gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
-                                       kAntiAliasingEpsilon);
-  // AAing clipped quads is not supported by the code yet.
-  bool use_aa = !clipped && !is_nearest_rect_within_epsilon && quad->IsEdge();
-  if (!use_aa)
-    return false;
-
-  LayerQuad device_layer_bounds(gfx::QuadF(device_layer_quad.BoundingBox()));
-  device_layer_bounds.InflateAntiAliasingDistance();
-
-  LayerQuad device_layer_edges(device_layer_quad);
-  device_layer_edges.InflateAntiAliasingDistance();
-
-  device_layer_edges.ToFloatArray(edge);
-  device_layer_bounds.ToFloatArray(&edge[12]);
-
   gfx::PointF bottom_right = tile_rect.bottom_right();
   gfx::PointF bottom_left = tile_rect.bottom_left();
   gfx::PointF top_left = tile_rect.origin();
   gfx::PointF top_right = tile_rect.top_right();
+  bool clipped = false;
 
   // Map points to device space. We ignore |clipped|, since the result of
   // |MapPoint()| still produces a valid point to draw the quad with. When
@@ -1530,7 +1486,61 @@ bool GLRenderer::SetupQuadForAntialiasing(
   right_edge.scale(sign);
 
   // Create device space quad.
-  LayerQuad device_quad(left_edge, top_edge, right_edge, bottom_edge);
+  return LayerQuad(left_edge, top_edge, right_edge, bottom_edge).ToQuadF();
+}
+
+// static
+bool GLRenderer::SetupQuadForAntialiasing(
+    const gfx::Transform& device_transform,
+    const DrawQuad* quad,
+    bool force_antialiasing,
+    gfx::QuadF* local_quad,
+    float edge[24]) {
+  bool is_render_pass_quad = (quad->material == DrawQuad::RENDER_PASS);
+  // For render pass quads, |device_transform| already contains quad's rect.
+  // TODO(rosca@adobe.com): remove branching on is_render_pass_quad
+  // crbug.com/429702
+  if (!is_render_pass_quad && !quad->IsEdge())
+    return false;
+  gfx::RectF content_rect =
+      is_render_pass_quad ? QuadVertexRect() : quad->visibleContentRect();
+
+  bool clipped = false;
+  gfx::QuadF device_layer_quad =
+      MathUtil::MapQuad(device_transform, gfx::QuadF(content_rect), &clipped);
+
+  if (device_layer_quad.BoundingBox().IsEmpty())
+    return false;
+
+  bool is_axis_aligned_in_target = device_layer_quad.IsRectilinear();
+  bool is_nearest_rect_within_epsilon =
+      is_axis_aligned_in_target &&
+      gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
+                                       kAntiAliasingEpsilon);
+  // AAing clipped quads is not supported by the code yet.
+  bool use_aa = !clipped && !is_nearest_rect_within_epsilon;
+  if (!use_aa && !force_antialiasing)
+    return false;
+
+  LayerQuad device_layer_bounds(gfx::QuadF(device_layer_quad.BoundingBox()));
+  device_layer_bounds.InflateAntiAliasingDistance();
+
+  LayerQuad device_layer_edges(device_layer_quad);
+  device_layer_edges.InflateAntiAliasingDistance();
+
+  device_layer_edges.ToFloatArray(edge);
+  device_layer_bounds.ToFloatArray(&edge[12]);
+
+  bool use_aa_on_all_four_edges =
+      is_render_pass_quad ||
+      (quad->IsTopEdge() && quad->IsLeftEdge() && quad->IsBottomEdge() &&
+       quad->IsRightEdge() && quad->visible_rect == quad->rect);
+
+  gfx::QuadF device_quad =
+      use_aa_on_all_four_edges
+          ? device_layer_edges.ToQuadF()
+          : GetDeviceQuadWithAntialiasingOnExteriorEdges(
+                device_layer_edges, device_transform, quad);
 
   // Map device space quad to local space. device_transform has no 3d
   // component since it was flattened, so we don't need to project.  We should
@@ -1538,8 +1548,8 @@ bool GLRenderer::SetupQuadForAntialiasing(
   gfx::Transform inverse_device_transform(gfx::Transform::kSkipInitialization);
   bool did_invert = device_transform.GetInverse(&inverse_device_transform);
   DCHECK(did_invert);
-  *local_quad = MathUtil::MapQuad(
-      inverse_device_transform, device_quad.ToQuadF(), &clipped);
+  *local_quad =
+      MathUtil::MapQuad(inverse_device_transform, device_quad, &clipped);
   // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
   // cause device_quad to become clipped. To our knowledge this scenario does
   // not need to be handled differently than the unclipped case.
@@ -1566,11 +1576,13 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   if (!device_transform.IsInvertible())
     return;
 
+  bool force_aa = false;
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa =
-      settings_->allow_antialiasing && !quad->force_anti_aliasing_off &&
-      SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
+  bool use_aa = settings_->allow_antialiasing &&
+                !quad->force_anti_aliasing_off &&
+                SetupQuadForAntialiasing(device_transform, quad, force_aa,
+                                         &local_quad, edge);
 
   SolidColorProgramUniforms uniforms;
   if (use_aa)
@@ -1695,11 +1707,12 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   if (!device_transform.IsInvertible())
     return;
 
+  bool force_aa = false;
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa =
-      settings_->allow_antialiasing &&
-      SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
+  bool use_aa = settings_->allow_antialiasing &&
+                SetupQuadForAntialiasing(device_transform, quad, force_aa,
+                                         &local_quad, edge);
 
   bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
   GLenum filter = (use_aa || scaled ||

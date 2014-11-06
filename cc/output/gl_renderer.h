@@ -132,6 +132,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   // Returns true if quad requires antialiasing and false otherwise.
   static bool SetupQuadForAntialiasing(const gfx::Transform& device_transform,
                                        const DrawQuad* quad,
+                                       bool force_antialiasing,
                                        gfx::QuadF* local_quad,
                                        float edge[24]);
 
@@ -168,7 +169,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   scoped_ptr<ScopedResource> ApplyInverseTransformForBackgroundFilters(
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform_inverse,
+      const gfx::Transform& contents_device_transform,
       skia::RefPtr<SkImage> backdrop_bitmap,
       const gfx::Rect& backdrop_bounding_rect);
 
