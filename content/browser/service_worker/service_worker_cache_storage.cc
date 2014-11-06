@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/barrier_closure.h"
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/memory/ref_counted.h"
@@ -22,6 +23,15 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 namespace content {
+
+namespace {
+
+void CloseAllCachesDidCloseCache(const scoped_refptr<ServiceWorkerCache>& cache,
+                                 const base::Closure& barrier_closure) {
+  barrier_closure.Run();
+}
+
+}  // namespace
 
 const char ServiceWorkerCacheStorage::kIndexFileName[] = "index.txt";
 
@@ -453,9 +463,6 @@ void ServiceWorkerCacheStorage::DeleteCache(
   }
 
   base::WeakPtr<ServiceWorkerCache> cache = it->second;
-  if (cache)
-    cache->Close();
-
   cache_map_.erase(it);
 
   // Delete the name from ordered_cache_names_.
@@ -464,13 +471,17 @@ void ServiceWorkerCacheStorage::DeleteCache(
   DCHECK(iter != ordered_cache_names_.end());
   ordered_cache_names_.erase(iter);
 
-  // Update the Index
-  cache_loader_->WriteIndex(
-      ordered_cache_names_,
-      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidWriteIndex,
-                 weak_factory_.GetWeakPtr(),
-                 cache_name,
-                 callback));
+  base::Closure closure =
+      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidClose,
+                 weak_factory_.GetWeakPtr(), cache_name, callback,
+                 ordered_cache_names_, make_scoped_refptr(cache.get()));
+
+  if (cache) {
+    cache->Close(closure);
+    return;
+  }
+
+  closure.Run();
 }
 
 void ServiceWorkerCacheStorage::EnumerateCaches(
@@ -487,16 +498,39 @@ void ServiceWorkerCacheStorage::EnumerateCaches(
   callback.Run(ordered_cache_names_, CACHE_STORAGE_ERROR_NO_ERROR);
 }
 
-void ServiceWorkerCacheStorage::CloseAllCaches() {
+void ServiceWorkerCacheStorage::CloseAllCaches(const base::Closure& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!initialized_)
+  if (!initialized_) {
+    callback.Run();
     return;
+  }
+
+  int live_cache_count = 0;
+  for (const auto& key_value : cache_map_) {
+    if (key_value.second)
+      live_cache_count += 1;
+  }
+
+  if (live_cache_count == 0) {
+    callback.Run();
+    return;
+  }
+
+  // The closure might modify this object so delay calling it until after
+  // iterating through cache_map_ by adding one to the barrier.
+  base::Closure barrier_closure =
+      base::BarrierClosure(live_cache_count + 1, base::Bind(callback));
 
   for (auto& key_value : cache_map_) {
-    if (key_value.second)
-      key_value.second->Close();
+    if (key_value.second) {
+      key_value.second->Close(base::Bind(
+          CloseAllCachesDidCloseCache,
+          make_scoped_refptr(key_value.second.get()), barrier_closure));
+    }
   }
+
+  barrier_closure.Run();
 }
 
 int64 ServiceWorkerCacheStorage::MemoryBackedSize() const {
@@ -591,6 +625,17 @@ void ServiceWorkerCacheStorage::CreateCacheDidWriteIndex(
   DCHECK(cache.get());
 
   callback.Run(cache, CACHE_STORAGE_ERROR_NO_ERROR);
+}
+
+void ServiceWorkerCacheStorage::DeleteCacheDidClose(
+    const std::string& cache_name,
+    const BoolAndErrorCallback& callback,
+    const StringVector& ordered_cache_names,
+    const scoped_refptr<ServiceWorkerCache>& cache /* might be null */) {
+  cache_loader_->WriteIndex(
+      ordered_cache_names,
+      base::Bind(&ServiceWorkerCacheStorage::DeleteCacheDidWriteIndex,
+                 weak_factory_.GetWeakPtr(), cache_name, callback));
 }
 
 void ServiceWorkerCacheStorage::DeleteCacheDidWriteIndex(

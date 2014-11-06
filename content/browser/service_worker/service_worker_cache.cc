@@ -677,34 +677,33 @@ base::WeakPtr<ServiceWorkerCache> ServiceWorkerCache::AsWeakPtr() {
 void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
                              scoped_ptr<ServiceWorkerResponse> response,
                              const ResponseCallback& callback) {
+  IncPendingOps();
+  ResponseCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingResponseCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
 
   if (!response->blob_uuid.empty()) {
     if (!blob_storage_context_) {
-      callback.Run(ErrorTypeStorage,
-                   scoped_ptr<ServiceWorkerResponse>(),
-                   scoped_ptr<storage::BlobDataHandle>());
+      pending_callback.Run(ErrorTypeStorage,
+                           scoped_ptr<ServiceWorkerResponse>(),
+                           scoped_ptr<storage::BlobDataHandle>());
       return;
     }
     blob_data_handle =
         blob_storage_context_->GetBlobDataFromUUID(response->blob_uuid);
     if (!blob_data_handle) {
-      callback.Run(ErrorTypeStorage,
-                   scoped_ptr<ServiceWorkerResponse>(),
-                   scoped_ptr<storage::BlobDataHandle>());
+      pending_callback.Run(ErrorTypeStorage,
+                           scoped_ptr<ServiceWorkerResponse>(),
+                           scoped_ptr<storage::BlobDataHandle>());
       return;
     }
   }
 
-  scoped_ptr<PutContext> put_context(
-      new PutContext(origin_,
-                     request.Pass(),
-                     response.Pass(),
-                     blob_data_handle.Pass(),
-                     callback,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     request_context_,
-                     quota_manager_proxy_));
+  scoped_ptr<PutContext> put_context(new PutContext(
+      origin_, request.Pass(), response.Pass(), blob_data_handle.Pass(),
+      pending_callback, weak_ptr_factory_.GetWeakPtr(), request_context_,
+      quota_manager_proxy_));
 
   if (put_context->blob_data_handle) {
     // Grab another handle to the blob for the callback response.
@@ -726,17 +725,19 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
 
 void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
                                const ResponseCallback& callback) {
+  IncPendingOps();
+  ResponseCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingResponseCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
   if (!initialized_) {
-    Init(base::Bind(&ServiceWorkerCache::Match,
-                    weak_ptr_factory_.GetWeakPtr(),
-                    base::Passed(request.Pass()),
-                    callback));
+    Init(base::Bind(&ServiceWorkerCache::Match, weak_ptr_factory_.GetWeakPtr(),
+                    base::Passed(request.Pass()), pending_callback));
     return;
   }
   if (!backend_) {
-    callback.Run(ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+    pending_callback.Run(ErrorTypeStorage, scoped_ptr<ServiceWorkerResponse>(),
+                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
@@ -746,12 +747,9 @@ void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   ServiceWorkerFetchRequest* request_ptr = request.get();
 
-  net::CompletionCallback open_entry_callback =
-      base::Bind(MatchDidOpenEntry,
-                 base::Passed(request.Pass()),
-                 callback,
-                 blob_storage_context_,
-                 base::Passed(entry.Pass()));
+  net::CompletionCallback open_entry_callback = base::Bind(
+      MatchDidOpenEntry, base::Passed(request.Pass()), pending_callback,
+      blob_storage_context_, base::Passed(entry.Pass()));
 
   int rv = backend_->OpenEntry(
       request_ptr->url.spec(), entry_ptr, open_entry_callback);
@@ -761,15 +759,18 @@ void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
 
 void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
                                 const ErrorCallback& callback) {
+  IncPendingOps();
+  ErrorCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingErrorCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
+
   if (!initialized_) {
-    Init(base::Bind(&ServiceWorkerCache::Delete,
-                    weak_ptr_factory_.GetWeakPtr(),
-                    base::Passed(request.Pass()),
-                    callback));
+    Init(base::Bind(&ServiceWorkerCache::Delete, weak_ptr_factory_.GetWeakPtr(),
+                    base::Passed(request.Pass()), pending_callback));
     return;
   }
   if (!backend_) {
-    callback.Run(ErrorTypeStorage);
+    pending_callback.Run(ErrorTypeStorage);
     return;
   }
 
@@ -779,13 +780,9 @@ void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   ServiceWorkerFetchRequest* request_ptr = request.get();
 
-  net::CompletionCallback open_entry_callback =
-      base::Bind(DeleteDidOpenEntry,
-                 origin_,
-                 base::Passed(request.Pass()),
-                 callback,
-                 base::Passed(entry.Pass()),
-                 quota_manager_proxy_);
+  net::CompletionCallback open_entry_callback = base::Bind(
+      DeleteDidOpenEntry, origin_, base::Passed(request.Pass()),
+      pending_callback, base::Passed(entry.Pass()), quota_manager_proxy_);
 
   int rv = backend_->OpenEntry(
       request_ptr->url.spec(), entry_ptr, open_entry_callback);
@@ -794,13 +791,17 @@ void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
 }
 
 void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
+  IncPendingOps();
+  RequestsCallback pending_callback =
+      base::Bind(&ServiceWorkerCache::PendingRequestsCallback,
+                 weak_ptr_factory_.GetWeakPtr(), callback);
   if (!initialized_) {
-    Init(base::Bind(
-        &ServiceWorkerCache::Keys, weak_ptr_factory_.GetWeakPtr(), callback));
+    Init(base::Bind(&ServiceWorkerCache::Keys, weak_ptr_factory_.GetWeakPtr(),
+                    pending_callback));
     return;
   }
   if (!backend_) {
-    callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
+    pending_callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
     return;
   }
 
@@ -815,7 +816,7 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
   // forever if you read data from a cache entry while enumerating.
 
   scoped_ptr<KeysContext> keys_context(
-      new KeysContext(callback, weak_ptr_factory_.GetWeakPtr()));
+      new KeysContext(pending_callback, weak_ptr_factory_.GetWeakPtr()));
 
   keys_context->backend_iterator = backend_->CreateIterator();
   disk_cache::Backend::Iterator& iterator = *keys_context->backend_iterator;
@@ -830,8 +831,21 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
     open_entry_callback.Run(rv);
 }
 
-void ServiceWorkerCache::Close() {
+void ServiceWorkerCache::Close(const base::Closure& callback) {
+  DCHECK(!initialized_ || backend_)
+      << "Don't call ServiceWorkerCache::Close() twice.";
+
+  if (pending_ops_ > 0) {
+    DCHECK(ops_complete_callback_.is_null());
+    initialized_ = true;  // So that future operations halt.
+    ops_complete_callback_ = base::Bind(
+        &ServiceWorkerCache::Close, weak_ptr_factory_.GetWeakPtr(), callback);
+    return;
+  }
+
+  initialized_ = true;
   backend_.reset();
+  callback.Run();
 }
 
 int64 ServiceWorkerCache::MemoryBackedSize() const {
@@ -875,6 +889,7 @@ ServiceWorkerCache::ServiceWorkerCache(
       blob_storage_context_(blob_context),
       initialized_(false),
       memory_only_(path.empty()),
+      pending_ops_(0),
       weak_ptr_factory_(this) {
 }
 
@@ -902,6 +917,7 @@ void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
     put_context->callback.Run(ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
+    return;
   }
 
   disk_cache::Entry** entry_ptr = &put_context->cache_entry;
@@ -1186,6 +1202,7 @@ void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
 }
 
 void ServiceWorkerCache::Init(const base::Closure& callback) {
+  DCHECK(!initialized_);
   init_callbacks_.push_back(callback);
 
   // If this isn't the first call to Init then return as the initialization
@@ -1205,6 +1222,38 @@ void ServiceWorkerCache::InitDone(ErrorType error) {
     it->Run();
   }
   init_callbacks_.clear();
+}
+
+void ServiceWorkerCache::DecPendingOps() {
+  DCHECK(pending_ops_ > 0);
+  pending_ops_--;
+  if (pending_ops_ == 0 && !ops_complete_callback_.is_null()) {
+    ops_complete_callback_.Run();
+    ops_complete_callback_.Reset();
+  }
+}
+
+void ServiceWorkerCache::PendingErrorCallback(const ErrorCallback& callback,
+                                              ErrorType error) {
+  callback.Run(error);
+  DecPendingOps();
+}
+
+void ServiceWorkerCache::PendingResponseCallback(
+    const ResponseCallback& callback,
+    ErrorType error,
+    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  callback.Run(error, response.Pass(), blob_data_handle.Pass());
+  DecPendingOps();
+}
+
+void ServiceWorkerCache::PendingRequestsCallback(
+    const RequestsCallback& callback,
+    ErrorType error,
+    scoped_ptr<Requests> requests) {
+  callback.Run(error, requests.Pass());
+  DecPendingOps();
 }
 
 }  // namespace content

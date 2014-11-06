@@ -104,6 +104,11 @@ class CONTENT_EXPORT ServiceWorkerCacheStorageManager {
       const storage::QuotaClient::GetOriginsCallback& callback);
   void DeleteOriginData(const GURL& origin,
                         const storage::QuotaClient::DeletionCallback& callback);
+  static void DeleteOriginDidClose(
+      const GURL& origin,
+      const storage::QuotaClient::DeletionCallback& callback,
+      scoped_ptr<ServiceWorkerCacheStorage> cache_storage,
+      base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager);
 
   net::URLRequestContext* url_request_context() const {
     return request_context_;

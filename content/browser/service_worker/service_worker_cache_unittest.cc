@@ -42,11 +42,52 @@ storage::BlobProtocolHandler* CreateMockBlobProtocolHandler(
 
 }  // namespace
 
+// A ServiceWorkerCache that can optionally pause during backend creation.
+class TestServiceWorkerCache : public ServiceWorkerCache {
+ public:
+  TestServiceWorkerCache(
+      const GURL& origin,
+      const base::FilePath& path,
+      net::URLRequestContext* request_context,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+      base::WeakPtr<storage::BlobStorageContext> blob_context)
+      : ServiceWorkerCache(origin,
+                           path,
+                           request_context,
+                           quota_manager_proxy,
+                           blob_context),
+        pause_backend_creation_(false) {}
+
+  virtual void CreateBackend(const ErrorCallback& callback) override {
+    backend_creation_callback_ = callback;
+    if (pause_backend_creation_)
+      return;
+    ContinueCreateBackend();
+  }
+
+  void ContinueCreateBackend() {
+    ServiceWorkerCache::CreateBackend(backend_creation_callback_);
+  }
+
+  void set_pause_backend_creation(bool pause) {
+    pause_backend_creation_ = pause;
+  }
+
+ private:
+  virtual ~TestServiceWorkerCache() override {}
+
+  bool pause_backend_creation_;
+  ErrorCallback backend_creation_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestServiceWorkerCache);
+};
+
 class ServiceWorkerCacheTest : public testing::Test {
  public:
   ServiceWorkerCacheTest()
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        callback_error_(ServiceWorkerCache::ErrorTypeOK) {}
+        callback_error_(ServiceWorkerCache::ErrorTypeOK),
+        callback_closed_(false) {}
 
   void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
@@ -69,21 +110,13 @@ class ServiceWorkerCacheTest : public testing::Test {
 
     CreateRequests(blob_storage_context);
 
-    if (MemoryOnly()) {
-      cache_ = ServiceWorkerCache::CreateMemoryCache(
-          GURL("http://example.com"),
-          url_request_context,
-          quota_manager_proxy_,
-          blob_storage_context->context()->AsWeakPtr());
-    } else {
+    if (!MemoryOnly())
       ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-      cache_ = ServiceWorkerCache::CreatePersistentCache(
-          GURL("http://example.com"),
-          temp_dir_.path(),
-          url_request_context,
-          quota_manager_proxy_,
-          blob_storage_context->context()->AsWeakPtr());
-    }
+    base::FilePath path = MemoryOnly() ? base::FilePath() : temp_dir_.path();
+
+    cache_ = make_scoped_refptr(new TestServiceWorkerCache(
+        GURL("http://example.com"), path, url_request_context,
+        quota_manager_proxy_, blob_storage_context->context()->AsWeakPtr()));
   }
 
   void TearDown() override {
@@ -208,20 +241,34 @@ class ServiceWorkerCacheTest : public testing::Test {
     return callback_error_ == ServiceWorkerCache::ErrorTypeOK;
   }
 
+  bool Close() {
+    scoped_ptr<base::RunLoop> loop(new base::RunLoop());
+
+    cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+                             base::Unretained(this),
+                             base::Unretained(loop.get())));
+    loop->Run();
+    return callback_closed_;
+  }
+
   void RequestsCallback(base::RunLoop* run_loop,
                         ServiceWorkerCache::ErrorType error,
                         scoped_ptr<ServiceWorkerCache::Requests> requests) {
     callback_error_ = error;
     callback_strings_.clear();
-    for (size_t i = 0u; i < requests->size(); ++i)
-      callback_strings_.push_back(requests->at(i).url.spec());
-    run_loop->Quit();
+    if (requests) {
+      for (size_t i = 0u; i < requests->size(); ++i)
+        callback_strings_.push_back(requests->at(i).url.spec());
+    }
+    if (run_loop)
+      run_loop->Quit();
   }
 
   void ErrorTypeCallback(base::RunLoop* run_loop,
                          ServiceWorkerCache::ErrorType error) {
     callback_error_ = error;
-    run_loop->Quit();
+    if (run_loop)
+      run_loop->Quit();
   }
 
   void ResponseAndErrorCallback(
@@ -231,14 +278,21 @@ class ServiceWorkerCacheTest : public testing::Test {
       scoped_ptr<storage::BlobDataHandle> body_handle) {
     callback_error_ = error;
     callback_response_ = response.Pass();
-
     callback_response_data_.reset();
     if (error == ServiceWorkerCache::ErrorTypeOK &&
         !callback_response_->blob_uuid.empty()) {
       callback_response_data_ = body_handle.Pass();
     }
 
-    run_loop->Quit();
+    if (run_loop)
+      run_loop->Quit();
+  }
+
+  void CloseCallback(base::RunLoop* run_loop) {
+    EXPECT_FALSE(callback_closed_);
+    callback_closed_ = true;
+    if (run_loop)
+      run_loop->Quit();
   }
 
   void CopyBody(storage::BlobDataHandle* blob_handle, std::string* output) {
@@ -271,6 +325,13 @@ class ServiceWorkerCacheTest : public testing::Test {
     return response_type == callback_response_->response_type;
   }
 
+  void VerifyAllOpsFail() {
+    EXPECT_FALSE(Put(no_body_request_, no_body_response_));
+    EXPECT_FALSE(Match(no_body_request_));
+    EXPECT_FALSE(Delete(body_request_));
+    EXPECT_FALSE(Keys());
+  }
+
   virtual bool MemoryOnly() { return false; }
 
  protected:
@@ -281,7 +342,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   storage::BlobStorageContext* blob_storage_context_;
 
   base::ScopedTempDir temp_dir_;
-  scoped_refptr<ServiceWorkerCache> cache_;
+  scoped_refptr<TestServiceWorkerCache> cache_;
 
   ServiceWorkerFetchRequest body_request_;
   ServiceWorkerResponse body_response_;
@@ -294,6 +355,7 @@ class ServiceWorkerCacheTest : public testing::Test {
   scoped_ptr<ServiceWorkerResponse> callback_response_;
   scoped_ptr<storage::BlobDataHandle> callback_response_data_;
   std::vector<std::string> callback_strings_;
+  bool callback_closed_;
 };
 
 class ServiceWorkerCacheTestP : public ServiceWorkerCacheTest,
@@ -618,6 +680,113 @@ TEST_F(ServiceWorkerCacheTest, MemoryBackedSizePersistent) {
   EXPECT_EQ(0, cache_->MemoryBackedSize());
   EXPECT_TRUE(Put(no_body_request_, no_body_response_));
   EXPECT_EQ(0, cache_->MemoryBackedSize());
+}
+
+TEST_P(ServiceWorkerCacheTestP, OpsFailOnClosedBackendNeverCreated) {
+  cache_->set_pause_backend_creation(
+      true);  // Will hang the test if a backend is created.
+  EXPECT_TRUE(Close());
+  VerifyAllOpsFail();
+}
+
+TEST_P(ServiceWorkerCacheTestP, OpsFailOnClosedBackend) {
+  // Create the backend and put something in it.
+  EXPECT_TRUE(Put(body_request_, body_response_));
+  EXPECT_TRUE(Close());
+  VerifyAllOpsFail();
+}
+
+TEST_F(ServiceWorkerCacheTest, ClosedDuringPut) {
+  // Even though Close is called in the middle of a Put operation (during
+  // backend creation), the put operation should still finish.
+  cache_->set_pause_backend_creation(true);
+  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
+  cache_->Put(CopyFetchRequest(body_request_),
+              CopyFetchResponse(body_response_),
+              base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+                         base::Unretained(this), nullptr));
+  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+                           base::Unretained(this), close_loop.get()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(callback_response_);
+  EXPECT_FALSE(callback_closed_);
+
+  cache_->ContinueCreateBackend();
+
+  close_loop->Run();
+  EXPECT_TRUE(callback_response_);
+  EXPECT_TRUE(callback_closed_);
+
+  VerifyAllOpsFail();
+}
+
+TEST_F(ServiceWorkerCacheTest, ClosedDuringMatch) {
+  // Even though Close is called in the middle of a Match operation (during
+  // backend creation), the match operation should still finish.
+  cache_->set_pause_backend_creation(true);
+  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
+  cache_->Match(CopyFetchRequest(body_request_),
+                base::Bind(&ServiceWorkerCacheTest::ResponseAndErrorCallback,
+                           base::Unretained(this), nullptr));
+  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+                           base::Unretained(this), close_loop.get()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
+  EXPECT_FALSE(callback_closed_);
+
+  cache_->ContinueCreateBackend();
+
+  close_loop->Run();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_error_);
+  EXPECT_TRUE(callback_closed_);
+
+  VerifyAllOpsFail();
+}
+
+TEST_F(ServiceWorkerCacheTest, ClosedDuringDelete) {
+  // Even though Close is called in the middle of a Delete operation (during
+  // backend creation), the delete operation should still finish.
+  cache_->set_pause_backend_creation(true);
+  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
+  cache_->Delete(CopyFetchRequest(body_request_),
+                 base::Bind(&ServiceWorkerCacheTest::ErrorTypeCallback,
+                            base::Unretained(this), nullptr));
+  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+                           base::Unretained(this), close_loop.get()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
+  EXPECT_FALSE(callback_closed_);
+
+  cache_->ContinueCreateBackend();
+
+  close_loop->Run();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_error_);
+  EXPECT_TRUE(callback_closed_);
+
+  VerifyAllOpsFail();
+}
+
+TEST_F(ServiceWorkerCacheTest, ClosedDuringKeys) {
+  // Even though Close is called in the middle of a Keys operation (during
+  // backend creation), the keys operation should still finish.
+  cache_->set_pause_backend_creation(true);
+  scoped_ptr<base::RunLoop> close_loop(new base::RunLoop());
+  callback_error_ = ServiceWorkerCache::ErrorTypeNotFound;
+  cache_->Keys(base::Bind(&ServiceWorkerCacheTest::RequestsCallback,
+                          base::Unretained(this), nullptr));
+  cache_->Close(base::Bind(&ServiceWorkerCacheTest::CloseCallback,
+                           base::Unretained(this), close_loop.get()));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeNotFound, callback_error_);
+  EXPECT_FALSE(callback_closed_);
+
+  cache_->ContinueCreateBackend();
+
+  close_loop->Run();
+  EXPECT_EQ(ServiceWorkerCache::ErrorTypeOK, callback_error_);
+  EXPECT_TRUE(callback_closed_);
+
+  VerifyAllOpsFail();
 }
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerCacheTest,

@@ -250,22 +250,37 @@ void ServiceWorkerCacheStorageManager::DeleteOriginData(
   ServiceWorkerCacheStorage* cache_storage =
       FindOrCreateServiceWorkerCacheManager(origin);
   cache_storage_map_.erase(origin);
-  cache_storage->CloseAllCaches();
+  cache_storage->CloseAllCaches(
+      base::Bind(&ServiceWorkerCacheStorageManager::DeleteOriginDidClose,
+                 origin, callback, base::Passed(make_scoped_ptr(cache_storage)),
+                 weak_ptr_factory_.GetWeakPtr()));
+}
 
+// static
+void ServiceWorkerCacheStorageManager::DeleteOriginDidClose(
+    const GURL& origin,
+    const storage::QuotaClient::DeletionCallback& callback,
+    scoped_ptr<ServiceWorkerCacheStorage> cache_storage,
+    base::WeakPtr<ServiceWorkerCacheStorageManager> cache_manager) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
   // hanging, resulting in unresolved promises. Fix this by guaranteeing that
   // callbacks are called in ServiceWorkerStorage.
-  delete cache_storage;
+  cache_storage.reset();
 
-  if (IsMemoryBacked()) {
+  if (!cache_manager) {
+    callback.Run(storage::kQuotaErrorAbort);
+    return;
+  }
+
+  if (cache_manager->IsMemoryBacked()) {
     callback.Run(storage::kQuotaStatusOk);
     return;
   }
 
   PostTaskAndReplyWithResult(
-      cache_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&DeleteDir, ConstructOriginPath(root_path_, origin)),
+      cache_manager->cache_task_runner_.get(), FROM_HERE,
+      base::Bind(&DeleteDir,
+                 ConstructOriginPath(cache_manager->root_path_, origin)),
       base::Bind(&DeleteOriginDidDeleteDir, callback));
 }
 

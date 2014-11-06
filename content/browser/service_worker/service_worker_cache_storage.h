@@ -83,7 +83,7 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
 
   // TODO(jkarlin): Add match() function.
 
-  void CloseAllCaches();
+  void CloseAllCaches(const base::Closure& callback);
 
   // The size of all of the origin's contents in memory. Returns 0 if the cache
   // backend is not a memory backend.
@@ -121,6 +121,10 @@ class CONTENT_EXPORT ServiceWorkerCacheStorage {
                                 bool success);
 
   // The DeleteCache callbacks are below.
+  void DeleteCacheDidClose(const std::string& cache_name,
+                           const BoolAndErrorCallback& callback,
+                           const StringVector& ordered_cache_names,
+                           const scoped_refptr<ServiceWorkerCache>& cache);
   void DeleteCacheDidWriteIndex(const std::string& cache_name,
                                 const BoolAndErrorCallback& callback,
                                 bool success);

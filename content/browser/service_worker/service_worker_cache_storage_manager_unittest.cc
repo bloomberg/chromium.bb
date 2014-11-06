@@ -595,6 +595,8 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaGetOriginsForHost) {
 
 TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteOriginData) {
   EXPECT_TRUE(Open(origin1_, "foo"));
+  // Call put to test that initialized caches are properly deleted too.
+  EXPECT_TRUE(CachePut(callback_cache_, GURL("http://example.com/foo")));
   EXPECT_TRUE(Open(origin1_, "bar"));
   EXPECT_TRUE(Open(origin2_, "baz"));
 
@@ -604,6 +606,10 @@ TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteOriginData) {
   EXPECT_FALSE(Has(origin1_, "bar"));
   EXPECT_TRUE(Has(origin2_, "baz"));
   EXPECT_TRUE(Open(origin1_, "foo"));
+}
+
+TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDeleteEmptyOrigin) {
+  EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
 }
 
 TEST_P(ServiceWorkerCacheQuotaClientTestP, QuotaDoesSupport) {
