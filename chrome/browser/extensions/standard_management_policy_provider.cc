@@ -97,7 +97,7 @@ bool StandardManagementPolicyProvider::UserMayLoad(
   // handled by the switch statement below, please consider whether enterprise
   // policy should be able to disallow extensions of the new type. If so, add
   // a branch to the second block and add a line to the definition of
-  // kExtensionAllowedTypesMap in configuration_policy_handler_list.cc.
+  // kAllowedTypesMap in extension_management_constants.h.
   switch (extension->GetType()) {
     case Manifest::TYPE_UNKNOWN:
       break;
