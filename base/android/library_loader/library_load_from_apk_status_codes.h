@@ -26,8 +26,9 @@ enum LibraryLoadFromApkStatusCodes {
   // The Chromium library was successfully loaded directly from the APK file.
   LIBRARY_LOAD_FROM_APK_STATUS_CODES_SUCCESSFUL = 3,
 
-  // The Chromium library was not page aligned in the APK file.
-  LIBRARY_LOAD_FROM_APK_STATUS_CODES_NOT_ALIGNED = 4,
+  // The Chromium library was successfully loaded using the unpack library
+  // fallback because it was compressed or not page aligned in the APK file.
+  LIBRARY_LOAD_FROM_APK_STATUS_CODES_USED_UNPACK_LIBRARY_FALLBACK = 4,
 
   // The Chromium library was successfully loaded using the no map executable
   // support fallback.

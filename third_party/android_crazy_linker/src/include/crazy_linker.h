@@ -353,8 +353,8 @@ crazy_status_t crazy_library_file_path_in_zip_file(const char* lib_name,
                                                    size_t buffer_size)
     _CRAZY_PUBLIC;
 
-// Check whether |lib_name| is page aligned in |zipfile_name|.
-crazy_status_t crazy_linker_check_library_aligned_in_zip_file(
+// Check whether |lib_name| is page aligned and uncompressed in |zipfile_name|.
+crazy_status_t crazy_linker_check_library_is_mappable_in_zip_file(
     const char* zipfile_name,
     const char* lib_name) _CRAZY_PUBLIC;
 

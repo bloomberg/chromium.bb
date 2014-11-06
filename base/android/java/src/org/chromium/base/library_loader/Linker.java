@@ -857,18 +857,18 @@ public class Linker {
     }
 
     /**
-     * Check whether a library is page aligned in the APK file.
+     * Check whether a library is page aligned and uncompressed in the APK file.
      *
      * @param apkFile Filename of the APK.
      * @param library The library's base name.
-     * @return true if page aligned.
+     * @return true if page aligned and uncompressed.
      */
-    public static boolean checkLibraryAlignedInApk(String apkFile, String library) {
+    public static boolean checkLibraryIsMappableInApk(String apkFile, String library) {
         synchronized (Linker.class) {
             ensureInitializedLocked();
 
-            if (DEBUG) Log.i(TAG, "checkLibraryAlignedInApk: " + apkFile + ", " + library);
-            boolean aligned = nativeCheckLibraryAlignedInApk(apkFile, library);
+            if (DEBUG) Log.i(TAG, "checkLibraryIsMappableInApk: " + apkFile + ", " + library);
+            boolean aligned = nativeCheckLibraryIsMappableInApk(apkFile, library);
             if (DEBUG) Log.i(TAG, library + " is " + (aligned ? "" : "NOT ")
                     + "page aligned in " + apkFile);
             return aligned;
@@ -996,13 +996,14 @@ public class Linker {
     private static native boolean nativeCheckMapExecSupport(String apkFile);
 
     /**
-     * Native method which checks whether a library is page aligned in the APK file.
+     * Native method which checks whether a library is page aligned and
+     * uncompressed in the APK file.
      *
      * @param apkFile Filename of the APK.
      * @param library The library's base name.
-     * @return true if page aligned.
+     * @return true if page aligned and uncompressed.
      */
-    private static native boolean nativeCheckLibraryAlignedInApk(String apkFile, String library);
+    private static native boolean nativeCheckLibraryIsMappableInApk(String apkFile, String library);
 
     /**
      * Record information for a given library.

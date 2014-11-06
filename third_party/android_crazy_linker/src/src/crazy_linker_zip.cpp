@@ -49,9 +49,14 @@ const int kOffsetFilenameInCentralDirectory =
 // This marker appears at the start of local header
 const uint32_t kLocalHeaderMarker = 0x04034b50;
 
+// http://www.pkware.com/documents/casestudies/APPNOTE.TXT Section 4.4.5
+// This value denotes that the file is stored (no compression).
+const uint32_t kCompressionMethodStored = 0;
+
 // Offsets of fields in the Local Header.
+const int kOffsetCompressionMethodInLocalHeader = 4 + 2 + 2;
 const int kOffsetFilenameLengthInLocalHeader =
-    4 + 2 + 2 + 2 + 2 + 2 + 4 + 4 + 4;
+    kOffsetCompressionMethodInLocalHeader + 2 + 2 + 2 + 4 + 4 + 4;
 const int kOffsetExtraFieldLengthInLocalHeader =
     kOffsetFilenameLengthInLocalHeader + 2;
 const int kOffsetFilenameInLocalHeader =
@@ -199,6 +204,17 @@ int FindStartOffsetOfFileInZipFile(const char* zip_file, const char* filename) {
         LOG("%s: Failed to find local file header marker in %s. "
             "Found 0x%x but expected 0x%x\n", __FUNCTION__,
             zip_file, marker, kLocalHeaderMarker);
+        return CRAZY_OFFSET_FAILED;
+      }
+
+      uint32_t compression_method =
+          ReadUInt16(
+              mem_bytes,
+              local_header_offset + kOffsetCompressionMethodInLocalHeader);
+      if (compression_method != kCompressionMethodStored) {
+        LOG("%s: %s is compressed within %s. "
+            "Found compression method %u but expected %u\n", __FUNCTION__,
+            filename, zip_file, compression_method, kCompressionMethodStored);
         return CRAZY_OFFSET_FAILED;
       }
 

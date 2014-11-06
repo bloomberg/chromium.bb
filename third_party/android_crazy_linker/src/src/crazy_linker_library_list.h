@@ -77,12 +77,12 @@ class LibraryList {
   static String GetLibraryFilePathInZipFile(const char* lib_name);
 
   // Find the location of a library in the zip file. If the name of the library
-  // is too long, an error occurs during the search or the library is not
-  // page aligned in the zip file, CRAZY_OFFSET_FAILED is returned. Otherwise,
-  // the offset of the library in the zip file is returned.
-  static int FindAlignedLibraryInZipFile(const char* zip_file_path,
-                                         const char* lib_name,
-                                         Error* error);
+  // is too long, an error occurs during the search, the library is not page
+  // aligned in the zip file or it is compressed, CRAZY_OFFSET_FAILED is
+  // returned. Otherwise, the offset of the library in the zip file is returned.
+  static int FindMappableLibraryInZipFile(const char* zip_file_path,
+                                          const char* lib_name,
+                                          Error* error);
 
   // Try to load a library from its location in the zip file.
   // On failure, returns NULL and sets the |error| message.

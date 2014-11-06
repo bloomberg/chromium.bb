@@ -64,8 +64,8 @@ public class LibraryLoader {
     private static boolean sLibraryWasLoadedFromApk = false;
 
     // One-way switch becomes false if the Chromium library should be loaded
-    // directly from the APK file but it was not aligned.
-    private static boolean sLibraryWasAlignedInApk = true;
+    // directly from the APK file but it was compressed or not aligned.
+    private static boolean sLibraryIsMappableInApk = true;
 
     // One-way switch becomes true if the system library loading failed,
     // and the right native library was found and loaded by the hack.
@@ -211,10 +211,10 @@ public class LibraryLoader {
                         String libFilePath = System.mapLibraryName(library);
                         if (apkFilePath != null && Linker.isInZipFile()) {
                             // The library is in the APK file.
-                            if (!Linker.checkLibraryAlignedInApk(apkFilePath, libFilePath)) {
-                                sLibraryWasAlignedInApk = false;
+                            if (!Linker.checkLibraryIsMappableInApk(apkFilePath, libFilePath)) {
+                                sLibraryIsMappableInApk = false;
                             }
-                            if (sLibraryWasAlignedInApk || useMapExecSupportFallback) {
+                            if (sLibraryIsMappableInApk || useMapExecSupportFallback) {
                                 // Load directly from the APK (or use the no map executable
                                 // support fallback, see crazy_linker_elf_loader.cpp).
                                 zipFilePath = apkFilePath;
@@ -224,9 +224,10 @@ public class LibraryLoader {
                                                 : "directly")
                                         + " from within " + apkFilePath);
                             } else {
-                                // Fallback.
+                                // Unpack library fallback.
                                 Log.i(TAG, "Loading " + library
-                                        + " using unpacking fallback from within " + apkFilePath);
+                                        + " using unpack library fallback from within "
+                                        + apkFilePath);
                                 libFilePath = LibraryLoaderHelper.buildFallbackLibrary(
                                         context, library);
                                 fallbackWasUsed = true;
@@ -396,8 +397,8 @@ public class LibraryLoader {
                     : LibraryLoadFromApkStatusCodes.USED_NO_MAP_EXEC_SUPPORT_FALLBACK;
         }
 
-        if (!sLibraryWasAlignedInApk) {
-            return LibraryLoadFromApkStatusCodes.NOT_ALIGNED;
+        if (!sLibraryIsMappableInApk) {
+            return LibraryLoadFromApkStatusCodes.USED_UNPACK_LIBRARY_FALLBACK;
         }
 
         if (context == null) {

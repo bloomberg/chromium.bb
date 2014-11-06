@@ -412,7 +412,7 @@ String LibraryList::GetLibraryFilePathInZipFile(const char* lib_name) {
   return path;
 }
 
-int LibraryList::FindAlignedLibraryInZipFile(
+int LibraryList::FindMappableLibraryInZipFile(
     const char* zip_file_path,
     const char* lib_name,
     Error* error) {
@@ -448,7 +448,7 @@ LibraryView* LibraryList::LoadLibraryInZipFile(
     SearchPathList* search_path_list,
     bool no_map_exec_support_fallback_enabled,
     Error* error) {
-  int offset = FindAlignedLibraryInZipFile(zip_file_path, lib_name, error);
+  int offset = FindMappableLibraryInZipFile(zip_file_path, lib_name, error);
   if (offset == CRAZY_OFFSET_FAILED) {
     return NULL;
   }
