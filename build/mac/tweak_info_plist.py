@@ -29,7 +29,7 @@ import subprocess
 import sys
 import tempfile
 
-TOP = os.path.join(env['SRCROOT'], '..')
+TOP = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 
 def _GetOutput(args):
