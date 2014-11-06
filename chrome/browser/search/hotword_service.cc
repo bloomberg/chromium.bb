@@ -161,6 +161,7 @@ namespace hotword_internal {
 // Constants for the hotword field trial.
 const char kHotwordFieldTrialName[] = "VoiceTrigger";
 const char kHotwordFieldTrialDisabledGroupName[] = "Disabled";
+const char kHotwordFieldTrialExperimentalGroupName[] = "Experimental";
 // Old preference constant.
 const char kHotwordUnusablePrefName[] = "hotword.search_enabled";
 // String passed to indicate the training state has changed.
@@ -182,6 +183,13 @@ bool HotwordService::DoesHotwordSupportLanguage(Profile* profile) {
 
 // static
 bool HotwordService::IsExperimentalHotwordingEnabled() {
+  std::string group = base::FieldTrialList::FindFullName(
+      hotword_internal::kHotwordFieldTrialName);
+  if (!group.empty() &&
+      group == hotword_internal::kHotwordFieldTrialExperimentalGroupName) {
+    return true;
+  }
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   return command_line->HasSwitch(switches::kEnableExperimentalHotwording);
 }
