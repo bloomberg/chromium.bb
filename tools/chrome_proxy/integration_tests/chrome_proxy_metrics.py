@@ -99,6 +99,26 @@ class ChromeProxyResponse(network_metrics.HTTPResponse):
       return True
     return False
 
+  def GetChromeProxyClientType(self):
+    """Get the client type directive from the Chrome-Proxy request header.
+
+    Returns:
+        The client type directive from the Chrome-Proxy request header for the
+        request that lead to this response. For example, if the request header
+        "Chrome-Proxy: c=android" is present, then this method would return
+        "android". Returns None if no client type directive is present.
+    """
+    if 'Chrome-Proxy' not in self.response.request_headers:
+      return None
+
+    chrome_proxy_request_header = self.response.request_headers['Chrome-Proxy']
+    values = [v.strip() for v in chrome_proxy_request_header.split(',')]
+    for value in values:
+      kvp = value.split('=', 1)
+      if len(kvp) == 2 and kvp[0].strip() == 'c':
+        return kvp[1].strip()
+    return None
+
 
 class ChromeProxyMetric(network_metrics.NetworkMetric):
   """A Chrome proxy timeline metric."""
@@ -179,11 +199,52 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'version_test', 'count', 1))
 
+  def GetClientTypeFromRequests(self, tab):
+    """Get the Chrome-Proxy client type value from requests made in this tab.
+
+    Returns:
+        The client type value from the first request made in this tab that
+        specifies a client type in the Chrome-Proxy request header. See
+        ChromeProxyResponse.GetChromeProxyClientType for more details about the
+        Chrome-Proxy client type. Returns None if none of the requests made in
+        this tab specify a client type.
+    """
+    for resp in self.IterResponses(tab):
+      client_type = resp.GetChromeProxyClientType()
+      if client_type:
+        return client_type
+    return None
+
+  def AddResultsForClientType(self, tab, results, client_type,
+                              bypass_for_client_type):
+    via_count = 0
+    bypass_count = 0
+
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        via_count += 1
+        if client_type.lower() == bypass_for_client_type.lower():
+          raise ChromeProxyMetricException, (
+              '%s: Response for client of type "%s" has via header, but should '
+              'be bypassed.' % (
+                  resp.response.url, bypass_for_client_type, client_type))
+      elif resp.ShouldHaveChromeProxyViaHeader():
+        bypass_count += 1
+        if client_type.lower() != bypass_for_client_type.lower():
+          raise ChromeProxyMetricException, (
+              '%s: Response missing via header. Only "%s" clients should '
+              'bypass for this page, but this client is "%s".' % (
+                  resp.response.url, bypass_for_client_type, client_type))
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'via', 'count', via_count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'bypass', 'count', bypass_count))
+
   def ProxyListForDev(self, proxies):
     return [self.effective_proxies['proxy-dev']
             if proxy == self.effective_proxies['proxy']
             else proxy for proxy in proxies]
-
 
   def IsProxyBypassed(self, tab):
     """Get whether all configured proxies are bypassed.

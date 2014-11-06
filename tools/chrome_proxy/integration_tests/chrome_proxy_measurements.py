@@ -271,6 +271,28 @@ class ChromeProxyClientVersion(ChromeProxyValidation):
     self._metrics.AddResultsForClientVersion(tab, results)
 
 
+class ChromeProxyClientType(ChromeProxyValidation):
+  """Correctness measurement for Chrome-Proxy header client type directives."""
+
+  def __init__(self):
+    super(ChromeProxyClientType, self).__init__(restart_after_each_page=True)
+    self._chrome_proxy_client_type = None
+
+  def AddResults(self, tab, results):
+    # Get the Chrome-Proxy client type from the first page in the page set, so
+    # that the client type value can be used to determine which of the later
+    # pages in the page set should be bypassed.
+    if not self._chrome_proxy_client_type:
+      client_type = self._metrics.GetClientTypeFromRequests(tab)
+      if client_type:
+        self._chrome_proxy_client_type = client_type
+
+    self._metrics.AddResultsForClientType(tab,
+                                          results,
+                                          self._chrome_proxy_client_type,
+                                          self._page.bypass_for_client_type)
+
+
 class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
   """Correctness measurement for HTTP proxy fallback to direct."""
 
