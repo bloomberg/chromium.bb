@@ -1904,6 +1904,12 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_DOWNLOAD_SEARCHRESULTSFOR" desc="Format string for search results">
         Search results for '<ph name="SEARCH_STRING">$1</ph>'
       </message>
+      <message name="IDS_DOWNLOAD_NO_SEARCH_RESULTS" desc="A message shown for when a search yield no results (no matching downloads).">
+        No search results found.
+      </message>
+      <message name="IDS_DOWNLOAD_NO_DOWNLOADS" desc="A message shown when the user has no downloads to show on chrome://downloads.">
+        No downloads found.
+      </message>
       <message name="IDS_DOWNLOAD_LINK_RESUME"
                desc="In the download view, 'Resume' link text">
         Resume

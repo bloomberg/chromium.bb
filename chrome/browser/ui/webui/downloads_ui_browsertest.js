@@ -13,6 +13,33 @@ TEST_F('BaseDownloadsWebUITest', 'DeleteAllowed', function() {
   testDone();
 });
 
+TEST_F('BaseDownloadsWebUITest', 'NoResultsHiddenWhenDownloads', function() {
+  assertNotEquals(0, downloads.size());
+  expectFalse($('downloads-display').hidden);
+  expectTrue($('no-downloads-or-results').hidden);
+});
+
+/**
+ * @constructor
+ * @extends {BaseDownloadsWebUITest}
+ */
+function EmptyDownloadsWebUITest() {}
+
+EmptyDownloadsWebUITest.prototype = {
+  __proto__: BaseDownloadsWebUITest.prototype,
+
+  /** @override */
+  setUp: function() {
+    // Doesn't create any fake downloads.
+    assertEquals(0, downloads.size());
+  },
+};
+
+TEST_F('EmptyDownloadsWebUITest', 'NoDownloadsMessageShowing', function() {
+  expectTrue($('downloads-display').hidden);
+  expectFalse($('no-downloads-or-results').hidden);
+});
+
 /**
  * Fixture for Downloads WebUI testing when deletions are prohibited.
  * @extends {BaseDownloadsWebUITest}

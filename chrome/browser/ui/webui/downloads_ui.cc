@@ -47,6 +47,11 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("open_downloads_folder",
                              IDS_DOWNLOAD_LINK_OPEN_DOWNLOADS_FOLDER);
 
+  // No results/downloads messages that show instead of the downloads list.
+  source->AddLocalizedString("no_downloads", IDS_DOWNLOAD_NO_DOWNLOADS);
+  source->AddLocalizedString("no_search_results",
+                             IDS_DOWNLOAD_NO_SEARCH_RESULTS);
+
   // Status.
   source->AddLocalizedString("status_cancelled", IDS_DOWNLOAD_TAB_CANCELLED);
   source->AddLocalizedString("status_removed", IDS_DOWNLOAD_FILE_REMOVED);
