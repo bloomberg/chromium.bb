@@ -584,16 +584,24 @@ NSDictionary* attributeToMethodNameMap = nil;
   case ui::AX_ROLE_ARTICLE:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_ARTICLE));
-    break;
   case ui::AX_ROLE_BANNER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_BANNER));
+  case ui::AX_ROLE_COMPLEMENTARY:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_COMPLEMENTARY));
   case ui::AX_ROLE_CONTENT_INFO:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_ADDRESS));
   case ui::AX_ROLE_FOOTER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));
+  case ui::AX_ROLE_MAIN:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_MAIN_CONTENT));
+  case ui::AX_ROLE_NAVIGATION:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_NAVIGATIONAL_LINK));
   case ui::AX_ROLE_REGION:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_REGION));

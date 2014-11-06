@@ -341,6 +341,9 @@ below:
       <message name="IDS_AX_ROLE_BANNER" desc="accessibility role description for banner">
         banner
       </message>
+      <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="accessibility role description for complementary">
+        complementary
+      </message>
       <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
         HTML content
       </message>
@@ -372,6 +375,12 @@ below:
       </if>
       <message name="IDS_AX_ROLE_ADDRESS" desc="accessibility role description for an address (as in a person's contact information)">
         address
+      </message>
+      <message name="IDS_AX_ROLE_MAIN_CONTENT" desc="accessibility role description for main content of the document.">
+        main
+      </message>
+      <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="accessibility role description for group of navigational links.">
+        navigation
       </message>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
