@@ -139,9 +139,7 @@ class GFX_EXPORT Transform {
   bool IsIdentityOrIntegerTranslation() const;
 
   // Returns true if the matrix had only scaling components.
-  bool IsScale2d() const {
-    return !(matrix_.getType() & ~SkMatrix44::kScale_Mask);
-  }
+  bool IsScale2d() const { return matrix_.isScale(); }
 
   // Returns true if the matrix is has only scaling and translation components.
   bool IsScaleOrTranslation() const { return matrix_.isScaleTranslate(); }
