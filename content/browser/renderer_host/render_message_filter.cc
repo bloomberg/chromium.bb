@@ -326,7 +326,8 @@ RenderMessageFilter::~RenderMessageFilter() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(plugin_host_clients_.empty());
   HostSharedBitmapManager::current()->ProcessRemoved(PeerHandle());
-  BrowserGpuMemoryBufferManager::current()->ProcessRemoved(PeerHandle());
+  BrowserGpuMemoryBufferManager::current()->ProcessRemoved(
+      PeerHandle(), render_process_id_);
   HostDiscardableSharedMemoryManager::current()->ProcessRemoved(PeerHandle());
 }
 
@@ -1271,11 +1272,10 @@ void RenderMessageFilter::GpuMemoryBufferAllocated(
 }
 
 void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     uint32 sync_point) {
   BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      type, id, PeerHandle(), render_process_id_, sync_point);
+      id, PeerHandle(), render_process_id_, sync_point);
 }
 
 }  // namespace content

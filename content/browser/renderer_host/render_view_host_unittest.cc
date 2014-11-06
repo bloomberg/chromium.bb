@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
@@ -47,9 +48,11 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     old_browser_client_ = SetBrowserClientForTesting(&test_browser_client_);
+    gpu_memory_buffer_manager_.reset(new BrowserGpuMemoryBufferManager(0));
   }
 
   void TearDown() override {
+    gpu_memory_buffer_manager_.reset();
     SetBrowserClientForTesting(old_browser_client_);
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -57,6 +60,7 @@ class RenderViewHostTest : public RenderViewHostImplTestHarness {
  private:
   RenderViewHostTestBrowserClient test_browser_client_;
   ContentBrowserClient* old_browser_client_;
+  scoped_ptr<BrowserGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTest);
 };

@@ -41,15 +41,20 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       int child_client_id,
       const AllocationCallback& callback);
   void ChildProcessDeletedGpuMemoryBuffer(
-      gfx::GpuMemoryBufferType type,
       gfx::GpuMemoryBufferId id,
       base::ProcessHandle child_process_handle,
       int child_client_id,
       uint32 sync_point);
-  void ProcessRemoved(base::ProcessHandle process_handle);
+  void ProcessRemoved(base::ProcessHandle process_handle, int client_id);
 
  private:
   struct AllocateGpuMemoryBufferRequest;
+
+  void GpuMemoryBufferAllocatedForChildProcess(
+      base::ProcessHandle child_process_handle,
+      int child_client_id,
+      const AllocationCallback& callback,
+      const gfx::GpuMemoryBufferHandle& handle);
 
   static void AllocateGpuMemoryBufferOnIO(
       AllocateGpuMemoryBufferRequest* request);
@@ -58,6 +63,13 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       scoped_ptr<GpuMemoryBufferImpl> buffer);
 
   int gpu_client_id_;
+
+  typedef base::hash_map<gfx::GpuMemoryBufferId, gfx::GpuMemoryBufferType>
+      BufferMap;
+  typedef base::hash_map<int, BufferMap> ClientMap;
+  ClientMap clients_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserGpuMemoryBufferManager);
 };
 
 }  // namespace content

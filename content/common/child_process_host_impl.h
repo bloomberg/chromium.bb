@@ -84,8 +84,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
                                  gfx::GpuMemoryBuffer::Format format,
                                  gfx::GpuMemoryBuffer::Usage usage,
                                  IPC::Message* reply);
-  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferType type,
-                                gfx::GpuMemoryBufferId id,
+  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                                 uint32 sync_point);
 
   void GpuMemoryBufferAllocated(IPC::Message* reply,
