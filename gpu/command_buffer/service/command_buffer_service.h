@@ -33,6 +33,9 @@ class GPU_EXPORT CommandBufferServiceBase : public CommandBuffer {
   // NOTE: if calling this in conjunction with SetParseError,
   // call this first.
   virtual void SetContextLostReason(error::ContextLostReason) = 0;
+
+  // Allows the reader to obtain the current put offset.
+  virtual int32 GetPutOffset() = 0;
 };
 
 // An object that implements a shared memory command buffer and a synchronous
@@ -61,6 +64,7 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
   void SetToken(int32 token) override;
   void SetParseError(error::Error error) override;
   void SetContextLostReason(error::ContextLostReason) override;
+  int32 GetPutOffset() override;
 
   // Sets a callback that is called whenever the put offset is changed. When
   // called with sync==true, the callback must not return until some progress

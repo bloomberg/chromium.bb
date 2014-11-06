@@ -29,7 +29,6 @@ TEST_F(CommandBufferSharedTest, TestBasic) {
 
   EXPECT_LT(state.generation, 0x80000000);
   EXPECT_EQ(state.get_offset, 0);
-  EXPECT_EQ(state.put_offset, 0);
   EXPECT_EQ(state.token, -1);
   EXPECT_EQ(state.error, gpu::error::kNoError);
   EXPECT_EQ(state.context_lost_reason, gpu::error::kUnknown);

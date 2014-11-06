@@ -341,7 +341,7 @@ void GpuCommandBufferStub::PollWork() {
 bool GpuCommandBufferStub::HasUnprocessedCommands() {
   if (command_buffer_) {
     gpu::CommandBuffer::State state = command_buffer_->GetLastState();
-    return state.put_offset != state.get_offset &&
+    return command_buffer_->GetPutOffset() != state.get_offset &&
         !gpu::error::IsError(state.error);
   }
   return false;
@@ -767,7 +767,7 @@ void GpuCommandBufferStub::OnAsyncFlush(
 
 void GpuCommandBufferStub::OnRescheduled() {
   gpu::CommandBuffer::State pre_state = command_buffer_->GetLastState();
-  command_buffer_->Flush(pre_state.put_offset);
+  command_buffer_->Flush(command_buffer_->GetPutOffset());
   gpu::CommandBuffer::State post_state = command_buffer_->GetLastState();
 
   if (pre_state.get_offset != post_state.get_offset)

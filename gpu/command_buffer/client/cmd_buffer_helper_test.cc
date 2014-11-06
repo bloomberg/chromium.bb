@@ -241,7 +241,7 @@ class CommandBufferHelperTest : public testing::Test {
   }
 
   int32 GetPutOffset() {
-    return command_buffer_->GetLastState().put_offset;
+    return command_buffer_->GetPutOffset();
   }
 
   int32 GetHelperGetOffset() { return helper_->get_offset(); }

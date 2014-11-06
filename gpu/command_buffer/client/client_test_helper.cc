@@ -15,7 +15,7 @@ using ::testing::Invoke;
 
 namespace gpu {
 
-MockCommandBufferBase::MockCommandBufferBase() {
+MockCommandBufferBase::MockCommandBufferBase() : put_offset_(0) {
 }
 
 MockCommandBufferBase::~MockCommandBufferBase() {
@@ -40,7 +40,7 @@ void MockCommandBufferBase::SetGetOffset(int32 get_offset) {
 void MockCommandBufferBase::WaitForTokenInRange(int32 start, int32 end) {}
 
 void MockCommandBufferBase::WaitForGetOffsetInRange(int32 start, int32 end) {
-  state_.get_offset = state_.put_offset;
+  state_.get_offset = put_offset_;
   OnFlush();
 }
 
@@ -48,7 +48,6 @@ void MockCommandBufferBase::SetGetBuffer(int transfer_buffer_id) {
   ring_buffer_buffer_ = GetTransferBuffer(transfer_buffer_id);
   ring_buffer_ =
       static_cast<CommandBufferEntry*>(ring_buffer_buffer_->memory());
-  state_.num_entries = ring_buffer_buffer_->size() / sizeof(ring_buffer_[0]);
   state_.token = 10000;  // All token checks in the tests should pass.
 }
 
@@ -91,7 +90,7 @@ scoped_refptr<Buffer> MockCommandBufferBase::GetTransferBuffer(int32 id) {
 }
 
 void MockCommandBufferBase::FlushHelper(int32 put_offset) {
-  state_.put_offset = put_offset;
+  put_offset_ = put_offset;
 }
 
 void MockCommandBufferBase::SetToken(int32 token) {
@@ -108,6 +107,10 @@ void MockCommandBufferBase::SetContextLostReason(
     error::ContextLostReason reason) {
   NOTREACHED();
   state_.context_lost_reason = reason;
+}
+
+int32 MockCommandBufferBase::GetPutOffset() {
+  return put_offset_;
 }
 
 // GCC requires these declarations, but MSVC requires they not be present

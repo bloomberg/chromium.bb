@@ -468,7 +468,7 @@ class GLES2ImplementationTest : public testing::Test {
 
       scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
       commands_ = static_cast<CommandBufferEntry*>(ring_buffer->memory()) +
-                  command_buffer()->GetLastState().put_offset;
+                  command_buffer()->GetPutOffset();
       ClearCommands();
       EXPECT_TRUE(transfer_buffer_->InSync());
 

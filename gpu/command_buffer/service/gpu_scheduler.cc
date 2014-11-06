@@ -51,11 +51,11 @@ void GpuScheduler::PutChanged() {
 
   // If there is no parser, exit.
   if (!parser_.get()) {
-    DCHECK_EQ(state.get_offset, state.put_offset);
+    DCHECK_EQ(state.get_offset, command_buffer_->GetPutOffset());
     return;
   }
 
-  parser_->set_put(state.put_offset);
+  parser_->set_put(command_buffer_->GetPutOffset());
   if (state.error != error::kNoError)
     return;
 

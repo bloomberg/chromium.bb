@@ -41,6 +41,7 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   void SetToken(int32 token) override;
   void SetParseError(error::Error error) override;
   void SetContextLostReason(error::ContextLostReason reason) override;
+  int32 GetPutOffset() override;
 
   // Get's the Id of the next transfer buffer that will be returned
   // by CreateTransferBuffer. This is useful for testing expected ids.
@@ -56,6 +57,7 @@ class MockCommandBufferBase : public CommandBufferServiceBase {
   CommandBufferEntry* ring_buffer_;
   scoped_refptr<Buffer> ring_buffer_buffer_;
   State state_;
+  int32 put_offset_;
 };
 
 class MockClientCommandBuffer : public MockCommandBufferBase {

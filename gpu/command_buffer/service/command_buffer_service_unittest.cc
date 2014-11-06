@@ -38,7 +38,7 @@ class CommandBufferServiceTest : public testing::Test {
   }
 
   int32 GetPutOffset() {
-    return command_buffer_->GetLastState().put_offset;
+    return command_buffer_->GetPutOffset();
   }
 
   int32 GetToken() {
@@ -65,7 +65,7 @@ TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
   EXPECT_TRUE(Initialize(1024));
   CommandBuffer::State state = command_buffer_->GetLastState();
   EXPECT_EQ(0, state.get_offset);
-  EXPECT_EQ(0, state.put_offset);
+  EXPECT_EQ(0, command_buffer_->GetPutOffset());
   EXPECT_EQ(0, state.token);
   EXPECT_EQ(error::kNoError, state.error);
 }
