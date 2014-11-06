@@ -275,9 +275,12 @@ class SyncSetupHandlerTest : public testing::Test {
     // Sign in the user.
     mock_signin_ = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetForProfile(profile_.get()));
-    mock_signin_->SetAuthenticatedUsername(GetTestUser());
-    profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
-                                    GetTestUser());
+    std::string username = GetTestUser();
+    if (!username.empty()) {
+      mock_signin_->SetAuthenticatedUsername(username);
+      profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                      username);
+    }
 
     mock_pss_ = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(

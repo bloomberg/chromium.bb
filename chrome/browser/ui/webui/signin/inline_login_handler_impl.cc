@@ -203,7 +203,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
       // OneClickSigninSyncStarter will delete itself once the job is done.
       new OneClickSigninSyncStarter(
           profile_, browser,
-          account_id, password_, result.refresh_token,
+          email_, password_, result.refresh_token,
           start_mode,
           contents,
           confirmation_required,

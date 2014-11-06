@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/options/core_options_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -24,6 +25,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/url_data_source.h"
@@ -219,6 +221,10 @@ GURL GetPromoURL(Source source, bool auto_close, bool is_constrained) {
 }
 
 GURL GetReauthURL(Profile* profile, const std::string& account_id) {
+  AccountTrackerService::AccountInfo info =
+      AccountTrackerServiceFactory::GetForProfile(profile)->
+          GetAccountInfo(account_id);
+
   if (switches::IsEnableWebBasedSignin()) {
     return net::AppendQueryParameter(
         signin::GetPromoURL(signin::SOURCE_SETTINGS, true),
@@ -232,7 +238,7 @@ GURL GetReauthURL(Profile* profile, const std::string& account_id) {
   GURL url = signin::GetPromoURL(
       source, true /* auto_close */,
       switches::IsNewAvatarMenu() /* is_constrained */);
-  url = net::AppendQueryParameter(url, "email", account_id);
+  url = net::AppendQueryParameter(url, "email", info.email);
   url = net::AppendQueryParameter(url, "validateEmail", "1");
   return net::AppendQueryParameter(url, "readOnlyEmail", "1");
 }

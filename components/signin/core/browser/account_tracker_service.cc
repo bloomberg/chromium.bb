@@ -466,7 +466,10 @@ std::string AccountTrackerService::PickAccountIdForAccount(
   switch(GetMigrationState(pref_service)) {
     case MIGRATION_NOT_STARTED:
     case MIGRATION_IN_PROGRESS:
-      return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
+      // Some tests don't use a real email address.  To support these cases,
+      // don't try to canonicalize these strings.
+      return (email.find('@') == std::string::npos) ? email :
+          gaia::CanonicalizeEmail(email);
     case MIGRATION_DONE:
       return gaia;
     default:
