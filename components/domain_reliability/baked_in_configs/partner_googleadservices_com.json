@@ -1,6 +1,6 @@
 {
-  "config_version": "partner-googleadservices-com-v1",
-  "config_valid_until": 1432944000.0,
+  "config_version": "partner-googleadservices-com $Revision: #5 $",
+  "config_valid_until": 1446336000,
   "monitored_domain": "partner.googleadservices.com",
   "collectors": [
     {
@@ -8,6 +8,15 @@
     },
     {
       "upload_url": "https://beacons.gvt2.com/domainreliability/upload"
+    },
+    {
+      "upload_url": "https://beacons2.gvt2.com/domainreliability/upload"
+    },
+    {
+      "upload_url": "https://beacons3.gvt2.com/domainreliability/upload"
+    },
+    {
+      "upload_url": "https://beacons4.gvt2.com/domainreliability/upload"
     }
   ],
   "monitored_resources": [
