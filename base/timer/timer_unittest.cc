@@ -4,10 +4,12 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/test_simple_task_runner.h"
 #include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
+using base::SingleThreadTaskRunner;
 
 namespace {
 
@@ -26,20 +28,32 @@ class OneShotTimerTester {
  public:
   explicit OneShotTimerTester(bool* did_run, unsigned milliseconds = 10)
       : did_run_(did_run),
-        delay_ms_(milliseconds) {
+        delay_ms_(milliseconds),
+        quit_message_loop_(true) {
   }
+
   void Start() {
     timer_.Start(FROM_HERE, TimeDelta::FromMilliseconds(delay_ms_), this,
                  &OneShotTimerTester::Run);
   }
+
+  void SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner) {
+    quit_message_loop_ = false;
+    timer_.SetTaskRunner(task_runner);
+  }
+
  private:
   void Run() {
     *did_run_ = true;
-    base::MessageLoop::current()->QuitWhenIdle();
+    if (quit_message_loop_) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
   }
+
   bool* did_run_;
   base::OneShotTimer<OneShotTimerTester> timer_;
   const unsigned delay_ms_;
+  bool quit_message_loop_;
 };
 
 class OneShotSelfDeletingTimerTester {
@@ -48,16 +62,19 @@ class OneShotSelfDeletingTimerTester {
       did_run_(did_run),
       timer_(new base::OneShotTimer<OneShotSelfDeletingTimerTester>()) {
   }
+
   void Start() {
     timer_->Start(FROM_HERE, TimeDelta::FromMilliseconds(10), this,
                   &OneShotSelfDeletingTimerTester::Run);
   }
+
  private:
   void Run() {
     *did_run_ = true;
     timer_.reset();
     base::MessageLoop::current()->QuitWhenIdle();
   }
+
   bool* did_run_;
   scoped_ptr<base::OneShotTimer<OneShotSelfDeletingTimerTester> > timer_;
 };
@@ -71,6 +88,7 @@ class RepeatingTimerTester {
   void Start() {
     timer_.Start(FROM_HERE, delay_, this, &RepeatingTimerTester::Run);
   }
+
  private:
   void Run() {
     if (--counter_ == 0) {
@@ -79,6 +97,7 @@ class RepeatingTimerTester {
       base::MessageLoop::current()->QuitWhenIdle();
     }
   }
+
   bool* did_run_;
   int counter_;
   TimeDelta delay_;
@@ -308,6 +327,20 @@ TEST(TimerTest, OneShotSelfDeletingTimer) {
   for (int i = 0; i < kNumTestingMessageLoops; i++) {
     RunTest_OneShotSelfDeletingTimer(testing_message_loops[i]);
   }
+}
+
+TEST(TimerTest, OneShotTimer_CustomTaskRunner) {
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner();
+
+  bool did_run = false;
+  OneShotTimerTester f(&did_run);
+  f.SetTaskRunner(task_runner);
+  f.Start();
+
+  EXPECT_FALSE(did_run);
+  task_runner->RunUntilIdle();
+  EXPECT_TRUE(did_run);
 }
 
 TEST(TimerTest, RepeatingTimer) {

@@ -93,6 +93,12 @@ TimeDelta Timer::GetCurrentDelay() const {
   return delay_;
 }
 
+void Timer::SetTaskRunner(scoped_refptr<SingleThreadTaskRunner> task_runner) {
+  // Do not allow changing the task runner once something has been scheduled.
+  DCHECK_EQ(thread_id_, 0);
+  task_runner_.swap(task_runner);
+}
+
 void Timer::Start(const tracked_objects::Location& posted_from,
                   TimeDelta delay,
                   const base::Closure& user_task) {
@@ -146,12 +152,12 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
   is_running_ = true;
   scheduled_task_ = new BaseTimerTaskInternal(this);
   if (delay > TimeDelta::FromMicroseconds(0)) {
-    ThreadTaskRunnerHandle::Get()->PostDelayedTask(posted_from_,
+    GetTaskRunner()->PostDelayedTask(posted_from_,
         base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)),
         delay);
     scheduled_run_time_ = desired_run_time_ = TimeTicks::Now() + delay;
   } else {
-    ThreadTaskRunnerHandle::Get()->PostTask(posted_from_,
+    GetTaskRunner()->PostTask(posted_from_,
         base::Bind(&BaseTimerTaskInternal::Run, base::Owned(scheduled_task_)));
     scheduled_run_time_ = desired_run_time_ = TimeTicks();
   }
@@ -159,6 +165,10 @@ void Timer::PostNewScheduledTask(TimeDelta delay) {
   // later when the task is abandoned to detect misuse from multiple threads.
   if (!thread_id_)
     thread_id_ = static_cast<int>(PlatformThread::CurrentId());
+}
+
+scoped_refptr<SingleThreadTaskRunner> Timer::GetTaskRunner() {
+  return task_runner_.get() ? task_runner_ : ThreadTaskRunnerHandle::Get();
 }
 
 void Timer::AbandonScheduledTask() {
