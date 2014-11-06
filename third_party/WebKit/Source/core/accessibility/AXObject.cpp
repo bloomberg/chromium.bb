@@ -76,6 +76,7 @@ static ARIARoleMap* createARIARoleMap()
         { "definition", DefinitionRole },
         { "document", DocumentRole },
         { "rowheader", RowHeaderRole },
+        { "form", FormRole },
         { "group", GroupRole },
         { "heading", HeadingRole },
         { "img", ImageRole },
@@ -189,6 +190,7 @@ bool AXObject::isLandmarkRelated() const
     case ComplementaryRole:
     case ContentInfoRole:
     case FooterRole:
+    case FormRole:
     case MainRole:
     case NavigationRole:
     case RegionRole:
