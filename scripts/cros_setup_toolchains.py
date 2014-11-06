@@ -803,10 +803,35 @@ def _EnvdGetVar(envd, var):
 def _ProcessBinutilsConfig(target, output_dir):
   """Do what binutils-config would have done"""
   binpath = os.path.join('/bin', target + '-')
-  globpath = os.path.join(output_dir, 'usr', toolchain.GetHostTuple(), target,
-                          'binutils-bin', '*-gold')
+
+  # Locate the bin dir holding the gold linker.
+  binutils_bin_path = os.path.join(output_dir, 'usr', toolchain.GetHostTuple(),
+                                   target, 'binutils-bin')
+  globpath = os.path.join(binutils_bin_path, '*-gold')
   srcpath = glob.glob(globpath)
-  assert len(srcpath) == 1, '%s: did not match 1 path' % globpath
+  if not srcpath:
+    # Maybe this target doesn't support gold.
+    globpath = os.path.join(binutils_bin_path, '*')
+    srcpath = glob.glob(globpath)
+    assert len(srcpath) == 1, ('%s: matched more than one path (but not *-gold)'
+                               % globpath)
+    srcpath = srcpath[0]
+    ld_path = os.path.join(srcpath, 'ld')
+    assert os.path.exists(ld_path), '%s: linker is missing!' % ld_path
+    ld_path = os.path.join(srcpath, 'ld.bfd')
+    assert os.path.exists(ld_path), '%s: linker is missing!' % ld_path
+    ld_path = os.path.join(srcpath, 'ld.gold')
+    assert not os.path.exists(ld_path), ('%s: exists, but gold dir does not!'
+                                         % ld_path)
+
+    # Nope, no gold support to be found.
+    gold_supported = False
+    cros_build_lib.Warning('%s: binutils lacks support for the gold linker',
+                           target)
+  else:
+    assert len(srcpath) == 1, '%s: did not match exactly 1 path' % globpath
+    gold_supported = True
+
   srcpath = srcpath[0][len(output_dir):]
   gccpath = os.path.join('/usr', 'libexec', 'gcc')
   for prog in os.listdir(output_dir + srcpath):
@@ -818,7 +843,9 @@ def _ProcessBinutilsConfig(target, output_dir):
                           os.path.join(srcpath, prog))
 
   libpath = os.path.join('/usr', toolchain.GetHostTuple(), target, 'lib')
-  envd = os.path.join(output_dir, 'etc', 'env.d', 'binutils', '*-gold')
+  envd = os.path.join(output_dir, 'etc', 'env.d', 'binutils', '*')
+  if gold_supported:
+    envd += '-gold'
   srcpath = _EnvdGetVar(envd, 'LIBPATH')
   os.symlink(os.path.relpath(srcpath, os.path.dirname(libpath)),
              output_dir + libpath)
@@ -911,6 +938,7 @@ def CreatePackages(targets_wanted, output_dir, root='/'):
     output_dir: The directory to put the packages in.
     root: The root path to pull all packages/files from.
   """
+  cros_build_lib.Info('Writing tarballs to %s', output_dir)
   osutils.SafeMakedirs(output_dir)
   ldpaths = lddtree.LoadLdpaths(root)
   targets = ExpandTargets(targets_wanted)
