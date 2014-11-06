@@ -142,8 +142,7 @@ TEST_P(GLES2DecoderTest2, TexParameterfvImmediateValidArgs) {
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
   EXPECT_CALL(
       *gl_,
-      TexParameterf(GL_TEXTURE_2D,
-                    GL_TEXTURE_MAG_FILTER,
+      TexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
                     *reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -233,11 +232,9 @@ TEST_P(GLES2DecoderTest2, TexParameterivImmediateValidArgs) {
       GL_NEAREST,
   };
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_CALL(
-      *gl_,
-      TexParameteri(GL_TEXTURE_2D,
-                    GL_TEXTURE_MAG_FILTER,
-                    *reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, TexParameteri(
+                        GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+                        *reinterpret_cast<GLint*>(ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -448,10 +445,9 @@ TEST_P(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
 TEST_P(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
   cmds::UniformMatrix2fvImmediate& cmd =
       *GetImmediateAs<cmds::UniformMatrix2fvImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      UniformMatrix2fv(
-          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_,
+              UniformMatrix2fv(1, 2, false, reinterpret_cast<GLfloat*>(
+                                                ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix2fvImmediate, 0>(true);
   GLfloat temp[4 * 2] = {
       0,
@@ -464,10 +460,9 @@ TEST_P(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
 TEST_P(GLES2DecoderTest2, UniformMatrix3fvImmediateValidArgs) {
   cmds::UniformMatrix3fvImmediate& cmd =
       *GetImmediateAs<cmds::UniformMatrix3fvImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      UniformMatrix3fv(
-          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_,
+              UniformMatrix3fv(1, 2, false, reinterpret_cast<GLfloat*>(
+                                                ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix3fvImmediate, 0>(true);
   GLfloat temp[9 * 2] = {
       0,
@@ -480,10 +475,9 @@ TEST_P(GLES2DecoderTest2, UniformMatrix3fvImmediateValidArgs) {
 TEST_P(GLES2DecoderTest2, UniformMatrix4fvImmediateValidArgs) {
   cmds::UniformMatrix4fvImmediate& cmd =
       *GetImmediateAs<cmds::UniformMatrix4fvImmediate>();
-  EXPECT_CALL(
-      *gl_,
-      UniformMatrix4fv(
-          1, 2, false, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_,
+              UniformMatrix4fv(1, 2, false, reinterpret_cast<GLfloat*>(
+                                                ImmediateDataAddress(&cmd))));
   SpecializedSetup<cmds::UniformMatrix4fvImmediate, 0>(true);
   GLfloat temp[16 * 2] = {
       0,
@@ -537,9 +531,8 @@ TEST_P(GLES2DecoderTest2, VertexAttrib1fvImmediateValidArgs) {
       0,
   };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_,
-              VertexAttrib1fv(
-                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, VertexAttrib1fv(1, reinterpret_cast<GLfloat*>(
+                                           ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -561,9 +554,8 @@ TEST_P(GLES2DecoderTest2, VertexAttrib2fvImmediateValidArgs) {
       0,
   };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_,
-              VertexAttrib2fv(
-                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, VertexAttrib2fv(1, reinterpret_cast<GLfloat*>(
+                                           ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -585,9 +577,8 @@ TEST_P(GLES2DecoderTest2, VertexAttrib3fvImmediateValidArgs) {
       0,
   };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_,
-              VertexAttrib3fv(
-                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, VertexAttrib3fv(1, reinterpret_cast<GLfloat*>(
+                                           ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -609,9 +600,8 @@ TEST_P(GLES2DecoderTest2, VertexAttrib4fvImmediateValidArgs) {
       0,
   };
   cmd.Init(1, &temp[0]);
-  EXPECT_CALL(*gl_,
-              VertexAttrib4fv(
-                  1, reinterpret_cast<GLfloat*>(ImmediateDataAddress(&cmd))));
+  EXPECT_CALL(*gl_, VertexAttrib4fv(1, reinterpret_cast<GLfloat*>(
+                                           ImmediateDataAddress(&cmd))));
   EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

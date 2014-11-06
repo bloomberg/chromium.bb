@@ -962,13 +962,8 @@ struct CompressedTexImage2D {
             GLsizei _imageSize,
             uint32_t _data_shm_id,
             uint32_t _data_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _internalformat,
-                                       _width,
-                                       _height,
-                                       _imageSize,
-                                       _data_shm_id,
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _internalformat, _width,
+                                       _height, _imageSize, _data_shm_id,
                                        _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -1046,14 +1041,8 @@ struct CompressedTexSubImage2DBucket {
             GLsizei _height,
             GLenum _format,
             GLuint _bucket_id) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _xoffset,
-                                       _yoffset,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _bucket_id);
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _xoffset, _yoffset,
+                                       _width, _height, _format, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -1135,16 +1124,9 @@ struct CompressedTexSubImage2D {
             GLsizei _imageSize,
             uint32_t _data_shm_id,
             uint32_t _data_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _xoffset,
-                                       _yoffset,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _imageSize,
-                                       _data_shm_id,
-                                       _data_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _xoffset, _yoffset,
+                                       _width, _height, _format, _imageSize,
+                                       _data_shm_id, _data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2436,8 +2418,8 @@ struct GetActiveAttrib {
             uint32_t _name_bucket_id,
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _program, _index, _name_bucket_id, _result_shm_id, _result_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _name_bucket_id,
+                                       _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2506,8 +2488,8 @@ struct GetActiveUniform {
             uint32_t _name_bucket_id,
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _program, _index, _name_bucket_id, _result_shm_id, _result_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_program, _index, _name_bucket_id,
+                                       _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2625,8 +2607,8 @@ struct GetAttribLocation {
             uint32_t _name_bucket_id,
             uint32_t _location_shm_id,
             uint32_t _location_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _program, _name_bucket_id, _location_shm_id, _location_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_program, _name_bucket_id,
+                                       _location_shm_id, _location_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -2870,8 +2852,8 @@ struct GetFramebufferAttachmentParameteriv {
             GLenum _pname,
             uint32_t _params_shm_id,
             uint32_t _params_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _target, _attachment, _pname, _params_shm_id, _params_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_target, _attachment, _pname,
+                                       _params_shm_id, _params_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -3572,8 +3554,8 @@ struct GetUniformLocation {
             uint32_t _name_bucket_id,
             uint32_t _location_shm_id,
             uint32_t _location_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _program, _name_bucket_id, _location_shm_id, _location_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_program, _name_bucket_id,
+                                       _location_shm_id, _location_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4313,17 +4295,9 @@ struct ReadPixels {
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset,
             GLboolean _async) {
-    static_cast<ValueType*>(cmd)->Init(_x,
-                                       _y,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _type,
-                                       _pixels_shm_id,
-                                       _pixels_shm_offset,
-                                       _result_shm_id,
-                                       _result_shm_offset,
-                                       _async);
+    static_cast<ValueType*>(cmd)
+        ->Init(_x, _y, _width, _height, _format, _type, _pixels_shm_id,
+               _pixels_shm_offset, _result_shm_id, _result_shm_offset, _async);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4557,13 +4531,9 @@ struct ShaderBinary {
             uint32_t _binary_shm_id,
             uint32_t _binary_shm_offset,
             GLsizei _length) {
-    static_cast<ValueType*>(cmd)->Init(_n,
-                                       _shaders_shm_id,
-                                       _shaders_shm_offset,
-                                       _binaryformat,
-                                       _binary_shm_id,
-                                       _binary_shm_offset,
-                                       _length);
+    static_cast<ValueType*>(cmd)->Init(_n, _shaders_shm_id, _shaders_shm_offset,
+                                       _binaryformat, _binary_shm_id,
+                                       _binary_shm_offset, _length);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4914,14 +4884,8 @@ struct TexImage2D {
             GLenum _type,
             uint32_t _pixels_shm_id,
             uint32_t _pixels_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _internalformat,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _type,
-                                       _pixels_shm_id,
+    static_cast<ValueType*>(cmd)->Init(_target, _level, _internalformat, _width,
+                                       _height, _format, _type, _pixels_shm_id,
                                        _pixels_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
@@ -5178,17 +5142,9 @@ struct TexSubImage2D {
             uint32_t _pixels_shm_id,
             uint32_t _pixels_shm_offset,
             GLboolean _internal) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _xoffset,
-                                       _yoffset,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _type,
-                                       _pixels_shm_id,
-                                       _pixels_shm_offset,
-                                       _internal);
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _xoffset, _yoffset, _width, _height, _format,
+               _type, _pixels_shm_id, _pixels_shm_offset, _internal);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -6615,16 +6571,8 @@ struct BlitFramebufferCHROMIUM {
             GLint _dstY1,
             GLbitfield _mask,
             GLenum _filter) {
-    static_cast<ValueType*>(cmd)->Init(_srcX0,
-                                       _srcY0,
-                                       _srcX1,
-                                       _srcY1,
-                                       _dstX0,
-                                       _dstY0,
-                                       _dstX1,
-                                       _dstY1,
-                                       _mask,
-                                       _filter);
+    static_cast<ValueType*>(cmd)->Init(_srcX0, _srcY0, _srcX1, _srcY1, _dstX0,
+                                       _dstY0, _dstX1, _dstY1, _mask, _filter);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7399,8 +7347,8 @@ struct GetMaxValueInBufferCHROMIUM {
             GLuint _offset,
             uint32_t _result_shm_id,
             uint32_t _result_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(
-        _buffer_id, _count, _type, _offset, _result_shm_id, _result_shm_offset);
+    static_cast<ValueType*>(cmd)->Init(_buffer_id, _count, _type, _offset,
+                                       _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7619,12 +7567,9 @@ struct GetMultipleIntegervCHROMIUM {
             uint32_t _results_shm_id,
             uint32_t _results_shm_offset,
             GLsizeiptr _size) {
-    static_cast<ValueType*>(cmd)->Init(_pnames_shm_id,
-                                       _pnames_shm_offset,
-                                       _count,
-                                       _results_shm_id,
-                                       _results_shm_offset,
-                                       _size);
+    static_cast<ValueType*>(cmd)->Init(_pnames_shm_id, _pnames_shm_offset,
+                                       _count, _results_shm_id,
+                                       _results_shm_offset, _size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -7878,8 +7823,8 @@ struct CopyTextureCHROMIUM {
             GLint _level,
             GLint _internalformat,
             GLenum _dest_type) {
-    static_cast<ValueType*>(cmd)->Init(
-        _target, _source_id, _dest_id, _level, _internalformat, _dest_type);
+    static_cast<ValueType*>(cmd)->Init(_target, _source_id, _dest_id, _level,
+                                       _internalformat, _dest_type);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8695,19 +8640,10 @@ struct AsyncTexSubImage2DCHROMIUM {
             uint32_t _async_upload_token,
             uint32_t _sync_data_shm_id,
             uint32_t _sync_data_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _xoffset,
-                                       _yoffset,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _type,
-                                       _data_shm_id,
-                                       _data_shm_offset,
-                                       _async_upload_token,
-                                       _sync_data_shm_id,
-                                       _sync_data_shm_offset);
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _xoffset, _yoffset, _width, _height, _format,
+               _type, _data_shm_id, _data_shm_offset, _async_upload_token,
+               _sync_data_shm_id, _sync_data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -8810,18 +8746,10 @@ struct AsyncTexImage2DCHROMIUM {
             uint32_t _async_upload_token,
             uint32_t _sync_data_shm_id,
             uint32_t _sync_data_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target,
-                                       _level,
-                                       _internalformat,
-                                       _width,
-                                       _height,
-                                       _format,
-                                       _type,
-                                       _pixels_shm_id,
-                                       _pixels_shm_offset,
-                                       _async_upload_token,
-                                       _sync_data_shm_id,
-                                       _sync_data_shm_offset);
+    static_cast<ValueType*>(cmd)
+        ->Init(_target, _level, _internalformat, _width, _height, _format,
+               _type, _pixels_shm_id, _pixels_shm_offset, _async_upload_token,
+               _sync_data_shm_id, _sync_data_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -9167,17 +9095,10 @@ struct ScheduleOverlayPlaneCHROMIUM {
             GLfloat _uv_y,
             GLfloat _uv_width,
             GLfloat _uv_height) {
-    static_cast<ValueType*>(cmd)->Init(_plane_z_order,
-                                       _plane_transform,
-                                       _overlay_texture_id,
-                                       _bounds_x,
-                                       _bounds_y,
-                                       _bounds_width,
-                                       _bounds_height,
-                                       _uv_x,
-                                       _uv_y,
-                                       _uv_width,
-                                       _uv_height);
+    static_cast<ValueType*>(cmd)->Init(_plane_z_order, _plane_transform,
+                                       _overlay_texture_id, _bounds_x,
+                                       _bounds_y, _bounds_width, _bounds_height,
+                                       _uv_x, _uv_y, _uv_width, _uv_height);
     return NextCmdAddress<ValueType>(cmd);
   }
 

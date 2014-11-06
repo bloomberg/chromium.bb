@@ -237,15 +237,9 @@ void CompressedTexSubImage2D(PP_Resource context_id,
                              const void* data) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->CompressedTexSubImage2D(target,
-                                                 level,
-                                                 xoffset,
-                                                 yoffset,
-                                                 width,
-                                                 height,
-                                                 format,
-                                                 imageSize,
-                                                 data);
+    ToGles2Impl(&enter)->CompressedTexSubImage2D(target, level, xoffset,
+                                                 yoffset, width, height, format,
+                                                 imageSize, data);
   }
 }
 
@@ -260,8 +254,8 @@ void CopyTexImage2D(PP_Resource context_id,
                     GLint border) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->CopyTexImage2D(
-        target, level, internalformat, x, y, width, height, border);
+    ToGles2Impl(&enter)->CopyTexImage2D(target, level, internalformat, x, y,
+                                        width, height, border);
   }
 }
 
@@ -276,8 +270,8 @@ void CopyTexSubImage2D(PP_Resource context_id,
                        GLsizei height) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->CopyTexSubImage2D(
-        target, level, xoffset, yoffset, x, y, width, height);
+    ToGles2Impl(&enter)->CopyTexSubImage2D(target, level, xoffset, yoffset, x,
+                                           y, width, height);
   }
 }
 
@@ -604,8 +598,8 @@ void GetFramebufferAttachmentParameteriv(PP_Resource context_id,
                                          GLint* params) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->GetFramebufferAttachmentParameteriv(
-        target, attachment, pname, params);
+    ToGles2Impl(&enter)->GetFramebufferAttachmentParameteriv(target, attachment,
+                                                             pname, params);
   }
 }
 
@@ -1018,15 +1012,8 @@ void TexImage2D(PP_Resource context_id,
                 const void* pixels) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->TexImage2D(target,
-                                    level,
-                                    internalformat,
-                                    width,
-                                    height,
-                                    border,
-                                    format,
-                                    type,
-                                    pixels);
+    ToGles2Impl(&enter)->TexImage2D(target, level, internalformat, width,
+                                    height, border, format, type, pixels);
   }
 }
 
@@ -1082,8 +1069,8 @@ void TexSubImage2D(PP_Resource context_id,
                    const void* pixels) {
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
-    ToGles2Impl(&enter)->TexSubImage2D(
-        target, level, xoffset, yoffset, width, height, format, type, pixels);
+    ToGles2Impl(&enter)->TexSubImage2D(target, level, xoffset, yoffset, width,
+                                       height, format, type, pixels);
   }
 }
 

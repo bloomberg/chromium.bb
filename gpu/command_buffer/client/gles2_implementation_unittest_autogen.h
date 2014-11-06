@@ -421,8 +421,8 @@ TEST_F(GLES2ImplementationTest, FramebufferRenderbuffer) {
   Cmds expected;
   expected.cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 4);
 
-  gl_->FramebufferRenderbuffer(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 4);
+  gl_->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                               GL_RENDERBUFFER, 4);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -433,14 +433,14 @@ TEST_F(GLES2ImplementationTest, FramebufferTexture2D) {
   Cmds expected;
   expected.cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4);
 
-  gl_->FramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 0);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            4, 0);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest, FramebufferTexture2DInvalidConstantArg4) {
-  gl_->FramebufferTexture2D(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 1);
+  gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            4, 1);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 }
@@ -602,18 +602,14 @@ TEST_F(GLES2ImplementationTest, GetFramebufferAttachmentParameteriv) {
   Result::Type result = 0;
   Cmds expected;
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
-  expected.cmd.Init(123,
-                    GL_COLOR_ATTACHMENT0,
-                    GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
-                    result1.id,
+  expected.cmd.Init(123, GL_COLOR_ATTACHMENT0,
+                    GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, result1.id,
                     result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
   gl_->GetFramebufferAttachmentParameteriv(
-      123,
-      GL_COLOR_ATTACHMENT0,
-      GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
+      123, GL_COLOR_ATTACHMENT0, GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
       &result);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
   EXPECT_EQ(static_cast<Result::Type>(1), result);
@@ -735,8 +731,8 @@ TEST_F(GLES2ImplementationTest, GetVertexAttribfv) {
   Result::Type result = 0;
   Cmds expected;
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
-  expected.cmd.Init(
-      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id, result1.offset);
+  expected.cmd.Init(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id,
+                    result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
@@ -753,8 +749,8 @@ TEST_F(GLES2ImplementationTest, GetVertexAttribiv) {
   Result::Type result = 0;
   Cmds expected;
   ExpectedMemoryInfo result1 = GetExpectedResultMemory(4);
-  expected.cmd.Init(
-      123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id, result1.offset);
+  expected.cmd.Init(123, GL_VERTEX_ATTRIB_ARRAY_NORMALIZED, result1.id,
+                    result1.offset);
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result1.ptr, SizedResultHelper<Result::Type>(1)))
       .RetiresOnSaturation();
@@ -1599,8 +1595,8 @@ TEST_F(GLES2ImplementationTest, RenderbufferStorageMultisampleCHROMIUM) {
   Cmds expected;
   expected.cmd.Init(GL_RENDERBUFFER, 2, GL_RGBA4, 4, 5);
 
-  gl_->RenderbufferStorageMultisampleCHROMIUM(
-      GL_RENDERBUFFER, 2, GL_RGBA4, 4, 5);
+  gl_->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, 2, GL_RGBA4, 4,
+                                              5);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
@@ -1622,15 +1618,15 @@ TEST_F(GLES2ImplementationTest, FramebufferTexture2DMultisampleEXT) {
   Cmds expected;
   expected.cmd.Init(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 6);
 
-  gl_->FramebufferTexture2DMultisampleEXT(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 0, 6);
+  gl_->FramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                          GL_TEXTURE_2D, 4, 0, 6);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
 TEST_F(GLES2ImplementationTest,
        FramebufferTexture2DMultisampleEXTInvalidConstantArg4) {
-  gl_->FramebufferTexture2DMultisampleEXT(
-      GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 4, 1, 6);
+  gl_->FramebufferTexture2DMultisampleEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                          GL_TEXTURE_2D, 4, 1, 6);
   EXPECT_TRUE(NoCommandsWritten());
   EXPECT_EQ(GL_INVALID_VALUE, CheckError());
 }

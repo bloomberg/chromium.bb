@@ -205,14 +205,8 @@ void CompressedTexImage2D(GLenum target,
   gles2::cmds::CompressedTexImage2D* c =
       GetCmdSpace<gles2::cmds::CompressedTexImage2D>();
   if (c) {
-    c->Init(target,
-            level,
-            internalformat,
-            width,
-            height,
-            imageSize,
-            data_shm_id,
-            data_shm_offset);
+    c->Init(target, level, internalformat, width, height, imageSize,
+            data_shm_id, data_shm_offset);
   }
 }
 
@@ -244,16 +238,8 @@ void CompressedTexSubImage2D(GLenum target,
   gles2::cmds::CompressedTexSubImage2D* c =
       GetCmdSpace<gles2::cmds::CompressedTexSubImage2D>();
   if (c) {
-    c->Init(target,
-            level,
-            xoffset,
-            yoffset,
-            width,
-            height,
-            format,
-            imageSize,
-            data_shm_id,
-            data_shm_offset);
+    c->Init(target, level, xoffset, yoffset, width, height, format, imageSize,
+            data_shm_id, data_shm_offset);
   }
 }
 
@@ -892,17 +878,8 @@ void ReadPixels(GLint x,
                 GLboolean async) {
   gles2::cmds::ReadPixels* c = GetCmdSpace<gles2::cmds::ReadPixels>();
   if (c) {
-    c->Init(x,
-            y,
-            width,
-            height,
-            format,
-            type,
-            pixels_shm_id,
-            pixels_shm_offset,
-            result_shm_id,
-            result_shm_offset,
-            async);
+    c->Init(x, y, width, height, format, type, pixels_shm_id, pixels_shm_offset,
+            result_shm_id, result_shm_offset, async);
   }
 }
 
@@ -948,13 +925,8 @@ void ShaderBinary(GLsizei n,
                   GLsizei length) {
   gles2::cmds::ShaderBinary* c = GetCmdSpace<gles2::cmds::ShaderBinary>();
   if (c) {
-    c->Init(n,
-            shaders_shm_id,
-            shaders_shm_offset,
-            binaryformat,
-            binary_shm_id,
-            binary_shm_offset,
-            length);
+    c->Init(n, shaders_shm_id, shaders_shm_offset, binaryformat, binary_shm_id,
+            binary_shm_offset, length);
   }
 }
 
@@ -1022,15 +994,8 @@ void TexImage2D(GLenum target,
                 uint32_t pixels_shm_offset) {
   gles2::cmds::TexImage2D* c = GetCmdSpace<gles2::cmds::TexImage2D>();
   if (c) {
-    c->Init(target,
-            level,
-            internalformat,
-            width,
-            height,
-            format,
-            type,
-            pixels_shm_id,
-            pixels_shm_offset);
+    c->Init(target, level, internalformat, width, height, format, type,
+            pixels_shm_id, pixels_shm_offset);
   }
 }
 
@@ -1081,17 +1046,8 @@ void TexSubImage2D(GLenum target,
                    GLboolean internal) {
   gles2::cmds::TexSubImage2D* c = GetCmdSpace<gles2::cmds::TexSubImage2D>();
   if (c) {
-    c->Init(target,
-            level,
-            xoffset,
-            yoffset,
-            width,
-            height,
-            format,
-            type,
-            pixels_shm_id,
-            pixels_shm_offset,
-            internal);
+    c->Init(target, level, xoffset, yoffset, width, height, format, type,
+            pixels_shm_id, pixels_shm_offset, internal);
   }
 }
 
@@ -1377,8 +1333,8 @@ void BlitFramebufferCHROMIUM(GLint srcX0,
   gles2::cmds::BlitFramebufferCHROMIUM* c =
       GetCmdSpace<gles2::cmds::BlitFramebufferCHROMIUM>();
   if (c) {
-    c->Init(
-        srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    c->Init(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
+            filter);
   }
 }
 
@@ -1591,12 +1547,8 @@ void GetMultipleIntegervCHROMIUM(uint32_t pnames_shm_id,
   gles2::cmds::GetMultipleIntegervCHROMIUM* c =
       GetCmdSpace<gles2::cmds::GetMultipleIntegervCHROMIUM>();
   if (c) {
-    c->Init(pnames_shm_id,
-            pnames_shm_offset,
-            count,
-            results_shm_id,
-            results_shm_offset,
-            size);
+    c->Init(pnames_shm_id, pnames_shm_offset, count, results_shm_id,
+            results_shm_offset, size);
   }
 }
 
@@ -1840,18 +1792,8 @@ void AsyncTexSubImage2DCHROMIUM(GLenum target,
   gles2::cmds::AsyncTexSubImage2DCHROMIUM* c =
       GetCmdSpace<gles2::cmds::AsyncTexSubImage2DCHROMIUM>();
   if (c) {
-    c->Init(target,
-            level,
-            xoffset,
-            yoffset,
-            width,
-            height,
-            format,
-            type,
-            data_shm_id,
-            data_shm_offset,
-            async_upload_token,
-            sync_data_shm_id,
+    c->Init(target, level, xoffset, yoffset, width, height, format, type,
+            data_shm_id, data_shm_offset, async_upload_token, sync_data_shm_id,
             sync_data_shm_offset);
   }
 }
@@ -1871,18 +1813,9 @@ void AsyncTexImage2DCHROMIUM(GLenum target,
   gles2::cmds::AsyncTexImage2DCHROMIUM* c =
       GetCmdSpace<gles2::cmds::AsyncTexImage2DCHROMIUM>();
   if (c) {
-    c->Init(target,
-            level,
-            internalformat,
-            width,
-            height,
-            format,
-            type,
-            pixels_shm_id,
-            pixels_shm_offset,
-            async_upload_token,
-            sync_data_shm_id,
-            sync_data_shm_offset);
+    c->Init(target, level, internalformat, width, height, format, type,
+            pixels_shm_id, pixels_shm_offset, async_upload_token,
+            sync_data_shm_id, sync_data_shm_offset);
   }
 }
 
@@ -1963,16 +1896,8 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
   gles2::cmds::ScheduleOverlayPlaneCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleOverlayPlaneCHROMIUM>();
   if (c) {
-    c->Init(plane_z_order,
-            plane_transform,
-            overlay_texture_id,
-            bounds_x,
-            bounds_y,
-            bounds_width,
-            bounds_height,
-            uv_x,
-            uv_y,
-            uv_width,
+    c->Init(plane_z_order, plane_transform, overlay_texture_id, bounds_x,
+            bounds_y, bounds_width, bounds_height, uv_x, uv_y, uv_width,
             uv_height);
   }
 }

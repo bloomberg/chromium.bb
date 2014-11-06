@@ -42,8 +42,8 @@ void GLES2Implementation::BindFramebuffer(GLenum target, GLuint framebuffer) {
                      << GLES2Util::GetStringFrameBufferTarget(target) << ", "
                      << framebuffer << ")");
   if (IsFramebufferReservedId(framebuffer)) {
-    SetGLError(
-        GL_INVALID_OPERATION, "BindFramebuffer", "framebuffer reserved id");
+    SetGLError(GL_INVALID_OPERATION, "BindFramebuffer",
+               "framebuffer reserved id");
     return;
   }
   if (BindFramebufferHelper(target, framebuffer)) {
@@ -58,8 +58,8 @@ void GLES2Implementation::BindRenderbuffer(GLenum target, GLuint renderbuffer) {
                      << GLES2Util::GetStringRenderBufferTarget(target) << ", "
                      << renderbuffer << ")");
   if (IsRenderbufferReservedId(renderbuffer)) {
-    SetGLError(
-        GL_INVALID_OPERATION, "BindRenderbuffer", "renderbuffer reserved id");
+    SetGLError(GL_INVALID_OPERATION, "BindRenderbuffer",
+               "renderbuffer reserved id");
     return;
   }
   if (BindRenderbufferHelper(target, renderbuffer)) {
@@ -146,8 +146,8 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
     return GL_FRAMEBUFFER_UNSUPPORTED;
   }
   *result = 0;
-  helper_->CheckFramebufferStatus(
-      target, GetResultShmId(), GetResultShmOffset());
+  helper_->CheckFramebufferStatus(target, GetResultShmId(),
+                                  GetResultShmOffset());
   WaitForCmd();
   GLenum result_value = *result;
   GPU_CLIENT_LOG("returned " << result_value);
@@ -261,8 +261,8 @@ void GLES2Implementation::CopyTexSubImage2D(GLenum target,
     SetGLError(GL_INVALID_VALUE, "glCopyTexSubImage2D", "height < 0");
     return;
   }
-  helper_->CopyTexSubImage2D(
-      target, level, xoffset, yoffset, x, y, width, height);
+  helper_->CopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width,
+                             height);
   CheckGLError();
 }
 
@@ -449,8 +449,8 @@ void GLES2Implementation::FramebufferRenderbuffer(GLenum target,
                      << GLES2Util::GetStringAttachment(attachment) << ", "
                      << GLES2Util::GetStringRenderBufferTarget(
                             renderbuffertarget) << ", " << renderbuffer << ")");
-  helper_->FramebufferRenderbuffer(
-      target, attachment, renderbuffertarget, renderbuffer);
+  helper_->FramebufferRenderbuffer(target, attachment, renderbuffertarget,
+                                   renderbuffer);
   CheckGLError();
 }
 
@@ -466,8 +466,8 @@ void GLES2Implementation::FramebufferTexture2D(GLenum target,
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ")");
   if (level != 0) {
-    SetGLError(
-        GL_INVALID_VALUE, "glFramebufferTexture2D", "level GL_INVALID_VALUE");
+    SetGLError(GL_INVALID_VALUE, "glFramebufferTexture2D",
+               "level GL_INVALID_VALUE");
     return;
   }
   helper_->FramebufferTexture2D(target, attachment, textarget, texture);
@@ -620,8 +620,8 @@ void GLES2Implementation::GetBufferParameteriv(GLenum target,
     return;
   }
   result->SetNumResults(0);
-  helper_->GetBufferParameteriv(
-      target, pname, GetResultShmId(), GetResultShmOffset());
+  helper_->GetBufferParameteriv(target, pname, GetResultShmId(),
+                                GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -670,8 +670,8 @@ void GLES2Implementation::GetFramebufferAttachmentParameteriv(GLenum target,
                      << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu",
                "GLES2Implementation::GetFramebufferAttachmentParameteriv");
-  if (GetFramebufferAttachmentParameterivHelper(
-          target, attachment, pname, params)) {
+  if (GetFramebufferAttachmentParameterivHelper(target, attachment, pname,
+                                                params)) {
     return;
   }
   typedef cmds::GetFramebufferAttachmentParameteriv::Result Result;
@@ -791,8 +791,8 @@ void GLES2Implementation::GetRenderbufferParameteriv(GLenum target,
     return;
   }
   result->SetNumResults(0);
-  helper_->GetRenderbufferParameteriv(
-      target, pname, GetResultShmId(), GetResultShmOffset());
+  helper_->GetRenderbufferParameteriv(target, pname, GetResultShmId(),
+                                      GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -902,8 +902,8 @@ void GLES2Implementation::GetTexParameterfv(GLenum target,
     return;
   }
   result->SetNumResults(0);
-  helper_->GetTexParameterfv(
-      target, pname, GetResultShmId(), GetResultShmOffset());
+  helper_->GetTexParameterfv(target, pname, GetResultShmId(),
+                             GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -932,8 +932,8 @@ void GLES2Implementation::GetTexParameteriv(GLenum target,
     return;
   }
   result->SetNumResults(0);
-  helper_->GetTexParameteriv(
-      target, pname, GetResultShmId(), GetResultShmOffset());
+  helper_->GetTexParameteriv(target, pname, GetResultShmId(),
+                             GetResultShmOffset());
   WaitForCmd();
   result->CopyResult(params);
   GPU_CLIENT_LOG_CODE_BLOCK({
@@ -1497,8 +1497,8 @@ void GLES2Implementation::UniformMatrix2fv(GLint location,
     return;
   }
   if (transpose != false) {
-    SetGLError(
-        GL_INVALID_VALUE, "glUniformMatrix2fv", "transpose GL_INVALID_VALUE");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix2fv",
+               "transpose GL_INVALID_VALUE");
     return;
   }
   helper_->UniformMatrix2fvImmediate(location, count, value);
@@ -1529,8 +1529,8 @@ void GLES2Implementation::UniformMatrix3fv(GLint location,
     return;
   }
   if (transpose != false) {
-    SetGLError(
-        GL_INVALID_VALUE, "glUniformMatrix3fv", "transpose GL_INVALID_VALUE");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix3fv",
+               "transpose GL_INVALID_VALUE");
     return;
   }
   helper_->UniformMatrix3fvImmediate(location, count, value);
@@ -1564,8 +1564,8 @@ void GLES2Implementation::UniformMatrix4fv(GLint location,
     return;
   }
   if (transpose != false) {
-    SetGLError(
-        GL_INVALID_VALUE, "glUniformMatrix4fv", "transpose GL_INVALID_VALUE");
+    SetGLError(GL_INVALID_VALUE, "glUniformMatrix4fv",
+               "transpose GL_INVALID_VALUE");
     return;
   }
   helper_->UniformMatrix4fvImmediate(location, count, value);
@@ -1705,8 +1705,8 @@ void GLES2Implementation::BlitFramebufferCHROMIUM(GLint srcX0,
                      << ", " << dstX0 << ", " << dstY0 << ", " << dstX1 << ", "
                      << dstY1 << ", " << mask << ", "
                      << GLES2Util::GetStringBlitFilter(filter) << ")");
-  helper_->BlitFramebufferCHROMIUM(
-      srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  helper_->BlitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0,
+                                   dstX1, dstY1, mask, filter);
   CheckGLError();
 }
 
@@ -1723,20 +1723,17 @@ void GLES2Implementation::RenderbufferStorageMultisampleCHROMIUM(
           << ", " << GLES2Util::GetStringRenderBufferFormat(internalformat)
           << ", " << width << ", " << height << ")");
   if (samples < 0) {
-    SetGLError(GL_INVALID_VALUE,
-               "glRenderbufferStorageMultisampleCHROMIUM",
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM",
                "samples < 0");
     return;
   }
   if (width < 0) {
-    SetGLError(GL_INVALID_VALUE,
-               "glRenderbufferStorageMultisampleCHROMIUM",
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM",
                "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(GL_INVALID_VALUE,
-               "glRenderbufferStorageMultisampleCHROMIUM",
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM",
                "height < 0");
     return;
   }
@@ -1758,22 +1755,22 @@ void GLES2Implementation::RenderbufferStorageMultisampleEXT(
           << ", " << GLES2Util::GetStringRenderBufferFormat(internalformat)
           << ", " << width << ", " << height << ")");
   if (samples < 0) {
-    SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "samples < 0");
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT",
+               "samples < 0");
     return;
   }
   if (width < 0) {
-    SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "width < 0");
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT",
+               "width < 0");
     return;
   }
   if (height < 0) {
-    SetGLError(
-        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "height < 0");
+    SetGLError(GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT",
+               "height < 0");
     return;
   }
-  helper_->RenderbufferStorageMultisampleEXT(
-      target, samples, internalformat, width, height);
+  helper_->RenderbufferStorageMultisampleEXT(target, samples, internalformat,
+                                             width, height);
   CheckGLError();
 }
 
@@ -1791,19 +1788,17 @@ void GLES2Implementation::FramebufferTexture2DMultisampleEXT(GLenum target,
                      << GLES2Util::GetStringTextureTarget(textarget) << ", "
                      << texture << ", " << level << ", " << samples << ")");
   if (level != 0) {
-    SetGLError(GL_INVALID_VALUE,
-               "glFramebufferTexture2DMultisampleEXT",
+    SetGLError(GL_INVALID_VALUE, "glFramebufferTexture2DMultisampleEXT",
                "level GL_INVALID_VALUE");
     return;
   }
   if (samples < 0) {
-    SetGLError(GL_INVALID_VALUE,
-               "glFramebufferTexture2DMultisampleEXT",
+    SetGLError(GL_INVALID_VALUE, "glFramebufferTexture2DMultisampleEXT",
                "samples < 0");
     return;
   }
-  helper_->FramebufferTexture2DMultisampleEXT(
-      target, attachment, textarget, texture, samples);
+  helper_->FramebufferTexture2DMultisampleEXT(target, attachment, textarget,
+                                              texture, samples);
   CheckGLError();
 }
 
@@ -2001,8 +1996,8 @@ void GLES2Implementation::TexImageIOSurface2DCHROMIUM(GLenum target,
     SetGLError(GL_INVALID_VALUE, "glTexImageIOSurface2DCHROMIUM", "height < 0");
     return;
   }
-  helper_->TexImageIOSurface2DCHROMIUM(
-      target, width, height, ioSurfaceId, plane);
+  helper_->TexImageIOSurface2DCHROMIUM(target, width, height, ioSurfaceId,
+                                       plane);
   CheckGLError();
 }
 
@@ -2019,8 +2014,8 @@ void GLES2Implementation::CopyTextureCHROMIUM(GLenum target,
                      << GLES2Util::GetStringEnum(dest_id) << ", " << level
                      << ", " << internalformat << ", "
                      << GLES2Util::GetStringPixelType(dest_type) << ")");
-  helper_->CopyTextureCHROMIUM(
-      target, source_id, dest_id, level, internalformat, dest_type);
+  helper_->CopyTextureCHROMIUM(target, source_id, dest_id, level,
+                               internalformat, dest_type);
   CheckGLError();
 }
 
@@ -2238,17 +2233,9 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
           << ", " << overlay_texture_id << ", " << bounds_x << ", " << bounds_y
           << ", " << bounds_width << ", " << bounds_height << ", " << uv_x
           << ", " << uv_y << ", " << uv_width << ", " << uv_height << ")");
-  helper_->ScheduleOverlayPlaneCHROMIUM(plane_z_order,
-                                        plane_transform,
-                                        overlay_texture_id,
-                                        bounds_x,
-                                        bounds_y,
-                                        bounds_width,
-                                        bounds_height,
-                                        uv_x,
-                                        uv_y,
-                                        uv_width,
-                                        uv_height);
+  helper_->ScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
   CheckGLError();
 }
 

@@ -124,8 +124,8 @@ void GLES2CopyTexImage2D(GLenum target,
                          GLsizei width,
                          GLsizei height,
                          GLint border) {
-  gles2::GetGLContext()->CopyTexImage2D(
-      target, level, internalformat, x, y, width, height, border);
+  gles2::GetGLContext()->CopyTexImage2D(target, level, internalformat, x, y,
+                                        width, height, border);
 }
 void GLES2CopyTexSubImage2D(GLenum target,
                             GLint level,
@@ -135,8 +135,8 @@ void GLES2CopyTexSubImage2D(GLenum target,
                             GLint y,
                             GLsizei width,
                             GLsizei height) {
-  gles2::GetGLContext()->CopyTexSubImage2D(
-      target, level, xoffset, yoffset, x, y, width, height);
+  gles2::GetGLContext()->CopyTexSubImage2D(target, level, xoffset, yoffset, x,
+                                           y, width, height);
 }
 GLuint GLES2CreateProgram() {
   return gles2::GetGLContext()->CreateProgram();
@@ -216,8 +216,8 @@ void GLES2FramebufferTexture2D(GLenum target,
                                GLenum textarget,
                                GLuint texture,
                                GLint level) {
-  gles2::GetGLContext()->FramebufferTexture2D(
-      target, attachment, textarget, texture, level);
+  gles2::GetGLContext()->FramebufferTexture2D(target, attachment, textarget,
+                                              texture, level);
 }
 void GLES2FrontFace(GLenum mode) {
   gles2::GetGLContext()->FrontFace(mode);
@@ -244,8 +244,8 @@ void GLES2GetActiveAttrib(GLuint program,
                           GLint* size,
                           GLenum* type,
                           char* name) {
-  gles2::GetGLContext()->GetActiveAttrib(
-      program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext()->GetActiveAttrib(program, index, bufsize, length, size,
+                                         type, name);
 }
 void GLES2GetActiveUniform(GLuint program,
                            GLuint index,
@@ -254,8 +254,8 @@ void GLES2GetActiveUniform(GLuint program,
                            GLint* size,
                            GLenum* type,
                            char* name) {
-  gles2::GetGLContext()->GetActiveUniform(
-      program, index, bufsize, length, size, type, name);
+  gles2::GetGLContext()->GetActiveUniform(program, index, bufsize, length, size,
+                                          type, name);
 }
 void GLES2GetAttachedShaders(GLuint program,
                              GLsizei maxcount,
@@ -282,8 +282,8 @@ void GLES2GetFramebufferAttachmentParameteriv(GLenum target,
                                               GLenum attachment,
                                               GLenum pname,
                                               GLint* params) {
-  gles2::GetGLContext()->GetFramebufferAttachmentParameteriv(
-      target, attachment, pname, params);
+  gles2::GetGLContext()->GetFramebufferAttachmentParameteriv(target, attachment,
+                                                             pname, params);
 }
 void GLES2GetIntegerv(GLenum pname, GLint* params) {
   gles2::GetGLContext()->GetIntegerv(pname, params);
@@ -315,8 +315,8 @@ void GLES2GetShaderPrecisionFormat(GLenum shadertype,
                                    GLenum precisiontype,
                                    GLint* range,
                                    GLint* precision) {
-  gles2::GetGLContext()->GetShaderPrecisionFormat(
-      shadertype, precisiontype, range, precision);
+  gles2::GetGLContext()->GetShaderPrecisionFormat(shadertype, precisiontype,
+                                                  range, precision);
 }
 void GLES2GetShaderSource(GLuint shader,
                           GLsizei bufsize,
@@ -403,8 +403,8 @@ void GLES2RenderbufferStorage(GLenum target,
                               GLenum internalformat,
                               GLsizei width,
                               GLsizei height) {
-  gles2::GetGLContext()->RenderbufferStorage(
-      target, internalformat, width, height);
+  gles2::GetGLContext()->RenderbufferStorage(target, internalformat, width,
+                                             height);
 }
 void GLES2SampleCoverage(GLclampf value, GLboolean invert) {
   gles2::GetGLContext()->SampleCoverage(value, invert);
@@ -464,15 +464,8 @@ void GLES2TexImage2D(GLenum target,
                      GLenum format,
                      GLenum type,
                      const void* pixels) {
-  gles2::GetGLContext()->TexImage2D(target,
-                                    level,
-                                    internalformat,
-                                    width,
-                                    height,
-                                    border,
-                                    format,
-                                    type,
-                                    pixels);
+  gles2::GetGLContext()->TexImage2D(target, level, internalformat, width,
+                                    height, border, format, type, pixels);
 }
 void GLES2TexParameterf(GLenum target, GLenum pname, GLfloat param) {
   gles2::GetGLContext()->TexParameterf(target, pname, param);
@@ -495,8 +488,8 @@ void GLES2TexSubImage2D(GLenum target,
                         GLenum format,
                         GLenum type,
                         const void* pixels) {
-  gles2::GetGLContext()->TexSubImage2D(
-      target, level, xoffset, yoffset, width, height, format, type, pixels);
+  gles2::GetGLContext()->TexSubImage2D(target, level, xoffset, yoffset, width,
+                                       height, format, type, pixels);
 }
 void GLES2Uniform1f(GLint location, GLfloat x) {
   gles2::GetGLContext()->Uniform1f(location, x);
@@ -608,8 +601,8 @@ void GLES2VertexAttribPointer(GLuint indx,
                               GLboolean normalized,
                               GLsizei stride,
                               const void* ptr) {
-  gles2::GetGLContext()->VertexAttribPointer(
-      indx, size, type, normalized, stride, ptr);
+  gles2::GetGLContext()->VertexAttribPointer(indx, size, type, normalized,
+                                             stride, ptr);
 }
 void GLES2Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
   gles2::GetGLContext()->Viewport(x, y, width, height);
@@ -657,8 +650,8 @@ void GLES2TexStorage2DEXT(GLenum target,
                           GLenum internalFormat,
                           GLsizei width,
                           GLsizei height) {
-  gles2::GetGLContext()->TexStorage2DEXT(
-      target, levels, internalFormat, width, height);
+  gles2::GetGLContext()->TexStorage2DEXT(target, levels, internalFormat, width,
+                                         height);
 }
 void GLES2GenQueriesEXT(GLsizei n, GLuint* queries) {
   gles2::GetGLContext()->GenQueriesEXT(n, queries);
@@ -709,8 +702,8 @@ GLuint GLES2GetMaxValueInBufferCHROMIUM(GLuint buffer_id,
                                         GLsizei count,
                                         GLenum type,
                                         GLuint offset) {
-  return gles2::GetGLContext()->GetMaxValueInBufferCHROMIUM(
-      buffer_id, count, type, offset);
+  return gles2::GetGLContext()->GetMaxValueInBufferCHROMIUM(buffer_id, count,
+                                                            type, offset);
 }
 GLboolean GLES2EnableFeatureCHROMIUM(const char* feature) {
   return gles2::GetGLContext()->EnableFeatureCHROMIUM(feature);
@@ -725,8 +718,8 @@ void* GLES2MapBufferSubDataCHROMIUM(GLuint target,
                                     GLintptr offset,
                                     GLsizeiptr size,
                                     GLenum access) {
-  return gles2::GetGLContext()->MapBufferSubDataCHROMIUM(
-      target, offset, size, access);
+  return gles2::GetGLContext()->MapBufferSubDataCHROMIUM(target, offset, size,
+                                                         access);
 }
 void GLES2UnmapBufferSubDataCHROMIUM(const void* mem) {
   gles2::GetGLContext()->UnmapBufferSubDataCHROMIUM(mem);
@@ -762,8 +755,8 @@ void GLES2GetMultipleIntegervCHROMIUM(const GLenum* pnames,
                                       GLuint count,
                                       GLint* results,
                                       GLsizeiptr size) {
-  gles2::GetGLContext()->GetMultipleIntegervCHROMIUM(
-      pnames, count, results, size);
+  gles2::GetGLContext()->GetMultipleIntegervCHROMIUM(pnames, count, results,
+                                                     size);
 }
 void GLES2GetProgramInfoCHROMIUM(GLuint program,
                                  GLsizei bufsize,
@@ -778,8 +771,8 @@ GLuint GLES2CreateImageCHROMIUM(ClientBuffer buffer,
                                 GLsizei width,
                                 GLsizei height,
                                 GLenum internalformat) {
-  return gles2::GetGLContext()->CreateImageCHROMIUM(
-      buffer, width, height, internalformat);
+  return gles2::GetGLContext()->CreateImageCHROMIUM(buffer, width, height,
+                                                    internalformat);
 }
 void GLES2DestroyImageCHROMIUM(GLuint image_id) {
   gles2::GetGLContext()->DestroyImageCHROMIUM(image_id);
@@ -795,8 +788,8 @@ void GLES2GetTranslatedShaderSourceANGLE(GLuint shader,
                                          GLsizei bufsize,
                                          GLsizei* length,
                                          char* source) {
-  gles2::GetGLContext()->GetTranslatedShaderSourceANGLE(
-      shader, bufsize, length, source);
+  gles2::GetGLContext()->GetTranslatedShaderSourceANGLE(shader, bufsize, length,
+                                                        source);
 }
 void GLES2PostSubBufferCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
   gles2::GetGLContext()->PostSubBufferCHROMIUM(x, y, width, height);
@@ -806,8 +799,8 @@ void GLES2TexImageIOSurface2DCHROMIUM(GLenum target,
                                       GLsizei height,
                                       GLuint ioSurfaceId,
                                       GLuint plane) {
-  gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(
-      target, width, height, ioSurfaceId, plane);
+  gles2::GetGLContext()->TexImageIOSurface2DCHROMIUM(target, width, height,
+                                                     ioSurfaceId, plane);
 }
 void GLES2CopyTextureCHROMIUM(GLenum target,
                               GLenum source_id,
@@ -815,23 +808,23 @@ void GLES2CopyTextureCHROMIUM(GLenum target,
                               GLint level,
                               GLint internalformat,
                               GLenum dest_type) {
-  gles2::GetGLContext()->CopyTextureCHROMIUM(
-      target, source_id, dest_id, level, internalformat, dest_type);
+  gles2::GetGLContext()->CopyTextureCHROMIUM(target, source_id, dest_id, level,
+                                             internalformat, dest_type);
 }
 void GLES2DrawArraysInstancedANGLE(GLenum mode,
                                    GLint first,
                                    GLsizei count,
                                    GLsizei primcount) {
-  gles2::GetGLContext()->DrawArraysInstancedANGLE(
-      mode, first, count, primcount);
+  gles2::GetGLContext()->DrawArraysInstancedANGLE(mode, first, count,
+                                                  primcount);
 }
 void GLES2DrawElementsInstancedANGLE(GLenum mode,
                                      GLsizei count,
                                      GLenum type,
                                      const void* indices,
                                      GLsizei primcount) {
-  gles2::GetGLContext()->DrawElementsInstancedANGLE(
-      mode, count, type, indices, primcount);
+  gles2::GetGLContext()->DrawElementsInstancedANGLE(mode, count, type, indices,
+                                                    primcount);
 }
 void GLES2VertexAttribDivisorANGLE(GLuint index, GLuint divisor) {
   gles2::GetGLContext()->VertexAttribDivisorANGLE(index, divisor);
@@ -917,15 +910,9 @@ void GLES2AsyncTexImage2DCHROMIUM(GLenum target,
                                   GLenum format,
                                   GLenum type,
                                   const void* pixels) {
-  gles2::GetGLContext()->AsyncTexImage2DCHROMIUM(target,
-                                                 level,
-                                                 internalformat,
-                                                 width,
-                                                 height,
-                                                 border,
-                                                 format,
-                                                 type,
-                                                 pixels);
+  gles2::GetGLContext()->AsyncTexImage2DCHROMIUM(target, level, internalformat,
+                                                 width, height, border, format,
+                                                 type, pixels);
 }
 void GLES2WaitAsyncTexImage2DCHROMIUM(GLenum target) {
   gles2::GetGLContext()->WaitAsyncTexImage2DCHROMIUM(target);
@@ -964,17 +951,9 @@ void GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                        GLfloat uv_y,
                                        GLfloat uv_width,
                                        GLfloat uv_height) {
-  gles2::GetGLContext()->ScheduleOverlayPlaneCHROMIUM(plane_z_order,
-                                                      plane_transform,
-                                                      overlay_texture_id,
-                                                      bounds_x,
-                                                      bounds_y,
-                                                      bounds_width,
-                                                      bounds_height,
-                                                      uv_x,
-                                                      uv_y,
-                                                      uv_width,
-                                                      uv_height);
+  gles2::GetGLContext()->ScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
 }
 void GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);
