@@ -99,6 +99,13 @@ MergeSessionHelper::ExternalCcResultFetcher::OnGetCheckConnectionInfoSuccess(
   }
 }
 
+void
+MergeSessionHelper::ExternalCcResultFetcher::OnGetCheckConnectionInfoError(
+    const GoogleServiceAuthError& error) {
+  CleanupTransientState();
+  FireGetCheckConnectionInfoCompleted(false);
+}
+
 net::URLFetcher* MergeSessionHelper::ExternalCcResultFetcher::CreateFetcher(
     const GURL& url) {
   net::URLFetcher* fetcher = net::URLFetcher::Create(

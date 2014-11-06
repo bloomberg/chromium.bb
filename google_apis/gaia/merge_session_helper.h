@@ -87,6 +87,8 @@ class MergeSessionHelper : public GaiaAuthConsumer,
    private:
     // Overridden from GaiaAuthConsumer.
     void OnGetCheckConnectionInfoSuccess(const std::string& data) override;
+    void OnGetCheckConnectionInfoError(
+        const GoogleServiceAuthError& error) override;
 
     // Creates and initializes a URL fetcher for doing a connection check.
     net::URLFetcher* CreateFetcher(const GURL& url);
