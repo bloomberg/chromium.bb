@@ -138,7 +138,8 @@ std::vector<CertAndIssuer> CreateSortedCertAndIssuerList(
        it != certs.end(); ++it) {
     const net::X509Certificate& cert = **it;
     if (cert.valid_expiry().is_null() || cert.HasExpired() ||
-        !HasPrivateKey(cert)) {
+        !HasPrivateKey(cert) ||
+        !CertLoader::IsCertificateHardwareBacked(&cert)) {
       continue;
     }
     net::ScopedCERTCertificate issuer_handle(
@@ -219,10 +220,6 @@ void LogError(const std::string& service_path,
 bool ClientCertificatesLoaded() {
   if (!CertLoader::Get()->certificates_loaded()) {
     VLOG(1) << "Certificates not loaded yet.";
-    return false;
-  }
-  if (!CertLoader::Get()->IsHardwareBacked()) {
-    VLOG(1) << "TPM is not available.";
     return false;
   }
   return true;

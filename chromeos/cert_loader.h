@@ -74,12 +74,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
 
-  bool IsHardwareBacked() const;
-
-  // Whether the certificate is hardware backed. Returns false if the CertLoader
-  // was not yet started (both |CertificatesLoading()| and
-  // |certificates_loaded()| are false).
-  bool IsCertificateHardwareBacked(const net::X509Certificate* cert) const;
+  // Returns true if |cert| is hardware backed. See also
+  // ForceHardwareBackedForTesting().
+  static bool IsCertificateHardwareBacked(const net::X509Certificate* cert);
 
   // Returns true when the certificate list has been requested but not loaded.
   bool CertificatesLoading() const;
@@ -89,9 +86,9 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   // This will be empty until certificates_loaded() is true.
   const net::CertificateList& cert_list() const { return *cert_list_; }
 
-  void force_hardware_backed_for_test() {
-    force_hardware_backed_for_test_ = true;
-  }
+  // Called in tests if |IsCertificateHardwareBacked()| should always return
+  // true.
+  static void ForceHardwareBackedForTesting();
 
  private:
   CertLoader();
@@ -121,9 +118,6 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer {
   // The user-specific NSS certificate database from which the certificates
   // should be loaded.
   net::NSSCertDatabase* database_;
-
-  // Set during tests if |IsHardwareBacked()| should always return true.
-  bool force_hardware_backed_for_test_;
 
   // Cached Certificates loaded from the database.
   scoped_ptr<net::CertificateList> cert_list_;

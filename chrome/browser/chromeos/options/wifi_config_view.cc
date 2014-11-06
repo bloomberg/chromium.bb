@@ -441,10 +441,10 @@ bool WifiConfigView::IsUserCertValid() const {
   if (index < 0)
     return false;
   // Currently only hardware-backed user certificates are valid.
-  if (CertLibrary::Get()->IsHardwareBacked() &&
-      !CertLibrary::Get()->IsCertHardwareBackedAt(
-          CertLibrary::CERT_TYPE_USER, index))
+  if (!CertLibrary::Get()->IsCertHardwareBackedAt(CertLibrary::CERT_TYPE_USER,
+                                                  index)) {
     return false;
+  }
   return true;
 }
 

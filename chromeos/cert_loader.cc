@@ -21,6 +21,7 @@
 namespace chromeos {
 
 static CertLoader* g_cert_loader = NULL;
+static bool g_force_hardware_backed_for_test = false;
 
 // static
 void CertLoader::Initialize() {
@@ -51,7 +52,6 @@ CertLoader::CertLoader()
       certificates_update_required_(false),
       certificates_update_running_(false),
       database_(NULL),
-      force_hardware_backed_for_test_(false),
       cert_list_(new net::CertificateList),
       weak_factory_(this) {
 }
@@ -84,26 +84,21 @@ void CertLoader::RemoveObserver(CertLoader::Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool CertLoader::IsHardwareBacked() const {
-  if (force_hardware_backed_for_test_)
+// static
+bool CertLoader::IsCertificateHardwareBacked(const net::X509Certificate* cert) {
+  if (g_force_hardware_backed_for_test)
     return true;
-  if (!database_)
-    return false;
-  crypto::ScopedPK11Slot slot(database_->GetPrivateSlot());
-  if (!slot)
-    return false;
-  return PK11_IsHW(slot.get());
-}
-
-bool CertLoader::IsCertificateHardwareBacked(
-    const net::X509Certificate* cert) const {
-  if (!database_)
-    return false;
-  return database_->IsHardwareBacked(cert);
+  PK11SlotInfo* slot = cert->os_cert_handle()->slot;
+  return slot && PK11_IsHW(slot);
 }
 
 bool CertLoader::CertificatesLoading() const {
   return database_ && !certificates_loaded_;
+}
+
+// static
+void CertLoader::ForceHardwareBackedForTesting() {
+  g_force_hardware_backed_for_test = true;
 }
 
 // static

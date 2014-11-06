@@ -78,7 +78,7 @@ class ClientCertResolverTest : public testing::Test,
 
     CertLoader::Initialize();
     cert_loader_ = CertLoader::Get();
-    cert_loader_->force_hardware_backed_for_test();
+    CertLoader::ForceHardwareBackedForTesting();
   }
 
   void TearDown() override {

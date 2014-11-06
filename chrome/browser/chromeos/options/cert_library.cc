@@ -145,10 +145,6 @@ bool CertLibrary::CertificatesLoaded() const {
   return CertLoader::Get()->certificates_loaded();
 }
 
-bool CertLibrary::IsHardwareBacked() const {
-  return CertLoader::Get()->IsHardwareBacked();
-}
-
 int CertLibrary::NumCertificates(CertType type) const {
   const net::CertificateList& cert_list = GetCertificateListForType(type);
   return static_cast<int>(cert_list.size());
@@ -172,7 +168,7 @@ std::string CertLibrary::GetUserCertPkcs11IdAt(int index, int* slot_id) const {
 
 bool CertLibrary::IsCertHardwareBackedAt(CertType type, int index) const {
   net::X509Certificate* cert = GetCertificateAt(type, index);
-  return CertLoader::Get()->IsCertificateHardwareBacked(cert);
+  return CertLoader::IsCertificateHardwareBacked(cert);
 }
 
 int CertLibrary::GetServerCACertIndexByPEM(

@@ -178,7 +178,6 @@ class CertLoaderTest : public testing::Test,
 TEST_F(CertLoaderTest, Basic) {
   EXPECT_FALSE(cert_loader_->CertificatesLoading());
   EXPECT_FALSE(cert_loader_->certificates_loaded());
-  EXPECT_FALSE(cert_loader_->IsHardwareBacked());
 
   FinishUserInitAndGetDatabase(&primary_user_, &primary_db_);
 
@@ -217,6 +216,8 @@ TEST_F(CertLoaderTest, CertLoaderUpdatesCertListOnNewCert) {
   // The certificate list should be updated now, as the message loop's been run.
   EXPECT_TRUE(
       IsCertInCertificateList(certs[0].get(), cert_loader_->cert_list()));
+
+  EXPECT_FALSE(cert_loader_->IsCertificateHardwareBacked(certs[0].get()));
 }
 
 TEST_F(CertLoaderTest, CertLoaderNoUpdateOnSecondaryDbChanges) {

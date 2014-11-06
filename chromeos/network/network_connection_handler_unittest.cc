@@ -74,8 +74,7 @@ class NetworkConnectionHandlerTest : public testing::Test {
     test_nssdb_->SetSlowTaskRunnerForTest(message_loop_.message_loop_proxy());
 
     CertLoader::Initialize();
-    CertLoader* cert_loader = CertLoader::Get();
-    cert_loader->force_hardware_backed_for_test();
+    CertLoader::ForceHardwareBackedForTesting();
 
     DBusThreadManager::Initialize();
     DBusThreadManager* dbus_manager = DBusThreadManager::Get();

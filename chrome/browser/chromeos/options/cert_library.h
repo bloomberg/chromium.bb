@@ -60,9 +60,6 @@ class CertLibrary : public CertLoader::Observer {
   // Returns true when the certificate list has been initiailized.
   bool CertificatesLoaded() const;
 
-  // Returns true if the TPM is available for hardware-backed certificates.
-  bool IsHardwareBacked() const;
-
   // Retruns the number of certificates available for |type|.
   int NumCertificates(CertType type) const;
 
