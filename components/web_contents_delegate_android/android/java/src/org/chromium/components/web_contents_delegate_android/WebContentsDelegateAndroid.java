@@ -106,6 +106,25 @@ public class WebContentsDelegateAndroid {
     }
 
     @CalledByNative
+    public void didNavigateToPendingEntry() {
+    }
+
+    @CalledByNative
+    public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, long newWebContents) {
+    }
+
+    @CalledByNative
+    public boolean shouldCreateWebContents(String targetUrl) {
+        return true;
+    }
+
+    @CalledByNative
+    public boolean onGoToEntryOffset(int offset) {
+        return true;
+    }
+
+    @CalledByNative
     public void onUpdateUrl(String url) {
     }
 

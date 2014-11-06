@@ -32,11 +32,6 @@ public class ChromeWebContentsDelegateAndroid extends WebContentsDelegateAndroid
         return false;
     }
 
-    @CalledByNative
-    public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
-            String frameName, String targetUrl, long newWebContents) {
-    }
-
     // Helper functions used to create types that are part of the public interface
     @CalledByNative
     private static Rect createRect(int x, int y, int right, int bottom) {

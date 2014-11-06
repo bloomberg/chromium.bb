@@ -216,6 +216,58 @@ void WebContentsDelegateAndroid::RendererResponsive(WebContents* source) {
   Java_WebContentsDelegateAndroid_rendererResponsive(env, obj.obj());
 }
 
+void WebContentsDelegateAndroid::DidNavigateToPendingEntry(
+    WebContents* source) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_didNavigateToPendingEntry(env, obj.obj());
+}
+
+bool WebContentsDelegateAndroid::ShouldCreateWebContents(
+    WebContents* web_contents,
+    int route_id,
+    WindowContainerType window_container_type,
+    const base::string16& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return true;
+  ScopedJavaLocalRef<jstring> java_url =
+      ConvertUTF8ToJavaString(env, target_url.spec());
+  return Java_WebContentsDelegateAndroid_shouldCreateWebContents(env, obj.obj(),
+      java_url.obj());
+}
+
+bool WebContentsDelegateAndroid::OnGoToEntryOffset(int offset) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return true;
+  return Java_WebContentsDelegateAndroid_onGoToEntryOffset(env, obj.obj(),
+      offset);
+}
+
+void WebContentsDelegateAndroid::WebContentsCreated(
+    WebContents* source_contents, int opener_render_frame_id,
+    const base::string16& frame_name, const GURL& target_url,
+    WebContents* new_contents) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
+  if (obj.is_null())
+    return;
+  Java_WebContentsDelegateAndroid_webContentsCreated(env, obj.obj(),
+      reinterpret_cast<intptr_t>(source_contents),
+      opener_render_frame_id,
+      base::android::ConvertUTF16ToJavaString(env, frame_name).Release(),
+      base::android::ConvertUTF8ToJavaString(env, target_url.spec()).Release(),
+      reinterpret_cast<intptr_t>(new_contents));
+}
+
 void WebContentsDelegateAndroid::CloseContents(WebContents* source) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);

@@ -71,6 +71,21 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
                                    double load_progress) override;
   virtual void RendererUnresponsive(content::WebContents* source) override;
   virtual void RendererResponsive(content::WebContents* source) override;
+  virtual void DidNavigateToPendingEntry(content::WebContents* source) override;
+  virtual void WebContentsCreated(content::WebContents* source_contents,
+                                  int opener_render_frame_id,
+                                  const base::string16& frame_name,
+                                  const GURL& target_url,
+                                  content::WebContents* new_contents) override;
+  virtual bool ShouldCreateWebContents(
+      content::WebContents* web_contents,
+      int route_id,
+      WindowContainerType window_container_type,
+      const base::string16& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) override;
+  virtual bool OnGoToEntryOffset(int offset) override;
   virtual void CloseContents(content::WebContents* source) override;
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) override;
