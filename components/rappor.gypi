@@ -43,5 +43,20 @@
       },
       'includes': [ '../build/protoc.gypi' ],
     },
+    {
+      # GN version: //components/rappor:test_support
+      'target_name': 'rappor_test_support',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'rappor',
+      ],
+      'sources': [
+        'rappor/test_rappor_service.cc',
+        'rappor/test_rappor_service.h',
+      ],
+    },
   ],
 }

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# GYP version: components/rappor.gypi:rappor
 static_library("rappor") {
   sources = [
     "bloom_filter.cc",
@@ -28,5 +29,37 @@ static_library("rappor") {
     "//crypto",
     "//net",
     "//third_party/smhasher:cityhash",
+  ]
+}
+
+# GYP version: components/rappor.gypi:rappor_test_support
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_rappor_service.cc",
+    "test_rappor_service.h",
+  ]
+
+  deps = [
+    ":rappor",
+    "//components/rappor/proto",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "bloom_filter_unittest.cc",
+    "byte_vector_utils_unittest.cc",
+    "log_uploader_unittest.cc",
+    "rappor_metric_unittest.cc",
+    "rappor_service_unittest.cc",
+  ]
+
+  deps = [
+    ":rappor",
+    "//base/test:test_support",
+    "//components/rappor/proto",
+    "//testing/gtest",
   ]
 }

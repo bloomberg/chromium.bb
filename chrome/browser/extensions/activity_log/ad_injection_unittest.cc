@@ -5,9 +5,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/time/time.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
-#include "components/rappor/byte_vector_utils.h"
-#include "components/rappor/proto/rappor_metric.pb.h"
-#include "components/rappor/rappor_service.h"
+#include "components/rappor/test_rappor_service.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,61 +31,26 @@ scoped_refptr<Action> CreateAction(const std::string& api_name,
 
 }  // namespace
 
-class TestRapporService : public rappor::RapporService {
- public:
-  TestRapporService();
-  ~TestRapporService() override;
-
-  // Returns the active reports. This also clears the internal map of metrics
-  // as a biproduct, so if comparing numbers of reports, the comparison should
-  // be from the last time GetReports() was called (not from the beginning of
-  // the test).
-  rappor::RapporReports GetReports();
-
- protected:
-  TestingPrefServiceSimple prefs_;
-};
-
-TestRapporService::TestRapporService()
-  : rappor::RapporService(&prefs_) {
-  // Initialize the RapporService for testing.
-  Initialize(0,
-             rappor::HmacByteVectorGenerator::GenerateEntropyInput(),
-             rappor::FINE_LEVEL);
-}
-
-TestRapporService::~TestRapporService() {}
-
-rappor::RapporReports TestRapporService::GetReports() {
-  rappor::RapporReports result;
-  rappor::RapporService::ExportMetrics(&result);
-  return result;
-}
-
 // Test that the actions properly upload the URLs to the RAPPOR service if
 // the action may have injected the ad.
 TEST(AdInjectionUnittest, CheckActionForAdInjectionTest) {
-  TestRapporService rappor_service;
-  rappor::RapporReports reports = rappor_service.GetReports();
-  EXPECT_EQ(0, reports.report_size());
+  rappor::TestRapporService rappor_service;
+  ASSERT_EQ(0, rappor_service.GetReportsCount());
 
   scoped_refptr<Action> modify_iframe_src =
       CreateAction("blinkSetAttribute", "iframe", "src");
   modify_iframe_src->DidInjectAd(&rappor_service);
-  reports = rappor_service.GetReports();
-  EXPECT_EQ(1, reports.report_size());
+  EXPECT_EQ(1, rappor_service.GetReportsCount());
 
   scoped_refptr<Action> modify_anchor_href =
       CreateAction("blinkSetAttribute", "a", "href");
   modify_anchor_href->DidInjectAd(&rappor_service);
-  reports = rappor_service.GetReports();
-  EXPECT_EQ(1, reports.report_size());
+  EXPECT_EQ(1, rappor_service.GetReportsCount());
 
   scoped_refptr<Action> harmless_action =
       CreateAction("Location.replace", "", "");
   harmless_action->DidInjectAd(&rappor_service);
-  reports = rappor_service.GetReports();
-  EXPECT_EQ(0, reports.report_size());
+  EXPECT_EQ(0, rappor_service.GetReportsCount());
 }
 
 }  // namespace extensions
