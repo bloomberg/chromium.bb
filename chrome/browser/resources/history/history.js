@@ -507,8 +507,9 @@ Visit.prototype.handleMousedown_ = function(event) {
   if (event.shiftKey) {
     event.preventDefault();
 
-    if (this.model_.getView().isInFocusGrid(event.target))
-      event.target.focus();
+    var target = assertInstanceof(event.target, HTMLElement);
+    if (this.model_.getView().isInFocusGrid(target))
+      target.focus();
   }
 };
 
