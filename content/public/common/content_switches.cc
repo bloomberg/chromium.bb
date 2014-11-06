@@ -521,14 +521,14 @@ const char kEnableZeroCopy[]                = "enable-zero-copy";
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
-// Some field trials may be randomized in the browser, and the randomly selected
-// outcome needs to be propagated to the renderer. For instance, this is used
-// to modify histograms recorded in the renderer, or to get the renderer to
-// also set of its state (initialize, or not initialize components) to match the
-// experiment(s). The option is also useful for forcing field trials when
-// testing changes locally. The argument is a list of name and value pairs,
-// separated by slashes. See FieldTrialList::CreateTrialsFromString() in
-// field_trial.h for details.
+// This option can be used to force field trials when testing changes locally.
+// The argument is a list of name and value pairs, separated by slashes. If a
+// trial name is prefixed with an asterisk, that trial will start activated.
+// For example, the following argument defines two trials, with the second one
+// activated: "GoogleNow/Enable/*MaterialDesignNTP/Default/"
+// This option is also used by the browser to send the list of trials to
+// renderers, using the same format. See
+// FieldTrialList::CreateTrialsFromString() in field_trial.h for details.
 const char kForceFieldTrials[]              = "force-fieldtrials";
 
 // Always use the Skia GPU backend for drawing layer tiles. Only valid with GPU
