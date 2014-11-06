@@ -7,6 +7,11 @@ For a walkthrough on how to maintain these binaries:
 To upload a file:
   python ~/depot_tools/upload_to_google_storage.py -b chromium-clang-format <FILENAME>
 
+On Linux and Mac, check that clang-format has its +x bit set before you run this
+upload command. Don't upload Linux and Mac binaries from Windows, since
+upload_to_google_storage.py will not set the +x bit on google storage when it's
+run from Windows.
+
 To download a file given a .sha1 file:
   python ~/depot_tools/download_from_google_storage.py -b chromium-clang-format -s <FILENAME>.sha1
 
