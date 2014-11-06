@@ -151,9 +151,6 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
     const base::FilePath& profile_path) {
   for (BrowserVector::const_iterator it = browsers_to_close.begin();
        it != browsers_to_close.end(); ++it) {
-    // TODO(mlerman): crbug.com/423229, if we can determine why window() is
-    // false we can better solve the underlying issue here.
-    CHECK((*it)->window());
     if ((*it)->CallBeforeUnloadHandlers(
             base::Bind(&BrowserList::PostBeforeUnloadHandlers,
                        browsers_to_close,
@@ -165,12 +162,11 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
 
   on_close_success.Run(profile_path);
 
-  for (BrowserVector::const_iterator it = browsers_to_close.begin();
-       it != browsers_to_close.end(); ++it) {
-    // TODO(mlerman): If reproducible, determine cause if window() being null.
-    CHECK((*it));
-    CHECK((*it)->window());
-    (*it)->window()->Close();
+  for (Browser* b : browsers_to_close) {
+    // BeforeUnload handlers may close browser windows, so we need to explicitly
+    // check whether they still exist.
+    if (b->window())
+      b->window()->Close();
   }
 }
 
