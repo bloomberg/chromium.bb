@@ -40,8 +40,8 @@ Value* DomainReliabilityBeacon::ToValue(
                            elapsed.InMilliseconds());
   beacon_value->SetInteger("request_age_ms",
                            (upload_time - start_time).InMilliseconds());
-  if (last_network_change_time > start_time)
-    beacon_value->SetBoolean("network_changed", true);
+  bool network_changed = last_network_change_time > start_time;
+  beacon_value->SetBoolean("network_changed", network_changed);
   return beacon_value;
 }
 
