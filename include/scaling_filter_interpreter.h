@@ -70,8 +70,6 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   bool IsMouseDevice(GestureInterpreterDeviceClass devclass);
   bool IsTouchpadDevice(GestureInterpreterDeviceClass devclass);
 
-  GestureInterpreterDeviceClass devclass_;
-
   float tp_x_scale_, tp_y_scale_;
   float tp_x_translate_, tp_y_translate_;
 

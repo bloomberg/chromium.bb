@@ -18,7 +18,6 @@ ScalingFilterInterpreter::ScalingFilterInterpreter(
     PropRegistry* prop_reg, Interpreter* next, Tracer* tracer,
     GestureInterpreterDeviceClass devclass)
     : FilterInterpreter(NULL, next, tracer, false),
-      devclass_(devclass),
       tp_x_scale_(1.0),
       tp_y_scale_(1.0),
       tp_x_translate_(0.0),
@@ -101,21 +100,15 @@ bool ScalingFilterInterpreter::IsMouseDevice(
 bool ScalingFilterInterpreter::IsTouchpadDevice(
     GestureInterpreterDeviceClass devclass) {
   return (devclass == GESTURES_DEVCLASS_TOUCHPAD ||
-          devclass == GESTURES_DEVCLASS_MULTITOUCH_MOUSE);
+          devclass == GESTURES_DEVCLASS_MULTITOUCH_MOUSE ||
+          devclass == GESTURES_DEVCLASS_TOUCHSCREEN);
 }
 
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
-  if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD ||
-      devclass_ == GESTURES_DEVCLASS_TOUCHSCREEN) {
+  if (device_touchpad_.val_)
     ScaleTouchpadHardwareState(hwstate);
-  } else if (devclass_ == GESTURES_DEVCLASS_MOUSE) {
+  if (device_mouse_.val_)
     ScaleMouseHardwareState(hwstate);
-  } else if (devclass_ == GESTURES_DEVCLASS_MULTITOUCH_MOUSE) {
-    ScaleTouchpadHardwareState(hwstate);
-    ScaleMouseHardwareState(hwstate);
-  } else {
-    Err("Couldn't recognize devclass: %d", devclass_);
-  }
 }
 
 void ScalingFilterInterpreter::ScaleMouseHardwareState(
@@ -234,7 +227,7 @@ void ScalingFilterInterpreter::ConsumeGesture(const Gesture& gs) {
       break;
     }
     case kGestureTypeScroll:
-      if (devclass_ != GESTURES_DEVCLASS_MOUSE) {
+      if (!(device_mouse_.val_ && !device_touchpad_.val_)) {
         copy.details.scroll.dx *= screen_x_scale_;
         copy.details.scroll.dy *= screen_y_scale_;
         copy.details.scroll.ordinal_dx *= screen_x_scale_;
