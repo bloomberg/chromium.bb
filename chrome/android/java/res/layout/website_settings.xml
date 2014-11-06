@@ -57,11 +57,13 @@
 
     <!-- Horizontal separator -->
     <View
+        android:id="@+id/website_settings_horizontal_separator"
         android:layout_width="match_parent"
         android:layout_height="1dip"
         android:background="#e7e7e7" />
 
     <LinearLayout
+        android:id="@+id/website_settings_lower_dialog_area"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -75,11 +77,10 @@
             android:orientation="vertical" >
         </LinearLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="end"
-            android:orientation="horizontal"
             android:paddingTop="16dp"
             android:paddingBottom="16dp" >
 
@@ -97,22 +98,7 @@
                 android:textColor="@color/website_settings_popup_button_text"
                 android:textSize="@dimen/website_settings_popup_button_text_size"
                 android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/website_settings_done_button"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="@dimen/website_settings_popup_button_height"
-                android:layout_marginEnd="@dimen/website_settings_popup_button_margin_sides"
-                android:layout_marginStart="@dimen/website_settings_popup_button_margin_sides"
-                android:paddingEnd="@dimen/website_settings_popup_button_padding_sides"
-                android:paddingStart="@dimen/website_settings_popup_button_padding_sides"
-                android:text="@string/page_info_done_button"
-                android:textAllCaps="true"
-                android:textColor="@color/website_settings_popup_button_text"
-                android:textSize="@dimen/website_settings_popup_button_text_size"
-                android:textStyle="bold" />
-        </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 
 </LinearLayout>

@@ -418,9 +418,6 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site Settings
       </message>
-      <message name="IDS_PAGE_INFO_DONE_BUTTON" desc="Text in the button that closes the Page Info dialog.">
-        Done
-      </message>
       <message name="IDS_PAGE_INFO_PERMISSION_ALLOW" desc="The label used in the permissions dropdowns in the Page Info dialog on mobile for the option that grants a permission.">
         Allow
       </message>

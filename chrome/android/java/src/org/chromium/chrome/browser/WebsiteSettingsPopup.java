@@ -91,7 +91,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
     private final LinearLayout mPermissionsList;
     private final Button mCopyUrlButton;
     private final Button mSiteSettingsButton;
-    private final Button mDoneButton;
+
+    private final View mHorizontalSeparator;
+    private final View mLowerDialogArea;
 
     // The dialog the container is placed in.
     private final Dialog mDialog;
@@ -130,11 +132,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 .findViewById(R.id.website_settings_site_settings_button);
         mSiteSettingsButton.setOnClickListener(this);
         // Hide the Site Settings button until there's a link to take it to.
-        // TODO(sashab,finnur): Make this button visible once Site Settings is working.
+        // TODO(sashab,finnur): Make this button visible for well-formed, non-internal URLs.
         mSiteSettingsButton.setVisibility(View.GONE);
 
-        mDoneButton = (Button) mContainer.findViewById(R.id.website_settings_done_button);
-        mDoneButton.setOnClickListener(this);
+        mHorizontalSeparator = mContainer
+                .findViewById(R.id.website_settings_horizontal_separator);
+        mLowerDialogArea = mContainer.findViewById(R.id.website_settings_lower_dialog_area);
+
+        // Hide the horizontal separator for sites with no permissions.
+        // TODO(sashab,finnur): Show this for all sites with either the site settings button or
+        // permissions (ie when the bottom area of the dialog is not empty).
+        setVisibilityOfLowerDialogArea(false);
 
         // Create the dialog.
         mDialog = new Dialog(mContext);
@@ -166,6 +174,17 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 nativeDestroy(mNativeWebsiteSettingsPopup);
             }
         });
+    }
+
+    /**
+     * Sets the visibility of the lower area of the dialog (containing the permissions and 'Site
+     * Settings' button).
+     *
+     * @param isVisible Whether to show or hide the dialog area.
+     */
+    private void setVisibilityOfLowerDialogArea(boolean isVisible) {
+        mHorizontalSeparator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        mLowerDialogArea.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -334,6 +353,9 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
      */
     @CalledByNative
     private void addPermissionSection(String name, int type, int currentSetting) {
+        // We have at least one permission, so show the lower permissions area.
+        setVisibilityOfLowerDialogArea(true);
+
         LinearLayout permissionRow = (LinearLayout) LayoutInflater.from(mContext).inflate(
                 R.layout.website_settings_permission_row, null);
 
@@ -436,8 +458,6 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
         } else if (view == mSiteSettingsButton) {
             // TODO(sashab,finnur): Make this open the Website Settings dialog.
             assert false : "No Website Settings here!";
-            mDialog.dismiss();
-        } else if (view == mDoneButton) {
             mDialog.dismiss();
         }
     }
