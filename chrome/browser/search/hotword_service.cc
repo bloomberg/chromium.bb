@@ -352,6 +352,13 @@ bool HotwordService::MaybeReinstallHotwordExtension() {
   // change so it's okay to reinstall.
   reinstall_pending_ = true;
 
+  // Disable always-on on a language change. We do this because the speaker-id
+  // model needs to be re-trained.
+  if (IsAlwaysOnEnabled()) {
+    profile_->GetPrefs()->SetBoolean(prefs::kHotwordAlwaysOnSearchEnabled,
+                                     false);
+  }
+
   return UninstallHotwordExtension(extension_service);
 }
 
