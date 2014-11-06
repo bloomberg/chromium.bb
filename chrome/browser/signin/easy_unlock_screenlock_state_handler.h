@@ -50,8 +50,10 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
     USER_HARDLOCK = 1 << 0,    // Hard lock is requested by user.
     PAIRING_CHANGED = 1 << 1,  // Hard lock because pairing data is changed.
     NO_PAIRING = 1 << 2,       // Hard lock because there is no pairing data.
-    LOGIN_FAILED = 1 << 3      // Transient hard lock caused by login attempt
+    LOGIN_FAILED = 1 << 3,     // Transient hard lock caused by login attempt
                                // failure. Reset when screen is unlocked.
+    PAIRING_ADDED = 1 << 4,    // Similar to PAIRING_CHANGED when it happens
+                               // on a new Chromebook.
   };
 
   // |user_email|: The email for the user associated with the profile to which

@@ -14824,11 +14824,35 @@ Do you accept?
     </message>
     <!-- Strings for notification shown when the Chromebook is added to Easy Unlock -->
     <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE" desc="Title for notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
-      Smart Lock is now enabled
+      Smart Lock is almost ready
     </message>
     <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE" desc="Message for the notification shown when this Chromebook is added to Easy Unlock as an additional Easy Unlock device.">
-      Your phone can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, too.
+      It will be activated next time you unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. With Smart Lock, your phone will unlock this device&#8212;without a password. Bluetooth will be turned on to enable Smart Lock.
     </message>
+    <message name="IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_ABOUT_BUTTON" desc="Label of a button on the new chrome notification to bring user to smart lock settings.">
+      About Smart Lock
+    </message>
+    <!-- Strings for the phone changed (aka old Chromebook setup) notification -->
+    <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE" desc="Title for notification shown when the paired phone is changed.">
+      Smart Lock phone changed
+    </message>
+    <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE" desc="Message for notification shown when the paired phone is changed.">
+      Next time you unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>, Smart Lock will update and you can just click your picture to enter.
+    </message>
+    <message name="IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_UPDATE_BUTTON" desc="Label of a button on the notification shown when the paired phone is changed to update Smart lock now.">
+      Update now
+    </message>
+    <message name="IDS_EASY_UNLOCK_NOTIFICATION_LEARN_MORE_BUTTON" desc="Label of a button on the notification to show Smart lock settings.">
+      Learn more
+    </message>
+    <!-- Strings for the phone change applied notification -->
+    <message name="IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_TITLE" desc="Title for notification shown when the pairing change is applied.">
+      Phone change updated
+    </message>
+    <message name="IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_MESSAGE" desc="Message for notification shown when the pairing change is applied.">
+      Your <ph name="PHONE_NAME">$1<ex>Moto X</ex></ph> can now unlock this <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph> too.
+    </message>
+
     <!-- Strings for the Easy Unlock setup dialog -->
     <!-- Step 1: Intro -->
     <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the first, introductory step.">
@@ -14933,7 +14957,10 @@ Do you accept?
       Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has been manually locked. You'll need to enter your password to unlock it.
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_CHANGED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock feature is enabled for the user, but the pairing data is changed. A password has to be entered to unlock the device.">
-      One-time activation: Type your password to activate Chrome Smart Lock. Next time, you can just click your picture.
+      Your phone for Smart Lock changed. Type your password to update Smart Lock on this device. Next time, you can just click your picture to enter.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_PAIRING_ADDED" desc="Tooltip text shown on a user's lock screen pod when Easy Unlock pairing data is synced on a new Chromebook.">
+      One-time activation: Type your password to activate Smart Lock. With Smart Lock, your phone will unlock this Chromebook&#8212;without a password. To change or disable this feature, visit your Chromebook's settings.
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_LOGIN_FAILURE" desc="Tooltip text shown on a user's lock screen when Smart Lock signin attempt fails.">
       Smart Lock couldn't verify your account. Type your password to enter.

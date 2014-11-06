@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/common/extensions/api/screenlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/event_router.h"
 
 namespace screenlock = extensions::api::screenlock_private;
@@ -63,7 +64,10 @@ bool ScreenlockPrivateSetLockedFunction::RunAsync() {
       screenlock::SetLocked::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
   if (params->locked) {
-    if (extension()->id() == extension_misc::kEasyUnlockAppId) {
+    if (extension()->id() == extension_misc::kEasyUnlockAppId &&
+        AppWindowRegistry::Get(browser_context())
+            ->GetAppWindowForAppAndKey(extension()->id(),
+                                       "easy_unlock_pairing")) {
       // Mark the Easy Unlock behaviour on the lock screen as the one initiated
       // by the Easy Unlock setup app as a trial one.
       // TODO(tbarzic): Move this logic to a new easyUnlockPrivate function.

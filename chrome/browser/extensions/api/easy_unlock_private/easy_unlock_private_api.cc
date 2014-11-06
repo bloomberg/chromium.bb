@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_screenlock_state_handler.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
+#include "chrome/browser/signin/screenlock_bridge.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/proximity_auth/bluetooth_util.h"
@@ -114,6 +115,7 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   strings->SetString(
       "learnMoreLinkTitle",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_LEARN_MORE_LINK_TITLE));
+  strings->SetString("deviceType", device_type);
 
   // Setup notification strings.
   strings->SetString(
@@ -135,10 +137,46 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_TITLE));
   strings->SetString(
-     "chromebookAddedNotificationMessage",
-     l10n_util::GetStringFUTF16(
+      "chromebookAddedNotificationMessage",
+      l10n_util::GetStringFUTF16(
           IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_MESSAGE,
           device_type));
+  strings->SetString(
+      "chromebookAddedNotificationAboutButton",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_CHROMEBOOK_ADDED_NOTIFICATION_ABOUT_BUTTON));
+
+  // Shared "Learn more" button for the pairing changed and pairing change
+  // applied notification.
+  strings->SetString(
+      "phoneChangedNotificationLearnMoreButton",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_NOTIFICATION_LEARN_MORE_BUTTON));
+
+  // Pairing changed notification strings.
+  strings->SetString(
+      "phoneChangedNotificationTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_TITLE));
+  strings->SetString(
+      "phoneChangedNotificationMessage",
+      l10n_util::GetStringFUTF16(
+          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_MESSAGE,
+          device_type));
+  strings->SetString(
+      "phoneChangedNotificationUpdateButton",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_PAIRING_CHANGED_NOTIFICATION_UPDATE_BUTTON));
+
+  // Phone change applied notification strings.
+  strings->SetString(
+      "phoneChangeAppliedNotificationTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_TITLE));
+  strings->SetString(
+      "phoneChangeAppliedNotificationMessage",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_PAIRING_CHANGE_APPLIED_NOTIFICATION_MESSAGE));
 
   // Setup dialog strings.
   // Step 1: Intro.
