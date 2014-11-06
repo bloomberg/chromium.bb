@@ -81,6 +81,19 @@ cr.define('hotword', function() {
     this.chime_ =
         /** @type {!HTMLAudioElement} */(document.createElement('audio'));
 
+    /**
+     * Chrome event listeners. Saved so that they can be de-registered when
+     * hotwording is disabled.
+     * @private
+     */
+    this.idleStateChangedListener_ = this.handleIdleStateChanged_.bind(this);
+
+    /**
+     * Whether this user is locked.
+     * @private {boolean}
+     */
+    this.isLocked_ = false;
+
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
 
@@ -192,20 +205,24 @@ cr.define('hotword', function() {
       if (this.hotwordStatus_.enabled ||
           this.hotwordStatus_.alwaysOnEnabled ||
           this.hotwordStatus_.trainingEnabled) {
-        // Start the detector if there's a session, and shut it down if there
-        // isn't.
-        // NOTE(amistry): With always-on, we want a different behaviour with
-        // sessions since the detector should always be running. The exception
-        // being when the user triggers by saying 'Ok Google'. In that case, the
-        // detector stops, so starting/stopping the launcher session should
-        // restart the detector.
-        if (this.sessions_.length)
+        // Start the detector if there's a session and the user is unlocked, and
+        // shut it down otherwise.
+        if (this.sessions_.length && !this.isLocked_)
           this.startDetector_();
         else
           this.shutdownDetector_();
+
+        if (!chrome.idle.onStateChanged.hasListener(
+                this.idleStateChangedListener_)) {
+          chrome.idle.onStateChanged.addListener(
+              this.idleStateChangedListener_);
+        }
       } else {
         // Not enabled. Shut down if running.
         this.shutdownDetector_();
+
+        chrome.idle.onStateChanged.removeListener(
+            this.idleStateChangedListener_);
       }
     },
 
@@ -398,6 +415,23 @@ cr.define('hotword', function() {
       hotword.debug('Stopping session for source: ' + source);
       this.removeSession_(source);
       this.updateStateFromStatus_();
+    },
+
+    /**
+     * Handles a chrome.idle.onStateChanged event.
+     * @param {!string} state State, one of "active", "idle", or "locked".
+     * @private
+     */
+    handleIdleStateChanged_: function(state) {
+      hotword.debug('Idle state changed: ' + state);
+      var oldLocked = this.isLocked_;
+      if (state == 'locked')
+        this.isLocked_ = true;
+      else
+        this.isLocked_ = false;
+
+      if (oldLocked != this.isLocked_)
+        this.updateStateFromStatus_();
     }
   };
 
