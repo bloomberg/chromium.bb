@@ -152,8 +152,14 @@ size_t GetMaxTransferBufferUsageBytes(
 
 unsigned GetMapImageTextureTarget(
     const ContextProvider::Capabilities& context_capabilities) {
+// TODO(reveman): This should be a setting passed to the compositor instead
+// of hard-coded here. The target that need to be used depends on our choice
+// of GpuMemoryBuffer type. Note: SURFACE_TEXTURE needs EXTERNAL_OES,
+// IO_SURFACE needs RECTANGLE_ARB. crbug.com/431059
+#if defined(OS_ANDROID)
   if (context_capabilities.gpu.egl_image_external)
     return GL_TEXTURE_EXTERNAL_OES;
+#endif
   if (context_capabilities.gpu.texture_rectangle)
     return GL_TEXTURE_RECTANGLE_ARB;
 
