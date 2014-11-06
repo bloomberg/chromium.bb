@@ -65,6 +65,13 @@ TEST_F(SysInfoTest, Uptime) {
   EXPECT_GT(up_time_2, up_time_1);
 }
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+TEST_F(SysInfoTest, HardwareModelName) {
+  std::string hardware_model = base::SysInfo::HardwareModelName();
+  EXPECT_FALSE(hardware_model.empty());
+}
+#endif
+
 #if defined(OS_CHROMEOS)
 
 TEST_F(SysInfoTest, GoogleChromeOSVersionNumbers) {

@@ -351,8 +351,9 @@ void MetricsLog::RecordEnvironment(
 
   SystemProfileProto::Hardware* hardware = system_profile->mutable_hardware();
 
-  // By default, the hardware class is empty (i.e., unknown).
-  hardware->set_hardware_class(std::string());
+  // HardwareModelName() will return an empty string on platforms where it's
+  // not implemented or if an error occured.
+  hardware->set_hardware_class(base::SysInfo::HardwareModelName());
 
   hardware->set_cpu_architecture(base::SysInfo::OperatingSystemArchitecture());
   hardware->set_system_ram_mb(base::SysInfo::AmountOfPhysicalMemoryMB());

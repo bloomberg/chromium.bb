@@ -44,6 +44,12 @@ bool SysInfo::IsLowEndDevice() {
 }
 #endif
 
+#if !defined(OS_MACOSX) || defined(OS_IOS)
+std::string SysInfo::HardwareModelName() {
+  return std::string();
+}
+#endif
+
 // static
 int64 SysInfo::Uptime() {
   // This code relies on an implementation detail of TimeTicks::Now() - that

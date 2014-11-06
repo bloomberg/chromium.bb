@@ -85,4 +85,12 @@ std::string SysInfo::CPUModelName() {
   return std::string();
 }
 
+std::string SysInfo::HardwareModelName() {
+  char model[256];
+  size_t len = sizeof(model);
+  if (sysctlbyname("hw.model", model, &len, NULL, 0) == 0)
+    return std::string(model, 0, len);
+  return std::string();
+}
+
 }  // namespace base
