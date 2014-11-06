@@ -523,7 +523,8 @@ bool ManagementUninstallFunctionBase::Uninstall(
   if (auto_confirm_for_test == DO_NOT_SKIP) {
     if (show_confirm_dialog) {
       AddRef();  // Balanced in ExtensionUninstallAccepted/Canceled
-      delegate->UninstallFunctionDelegate(this, target_extension_id);
+      uninstall_dialog_ =
+          delegate->UninstallFunctionDelegate(this, target_extension_id);
     } else {
       Finish(true);
     }
