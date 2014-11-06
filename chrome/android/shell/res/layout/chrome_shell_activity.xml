@@ -40,7 +40,7 @@
             android:id="@+id/tab_switcher"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/btn_tabswitcher_white_normal"
+            android:src="@drawable/btn_tabswitcher"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"
             android:contentDescription="@null"/>

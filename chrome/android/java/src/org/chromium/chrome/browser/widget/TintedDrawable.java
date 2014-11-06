@@ -18,7 +18,10 @@ import org.chromium.chrome.R;
  * bitmap drawable states using chrome:tint attribute in XML.
  */
 public class TintedDrawable extends BitmapDrawable {
-    private ColorStateList mTint;
+    /**
+     * The set of colors that just be used for tinting this bitmap drawable.
+     */
+    protected ColorStateList mTint;
 
     public TintedDrawable(Resources res, Bitmap bitmap) {
         super(res, bitmap);
@@ -27,8 +30,9 @@ public class TintedDrawable extends BitmapDrawable {
 
     @Override
     protected boolean onStateChange(int[] state) {
-        updateTintColor();
-        return super.onStateChange(state);
+        boolean ret = updateTintColor();
+        super.onStateChange(state);
+        return ret;
     }
 
     @Override
