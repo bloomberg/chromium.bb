@@ -267,28 +267,28 @@ class ExtensionFunction
 
   // ResponseValues.
   //
-  // Success, no arguments to pass to caller
+  // Success, no arguments to pass to caller.
   ResponseValue NoArguments();
-  // Success, a single argument |arg| to pass to caller. TAKES OWNERSHIP -- a
+  // Success, a single argument |arg| to pass to caller. TAKES OWNERSHIP - a
   // raw pointer for convenience, since callers usually construct the argument
   // to this by hand.
   ResponseValue OneArgument(base::Value* arg);
   // Success, two arguments |arg1| and |arg2| to pass to caller. TAKES
-  // OWNERSHIP -- raw pointers for convenience, since callers usually construct
+  // OWNERSHIP - raw pointers for convenience, since callers usually construct
   // the argument to this by hand. Note that use of this function may imply you
   // should be using the generated Result struct and ArgumentList.
   ResponseValue TwoArguments(base::Value* arg1, base::Value* arg2);
   // Success, a list of arguments |results| to pass to caller. TAKES OWNERSHIP
-  // --
-  // a scoped_ptr<> for convenience, since callers usually get this from the
-  // result of a ToValue() call on the generated Result struct.
+  // - a scoped_ptr<> for convenience, since callers usually get this from the
+  // result of a Create(...) call on the generated Results struct, for example,
+  // alarms::Get::Results::Create(alarm).
   ResponseValue ArgumentList(scoped_ptr<base::ListValue> results);
   // Error. chrome.runtime.lastError.message will be set to |error|.
   ResponseValue Error(const std::string& error);
   // Error with formatting. Args are processed using
   // ErrorUtils::FormatErrorMessage, that is, each occurence of * is replaced
   // by the corresponding |s*|:
-  // Error("Error in *: *", "foo", "bar") <--> // Error("Error in foo: bar").
+  // Error("Error in *: *", "foo", "bar") <--> Error("Error in foo: bar").
   ResponseValue Error(const std::string& format, const std::string& s1);
   ResponseValue Error(const std::string& format,
                       const std::string& s1,
@@ -297,14 +297,15 @@ class ExtensionFunction
                       const std::string& s1,
                       const std::string& s2,
                       const std::string& s3);
-  // Bad message. A ResponseValue equivalent to EXTENSION_FUNCTION_VALIDATE().
+  // Bad message. A ResponseValue equivalent to EXTENSION_FUNCTION_VALIDATE(),
+  // so this will actually kill the renderer and not respond at all.
   ResponseValue BadMessage();
 
   // ResponseActions.
   //
   // Respond to the extension immediately with |result|.
   ResponseAction RespondNow(ResponseValue result);
-  // Don't respond now, but promise to call Respond() later.
+  // Don't respond now, but promise to call Respond(...) later.
   ResponseAction RespondLater();
 
   // This is the return value of the EXTENSION_FUNCTION_VALIDATE macro, which
