@@ -780,19 +780,22 @@ cr.define('options.internet', function() {
         option.textContent =
             name ? (name + ' (' + accessPointName + ')') : accessPointName;
         option.value = i;
-        // If this matches the active Apn, or LastGoodApn, set it as the
-        // selected Apn.
-        if ((activeApn == accessPointName &&
-            activeUsername == apnDict['Username'] &&
-            activePassword == apnDict['Password']) ||
-            (!activeApn &&
-            lastGoodApn == accessPointName &&
-            lastGoodUsername == apnDict['Username'] &&
-            lastGoodPassword == apnDict['Password'])) {
-          this.selectedApnIndex_ = i;
-        }
         // Insert new option before "other" option.
         apnSelector.add(option, otherOption);
+        if (this.selectedApnIndex_ != -1)
+          continue;
+        // If this matches the active Apn, or LastGoodApn (or there is no last
+        // good APN), set it as the selected Apn.
+        if ((activeApn == accessPointName &&
+             activeUsername == apnDict['Username'] &&
+             activePassword == apnDict['Password']) ||
+            (!activeApn && !lastGoodApn) ||
+            (!activeApn &&
+             lastGoodApn == accessPointName &&
+             lastGoodUsername == apnDict['Username'] &&
+             lastGoodPassword == apnDict['Password'])) {
+          this.selectedApnIndex_ = i;
+        }
       }
       if (this.selectedApnIndex_ == -1 && activeApn) {
         var activeOption = document.createElement('option');
@@ -1560,6 +1563,7 @@ cr.define('options.internet', function() {
         '#details-internet-page .controlled-setting-indicator');
     for (var i = 0; i < indicators.length; i++) {
       var managed = indicators[i].hasAttribute('managed');
+      // TODO(stevenjb): Eliminate support for 'data' once 39 is stable.
       var attributeName = managed ? 'managed' : 'data';
       var propName = indicators[i].getAttribute(attributeName);
       if (!propName)
@@ -1567,9 +1571,9 @@ cr.define('options.internet', function() {
       var propValue = managed ?
           onc.getManagedProperty(propName) :
           onc.getActiveValue(propName);
-      if (propValue == undefined)
+      // If the property is unset or unmanaged (i.e. not an Object) skip it.
+      if (propValue == undefined || (typeof propValue != 'object'))
         continue;
-      propValue = assertInstanceof(propValue, Object);
       var event;
       if (managed)
         event = detailsPage.createManagedEvent_(propName, propValue);
