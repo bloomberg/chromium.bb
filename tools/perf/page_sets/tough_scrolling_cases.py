@@ -18,12 +18,12 @@ class ToughScrollingCasesPage(page_module.Page):
 
 class ToughFastScrollingCasesPage(page_module.Page):
 
-  def __init__(self, url, speed_in_pixels_per_second, page_set):
+  def __init__(self, url, name, speed_in_pixels_per_second, page_set):
     super(ToughFastScrollingCasesPage, self).__init__(
       url=url,
       page_set=page_set,
-      labels=['fastscrolling'],
-      name=str(speed_in_pixels_per_second).zfill(5) + '_pixels_per_second')
+      name=name,
+      labels=['fastscrolling'])
     self.speed_in_pixels_per_second = speed_in_pixels_per_second
 
   def RunSmoothness(self, action_runner):
@@ -58,15 +58,19 @@ class ToughScrollingCasesPageSet(page_set_module.PageSet):
     for url in urls_list:
       self.AddPage(ToughScrollingCasesPage(url, self))
 
-    fast_scrolling_urls_list = [
-      'file://tough_scrolling_cases/lorem_ipsum.html',
-      'file://tough_scrolling_cases/canvas.html'
+    fast_scrolling_page_name_list = [
+      'text',
+      'canvas'
     ]
 
     fast_scrolling_speed_list = [
-      5000, 10000, 15000, 20000, 25000, 30000, 35000, 40000, 45000, 50000
+      5000, 10000, 15000, 20000, 30000, 40000, 50000, 60000, 75000, 90000
     ]
 
-    for url in fast_scrolling_urls_list:
+    for name in fast_scrolling_page_name_list:
       for speed in fast_scrolling_speed_list:
-        self.AddPage(ToughFastScrollingCasesPage(url, speed, self))
+        self.AddPage(ToughFastScrollingCasesPage(
+          'file://tough_scrolling_cases/' + name + '.html',
+          name + '_' + str(speed).zfill(5) + '_pixels_per_second',
+          speed,
+          self))
