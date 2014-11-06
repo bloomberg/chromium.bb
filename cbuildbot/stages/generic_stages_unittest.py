@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import contextlib
 import copy
-import mox
 import os
 import sys
 import unittest
@@ -263,20 +262,15 @@ class BuilderStageTest(AbstractStageTest):
 
   def testGetPortageEnvVar(self):
     """Basic test case for _GetPortageEnvVar function."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    envvar = 'EXAMPLE'
-    obj = cros_test_lib.EasyAttr(output='RESULT\n')
-    cros_build_lib.RunCommand(mox.And(mox.IsA(list), mox.In(envvar)),
-                              cwd='%s/src/scripts' % self.build_root,
-                              redirect_stdout=True, enter_chroot=True,
-                              error_code_ok=True).AndReturn(obj)
-    self.mox.ReplayAll()
-
     stage = self.ConstructStage()
     board = self._current_board
-    result = stage._GetPortageEnvVar(envvar, board)
-    self.mox.VerifyAll()
 
+    envvar = 'EXAMPLE'
+    rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    rc_mock.AddCmdResult(['portageq-%s' % board, 'envvar', envvar],
+                         output='RESULT\n')
+
+    result = stage._GetPortageEnvVar(envvar, board)
     self.assertEqual(result, 'RESULT')
 
   def testStageNamePrefixSmoke(self):

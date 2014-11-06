@@ -9,7 +9,6 @@ from __future__ import print_function
 
 import glob
 import imp
-import mox
 import os
 import sys
 
@@ -48,39 +47,35 @@ class MockCommand(partial_mock.PartialMock):
       self.backup['Run'](inst)
 
 
-# pylint: disable=W0212
-class CommandTest(cros_test_lib.MoxTestCase):
+class CommandTest(cros_test_lib.MockTestCase):
   """This test class tests that we can load modules correctly."""
+
+  # pylint: disable=W0212
 
   def testFindModules(self):
     """Tests that we can return modules correctly when mocking out glob."""
-    self.mox.StubOutWithMock(glob, 'glob')
     fake_command_file = 'cros_command_test.py'
     filtered_file = 'cros_command_unittest.py'
     mydir = 'mydir'
 
-    glob.glob(mox.StrContains(mydir)).AndReturn([fake_command_file,
-                                                 filtered_file])
+    self.PatchObject(glob, 'glob',
+                     return_value=[fake_command_file, filtered_file])
 
-    self.mox.ReplayAll()
     self.assertEqual(commands._FindModules(mydir), [fake_command_file])
-    self.mox.VerifyAll()
 
   def testLoadCommands(self):
     """Tests import commands correctly."""
-    self.mox.StubOutWithMock(commands, '_FindModules')
-    self.mox.StubOutWithMock(imp, 'load_module')
-    self.mox.StubOutWithMock(imp, 'find_module')
     fake_command_file = 'cros_command_test.py'
     fake_module = 'cros_command_test'
     module_tuple = 'file', 'pathname', 'description'
-    commands._FindModules(mox.IgnoreArg()).AndReturn([fake_command_file])
-    imp.find_module(fake_module, mox.IgnoreArg()).AndReturn(module_tuple)
-    imp.load_module(fake_module, *module_tuple)
 
-    self.mox.ReplayAll()
+    self.PatchObject(commands, '_FindModules', return_value=[fake_command_file])
+    self.PatchObject(imp, 'find_module', return_value=module_tuple)
+    load_mock = self.PatchObject(imp, 'load_module')
+
     commands._ImportCommands()
-    self.mox.VerifyAll()
+
+    load_mock.assert_called(fake_module, *module_tuple)
 
 
 if __name__ == '__main__':

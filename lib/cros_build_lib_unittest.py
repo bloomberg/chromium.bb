@@ -19,7 +19,6 @@ import errno
 import functools
 import itertools
 import logging
-import mox
 import signal
 import socket
 import StringIO
@@ -210,7 +209,7 @@ def _ForceLoggingLevel(functor):
   return inner
 
 
-class TestRunCommand(cros_test_lib.MoxTestCase):
+class TestRunCommand(cros_test_lib.MockTestCase):
   """Tests of RunCommand functionality."""
 
   def setUp(self):
@@ -218,24 +217,23 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     # correct thing.
     self._old_sigint = signal.getsignal(signal.SIGINT)
 
-    self.mox.StubOutWithMock(cros_build_lib, '_Popen', use_mock_anything=True)
-    self.mox.StubOutWithMock(signal, 'signal')
-    self.mox.StubOutWithMock(signal, 'getsignal')
-    self.mox.StubOutWithMock(cros_signals, 'SignalModuleUsable')
-    self.proc_mock = self.mox.CreateMockAnything()
+    # Mock the return value of Popen().
     self.error = 'test error'
     self.output = 'test output'
+    self.proc_mock = mock.MagicMock(
+        returncode=0,
+        communicate=lambda x: (self.output, self.error))
+    self.popen_mock = self.PatchObject(cros_build_lib, '_Popen',
+                                       return_value=self.proc_mock)
+
+    self.signal_mock = self.PatchObject(signal, 'signal')
+    self.getsignal_mock = self.PatchObject(signal, 'getsignal')
+    self.PatchObject(cros_signals, 'SignalModuleUsable', return_value=True)
 
   @contextlib.contextmanager
-  def _SetupPopen(self, cmd, **kwargs):
-    cros_signals.SignalModuleUsable().AndReturn(True)
+  def _MockChecker(self, cmd, **kwargs):
+    """Verify the mocks we set up"""
     ignore_sigint = kwargs.pop('ignore_sigint', False)
-
-    for val in ('cwd', 'stdin', 'stdout', 'stderr'):
-      kwargs.setdefault(val, None)
-    kwargs.setdefault('shell', False)
-    kwargs.setdefault('env', mox.IgnoreArg())
-    kwargs['close_fds'] = True
 
     # Make some arbitrary functors we can pretend are signal handlers.
     # Note that these are intentionally defined on the fly via lambda-
@@ -247,24 +245,72 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     normal_sigterm = lambda signum, frame:None
     normal_sigterm.__name__ = 'sigterm'
 
-    # If requested, RunCommand will ignore sigints; record that.
-    if ignore_sigint:
-      signal.signal(signal.SIGINT, signal.SIG_IGN).AndReturn(sigint_suppress)
-    else:
-      signal.getsignal(signal.SIGINT).AndReturn(normal_sigint)
-      signal.signal(signal.SIGINT, mox.IgnoreArg()).AndReturn(normal_sigint)
-    signal.getsignal(signal.SIGTERM).AndReturn(normal_sigterm)
-    signal.signal(signal.SIGTERM, mox.IgnoreArg()).AndReturn(normal_sigterm)
+    # Set up complicated mock for signal.signal().
+    def _SignalChecker(sig, _action):
+      """Return the right signal values so we can check the calls."""
+      if sig == signal.SIGINT:
+        return sigint_suppress if ignore_sigint else normal_sigint
+      elif sig == signal.SIGTERM:
+        return normal_sigterm
+      else:
+        raise ValueError('unknown sig %i' % sig)
+    self.signal_mock.side_effect = _SignalChecker
 
-    cros_build_lib._Popen(cmd, **kwargs).AndReturn(self.proc_mock)
-    yield self.proc_mock
+    # Set up complicated mock for signal.getsignal().
+    def _GetsignalChecker(sig):
+      """Return the right signal values so we can check the calls."""
+      if sig == signal.SIGINT:
+        self.assertFalse(ignore_sigint)
+        return normal_sigint
+      elif sig == signal.SIGTERM:
+        return normal_sigterm
+      else:
+        raise ValueError('unknown sig %i' % sig)
+    self.getsignal_mock.side_effect = _GetsignalChecker
 
-    # If it ignored them, RunCommand will restore sigints; record that.
+    # Let the body of code run, then check the signal behavior afterwards.
+    # We don't get visibility into signal ordering vs command execution,
+    # but it's kind of hard to mess up that, so we won't bother.
+    yield
+
+    class RejectSigIgn(object):
+      """Make sure the signal action is not SIG_IGN."""
+      def __eq__(self, other):
+        return other != signal.SIG_IGN
+
+    # Verify the signals checked/setup are correct.
     if ignore_sigint:
-      signal.signal(signal.SIGINT, sigint_suppress).AndReturn(signal.SIG_IGN)
+      self.signal_mock.assert_has_calls([
+          mock.call(signal.SIGINT, signal.SIG_IGN),
+          mock.call(signal.SIGTERM, RejectSigIgn()),
+          mock.call(signal.SIGINT, sigint_suppress),
+          mock.call(signal.SIGTERM, normal_sigterm),
+      ])
+      self.assertEqual(self.getsignal_mock.call_count, 1)
     else:
-      signal.signal(signal.SIGINT, normal_sigint).AndReturn(None)
-    signal.signal(signal.SIGTERM, normal_sigterm).AndReturn(None)
+      self.signal_mock.assert_has_calls([
+          mock.call(signal.SIGINT, RejectSigIgn()),
+          mock.call(signal.SIGTERM, RejectSigIgn()),
+          mock.call(signal.SIGINT, normal_sigint),
+          mock.call(signal.SIGTERM, normal_sigterm),
+      ])
+      self.assertEqual(self.getsignal_mock.call_count, 2)
+
+    # Verify various args are passed down to the real command.
+    pargs = self.popen_mock.call_args[0][0]
+    self.assertEqual(cmd, pargs)
+
+    # Verify various kwargs are passed down to the real command.
+    pkwargs = self.popen_mock.call_args[1]
+    for key in ('cwd', 'stdin', 'stdout', 'stderr'):
+      kwargs.setdefault(key, None)
+    kwargs.setdefault('shell', False)
+    kwargs.setdefault('env', mock.ANY)
+    kwargs['close_fds'] = True
+    self.longMessage = True
+    for key in kwargs.keys():
+      self.assertEqual(kwargs[key], pkwargs[key],
+                       msg='kwargs[%s] mismatch' % key)
 
   def _AssertCrEqual(self, expected, actual):
     """Helper method to compare two CommandResult objects.
@@ -311,17 +357,13 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
         else:
           arg_dict[attr] = None
 
-    with self._SetupPopen(real_cmd,
-                          ignore_sigint=rc_kv.get('ignore_sigint'),
-                          **sp_kv) as proc:
-      proc.communicate(None).AndReturn((self.output, self.error))
-
-    self.mox.ReplayAll()
     if sudo:
-      actual_result = cros_build_lib.SudoRunCommand(cmd, **rc_kv)
+      runcmd = cros_build_lib.SudoRunCommand
     else:
-      actual_result = cros_build_lib.RunCommand(cmd, **rc_kv)
-    self.mox.VerifyAll()
+      runcmd = cros_build_lib.RunCommand
+    with self._MockChecker(real_cmd, ignore_sigint=rc_kv.get('ignore_sigint'),
+                           **sp_kv):
+      actual_result = runcmd(cmd, **rc_kv)
 
     self._AssertCrEqual(expected_result, actual_result)
 
@@ -363,16 +405,12 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
       ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
     """
     cmd = 'test cmd'
-
-    with self._SetupPopen(['/bin/bash', '-c', cmd],
-                          ignore_sigint=ignore_sigint) as proc:
-      proc.communicate(None).AndReturn((self.output, self.error))
-
-    self.mox.ReplayAll()
-    self.assertRaises(cros_build_lib.RunCommandError,
-                      cros_build_lib.RunCommand, cmd, shell=True,
-                      ignore_sigint=ignore_sigint, error_code_ok=False)
-    self.mox.VerifyAll()
+    self.proc_mock.returncode = 1
+    with self._MockChecker(['/bin/bash', '-c', cmd],
+                           ignore_sigint=ignore_sigint):
+      self.assertRaises(cros_build_lib.RunCommandError,
+                        cros_build_lib.RunCommand, cmd, shell=True,
+                        ignore_sigint=ignore_sigint, error_code_ok=False)
 
   @_ForceLoggingLevel
   def testSubprocessCommunicateExceptionRaisesError(self, ignore_sigint=False):
@@ -385,14 +423,10 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
       ignore_sigint: If True, we'll tell RunCommand to ignore sigint.
     """
     cmd = ['test', 'cmd']
-
-    with self._SetupPopen(cmd, ignore_sigint=ignore_sigint) as proc:
-      proc.communicate(None).AndRaise(ValueError)
-
-    self.mox.ReplayAll()
-    self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
-                      ignore_sigint=ignore_sigint)
-    self.mox.VerifyAll()
+    self.proc_mock.communicate = mock.MagicMock(side_effect=ValueError)
+    with self._MockChecker(cmd, ignore_sigint=ignore_sigint):
+      self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
+                        ignore_sigint=ignore_sigint)
 
   def testSignalRestoreExceptionCase(self):
     """Test RunCommand() properly sets/restores sigint.  Exception case."""
@@ -539,7 +573,7 @@ class TestRunCommandLogging(cros_test_lib.TempDirTestCase):
     self.assertEqual(osutils.ReadFile(log), 'monkeys4\nmonkeys5\n')
 
 
-class TestRetries(cros_test_lib.MoxTestCase):
+class TestRetries(cros_test_lib.MockTestCase):
   """Tests of GenericRetry and relatives."""
 
   def testGenericRetry(self):
@@ -599,76 +633,65 @@ class TestRetries(cros_test_lib.MoxTestCase):
 
     os.chmod(path, 0o755)
 
-    def _setup_counters(start, stop, sleep, sleep_cnt):
-      self.mox.ResetAll()
-      for i in xrange(sleep_cnt):
-        time.sleep(sleep * (i + 1))
-      self.mox.ReplayAll()
-
+    def _setup_counters(start, stop):
+      sleep_mock.reset_mock()
       osutils.WriteFile(paths['store'], str(start))
       osutils.WriteFile(paths['stop'], str(stop))
 
-    self.mox.StubOutWithMock(time, 'sleep')
-    self.mox.ReplayAll()
+    def _check_counters(sleep, sleep_cnt):
+      calls = [mock.call(sleep * (x + 1)) for x in range(sleep_cnt)]
+      sleep_mock.assert_has_calls(calls)
 
-    _setup_counters(0, 0, 0, 0)
+    sleep_mock = self.PatchObject(time, 'sleep')
+
+    _setup_counters(0, 0)
     command = ['python', path]
     kwargs = {'redirect_stdout': True, 'print_cmd': False}
-
     self.assertEqual(cros_build_lib.RunCommand(command, **kwargs).output, '0\n')
+    _check_counters(0, 0)
 
     func = retry_util.RunCommandWithRetries
 
-    _setup_counters(2, 2, 0, 0)
+    _setup_counters(2, 2)
     self.assertEqual(func(0, command, sleep=0, **kwargs).output, '2\n')
-    self.mox.VerifyAll()
+    _check_counters(0, 0)
 
-    _setup_counters(0, 2, 1, 2)
+    _setup_counters(0, 2)
     self.assertEqual(func(2, command, sleep=1, **kwargs).output, '2\n')
-    self.mox.VerifyAll()
+    _check_counters(1, 2)
 
-    _setup_counters(0, 1, 2, 1)
+    _setup_counters(0, 1)
     self.assertEqual(func(1, command, sleep=2, **kwargs).output, '1\n')
-    self.mox.VerifyAll()
+    _check_counters(2, 1)
 
-    _setup_counters(0, 3, 3, 2)
+    _setup_counters(0, 3)
     self.assertRaises(cros_build_lib.RunCommandError,
                       func, 2, command, sleep=3, **kwargs)
-    self.mox.VerifyAll()
+    _check_counters(3, 2)
 
 
-class TestTimedCommand(cros_test_lib.MoxTestCase):
+class TestTimedCommand(RunCommandTestCase):
   """Tests for TimedCommand()"""
-
-  def setUp(self):
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
 
   def testBasic(self):
     """Make sure simple stuff works."""
-    cros_build_lib.RunCommand(['true', 'foo'])
-    self.mox.ReplayAll()
-
     cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ['true', 'foo'])
+    self.rc.assertCommandCalled(['true', 'foo'])
 
   def testArgs(self):
     """Verify passing of optional args to the destination function."""
-    cros_build_lib.RunCommand(':', shell=True, print_cmd=False,
-                              error_code_ok=False)
-    self.mox.ReplayAll()
-
     cros_build_lib.TimedCommand(cros_build_lib.RunCommand, ':', shell=True,
                                 print_cmd=False, error_code_ok=False)
+    self.rc.assertCommandCalled(':', shell=True, print_cmd=False,
+                                error_code_ok=False)
 
   def testLog(self):
     """Verify logging does the right thing."""
-    self.mox.StubOutWithMock(cros_build_lib.logger, 'log')
-
-    cros_build_lib.RunCommand('fun', shell=True)
-    cros_build_lib.logger.log(mox.IgnoreArg(), 'msg! %s', mox.IgnoreArg())
-    self.mox.ReplayAll()
-
+    m = self.PatchObject(cros_build_lib.logger, 'log')
     cros_build_lib.TimedCommand(cros_build_lib.RunCommand, 'fun',
                                 timed_log_msg='msg! %s', shell=True)
+    self.rc.assertCommandCalled('fun', shell=True)
+    m.assert_called()
 
 
 class TestListFiles(cros_test_lib.TempDirTestCase):
@@ -720,7 +743,7 @@ class TestListFiles(cros_test_lib.TempDirTestCase):
 
 
 class HelperMethodSimpleTests(cros_test_lib.TestCase):
-  """Tests for various helper methods without using mox."""
+  """Tests for various helper methods without using mocks."""
 
   def _TestChromeosVersion(self, test_str, expected=None):
     actual = cros_build_lib.GetChromeosVersion(test_str)

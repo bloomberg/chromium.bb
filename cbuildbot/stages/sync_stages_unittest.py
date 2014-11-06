@@ -60,10 +60,10 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
     self.PatchObject(manifest_version.BuildSpecsManager, 'SetInFlight')
 
     repo = repository.RepoRepository(
-      self.source_repo, self.tempdir, self.branch)
+        self.source_repo, self.tempdir, self.branch)
     self.manager = manifest_version.BuildSpecsManager(
-      repo, self.manifest_version_url, [self.build_name], self.incr_type,
-      force=False, branch=self.branch, dry_run=True)
+        repo, self.manifest_version_url, [self.build_name], self.incr_type,
+        force=False, branch=self.branch, dry_run=True)
 
     self._Prepare()
 
@@ -79,29 +79,16 @@ class ManifestVersionedSyncStageTest(generic_stages_unittest.AbstractStageTest):
   def testManifestVersionedSyncOnePartBranch(self):
     """Tests basic ManifestVersionedSyncStage with branch ooga_booga"""
     # pylint: disable=E1120
-    self.mox.StubOutWithMock(sync_stages.ManifestVersionedSyncStage,
-                             'Initialize')
-    self.mox.StubOutWithMock(sync_stages.ManifestVersionedSyncStage,
-                             '_SetChromeVersionIfApplicable')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetNextBuildSpec')
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager,
-                             'GetLatestPassingSpec')
-    self.mox.StubOutWithMock(sync_stages.SyncStage, 'ManifestCheckout')
+    self.PatchObject(sync_stages.ManifestVersionedSyncStage, 'Initialize')
+    self.PatchObject(sync_stages.ManifestVersionedSyncStage,
+                     '_SetChromeVersionIfApplicable')
+    self.PatchObject(manifest_version.BuildSpecsManager, 'GetNextBuildSpec',
+                     return_value=self.next_version)
+    self.PatchObject(manifest_version.BuildSpecsManager, 'GetLatestPassingSpec')
+    self.PatchObject(sync_stages.SyncStage, 'ManifestCheckout',
+                     return_value=self.next_version)
 
-    sync_stages.ManifestVersionedSyncStage.Initialize()
-    self.manager.GetNextBuildSpec(
-        build_id=MOCK_BUILD_ID,
-        ).AndReturn(self.next_version)
-    self.manager.GetLatestPassingSpec().AndReturn(None)
-
-    sync_stages.ManifestVersionedSyncStage._SetChromeVersionIfApplicable(
-        self.next_version)
-    sync_stages.SyncStage.ManifestCheckout(self.next_version)
-
-    self.mox.ReplayAll()
     self.sync_stage.Run()
-    self.mox.VerifyAll()
 
 
 class MockPatch(mock.MagicMock):

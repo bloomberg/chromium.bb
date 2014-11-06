@@ -23,6 +23,9 @@ from chromite.lib import binpkg
 from chromite.lib import osutils
 from chromite.lib import portage_util
 
+import mock
+
+
 # pylint: disable=E1120,W0212,R0904
 PUBLIC_PACKAGES = [{'CPV': 'gtk+/public1', 'SHA1': '1', 'MTIME': '1'},
                    {'CPV': 'gtk+/public2', 'SHA1': '2',
@@ -109,16 +112,14 @@ class TestUpdateFile(cros_test_lib.TempDirTestCase):
         os.remove(non_existent_file)
 
 
-class TestPrebuilt(cros_test_lib.MoxTestCase):
+class TestPrebuilt(cros_test_lib.MockTestCase):
   """Tests for Prebuilt logic."""
 
   def testGenerateUploadDict(self):
     base_local_path = '/b/cbuild/build/chroot/build/x86-dogfood/'
     gs_bucket_path = 'gs://chromeos-prebuilt/host/version'
     local_path = os.path.join(base_local_path, 'public1.tbz2')
-    self.mox.StubOutWithMock(prebuilt.os.path, 'exists')
-    prebuilt.os.path.exists(local_path).AndReturn(True)
-    self.mox.ReplayAll()
+    self.PatchObject(prebuilt.os.path, 'exists', return_true=True)
     pkgs = [{ 'CPV': 'public1' }]
     result = prebuilt.GenerateUploadDict(base_local_path, gs_bucket_path, pkgs)
     expected = { local_path: gs_bucket_path + '/public1.tbz2' }
@@ -185,13 +186,11 @@ class TestPopulateDuplicateDB(TestPkgIndex):
     self.assertRaises(KeyError, self.pkgindex._PopulateDuplicateDB, self.db, 0)
 
 
-class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase, TestPkgIndex):
+class TestResolveDuplicateUploads(cros_test_lib.MockTestCase, TestPkgIndex):
   """Tests for the ResolveDuplicateUploads function."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(binpkg.time, 'time')
-    binpkg.time.time().AndReturn(binpkg.TWO_WEEKS)
-    self.mox.ReplayAll()
+    self.PatchObject(binpkg.time, 'time', return_value=binpkg.TWO_WEEKS)
     self.db = {}
     self.dup = SimplePackageIndex()
     self.expected_pkgindex = SimplePackageIndex()
@@ -257,14 +256,12 @@ class TestResolveDuplicateUploads(cros_test_lib.MoxTestCase, TestPkgIndex):
     self.assertEqual(self.pkgindex.packages, self.expected_pkgindex.packages)
 
 
-class TestWritePackageIndex(cros_test_lib.MoxTestCase, TestPkgIndex):
+class TestWritePackageIndex(cros_test_lib.MockTestCase, TestPkgIndex):
   """Tests for the WriteToNamedTemporaryFile function."""
 
   def testSimple(self):
     """Test simple call of WriteToNamedTemporaryFile()"""
-    self.mox.StubOutWithMock(self.pkgindex, 'Write')
-    self.pkgindex.Write(mox.IgnoreArg())
-    self.mox.ReplayAll()
+    self.PatchObject(self.pkgindex, 'Write')
     f = self.pkgindex.WriteToNamedTemporaryFile()
     self.assertEqual(f.read(), '')
 
@@ -444,12 +441,15 @@ class TestMain(cros_test_lib.MoxTestCase):
     prebuilt.main([])
 
 
-class TestSdk(cros_test_lib.MoxTestCase):
+class TestSdk(cros_test_lib.MockTestCase):
   """Test logic related to uploading SDK binaries"""
 
   def setUp(self):
-    self.mox.StubOutWithMock(prebuilt, '_GsUpload')
-    self.mox.StubOutWithMock(prebuilt, 'UpdateBinhostConfFile')
+    self.PatchObject(prebuilt, '_GsUpload',
+                     side_effect=Exception('should not get called'))
+    self.PatchObject(prebuilt, 'UpdateBinhostConfFile',
+                     side_effect=Exception('should not get called'))
+    self.upload_mock = self.PatchObject(prebuilt.PrebuiltUploader, '_Upload')
 
     self.acl = 'magic-acl'
 
@@ -458,24 +458,27 @@ class TestSdk(cros_test_lib.MoxTestCase):
         'gs://foo', self.acl, 'prebuilt', [], '/', [],
         False, 'foo', False, 'x86-foo', [], 'chroot-1234')
 
-  def testSdkUpload(self, cb=lambda:None, tc_tarballs=(),
-                    tc_upload_path=None):
+  def testSdkUpload(self, tc_tarballs=(), tc_upload_path=None):
     """Make sure we can upload just an SDK tarball"""
     tar = 'sdk.tar.xz'
     ver = '1234'
     vtar = 'cros-sdk-%s.tar.xz' % ver
 
-    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, '%s.Manifest' % tar,
-                       'gs://chromiumos-sdk/%s.Manifest' % vtar)
-    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, tar,
-                       'gs://chromiumos-sdk/%s' % vtar)
-    cb()
-    prebuilt._GsUpload(mox.IgnoreArg(), self.acl, mox.IgnoreArg(),
-                       'gs://chromiumos-sdk/cros-sdk-latest.conf')
-    self.mox.ReplayAll()
+    calls = [
+        mock.call('%s.Manifest' % tar,
+                  'gs://chromiumos-sdk/%s.Manifest' % vtar),
+        mock.call(tar, 'gs://chromiumos-sdk/%s' % vtar),
+    ]
+    for tc in tc_tarballs:
+      tc = tc.split(':')
+      calls.append(mock.call(
+          tc[1], ('gs://chromiumos-sdk/' + tc_upload_path) % {'target': tc[0]}))
+    calls.append(mock.call(
+        mock.ANY, 'gs://chromiumos-sdk/cros-sdk-latest.conf'))
 
     self.uploader._UploadSdkTarball('amd64-host', '',
                                     tar, tc_tarballs, tc_upload_path)
+    self.upload_mock.assert_has_calls(calls)
 
   def testTarballUpload(self):
     """Make sure processing of toolchain tarballs works"""
@@ -484,13 +487,7 @@ class TestSdk(cros_test_lib.MoxTestCase):
         'arm-none:/some/arm.tar.xz',
     )
     tc_upload_path = '1994/04/%(target)s-1994.04.02.tar.xz'
-    def cb():
-      for tc in tc_tarballs:
-        tc = tc.split(':')
-        prebuilt._GsUpload(
-            mox.IgnoreArg(), self.acl, tc[1],
-            ('gs://chromiumos-sdk/' + tc_upload_path) % {'target': tc[0]})
-    self.testSdkUpload(cb, tc_tarballs, tc_upload_path)
+    self.testSdkUpload(tc_tarballs, tc_upload_path)
 
 
 if __name__ == '__main__':

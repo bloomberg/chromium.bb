@@ -100,7 +100,7 @@ class GdataLibTest(cros_test_lib.OutputTestCase):
       self.assertEquals(expected, gdata_lib.ScrubValFromSS(val))
 
 
-class CredsTest(cros_test_lib.MoxOutputTestCase):
+class CredsTest(cros_test_lib.MockOutputTestCase):
   """Tests related to user credentials."""
 
   USER = 'somedude@chromium.org'
@@ -179,12 +179,10 @@ class CredsTest(cros_test_lib.MoxOutputTestCase):
 
   def testSetCredsNoPassword(self):
     # Add test-specific mocks/stubs
-    self.mox.StubOutWithMock(getpass, 'getpass')
+    self.PatchObject(getpass, 'getpass', return_value=self.PASSWORD)
 
     # This is the replay script for the test.
     creds = gdata_lib.Creds()
-    getpass.getpass(mox.IgnoreArg()).AndReturn(self.PASSWORD)
-    self.mox.ReplayAll()
 
     # This is the test verification.
     creds.SetCreds(self.USER)

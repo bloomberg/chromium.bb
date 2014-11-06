@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import json
 import os
 import sys
@@ -22,7 +21,7 @@ from chromite.lib import portage_util
 
 
 # pylint: disable=R0901
-class SDKStageTest(generic_stages_unittest.AbstractStageTest):
+class SDKPackageStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests SDK package and Manifest creation."""
   fake_packages = [('cat1/package', '1'), ('cat1/package', '2'),
                    ('cat2/package', '3'), ('cat2/package', '4')]
@@ -55,19 +54,14 @@ class SDKStageTest(generic_stages_unittest.AbstractStageTest):
     fake_tarball = os.path.join(self.build_root, 'built-sdk.tar.xz')
     fake_manifest = os.path.join(self.build_root,
                                  'built-sdk.tar.xz.Manifest')
-    self.mox.StubOutWithMock(portage_util, 'ListInstalledPackages')
-    self.mox.StubOutWithMock(sdk_stages.SDKPackageStage,
-                             'CreateRedistributableToolchains')
 
-    portage_util.ListInstalledPackages(self.fake_chroot).AndReturn(
-        self.fake_packages)
+    self.PatchObject(portage_util, 'ListInstalledPackages',
+                     return_value=self.fake_packages)
     # This code has its own unit tests, so no need to go testing it here.
-    # pylint: disable=E1120
-    sdk_stages.SDKPackageStage.CreateRedistributableToolchains(mox.IgnoreArg())
+    self.PatchObject(sdk_stages.SDKPackageStage,
+                     'CreateRedistributableToolchains')
 
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
 
     # Check tarball for the correct contents.
     output = cros_build_lib.RunCommand(
@@ -77,9 +71,8 @@ class SDKStageTest(generic_stages_unittest.AbstractStageTest):
     # much from all other lines.
     stripchars = len(output[0]) - 1
     tar_lines = [x[stripchars:] for x in output]
-    # TODO(ferringb): replace with assertIn.
-    self.assertFalse('/build/amd64-host/' in tar_lines)
-    self.assertTrue('/file' in tar_lines)
+    self.assertNotIn('/build/amd64-host/', tar_lines)
+    self.assertIn('/file', tar_lines)
     # Verify manifest contents.
     real_json_data = json.loads(osutils.ReadFile(fake_manifest))
     self.assertEqual(real_json_data['packages'],

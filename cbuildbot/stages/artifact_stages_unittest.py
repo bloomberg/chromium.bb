@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import argparse
-import mox
 import os
 import sys
 
@@ -32,6 +31,10 @@ from chromite.lib import partial_mock
 
 from chromite.cbuildbot.stages.generic_stages_unittest import patch
 from chromite.cbuildbot.stages.generic_stages_unittest import patches
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 
 DEFAULT_CHROME_BRANCH = '27'
@@ -268,7 +271,8 @@ class UploadDevInstallerPrebuiltsStageTest(
   RELEASE_TAG = 'RT'
 
   def setUp(self):
-    self.mox.StubOutWithMock(prebuilts, 'UploadDevInstallerPrebuilts')
+    self.upload_mock = self.PatchObject(
+        prebuilts, 'UploadDevInstallerPrebuilts')
 
     self.StartPatcher(BuilderRunMock())
 
@@ -290,20 +294,15 @@ class UploadDevInstallerPrebuiltsStageTest(
 
   def testDevInstallerUpload(self):
     """Basic sanity test testing uploads of dev installer prebuilts."""
-    version = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, self.RELEASE_TAG)
+    self.RunStage()
 
-    prebuilts.UploadDevInstallerPrebuilts(
+    self.upload_mock.assert_called_with(
         binhost_bucket=self._run.config.binhost_bucket,
         binhost_key=self._run.config.binhost_key,
         binhost_base_url=self._run.config.binhost_base_url,
         buildroot=self.build_root,
         board=self._current_board,
-        extra_args=mox.And(mox.IsA(list),
-                           mox.In(version)))
-
-    self.mox.ReplayAll()
-    self.RunStage()
-    self.mox.VerifyAll()
+        extra_args=mock.ANY)
 
 
 class CPEExportStageTest(generic_stages_unittest.AbstractStageTest):

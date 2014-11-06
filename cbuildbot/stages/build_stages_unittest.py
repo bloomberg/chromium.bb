@@ -158,7 +158,7 @@ class UprevStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests for the UprevStage class."""
 
   def setUp(self):
-    self.mox.StubOutWithMock(commands, 'UprevPackages')
+    self.uprev_mock = self.PatchObject(commands, 'UprevPackages')
 
     self._Prepare()
 
@@ -168,17 +168,14 @@ class UprevStageTest(generic_stages_unittest.AbstractStageTest):
   def testBuildRev(self):
     """Uprevving the build without uprevving chrome."""
     self._run.config['uprev'] = True
-    commands.UprevPackages(self.build_root, self._boards, [], enter_chroot=True)
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    self.assertTrue(self.uprev_mock.called)
 
   def testNoRev(self):
     """No paths are enabled."""
     self._run.config['uprev'] = False
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    self.assertFalse(self.uprev_mock.called)
 
 
 class AllConfigsTestCase(generic_stages_unittest.AbstractStageTest):
