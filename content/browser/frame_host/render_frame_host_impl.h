@@ -475,13 +475,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // from accessibility node id to the frame routing id of a cross-process
   // iframe.
   void UpdateCrossProcessIframeAccessibility(
-      const std::map<int32, int> node_to_frame_routing_id_map);
+      const std::map<int32, int>& node_to_frame_routing_id_map);
 
   // Update the the singleton FrameAccessibility instance with a map
   // from accessibility node id to the browser plugin instance id of a
   // guest WebContents.
   void UpdateGuestFrameAccessibility(
-      const std::map<int32, int> node_to_browser_plugin_instance_id_map);
+      const std::map<int32, int>& node_to_browser_plugin_instance_id_map);
 
   // Informs the content client that geolocation permissions were used.
   void DidUseGeolocationPermission();

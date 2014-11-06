@@ -1122,7 +1122,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       // Get the frame routing ids from out-of-process iframes and
       // browser plugin instance ids from guests and update the mappings in
       // FrameAccessibility.
-      for (unsigned int i = 0; i < params.size(); ++i) {
+      for (size_t i = 0; i < params.size(); ++i) {
         const AccessibilityHostMsg_EventParams& param = params[i];
         UpdateCrossProcessIframeAccessibility(
             param.node_to_frame_routing_id_map);
@@ -1513,15 +1513,12 @@ void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
 }
 
 void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(
-    const std::map<int32, int> node_to_frame_routing_id_map) {
-  std::map<int32, int>::const_iterator iter;
-  for (iter = node_to_frame_routing_id_map.begin();
-       iter != node_to_frame_routing_id_map.end();
-       ++iter) {
+    const std::map<int32, int>& node_to_frame_routing_id_map) {
+  for (const auto& iter : node_to_frame_routing_id_map) {
     // This is the id of the accessibility node that has a child frame.
-    int32 node_id = iter->first;
+    int32 node_id = iter.first;
     // The routing id from either a RenderFrame or a RenderFrameProxy.
-    int frame_routing_id = iter->second;
+    int frame_routing_id = iter.second;
 
     FrameTree* frame_tree = frame_tree_node()->frame_tree();
     FrameTreeNode* child_frame_tree_node = frame_tree->FindByRoutingID(
@@ -1534,15 +1531,12 @@ void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(
 }
 
 void RenderFrameHostImpl::UpdateGuestFrameAccessibility(
-    const std::map<int32, int> node_to_browser_plugin_instance_id_map) {
-  std::map<int32, int>::const_iterator iter;
-  for (iter = node_to_browser_plugin_instance_id_map.begin();
-       iter != node_to_browser_plugin_instance_id_map.end();
-       ++iter) {
+    const std::map<int32, int>& node_to_browser_plugin_instance_id_map) {
+  for (const auto& iter : node_to_browser_plugin_instance_id_map) {
     // This is the id of the accessibility node that hosts a plugin.
-    int32 node_id = iter->first;
+    int32 node_id = iter.first;
     // The id of the browser plugin.
-    int browser_plugin_instance_id = iter->second;
+    int browser_plugin_instance_id = iter.second;
     FrameAccessibility::GetInstance()->AddGuestWebContents(
         this, node_id, browser_plugin_instance_id);
   }
