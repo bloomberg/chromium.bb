@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_base_screen_delegate.h"

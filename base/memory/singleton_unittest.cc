@@ -4,7 +4,6 @@
 
 #include "base/at_exit.h"
 #include "base/memory/singleton.h"
-#include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

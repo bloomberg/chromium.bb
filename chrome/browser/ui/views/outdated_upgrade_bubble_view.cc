@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/outdated_upgrade_bubble_view.h"
 
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"

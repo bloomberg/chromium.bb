@@ -9,7 +9,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestWithTempDir : public testing::Test {

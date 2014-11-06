@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/media_galleries/pmp_constants.h"

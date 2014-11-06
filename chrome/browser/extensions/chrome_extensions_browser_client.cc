@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/version.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"

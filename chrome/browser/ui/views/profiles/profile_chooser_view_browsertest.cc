@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/profiles/profile_chooser_view.h"
 
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"

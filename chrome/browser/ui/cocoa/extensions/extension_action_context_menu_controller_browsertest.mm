@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
-#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_action.h"

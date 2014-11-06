@@ -4,7 +4,6 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/importer/firefox_profile_lock.h"

@@ -7,7 +7,6 @@
 #include <set>
 
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "chromeos/dbus/cros_disks_client.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "storage/browser/fileapi/external_mount_points.h"

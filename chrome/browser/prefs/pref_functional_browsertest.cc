@@ -4,7 +4,6 @@
 
 #include <string>
 
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"

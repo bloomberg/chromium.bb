@@ -7,7 +7,6 @@
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
-#include "base/path_service.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"

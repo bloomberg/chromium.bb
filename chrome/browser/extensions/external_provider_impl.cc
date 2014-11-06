@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/metrics/field_trial.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "base/version.h"

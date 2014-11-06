@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/guid.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
