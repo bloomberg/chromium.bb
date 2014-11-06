@@ -127,7 +127,9 @@ v8::Local<v8::Script> V8ScriptRunner::compileScript(v8::Handle<v8::String> code,
         const v8::ScriptCompiler::CachedData* newCachedData = streamer->source()->GetCachedData();
         if (newCachedData) {
             resource->clearCachedMetadata();
-            resource->setCachedMetadata(streamer->cachedDataType(), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length);
+            // Temporarily disable cached metadata for streaming; it's
+            // producing broken data. FIXME: enable it again.
+            // resource->setCachedMetadata(streamer->cachedDataType(), reinterpret_cast<const char*>(newCachedData->data), newCachedData->length);
         }
     } else if (!resource || !resource->url().protocolIsInHTTPFamily() || code->Length() < 1024) {
         v8::ScriptCompiler::Source source(code, origin);

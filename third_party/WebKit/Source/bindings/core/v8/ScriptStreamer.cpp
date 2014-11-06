@@ -506,7 +506,8 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, Settings* set
         return false;
 
     ScriptResource* resource = script.resource();
-    ASSERT(!resource->isLoaded());
+    if (resource->isLoaded())
+        return false;
     if (!resource->url().protocolIsInHTTPFamily())
         return false;
     if (resource->resourceToRevalidate()) {
