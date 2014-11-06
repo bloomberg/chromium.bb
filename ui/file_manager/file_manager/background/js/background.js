@@ -46,6 +46,28 @@ function FileBrowserBackground() {
   this.fileOperationManager = new FileOperationManager();
 
   /**
+   * Manages loading of import history necessary for decorating files
+   * in some views and integral to local dedupling files during the
+   * cloud import process.
+   *
+   * @type {HistoryLoader}
+   */
+  this.historyLoader = null;
+
+  chrome.commandLinePrivate.hasSwitch(
+      'enable-cloud-backup',
+      /**
+       * @param {boolean} enabled
+       * @this {!FileBrowserBackground}
+       */
+      function(enabled) {
+        if (enabled) {
+          this.historyLoader = new SynchronizedHistoryLoader(
+              new ChromeSyncFileEntryProvider());
+        }
+      }.bind(this));
+
+  /**
    * Event handler for progress center.
    * @type {FileOperationHandler}
    * @private

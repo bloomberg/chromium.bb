@@ -1,7 +1,6 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-'use strict';
 
 /** @const {string} */
 var FILE_LAST_MODIFIED = new Date("Dec 4 1968").toString();
@@ -19,7 +18,7 @@ var GOOGLE_DRIVE = 'Google Drive';
  * Space Cloud: Your source for interstellar cloud storage.
  * @const {string}
  */
-var SPACE_CLOUD = 'Space Cloud';
+var SPACE_CAMP = 'Space Camp';
 
 /** @type {!MockFileSystem|undefined} */
 var testFileSystem;
@@ -31,7 +30,7 @@ var testFileEntry;
 var storage;
 
 /** @type {!Promise.<ImportHistory>|undefined} */
-var historyLoader;
+var historyProvider;
 
 // Set up the test components.
 function setUp() {
@@ -44,7 +43,187 @@ function setUp() {
       });
 
   storage = new TestRecordStorage();
-  historyLoader = ImportHistory.load(storage);
+
+  var history = new ImportHistory(storage);
+  historyProvider = history.refresh();
+}
+
+function testHistoryWasImportedFalseForUnknownEntry(callback) {
+  // TestRecordWriter is pre-configured with a Space Cloud entry
+  // but not for this file.
+  historyProvider.then(
+      function(history) {
+        history.wasImported(testFileEntry, SPACE_CAMP).then(
+          function(result) {
+            callback(/* error */ result);
+          },
+          callback.bind(null, true));
+      },
+      callback.bind(null, true))
+  .catch(handleError.bind(null, callback));
+}
+
+function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
+  // TestRecordWriter is pre-configured with this entry.
+  historyProvider.then(
+      function(history) {
+        history.wasImported(testFileEntry, GOOGLE_DRIVE).then(
+          function(result) {
+            callback(/* error */ !result);
+          },
+          callback.bind(null, true));
+      },
+      callback.bind(null, true))
+  .catch(handleError.bind(null, callback));
+}
+
+function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
+  historyProvider.then(
+      function(history) {
+        history.markImported(testFileEntry, SPACE_CAMP).then(
+            function() {
+              history.wasImported(testFileEntry, SPACE_CAMP).then(
+                  function(result) {
+                    callback(/* error */ !result);
+                  });
+            },
+            callback.bind(null, true));
+      },
+      callback.bind(null, true))
+  .catch(handleError.bind(null, callback));
+}
+
+function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
+  createRealStorage('recordStorageTest.data')
+      .then(
+          function(storage) {
+            storage.write(['abc', '123']).then(
+                function() {
+                  storage.readAll().then(
+                      function(records) {
+                        callback(/* error */ records.length != 1);
+                      },
+                      callback);
+                });
+            },
+            callback)
+      .catch(handleError.bind(null, callback));
+}
+
+function testHistoryLoaderIntegration(callback) {
+
+  /** @type {!SyncFileEntryProvider|undefined} */
+  var fileProvider;
+
+  /** @type {!HistoryLoader|undefined} */
+  var loader;
+
+  /** @type {!ImportHistory|undefined} */
+  var history;
+
+  /** @type {!TestSyncFileEntryProvider|undefined} */
+  var syncFileProvider;
+
+  createFileEntry('historyLoaderTest.data')
+      .then(
+          /**
+           * @param  {!FileEntry} fileEntry
+           * @return {!Promise.<!<Array.<!ImportHistory>>}
+           */
+          function(fileEntry) {
+            syncFileProvider = new TestSyncFileEntryProvider(fileEntry);
+            loader = new SynchronizedHistoryLoader(syncFileProvider);
+            // Used to write new data to the "sync" file...data to be
+            // refreshed by the the non-remote history instance.
+            var remoteLoader = new SynchronizedHistoryLoader(
+                new TestSyncFileEntryProvider(fileEntry));
+
+            var promises = [];
+            promises.push(loader.loadHistory());
+            promises.push(remoteLoader.loadHistory());
+            return Promise.all(promises);
+          })
+      .then(
+          /**
+           * @param {!<Array.<!ImportHistory>}
+           * @return {!Promise.<?>}
+           */
+          function(histories) {
+            history = histories[0];
+            var remoteHistory = histories[1];
+            return remoteHistory.markImported(testFileEntry, SPACE_CAMP);
+          })
+      .then(
+          /**
+           * @return {!Promise.<?>} Resolves
+           *     when history has been reloaded.
+           */
+          function() {
+            syncFileProvider.fireSyncEvent();
+          })
+      .then(
+          /**
+           * @return {!Promise.<boolean>} Resolves with true if the
+           *     entry was previously marked as imported.
+           */
+          function() {
+            return history.wasImported(testFileEntry, SPACE_CAMP);
+          })
+      .then(
+          function(wasImported) {
+            callback(/* error */ !wasImported);
+          })
+      .catch(handleError.bind(null, callback));
+}
+
+/**
+ * Shared error handler.
+ * @param {function()} callback
+ * @param {*} error
+ */
+function handleError(callback, error) {
+  console.error(error && (error.stack || error) || 'Unspecified test error.');
+  callback(/* error */ true);
+}
+
+/**
+ * @param {string} fileName
+ * @return {!Promise.<!FileEntry>}
+ */
+function createRealStorage(fileName) {
+  return createFileEntry(fileName)
+      .then(
+          function(fileEntry) {
+            return new FileEntryRecordStorage(fileEntry);
+          });
+}
+
+/**
+ * Creates a *real* FileEntry in the DOM filesystem.
+ *
+ * @param {string} fileName
+ * @return {!Promise.<FileEntry>}
+ */
+function createFileEntry(fileName) {
+  return new Promise(
+      function(resolve, reject) {
+        var onFileSystemReady = function(fileSystem) {
+          fileSystem.root.getFile(
+              fileName,
+              {
+                create: true,
+                exclusive: false
+              },
+              resolve,
+              reject);
+        };
+
+        window.webkitRequestFileSystem(
+            TEMPORARY,
+            1024 * 1024,
+            onFileSystemReady,
+            reject);
+      });
 }
 
 /**
@@ -52,6 +231,7 @@ function setUp() {
  *
  * @constructor
  * @implements {RecordStorage}
+ * @struct
  */
 var TestRecordStorage = function() {
 
@@ -59,7 +239,7 @@ var TestRecordStorage = function() {
   /** @private {!Array.<!Array.<string>>} */
   this.records_ = [
     [FILE_LAST_MODIFIED + '_' + FILE_SIZE, GOOGLE_DRIVE],
-    ['99999_99999', SPACE_CLOUD]
+    ['99999_99999', SPACE_CAMP]
   ];
 
   /**
@@ -81,94 +261,45 @@ var TestRecordStorage = function() {
 };
 
 /**
- * @return {!Promise.<RecordStorage>}
+ * Test implementation of SyncFileEntryProvider.
+ *
+ * @constructor
+ * @implements {SyncFileEntryProvider}
+ * @final
+ * @struct
+ *
+ * @param {!FileEntry} fileEntry
  */
-function createRealStorage() {
-  return new Promise(
-      function(resolve, reject) {
-        var onFilesystemReady = function(fileSystem) {
-          fileSystem.root.getFile(
-              'test.data',
-              {
-                create: true,
-                exclusive: false
-              },
-              function(fileEntry) {
-                resolve(new FileEntryRecordStorage(fileEntry));
-              },
-              reject);
-        };
+var TestSyncFileEntryProvider = function(fileEntry) {
+  /** @private {!FileEntry} */
+  this.fileEntry_ = fileEntry;
 
-        window.webkitRequestFileSystem(
-            TEMPORARY,
-            1024 * 1024,
-            onFilesystemReady,
-            reject);
-      });
-}
+  /** @private {function()} */
+  this.listener_;
 
-function testRecordStorageRemembersPreviouslyWrittenRecords(callback) {
-  createRealStorage()
-      .then(
-          function(storage) {
-            storage.write(['abc', '123']).then(
-                function() {
-                  storage.readAll().then(
-                      function(records) {
-                        callback(/* error */ records.length != 1);
-                      },
-                      callback);
-                });
-            },
-            callback)
-      .catch(handleError.bind(callback));
-}
+  /**
+   * @override
+   * @this {TestSyncFileEntryProvider}
+   */
+  this.addSyncListener = function(listener) {
+    if (!!this.listener_) {
+      throw new Error('Listener already set. Unexpected reality!');
+    }
+    this.listener_ = listener;
+  };
 
-function testHistoryWasImportedFalseForUnknownEntry(callback) {
-  // TestRecordWriter is pre-configured with a Space Cloud entry
-  // but not for this file.
-  historyLoader.then(
-      function(testHistory) {
-        testHistory.wasImported(testFileEntry, SPACE_CLOUD).then(
-          function(result) {
-            callback(/* error */ result);
-          });
-      })
-  .catch(handleError.bind(callback));
-}
+  /**
+   * @override
+   * @this {TestSyncFileEntryProvider}
+   */
+  this.getSyncFileEntry = function() {
+    return Promise.resolve(this.fileEntry_);
+  };
 
-function testHistoryWasImportedTrueForKnownEntryLoadedFromStorage(callback) {
-  // TestRecordWriter is pre-configured with this entry.
-  historyLoader.then(
-      function(testHistory) {
-        testHistory.wasImported(testFileEntry, GOOGLE_DRIVE).then(
-          function(result) {
-            callback(/* error */ !result);
-          });
-      })
-  .catch(handleError.bind(callback));
-}
-
-function testHistoryWasImportedTrueForKnownEntrySetAtRuntime(callback) {
-  historyLoader.then(
-      function(testHistory) {
-        testHistory.markImported(testFileEntry, SPACE_CLOUD).then(
-            function() {
-              testHistory.wasImported(testFileEntry, SPACE_CLOUD).then(
-                  function(result) {
-                    callback(/* error */ !result);
-                  });
-            });
-      })
-  .catch(handleError.bind(callback));
-}
-
-/**
- * Shared error handler.
- * @param {function()} callback
- * @param {!Object} error
- */
-function handleError(callback, error) {
-  console.error(error.stack || error);
-  callback(/* error */ true);
-}
+  /**
+   * @this {TestSyncFileEntryProvider}
+   */
+  this.fireSyncEvent = function() {
+    this.listener_();
+  };
+};

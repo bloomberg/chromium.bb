@@ -24,6 +24,7 @@
           'drive_sync_handler.js',
           'file_operation_handler.js',
           'file_operation_manager.js',
+          'import_history.js',
           'progress_center.js',
           'test_util.js',
           'volume_manager.js',
