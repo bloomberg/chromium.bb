@@ -263,7 +263,15 @@ gbm_bo_get_handle(struct gbm_bo *bo)
 PUBLIC int
 gbm_bo_get_fd(struct gbm_bo *bo)
 {
-	return bo->gbm->fd;
+	int fd;
+
+	if (drmPrimeHandleToFD(dri->get_fd(),
+				bo->handle,
+				DRM_CLOEXEC,
+				&fd))
+		return fd;
+	else
+		return -1
 }
 
 PUBLIC void
