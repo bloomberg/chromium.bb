@@ -8511,7 +8511,7 @@ TEST_P(HttpNetworkTransactionTest,
   const AlternateProtocolInfo alternate =
       http_server_properties->GetAlternateProtocol(
           HostPortPair::FromURL(request.url));
-  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
+  EXPECT_TRUE(alternate.is_broken);
 }
 
 TEST_P(HttpNetworkTransactionTest,

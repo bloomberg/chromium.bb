@@ -67,14 +67,10 @@ void HttpStreamFactory::ProcessAlternateProtocol(
       return;
     }
 
-    protocol =
-        AlternateProtocolFromString(port_protocol_vector[1]);
+    protocol = AlternateProtocolFromString(port_protocol_vector[1]);
+
     if (IsAlternateProtocolValid(protocol) &&
         !session.IsProtocolEnabled(protocol)) {
-      protocol = ALTERNATE_PROTOCOL_BROKEN;
-    }
-
-    if (protocol == ALTERNATE_PROTOCOL_BROKEN) {
       DVLOG(1) << kAlternateProtocolHeader
                << " header has unrecognized protocol: "
                << port_protocol_vector[1];
@@ -94,7 +90,7 @@ void HttpStreamFactory::ProcessAlternateProtocol(
     const AlternateProtocolInfo existing_alternate =
         http_server_properties->GetAlternateProtocol(host_port);
     // If we think the alternate protocol is broken, don't change it.
-    if (existing_alternate.protocol == ALTERNATE_PROTOCOL_BROKEN)
+    if (existing_alternate.is_broken)
       return;
   }
 

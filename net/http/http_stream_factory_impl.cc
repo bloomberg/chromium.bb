@@ -194,7 +194,7 @@ AlternateProtocolInfo HttpStreamFactoryImpl::GetAlternateProtocolRequestFor(
 
   AlternateProtocolInfo alternate =
       http_server_properties.GetAlternateProtocol(origin);
-  if (alternate.protocol == ALTERNATE_PROTOCOL_BROKEN) {
+  if (alternate.is_broken) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN);
     return kNoAlternateProtocol;
   }

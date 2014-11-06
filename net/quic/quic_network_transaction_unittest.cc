@@ -286,7 +286,7 @@ class QuicNetworkTransactionTest
     const AlternateProtocolInfo alternate =
         session_->http_server_properties()->GetAlternateProtocol(
             HostPortPair::FromURL(request_.url));
-    EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
+    EXPECT_TRUE(alternate.is_broken);
   }
 
   void ExpectQuicAlternateProtocolMapping() {

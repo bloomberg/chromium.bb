@@ -746,11 +746,11 @@ void HttpServerPropertiesManager::UpdatePrefsOnPrefThread(
     }
 
     // Save alternate_protocol.
-    if (server_pref.alternate_protocol) {
+    const net::AlternateProtocolInfo* port_alternate_protocol =
+        server_pref.alternate_protocol;
+    if (port_alternate_protocol && !port_alternate_protocol->is_broken) {
       base::DictionaryValue* port_alternate_protocol_dict =
           new base::DictionaryValue;
-      const net::AlternateProtocolInfo* port_alternate_protocol =
-          server_pref.alternate_protocol;
       port_alternate_protocol_dict->SetInteger("port",
                                                port_alternate_protocol->port);
       const char* protocol_str =

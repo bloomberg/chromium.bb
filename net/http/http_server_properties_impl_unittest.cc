@@ -286,19 +286,18 @@ TEST_F(AlternateProtocolServerPropertiesTest, ProbabilityExcluded) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
   HostPortPair test_host_port_pair1("foo1", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair1, 443, NPN_SPDY_3, 1);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair1);
   HostPortPair test_host_port_pair2("foo2", 80);
   impl_.SetAlternateProtocol(test_host_port_pair2, 443, NPN_SPDY_3, 1);
 
   AlternateProtocolMap alternate_protocol_map(
       AlternateProtocolMap::NO_AUTO_EVICT);
-  AlternateProtocolInfo port_alternate_protocol_pair(123, NPN_SPDY_3, 1);
-  alternate_protocol_map.Put(test_host_port_pair2,
-                             port_alternate_protocol_pair);
+  AlternateProtocolInfo alternate(123, NPN_SPDY_3, 1);
+  alternate_protocol_map.Put(test_host_port_pair2, alternate);
   HostPortPair test_host_port_pair3("foo3", 80);
-  port_alternate_protocol_pair.port = 1234;
-  alternate_protocol_map.Put(test_host_port_pair3,
-                             port_alternate_protocol_pair);
+  alternate.port = 1234;
+  alternate_protocol_map.Put(test_host_port_pair3, alternate);
   impl_.InitializeAlternateProtocolServers(&alternate_protocol_map);
 
   // Verify test_host_port_pair3 is the MRU server.
@@ -311,13 +310,11 @@ TEST_F(AlternateProtocolServerPropertiesTest, Initialize) {
 
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair1));
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair2));
-  port_alternate_protocol_pair =
-      impl_.GetAlternateProtocol(test_host_port_pair1);
-  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, port_alternate_protocol_pair.protocol);
-  port_alternate_protocol_pair =
-      impl_.GetAlternateProtocol(test_host_port_pair2);
-  EXPECT_EQ(123, port_alternate_protocol_pair.port);
-  EXPECT_EQ(NPN_SPDY_3, port_alternate_protocol_pair.protocol);
+  alternate = impl_.GetAlternateProtocol(test_host_port_pair1);
+  EXPECT_TRUE(alternate.is_broken);
+  alternate = impl_.GetAlternateProtocol(test_host_port_pair2);
+  EXPECT_EQ(123, alternate.port);
+  EXPECT_EQ(NPN_SPDY_3, alternate.protocol);
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, MRUOfHasAlternateProtocol) {
@@ -365,11 +362,12 @@ TEST_F(AlternateProtocolServerPropertiesTest, MRUOfGetAlternateProtocol) {
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
   HostPortPair test_host_port_pair("foo", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3, 1);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   AlternateProtocolInfo alternate =
       impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
+  EXPECT_TRUE(alternate.is_broken);
 
   impl_.SetAlternateProtocol(
       test_host_port_pair,
@@ -377,17 +375,17 @@ TEST_F(AlternateProtocolServerPropertiesTest, SetBroken) {
       NPN_SPDY_3,
       1);
   alternate = impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol)
-      << "Second attempt should be ignored.";
+  EXPECT_TRUE(alternate.is_broken) << "Second attempt should be ignored.";
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, ClearBroken) {
   HostPortPair test_host_port_pair("foo", 80);
+  impl_.SetAlternateProtocol(test_host_port_pair, 443, NPN_SPDY_3, 1);
   impl_.SetBrokenAlternateProtocol(test_host_port_pair);
   ASSERT_TRUE(impl_.HasAlternateProtocol(test_host_port_pair));
   AlternateProtocolInfo alternate =
       impl_.GetAlternateProtocol(test_host_port_pair);
-  EXPECT_EQ(ALTERNATE_PROTOCOL_BROKEN, alternate.protocol);
+  EXPECT_TRUE(alternate.is_broken);
   impl_.ClearAlternateProtocol(test_host_port_pair);
   EXPECT_FALSE(impl_.HasAlternateProtocol(test_host_port_pair));
 }
