@@ -252,6 +252,14 @@ cr.define('options', function() {
         return true;
       };
 
+      // Open the Hotword Audio Verification app to retrain a voice model.
+      $('hotword-retrain-link').onclick = function(event) {
+        chrome.send('launchHotwordAudioVerificationApp', [true]);
+      };
+      Preferences.getInstance().addEventListener(
+          'hotword.always_on_search_enabled',
+          this.onHotwordAlwaysOnChanged_.bind(this));
+
       $('themes-gallery').onclick = function(event) {
         window.open(loadTimeData.getString('themesGalleryURL'));
         chrome.send('coreOptionsUserMetricsAction',
@@ -1186,6 +1194,25 @@ cr.define('options', function() {
     },
 
     /**
+     * Shows or hides the hotword retrain link
+     * @param {boolean} visible Whether to show the link.
+     * @private
+     */
+    setHotwordRetrainLinkVisible_: function(visible) {
+      $('hotword-retrain-link').hidden = !visible;
+    },
+
+    /**
+     * Event listener for the 'hotword always on search enabled' preference.
+     * Updates the visibility of the 'retrain' link.
+     * @param {Event} show The preference change event.
+     * @private
+     */
+    onHotwordAlwaysOnChanged_: function(event) {
+      this.setHotwordRetrainLinkVisible_(event.value.value);
+    },
+
+    /**
      * Event listener for the 'homepage is NTP' preference. Updates the label
      * next to the 'Change' button.
      * @param {Event} event The preference change event.
@@ -2066,6 +2093,7 @@ cr.define('options', function() {
     'setBluetoothState',
     'setCanSetTime',
     'setFontSize',
+    'setHotwordRetrainLinkVisible',
     'setNativeThemeButtonEnabled',
     'setNetworkPredictionValue',
     'setHighContrastCheckboxState',

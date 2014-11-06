@@ -281,6 +281,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "hotwordConfirmMessage", IDS_HOTWORD_SEARCH_PREF_DESCRIPTION },
     { "hotwordNoDSPDesc", IDS_HOTWORD_SEARCH_NO_DSP_DESCRIPTION },
     { "hotwordAlwaysOnDesc", IDS_HOTWORD_SEARCH_ALWAYS_ON_DESCRIPTION },
+    { "hotwordRetrainLink", IDS_HOTWORD_RETRAIN_LINK },
     { "hotwordAudioLoggingEnable", IDS_HOTWORD_AUDIO_LOGGING_ENABLE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
@@ -1638,6 +1639,14 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     if (HotwordService::IsExperimentalHotwordingEnabled()) {
       if (HotwordServiceFactory::IsHotwordHardwareAvailable()) {
         function_name = "BrowserOptions.showHotwordAlwaysOnSection";
+
+        // Show the retrain link if always-on is enabled.
+        if (profile->GetPrefs()->GetBoolean(
+                prefs::kHotwordAlwaysOnSearchEnabled)) {
+          web_ui()->CallJavascriptFunction(
+              "BrowserOptions.setHotwordRetrainLinkVisible",
+              base::FundamentalValue(true));
+        }
       } else {
         function_name = "BrowserOptions.showHotwordNoDspSection";
       }

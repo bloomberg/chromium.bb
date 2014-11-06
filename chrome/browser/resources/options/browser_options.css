@@ -195,6 +195,11 @@ input[type='range'] {
   -webkit-padding-start: 8px;
 }
 
+#hotword-retrain-link {
+  -webkit-padding-start: 8px;
+  text-decoration: none;
+}
+
 /* Internet settings */
 
 #network-settings {

@@ -87,10 +87,10 @@
       return;
 
     this.training_ = true;
-    if (this.launchMode_ == LaunchMode.HOTWORD_ONLY ||
-        this.launchMode_ == LaunchMode.RETRAIN) {
+    if (this.launchMode_ == LaunchMode.HOTWORD_ONLY) {
       this.trainingPagePrefix_ = 'hotword-only';
-    } else if (this.launchMode_ == LaunchMode.HOTWORD_AND_AUDIO_HISTORY) {
+    } else if (this.launchMode_ == LaunchMode.HOTWORD_AND_AUDIO_HISTORY ||
+               this.launchMode_ == LaunchMode.RETRAIN) {
       this.trainingPagePrefix_ = 'speech-training';
     }
 
@@ -196,7 +196,7 @@
     this.advanceStep();
     // If the flow begins with a a training step, then start the training flow.
     if (state.launchMode == LaunchMode.HOTWORD_ONLY ||
-        state.launchMode == LaunchMode.SPEECH_TRAINING) {
+        state.launchMode == LaunchMode.RETRAIN) {
       this.startTraining();
     }
   };
