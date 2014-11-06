@@ -15,7 +15,7 @@
 #   output:
 #     File name of file to write.
 #
-#   extra_args:
+#   extra_args (optional):
 #     Extra arguments to pass to version.py.
 #
 #   visibility (optional)

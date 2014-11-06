@@ -295,8 +295,8 @@
           'action': [
             'python',
             '<(version_py_path)',
-            '-e', 'VERSION_FULL="<(version_full)"',
             '-f', '<(lastchange_path)',
+            '-f', '<(version_path)',
             'common/version.h.in',
             '<@(_outputs)',
           ],

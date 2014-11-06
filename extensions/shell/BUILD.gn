@@ -2,6 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Technically, this directory should not depend on files from src/chrome, but
+# that's where the VERSION file is. This  should probably all be moved to
+# src/build.
+import("//chrome/version.gni")
 import("//tools/grit/grit_rule.gni")
 
 assert(enable_extensions)
@@ -130,38 +134,20 @@ source_set("app_shell_lib") {
 }
 
 if (!(is_chromeos && !use_ozone)) {
-    executable("app_shell") {
+  executable("app_shell") {
     # testonly because :app_shell_lib is testonly. See :app_shell_lib comment.
     testonly = true
-    deps = [
-        ":app_shell_lib",
-        "//extensions:shell_and_test_pak",
+    sources = [
+      "app/shell_main.cc",
     ]
-    sources = [ "app/shell_main.cc" ]
-    }
+    deps = [
+      ":app_shell_lib",
+      "//extensions:shell_and_test_pak",
+    ]
+  }
 }
 
-action("version_header") {
-  script = "//build/util/version.py"
-  version_path = "//chrome/VERSION"
-  lastchange_path = "//build/util/LASTCHANGE"
-  version_h = "common/version.h.in"
-  version_full = exec_script(
-    script,
-    ["-f", rebase_path(version_path, root_build_dir),
-     "-t", "@MAJOR@.@MINOR@.@BUILD@.@PATCH@"],
-    "trim string",
-    ["VERSION"])
-  inputs = [
-    lastchange_path,
-    version_path,
-    version_h
-  ]
-  outputs = [ "$target_gen_dir/common/version.h" ]
-  args = [
-    "-f", rebase_path(lastchange_path, root_build_dir),
-    "-e", "VERSION_FULL=\"$version_full\"",
-    rebase_path(version_h, root_build_dir),
-    rebase_path("$target_gen_dir/common/version.h")
-  ]
+process_version("version_header") {
+  source = "common/version.h.in"
+  output = "$target_gen_dir/common/version.h"
 }
