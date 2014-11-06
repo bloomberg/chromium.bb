@@ -878,15 +878,6 @@ class PreCQSyncStage(SyncStage):
     if len(self.pool.changes) == 0:
       cros_build_lib.Die('No changes have been applied.')
 
-    # Mark changes that are not passed with pre-cq status inflight.
-    _, db = self._run.GetCIDBHandle()
-    if db:
-      action_history = db.GetActionsForChanges(self.pool.changes)
-      for change in self.pool.changes:
-        current_status = clactions.GetCLPreCQStatus(change, action_history)
-        if current_status != constants.CL_STATUS_PASSED:
-          self.pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_INFLIGHT)
-
 
 class PreCQLauncherStage(SyncStage):
   """Scans for CLs and automatically launches Pre-CQ jobs to test them."""
