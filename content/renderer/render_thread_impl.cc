@@ -93,6 +93,7 @@
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
@@ -439,6 +440,7 @@ void RenderThreadImpl::Init() {
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
       thread_safe_sender()));
+  renderer_scheduler_ = RendererScheduler::Create();
   embedded_worker_dispatcher_.reset(new EmbeddedWorkerDispatcher());
 
   media_stream_center_ = NULL;
@@ -843,7 +845,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
 
-  blink_platform_impl_.reset(new RendererBlinkPlatformImpl);
+  blink_platform_impl_.reset(
+      new RendererBlinkPlatformImpl(renderer_scheduler_.get()));
   blink::initialize(blink_platform_impl_.get());
 
   v8::Isolate* isolate = blink::mainThreadIsolate();
@@ -854,7 +857,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  main_thread_compositor_task_runner_ = base::MessageLoopProxy::current();
+  main_thread_compositor_task_runner_ =
+      renderer_scheduler()->CompositorTaskRunner();
 
   bool enable = !command_line.HasSwitch(switches::kDisableThreadedCompositing);
   if (enable) {

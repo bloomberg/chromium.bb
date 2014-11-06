@@ -35,6 +35,7 @@ class MockRenderProcess;
 class PageState;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImplNoSandboxImpl;
+class RendererScheduler;
 class RenderView;
 
 class RenderViewTest : public testing::Test {
@@ -48,6 +49,7 @@ class RenderViewTest : public testing::Test {
     blink::Platform* Get();
 
    private:
+    scoped_ptr<RendererScheduler> renderer_scheduler_;
     scoped_ptr<RendererBlinkPlatformImplNoSandboxImpl> blink_platform_impl_;
   };
 

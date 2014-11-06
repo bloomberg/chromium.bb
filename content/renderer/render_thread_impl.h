@@ -98,6 +98,7 @@ class PeerConnectionTracker;
 class RenderProcessObserver;
 class RendererBlinkPlatformImpl;
 class RendererDemuxerAndroid;
+class RendererScheduler;
 class VideoCaptureImplManager;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
@@ -191,6 +192,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   }
   void set_layout_test_mode(bool layout_test_mode) {
     layout_test_mode_ = layout_test_mode;
+  }
+
+  RendererScheduler* renderer_scheduler() const {
+    DCHECK(renderer_scheduler_);
+    return renderer_scheduler_.get();
   }
 
   RendererBlinkPlatformImpl* blink_platform_impl() const {
@@ -453,6 +459,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
   scoped_ptr<DomStorageDispatcher> dom_storage_dispatcher_;
   scoped_ptr<IndexedDBDispatcher> main_thread_indexed_db_dispatcher_;
+  scoped_ptr<RendererScheduler> renderer_scheduler_;
   scoped_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   scoped_ptr<EmbeddedWorkerDispatcher> embedded_worker_dispatcher_;
 

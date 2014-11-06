@@ -51,6 +51,8 @@
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_client.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
+#include "content/renderer/scheduler/web_scheduler_impl.h"
 #include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
@@ -225,12 +227,15 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 //------------------------------------------------------------------------------
 
-RendererBlinkPlatformImpl::RendererBlinkPlatformImpl()
-    : clipboard_client_(new RendererClipboardClient),
+RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
+    RendererScheduler* renderer_scheduler)
+    : web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
+      clipboard_client_(new RendererClipboardClient),
       clipboard_(new WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
       sudden_termination_disables_(0),
       plugin_refresh_allowed_(true),
+      default_task_runner_(renderer_scheduler->DefaultTaskRunner()),
       child_thread_loop_(base::MessageLoopProxy::current()),
       web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       bluetooth_(new WebBluetoothImpl) {
@@ -257,6 +262,15 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 }
 
 //------------------------------------------------------------------------------
+
+void RendererBlinkPlatformImpl::callOnMainThread(void (*func)(void*),
+                                                 void* context) {
+  default_task_runner_->PostTask(FROM_HERE, base::Bind(func, context));
+}
+
+blink::WebScheduler* RendererBlinkPlatformImpl::scheduler() {
+  return web_scheduler_.get();
+}
 
 blink::WebClipboard* RendererBlinkPlatformImpl::clipboard() {
   blink::WebClipboard* clipboard =

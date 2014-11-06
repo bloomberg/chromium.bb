@@ -726,6 +726,7 @@
         'renderer/pepper/v8_var_converter_unittest.cc',
         'renderer/render_thread_impl_unittest.cc',
         'renderer/render_widget_unittest.cc',
+        'renderer/scheduler/renderer_scheduler_impl_unittest.cc',
         'renderer/scheduler/renderer_task_queue_selector_unittest.cc',
         'renderer/scheduler/task_queue_manager_unittest.cc',
         'renderer/screen_orientation/screen_orientation_dispatcher_unittest.cc',

@@ -43,22 +43,25 @@ class DeviceOrientationEventPump;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardClient;
+class RendererScheduler;
 class RenderView;
 class ThreadSafeSender;
 class WebBluetoothImpl;
 class WebClipboardImpl;
 class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
+class WebSchedulerImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImpl();
+  RendererBlinkPlatformImpl(RendererScheduler* renderer_scheduler);
   virtual ~RendererBlinkPlatformImpl();
 
   void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
     plugin_refresh_allowed_ = plugin_refresh_allowed;
   }
   // Platform methods:
+  virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebFileUtilities* fileUtilities();
@@ -151,6 +154,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   virtual blink::WebBluetooth* bluetooth();
   virtual void vibrate(unsigned int milliseconds);
   virtual void cancelVibration();
+  virtual blink::WebScheduler* scheduler();
 
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
   // with |type| to |observer|. If there was already an observer associated to
@@ -201,6 +205,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // them to the registered listener.
   void SendFakeDeviceEventDataForTesting(blink::WebPlatformEventType type);
 
+  scoped_ptr<WebSchedulerImpl> web_scheduler_;
+
   scoped_ptr<RendererClipboardClient> clipboard_client_;
   scoped_ptr<WebClipboardImpl> clipboard_;
 
@@ -232,6 +238,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
   scoped_ptr<DeviceOrientationEventPump> device_orientation_event_pump_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;

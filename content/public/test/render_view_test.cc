@@ -21,6 +21,7 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/renderer_main_platform_delegate.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
@@ -60,6 +61,9 @@ namespace content {
 class RendererBlinkPlatformImplNoSandboxImpl
     : public RendererBlinkPlatformImpl {
  public:
+  RendererBlinkPlatformImplNoSandboxImpl(RendererScheduler* scheduler)
+      : RendererBlinkPlatformImpl(scheduler) {}
+
   virtual blink::WebSandboxSupport* sandboxSupport() {
     return NULL;
   }
@@ -67,7 +71,9 @@ class RendererBlinkPlatformImplNoSandboxImpl
 
 RenderViewTest::RendererBlinkPlatformImplNoSandbox::
     RendererBlinkPlatformImplNoSandbox() {
-  blink_platform_impl_.reset(new RendererBlinkPlatformImplNoSandboxImpl());
+  renderer_scheduler_ = RendererScheduler::Create();
+  blink_platform_impl_.reset(
+      new RendererBlinkPlatformImplNoSandboxImpl(renderer_scheduler_.get()));
 }
 
 RenderViewTest::RendererBlinkPlatformImplNoSandbox::
