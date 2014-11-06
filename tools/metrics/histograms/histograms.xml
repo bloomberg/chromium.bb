@@ -42629,9 +42629,10 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="9" label="Password sign-in: Phone not authenticated"/>
   <int value="10" label="Password sign-in: Phone locked"/>
   <int value="11" label="Password sign-in: Phone not lockable"/>
-  <int value="12" label="Password sign-in: Phone not nearby"/>
+  <int value="12" label="Password sign-in: RSSI too low"/>
   <int value="13" label="Password sign-in: Phone not supported"/>
   <int value="14" label="Password sign-in: Phone authenticated"/>
+  <int value="15" label="Password sign-in: Tx power too high"/>
 </enum>
 
 <enum name="EasyUnlockNotificationEvent" type="int">

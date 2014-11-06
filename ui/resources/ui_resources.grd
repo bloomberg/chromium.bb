@@ -270,6 +270,9 @@
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED" file="common/easy_unlock_locked.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED_HOVER" file="common/easy_unlock_locked_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED_PRESSED" file="common/easy_unlock_locked_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT" file="common/easy_unlock_locked_with_proximity_hint.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER" file="common/easy_unlock_locked_with_proximity_hint_hover.png" />
+      <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED" file="common/easy_unlock_locked_with_proximity_hint_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_SPINNER" file="common/easy_unlock_spinner.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED" file="common/easy_unlock_unlocked.png" />
       <structure type="chrome_scaled_image" name="IDR_EASY_UNLOCK_UNLOCKED_HOVER" file="common/easy_unlock_unlocked_hover.png" />

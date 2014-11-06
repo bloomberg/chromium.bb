@@ -222,11 +222,14 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
         event = chromeos::PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE;
         break;
-      case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
-        event = chromeos::PASSWORD_SIGN_IN_PHONE_NOT_NEARBY;
-        break;
       case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
         event = chromeos::PASSWORD_SIGN_IN_PHONE_UNSUPPORTED;
+        break;
+      case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+        event = chromeos::PASSWORD_SIGN_IN_RSSI_TOO_LOW;
+        break;
+      case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+        event = chromeos::PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH;
         break;
       case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
         event = chromeos::PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE;

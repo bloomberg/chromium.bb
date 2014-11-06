@@ -191,6 +191,8 @@ cr.define('login', function() {
    */
   UserPodCustomIcon.ICONS = [
     {id: 'locked', class: 'custom-icon-locked'},
+    {id: 'locked-with-proximity-hint',
+     class: 'custom-icon-locked-with-proximity-hint'},
     {id: 'unlocked', class: 'custom-icon-unlocked'},
     {id: 'hardlocked', class: 'custom-icon-hardlocked'},
     {id: 'spinner', class: 'custom-icon-spinner'}

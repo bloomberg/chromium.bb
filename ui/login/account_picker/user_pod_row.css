@@ -259,6 +259,21 @@ html[dir=rtl] .main-pane {
   background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED');
 }
 
+.custom-icon-locked-with-proximity-hint {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT');
+}
+
+.custom-icon-locked-with-proximity-hint.icon-with-tooltip:hover {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER');
+}
+
+.custom-icon-locked-with-proximity-hint.interactive-custom-icon:active {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED');
+}
+
 .custom-icon-unlocked {
   background-image: url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED');
 }

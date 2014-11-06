@@ -20,10 +20,12 @@ ScreenlockBridge::UserPodCustomIcon GetIconForState(
     case EasyUnlockScreenlockStateHandler::STATE_NO_PHONE:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_AUTHENTICATED:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_LOCKED:
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
+    case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
       return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED;
+    case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+      return ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED_WITH_PROXIMITY_HINT;
     case EasyUnlockScreenlockStateHandler::STATE_BLUETOOTH_CONNECTING:
       return ScreenlockBridge::USER_POD_CUSTOM_ICON_SPINNER;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
@@ -49,8 +51,10 @@ size_t GetTooltipResourceId(EasyUnlockScreenlockStateHandler::State state) {
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_LOCKED;
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_UNLOCKABLE;
-    case EasyUnlockScreenlockStateHandler::STATE_PHONE_NOT_NEARBY:
-      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_NOT_NEARBY;
+    case EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW;
+    case EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH:
+      return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH;
     case EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED:
       return IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_HARDLOCK_INSTRUCTIONS;
     case EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED:
@@ -64,7 +68,8 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
   return state == EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED ||
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
          state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
-         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED;
+         state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED ||
+         state == EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH;
 }
 
 }  // namespace

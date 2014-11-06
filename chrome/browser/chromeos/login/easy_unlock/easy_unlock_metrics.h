@@ -38,13 +38,17 @@ enum EasyUnlockLoginEvent {
   PASSWORD_SIGN_IN_PHONE_LOCKED = 10,
   // Password is used for sign-in because phone does not have lock screen.
   PASSWORD_SIGN_IN_PHONE_NOT_LOCKABLE = 11,
-  // Password is used for sign-in because phone is not close enough.
-  PASSWORD_SIGN_IN_PHONE_NOT_NEARBY = 12,
+  // Password is used for sign-in because phone is not close enough (roughly,
+  // at least 30 feet away).
+  PASSWORD_SIGN_IN_RSSI_TOO_LOW = 12,
   // Password is used for sign-in because phone is not supported.
   PASSWORD_SIGN_IN_PHONE_UNSUPPORTED = 13,
   // Password is used for sign-in because user types in passowrd. This is
   // unlikely to happen though.
   PASSWORD_SIGN_IN_WITH_AUTHENTICATED_PHONE = 14,
+  // Password is used for sign-in because phone is not right next to the
+  // Chromebook.
+  PASSWORD_SIGN_IN_TX_POWER_TOO_HIGH = 15,
 
   EASY_SIGN_IN_LOGIN_EVENT_COUNT  // Must be the last.
 };

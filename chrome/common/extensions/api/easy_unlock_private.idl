@@ -37,12 +37,17 @@
     // A phone eligible to unlock the device is detected, but it is not allowed
     // to unlock the device because it doesn't have lock screen enabled.
     PHONE_UNLOCKABLE,
-    // A phone eligible to unlock the device is detected, but it's not close
-    // enough to be allowed to unlock the device.
-    PHONE_NOT_NEARBY,
     // A phone eligible to unlock the device is detected, but it is not allowed
     // to unlock the device because it does not report its lock screen state.
     PHONE_UNSUPPORTED,
+    // A phone eligible to unlock the device is detected, but its received
+    // signal strength is too low, i.e. the phone is roughly more than 30 feet
+    // away, and therefore is not allowed to unlock the device.
+    RSSI_TOO_LOW,
+    // A phone eligible to unlock the device is found, but the local device's
+    // transmission power is too high, indicating that the phone is (probably)
+    // more than 1 foot away, and therefore is not allowed to unlock the device.
+    TX_POWER_TOO_HIGH,
     // The devie can be unlocked using Easy Unlock.
     AUTHENTICATED
   };

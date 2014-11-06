@@ -34,12 +34,17 @@ class EasyUnlockScreenlockStateHandler : public ScreenlockBridge::Observer {
     // A phone eligible to unlock the device is found, but does not have lock
     // screen enabled.
     STATE_PHONE_UNLOCKABLE,
-    // A phone eligible to unlock the device is found, but it's not close enough
-    // to be allowed to unlock the device.
-    STATE_PHONE_NOT_NEARBY,
     // An Easy Unlock enabled phone is found, but it is not allowed to unlock
     // the device because it does not support reporting it's lock screen state.
     STATE_PHONE_UNSUPPORTED,
+    // A phone eligible to unlock the device is found, but its received signal
+    // strength is too low, i.e. the phone is roughly more than 30 feet away,
+    // and therefore is not allowed to unlock the device.
+    STATE_RSSI_TOO_LOW,
+    // A phone eligible to unlock the device is found, but the local device's
+    // transmission power is too high, indicating that the phone is (probably)
+    // more than 1 foot away, and therefore is not allowed to unlock the device.
+    STATE_TX_POWER_TOO_HIGH,
     // The device can be unlocked using Easy Unlock.
     STATE_AUTHENTICATED
   };
