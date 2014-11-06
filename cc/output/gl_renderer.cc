@@ -2076,7 +2076,7 @@ struct TexTransformTextureProgramBinding : TextureProgramBinding {
 
 void GLRenderer::FlushTextureQuadCache() {
   // Check to see if we have anything to draw.
-  if (draw_cache_.program_id == 0)
+  if (draw_cache_.program_id == -1)
     return;
 
   // Set the correct blending mode.
@@ -2132,7 +2132,7 @@ void GLRenderer::FlushTextureQuadCache() {
                         0));
 
   // Clear the cache.
-  draw_cache_.program_id = 0;
+  draw_cache_.program_id = -1;
   draw_cache_.uv_xform_data.resize(0);
   draw_cache_.vertex_opacity_data.resize(0);
   draw_cache_.matrix_data.resize(0);
