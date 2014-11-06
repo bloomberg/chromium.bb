@@ -3,4 +3,3 @@ AXWebArea AXRoleDescription='HTML content'
     AXCheckBox AXSubrole=AXToggleButton AXRoleDescription='toggle button' AXTitle='Toggle button unpressed' AXValue='0'
     AXCheckBox AXSubrole=AXToggleButton AXRoleDescription='toggle button' AXTitle='Toggle button pressed' AXValue='1'
     AXCheckBox AXSubrole=AXToggleButton AXRoleDescription='toggle button' AXTitle='Toggle button mixed' AXValue='2'
-
