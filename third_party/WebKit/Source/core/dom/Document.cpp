@@ -2491,8 +2491,10 @@ void Document::implicitClose()
     ASSERT(!inStyleRecalc());
     if (processingLoadEvent() || !m_parser)
         return;
-    if (frame() && frame()->navigationScheduler().locationChangePending())
+    if (frame() && frame()->navigationScheduler().locationChangePending()) {
+        suppressLoadEvent();
         return;
+    }
 
     // The call to dispatchWindowLoadEvent can detach the LocalDOMWindow and cause it (and its
     // attached Document) to be destroyed.
@@ -4425,12 +4427,16 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     String resultMIMEType;
     String newSource;
     String resultEncoding;
-    if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding))
+    setParsing(true);
+    if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding)) {
+        setParsing(false);
         return;
+    }
     // FIXME: If the transform failed we should probably report an error (like Mozilla does).
     LocalFrame* ownerFrame = frame();
     processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, ownerFrame);
     InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
+    setParsing(false);
 }
 
 void Document::setTransformSource(PassOwnPtr<TransformSource> source)

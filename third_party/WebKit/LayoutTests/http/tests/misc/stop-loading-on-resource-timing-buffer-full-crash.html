@@ -1,7 +1,11 @@
 <html>
-<head>
+<body>
 <script src="/js-test-resources/js-test.js"></script>
 <script>
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 
 performance.onwebkitresourcetimingbufferfull = function() { 
   window.stop();
@@ -10,14 +14,6 @@ performance.onwebkitresourcetimingbufferfull = function() {
 };
 
 performance.webkitSetResourceTimingBufferSize(1);
-</script>
-</head>
-<body>
-<script>
-if (window.testRunner) {
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-}
 </script>
 </body>
 </html>

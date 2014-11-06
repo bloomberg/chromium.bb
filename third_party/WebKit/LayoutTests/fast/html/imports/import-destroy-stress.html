@@ -10,8 +10,8 @@ var count = parseInt(window.localStorage['count'] || '0');
 if (iteration < count) {
     debug('PASS unless crash')
     finishJSTest();
+} else {
+    window.localStorage['count'] = (count + 1).toString();
+    window.location.reload();
 }
-
-window.localStorage['count'] = (count + 1).toString();
-window.location.reload();
 </script>

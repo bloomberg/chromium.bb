@@ -2,8 +2,10 @@
 <html>
 <head>
     <script>
-        if (window.testRunner)
+        if (window.testRunner) {
             testRunner.dumpAsText();
+            testRunner.waitUntilDone();
+        }
 
         var req = new XMLHttpRequest();
         req.open("GET", "resources/endlessxml.php");
@@ -15,8 +17,7 @@
         };
         req.send(null);
 
-        if (window.testRunner)
-            testRunner.queueLoad("resources/navigation-target.html");
+        location = "resources/navigation-target.html";
     </script>
 </head>
 <body>

@@ -132,7 +132,8 @@ TEST_F(ActivityLoggerTest, ScriptElement)
         "script = document.createElement('script');"
         "script.src = 'data:text/javascript;charset=utf-8,';"
         "document.body.appendChild(script);"
-        "document.write('<body><script src=\\\'data:text/javascript;charset=utf-8,\\\'></script></body>');";
+        "document.write('<body><script src=\\\'data:text/javascript;charset=utf-8,\\\'></script></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | script | data:text/javascript;charset=utf-8,\n"
         "blinkAddElement | script | \n"
@@ -157,7 +158,8 @@ TEST_F(ActivityLoggerTest, IFrameElement)
         "iframe = document.createElement('iframe');"
         "iframe.src = 'data:text/html;charset=utf-8,';"
         "document.body.appendChild(iframe);"
-        "document.write('<body><iframe src=\\\'data:text/html;charset=utf-8,\\\'></iframe></body>');";
+        "document.write('<body><iframe src=\\\'data:text/html;charset=utf-8,\\\'></iframe></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | iframe | data:text/html;charset=utf-8,\n"
         "blinkRequestResource | Main resource | data:text/html;charset=utf-8,\n"
@@ -183,7 +185,8 @@ TEST_F(ActivityLoggerTest, AnchorElement)
         "a = document.createElement('a');"
         "a.href = 'data:text/css;charset=utf-8,';"
         "document.body.appendChild(a);"
-        "document.write('<body><a href=\\\'data:text/css;charset=utf-8,\\\'></a></body>');";
+        "document.write('<body><a href=\\\'data:text/css;charset=utf-8,\\\'></a></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | a | data:text/css;charset=utf-8,\n"
         "blinkAddElement | a | \n"
@@ -207,7 +210,8 @@ TEST_F(ActivityLoggerTest, LinkElement)
         "link.rel = 'stylesheet';"
         "link.href = 'data:text/css;charset=utf-8,';"
         "document.body.appendChild(link);"
-        "document.write('<body><link rel=\\\'stylesheet\\\' href=\\\'data:text/css;charset=utf-8,\\\'></link></body>');";
+        "document.write('<body><link rel=\\\'stylesheet\\\' href=\\\'data:text/css;charset=utf-8,\\\'></link></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | link | stylesheet | data:text/css;charset=utf-8,\n"
         "blinkRequestResource | CSS stylesheet | data:text/css;charset=utf-8,\n"
@@ -234,7 +238,8 @@ TEST_F(ActivityLoggerTest, InputElement)
         "input.type = 'submit';"
         "input.formAction = 'data:text/html;charset=utf-8,';"
         "document.body.appendChild(input);"
-        "document.write('<body><input type=\\\'submit\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></input></body>');";
+        "document.write('<body><input type=\\\'submit\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></input></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | input | submit | data:text/html;charset=utf-8,\n"
         "blinkAddElement | input |  | \n"
@@ -259,7 +264,8 @@ TEST_F(ActivityLoggerTest, ButtonElement)
         "button.formMethod = 'post';"
         "button.formAction = 'data:text/html;charset=utf-8,';"
         "document.body.appendChild(button);"
-        "document.write('<body><button type=\\\'submit\\\' formmethod=\\\'post\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></button></body>');";
+        "document.write('<body><button type=\\\'submit\\\' formmethod=\\\'post\\\' formaction=\\\'data:text/html;charset=utf-8,\\\'></button></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | button | submit | post | data:text/html;charset=utf-8,\n"
         "blinkAddElement | button |  |  | \n"
@@ -283,7 +289,8 @@ TEST_F(ActivityLoggerTest, FormElement)
         "form.method = 'post';"
         "form.action = 'data:text/html;charset=utf-8,';"
         "document.body.appendChild(form);"
-        "document.write('<body><form method=\\\'post\\\' action=\\\'data:text/html;charset=utf-8,\\\'></form></body>');";
+        "document.write('<body><form method=\\\'post\\\' action=\\\'data:text/html;charset=utf-8,\\\'></form></body>');"
+        "document.close();";
     const char* expectedActivities =
         "blinkAddElement | form | post | data:text/html;charset=utf-8,\n"
         "blinkAddElement | form |  | \n"
@@ -499,6 +506,7 @@ TEST_F(ActivityLoggerTest, RequestResource)
         "document.write('<img src=\\\'data:text/html;charset=utf-8,B\\\'></img>');"
         "document.write('<link rel=\\\'stylesheet\\\' href=\\\'data:text/html;charset=utf-8,C\\\'></link>');"
         "document.write('<script src=\\\'data:text/html;charset=utf-8,D\\\'></script>');"
+        "document.close();"
         "var xhr = new XMLHttpRequest(); xhr.open('GET', 'data:text/html;charset=utf-8,E'); xhr.send();";
     const char* expectedActivities =
         "blinkAddElement | iframe | data:text/html;charset=utf-8,A\n"

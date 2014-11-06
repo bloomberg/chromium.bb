@@ -41,9 +41,6 @@ window.onload = function()
     shouldBeTrue("canGet('targetWindow.toString')");
     shouldBeFalse("canSet('targetWindow.toString')");
     shouldBe("toString('targetWindow', '')", "'[object Window]'");
-
-    // Work around DRT bug that causes subsequent tests to fail.
-    window.stop();
 }
 </script>
 </body>

@@ -109,6 +109,8 @@ private:
 
     bool responseNeedsAccessControlCheck() const;
 
+    void didComplete();
+
     ResourceRequest& applyOptions(ResourceRequest&) const;
 
     OwnPtr<blink::WebURLLoader> m_loader;

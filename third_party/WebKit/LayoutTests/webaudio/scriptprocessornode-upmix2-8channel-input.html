@@ -21,14 +21,11 @@ var sourceChannels = 2;
 var inputChannels = 8;
 var outputChannels = 6;
 
+window.jsTestIsAsync = true;
+
 function runTest() {
-    if (window.testRunner) {
+    if (window.testRunner)
         testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
-    window.jsTestIsAsync = true;
-
     runJSNodeTest();
 }
 

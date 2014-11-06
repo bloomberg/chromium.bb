@@ -28,6 +28,15 @@
         </p>
         <p><br/><a href="javascript:history.back()">Back</a></p>
     </div>
+    <script src="../../resources/run-after-display.js"></script>
+    <script>
+    if (window.testRunner)
+        testRunner.waitUntilDone();
+    runAfterDisplay(function() {
+        if (window.testRunner)
+            testRunner.notifyDone();
+    });
+    </script>
 </body>
 </html>
 

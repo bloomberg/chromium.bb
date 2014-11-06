@@ -4,8 +4,4 @@ This test passes if the "safe" HTML5 import occurs, because XSSAuditor gives a p
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-
 Page rendered here.
-
-
-

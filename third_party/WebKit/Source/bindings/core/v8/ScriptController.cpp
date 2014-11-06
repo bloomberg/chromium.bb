@@ -66,6 +66,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/ProgressTracker.h"
 #include "core/plugins/PluginView.h"
 #include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
@@ -541,6 +542,9 @@ bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url)
     if (!m_frame->page()
         || !m_frame->document()->contentSecurityPolicy()->allowJavaScriptURLs(m_frame->document()->url(), eventHandlerPosition().m_line))
         return true;
+
+    if (m_frame->loader().stateMachine()->isDisplayingInitialEmptyDocument())
+        m_frame->loader().progress().progressStarted();
 
     // We need to hold onto the LocalFrame here because executing script can
     // destroy the frame.
