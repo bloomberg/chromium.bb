@@ -7,7 +7,6 @@
 
     "core-ajax": "Polymer/core-ajax#0.3.5",
     "core-animated-pages": "Polymer/core-animated-pages#0.3.5",
-    "core-animation": "Polymer/core-animation#0.3.5",
     "core-collapse": "Polymer/core-collapse#0.3.5",
     "core-component-page": "Polymer/core-component-page#0.3.5",
     "core-drag-drop": "Polymer/core-drag-drop#0.3.5",
@@ -56,7 +55,6 @@
     "paper-icon-button": "Polymer/paper-icon-button#0.3.5",
     "paper-input": "Polymer/paper-input#0.3.5",
     "paper-item": "Polymer/paper-item#0.3.5",
-    "paper-menu-button": "Polymer/paper-menu-button#0.3.5",
     "paper-progress": "Polymer/paper-progress#0.3.5",
     "paper-radio-button": "Polymer/paper-radio-button#0.3.5",
     "paper-radio-group": "Polymer/paper-radio-group#0.3.5",
@@ -65,11 +63,6 @@
     "paper-slider": "Polymer/paper-slider#0.3.5",
     "paper-tabs": "Polymer/paper-tabs#0.3.5",
     "paper-toast": "Polymer/paper-toast#0.3.5",
-    "paper-toggle-button": "Polymer/paper-toggle-button#0.3.5",
-
-    "web-animations-js": "web-animations/web-animations-js#7605c531e22b9a61b4d708c0bc17793bac1cd7ff"
-  },
-  "resolutions": {
-    "web-animations-js": "7605c531e22b9a61b4d708c0bc17793bac1cd7ff"
+    "paper-toggle-button": "Polymer/paper-toggle-button#0.3.5"
   }
 }

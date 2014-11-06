@@ -12,8 +12,8 @@ This directory contains a copy of the following components which are a part of
 the Polymer project:
 -polymer
 -platform
--all core elements and their dependencies
--all paper elements and their dependencies
+-all core elements and their dependencies (except "core-animation{,-group}")
+-all paper elements and their dependencies (except "paper-menu-button")
 See bower.json for a full list of components.
 
 The version can be found in header of polymer/polymer.js. The license can

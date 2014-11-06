@@ -16,7 +16,6 @@ cd "$(dirname "$0")"
 rm -rf components components-chromium
 
 bower install
-rm -rf components/web-animations-js
 find components/core-list -type f -exec chmod -x {} \;
 
 ./extract_inline_scripts.sh components components-chromium
