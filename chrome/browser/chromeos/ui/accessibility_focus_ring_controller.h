@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_layer.h"
@@ -69,7 +69,7 @@ class AccessibilityFocusRingController
   std::vector<gfx::Rect> rects_;
   std::vector<AccessibilityFocusRing> previous_rings_;
   std::vector<AccessibilityFocusRing> rings_;
-  std::vector<scoped_ptr<AccessibilityFocusRingLayer> > layers_;
+  ScopedVector<AccessibilityFocusRingLayer> layers_;
   base::TimeTicks focus_change_time_;
   ui::Compositor* compositor_;
 

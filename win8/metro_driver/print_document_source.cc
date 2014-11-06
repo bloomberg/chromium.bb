@@ -393,7 +393,7 @@ void PrintDocumentSource::SetPageCount(size_t page_count) {
     pages_ready_state_.resize(page_count);
 
     for (size_t i = 0; i < page_count; ++i)
-      pages_ready_state_[i].reset(new base::ConditionVariable(parent_lock_));
+      pages_ready_state_[i] = new base::ConditionVariable(parent_lock_);
   }
   page_count_ready_.Signal();
 }

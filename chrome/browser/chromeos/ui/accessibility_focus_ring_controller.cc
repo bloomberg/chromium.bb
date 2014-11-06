@@ -62,7 +62,7 @@ void AccessibilityFocusRingController::Update() {
   layers_.resize(rings_.size());
   for (size_t i = 0; i < rings_.size(); ++i) {
     if (!layers_[i])
-      layers_[i].reset(new AccessibilityFocusRingLayer(this));
+      layers_[i] = new AccessibilityFocusRingLayer(this);
 
     if (i > 0) {
       // Focus rings other than the first one don't animate.

@@ -518,7 +518,7 @@ void MidiManagerWin::StartInitialization() {
         base::IntToString(static_cast<int>(caps.vDriverVersion)));
     AddInputPort(info);
     in_device->set_port_index(inport_index++);
-    in_devices_.push_back(in_device.Pass());
+    in_devices_.push_back(in_device.release());
   }
 
   const UINT num_out_devices = midiOutGetNumDevs();
@@ -540,7 +540,7 @@ void MidiManagerWin::StartInitialization() {
         base::WideToUTF8(caps.szPname),
         base::IntToString(static_cast<int>(caps.vDriverVersion)));
     AddOutputPort(info);
-    out_devices_.push_back(out_port.Pass());
+    out_devices_.push_back(out_port.release());
   }
 
   CompleteInitialization(MIDI_OK);
@@ -575,7 +575,7 @@ void MidiManagerWin::DispatchSendMidiData(MidiManagerClient* client,
   if (!send_thread_.IsRunning())
     send_thread_.Start();
 
-  OutDeviceInfo* out_port = out_devices_[port_index].get();
+  OutDeviceInfo* out_port = out_devices_[port_index];
   send_thread_.message_loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&OutDeviceInfo::Send, base::Unretained(out_port), data),

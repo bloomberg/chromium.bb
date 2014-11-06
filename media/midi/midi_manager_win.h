@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/midi/midi_manager.h"
 
@@ -29,8 +29,8 @@ class MidiManagerWin : public MidiManager {
  private:
   class InDeviceInfo;
   class OutDeviceInfo;
-  std::vector<scoped_ptr<InDeviceInfo> > in_devices_;
-  std::vector<scoped_ptr<OutDeviceInfo> > out_devices_;
+  ScopedVector<InDeviceInfo> in_devices_;
+  ScopedVector<OutDeviceInfo> out_devices_;
   base::Thread send_thread_;
   DISALLOW_COPY_AND_ASSIGN(MidiManagerWin);
 };

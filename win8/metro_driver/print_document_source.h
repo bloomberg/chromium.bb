@@ -13,7 +13,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
 #include "win8/metro_driver/winrt_utils.h"
@@ -125,7 +125,7 @@ class PrintDocumentSource
   // variable in this vector is signaled. This is only filled when we receive
   // the page count, so we must wait on page_count_ready_ before accessing
   // the content of this vector.
-  std::vector<scoped_ptr<base::ConditionVariable> > pages_ready_state_;
+  ScopedVector<base::ConditionVariable> pages_ready_state_;
 
   // This event is signaled when we receive a page count from Chrome. We should
   // not receive any page data before the count, so we can check this event
