@@ -20,6 +20,7 @@
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
+using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
 namespace media {
@@ -44,6 +45,10 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
     return;
 
   Stop();
+}
+
+void PipelineIntegrationTestBase::SaveStatus(PipelineStatus status) {
+  pipeline_status_ = status;
 }
 
 void PipelineIntegrationTestBase::OnStatusCallback(
@@ -177,8 +182,11 @@ void PipelineIntegrationTestBase::Pause() {
 bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
   ended_ = false;
 
-  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH));
-  pipeline_->Seek(seek_time, QuitOnStatusCB(PIPELINE_OK));
+  EXPECT_CALL(*this, OnBufferingStateChanged(BUFFERING_HAVE_ENOUGH))
+      .WillOnce(InvokeWithoutArgs(&message_loop_, &base::MessageLoop::QuitNow));
+  pipeline_->Seek(seek_time,
+                  base::Bind(&PipelineIntegrationTestBase::SaveStatus,
+                             base::Unretained(this)));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
