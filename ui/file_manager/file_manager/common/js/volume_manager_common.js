@@ -130,6 +130,35 @@ VolumeManagerCommon.VolumeType = {
 Object.freeze(VolumeManagerCommon.VolumeType);
 
 /**
+ * Obtains volume type from root type.
+ * @param {VolumeManagerCommon.RootType} rootType RootType
+ * @return {VolumeManagerCommon.VolumeType}
+ */
+VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
+  switch (rootType) {
+    case VolumeManagerCommon.RootType.DOWNLOADS:
+      return VolumeManagerCommon.VolumeType.DOWNLOADS;
+    case VolumeManagerCommon.RootType.ARCHIVE:
+      return VolumeManagerCommon.VolumeType.ARCHIVE;
+    case VolumeManagerCommon.RootType.REMOVABLE:
+      return VolumeManagerCommon.VolumeType.REMOVABLE;
+    case VolumeManagerCommon.RootType.DRIVE:
+    case VolumeManagerCommon.RootType.DRIVE_OTHER:
+    case VolumeManagerCommon.RootType.DRIVE_OFFLINE:
+    case VolumeManagerCommon.RootType.DRIVE_SHARED_WITH_ME:
+    case VolumeManagerCommon.RootType.DRIVE_RECENT:
+      return VolumeManagerCommon.VolumeType.DRIVE;
+    case VolumeManagerCommon.RootType.CLOUD_DEVICE:
+      return VolumeManagerCommon.VolumeType.CLOUD_DEVICE;
+    case VolumeManagerCommon.RootType.MTP:
+      return VolumeManagerCommon.VolumeType.MTP;
+    case VolumeManagerCommon.RootType.PROVIDED:
+      return VolumeManagerCommon.VolumeType.PROVIDED;
+  }
+  assertNotReached('Unknown root type: ' + rootType);
+};
+
+/**
  * @typedef {{
  *   type: VolumeManagerCommon.DriveConnectionType,
  *   reason: VolumeManagerCommon.DriveConnectionReason

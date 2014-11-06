@@ -7,13 +7,14 @@
  *
  * @param {!ListContainer} listContainer
  * @param {!cr.ui.dialogs.AlertDialog} alertDialog
+ * @param {!cr.ui.dialogs.ConfirmDialog} confirmDialog
  * @param {!DirectoryModel} directoryModel
  * @param {!FileFilter} fileFilter
  * @constructor
  * @struct
  */
 function NamingController(
-    listContainer, alertDialog, directoryModel, fileFilter) {
+    listContainer, alertDialog, confirmDialog, directoryModel, fileFilter) {
   /**
    * @type {!ListContainer}
    * @const
@@ -27,6 +28,13 @@ function NamingController(
    * @private
    */
   this.alertDialog_ = alertDialog;
+
+ /**
+   * @type {!cr.ui.dialogs.ConfirmDialog}
+   * @const
+   * @private
+   */
+  this.confirmDialog_ = confirmDialog;
 
   /**
    * @type {!DirectoryModel}
@@ -71,6 +79,57 @@ NamingController.prototype.validateFileName = function(
   }.bind(this)).catch(function(error) {
     console.error(error.stack || error);
   });
+};
+
+/**
+ * @param {string} filename
+ * @return {Promise.<string>}
+ */
+NamingController.prototype.validateFileNameForSaving = function(filename) {
+  var directory = this.directoryModel_.getCurrentDirEntry();
+  var currentDirUrl = directory.toURL().replace(/\/?$/, '/');
+  var fileUrl = currentDirUrl + encodeURIComponent(filename);
+
+  return new Promise(this.validateFileName.bind(this, directory, filename)).
+      then(function(isValid) {
+        if (!isValid)
+          return Promise.reject('Invalid filename.');
+
+        if (util.isFakeEntry(directory)) {
+          // Can't save a file into a fake directory.
+          return Promise.reject('Cannot save into fake entry.');
+        }
+
+        return new Promise(
+            directory.getFile.bind(directory, filename, {create: false}));
+      }).then(function() {
+        // An existing file is found. Show confirmation dialog to
+        // overwrite it. If the user select "OK" on the dialog, save it.
+        return new Promise(function(fulfill, reject) {
+          this.confirmDialog_.show(
+              strf('CONFIRM_OVERWRITE_FILE', filename),
+              fulfill.bind(null, fileUrl),
+              reject.bind(null, 'Cancelled'),
+              function() {});
+        }.bind(this));
+      }.bind(this), function(error) {
+        if (error.name == util.FileError.NOT_FOUND_ERR) {
+          // The file does not exist, so it should be ok to create a
+          // new file.
+          return fileUrl;
+        }
+
+        if (error.name == util.FileError.TYPE_MISMATCH_ERR) {
+          // An directory is found.
+          // Do not allow to overwrite directory.
+          this.alertDialog_.show(strf('DIRECTORY_ALREADY_EXISTS', filename));
+          return Promise.reject(error);
+        }
+
+        // Unexpected error.
+        console.error('File save failed: ' + error.code);
+        return Promise.reject(error);
+      }.bind(this));
 };
 
 /**

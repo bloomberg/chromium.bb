@@ -122,8 +122,7 @@ function FileManagerUI(element, dialogType) {
    * @type {!DialogFooter}
    */
   this.dialogFooter = DialogFooter.findDialogFooter(
-      this.dialogType_,
-      /** @type {!Document} */ (this.element_.ownerDocument));
+      this.dialogType_, /** @type {!Document} */(this.element_.ownerDocument));
 
   Object.seal(this);
 

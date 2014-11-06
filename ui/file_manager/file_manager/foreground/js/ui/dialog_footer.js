@@ -11,6 +11,13 @@
  */
 function DialogFooter(dialogType, container, filenameInput) {
   /**
+   * Root element of the footer.
+   * @type {!Element}
+   * @const
+   */
+  this.element = container;
+
+  /**
    * Dialog type.
    * @type {DialogType}
    * @const
