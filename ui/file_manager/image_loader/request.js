@@ -194,8 +194,14 @@ Request.prototype.saveToCache_ = function(data) {
  * @private
  */
 Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
-  this.image_.onload = onSuccess;
-  this.image_.onerror = onFailure;
+  this.image_.onload = function() {
+    URL.revokeObjectURL(this.image_.src);
+    onSuccess();
+  }.bind(this);
+  this.image_.onerror = function() {
+    URL.revokeObjectURL(this.image_.src);
+    onFailure();
+  }.bind(this);
 
   // Download data urls directly since they are not supported by XmlHttpRequest.
   var dataUrlMatches = this.request_.url.match(/^data:([^,;]*)[,;]/);
@@ -207,14 +213,7 @@ Request.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 
   // Fetch the image via authorized XHR and parse it.
   var parseImage = function(contentType, blob) {
-    var reader = new FileReader();
-    reader.onerror = onFailure;
-    reader.onload = function(e) {
-      this.image_.src = e.target.result;
-    }.bind(this);
-
-    // Load the data to the image as a data url.
-    reader.readAsDataURL(blob);
+    this.image_.src = URL.createObjectURL(blob);
   }.bind(this);
 
   // Request raw data via XHR.
