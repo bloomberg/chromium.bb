@@ -71,15 +71,13 @@ class DummySearchBoxView : public SearchBoxView {
 StartPageView::StartPageView(AppListMainView* app_list_main_view,
                              AppListViewDelegate* view_delegate)
     : app_list_main_view_(app_list_main_view),
-      search_results_model_(NULL),
       view_delegate_(view_delegate),
       search_box_view_(new DummySearchBoxView(this, view_delegate_)),
       results_view_(
           new SearchResultListView(app_list_main_view, view_delegate)),
       instant_container_(new views::View),
       tiles_container_(new views::View),
-      show_state_(SHOW_START_PAGE),
-      update_factory_(this) {
+      show_state_(SHOW_START_PAGE) {
   // The view containing the start page WebContents and DummySearchBoxView.
   InitInstantContainer();
   AddChildView(instant_container_);
@@ -95,8 +93,6 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
 }
 
 StartPageView::~StartPageView() {
-  if (search_results_model_)
-    search_results_model_->RemoveObserver(this);
 }
 
 void StartPageView::InitInstantContainer() {
@@ -153,11 +149,8 @@ void StartPageView::InitTilesContainer() {
 
 void StartPageView::SetModel(AppListModel* model) {
   DCHECK(model);
-  if (search_results_model_)
-    search_results_model_->RemoveObserver(this);
-  search_results_model_ = model->results();
-  search_results_model_->AddObserver(this);
-  results_view_->SetResults(search_results_model_);
+  SetResults(model->results());
+  results_view_->SetResults(model->results());
   Reset();
 }
 
@@ -230,8 +223,7 @@ void StartPageView::Update() {
                                                     : kNumSearchResultTiles;
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          search_results_model_, SearchResult::DISPLAY_TILE, max_tiles);
-
+          results(), SearchResult::DISPLAY_TILE, max_tiles);
   // Update the tile item results.
   for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {
     SearchResult* item = NULL;
@@ -245,17 +237,6 @@ void StartPageView::Update() {
 
   tiles_container_->Layout();
   Layout();
-  update_factory_.InvalidateWeakPtrs();
-}
-
-void StartPageView::ScheduleUpdate() {
-  // When search results are added one by one, each addition generates an update
-  // request. Consolidates those update requests into one Update call.
-  if (!update_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&StartPageView::Update, update_factory_.GetWeakPtr()));
-  }
 }
 
 void StartPageView::QueryChanged(SearchBoxView* sender) {
@@ -264,22 +245,6 @@ void StartPageView::QueryChanged(SearchBoxView* sender) {
   app_list_main_view_->OnStartPageSearchTextfieldChanged(
       sender->search_box()->text());
   sender->search_box()->SetText(base::string16());
-}
-
-void StartPageView::ListItemsAdded(size_t start, size_t count) {
-  ScheduleUpdate();
-}
-
-void StartPageView::ListItemsRemoved(size_t start, size_t count) {
-  ScheduleUpdate();
-}
-
-void StartPageView::ListItemMoved(size_t index, size_t target_index) {
-  ScheduleUpdate();
-}
-
-void StartPageView::ListItemsChanged(size_t start, size_t count) {
-  ScheduleUpdate();
 }
 
 }  // namespace app_list

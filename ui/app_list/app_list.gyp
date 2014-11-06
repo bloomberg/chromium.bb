@@ -156,6 +156,8 @@
         'views/search_box_view_delegate.h',
         'views/search_result_actions_view.cc',
         'views/search_result_actions_view.h',
+        'views/search_result_container_view.cc',
+        'views/search_result_container_view.h',
         'views/search_result_list_view.cc',
         'views/search_result_list_view.h',
         'views/search_result_list_view_delegate.h',

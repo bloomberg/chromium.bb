@@ -37,12 +37,10 @@ SearchResultListView::SearchResultListView(
     AppListViewDelegate* view_delegate)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      results_(NULL),
       results_container_(new views::View),
       auto_launch_indicator_(new views::View),
       last_visible_index_(0),
-      selected_index_(-1),
-      update_factory_(this) {
+      selected_index_(-1) {
   results_container_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
@@ -62,19 +60,6 @@ SearchResultListView::SearchResultListView(
 }
 
 SearchResultListView::~SearchResultListView() {
-  if (results_)
-    results_->RemoveObserver(this);
-}
-
-void SearchResultListView::SetResults(AppListModel::SearchResults* results) {
-  if (results_)
-    results_->RemoveObserver(this);
-
-  results_ = results;
-  if (results_)
-    results_->AddObserver(this);
-
-  Update();
 }
 
 void SearchResultListView::SetSelectedIndex(int selected_index) {
@@ -163,10 +148,19 @@ SearchResultView* SearchResultListView::GetResultViewAt(int index) {
   return static_cast<SearchResultView*>(results_container_->child_at(index));
 }
 
+void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
+  size_t last = std::min(
+      start + count, static_cast<size_t>(results_container_->child_count()));
+  for (size_t i = start; i < last; ++i)
+    GetResultViewAt(i)->ClearResultNoRepaint();
+
+  SearchResultContainerView::ListItemsRemoved(start, count);
+}
+
 void SearchResultListView::Update() {
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          results_,
+          results(),
           SearchResult::DISPLAY_LIST,
           results_container_->child_count());
   last_visible_index_ = display_results.size() - 1;
@@ -186,19 +180,7 @@ void SearchResultListView::Update() {
     SetSelectedIndex(last_visible_index_);
 
   Layout();
-  update_factory_.InvalidateWeakPtrs();
   UpdateAutoLaunchState();
-}
-
-void SearchResultListView::ScheduleUpdate() {
-  // When search results are added one by one, each addition generates an update
-  // request. Consolidates those update requests into one Update call.
-  if (!update_factory_.HasWeakPtrs()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&SearchResultListView::Update,
-                   update_factory_.GetWeakPtr()));
-  }
 }
 
 void SearchResultListView::ForceAutoLaunchForTest() {
@@ -228,7 +210,7 @@ void SearchResultListView::VisibilityChanged(views::View* starting_from,
 
 void SearchResultListView::AnimationEnded(const gfx::Animation* animation) {
   DCHECK_EQ(auto_launch_animation_.get(), animation);
-  view_delegate_->OpenSearchResult(results_->GetItemAt(0), true, ui::EF_NONE);
+  view_delegate_->OpenSearchResult(results()->GetItemAt(0), true, ui::EF_NONE);
 
   // The auto-launch has to be canceled explicitly. Think that one of searcher
   // is extremely slow. Sometimes the events would happen in the following
@@ -246,28 +228,6 @@ void SearchResultListView::AnimationProgressed(
   int indicator_width = auto_launch_animation_->CurrentValueBetween(0, width());
   auto_launch_indicator_->SetBounds(
       0, 0, indicator_width, kTimeoutIndicatorHeight);
-}
-
-void SearchResultListView::ListItemsAdded(size_t start, size_t count) {
-  ScheduleUpdate();
-}
-
-void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
-  size_t last = std::min(
-      start + count,
-      static_cast<size_t>(results_container_->child_count()));
-  for (size_t i = start; i < last; ++i)
-    GetResultViewAt(i)->ClearResultNoRepaint();
-
-  ScheduleUpdate();
-}
-
-void SearchResultListView::ListItemMoved(size_t index, size_t target_index) {
-  NOTREACHED();
-}
-
-void SearchResultListView::ListItemsChanged(size_t start, size_t count) {
-  NOTREACHED();
 }
 
 void SearchResultListView::SearchResultActivated(SearchResultView* view,
