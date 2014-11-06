@@ -34,6 +34,9 @@ int SanitizeTtl(int* user_ttl) {
 }
 
 BroadcastScanConfiguration TranslateStrategy(const Strategy& strategy) {
+  if (strategy.low_power && *strategy.low_power)
+    return BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
+
   bool only_broadcast = strategy.only_broadcast && *strategy.only_broadcast;
   bool only_scan = strategy.only_scan && *strategy.only_scan;
 
