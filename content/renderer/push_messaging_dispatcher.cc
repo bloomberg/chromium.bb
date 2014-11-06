@@ -79,7 +79,7 @@ void PushMessagingDispatcher::DoRegister(
 }
 
 void PushMessagingDispatcher::getPermissionStatus(
-    blink::WebPushPermissionCallback* callback,
+    blink::WebPushPermissionStatusCallback* callback,
     blink::WebServiceWorkerProvider* service_worker_provider) {
   int permission_callback_id = permission_check_callbacks_.Add(callback);
   int service_worker_provider_id = static_cast<WebServiceWorkerProviderImpl*>(
@@ -120,15 +120,15 @@ void PushMessagingDispatcher::OnRegisterError(int32 callbacks_id,
 void PushMessagingDispatcher::OnPermissionStatus(
     int32 callback_id,
     blink::WebPushPermissionStatus status) {
-  blink::WebPushPermissionCallback* callback =
+  blink::WebPushPermissionStatusCallback* callback =
       permission_check_callbacks_.Lookup(callback_id);
   callback->onSuccess(&status);
   permission_check_callbacks_.Remove(callback_id);
 }
 
 void PushMessagingDispatcher::OnPermissionStatusFailure(int32 callback_id) {
-  blink::WebPushPermissionCallback* callback =
-       permission_check_callbacks_.Lookup(callback_id);
+  blink::WebPushPermissionStatusCallback* callback =
+      permission_check_callbacks_.Lookup(callback_id);
   callback->onError();
   permission_check_callbacks_.Remove(callback_id);
 }
