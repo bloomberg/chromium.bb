@@ -193,7 +193,7 @@ namespace usb {
     // The product ID.
     long productId;
     // The interface ID to request access to.
-    // Only available on ChromeOS. It has no effect on other platforms.
+    // Only available on Chrome OS. It has no effect on other platforms.
     long? interfaceId;
   };
 
@@ -233,13 +233,14 @@ namespace usb {
                                        GetDevicesCallback callback);
 
     // Requests access from the permission broker to a device claimed by
-    // ChromeOS if the given interface on the device is not claimed.
-    //
-    // <b>Note:</b> This method is ChromeOS specific. Calling this method on
-    // other platforms will fail.
+    // Chrome OS if the given interface on the device is not claimed.
     //
     // |device|: The $(ref:Device) to request access to.
     // |interfaceId|: The particular interface requested.
+    [deprecated="This function was Chrome OS specific and calling it on other
+    platforms would fail. This operation is now implicitly performed as part of
+    $(ref:openDevice) and this function will return <code>true</code> on all
+    platforms."]
     static void requestAccess(Device device,
                               long interfaceId,
                               RequestAccessCallback callback);
@@ -251,16 +252,11 @@ namespace usb {
     // Finds USB devices specified by the vendor, product and (optionally)
     // interface IDs and if permissions allow opens them for use.
     //
-    // On Chrome OS, you can specify the interface ID. In that case the method
-    // will request access from permission broker in the same way as
-    // $(ref:requestAccess).
-    //
     // If the access request is rejected or the device fails to be opened a
     // connection handle will not be created or returned.
     //
-    // Calling this method is equivalent to calling $(ref:getDevices followed by
-    // $(ref:requestAccess) (if it is on ChromeOS) and $(ref:openDevice) for
-    // each device.
+    // Calling this method is equivalent to calling $(ref:getDevices) followed
+    // by $(ref:openDevice) for each device.
     //
     // |options|: The properties to search for on target devices.
     static void findDevices(EnumerateDevicesAndRequestAccessOptions options,

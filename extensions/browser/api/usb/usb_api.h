@@ -138,8 +138,6 @@ class UsbRequestAccessFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbRequestAccessFunction() override;
 
-  void OnCompleted(bool success);
-
  private:
   scoped_ptr<extensions::core_api::usb::RequestAccess::Params> parameters_;
 };
@@ -157,7 +155,9 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
   ~UsbOpenDeviceFunction() override;
 
  private:
-  scoped_refptr<device::UsbDeviceHandle> handle_;
+  void OnRequestAccessComplete(bool success);
+
+  scoped_refptr<device::UsbDevice> device_;
   scoped_ptr<extensions::core_api::usb::OpenDevice::Params> parameters_;
 };
 

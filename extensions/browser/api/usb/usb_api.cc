@@ -774,29 +774,11 @@ UsbRequestAccessFunction::~UsbRequestAccessFunction() {
 bool UsbRequestAccessFunction::Prepare() {
   parameters_ = RequestAccess::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  device_permissions_ = DevicePermissionsManager::Get(browser_context())
-                            ->GetForExtension(extension()->id());
   return true;
 }
 
 void UsbRequestAccessFunction::AsyncWorkStart() {
-#if defined(OS_CHROMEOS)
-  scoped_refptr<UsbDevice> device =
-      GetDeviceOrCompleteWithError(parameters_->device);
-  if (!device.get())
-    return;
-
-  device->RequestUsbAccess(
-      parameters_->interface_id,
-      base::Bind(&UsbRequestAccessFunction::OnCompleted, this));
-#else
-  SetResult(new base::FundamentalValue(false));
-  CompleteWithError(kErrorNotSupported);
-#endif  // OS_CHROMEOS
-}
-
-void UsbRequestAccessFunction::OnCompleted(bool success) {
-  SetResult(new base::FundamentalValue(success));
+  SetResult(new base::FundamentalValue(true));
   AsyncWorkCompleted();
 }
 
@@ -815,22 +797,37 @@ bool UsbOpenDeviceFunction::Prepare() {
 }
 
 void UsbOpenDeviceFunction::AsyncWorkStart() {
-  scoped_refptr<UsbDevice> device =
-      GetDeviceOrCompleteWithError(parameters_->device);
-  if (!device.get())
+  device_ = GetDeviceOrCompleteWithError(parameters_->device);
+  if (!device_.get()) {
     return;
+  }
 
-  handle_ = device->Open();
-  if (!handle_.get()) {
+#if defined(OS_CHROMEOS)
+  device_->RequestUsbAccess(
+      -1, /* any interface, unused by the permission broker */
+      base::Bind(&UsbOpenDeviceFunction::OnRequestAccessComplete, this));
+#else
+  OnRequestAccessComplete(true);
+#endif  // OS_CHROMEOS
+}
+
+void UsbOpenDeviceFunction::OnRequestAccessComplete(bool success) {
+  if (!success) {
+    SetError(kErrorPermissionDenied);
+    AsyncWorkCompleted();
+    return;
+  }
+
+  scoped_refptr<UsbDeviceHandle> handle = device_->Open();
+  if (!handle.get()) {
     SetError(kErrorOpen);
     AsyncWorkCompleted();
     return;
   }
 
   SetResult(PopulateConnectionHandle(
-      manager_->Add(new UsbDeviceResource(extension_->id(), handle_)),
-      handle_->GetDevice()->vendor_id(),
-      handle_->GetDevice()->product_id()));
+      manager_->Add(new UsbDeviceResource(extension_->id(), handle)),
+      device_->vendor_id(), device_->product_id()));
   AsyncWorkCompleted();
 }
 
