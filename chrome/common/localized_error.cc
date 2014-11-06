@@ -44,8 +44,6 @@ static const char kRedirectLoopLearnMoreUrl[] =
 static const char kWeakDHKeyLearnMoreUrl[] =
     "http://sites.google.com/a/chromium.org/dev/"
     "err_ssl_weak_server_ephemeral_dh_key";
-static const char kSSLv3FallbackUrl[] =
-    "https://code.google.com/p/chromium/issues/detail?id=418848";
 #if defined(OS_CHROMEOS)
 static const char kAppWarningLearnMoreUrl[] =
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"
@@ -312,7 +310,7 @@ const LocalizedErrorMap net_error_options[] = {
    IDS_ERRORPAGES_HEADING_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    IDS_ERRORPAGES_SUMMARY_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
    IDS_ERRORPAGES_DETAILS_SSL_FALLBACK_BEYOND_MINIMUM_VERSION,
-   SUGGEST_LEARNMORE,
+   SUGGEST_NONE,
   },
   {net::ERR_SSL_VERSION_OR_CIPHER_MISMATCH,
    IDS_ERRORPAGES_TITLE_LOAD_FAILED,
@@ -814,9 +812,6 @@ void LocalizedError::GetStrings(int error_code,
         break;
       case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
         learn_more_url = GURL(kWeakDHKeyLearnMoreUrl);
-        break;
-      case net::ERR_SSL_FALLBACK_BEYOND_MINIMUM_VERSION:
-        learn_more_url = GURL(kSSLv3FallbackUrl);
         break;
       default:
         break;
