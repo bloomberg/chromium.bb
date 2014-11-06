@@ -313,7 +313,7 @@ class DeviceUtilsNewImplTest(unittest.TestCase):
         or a _ShellError object to raise an AdbShellCommandFailedError.
     '''
     def mk_expected_call(cmd, return_value):
-      expected_args = Args(cmd, expect_rc=0, timeout=10, retries=0)
+      expected_args = Args(cmd, expect_rc=0)
       if isinstance(return_value, _ShellError):
         return_value = device_errors.AdbShellCommandFailedError(cmd,
             return_value.return_code, return_value.output, str(self.device))
@@ -690,13 +690,13 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
 
   def testRunShellCommand_withSu(self):
     with self.assertShellCallSequence([
-        ('ls /root', _ShellError()),
+        ('su -c ls /root && ! ls /root', ''),
         ('su -c setprop service.adb.root 0', '')]):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_withRoot(self):
     with self.assertShellCallSequence([
-        ('ls /root', '\r\n'),
+        ('su -c ls /root && ! ls /root', _ShellError()),
         ('setprop service.adb.root 0', '')]):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
@@ -794,7 +794,7 @@ class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
         ('ps', 'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\r\n'
                'u0_a1  1234  174   123456 54321 ffffffff 456789ab '
                'this.is.a.test.process\r\n'),
-        ('ls /root', _ShellError()),
+        ('su -c ls /root && ! ls /root', ''),
         ('su -c kill -9 1234', '')]):
       self.assertEquals(1,
           self.device.KillAll('this.is.a.test.process', as_root=True))
@@ -1095,7 +1095,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
     self.device._GetExternalStoragePathImpl = mock.Mock(
         return_value='/test/device/external_dir')
     self.device.IsOnline = mock.Mock(return_value=True)
-    self.device._RunShellCommandImpl = mock.Mock()
+    self.device.RunShellCommand = mock.Mock()
     mock_zip_temp = mock.mock_open()
     mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
     with mock.patch('multiprocessing.Process') as mock_zip_proc, (
@@ -1107,13 +1107,13 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
         args=('/test/temp/file/tmp.zip', test_files))
     self.adb.Push.assert_called_once_with(
         '/test/temp/file/tmp.zip', '/test/device/external_dir/tmp.zip')
-    self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
-    self.device._RunShellCommandImpl.assert_any_call(
+    self.assertEqual(2, self.device.RunShellCommand.call_count)
+    self.device.RunShellCommand.assert_any_call(
         ['unzip', '/test/device/external_dir/tmp.zip'],
         as_root=True,
         env={'PATH': '$PATH:/data/local/tmp/bin'},
         check_return=True)
-    self.device._RunShellCommandImpl.assert_any_call(
+    self.device.RunShellCommand.assert_any_call(
         ['rm', '/test/device/external_dir/tmp.zip'], check_return=True)
 
   def testPushChangedFilesZipped_multiple(self):
@@ -1123,7 +1123,7 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
     self.device._GetExternalStoragePathImpl = mock.Mock(
         return_value='/test/device/external_dir')
     self.device.IsOnline = mock.Mock(return_value=True)
-    self.device._RunShellCommandImpl = mock.Mock()
+    self.device.RunShellCommand = mock.Mock()
     mock_zip_temp = mock.mock_open()
     mock_zip_temp.return_value.name = '/test/temp/file/tmp.zip'
     with mock.patch('multiprocessing.Process') as mock_zip_proc, (
@@ -1135,13 +1135,13 @@ class DeviceUtilsPushChangedFilesZippedTest(DeviceUtilsHybridImplTest):
         args=('/test/temp/file/tmp.zip', test_files))
     self.adb.Push.assert_called_once_with(
         '/test/temp/file/tmp.zip', '/test/device/external_dir/tmp.zip')
-    self.assertEqual(2, self.device._RunShellCommandImpl.call_count)
-    self.device._RunShellCommandImpl.assert_any_call(
+    self.assertEqual(2, self.device.RunShellCommand.call_count)
+    self.device.RunShellCommand.assert_any_call(
         ['unzip', '/test/device/external_dir/tmp.zip'],
         as_root=True,
         env={'PATH': '$PATH:/data/local/tmp/bin'},
         check_return=True)
-    self.device._RunShellCommandImpl.assert_any_call(
+    self.device.RunShellCommand.assert_any_call(
         ['rm', '/test/device/external_dir/tmp.zip'], check_return=True)
 
 
@@ -1383,7 +1383,7 @@ class DeviceUtilsWriteTextFileTest(DeviceUtilsNewImplTest):
 
   def testWriteTextFileTest_asRoot(self):
     with self.assertShellCallSequence([
-        ('ls /root', _ShellError()),
+        ('su -c ls /root && ! ls /root', ''),
         ('su -c echo string > /test/file', '')]):
       self.device.WriteTextFile('/test/file', 'string', as_root=True)
 

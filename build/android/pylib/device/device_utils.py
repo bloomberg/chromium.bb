@@ -130,14 +130,38 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._HasRootImpl()
-
-  def _HasRootImpl(self):
     try:
-      self._RunShellCommandImpl('ls /root', check_return=True)
+      self.RunShellCommand('ls /root', check_return=True)
       return True
     except device_errors.AdbShellCommandFailedError:
       return False
+
+  def NeedsSU(self, timeout=None, retries=None):
+    """Checks whether 'su' is needed to access protected resources.
+
+    Args:
+      timeout: timeout in seconds
+      retries: number of retries
+
+    Returns:
+      True if 'su' is available on the device and is needed to to access
+        protected resources; False otherwise if either 'su' is not available
+        (e.g. because the device has a user build), or not needed (because adbd
+        already has root privileges).
+
+    Raises:
+      CommandTimeoutError on timeout.
+      DeviceUnreachableError on missing device.
+    """
+    if 'needs_su' not in self._cache:
+      try:
+        self.RunShellCommand('su -c ls /root && ! ls /root', check_return=True,
+                             timeout=timeout, retries=retries)
+        self._cache['needs_su'] = True
+      except device_errors.AdbShellCommandFailedError:
+        self._cache['needs_su'] = False
+    return self._cache['needs_su']
+
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def EnableRoot(self, timeout=None, retries=None):
@@ -151,6 +175,8 @@ class DeviceUtils(object):
       CommandFailedError if root could not be enabled.
       CommandTimeoutError on timeout.
     """
+    if 'needs_su' in self._cache:
+      del self._cache['needs_su']
     if not self.old_interface.EnableAdbRoot():
       raise device_errors.CommandFailedError(
           'Could not enable root.', device=str(self))
@@ -195,9 +221,9 @@ class DeviceUtils(object):
     if 'external_storage' in self._cache:
       return self._cache['external_storage']
 
-    value = self._RunShellCommandImpl('echo $EXTERNAL_STORAGE',
-                                      single_line=True,
-                                      check_return=True)
+    value = self.RunShellCommand('echo $EXTERNAL_STORAGE',
+                                 single_line=True,
+                                 check_return=True)
     if not value:
       raise device_errors.CommandFailedError('$EXTERNAL_STORAGE is not set',
                                              str(self))
@@ -397,11 +423,6 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._RunShellCommandImpl(cmd, check_return=check_return, cwd=cwd,
-        env=env, as_root=as_root, single_line=single_line, timeout=timeout)
-
-  def _RunShellCommandImpl(self, cmd, check_return=False, cwd=None, env=None,
-                           as_root=False, single_line=False, timeout=None):
     def env_quote(key, value):
       if not DeviceUtils._VALID_SHELL_VARIABLE.match(key):
         raise KeyError('Invalid shell variable name %r' % key)
@@ -410,7 +431,7 @@ class DeviceUtils(object):
 
     if not isinstance(cmd, basestring):
       cmd = ' '.join(cmd_helper.SingleQuote(s) for s in cmd)
-    if as_root and not self._HasRootImpl():
+    if as_root and self.NeedsSU():
       cmd = 'su -c %s' % cmd
     if env:
       env = ' '.join(env_quote(k, v) for k, v in env.iteritems())
@@ -421,9 +442,7 @@ class DeviceUtils(object):
       timeout = self._default_timeout
 
     try:
-      # TODO(perezju) still need to make sure that we call a version of
-      # adb.Shell without a timeout-and-retries wrapper.
-      output = self.adb.Shell(cmd, expect_rc=0, timeout=timeout, retries=0)
+      output = self.adb.Shell(cmd, expect_rc=0)
     except device_errors.AdbShellCommandFailedError as e:
       if check_return:
         raise
@@ -469,7 +488,7 @@ class DeviceUtils(object):
           'No process "%s"' % process_name, device=str(self))
 
     cmd = ['kill', '-%d' % signum] + pids.values()
-    self._RunShellCommandImpl(cmd, as_root=as_root, check_return=True)
+    self.RunShellCommand(cmd, as_root=as_root, check_return=True)
 
     if blocking:
       wait_period = 0.1
@@ -620,7 +639,7 @@ class DeviceUtils(object):
     files = []
     for h, d in host_device_tuples:
       if os.path.isdir(h):
-        self._RunShellCommandImpl(['mkdir', '-p', d], check_return=True)
+        self.RunShellCommand(['mkdir', '-p', d], check_return=True)
       files += self._GetChangedFilesImpl(h, d)
 
     if not files:
@@ -652,14 +671,14 @@ class DeviceUtils(object):
       self._PushChangedFilesIndividually(files)
     else:
       self._PushChangedFilesZipped(files)
-      self._RunShellCommandImpl(
+      self.RunShellCommand(
           ['chmod', '-R', '777'] + [d for _, d in host_device_tuples],
           as_root=True, check_return=True)
 
   def _GetChangedFilesImpl(self, host_path, device_path):
     real_host_path = os.path.realpath(host_path)
     try:
-      real_device_path = self._RunShellCommandImpl(
+      real_device_path = self.RunShellCommand(
           ['realpath', device_path], single_line=True, check_return=True)
     except device_errors.CommandFailedError:
       real_device_path = None
@@ -752,7 +771,7 @@ class DeviceUtils(object):
       zip_on_device = '%s/tmp.zip' % self._GetExternalStoragePathImpl()
       try:
         self.adb.Push(zip_file.name, zip_on_device)
-        self._RunShellCommandImpl(
+        self.RunShellCommand(
             ['unzip', zip_on_device],
             as_root=True,
             env={'PATH': '$PATH:%s' % install_commands.BIN_DIR},
@@ -761,7 +780,7 @@ class DeviceUtils(object):
         if zip_proc.is_alive():
           zip_proc.terminate()
         if self.IsOnline():
-          self._RunShellCommandImpl(['rm', zip_on_device], check_return=True)
+          self.RunShellCommand(['rm', zip_on_device], check_return=True)
 
   @staticmethod
   def _CreateDeviceZip(zip_path, host_device_tuples):
@@ -899,7 +918,7 @@ class DeviceUtils(object):
     """
     cmd = 'echo %s > %s' % (cmd_helper.SingleQuote(text),
                             cmd_helper.SingleQuote(device_path))
-    self._RunShellCommandImpl(cmd, as_root=as_root, check_return=True)
+    self.RunShellCommand(cmd, as_root=as_root, check_return=True)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Ls(self, device_path, timeout=None, retries=None):
@@ -1042,7 +1061,7 @@ class DeviceUtils(object):
 
   def _GetPidsImpl(self, process_name):
     procs_pids = {}
-    for line in self._RunShellCommandImpl('ps', check_return=True):
+    for line in self.RunShellCommand('ps', check_return=True):
       try:
         ps_data = line.split()
         if process_name in ps_data[-1]:
