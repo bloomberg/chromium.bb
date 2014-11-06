@@ -65,6 +65,8 @@ _deps_builders = {
     "win-xp": "WebKit XP (deps)",
     "win-win7": "WebKit XP (deps)",
     "mac-snowleopard": "WebKit Mac10.6 (deps)",
+    # The following port names are mapped to 10.6 bot since we don't have bots
+    # for these ports.
     "mac-lion": "WebKit Mac10.6 (deps)",
     "mac-mountainlion": "WebKit Mac10.6 (deps)",
     "mac-mavericks": "WebKit Mac10.6 (deps)",
