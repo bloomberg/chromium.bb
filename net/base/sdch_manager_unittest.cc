@@ -9,7 +9,9 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/sdch_manager.h"
+#include "net/base/sdch_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace net {
 
@@ -21,6 +23,32 @@ static const char kTestVcdiffDictionary[] = "DictionaryFor"
 
 //------------------------------------------------------------------------------
 
+class MockSdchObserver : public SdchObserver {
+ public:
+  MockSdchObserver() : get_dictionary_notifications_(0) {}
+
+  const GURL& last_dictionary_request_url() {
+    return last_dictionary_request_url_;
+  }
+  const GURL& last_dictionary_url() { return last_dictionary_url_; }
+  int get_dictionary_notifications() { return get_dictionary_notifications_; }
+
+  // SdchObserver implementation
+  void OnGetDictionary(SdchManager* manager,
+                       const GURL& request_url,
+                       const GURL& dictionary_url) override {
+    ++get_dictionary_notifications_;
+    last_dictionary_request_url_ = request_url;
+    last_dictionary_url_ = dictionary_url;
+  }
+  void OnClearDictionaries(SdchManager* manager) override {}
+
+ private:
+  int get_dictionary_notifications_;
+  GURL last_dictionary_request_url_;
+  GURL last_dictionary_url_;
+};
+
 class SdchManagerTest : public testing::Test {
  protected:
   SdchManagerTest()
@@ -30,6 +58,8 @@ class SdchManagerTest : public testing::Test {
     default_support_ = sdch_manager_->sdch_enabled();
     default_https_support_ = sdch_manager_->secure_scheme_supported();
   }
+
+  virtual ~SdchManagerTest() {}
 
   SdchManager* sdch_manager() { return sdch_manager_.get(); }
 
@@ -561,6 +591,25 @@ TEST_F(SdchManagerTest, ClearDictionaryData) {
       &dictionary);
   EXPECT_FALSE(dictionary.get());
   EXPECT_TRUE(sdch_manager()->IsInSupportedDomain(blacklist_url));
+}
+
+TEST_F(SdchManagerTest, GetDictionaryNotification) {
+  GURL test_request_gurl(GURL("http://www.example.com/data"));
+  GURL test_dictionary_gurl(GURL("http://www.example.com/dict"));
+  MockSdchObserver observer;
+  sdch_manager()->AddObserver(&observer);
+
+  EXPECT_EQ(0, observer.get_dictionary_notifications());
+  sdch_manager()->OnGetDictionary(test_request_gurl, test_dictionary_gurl);
+  EXPECT_EQ(1, observer.get_dictionary_notifications());
+  EXPECT_EQ(test_request_gurl, observer.last_dictionary_request_url());
+  EXPECT_EQ(test_dictionary_gurl, observer.last_dictionary_url());
+
+  sdch_manager()->RemoveObserver(&observer);
+  sdch_manager()->OnGetDictionary(test_request_gurl, test_dictionary_gurl);
+  EXPECT_EQ(1, observer.get_dictionary_notifications());
+  EXPECT_EQ(test_request_gurl, observer.last_dictionary_request_url());
+  EXPECT_EQ(test_dictionary_gurl, observer.last_dictionary_url());
 }
 
 }  // namespace net

@@ -717,6 +717,8 @@
       'browser/net/chrome_net_log.h',
       'browser/net/chrome_network_delegate.cc',
       'browser/net/chrome_network_delegate.h',
+      'browser/net/chrome_sdch_policy.cc',
+      'browser/net/chrome_sdch_policy.h',
       'browser/net/chrome_url_request_context_getter.cc',
       'browser/net/chrome_url_request_context_getter.h',
       'browser/net/client_hints.cc',

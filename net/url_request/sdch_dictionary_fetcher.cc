@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/sdch_dictionary_fetcher.h"
+#include "net/url_request/sdch_dictionary_fetcher.h"
 
 #include <stdint.h>
 
@@ -24,15 +24,14 @@ const int kBufferSize = 4096;
 namespace net {
 
 SdchDictionaryFetcher::SdchDictionaryFetcher(
-    SdchFetcher::Delegate* consumer,
-    URLRequestContext* context)
+    URLRequestContext* context,
+    const OnDictionaryFetchedCallback& callback)
     : next_state_(STATE_NONE),
       in_loop_(false),
-      consumer_(consumer),
       context_(context),
+      dictionary_fetched_callback_(callback),
       weak_factory_(this) {
   DCHECK(CalledOnValidThread());
-  DCHECK(consumer);
   DCHECK(context);
 }
 
@@ -158,8 +157,8 @@ int SdchDictionaryFetcher::DoDispatchRequest(int rv) {
     return OK;
   }
 
-  current_request_ = context_->CreateRequest(
-      fetch_queue_.front(), IDLE, this, NULL);
+  current_request_ =
+      context_->CreateRequest(fetch_queue_.front(), IDLE, this, NULL);
   current_request_->SetLoadFlags(LOAD_DO_NOT_SEND_COOKIES |
                                  LOAD_DO_NOT_SAVE_COOKIES);
   buffer_ = new IOBuffer(kBufferSize);
@@ -209,8 +208,8 @@ int SdchDictionaryFetcher::DoRead(int rv) {
       // without a promise to invoke the callback at some point in the future,
       // so the request is failed.
       SdchManager::SdchErrorRecovery(SdchManager::DICTIONARY_FETCH_READ_FAILED);
-      DLOG(FATAL) <<
-          "URLRequest::Read() returned false without IO pending or error!";
+      DLOG(FATAL)
+          << "URLRequest::Read() returned false without IO pending or error!";
       return ERR_FAILED;
     }
 
@@ -230,7 +229,7 @@ int SdchDictionaryFetcher::DoCompleteRequest(int rv) {
 
   // If the dictionary was successfully fetched, add it to the manager.
   if (rv == OK)
-    consumer_->AddSdchDictionary(dictionary_, current_request_->url());
+    dictionary_fetched_callback_.Run(dictionary_, current_request_->url());
 
   current_request_.reset();
   buffer_ = NULL;

@@ -22,6 +22,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/chrome_sdch_policy.h"
 #include "chrome/browser/net/connect_interceptor.h"
 #include "chrome/browser/net/cookie_store_util.h"
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
@@ -48,7 +49,6 @@
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/common/constants.h"
 #include "net/base/cache_type.h"
-#include "net/base/sdch_dictionary_fetcher.h"
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -579,11 +579,9 @@ void ProfileImplIOData::InitializeInternal(
   InitializeExtensionsRequestContext(profile_params);
 #endif
 
-  // Setup the SDCHManager for this profile.
+  // Setup SDCH for this profile.
   sdch_manager_.reset(new net::SdchManager);
-  sdch_manager_->set_sdch_fetcher(scoped_ptr<net::SdchFetcher>(
-      new net::SdchDictionaryFetcher(sdch_manager_.get(),
-                                     main_context)).Pass());
+  sdch_policy_.reset(new ChromeSdchPolicy(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
 
   // Create a media request context based on the main context, but using a

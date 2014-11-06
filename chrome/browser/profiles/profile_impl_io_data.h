@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "content/public/browser/cookie_store_factory.h"
 
+class ChromeSdchPolicy;
+
 namespace chrome_browser_net {
 class Predictor;
 }  // namespace chrome_browser_net
@@ -236,6 +238,7 @@ class ProfileImplIOData : public ProfileIOData {
       domain_reliability_monitor_;
 
   mutable scoped_ptr<net::SdchManager> sdch_manager_;
+  mutable scoped_ptr<ChromeSdchPolicy> sdch_policy_;
 
   mutable BooleanPrefMember data_reduction_proxy_enabled_;
 

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(rdsmith): This class needs to be moved out to the net/ embedder and
-// hooked into whatever mechanisms the embedder uses for authentication.
-// Specifically, this class needs methods overriding
-// URLRequest::Delegate::{OnAuthRequired,OnCertificateRequested} and can't
-// implement them at the net/ layer.
+// TODO(rdsmith): This class needs to delegate URLRequest::Delegate methods
+// to the net/ embedder for correct implementation of authentication.
+// Specifically, this class needs the embedder to provide functionality
+// corresponding to
+// URLRequest::Delegate::{OnAuthRequired,OnCertificateRequested}.
 
-#ifndef NET_BASE_SDCH_DICTIONARY_FETCHER_H_
-#define NET_BASE_SDCH_DICTIONARY_FETCHER_H_
+#ifndef NET_URL_REQUEST_SDCH_DICTIONARY_FETCHER_H_
+#define NET_URL_REQUEST_SDCH_DICTIONARY_FETCHER_H_
 
 #include <queue>
 #include <set>
@@ -27,25 +27,31 @@ namespace net {
 class URLRequest;
 class URLRequestThrottlerEntryInterface;
 
-// This class implements the SdchFetcher interface. It queues requests
-// for dictionaries and dispatches them serially, implementing
-// the URLRequest::Delegate interface to handle callbacks (but see above
-// TODO). It tracks all requests, only attempting to fetch each dictionary
-// once.
-class NET_EXPORT SdchDictionaryFetcher
-    : public SdchFetcher,
-      public URLRequest::Delegate,
-      public base::NonThreadSafe {
+// This class is used by embedder SDCH policy object to fetch
+// dictionaries. It queues requests for dictionaries and dispatches
+// them serially, implementing the URLRequest::Delegate interface to
+// handle callbacks (but see above TODO). It tracks all requests, only
+// attempting to fetch each dictionary once.
+class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
+                                         public base::NonThreadSafe {
  public:
-  // The consumer must guarantee that |*consumer| and |*context| outlive
-  // this object.
-  SdchDictionaryFetcher(SdchFetcher::Delegate* consumer,
-                        URLRequestContext* context);
+  typedef base::Callback<void(const std::string& dictionary_text,
+                              const GURL& dictionary_url)>
+      OnDictionaryFetchedCallback;
+
+  // The consumer must guarantee that |*context| outlives this object.
+  // |callback| will be called on successful dictionary fetch
+  // requested through Schedule().  |callback| will not be called
+  // after object destruction.
+  SdchDictionaryFetcher(URLRequestContext* context,
+                        const OnDictionaryFetchedCallback& callback);
   ~SdchDictionaryFetcher() override;
 
-  // Implementation of SdchFetcher methods.
-  void Schedule(const GURL& dictionary_url) override;
-  void Cancel() override;
+  // Request a new dictionary fetch.
+  void Schedule(const GURL& dictionary_url);
+
+  // Cancel any in-progress requests.
+  void Cancel();
 
   // Implementation of URLRequest::Delegate methods.
   void OnResponseStarted(URLRequest* request) override;
@@ -69,8 +75,6 @@ class NET_EXPORT SdchDictionaryFetcher
 
   State next_state_;
   bool in_loop_;
-
-  SdchFetcher::Delegate* const consumer_;
 
   // A queue of URLs that are being used to download dictionaries.
   std::queue<GURL> fetch_queue_;
@@ -100,7 +104,9 @@ class NET_EXPORT SdchDictionaryFetcher
 
   // Store the URLRequestContext associated with the owning SdchManager for
   // use while fetching.
-  URLRequestContext* context_;
+  URLRequestContext* const context_;
+
+  const OnDictionaryFetchedCallback dictionary_fetched_callback_;
 
   base::WeakPtrFactory<SdchDictionaryFetcher> weak_factory_;
 
@@ -109,4 +115,4 @@ class NET_EXPORT SdchDictionaryFetcher
 
 }  // namespace net
 
-#endif  // NET_BASE_SDCH_DICTIONARY_FETCHER_H_
+#endif  // NET_URL_REQUEST_SDCH_DICTIONARY_FETCHER_H_

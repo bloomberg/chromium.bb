@@ -335,7 +335,7 @@ void URLRequestHttpJob::NotifyHeadersComplete() {
       // Resolve suggested URL relative to request url.
       GURL sdch_dictionary_url = request_->url().Resolve(url_text);
       if (sdch_dictionary_url.is_valid()) {
-        sdch_manager->FetchDictionary(request_->url(), sdch_dictionary_url);
+        sdch_manager->OnGetDictionary(request_->url(), sdch_dictionary_url);
       }
     }
   }

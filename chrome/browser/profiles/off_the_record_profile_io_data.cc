@@ -18,6 +18,7 @@
 #include "chrome/browser/net/about_protocol_handler.h"
 #include "chrome/browser/net/chrome_net_log.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
+#include "chrome/browser/net/chrome_sdch_policy.h"
 #include "chrome/browser/net/chrome_url_request_context_getter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -27,7 +28,6 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "extensions/common/constants.h"
-#include "net/base/sdch_dictionary_fetcher.h"
 #include "net/base/sdch_manager.h"
 #include "net/ftp/ftp_network_layer.h"
 #include "net/http/http_cache.h"
@@ -270,11 +270,9 @@ void OffTheRecordProfileIOData::InitializeInternal(
       ftp_factory_.get());
   main_context->set_job_factory(main_job_factory_.get());
 
-  // Setup the SDCHManager for this profile.
+  // Setup SDCH for this profile.
   sdch_manager_.reset(new net::SdchManager);
-  sdch_manager_->set_sdch_fetcher(scoped_ptr<net::SdchFetcher>(
-      new net::SdchDictionaryFetcher(sdch_manager_.get(),
-                                     main_context)).Pass());
+  sdch_policy_.reset(new ChromeSdchPolicy(sdch_manager_.get(), main_context));
   main_context->set_sdch_manager(sdch_manager_.get());
 
 #if defined(ENABLE_EXTENSIONS)

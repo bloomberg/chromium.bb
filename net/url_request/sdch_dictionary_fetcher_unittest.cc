@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/base/sdch_dictionary_fetcher.h"
+#include "net/url_request/sdch_dictionary_fetcher.h"
 
 #include <string>
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_task_runner_handle.h"
@@ -31,8 +32,8 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
   static void AddUrlHandler() {
     net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
     jobs_requested_ = 0;
-    filter->AddHostnameHandler("http", kTestDomain,
-                               &URLRequestSpecifiedResponseJob::Factory);
+    filter->AddHostnameHandler(
+        "http", kTestDomain, &URLRequestSpecifiedResponseJob::Factory);
   }
 
   static void RemoveUrlHandler() {
@@ -41,17 +42,17 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
     jobs_requested_ = 0;
   }
 
-  static URLRequestJob* Factory(
-      URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const std::string& scheme) {
+  static URLRequestJob* Factory(URLRequest* request,
+                                net::NetworkDelegate* network_delegate,
+                                const std::string& scheme) {
     ++jobs_requested_;
     return new URLRequestSpecifiedResponseJob(request, network_delegate);
   }
 
   static std::string ExpectedResponseForURL(const GURL& url) {
     return base::StringPrintf("Response for %s\n%s\nEnd Response for %s\n",
-                              url.spec().c_str(), kSampleBufferContext,
+                              url.spec().c_str(),
+                              kSampleBufferContext,
                               url.spec().c_str());
   }
 
@@ -73,21 +74,32 @@ class URLRequestSpecifiedResponseJob : public URLRequestSimpleJob {
 
 int URLRequestSpecifiedResponseJob::jobs_requested_(0);
 
-class SdchTestDelegate : public SdchFetcher::Delegate {
+class SdchDictionaryFetcherTest : public ::testing::Test {
  public:
   struct DictionaryAdditions {
     DictionaryAdditions(const std::string& dictionary_text,
                         const GURL& dictionary_url)
-        : dictionary_text(dictionary_text),
-          dictionary_url(dictionary_url) {}
-
+        : dictionary_text(dictionary_text), dictionary_url(dictionary_url) {}
 
     std::string dictionary_text;
     GURL dictionary_url;
   };
 
-  void AddSdchDictionary(const std::string& dictionary_text,
-                         const GURL& dictionary_url) override {
+  SdchDictionaryFetcherTest() {
+    URLRequestSpecifiedResponseJob::AddUrlHandler();
+    context_.reset(new TestURLRequestContext);
+    fetcher_.reset(new SdchDictionaryFetcher(
+        context_.get(),
+        base::Bind(&SdchDictionaryFetcherTest::OnDictionaryFetched,
+                   base::Unretained(this))));
+  }
+
+  ~SdchDictionaryFetcherTest() {
+    URLRequestSpecifiedResponseJob::RemoveUrlHandler();
+  }
+
+  void OnDictionaryFetched(const std::string& dictionary_text,
+                           const GURL& dictionary_url) {
     dictionary_additions.push_back(
         DictionaryAdditions(dictionary_text, dictionary_url));
   }
@@ -97,33 +109,7 @@ class SdchTestDelegate : public SdchFetcher::Delegate {
     dictionary_additions.clear();
   }
 
- private:
-  std::vector<DictionaryAdditions> dictionary_additions;
-};
-
-class SdchDictionaryFetcherTest : public ::testing::Test {
- public:
-  SdchDictionaryFetcherTest() {}
-
-  void SetUp() override {
-    DCHECK(!fetcher_.get());
-
-    URLRequestSpecifiedResponseJob::AddUrlHandler();
-    fetcher_delegate_.reset(new SdchTestDelegate);
-    context_.reset(new TestURLRequestContext);
-    fetcher_.reset(new SdchDictionaryFetcher(
-        fetcher_delegate_.get(), context_.get()));
-  }
-
-  void TearDown() override {
-    URLRequestSpecifiedResponseJob::RemoveUrlHandler();
-    fetcher_.reset();
-    context_.reset();
-    fetcher_delegate_.reset();
-  }
-
   SdchDictionaryFetcher* fetcher() { return fetcher_.get(); }
-  SdchTestDelegate* manager() { return fetcher_delegate_.get(); }
 
   // May not be called outside the SetUp()/TearDown() interval.
   int JobsRequested() {
@@ -139,9 +125,9 @@ class SdchDictionaryFetcherTest : public ::testing::Test {
   }
 
  private:
-  scoped_ptr<SdchTestDelegate> fetcher_delegate_;
   scoped_ptr<TestURLRequestContext> context_;
   scoped_ptr<SdchDictionaryFetcher> fetcher_;
+  std::vector<DictionaryAdditions> dictionary_additions;
 };
 
 // Schedule a fetch and make sure it happens.
@@ -151,11 +137,12 @@ TEST_F(SdchDictionaryFetcherTest, Basic) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, JobsRequested());
-  std::vector<SdchTestDelegate::DictionaryAdditions> additions;
-  manager()->GetDictionaryAdditions(&additions);
+  std::vector<DictionaryAdditions> additions;
+  GetDictionaryAdditions(&additions);
   ASSERT_EQ(1u, additions.size());
-  EXPECT_EQ(URLRequestSpecifiedResponseJob::ExpectedResponseForURL(
-      dictionary_url), additions[0].dictionary_text);
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary_url),
+      additions[0].dictionary_text);
 }
 
 // Multiple fetches of the same URL should result in only one request.
@@ -167,11 +154,12 @@ TEST_F(SdchDictionaryFetcherTest, Multiple) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, JobsRequested());
-  std::vector<SdchTestDelegate::DictionaryAdditions> additions;
-  manager()->GetDictionaryAdditions(&additions);
+  std::vector<DictionaryAdditions> additions;
+  GetDictionaryAdditions(&additions);
   ASSERT_EQ(1u, additions.size());
-  EXPECT_EQ(URLRequestSpecifiedResponseJob::ExpectedResponseForURL(
-      dictionary_url), additions[0].dictionary_text);
+  EXPECT_EQ(
+      URLRequestSpecifiedResponseJob::ExpectedResponseForURL(dictionary_url),
+      additions[0].dictionary_text);
 }
 
 // A cancel should result in no actual requests being generated.
@@ -189,5 +177,4 @@ TEST_F(SdchDictionaryFetcherTest, Cancel) {
   // Synchronous execution may have resulted in a single job being scheduled.
   EXPECT_GE(1, JobsRequested());
 }
-
 }
