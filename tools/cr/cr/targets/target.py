@@ -29,8 +29,9 @@ class Target(cr.base.context.Context, cr.AutoExport):
   NOT_A_TEST = 'no'
   # The default choice for the type of test when it can't be determined.
   NORMAL_TEST = 'gtest'
+  INSTRUMENTATION_TEST = 'instrumentation'
   # TODO(iancottrell): support the other test types
-  TEST_TYPES = [NOT_A_TEST, NORMAL_TEST]
+  TEST_TYPES = [NOT_A_TEST, NORMAL_TEST, INSTRUMENTATION_TEST]
 
   def  __init__(self, target_name):
     super(Target, self).__init__(target_name)

@@ -21,5 +21,6 @@ class ChromeShellTestTarget(cr.NamedTarget):
   NAME = 'chrome_shell_test'
   CONFIG = cr.Config.From(
       CR_TARGET_NAME='ChromeShellTest',
+      CR_TEST_TYPE=cr.Target.INSTRUMENTATION_TEST,
   )
 

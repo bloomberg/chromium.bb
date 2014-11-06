@@ -117,12 +117,17 @@ class AdbRunner(cr.Runner):
 
   def Test(self, target, arguments):
     with target:
+      test_type = cr.context.Get('CR_TEST_TYPE')
+      if test_type == cr.Target.INSTRUMENTATION_TEST:
+        target_name_flag = '--test-apk'
+      else:
+        target_name_flag = '-s'
       cr.Host.Execute(
-        '{CR_TEST_RUNNER}', '{CR_TEST_TYPE}',
-        '-s', '{CR_TARGET_NAME}',
-        '--{CR_TEST_MODE}',
-        *arguments
-    )
+          '{CR_TEST_RUNNER}', test_type,
+          target_name_flag, '{CR_TARGET_NAME}',
+          '--{CR_TEST_MODE}',
+          *arguments
+      )
 
 
 class AdbInstaller(cr.Installer):

@@ -21,4 +21,5 @@ class ContentShellTestTarget(cr.NamedTarget):
   NAME = 'content_shell_test'
   CONFIG = cr.Config.From(
       CR_TARGET_NAME='ContentShellTest',
+      CR_TEST_TYPE=cr.Target.INSTRUMENTATION_TEST,
   )
