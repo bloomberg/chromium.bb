@@ -2028,7 +2028,6 @@ internal_paladin.add_config('wolf-paladin',
 
 internal_paladin.add_config('x86-zgb-paladin',
   boards=['x86-zgb'],
-  important=False,
   paladin_builder_name='x86-zgb paladin',
   hw_tests=HWTestConfig.DefaultListCQ(),
 )
@@ -2220,6 +2219,7 @@ def ShardHWTestsBetweenBuilders(*args):
 # Shard the bvt-inline and bvt-cq hw tests between similar builders.
 # The first builder gets bvt-inline, and the second builder gets bvt-cq.
 # bvt-cq takes longer, so it usually makes sense to give it the faster board.
+ShardHWTestsBetweenBuilders('x86-zgb-paladin', 'x86-alex-paladin')
 ShardHWTestsBetweenBuilders('wolf-paladin', 'peppy-paladin')
 ShardHWTestsBetweenBuilders('daisy-paladin', 'peach_pit-paladin')
 ShardHWTestsBetweenBuilders('lumpy-paladin', 'stumpy-paladin')
