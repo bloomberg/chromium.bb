@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import ConfigParser
 import cPickle
 import datetime
 import itertools
@@ -16,6 +17,7 @@ import time
 import tempfile
 
 sys.path.insert(0, os.path.abspath('%s/../../..' % os.path.dirname(__file__)))
+from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
@@ -401,6 +403,35 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
 
     self.sync_stage = sync_stages.PreCQLauncherStage(self._run)
 
+  def testVerificationsForChangeValidConfig(self):
+    change = MockPatch()
+    configs_to_test = cbuildbot_config.config.keys()[:5]
+    return_string = ' '.join(configs_to_test)
+    self.PatchObject(validation_pool, 'GetOptionForChange',
+                     return_value=return_string)
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     configs_to_test)
+
+  def testVerificationsForChangeMalformedConfigFile(self):
+    change = MockPatch()
+    self.PatchObject(validation_pool, 'GetOptionForChange',
+                     side_effect=ConfigParser.Error)
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     constants.PRE_CQ_DEFAULT_CONFIGS)
+
+  def testVerificationsForChangeNoSuchConfig(self):
+    change = MockPatch()
+    self.PatchObject(validation_pool, 'GetOptionForChange',
+                     return_value='this_config_does_not_exist')
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     constants.PRE_CQ_DEFAULT_CONFIGS)
+
+  def testVerificationsForChangeEmptyField(self):
+    change = MockPatch()
+    self.PatchObject(validation_pool, 'GetOptionForChange',
+                     return_value=' ')
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.

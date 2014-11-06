@@ -945,19 +945,27 @@ class PreCQLauncherStage(SyncStage):
     cros_build_lib.PrintBuildbotLink(' | '.join(items), patch.url)
 
 
-  @staticmethod
-  def VerificationsForChange(_change):
+  def VerificationsForChange(self, change):
     """Determine which configs to test |change| with.
 
     Args:
-      _change: GerritPatch instance to get configs-to-test for.
+      change: GerritPatch instance to get configs-to-test for.
 
     Returns:
       A list of configs.
     """
-    # TODO(akeshet): Screen CL's based on the contents of the CL rather than
-    # hard coding a single test config. crbug.com/384169
-    return [constants.PRE_CQ_GROUP_CONFIG]
+    configs_to_test = constants.PRE_CQ_DEFAULT_CONFIGS
+    try:
+      result = validation_pool.GetOptionForChange(
+          self._build_root, change, 'GENERAL', 'pre-cq-configs')
+      result = result.split()
+      if result and all(c in cbuildbot_config.config for c in result):
+        configs_to_test = result
+    except ConfigParser.Error:
+      cros_build_lib.Error('%s has malformed config file', change,
+                           exc_info=True)
+
+    return configs_to_test
 
 
   def ScreenChangeForPreCQ(self, change):

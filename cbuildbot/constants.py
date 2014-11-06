@@ -328,6 +328,9 @@ VALID_BUILD_TYPES = (
 # The name of the standard pre-cq testing config.
 PRE_CQ_GROUP_CONFIG = 'pre-cq-group'
 
+# The default list of pre-cq configs to use.
+PRE_CQ_DEFAULT_CONFIGS = [PRE_CQ_GROUP_CONFIG]
+
 # The name of the pre-cq launching config.
 PRE_CQ_LAUNCHER_CONFIG = 'pre-cq-launcher'
 
