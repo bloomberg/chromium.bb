@@ -822,11 +822,11 @@ void LayerPainter::paintChildClippingMaskForFragments(const LayerFragments& laye
         OwnPtr<ClipRecorder> clipRecorder;
         if (localPaintingInfo.clipToDirtyRect && needsToClip(localPaintingInfo, fragment.foregroundRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerFragmentClippingMask, fragment.foregroundRect));
-            applyRoundedRectClips(localPaintingInfo, context, fragment.foregroundRect, paintFlags, *clipRecorder, IncludeSelfForBorderRadius); // Child clipping mask painting will handle clipping to self.
+            applyRoundedRectClips(localPaintingInfo, context, fragment.foregroundRect, paintFlags, *clipRecorder, IncludeSelfForBorderRadius);
         }
 
         // Paint the the clipped mask.
-        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.backgroundRect.rect()), PaintPhaseClippingMask, PaintBehaviorNormal, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
+        PaintInfo paintInfo(context, pixelSnappedIntRect(fragment.foregroundRect.rect()), PaintPhaseClippingMask, PaintBehaviorNormal, paintingRootForRenderer, 0, localPaintingInfo.rootLayer->renderer());
         m_renderLayer.renderer()->paint(paintInfo, toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState())));
     }
 }
