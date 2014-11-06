@@ -117,6 +117,11 @@ public class ChromeShellTab extends Tab {
             public void onOpenInNewTab(String url, Referrer referrer) {
                 mTabManager.createTab(url, TabLaunchType.FROM_LINK);
             }
+
+            @Override
+            public void onOpenImageInNewTab(String url, Referrer referrer) {
+                mTabManager.createTab(url, TabLaunchType.FROM_LINK);
+            }
         });
     }
 
