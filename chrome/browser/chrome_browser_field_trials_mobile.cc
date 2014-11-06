@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
+#include "base/tracked_objects.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 
@@ -67,6 +68,10 @@ void SetupMobileFieldTrials(const CommandLine& parsed_command_line) {
   SetupDataCompressionProxyFieldTrials();
 #if defined(OS_ANDROID)
   prerender::ConfigurePrerender(parsed_command_line);
+
+  // Force-enable profiler timing depending on the field trial.
+  if (base::FieldTrialList::FindFullName("ProfilerTiming") == "Enable")
+    tracked_objects::ThreadData::EnableProfilerTiming();
 #endif
 }
 

@@ -54,18 +54,27 @@ const ThreadData::Status kInitialStartupState =
 // problem with its presence).
 static const bool kAllowAlternateTimeSourceHandling = true;
 
+// Possible states of the profiler timing enabledness.
+enum {
+  UNDEFINED_TIMING,
+  ENABLED_TIMING,
+  DISABLED_TIMING,
+};
+
+// State of the profiler timing enabledness.
+base::subtle::Atomic32 g_profiler_timing_enabled = UNDEFINED_TIMING;
+
+// Returns whether profiler timing is enabled. The default is true, but this may
+// be overridden by a command-line flag. Some platforms may programmatically set
+// this command-line flag to the "off" value if it's not specified.
+// This in turn can be overridden by explicitly calling
+// ThreadData::EnableProfilerTiming, say, based on a field trial.
 inline bool IsProfilerTimingEnabled() {
-  enum {
-    UNDEFINED_TIMING,
-    ENABLED_TIMING,
-    DISABLED_TIMING,
-  };
-  static base::subtle::Atomic32 timing_enabled = UNDEFINED_TIMING;
-  // Reading |timing_enabled| is done without barrier because multiple
-  // initialization is not an issue while the barrier can be relatively costly
-  // given that this method is sometimes called in a tight loop.
+  // Reading |g_profiler_timing_enabled| is done without barrier because
+  // multiple initialization is not an issue while the barrier can be relatively
+  // costly given that this method is sometimes called in a tight loop.
   base::subtle::Atomic32 current_timing_enabled =
-      base::subtle::NoBarrier_Load(&timing_enabled);
+      base::subtle::NoBarrier_Load(&g_profiler_timing_enabled);
   if (current_timing_enabled == UNDEFINED_TIMING) {
     if (!CommandLine::InitializedForCurrentProcess())
       return true;
@@ -75,7 +84,8 @@ inline bool IsProfilerTimingEnabled() {
          switches::kProfilerTimingDisabledValue)
             ? DISABLED_TIMING
             : ENABLED_TIMING;
-    base::subtle::NoBarrier_Store(&timing_enabled, current_timing_enabled);
+    base::subtle::NoBarrier_Store(&g_profiler_timing_enabled,
+                                  current_timing_enabled);
   }
   return current_timing_enabled == ENABLED_TIMING;
 }
@@ -772,6 +782,11 @@ void ThreadData::SetAlternateTimeSource(NowFunction* now_function) {
   DCHECK(now_function);
   if (kAllowAlternateTimeSourceHandling)
     now_function_ = now_function;
+}
+
+// static
+void ThreadData::EnableProfilerTiming() {
+  base::subtle::NoBarrier_Store(&g_profiler_timing_enabled, ENABLED_TIMING);
 }
 
 // static

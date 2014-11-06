@@ -466,6 +466,9 @@ class BASE_EXPORT ThreadData {
   // relationships can be (optionally) calculated.
   static void PrepareForStartOfRun(const Births* parent);
 
+  // Enables profiler timing.
+  static void EnableProfilerTiming();
+
   // Provide a time function that does nothing (runs fast) when we don't have
   // the profiler enabled.  It will generally be optimized away when it is
   // ifdef'ed to be small enough (allowing the profiler to be "compiled out" of
