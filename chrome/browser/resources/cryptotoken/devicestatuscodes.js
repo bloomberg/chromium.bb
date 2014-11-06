@@ -55,3 +55,4 @@ DeviceStatusCodes.BUSY_STATUS = -6;
  * @const
  */
 DeviceStatusCodes.GONE_STATUS = -8;
+

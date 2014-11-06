@@ -13,13 +13,13 @@ var signRequestQueue = new OriginKeyedRequestQueue();
 
 /**
  * Handles a web sign request.
- * @param {MessageSender} sender The sender of the message.
+ * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleWebSignRequest(sender, request, sendResponse) {
+function handleWebSignRequest(messageSender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
@@ -38,6 +38,12 @@ function handleWebSignRequest(sender, request, sendResponse) {
     sendResponseOnce(sentResponse, queuedSignRequest, response, sendResponse);
   }
 
+  var sender = createSenderFromMessageSender(messageSender);
+  if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
+  }
+
   queuedSignRequest =
       validateAndEnqueueSignRequest(
           sender, request, 'signData', sendErrorResponse,
@@ -47,13 +53,13 @@ function handleWebSignRequest(sender, request, sendResponse) {
 
 /**
  * Handles a U2F sign request.
- * @param {MessageSender} sender The sender of the message.
+ * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's sign request.
  * @param {Function} sendResponse Called back with the result of the sign.
  * @return {Closeable} Request handler that should be closed when the browser
  *     message channel is closed.
  */
-function handleU2fSignRequest(sender, request, sendResponse) {
+function handleU2fSignRequest(messageSender, request, sendResponse) {
   var sentResponse = false;
   var queuedSignRequest;
 
@@ -69,6 +75,12 @@ function handleU2fSignRequest(sender, request, sendResponse) {
         'clientData');
     var response = makeU2fSuccessResponse(request, responseData);
     sendResponseOnce(sentResponse, queuedSignRequest, response, sendResponse);
+  }
+
+  var sender = createSenderFromMessageSender(messageSender);
+  if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
 
   queuedSignRequest =
@@ -120,7 +132,7 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
 /**
  * Validates a sign request using the given sign challenges name, and, if valid,
  * enqueues the sign request for eventual processing.
- * @param {MessageSender} sender The sender of the message.
+ * @param {WebRequestSender} sender The sender of the message.
  * @param {Object} request The web page's sign request.
  * @param {string} signChallengesName The name of the sign challenges value in
  *     the request.
@@ -131,14 +143,6 @@ function addSignatureAndBrowserDataToResponseData(responseData, signatureData,
  */
 function validateAndEnqueueSignRequest(sender, request,
     signChallengesName, errorCb, successCb) {
-  var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
-  if (!origin) {
-    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
-    return null;
-  }
-  // More closure type inference fail.
-  var nonNullOrigin = /** @type {string} */ (origin);
-
   if (!isValidSignRequest(request, signChallengesName)) {
     errorCb({errorCode: ErrorCodes.BAD_REQUEST});
     return null;
@@ -148,9 +152,7 @@ function validateAndEnqueueSignRequest(sender, request,
   var appId;
   if (request['appId']) {
     appId = request['appId'];
-  } else {
-    // A valid sign data has at least one challenge, so get the appId from
-    // the first challenge.
+  } else if (signChallenges.length) {
     appId = signChallenges[0]['appId'];
   }
   // Sanity check
@@ -166,9 +168,9 @@ function validateAndEnqueueSignRequest(sender, request,
   // Queue sign requests from the same origin, to protect against simultaneous
   // sign-out on many tabs resulting in repeated sign-in requests.
   var queuedSignRequest = new QueuedSignRequest(signChallenges,
-      timer, nonNullOrigin, errorCb, successCb, appId, sender.tlsChannelId,
-      logMsgUrl);
-  var requestToken = signRequestQueue.queueRequest(appId, nonNullOrigin,
+      timer, sender, errorCb, successCb, request['challenge'],
+      appId, logMsgUrl);
+  var requestToken = signRequestQueue.queueRequest(appId, sender.origin,
       queuedSignRequest.begin.bind(queuedSignRequest), timer);
   queuedSignRequest.setToken(requestToken);
   return queuedSignRequest;
@@ -185,43 +187,46 @@ function isValidSignRequest(request, signChallengesName) {
   if (!request.hasOwnProperty(signChallengesName))
     return false;
   var signChallenges = request[signChallengesName];
-  // If a sign request contains an empty array of challenges, it could never
-  // be fulfilled. Fail.
-  if (!signChallenges.length)
-    return false;
+  var hasDefaultChallenge = request.hasOwnProperty('challenge');
   var hasAppId = request.hasOwnProperty('appId');
-  return isValidSignChallengeArray(signChallenges, !hasAppId);
+  // If the sign challenge array is empty, the global appId is required.
+  if (!hasAppId && (!signChallenges || !signChallenges.length)) {
+    return false;
+  }
+  return isValidSignChallengeArray(signChallenges, hasDefaultChallenge,
+      !hasAppId);
 }
 
 /**
  * Adapter class representing a queued sign request.
  * @param {!Array.<SignChallenge>} signChallenges The sign challenges.
  * @param {Countdown} timer Timeout timer
- * @param {string} origin Signature origin
+ * @param {WebRequestSender} sender Message sender.
  * @param {function(U2fError)} errorCb Error callback
  * @param {function(SignChallenge, string, string)} successCb Success callback
+ * @param {string|undefined} opt_defaultChallenge A default sign challenge
+ *     value, if a request does not provide one.
  * @param {string|undefined} opt_appId The app id for the entire request.
- * @param {string|undefined} opt_tlsChannelId TLS Channel Id
  * @param {string|undefined} opt_logMsgUrl Url to post log messages to
  * @constructor
  * @implements {Closeable}
  */
-function QueuedSignRequest(signChallenges, timer, origin, errorCb,
-    successCb, opt_appId, opt_tlsChannelId, opt_logMsgUrl) {
+function QueuedSignRequest(signChallenges, timer, sender, errorCb,
+    successCb, opt_defaultChallenge, opt_appId, opt_logMsgUrl) {
   /** @private {!Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
   /** @private {Countdown} */
   this.timer_ = timer;
-  /** @private {string} */
-  this.origin_ = origin;
+  /** @private {WebRequestSender} */
+  this.sender_ = sender;
   /** @private {function(U2fError)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
   /** @private {string|undefined} */
-  this.appId_ = opt_appId;
+  this.defaultChallenge_ = opt_defaultChallenge;
   /** @private {string|undefined} */
-  this.tlsChannelId_ = opt_tlsChannelId;
+  this.appId_ = opt_appId;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
   /** @private {boolean} */
@@ -257,10 +262,11 @@ QueuedSignRequest.prototype.setToken = function(token) {
 QueuedSignRequest.prototype.begin = function(token) {
   this.begun_ = true;
   this.setToken(token);
-  this.signer_ = new Signer(this.timer_, this.origin_,
+  this.signer_ = new Signer(this.timer_, this.sender_,
       this.signerFailed_.bind(this), this.signerSucceeded_.bind(this),
-      this.tlsChannelId_, this.logMsgUrl_);
-  if (!this.signer_.setChallenges(this.signChallenges_, this.appId_)) {
+      this.logMsgUrl_);
+  if (!this.signer_.setChallenges(this.signChallenges_, this.defaultChallenge_,
+      this.appId_)) {
     token.complete();
     this.errorCb_({errorCode: ErrorCodes.BAD_REQUEST});
   }
@@ -292,27 +298,22 @@ QueuedSignRequest.prototype.signerSucceeded_ =
 /**
  * Creates an object to track signing with a gnubby.
  * @param {Countdown} timer Timer for sign request.
- * @param {string} origin The origin making the request.
+ * @param {WebRequestSender} sender The message sender.
  * @param {function(U2fError)} errorCb Called when the sign operation fails.
  * @param {function(SignChallenge, string, string)} successCb Called when the
  *     sign operation succeeds.
- * @param {string=} opt_tlsChannelId the TLS channel ID, if any, of the origin
- *     making the request.
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Signer(timer, origin, errorCb, successCb,
-    opt_tlsChannelId, opt_logMsgUrl) {
+function Signer(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {Countdown} */
   this.timer_ = timer;
-  /** @private {string} */
-  this.origin_ = origin;
+  /** @private {WebRequestSender} */
+  this.sender_ = sender;
   /** @private {function(U2fError)} */
   this.errorCb_ = errorCb;
   /** @private {function(SignChallenge, string, string)} */
   this.successCb_ = successCb;
-  /** @private {string|undefined} */
-  this.tlsChannelId_ = opt_tlsChannelId;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
@@ -328,7 +329,8 @@ function Signer(timer, origin, errorCb, successCb,
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)
   /** @private {boolean} */
-  this.allowHttp_ = this.origin_ ? this.origin_.indexOf('http://') == 0 : false;
+  this.allowHttp_ = this.sender_.origin ?
+      this.sender_.origin.indexOf('http://') == 0 : false;
   /** @private {Closeable} */
   this.handler_ = null;
 }
@@ -336,14 +338,19 @@ function Signer(timer, origin, errorCb, successCb,
 /**
  * Sets the challenges to be signed.
  * @param {Array.<SignChallenge>} signChallenges The challenges to set.
+ * @param {string=} opt_defaultChallenge A default sign challenge
+ *     value, if a request does not provide one.
  * @param {string=} opt_appId The app id for the entire request.
  * @return {boolean} Whether the challenges could be set.
  */
-Signer.prototype.setChallenges = function(signChallenges, opt_appId) {
+Signer.prototype.setChallenges = function(signChallenges, opt_defaultChallenge,
+    opt_appId) {
   if (this.challengesSet_ || this.done_)
     return false;
   /** @private {Array.<SignChallenge>} */
   this.signChallenges_ = signChallenges;
+  /** @private {string|undefined} */
+  this.defaultChallenge_ = opt_defaultChallenge;
   /** @private {string|undefined} */
   this.appId_ = opt_appId;
   /** @private {boolean} */
@@ -370,7 +377,8 @@ Signer.prototype.checkAppIds_ = function() {
     this.notifyError_(error);
     return;
   }
-  FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
+  FACTORY_REGISTRY.getOriginChecker()
+      .canClaimAppIds(this.sender_.origin, appIds)
       .then(this.originChecked_.bind(this, appIds));
 };
 
@@ -393,7 +401,7 @@ Signer.prototype.originChecked_ = function(appIds, result) {
   }
   /** @private {!AppIdChecker} */
   this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
-      this.timer_.clone(), this.origin_,
+      this.timer_.clone(), this.sender_.origin,
       /** @type {!Array.<string>} */ (appIds), this.allowHttp_,
       this.logMsgUrl_);
   this.appIdChecker_.doCheck().then(this.appIdChecked_.bind(this));
@@ -429,17 +437,27 @@ Signer.prototype.doSign_ = function() {
   // Create the browser data for each challenge.
   for (var i = 0; i < this.signChallenges_.length; i++) {
     var challenge = this.signChallenges_[i];
-    var serverChallenge = challenge['challenge'];
+    var serverChallenge;
+    if (challenge.hasOwnProperty('challenge')) {
+      serverChallenge = challenge['challenge'];
+    } else {
+      serverChallenge = this.defaultChallenge_;
+    }
+    if (!serverChallenge) {
+      console.warn(UTIL_fmt('challenge missing'));
+      return false;
+    }
     var keyHandle = challenge['keyHandle'];
 
     var browserData =
-        makeSignBrowserData(serverChallenge, this.origin_, this.tlsChannelId_);
+        makeSignBrowserData(serverChallenge, this.sender_.origin,
+            this.sender_.tlsChannelId);
     this.browserData_[keyHandle] = browserData;
     this.serverChallenges_[keyHandle] = challenge;
   }
 
   var encodedChallenges = encodeSignChallenges(this.signChallenges_,
-      this.appId_, this.getChallengeHash_.bind(this));
+      this.defaultChallenge_, this.appId_, this.getChallengeHash_.bind(this));
 
   var timeoutSeconds = this.timer_.millisecondsUntilExpired() / 1000.0;
   var request = makeSignHelperRequest(encodedChallenges, timeoutSeconds,

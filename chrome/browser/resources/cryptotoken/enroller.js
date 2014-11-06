@@ -10,13 +10,13 @@
 
 /**
  * Handles a web enroll request.
- * @param {MessageSender} sender The sender of the message.
+ * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's enroll request.
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @return {Closeable} A handler object to be closed when the browser channel
  *     closes.
  */
-function handleWebEnrollRequest(sender, request, sendResponse) {
+function handleWebEnrollRequest(messageSender, request, sendResponse) {
   var sentResponse = false;
   var closeable = null;
 
@@ -31,7 +31,7 @@ function handleWebEnrollRequest(sender, request, sendResponse) {
     var enrollChallenge =
         findEnrollChallengeOfVersion(enrollChallenges, u2fVersion);
     if (!enrollChallenge) {
-      sendErrorResponse(ErrorCodes.OTHER_ERROR);
+      sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
       return;
     }
     var responseData =
@@ -39,6 +39,12 @@ function handleWebEnrollRequest(sender, request, sendResponse) {
             'enrollData', info, 'browserData', browserData);
     var response = makeWebSuccessResponse(request, responseData);
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
+  }
+
+  var sender = createSenderFromMessageSender(messageSender);
+  if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
 
   var enroller =
@@ -56,13 +62,13 @@ function handleWebEnrollRequest(sender, request, sendResponse) {
 
 /**
  * Handles a U2F enroll request.
- * @param {MessageSender} sender The sender of the message.
+ * @param {MessageSender} messageSender The message sender.
  * @param {Object} request The web page's enroll request.
  * @param {Function} sendResponse Called back with the result of the enroll.
  * @return {Closeable} A handler object to be closed when the browser channel
  *     closes.
  */
-function handleU2fEnrollRequest(sender, request, sendResponse) {
+function handleU2fEnrollRequest(messageSender, request, sendResponse) {
   var sentResponse = false;
   var closeable = null;
 
@@ -77,7 +83,7 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
     var enrollChallenge =
         findEnrollChallengeOfVersion(enrollChallenges, u2fVersion);
     if (!enrollChallenge) {
-      sendErrorResponse(ErrorCodes.OTHER_ERROR);
+      sendErrorResponse({errorCode: ErrorCodes.OTHER_ERROR});
       return;
     }
     var responseData =
@@ -85,6 +91,12 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
             'registrationData', info, 'clientData', browserData);
     var response = makeU2fSuccessResponse(request, responseData);
     sendResponseOnce(sentResponse, closeable, response, sendResponse);
+  }
+
+  var sender = createSenderFromMessageSender(messageSender);
+  if (!sender) {
+    sendErrorResponse({errorCode: ErrorCodes.BAD_REQUEST});
+    return null;
   }
 
   var enroller =
@@ -103,7 +115,7 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
 
 /**
  * Validates an enroll request using the given parameters.
- * @param {MessageSender} sender The sender of the message.
+ * @param {WebRequestSender} sender The sender of the message.
  * @param {Object} request The web page's enroll request.
  * @param {string} enrollChallengesName The name of the enroll challenges value
  *     in the request.
@@ -120,12 +132,6 @@ function handleU2fEnrollRequest(sender, request, sendResponse) {
 function validateEnrollRequest(sender, request,
     enrollChallengesName, signChallengesName, errorCb, successCb,
     opt_registeredKeysName) {
-  var origin = getOriginFromUrl(/** @type {string} */ (sender.url));
-  if (!origin) {
-    errorCb({errorCode: ErrorCodes.BAD_REQUEST});
-    return null;
-  }
-
   if (!isValidEnrollRequest(request, enrollChallengesName,
       signChallengesName, opt_registeredKeysName)) {
     errorCb({errorCode: ErrorCodes.BAD_REQUEST});
@@ -135,8 +141,7 @@ function validateEnrollRequest(sender, request,
   var timer = createTimerForRequest(
       FACTORY_REGISTRY.getCountdownFactory(), request);
   var logMsgUrl = request['logMsgUrl'];
-  var enroller = new Enroller(timer, origin, errorCb, successCb,
-      sender.tlsChannelId, logMsgUrl);
+  var enroller = new Enroller(timer, sender, errorCb, successCb, logMsgUrl);
   return enroller;
 }
 
@@ -164,7 +169,10 @@ function isValidEnrollRequest(request, enrollChallengesName,
   var signChallenges = request[signChallengesName];
   // A missing sign challenge array is ok, in the case the user is not already
   // enrolled.
-  if (signChallenges && !isValidSignChallengeArray(signChallenges, !hasAppId))
+  // A challenge value need not necessarily be supplied with every challenge.
+  var challengeRequired = false;
+  if (signChallenges &&
+      !isValidSignChallengeArray(signChallenges, challengeRequired, !hasAppId))
     return false;
   if (opt_registeredKeysName) {
     var registeredKeys = request[opt_registeredKeysName];
@@ -285,14 +293,18 @@ function getSignRequestsFromEnrollRequest(request, signChallengesName,
   var signChallenges;
   if (opt_registeredKeysName &&
       request.hasOwnProperty(opt_registeredKeysName)) {
-    // Convert registered keys to sign challenges by adding a challenge value.
     signChallenges = request[opt_registeredKeysName];
-    for (var i = 0; i < signChallenges.length; i++) {
-      // The actual value doesn't matter, as long as it's a string.
-      signChallenges[i]['challenge'] = '';
-    }
   } else {
     signChallenges = request[signChallengesName];
+  }
+  if (signChallenges) {
+    for (var i = 0; i < signChallenges.length; i++) {
+      // Make sure each sign challenge has a challenge value.
+      // The actual value doesn't matter, as long as it's a string.
+      if (!signChallenges[i].hasOwnProperty('challenge')) {
+        signChallenges[i]['challenge'] = '';
+      }
+    }
   }
   return signChallenges;
 }
@@ -300,28 +312,23 @@ function getSignRequestsFromEnrollRequest(request, signChallengesName,
 /**
  * Creates a new object to track enrolling with a gnubby.
  * @param {!Countdown} timer Timer for enroll request.
- * @param {string} origin The origin making the request.
+ * @param {!WebRequestSender} sender The sender of the request.
  * @param {function(U2fError)} errorCb Called upon enroll failure.
  * @param {function(string, string, (string|undefined))} successCb Called upon
  *     enroll success with the version of the succeeding gnubby, the enroll
  *     data, and optionally the browser data associated with the enrollment.
- * @param {string=} opt_tlsChannelId the TLS channel ID, if any, of the origin
- *     making the request.
  * @param {string=} opt_logMsgUrl The url to post log messages to.
  * @constructor
  */
-function Enroller(timer, origin, errorCb, successCb, opt_tlsChannelId,
-    opt_logMsgUrl) {
+function Enroller(timer, sender, errorCb, successCb, opt_logMsgUrl) {
   /** @private {Countdown} */
   this.timer_ = timer;
-  /** @private {string} */
-  this.origin_ = origin;
+  /** @private {WebRequestSender} */
+  this.sender_ = sender;
   /** @private {function(U2fError)} */
   this.errorCb_ = errorCb;
   /** @private {function(string, string, (string|undefined))} */
   this.successCb_ = successCb;
-  /** @private {string|undefined} */
-  this.tlsChannelId_ = opt_tlsChannelId;
   /** @private {string|undefined} */
   this.logMsgUrl_ = opt_logMsgUrl;
 
@@ -337,7 +344,8 @@ function Enroller(timer, origin, errorCb, successCb, opt_tlsChannelId,
   // Allow http appIds for http origins. (Broken, but the caller deserves
   // what they get.)
   /** @private {boolean} */
-  this.allowHttp_ = this.origin_ ? this.origin_.indexOf('http://') == 0 : false;
+  this.allowHttp_ =
+      this.sender_.origin ? this.sender_.origin.indexOf('http://') == 0 : false;
   /** @private {Closeable} */
   this.handler_ = null;
 }
@@ -356,9 +364,57 @@ Enroller.DEFAULT_TIMEOUT_MILLIS = 30 * 1000;
  */
 Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     opt_appId) {
+  /** @private {Array.<EnrollChallenge>} */
+  this.enrollChallenges_ = enrollChallenges;
+  /** @private {Array.<SignChallenge>} */
+  this.signChallenges_ = signChallenges;
+  /** @private {(string|undefined)} */
+  this.appId_ = opt_appId;
+  var self = this;
+  getTabIdWhenPossible(this.sender_).then(function() {
+    if (self.done_) return;
+    self.approveOrigin_();
+  }, function() {
+    self.close();
+    self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+  });
+};
+
+/**
+ * Ensures the user has approved this origin to use security keys, sending
+ * to the request to the handler if/when the user has done so.
+ * @private
+ */
+Enroller.prototype.approveOrigin_ = function() {
+  var self = this;
+  FACTORY_REGISTRY.getApprovedOrigins()
+      .isApprovedOrigin(this.sender_.origin, this.sender_.tabId)
+      .then(function(result) {
+        if (self.done_) return;
+        if (!result) {
+          // Origin not approved: fail the result.
+          self.notifyError_({errorCode: ErrorCodes.BAD_REQUEST});
+          return;
+        }
+        self.sendEnrollRequestToHelper_();
+      });
+};
+
+/**
+ * Performs an enroll request with this instance's enroll and sign challenges,
+ * by encoding them into a helper request and passing the resulting request to
+ * the factory registry's helper.
+ * @private
+ */
+Enroller.prototype.sendEnrollRequestToHelper_ = function() {
   var encodedEnrollChallenges =
-      this.encodeEnrollChallenges_(enrollChallenges, opt_appId);
-  var encodedSignChallenges = encodeSignChallenges(signChallenges, opt_appId);
+      this.encodeEnrollChallenges_(this.enrollChallenges_, this.appId_);
+  // If the request didn't contain a sign challenge, provide one. The value
+  // doesn't matter.
+  var defaultSignChallenge = '';
+  var encodedSignChallenges =
+      encodeSignChallenges(this.signChallenges_, defaultSignChallenge,
+          this.appId_);
   var request = {
     type: 'enroll_helper_request',
     enrollChallenges: encodedEnrollChallenges,
@@ -372,12 +428,12 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
 
   // Begin fetching/checking the app ids.
   var enrollAppIds = [];
-  if (opt_appId) {
-    enrollAppIds.push(opt_appId);
+  if (this.appId_) {
+    enrollAppIds.push(this.appId_);
   }
-  for (var i = 0; i < enrollChallenges.length; i++) {
-    if (enrollChallenges[i].hasOwnProperty('appId')) {
-      enrollAppIds.push(enrollChallenges[i]['appId']);
+  for (var i = 0; i < this.enrollChallenges_.length; i++) {
+    if (this.enrollChallenges_[i].hasOwnProperty('appId')) {
+      enrollAppIds.push(this.enrollChallenges_[i]['appId']);
     }
   }
   // Sanity check
@@ -387,7 +443,8 @@ Enroller.prototype.doEnroll = function(enrollChallenges, signChallenges,
     return;
   }
   var self = this;
-  this.checkAppIds_(enrollAppIds, signChallenges, function(result) {
+  this.checkAppIds_(enrollAppIds, function(result) {
+    if (self.done_) return;
     if (result) {
       self.handler_ = FACTORY_REGISTRY.getRequestHelper().getHandler(request);
       if (self.handler_) {
@@ -464,7 +521,7 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
       // other things, the server challenge.
       var serverChallenge = enrollChallenge['challenge'];
       var browserData = makeEnrollBrowserData(
-          serverChallenge, this.origin_, this.tlsChannelId_);
+          serverChallenge, this.sender_.origin, this.sender_.tlsChannelId);
       // Replace the challenge with the hash of the browser data.
       modifiedChallenge['challenge'] =
           B64_encode(sha256HashOfString(browserData));
@@ -485,15 +542,14 @@ Enroller.prototype.encodeEnrollChallenges_ = function(enrollChallenges,
  * with the result of the check.
  * @param {!Array.<string>} enrollAppIds The app ids in the enroll challenge
  *     portion of the enroll request.
- * @param {Array.<SignChallenge>} signChallenges The sign challenges associated
- *     with the request.
  * @param {function(boolean)} cb Called with the result of the check.
  * @private
  */
-Enroller.prototype.checkAppIds_ = function(enrollAppIds, signChallenges, cb) {
+Enroller.prototype.checkAppIds_ = function(enrollAppIds, cb) {
   var appIds =
-      UTIL_unionArrays(enrollAppIds, getDistinctAppIds(signChallenges));
-  FACTORY_REGISTRY.getOriginChecker().canClaimAppIds(this.origin_, appIds)
+      UTIL_unionArrays(enrollAppIds, getDistinctAppIds(this.signChallenges_));
+  FACTORY_REGISTRY.getOriginChecker()
+      .canClaimAppIds(this.sender_.origin, appIds)
       .then(this.originChecked_.bind(this, appIds, cb));
 };
 
@@ -513,7 +569,7 @@ Enroller.prototype.originChecked_ = function(appIds, cb, result) {
   }
   /** @private {!AppIdChecker} */
   this.appIdChecker_ = new AppIdChecker(FACTORY_REGISTRY.getTextFetcher(),
-      this.timer_.clone(), this.origin_, appIds, this.allowHttp_,
+      this.timer_.clone(), this.sender_.origin, appIds, this.allowHttp_,
       this.logMsgUrl_);
   this.appIdChecker_.doCheck().then(cb);
 };
@@ -527,6 +583,7 @@ Enroller.prototype.close = function() {
     this.handler_.close();
     this.handler_ = null;
   }
+  this.done_ = true;
 };
 
 /**

@@ -41,7 +41,9 @@ GstaticOriginChecker.prototype.checkAppId_ = function(origin, appId) {
     // Trivially allowed
     return true;
   }
-  if (/google.com$/.test(origin)) {
+  var anchor = document.createElement('a');
+  anchor.href = origin;
+  if (/google.com$/.test(anchor.hostname)) {
     return (appId.indexOf('https://www.gstatic.com') == 0 ||
         appId.indexOf('https://static.corp.google.com') == 0);
   }
