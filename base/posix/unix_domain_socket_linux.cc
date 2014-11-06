@@ -154,16 +154,12 @@ ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
     }
   }
 
-#if !defined(OS_NACL_NONSFI)
-  // The PNaCl toolchain for Non-SFI binary build does not support
-  // MSG_TRUNC or MSG_CTRUNC.
   if (msg.msg_flags & MSG_TRUNC || msg.msg_flags & MSG_CTRUNC) {
     for (unsigned i = 0; i < wire_fds_len; ++i)
       close(wire_fds[i]);
     errno = EMSGSIZE;
     return -1;
   }
-#endif
 
   if (wire_fds) {
     for (unsigned i = 0; i < wire_fds_len; ++i)

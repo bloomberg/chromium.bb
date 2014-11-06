@@ -950,15 +950,11 @@ bool ChannelPosix::ExtractFileDescriptorsFromMsghdr(msghdr* msg) {
                         file_descriptors,
                         file_descriptors + num_file_descriptors);
 
-#if !defined(OS_NACL_NONSFI)
-      // The PNaCl toolchain for Non-SFI binary build does not support
-      // MSG_CTRUNC.
       // Check this after adding the FDs so we don't leak them.
       if (msg->msg_flags & MSG_CTRUNC) {
         ClearInputFDs();
         return false;
       }
-#endif
 
       return true;
     }
