@@ -17,127 +17,6 @@ from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 
 
-def GetRelevantOverlaysForConfig(config, build_root):
-  """Returns a list of overlays relevant to |config|.
-
-  Args:
-    config: A cbuildbot config name.
-    build_root: Path to the build root.
-
-  Returns:
-    A set of overlays.
-  """
-  relevant_overlays = set()
-  for board in config.boards:
-    overlays = portage_util.FindOverlays(
-      constants.BOTH_OVERLAYS, board, build_root)
-    relevant_overlays.update(overlays)
-
-  return relevant_overlays
-
-
-def GetAffectedOverlays(change, manifest, all_overlays):
-  """Get the set of overlays affected by a given change.
-
-  Args:
-    change: The GerritPatch instance to look at.
-    manifest: A ManifestCheckout instance representing our build directory.
-    all_overlays: The set of all valid overlays.
-
-  Returns:
-    The set of overlays affected by the specified |change|. If the change
-    affected something other than an overlay, return None.
-  """
-  checkout = change.GetCheckout(manifest, strict=False)
-  if checkout:
-    git_repo = checkout.GetPath(absolute=True)
-
-    # The whole git repo is an overlay. Return it.
-    # Example: src/private-overlays/overlay-x86-zgb-private
-    if git_repo in all_overlays:
-      return set([git_repo])
-
-    # Get the set of immediate subdirs affected by the change.
-    # Example: src/overlays/overlay-x86-zgb
-    subdirs = set([os.path.join(git_repo, path.split(os.path.sep)[0])
-                   for path in change.GetDiffStatus(git_repo)])
-
-    # If all of the subdirs are overlays, return them.
-    if subdirs.issubset(all_overlays):
-      return subdirs
-
-
-class CategorizeChanges(object):
-  """A collection of methods to help categorize GerritPatch changes."""
-
-  @classmethod
-  def ClassifyOverlayChanges(cls, changes, config, build_root, manifest):
-    """Classifies overlay changes in |changes|.
-
-    Args:
-      changes: The list or set of GerritPatch instances.
-      config: The cbuildbot config.
-      build_root: Path to the build root.
-      manifest: A ManifestCheckout instance representing our build directory.
-
-    Returns:
-      A (overlay_changes, irrelevant_overlay_changes) tuple; overlay_changes
-      is a subset of |changes| that have modified one or more overlays, and
-      irrelevant_overlay_changes is a subset of overlay_changes which are
-      irrelevant to |config|.
-    """
-    visible_overlays = set(portage_util.FindOverlays(config.overlays, None,
-                                                     build_root))
-    # The overlays relevant to this build.
-    relevant_overlays = GetRelevantOverlaysForConfig(config, build_root)
-
-    overlay_changes = set()
-    irrelevant_overlay_changes = set()
-    for change in changes:
-      affected_overlays = GetAffectedOverlays(change, manifest,
-                                              visible_overlays)
-      if affected_overlays is not None:
-        # The change modifies an overlay.
-        overlay_changes.add(change)
-        if not any(x in relevant_overlays for x in affected_overlays):
-          # The change touched an irrelevant overlay.
-          irrelevant_overlay_changes.add(change)
-
-    return overlay_changes, irrelevant_overlay_changes
-
-  @classmethod
-  def GetIrrelevantChanges(cls, changes, config, build_root, manifest):
-    """Determine changes irrelavant to build |config|.
-
-    This method determine a set of changes that are irrelevant to the
-    build |config|. The general rule of thumb is that if we are unsure
-    whether a change is relevant, consider it relevant.
-
-    Args:
-      changes: The list or set of GerritPatch instances.
-      config: The cbuildbot config.
-      build_root: Path to the build root.
-      manifest: A ManifestCheckout instance representing our build directory.
-
-    Returns:
-      A subset of |changes| which are irrelevant to |config|.
-    """
-    untriaged_changes = set(changes)
-    irrelevant_changes = set()
-
-    # Handles overlay changes.
-    # ClassifyOverlayChanges only handles overlays visible to this
-    # build. For example, an external build may not be able to view
-    # the internal overlays. In those cases, the changes have been
-    # filtered out by the previous step.
-    overlay_changes, irrelevant_overlay_changes = cls.ClassifyOverlayChanges(
-        untriaged_changes, config, build_root, manifest)
-    untriaged_changes -= overlay_changes
-    irrelevant_changes |= irrelevant_overlay_changes
-
-    return irrelevant_changes
-
-
 class CalculateSuspects(object):
   """Diagnose the cause for a given set of failures."""
 
@@ -302,10 +181,42 @@ class CalculateSuspects(object):
       config = cbuildbot_config.config.get(bot_id)
       if not config:
         return None
-      responsible_overlays.update(
-          GetRelevantOverlaysForConfig(config, build_root))
-
+      for board in config.boards:
+        overlays = portage_util.FindOverlays(
+            constants.BOTH_OVERLAYS, board, build_root)
+        responsible_overlays.update(overlays)
     return responsible_overlays
+
+  @classmethod
+  def GetAffectedOverlays(cls, change, manifest, all_overlays):
+    """Get the set of overlays affected by a given change.
+
+    Args:
+      change: The change to look at.
+      manifest: A ManifestCheckout instance representing our build directory.
+      all_overlays: The set of all valid overlays.
+
+    Returns:
+      The set of overlays affected by the specified |change|. If the change
+      affected something other than an overlay, return None.
+    """
+    checkout = change.GetCheckout(manifest, strict=False)
+    if checkout:
+      git_repo = checkout.GetPath(absolute=True)
+
+      # The whole git repo is an overlay. Return it.
+      # Example: src/private-overlays/overlay-x86-zgb-private
+      if git_repo in all_overlays:
+        return set([git_repo])
+
+      # Get the set of immediate subdirs affected by the change.
+      # Example: src/overlays/overlay-x86-zgb
+      subdirs = set([os.path.join(git_repo, path.split(os.path.sep)[0])
+                     for path in change.GetDiffStatus(git_repo)])
+
+      # If all of the subdirs are overlays, return them.
+      if subdirs.issubset(all_overlays):
+        return subdirs
 
   @classmethod
   def FilterOutInnocentChanges(cls, build_root, changes, messages):
@@ -344,15 +255,15 @@ class CalculateSuspects(object):
     Returns:
       A list of the changes that we could not prove innocent.
     """
-    all_overlays = set(portage_util.FindOverlays(
-        constants.BOTH_OVERLAYS, None, build_root))
     responsible_overlays = cls.GetResponsibleOverlays(build_root, messages)
     if responsible_overlays is None:
       return changes
+    all_overlays = set(portage_util.FindOverlays(
+        constants.BOTH_OVERLAYS, None, build_root))
     manifest = git.ManifestCheckout.Cached(build_root)
     candidates = []
     for change in changes:
-      overlays = GetAffectedOverlays(change, manifest, all_overlays)
+      overlays = cls.GetAffectedOverlays(change, manifest, all_overlays)
       if overlays is None or overlays.issubset(responsible_overlays):
         candidates.append(change)
     return candidates

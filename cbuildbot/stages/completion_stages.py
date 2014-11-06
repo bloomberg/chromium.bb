@@ -13,7 +13,6 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import constants
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import tree_status
@@ -671,27 +670,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     sanity_check_slaves = sanity_check_slaves or []
     return not any([x in slave_statuses and slave_statuses[x].Failed() for
                     x in sanity_check_slaves])
-
-  def _RecordIrrelevantChanges(self):
-    """Calculates irrelevant changes and record them into cidb."""
-    # Get a ManifestCheckout instance using the original manifest
-    # created by the master.
-    manifest = git.ManifestCheckout.Cached(
-        self._build_root,
-        manifest_path=self._run.attrs.metadata.GetValue('local_manifest_path'))
-
-    changes = set(self.sync_stage.pool.changes)
-    irrelevant_changes = triage_lib.CategorizeChanges.GetIrrelevantChanges(
-        changes, self._run.config, self._build_root, manifest)
-    self.sync_stage.pool.RecordIrrelevantChanges(irrelevant_changes)
-
-  def PerformStage(self):
-    """Run CommitQueueCompletionStage."""
-    if not self._run.config.master:
-      # Slave needs to record what change are irrelevant to this build.
-      self._RecordIrrelevantChanges()
-
-    super(CommitQueueCompletionStage, self).PerformStage()
 
 
 class PreCQCompletionStage(generic_stages.BuilderStage):
