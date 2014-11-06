@@ -65,6 +65,12 @@ class CONTENT_EXPORT RemoteMediaStreamImpl {
 
     void InitializeOnMainThread(const std::string& label);
 
+    // Uninitializes the observer, unregisteres from receiving notifications
+    // and releases the webrtc stream.
+    // Note: Must be called from the main thread before releasing the main
+    // reference.
+    void Unregister();
+
    private:
     friend class base::RefCountedThreadSafe<Observer>;
     ~Observer() override;
@@ -78,8 +84,7 @@ class CONTENT_EXPORT RemoteMediaStreamImpl {
 
     base::WeakPtr<RemoteMediaStreamImpl> media_stream_;
     const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-    const scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
-    base::ThreadChecker ctor_thread_;
+    scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
   };
 
   void OnChanged(scoped_ptr<RemoteAudioTrackAdapters> audio_tracks,

@@ -328,8 +328,7 @@ RemoteMediaStreamImpl::Observer::Observer(
 }
 
 RemoteMediaStreamImpl::Observer::~Observer() {
-  DCHECK(ctor_thread_.CalledOnValidThread());
-  webrtc_stream_->UnregisterObserver(this);
+  DCHECK(!webrtc_stream_.get()) << "Unregister hasn't been called";
 }
 
 void RemoteMediaStreamImpl::Observer::InitializeOnMainThread(
@@ -337,6 +336,14 @@ void RemoteMediaStreamImpl::Observer::InitializeOnMainThread(
   DCHECK(main_thread_->BelongsToCurrentThread());
   if (media_stream_)
     media_stream_->InitializeOnMainThread(label);
+}
+
+void RemoteMediaStreamImpl::Observer::Unregister() {
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  webrtc_stream_->UnregisterObserver(this);
+  // Since we're guaranteed to not get further notifications, it's safe to
+  // release the webrtc_stream_ here.
+  webrtc_stream_ = nullptr;
 }
 
 void RemoteMediaStreamImpl::Observer::OnChanged() {
@@ -383,6 +390,7 @@ RemoteMediaStreamImpl::~RemoteMediaStreamImpl() {
   DCHECK(observer_->main_thread()->BelongsToCurrentThread());
   for (auto& track : audio_track_observers_)
     track->Unregister();
+  observer_->Unregister();
 }
 
 void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
