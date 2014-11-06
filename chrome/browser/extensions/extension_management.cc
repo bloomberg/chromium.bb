@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/extension_management.h"
 
 #include <algorithm>
-#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,6 +24,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
@@ -82,8 +82,21 @@ bool ExtensionManagement::BlacklistedByDefault() const {
 }
 
 ExtensionManagement::InstallationMode ExtensionManagement::GetInstallationMode(
-    const ExtensionId& id) const {
-  return ReadById(id)->installation_mode;
+    const Extension* extension) const {
+  // Check per-extension installation mode setting first.
+  auto iter_id = settings_by_id_.find(extension->id());
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->installation_mode;
+  std::string update_url;
+  // Check per-update-url installation mode setting.
+  if (extension->manifest()->GetString(manifest_keys::kUpdateURL,
+                                       &update_url)) {
+    auto iter_update_url = settings_by_update_url_.find(update_url);
+    if (iter_update_url != settings_by_update_url_.end())
+      return iter_update_url->second->installation_mode;
+  }
+  // Fall back to default installation mode setting.
+  return default_settings_->installation_mode;
 }
 
 scoped_ptr<base::DictionaryValue> ExtensionManagement::GetForceInstallList()
@@ -154,25 +167,50 @@ bool ExtensionManagement::IsAllowedManifestType(
          allowed_types.end();
 }
 
-const APIPermissionSet& ExtensionManagement::GetBlockedAPIPermissions(
-    const ExtensionId& id) const {
-  return ReadById(id)->blocked_permissions;
+APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
+    const Extension* extension) const {
+  // Fetch per-extension blocked permissions setting.
+  auto iter_id = settings_by_id_.find(extension->id());
+
+  // Fetch per-update-url blocked permissions setting.
+  std::string update_url;
+  auto iter_update_url = settings_by_update_url_.end();
+  if (extension->manifest()->GetString(manifest_keys::kUpdateURL,
+                                       &update_url)) {
+    iter_update_url = settings_by_update_url_.find(update_url);
+  }
+
+  if (iter_id != settings_by_id_.end() &&
+      iter_update_url != settings_by_update_url_.end()) {
+    // Blocked permissions setting are specified in both per-extension and
+    // per-update-url settings, try to merge them.
+    APIPermissionSet merged;
+    APIPermissionSet::Union(iter_id->second->blocked_permissions,
+                            iter_update_url->second->blocked_permissions,
+                            &merged);
+    return merged;
+  }
+  // Check whether if in one of them, setting is specified.
+  if (iter_id != settings_by_id_.end())
+    return iter_id->second->blocked_permissions;
+  if (iter_update_url != settings_by_update_url_.end())
+    return iter_update_url->second->blocked_permissions;
+  // Fall back to the default blocked permissions setting.
+  return default_settings_->blocked_permissions;
 }
 
 scoped_refptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(
-    const ExtensionId& id) const {
+    const Extension* extension) const {
   // Only api permissions are supported currently.
-  return scoped_refptr<const PermissionSet>(
-      new PermissionSet(GetBlockedAPIPermissions(id),
-                        ManifestPermissionSet(),
-                        URLPatternSet(),
-                        URLPatternSet()));
+  return scoped_refptr<const PermissionSet>(new PermissionSet(
+      GetBlockedAPIPermissions(extension), ManifestPermissionSet(),
+      URLPatternSet(), URLPatternSet()));
 }
 
 bool ExtensionManagement::IsPermissionSetAllowed(
-    const ExtensionId& id,
+    const Extension* extension,
     scoped_refptr<const PermissionSet> perms) const {
-  for (const auto& blocked_api : GetBlockedAPIPermissions(id)) {
+  for (const auto& blocked_api : GetBlockedAPIPermissions(extension)) {
     if (perms->HasAPIPermission(blocked_api->id()))
       return false;
   }
@@ -314,19 +352,35 @@ void ExtensionManagement::Refresh() {
         continue;
       if (!iter.value().GetAsDictionary(&subdict))
         continue;
-      if (StartsWithASCII(iter.key(), schema_constants::kUpdateUrlPrefix, true))
-        continue;
-      const std::string& extension_id = iter.key();
-      if (!crx_file::id_util::IdIsValid(extension_id)) {
-        LOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
-        continue;
-      }
-      internal::IndividualSettings* by_id = AccessById(extension_id);
-      if (!by_id->Parse(subdict,
-                        internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
-        settings_by_id_.erase(extension_id);
-        LOG(WARNING) << "Malformed Extension Management settings for "
-                     << extension_id << ".";
+      if (StartsWithASCII(iter.key(), schema_constants::kUpdateUrlPrefix,
+                          true)) {
+        const std::string& update_url =
+            iter.key().substr(strlen(schema_constants::kUpdateUrlPrefix));
+        if (!GURL(update_url).is_valid()) {
+          LOG(WARNING) << "Invalid update URL: " << update_url << ".";
+          continue;
+        }
+        internal::IndividualSettings* by_update_url =
+            AccessByUpdateUrl(update_url);
+        if (!by_update_url->Parse(
+                subdict, internal::IndividualSettings::SCOPE_UPDATE_URL)) {
+          settings_by_update_url_.erase(update_url);
+          LOG(WARNING) << "Malformed Extension Management settings for "
+                          "extensions with update url: " << update_url << ".";
+        }
+      } else {
+        const std::string& extension_id = iter.key();
+        if (!crx_file::id_util::IdIsValid(extension_id)) {
+          LOG(WARNING) << "Invalid extension ID : " << extension_id << ".";
+          continue;
+        }
+        internal::IndividualSettings* by_id = AccessById(extension_id);
+        if (!by_id->Parse(subdict,
+                          internal::IndividualSettings::SCOPE_INDIVIDUAL)) {
+          settings_by_id_.erase(extension_id);
+          LOG(WARNING) << "Malformed Extension Management settings for "
+                       << extension_id << ".";
+        }
       }
     }
   }
@@ -359,20 +413,6 @@ void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
       Observer, observer_list_, OnExtensionManagementSettingsChanged());
 }
 
-const internal::IndividualSettings* ExtensionManagement::ReadById(
-    const ExtensionId& id) const {
-  DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
-  SettingsIdMap::const_iterator it = settings_by_id_.find(id);
-  if (it != settings_by_id_.end())
-    return it->second;
-  return default_settings_.get();
-}
-
-const internal::GlobalSettings* ExtensionManagement::ReadGlobalSettings()
-    const {
-  return global_settings_.get();
-}
-
 internal::IndividualSettings* ExtensionManagement::AccessById(
     const ExtensionId& id) {
   DCHECK(crx_file::id_util::IdIsValid(id)) << "Invalid ID: " << id;
@@ -381,6 +421,18 @@ internal::IndividualSettings* ExtensionManagement::AccessById(
     scoped_ptr<internal::IndividualSettings> settings(
         new internal::IndividualSettings(*default_settings_));
     it = settings_by_id_.add(id, settings.Pass()).first;
+  }
+  return it->second;
+}
+
+internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
+    const std::string& update_url) {
+  DCHECK(GURL(update_url).is_valid()) << "Invalid update URL: " << update_url;
+  SettingsUpdateUrlMap::iterator it = settings_by_update_url_.find(update_url);
+  if (it == settings_by_update_url_.end()) {
+    scoped_ptr<internal::IndividualSettings> settings(
+        new internal::IndividualSettings(*default_settings_));
+    it = settings_by_update_url_.add(update_url, settings.Pass()).first;
   }
   return it->second;
 }

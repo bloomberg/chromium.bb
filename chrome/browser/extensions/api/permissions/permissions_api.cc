@@ -186,8 +186,7 @@ bool PermissionsRequestFunction::RunAsync() {
   // Automatically declines api permissions requests, which are blocked by
   // enterprise policy.
   if (!ExtensionManagementFactory::GetForBrowserContext(GetProfile())
-           ->IsPermissionSetAllowed(extension()->id(),
-                                    requested_permissions_)) {
+           ->IsPermissionSetAllowed(extension(), requested_permissions_)) {
     error_ = kBlockedByEnterprisePolicy;
     return false;
   }

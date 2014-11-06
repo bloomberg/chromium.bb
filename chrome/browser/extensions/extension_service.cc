@@ -1718,11 +1718,11 @@ void ExtensionService::OnExtensionManagementSettingsChanged() {
       registry_->GenerateInstalledExtensionsSet());
   for (const auto& extension : *all_extensions.get()) {
     if (!settings->IsPermissionSetAllowed(
-            extension->id(),
+            extension.get(),
             extension->permissions_data()->active_permissions())) {
       extensions::PermissionsUpdater(profile()).RemovePermissions(
           extension.get(),
-          settings->GetBlockedPermissions(extension->id()).get());
+          settings->GetBlockedPermissions(extension.get()).get());
     }
   }
 

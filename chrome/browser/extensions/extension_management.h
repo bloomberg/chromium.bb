@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_MANAGEMENT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/containers/scoped_ptr_hash_map.h"
@@ -88,7 +89,7 @@ class ExtensionManagement : public KeyedService {
   bool BlacklistedByDefault() const;
 
   // Returns installation mode for an extension.
-  InstallationMode GetInstallationMode(const ExtensionId& id) const;
+  InstallationMode GetInstallationMode(const Extension* extension) const;
 
   // Returns the force install list, in format specified by
   // ExternalPolicyLoader::AddExtension().
@@ -109,20 +110,22 @@ class ExtensionManagement : public KeyedService {
   // allowed to be installed.
   bool IsAllowedManifestType(Manifest::Type manifest_type) const;
 
-  // Returns the list of blocked API permissions for the extension |id|.
-  const APIPermissionSet& GetBlockedAPIPermissions(const ExtensionId& id) const;
+  // Returns the list of blocked API permissions for |extension|.
+  APIPermissionSet GetBlockedAPIPermissions(const Extension* extension) const;
 
-  // Returns blocked permission set for extension |id|.
+  // Returns blocked permission set for |extension|.
   scoped_refptr<const PermissionSet> GetBlockedPermissions(
-      const ExtensionId& id) const;
+      const Extension* extension) const;
 
-  // Returns true if every permission in |perms| is allowed for extension |id|.
-  bool IsPermissionSetAllowed(const ExtensionId& id,
+  // Returns true if every permission in |perms| is allowed for |extension|.
+  bool IsPermissionSetAllowed(const Extension* extension,
                               scoped_refptr<const PermissionSet> perms) const;
 
  private:
   typedef base::ScopedPtrHashMap<ExtensionId, internal::IndividualSettings>
       SettingsIdMap;
+  typedef base::ScopedPtrHashMap<std::string, internal::IndividualSettings>
+      SettingsUpdateUrlMap;
   friend class ExtensionManagementServiceTest;
 
   // Load all extension management preferences from |pref_service|, and
@@ -140,24 +143,24 @@ class ExtensionManagement : public KeyedService {
   void OnExtensionPrefChanged();
   void NotifyExtensionManagementPrefChanged();
 
-  // Helper function to read |settings_by_id_| with |id| as key. Returns a
-  // constant reference to default settings if |id| does not exist.
-  const internal::IndividualSettings* ReadById(const ExtensionId& id) const;
-
-  // Returns a constant reference to |global_settings_|.
-  const internal::GlobalSettings* ReadGlobalSettings() const;
-
   // Helper function to access |settings_by_id_| with |id| as key.
   // Adds a new IndividualSettings entry to |settings_by_id_| if none exists for
   // |id| yet.
   internal::IndividualSettings* AccessById(const ExtensionId& id);
 
+  // Similar to AccessById(), but access |settings_by_update_url_| instead.
+  internal::IndividualSettings* AccessByUpdateUrl(
+      const std::string& update_url);
+
   // A map containing all IndividualSettings applied to an individual extension
   // identified by extension ID. The extension ID is used as index key of the
   // map.
-  // TODO(binjin): Add |settings_by_update_url_|, and implement mechanism for
-  // it.
   SettingsIdMap settings_by_id_;
+
+  // Similar to |settings_by_id_|, but contains the settings for a group of
+  // extensions with same update URL. The update url itself is used as index
+  // key for the map.
+  SettingsUpdateUrlMap settings_by_update_url_;
 
   // The default IndividualSettings.
   // For extension settings applied to an individual extension (identified by

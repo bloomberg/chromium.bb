@@ -33,8 +33,10 @@ const char kTargetExtension[] = "abcdefghijklmnopabcdefghijklmnop";
 const char kTargetExtension2[] = "bcdefghijklmnopabcdefghijklmnopa";
 const char kTargetExtension3[] = "cdefghijklmnopabcdefghijklmnopab";
 const char kTargetExtension4[] = "defghijklmnopabcdefghijklmnopabc";
-const char kOtherExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char kExampleUpdateUrl[] = "http://example.com/update_url";
+
+const char kNonExistingExtension[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kNonExistingUpdateUrl[] = "http://example.net/update.xml";
 
 const char kExampleDictPreference[] =
     "{"
@@ -55,6 +57,11 @@ const char kExampleDictPreference[] =
     "  },"
     "  \"defghijklmnopabcdefghijklmnopabc\": {"  // kTargetExtension4
     "    \"installation_mode\": \"blocked\","
+    "  },"
+    "  \"update_url:http://example.com/update_url\": {"  // kExampleUpdateUrl
+    "    \"installation_mode\": \"allowed\","
+    "    \"allowed_permissions\": [\"downloads\"],"
+    "    \"blocked_permissions\": [\"bookmarks\"],"
     "  },"
     "  \"*\": {"
     "    \"installation_mode\": \"blocked\","
@@ -105,12 +112,38 @@ class ExtensionManagementServiceTest : public testing::Test {
       pref_service_->RemoveUserPref(path);
   }
 
-  const internal::IndividualSettings* ReadById(const ExtensionId& id) {
-    return extension_management_->ReadById(id);
+  const internal::GlobalSettings* ReadGlobalSettings() {
+    return extension_management_->global_settings_.get();
   }
 
-  const internal::GlobalSettings* ReadGlobalSettings() {
-    return extension_management_->ReadGlobalSettings();
+  ExtensionManagement::InstallationMode GetInstallationModeById(
+      const std::string& id) {
+    return GetInstallationMode(id, kNonExistingUpdateUrl);
+  }
+
+  ExtensionManagement::InstallationMode GetInstallationModeByUpdateUrl(
+      const std::string& update_url) {
+    return GetInstallationMode(kNonExistingExtension, update_url);
+  }
+
+  void CheckAutomaticallyInstalledUpdateUrl(const std::string& id,
+                                            const std::string& update_url) {
+    auto iter = extension_management_->settings_by_id_.find(id);
+    ASSERT_TRUE(iter != extension_management_->settings_by_id_.end());
+    ASSERT_TRUE((iter->second->installation_mode ==
+                 ExtensionManagement::INSTALLATION_FORCED) ||
+                (iter->second->installation_mode ==
+                 ExtensionManagement::INSTALLATION_RECOMMENDED));
+    EXPECT_EQ(iter->second->update_url, update_url);
+  }
+
+  APIPermissionSet GetBlockedAPIPermissionsById(const std::string& id) {
+    return GetBlockedAPIPermissions(id, kNonExistingUpdateUrl);
+  }
+
+  APIPermissionSet GetBlockedAPIPermissionsByUpdateUrl(
+      const std::string& update_url) {
+    return GetBlockedAPIPermissions(kNonExistingExtension, update_url);
   }
 
   void SetExampleDictPref() {
@@ -125,9 +158,42 @@ class ExtensionManagementServiceTest : public testing::Test {
     SetPref(true, pref_names::kExtensionManagement, parsed.release());
   }
 
+  ExtensionManagement::InstallationMode GetInstallationMode(
+      const std::string& id,
+      const std::string& update_url) {
+    scoped_refptr<const Extension> extension =
+        CreateExtensionWithIdAndUpdateUrl(Manifest::UNPACKED, id, update_url);
+    return extension_management_->GetInstallationMode(extension.get());
+  }
+
+  APIPermissionSet GetBlockedAPIPermissions(const std::string& id,
+                                            const std::string& update_url) {
+    scoped_refptr<const Extension> extension =
+        CreateExtensionWithIdAndUpdateUrl(Manifest::UNPACKED, id, update_url);
+    return extension_management_->GetBlockedAPIPermissions(extension.get());
+  }
+
  protected:
   scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<ExtensionManagement> extension_management_;
+
+ private:
+  // Create an extension with specified |location|, |id| and |update_url|.
+  scoped_refptr<const Extension> CreateExtensionWithIdAndUpdateUrl(
+      Manifest::Location location,
+      const std::string& id,
+      const std::string& update_url) {
+    base::DictionaryValue manifest_dict;
+    manifest_dict.SetString(manifest_keys::kName, "test");
+    manifest_dict.SetString(manifest_keys::kVersion, "0.1");
+    manifest_dict.SetString(manifest_keys::kUpdateURL, update_url);
+    std::string error;
+    scoped_refptr<const Extension> extension =
+        Extension::Create(base::FilePath(), location, manifest_dict,
+                          Extension::NO_FLAGS, id, &error);
+    CHECK(extension.get()) << error;
+    return extension;
+  }
 };
 
 class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
@@ -267,9 +333,9 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallBlacklist) {
   denied_list_pref.AppendString(kTargetExtension);
 
   SetPref(true, pref_names::kInstallDenyList, denied_list_pref.DeepCopy());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
@@ -283,15 +349,15 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallWhitelist) {
 
   SetPref(true, pref_names::kInstallDenyList, denied_list_pref.DeepCopy());
   SetPref(true, pref_names::kInstallAllowList, allowed_list_pref.DeepCopy());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 
   // Verify that install whitelist preference set by user is ignored.
   RemovePref(true, pref_names::kInstallAllowList);
   SetPref(false, pref_names::kInstallAllowList, allowed_list_pref.DeepCopy());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 }
 
@@ -303,16 +369,16 @@ TEST_F(ExtensionManagementServiceTest, LegacyInstallForcelist) {
       &forced_list_pref, kTargetExtension, kExampleUpdateUrl);
 
   SetPref(true, pref_names::kInstallForceList, forced_list_pref.DeepCopy());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_FORCED);
-  EXPECT_EQ(ReadById(kTargetExtension)->update_url, kExampleUpdateUrl);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  CheckAutomaticallyInstalledUpdateUrl(kTargetExtension, kExampleUpdateUrl);
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 
   // Verify that install forcelist preference set by user is ignored.
   RemovePref(true, pref_names::kInstallForceList);
   SetPref(false, pref_names::kInstallForceList, forced_list_pref.DeepCopy());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
@@ -322,16 +388,18 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
 
   // Verifies the installation mode settings.
   EXPECT_TRUE(extension_management_->BlacklistedByDefault());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
-  EXPECT_EQ(ReadById(kTargetExtension2)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
             ExtensionManagement::INSTALLATION_FORCED);
-  EXPECT_EQ(ReadById(kTargetExtension2)->update_url, kExampleUpdateUrl);
-  EXPECT_EQ(ReadById(kTargetExtension3)->installation_mode,
+  CheckAutomaticallyInstalledUpdateUrl(kTargetExtension2, kExampleUpdateUrl);
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension3),
             ExtensionManagement::INSTALLATION_RECOMMENDED);
-  EXPECT_EQ(ReadById(kTargetExtension3)->update_url, kExampleUpdateUrl);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  CheckAutomaticallyInstalledUpdateUrl(kTargetExtension3, kExampleUpdateUrl);
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
+  EXPECT_EQ(GetInstallationModeByUpdateUrl(kExampleUpdateUrl),
+            ExtensionManagement::INSTALLATION_ALLOWED);
 
   // Verifies global settings.
   EXPECT_TRUE(ReadGlobalSettings()->has_restricted_install_sources);
@@ -357,25 +425,76 @@ TEST_F(ExtensionManagementServiceTest, PreferenceParsing) {
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kDownloads);
   EXPECT_EQ(api_permission_set,
-            extension_management_->GetBlockedAPIPermissions(kOtherExtension));
+            GetBlockedAPIPermissionsById(kNonExistingExtension));
 
   api_permission_set.clear();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kDownloads);
   api_permission_set.insert(APIPermission::kBookmark);
-  EXPECT_EQ(api_permission_set,
-            extension_management_->GetBlockedAPIPermissions(kTargetExtension));
+  EXPECT_EQ(api_permission_set, GetBlockedAPIPermissionsById(kTargetExtension));
 
   api_permission_set.clear();
   api_permission_set.insert(APIPermission::kDownloads);
   EXPECT_EQ(api_permission_set,
-            extension_management_->GetBlockedAPIPermissions(kTargetExtension2));
+            GetBlockedAPIPermissionsById(kTargetExtension2));
 
   api_permission_set.clear();
   api_permission_set.insert(APIPermission::kFileSystem);
   api_permission_set.insert(APIPermission::kHistory);
   EXPECT_EQ(api_permission_set,
-            extension_management_->GetBlockedAPIPermissions(kTargetExtension3));
+            GetBlockedAPIPermissionsById(kTargetExtension3));
+
+  api_permission_set.clear();
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kBookmark);
+  EXPECT_EQ(api_permission_set,
+            GetBlockedAPIPermissionsByUpdateUrl(kExampleUpdateUrl));
+}
+
+// Tests the handling of installation mode in case it's specified in both
+// per-extension and per-update-url settings.
+TEST_F(ExtensionManagementServiceTest, InstallationModeConflictHandling) {
+  SetExampleDictPref();
+
+  // Per-extension installation mode settings should always override
+  // per-update-url settings.
+  EXPECT_EQ(GetInstallationMode(kTargetExtension, kExampleUpdateUrl),
+            ExtensionManagement::INSTALLATION_ALLOWED);
+  EXPECT_EQ(GetInstallationMode(kTargetExtension2, kExampleUpdateUrl),
+            ExtensionManagement::INSTALLATION_FORCED);
+  EXPECT_EQ(GetInstallationMode(kTargetExtension3, kExampleUpdateUrl),
+            ExtensionManagement::INSTALLATION_RECOMMENDED);
+}
+
+// Tests the handling of blocked permissions in case it's specified in both
+// per-extension and per-update-url settings.
+TEST_F(ExtensionManagementServiceTest, BlockedPermissionsConflictHandling) {
+  SetExampleDictPref();
+
+  // Both settings should be enforced.
+  APIPermissionSet blocked_permissions_for_update_url;
+  blocked_permissions_for_update_url.insert(APIPermission::kFileSystem);
+  blocked_permissions_for_update_url.insert(APIPermission::kBookmark);
+
+  APIPermissionSet api_permission_set;
+
+  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kDownloads);
+  api_permission_set.insert(APIPermission::kBookmark);
+  EXPECT_EQ(api_permission_set,
+            GetBlockedAPIPermissions(kTargetExtension, kExampleUpdateUrl));
+
+  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set.insert(APIPermission::kDownloads);
+  EXPECT_EQ(api_permission_set,
+            GetBlockedAPIPermissions(kTargetExtension2, kExampleUpdateUrl));
+
+  api_permission_set = blocked_permissions_for_update_url;
+  api_permission_set.insert(APIPermission::kFileSystem);
+  api_permission_set.insert(APIPermission::kHistory);
+  EXPECT_EQ(api_permission_set,
+            GetBlockedAPIPermissions(kTargetExtension3, kExampleUpdateUrl));
 }
 
 // Tests functionality of new preference as to deprecate legacy
@@ -449,12 +568,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
     updater.SetBlacklistedByDefault(false);  // Allowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, false);
     updater.ClearPerExtensionSettings(kTargetExtension2);
-    updater.ClearPerExtensionSettings(kOtherExtension);
   }
   EXPECT_FALSE(extension_management_->BlacklistedByDefault());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 
   // Set legacy preference.
@@ -469,11 +587,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallBlacklist) {
 
   // Verifies that the new one have higher priority over the legacy ones.
   EXPECT_FALSE(extension_management_->BlacklistedByDefault());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
-  EXPECT_EQ(ReadById(kTargetExtension2)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
             ExtensionManagement::INSTALLATION_BLOCKED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
@@ -486,12 +604,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
     updater.SetBlacklistedByDefault(true);  // Disallowed by default.
     updater.SetIndividualExtensionInstallationAllowed(kTargetExtension, true);
     updater.ClearPerExtensionSettings(kTargetExtension2);
-    updater.ClearPerExtensionSettings(kOtherExtension);
   }
   EXPECT_TRUE(extension_management_->BlacklistedByDefault());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 
   // Set legacy preference.
@@ -505,11 +622,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallWhitelist) {
 
   // Verifies that the new one have higher priority over the legacy ones.
   EXPECT_TRUE(extension_management_->BlacklistedByDefault());
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
-  EXPECT_EQ(ReadById(kTargetExtension2)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension2),
             ExtensionManagement::INSTALLATION_ALLOWED);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_BLOCKED);
 }
 
@@ -527,12 +644,11 @@ TEST_F(ExtensionManagementServiceTest, NewInstallForcelist) {
     PrefUpdater updater(pref_service_.get());
     updater.SetIndividualExtensionAutoInstalled(
         kTargetExtension, kExampleUpdateUrl, true);
-    updater.ClearPerExtensionSettings(kOtherExtension);
   }
-  EXPECT_EQ(ReadById(kTargetExtension)->installation_mode,
+  EXPECT_EQ(GetInstallationModeById(kTargetExtension),
             ExtensionManagement::INSTALLATION_FORCED);
-  EXPECT_EQ(ReadById(kTargetExtension)->update_url, kExampleUpdateUrl);
-  EXPECT_EQ(ReadById(kOtherExtension)->installation_mode,
+  CheckAutomaticallyInstalledUpdateUrl(kTargetExtension, kExampleUpdateUrl);
+  EXPECT_EQ(GetInstallationModeById(kNonExistingExtension),
             ExtensionManagement::INSTALLATION_ALLOWED);
 }
 
@@ -546,7 +662,7 @@ TEST_F(ExtensionManagementServiceTest, IsInstallationExplicitlyAllowed) {
   const char* forced  = kTargetExtension2;
   const char* recommended = kTargetExtension3;
   const char* blocked = kTargetExtension4;
-  const char* not_specified = kOtherExtension;
+  const char* not_specified = kNonExistingExtension;
 
   // BlacklistedByDefault() is true in example preference.
   EXPECT_TRUE(extension_management_->IsInstallationExplicitlyAllowed(allowed));
@@ -578,7 +694,7 @@ TEST_F(ExtensionAdminPolicyTest, BlacklistedByDefault) {
   EXPECT_FALSE(BlacklistedByDefault(NULL));
 
   base::ListValue blacklist;
-  blacklist.Append(new base::StringValue(kOtherExtension));
+  blacklist.Append(new base::StringValue(kNonExistingExtension));
   EXPECT_FALSE(BlacklistedByDefault(&blacklist));
   blacklist.Append(new base::StringValue("*"));
   EXPECT_TRUE(BlacklistedByDefault(&blacklist));

@@ -83,7 +83,7 @@ bool StandardManagementPolicyProvider::UserMayLoad(
     return true;
 
   ExtensionManagement::InstallationMode installation_mode =
-      settings_->GetInstallationMode(extension->id());
+      settings_->GetInstallationMode(extension);
 
   // Force-installed extensions cannot be overwritten manually.
   if (!Manifest::IsPolicyLocation(extension->location()) &&
@@ -142,7 +142,7 @@ bool StandardManagementPolicyProvider::MustRemainInstalled(
     const Extension* extension,
     base::string16* error) const {
   ExtensionManagement::InstallationMode mode =
-      settings_->GetInstallationMode(extension->id());
+      settings_->GetInstallationMode(extension);
   // Disallow removing of recommended extension, to avoid re-install it
   // again while policy is reload. But disabling of recommended extension is
   // allowed.
