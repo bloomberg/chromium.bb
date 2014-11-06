@@ -1082,7 +1082,8 @@ class PreCQLauncherStage(SyncStage):
       # approval time and local clock for launch delay.
       elif any(x.approval_timestamp + self.LAUNCH_DELAY * 60 > time.time()
                for x in plan):
-        logging.info('CLs waiting on launch delay: %r', plan)
+        logging.info('CLs waiting on launch delay: %r',
+                     ' '.join(map(str, plan)))
       else:
         pending_configs = clactions.GetPreCQConfigsToTest(plan, progress_map)
         for config in pending_configs:
