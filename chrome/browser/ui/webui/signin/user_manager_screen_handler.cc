@@ -725,11 +725,13 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
 
   // Unlock the profile after browser opens so startup can read the lock bit.
   // Any necessary authentication must have been successful to reach this point.
-  ProfileInfoCache& info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
-  size_t index = info_cache.GetIndexOfProfileWithPath(
-      browser->profile()->GetPath());
-  info_cache.SetProfileSigninRequiredAtIndex(index, false);
+  if (!browser->profile()->IsGuestSession()) {
+    ProfileInfoCache& info_cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t index = info_cache.GetIndexOfProfileWithPath(
+        browser->profile()->GetPath());
+    info_cache.SetProfileSigninRequiredAtIndex(index, false);
+  }
 
   if (url_hash_ == profiles::kUserManagerSelectProfileTaskManager) {
     base::MessageLoop::current()->PostTask(
