@@ -127,7 +127,7 @@ void AddVectorHeaderIfNonEmpty(const char* name,
 GetHeaderResult GetSingleHeaderValue(const HttpResponseHeaders* headers,
                                      const base::StringPiece& name,
                                      std::string* value) {
-  void* state = NULL;
+  void* state = nullptr;
   size_t num_values = 0;
   std::string temp_value;
   while (headers->EnumerateHeader(&state, name, &temp_value)) {
@@ -211,7 +211,7 @@ bool ValidateSubProtocol(
     const std::vector<std::string>& requested_sub_protocols,
     std::string* sub_protocol,
     std::string* failure_message) {
-  void* state = NULL;
+  void* state = nullptr;
   std::string value;
   base::hash_set<std::string> requested_set(requested_sub_protocols.begin(),
                                             requested_sub_protocols.end());
@@ -329,7 +329,7 @@ bool ValidateExtensions(const HttpResponseHeaders* headers,
                         std::string* extensions,
                         std::string* failure_message,
                         WebSocketExtensionParams* params) {
-  void* state = NULL;
+  void* state = nullptr;
   std::string value;
   std::vector<std::string> accepted_extensions;
   // TODO(ricea): If adding support for additional extensions, generalise this
@@ -380,7 +380,7 @@ WebSocketBasicHandshakeStream::WebSocketBasicHandshakeStream(
     std::string* failure_message)
     : state_(connection.release(), using_proxy),
       connect_delegate_(connect_delegate),
-      http_response_info_(NULL),
+      http_response_info_(nullptr),
       requested_sub_protocols_(requested_sub_protocols),
       requested_extensions_(requested_extensions),
       failure_message_(failure_message) {
@@ -528,6 +528,15 @@ void WebSocketBasicHandshakeStream::Drain(HttpNetworkSession* session) {
 void WebSocketBasicHandshakeStream::SetPriority(RequestPriority priority) {
   // TODO(ricea): See TODO comment in HttpBasicStream::SetPriority(). If it is
   // gone, then copy whatever has happened there over here.
+}
+
+UploadProgress WebSocketBasicHandshakeStream::GetUploadProgress() const {
+  return UploadProgress();
+}
+
+HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
+  // Return null because we don't support renewing the stream.
+  return nullptr;
 }
 
 scoped_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {

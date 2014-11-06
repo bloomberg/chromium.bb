@@ -28,7 +28,7 @@ namespace net {
 class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
-class HttpStreamBase;
+class HttpStream;
 class HttpStreamRequest;
 class IOBuffer;
 class ProxyInfo;
@@ -79,7 +79,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // HttpStreamRequest::Delegate methods:
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
-                     HttpStreamBase* stream) override;
+                     HttpStream* stream) override;
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
@@ -97,7 +97,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
-                                  HttpStreamBase* stream) override;
+                                  HttpStream* stream) override;
 
  private:
   friend class HttpNetworkTransactionSSLTest;
@@ -247,7 +247,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Debug helper.
   static std::string DescribeState(State state);
 
-  void SetStream(HttpStreamBase* stream);
+  void SetStream(HttpStream* stream);
 
   scoped_refptr<HttpAuthController>
       auth_controllers_[HttpAuth::AUTH_NUM_TARGETS];
@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   ProxyInfo proxy_info_;
 
   scoped_ptr<HttpStreamRequest> stream_request_;
-  scoped_ptr<HttpStreamBase> stream_;
+  scoped_ptr<HttpStream> stream_;
 
   // True if we've validated the headers that the stream parser has returned.
   bool headers_valid_;

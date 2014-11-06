@@ -33,7 +33,7 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
   // HttpStreamRequest::Delegate
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
-                     HttpStreamBase* stream) override {}
+                     HttpStream* stream) override {}
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
@@ -51,7 +51,7 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
   void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
-                                  HttpStreamBase* stream) override {}
+                                  HttpStream* stream) override {}
 };
 
 }  // namespace

@@ -52,7 +52,7 @@ class URLRequestHttpJobTest : public ::testing::Test {
       : req_(context_.CreateRequest(GURL("http://www.example.com"),
                                     DEFAULT_PRIORITY,
                                     &delegate_,
-                                    NULL)) {
+                                    nullptr)) {
     context_.set_http_transaction_factory(&network_layer_);
   }
 
@@ -186,7 +186,7 @@ TEST_F(URLRequestHttpJobTest, SdchAdvertisementPost) {
 // constructor is called.
 class URLRequestHttpJobWebSocketTestBase : public ::testing::Test {
  protected:
-  URLRequestHttpJobWebSocketTestBase() : socket_data_(NULL, 0, NULL, 0),
+  URLRequestHttpJobWebSocketTestBase() : socket_data_(nullptr, 0, nullptr, 0),
                                          context_(true) {
     // A Network Delegate is required for the WebSocketHandshakeStreamBase
     // object to be passed on to the HttpNetworkTransaction.
@@ -212,7 +212,7 @@ class URLRequestHttpJobWebSocketTest
       : req_(context_.CreateRequest(GURL("ws://www.example.com"),
                                     DEFAULT_PRIORITY,
                                     &delegate_,
-                                    NULL)) {
+                                    nullptr)) {
     // The TestNetworkDelegate expects a call to NotifyBeforeURLRequest before
     // anything else happens.
     GURL url("ws://localhost/");
@@ -303,6 +303,12 @@ class FakeWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   void Drain(HttpNetworkSession* session) override {}
 
   void SetPriority(RequestPriority priority) override {}
+
+  UploadProgress GetUploadProgress() const override {
+    return UploadProgress();
+  }
+
+  HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   // Fake implementation of WebSocketHandshakeStreamBase method(s)
   scoped_ptr<WebSocketStream> Upgrade() override {

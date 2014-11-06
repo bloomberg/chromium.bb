@@ -71,7 +71,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
   void OnStreamReady(Job* job,
                      const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
-                     HttpStreamBase* stream);
+                     HttpStream* stream);
   void OnWebSocketHandshakeStreamReady(Job* job,
                                        const SSLConfig& used_ssl_config,
                                        const ProxyInfo& used_proxy_info,
@@ -94,7 +94,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
       const HttpResponseInfo& response_info,
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      HttpStreamBase* stream);
+      HttpStream* stream);
 
   // HttpStreamRequest methods.
 

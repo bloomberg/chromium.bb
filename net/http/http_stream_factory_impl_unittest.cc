@@ -58,7 +58,7 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
     return type_;
   }
 
-  // HttpStreamBase methods
+  // HttpStream methods
   int InitializeStream(const HttpRequestInfo* request_info,
                        RequestPriority priority,
                        const BoundNetLog& net_log,
@@ -93,6 +93,8 @@ class MockWebSocketHandshakeStream : public WebSocketHandshakeStreamBase {
   bool IsSpdyHttpStream() const override { return false; }
   void Drain(HttpNetworkSession* session) override {}
   void SetPriority(RequestPriority priority) override {}
+  UploadProgress GetUploadProgress() const override { return UploadProgress(); }
+  HttpStream* RenewStreamForAuth() override { return nullptr; }
 
   scoped_ptr<WebSocketStream> Upgrade() override {
     return scoped_ptr<WebSocketStream>();
@@ -142,7 +144,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
 
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
-                     HttpStreamBase* stream) override {
+                     HttpStream* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->Quit();
@@ -180,7 +182,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   void OnHttpsProxyTunnelResponse(const HttpResponseInfo& response_info,
                                   const SSLConfig& used_ssl_config,
                                   const ProxyInfo& used_proxy_info,
-                                  HttpStreamBase* stream) override {}
+                                  HttpStream* stream) override {}
 
   void WaitForStream() {
     while (!stream_done_) {
@@ -198,7 +200,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return used_proxy_info_;
   }
 
-  HttpStreamBase* stream() {
+  HttpStream* stream() {
     return stream_.get();
   }
 
@@ -211,7 +213,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
  private:
   bool waiting_for_stream_;
   bool stream_done_;
-  scoped_ptr<HttpStreamBase> stream_;
+  scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
@@ -382,14 +384,14 @@ CapturePreconnectsSSLSocketPool;
 template<typename ParentPool>
 CapturePreconnectsSocketPool<ParentPool>::CapturePreconnectsSocketPool(
     HostResolver* host_resolver, CertVerifier* /* cert_verifier */)
-    : ParentPool(0, 0, NULL, host_resolver, NULL, NULL),
+    : ParentPool(0, 0, nullptr, host_resolver, nullptr, nullptr),
       last_num_streams_(-1) {}
 
 template<>
 CapturePreconnectsHttpProxySocketPool::CapturePreconnectsSocketPool(
     HostResolver* host_resolver, CertVerifier* /* cert_verifier */)
     : HttpProxyClientSocketPool(
-          0, 0, NULL, host_resolver, NULL, NULL, NULL, NULL),
+          0, 0, nullptr, host_resolver, nullptr, nullptr, nullptr, nullptr),
       last_num_streams_(-1) {}
 
 template <>
@@ -398,20 +400,20 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
     CertVerifier* cert_verifier)
     : SSLClientSocketPool(0,
                           0,
-                          NULL,  // ssl_histograms
+                          nullptr,  // ssl_histograms
                           host_resolver,
                           cert_verifier,
-                          NULL,           // channel_id_store
-                          NULL,           // transport_security_state
-                          NULL,           // cert_transparency_verifier
+                          nullptr,           // channel_id_store
+                          nullptr,           // transport_security_state
+                          nullptr,           // cert_transparency_verifier
                           std::string(),  // ssl_session_cache_shard
-                          NULL,           // deterministic_socket_factory
-                          NULL,           // transport_socket_pool
-                          NULL,
-                          NULL,
-                          NULL,   // ssl_config_service
+                          nullptr,           // deterministic_socket_factory
+                          nullptr,           // transport_socket_pool
+                          nullptr,
+                          nullptr,
+                          nullptr,   // ssl_config_service
                           false,  // enable_ssl_connect_job_waiting
-                          NULL),  // net_log
+                          nullptr),  // net_log
       last_num_streams_(-1) {
 }
 
@@ -659,9 +661,9 @@ namespace {
 int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
   scoped_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", "", false));
-  EXPECT_TRUE(dict != NULL);
-  base::DictionaryValue* groups = NULL;
-  if (dict->GetDictionary("groups", &groups) && (groups != NULL)) {
+  EXPECT_TRUE(dict != nullptr);
+  base::DictionaryValue* groups = nullptr;
+  if (dict->GetDictionary("groups", &groups) && (groups != nullptr)) {
     count = static_cast<int>(groups->size());
   }
   return count;
@@ -778,8 +780,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStream) {
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  ASSERT_TRUE(NULL != waiter.stream());
-  EXPECT_TRUE(NULL == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
   EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
 
   EXPECT_EQ(1, GetSocketPoolGroupCount(
@@ -799,7 +801,7 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
       GetParam(), ProxyService::CreateDirect());
 
   MockRead mock_read(ASYNC, OK);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  StaticSocketDataProvider socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
@@ -827,8 +829,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverSSL) {
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  ASSERT_TRUE(NULL != waiter.stream());
-  EXPECT_TRUE(NULL == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
   EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -872,8 +874,8 @@ TEST_P(HttpStreamFactoryTest, RequestHttpStreamOverProxy) {
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  ASSERT_TRUE(NULL != waiter.stream());
-  EXPECT_TRUE(NULL == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
   EXPECT_FALSE(waiter.stream()->IsSpdyHttpStream());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -925,8 +927,8 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  EXPECT_TRUE(NULL == waiter.stream());
-  ASSERT_TRUE(NULL != waiter.websocket_stream());
+  EXPECT_TRUE(nullptr == waiter.stream());
+  ASSERT_TRUE(nullptr != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
@@ -943,7 +945,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
       GetParam(), ProxyService::CreateDirect());
 
   MockRead mock_read(ASYNC, OK);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  StaticSocketDataProvider socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
@@ -973,8 +975,8 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  EXPECT_TRUE(NULL == waiter.stream());
-  ASSERT_TRUE(NULL != waiter.websocket_stream());
+  EXPECT_TRUE(nullptr == waiter.stream());
+  ASSERT_TRUE(nullptr != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
@@ -1018,8 +1020,8 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  EXPECT_TRUE(NULL == waiter.stream());
-  ASSERT_TRUE(NULL != waiter.websocket_stream());
+  EXPECT_TRUE(nullptr == waiter.stream());
+  ASSERT_TRUE(nullptr != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter.websocket_stream()->type());
   EXPECT_EQ(0, GetSocketPoolGroupCount(
@@ -1047,7 +1049,7 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
                                        ProxyService::CreateDirect());
 
   MockRead mock_read(ASYNC, OK);
-  DeterministicSocketData socket_data(&mock_read, 1, NULL, 0);
+  DeterministicSocketData socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.deterministic_socket_factory->AddSocketDataProvider(
       &socket_data);
@@ -1080,8 +1082,8 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  EXPECT_TRUE(NULL == waiter.websocket_stream());
-  ASSERT_TRUE(NULL != waiter.stream());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
   EXPECT_TRUE(waiter.stream()->IsSpdyHttpStream());
   EXPECT_EQ(1, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -1103,7 +1105,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStreamButGetSSL) {
                                        ProxyService::CreateDirect());
 
   MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  StaticSocketDataProvider socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
@@ -1134,10 +1136,10 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStreamButGetSSL) {
                                             BoundNetLog()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
-  ASSERT_TRUE(NULL != waiter1.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter1.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeBasic,
             waiter1.websocket_stream()->type());
-  EXPECT_TRUE(NULL == waiter1.stream());
+  EXPECT_TRUE(nullptr == waiter1.stream());
 
   EXPECT_EQ(0, GetSocketPoolGroupCount(
       session->GetTransportSocketPool(HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -1154,7 +1156,7 @@ TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
                                        ProxyService::CreateDirect());
 
   MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
-  StaticSocketDataProvider socket_data(&mock_read, 1, NULL, 0);
+  StaticSocketDataProvider socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.socket_factory->AddSocketDataProvider(&socket_data);
 
@@ -1186,10 +1188,10 @@ TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
                                             BoundNetLog()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
-  ASSERT_TRUE(NULL != waiter1.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter1.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter1.websocket_stream()->type());
-  EXPECT_TRUE(NULL == waiter1.stream());
+  EXPECT_TRUE(nullptr == waiter1.stream());
 
   StreamRequestWaiter waiter2;
   scoped_ptr<HttpStreamRequest> request2(
@@ -1203,10 +1205,10 @@ TEST_P(HttpStreamFactoryTest, DISABLED_RequestWebSocketSpdyHandshakeStream) {
                                             BoundNetLog()));
   waiter2.WaitForStream();
   EXPECT_TRUE(waiter2.stream_done());
-  ASSERT_TRUE(NULL != waiter2.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter2.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter2.websocket_stream()->type());
-  EXPECT_TRUE(NULL == waiter2.stream());
+  EXPECT_TRUE(nullptr == waiter2.stream());
   EXPECT_NE(waiter2.websocket_stream(), waiter1.websocket_stream());
   EXPECT_EQ(static_cast<WebSocketSpdyHandshakeStream*>(
                 waiter2.websocket_stream())->spdy_session(),
@@ -1232,13 +1234,13 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
   session_deps.use_alternate_protocols = true;
 
   MockRead mock_read(ASYNC, OK);
-  DeterministicSocketData socket_data(&mock_read, 1, NULL, 0);
+  DeterministicSocketData socket_data(&mock_read, 1, nullptr, 0);
   socket_data.set_connect_data(MockConnect(ASYNC, OK));
   session_deps.deterministic_socket_factory->AddSocketDataProvider(
       &socket_data);
 
   MockRead mock_read2(ASYNC, OK);
-  DeterministicSocketData socket_data2(&mock_read2, 1, NULL, 0);
+  DeterministicSocketData socket_data2(&mock_read2, 1, nullptr, 0);
   socket_data2.set_connect_data(MockConnect(ASYNC, ERR_IO_PENDING));
   session_deps.deterministic_socket_factory->AddSocketDataProvider(
       &socket_data2);
@@ -1278,8 +1280,8 @@ TEST_P(HttpStreamFactoryTest, DISABLED_OrphanedWebSocketStream) {
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
-  EXPECT_TRUE(NULL == waiter.stream());
-  ASSERT_TRUE(NULL != waiter.websocket_stream());
+  EXPECT_TRUE(nullptr == waiter.stream());
+  ASSERT_TRUE(nullptr != waiter.websocket_stream());
   EXPECT_EQ(MockWebSocketHandshakeStream::kStreamTypeSpdy,
             waiter.websocket_stream()->type());
 

@@ -37,7 +37,7 @@ class HttpAuthController;
 class HttpNetworkSession;
 class HttpResponseInfo;
 class HttpServerProperties;
-class HttpStreamBase;
+class HttpStream;
 class ProxyInfo;
 class SSLCertRequestInfo;
 class SSLInfo;
@@ -68,7 +68,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
     virtual void OnStreamReady(
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        HttpStreamBase* stream) = 0;
+        HttpStream* stream) = 0;
 
     // This is the success case for RequestWebSocketHandshakeStream.
     // |stream| is now owned by the delegate.
@@ -143,7 +143,7 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const HttpResponseInfo& response_info,
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        HttpStreamBase* stream) = 0;
+        HttpStream* stream) = 0;
   };
 
   virtual ~HttpStreamRequest() {}

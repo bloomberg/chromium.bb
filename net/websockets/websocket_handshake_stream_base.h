@@ -15,7 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "net/http/http_stream_base.h"
+#include "net/http/http_stream.h"
 #include "net/url_request/websocket_handshake_userdata_key.h"
 #include "net/websockets/websocket_stream.h"
 
@@ -28,7 +28,7 @@ class SpdySession;
 // WebSocketBasicHandshakeStream.  net/http code uses this interface to handle
 // WebSocketBasicHandshakeStream when it needs to be treated differently from
 // HttpStreamBase.
-class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
+class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStream {
  public:
   // An object that stores data needed for the creation of a
   // WebSocketBasicHandshakeStream object. A new CreateHelper is used for each

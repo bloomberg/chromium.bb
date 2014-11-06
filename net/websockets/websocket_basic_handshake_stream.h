@@ -63,6 +63,9 @@ class NET_EXPORT_PRIVATE WebSocketBasicHandshakeStream
   bool IsSpdyHttpStream() const override;
   void Drain(HttpNetworkSession* session) override;
   void SetPriority(RequestPriority priority) override;
+  UploadProgress GetUploadProgress() const override;
+  HttpStream* RenewStreamForAuth() override;
+
 
   // This is called from the top level once correct handshake response headers
   // have been received. It creates an appropriate subclass of WebSocketStream

@@ -9,11 +9,11 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_stream_base.h"
+#include "net/http/http_stream.h"
 
 namespace net {
 
-HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStreamBase* stream)
+HttpResponseBodyDrainer::HttpResponseBodyDrainer(HttpStream* stream)
     : stream_(stream),
       next_state_(STATE_NONE),
       total_read_(0),

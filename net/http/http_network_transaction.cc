@@ -45,7 +45,7 @@
 #include "net/http/http_response_info.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_status_code.h"
-#include "net/http/http_stream_base.h"
+#include "net/http/http_stream.h"
 #include "net/http/http_stream_factory.h"
 #include "net/http/http_util.h"
 #include "net/http/transport_security_state.h"
@@ -163,7 +163,7 @@ HttpNetworkTransaction::~HttpNetworkTransaction() {
         stream_->Close(true /* not reusable */);
       } else {
         // Otherwise, we try to drain the response body.
-        HttpStreamBase* stream = stream_.release();
+        HttpStream* stream = stream_.release();
         stream->Drain(session_);
       }
     }
@@ -305,8 +305,7 @@ void HttpNetworkTransaction::DidDrainBodyForAuthRestart(bool keep_alive) {
       // We should call connection_->set_idle_time(), but this doesn't occur
       // often enough to be worth the trouble.
       stream_->SetConnectionReused();
-      new_stream =
-          static_cast<HttpStream*>(stream_.get())->RenewStreamForAuth();
+      new_stream = stream_->RenewStreamForAuth();
     }
 
     if (!new_stream) {
@@ -421,8 +420,7 @@ UploadProgress HttpNetworkTransaction::GetUploadProgress() const {
   if (!stream_.get())
     return UploadProgress();
 
-  // TODO(bashi): This cast is temporary. Remove later.
-  return static_cast<HttpStream*>(stream_.get())->GetUploadProgress();
+  return stream_->GetUploadProgress();
 }
 
 void HttpNetworkTransaction::SetQuicServerInfo(
@@ -471,7 +469,7 @@ int HttpNetworkTransaction::ResumeNetworkStart() {
 
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
                                            const ProxyInfo& used_proxy_info,
-                                           HttpStreamBase* stream) {
+                                           HttpStream* stream) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
   DCHECK(stream_request_.get());
 
@@ -564,7 +562,7 @@ void HttpNetworkTransaction::OnHttpsProxyTunnelResponse(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStreamBase* stream) {
+    HttpStream* stream) {
   DCHECK_EQ(STATE_CREATE_STREAM_COMPLETE, next_state_);
 
   headers_valid_ = true;

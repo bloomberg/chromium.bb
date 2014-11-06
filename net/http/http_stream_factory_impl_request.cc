@@ -90,7 +90,7 @@ void HttpStreamFactoryImpl::Request::OnStreamReady(
     Job* job,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStreamBase* stream) {
+    HttpStream* stream) {
   DCHECK(!factory_->for_websockets_);
   DCHECK(stream);
   DCHECK(completed_);
@@ -185,7 +185,7 @@ void HttpStreamFactoryImpl::Request::OnHttpsProxyTunnelResponse(
     const HttpResponseInfo& response_info,
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    HttpStreamBase* stream) {
+    HttpStream* stream) {
   if (!bound_job_.get())
     OrphanJobsExcept(job);
   else
