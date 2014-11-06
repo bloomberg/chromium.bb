@@ -7,7 +7,6 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/blockfile/backend_impl.h"

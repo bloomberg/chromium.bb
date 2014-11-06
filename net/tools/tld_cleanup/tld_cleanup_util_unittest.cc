@@ -5,7 +5,6 @@
 #include "net/tools/tld_cleanup/tld_cleanup_util.h"
 
 #include "base/files/file_path.h"
-#include "base/path_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {

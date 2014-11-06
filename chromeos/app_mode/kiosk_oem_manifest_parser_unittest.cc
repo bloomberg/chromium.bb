@@ -4,7 +4,6 @@
 
 #include "chromeos/app_mode/kiosk_oem_manifest_parser.h"
 
-#include "base/path_service.h"
 #include "chromeos/chromeos_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

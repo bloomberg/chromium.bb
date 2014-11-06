@@ -11,7 +11,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

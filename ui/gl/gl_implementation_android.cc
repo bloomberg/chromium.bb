@@ -7,7 +7,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
-#include "base/path_service.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context_stub_with_extensions.h"
 #include "ui/gl/gl_egl_api_implementation.h"

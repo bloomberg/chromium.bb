@@ -14,7 +14,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/metrics/stats_counters.h"
-#include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"

@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/pending_task.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_device_source.h"

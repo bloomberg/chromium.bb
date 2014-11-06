@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/path_service.h"
 #include "base/threading/worker_pool.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
 #include "chromecast/browser/cast_network_delegate.h"

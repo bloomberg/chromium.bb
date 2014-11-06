@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/values.h"
 #include "chromeos/chromeos_test_utils.h"
 

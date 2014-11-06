@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
-#include "base/path_service.h"
 #include "base/process/kill.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"

@@ -23,7 +23,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"

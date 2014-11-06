@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"

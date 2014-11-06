@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/path_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/app/paths_mac.h"
 #include "content/shell/common/shell_switches.h"

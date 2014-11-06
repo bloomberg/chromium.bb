@@ -5,7 +5,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
 #include "remoting/host/json_host_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

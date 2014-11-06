@@ -7,7 +7,6 @@
 #include "base/base64.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/path_service.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "net/base/net_errors.h"

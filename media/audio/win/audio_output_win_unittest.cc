@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/base_paths.h"
 #include "base/memory/aligned_memory.h"
-#include "base/path_service.h"
 #include "base/sync_socket.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"

@@ -11,7 +11,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"

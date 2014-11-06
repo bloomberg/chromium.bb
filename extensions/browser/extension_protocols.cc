@@ -19,7 +19,6 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
-#include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"

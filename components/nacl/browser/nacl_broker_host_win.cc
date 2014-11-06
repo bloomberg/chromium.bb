@@ -6,7 +6,6 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/path_service.h"
 #include "components/nacl/browser/nacl_broker_service_win.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/common/nacl_cmd_line.h"

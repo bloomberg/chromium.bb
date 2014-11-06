@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/files/scoped_temp_dir.h"
-#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"

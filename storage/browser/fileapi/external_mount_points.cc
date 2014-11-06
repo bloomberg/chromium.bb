@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
-#include "base/path_service.h"
 #include "base/stl_util.h"
 #include "storage/browser/fileapi/file_system_url.h"
 

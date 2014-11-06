@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/path_service.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/common/content_paths.h"

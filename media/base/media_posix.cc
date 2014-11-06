@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/strings/stringize_macros.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "third_party/ffmpeg/ffmpeg_stubs.h"

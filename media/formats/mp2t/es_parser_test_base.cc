@@ -6,7 +6,6 @@
 
 #include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "media/base/buffers.h"
 #include "media/base/stream_parser_buffer.h"

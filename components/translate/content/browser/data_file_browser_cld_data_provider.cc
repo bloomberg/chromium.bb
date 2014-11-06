@@ -10,7 +10,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
-#include "base/path_service.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"

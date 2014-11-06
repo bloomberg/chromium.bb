@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"

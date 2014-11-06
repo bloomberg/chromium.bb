@@ -20,7 +20,6 @@
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"

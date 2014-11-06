@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

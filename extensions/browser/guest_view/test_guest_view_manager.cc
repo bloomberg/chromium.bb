@@ -4,7 +4,6 @@
 
 #include "extensions/browser/guest_view/test_guest_view_manager.h"
 
-#include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/app_window/app_window.h"

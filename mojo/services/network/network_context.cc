@@ -5,7 +5,6 @@
 #include "mojo/services/network/network_context.h"
 
 #include "base/base_paths.h"
-#include "base/path_service.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
