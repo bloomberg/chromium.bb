@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/proxy/proxy_retry_info.h"
@@ -881,7 +882,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         false,
         false,
         // expected result
-        true,
+        false,
       },
       { // proxy flags
         false,
@@ -896,7 +897,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         true,
         false,
         // expected result
-        true,
+        false,
       },
       { // proxy flags
         true,
@@ -917,21 +918,6 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         true,
         true,
         false,
-        // is https request
-        false,
-        // proxies in retry map
-        true,
-        true,
-        false,
-        false,
-        false,
-        // expected result
-        true,
-      },
-      { // proxy flags
-        true,
-        true,
-        true,
         // is https request
         false,
         // proxies in retry map
@@ -951,6 +937,21 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         false,
         // proxies in retry map
         true,
+        true,
+        false,
+        false,
+        false,
+        // expected result
+        false,
+      },
+      { // proxy flags
+        true,
+        true,
+        true,
+        // is https request
+        false,
+        // proxies in retry map
+        true,
         false,
         true,
         false,
@@ -971,7 +972,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         true,
         false,
         // expected result
-        true,
+        false,
       },
       { // proxy flags
         false,
@@ -1016,7 +1017,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
         true,
         false,
         // expected result
-        true,
+        false,
       },
       { // proxy flags
         true,
@@ -1068,7 +1069,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
   // The retry map has the scheme prefix for https but not for http.
   std::string origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultOrigin());
-  std::string fallback_origin =GetRetryMapKeyFromOrigin(
+  std::string fallback_origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultFallbackOrigin());
   std::string alt_origin = GetRetryMapKeyFromOrigin(
       TestDataReductionProxyParams::DefaultAltOrigin());
@@ -1078,6 +1079,23 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
       TestDataReductionProxyParams::DefaultSSLOrigin());
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    net::ProxyConfig::ProxyRules rules;
+    std::vector<std::string> proxies;
+
+    if (tests[i].allowed)
+      proxies.push_back(origin);
+    if (tests[i].alt_allowed)
+      proxies.push_back(alt_origin);
+    if (tests[i].allowed && tests[i].fallback_allowed)
+      proxies.push_back(fallback_origin);
+    if (tests[i].alt_allowed && tests[i].fallback_allowed)
+      proxies.push_back(alt_fallback_origin);
+
+    std::string proxy_rules = "http=" + JoinString(proxies, ",") + ",direct://;"
+        + (tests[i].alt_allowed ? ("https=" + ssl_origin + ",direct://;") : "");
+
+    rules.ParseFromString(proxy_rules);
+
     int flags = 0;
     if (tests[i].allowed)
       flags |= DataReductionProxyParams::kAllowed;
@@ -1093,6 +1111,7 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
 
     net::ProxyRetryInfoMap retry_map;
     net::ProxyRetryInfo retry_info;
+    retry_info.bad_until = base::TimeTicks() + base::TimeDelta::Max();
 
     if (tests[i].origin)
       retry_map[origin] = retry_info;
@@ -1106,10 +1125,72 @@ TEST_F(DataReductionProxyParamsTest, AreProxiesBypassed) {
       retry_map[ssl_origin] = retry_info;
 
     bool was_bypassed = params.AreProxiesBypassed(retry_map,
+                                                  rules,
                                                   tests[i].is_https,
                                                   NULL);
 
     EXPECT_EQ(tests[i].expected_result, was_bypassed);
   }
 }
+
+TEST_F(DataReductionProxyParamsTest, AreProxiesBypassedRetryDelay) {
+  std::string origin = GetRetryMapKeyFromOrigin(
+      TestDataReductionProxyParams::DefaultOrigin());
+  std::string fallback_origin = GetRetryMapKeyFromOrigin(
+      TestDataReductionProxyParams::DefaultFallbackOrigin());
+
+  net::ProxyConfig::ProxyRules rules;
+  std::vector<std::string> proxies;
+
+  proxies.push_back(origin);
+  proxies.push_back(fallback_origin);
+
+  std::string proxy_rules = "http=" + JoinString(proxies, ",") + ",direct://;";
+
+  rules.ParseFromString(proxy_rules);
+
+  int flags = 0;
+  flags |= DataReductionProxyParams::kAllowed;
+  flags |= DataReductionProxyParams::kFallbackAllowed;
+  unsigned int has_definitions =
+      TestDataReductionProxyParams::HAS_EVERYTHING &
+      ~TestDataReductionProxyParams::HAS_DEV_ORIGIN &
+      ~TestDataReductionProxyParams::HAS_DEV_FALLBACK_ORIGIN;
+  TestDataReductionProxyParams params(flags, has_definitions);
+
+  net::ProxyRetryInfoMap retry_map;
+  net::ProxyRetryInfo retry_info;
+
+  retry_info.bad_until = base::TimeTicks() + base::TimeDelta::Max();
+  retry_map[origin] = retry_info;
+
+  retry_info.bad_until = base::TimeTicks();
+  retry_map[fallback_origin] = retry_info;
+
+  bool was_bypassed = params.AreProxiesBypassed(retry_map,
+                                                rules,
+                                                false,
+                                                NULL);
+
+  EXPECT_FALSE(was_bypassed);
+
+  base::TimeDelta delay = base::TimeDelta::FromHours(2);
+  retry_info.bad_until = base::TimeTicks::Now() + delay;
+  retry_info.current_delay = delay;
+  retry_map[origin] = retry_info;
+
+  delay = base::TimeDelta::FromHours(1);
+  retry_info.bad_until = base::TimeTicks::Now() + delay;
+  retry_info.current_delay = delay;
+  retry_map[fallback_origin] = retry_info;
+
+  base::TimeDelta min_retry_delay;
+  was_bypassed = params.AreProxiesBypassed(retry_map,
+                                           rules,
+                                           false,
+                                           &min_retry_delay);
+  EXPECT_TRUE(was_bypassed);
+  EXPECT_EQ(delay, min_retry_delay);
+}
+
 }  // namespace data_reduction_proxy

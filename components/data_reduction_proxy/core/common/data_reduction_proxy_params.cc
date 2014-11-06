@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
@@ -411,6 +412,7 @@ bool DataReductionProxyParams::AreDataReductionProxiesBypassed(
       request.context()->proxy_service() != NULL) {
     return AreProxiesBypassed(
         request.context()->proxy_service()->proxy_retry_info(),
+        request.context()->proxy_service()->config().proxy_rules(),
         request.url().SchemeIs(url::kHttpsScheme),
         min_retry_delay);
   }
@@ -420,74 +422,67 @@ bool DataReductionProxyParams::AreDataReductionProxiesBypassed(
 
 bool DataReductionProxyParams::AreProxiesBypassed(
     const net::ProxyRetryInfoMap& retry_map,
+    const net::ProxyConfig::ProxyRules& proxy_rules,
     bool is_https,
     base::TimeDelta* min_retry_delay) const {
-  if (retry_map.size() == 0)
+  // Data reduction proxy config is TYPE_PROXY_PER_SCHEME.
+  if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
 
-  // If the request is https, consider only the ssl proxy.
-  if (is_https) {
-    if (alt_allowed_) {
-      return ArePrimaryAndFallbackBypassed(
-          retry_map, ssl_origin_, GURL(), min_retry_delay);
+  scoped_ptr<base::ListValue> proxy_list =
+      scoped_ptr<base::ListValue>(is_https ?
+          proxy_rules.MapUrlSchemeToProxyList(url::kHttpsScheme)->ToValue() :
+          proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme)->ToValue());
+
+  base::TimeDelta min_delay = base::TimeDelta::Max();
+  base::TimeDelta delay;
+  bool bypassed = false;
+  std::string proxy;
+  net::HostPortPair host_port_pair;
+
+  for (size_t i = 0; i < proxy_list->GetSize(); ++i) {
+    proxy_list->GetString(i, &proxy);
+    host_port_pair = GURL(proxy).SchemeIs(url::kHttpsScheme) ?
+        net::HostPortPair::FromURL(GURL(proxy)) :
+        net::HostPortPair::FromString(proxy);
+
+    if (IsDataReductionProxy(host_port_pair, NULL)) {
+      if (!IsProxyBypassed(
+              retry_map,
+              net::ProxyServer(GURL(proxy).SchemeIs(url::kHttpsScheme) ?
+                                   net::ProxyServer::SCHEME_HTTPS :
+                                   net::ProxyServer::SCHEME_HTTP,
+                               host_port_pair),
+              &delay))
+        return false;
+      if (delay < min_delay)
+        min_delay = delay;
+      bypassed = true;
     }
-    NOTREACHED();
-    return false;
   }
 
-  if (allowed_ && ArePrimaryAndFallbackBypassed(
-      retry_map, origin_, fallback_origin_, min_retry_delay)) {
-    return true;
-  }
+  if (min_retry_delay && bypassed)
+    *min_retry_delay = min_delay;
 
-  if (alt_allowed_ && ArePrimaryAndFallbackBypassed(
-      retry_map, alt_origin_, alt_fallback_origin_, min_retry_delay)) {
-    return true;
-  }
-
-  return false;
+  return bypassed;
 }
 
-bool DataReductionProxyParams::ArePrimaryAndFallbackBypassed(
+bool DataReductionProxyParams::IsProxyBypassed(
     const net::ProxyRetryInfoMap& retry_map,
-    const GURL& primary,
-    const GURL& fallback,
-    base::TimeDelta* min_retry_delay) const {
-  net::ProxyRetryInfoMap::const_iterator found = retry_map.end();
-  if (min_retry_delay)
-    *min_retry_delay = base::TimeDelta::Max();
+    const net::ProxyServer& proxy_server,
+    base::TimeDelta* retry_delay) const {
+  net::ProxyRetryInfoMap::const_iterator found =
+      retry_map.find(proxy_server.ToURI());
 
-  // Look for the primary proxy in the retry map. This must be done before
-  // looking for the fallback in order to assign |min_retry_delay| if the
-  // primary proxy has a shorter delay.
-  if (!fallback_allowed_ || !fallback.is_valid() || min_retry_delay) {
-    found = retry_map.find(
-        net::ProxyServer(primary.SchemeIs(url::kHttpsScheme) ?
-            net::ProxyServer::SCHEME_HTTPS :
-            net::ProxyServer::SCHEME_HTTP,
-        net::HostPortPair::FromURL(primary)).ToURI());
-    if (found != retry_map.end() && min_retry_delay) {
-      *min_retry_delay = found->second.current_delay;
-    }
+  if (found == retry_map.end() ||
+      found->second.bad_until < base::TimeTicks::Now()) {
+    return false;
   }
 
-  if (fallback_allowed_ && fallback.is_valid()) {
-    // If fallback is allowed, only the fallback proxy needs to be on the retry
-    // map to know if there was a bypass. We can reset found and forget if the
-    // primary was on the retry map.
-    found = retry_map.find(
-        net::ProxyServer(fallback.SchemeIs(url::kHttpsScheme) ?
-                             net::ProxyServer::SCHEME_HTTPS :
-                             net::ProxyServer::SCHEME_HTTP,
-                         net::HostPortPair::FromURL(fallback)).ToURI());
-    if (found != retry_map.end() &&
-        min_retry_delay &&
-        *min_retry_delay > found->second.current_delay) {
-      *min_retry_delay = found->second.current_delay;
-    }
-  }
+  if (retry_delay)
+     *retry_delay = found->second.current_delay;
 
-  return found != retry_map.end();
+  return true;
 }
 
 // TODO(kundaji): Remove tests for macro definitions.

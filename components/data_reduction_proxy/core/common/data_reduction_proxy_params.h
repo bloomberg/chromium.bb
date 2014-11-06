@@ -11,6 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/host_port_pair.h"
+#include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,7 @@ class TimeDelta;
 }
 
 namespace net {
-class ProxyConfig;
+class ProxyServer;
 class URLRequest;
 }
 
@@ -141,22 +142,32 @@ class DataReductionProxyParams {
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction
-  // proxies and returns the bypass delay in delay_seconds (if not NULL). If
-  // there are no configured data reduction proxies, returns false. If
-  // the request is bypassed by more than one proxy, delay_seconds returns
-  // the shortest delay.
+  // proxies that apply to the request scheme. If all possible data reduction
+  // proxies are bypassed, returns the minimum retry delay of the bypassed data
+  // reduction proxies in min_retry_delay (if not NULL). If there are no
+  // bypassed data reduction proxies for the request scheme, returns false and
+  // does not assign min_retry_delay.
   bool AreDataReductionProxiesBypassed(const net::URLRequest& request,
                                        base::TimeDelta* min_retry_delay) const;
 
   // Checks if all configured data reduction proxies are in the retry map.
   // Returns true if the request is bypassed by all configured data reduction
-  // proxies and returns the bypass delay in delay_seconds (if not NULL). If
-  // there are no configured data reduction proxies, returns false. If
-  // the request is bypassed by more than one proxy, delay_seconds returns
-  // the shortest delay.
+  // proxies that apply to the request scheme. If all possible data reduction
+  // proxies are bypassed, returns the minimum retry delay of the bypassed data
+  // reduction proxies in min_retry_delay (if not NULL). If there are no
+  // bypassed data reduction proxies for the request scheme, returns false and
+  // does not assign min_retry_delay.
   bool AreProxiesBypassed(const net::ProxyRetryInfoMap& retry_map,
+                          const net::ProxyConfig::ProxyRules& proxy_rules,
                           bool is_https,
                           base::TimeDelta* min_retry_delay) const;
+
+  // Returns true if the proxy is on the retry map and the retry delay is not
+  // expired. If proxy is bypassed, retry_delay (if not NULL) returns the delay
+  // of proxy_server. If proxy is not bypassed, retry_delay is not assigned.
+  bool IsProxyBypassed(const net::ProxyRetryInfoMap& retry_map,
+                       const net::ProxyServer& proxy_server,
+                       base::TimeDelta* retry_delay) const;
 
   // Returns the data reduction proxy primary origin.
   const GURL& origin() const {

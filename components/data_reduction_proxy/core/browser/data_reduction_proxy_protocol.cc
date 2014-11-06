@@ -110,9 +110,10 @@ bool MaybeBypassProxyAndPrepareToRetry(
       data_reduction_proxy_type_info.proxy_servers.first, &proxy_server);
 
   // Only record UMA if the proxy isn't already on the retry list.
-  const net::ProxyRetryInfoMap& proxy_retry_info =
-      request->context()->proxy_service()->proxy_retry_info();
-  if (proxy_retry_info.find(proxy_server.ToURI()) == proxy_retry_info.end()) {
+  if (!data_reduction_proxy_params->IsProxyBypassed(
+          request->context()->proxy_service()->proxy_retry_info(),
+          proxy_server,
+          NULL)) {
     DataReductionProxyUsageStats::RecordDataReductionProxyBypassInfo(
         !data_reduction_proxy_type_info.proxy_servers.second.is_empty(),
         data_reduction_proxy_info.bypass_all,
