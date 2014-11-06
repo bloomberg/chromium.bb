@@ -20,7 +20,7 @@
             android:id="@+id/stop_reload_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
-            android:src="@drawable/btn_toolbar_stop_loading_white_normal"
+            android:src="@drawable/btn_toolbar_stop"
             android:background="?android:attr/selectableItemBackground"
             android:scaleType="center"/>
         <EditText android:id="@+id/url"

@@ -9,27 +9,27 @@ import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.util.AttributeSet;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import org.chromium.chrome.R;
 
 /**
- * Implementation of ImageButton that allows to tint the color of the image button for all
- * image button states using chrome:tint attribute in XML.
+ * Implementation of ImageView that allows to tint the color of the image view for all
+ * image view states using chrome:tint attribute in XML.
  */
-public class TintedImageButton extends ImageButton {
+public class TintedImageView extends ImageView {
     private ColorStateList mTint;
 
-    public TintedImageButton(Context context) {
+    public TintedImageView(Context context) {
         super(context);
     }
 
-    public TintedImageButton(Context context, AttributeSet attrs) {
+    public TintedImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context, attrs, 0);
     }
 
-    public TintedImageButton(Context context, AttributeSet attrs, int defStyle) {
+    public TintedImageView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
         init(context, attrs, defStyle);
     }
@@ -48,8 +48,8 @@ public class TintedImageButton extends ImageButton {
     }
 
     /**
-     * Sets the tint color for the given ImageButton for all button states.
-     * @param tint The set of colors to use to color the ImageButton.
+     * Sets the tint color for the given ImageView for all view states.
+     * @param tint The set of colors to use to color the ImageView.
      */
     public void setTint(ColorStateList tint) {
         if (mTint == tint) return;

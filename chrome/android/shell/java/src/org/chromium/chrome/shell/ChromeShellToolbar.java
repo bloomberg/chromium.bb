@@ -50,9 +50,9 @@ public class ChromeShellToolbar extends LinearLayout {
             mProgressDrawable.setLevel(100 * mProgress);
             if (mLoading) {
                 mStopReloadButton.setImageResource(
-                        R.drawable.btn_toolbar_stop_loading_white_normal);
+                        R.drawable.btn_toolbar_stop);
             } else {
-                mStopReloadButton.setImageResource(R.drawable.btn_toolbar_reload_white_normal);
+                mStopReloadButton.setImageResource(R.drawable.btn_toolbar_reload);
                 ApiCompatibilityUtils.postOnAnimationDelayed(ChromeShellToolbar.this,
                         mClearProgressRunnable, COMPLETED_PROGRESS_TIMEOUT_MS);
             }
