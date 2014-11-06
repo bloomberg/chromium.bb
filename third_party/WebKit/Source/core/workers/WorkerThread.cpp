@@ -416,6 +416,12 @@ void WorkerThread::stopInShutdownSequence()
     stopInternal();
 }
 
+void WorkerThread::terminateAndWait()
+{
+    stop();
+    m_terminationEvent->wait();
+}
+
 bool WorkerThread::terminated()
 {
     MutexLocker lock(m_threadCreationMutex);

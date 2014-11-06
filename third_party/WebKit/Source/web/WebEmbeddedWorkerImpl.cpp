@@ -51,7 +51,6 @@
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/platform/WebWaitableEvent.h"
 #include "public/web/WebDevToolsAgent.h"
 #include "public/web/WebServiceWorkerContextClient.h"
 #include "public/web/WebServiceWorkerNetworkProvider.h"
@@ -172,10 +171,8 @@ WebEmbeddedWorkerImpl::WebEmbeddedWorkerImpl(
 
 WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl()
 {
-    if (m_workerThread) {
-        ASSERT(m_workerThread->terminated());
-        m_workerThread->terminationEvent()->wait();
-    }
+    if (m_workerThread)
+        m_workerThread->terminateAndWait();
 
     ASSERT(runningWorkerInstances().contains(this));
     runningWorkerInstances().remove(this);
