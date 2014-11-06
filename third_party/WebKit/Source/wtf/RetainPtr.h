@@ -74,9 +74,7 @@ namespace WTF {
 
         RetainPtr(const RetainPtr& o) : m_ptr(o.m_ptr) { if (PtrType ptr = m_ptr) CFRetain(ptr); }
 
-#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
         RetainPtr(RetainPtr&& o) : m_ptr(o.leakRef()) { }
-#endif
 
         // Hash table deleted values, which are only constructed and never copied or destroyed.
         RetainPtr(HashTableDeletedValueType) : m_ptr(hashTableDeletedValue()) { }
@@ -106,10 +104,8 @@ namespace WTF {
         RetainPtr& operator=(PtrType);
         template<typename U> RetainPtr& operator=(U*);
 
-#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
         RetainPtr& operator=(RetainPtr&&);
         template<typename U> RetainPtr& operator=(RetainPtr<U>&&);
-#endif
 
 #if !COMPILER_SUPPORTS(CXX_NULLPTR)
         RetainPtr& operator=(std::nullptr_t) { clear(); return *this; }
@@ -194,7 +190,6 @@ namespace WTF {
         return *this;
     }
 
-#if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     template<typename T> inline RetainPtr<T>& RetainPtr<T>::operator=(RetainPtr<T>&& o)
     {
         adoptCF(o.leakRef());
@@ -206,7 +201,6 @@ namespace WTF {
         adoptCF(o.leakRef());
         return *this;
     }
-#endif
 
     template<typename T> inline void RetainPtr<T>::adoptCF(PtrType optr)
     {
