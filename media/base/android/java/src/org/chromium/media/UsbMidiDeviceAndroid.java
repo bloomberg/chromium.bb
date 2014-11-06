@@ -85,8 +85,8 @@ class UsbMidiDeviceAndroid {
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
-            if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO ||
-                    iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
+            if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO
+                    || iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
                 continue;
             }
             mConnection.claimInterface(iface, true);
@@ -114,8 +114,8 @@ class UsbMidiDeviceAndroid {
 
         for (int i = 0; i < device.getInterfaceCount(); ++i) {
             UsbInterface iface = device.getInterface(i);
-            if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO ||
-                    iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
+            if (iface.getInterfaceClass() != UsbConstants.USB_CLASS_AUDIO
+                    || iface.getInterfaceSubclass() != MIDI_SUBCLASS) {
                 continue;
             }
             for (int j = 0; j < iface.getEndpointCount(); ++j) {
@@ -211,7 +211,7 @@ class UsbMidiDeviceAndroid {
             //
             // TODO(yhirano): Delete this block once the problem is fixed.
             final int timeout = 100;
-            mConnection.bulkTransfer(endpoint, bs, 0, bs.length, timeout);
+            mConnection.bulkTransfer(endpoint, bs, bs.length, timeout);
         } else {
             UsbRequest request = mRequestMap.get(endpoint);
             if (request == null) {
