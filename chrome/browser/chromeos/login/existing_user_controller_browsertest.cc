@@ -436,7 +436,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       SupervisedUserCreationForbidden) {
+                       DISABLED_SupervisedUserCreationForbidden) {
   MockBaseScreenDelegate mock_base_screen_delegate;
   SupervisedUserCreationScreenHandler supervised_user_creation_screen_handler;
   SupervisedUserCreationScreen supervised_user_creation_screen(
