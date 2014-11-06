@@ -326,6 +326,9 @@ cr.define('cr.ui.login', function() {
      * @param {string} name Accelerator name.
      */
     handleAccelerator: function(name) {
+      if (this.currentScreen.ignoreAccelerators) {
+        return;
+      }
       var currentStepId = this.screens_[this.currentStep_];
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen.cancel) {

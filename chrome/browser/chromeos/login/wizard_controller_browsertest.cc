@@ -566,7 +566,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowMain) {
   OnExit(BaseScreenDelegate::UPDATE_INSTALLED);
 
   CheckCurrentScreen(WizardController::kAutoEnrollmentCheckScreenName);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
   OnExit(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
@@ -604,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowErrorUpdate) {
   OnExit(BaseScreenDelegate::UPDATE_ERROR_UPDATING);
 
   CheckCurrentScreen(WizardController::kAutoEnrollmentCheckScreenName);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(0);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(0);
   OnExit(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
@@ -852,7 +852,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
       AutoEnrollmentCheckScreen::Get(WizardController::default_controller());
   EXPECT_EQ(screen,
             WizardController::default_controller()->current_screen());
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
   screen->Start();
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             LoginDisplayHostImpl::default_host()
@@ -1204,7 +1203,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 24,
+COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 23,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

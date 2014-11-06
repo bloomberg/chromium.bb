@@ -590,6 +590,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
     light_bar_.reset(new LightBar());
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
+  g_browser_process->platform_part()->InitializeDeviceDisablingManager();
 
   // This observer cannot be created earlier because it requires the shell to be
   // available.
@@ -749,6 +750,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 #if !defined(USE_ATHENA)
   WallpaperManager::Get()->Shutdown();
 #endif
+
+  g_browser_process->platform_part()->ShutdownDeviceDisablingManager();
 
   // Let the AutomaticRebootManager unregister itself as an observer of several
   // subsystems.

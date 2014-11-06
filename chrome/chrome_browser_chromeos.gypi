@@ -867,6 +867,8 @@
         'browser/chromeos/system/automatic_reboot_manager_observer.h',
         'browser/chromeos/system/device_change_handler.cc',
         'browser/chromeos/system/device_change_handler.h',
+        'browser/chromeos/system/device_disabling_manager.cc',
+        'browser/chromeos/system/device_disabling_manager.h',
         'browser/chromeos/system/input_device_settings.cc',
         'browser/chromeos/system/input_device_settings.h',
         'browser/chromeos/system/pointer_device_observer.cc',

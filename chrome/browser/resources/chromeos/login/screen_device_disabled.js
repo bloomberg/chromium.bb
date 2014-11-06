@@ -13,6 +13,11 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     ],
 
     /**
+     * Ignore any accelerators the user presses on this screen.
+     */
+    ignoreAccelerators: true,
+
+    /**
      * The visibility of the cancel button in the header bar is controlled by a
      * global. Although the device disabling screen hides the button, a
      * notification intended for an earlier screen (e.g animation finished)
@@ -40,6 +45,8 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
       * @private
       */
     setMessage: function(message) {
+      // The contents of |message| is untrusted. Set it as |textContent| so that
+      // it gets treated as plain text and cannot be used to inject JS or HTML.
       $('device-disabled-message').textContent = message;
     }
   };

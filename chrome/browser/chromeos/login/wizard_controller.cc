@@ -21,6 +21,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -53,6 +54,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/timezone/timezone_provider.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -537,7 +539,7 @@ void WizardController::SkipToLoginForTesting(
   VLOG(1) << "SkipToLoginForTesting.";
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
-  OnDeviceNotDisabled();
+  OnDeviceDisabledChecked(false /* device_disabled */);
 }
 
 void WizardController::AddObserver(Observer* observer) {
@@ -753,10 +755,22 @@ void WizardController::OnHostPairingFinished() {
   InitiateOOBEUpdate();
 }
 
-void WizardController::OnDeviceNotDisabled() {
-  if (skip_update_enroll_after_eula_ ||
-      ShouldAutoStartEnrollment() ||
-      enrollment_recovery_) {
+void WizardController::OnAutoEnrollmentCheckCompleted() {
+  // Check whether the device is disabled. OnDeviceDisabledChecked() will be
+  // invoked when the result of this check is known. Until then, the current
+  // screen will remain visible and will continue showing a spinner.
+  g_browser_process->platform_part()->device_disabling_manager()->
+      CheckWhetherDeviceDisabledDuringOOBE(base::Bind(
+          &WizardController::OnDeviceDisabledChecked,
+          weak_factory_.GetWeakPtr()));
+}
+
+void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
+  if (device_disabled) {
+    ShowDeviceDisabledScreen();
+  } else if (skip_update_enroll_after_eula_ ||
+             ShouldAutoStartEnrollment() ||
+             enrollment_recovery_) {
     ShowEnrollmentScreen();
   } else {
     PerformOOBECompletedActions();
@@ -973,7 +987,7 @@ void WizardController::OnExit(ExitCodes exit_code) {
       ShowNetworkScreen();
       break;
     case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
-      ShowDeviceDisabledScreen();
+      OnAutoEnrollmentCheckCompleted();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
@@ -1010,9 +1024,6 @@ void WizardController::OnExit(ExitCodes exit_code) {
       break;
     case HOST_PAIRING_FINISHED:
       OnHostPairingFinished();
-      break;
-    case DEVICE_NOT_DISABLED:
-      OnDeviceNotDisabled();
       break;
     default:
       NOTREACHED();

@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/session_manager/core/session_manager.h"
 
@@ -46,6 +47,17 @@ void BrowserProcessPlatformPart::InitializeChromeUserManager() {
 void BrowserProcessPlatformPart::DestroyChromeUserManager() {
   chrome_user_manager_->Destroy();
   chrome_user_manager_.reset();
+}
+
+void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
+  DCHECK(!device_disabling_manager_);
+
+  device_disabling_manager_.reset(new chromeos::system::DeviceDisablingManager(
+      browser_policy_connector_chromeos()));
+}
+
+void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {
+  device_disabling_manager_.reset();
 }
 
 void BrowserProcessPlatformPart::InitializeSessionManager(
