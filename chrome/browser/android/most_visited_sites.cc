@@ -191,8 +191,8 @@ SyncState GetSyncState(Profile* profile) {
 
 MostVisitedSites::MostVisitedSites(Profile* profile)
     : profile_(profile), num_sites_(0), is_control_group_(false),
-      num_local_thumbs_(0), num_server_thumbs_(0), num_empty_thumbs_(0),
-      weak_ptr_factory_(this) {
+      initial_load_done_(false), num_local_thumbs_(0), num_server_thumbs_(0),
+      num_empty_thumbs_(0), weak_ptr_factory_(this) {
   // Register the debugging page for the Suggestions Service and the thumbnails
   // debugging page.
   content::URLDataSource::Add(profile_,
@@ -399,13 +399,17 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
 
   mv_source_ = TOP_SITES;
 
-  int num_tiles = urls.size();
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
-  const std::string histogram = is_control_group_ ?
-      kImpressionControlHistogramName : kImpressionClientHistogramName;
-  for (int i = 0; i < num_tiles; ++i) {
-    LogHistogramEvent(histogram, i, num_sites_);
+  // Only log impression metrics on the initial load of the NTP.
+  if (!initial_load_done_) {
+    int num_tiles = urls.size();
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, num_tiles);
+    const std::string histogram = is_control_group_ ?
+        kImpressionControlHistogramName : kImpressionClientHistogramName;
+    for (int i = 0; i < num_tiles; ++i) {
+      LogHistogramEvent(histogram, i, num_sites_);
+    }
   }
+  initial_load_done_ = true;
 
   JNIEnv* env = AttachCurrentThread();
   Java_MostVisitedURLsObserver_onMostVisitedURLsAvailable(
@@ -439,15 +443,21 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     const ChromeSuggestion& suggestion = suggestions_profile.suggestions(i);
     titles.push_back(base::UTF8ToUTF16(suggestion.title()));
     urls.push_back(suggestion.url());
-    if (suggestion.providers_size()) {
-      std::string histogram = base::StringPrintf(
-          kImpressionServerHistogramFormat, suggestion.providers(0));
-      LogHistogramEvent(histogram, i, num_sites_);
-    } else {
-      UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
+    // Only log impression metrics on the initial NTP load.
+    if (!initial_load_done_) {
+      if (suggestion.providers_size()) {
+        std::string histogram = base::StringPrintf(
+            kImpressionServerHistogramFormat, suggestion.providers(0));
+        LogHistogramEvent(histogram, i, num_sites_);
+      } else {
+        UMA_HISTOGRAM_SPARSE_SLOWLY(kImpressionServerHistogramName, i);
+      }
     }
   }
-  UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, i);
+  if (!initial_load_done_) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(kNumTilesHistogramName, i);
+  }
+  initial_load_done_ = true;
 
   mv_source_ = SUGGESTIONS_SERVICE;
   // Keep a copy of the suggestions for eventual logging.

@@ -112,6 +112,9 @@ class MostVisitedSites : public ProfileSyncServiceObserver,
   // Whether the user is in a control group for the purposes of logging.
   bool is_control_group_;
 
+  // Keeps track of whether the initial NTP load has been done.
+  bool initial_load_done_;
+
   // Counters for UMA metrics.
 
   // Number of tiles using a local thumbnail image for this NTP session.
