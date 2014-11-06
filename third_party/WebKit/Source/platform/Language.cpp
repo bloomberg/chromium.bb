@@ -31,23 +31,22 @@
 
 namespace blink {
 
+static String canonicalizeLanguageIdentifier(const String& languageCode)
+{
+    String lowercaseLanguageCode = languageCode.lower();
+    // Platform::defaultLocale() might provide a language code with '_'.
+    lowercaseLanguageCode.replace('_', '-');
+    return lowercaseLanguageCode;
+}
+
 static const AtomicString& platformLanguage()
 {
     DEFINE_STATIC_LOCAL(AtomicString, computedDefaultLanguage, ());
     if (computedDefaultLanguage.isEmpty()) {
-        computedDefaultLanguage = blink::Platform::current()->defaultLocale();
+        computedDefaultLanguage = AtomicString(canonicalizeLanguageIdentifier(Platform::current()->defaultLocale()));
         ASSERT(!computedDefaultLanguage.isEmpty());
     }
     return computedDefaultLanguage;
-}
-
-AtomicString defaultLanguage()
-{
-    Vector<AtomicString> languages = userPreferredLanguages();
-    if (!languages.isEmpty())
-        return languages[0];
-
-    return emptyAtom;
 }
 
 static Vector<AtomicString>& preferredLanguagesOverride()
@@ -56,14 +55,21 @@ static Vector<AtomicString>& preferredLanguagesOverride()
     return override;
 }
 
-Vector<AtomicString> userPreferredLanguagesOverride()
-{
-    return preferredLanguagesOverride();
-}
-
 void overrideUserPreferredLanguages(const Vector<AtomicString>& override)
 {
-    preferredLanguagesOverride() = override;
+    Vector<AtomicString>& canonicalized = preferredLanguagesOverride();
+    canonicalized.resize(0);
+    canonicalized.reserveCapacity(override.size());
+    for (const auto& lang : override)
+        canonicalized.append(canonicalizeLanguageIdentifier(lang));
+}
+
+AtomicString defaultLanguage()
+{
+    Vector<AtomicString>& override = preferredLanguagesOverride();
+    if (!override.isEmpty())
+        return override[0];
+    return platformLanguage();
 }
 
 Vector<AtomicString> userPreferredLanguages()
@@ -78,16 +84,6 @@ Vector<AtomicString> userPreferredLanguages()
     return languages;
 }
 
-static String canonicalLanguageIdentifier(const String& languageCode)
-{
-    String lowercaseLanguageCode = languageCode.lower();
-
-    if (lowercaseLanguageCode.length() >= 3 && lowercaseLanguageCode[2] == '_')
-        lowercaseLanguageCode.replace(2, 1, "-");
-
-    return lowercaseLanguageCode;
-}
-
 size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vector<AtomicString>& languageList)
 {
     AtomicString languageWithoutLocaleMatch;
@@ -97,7 +93,7 @@ size_t indexOfBestMatchingLanguageInList(const AtomicString& language, const Vec
     bool canMatchLanguageOnly = (language.length() == 2 || (language.length() >= 3 && language[2] == '-'));
 
     for (size_t i = 0; i < languageList.size(); ++i) {
-        String canonicalizedLanguageFromList = canonicalLanguageIdentifier(languageList[i]);
+        String canonicalizedLanguageFromList = canonicalizeLanguageIdentifier(languageList[i]);
 
         if (language == canonicalizedLanguageFromList)
             return i;

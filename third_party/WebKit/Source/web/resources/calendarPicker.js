@@ -49,7 +49,7 @@ var WeekDay = {
 var global = {
     picker: null,
     params: {
-        locale: "en_US",
+        locale: "en-US",
         weekStartDay: WeekDay.Sunday,
         dayLabels: ["S", "M", "T", "W", "T", "F", "S"],
         shortMonthLabels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"],
@@ -75,7 +75,7 @@ function hasInaccuratePointingDevice() {
  * @return {!string} lowercase locale name. e.g. "en-us"
  */
 function getLocale() {
-    return (global.params.locale || "en-us").toLowerCase().replace(/_/g, '-');
+    return global.params.locale || "en-us";
 }
 
 /**
