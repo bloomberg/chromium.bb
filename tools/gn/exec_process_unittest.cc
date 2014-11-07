@@ -35,6 +35,10 @@ bool ExecPython(const std::string& command,
 }
 }  // namespace
 
+// TODO(cjhopman): Enable these tests when windows ExecProcess handles stderr.
+// 'python' is not runnable on Windows. Adding ["cmd", "/c"] fails because
+// CommandLine does unusual reordering of args.
+#if !defined(OS_WIN)
 TEST(ExecProcessTest, TestExitCode) {
   std::string std_out, std_err;
   int exit_code;
@@ -71,8 +75,6 @@ TEST(ExecProcessTest, TestLargeOutput) {
   EXPECT_EQ(1000001u, std_out.size());
 }
 
-// TODO(cjhopman): Enable these tests when windows ExecProcess handles stderr.
-#if !defined(OS_WIN)
 TEST(ExecProcessTest, TestStdoutAndStderrOutput) {
   base::ScopedTempDir temp_dir;
   std::string std_out, std_err;
