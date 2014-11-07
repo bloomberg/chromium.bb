@@ -989,7 +989,7 @@ const char kSubnetPrefixParameterThirdPartyVpn[] = "subnet_prefix";
 const char kMtuParameterThirdPartyVpn[] = "mtu";
 const char kDomainSearchParameterThirdPartyVpn[] = "domain_search";
 const char kDnsServersParameterThirdPartyVpn[] = "dns_servers";
-const char kExtensionIDProperty[] = "ExtensionId";
+const char kObjectPathSuffixProperty[] = "ObjectPathSuffix";
 const char kObjectPathBase[] = "/thirdpartyvpn/";
 }  // namespace shill
 
