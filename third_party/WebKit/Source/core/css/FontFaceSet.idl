@@ -42,7 +42,7 @@ enum FontFaceSetLoadStatus { "loading", "loaded" };
 
     [RaisesException] boolean check(DOMString font, optional DOMString text = " ");
     [CallWith=ScriptState] Promise load(DOMString font, optional DOMString text = " ");
-    [MeasureAs=FontFaceSetReady, CallWith=ScriptState] Promise ready();
+    [DeprecateAs=FontFaceSetReady, CallWith=ScriptState] Promise ready();
 
     [RaisesException] void add(FontFace fontFace);
     void clear();

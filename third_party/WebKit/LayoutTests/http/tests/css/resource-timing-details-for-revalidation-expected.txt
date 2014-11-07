@@ -1,3 +1,5 @@
+CONSOLE WARNING: document.fonts.ready() method is going to be replaced with document.fonts.ready attribute in future releases. Please be prepared. For more help, check https://code.google.com/p/chromium/issues/detail?id=392077#c3 .
+CONSOLE WARNING: document.fonts.ready() method is going to be replaced with document.fonts.ready attribute in future releases. Please be prepared. For more help, check https://code.google.com/p/chromium/issues/detail?id=392077#c3 .
 PASS successfullyParsed is true
 
 TEST COMPLETE

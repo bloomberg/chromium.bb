@@ -807,6 +807,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload:
         return "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check http://xhr.spec.whatwg.org/.";
 
+    case FontFaceSetReady:
+        return "document.fonts.ready() method is going to be replaced with document.fonts.ready attribute in future releases. Please be prepared. For more help, check https://code.google.com/p/chromium/issues/detail?id=392077#c3 .";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
