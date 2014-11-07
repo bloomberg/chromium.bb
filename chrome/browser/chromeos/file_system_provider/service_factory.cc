@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service_factory.h"
 
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/extensions/extension_system_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_factory.h"
@@ -33,6 +34,7 @@ ServiceFactory::ServiceFactory()
           "Service",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionRegistryFactory::GetInstance());
+  DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
 ServiceFactory::~ServiceFactory() {}
