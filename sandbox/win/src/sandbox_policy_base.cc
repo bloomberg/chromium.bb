@@ -459,7 +459,7 @@ ResultCode PolicyBase::MakeTokens(HANDLE* initial, HANDLE* lockdown) {
   // integrity label on the object is no higher than the sandboxed process's
   // integrity level. So, we lower the label on the desktop process if it's
   // not already low enough for our process.
-  if (use_alternate_desktop_ &&
+  if (alternate_desktop_handle_ && use_alternate_desktop_ &&
       integrity_level_ != INTEGRITY_LEVEL_LAST &&
       alternate_desktop_integrity_level_label_ < integrity_level_ &&
       base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
