@@ -236,6 +236,7 @@
   "android_webview/java/strings/android_webview_strings.grd": {},
   "chrome/android/java/strings/android_chrome_strings.grd": {},
   "content/public/android/java/strings/android_content_strings.grd": {},
+  "ui/accessibility/extensions/strings/accessibility_extensions_strings.grd": {},
   "ui/android/java/strings/android_ui_strings.grd": {},
 
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
