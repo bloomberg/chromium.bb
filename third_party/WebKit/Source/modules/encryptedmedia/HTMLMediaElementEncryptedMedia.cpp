@@ -21,7 +21,6 @@
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Functional.h"
 
 namespace blink {

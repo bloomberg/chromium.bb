@@ -13,6 +13,7 @@ namespace blink {
 
 class DOMArrayPiece : public WTF::ArrayPiece {
 public:
+    DOMArrayPiece() { }
     DOMArrayPiece(DOMArrayBuffer* buffer)
         : ArrayPiece(buffer->buffer()) { }
     DOMArrayPiece(DOMArrayBufferView* view)

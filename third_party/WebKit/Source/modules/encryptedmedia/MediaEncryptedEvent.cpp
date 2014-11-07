@@ -26,6 +26,8 @@
 #include "config.h"
 #include "modules/encryptedmedia/MediaEncryptedEvent.h"
 
+#include "core/dom/DOMArrayBuffer.h"
+
 namespace blink {
 
 MediaEncryptedEventInit::MediaEncryptedEventInit()

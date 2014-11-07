@@ -113,8 +113,8 @@ private:
     virtual void error(WebContentDecryptionModuleException, unsigned long systemCode, const WebString& errorMessage) override;
     virtual void expirationChanged(double updatedExpiryTimeInMS) override;
 
-    ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<ArrayBuffer> initData);
-    ScriptPromise updateInternal(ScriptState*, PassRefPtr<ArrayBuffer> response);
+    ScriptPromise generateRequestInternal(ScriptState*, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData);
+    ScriptPromise updateInternal(ScriptState*, PassRefPtr<DOMArrayBuffer> response);
 
     // Called by NewSessionResult when the new session has been created.
     void finishGenerateRequest();

@@ -26,11 +26,11 @@
 #ifndef MediaEncryptedEvent_h
 #define MediaEncryptedEvent_h
 
-#include "core/dom/DOMTypedArray.h"
 #include "modules/EventModules.h"
-#include "wtf/ArrayBuffer.h"
 
 namespace blink {
+
+class DOMArrayBuffer;
 
 struct MediaEncryptedEventInit : public EventInit {
     MediaEncryptedEventInit();

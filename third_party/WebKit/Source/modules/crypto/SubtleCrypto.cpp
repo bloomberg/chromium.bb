@@ -40,13 +40,12 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
-#include "wtf/ArrayBufferView.h"
 
 namespace blink {
 
 // Seems like the generated bindings should take care of these however it
 // currently doesn't. See also http://crbug.com/264520
-static bool ensureNotNull(const ArrayPiece& x, const char* paramName, CryptoResult* result)
+static bool ensureNotNull(const DOMArrayPiece& x, const char* paramName, CryptoResult* result)
 {
     if (x.isNull()) {
         String message = String("Invalid ") + paramName + String(" argument");
@@ -87,7 +86,7 @@ static bool canAccessWebCrypto(ScriptState* scriptState, CryptoResult* result)
     return true;
 }
 
-static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, WebCryptoOperation operationType, const ArrayPiece& signature, const ArrayPiece& dataBuffer)
+static ScriptPromise startCryptoOperation(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, WebCryptoOperation operationType, const DOMArrayPiece& signature, const DOMArrayPiece& dataBuffer)
 {
     RefPtr<CryptoResultImpl> result = CryptoResultImpl::create(scriptState);
     ScriptPromise promise = result->promise();
@@ -195,17 +194,17 @@ SubtleCrypto::SubtleCrypto()
 
 ScriptPromise SubtleCrypto::encrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationEncrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationEncrypt, DOMArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::decrypt(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationDecrypt, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationDecrypt, DOMArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::sign(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationSign, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, key, WebCryptoOperationSign, DOMArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dictionary& rawAlgorithm, CryptoKey* key, const DOMArrayPiece& signature, const DOMArrayPiece& data)
@@ -215,7 +214,7 @@ ScriptPromise SubtleCrypto::verifySignature(ScriptState* scriptState, const Dict
 
 ScriptPromise SubtleCrypto::digest(ScriptState* scriptState, const Dictionary& rawAlgorithm, const DOMArrayPiece& data)
 {
-    return startCryptoOperation(scriptState, rawAlgorithm, 0, WebCryptoOperationDigest, ArrayPiece(), data);
+    return startCryptoOperation(scriptState, rawAlgorithm, 0, WebCryptoOperationDigest, DOMArrayPiece(), data);
 }
 
 ScriptPromise SubtleCrypto::generateKey(ScriptState* scriptState, const Dictionary& rawAlgorithm, bool extractable, const Vector<String>& rawKeyUsages)

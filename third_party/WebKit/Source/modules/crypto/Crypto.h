@@ -32,10 +32,10 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/crypto/SubtleCrypto.h"
 #include "platform/heap/Handle.h"
-#include "wtf/Forward.h"
 
 namespace blink {
 
+class DOMArrayBufferView;
 class ExceptionState;
 
 class Crypto final : public GarbageCollected<Crypto>, public ScriptWrappable {
@@ -46,14 +46,14 @@ public:
         return new Crypto();
     }
 
-    void getRandomValues(ArrayBufferView*, ExceptionState&);
+    void getRandomValues(DOMArrayBufferView*, ExceptionState&);
 
     SubtleCrypto* subtle();
 
     void trace(Visitor*);
 
 private:
-    Crypto();
+    Crypto() { }
 
     Member<SubtleCrypto> m_subtleCrypto;
 };

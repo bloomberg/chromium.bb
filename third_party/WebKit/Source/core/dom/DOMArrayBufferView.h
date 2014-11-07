@@ -15,6 +15,18 @@ namespace blink {
 class DOMArrayBufferView : public RefCounted<DOMArrayBufferView>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    typedef WTF::ArrayBufferView::ViewType ViewType;
+    static const int TypeInt8 = WTF::ArrayBufferView::TypeInt8;
+    static const int TypeUint8 = WTF::ArrayBufferView::TypeUint8;
+    static const int TypeUint8Clamped = WTF::ArrayBufferView::TypeUint8Clamped;
+    static const int TypeInt16 = WTF::ArrayBufferView::TypeInt16;
+    static const int TypeUint16 = WTF::ArrayBufferView::TypeUint16;
+    static const int TypeInt32 = WTF::ArrayBufferView::TypeInt32;
+    static const int TypeUint32 = WTF::ArrayBufferView::TypeUint32;
+    static const int TypeFloat32 = WTF::ArrayBufferView::TypeFloat32;
+    static const int TypeFloat64 = WTF::ArrayBufferView::TypeFloat64;
+    static const int TypeDataView = WTF::ArrayBufferView::TypeDataView;
+
     virtual ~DOMArrayBufferView() { }
 
     PassRefPtr<DOMArrayBuffer> buffer() const
@@ -27,10 +39,11 @@ public:
     const WTF::ArrayBufferView* view() const { return m_bufferView.get(); }
     WTF::ArrayBufferView* view() { return m_bufferView.get(); }
 
-    WTF::ArrayBufferView::ViewType type() const { return view()->type(); }
+    ViewType type() const { return view()->type(); }
+    const char* typeName() { return view()->typeName(); }
     void* baseAddress() const { return view()->baseAddress(); }
-    unsigned long byteOffset() const { return view()->byteOffset(); }
-    unsigned long byteLength() const { return view()->byteLength(); }
+    unsigned byteOffset() const { return view()->byteOffset(); }
+    unsigned byteLength() const { return view()->byteLength(); }
 
     virtual v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*) override
     {

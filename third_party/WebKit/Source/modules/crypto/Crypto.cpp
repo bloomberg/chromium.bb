@@ -31,33 +31,29 @@
 #include "modules/crypto/Crypto.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/ArrayBufferView.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 
 namespace blink {
 
 namespace {
 
-bool isIntegerArray(ArrayBufferView* array)
+bool isIntegerArray(DOMArrayBufferView* array)
 {
-    ArrayBufferView::ViewType type = array->type();
-    return type == ArrayBufferView::TypeInt8
-        || type == ArrayBufferView::TypeUint8
-        || type == ArrayBufferView::TypeUint8Clamped
-        || type == ArrayBufferView::TypeInt16
-        || type == ArrayBufferView::TypeUint16
-        || type == ArrayBufferView::TypeInt32
-        || type == ArrayBufferView::TypeUint32;
+    DOMArrayBufferView::ViewType type = array->type();
+    return type == DOMArrayBufferView::TypeInt8
+        || type == DOMArrayBufferView::TypeUint8
+        || type == DOMArrayBufferView::TypeUint8Clamped
+        || type == DOMArrayBufferView::TypeInt16
+        || type == DOMArrayBufferView::TypeUint16
+        || type == DOMArrayBufferView::TypeInt32
+        || type == DOMArrayBufferView::TypeUint32;
 }
 
-}
+} // namespace
 
-Crypto::Crypto()
-{
-}
-
-void Crypto::getRandomValues(ArrayBufferView* array, ExceptionState& exceptionState)
+void Crypto::getRandomValues(DOMArrayBufferView* array, ExceptionState& exceptionState)
 {
     if (!array) {
         exceptionState.throwDOMException(TypeMismatchError, "The provided ArrayBufferView is null.");
@@ -86,4 +82,4 @@ void Crypto::trace(Visitor* visitor)
     visitor->trace(m_subtleCrypto);
 }
 
-}
+} // namespace blink

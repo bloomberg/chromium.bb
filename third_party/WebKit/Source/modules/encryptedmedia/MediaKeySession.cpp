@@ -122,7 +122,7 @@ public:
         return m_result;
     }
 
-    const RefPtr<ArrayBuffer> data() const
+    const PassRefPtr<DOMArrayBuffer> data() const
     {
         ASSERT(m_type == GenerateRequest || m_type == Update);
         return m_data;
@@ -140,7 +140,7 @@ public:
         return m_stringData;
     }
 
-    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, const String& initDataType, PassRefPtr<ArrayBuffer> initData)
+    static PendingAction* CreatePendingGenerateRequest(ContentDecryptionModuleResult* result, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
     {
         ASSERT(result);
         ASSERT(initData);
@@ -150,10 +150,10 @@ public:
     static PendingAction* CreatePendingLoadRequest(ContentDecryptionModuleResult* result, const String& sessionId)
     {
         ASSERT(result);
-        return new PendingAction(Load, result, sessionId, PassRefPtr<ArrayBuffer>());
+        return new PendingAction(Load, result, sessionId, PassRefPtr<DOMArrayBuffer>());
     }
 
-    static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, PassRefPtr<ArrayBuffer> data)
+    static PendingAction* CreatePendingUpdate(ContentDecryptionModuleResult* result, PassRefPtr<DOMArrayBuffer> data)
     {
         ASSERT(result);
         ASSERT(data);
@@ -163,13 +163,13 @@ public:
     static PendingAction* CreatePendingClose(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Close, result, String(), PassRefPtr<ArrayBuffer>());
+        return new PendingAction(Close, result, String(), PassRefPtr<DOMArrayBuffer>());
     }
 
     static PendingAction* CreatePendingRemove(ContentDecryptionModuleResult* result)
     {
         ASSERT(result);
-        return new PendingAction(Remove, result, String(), PassRefPtr<ArrayBuffer>());
+        return new PendingAction(Remove, result, String(), PassRefPtr<DOMArrayBuffer>());
     }
 
     ~PendingAction()
@@ -182,7 +182,7 @@ public:
     }
 
 private:
-    PendingAction(Type type, ContentDecryptionModuleResult* result, const String& stringData, PassRefPtr<ArrayBuffer> data)
+    PendingAction(Type type, ContentDecryptionModuleResult* result, const String& stringData, PassRefPtr<DOMArrayBuffer> data)
         : m_type(type)
         , m_result(result)
         , m_stringData(stringData)
@@ -193,7 +193,7 @@ private:
     const Type m_type;
     const Member<ContentDecryptionModuleResult> m_result;
     const String m_stringData;
-    const RefPtr<ArrayBuffer> m_data;
+    const RefPtr<DOMArrayBuffer> m_data;
 };
 
 // This class wraps the promise resolver used when initializing a new session
@@ -419,17 +419,17 @@ ScriptPromise MediaKeySession::closed(ScriptState* scriptState)
 
 ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBuffer* initData)
 {
-    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->data(), initData->byteLength());
+    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->data(), initData->byteLength());
     return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
 }
 
 ScriptPromise MediaKeySession::generateRequest(ScriptState* scriptState, const String& initDataType, DOMArrayBufferView* initData)
 {
-    RefPtr<ArrayBuffer> initDataCopy = ArrayBuffer::create(initData->baseAddress(), initData->byteLength());
+    RefPtr<DOMArrayBuffer> initDataCopy = DOMArrayBuffer::create(initData->baseAddress(), initData->byteLength());
     return generateRequestInternal(scriptState, initDataType, initDataCopy.release());
 }
 
-ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<ArrayBuffer> initData)
+ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState, const String& initDataType, PassRefPtr<DOMArrayBuffer> initData)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::generateRequest %s", this, initDataType.ascii().data());
 
@@ -551,17 +551,17 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
 
 ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBuffer* response)
 {
-    RefPtr<ArrayBuffer> responseCopy = ArrayBuffer::create(response->data(), response->byteLength());
+    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->data(), response->byteLength());
     return updateInternal(scriptState, responseCopy.release());
 }
 
 ScriptPromise MediaKeySession::update(ScriptState* scriptState, DOMArrayBufferView* response)
 {
-    RefPtr<ArrayBuffer> responseCopy = ArrayBuffer::create(response->baseAddress(), response->byteLength());
+    RefPtr<DOMArrayBuffer> responseCopy = DOMArrayBuffer::create(response->baseAddress(), response->byteLength());
     return updateInternal(scriptState, responseCopy.release());
 }
 
-ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefPtr<ArrayBuffer> response)
+ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefPtr<DOMArrayBuffer> response)
 {
     WTF_LOG(Media, "MediaKeySession(%p)::update", this);
     ASSERT(!m_isClosed);

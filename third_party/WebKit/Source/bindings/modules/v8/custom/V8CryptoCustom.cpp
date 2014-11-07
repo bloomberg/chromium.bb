@@ -51,7 +51,7 @@ void V8Crypto::getRandomValuesMethodCustom(const v8::FunctionCallbackInfo<v8::Va
         ASSERT(arrayBufferView);
 
         Crypto* crypto = V8Crypto::toImpl(info.Holder());
-        crypto->getRandomValues(arrayBufferView->view(), exceptionState);
+        crypto->getRandomValues(arrayBufferView, exceptionState);
     }
 
     if (exceptionState.throwIfNeeded())

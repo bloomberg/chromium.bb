@@ -72,7 +72,7 @@ public:
 private:
     class PendingAction;
 
-    ScriptPromise setServerCertificateInternal(ScriptState*, PassRefPtr<ArrayBuffer> initData);
+    ScriptPromise setServerCertificateInternal(ScriptState*, PassRefPtr<DOMArrayBuffer> initData);
 
     void timerFired(Timer<MediaKeys>*);
 
