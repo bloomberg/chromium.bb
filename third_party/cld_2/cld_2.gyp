@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Note to maintainers: In the January 2014 release (*_0122*), there are some
-# options for building:
+# Note to maintainers: In the October 2014 release, there are some options for
+# building:
 # Pick one quadgram file (cld2_generated_quadchrome*.cc):
-#   0122_16 = 160K entries, smallest size, lowest accuracy (set cld2_table_size=0)
-#   0122_19 = 192K entries, medium size, medium accuracy (set cld2_table_size=1)
-#   0122_2  = 256K entries, largest size, highest accuracy (set cld2_table_size=2)
+#   _16 = 160K entries, smallest size, lowest accuracy (set cld2_table_size=0)
+#   _2  = 256K entries, largest size, highest accuracy (set cld2_table_size=2)
 #
 # For the CJK bigram file (cld_generated_cjk_delta_bi*.cc), always use
 # cld_generated_cjk_delta_bi_4.cc, as this is intended for use with Chromium.
@@ -76,22 +75,19 @@
     ],
     'cld2_data_sources': [
       'src/internal/cld2_generated_cjk_compatible.cc',
-      'src/internal/cld2_generated_deltaoctachrome0122.cc',
-      'src/internal/cld2_generated_distinctoctachrome0122.cc',
+      'src/internal/cld2_generated_deltaoctachrome.cc',
+      'src/internal/cld2_generated_distinctoctachrome.cc',
       'src/internal/cld_generated_cjk_delta_bi_4.cc',
       'src/internal/cld_generated_cjk_uni_prop_80.cc',
-      'src/internal/cld_generated_score_quad_octa_0122_2.cc',
+      'src/internal/cld_generated_score_quad_octa_2.cc',
       'src/internal/generated_distinct_bi_0.cc',
     ],
     'conditions': [
       ['cld2_table_size==0', {
-        'cld2_data_sources+': ['src/internal/cld2_generated_quadchrome0122_16.cc']
-      }],
-      ['cld2_table_size==1', {
-         'cld2_data_sources+': ['src/internal/cld2_generated_quadchrome0122_19.cc']
+        'cld2_data_sources+': ['src/internal/cld2_generated_quadchrome_16.cc']
       }],
       ['cld2_table_size==2', {
-         'cld2_data_sources+': ['src/internal/cld2_generated_quadchrome0122_2.cc']
+         'cld2_data_sources+': ['src/internal/cld2_generated_quadchrome_2.cc']
       }],
     ],
   },
