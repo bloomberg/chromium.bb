@@ -27,7 +27,7 @@
 namespace mojo {
 
 // Switches for html_viewer to be used with "--args-for". For example:
-// --args-for='mojo://html_viewer --enable-mojo-media-renderer'
+// --args-for='mojo:html_viewer --enable-mojo-media-renderer'
 
 // Enable mojo::MediaRenderer in media pipeline instead of using the internal
 // media::Renderer implementation.
