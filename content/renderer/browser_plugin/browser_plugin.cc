@@ -85,6 +85,9 @@ BrowserPlugin::BrowserPlugin(RenderViewImpl* render_view,
 }
 
 BrowserPlugin::~BrowserPlugin() {
+  if (compositing_helper_.get())
+    compositing_helper_->OnContainerDestroy();
+
   browser_plugin_manager()->RemoveBrowserPlugin(browser_plugin_instance_id_);
 }
 
@@ -342,15 +345,11 @@ void BrowserPlugin::EnableCompositing(bool enable) {
 
 void BrowserPlugin::destroy() {
   if (container_) {
-    //container_->clearScriptObjects();
-
     // The BrowserPlugin's WebPluginContainer is deleted immediately after this
     // call returns, so let's not keep a reference to it around.
     g_plugin_container_map.Get().erase(container_);
   }
 
-  if (compositing_helper_.get())
-    compositing_helper_->OnContainerDestroy();
   container_ = NULL;
   // Will be a no-op if the mouse is not currently locked.
   if (render_view_)

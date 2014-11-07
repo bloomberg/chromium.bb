@@ -64,11 +64,15 @@ class CONTENT_EXPORT BrowserPluginManager
   // then the BrowserPluginManager will be destroyed.
   void OnDestruct() override {}
 
- protected:
+ private:
   // Friend RefCounted so that the dtor can be non-public.
   friend class base::RefCounted<BrowserPluginManager>;
 
   ~BrowserPluginManager() override;
+
+  // IPC message handlers.
+  void OnCompositorFrameSwappedPluginUnavailable(const IPC::Message& message);
+
   // This map is keyed by guest instance IDs.
   IDMap<BrowserPlugin> instances_;
   int current_instance_id_;
