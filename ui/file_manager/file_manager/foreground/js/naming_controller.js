@@ -359,7 +359,7 @@ NamingController.prototype.cancelRename_ = function() {
   if (parent)
     parent.removeChild(this.listContainer_.renameInput);
 
-  this.listContainer_.startBatchUpdates();
+  this.listContainer_.endBatchUpdates();
 
   // Focus may go out of the list. Back it to the list.
   this.listContainer_.currentList.focus();
