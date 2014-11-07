@@ -10,6 +10,7 @@ import cStringIO
 import logging
 import os
 import shutil
+import sys
 import tempfile
 import time
 import urlparse
@@ -22,6 +23,7 @@ from chromite.lib import osutils
 from chromite.lib import remote_access
 
 
+DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
 DEVSERVER_STATIC_DIR = cros_build_lib.FromChrootPath(
     os.path.join(constants.CHROOT_SOURCE_ROOT, 'devserver', 'static'))
 
@@ -97,38 +99,38 @@ def _GetXbuddyPath(path):
     raise ValueError('Do not support scheme %s.', parsed.scheme)
 
 
-def TranslateImagePath(path, board, debug=False):
-  """Start devserver to translate the xbuddy |path|.
+def GetImagePathWithXbuddy(path, board):
+  """Gets image path using xbuddy.
+
+  Ask xbuddy to translate |path|, and if necessary, download and stage the
+  image, then return a translated path to the image.
 
   Args:
     path: The xbuddy path.
     board: The default board to use if board is not specified in |path|.
-    debug: If True, prints the devserver log on response error.
 
   Returns:
-    A translated path that uniquely identifies one build:
-      build-id/version/image_name
+    A translated path to the image: build-id/version/image_name.
   """
-  ds = ds_wrapper.DevServerWrapper(static_dir=DEVSERVER_STATIC_DIR,
-                                   board=board)
-  req = GenerateXbuddyRequest(path, 'translate')
-  logging.info('Starting local devserver to get image path...')
-  try:
-    ds.Start()
-    return ds.OpenURL(ds.GetURL(sub_dir=req), timeout=60 * 15)
+  # Import xbuddy for translating, downloading and staging the image.
+  if not os.path.exists(DEVSERVER_PKG_DIR):
+    raise Exception('Cannot find xbuddy module. Devserver package directory '
+                    'does not exist: %s' % DEVSERVER_PKG_DIR)
+  sys.path.append(DEVSERVER_PKG_DIR)
+  import xbuddy
 
-  except ds_wrapper.DevServerResponseError as e:
+  xb = xbuddy.XBuddy(static_dir=DEVSERVER_STATIC_DIR, board=board,
+                     log_screen=False)
+  path_list = _GetXbuddyPath(path).rsplit(os.path.sep)
+
+  try:
+    build_id, file_name = xb.Get(path_list)
+    return os.path.join(build_id, file_name)
+  except xbuddy.XBuddyException as e:
     logging.error('Unable to translate the image path: %s. Are you sure the '
                   'image path is correct? The board %s is used when no board '
                   'name is included in the image path.', path, board)
-    if debug:
-      logging.warning(ds.TailLog() or 'No devserver log is available.')
     raise ValueError('Cannot locate image %s: %s' % (path, e))
-  except ds_wrapper.DevServerException:
-    logging.warning(ds.TailLog() or 'No devserver log is available.')
-    raise
-  finally:
-    ds.Stop()
 
 
 def GenerateXbuddyRequest(path, req_type):
@@ -156,32 +158,19 @@ def GenerateXbuddyRequest(path, req_type):
     raise ValueError('Does not support xbuddy request type %s' % req_type)
 
 
-def DevserverURLToLocalPath(url, static_dir, file_type):
-  """Convert the devserver returned URL to a local path.
-
-  Devserver returns only the directory where the files are. This
-  function converts such a URL to a local path based on |file_type| so
-  that we can access the file without downloading it.
+def TranslatedPathToLocalPath(translated_path, static_dir):
+  """Convert the translated path to a local path to the image file.
 
   Args:
-    url: The URL returned by devserver (when return_dir=true).
+    translated_path: the translated xbuddy path
+      (e.g., peppy-release/R36-5760.0.0/chromiumos_image).
     static_dir: The static directory used by the devserver.
-    file_type: The image (in IMAGE_TYPE_TO_NAME) that we want to access.
 
   Returns:
-    A local path to the file.
+    A local path to the image file.
   """
-  # pylint: disable=E1101
-  # Example URL: http://localhost:8080/static/peppy-release/R33-5116.87.0
-  relative_path = urlparse.urlparse(url).path[len('/static/'):]
-  # Defaults to test image because that is how Xbuddy handles the path.
-  filename = IMAGE_TYPE_TO_NAME.get(file_type, IMAGE_TYPE_TO_NAME['test'])
-  # Expand the path because devserver may use symlinks.
-  real_path = osutils.ExpandPath(
-      os.path.join(static_dir, relative_path, filename))
+  real_path = osutils.ExpandPath(os.path.join(static_dir, translated_path))
 
-  # If devserver uses a symlink within chroot, and we are running
-  # outside of chroot, we need to convert the path.
   if os.path.exists(real_path):
     return real_path
   else:
@@ -289,39 +278,6 @@ class USBImager(object):
     cros_build_lib.SudoRunCommand(cmd, shell=True)
     cros_build_lib.SudoRunCommand(['sync'], debug_level=self.debug_level)
 
-  def GetImagePathFromDevserver(self, path):
-    """Gets image path from devserver.
-
-    Asks devserver to stage the image and convert the returned URL to a
-    local path to the image.
-
-    Args:
-      path: An xbuddy path with or without (xbuddy://).
-
-    Returns:
-      A local path to the image.
-    """
-    ds = ds_wrapper.DevServerWrapper(static_dir=DEVSERVER_STATIC_DIR,
-                                     board=self.board)
-    req = GenerateXbuddyRequest(path, 'image')
-    logging.info('Starting a local devserver to stage image...')
-    try:
-      ds.Start()
-      url = ds.OpenURL(ds.GetURL(sub_dir=req), timeout=60 * 15)
-
-    except ds_wrapper.DevServerResponseError:
-      logging.warning('Could not download %s.', path)
-      logging.warning(ds.TailLog() or 'No devserver log is available.')
-      raise
-    else:
-      # Print out the log when debug is on.
-      logging.debug(ds.TailLog() or 'No devserver log is available.')
-    finally:
-      ds.Stop()
-
-    return DevserverURLToLocalPath(url, DEVSERVER_STATIC_DIR,
-                                   path.rsplit(os.path.sep)[-1])
-
   def IsFilePathGPTDiskImage(self, file_path):
     """Determines if the file is a valid GPT disk."""
     if os.path.isfile(file_path):
@@ -364,11 +320,9 @@ class USBImager(object):
       image_path = self.ChooseImageFromDirectory(self.image)
     else:
       # Translate the xbuddy path to get the exact image to use.
-      translated_path = TranslateImagePath(self.image, self.board,
-                                           debug=self.debug)
-      # Convert the translated path to be used in a request.
-      xbuddy_path = ConvertTranslatedPath(self.image, translated_path)
-      image_path = self.GetImagePathFromDevserver(xbuddy_path)
+      translated_path = GetImagePathWithXbuddy(self.image, self.board)
+      image_path = TranslatedPathToLocalPath(translated_path,
+                                             DEVSERVER_STATIC_DIR)
 
     logging.info('Using image %s', translated_path or image_path)
     return image_path
@@ -439,7 +393,6 @@ class RemoteDeviceUpdater(object):
   """Performs update on a remote device."""
   ROOTFS_FILENAME = 'update.gz'
   STATEFUL_FILENAME = 'stateful.tgz'
-  DEVSERVER_PKG_DIR = os.path.join(constants.SOURCE_ROOT, 'src/platform/dev')
   DEVSERVER_FILENAME = 'devserver.py'
   STATEFUL_UPDATE_BIN = '/usr/bin/stateful_update'
   UPDATE_ENGINE_BIN = 'update_engine_client'
@@ -555,7 +508,7 @@ class RemoteDeviceUpdater(object):
     src_dir = os.path.join(tempdir, 'src')
     osutils.RmDir(src_dir, ignore_missing=True)
     shutil.copytree(
-        self.DEVSERVER_PKG_DIR, src_dir,
+        DEVSERVER_PKG_DIR, src_dir,
         ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static', '*~'))
     device.CopyToWorkDir(src_dir)
     return os.path.join(device.work_dir, os.path.basename(src_dir))
@@ -818,8 +771,7 @@ class RemoteDeviceUpdater(object):
             # crbug.com/340722 and use it to compare boards.
 
             # Translate the xbuddy path to get the exact image to use.
-            translated_path = TranslateImagePath(self.image, board,
-                                                 debug=self.debug)
+            translated_path = GetImagePathWithXbuddy(self.image, board)
             logging.info('Using image %s', translated_path)
             # Convert the translated path to be used in the update request.
             image_path = ConvertTranslatedPath(self.image, translated_path)
