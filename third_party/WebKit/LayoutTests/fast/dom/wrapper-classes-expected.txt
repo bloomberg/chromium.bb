@@ -125,26 +125,6 @@ PASS classString(stylesheet.cssRules.item(0).style) is "CSSStyleDeclaration"
 FAIL classString(stylesheet.cssRules.item(0).style.__proto__) should be CSSStyleDeclarationPrototype. Was Object.
 PASS classString(stylesheet.cssRules.item(0).style.constructor) is "Function"
 PASS stylesheet.cssRules.item(0).style.constructor.name is "CSSStyleDeclaration"
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color')) is "CSSPrimitiveValue"
-FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').__proto__) should be CSSPrimitiveValuePrototype. Was Object.
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').constructor) is "Function"
-PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').constructor.name is "CSSPrimitiveValue"
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue()) is "RGBColor"
-FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().__proto__) should be RGBColorPrototype. Was Object.
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().constructor) is "Function"
-PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().constructor.name is "RGBColor"
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue()) is "Rect"
-FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().__proto__) should be RectPrototype. Was Object.
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().constructor) is "Function"
-PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().constructor.name is "Rect"
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content')) is "CSSValueList"
-FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').__proto__) should be CSSValueListPrototype. Was Object.
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').constructor) is "Function"
-PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').constructor.name is "CSSValueList"
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue()) is "Counter"
-FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().__proto__) should be CounterPrototype. Was Object.
-PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().constructor) is "Function"
-PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().constructor.name is "Counter"
 PASS classString(stylesheet.media) is "MediaList"
 FAIL classString(stylesheet.media.__proto__) should be MediaListPrototype. Was Object.
 PASS classString(stylesheet.media.constructor) is "Function"

@@ -180,15 +180,6 @@ shouldBe("resultArray[1].item", "cssStyleDeclaration.item(1)");
 shouldBe("resultArray[2].i", "'2'");
 shouldBe("resultArray[2].item", "cssStyleDeclaration.item(2)");
 
-// CSSValueList
-var cssValueList = window.getComputedStyle(document.getElementsByTagName('ol')[0]).getPropertyCSSValue('border-spacing');
-resultArray = iterateList(cssValueList);
-shouldBe("resultArray.length", "10");
-shouldBe("resultArray[0].i", "'0'");
-shouldBe("resultArray[0].item", "cssValueList.item(0)");
-shouldBe("resultArray[1].i", "'1'");
-shouldBe("resultArray[1].item", "cssValueList.item(1)");
-
 // MediaList
 var mediaList = document.styleSheets[3].cssRules[0].media;
 resultArray = iterateList(mediaList);

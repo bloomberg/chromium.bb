@@ -32,7 +32,7 @@ function shouldBe(a, b)
     print(message, color);
 }
 
-var cssRule, cssValue, nodeFilter, event;
+var cssRule, nodeFilter, event;
 
 function test() {
     if (window.testRunner)
@@ -54,17 +54,6 @@ function test() {
     shouldBe("window.CSSRule.MEDIA_RULE", 4);
     shouldBe("window.CSSRule.FONT_FACE_RULE", 5);
     shouldBe("window.CSSRule.PAGE_RULE", 6);
-
-    cssValue = cssRule.style.getPropertyCSSValue("color");
-    shouldBe("cssValue.CSS_INHERIT", 0);
-    shouldBe("cssValue.CSS_PRIMITIVE_VALUE", 1);
-    shouldBe("cssValue.CSS_VALUE_LIST", 2);
-    shouldBe("cssValue.CSS_CUSTOM", 3);
-    
-    shouldBe("window.CSSValue.CSS_INHERIT", 0);
-    shouldBe("window.CSSValue.CSS_PRIMITIVE_VALUE", 1);
-    shouldBe("window.CSSValue.CSS_VALUE_LIST", 2);
-    shouldBe("window.CSSValue.CSS_CUSTOM", 3);
 
     var nodeIterator;
     try {
@@ -157,7 +146,7 @@ function test() {
 </script>
 </head>
 <body onload="test();">
-<p>This page tests CSSRule, CSSValue, NodeFilter, and Event. It tests:</p>
+<p>This page tests CSSRule, NodeFilter, and Event. It tests:</p>
 <ol>
     <li>Whether their global constructors have the correct constant values</li>
     <li>Whether their objects have the correct constant values</li>

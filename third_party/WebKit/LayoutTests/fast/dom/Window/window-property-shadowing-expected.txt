@@ -64,9 +64,6 @@ PASS: XMLHttpRequest successfully shadowed
 PASS: XSLTProcessor successfully shadowed
 PASS: StyleSheet successfully shadowed
 PASS: CSSStyleSheet successfully shadowed
-PASS: CSSValue successfully shadowed
-PASS: CSSPrimitiveValue successfully shadowed
-PASS: CSSValueList successfully shadowed
 PASS: CSSRule successfully shadowed
 PASS: CSSCharsetRule successfully shadowed
 PASS: CSSFontFaceRule successfully shadowed
@@ -76,9 +73,7 @@ PASS: CSSPageRule successfully shadowed
 PASS: CSSStyleRule successfully shadowed
 PASS: CSSStyleDeclaration successfully shadowed
 PASS: MediaList successfully shadowed
-PASS: Counter successfully shadowed
 PASS: CSSRuleList successfully shadowed
-PASS: Rect successfully shadowed
 PASS: DOMImplementation successfully shadowed
 PASS: DocumentFragment successfully shadowed
 PASS: Document successfully shadowed

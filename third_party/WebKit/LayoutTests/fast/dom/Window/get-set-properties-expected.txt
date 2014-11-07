@@ -13,8 +13,6 @@ PASS: canGet('CSSRule') should be 'true' and is.
 PASS: canSet('CSSRule') should be 'true' and is.
 PASS: canGet('CSSStyleDeclaration') should be 'true' and is.
 PASS: canSet('CSSStyleDeclaration') should be 'true' and is.
-PASS: canGet('CSSValue') should be 'true' and is.
-PASS: canSet('CSSValue') should be 'true' and is.
 PASS: canGet('CharacterData') should be 'true' and is.
 PASS: canSet('CharacterData') should be 'true' and is.
 PASS: canGet('Comment') should be 'true' and is.

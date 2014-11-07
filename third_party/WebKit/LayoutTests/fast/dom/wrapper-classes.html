@@ -4,8 +4,6 @@
 <style id="style" media="screen">
 .non-existent-class {
     color: rgb(0, 0, 0);
-    clip: rect(0, 0, 1, 1);
-    content: counter(dummy, square);
 }
 </style>
 </head>
@@ -120,11 +118,6 @@ function runTest()
     test("stylesheet.cssRules", "CSSRuleList");
     test("stylesheet.cssRules.item(0)", "CSSStyleRule");
     test("stylesheet.cssRules.item(0).style", "CSSStyleDeclaration");
-    test("stylesheet.cssRules.item(0).style.getPropertyCSSValue('color')", "CSSPrimitiveValue");
-    test("stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue()", "RGBColor");
-    test("stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue()", "Rect");
-    test("stylesheet.cssRules.item(0).style.getPropertyCSSValue('content')", "CSSValueList");
-    test("stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue()", "Counter");
     test("stylesheet.media", "MediaList");
 
     debug('');
@@ -276,10 +269,8 @@ function runTest()
     // CSSMediaRule
     // CSSPageRule
     // CSSRule
-    // CSSVariablesRule
     // WebKitCSSKeyframeRule
     // WebKitCSSKeyframesRule
-    // CSSValue
     // SVGColor
     // SVGPaint
     // SVGZoomEvent
