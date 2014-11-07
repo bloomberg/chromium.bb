@@ -24,6 +24,7 @@
 
 #if defined(USE_X11)
 #include <X11/Xlib.h>
+#include "ui/aura/test/x11_event_sender.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #endif  // USE_X11
 
@@ -79,18 +80,18 @@ void DispatchKeyReleaseA(aura::Window* root_window) {
 // manager only checks a keyup event following a keydown event. See
 // ShouldHandle() in ui/base/accelerators/accelerator_manager.cc for details.
 #if defined(OS_WIN)
-  MSG native_event_down = {NULL, WM_KEYDOWN, ui::VKEY_A, 0};
   aura::WindowTreeHost* host = root_window->GetHost();
-  host->PostNativeEvent(native_event_down);
+  HWND hwnd = host->GetAcceleratedWidget();
+  ::PostMessage(hwnd, WM_KEYDOWN, ui::VKEY_A, 0);
   MSG native_event_up = {NULL, WM_KEYUP, ui::VKEY_A, 0};
-  host->PostNativeEvent(native_event_up);
+  ::PostMessage(hwnd, WM_KEYUP, ui::VKEY_A, 0);
 #elif defined(USE_X11)
   ui::ScopedXI2Event native_event;
   native_event.InitKeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_A, 0);
   aura::WindowTreeHost* host = root_window->GetHost();
-  host->PostNativeEvent(native_event);
+  aura::test::PostEventToWindowTreeHost(*native_event, host);
   native_event.InitKeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_A, 0);
-  host->PostNativeEvent(native_event);
+  aura::test::PostEventToWindowTreeHost(*native_event, host);
 #endif
   // Make sure the inner message-loop terminates after dispatching the events.
   base::MessageLoop::current()->PostTask(

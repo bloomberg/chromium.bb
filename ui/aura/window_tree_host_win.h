@@ -36,7 +36,6 @@ class AURA_EXPORT WindowTreeHostWin
   virtual void SetCursorNative(gfx::NativeCursor cursor) override;
   virtual void MoveCursorToNative(const gfx::Point& location) override;
   virtual void OnCursorVisibilityChangedNative(bool show) override;
-  virtual void PostNativeEvent(const base::NativeEvent& native_event) override;
 
   // ui::EventSource:
   virtual ui::EventProcessor* GetEventProcessor() override;

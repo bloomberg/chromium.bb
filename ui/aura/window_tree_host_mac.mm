@@ -92,10 +92,6 @@ void WindowTreeHostMac::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostMac::PostNativeEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED();
-}
-
 void WindowTreeHostMac::OnDeviceScaleFactorChanged(float device_scale_factor) {
   NOTIMPLEMENTED();
 }

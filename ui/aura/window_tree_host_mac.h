@@ -47,7 +47,6 @@ class AURA_EXPORT WindowTreeHostMac : public WindowTreeHost {
   virtual void SetCursorNative(gfx::NativeCursor cursor_type) override;
   virtual void MoveCursorToNative(const gfx::Point& location) override;
   virtual void OnCursorVisibilityChangedNative(bool show) override;
-  virtual void PostNativeEvent(const base::NativeEvent& event) override;
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) override;
 
  private:

@@ -156,7 +156,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  void PostNativeEvent(const base::NativeEvent& native_event) override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;

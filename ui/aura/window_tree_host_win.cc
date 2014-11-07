@@ -112,11 +112,6 @@ void WindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
   NOTIMPLEMENTED();
 }
 
-void WindowTreeHostWin::PostNativeEvent(const base::NativeEvent& native_event) {
-  ::PostMessage(
-      widget_, native_event.message, native_event.wParam, native_event.lParam);
-}
-
 ui::EventProcessor* WindowTreeHostWin::GetEventProcessor() {
   return dispatcher();
 }

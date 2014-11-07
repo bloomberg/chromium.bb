@@ -532,10 +532,6 @@ void DesktopWindowTreeHostWin::ReleaseCapture() {
   message_handler_->ReleaseCapture();
 }
 
-void DesktopWindowTreeHostWin::PostNativeEvent(
-    const base::NativeEvent& native_event) {
-}
-
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);

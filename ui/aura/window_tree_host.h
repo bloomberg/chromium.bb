@@ -139,9 +139,6 @@ class AURA_EXPORT WindowTreeHost {
   // Releases OS capture of the root window.
   virtual void ReleaseCapture() = 0;
 
-  // Posts |native_event| to the platform's event queue.
-  virtual void PostNativeEvent(const base::NativeEvent& native_event) = 0;
-
  protected:
   friend class TestScreen;  // TODO(beng): see if we can remove/consolidate.
 

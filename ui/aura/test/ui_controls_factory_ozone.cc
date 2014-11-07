@@ -10,6 +10,7 @@
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/test/ui_controls_aura.h"
+#include "ui/events/test/events_test_utils.h"
 
 namespace aura {
 namespace test {
@@ -165,6 +166,14 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
   }
 
  private:
+  void SendEventToProcessor(ui::Event* event) {
+    ui::EventSourceTestApi event_source_test(host_->GetEventSource());
+    ui::EventDispatchDetails details =
+        event_source_test.SendEventToProcessor(event);
+    if (details.dispatcher_destroyed)
+      return;
+  }
+
   void PostKeyEvent(ui::EventType type, ui::KeyboardCode key_code, int flags) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
@@ -182,7 +191,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     flags |= ui::EF_FINAL;
 
     ui::KeyEvent key_event(type, key_code, flags);
-    host_->PostNativeEvent(&key_event);
+    SendEventToProcessor(&key_event);
   }
 
   void PostMouseEvent(ui::EventType type,
@@ -209,7 +218,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     // This hack is necessary to set the repeat count for clicks.
     ui::MouseEvent mouse_event2(&mouse_event);
 
-    host_->PostNativeEvent(&mouse_event2);
+    SendEventToProcessor(&mouse_event2);
   }
 
   WindowTreeHost* host_;

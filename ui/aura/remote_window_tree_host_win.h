@@ -125,7 +125,6 @@ class AURA_EXPORT RemoteWindowTreeHostWin
   virtual gfx::Point GetLocationOnNativeScreen() const override;
   virtual void SetCapture() override;
   virtual void ReleaseCapture() override;
-  virtual void PostNativeEvent(const base::NativeEvent& native_event) override;
   virtual void SetCursorNative(gfx::NativeCursor cursor) override;
   virtual void MoveCursorToNative(const gfx::Point& location) override;
   virtual void OnCursorVisibilityChangedNative(bool show) override;

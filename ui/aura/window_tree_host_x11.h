@@ -51,7 +51,6 @@ class AURA_EXPORT WindowTreeHostX11 : public WindowTreeHost,
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
-  void PostNativeEvent(const base::NativeEvent& event) override;
   void SetCursorNative(gfx::NativeCursor cursor_type) override;
   void MoveCursorToNative(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;

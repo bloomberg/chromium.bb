@@ -94,11 +94,6 @@ void WindowTreeHostOzone::ReleaseCapture() {
   platform_window_->ReleaseCapture();
 }
 
-void WindowTreeHostOzone::PostNativeEvent(
-    const base::NativeEvent& native_event) {
-  SendEventToProcessor(static_cast<ui::Event*>(native_event));
-}
-
 void WindowTreeHostOzone::SetCursorNative(gfx::NativeCursor cursor) {
   platform_window_->SetCursor(cursor.platform());
 }

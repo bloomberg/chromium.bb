@@ -175,6 +175,8 @@ source_set("test_support") {
     "test/window_event_dispatcher_test_api.h",
     "test/window_test_api.cc",
     "test/window_test_api.h",
+    "test/x11_event_sender.cc",
+    "test/x11_event_sender.h",
   ]
 
   public_deps = [

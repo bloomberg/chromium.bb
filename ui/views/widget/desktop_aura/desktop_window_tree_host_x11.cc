@@ -988,39 +988,6 @@ void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
   // the same tap-to-click disabling here that chromeos does.
 }
 
-void DesktopWindowTreeHostX11::PostNativeEvent(
-    const base::NativeEvent& native_event) {
-  DCHECK(xwindow_);
-  DCHECK(xdisplay_);
-  XEvent xevent = *native_event;
-  xevent.xany.display = xdisplay_;
-  xevent.xany.window = xwindow_;
-
-  switch (xevent.type) {
-    case EnterNotify:
-    case LeaveNotify:
-    case MotionNotify:
-    case KeyPress:
-    case KeyRelease:
-    case ButtonPress:
-    case ButtonRelease: {
-      // The fields used below are in the same place for all of events
-      // above. Using xmotion from XEvent's unions to avoid repeating
-      // the code.
-      xevent.xmotion.root = x_root_window_;
-      xevent.xmotion.time = CurrentTime;
-
-      gfx::Point point(xevent.xmotion.x, xevent.xmotion.y);
-      ConvertPointToNativeScreen(&point);
-      xevent.xmotion.x_root = point.x();
-      xevent.xmotion.y_root = point.y();
-    }
-    default:
-      break;
-  }
-  XSendEvent(xdisplay_, xwindow_, False, 0, &xevent);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, ui::EventSource implementation:
 
