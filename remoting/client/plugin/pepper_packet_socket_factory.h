@@ -18,12 +18,12 @@ class PepperPacketSocketFactory : public rtc::PacketSocketFactory {
 
   rtc::AsyncPacketSocket* CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port,
-      int max_port) override;
+      uint16 min_port,
+      uint16 max_port) override;
   rtc::AsyncPacketSocket* CreateServerTcpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port,
-      int max_port,
+      uint16 min_port,
+      uint16 max_port,
       int opts) override;
   rtc::AsyncPacketSocket* CreateClientTcpSocket(
       const rtc::SocketAddress& local_address,

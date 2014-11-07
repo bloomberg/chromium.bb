@@ -36,7 +36,7 @@ class UdpPacketSocket : public rtc::AsyncPacketSocket {
   ~UdpPacketSocket() override;
 
   bool Init(const rtc::SocketAddress& local_address,
-            int min_port, int max_port);
+            uint16 min_port, uint16 max_port);
 
   // rtc::AsyncPacketSocket interface.
   rtc::SocketAddress GetLocalAddress() const override;
@@ -115,14 +115,14 @@ UdpPacketSocket::~UdpPacketSocket() {
 }
 
 bool UdpPacketSocket::Init(const rtc::SocketAddress& local_address,
-                           int min_port, int max_port) {
+                           uint16 min_port, uint16 max_port) {
   net::IPEndPoint local_endpoint;
   if (!jingle_glue::SocketAddressToIPEndPoint(
           local_address, &local_endpoint)) {
     return false;
   }
 
-  for (int port = min_port; port <= max_port; ++port) {
+  for (uint16 port = min_port; port <= max_port; ++port) {
     socket_.reset(new net::UDPServerSocket(NULL, net::NetLog::Source()));
     int result = socket_->Listen(
         net::IPEndPoint(local_endpoint.address(), port));
@@ -361,7 +361,7 @@ ChromiumPacketSocketFactory::~ChromiumPacketSocketFactory() {
 
 rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
       const rtc::SocketAddress& local_address,
-      int min_port, int max_port) {
+      uint16 min_port, uint16 max_port) {
   scoped_ptr<UdpPacketSocket> result(new UdpPacketSocket());
   if (!result->Init(local_address, min_port, max_port))
     return NULL;
@@ -371,7 +371,7 @@ rtc::AsyncPacketSocket* ChromiumPacketSocketFactory::CreateUdpSocket(
 rtc::AsyncPacketSocket*
 ChromiumPacketSocketFactory::CreateServerTcpSocket(
     const rtc::SocketAddress& local_address,
-    int min_port, int max_port,
+    uint16 min_port, uint16 max_port,
     int opts) {
   // We don't use TCP sockets for remoting connections.
   NOTIMPLEMENTED();

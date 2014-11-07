@@ -653,7 +653,7 @@ IpcPacketSocketFactory::~IpcPacketSocketFactory() {
 }
 
 rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
-    const rtc::SocketAddress& local_address, int min_port, int max_port) {
+    const rtc::SocketAddress& local_address, uint16 min_port, uint16 max_port) {
   rtc::SocketAddress crome_address;
   P2PSocketClientImpl* socket_client =
       new P2PSocketClientImpl(socket_dispatcher_);
@@ -668,7 +668,7 @@ rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateUdpSocket(
 }
 
 rtc::AsyncPacketSocket* IpcPacketSocketFactory::CreateServerTcpSocket(
-    const rtc::SocketAddress& local_address, int min_port, int max_port,
+    const rtc::SocketAddress& local_address, uint16 min_port, uint16 max_port,
     int opts) {
   // TODO(sergeyu): Implement SSL support.
   if (opts & rtc::PacketSocketFactory::OPT_SSLTCP)

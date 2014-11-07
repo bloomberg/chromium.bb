@@ -200,12 +200,12 @@ void FakePacketSocketFactory::SetLatency(base::TimeDelta average,
 
 rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
     const rtc::SocketAddress& local_address,
-    int min_port, int max_port) {
+    uint16 min_port, uint16 max_port) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   int port = -1;
   if (min_port > 0 && max_port > 0) {
-    for (int i = min_port; i <= max_port; ++i) {
+    for (uint16 i = min_port; i <= max_port; ++i) {
       if (udp_sockets_.find(i) == udp_sockets_.end()) {
         port = i;
         break;
@@ -235,7 +235,7 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
 
 rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateServerTcpSocket(
     const rtc::SocketAddress& local_address,
-    int min_port, int max_port,
+    uint16 min_port, uint16 max_port,
     int opts) {
   return NULL;
 }
