@@ -151,6 +151,43 @@ class CategorizeChanges(object):
     return workon_changes, irrelevant_workon_changes
 
   @classmethod
+  def _FilterProjectsInManifestByGroup(cls, manifest, groups):
+    """Filters projects in |manifest| by |groups|.
+
+    Args:
+      manifest: A git.Manifest instance.
+      groups: A list of groups to filter.
+
+    Returns:
+      A set of (project, branch) tuples where each tuple is asssociated
+      with at least one group in |groups|.
+    """
+    results = set()
+    for project, checkout_list in manifest.checkouts_by_name.iteritems():
+      for checkout in checkout_list:
+        if any(x in checkout['groups'] for x in groups):
+          branch = git.StripRefs(checkout['tracking_branch'])
+          results.add((project, branch))
+
+    return results
+
+  @classmethod
+  def GetChangesToBuildTools(cls, changes, manifest):
+    """Returns a changes associated with buildtools projects.
+
+    Args:
+      changes: The list or set of GerritPatch instances.
+      manifest: A git.Manifest instance.
+
+    Returns:
+      A subset of |changes| to projects of "buildtools" group.
+    """
+    buildtool_set = cls._FilterProjectsInManifestByGroup(
+        manifest, ['buildtools'])
+    return set([x for x in changes if (x.project, x.tracking_branch)
+                in buildtool_set])
+
+  @classmethod
   def GetIrrelevantChanges(cls, changes, config, build_root, manifest,
                            packages_under_test):
     """Determine changes irrelavant to build |config|.
@@ -172,8 +209,8 @@ class CategorizeChanges(object):
     untriaged_changes = set(changes)
     irrelevant_changes = set()
 
-    # TODO(yjhong): changes that modify projects in "buildtools"
-    # should always be considered relevant. Add the screening here.
+    # Changes that modify projects used in building are always relevant.
+    untriaged_changes -= cls.GetChangesToBuildTools(changes, manifest)
 
     # Handles overlay changes.
     # ClassifyOverlayChanges only handles overlays visible to this
