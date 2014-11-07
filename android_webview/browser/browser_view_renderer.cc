@@ -90,8 +90,8 @@ BrowserViewRenderer::~BrowserViewRenderer() {
   // policy should have already been updated.
 }
 
-SharedRendererState* BrowserViewRenderer::GetSharedRendererState() {
-  return &shared_renderer_state_;
+intptr_t BrowserViewRenderer::GetAwDrawGLViewContext() {
+  return reinterpret_cast<intptr_t>(&shared_renderer_state_);
 }
 
 bool BrowserViewRenderer::RequestDrawGL(bool wait_for_completion) {
@@ -106,6 +106,7 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
     TRIM_MEMORY_RUNNING_LOW = 10,
     TRIM_MEMORY_UI_HIDDEN = 20,
     TRIM_MEMORY_BACKGROUND = 40,
+    TRIM_MEMORY_MODERATE = 60,
   };
 
   // Not urgent enough. TRIM_MEMORY_UI_HIDDEN is treated specially because
@@ -123,6 +124,12 @@ void BrowserViewRenderer::TrimMemory(const int level, const bool visible) {
     return;
 
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::TrimMemory");
+
+  // Drop everything in hardware.
+  if (level >= TRIM_MEMORY_MODERATE) {
+    shared_renderer_state_.ReleaseHardwareDrawIfNeededOnUI();
+    return;
+  }
 
   // Just set the memory limit to 0 and drop all tiles. This will be reset to
   // normal levels in the next DrawGL call.
@@ -164,6 +171,7 @@ bool BrowserViewRenderer::OnDraw(jobject java_canvas,
 
 bool BrowserViewRenderer::OnDrawHardware() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
+  shared_renderer_state_.InitializeHardwareDrawIfNeededOnUI();
   if (!compositor_)
     return false;
 
@@ -393,6 +401,7 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDetachedFromWindow");
+  shared_renderer_state_.ReleaseHardwareDrawIfNeededOnUI();
   attached_to_window_ = false;
   DCHECK(!hardware_enabled_);
 }

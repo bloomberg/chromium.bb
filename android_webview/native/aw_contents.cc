@@ -14,6 +14,7 @@
 #include "android_webview/browser/net_disk_cache_remover.h"
 #include "android_webview/browser/renderer_host/aw_resource_dispatcher_host_delegate.h"
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_hit_test_data.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_client.h"
@@ -67,7 +68,6 @@
 #include "ui/gfx/size.h"
 
 struct AwDrawSWFunctionTable;
-struct AwDrawGLFunctionTable;
 
 using autofill::ContentAutofillDriver;
 using autofill::AutofillManager;
@@ -92,7 +92,7 @@ static void DrawGLFunction(long view_context,
                            void* spare) {
   // |view_context| is the value that was returned from the java
   // AwContents.onPrepareDrawGL; this cast must match the code there.
-  reinterpret_cast<android_webview::AwContents*>(view_context)
+  reinterpret_cast<android_webview::SharedRendererState*>(view_context)
       ->DrawGL(draw_info);
 }
 }
@@ -163,7 +163,6 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
           this,
           web_contents_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
-      shared_renderer_state_(browser_view_renderer_.GetSharedRendererState()),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
   icon_helper_.reset(new IconHelper(web_contents_.get()));
@@ -320,11 +319,7 @@ jint GetNativeInstanceCount(JNIEnv* env, jclass) {
 
 jlong AwContents::GetAwDrawGLViewContext(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return reinterpret_cast<intptr_t>(this);
-}
-
-void AwContents::DrawGL(AwDrawGLInfo* draw_info) {
-  shared_renderer_state_->DrawGL(draw_info);
+  return browser_view_renderer_.GetAwDrawGLViewContext();
 }
 
 namespace {
@@ -805,18 +800,9 @@ void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {
   browser_view_renderer_.OnAttachedToWindow(w, h);
 }
 
-void AwContents::InitializeHardwareDrawIfNeeded() {
-  shared_renderer_state_->InitializeHardwareDrawIfNeededOnUI();
-}
-
 void AwContents::OnDetachedFromWindow(JNIEnv* env, jobject obj) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  ReleaseHardwareDrawIfNeeded();
   browser_view_renderer_.OnDetachedFromWindow();
-}
-
-void AwContents::ReleaseHardwareDrawIfNeeded() {
-  shared_renderer_state_->ReleaseHardwareDrawIfNeededOnUI();
 }
 
 void AwContents::InvalidateOnFunctorDestroy() {
@@ -869,8 +855,6 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jint visible_right,
                         jint visible_bottom) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_hardware_accelerated)
-    InitializeHardwareDrawIfNeeded();
   return browser_view_renderer_.OnDraw(
       canvas,
       is_hardware_accelerated,
@@ -1053,14 +1037,6 @@ void AwContents::TrimMemory(JNIEnv* env,
                             jint level,
                             jboolean visible) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  enum {
-    TRIM_MEMORY_MODERATE = 60,
-  };
-  if (level >= TRIM_MEMORY_MODERATE) {
-    ReleaseHardwareDrawIfNeeded();
-    return;
-  }
-
   browser_view_renderer_.TrimMemory(level, visible);
 }
 

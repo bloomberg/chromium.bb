@@ -17,7 +17,6 @@
 #include "android_webview/browser/gl_view_renderer_manager.h"
 #include "android_webview/browser/icon_helper.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
-#include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/native/permission/permission_request_handler_client.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
@@ -128,8 +127,6 @@ class AwContents : public FindHelper::Listener,
   void SetExtraHeadersForUrl(JNIEnv* env, jobject obj,
                              jstring url, jstring extra_headers);
 
-  void DrawGL(AwDrawGLInfo* draw_info);
-
   void InvokeGeolocationCallback(JNIEnv* env,
                                  jobject obj,
                                  jboolean value,
@@ -225,9 +222,6 @@ class AwContents : public FindHelper::Listener,
   void InitDataReductionProxyIfNecessary();
   void InitAutofillIfNecessary(bool enabled);
 
-  void InitializeHardwareDrawIfNeeded();
-  void ReleaseHardwareDrawIfNeeded();
-
   // Geolocation API support
   void ShowGeolocationPrompt(const GURL& origin, base::Callback<void(bool)>);
   void HideGeolocationPrompt(const GURL& origin);
@@ -241,10 +235,6 @@ class AwContents : public FindHelper::Listener,
   scoped_ptr<IconHelper> icon_helper_;
   scoped_ptr<AwContents> pending_contents_;
   BrowserViewRenderer browser_view_renderer_;
-  // SharedRendererState is owned by BrowserViewRenderer.
-  // So keep a raw pointer here.
-  // TODO(hush): remove this pointer from AwContents.
-  SharedRendererState* shared_renderer_state_;
   scoped_ptr<AwPdfExporter> pdf_exporter_;
   scoped_ptr<PermissionRequestHandler> permission_request_handler_;
 

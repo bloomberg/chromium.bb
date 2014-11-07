@@ -62,7 +62,7 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   virtual ~BrowserViewRenderer();
 
-  SharedRendererState* GetSharedRendererState();
+  intptr_t GetAwDrawGLViewContext();
   bool RequestDrawGL(bool wait_for_completion);
 
   // Main handler for view drawing: performs a SW draw immediately, or sets up
