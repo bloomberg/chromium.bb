@@ -12,7 +12,6 @@
 #include "chrome/common/chrome_version_info.h"
 #include "components/invalidation/invalidation_util.h"
 #include "components/invalidation/object_id_invalidation_map.h"
-#include "content/public/browser/browser_thread.h"
 #include "sync/internal_api/public/events/protocol_event.h"
 #include "sync/internal_api/public/http_post_provider_factory.h"
 #include "sync/internal_api/public/internal_components_factory.h"
@@ -65,6 +64,7 @@ DoInitializeOptions::DoInitializeOptions(
     const syncer::SyncCredentials& credentials,
     const std::string& invalidator_client_id,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
+    bool delete_sync_data_folder,
     const std::string& restored_key_for_bootstrapping,
     const std::string& restored_keystore_key_for_bootstrapping,
     scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
@@ -82,6 +82,7 @@ DoInitializeOptions::DoInitializeOptions(
       credentials(credentials),
       invalidator_client_id(invalidator_client_id),
       sync_manager_factory(sync_manager_factory.Pass()),
+      delete_sync_data_folder(delete_sync_data_folder),
       restored_key_for_bootstrapping(restored_key_for_bootstrapping),
       restored_keystore_key_for_bootstrapping(
           restored_keystore_key_for_bootstrapping),
@@ -98,11 +99,11 @@ DoConfigureSyncerTypes::~DoConfigureSyncerTypes() {}
 
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
-    const base::FilePath& directory_path,
+    const base::FilePath& sync_data_folder_path,
     bool has_sync_setup_completed,
     const base::WeakPtr<SyncBackendHostImpl>& backend)
     : name_(name),
-      directory_path_(directory_path),
+      sync_data_folder_path_(sync_data_folder_path),
       host_(backend),
       sync_loop_(NULL),
       registrar_(NULL),
@@ -115,26 +116,6 @@ SyncBackendHostCore::SyncBackendHostCore(
 
 SyncBackendHostCore::~SyncBackendHostCore() {
   DCHECK(!sync_manager_.get());
-}
-
-void SyncBackendHostCore::Initialize(scoped_ptr<DoInitializeOptions> options) {
-  content::BrowserThread::PostTask(content::BrowserThread::FILE,
-      FROM_HERE, base::Bind(
-          &SyncBackendHostCore::CreateDirectoryAndDoInitialize, this,
-          base::Passed(&options)));
-}
-
-void SyncBackendHostCore::CreateDirectoryAndDoInitialize(
-    scoped_ptr<DoInitializeOptions> options) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
-  if (!base::CreateDirectory(directory_path_)) {
-    DLOG(FATAL) << "Sync Data directory creation failed.";
-  }
-  // We need to extract the loop pointer on a separate line because on
-  // Windows the options pointer gets Passed() first.
-  base::MessageLoop* sync_loop = options->sync_loop;
-  sync_loop->PostTask(FROM_HERE, base::Bind(
-      &SyncBackendHostCore::DoInitialize, this, base::Passed(&options)));
 }
 
 void SyncBackendHostCore::OnSyncCycleCompleted(
@@ -420,6 +401,18 @@ void SyncBackendHostCore::DoInitialize(
   options->http_bridge_factory->Init(
       LocalDeviceInfoProviderImpl::MakeUserAgentForSyncApi(version_info));
 
+  // Blow away the partial or corrupt sync data folder before doing any more
+  // initialization, if necessary.
+  if (options->delete_sync_data_folder) {
+    DeleteSyncDataFolder();
+  }
+
+  // Make sure that the directory exists before initializing the backend.
+  // If it already exists, this will do no harm.
+  if (!base::CreateDirectory(sync_data_folder_path_)) {
+    DLOG(FATAL) << "Sync Data directory creation failed.";
+  }
+
   DCHECK(!registrar_);
   registrar_ = options->registrar;
   DCHECK(registrar_);
@@ -428,7 +421,7 @@ void SyncBackendHostCore::DoInitialize(
   sync_manager_->AddObserver(this);
 
   syncer::SyncManager::InitArgs args;
-  args.database_location = directory_path_;
+  args.database_location = sync_data_folder_path_;
   args.event_handler = options->event_handler;
   args.service_url = options->service_url;
   args.post_factory = options->http_bridge_factory.Pass();
@@ -556,6 +549,9 @@ void SyncBackendHostCore::DoShutdown(syncer::ShutdownReason reason) {
 
   registrar_ = NULL;
 
+  if (reason == syncer::DISABLE_SYNC)
+    DeleteSyncDataFolder();
+
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
@@ -678,6 +674,14 @@ void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
 
   if (sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
     sync_manager_->UnregisterDirectoryTypeDebugInfoObserver(this);
+}
+
+void SyncBackendHostCore::DeleteSyncDataFolder() {
+  DCHECK_EQ(base::MessageLoop::current(), sync_loop_);
+  if (base::DirectoryExists(sync_data_folder_path_)) {
+    if (!base::DeleteFile(sync_data_folder_path_, true))
+      SLOG(DFATAL) << "Could not delete the Sync Data folder.";
+  }
 }
 
 void SyncBackendHostCore::GetAllNodesForTypes(

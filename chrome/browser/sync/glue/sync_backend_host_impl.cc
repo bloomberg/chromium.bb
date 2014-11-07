@@ -72,7 +72,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
     Profile* profile,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-    const base::FilePath& directory_path)
+    const base::FilePath& sync_folder)
     : frontend_loop_(base::MessageLoop::current()),
       profile_(profile),
       name_(name),
@@ -85,7 +85,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
       weak_ptr_factory_(this) {
   core_ = new SyncBackendHostCore(
       name_,
-      directory_path,
+      profile_->GetPath().Append(sync_folder),
       sync_prefs_->HasSyncSetupCompleted(),
       weak_ptr_factory_.GetWeakPtr());
 }
@@ -101,6 +101,7 @@ void SyncBackendHostImpl::Initialize(
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& sync_service_url,
     const syncer::SyncCredentials& credentials,
+    bool delete_sync_data_folder,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
@@ -149,6 +150,7 @@ void SyncBackendHostImpl::Initialize(
       credentials,
       invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
       sync_manager_factory.Pass(),
+      delete_sync_data_folder,
       sync_prefs_->GetEncryptionBootstrapToken(),
       sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
       scoped_ptr<InternalComponentsFactory>(
@@ -560,7 +562,9 @@ void SyncBackendHostImpl::GetAllNodesForTypes(
 }
 
 void SyncBackendHostImpl::InitCore(scoped_ptr<DoInitializeOptions> options) {
-  core_->Initialize(options.Pass());
+  registrar_->sync_thread()->message_loop()->PostTask(FROM_HERE,
+      base::Bind(&SyncBackendHostCore::DoInitialize,
+                 core_.get(), base::Passed(&options)));
 }
 
 void SyncBackendHostImpl::RequestConfigureSyncer(

@@ -70,13 +70,12 @@ class SyncBackendHostImpl
   // Create a SyncBackendHost with a reference to the |frontend| that
   // it serves and communicates to via the SyncFrontend interface (on
   // the same thread it used to call the constructor).  Must outlive
-  // |sync_prefs|. |directory_path| is the full path to the sync data
-  // directory.
+  // |sync_prefs|.
   SyncBackendHostImpl(const std::string& name,
                       Profile* profile,
                       invalidation::InvalidationService* invalidator,
                       const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-                      const base::FilePath& directory_path);
+                      const base::FilePath& sync_folder);
   ~SyncBackendHostImpl() override;
 
   // SyncBackendHost implementation.
@@ -86,6 +85,7 @@ class SyncBackendHostImpl
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const syncer::SyncCredentials& credentials,
+      bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction
