@@ -531,12 +531,7 @@ void WebKitTestController::OnImageDump(
   if (actual_pixel_hash != expected_pixel_hash_) {
     std::vector<unsigned char> png;
 
-    // Only the expected PNGs for Mac have a valid alpha channel.
-#if defined(OS_MACOSX)
-    bool discard_transparency = false;
-#else
     bool discard_transparency = true;
-#endif
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableOverlayFullscreenVideo))
       discard_transparency = false;
