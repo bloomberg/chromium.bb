@@ -7,8 +7,11 @@
  */
 
 login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
+  /** @const */ var HELP_TOPIC_DEVICE_DISABLING = 4631259;
+
   return {
     EXTERNAL_API: [
+      'setEnrollmentDomain',
       'setMessage'
     ],
 
@@ -16,6 +19,16 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
      * Ignore any accelerators the user presses on this screen.
      */
     ignoreAccelerators: true,
+
+    /** @override */
+    decorate: function() {
+      this.setEnrollmentDomain(null);
+      $('device-disabled-help-link').addEventListener(
+          'click',
+          function() {
+            chrome.send('launchHelpApp', [HELP_TOPIC_DEVICE_DISABLING]);
+          });
+    },
 
     /**
      * The visibility of the cancel button in the header bar is controlled by a
@@ -40,9 +53,30 @@ login.createScreen('DeviceDisabledScreen', 'device-disabled', function() {
     },
 
     /**
+      * Updates the explanation shown to the user. The explanation will indicate
+      * that the device is owned by |enrollment_domain|. If |enrollment_domain|
+      * is null or empty, a generic explanation will be used instead that does
+      * not reference any domain.
+      * @param {string} enrollment_domain The domain that owns the device.
+      */
+    setEnrollmentDomain: function(enrollment_domain) {
+      if (enrollment_domain) {
+        // The contents of |enrollment_domain| is untrusted. Set the resulting
+        // string as |textContent| so that it gets treated as plain text and
+        // cannot be used to inject JS or HTML.
+        $('device-disabled-explanation').textContent = loadTimeData.getStringF(
+            'deviceDisabledExplanationWithDomain',
+            enrollment_domain);
+      } else {
+        $('device-disabled-explanation').textContent = loadTimeData.getString(
+            'deviceDisabledExplanationWithoutDomain');
+      }
+    },
+
+
+    /**
       * Sets the message to show to the user.
       * @param {string} message The message to show to the user.
-      * @private
       */
     setMessage: function(message) {
       // The contents of |message| is untrusted. Set it as |textContent| so that

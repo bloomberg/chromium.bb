@@ -35,6 +35,8 @@ class DeviceDisabledScreen : public BaseScreen,
 
   // DeviceDisabledScreenActor::Delegate:
   void OnActorDestroyed(DeviceDisabledScreenActor* actor) override;
+  const std::string& GetEnrollmentDomain() const override;
+  const std::string& GetMessage() const override;
 
   // system::DeviceDisablingManager::Observer:
   void OnDisabledMessageChanged(const std::string& disabled_message) override;

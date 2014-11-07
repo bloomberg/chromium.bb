@@ -441,7 +441,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         make_linked_ptr(new DeviceDisabledScreen(
             wizard_controller,
             device_disabled_screen_actor_.get()));
-    EXPECT_CALL(*device_disabled_screen_actor_, Show(_)).Times(0);
+    EXPECT_CALL(*device_disabled_screen_actor_, Show()).Times(0);
 
     // Switch to the initial screen.
     EXPECT_EQ(NULL, wizard_controller->current_screen());
@@ -900,7 +900,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
-  EXPECT_CALL(*device_disabled_screen_actor_, Show(kDisabledMessage)).Times(1);
+  EXPECT_CALL(*device_disabled_screen_actor_,
+              UpdateMessage(kDisabledMessage)).Times(1);
+  EXPECT_CALL(*device_disabled_screen_actor_, Show()).Times(1);
   OnExit(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 
   ResetAutoEnrollmentCheckScreen();

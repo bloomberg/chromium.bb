@@ -5118,8 +5118,14 @@ Battery full
   <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
     Locked
   </message>
-  <message name="IDS_DEVICE_DISABLED_EXPLANATION" desc="Explanation shown to the user when the device has been disabled by its owner.">
-    This device was locked by its owner. Only an approved administrator can unlock it. Take this device to Tech Support for assistance.
+  <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is known.">
+    This device was locked by the <ph name="SAML_DOMAIN">$1<ex>example.com</ex></ph> administrator.
+  </message>
+  <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITHOUT_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is not known.">
+    This device was locked by the owner.
+  </message>
+  <message name="IDS_DEVICE_DISABLED_HELP_LINK" desc="Link to a help center article explaining how the owner can re-enable the device. Shown to the user when the device has been disabled by its owner.">
+    Unlocking help for owners
   </message>
 
   <!-- Idle warning dialog -->

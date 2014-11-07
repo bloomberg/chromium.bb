@@ -4,39 +4,63 @@
  */
 
 #device-disabled,
-#device-disabled-top-container {
+#device-disabled-top-container,
+#device-disabled-bottom-container {
   display: flex;
   flex-direction: column;
 }
 
 #device-disabled {
   font-size: 12px;
+  line-height: 18px;
   width: 330px;
 }
 
 #device-disabled-top-container {
-  background-color: rgb(214, 0, 0);
+  background-color: rgb(213, 0, 0);
   color: white;
+  padding: 25px 20px;
   text-align: center;
 }
 
-#device-disabled-heading {
-  font-size: 16px;
-  margin: 60px 20px 0;
+#device-disabled-symbol {
+  align-self: center;
+  background-image: url('chrome://theme/IDR_DEVICE_DISABLED');
+  height: 24px;
+  width: 24px;
 }
 
-#device-disabled-message {
+#device-disabled-heading {
+  font-size: 15px;
+  line-height: 15px;
+  margin-top: 8px;
+}
+
+#device-disabled-explanation {
   font-weight: bold;
-  margin: 20px;
-  max-height: 400px;
-  overflow: auto;
-  white-space: pre-wrap;
+  margin: 25px 0 -5px;
+  max-height: 54px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #device-disabled-bottom-container {
   background-color: white;
+  padding: 25px 20px;
 }
 
-#device-disabled-explanation {
-  margin: 25px 20px 45px
+#device-disabled-message {
+  margin-top: -3px;
+  max-height: 400px;
+  overflow: auto;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+}
+
+#device-disabled-help-link-container {
+  margin: 17px 0 -5px;
+}
+
+#device-disabled-help-link {
+  color: rgb(85, 149, 243);
 }

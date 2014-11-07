@@ -127,6 +127,13 @@ void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
   // off by flag and the device is still unowned, we honor the information in
   // local state and consider the device disabled.
 
+  // Update the enrollment domain.
+  enrollment_domain_.clear();
+  g_browser_process->local_state()->GetDictionary(
+      prefs::kServerBackedDeviceState)->GetString(
+          policy::kDeviceStateManagementDomain,
+          &enrollment_domain_);
+
   // Update the disabled message.
   std::string disabled_message;
   g_browser_process->local_state()->GetDictionary(
@@ -205,6 +212,9 @@ void DeviceDisablingManager::UpdateFromCrosSettings() {
     delegate_->RestartToLoginScreen();
     return;
   }
+
+  // Cache the enrollment domain.
+  enrollment_domain_ = browser_policy_connector_->GetEnterpriseDomain();
 
   // If no session or login is in progress, show the device disabled screen.
   delegate_->ShowDeviceDisabledScreen();

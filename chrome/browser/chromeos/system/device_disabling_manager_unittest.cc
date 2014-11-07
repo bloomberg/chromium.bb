@@ -39,6 +39,7 @@ namespace system {
 namespace {
 
 const char kTestUser[] = "user@example.com";
+const char kEnrollmentDomain[] = "example.com";
 const char kDisabledMessage1[] = "Device disabled 1.";
 const char kDisabledMessage2[] = "Device disabled 2.";
 
@@ -55,8 +56,9 @@ class DeviceDisablingManagerTestBase : public testing::Test,
   virtual void CreateDeviceDisablingManager();
   virtual void DestroyDeviceDisablingManager();
 
-  void SetRegistrationUser(const std::string& registration_user);
-  void SetDeviceMode(policy::DeviceMode device_mode);
+  void UpdateInstallAttributes(const std::string& enrollment_domain,
+                               const std::string& registration_user,
+                               policy::DeviceMode device_mode);
   void LogIn();
 
   // DeviceDisablingManager::Delegate:
@@ -96,20 +98,17 @@ void DeviceDisablingManagerTestBase::DestroyDeviceDisablingManager() {
   device_disabling_manager_.reset();
 }
 
-void DeviceDisablingManagerTestBase::SetRegistrationUser(
-    const std::string& registration_user) {
-  reinterpret_cast<policy::StubEnterpriseInstallAttributes*>(
-      TestingBrowserProcess::GetGlobal()->platform_part()->
-          browser_policy_connector_chromeos()->GetInstallAttributes())->
-              SetRegistrationUser(registration_user);
-}
-
-void DeviceDisablingManagerTestBase::SetDeviceMode(
+void DeviceDisablingManagerTestBase::UpdateInstallAttributes(
+    const std::string& enrollment_domain,
+    const std::string& registration_user,
     policy::DeviceMode device_mode) {
-  reinterpret_cast<policy::StubEnterpriseInstallAttributes*>(
-      TestingBrowserProcess::GetGlobal()->platform_part()->
-          browser_policy_connector_chromeos()->GetInstallAttributes())->
-              SetMode(device_mode);
+  policy::StubEnterpriseInstallAttributes* install_attributes =
+      static_cast<policy::StubEnterpriseInstallAttributes*>(
+          TestingBrowserProcess::GetGlobal()->platform_part()->
+              browser_policy_connector_chromeos()->GetInstallAttributes());
+  install_attributes->SetDomain(enrollment_domain);
+  install_attributes->SetRegistrationUser(registration_user);
+  install_attributes->SetMode(device_mode);
 }
 
 void DeviceDisablingManagerTestBase::LogIn() {
@@ -176,6 +175,7 @@ void DeviceDisablingManagerOOBETest::SetDeviceDisabled(bool disabled) {
   } else {
     dict->Remove(policy::kDeviceStateRestoreMode, nullptr);
   }
+  dict->SetString(policy::kDeviceStateManagementDomain, kEnrollmentDomain);
   dict->SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage1);
 }
 
@@ -212,7 +212,9 @@ TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenTurnedOffByFlag) {
 // Verifies that the device is not considered disabled during OOBE when it is
 // already enrolled, even if the device is marked as disabled.
 TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenEnterpriseOwned) {
-  SetDeviceMode(policy::DEVICE_MODE_ENTERPRISE);
+  UpdateInstallAttributes(kEnrollmentDomain,
+                          kTestUser,
+                          policy::DEVICE_MODE_ENTERPRISE);
   SetDeviceDisabled(true);
   CheckWhetherDeviceDisabledDuringOOBE();
   EXPECT_FALSE(device_disabled());
@@ -221,7 +223,9 @@ TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenEnterpriseOwned) {
 // Verifies that the device is not considered disabled during OOBE when it is
 // already owned by a consumer, even if the device is marked as disabled.
 TEST_F(DeviceDisablingManagerOOBETest, NotDisabledWhenConsumerOwned) {
-  SetDeviceMode(policy::DEVICE_MODE_CONSUMER);
+  UpdateInstallAttributes(std::string() /* enrollment_domain */,
+                          std::string() /* registration_user */,
+                          policy::DEVICE_MODE_CONSUMER);
   SetDeviceDisabled(true);
   CheckWhetherDeviceDisabledDuringOOBE();
   EXPECT_FALSE(device_disabled());
@@ -234,6 +238,8 @@ TEST_F(DeviceDisablingManagerOOBETest, ShowWhenDisabledAndNotOwned) {
   SetDeviceDisabled(true);
   CheckWhetherDeviceDisabledDuringOOBE();
   EXPECT_TRUE(device_disabled());
+  EXPECT_EQ(kEnrollmentDomain,
+            GetDeviceDisablingManager()->enrollment_domain());
   EXPECT_EQ(kDisabledMessage1, GetDeviceDisablingManager()->disabled_message());
 }
 
@@ -290,17 +296,21 @@ void DeviceDisablingManagerTest::DestroyDeviceDisablingManager() {
 }
 
 void DeviceDisablingManagerTest::SetUnowned() {
-  SetRegistrationUser(std::string());
-  SetDeviceMode(policy::DEVICE_MODE_NOT_SET);
+  UpdateInstallAttributes(std::string() /* enrollment_domain */,
+                          std::string() /* registration_user */,
+                          policy::DEVICE_MODE_NOT_SET);
 }
 
 void DeviceDisablingManagerTest::SetEnterpriseOwned() {
-  SetRegistrationUser(kTestUser);
-  SetDeviceMode(policy::DEVICE_MODE_ENTERPRISE);
+  UpdateInstallAttributes(kEnrollmentDomain,
+                          kTestUser,
+                          policy::DEVICE_MODE_ENTERPRISE);
 }
 
 void DeviceDisablingManagerTest::SetConsumerOwned() {
-  SetDeviceMode(policy::DEVICE_MODE_CONSUMER);
+  UpdateInstallAttributes(std::string() /* enrollment_domain */,
+                          std::string() /* registration_user */,
+                          policy::DEVICE_MODE_CONSUMER);
 }
 
 void DeviceDisablingManagerTest::MakeCrosSettingsTrusted() {
@@ -402,6 +412,8 @@ TEST_F(DeviceDisablingManagerTest, DisabledOnLoginScreen) {
   EXPECT_CALL(*this, ShowDeviceDisabledScreen()).Times(1);
   EXPECT_CALL(*this, OnDisabledMessageChanged(_)).Times(0);
   CreateDeviceDisablingManager();
+  EXPECT_EQ(kEnrollmentDomain,
+            GetDeviceDisablingManager()->enrollment_domain());
   EXPECT_EQ(kDisabledMessage1, GetDeviceDisablingManager()->disabled_message());
 }
 
@@ -429,6 +441,8 @@ TEST_F(DeviceDisablingManagerTest, DisableAndReEnableOnLoginScreen) {
   EXPECT_CALL(*this, OnDisabledMessageChanged(kDisabledMessage1)).Times(1);
   SetDeviceDisabled(true);
   Mock::VerifyAndClearExpectations(this);
+  EXPECT_EQ(kEnrollmentDomain,
+            GetDeviceDisablingManager()->enrollment_domain());
   EXPECT_EQ(kDisabledMessage1, GetDeviceDisablingManager()->disabled_message());
 
   // Update the disabled message. Verify that the device disabled screen is

@@ -88,6 +88,10 @@ class DeviceDisablingManager {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Returns the cached domain that owns the device. The domain is only
+  // guaranteed to be up to date if the disabled screen was triggered.
+  const std::string& enrollment_domain() const { return enrollment_domain_; }
+
   // Returns the cached disabled message. The message is only guaranteed to be
   // up to date if the disabled screen was triggered.
   const std::string& disabled_message() const { return disabled_message_; }
@@ -123,6 +127,9 @@ class DeviceDisablingManager {
   // Indicates whether the device was disabled when the cros settings were last
   // read.
   bool device_disabled_;
+
+  // A cached copy of the domain that owns the device.
+  std::string enrollment_domain_;
 
   // A cached copy of the message to show on the device disabled screen.
   std::string disabled_message_;

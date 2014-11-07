@@ -21,12 +21,18 @@ class DeviceDisabledScreenActor {
     // Called when the actor is being destroyed. Note that if the Delegate is
     // destroyed first, it must call SetDelegate(nullptr).
     virtual void OnActorDestroyed(DeviceDisabledScreenActor* actor) = 0;
+
+    // Returns the domain that owns the device.
+    virtual const std::string& GetEnrollmentDomain() const = 0;
+
+    // Returns the message that should be shown to the user.
+    virtual const std::string& GetMessage() const = 0;
   };
 
   virtual ~DeviceDisabledScreenActor() {
   }
 
-  virtual void Show(const std::string& message) = 0;
+  virtual void Show() = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
   virtual void UpdateMessage(const std::string& message) = 0;

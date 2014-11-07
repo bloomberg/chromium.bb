@@ -41,7 +41,7 @@ void DeviceDisabledScreen::Show() {
     return;
 
   showing_ = true;
-  actor_->Show(device_disabling_manager_->disabled_message());
+  actor_->Show();
 }
 
 void DeviceDisabledScreen::Hide() {
@@ -60,6 +60,14 @@ std::string DeviceDisabledScreen::GetName() const {
 void DeviceDisabledScreen::OnActorDestroyed(DeviceDisabledScreenActor* actor) {
   if (actor_ == actor)
     actor_ = nullptr;
+}
+
+const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
+  return device_disabling_manager_->enrollment_domain();
+}
+
+const std::string& DeviceDisabledScreen::GetMessage() const {
+  return device_disabling_manager_->disabled_message();
 }
 
 void DeviceDisabledScreen::OnDisabledMessageChanged(
