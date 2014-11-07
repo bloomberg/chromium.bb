@@ -43,12 +43,9 @@ SQLiteFileSystem::SQLiteFileSystem()
 {
 }
 
-int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database, bool forWebSQLDatabase)
+int SQLiteFileSystem::openDatabase(const String& filename, sqlite3** database)
 {
     ThreadState::SafePointScope scope(ThreadState::HeapPointersOnStack);
-    if (!forWebSQLDatabase)
-        return sqlite3_open(filename.utf8().data(), database);
-
     return sqlite3_open_v2(filename.utf8().data(), database, SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, "chromium_vfs");
 }
 

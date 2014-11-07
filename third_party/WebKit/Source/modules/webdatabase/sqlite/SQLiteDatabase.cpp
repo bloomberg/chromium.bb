@@ -61,11 +61,11 @@ SQLiteDatabase::~SQLiteDatabase()
     close();
 }
 
-bool SQLiteDatabase::open(const String& filename, bool forWebSQLDatabase)
+bool SQLiteDatabase::open(const String& filename)
 {
     close();
 
-    m_openError = SQLiteFileSystem::openDatabase(filename, &m_db, forWebSQLDatabase);
+    m_openError = SQLiteFileSystem::openDatabase(filename, &m_db);
     if (m_openError != SQLITE_OK) {
         m_openErrorMessage = m_db ? sqlite3_errmsg(m_db) : "sqlite_open returned null";
         WTF_LOG_ERROR("SQLite database failed to load from %s\nCause - %s", filename.ascii().data(),

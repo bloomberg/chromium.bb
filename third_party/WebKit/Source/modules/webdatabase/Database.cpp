@@ -429,7 +429,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
 
     const int maxSqliteBusyWaitTime = 30000;
 
-    if (!m_sqliteDatabase.open(m_filename, true)) {
+    if (!m_sqliteDatabase.open(m_filename)) {
         reportOpenDatabaseResult(1, InvalidStateError, m_sqliteDatabase.lastError());
         errorMessage = formatErrorMessage("unable to open database", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
         return false;
