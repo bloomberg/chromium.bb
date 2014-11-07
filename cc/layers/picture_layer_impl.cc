@@ -629,7 +629,7 @@ skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                const gfx::Rect& content_rect) {
   DCHECK(!pile_->is_solid_color());
-  if (!pile_->CanRaster(tiling->contents_scale(), content_rect))
+  if (!pile_->CoversRect(content_rect, tiling->contents_scale()))
     return scoped_refptr<Tile>();
 
   int flags = 0;

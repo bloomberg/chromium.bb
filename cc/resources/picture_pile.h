@@ -55,6 +55,11 @@ class CC_EXPORT PicturePile : public PicturePileBase {
 
   void SetPixelRecordDistanceForTesting(int d) { pixel_record_distance_ = d; }
 
+ protected:
+  // An internal CanRaster check that goes to the picture_map rather than
+  // using the recorded_viewport hint.
+  bool CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const;
+
  private:
   friend class PicturePileImpl;
 

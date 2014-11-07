@@ -72,12 +72,24 @@ class FakePicturePileImpl : public PicturePileImpl {
     is_solid_color_ = is_solid_color;
   }
 
+  bool HasRecordingAt(int x, int y) const;
+  void SetIsMask(bool mask) { is_mask_ = mask; }
+
+  int num_tiles_x() const { return tiling_.num_tiles_x(); }
+  int num_tiles_y() const { return tiling_.num_tiles_y(); }
+
+  void SetMinContentsScale(float scale);
+  void SetBufferPixels(int new_buffer_pixels);
+  void Clear();
+
  protected:
   FakePicturePileImpl();
+  explicit FakePicturePileImpl(const PicturePileBase* other);
   ~FakePicturePileImpl() override;
 
   FakeContentLayerClient client_;
   SkPaint default_paint_;
+  SkTileGridFactory::TileGridInfo tile_grid_info_;
 };
 
 }  // namespace cc

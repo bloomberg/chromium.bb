@@ -26,11 +26,34 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
 }
 
 PicturePileImpl::PicturePileImpl()
-    : likely_to_be_used_for_transform_animation_(false) {
+    : background_color_(SK_ColorTRANSPARENT),
+      contents_opaque_(false),
+      contents_fill_bounds_completely_(false),
+      is_solid_color_(false),
+      solid_color_(SK_ColorTRANSPARENT),
+      has_any_recordings_(false),
+      is_mask_(false),
+      clear_canvas_with_debug_color_(false),
+      min_contents_scale_(0.f),
+      slow_down_raster_scale_factor_for_debug_(0),
+      likely_to_be_used_for_transform_animation_(false) {
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
-    : PicturePileBase(other),
+    : picture_map_(other->picture_map_),
+      tiling_(other->tiling_),
+      background_color_(other->background_color_),
+      contents_opaque_(other->contents_opaque_),
+      contents_fill_bounds_completely_(other->contents_fill_bounds_completely_),
+      is_solid_color_(other->is_solid_color_),
+      solid_color_(other->solid_color_),
+      recorded_viewport_(other->recorded_viewport_),
+      has_any_recordings_(other->has_any_recordings_),
+      is_mask_(other->is_mask_),
+      clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
+      min_contents_scale_(other->min_contents_scale_),
+      slow_down_raster_scale_factor_for_debug_(
+          other->slow_down_raster_scale_factor_for_debug_),
       likely_to_be_used_for_transform_animation_(false) {
 }
 
@@ -320,11 +343,63 @@ void PicturePileImpl::GatherPixelRefs(
 
 bool PicturePileImpl::CoversRect(const gfx::Rect& content_rect,
                                  float contents_scale) const {
-  return CanRaster(contents_scale, content_rect);
+  if (tiling_.tiling_size().IsEmpty())
+    return false;
+  gfx::Rect layer_rect =
+      gfx::ScaleToEnclosingRect(content_rect, 1.f / contents_scale);
+  layer_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
+
+  // Common case inside of viewport to avoid the slower map lookups.
+  if (recorded_viewport_.Contains(layer_rect)) {
+    // Sanity check that there are no false positives in recorded_viewport_.
+    DCHECK(CanRasterSlowTileCheck(layer_rect));
+    return true;
+  }
+
+  return CanRasterSlowTileCheck(layer_rect);
+}
+
+gfx::Rect PicturePileImpl::PaddedRect(const PictureMapKey& key) const {
+  gfx::Rect padded_rect = tiling_.TileBounds(key.first, key.second);
+  padded_rect.Inset(-buffer_pixels(), -buffer_pixels(), -buffer_pixels(),
+                    -buffer_pixels());
+  return padded_rect;
+}
+
+bool PicturePileImpl::CanRasterSlowTileCheck(
+    const gfx::Rect& layer_rect) const {
+  bool include_borders = false;
+  for (TilingData::Iterator tile_iter(&tiling_, layer_rect, include_borders);
+       tile_iter; ++tile_iter) {
+    PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
+    if (map_iter == picture_map_.end())
+      return false;
+    if (!map_iter->second.GetPicture())
+      return false;
+  }
+  return true;
 }
 
 bool PicturePileImpl::SuitableForDistanceFieldText() const {
   return likely_to_be_used_for_transform_animation_;
+}
+
+void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
+  gfx::Rect tiling_rect(tiling_.tiling_size());
+  std::set<const void*> appended_pictures;
+  bool include_borders = true;
+  for (TilingData::Iterator tile_iter(&tiling_, tiling_rect, include_borders);
+       tile_iter; ++tile_iter) {
+    PictureMap::const_iterator map_iter = picture_map_.find(tile_iter.index());
+    if (map_iter == picture_map_.end())
+      continue;
+
+    const Picture* picture = map_iter->second.GetPicture();
+    if (picture && (appended_pictures.count(picture) == 0)) {
+      appended_pictures.insert(picture);
+      TracedValue::AppendIDRef(picture, pictures);
+    }
+  }
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(

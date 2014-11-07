@@ -658,10 +658,10 @@ TEST_F(PictureLayerImplTest, AddTilesFromNewRecording) {
          ++iter) {
       EXPECT_FALSE(iter.full_tile_geometry_rect().IsEmpty());
       // Ensure there is a recording for this tile.
-      bool in_pending = pending_pile->CanRaster(tiling->contents_scale(),
-                                                iter.full_tile_geometry_rect());
-      bool in_active = active_pile->CanRaster(tiling->contents_scale(),
-                                              iter.full_tile_geometry_rect());
+      bool in_pending = pending_pile->CoversRect(iter.full_tile_geometry_rect(),
+                                                 tiling->contents_scale());
+      bool in_active = active_pile->CoversRect(iter.full_tile_geometry_rect(),
+                                               tiling->contents_scale());
 
       if (in_pending && !in_active)
         EXPECT_EQ(pending_pile.get(), iter->raster_source());
@@ -1132,8 +1132,15 @@ TEST_F(PictureLayerImplTest, DontAddLowResDuringAnimation) {
 }
 
 TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
-  gfx::Size tile_size(host_impl_.settings().default_tile_size);
-  SetupDefaultTrees(tile_size);
+  gfx::Size layer_bounds(host_impl_.settings().default_tile_size);
+  gfx::Size tile_size(100, 100);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  SetupTrees(pending_pile, active_pile);
 
   float low_res_factor = host_impl_.settings().low_res_contents_scale_factor;
   float device_scale = 1.f;
@@ -1181,8 +1188,8 @@ TEST_F(PictureLayerImplTest, DontAddLowResForSmallLayers) {
   ResetTilingsAndRasterScales();
 
   // Mask layers dont create low res since they always fit on one tile.
-  pending_layer_->pile()->set_is_mask(true);
-  active_layer_->pile()->set_is_mask(true);
+  pending_pile->SetIsMask(true);
+  active_pile->SetIsMask(true);
   SetContentsScaleOnBothLayers(contents_scale,
                                device_scale,
                                page_scale,
@@ -1197,7 +1204,7 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
 
   scoped_refptr<FakePicturePileImpl> valid_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
-  valid_pile->set_is_mask(true);
+  valid_pile->SetIsMask(true);
   SetupPendingTree(valid_pile);
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
@@ -1224,7 +1231,7 @@ TEST_F(PictureLayerImplTest, HugeMasksDontGetTiles) {
   scoped_refptr<FakePicturePileImpl> huge_pile =
       FakePicturePileImpl::CreateFilledPile(
           tile_size, gfx::Size(max_texture_size + 1, 10));
-  huge_pile->set_is_mask(true);
+  huge_pile->SetIsMask(true);
   SetupPendingTree(huge_pile);
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer_, 1.f, 1.f, 1.f, 1.f, false);
@@ -1249,7 +1256,7 @@ TEST_F(PictureLayerImplTest, ScaledMaskLayer) {
 
   scoped_refptr<FakePicturePileImpl> valid_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
-  valid_pile->set_is_mask(true);
+  valid_pile->SetIsMask(true);
   SetupPendingTree(valid_pile);
 
   float ideal_contents_scale = 1.3f;
@@ -3708,7 +3715,7 @@ TEST_F(PictureLayerImplTest, UpdateTilesForMasksWithNoVisibleContent) {
 
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, bounds);
-  pending_pile->set_is_mask(true);
+  pending_pile->SetIsMask(true);
   scoped_ptr<FakePictureLayerImpl> mask = FakePictureLayerImpl::CreateWithPile(
       host_impl_.pending_tree(), 3, pending_pile);
 

@@ -26,9 +26,14 @@ class TestPicturePile : public PicturePile {
   PictureMap& picture_map() { return picture_map_; }
   const gfx::Rect& recorded_viewport() const { return recorded_viewport_; }
 
-  bool CanRasterLayerRect(const gfx::Rect& layer_rect) {
-    return CanRaster(1.f, layer_rect);
+  bool CanRasterLayerRect(gfx::Rect layer_rect) {
+    layer_rect.Intersect(gfx::Rect(tiling_.tiling_size()));
+    if (recorded_viewport_.Contains(layer_rect))
+      return true;
+    return CanRasterSlowTileCheck(layer_rect);
   }
+
+  bool HasRecordings() const { return has_any_recordings_; }
 
   typedef PicturePile::PictureInfo PictureInfo;
   typedef PicturePile::PictureMapKey PictureMapKey;

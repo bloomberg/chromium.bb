@@ -4,9 +4,11 @@
 
 #include "cc/test/fake_picture_pile_impl.h"
 
+#include <algorithm>
 #include <limits>
 #include <utility>
 
+#include "cc/resources/picture_pile.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,62 +16,71 @@ namespace cc {
 
 FakePicturePileImpl::FakePicturePileImpl() {}
 
+FakePicturePileImpl::FakePicturePileImpl(const PicturePileBase* other)
+    : PicturePileImpl(other),
+      tile_grid_info_(other->GetTileGridInfoForTesting()) {
+}
+
 FakePicturePileImpl::~FakePicturePileImpl() {}
 
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTilingSize(layer_bounds);
-  pile->tiling().SetMaxTextureSize(tile_size);
-  pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
-  pile->recorded_viewport_ = gfx::Rect(layer_bounds);
-  pile->has_any_recordings_ = true;
-  for (int x = 0; x < pile->tiling().num_tiles_x(); ++x) {
-    for (int y = 0; y < pile->tiling().num_tiles_y(); ++y)
-      pile->AddRecordingAt(x, y);
+  PicturePile pile;
+  pile.tiling().SetTilingSize(layer_bounds);
+  pile.tiling().SetMaxTextureSize(tile_size);
+  pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
+  pile.SetRecordedViewportForTesting(gfx::Rect(layer_bounds));
+  pile.SetHasAnyRecordingsForTesting(true);
+
+  auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile));
+  for (int x = 0; x < pile_impl->tiling().num_tiles_x(); ++x) {
+    for (int y = 0; y < pile_impl->tiling().num_tiles_y(); ++y)
+      pile_impl->AddRecordingAt(x, y);
   }
-  return pile;
+  return pile_impl;
 }
 
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTilingSize(layer_bounds);
-  pile->tiling().SetMaxTextureSize(tile_size);
-  pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
-  pile->recorded_viewport_ = gfx::Rect();
-  pile->has_any_recordings_ = false;
-  return pile;
+  PicturePile pile;
+  pile.tiling().SetTilingSize(layer_bounds);
+  pile.tiling().SetMaxTextureSize(tile_size);
+  pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
+  pile.SetRecordedViewportForTesting(gfx::Rect());
+  pile.SetHasAnyRecordingsForTesting(false);
+  return make_scoped_refptr(new FakePicturePileImpl(&pile));
 }
 
 scoped_refptr<FakePicturePileImpl>
 FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
-  pile->tiling().SetTilingSize(layer_bounds);
-  pile->tiling().SetMaxTextureSize(tile_size);
-  pile->SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
+  PicturePile pile;
+  pile.tiling().SetTilingSize(layer_bounds);
+  pile.tiling().SetMaxTextureSize(tile_size);
+  pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
   // This simulates a false positive for this flag.
-  pile->recorded_viewport_ = gfx::Rect();
-  pile->has_any_recordings_ = true;
-  return pile;
+  pile.SetRecordedViewportForTesting(gfx::Rect());
+  pile.SetHasAnyRecordingsForTesting(true);
+  return make_scoped_refptr(new FakePicturePileImpl(&pile));
 }
 
 scoped_refptr<FakePicturePileImpl>
 FakePicturePileImpl::CreateInfiniteFilledPile() {
-  scoped_refptr<FakePicturePileImpl> pile(new FakePicturePileImpl());
+  PicturePile pile;
   gfx::Size size(std::numeric_limits<int>::max(),
                  std::numeric_limits<int>::max());
-  pile->tiling().SetTilingSize(size);
-  pile->tiling().SetMaxTextureSize(size);
-  pile->SetTileGridSize(size);
-  pile->recorded_viewport_ = gfx::Rect(size);
-  pile->has_any_recordings_ = true;
-  pile->AddRecordingAt(0, 0);
-  return pile;
+  pile.tiling().SetTilingSize(size);
+  pile.tiling().SetMaxTextureSize(size);
+  pile.SetTileGridSize(size);
+  pile.SetRecordedViewportForTesting(gfx::Rect(size));
+  pile.SetHasAnyRecordingsForTesting(true);
+
+  auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile));
+  pile_impl->AddRecordingAt(0, 0);
+  return pile_impl;
 }
 
 void FakePicturePileImpl::AddRecordingAt(int x, int y) {
@@ -103,6 +114,13 @@ void FakePicturePileImpl::RemoveRecordingAt(int x, int y) {
   EXPECT_FALSE(HasRecordingAt(x, y));
 }
 
+bool FakePicturePileImpl::HasRecordingAt(int x, int y) const {
+  PictureMap::const_iterator found = picture_map_.find(PictureMapKey(x, y));
+  if (found == picture_map_.end())
+    return false;
+  return !!found->second.GetPicture();
+}
+
 void FakePicturePileImpl::RerecordPile() {
   for (int y = 0; y < num_tiles_y(); ++y) {
     for (int x = 0; x < num_tiles_x(); ++x) {
@@ -110,6 +128,39 @@ void FakePicturePileImpl::RerecordPile() {
       AddRecordingAt(x, y);
     }
   }
+}
+
+void FakePicturePileImpl::SetMinContentsScale(float min_contents_scale) {
+  if (min_contents_scale_ == min_contents_scale)
+    return;
+
+  // Picture contents are played back scaled. When the final contents scale is
+  // less than 1 (i.e. low res), then multiple recorded pixels will be used
+  // to raster one final pixel.  To avoid splitting a final pixel across
+  // pictures (which would result in incorrect rasterization due to blending), a
+  // buffer margin is added so that any picture can be snapped to integral
+  // final pixels.
+  //
+  // For example, if a 1/4 contents scale is used, then that would be 3 buffer
+  // pixels, since that's the minimum number of pixels to add so that resulting
+  // content can be snapped to a four pixel aligned grid.
+  int buffer_pixels = static_cast<int>(ceil(1 / min_contents_scale) - 1);
+  buffer_pixels = std::max(0, buffer_pixels);
+  SetBufferPixels(buffer_pixels);
+  min_contents_scale_ = min_contents_scale;
+}
+
+void FakePicturePileImpl::SetBufferPixels(int new_buffer_pixels) {
+  if (new_buffer_pixels == buffer_pixels())
+    return;
+
+  Clear();
+  tiling_.SetBorderTexels(new_buffer_pixels);
+}
+
+void FakePicturePileImpl::Clear() {
+  picture_map_.clear();
+  recorded_viewport_ = gfx::Rect();
 }
 
 }  // namespace cc
