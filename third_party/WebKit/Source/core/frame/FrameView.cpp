@@ -323,6 +323,24 @@ void FrameView::detachCustomScrollbars()
     }
 }
 
+void FrameView::recalculateCustomScrollbarStyle()
+{
+    bool didStyleChange = false;
+    if (m_horizontalScrollbar && m_horizontalScrollbar->isCustomScrollbar()) {
+        m_horizontalScrollbar->styleChanged();
+        didStyleChange = true;
+    }
+    if (m_verticalScrollbar && m_verticalScrollbar->isCustomScrollbar()) {
+        m_verticalScrollbar->styleChanged();
+        didStyleChange = true;
+    }
+    if (didStyleChange) {
+        updateScrollbarGeometry();
+        updateScrollCorner();
+        positionScrollbarLayers();
+    }
+}
+
 void FrameView::recalculateScrollbarOverlayStyle()
 {
     ScrollbarOverlayStyle oldOverlayStyle = scrollbarOverlayStyle();

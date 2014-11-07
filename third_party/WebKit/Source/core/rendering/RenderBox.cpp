@@ -211,9 +211,10 @@ void RenderBox::styleDidChange(StyleDifference diff, const RenderStyle* oldStyle
         }
     }
 
-    if (isDocumentElement() || isBody())
+    if (isDocumentElement() || isBody()) {
         document().view()->recalculateScrollbarOverlayStyle();
-
+        document().view()->recalculateCustomScrollbarStyle();
+    }
     updateShapeOutsideInfoAfterStyleChange(*style(), oldStyle);
     updateGridPositionAfterStyleChange(oldStyle);
 }
