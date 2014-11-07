@@ -1,10 +1,10 @@
 self.onmessage = function(e) {
-    self.clients.getAll().then(function(clients) {
-        clients.forEach(function(client) {
-            client.postMessage('Sending message via clients');
-            if (!Array.isArray(clients))
-                client.postMessage('clients is not an array');
-            client.postMessage('quit');
+  self.clients.getAll().then(function(clients) {
+      clients.forEach(function(client) {
+          client.postMessage('Sending message via clients');
+          if (!Array.isArray(clients))
+            client.postMessage('clients is not an array');
+          client.postMessage('quit');
         });
     });
 };

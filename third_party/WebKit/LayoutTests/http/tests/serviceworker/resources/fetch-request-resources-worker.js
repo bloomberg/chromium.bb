@@ -15,9 +15,9 @@ self.addEventListener('fetch', function(event) {
       return;
     }
     port.postMessage({
-      url: url,
-      mode: event.request.mode,
-      credentials: event.request.credentials
-    });
+        url: url,
+        mode: event.request.mode,
+        credentials: event.request.credentials
+      });
     event.respondWith(Promise.reject());
   });

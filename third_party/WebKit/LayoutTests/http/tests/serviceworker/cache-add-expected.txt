@@ -23,10 +23,10 @@ FAIL Cache.addAll with a mix of valid and undefined arguments undefined is not a
 FAIL Cache.addAll with string URL arguments undefined is not a function(stack: TypeError: undefined is not a function
     at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:102:18)
 FAIL Cache.addAll with Request arguments undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:116:18)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:117:18)
 FAIL Cache.addAll with a mix of succeeding and failing requests undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:131:18)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:132:18)
 FAIL Cache.addAll called with the same Request object specified twice undefined is not a function(stack: TypeError: undefined is not a function
-    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:142:13)
+    at http://127.0.0.1:8000/serviceworker/resources/cache-add-worker.js:143:13)
 Harness: the test ran to completion.
 

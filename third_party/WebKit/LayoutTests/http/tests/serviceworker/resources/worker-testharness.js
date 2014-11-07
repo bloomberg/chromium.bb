@@ -106,7 +106,7 @@ importScripts('/resources/testharness.js');
 //    }, "Some Cache test");
 function cache_test(test_function, description) {
   promise_test(function(test) {
-    return create_temporary_cache(test)
+      return create_temporary_cache(test)
         .then(test_function);
-  }, description);
+    }, description);
 }

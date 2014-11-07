@@ -7,7 +7,7 @@ promise_test(function() {
     var eTag = '';
     var url = 'other.html';
     var expectedText = '<!DOCTYPE html>\n<title>Other</title>\n' +
-        'Here\'s an other html file.\n';
+      'Here\'s an other html file.\n';
     return fetch(url)
       .then(function(res) {
           lastModified = res.headers.get('last-modified');
@@ -34,14 +34,14 @@ promise_test(function() {
           assert_equals(
             res.status, 304,
             'When If-Modified-Since is overridden, the response status must ' +
-                'be 304.');
+            'be 304.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, '',
             'When If-Modified-Since is overridden, the response body must be' +
-                ' empty.');
+            ' empty.');
 
           return fetch(url,
                        { headers: [['If-Modified-Since',
@@ -51,14 +51,14 @@ promise_test(function() {
           assert_equals(
             res.status, 200,
             'When If-Modified-Since is overridden, the modified response ' +
-                'status must be 200.');
+            'status must be 200.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, expectedText,
             'When If-Modified-Since is overridden, the modified response body' +
-                ' must be correct.');
+            ' must be correct.');
 
           return fetch(url,
                        { headers: [['If-Unmodified-Since', lastModified]] });
@@ -67,14 +67,14 @@ promise_test(function() {
           assert_equals(
             res.status, 200,
             'When If-Unmodified-Since is overridden, the modified response ' +
-                'status must be 200.');
+            'status must be 200.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, expectedText,
             'When If-Unmodified-Since is overridden, the modified response ' +
-                'body must be correct.');
+            'body must be correct.');
 
           return fetch(url,
                        { headers: [['If-Unmodified-Since',
@@ -84,14 +84,14 @@ promise_test(function() {
           assert_equals(
             res.status, 412,
             'When If-Unmodified is overridden, the modified response status ' +
-                'must be 412.');
+            'must be 412.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, '',
             'When If-Unmodified is overridden, the modified response body ' +
-                'must be empty.');
+            'must be empty.');
 
           return fetch(url,
                        { headers: [['If-Match', eTag]] });
@@ -114,14 +114,14 @@ promise_test(function() {
           assert_equals(
             res.status, 412,
             'When If-Match is overridden to the invalid tag, the response ' +
-                'status must be 412.');
+            'status must be 412.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, '',
             'When If-Match is overridden to the invalid tag, the response ' +
-                'body must be empty.');
+            'body must be empty.');
 
           return fetch(url,
                        { headers: [['If-None-Match', eTag]] });
@@ -130,14 +130,14 @@ promise_test(function() {
           assert_equals(
             res.status, 304,
             'When If-None-Match is overridden, the response status must be ' +
-                '304.');
+            '304.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, '',
             'When If-None-Match is overridden, the response body must be ' +
-                'empty.');
+            'empty.');
 
           return fetch(url,
                        { headers: [['If-None-Match', 'xyzzy']] });
@@ -146,14 +146,14 @@ promise_test(function() {
           assert_equals(
             res.status, 200,
             'When If-None-Match is overridden to the invalid tag, the ' +
-                'response status must be 200.');
+            'response status must be 200.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, expectedText,
             'When If-None-Match is overridden to the invalid tag, the ' +
-                'response body must be correct.');
+            'response body must be correct.');
 
           return fetch(url,
                        { headers: [['If-Range', eTag],
@@ -178,14 +178,14 @@ promise_test(function() {
           assert_equals(
             res.status, 200,
             'When If-Range is overridden to the invalid tag, the response ' +
-                'status must be 200.');
+            'status must be 200.');
           return res.text();
         })
       .then(function(text) {
           assert_equals(
             text, expectedText,
             'When If-Range is overridden to the invalid tag, the response ' +
-                'body must be correct.');
+            'body must be correct.');
 
           return fetch('fetch-status.php?status=304');
         })
@@ -193,6 +193,6 @@ promise_test(function() {
           assert_equals(
             res.status, 304 ,
             'When the server returns 304 and there\'s a cache miss, the ' +
-                'response status must be 304.');
+            'response status must be 304.');
         });
   }, '304 handling for fetch().');

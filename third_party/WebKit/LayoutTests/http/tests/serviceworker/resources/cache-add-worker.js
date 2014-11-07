@@ -102,7 +102,8 @@ cache_test(function(cache) {
     return cache.addAll(urls)
       .then(function(result) {
           assert_equals(result, undefined,
-                        'Cache.addAll should resolve with undefined on success.');
+                        'Cache.addAll should resolve with undefined on ' +
+                        'success.');
         });
   }, 'Cache.addAll with string URL arguments');
 

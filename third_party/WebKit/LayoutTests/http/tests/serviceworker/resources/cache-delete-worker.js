@@ -127,16 +127,17 @@ prepopulated_cache_test(function(cache) {
                       'was successfully deleted.');
         })
       .then(function() {
-          return Promise.all([].concat(
-            // The entries 'a' and 'a_with_query' should have been deleted.
-            ['a', 'a_with_query'].map(function(k) {
-                return assert_promise_rejects(
-                  cache.match(cache_entries[k].request.url),
-                  'NotFoundError',
-                  'Cache.delete should respect "prefixMatch" option.');
-              }),
-            // The entry 'b' should still be in the cache.
-            cache.match(cache_entries.b.request.url)
+          return Promise.all(
+            [].concat(
+              // The entries 'a' and 'a_with_query' should have been deleted.
+              ['a', 'a_with_query'].map(function(k) {
+                  return assert_promise_rejects(
+                    cache.match(cache_entries[k].request.url),
+                    'NotFoundError',
+                    'Cache.delete should respect "prefixMatch" option.');
+                }),
+              // The entry 'b' should still be in the cache.
+              cache.match(cache_entries.b.request.url)
               .catch(function() {
                   assert_unreached('Cache.delete should respect ' +
                                    '"prefixMatch" option.');

@@ -10,7 +10,8 @@ promise_test(function() {
     return response.text()
       .then(function(text) {
           assert_equals(text, 'test string',
-            'Response body text should match the string on construction.');
+                        'Response body text should match the string on ' +
+                        'construction.');
         });
   }, 'Behavior of Response with string content.');
 
@@ -20,7 +21,8 @@ promise_test(function() {
 
     var response = new Response(buffer);
     assert_false(response.headers.has('Content-Type'),
-      'A Response constructed with ArrayBuffer should not have a content type.');
+                 'A Response constructed with ArrayBuffer should not have a ' +
+                 'content type.');
     return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
@@ -36,8 +38,8 @@ promise_test(function() {
 
     var response = new Response(intView);
     assert_false(response.headers.has('Content-Type'),
-      'A Response constructed with ArrayBufferView ' +
-      'should not have a content type.');
+                 'A Response constructed with ArrayBufferView ' +
+                 'should not have a content type.');
     return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
@@ -53,8 +55,8 @@ promise_test(function() {
     var slice = intView.subarray(1, 4);  // Should be [1, 2, 3]
     var response = new Response(slice);
     assert_false(response.headers.has('Content-Type'),
-      'A Response constructed with ArrayBufferView ' +
-      'should not have a content type.');
+                 'A Response constructed with ArrayBufferView ' +
+                 'should not have a content type.');
     return response.arrayBuffer()
       .then(function(buffer) {
           var resultIntView = new Int32Array(buffer);
@@ -96,6 +98,6 @@ promise_test(function() {
         })
       .then(function(text) {
           assert_equals(text, 'test string',
-            'Response clone response body text should match.');
+                        'Response clone response body text should match.');
         });
   }, 'Behavior of bodyUsed in Response and clone behavior.');

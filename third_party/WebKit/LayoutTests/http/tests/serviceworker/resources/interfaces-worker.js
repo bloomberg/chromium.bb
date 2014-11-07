@@ -29,7 +29,8 @@ test(function() {
 
 test(function() {
     verify_interface('ServiceWorkerClient');
-    // FIXME: Get an instance and test it, or ensure property exists on prototype.
+    // FIXME: Get an instance and test it, or ensure property exists on
+    // prototype.
   }, 'ServiceWorkerClient');
 
 test(function() {

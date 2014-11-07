@@ -11,8 +11,8 @@ self.addEventListener('fetch', function(event) {
       headers.push(header);
     }
     requests.push({
-      url: url,
-      headers: headers
-    });
+        url: url,
+        headers: headers
+      });
     event.respondWith(fetch(event.request));
   });

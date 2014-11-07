@@ -35,7 +35,7 @@ cache_test(function(cache) {
     var request = new Request(test_url);
     var response;
     return fetch(test_url)
-        .then(function(fetch_result) {
+      .then(function(fetch_result) {
           response = fetch_result.clone();
           return cache.put(request, fetch_result);
         })
@@ -138,7 +138,7 @@ cache_test(function(cache) {
   }, 'Cache.put with HTTP 500 response');
 
 cache_test(function(cache) {
-  var alternate_response = new_test_response('Lorem ipsum');
+    var alternate_response = new_test_response('Lorem ipsum');
     return cache.put(new_test_request(), new_test_response())
       .then(function() {
           return cache.put(new_test_request(), alternate_response);
@@ -161,7 +161,7 @@ cache_test(function(cache) {
       .then(function(body) {
           assert_equals(body, 'some body',
                         'Cache.put should accept a string as request.');
-      });
+        });
   }, 'Cache.put with an string request');
 
 cache_test(function(cache) {
@@ -172,14 +172,14 @@ cache_test(function(cache) {
   }, 'Cache.put with an invalid response');
 
 cache_test(function(cache) {
-  return assert_promise_rejects(
+    return assert_promise_rejects(
       cache.put(new Request('file:///etc/passwd'), new_test_response()),
       new TypeError(),
       'Cache.put should reject non-HTTP/HTTPS requests with a TypeError.');
   }, 'Cache.put with a non-HTTP/HTTPS request');
 
 cache_test(function(cache) {
-  var response = new_test_response();
+    var response = new_test_response();
     return cache.put(new Request('relative-url'), response)
       .then(function() {
           return cache.match(new URL('relative-url', location.href).href);

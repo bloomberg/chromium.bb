@@ -4,9 +4,9 @@ self.addEventListener('fetch', function(event) {
       return;
     }
     event.respondWith(new Promise(function(resolve) {
-      var headers = new Headers;
-      headers.append('foo', 'foo');
-      headers.append('foo', 'bar');
-      resolve(new Response('hello world', {'headers': headers}));
-    }));
-});
+        var headers = new Headers;
+        headers.append('foo', 'foo');
+        headers.append('foo', 'bar');
+        resolve(new Response('hello world', {'headers': headers}));
+      }));
+  });
