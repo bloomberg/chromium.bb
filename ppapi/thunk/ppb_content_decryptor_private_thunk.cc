@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_content_decryptor_private.idl,
-//   modified Mon Aug 25 13:52:39 2014.
+// From private/ppb_content_decryptor_private.idl modified Wed Nov  5 14:29:15
+// 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -31,8 +31,7 @@ void PromiseResolvedWithSession(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->PromiseResolvedWithSession(instance,
-                                                promise_id,
+  enter.functions()->PromiseResolvedWithSession(instance, promise_id,
                                                 web_session_id);
 }
 
@@ -43,8 +42,7 @@ void PromiseResolvedWithKeyIds(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->PromiseResolvedWithKeyIds(instance,
-                                               promise_id,
+  enter.functions()->PromiseResolvedWithKeyIds(instance, promise_id,
                                                key_ids_array);
 }
 
@@ -57,11 +55,8 @@ void PromiseRejected(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->PromiseRejected(instance,
-                                     promise_id,
-                                     exception_code,
-                                     system_code,
-                                     error_description);
+  enter.functions()->PromiseRejected(instance, promise_id, exception_code,
+                                     system_code, error_description);
 }
 
 void SessionMessage(PP_Instance instance,
@@ -72,9 +67,7 @@ void SessionMessage(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionMessage(instance,
-                                    web_session_id,
-                                    message,
+  enter.functions()->SessionMessage(instance, web_session_id, message,
                                     destination_url);
 }
 
@@ -85,8 +78,7 @@ void SessionKeysChange(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionKeysChange(instance,
-                                       web_session_id,
+  enter.functions()->SessionKeysChange(instance, web_session_id,
                                        has_additional_usable_key);
 }
 
@@ -97,8 +89,7 @@ void SessionExpirationChange(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionExpirationChange(instance,
-                                             web_session_id,
+  enter.functions()->SessionExpirationChange(instance, web_session_id,
                                              new_expiry_time);
 }
 
@@ -127,11 +118,8 @@ void SessionError(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->SessionError(instance,
-                                  web_session_id,
-                                  exception_code,
-                                  system_code,
-                                  error_description);
+  enter.functions()->SessionError(instance, web_session_id, exception_code,
+                                  system_code, error_description);
 }
 
 void DeliverBlock(PP_Instance instance,
@@ -141,8 +129,7 @@ void DeliverBlock(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->DeliverBlock(instance,
-                                  decrypted_block,
+  enter.functions()->DeliverBlock(instance, decrypted_block,
                                   decrypted_block_info);
 }
 
@@ -154,9 +141,7 @@ void DecoderInitializeDone(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->DecoderInitializeDone(instance,
-                                           decoder_type,
-                                           request_id,
+  enter.functions()->DecoderInitializeDone(instance, decoder_type, request_id,
                                            success);
 }
 
@@ -167,8 +152,7 @@ void DecoderDeinitializeDone(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->DecoderDeinitializeDone(instance,
-                                             decoder_type,
+  enter.functions()->DecoderDeinitializeDone(instance, decoder_type,
                                              request_id);
 }
 
@@ -189,8 +173,7 @@ void DeliverFrame(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->DeliverFrame(instance,
-                                  decrypted_frame,
+  enter.functions()->DeliverFrame(instance, decrypted_frame,
                                   decrypted_frame_info);
 }
 
@@ -202,35 +185,32 @@ void DeliverSamples(
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->DeliverSamples(instance,
-                                    audio_frames,
+  enter.functions()->DeliverSamples(instance, audio_frames,
                                     decrypted_sample_info);
 }
 
 const PPB_ContentDecryptor_Private_0_12
-    g_ppb_contentdecryptor_private_thunk_0_12 = {
-  &PromiseResolved,
-  &PromiseResolvedWithSession,
-  &PromiseResolvedWithKeyIds,
-  &PromiseRejected,
-  &SessionMessage,
-  &SessionKeysChange,
-  &SessionExpirationChange,
-  &SessionReady,
-  &SessionClosed,
-  &SessionError,
-  &DeliverBlock,
-  &DecoderInitializeDone,
-  &DecoderDeinitializeDone,
-  &DecoderResetDone,
-  &DeliverFrame,
-  &DeliverSamples
-};
+    g_ppb_contentdecryptor_private_thunk_0_12 = {&PromiseResolved,
+                                                 &PromiseResolvedWithSession,
+                                                 &PromiseResolvedWithKeyIds,
+                                                 &PromiseRejected,
+                                                 &SessionMessage,
+                                                 &SessionKeysChange,
+                                                 &SessionExpirationChange,
+                                                 &SessionReady,
+                                                 &SessionClosed,
+                                                 &SessionError,
+                                                 &DeliverBlock,
+                                                 &DecoderInitializeDone,
+                                                 &DecoderDeinitializeDone,
+                                                 &DecoderResetDone,
+                                                 &DeliverFrame,
+                                                 &DeliverSamples};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_ContentDecryptor_Private_0_12*
-    GetPPB_ContentDecryptor_Private_0_12_Thunk() {
+GetPPB_ContentDecryptor_Private_0_12_Thunk() {
   return &g_ppb_contentdecryptor_private_thunk_0_12;
 }
 

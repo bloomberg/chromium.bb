@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_url_response_info.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_url_response_info.idl modified Tue May  7 14:43:00 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_response_info.h"
@@ -40,15 +40,14 @@ PP_Resource GetBodyAsFileRef(PP_Resource response) {
 }
 
 const PPB_URLResponseInfo_1_0 g_ppb_urlresponseinfo_thunk_1_0 = {
-  &IsURLResponseInfo,
-  &GetProperty,
-  &GetBodyAsFileRef
-};
+    &IsURLResponseInfo,
+    &GetProperty,
+    &GetBodyAsFileRef};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_URLResponseInfo_1_0*
-    GetPPB_URLResponseInfo_1_0_Thunk() {
+GetPPB_URLResponseInfo_1_0_Thunk() {
   return &g_ppb_urlresponseinfo_thunk_1_0;
 }
 

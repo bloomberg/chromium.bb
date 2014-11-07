@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_flash_drm.idl modified Tue Dec  3 15:22:00 2013.
+// From private/ppb_flash_drm.idl modified Mon Apr  7 08:56:43 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -50,8 +50,8 @@ int32_t GetVoucherFile(PP_Resource drm,
   EnterResource<PPB_Flash_DRM_API> enter(drm, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetVoucherFile(file_ref,
-                                                        enter.callback()));
+  return enter.SetResult(
+      enter.object()->GetVoucherFile(file_ref, enter.callback()));
 }
 
 int32_t MonitorIsExternal(PP_Resource drm,
@@ -61,24 +61,20 @@ int32_t MonitorIsExternal(PP_Resource drm,
   EnterResource<PPB_Flash_DRM_API> enter(drm, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->MonitorIsExternal(is_external,
-                                                           enter.callback()));
+  return enter.SetResult(
+      enter.object()->MonitorIsExternal(is_external, enter.callback()));
 }
 
-const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {
-  &Create,
-  &GetDeviceID,
-  &GetHmonitor,
-  &GetVoucherFile
-};
+const PPB_Flash_DRM_1_0 g_ppb_flash_drm_thunk_1_0 = {&Create,
+                                                     &GetDeviceID,
+                                                     &GetHmonitor,
+                                                     &GetVoucherFile};
 
-const PPB_Flash_DRM_1_1 g_ppb_flash_drm_thunk_1_1 = {
-  &Create,
-  &GetDeviceID,
-  &GetHmonitor,
-  &GetVoucherFile,
-  &MonitorIsExternal
-};
+const PPB_Flash_DRM_1_1 g_ppb_flash_drm_thunk_1_1 = {&Create,
+                                                     &GetDeviceID,
+                                                     &GetHmonitor,
+                                                     &GetVoucherFile,
+                                                     &MonitorIsExternal};
 
 }  // namespace
 

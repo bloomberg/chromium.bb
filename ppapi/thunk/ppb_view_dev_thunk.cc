@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_view_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_view_dev.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -32,10 +32,8 @@ float GetCSSScale(PP_Resource resource) {
   return enter.object()->GetCSSScale();
 }
 
-const PPB_View_Dev_0_1 g_ppb_view_dev_thunk_0_1 = {
-  &GetDeviceScale,
-  &GetCSSScale
-};
+const PPB_View_Dev_0_1 g_ppb_view_dev_thunk_0_1 = {&GetDeviceScale,
+                                                   &GetCSSScale};
 
 }  // namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_graphics_3d.idl modified Thu Oct 31 12:30:06 2013.
+// From ppb_graphics_3d.idl modified Fri Nov  1 16:12:12 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -34,8 +34,7 @@ PP_Resource Create(PP_Instance instance,
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateGraphics3D(instance,
-                                             share_context,
+  return enter.functions()->CreateGraphics3D(instance, share_context,
                                              attrib_list);
 }
 
@@ -86,16 +85,14 @@ int32_t SwapBuffers(PP_Resource context,
   return enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
 }
 
-const PPB_Graphics3D_1_0 g_ppb_graphics3d_thunk_1_0 = {
-  &GetAttribMaxValue,
-  &Create,
-  &IsGraphics3D,
-  &GetAttribs,
-  &SetAttribs,
-  &GetError,
-  &ResizeBuffers,
-  &SwapBuffers
-};
+const PPB_Graphics3D_1_0 g_ppb_graphics3d_thunk_1_0 = {&GetAttribMaxValue,
+                                                       &Create,
+                                                       &IsGraphics3D,
+                                                       &GetAttribs,
+                                                       &SetAttribs,
+                                                       &GetError,
+                                                       &ResizeBuffers,
+                                                       &SwapBuffers};
 
 }  // namespace
 

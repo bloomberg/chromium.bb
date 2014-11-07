@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_udp_socket.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_udp_socket.idl modified Mon Jun 24 15:10:54 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -58,10 +58,8 @@ int32_t RecvFrom(PP_Resource udp_socket,
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->RecvFrom(buffer,
-                                                  num_bytes,
-                                                  addr,
-                                                  enter.callback()));
+  return enter.SetResult(
+      enter.object()->RecvFrom(buffer, num_bytes, addr, enter.callback()));
 }
 
 int32_t SendTo(PP_Resource udp_socket,
@@ -73,10 +71,8 @@ int32_t SendTo(PP_Resource udp_socket,
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SendTo(buffer,
-                                                num_bytes,
-                                                addr,
-                                                enter.callback()));
+  return enter.SetResult(
+      enter.object()->SendTo(buffer, num_bytes, addr, enter.callback()));
 }
 
 void Close(PP_Resource udp_socket) {
@@ -95,21 +91,18 @@ int32_t SetOption(PP_Resource udp_socket,
   EnterResource<PPB_UDPSocket_API> enter(udp_socket, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SetOption(name,
-                                                   value,
-                                                   enter.callback()));
+  return enter.SetResult(
+      enter.object()->SetOption(name, value, enter.callback()));
 }
 
-const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {
-  &Create,
-  &IsUDPSocket,
-  &Bind,
-  &GetBoundAddress,
-  &RecvFrom,
-  &SendTo,
-  &Close,
-  &SetOption
-};
+const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {&Create,
+                                                     &IsUDPSocket,
+                                                     &Bind,
+                                                     &GetBoundAddress,
+                                                     &RecvFrom,
+                                                     &SendTo,
+                                                     &Close,
+                                                     &SetOption};
 
 }  // namespace
 

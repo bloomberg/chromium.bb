@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_device_ref_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_device_ref_dev.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -38,16 +38,14 @@ struct PP_Var GetName(PP_Resource device_ref) {
   return enter.object()->GetName();
 }
 
-const PPB_DeviceRef_Dev_0_1 g_ppb_deviceref_dev_thunk_0_1 = {
-  &IsDeviceRef,
-  &GetType,
-  &GetName
-};
+const PPB_DeviceRef_Dev_0_1 g_ppb_deviceref_dev_thunk_0_1 = {&IsDeviceRef,
+                                                             &GetType,
+                                                             &GetName};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_DeviceRef_Dev_0_1*
-    GetPPB_DeviceRef_Dev_0_1_Thunk() {
+GetPPB_DeviceRef_Dev_0_1_Thunk() {
   return &g_ppb_deviceref_dev_thunk_0_1;
 }
 

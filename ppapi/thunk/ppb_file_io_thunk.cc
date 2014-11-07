@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Thu Oct 31 12:30:06 2013.
+// From ppb_file_io.idl modified Mon Nov 11 16:02:07 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -39,9 +39,8 @@ int32_t Open(PP_Resource file_io,
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Open(file_ref,
-                                              open_flags,
-                                              enter.callback()));
+  return enter.SetResult(
+      enter.object()->Open(file_ref, open_flags, enter.callback()));
 }
 
 int32_t Query(PP_Resource file_io,
@@ -62,9 +61,8 @@ int32_t Touch(PP_Resource file_io,
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Touch(last_access_time,
-                                               last_modified_time,
-                                               enter.callback()));
+  return enter.SetResult(enter.object()->Touch(
+      last_access_time, last_modified_time, enter.callback()));
 }
 
 int32_t Read(PP_Resource file_io,
@@ -76,10 +74,8 @@ int32_t Read(PP_Resource file_io,
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Read(offset,
-                                              buffer,
-                                              bytes_to_read,
-                                              enter.callback()));
+  return enter.SetResult(
+      enter.object()->Read(offset, buffer, bytes_to_read, enter.callback()));
 }
 
 int32_t Write(PP_Resource file_io,
@@ -91,10 +87,8 @@ int32_t Write(PP_Resource file_io,
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Write(offset,
-                                               buffer,
-                                               bytes_to_write,
-                                               enter.callback()));
+  return enter.SetResult(
+      enter.object()->Write(offset, buffer, bytes_to_write, enter.callback()));
 }
 
 int32_t SetLength(PP_Resource file_io,
@@ -132,38 +126,32 @@ int32_t ReadToArray(PP_Resource file_io,
   EnterResource<PPB_FileIO_API> enter(file_io, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ReadToArray(offset,
-                                                     max_read_length,
-                                                     output,
-                                                     enter.callback()));
+  return enter.SetResult(enter.object()->ReadToArray(offset, max_read_length,
+                                                     output, enter.callback()));
 }
 
-const PPB_FileIO_1_0 g_ppb_fileio_thunk_1_0 = {
-  &Create,
-  &IsFileIO,
-  &Open,
-  &Query,
-  &Touch,
-  &Read,
-  &Write,
-  &SetLength,
-  &Flush,
-  &Close
-};
+const PPB_FileIO_1_0 g_ppb_fileio_thunk_1_0 = {&Create,
+                                               &IsFileIO,
+                                               &Open,
+                                               &Query,
+                                               &Touch,
+                                               &Read,
+                                               &Write,
+                                               &SetLength,
+                                               &Flush,
+                                               &Close};
 
-const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {
-  &Create,
-  &IsFileIO,
-  &Open,
-  &Query,
-  &Touch,
-  &Read,
-  &Write,
-  &SetLength,
-  &Flush,
-  &Close,
-  &ReadToArray
-};
+const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {&Create,
+                                               &IsFileIO,
+                                               &Open,
+                                               &Query,
+                                               &Touch,
+                                               &Read,
+                                               &Write,
+                                               &SetLength,
+                                               &Flush,
+                                               &Close,
+                                               &ReadToArray};
 
 }  // namespace
 

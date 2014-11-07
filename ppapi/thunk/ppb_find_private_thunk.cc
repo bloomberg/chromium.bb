@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_find_private.idl modified Wed Mar 19 13:42:13 2014.
+// From private/ppb_find_private.idl modified Mon Apr  7 08:56:43 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_find_private.h"
@@ -52,16 +52,14 @@ void SetTickmarks(PP_Instance instance,
 }
 
 const PPB_Find_Private_0_3 g_ppb_find_private_thunk_0_3 = {
-  &SetPluginToHandleFindRequests,
-  &NumberOfFindResultsChanged,
-  &SelectedFindResultChanged,
-  &SetTickmarks
-};
+    &SetPluginToHandleFindRequests,
+    &NumberOfFindResultsChanged,
+    &SelectedFindResultChanged,
+    &SetTickmarks};
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_Find_Private_0_3*
-    GetPPB_Find_Private_0_3_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_Find_Private_0_3* GetPPB_Find_Private_0_3_Thunk() {
   return &g_ppb_find_private_thunk_0_3;
 }
 

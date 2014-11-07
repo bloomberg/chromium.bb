@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_zoom_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_zoom_dev.idl modified Tue May  7 14:43:00 2013.
 
 #include "ppapi/c/dev/ppb_zoom_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -30,15 +30,12 @@ void ZoomLimitsChanged(PP_Instance instance,
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->ZoomLimitsChanged(instance,
-                                       minimum_factor,
+  enter.functions()->ZoomLimitsChanged(instance, minimum_factor,
                                        maximum_factor);
 }
 
-const PPB_Zoom_Dev_0_2 g_ppb_zoom_dev_thunk_0_2 = {
-  &ZoomChanged,
-  &ZoomLimitsChanged
-};
+const PPB_Zoom_Dev_0_2 g_ppb_zoom_dev_thunk_0_2 = {&ZoomChanged,
+                                                   &ZoomLimitsChanged};
 
 }  // namespace
 

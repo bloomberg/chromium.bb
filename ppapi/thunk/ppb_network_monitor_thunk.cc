@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_network_monitor.idl modified Thu Oct 31 12:30:06 2013.
+// From ppb_network_monitor.idl modified Fri Nov  1 16:12:12 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -32,8 +32,8 @@ int32_t UpdateNetworkList(PP_Resource network_monitor,
   EnterResource<PPB_NetworkMonitor_API> enter(network_monitor, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->UpdateNetworkList(network_list,
-                                                           enter.callback()));
+  return enter.SetResult(
+      enter.object()->UpdateNetworkList(network_list, enter.callback()));
 }
 
 PP_Bool IsNetworkMonitor(PP_Resource resource) {
@@ -43,15 +43,14 @@ PP_Bool IsNetworkMonitor(PP_Resource resource) {
 }
 
 const PPB_NetworkMonitor_1_0 g_ppb_networkmonitor_thunk_1_0 = {
-  &Create,
-  &UpdateNetworkList,
-  &IsNetworkMonitor
-};
+    &Create,
+    &UpdateNetworkList,
+    &IsNetworkMonitor};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_NetworkMonitor_1_0*
-    GetPPB_NetworkMonitor_1_0_Thunk() {
+GetPPB_NetworkMonitor_1_0_Thunk() {
   return &g_ppb_networkmonitor_thunk_1_0;
 }
 

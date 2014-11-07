@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_display_color_profile_private.idl,
-//   modified Tue Feb 18 18:03:36 2014.
+// From private/ppb_display_color_profile_private.idl modified Mon Apr  7
+// 08:56:43 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -37,40 +37,37 @@ int32_t GetColorProfile(PP_Resource display_color_profile_res,
                         struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_DisplayColorProfile_Private::GetColorProfile()";
   EnterResource<PPB_DisplayColorProfile_API> enter(display_color_profile_res,
-                                                   callback,
-                                                   true);
+                                                   callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetColorProfile(color_profile,
-                                                         enter.callback()));
+  return enter.SetResult(
+      enter.object()->GetColorProfile(color_profile, enter.callback()));
 }
 
 int32_t RegisterColorProfileChangeCallback(
     PP_Resource display_color_profile_res,
     struct PP_CompletionCallback callback) {
-  VLOG(4) <<
-      "PPB_DisplayColorProfile_Private::RegisterColorProfileChangeCallback()";
+  VLOG(4) << "PPB_DisplayColorProfile_Private::"
+             "RegisterColorProfileChangeCallback()";
   EnterResource<PPB_DisplayColorProfile_API> enter(display_color_profile_res,
-                                                   callback,
-                                                   true);
+                                                   callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->RegisterColorProfileChangeCallback(
-      enter.callback()));
+  return enter.SetResult(
+      enter.object()->RegisterColorProfileChangeCallback(enter.callback()));
 }
 
 const PPB_DisplayColorProfile_Private_0_1
     g_ppb_displaycolorprofile_private_thunk_0_1 = {
-  &Create,
-  &IsDisplayColorProfile,
-  &GetColorProfile,
-  &RegisterColorProfileChangeCallback
-};
+        &Create,
+        &IsDisplayColorProfile,
+        &GetColorProfile,
+        &RegisterColorProfileChangeCallback};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_DisplayColorProfile_Private_0_1*
-    GetPPB_DisplayColorProfile_Private_0_1_Thunk() {
+GetPPB_DisplayColorProfile_Private_0_1_Thunk() {
   return &g_ppb_displaycolorprofile_private_thunk_0_1;
 }
 

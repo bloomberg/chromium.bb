@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_platform_verification_private.idl,
-//   modified Thu Oct 31 12:30:06 2013.
+// From private/ppb_platform_verification_private.idl modified Fri Nov  1
+// 16:12:12 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -44,25 +44,19 @@ int32_t ChallengePlatform(PP_Resource instance,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->ChallengePlatform(
-      service_id,
-      challenge,
-      signed_data,
-      signed_data_signature,
-      platform_key_certificate,
-      enter.callback()));
+      service_id, challenge, signed_data, signed_data_signature,
+      platform_key_certificate, enter.callback()));
 }
 
 const PPB_PlatformVerification_Private_0_2
-    g_ppb_platformverification_private_thunk_0_2 = {
-  &Create,
-  &IsPlatformVerification,
-  &ChallengePlatform
-};
+    g_ppb_platformverification_private_thunk_0_2 = {&Create,
+                                                    &IsPlatformVerification,
+                                                    &ChallengePlatform};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_PlatformVerification_Private_0_2*
-    GetPPB_PlatformVerification_Private_0_2_Thunk() {
+GetPPB_PlatformVerification_Private_0_2_Thunk() {
   return &g_ppb_platformverification_private_thunk_0_2;
 }
 

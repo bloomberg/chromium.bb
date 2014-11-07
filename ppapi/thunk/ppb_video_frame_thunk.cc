@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_video_frame.idl modified Mon Jan 13 12:02:23 2014.
+// From ppb_video_frame.idl modified Mon Apr  7 08:56:43 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_video_frame.h"
@@ -70,15 +70,13 @@ uint32_t GetDataBufferSize(PP_Resource frame) {
   return enter.object()->GetDataBufferSize();
 }
 
-const PPB_VideoFrame_0_1 g_ppb_videoframe_thunk_0_1 = {
-  &IsVideoFrame,
-  &GetTimestamp,
-  &SetTimestamp,
-  &GetFormat,
-  &GetSize,
-  &GetDataBuffer,
-  &GetDataBufferSize
-};
+const PPB_VideoFrame_0_1 g_ppb_videoframe_thunk_0_1 = {&IsVideoFrame,
+                                                       &GetTimestamp,
+                                                       &SetTimestamp,
+                                                       &GetFormat,
+                                                       &GetSize,
+                                                       &GetDataBuffer,
+                                                       &GetDataBufferSize};
 
 }  // namespace
 

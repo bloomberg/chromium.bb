@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_network_proxy.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_network_proxy.idl modified Tue Jun 25 15:45:53 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -25,20 +25,15 @@ int32_t GetProxyForURL(PP_Instance instance,
   EnterInstanceAPI<PPB_NetworkProxy_API> enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.functions()->GetProxyForURL(instance,
-                                                           url,
-                                                           proxy_string,
-                                                           enter.callback()));
+  return enter.SetResult(enter.functions()->GetProxyForURL(
+      instance, url, proxy_string, enter.callback()));
 }
 
-const PPB_NetworkProxy_1_0 g_ppb_networkproxy_thunk_1_0 = {
-  &GetProxyForURL
-};
+const PPB_NetworkProxy_1_0 g_ppb_networkproxy_thunk_1_0 = {&GetProxyForURL};
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_NetworkProxy_1_0*
-    GetPPB_NetworkProxy_1_0_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_NetworkProxy_1_0* GetPPB_NetworkProxy_1_0_Thunk() {
   return &g_ppb_networkproxy_thunk_1_0;
 }
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_compositor_layer.idl modified Thu Aug 14 18:06:33 2014.
+// From ppb_compositor_layer.idl modified Thu Sep 18 11:36:39 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -45,10 +45,8 @@ int32_t SetTexture_0_1(PP_Resource layer,
   EnterResource<PPB_CompositorLayer_API> enter(layer, cc, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SetTexture0_1(context,
-                                                       texture,
-                                                       size,
-                                                       enter.callback()));
+  return enter.SetResult(
+      enter.object()->SetTexture0_1(context, texture, size, enter.callback()));
 }
 
 int32_t SetTexture(PP_Resource layer,
@@ -61,11 +59,8 @@ int32_t SetTexture(PP_Resource layer,
   EnterResource<PPB_CompositorLayer_API> enter(layer, cc, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SetTexture(context,
-                                                    target,
-                                                    texture,
-                                                    size,
-                                                    enter.callback()));
+  return enter.SetResult(enter.object()->SetTexture(context, target, texture,
+                                                    size, enter.callback()));
 }
 
 int32_t SetImage(PP_Resource layer,
@@ -76,9 +71,8 @@ int32_t SetImage(PP_Resource layer,
   EnterResource<PPB_CompositorLayer_API> enter(layer, cc, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SetImage(image_data,
-                                                  size,
-                                                  enter.callback()));
+  return enter.SetResult(
+      enter.object()->SetImage(image_data, size, enter.callback()));
 }
 
 int32_t SetClipRect(PP_Resource layer, const struct PP_Rect* rect) {
@@ -130,40 +124,38 @@ int32_t SetPremultipliedAlpha(PP_Resource layer, PP_Bool premult) {
 }
 
 const PPB_CompositorLayer_0_1 g_ppb_compositorlayer_thunk_0_1 = {
-  &IsCompositorLayer,
-  &SetColor,
-  &SetTexture_0_1,
-  &SetImage,
-  &SetClipRect,
-  &SetTransform,
-  &SetOpacity,
-  &SetBlendMode,
-  &SetSourceRect,
-  &SetPremultipliedAlpha
-};
+    &IsCompositorLayer,
+    &SetColor,
+    &SetTexture_0_1,
+    &SetImage,
+    &SetClipRect,
+    &SetTransform,
+    &SetOpacity,
+    &SetBlendMode,
+    &SetSourceRect,
+    &SetPremultipliedAlpha};
 
 const PPB_CompositorLayer_0_2 g_ppb_compositorlayer_thunk_0_2 = {
-  &IsCompositorLayer,
-  &SetColor,
-  &SetTexture,
-  &SetImage,
-  &SetClipRect,
-  &SetTransform,
-  &SetOpacity,
-  &SetBlendMode,
-  &SetSourceRect,
-  &SetPremultipliedAlpha
-};
+    &IsCompositorLayer,
+    &SetColor,
+    &SetTexture,
+    &SetImage,
+    &SetClipRect,
+    &SetTransform,
+    &SetOpacity,
+    &SetBlendMode,
+    &SetSourceRect,
+    &SetPremultipliedAlpha};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_CompositorLayer_0_1*
-    GetPPB_CompositorLayer_0_1_Thunk() {
+GetPPB_CompositorLayer_0_1_Thunk() {
   return &g_ppb_compositorlayer_thunk_0_1;
 }
 
 PPAPI_THUNK_EXPORT const PPB_CompositorLayer_0_2*
-    GetPPB_CompositorLayer_0_2_Thunk() {
+GetPPB_CompositorLayer_0_2_Thunk() {
   return &g_ppb_compositorlayer_thunk_0_2;
 }
 

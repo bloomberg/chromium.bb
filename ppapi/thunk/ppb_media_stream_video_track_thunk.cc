@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_video_track.idl modified Mon Mar 31 14:40:45 2014.
+// From ppb_media_stream_video_track.idl modified Thu Sep 18 11:36:39 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -35,13 +35,12 @@ int32_t Configure(PP_Resource video_track,
                   const int32_t attrib_list[],
                   struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_MediaStreamVideoTrack::Configure()";
-  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track,
-                                                     callback,
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track, callback,
                                                      true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Configure(attrib_list,
-                                                   enter.callback()));
+  return enter.SetResult(
+      enter.object()->Configure(attrib_list, enter.callback()));
 }
 
 int32_t GetAttrib(PP_Resource video_track,
@@ -74,8 +73,7 @@ int32_t GetFrame(PP_Resource video_track,
                  PP_Resource* frame,
                  struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_MediaStreamVideoTrack::GetFrame()";
-  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track,
-                                                     callback,
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track, callback,
                                                      true);
   if (enter.failed())
     return enter.retval();
@@ -102,13 +100,12 @@ int32_t GetEmptyFrame(PP_Resource video_track,
                       PP_Resource* frame,
                       struct PP_CompletionCallback callback) {
   VLOG(4) << "PPB_MediaStreamVideoTrack::GetEmptyFrame()";
-  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track,
-                                                     callback,
+  EnterResource<PPB_MediaStreamVideoTrack_API> enter(video_track, callback,
                                                      true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetEmptyFrame(frame,
-                                                       enter.callback()));
+  return enter.SetResult(
+      enter.object()->GetEmptyFrame(frame, enter.callback()));
 }
 
 int32_t PutFrame(PP_Resource video_track, PP_Resource frame) {
@@ -120,39 +117,37 @@ int32_t PutFrame(PP_Resource video_track, PP_Resource frame) {
 }
 
 const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
-  &IsMediaStreamVideoTrack,
-  &Configure,
-  &GetAttrib,
-  &GetId,
-  &HasEnded,
-  &GetFrame,
-  &RecycleFrame,
-  &Close
-};
+    &IsMediaStreamVideoTrack,
+    &Configure,
+    &GetAttrib,
+    &GetId,
+    &HasEnded,
+    &GetFrame,
+    &RecycleFrame,
+    &Close};
 
 const PPB_MediaStreamVideoTrack_1_0 g_ppb_mediastreamvideotrack_thunk_1_0 = {
-  &Create,
-  &IsMediaStreamVideoTrack,
-  &Configure,
-  &GetAttrib,
-  &GetId,
-  &HasEnded,
-  &GetFrame,
-  &RecycleFrame,
-  &Close,
-  &GetEmptyFrame,
-  &PutFrame
-};
+    &Create,
+    &IsMediaStreamVideoTrack,
+    &Configure,
+    &GetAttrib,
+    &GetId,
+    &HasEnded,
+    &GetFrame,
+    &RecycleFrame,
+    &Close,
+    &GetEmptyFrame,
+    &PutFrame};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_MediaStreamVideoTrack_0_1*
-    GetPPB_MediaStreamVideoTrack_0_1_Thunk() {
+GetPPB_MediaStreamVideoTrack_0_1_Thunk() {
   return &g_ppb_mediastreamvideotrack_thunk_0_1;
 }
 
 PPAPI_THUNK_EXPORT const PPB_MediaStreamVideoTrack_1_0*
-    GetPPB_MediaStreamVideoTrack_1_0_Thunk() {
+GetPPB_MediaStreamVideoTrack_1_0_Thunk() {
   return &g_ppb_mediastreamvideotrack_thunk_1_0;
 }
 

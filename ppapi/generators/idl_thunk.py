@@ -436,6 +436,7 @@ class TGen(GeneratorByFile):
     self.WriteHead(thunk_out, filenode, releases, options, meta)
     thunk_out.Write('\n\n'.join(body))
     self.WriteTail(thunk_out, filenode, releases, options)
+    thunk_out.ClangFormat()
     return thunk_out.Close()
 
   def WriteHead(self, out, filenode, releases, options, meta):
@@ -446,15 +447,11 @@ class TGen(GeneratorByFile):
     assert(cright_node.IsA('Copyright'))
     out.Write('%s\n' % cgen.Copyright(cright_node, cpp_style=True))
 
-    # Wrap the From ... modified ... comment if it would be >80 characters.
     from_text = 'From %s' % (
         filenode.GetProperty('NAME').replace(os.sep,'/'))
     modified_text = 'modified %s.' % (
         filenode.GetProperty('DATETIME'))
-    if len(from_text) + len(modified_text) < 74:
-      out.Write('// %s %s\n\n' % (from_text, modified_text))
-    else:
-      out.Write('// %s,\n//   %s\n\n' % (from_text, modified_text))
+    out.Write('// %s %s\n\n' % (from_text, modified_text))
 
     if meta.BuiltinIncludes():
       for include in sorted(meta.BuiltinIncludes()):
@@ -529,10 +526,7 @@ class TGen(GeneratorByFile):
         thunk_type = '_'.join((node.GetName(), version))
         version_list.append((thunk_type, thunk_name))
 
-        declare_line = 'const %s %s = {' % (thunk_type, thunk_name)
-        if len(declare_line) > 80:
-          declare_line = 'const %s\n    %s = {' % (thunk_type, thunk_name)
-        out.Write('%s\n' % declare_line)
+        out.Write('const %s %s = {\n' % (thunk_type, thunk_name))
         generated_functions = []
         members = node.GetListOf('Member')
         for child in members:
@@ -550,12 +544,8 @@ class TGen(GeneratorByFile):
     out.Write('}  // namespace\n')
     out.Write('\n')
     for thunk_type, thunk_name in version_list:
-      thunk_decl = ('PPAPI_THUNK_EXPORT const %s* Get%s_Thunk() {\n' %
+      out.Write('PPAPI_THUNK_EXPORT const %s* Get%s_Thunk() {\n' %
                     (thunk_type, thunk_type))
-      if len(thunk_decl) > 80:
-        thunk_decl = ('PPAPI_THUNK_EXPORT const %s*\n    Get%s_Thunk() {\n' %
-                      (thunk_type, thunk_type))
-      out.Write(thunk_decl)
       out.Write('  return &%s;\n' % thunk_name)
       out.Write('}\n')
       out.Write('\n')

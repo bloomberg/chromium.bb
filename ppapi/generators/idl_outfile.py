@@ -8,6 +8,7 @@
 import difflib
 import os
 import time
+import subprocess
 import sys
 
 from idl_log import ErrOut, InfoOut, WarnOut
@@ -90,6 +91,14 @@ class IDLOutFile(object):
       raise RuntimeError('Could not write to closed file %s.' % self.filename)
     self.outlist.append(string)
 
+  # Run clang-format on the buffered file contents.
+  def ClangFormat(self):
+    clang_format = subprocess.Popen(['clang-format', '-style=Chromium'],
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE)
+    new_output = clang_format.communicate("".join(self.outlist))[0]
+    self.outlist = [new_output]
+
   # Close the file, flushing it to disk
   def Close(self):
     filename = os.path.realpath(self.filename)
@@ -123,6 +132,7 @@ class IDLOutFile(object):
       if not GetOption('test'):
         outfile = open(filename, 'wb')
         outfile.write(outtext)
+        outfile.close();
         InfoOut.Log('Output %s written.' % self.filename)
       return True
 

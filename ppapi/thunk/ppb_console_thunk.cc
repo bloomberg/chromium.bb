@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_console.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_console.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_console.h"
@@ -34,10 +34,7 @@ void LogWithSource(PP_Instance instance,
   enter.functions()->LogWithSource(instance, level, source, value);
 }
 
-const PPB_Console_1_0 g_ppb_console_thunk_1_0 = {
-  &Log,
-  &LogWithSource
-};
+const PPB_Console_1_0 g_ppb_console_thunk_1_0 = {&Log, &LogWithSource};
 
 }  // namespace
 

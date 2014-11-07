@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_image_capture_config_private.idl,
-//   modified Wed Aug 13 14:07:52 2014.
+// From private/ppb_image_capture_config_private.idl modified Wed Nov  5
+// 14:29:15 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_image_capture_config_private.h"
@@ -64,19 +64,17 @@ void SetJpegSize(PP_Resource config, const struct PP_Size* jpeg_size) {
 }
 
 const PPB_ImageCaptureConfig_Private_0_1
-    g_ppb_imagecaptureconfig_private_thunk_0_1 = {
-  &Create,
-  &IsImageCaptureConfig,
-  &GetPreviewSize,
-  &SetPreviewSize,
-  &GetJpegSize,
-  &SetJpegSize
-};
+    g_ppb_imagecaptureconfig_private_thunk_0_1 = {&Create,
+                                                  &IsImageCaptureConfig,
+                                                  &GetPreviewSize,
+                                                  &SetPreviewSize,
+                                                  &GetJpegSize,
+                                                  &SetJpegSize};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_ImageCaptureConfig_Private_0_1*
-    GetPPB_ImageCaptureConfig_Private_0_1_Thunk() {
+GetPPB_ImageCaptureConfig_Private_0_1_Thunk() {
   return &g_ppb_imagecaptureconfig_private_thunk_0_1;
 }
 

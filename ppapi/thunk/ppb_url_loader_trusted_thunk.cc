@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From trusted/ppb_url_loader_trusted.idl modified Tue Aug 20 08:13:36 2013.
+// From trusted/ppb_url_loader_trusted.idl modified Tue May  7 14:43:00 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
@@ -34,14 +34,13 @@ void RegisterStatusCallback(PP_Resource loader,
 }
 
 const PPB_URLLoaderTrusted_0_3 g_ppb_urlloadertrusted_thunk_0_3 = {
-  &GrantUniversalAccess,
-  &RegisterStatusCallback
-};
+    &GrantUniversalAccess,
+    &RegisterStatusCallback};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_URLLoaderTrusted_0_3*
-    GetPPB_URLLoaderTrusted_0_3_Thunk() {
+GetPPB_URLLoaderTrusted_0_3_Thunk() {
   return &g_ppb_urlloadertrusted_thunk_0_3;
 }
 

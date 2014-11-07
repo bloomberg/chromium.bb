@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_view.idl modified Wed Jun 11 15:42:26 2014.
+// From ppb_view.idl modified Wed Nov  5 14:29:15 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_view.h"
@@ -86,37 +86,31 @@ PP_Bool GetScrollOffset(PP_Resource resource, struct PP_Point* offset) {
   return enter.object()->GetScrollOffset(offset);
 }
 
-const PPB_View_1_0 g_ppb_view_thunk_1_0 = {
-  &IsView,
-  &GetRect,
-  &IsFullscreen,
-  &IsVisible,
-  &IsPageVisible,
-  &GetClipRect
-};
+const PPB_View_1_0 g_ppb_view_thunk_1_0 = {&IsView,
+                                           &GetRect,
+                                           &IsFullscreen,
+                                           &IsVisible,
+                                           &IsPageVisible,
+                                           &GetClipRect};
 
-const PPB_View_1_1 g_ppb_view_thunk_1_1 = {
-  &IsView,
-  &GetRect,
-  &IsFullscreen,
-  &IsVisible,
-  &IsPageVisible,
-  &GetClipRect,
-  &GetDeviceScale,
-  &GetCSSScale
-};
+const PPB_View_1_1 g_ppb_view_thunk_1_1 = {&IsView,
+                                           &GetRect,
+                                           &IsFullscreen,
+                                           &IsVisible,
+                                           &IsPageVisible,
+                                           &GetClipRect,
+                                           &GetDeviceScale,
+                                           &GetCSSScale};
 
-const PPB_View_1_2 g_ppb_view_thunk_1_2 = {
-  &IsView,
-  &GetRect,
-  &IsFullscreen,
-  &IsVisible,
-  &IsPageVisible,
-  &GetClipRect,
-  &GetDeviceScale,
-  &GetCSSScale,
-  &GetScrollOffset
-};
+const PPB_View_1_2 g_ppb_view_thunk_1_2 = {&IsView,
+                                           &GetRect,
+                                           &IsFullscreen,
+                                           &IsVisible,
+                                           &IsPageVisible,
+                                           &GetClipRect,
+                                           &GetDeviceScale,
+                                           &GetCSSScale,
+                                           &GetScrollOffset};
 
 }  // namespace
 

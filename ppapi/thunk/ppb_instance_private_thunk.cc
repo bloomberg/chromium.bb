@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_instance_private.idl modified Thu Nov 14 08:28:26 2013.
+// From private/ppb_instance_private.idl modified Fri Jul 26 09:45:14 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_instance_private.h"
@@ -42,15 +42,14 @@ struct PP_Var ExecuteScript(PP_Instance instance,
 }
 
 const PPB_Instance_Private_0_1 g_ppb_instance_private_thunk_0_1 = {
-  &GetWindowObject,
-  &GetOwnerElementObject,
-  &ExecuteScript
-};
+    &GetWindowObject,
+    &GetOwnerElementObject,
+    &ExecuteScript};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_Instance_Private_0_1*
-    GetPPB_Instance_Private_0_1_Thunk() {
+GetPPB_Instance_Private_0_1_Thunk() {
   return &g_ppb_instance_private_thunk_0_1;
 }
 

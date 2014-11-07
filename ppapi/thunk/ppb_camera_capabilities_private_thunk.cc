@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_camera_capabilities_private.idl,
-//   modified Tue Aug 19 14:43:34 2014.
+// From private/ppb_camera_capabilities_private.idl modified Wed Nov  5 14:29:15
+// 2014.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_camera_capabilities_private.h"
@@ -52,17 +52,15 @@ void GetSupportedJpegSizes(PP_Resource capabilities,
 }
 
 const PPB_CameraCapabilities_Private_0_1
-    g_ppb_cameracapabilities_private_thunk_0_1 = {
-  &Create,
-  &IsCameraCapabilities,
-  &GetSupportedPreviewSizes,
-  &GetSupportedJpegSizes
-};
+    g_ppb_cameracapabilities_private_thunk_0_1 = {&Create,
+                                                  &IsCameraCapabilities,
+                                                  &GetSupportedPreviewSizes,
+                                                  &GetSupportedJpegSizes};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_CameraCapabilities_Private_0_1*
-    GetPPB_CameraCapabilities_Private_0_1_Thunk() {
+GetPPB_CameraCapabilities_Private_0_1_Thunk() {
   return &g_ppb_cameracapabilities_private_thunk_0_1;
 }
 

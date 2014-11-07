@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_widget_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_widget_dev.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/dev/ppb_widget_dev.h"
 #include "ppapi/c/pp_errors.h"
@@ -64,22 +64,14 @@ void SetScale(PP_Resource widget, float scale) {
   enter.object()->SetScale(scale);
 }
 
-const PPB_Widget_Dev_0_3 g_ppb_widget_dev_thunk_0_3 = {
-  &IsWidget,
-  &Paint,
-  &HandleEvent,
-  &GetLocation,
-  &SetLocation
-};
+const PPB_Widget_Dev_0_3 g_ppb_widget_dev_thunk_0_3 = {&IsWidget,
+                                                       &Paint,
+                                                       &HandleEvent,
+                                                       &GetLocation,
+                                                       &SetLocation};
 
-const PPB_Widget_Dev_0_4 g_ppb_widget_dev_thunk_0_4 = {
-  &IsWidget,
-  &Paint,
-  &HandleEvent,
-  &GetLocation,
-  &SetLocation,
-  &SetScale
-};
+const PPB_Widget_Dev_0_4 g_ppb_widget_dev_thunk_0_4 =
+    {&IsWidget, &Paint, &HandleEvent, &GetLocation, &SetLocation, &SetScale};
 
 }  // namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_host_resolver.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_host_resolver.idl modified Mon Jun 24 15:10:54 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -40,10 +40,8 @@ int32_t Resolve(PP_Resource host_resolver,
   EnterResource<PPB_HostResolver_API> enter(host_resolver, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Resolve(host,
-                                                 port,
-                                                 hint,
-                                                 enter.callback()));
+  return enter.SetResult(
+      enter.object()->Resolve(host, port, hint, enter.callback()));
 }
 
 struct PP_Var GetCanonicalName(PP_Resource host_resolver) {
@@ -70,19 +68,16 @@ PP_Resource GetNetAddress(PP_Resource host_resolver, uint32_t index) {
   return enter.object()->GetNetAddress(index);
 }
 
-const PPB_HostResolver_1_0 g_ppb_hostresolver_thunk_1_0 = {
-  &Create,
-  &IsHostResolver,
-  &Resolve,
-  &GetCanonicalName,
-  &GetNetAddressCount,
-  &GetNetAddress
-};
+const PPB_HostResolver_1_0 g_ppb_hostresolver_thunk_1_0 = {&Create,
+                                                           &IsHostResolver,
+                                                           &Resolve,
+                                                           &GetCanonicalName,
+                                                           &GetNetAddressCount,
+                                                           &GetNetAddress};
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_HostResolver_1_0*
-    GetPPB_HostResolver_1_0_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_HostResolver_1_0* GetPPB_HostResolver_1_0_Thunk() {
   return &g_ppb_hostresolver_thunk_1_0;
 }
 

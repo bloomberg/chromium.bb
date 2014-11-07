@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_fullscreen.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_fullscreen.idl modified Wed May 15 13:57:07 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_fullscreen.h"
@@ -39,11 +39,9 @@ PP_Bool GetScreenSize(PP_Instance instance, struct PP_Size* size) {
   return enter.functions()->GetScreenSize(instance, size);
 }
 
-const PPB_Fullscreen_1_0 g_ppb_fullscreen_thunk_1_0 = {
-  &IsFullscreen,
-  &SetFullscreen,
-  &GetScreenSize
-};
+const PPB_Fullscreen_1_0 g_ppb_fullscreen_thunk_1_0 = {&IsFullscreen,
+                                                       &SetFullscreen,
+                                                       &GetScreenSize};
 
 }  // namespace
 

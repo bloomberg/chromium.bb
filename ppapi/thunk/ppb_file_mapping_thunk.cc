@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_mapping.idl modified Mon Jan 27 11:00:43 2014.
+// From ppb_file_mapping.idl modified Mon Apr  7 08:55:47 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -29,14 +29,9 @@ int32_t Map(PP_Instance instance,
   EnterInstanceAPI<PPB_FileMapping_API> enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.functions()->Map(instance,
-                                                file_io,
-                                                length,
-                                                map_protection,
-                                                map_flags,
-                                                offset,
-                                                address,
-                                                enter.callback()));
+  return enter.SetResult(
+      enter.functions()->Map(instance, file_io, length, map_protection,
+                             map_flags, offset, address, enter.callback()));
 }
 
 int32_t Unmap(PP_Instance instance,
@@ -47,10 +42,8 @@ int32_t Unmap(PP_Instance instance,
   EnterInstanceAPI<PPB_FileMapping_API> enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.functions()->Unmap(instance,
-                                                  address,
-                                                  length,
-                                                  enter.callback()));
+  return enter.SetResult(
+      enter.functions()->Unmap(instance, address, length, enter.callback()));
 }
 
 int64_t GetMapPageSize(PP_Instance instance) {
@@ -61,11 +54,9 @@ int64_t GetMapPageSize(PP_Instance instance) {
   return enter.functions()->GetMapPageSize(instance);
 }
 
-const PPB_FileMapping_0_1 g_ppb_filemapping_thunk_0_1 = {
-  &Map,
-  &Unmap,
-  &GetMapPageSize
-};
+const PPB_FileMapping_0_1 g_ppb_filemapping_thunk_0_1 = {&Map,
+                                                         &Unmap,
+                                                         &GetMapPageSize};
 
 }  // namespace
 

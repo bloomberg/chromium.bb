@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_image_data.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_image_data.idl modified Tue May  7 14:43:00 2013.
 
 #include <string.h>
 
@@ -37,9 +37,7 @@ PP_Resource Create(PP_Instance instance,
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateImageData(instance,
-                                            format,
-                                            size,
+  return enter.functions()->CreateImageData(instance, format, size,
                                             init_to_zero);
 }
 
@@ -76,14 +74,13 @@ void Unmap(PP_Resource image_data) {
 }
 
 const PPB_ImageData_1_0 g_ppb_imagedata_thunk_1_0 = {
-  &GetNativeImageDataFormat,
-  &IsImageDataFormatSupported,
-  &Create,
-  &IsImageData,
-  &Describe,
-  &Map,
-  &Unmap
-};
+    &GetNativeImageDataFormat,
+    &IsImageDataFormatSupported,
+    &Create,
+    &IsImageData,
+    &Describe,
+    &Map,
+    &Unmap};
 
 }  // namespace
 

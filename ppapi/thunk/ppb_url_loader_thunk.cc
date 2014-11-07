@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_url_loader.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_url_loader.idl modified Tue May  7 14:43:00 2013.
 
 #include <string.h>
 
@@ -95,8 +95,7 @@ int32_t ReadResponseBody(PP_Resource loader,
   EnterResource<PPB_URLLoader_API> enter(loader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ReadResponseBody(buffer,
-                                                          bytes_to_read,
+  return enter.SetResult(enter.object()->ReadResponseBody(buffer, bytes_to_read,
                                                           enter.callback()));
 }
 
@@ -106,8 +105,8 @@ int32_t FinishStreamingToFile(PP_Resource loader,
   EnterResource<PPB_URLLoader_API> enter(loader, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->FinishStreamingToFile(
-      enter.callback()));
+  return enter.SetResult(
+      enter.object()->FinishStreamingToFile(enter.callback()));
 }
 
 void Close(PP_Resource loader) {
@@ -118,18 +117,16 @@ void Close(PP_Resource loader) {
   enter.object()->Close();
 }
 
-const PPB_URLLoader_1_0 g_ppb_urlloader_thunk_1_0 = {
-  &Create,
-  &IsURLLoader,
-  &Open,
-  &FollowRedirect,
-  &GetUploadProgress,
-  &GetDownloadProgress,
-  &GetResponseInfo,
-  &ReadResponseBody,
-  &FinishStreamingToFile,
-  &Close
-};
+const PPB_URLLoader_1_0 g_ppb_urlloader_thunk_1_0 = {&Create,
+                                                     &IsURLLoader,
+                                                     &Open,
+                                                     &FollowRedirect,
+                                                     &GetUploadProgress,
+                                                     &GetDownloadProgress,
+                                                     &GetResponseInfo,
+                                                     &ReadResponseBody,
+                                                     &FinishStreamingToFile,
+                                                     &Close};
 
 }  // namespace
 

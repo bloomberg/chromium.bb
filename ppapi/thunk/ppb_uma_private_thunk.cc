@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_uma_private.idl modified Thu Mar 13 11:54:51 2014.
+// From private/ppb_uma_private.idl modified Mon Apr  7 08:56:43 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -27,11 +27,7 @@ void HistogramCustomTimes(PP_Instance instance,
   EnterInstanceAPI<PPB_UMA_Singleton_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->HistogramCustomTimes(instance,
-                                          name,
-                                          sample,
-                                          min,
-                                          max,
+  enter.functions()->HistogramCustomTimes(instance, name, sample, min, max,
                                           bucket_count);
 }
 
@@ -45,11 +41,7 @@ void HistogramCustomCounts(PP_Instance instance,
   EnterInstanceAPI<PPB_UMA_Singleton_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->HistogramCustomCounts(instance,
-                                           name,
-                                           sample,
-                                           min,
-                                           max,
+  enter.functions()->HistogramCustomCounts(instance, name, sample, min, max,
                                            bucket_count);
 }
 
@@ -61,9 +53,7 @@ void HistogramEnumeration(PP_Instance instance,
   EnterInstanceAPI<PPB_UMA_Singleton_API> enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->HistogramEnumeration(instance,
-                                          name,
-                                          sample,
+  enter.functions()->HistogramEnumeration(instance, name, sample,
                                           boundary_value);
 }
 
@@ -73,17 +63,15 @@ int32_t IsCrashReportingEnabled(PP_Instance instance,
   EnterInstanceAPI<PPB_UMA_Singleton_API> enter(instance, callback);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.functions()->IsCrashReportingEnabled(
-      instance,
-      enter.callback()));
+  return enter.SetResult(
+      enter.functions()->IsCrashReportingEnabled(instance, enter.callback()));
 }
 
 const PPB_UMA_Private_0_3 g_ppb_uma_private_thunk_0_3 = {
-  &HistogramCustomTimes,
-  &HistogramCustomCounts,
-  &HistogramEnumeration,
-  &IsCrashReportingEnabled
-};
+    &HistogramCustomTimes,
+    &HistogramCustomCounts,
+    &HistogramEnumeration,
+    &IsCrashReportingEnabled};
 
 }  // namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_printing_dev.idl modified Tue Aug 20 08:13:36 2013.
+// From dev/ppb_printing_dev.idl modified Tue May  7 14:43:00 2013.
 
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/pp_completion_callback.h"
@@ -33,19 +33,16 @@ int32_t GetDefaultPrintSettings(PP_Resource resource,
   if (enter.failed())
     return enter.retval();
   return enter.SetResult(enter.object()->GetDefaultPrintSettings(
-      print_settings,
-      enter.callback()));
+      print_settings, enter.callback()));
 }
 
 const PPB_Printing_Dev_0_7 g_ppb_printing_dev_thunk_0_7 = {
-  &Create,
-  &GetDefaultPrintSettings
-};
+    &Create,
+    &GetDefaultPrintSettings};
 
 }  // namespace
 
-PPAPI_THUNK_EXPORT const PPB_Printing_Dev_0_7*
-    GetPPB_Printing_Dev_0_7_Thunk() {
+PPAPI_THUNK_EXPORT const PPB_Printing_Dev_0_7* GetPPB_Printing_Dev_0_7_Thunk() {
   return &g_ppb_printing_dev_thunk_0_7;
 }
 

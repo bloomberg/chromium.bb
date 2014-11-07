@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_image_capture_private.idl,
-//   modified Wed Aug 13 17:26:13 2014.
+// From private/ppb_image_capture_private.idl modified Wed Nov  5 14:29:15 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -26,10 +25,8 @@ PP_Resource Create(PP_Instance instance,
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateImageCapturePrivate(instance,
-                                                      camera_source_id,
-                                                      error_callback,
-                                                      user_data);
+  return enter.functions()->CreateImageCapturePrivate(
+      instance, camera_source_id, error_callback, user_data);
 }
 
 PP_Bool IsImageCapture(PP_Resource resource) {
@@ -73,9 +70,8 @@ int32_t GetCameraCapabilities(PP_Resource image_capture,
   EnterResource<PPB_ImageCapture_API> enter(image_capture, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->GetCameraCapabilities(
-      capabilities,
-      enter.callback()));
+  return enter.SetResult(
+      enter.object()->GetCameraCapabilities(capabilities, enter.callback()));
 }
 
 int32_t CaptureStillImage(
@@ -88,26 +84,23 @@ int32_t CaptureStillImage(
   EnterResource<PPB_ImageCapture_API> enter(image_capture, true);
   if (enter.failed())
     return enter.retval();
-  return enter.object()->CaptureStillImage(shutter_callback,
-                                           preview_callback,
-                                           jpeg_callback,
-                                           sequence_id);
+  return enter.object()->CaptureStillImage(shutter_callback, preview_callback,
+                                           jpeg_callback, sequence_id);
 }
 
 const PPB_ImageCapture_Private_0_1 g_ppb_imagecapture_private_thunk_0_1 = {
-  &Create,
-  &IsImageCapture,
-  &Close,
-  &SetConfig,
-  &GetConfig,
-  &GetCameraCapabilities,
-  &CaptureStillImage
-};
+    &Create,
+    &IsImageCapture,
+    &Close,
+    &SetConfig,
+    &GetConfig,
+    &GetCameraCapabilities,
+    &CaptureStillImage};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_ImageCapture_Private_0_1*
-    GetPPB_ImageCapture_Private_0_1_Thunk() {
+GetPPB_ImageCapture_Private_0_1_Thunk() {
   return &g_ppb_imagecapture_private_thunk_0_1;
 }
 

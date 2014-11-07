@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_compositor.idl modified Thu May 15 17:40:43 2014.
+// From ppb_compositor.idl modified Thu Sep 18 11:36:39 2014.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -55,13 +55,11 @@ int32_t ResetLayers(PP_Resource compositor) {
   return enter.object()->ResetLayers();
 }
 
-const PPB_Compositor_0_1 g_ppb_compositor_thunk_0_1 = {
-  &IsCompositor,
-  &Create,
-  &AddLayer,
-  &CommitLayers,
-  &ResetLayers
-};
+const PPB_Compositor_0_1 g_ppb_compositor_thunk_0_1 = {&IsCompositor,
+                                                       &Create,
+                                                       &AddLayer,
+                                                       &CommitLayers,
+                                                       &ResetLayers};
 
 }  // namespace
 

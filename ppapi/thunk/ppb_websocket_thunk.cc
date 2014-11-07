@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_websocket.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_websocket.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
@@ -40,9 +40,7 @@ int32_t Connect(PP_Resource web_socket,
   EnterResource<PPB_WebSocket_API> enter(web_socket, callback, false);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Connect(url,
-                                                 protocols,
-                                                 protocol_count,
+  return enter.SetResult(enter.object()->Connect(url, protocols, protocol_count,
                                                  enter.callback()));
 }
 
@@ -64,8 +62,8 @@ int32_t ReceiveMessage(PP_Resource web_socket,
   EnterResource<PPB_WebSocket_API> enter(web_socket, callback, false);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->ReceiveMessage(message,
-                                                        enter.callback()));
+  return enter.SetResult(
+      enter.object()->ReceiveMessage(message, enter.callback()));
 }
 
 int32_t SendMessage(PP_Resource web_socket, struct PP_Var message) {
@@ -140,22 +138,20 @@ struct PP_Var GetURL(PP_Resource web_socket) {
   return enter.object()->GetURL();
 }
 
-const PPB_WebSocket_1_0 g_ppb_websocket_thunk_1_0 = {
-  &Create,
-  &IsWebSocket,
-  &Connect,
-  &Close,
-  &ReceiveMessage,
-  &SendMessage,
-  &GetBufferedAmount,
-  &GetCloseCode,
-  &GetCloseReason,
-  &GetCloseWasClean,
-  &GetExtensions,
-  &GetProtocol,
-  &GetReadyState,
-  &GetURL
-};
+const PPB_WebSocket_1_0 g_ppb_websocket_thunk_1_0 = {&Create,
+                                                     &IsWebSocket,
+                                                     &Connect,
+                                                     &Close,
+                                                     &ReceiveMessage,
+                                                     &SendMessage,
+                                                     &GetBufferedAmount,
+                                                     &GetCloseCode,
+                                                     &GetCloseReason,
+                                                     &GetCloseWasClean,
+                                                     &GetExtensions,
+                                                     &GetProtocol,
+                                                     &GetReadyState,
+                                                     &GetURL};
 
 }  // namespace
 

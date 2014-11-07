@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_url_request_info.idl modified Tue Aug 20 08:13:36 2013.
+// From ppb_url_request_info.idl modified Mon May  6 10:11:29 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_request_info.h"
@@ -57,24 +57,21 @@ PP_Bool AppendFileToBody(PP_Resource request,
   EnterResource<PPB_URLRequestInfo_API> enter(request, true);
   if (enter.failed())
     return PP_FALSE;
-  return enter.object()->AppendFileToBody(file_ref,
-                                          start_offset,
-                                          number_of_bytes,
-                                          expected_last_modified_time);
+  return enter.object()->AppendFileToBody(
+      file_ref, start_offset, number_of_bytes, expected_last_modified_time);
 }
 
 const PPB_URLRequestInfo_1_0 g_ppb_urlrequestinfo_thunk_1_0 = {
-  &Create,
-  &IsURLRequestInfo,
-  &SetProperty,
-  &AppendDataToBody,
-  &AppendFileToBody
-};
+    &Create,
+    &IsURLRequestInfo,
+    &SetProperty,
+    &AppendDataToBody,
+    &AppendFileToBody};
 
 }  // namespace
 
 PPAPI_THUNK_EXPORT const PPB_URLRequestInfo_1_0*
-    GetPPB_URLRequestInfo_1_0_Thunk() {
+GetPPB_URLRequestInfo_1_0_Thunk() {
   return &g_ppb_urlrequestinfo_thunk_1_0;
 }
 
