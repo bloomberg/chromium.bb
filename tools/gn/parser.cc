@@ -583,9 +583,9 @@ void Parser::AssignComments(ParseNode* file) {
   for (std::vector<const ParseNode*>::const_reverse_iterator i = post.rbegin();
        i != post.rend();
        ++i) {
-    // Don't assign suffix comments to the function call or list, but instead
+    // Don't assign suffix comments to the function, list, or block, but instead
     // to the last thing inside.
-    if ((*i)->AsFunctionCall() || (*i)->AsList())
+    if ((*i)->AsFunctionCall() || (*i)->AsList() || (*i)->AsBlock())
       continue;
 
     const Location& start = (*i)->GetRange().begin();

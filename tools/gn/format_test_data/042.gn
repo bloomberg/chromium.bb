@@ -1,0 +1,16 @@
+# Test both one element and two element for specifically name LHSs.
+if (true) {
+  deps = [ "x" ]
+  sources = [ "x" ]
+  public_deps = [ "x" ]
+  include_dirs = ["x"]
+  defines = ["x"]
+  cflags = ["x"]
+} else {
+  deps = [ "x", "y" ]
+  sources = [ "x", "y" ]
+  public_deps = [ "x", "y" ]
+  include_dirs = ["x", "y"]
+  defines = ["x", "y"]
+  cflags = ["x", "y"]
+}

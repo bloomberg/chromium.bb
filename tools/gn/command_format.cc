@@ -626,6 +626,13 @@ void Printer::FunctionCall(const FunctionCallNode* func_call) {
     }
   }
 
+  // Defer any end of line comment until we reach the newline.
+  if (end->comments() && !end->comments()->suffix().empty()) {
+    std::copy(end->comments()->suffix().begin(),
+              end->comments()->suffix().end(),
+              std::back_inserter(comments_));
+  }
+
   Print(")");
   margin_ = old_margin;
 
