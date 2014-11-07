@@ -17,15 +17,6 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 
-function computedStyle(element, style) {
-    var cs = window.getComputedStyle(element);
-    if (!cs)
-        return '(NA)';
-    if (cs.getPropertyCSSValue(style))
-        return cs.getPropertyCSSValue(style).cssText;
-    return undefined;
-}
-
 function prepareNodeInShadowRoot(host) {
     var shadowRoot = host.createShadowRoot();
     var nodeInShadow = document.createElement('div');
@@ -38,8 +29,7 @@ function prepareNodeInShadowRoot(host) {
 document.body.offsetLeft;
 
 var nodeInShadowRoot1 = prepareNodeInShadowRoot(document.getElementById('host1'));
-var userModifyPropertyName = '-webkit-user-modify';
-shouldBeEqualToString('computedStyle(nodeInShadowRoot1, userModifyPropertyName)', 'read-only');
+shouldBeEqualToString('getComputedStyle(nodeInShadowRoot1).webkitUserModify', 'read-only');
 
 var successfullyParsed = true;
 </script>

@@ -7,7 +7,7 @@ var child = document.createElement("div");
 parent.appendChild(child);
 document.body.appendChild(parent);
 
-shouldBe("window.getComputedStyle(parent).getPropertyCSSValue('page-break-inside').getStringValue()", '"avoid"');
-shouldBe("window.getComputedStyle(child).getPropertyCSSValue('page-break-inside').getStringValue()", '"auto"');
+shouldBe("window.getComputedStyle(parent).pageBreakInside", '"avoid"');
+shouldBe("window.getComputedStyle(child).pageBreakInside", '"auto"');
 
 document.body.removeChild(parent);
