@@ -234,8 +234,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     bool use_system_default_icon;
     // Whether the widget should be maximized or minimized.
     ui::WindowShowState show_state;
-    // Should the widget be double buffered? Default is false.
-    bool double_buffer;
     gfx::NativeView parent;
     // Specifies the initial bounds of the Widget. Default is empty, which means
     // the NativeWidget may specify a default size. If the parent is specified,
