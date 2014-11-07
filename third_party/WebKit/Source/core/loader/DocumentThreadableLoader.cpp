@@ -250,6 +250,7 @@ void DocumentThreadableLoader::redirectReceived(Resource* resource, ResourceRequ
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == this->resource());
+    ASSERT(m_async);
 
     RefPtr<DocumentThreadableLoader> protect(this);
 
@@ -337,6 +338,8 @@ void DocumentThreadableLoader::dataSent(Resource* resource, unsigned long long b
 {
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == this->resource());
+    ASSERT(m_async);
+
     m_client->didSendData(bytesSent, totalBytesToBeSent);
 }
 
@@ -345,6 +348,7 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
     ASSERT(m_client);
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(!m_actualRequest);
+    ASSERT(m_async);
 
     m_client->didDownloadData(dataLength);
 }
@@ -352,6 +356,8 @@ void DocumentThreadableLoader::dataDownloaded(Resource* resource, int dataLength
 void DocumentThreadableLoader::responseReceived(Resource* resource, const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
+    ASSERT(m_async);
+
     handleResponse(resource->identifier(), response, handle);
 }
 
@@ -428,6 +434,8 @@ void DocumentThreadableLoader::handleResponse(unsigned long identifier, const Re
 void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, unsigned dataLength)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
+    ASSERT(m_async);
+
     handleReceivedData(data, dataLength);
 }
 
@@ -448,6 +456,7 @@ void DocumentThreadableLoader::notifyFinished(Resource* resource)
 {
     ASSERT(m_client);
     ASSERT(resource == this->resource());
+    ASSERT(m_async);
 
     m_timeoutTimer.stop();
 

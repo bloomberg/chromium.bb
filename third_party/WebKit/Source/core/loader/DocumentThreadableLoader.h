@@ -71,13 +71,14 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         DocumentThreadableLoader(Document&, ThreadableLoaderClient*, BlockingBehavior, const ResourceRequest&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
 
-        // RawResourceClient implementation
-        virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
-        virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
-        virtual void dataReceived(Resource*, const char* data, unsigned dataLength) override;
-        virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
-        virtual void notifyFinished(Resource*) override;
-        virtual void dataDownloaded(Resource*, int) override;
+        // ResourceClient
+        void notifyFinished(Resource*) override;
+        // RawResourceClient
+        void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
+        void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
+        void dataReceived(Resource*, const char* data, unsigned dataLength) override;
+        void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
+        void dataDownloaded(Resource*, int) override;
 
         void cancelWithError(const ResourceError&);
 
@@ -132,7 +133,8 @@ class DocumentThreadableLoader final : public ThreadableLoader, private Resource
 
         bool m_sameOriginRequest;
         bool m_simpleRequest;
-        bool m_async;
+
+        const bool m_async;
 
         // Holds the original request for fallback in case the Service Worker
         // does not respond.
