@@ -37,8 +37,8 @@ class UserImageSource : public content::URLDataSource {
 
   // Returns PNG encoded image for user with specified email. If there's
   // no user with such email, returns the first default image.
-  base::RefCountedMemory* GetUserImage(const std::string& email,
-                                       ui::ScaleFactor scale_factor) const;
+  static base::RefCountedMemory* GetUserImage(const std::string& email,
+                                              ui::ScaleFactor scale_factor);
 
  private:
   virtual ~UserImageSource();

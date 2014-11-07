@@ -35,9 +35,10 @@ void ParseRequest(const GURL& url,
 namespace chromeos {
 namespace options {
 
+// Static.
 base::RefCountedMemory* UserImageSource::GetUserImage(
     const std::string& email,
-    ui::ScaleFactor scale_factor) const {
+    ui::ScaleFactor scale_factor) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(email);
   if (user) {

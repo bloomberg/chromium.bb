@@ -297,6 +297,9 @@
     // Retrieves information about the user associated with the Easy unlock
     // service.
     static void getUserInfo(GetUserInfoCallback callback);
+
+    // Gets the user's profile image as a bitmap.
+    static void getUserImage(DataCallback callback);
   };
 
   interface Events {
