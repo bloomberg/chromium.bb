@@ -174,24 +174,29 @@ void ImagePainter::paintReplaced(PaintInfo& paintInfo, const LayoutPoint& paintO
 
 void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rect)
 {
+    if (!m_renderImage.imageResource()->hasImage() || m_renderImage.imageResource()->errorOccurred())
+        return; // FIXME: should we just ASSERT these conditions? (audit all callers).
+
     IntRect alignedRect = pixelSnappedIntRect(rect);
-    if (!m_renderImage.imageResource()->hasImage() || m_renderImage.imageResource()->errorOccurred() || alignedRect.width() <= 0 || alignedRect.height() <= 0)
+    if (alignedRect.width() <= 0 || alignedRect.height() <= 0)
         return;
 
-    RefPtr<Image> img = m_renderImage.imageResource()->image(alignedRect.width(), alignedRect.height());
-    if (!img || img->isNull())
+    RefPtr<Image> image = m_renderImage.imageResource()->image(alignedRect.width(), alignedRect.height());
+    if (!image || image->isNull())
         return;
 
-    Image* image = img.get();
-    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image, image, alignedRect.size());
+    // FIXME: why is interpolation quality selection not included in the Instrumentation reported cost of drawing an image?
+    InterpolationQuality interpolationQuality = BoxPainter::chooseInterpolationQuality(m_renderImage, context, image.get(), image.get(), alignedRect.size());
 
     TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data", InspectorPaintImageEvent::data(m_renderImage));
-    // FIXME(361045): remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
+    // FIXME: crbug.com/361045 remove InspectorInstrumentation calls once DevTools Timeline migrates to tracing.
     InspectorInstrumentation::willPaintImage(&m_renderImage);
+
     InterpolationQuality previousInterpolationQuality = context->imageInterpolationQuality();
     context->setImageInterpolationQuality(interpolationQuality);
-    context->drawImage(image, alignedRect, CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
+    context->drawImage(image.get(), alignedRect, CompositeSourceOver, m_renderImage.shouldRespectImageOrientation());
     context->setImageInterpolationQuality(previousInterpolationQuality);
+
     InspectorInstrumentation::didPaintImage(&m_renderImage);
 }
 
