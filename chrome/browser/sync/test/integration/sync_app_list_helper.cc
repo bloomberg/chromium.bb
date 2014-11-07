@@ -104,13 +104,13 @@ bool SyncAppListHelper::AllProfilesHaveSameAppListAsVerifier() {
   }
   if (!res) {
     Profile* verifier = test_->verifier();
-    VLOG(1) << "Verifier: "
-            << AppListSyncableServiceFactory::GetForProfile(verifier);
+    DVLOG(1) << "Verifier: "
+             << AppListSyncableServiceFactory::GetForProfile(verifier);
     PrintAppList(test_->verifier());
     for (int i = 0; i < test_->num_clients(); ++i) {
       Profile* profile = test_->GetProfile(i);
-      VLOG(1) << "Profile: " << i << ": "
-              << AppListSyncableServiceFactory::GetForProfile(profile);
+      DVLOG(1) << "Profile: " << i << ": "
+               << AppListSyncableServiceFactory::GetForProfile(profile);
       PrintAppList(profile);
     }
   }
@@ -175,7 +175,7 @@ void SyncAppListHelper::PrintItem(Profile* profile,
       extensions::ExtensionPrefs::Get(profile)->app_sorting();
   std::string id = item->id();
   if (item->GetItemType() == AppListFolderItem::kItemType) {
-    VLOG(1) << label << item->ToDebugString();
+    DVLOG(1) << label << item->ToDebugString();
     AppListFolderItem* folder = static_cast<AppListFolderItem*>(item);
     for (size_t i = 0; i < folder->item_list()->item_count(); ++i) {
       AppListItem* child = folder->item_list()->item_at(i);
@@ -185,8 +185,8 @@ void SyncAppListHelper::PrintItem(Profile* profile,
     }
     return;
   }
-  VLOG(1) << label << item->ToDebugString()
-          << " Page: " << s->GetPageOrdinal(id).ToDebugString().substr(0, 8)
-          << " Item: "
-          << s->GetAppLaunchOrdinal(id).ToDebugString().substr(0, 8);
+  DVLOG(1) << label << item->ToDebugString()
+           << " Page: " << s->GetPageOrdinal(id).ToDebugString().substr(0, 8)
+           << " Item: "
+           << s->GetAppLaunchOrdinal(id).ToDebugString().substr(0, 8);
 }

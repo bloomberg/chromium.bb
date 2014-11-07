@@ -174,7 +174,7 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
     }
 
     if (!(*it)->HasLatestProgressMarkers()) {
-      VLOG(1) << "Not quiesced: Progress markers are old.";
+      DVLOG(1) << "Not quiesced: Progress markers are old.";
       return false;
     }
   }
@@ -201,7 +201,7 @@ bool QuiesceStatusChangeChecker::IsExitConditionSatisfied() {
   while (it2 != enabled_services.end()) {
     // Return false if there is a progress marker mismatch.
     if (!ProgressMarkersMatch(*it1, *it2)) {
-      VLOG(1) << "Not quiesced: Progress marker mismatch.";
+      DVLOG(1) << "Not quiesced: Progress marker mismatch.";
       return false;
     }
     it1++;

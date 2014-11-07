@@ -248,11 +248,11 @@ void ExtensionsMatchChecker::Wait() {
   observing_ = true;
 
   if (IsExitConditionSatisfied()) {
-    VLOG(1) << "Extensions matched without waiting";
+    DVLOG(1) << "Extensions matched without waiting";
     return;
   }
 
-  VLOG(1) << "Starting Wait: " << GetDebugMessage();
+  DVLOG(1) << "Starting Wait: " << GetDebugMessage();
   StartBlockingWait();
 }
 
