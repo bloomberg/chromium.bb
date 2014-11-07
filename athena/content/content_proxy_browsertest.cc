@@ -5,8 +5,8 @@
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_view_model.h"
 #include "athena/resource_manager/public/resource_manager.h"
-#include "athena/test/chrome/athena_browsertest.h"
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
+#include "athena/test/chrome/athena_chrome_browser_test.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/compositor/compositor_switches.h"
@@ -22,7 +22,7 @@ const char kTestUrl[] = "chrome:about";
 }
 
 // Need to override the test class to make the test always draw its content.
-class ContentProxyBrowserTest : public AthenaBrowserTest {
+class ContentProxyBrowserTest : public AthenaChromeBrowserTest {
  public:
   ContentProxyBrowserTest() {}
   ~ContentProxyBrowserTest() override {}
@@ -31,7 +31,7 @@ class ContentProxyBrowserTest : public AthenaBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Make sure that we draw the output - it's required for this test.
     command_line->AppendSwitch(switches::kEnablePixelOutputInTests);
-    AthenaBrowserTest::SetUpCommandLine(command_line);
+    AthenaChromeBrowserTest::SetUpCommandLine(command_line);
   }
 
  private:
@@ -42,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
   const int kTimeoutMS = 12000;  // The timeout: 2 seconds.
   const int kIterationSleepMS = 5;  // The wait time in ms per iteration.
   const GURL gurl(kTestUrl);
-  content::BrowserContext* context = test_util::GetBrowserContext();
+  content::BrowserContext* context = GetBrowserContext();
   // Create an activity (and wait until it is loaded).
   // The size of its overview image should be empty since it is visible.
   Activity* activity1 =

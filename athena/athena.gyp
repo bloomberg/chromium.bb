@@ -282,8 +282,46 @@
         'test/base/test_resource_manager_delegate.cc',
         'test/base/test_windows.cc',
         'test/base/test_windows.h',
+        'test/base/test_util.cc',
+        'test/base/test_util.h',
         'wm/test/window_manager_impl_test_api.cc',
         'wm/test/window_manager_impl_test_api.h',
+      ],
+    },
+    {
+      'target_name': 'athena_browsertest_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'athena_test_support',
+        'main/athena_main.gyp:athena_main_lib',
+        'resources/athena_resources.gyp:athena_pak',
+      ],
+      'sources': [
+        'test/base/activity_lifetime_tracker.h',
+        'test/base/activity_lifetime_tracker.cc',
+        'test/base/athena_browser_test.h',
+        'test/base/athena_browser_test.cc',
+        'test/base/athena_browser_test.h',
+        'test/base/athena_test_launcher_delegate.cc',
+        'test/base/athena_test_launcher_delegate.h',
+      ],
+    },
+    {
+      'target_name': 'athena_browsertests',
+      'type': 'executable',
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        '../skia/skia.gyp:skia',
+        'athena_browsertest_support',
+        'athena_app_shell_lib',
+        'athena_lib',
+      ],
+      'defines': [
+        'HAS_OUT_OF_PROC_TEST_RUNNER',
+      ],
+      'sources': [
+        'test/base/athena_browser_test_main.cc',
       ],
     },
     {

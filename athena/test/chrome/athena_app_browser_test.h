@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_TEST_CHROME_ATHENA_APP_BROWSERTEST_H_
-#define ATHENA_TEST_CHROME_ATHENA_APP_BROWSERTEST_H_
+#ifndef ATHENA_TEST_CHROME_ATHENA_APP_BROWSER_TEST_H_
+#define ATHENA_TEST_CHROME_ATHENA_APP_BROWSER_TEST_H_
 
 #include "chrome/browser/apps/app_browsertest_util.h"
 
@@ -32,6 +32,9 @@ class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
   // BrowserTestBase:
   void SetUpOnMainThread() override;
 
+  // Returns the browser context used by the test.
+  content::BrowserContext* GetBrowserContext();
+
  private:
   // Our created app id - after it got created and installed.
   std::string app_id_;
@@ -41,5 +44,4 @@ class AthenaAppBrowserTest : public extensions::PlatformAppBrowserTest {
 
 }  // namespace athena
 
-#endif //  ATHENA_TEST_CHROME_ATHENA_APP_BROWSERTEST_H_
-
+#endif  //  ATHENA_TEST_CHROME_ATHENA_APP_BROWSER_TEST_H_

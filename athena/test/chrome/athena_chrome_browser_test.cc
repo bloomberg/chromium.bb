@@ -2,30 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/chrome/athena_browsertest.h"
+#include "athena/test/chrome/athena_chrome_browser_test.h"
 
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
 #include "base/command_line.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/common/content_switches.h"
 
 namespace athena {
 
-AthenaBrowserTest::AthenaBrowserTest() {
+AthenaChromeBrowserTest::AthenaChromeBrowserTest() {
 }
 
-AthenaBrowserTest::~AthenaBrowserTest() {
+AthenaChromeBrowserTest::~AthenaChromeBrowserTest() {
 }
 
-void AthenaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+void AthenaChromeBrowserTest::SetUpCommandLine(
+    base::CommandLine* command_line) {
   // The NaCl sandbox won't work in our browser tests.
   command_line->AppendSwitch(switches::kNoSandbox);
   InProcessBrowserTest::SetUpCommandLine(command_line);
 }
 
-void AthenaBrowserTest::SetUpOnMainThread() {
+void AthenaChromeBrowserTest::SetUpOnMainThread() {
   // Set the memory pressure to low and turning off undeterministic resource
   // observer events.
   test_util::SendTestMemoryPressureEvent(ResourceManager::MEMORY_PRESSURE_LOW);
+}
+
+content::BrowserContext* AthenaChromeBrowserTest::GetBrowserContext() {
+  return ProfileManager::GetActiveUserProfile();
 }
 
 }  // namespace athena

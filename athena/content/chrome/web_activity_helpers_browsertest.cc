@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "athena/activity/public/activity.h"
-#include "athena/test/chrome/athena_browsertest.h"
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
+#include "athena/test/chrome/athena_chrome_browser_test.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "content/public/browser/notification_observer.h"
@@ -58,7 +58,7 @@ class HelpersCreatedChecker : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(HelpersCreatedChecker);
 };
 
-typedef AthenaBrowserTest WebActivityHelpersBrowserTest;
+typedef AthenaChromeBrowserTest WebActivityHelpersBrowserTest;
 
 // Test that the WebActivity helpers are attached to the web contents prior to
 // the RenderView view being created. This is important because some of the
@@ -70,10 +70,8 @@ IN_PROC_BROWSER_TEST_F(WebActivityHelpersBrowserTest, CreationTime) {
   HelpersCreatedChecker checker;
   GURL url("http://www.google.com");
 
-  athena::Activity* activity =
-      test_util::CreateTestWebActivity(test_util::GetBrowserContext(),
-                                       base::UTF8ToUTF16("App"),
-                                       url);
+  athena::Activity* activity = test_util::CreateTestWebActivity(
+      GetBrowserContext(), base::UTF8ToUTF16("App"), url);
   content::WebContents* web_contents1 = activity->GetWebContents();
   EXPECT_NE(Activity::ACTIVITY_UNLOADED, activity->GetCurrentState());
   EXPECT_TRUE(web_contents1->GetRenderViewHost()->IsRenderViewLive());

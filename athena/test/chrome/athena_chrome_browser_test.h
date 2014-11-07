@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_TEST_CHROME_ATHENA_BROWSERTEST_H_
-#define ATHENA_TEST_CHROME_ATHENA_BROWSERTEST_H_
+#ifndef ATHENA_TEST_CHROME_ATHENA_CHROME_BROWSER_TEST_H_
+#define ATHENA_TEST_CHROME_ATHENA_CHROME_BROWSER_TEST_H_
 
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace base {
 class CommandLine;
+}
+
+namespace content {
+class BrowserContext;
 }
 
 namespace athena {
@@ -17,21 +21,23 @@ namespace athena {
 //
 // Note: To avoid asynchronous resource manager events, the memory pressure
 // callback gets turned off at the beginning to a low memory pressure.
-class AthenaBrowserTest : public InProcessBrowserTest {
+class AthenaChromeBrowserTest : public InProcessBrowserTest {
  public:
-  AthenaBrowserTest();
-  ~AthenaBrowserTest() override;
+  AthenaChromeBrowserTest();
+  ~AthenaChromeBrowserTest() override;
 
  protected:
   // BrowserTestBase:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
+  // Returns the browser context used by the test.
+  content::BrowserContext* GetBrowserContext();
+
  private:
-  DISALLOW_COPY_AND_ASSIGN(AthenaBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(AthenaChromeBrowserTest);
 };
 
 }  // namespace athena
 
-#endif //  ATHENA_TEST_CHROME_ATHENA_BROWSERTEST_H_
-
+#endif  //  ATHENA_TEST_CHROME_ATHENA_CHROME_BROWSER_TEST_H_

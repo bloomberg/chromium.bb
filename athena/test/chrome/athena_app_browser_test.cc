@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/chrome/athena_app_browsertest.h"
+#include "athena/test/chrome/athena_app_browser_test.h"
 
 #include "athena/extensions/public/extensions_delegate.h"
 #include "athena/test/base/activity_lifetime_tracker.h"
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
@@ -34,7 +35,7 @@ Activity* AthenaAppBrowserTest::CreateTestAppActivity(
       content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::NotificationService::AllSources());
 
-  ExtensionsDelegate::Get(test_util::GetBrowserContext())->LaunchApp(app_id);
+  ExtensionsDelegate::Get(GetBrowserContext())->LaunchApp(app_id);
 
   observer.Wait();
   return tracker.GetNewActivityAndReset();
@@ -56,6 +57,10 @@ void AthenaAppBrowserTest::SetUpOnMainThread() {
   // Set the memory pressure to low and turning off undeterministic resource
   // observer events.
   test_util::SendTestMemoryPressureEvent(ResourceManager::MEMORY_PRESSURE_LOW);
+}
+
+content::BrowserContext* AthenaAppBrowserTest::GetBrowserContext() {
+  return ProfileManager::GetActiveUserProfile();
 }
 
 }  // namespace athena

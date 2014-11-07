@@ -4,8 +4,8 @@
 
 #include "athena/activity/public/activity.h"
 #include "athena/resource_manager/public/resource_manager.h"
-#include "athena/test/chrome/athena_browsertest.h"
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
+#include "athena/test/chrome/athena_chrome_browser_test.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,16 +21,14 @@ namespace {
 const char kTestUrl[] = "chrome:about";
 }
 
-typedef AthenaBrowserTest WebActivityBrowserTest;
+typedef AthenaChromeBrowserTest WebActivityBrowserTest;
 
 // A simple test to create web content.
 IN_PROC_BROWSER_TEST_F(WebActivityBrowserTest, SimpleCreate) {
   const GURL target_url(kTestUrl);
   // Create an activity, wait until it is loaded and check that it was created.
   Activity* activity = test_util::CreateTestWebActivity(
-      test_util::GetBrowserContext(),
-      base::UTF8ToUTF16("App"),
-      target_url);
+      GetBrowserContext(), base::UTF8ToUTF16("App"), target_url);
   ASSERT_TRUE(activity);
   EXPECT_NE(Activity::ACTIVITY_UNLOADED, activity->GetCurrentState());
   // The activity manager should take care of destroying the activity upon
@@ -47,16 +45,12 @@ IN_PROC_BROWSER_TEST_F(WebActivityBrowserTest, LoadUnloadReload) {
   // Create an activity (and wait until it is loaded).
   // The size of its overview image should be empty since it is visible.
   Activity* activity2 = test_util::CreateTestWebActivity(
-      test_util::GetBrowserContext(),
-      base::UTF8ToUTF16("App2"),
-      target_url);
+      GetBrowserContext(), base::UTF8ToUTF16("App2"), target_url);
   EXPECT_TRUE(activity2);
   EXPECT_EQ(list[0], activity2->GetWindow());
   EXPECT_NE(Activity::ACTIVITY_UNLOADED, activity2->GetCurrentState());
   Activity* activity1 = test_util::CreateTestWebActivity(
-      test_util::GetBrowserContext(),
-      base::UTF8ToUTF16("App1"),
-      target_url);
+      GetBrowserContext(), base::UTF8ToUTF16("App1"), target_url);
   EXPECT_TRUE(activity1);
 
   // |activity2| should now be the second activity. Both activities should have

@@ -5,8 +5,8 @@
 #include "athena/activity/public/activity.h"
 #include "athena/resource_manager/public/resource_manager.h"
 #include "athena/test/base/activity_lifetime_tracker.h"
-#include "athena/test/chrome/athena_app_browsertest.h"
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
+#include "athena/test/chrome/athena_app_browser_test.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,9 +72,7 @@ class AppActivityBrowserTest : public AthenaAppBrowserTest {
 
     // Then a web activity (which will then be in front of the app).
     *web_activity = test_util::CreateTestWebActivity(
-        test_util::GetBrowserContext(),
-        base::UTF8ToUTF16("App1"),
-        GURL(kTestUrl));
+        GetBrowserContext(), base::UTF8ToUTF16("App1"), GURL(kTestUrl));
     ASSERT_TRUE(*web_activity);
     EXPECT_EQ(*web_activity, tracker_->GetNewActivityAndReset());
     EXPECT_EQ(nullptr, tracker_->GetDeletedActivityAndReset());
@@ -124,10 +122,8 @@ IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, StartApplication) {
 // Test that creating an application (without a particular activity order
 // location) should activate it initially.
 IN_PROC_BROWSER_TEST_F(AppActivityBrowserTest, CreatedAppGetsFocus) {
-  Activity* web_activity =
-      test_util::CreateTestWebActivity(test_util::GetBrowserContext(),
-                                       base::UTF8ToUTF16("App1"),
-                                       GURL(kTestUrl));
+  Activity* web_activity = test_util::CreateTestWebActivity(
+      GetBrowserContext(), base::UTF8ToUTF16("App1"), GURL(kTestUrl));
   EXPECT_TRUE(IsActivityActive(web_activity));
 
   Activity* app_activity = CreateTestAppActivity(GetTestAppID());

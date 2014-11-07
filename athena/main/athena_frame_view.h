@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ATHENA_COMMON_ATHENA_FRAME_VIEW_H_
-#define ATHENA_COMMON_ATHENA_FRAME_VIEW_H_
+#ifndef ATHENA_MAIN_ATHENA_FRAME_VIEW_H_
+#define ATHENA_MAIN_ATHENA_FRAME_VIEW_H_
 
 #include "ui/views/window/non_client_view.h"
 
@@ -54,4 +54,4 @@ class AthenaFrameView : public views::NonClientFrameView {
 
 }  // namespace athena
 
-#endif  // ATHENA_COMMON_ATHENA_FRAME_VIEW_H_
+#endif  // ATHENA_MAIN_ATHENA_FRAME_VIEW_H_

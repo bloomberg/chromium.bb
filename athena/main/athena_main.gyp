@@ -39,6 +39,8 @@
         'athena_frame_view.cc',
         'athena_frame_view.h',
         'athena_launcher.cc',
+        'athena_main_delegate.cc',
+        'athena_main_delegate.h',
         'athena_renderer_pdf_helper.cc',
         'athena_renderer_pdf_helper.h',
         'athena_views_delegate.cc',

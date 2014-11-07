@@ -3,6 +3,4 @@ include_rules = [
   "+chrome/browser/profiles",
   "+chrome/test/base",
   "+content/public",
-  "+extensions/browser",
 ]
-

@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "athena/test/chrome/test_util.h"
+#include "athena/test/base/test_util.h"
 
 #include "athena/activity/public/activity.h"
 #include "athena/activity/public/activity_factory.h"
 #include "athena/resource_manager/public/resource_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/notification_types.h"
@@ -36,10 +35,6 @@ Activity* CreateTestWebActivity(content::BrowserContext* context,
 
 void WaitUntilIdle() {
   base::MessageLoopForUI::current()->RunUntilIdle();
-}
-
-content::BrowserContext* GetBrowserContext() {
-  return ProfileManager::GetActiveUserProfile();
 }
 
 }  // namespace test_util

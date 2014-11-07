@@ -1,0 +1,6 @@
+include_rules = [
+  "+athena/main",
+  "+content/public",
+  "+extensions/browser",
+  "+extensions/shell",
+]
