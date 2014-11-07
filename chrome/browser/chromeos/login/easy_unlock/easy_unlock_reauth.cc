@@ -60,9 +60,9 @@ class ReauthHandler : public content::NotificationObserver,
   }
 
   // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) override {
     CHECK(type == chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED);
     bool is_screen_locked = *content::Details<bool>(details).ptr();
     DCHECK(is_screen_locked);
