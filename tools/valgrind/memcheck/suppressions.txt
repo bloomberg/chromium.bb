@@ -3435,3 +3435,19 @@
    fun:_ZN7content19TestRenderFrameHost41SendNavigateWithTransitionAndResponseCodeEiRK4GURLN2ui14PageTransitionEi
    fun:_ZN7content19TestRenderFrameHost26SendNavigateWithTransitionEiRK4GURLN2ui14PageTransitionE
 }
+{
+   bug_431209a
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8remoting13ClipboardAuraC1E13scoped_refptrIN4base22SingleThreadTaskRunnerEE
+   fun:_ZN8remoting17ClipboardAuraTest5SetUpEv
+}
+{
+   bug_431209b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN2ui9Clipboard6CreateEv
+   fun:_ZN2ui9Clipboard19GetForCurrentThreadEv
+   fun:_ZN2ui21ScopedClipboardWriterD1Ev
+   fun:_ZN8remoting13ClipboardAura4Core20InjectClipboardEventERKNS_8protocol14ClipboardEventE
+}
