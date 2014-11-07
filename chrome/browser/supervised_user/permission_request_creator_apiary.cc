@@ -161,6 +161,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
 void PermissionRequestCreatorApiary::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
+  VLOG(1) << "Couldn't get token";
   RequestIterator it = requests_.begin();
   while (it != requests_.end()) {
     if (request == (*it)->access_token_request.get())
@@ -200,7 +201,7 @@ void PermissionRequestCreatorApiary::OnURLFetchComplete(
   }
 
   if (response_code != net::HTTP_OK) {
-    DLOG(WARNING) << "HTTP error " << response_code;
+    LOG(WARNING) << "HTTP error " << response_code;
     DispatchGoogleServiceAuthError(
         it, GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED));
     return;
@@ -237,6 +238,7 @@ void PermissionRequestCreatorApiary::DispatchNetworkError(RequestIterator it,
 void PermissionRequestCreatorApiary::DispatchGoogleServiceAuthError(
     RequestIterator it,
     const GoogleServiceAuthError& error) {
+  VLOG(1) << "GoogleServiceAuthError: " << error.ToString();
   (*it)->callback.Run(false);
   requests_.erase(it);
 }

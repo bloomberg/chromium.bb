@@ -277,8 +277,8 @@ void SupervisedUserInterstitial::OnAccessRequestAdded(bool success) {
   // TODO(akuegel): Figure out how to show the result of issuing the permission
   // request in the UI. Currently, we assume the permission request was created
   // successfully.
-  DVLOG(1) << "Sent access request for " << url_.spec()
-           << (success ? " successfully" : " unsuccessfully");
+  VLOG(1) << "Sent access request for " << url_.spec()
+          << (success ? " successfully" : " unsuccessfully");
 }
 
 bool SupervisedUserInterstitial::ShouldProceed() {
