@@ -1459,3 +1459,5 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-
 
 crbug.com/429843 [ Win7 Debug ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
 crbug.com/429874 [ Win ] http/tests/serviceworker/cache-match.html [ Pass Failure ]
+
+crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
