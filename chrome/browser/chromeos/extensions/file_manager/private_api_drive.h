@@ -52,6 +52,7 @@ class FileManagerPrivateGetEntryPropertiesFunction
  private:
   void CompleteGetEntryProperties(
       size_t index,
+      const storage::FileSystemURL& url,
       scoped_ptr<api::file_manager_private::EntryProperties> properties,
       base::File::Error error);
 

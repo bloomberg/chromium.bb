@@ -11,6 +11,11 @@
 var DRAG_AND_DROP_GLOBAL_DATA = '__drag_and_drop_global_data';
 
 /**
+ * @typedef {{file:File, externalFileUrl:string}}
+ */
+var FileAsyncData;
+
+/**
  * @param {HTMLDocument} doc Owning document.
  * @param {FileOperationManager} fileOperationManager File operation manager
  *     instance.
@@ -66,10 +71,10 @@ function FileTransferController(doc,
   /**
    * File objects for selected files.
    *
-   * @type {Array.<File>}
+   * @type {Object.<string, FileAsyncData>}
    * @private
    */
-  this.selectedFileObjects_ = [];
+  this.selectedAsyncData_ = {};
 
   /**
    * Drag selector.
@@ -192,10 +197,14 @@ FileTransferController.prototype = {
     dataTransfer.setData('fs/effectallowed', effectAllowed);
     dataTransfer.setData('fs/missingFileContents',
                          (!this.isAllSelectedFilesAvailable_()).toString());
-
-    for (var i = 0; i < this.selectedFileObjects_.length; i++) {
-      dataTransfer.items.add(this.selectedFileObjects_[i]);
+    var externalFileUrl;
+    for (var i = 0; i < this.selectedEntries_.length; i++) {
+      var url = this.selectedEntries_[i].toURL();
+      dataTransfer.items.add(this.selectedAsyncData_[url].file);
+      if (!externalFileUrl)
+        externalFileUrl = this.selectedAsyncData_[url].externalFileUrl;
     }
+    dataTransfer.setData('text/uri-list', externalFileUrl);
   },
 
   /**
@@ -966,7 +975,7 @@ FileTransferController.prototype = {
    */
   onSelectionChanged_: function(event) {
     var entries = this.selectedEntries_;
-    var files = this.selectedFileObjects_ = [];
+    var asyncData = this.selectedAsyncData_ = {};
     this.preloadedThumbnailImagePromise_ = null;
 
     var fileEntries = [];
@@ -982,7 +991,10 @@ FileTransferController.prototype = {
     // asynchronous operations.
     if (!containsDirectory) {
       for (var i = 0; i < fileEntries.length; i++) {
-        fileEntries[i].file(function(file) { files.push(file); });
+        asyncData[fileEntries[i].toURL()] = {};
+        fileEntries[i].file(function(data, file) {
+          data.file = file;
+        }.bind(null, asyncData[fileEntries[i].toURL()]));
       }
     }
 
@@ -993,21 +1005,26 @@ FileTransferController.prototype = {
       this.preloadThumbnailImage_(entries[0]);
     }
 
-    if (this.isOnDrive) {
-      this.allDriveFilesAvailable = false;
-      this.metadataCache_.get(entries, 'external', function(props) {
-        // We consider directories not available offline for the purposes of
-        // file transfer since we cannot afford to recursive traversal.
-        this.allDriveFilesAvailable =
-            !containsDirectory &&
-            props.filter(function(p) {
-              return !p.availableOffline;
-            }).length === 0;
-        // |Copy| is the only menu item affected by allDriveFilesAvailable.
-        // It could be open right now, update its UI.
-        this.copyCommand_.disabled = !this.canCopyOrDrag_();
-      }.bind(this));
-    }
+    this.allDriveFilesAvailable = false;
+    this.metadataCache_.get(entries, 'external', function(metadataList) {
+      // We consider directories not available offline for the purposes of
+      // file transfer since we cannot afford to recursive traversal.
+      this.allDriveFilesAvailable =
+          !containsDirectory &&
+          metadataList.every(function(metadata) {
+            return metadata && metadata.availableOffline;
+          });
+      // |Copy| is the only menu item affected by allDriveFilesAvailable.
+      // It could be open right now, update its UI.
+      this.copyCommand_.disabled = !this.canCopyOrDrag_();
+
+      for (var i = 0; i < entries.length; i++) {
+        if (entries[i].isFile) {
+          asyncData[entries[i].toURL()].externalFileUrl =
+              metadataList[i] ? metadataList[i].externalFileUrl : null;
+        }
+      }
+    }.bind(this));
   },
 
   /**

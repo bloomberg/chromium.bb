@@ -29,6 +29,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
@@ -257,6 +258,11 @@ FileManagerPrivateRequestFileSystemFunction::SetupFileSystemAccessPermissions(
                                                             profiles[i]);
     }
   }
+
+  // Grant permission to request externalfile scheme. The permission is needed
+  // to start drag for external file URL.
+  ChildProcessSecurityPolicy::GetInstance()->GrantScheme(
+      child_id, content::kExternalFileScheme);
 
   return true;
 }

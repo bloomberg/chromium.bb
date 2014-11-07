@@ -14,7 +14,6 @@ namespace chrome {
 
 #if defined(OS_CHROMEOS)
 const char kCrosScheme[] = "cros";
-const char kExternalFileScheme[] = "externalfile";
 #endif
 
 // Add Chrome UI URLs as necessary, in alphabetical order.

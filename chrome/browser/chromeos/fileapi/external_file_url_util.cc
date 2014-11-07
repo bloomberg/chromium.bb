@@ -13,10 +13,10 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
@@ -39,12 +39,12 @@ GURL FileSystemURLToExternalFileURL(
 
   return GURL(base::StringPrintf(
       "%s:%s",
-      chrome::kExternalFileScheme,
+      content::kExternalFileScheme,
       file_system_url.virtual_path().AsUTF8Unsafe().c_str()));
 }
 
 base::FilePath ExternalFileURLToVirtualPath(const GURL& url) {
-  if (!url.is_valid() || url.scheme() != chrome::kExternalFileScheme)
+  if (!url.is_valid() || url.scheme() != content::kExternalFileScheme)
     return base::FilePath();
   const std::string path_string =
       net::UnescapeURLComponent(url.GetContent(), net::UnescapeRule::NORMAL);

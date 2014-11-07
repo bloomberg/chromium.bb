@@ -16,9 +16,9 @@
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "chrome/browser/extensions/api/file_handlers/mime_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_request_headers.h"
@@ -199,7 +199,7 @@ void ExternalFileURLRequestJob::Start() {
   }
 
   // Check if the scheme is correct.
-  if (!request()->url().SchemeIs(chrome::kExternalFileScheme)) {
+  if (!request()->url().SchemeIs(content::kExternalFileScheme)) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_INVALID_URL));
     return;

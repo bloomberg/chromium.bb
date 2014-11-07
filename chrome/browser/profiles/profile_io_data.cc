@@ -707,7 +707,7 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     content::kChromeUIScheme,
     url::kDataScheme,
 #if defined(OS_CHROMEOS)
-    chrome::kExternalFileScheme,
+    content::kExternalFileScheme,
 #endif  // defined(OS_CHROMEOS)
     url::kAboutScheme,
 #if !defined(DISABLE_FTP_SUPPORT)
@@ -1147,7 +1147,7 @@ scoped_ptr<net::URLRequestJobFactory> ProfileIOData::SetUpJobFactoryDefaults(
 #if defined(OS_CHROMEOS)
   if (profile_params_) {
     set_protocol = job_factory->SetProtocolHandler(
-        chrome::kExternalFileScheme,
+        content::kExternalFileScheme,
         new chromeos::ExternalFileProtocolHandler(profile_params_->profile));
     DCHECK(set_protocol);
   }

@@ -21,6 +21,9 @@ CONTENT_EXPORT extern const char kGuestScheme[];
 CONTENT_EXPORT extern const char kMetadataScheme[];
 CONTENT_EXPORT extern const char kSwappedOutScheme[];
 CONTENT_EXPORT extern const char kViewSourceScheme[];
+#if defined(OS_CHROMEOS)
+CONTENT_EXPORT extern const char kExternalFileScheme[];
+#endif
 
 // Hosts for about URLs.
 CONTENT_EXPORT extern const char kAboutSrcDocURL[];

@@ -222,6 +222,9 @@ dictionary EntryProperties {
   // True if the entry is labeled as shared (either from me to others or to me
   // by others.)
   boolean? shared;
+
+  // External file URL to open the file in browser.
+  DOMString? externalFileUrl;
 };
 
 // Information about total and remaining size on the mount point.

@@ -10,7 +10,7 @@
  * {
  *   filesystem: size, modificationTime
  *   internal: presence
- *   external: pinned, present, hosted, availableOffline
+ *   external: pinned, present, hosted, availableOffline, externalFileUrl
  *
  *   Following are not fetched for non-present external files.
  *   media: artist, album, title, width, height, imageTransform, etc.
@@ -889,7 +889,8 @@ ExternalProvider.prototype.convert_ = function(data, entry) {
     contentMimeType: data.contentMimeType || '',
     sharedWithMe: data.sharedWithMe,
     shared: data.shared,
-    thumbnailUrl: data.thumbnailUrl  // Thumbnail passed from external server.
+    thumbnailUrl: data.thumbnailUrl,  // Thumbnail passed from external server.
+    externalFileUrl: data.externalFileUrl
   };
 
   result.filesystem = {

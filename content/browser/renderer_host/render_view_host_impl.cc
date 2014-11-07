@@ -69,6 +69,7 @@
 #include "content/public/common/file_chooser_file_info.h"
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/result_codes.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_util.h"
@@ -562,6 +563,13 @@ void RenderViewHostImpl::DragTargetDragEnter(
   const int renderer_id = GetProcess()->GetID();
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
+
+#if defined(OS_CHROMEOS)
+  // The externalfile:// scheme is used in Chrome OS to open external files in a
+  // browser tab.
+  if (drop_data.url.SchemeIs(content::kExternalFileScheme))
+    policy->GrantRequestURL(renderer_id, drop_data.url);
+#endif
 
   // The URL could have been cobbled together from any highlighted text string,
   // and can't be interpreted as a capability.

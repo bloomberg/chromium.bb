@@ -20,13 +20,13 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/pref_registry/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_file_system_options.h"
 #include "google_apis/drive/test_util.h"
@@ -77,7 +77,7 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
   }
 
   virtual bool IsHandledProtocol(const std::string& scheme) const override {
-    return scheme == chrome::kExternalFileScheme;
+    return scheme == content::kExternalFileScheme;
   }
 
   virtual bool IsHandledURL(const GURL& url) const override {

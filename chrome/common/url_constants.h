@@ -522,7 +522,6 @@ extern const char kChromeSearchMostVisitedUrl[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCrosScheme[];
-extern const char kExternalFileScheme[];
 #endif
 
 // "Learn more" URL for the Cloud Print section under Options.

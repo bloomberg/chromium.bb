@@ -255,8 +255,9 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
 
 #if defined(OS_CHROMEOS)
   if (url.SchemeIs(chrome::kCrosScheme) ||
-      url.SchemeIs(chrome::kExternalFileScheme))
+      url.SchemeIs(content::kExternalFileScheme)) {
     return base::UTF8ToUTF16(url.spec());
+  }
 #endif
 
   // If all else fails, return the hostname.
