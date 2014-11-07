@@ -2418,18 +2418,21 @@ class ValidationPool(object):
 
     candidates = []
 
-    _, db = self._run.GetCIDBHandle()
-    action_history = []
-    if db:
-      action_history = db.GetActionsForChanges(changes)
+    if self.pre_cq:
+      _, db = self._run.GetCIDBHandle()
+      action_history = []
+      if db:
+        action_history = db.GetActionsForChanges(changes)
 
-    for change in changes:
-      # Pre-CQ ignores changes that were already verified.
-      pre_cq_status = clactions.GetCLPreCQStatus(
-          change, action_history)
-      if (self.pre_cq and pre_cq_status == constants.CL_STATUS_PASSED):
-        continue
-      candidates.append(change)
+      for change in changes:
+        # Don't reject changes that have already passed the pre-cq.
+        pre_cq_status = clactions.GetCLPreCQStatus(
+            change, action_history)
+        if pre_cq_status == constants.CL_STATUS_PASSED:
+          continue
+        candidates.append(change)
+    else:
+      candidates.extend(changes)
 
     suspects = set()
     infra_fail = lab_fail = False
