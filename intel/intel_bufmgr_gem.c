@@ -759,15 +759,16 @@ retry:
 		bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 		bo_gem->stride = 0;
 
+		/* drm_intel_gem_bo_free calls DRMLISTDEL() for an uninitialized
+		   list (vma_list), so better set the list head here */
+		DRMINITLISTHEAD(&bo_gem->name_list);
+		DRMINITLISTHEAD(&bo_gem->vma_list);
 		if (drm_intel_gem_bo_set_tiling_internal(&bo_gem->bo,
 							 tiling_mode,
 							 stride)) {
 		    drm_intel_gem_bo_free(&bo_gem->bo);
 		    return NULL;
 		}
-
-		DRMINITLISTHEAD(&bo_gem->name_list);
-		DRMINITLISTHEAD(&bo_gem->vma_list);
 	}
 
 	bo_gem->name = name;
