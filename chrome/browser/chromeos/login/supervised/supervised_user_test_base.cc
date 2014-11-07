@@ -350,7 +350,7 @@ void SupervisedUserTestBase::StartUserCreation(
   content::RunAllBlockingPoolTasksUntilIdle();
 
   JSExpect(StringPrintf("%s == 'created'", kCurrentPage));
-  JSEval("$('supervised-user-creation-gotit-button').click()");
+  JSEvalOrExitBrowser("$('supervised-user-creation-gotit-button').click()");
 }
 
 void SupervisedUserTestBase::SigninAsSupervisedUser(
