@@ -574,6 +574,13 @@
           'dependencies': [
             'libjingle_webrtc_common',
           ],
+          'conditions': [
+            ['libpeer_target_type=="static_library"', {
+              'dependencies': [
+                '<(DEPTH)/third_party/webrtc/modules/modules.gyp:audio_processing',
+              ],
+            }],
+          ],
         },
         {
           # GN version: //third_party/libjingle:libpeerconnection
