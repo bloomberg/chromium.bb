@@ -129,8 +129,8 @@ unit tests.
 - expired_cert.pem
 - ok_cert.pem
 - root_ca_cert.pem
-     These certificates are the common certificates used by the Python test
-     server for simulating HTTPS connections.
+    These certificates are the common certificates used by the Python test
+    server for simulating HTTPS connections.
 
 - name_constraint_bad.pem
 - name_constraint_good.pem
@@ -146,6 +146,12 @@ unit tests.
 
 - punycodetest.pem : A test self-signed server certificate with punycode name.
      The common name is "xn--wgv71a119e.com" (日本語.com)
+
+- 40_months_after_2015_04.pem
+- 61_months_after_2012_07.pem
+- 11_year_validity.pem
+    Certs to test that the maximum validity durations set by the CA/Browser
+    Forum Baseline Requirements are enforced.
 
 ===== From net/data/ssl/scripts/generate-weak-test-chains.sh
 - 2048-rsa-root.pem
@@ -252,5 +258,3 @@ unit tests.
      containing the intermediate, which can be served via a URLRequestFilter.
      aia-intermediate.der is stored in DER form for convenience, since that is
      the form expected of certificates discovered via AIA.
-
-
