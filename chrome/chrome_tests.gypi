@@ -850,12 +850,10 @@
       'browser/extensions/extension_function_test_utils.cc',
       'browser/extensions/extension_commands_global_registry_apitest.cc',
       'browser/extensions/extension_keybinding_apitest.cc',
-      'browser/extensions/notifications_apitest.cc',
       'browser/extensions/updater/extension_cache_fake.h',
       'browser/extensions/updater/extension_cache_fake.cc',
       'browser/extensions/window_open_interactive_apitest.cc',
       'browser/mouseleave_browsertest.cc',
-      'browser/notifications/notification_browsertest.cc',
       'browser/password_manager/password_generation_interactive_uitest.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_browsertest_util.h',
@@ -899,16 +897,10 @@
       'browser/ui/toolbar/test_toolbar_model.cc',
       'browser/ui/toolbar/test_toolbar_model.h',
       'browser/ui/views/ash/tab_scrubber_browsertest.cc',
-      'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-      'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
-      'browser/ui/views/constrained_window_views_browsertest.cc',
       'browser/ui/views/find_bar_controller_interactive_uitest.cc',
-      'browser/ui/views/find_bar_host_interactive_uitest.cc',
       'browser/ui/views/frame/browser_view_focus_uitest.cc',
       'browser/ui/views/frame/browser_view_interactive_uitest.cc',
       'browser/ui/views/keyboard_access_browsertest.cc',
-      'browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc',
-      'browser/ui/views/location_bar/star_view_browsertest.cc',
       'browser/ui/views/menu_controller_interactive_uitest.cc',
       'browser/ui/views/menu_item_view_interactive_uitest.cc',
       'browser/ui/views/menu_test_base.cc',
@@ -916,17 +908,11 @@
       'browser/ui/views/menu_model_adapter_test.cc',
       'browser/ui/views/menu_view_drag_and_drop_test.cc',
       'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-      'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
       'browser/ui/views/panels/panel_view_browsertest.cc',
-      'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
       'browser/ui/views/passwords/manage_passwords_icon_view_browsertest.cc',
-      'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
       'browser/ui/views/status_icons/status_tray_state_changer_interactive_uitest_win.cc',
-      'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
-      'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
       'browser/ui/views/tabs/tab_drag_controller_interactive_uitest_win.cc',
       'browser/ui/views/toolbar/toolbar_button_test.cc',
-      'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
       'test/base/interactive_test_utils.cc',
       'test/base/interactive_test_utils.h',
       'test/base/interactive_test_utils_aura.cc',
@@ -942,6 +928,24 @@
       'test/base/view_event_test_platform_part_chromeos.cc',
       'test/base/view_event_test_platform_part_mac.mm',
       'test/ppapi/ppapi_interactive_browsertest.cc',
+    ],
+    'chrome_interactive_ui_test_non_mac_sources': [
+      'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+      'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
+      'browser/ui/views/constrained_window_views_browsertest.cc',
+      'browser/ui/views/find_bar_host_interactive_uitest.cc',
+      'browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc',
+      'browser/ui/views/location_bar/star_view_browsertest.cc',
+      'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
+      'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
+      'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
+      'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
+      'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.h',
+      'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
+    ],
+    'chrome_interactive_ui_test_notifications_sources': [
+      'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
+      'browser/notifications/message_center_notifications_browsertest.cc',
     ],
     'chrome_interactive_ui_test_chromeos_sources': [
       'browser/chromeos/accessibility/speech_monitor.cc',
@@ -1415,25 +1419,17 @@
             'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
           ],
         }],
+        ['OS != "mac"', {
+          'sources': [ '<@(chrome_interactive_ui_test_non_mac_sources)' ],
+        }],
         ['OS=="mac"', {
           'sources!': [
             # TODO(tapted): Enable toolkit-views tests on Mac when their
             # respective implementations are ported.
-            'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
-            'browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h',
-            'browser/ui/views/constrained_window_views_browsertest.cc',
-            'browser/ui/views/find_bar_host_interactive_uitest.cc',
             'browser/ui/views/keyboard_access_browsertest.cc',
-            'browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc',
-            'browser/ui/views/location_bar/star_view_browsertest.cc',
             'browser/ui/views/message_center/web_notification_tray_browsertest.cc',
-            'browser/ui/views/omnibox/omnibox_view_views_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
-            'browser/ui/views/passwords/manage_passwords_bubble_view_browsertest.cc',
-            'browser/ui/views/ssl_client_certificate_selector_browsertest.cc',
-            'browser/ui/views/tabs/tab_drag_controller_interactive_uitest.cc',
             'browser/ui/views/toolbar/toolbar_button_test.cc',
-            'browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc',
           ],
           'dependencies': [
             'chrome'
@@ -1441,10 +1437,19 @@
           # See comment about the same line in chrome/chrome_tests.gypi.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],  # OS=="mac"
-        ['notifications==0', {
-          'sources/': [
-            ['exclude', '^browser/notifications/'],
-            ['exclude', '^browser/extensions/notifications_apitest.cc'],
+        ['notifications == 1', {
+          # Common notifications tests.
+          'sources': [
+            'browser/extensions/notifications_apitest.cc',
+          ],
+          'conditions': [
+            ['chromeos == 0', {
+              # Non-ChromeOS notifications tests (ChromeOS does not use
+              # cross-platform panels).
+              'sources': [
+                'browser/notifications/notification_browsertest.cc',
+              ],
+            }],
           ],
         }],
         ['OS=="android"', {
@@ -1508,7 +1513,6 @@
             '../ui/views/widget/desktop_aura/x11_topmost_window_finder_interactive_uitest.cc',
 
             # chromeos does not use cross-platform panels
-            'browser/notifications/notification_browsertest.cc',
             'browser/ui/panels/detached_panel_browsertest.cc',
             'browser/ui/panels/docked_panel_browsertest.cc',
             'browser/ui/panels/panel_browsertest.cc',
