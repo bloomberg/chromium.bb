@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/push_messaging_router.h"
+#include "content/browser/push_messaging/push_messaging_router.h"
 
 #include "base/bind.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"

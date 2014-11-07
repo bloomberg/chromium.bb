@@ -9,7 +9,7 @@
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/push_messaging_router.h"
+#include "content/browser/push_messaging/push_messaging_router.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"

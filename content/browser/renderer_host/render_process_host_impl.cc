@@ -67,7 +67,7 @@
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/notifications/notification_message_filter.h"
 #include "content/browser/profiler_message_filter.h"
-#include "content/browser/push_messaging_message_filter.h"
+#include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/clipboard_message_filter.h"
 #include "content/browser/renderer_host/database_message_filter.h"
