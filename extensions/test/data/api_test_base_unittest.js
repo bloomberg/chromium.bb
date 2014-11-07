@@ -36,8 +36,8 @@ unittestBindings.exportTests([
   },
   function testMojoModulesAreAvailable() {
     Promise.all([
-      requireAsync('mojo/public/js/bindings/connection'),
-      requireAsync('mojo/public/js/bindings/core'),
+      requireAsync('mojo/public/js/connection'),
+      requireAsync('mojo/public/js/core'),
       requireAsync('content/public/renderer/service_provider'),
     ]).then(test.callback(function(modules) {
       var connection = modules[0];

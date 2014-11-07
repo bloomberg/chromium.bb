@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -17,10 +18,6 @@ class TaskRunner;
 }
 
 namespace mojo {
-namespace embedder {
-struct ChannelInfo;
-}
-
 namespace embedder {
 
 // |ChannelInit| handles creation (and destruction) of the Mojo channel. It is

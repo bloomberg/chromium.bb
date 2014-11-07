@@ -15,13 +15,8 @@
 #include "ipc/ipc_export.h"
 #include "ipc/mojo/ipc_message_pipe_reader.h"
 #include "ipc/mojo/ipc_mojo_bootstrap.h"
+#include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/public/cpp/system/core.h"
-
-namespace mojo {
-namespace embedder {
-struct ChannelInfo;
-}
-}
 
 namespace IPC {
 

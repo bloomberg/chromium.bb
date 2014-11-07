@@ -92,6 +92,7 @@ class ViewManagerClientImpl : public ViewManager,
                ViewDataPtr root,
                InterfaceRequest<ServiceProvider> parent_services,
                ScopedMessagePipeHandle window_manager_pipe) override;
+  void OnEmbeddedAppDisconnected(Id view_id) override;
   void OnViewBoundsChanged(Id view_id,
                            RectPtr old_bounds,
                            RectPtr new_bounds) override;

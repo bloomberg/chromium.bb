@@ -7,6 +7,7 @@
     '../base/base.gyp:base',
     '../components/tracing.gyp:tracing',
     '../mojo/mojo_base.gyp:mojo_environment_chromium',
+    '../mojo/mojo_base.gyp:mojo_common_lib',
     '../mojo/public/mojo_public.gyp:mojo_application_bindings',
     '../skia/skia.gyp:skia',
     '../ui/base/ui_base.gyp:ui_base',

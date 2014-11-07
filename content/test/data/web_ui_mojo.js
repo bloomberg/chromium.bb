@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define('main', [
-    'mojo/public/js/bindings/connection',
+    'mojo/public/js/connection',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
     'content/public/renderer/service_provider',
 ], function (connection, bindings, serviceProvider) {

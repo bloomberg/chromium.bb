@@ -130,8 +130,8 @@
         '../..'
       ],
       'sources': [
-        'js/bindings/constants.cc',
-        'js/bindings/constants.h',
+        'js/constants.cc',
+        'js/constants.h',
       ],
     },
     {
@@ -141,7 +141,9 @@
       'sources': [
         'c/environment/async_waiter.h',
         'c/environment/logger.h',
+        'cpp/environment/async_waiter.h',
         'cpp/environment/environment.h',
+        'cpp/environment/lib/async_waiter.cc',
         'cpp/environment/lib/default_async_waiter.cc',
         'cpp/environment/lib/default_async_waiter.h',
         'cpp/environment/lib/default_logger.cc',

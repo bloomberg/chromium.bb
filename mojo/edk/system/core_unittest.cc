@@ -1084,6 +1084,19 @@ TEST_F(CoreTest, DataPipe) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
 
+  // Peek one character.
+  elements[0] = -1;
+  elements[1] = -1;
+  num_bytes = 1u;
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadData(
+                ch,
+                UserPointer<void>(elements),
+                MakeUserPointer(&num_bytes),
+                MOJO_READ_DATA_FLAG_NONE | MOJO_READ_DATA_FLAG_PEEK));
+  EXPECT_EQ('A', elements[0]);
+  EXPECT_EQ(-1, elements[1]);
+
   // Read one character.
   elements[0] = -1;
   elements[1] = -1;
@@ -1131,6 +1144,16 @@ TEST_F(CoreTest, DataPipe) {
                              MOJO_READ_DATA_FLAG_QUERY));
   EXPECT_EQ(4u, num_bytes);
 
+  // Try to query with peek. Should fail.
+  num_bytes = 0;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->ReadData(
+                ch,
+                NullUserPointer(),
+                MakeUserPointer(&num_bytes),
+                MOJO_READ_DATA_FLAG_QUERY | MOJO_READ_DATA_FLAG_PEEK));
+  EXPECT_EQ(0u, num_bytes);
+
   // Try to discard ten characters, in all-or-none mode. Should fail.
   num_bytes = 10;
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
@@ -1139,6 +1162,15 @@ TEST_F(CoreTest, DataPipe) {
                 NullUserPointer(),
                 MakeUserPointer(&num_bytes),
                 MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+
+  // Try to discard two characters, in peek mode. Should fail.
+  num_bytes = 2;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->ReadData(
+                ch,
+                NullUserPointer(),
+                MakeUserPointer(&num_bytes),
+                MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_PEEK));
 
   // Discard two characters.
   num_bytes = 2;
@@ -1149,8 +1181,16 @@ TEST_F(CoreTest, DataPipe) {
                 MakeUserPointer(&num_bytes),
                 MOJO_READ_DATA_FLAG_DISCARD | MOJO_READ_DATA_FLAG_ALL_OR_NONE));
 
-  // Read the remaining two characters, in two-phase mode (all-or-none).
+  // Try a two-phase read of the remaining two bytes with peek. Should fail.
   const void* read_ptr = nullptr;
+  num_bytes = 2;
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            core()->BeginReadData(ch,
+                                  MakeUserPointer(&read_ptr),
+                                  MakeUserPointer(&num_bytes),
+                                  MOJO_READ_DATA_FLAG_PEEK));
+
+  // Read the remaining two characters, in two-phase mode (all-or-none).
   num_bytes = 2;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->BeginReadData(ch,

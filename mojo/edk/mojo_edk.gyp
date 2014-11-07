@@ -28,6 +28,7 @@
         'mojo_public_utility_unittests',
         'mojo_system_impl',
         'mojo_system_unittests',
+        'mojo_js_unittests',
       ],
     },
     {
@@ -112,6 +113,7 @@
       ],
       'include_dirs': [ '../..' ],
       'sources': [
+        '../public/cpp/environment/tests/async_wait_unittest.cc',
         '../public/cpp/environment/tests/async_waiter_unittest.cc',
         '../public/cpp/environment/tests/logger_unittest.cc',
         '../public/cpp/environment/tests/logging_unittest.cc',
@@ -203,6 +205,7 @@
         'MOJO_USE_SYSTEM_IMPL',
       ],
       'sources': [
+        'embedder/channel_info_forward.h',
         'embedder/channel_init.cc',
         'embedder/channel_init.h',
         'embedder/embedder.cc',
@@ -234,6 +237,8 @@
         'system/channel_endpoint.h',
         'system/channel_endpoint_id.cc',
         'system/channel_endpoint_id.h',
+        'system/channel_info.cc',
+        'system/channel_info.h',
         'system/constants.h',
         'system/core.cc',
         'system/core.h',
@@ -367,6 +372,52 @@
         'system/message_pipe_test_utils.cc',
         'system/test_utils.cc',
         'system/test_utils.h',
+      ],
+    },
+    {
+      # GN version: //mojo/edk/js
+      'target_name': 'mojo_js_lib',
+      'type': 'static_library',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../gin/gin.gyp:gin',
+        '../../v8/tools/gyp/v8.gyp:v8',
+      ],
+      'export_dependent_settings': [
+        '../../base/base.gyp:base',
+        '../../gin/gin.gyp:gin',
+      ],
+      'sources': [
+        # Sources list duplicated in GN build.
+        'js/core.cc',
+        'js/core.h',
+        'js/drain_data.cc',
+        'js/drain_data.h',
+        'js/handle.cc',
+        'js/handle.h',
+        'js/handle_close_observer.h',
+        'js/support.cc',
+        'js/support.h',
+        'js/waiting_callback.cc',
+        'js/waiting_callback.h',
+      ],
+    },
+    {
+      # GN version: //mojo/edk/js:js_unittests
+      'target_name': 'mojo_js_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../../gin/gin.gyp:gin_test',
+        'mojo_common_test_support',
+        'mojo_run_all_unittests',
+        'mojo_js_lib',
+        '../public/mojo_public.gyp:mojo_environment_standalone',
+        '../public/mojo_public.gyp:mojo_public_test_interfaces',
+        '../public/mojo_public.gyp:mojo_utility',
+      ],
+      'sources': [
+        'js/handle_unittest.cc',
+        'js/tests/run_js_tests.cc',
       ],
     },
     {

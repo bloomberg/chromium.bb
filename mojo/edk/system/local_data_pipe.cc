@@ -177,7 +177,8 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(
     UserPointer<void> elements,
     UserPointer<uint32_t> num_bytes,
     uint32_t max_num_bytes_to_read,
-    uint32_t min_num_bytes_to_read) {
+    uint32_t min_num_bytes_to_read,
+    bool peek) {
   DCHECK_EQ(max_num_bytes_to_read % element_num_bytes(), 0u);
   DCHECK_EQ(min_num_bytes_to_read % element_num_bytes(), 0u);
   DCHECK_GT(max_num_bytes_to_read, 0u);
@@ -207,7 +208,8 @@ MojoResult LocalDataPipe::ConsumerReadDataImplNoLock(
         .PutArray(buffer_.get(), num_bytes_to_read - num_bytes_to_read_first);
   }
 
-  MarkDataAsConsumedNoLock(num_bytes_to_read);
+  if (!peek)
+    MarkDataAsConsumedNoLock(num_bytes_to_read);
   num_bytes.Put(static_cast<uint32_t>(num_bytes_to_read));
   return MOJO_RESULT_OK;
 }

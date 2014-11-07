@@ -5,7 +5,7 @@
 define('keep_alive', [
     'content/public/renderer/service_provider',
     'extensions/common/mojo/keep_alive.mojom',
-    'mojo/public/js/bindings/core',
+    'mojo/public/js/core',
 ], function(serviceProvider, mojom, core) {
 
   /**

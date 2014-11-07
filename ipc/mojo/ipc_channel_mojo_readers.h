@@ -12,12 +12,6 @@
 #include "ipc/mojo/ipc_message_pipe_reader.h"
 #include "mojo/public/cpp/system/core.h"
 
-namespace mojo {
-namespace embedder {
-struct ChannelInfo;
-}
-}
-
 namespace IPC {
 
 class ChannelMojo;

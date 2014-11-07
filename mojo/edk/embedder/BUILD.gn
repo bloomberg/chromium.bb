@@ -17,6 +17,7 @@ source_set("embedder") {
   configs += [ "//mojo/edk/system:system_config" ]
 
   sources = [
+    "channel_info_forward.h",
     "channel_init.cc",
     "channel_init.h",
     "embedder.cc",

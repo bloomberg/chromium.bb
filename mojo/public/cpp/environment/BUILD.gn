@@ -4,17 +4,22 @@
 
 source_set("environment") {
   sources = [
+    "async_waiter.h",
     "logging.h",
     "environment.h",
   ]
 
   public_deps = [ "//mojo/public/c/environment" ]
 
-  deps = [ "//mojo/public/cpp/system" ]
+  deps = [
+    "//mojo/public/cpp/bindings:callback",
+    "//mojo/public/cpp/system",
+  ]
 }
 
 source_set("standalone") {
   sources = [
+    "lib/async_waiter.cc",
     "lib/default_async_waiter.cc",
     "lib/default_async_waiter.h",
     "lib/default_logger.cc",

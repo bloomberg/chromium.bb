@@ -40,7 +40,7 @@ component("keyboard") {
     "//base/third_party/dynamic_annotations",
     "//content/public/browser",
     "//content/public/common",
-    "//mojo/bindings/js",
+    "//mojo/edk/js",
     "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",

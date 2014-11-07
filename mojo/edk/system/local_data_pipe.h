@@ -48,7 +48,8 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
       UserPointer<void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_read,
-      uint32_t min_num_bytes_to_read) override;
+      uint32_t min_num_bytes_to_read,
+      bool peek) override;
   MojoResult ConsumerDiscardDataImplNoLock(
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_discard,

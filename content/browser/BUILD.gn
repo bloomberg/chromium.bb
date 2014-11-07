@@ -100,7 +100,7 @@ source_set("browser") {
       "//content/public/common:mojo_bindings",
       "//mojo/public/cpp/bindings",
       "//mojo/public/interfaces/application",
-      "//mojo/public/js/bindings",
+      "//mojo/public/js",
       "//net:http_server",
       "//storage/browser",
       "//storage/common",

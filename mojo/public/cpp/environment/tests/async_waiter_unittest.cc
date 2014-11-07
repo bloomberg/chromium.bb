@@ -2,12 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <string>
-
-#include "mojo/public/c/environment/async_waiter.h"
-#include "mojo/public/cpp/environment/environment.h"
-#include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/macros.h"
+#include "mojo/public/cpp/bindings/callback.h"
+#include "mojo/public/cpp/environment/async_waiter.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/cpp/utility/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,11 +20,9 @@ class TestAsyncWaitCallback {
 
   MojoResult last_result() const { return last_result_; }
 
-  // MojoAsyncWaitCallback:
-  static void OnHandleReady(void* closure, MojoResult result) {
-    TestAsyncWaitCallback* self = static_cast<TestAsyncWaitCallback*>(closure);
-    self->result_count_++;
-    self->last_result_ = result;
+  void OnHandleReady(MojoResult result) {
+    result_count_++;
+    last_result_ = result;
   }
 
  private:
@@ -38,20 +32,17 @@ class TestAsyncWaitCallback {
   MOJO_DISALLOW_COPY_AND_ASSIGN(TestAsyncWaitCallback);
 };
 
-MojoAsyncWaitID CallAsyncWait(const Handle& handle,
-                              MojoHandleSignals signals,
-                              TestAsyncWaitCallback* callback) {
-  return Environment::GetDefaultAsyncWaiter()->AsyncWait(
-      handle.value(),
-      signals,
-      MOJO_DEADLINE_INDEFINITE,
-      &TestAsyncWaitCallback::OnHandleReady,
-      callback);
-}
+// Manual code to create a callback since we don't have mojo::Bind yet.
+class ManualCallback {
+ public:
+  explicit ManualCallback(TestAsyncWaitCallback* callback)
+      : callback_(callback) {}
 
-void CallCancelWait(MojoAsyncWaitID wait_id) {
-  Environment::GetDefaultAsyncWaiter()->CancelWait(wait_id);
-}
+  void Run(MojoResult result) const { callback_->OnHandleReady(result); }
+
+ private:
+  TestAsyncWaitCallback* callback_;
+};
 
 class AsyncWaiterTest : public testing::Test {
  public:
@@ -70,8 +61,8 @@ TEST_F(AsyncWaiterTest, CallbackNotified) {
   MessagePipe test_pipe;
   EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
-  CallAsyncWait(
-      test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback);
+  AsyncWaiter waiter(test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                     ManualCallback(&callback));
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback.result_count());
   EXPECT_EQ(MOJO_RESULT_OK, callback.last_result());
@@ -86,10 +77,10 @@ TEST_F(AsyncWaiterTest, TwoCallbacksNotified) {
   EXPECT_TRUE(test::WriteTextMessage(test_pipe1.handle1.get(), std::string()));
   EXPECT_TRUE(test::WriteTextMessage(test_pipe2.handle1.get(), std::string()));
 
-  CallAsyncWait(
-      test_pipe1.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback1);
-  CallAsyncWait(
-      test_pipe2.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback2);
+  AsyncWaiter waiter1(test_pipe1.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                      ManualCallback(&callback1));
+  AsyncWaiter waiter2(test_pipe2.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                      ManualCallback(&callback2));
 
   RunLoop::current()->Run();
   EXPECT_EQ(1, callback1.result_count());
@@ -104,8 +95,10 @@ TEST_F(AsyncWaiterTest, CancelCallback) {
   MessagePipe test_pipe;
   EXPECT_TRUE(test::WriteTextMessage(test_pipe.handle1.get(), std::string()));
 
-  CallCancelWait(CallAsyncWait(
-      test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE, &callback));
+  {
+    AsyncWaiter waiter(test_pipe.handle0.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                       ManualCallback(&callback));
+  }
   RunLoop::current()->Run();
   EXPECT_EQ(0, callback.result_count());
 }

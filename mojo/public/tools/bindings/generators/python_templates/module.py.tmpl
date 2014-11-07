@@ -37,7 +37,7 @@ class {{interface|name}}(object):
   __metaclass__ = _reflection.MojoInterfaceType
   DESCRIPTOR = {
 {%  if interface.client %}
-    'client': {{interface.qualified_client|fully_qualified_name}},
+    'client': lambda: {{interface.qualified_client|fully_qualified_name}},
 {%  endif %}
     'methods': [
 {%  for method in interface.methods %}

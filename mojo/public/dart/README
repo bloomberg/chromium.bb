@@ -1,0 +1,41 @@
+These are interim instructions for building and testing Dart's Mojo bindings.
+These instructions currently only work for Linux, and assume you already have a
+Mojo checkout.
+
+1.) Install the Dart SDK.
+
+- apt-get -
+
+Follow instructions at: https://www.dartlang.org/tools/debian.html
+
+- Debian package -
+
+Download from:
+
+$ wget https://storage.googleapis.com/dart-archive/channels/dev/release/latest/linux_packages/debian_wheezy/dart_1.8.0-dev.2.0-1_amd64.deb
+$ dpkg -i dart_1.8.0-dev.2.0-1_amd64.deb
+
+- From source -
+
+Follow instructions here: https://code.google.com/p/dart/wiki/Building
+
+and build the "create_sdk" target.
+
+With the first two options, dart is on your path and you are ready to go.
+When building from source, you must explicitly add
+e.g. out/ReleaseX64/dart-sdk/bin to your path.
+
+
+2.) Configure Mojo with Dart.
+
+  $ ./mojob.sh --release --with-dart gn
+
+
+3.) Build Mojo with Dart.
+
+  $ ./mojob.sh --release build
+
+
+4.) Run Dart tests.
+
+  $ ./mojob.sh --release darttest

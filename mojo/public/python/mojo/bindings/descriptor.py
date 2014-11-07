@@ -210,12 +210,40 @@ class StringType(PointerType):
     return unicode(string_array.tostring(), 'utf8')
 
 
-class HandleType(SerializableType):
+class BaseHandleType(SerializableType):
   """Type object for handles."""
 
   def __init__(self, nullable=False):
     SerializableType.__init__(self, 'i')
     self.nullable = nullable
+
+  def Serialize(self, value, data_offset, data, handle_offset):
+    handle = self.ToHandle(value)
+    if not handle.IsValid() and not self.nullable:
+      raise serialization.SerializationException(
+          'Trying to serialize null for non nullable type.')
+    if not handle.IsValid():
+      return (-1, [])
+    return (handle_offset, [handle])
+
+  def Deserialize(self, value, data, handles):
+    if value == -1:
+      if not self.nullable:
+        raise serialization.DeserializationException(
+            'Trying to deserialize null for non nullable type.')
+      return self.FromHandle(mojo.system.Handle())
+    # TODO(qsr) validate handle order
+    return self.FromHandle(handles[value])
+
+  def FromHandle(self, handle):
+    raise NotImplementedError()
+
+  def ToHandle(self, value):
+    raise NotImplementedError()
+
+
+class HandleType(BaseHandleType):
+  """Type object for handles."""
 
   def Convert(self, value):
     if value is None:
@@ -224,22 +252,62 @@ class HandleType(SerializableType):
       raise TypeError('%r is not a handle' % value)
     return value
 
-  def Serialize(self, value, data_offset, data, handle_offset):
-    if not value.IsValid() and not self.nullable:
-      raise serialization.SerializationException(
-          'Trying to serialize null for non nullable type.')
-    if not value.IsValid():
-      return (-1, [])
-    return (handle_offset, [value])
+  def FromHandle(self, handle):
+    return handle
 
-  def Deserialize(self, value, data, handles):
-    if value == -1:
-      if not self.nullable:
-        raise serialization.DeserializationException(
-            'Trying to deserialize null for non nullable type.')
+  def ToHandle(self, value):
+    return value
+
+
+class InterfaceRequestType(BaseHandleType):
+  """Type object for interface requests."""
+
+  def Convert(self, value):
+    if value is None:
+      return reflection.InterfaceRequest(mojo.system.Handle())
+    if not isinstance(value, reflection.InterfaceRequest):
+      raise TypeError('%r is not an interface request' % value)
+    return value
+
+  def FromHandle(self, handle):
+    return reflection.InterfaceRequest(handle)
+
+  def ToHandle(self, value):
+    return value.PassMessagePipe()
+
+
+class InterfaceType(BaseHandleType):
+  """Type object for interfaces."""
+
+  def __init__(self, interface_getter, nullable=False):
+    BaseHandleType.__init__(self, nullable)
+    self._interface_getter = interface_getter
+    self._interface = None
+
+  def Convert(self, value):
+    if value is None or isinstance(value, self.interface):
+      return value
+    raise TypeError('%r is not an instance of ' % self.interface)
+
+  @property
+  def interface(self):
+    if not self._interface:
+      self._interface = self._interface_getter()
+    return self._interface
+
+  def FromHandle(self, handle):
+    if handle.IsValid():
+      return self.interface.manager.Proxy(handle)
+    return None
+
+  def ToHandle(self, value):
+    if not value:
       return mojo.system.Handle()
-    # TODO(qsr) validate handle order
-    return handles[value]
+    if isinstance(value, reflection.InterfaceProxy):
+      return value.manager.PassMessagePipe()
+    pipe = mojo.system.MessagePipe()
+    self.interface.manager.Bind(value, pipe.handle0)
+    return pipe.handle1
 
 
 class BaseArrayType(PointerType):
@@ -460,24 +528,6 @@ class MapType(SerializableType):
       return GenericArrayType(t)
 
 
-class NoneType(SerializableType):
-  """Placeholder type, used temporarily until all mojo types are handled."""
-
-  def __init__(self):
-    SerializableType.__init__(self, 'B')
-
-  def Convert(self, value):
-    return None
-
-  def Serialize(self, value, data_offset, data, handle_offset):
-    return (0, [])
-
-  def Deserialize(self, value, data, handles):
-    return None
-
-
-TYPE_NONE = NoneType()
-
 TYPE_BOOL = BooleanType()
 
 TYPE_INT8 = IntegerType('b')
@@ -498,6 +548,9 @@ TYPE_NULLABLE_STRING = StringType(True)
 
 TYPE_HANDLE = HandleType()
 TYPE_NULLABLE_HANDLE = HandleType(True)
+
+TYPE_INTERFACE_REQUEST = InterfaceRequestType()
+TYPE_NULLABLE_INTERFACE_REQUEST = InterfaceRequestType(True)
 
 
 class FieldDescriptor(object):

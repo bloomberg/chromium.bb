@@ -275,6 +275,14 @@ void ViewManagerClientImpl::OnEmbed(
   delegate_->OnEmbed(this, root, exported_services, remote.Pass());
 }
 
+void ViewManagerClientImpl::OnEmbeddedAppDisconnected(Id view_id) {
+  View* view = GetViewById(view_id);
+  if (view) {
+    FOR_EACH_OBSERVER(ViewObserver, *ViewPrivate(view).observers(),
+                      OnViewEmbeddedAppDisconnected(view));
+  }
+}
+
 void ViewManagerClientImpl::OnViewBoundsChanged(Id view_id,
                                                 RectPtr old_bounds,
                                                 RectPtr new_bounds) {

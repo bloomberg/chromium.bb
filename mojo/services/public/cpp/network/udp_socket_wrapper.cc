@@ -124,7 +124,7 @@ void UDPSocketWrapper::SendTo(NetAddressPtr dest_addr,
   MOJO_DCHECK(send_requests_.empty());
   current_pending_sends_++;
   socket_->SendTo(dest_addr.Pass(), data.Pass(),
-                  ErrorCallback(static_cast<typename ErrorCallback::Runnable*>(
+                  ErrorCallback(static_cast<ErrorCallback::Runnable*>(
                       new SendCallbackHandler(this, callback))));
 }
 
@@ -157,7 +157,7 @@ void UDPSocketWrapper::Initialize(uint32_t requested_max_pending_sends) {
   socket_->NegotiateMaxPendingSendRequests(
       requested_max_pending_sends,
       Callback<void(uint32_t)>(
-          static_cast<typename Callback<void(uint32_t)>::Runnable*>(
+          static_cast< Callback<void(uint32_t)>::Runnable*>(
               new NegotiateCallbackHandler(this))));
   socket_->ReceiveMore(max_receive_queue_size_);
 }
@@ -196,7 +196,7 @@ bool UDPSocketWrapper::ProcessNextSendRequest() {
 
   socket_->SendTo(
       request->dest_addr.Pass(), request->data.Pass(),
-      ErrorCallback(static_cast<typename ErrorCallback::Runnable*>(
+      ErrorCallback(static_cast<ErrorCallback::Runnable*>(
           new SendCallbackHandler(this, request->callback))));
 
   delete request;

@@ -5,6 +5,7 @@
 # GYP version: mojo/mojo_base.gyp:mojo_public_environment_unittests
 test("mojo_public_environment_unittests") {
   sources = [
+    "async_wait_unittest.cc",
     "async_waiter_unittest.cc",
     "logger_unittest.cc",
     "logging_unittest.cc",
@@ -13,6 +14,7 @@ test("mojo_public_environment_unittests") {
   deps = [
     "//mojo/edk/test:run_all_unittests",
     "//mojo/public/c/environment",
+    "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/environment:standalone",
     "//mojo/public/cpp/system",
     "//mojo/public/cpp/test_support:test_utils",

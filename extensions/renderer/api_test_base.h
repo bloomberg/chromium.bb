@@ -17,7 +17,7 @@
 #include "gin/modules/module_registry.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
-#include "mojo/bindings/js/handle.h"
+#include "mojo/edk/js/handle.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/core.h"
 

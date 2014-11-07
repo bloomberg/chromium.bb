@@ -19,7 +19,7 @@ MojoResult MojoMain(MojoHandle shell_handle) {
 
     // Construct an ApplicationImpl just for the GTEST commandline arguments.
     // GTEST command line arguments are supported amid application arguments:
-    // $ mojo_shell 'mojo:example_apptest arg1 --gtest_filter=foo arg2'
+    // $ mojo_shell 'mojo:example_apptests arg1 --gtest_filter=foo arg2'
     mojo::ApplicationDelegate dummy_application_delegate;
     mojo::ApplicationImpl app(&dummy_application_delegate, shell_handle);
     MOJO_CHECK(app.WaitForInitialize());

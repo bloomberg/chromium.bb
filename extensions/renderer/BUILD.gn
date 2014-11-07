@@ -167,7 +167,7 @@ source_set("renderer") {
     "//content:resources",
     "//extensions:extensions_resources",
     "//gin",
-    "//mojo/bindings/js",
+    "//mojo/edk/js",
     "//skia",
     "//third_party/WebKit/public:blink",
   ]

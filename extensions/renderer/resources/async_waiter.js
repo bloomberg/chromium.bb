@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define('async_waiter', [
-    'mojo/public/js/bindings/support',
+    'mojo/public/js/support',
 ], function(supportModule) {
   /**
    * @module async_waiter

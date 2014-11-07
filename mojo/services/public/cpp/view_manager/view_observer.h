@@ -68,6 +68,8 @@ class ViewObserver {
                                      const std::vector<uint8_t>* old_data,
                                      const std::vector<uint8_t>* new_data) {}
 
+  virtual void OnViewEmbeddedAppDisconnected(View* view) {}
+
   // Sent when the drawn state changes. This is only sent for the root nodes
   // when embedded.
   virtual void OnViewDrawnChanging(View* view) {}

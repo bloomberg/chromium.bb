@@ -17,7 +17,7 @@
  * are available, the Javascript formats them and displays them.
  */
 define('main', [
-    'mojo/public/js/bindings/connection',
+    'mojo/public/js/connection',
     'chrome/browser/ui/webui/omnibox/omnibox.mojom',
     'content/public/renderer/service_provider',
 ], function(connector, browser, serviceProvider) {

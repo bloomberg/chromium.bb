@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task_runner.h"
+#include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/cpp/system/core.h"
@@ -53,19 +54,15 @@ MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 // first synchronously and second asynchronously.
 //
 // The destruction functions are similarly synchronous and asynchronous,
-// respectively, and take the |ChannelInfo*| produced by the creation function.
-// (Note: One may call |DestroyChannelOnIOThread()| with the result of
-// |CreateChannel()|, but not |DestroyChannel()| with the result of
-// |CreateChannelOnIOThread()|.)
+// respectively, and take the |ChannelInfo*| produced by the creation functions.
 //
 // TODO(vtl): Figure out channel teardown.
-struct ChannelInfo;
 
 // Creates a channel; must only be called from the I/O thread. |platform_handle|
 // should be a handle to a connected OS "pipe". Eventually (even on failure),
 // the "out" value |*channel_info| should be passed to
-// |DestroyChannelOnIOThread()| to tear down the channel. Returns a handle to
-// the bootstrap message pipe.
+// |DestroyChannelOnIOThread()| (or |DestoryChannel()|) to tear down the
+// channel. Returns a handle to the bootstrap message pipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
     CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
                             ChannelInfo** channel_info);
@@ -93,10 +90,9 @@ MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannelOnIOThread(
     ChannelInfo* channel_info);
 
-// Destroys a channel (asynchronously) that was created using |CreateChannel()|
-// (note: NOT |CreateChannelOnIOThread()|); may be called from any thread.
-// |channel_info| should be the value provided to the callback to
-// |CreateChannel()|.
+// Destroys a channel (asynchronously) that was created using |CreateChannel()|;
+// may be called from any thread. |channel_info| should be the value provided to
+// the callback to |CreateChannel()|.
 MOJO_SYSTEM_IMPL_EXPORT void DestroyChannel(ChannelInfo* channel_info);
 
 // Inform the channel that it will soon be destroyed (doing so is optional).

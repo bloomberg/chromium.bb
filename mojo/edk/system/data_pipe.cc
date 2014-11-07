@@ -260,7 +260,8 @@ void DataPipe::ConsumerClose() {
 
 MojoResult DataPipe::ConsumerReadData(UserPointer<void> elements,
                                       UserPointer<uint32_t> num_bytes,
-                                      bool all_or_none) {
+                                      bool all_or_none,
+                                      bool peek) {
   base::AutoLock locker(lock_);
   DCHECK(has_local_consumer_no_lock());
 
@@ -279,7 +280,7 @@ MojoResult DataPipe::ConsumerReadData(UserPointer<void> elements,
   HandleSignalsState old_producer_state =
       ProducerGetHandleSignalsStateImplNoLock();
   MojoResult rv = ConsumerReadDataImplNoLock(
-      elements, num_bytes, max_num_bytes_to_read, min_num_bytes_to_read);
+      elements, num_bytes, max_num_bytes_to_read, min_num_bytes_to_read, peek);
   HandleSignalsState new_producer_state =
       ProducerGetHandleSignalsStateImplNoLock();
   if (!new_producer_state.equals(old_producer_state))

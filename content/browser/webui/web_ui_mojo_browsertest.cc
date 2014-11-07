@@ -28,7 +28,7 @@
 #include "mojo/edk/test/test_utils.h"
 #include "mojo/public/cpp/bindings/interface_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/js/bindings/constants.h"
+#include "mojo/public/js/constants.h"
 
 namespace content {
 namespace {

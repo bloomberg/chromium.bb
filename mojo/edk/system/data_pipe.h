@@ -73,7 +73,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
   // a multiple of |element_num_bytes_|.
   MojoResult ConsumerReadData(UserPointer<void> elements,
                               UserPointer<uint32_t> num_bytes,
-                              bool all_or_none);
+                              bool all_or_none,
+                              bool peek);
   MojoResult ConsumerDiscardData(UserPointer<uint32_t> num_bytes,
                                  bool all_or_none);
   MojoResult ConsumerQueryData(UserPointer<uint32_t> num_bytes);
@@ -120,7 +121,8 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipe
       UserPointer<void> elements,
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_read,
-      uint32_t min_num_bytes_to_read) = 0;
+      uint32_t min_num_bytes_to_read,
+      bool peek) = 0;
   virtual MojoResult ConsumerDiscardDataImplNoLock(
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_discard,

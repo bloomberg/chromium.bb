@@ -58,7 +58,8 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
 
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD)) {
     // These flags are mutally exclusive.
-    if ((flags & MOJO_READ_DATA_FLAG_QUERY))
+    if ((flags & MOJO_READ_DATA_FLAG_QUERY) ||
+        (flags & MOJO_READ_DATA_FLAG_PEEK))
       return MOJO_RESULT_INVALID_ARGUMENT;
     DVLOG_IF(2, !elements.IsNull())
         << "Discard mode: ignoring non-null |elements|";
@@ -67,6 +68,8 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
   }
 
   if ((flags & MOJO_READ_DATA_FLAG_QUERY)) {
+    if ((flags & MOJO_READ_DATA_FLAG_PEEK))
+      return MOJO_RESULT_INVALID_ARGUMENT;
     DCHECK(!(flags & MOJO_READ_DATA_FLAG_DISCARD));  // Handled above.
     DVLOG_IF(2, !elements.IsNull())
         << "Query mode: ignoring non-null |elements|";
@@ -74,7 +77,10 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
   }
 
   return data_pipe_->ConsumerReadData(
-      elements, num_bytes, (flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE));
+      elements,
+      num_bytes,
+      !!(flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+      !!(flags & MOJO_READ_DATA_FLAG_PEEK));
 }
 
 MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
@@ -85,7 +91,8 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
 
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
-      (flags & MOJO_READ_DATA_FLAG_QUERY))
+      (flags & MOJO_READ_DATA_FLAG_QUERY) ||
+      (flags & MOJO_READ_DATA_FLAG_PEEK))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ConsumerBeginReadData(

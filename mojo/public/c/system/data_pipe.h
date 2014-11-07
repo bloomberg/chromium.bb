@@ -83,6 +83,9 @@ const MojoWriteDataFlags MOJO_WRITE_DATA_FLAG_ALL_OR_NONE = 1 << 0;
 //       read. For use with |MojoReadData()| only. Mutually exclusive with
 //       |MOJO_READ_DATA_FLAG_DISCARD| and |MOJO_READ_DATA_FLAG_ALL_OR_NONE| is
 //       ignored if this flag is set.
+//   |MOJO_READ_DATA_FLAG_PEEK| - Read elements without removing them. For use
+//       with |MojoReadData()| only. Mutually exclusive with
+//       |MOJO_READ_DATA_FLAG_DISCARD| and |MOJO_READ_DATA_FLAG_QUERY|.
 
 typedef uint32_t MojoReadDataFlags;
 
@@ -91,11 +94,13 @@ const MojoReadDataFlags MOJO_READ_DATA_FLAG_NONE = 0;
 const MojoReadDataFlags MOJO_READ_DATA_FLAG_ALL_OR_NONE = 1 << 0;
 const MojoReadDataFlags MOJO_READ_DATA_FLAG_DISCARD = 1 << 1;
 const MojoReadDataFlags MOJO_READ_DATA_FLAG_QUERY = 1 << 2;
+const MojoReadDataFlags MOJO_READ_DATA_FLAG_PEEK = 1 << 3;
 #else
 #define MOJO_READ_DATA_FLAG_NONE ((MojoReadDataFlags)0)
 #define MOJO_READ_DATA_FLAG_ALL_OR_NONE ((MojoReadDataFlags)1 << 0)
 #define MOJO_READ_DATA_FLAG_DISCARD ((MojoReadDataFlags)1 << 1)
 #define MOJO_READ_DATA_FLAG_QUERY ((MojoReadDataFlags)1 << 2)
+#define MOJO_READ_DATA_FLAG_PEEK ((MojoReadDataFlags)1 << 3)
 #endif
 
 #ifdef __cplusplus
@@ -254,7 +259,9 @@ MOJO_SYSTEM_EXPORT MojoResult
 // must be a multiple of the data pipe's element size) bytes of data to
 // |elements| and set |*num_bytes| to the amount actually read. If flags has
 // |MOJO_READ_DATA_FLAG_ALL_OR_NONE| set, it will either read exactly
-// |*num_bytes| bytes of data or none.
+// |*num_bytes| bytes of data or none. Additionally, if flags has
+// |MOJO_READ_DATA_FLAG_PEEK| set, the data read will remain in the pipe and be
+// available to future reads.
 //
 // If flags has |MOJO_READ_DATA_FLAG_DISCARD| set, it discards up to
 // |*num_bytes| (which again be a multiple of the element size) bytes of data,
@@ -300,7 +307,8 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadData(MojoHandle data_pipe_consumer_handle,
 // |*buffer_num_bytes| will be at least as large as its input value, which must
 // also be a multiple of the element size (if |MOJO_READ_DATA_FLAG_ALL_OR_NONE|
 // is not set, the input value of |*buffer_num_bytes| is ignored). |flags| must
-// not have |MOJO_READ_DATA_FLAG_DISCARD| or |MOJO_READ_DATA_FLAG_QUERY| set.
+// not have |MOJO_READ_DATA_FLAG_DISCARD|, |MOJO_READ_DATA_FLAG_QUERY|, or
+// |MOJO_READ_DATA_FLAG_PEEK| set.
 //
 // During a two-phase read, |data_pipe_consumer_handle| is *not* readable.
 // E.g., if another thread tries to read from it, it will get

@@ -45,8 +45,8 @@ void ApplicationTestBase::SetUp() {
   Environment::InstantiateDefaultRunLoop();
 
   // New applications are constructed for each test to avoid persisting state.
-  application_impl_ =
-      new ApplicationImpl(GetApplicationDelegate(), PassShellHandle());
+  application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
+                                          PassShellHandle());
 
   // Fake application initialization with the given command line arguments.
   application_impl_->Initialize(args_.Clone());

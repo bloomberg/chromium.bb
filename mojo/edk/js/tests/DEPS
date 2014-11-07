@@ -1,0 +1,7 @@
+include_rules = [
+  "+base",
+  "+gin",
+  "+v8",
+  "+mojo/edk/js/core.h",
+  "+mojo/edk/js/support.h",
+]

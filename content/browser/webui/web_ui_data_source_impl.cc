@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "content/grit/content_resources.h"
 #include "content/public/common/content_client.h"
-#include "mojo/public/js/bindings/constants.h"
+#include "mojo/public/js/constants.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
 

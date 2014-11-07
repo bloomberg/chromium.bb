@@ -155,36 +155,6 @@
         'public/mojo_public.gyp:mojo_application_base',
        ],
     },
-    {
-      # GN version: //mojo/bindings/js
-      'target_name': 'mojo_js_bindings_lib',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../gin/gin.gyp:gin',
-        '../v8/tools/gyp/v8.gyp:v8',
-        'mojo_common_lib',
-      ],
-      'export_dependent_settings': [
-        '../base/base.gyp:base',
-        '../gin/gin.gyp:gin',
-        'mojo_common_lib',
-      ],
-      'sources': [
-        # Sources list duplicated in GN build.
-        'bindings/js/core.cc',
-        'bindings/js/core.h',
-        'bindings/js/drain_data.cc',
-        'bindings/js/drain_data.h',
-        'bindings/js/handle.cc',
-        'bindings/js/handle.h',
-        'bindings/js/handle_close_observer.h',
-        'bindings/js/support.cc',
-        'bindings/js/support.h',
-        'bindings/js/waiting_callback.cc',
-        'bindings/js/waiting_callback.h',
-      ],
-    },
   ],
   'conditions': [
     ['OS=="android"', {

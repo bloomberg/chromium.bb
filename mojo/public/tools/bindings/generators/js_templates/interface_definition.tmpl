@@ -32,17 +32,14 @@
           codec.kMessageExpectsResponse, 0);
       builder.encodeStruct({{interface.name}}_{{method.name}}_Params, params);
       var message = builder.finish();
-      this.receiver_.acceptWithResponder(message, {
-          accept: function(message) {
-            var reader = new codec.MessageReader(message);
-            var responseParams =
-                reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
-            resolve(responseParams);
-          },
-          reject: function(result) {
-            reject(Error("Connection error: " + result));
-          },
-      }).catch(reject);
+      this.receiver_.acceptAndExpectResponse(message).then(function(message) {
+        var reader = new codec.MessageReader(message);
+        var responseParams =
+            reader.decodeStruct({{interface.name}}_{{method.name}}_ResponseParams);
+        resolve(responseParams);
+      }).catch(function(result) {
+        reject(Error("Connection error: " + result));
+      });
     }.bind(this));
 {%- endif %}
   };

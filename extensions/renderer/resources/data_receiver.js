@@ -5,8 +5,8 @@
 define('data_receiver', [
     'device/serial/data_stream.mojom',
     'device/serial/data_stream_serialization.mojom',
-    'mojo/public/js/bindings/core',
-    'mojo/public/js/bindings/router',
+    'mojo/public/js/core',
+    'mojo/public/js/router',
 ], function(dataStream, serialization, core, router) {
   /**
    * @module data_receiver
@@ -135,7 +135,7 @@ define('data_receiver', [
                                           pendingData,
                                           paused) {
     /**
-     * The [Router]{@link module:mojo/public/js/bindings/router.Router} for the
+     * The [Router]{@link module:mojo/public/js/router.Router} for the
      * connection to the DataSource.
      * @private
      */

@@ -111,8 +111,11 @@ interface ViewManagerService {
   //
   // A view may only be a root of one connection at a time. Subsequent calls to
   // Embed() for the same view result in the view being removed from the
-  // current connection. The current connection is told this by way of
+  // currently embedded app. The embedded app is told this by way of
   // OnViewDeleted().
+  //
+  // The embedder can detect when the embedded app disconnects by way of
+  // OnEmbeddedAppDisconnected().
   //
   // When a connection embeds an app the connection no longer has priviledges
   // to access or see any of the children of the view. If the view had existing
@@ -143,6 +146,9 @@ interface ViewManagerClient {
           ViewData root,
           ServiceProvider&? parent_service_provider,
           handle<message_pipe> window_manager_pipe);
+
+  // Invoked when the application embedded at |view| is disconnected.
+  OnEmbeddedAppDisconnected(uint32 view);
 
   // Invoked when a view's bounds have changed.
   OnViewBoundsChanged(uint32 view,

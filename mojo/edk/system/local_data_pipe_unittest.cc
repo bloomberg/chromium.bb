@@ -118,8 +118,10 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   num_bytes = static_cast<uint32_t>(arraysize(elements) * sizeof(elements[0]));
   EXPECT_EQ(
       MOJO_RESULT_SHOULD_WAIT,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
 
   // Query; nothing there yet.
   num_bytes = 0;
@@ -135,8 +137,10 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   num_bytes = sizeof(elements[0]) + 1;
   EXPECT_EQ(
       MOJO_RESULT_INVALID_ARGUMENT,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
 
   // Write two elements.
   elements[0] = 123;
@@ -160,13 +164,34 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
   EXPECT_EQ(1u * sizeof(elements[0]), num_bytes);
   EXPECT_EQ(123, elements[0]);
   EXPECT_EQ(-1, elements[1]);
 
   // Query.
+  num_bytes = 0;
+  EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(MakeUserPointer(&num_bytes)));
+  EXPECT_EQ(1 * sizeof(elements[0]), num_bytes);
+
+  // Peek one element.
+  elements[0] = -1;
+  elements[1] = -1;
+  num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           true));
+  EXPECT_EQ(1u * sizeof(elements[0]), num_bytes);
+  EXPECT_EQ(456, elements[0]);
+  EXPECT_EQ(-1, elements[1]);
+
+  // Query. Still has 1 element remaining.
   num_bytes = 0;
   EXPECT_EQ(MOJO_RESULT_OK, dp->ConsumerQueryData(MakeUserPointer(&num_bytes)));
   EXPECT_EQ(1 * sizeof(elements[0]), num_bytes);
@@ -177,8 +202,10 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
   EXPECT_EQ(
       MOJO_RESULT_OUT_OF_RANGE,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), true));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           true,
+                           false));
   EXPECT_EQ(-1, elements[0]);
   EXPECT_EQ(-1, elements[1]);
 
@@ -188,8 +215,10 @@ TEST(LocalDataPipeTest, SimpleReadWrite) {
   num_bytes = static_cast<uint32_t>(2u * sizeof(elements[0]));
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
   EXPECT_EQ(456, elements[0]);
   EXPECT_EQ(-1, elements[1]);
 
@@ -262,6 +291,32 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
 
+  // Peek one element.
+  elements[0] = -1;
+  elements[1] = -1;
+  num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           true,
+                           true));
+  EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+  EXPECT_EQ(123, elements[0]);
+  EXPECT_EQ(-1, elements[1]);
+
+  // Add a waiter.
+  waiter.Init();
+  ASSERT_EQ(
+      MOJO_RESULT_OK,
+      dp->ProducerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_WRITABLE, 56, nullptr));
+  // And it still shouldn't be writable yet.
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED, waiter.Wait(0, nullptr));
+  hss = HandleSignalsState();
+  dp->ProducerRemoveWaiter(&waiter, &hss);
+  EXPECT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfiable_signals);
+
   // Do it again.
   waiter.Init();
   ASSERT_EQ(
@@ -274,8 +329,10 @@ TEST(LocalDataPipeTest, BasicProducerWaiting) {
   num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(elements), MakeUserPointer(&num_bytes), true));
+      dp->ConsumerReadData(UserPointer<void>(elements),
+                           MakeUserPointer(&num_bytes),
+                           true,
+                           false));
   EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
   EXPECT_EQ(123, elements[0]);
   EXPECT_EQ(-1, elements[1]);
@@ -432,14 +489,39 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
     EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
 
+    // Peek one element.
+    elements[0] = -1;
+    elements[1] = -1;
+    num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        dp->ConsumerReadData(UserPointer<void>(elements),
+                             MakeUserPointer(&num_bytes),
+                             true,
+                             true));
+    EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
+    EXPECT_EQ(456, elements[0]);
+    EXPECT_EQ(-1, elements[1]);
+
+    // Should still be readable.
+    waiter.Init();
+    hss = HandleSignalsState();
+    EXPECT_EQ(
+        MOJO_RESULT_ALREADY_EXISTS,
+        dp->ConsumerAddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 78, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE, hss.satisfiable_signals);
+
     // Read one element.
     elements[0] = -1;
     elements[1] = -1;
     num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
     EXPECT_EQ(
         MOJO_RESULT_OK,
-        dp->ConsumerReadData(
-            UserPointer<void>(elements), MakeUserPointer(&num_bytes), true));
+        dp->ConsumerReadData(UserPointer<void>(elements),
+                             MakeUserPointer(&num_bytes),
+                             true,
+                             false));
     EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
     EXPECT_EQ(456, elements[0]);
     EXPECT_EQ(-1, elements[1]);
@@ -485,8 +567,10 @@ TEST(LocalDataPipeTest, BasicConsumerWaiting) {
     num_bytes = static_cast<uint32_t>(1u * sizeof(elements[0]));
     EXPECT_EQ(
         MOJO_RESULT_OK,
-        dp->ConsumerReadData(
-            UserPointer<void>(elements), MakeUserPointer(&num_bytes), true));
+        dp->ConsumerReadData(UserPointer<void>(elements),
+                             MakeUserPointer(&num_bytes),
+                             true,
+                             false));
     EXPECT_EQ(static_cast<uint32_t>(1u * sizeof(elements[0])), num_bytes);
     EXPECT_EQ(789, elements[0]);
     EXPECT_EQ(-1, elements[1]);
@@ -843,8 +927,10 @@ TEST(LocalDataPipeTest, BasicMayDiscardWaiting) {
   element = 0;
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(&element), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(&element),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
   EXPECT_EQ(static_cast<uint32_t>(sizeof(int32_t)), num_bytes);
   EXPECT_EQ(456, element);
 
@@ -908,8 +994,10 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 5u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 false,
+                                 false));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   int32_t expected_buffer[100];
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
@@ -933,8 +1021,10 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = 5u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 false,
+                                 false));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   expected_buffer[0] = 8;
@@ -972,8 +1062,10 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = sizeof(buffer);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 false,
+                                 false));
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   expected_buffer[0] = 104;
@@ -1062,8 +1154,10 @@ TEST(LocalDataPipeTest, MayDiscard) {
   num_bytes = sizeof(buffer);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 false,
+                                 false));
   EXPECT_EQ(8u * sizeof(int32_t), num_bytes);
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   expected_buffer[0] = 500;
@@ -1134,8 +1228,10 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 11u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   int32_t expected_buffer[100];
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
@@ -1172,8 +1268,10 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 5u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   EXPECT_EQ(5u * sizeof(int32_t), num_bytes);
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   Seq(100, 5, expected_buffer);
@@ -1183,8 +1281,10 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 6u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
@@ -1211,8 +1311,10 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 4u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
@@ -1225,8 +1327,10 @@ TEST(LocalDataPipeTest, AllOrNone) {
   num_bytes = 2u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   EXPECT_EQ(2u * sizeof(int32_t), num_bytes);
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   Seq(400, 2, expected_buffer);
@@ -1291,8 +1395,10 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   num_bytes = 1u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   EXPECT_EQ(1u * sizeof(int32_t), num_bytes);
   int32_t expected_buffer[100];
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
@@ -1303,8 +1409,10 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   num_bytes = 10u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OUT_OF_RANGE,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   EXPECT_EQ(0, memcmp(buffer, expected_buffer, sizeof(buffer)));
 
@@ -1336,8 +1444,10 @@ TEST(LocalDataPipeTest, AllOrNoneMayDiscard) {
   num_bytes = 10u * sizeof(int32_t);
   memset(buffer, 0xab, sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            dp->ConsumerReadData(
-                UserPointer<void>(buffer), MakeUserPointer(&num_bytes), true));
+            dp->ConsumerReadData(UserPointer<void>(buffer),
+                                 MakeUserPointer(&num_bytes),
+                                 true,
+                                 false));
   memset(expected_buffer, 0xab, sizeof(expected_buffer));
   EXPECT_EQ(10u * sizeof(int32_t), num_bytes);
   Seq(300, 10, expected_buffer);
@@ -1525,8 +1635,10 @@ TEST(LocalDataPipeTest, WrapAround) {
   num_bytes = 10u;
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(read_buffer), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(read_buffer),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
   EXPECT_EQ(10u, num_bytes);
   EXPECT_EQ(0, memcmp(read_buffer, &test_data[0], 10u));
 
@@ -1572,8 +1684,10 @@ TEST(LocalDataPipeTest, WrapAround) {
   memset(read_buffer, 0, num_bytes);
   EXPECT_EQ(
       MOJO_RESULT_OK,
-      dp->ConsumerReadData(
-          UserPointer<void>(read_buffer), MakeUserPointer(&num_bytes), false));
+      dp->ConsumerReadData(UserPointer<void>(read_buffer),
+                           MakeUserPointer(&num_bytes),
+                           false,
+                           false));
   EXPECT_EQ(100u, num_bytes);
   EXPECT_EQ(0, memcmp(read_buffer, &test_data[10], 100u));
 
@@ -1753,13 +1867,27 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     // Close the producer.
     dp->ProducerClose();
 
-    // Read that data.
+    // Peek that data.
     char buffer[1000];
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(
         MOJO_RESULT_OK,
-        dp->ConsumerReadData(
-            UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+        dp->ConsumerReadData(UserPointer<void>(buffer),
+                             MakeUserPointer(&num_bytes),
+                             false,
+                             true));
+    EXPECT_EQ(kTestDataSize, num_bytes);
+    EXPECT_EQ(0, memcmp(buffer, kTestData, kTestDataSize));
+
+    // Read that data.
+    memset(buffer, 0, 1000);
+    num_bytes = static_cast<uint32_t>(sizeof(buffer));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        dp->ConsumerReadData(UserPointer<void>(buffer),
+                             MakeUserPointer(&num_bytes),
+                             false,
+                             false));
     EXPECT_EQ(kTestDataSize, num_bytes);
     EXPECT_EQ(0, memcmp(buffer, kTestData, kTestDataSize));
 
@@ -1767,8 +1895,10 @@ TEST(LocalDataPipeTest, CloseWriteRead) {
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(
         MOJO_RESULT_FAILED_PRECONDITION,
-        dp->ConsumerReadData(
-            UserPointer<void>(buffer), MakeUserPointer(&num_bytes), false));
+        dp->ConsumerReadData(UserPointer<void>(buffer),
+                             MakeUserPointer(&num_bytes),
+                             false,
+                             false));
 
     // A two-phase read should also fail.
     const void* read_buffer_ptr = nullptr;

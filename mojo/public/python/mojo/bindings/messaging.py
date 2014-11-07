@@ -247,6 +247,14 @@ class Connector(MessageReceiver):
       self._cancellable = None
     self._handle.Close()
 
+  def PassMessagePipe(self):
+    if self._cancellable:
+      self._cancellable()
+      self._cancellable = None
+    result = self._handle
+    self._handle = system.Handle()
+    return result
+
   def _OnAsyncWaiterResult(self, result):
     self._cancellable = None
     if result == system.RESULT_OK:
@@ -319,7 +327,7 @@ class Router(MessageReceiverWithResponder):
     # The message must have a header.
     header = message.header
     assert header.expects_response
-    request_id = self.NextRequestId()
+    request_id = self._NextRequestId()
     header.request_id = request_id
     if not self._connector.Accept(message):
       return False
@@ -328,6 +336,9 @@ class Router(MessageReceiverWithResponder):
 
   def Close(self):
     self._connector.Close()
+
+  def PassMessagePipe(self):
+    return self._connector.PassMessagePipe()
 
   def _HandleIncomingMessage(self, message):
     header = message.header
@@ -350,7 +361,7 @@ class Router(MessageReceiverWithResponder):
     # Ok to drop the message
     return False
 
-  def NextRequestId(self):
+  def _NextRequestId(self):
     request_id = self._next_request_id
     while request_id == 0 or request_id in self._responders:
       request_id = (request_id + 1) % (1 << 64)

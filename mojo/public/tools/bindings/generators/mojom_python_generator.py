@@ -51,22 +51,6 @@ _kind_to_typecode_for_native_array = {
   mojom.DOUBLE: 'd',
 }
 
-_kind_to_typecode = dict(_kind_to_typecode_for_native_array)
-_kind_to_typecode.update({
-  mojom.INT64:                 'q',
-  mojom.UINT64:                'Q',
-  mojom.HANDLE:                'i',
-  mojom.DCPIPE:                'i',
-  mojom.DPPIPE:                'i',
-  mojom.MSGPIPE:               'i',
-  mojom.SHAREDBUFFER:          'i',
-  mojom.NULLABLE_HANDLE:       'i',
-  mojom.NULLABLE_DCPIPE:       'i',
-  mojom.NULLABLE_DPPIPE:       'i',
-  mojom.NULLABLE_MSGPIPE:      'i',
-  mojom.NULLABLE_SHAREDBUFFER: 'i',
-})
-
 
 def NameToComponent(name):
   # insert '_' between anything and a Title name (e.g, HTTPEntry2FooBar ->
@@ -137,7 +121,7 @@ def GetFieldType(kind, field=None):
   if mojom.IsArrayKind(kind):
     arguments = []
     if kind.kind in _kind_to_typecode_for_native_array:
-      arguments.append('%r' %_kind_to_typecode_for_native_array[kind.kind])
+      arguments.append('%r' % _kind_to_typecode_for_native_array[kind.kind])
     elif kind.kind != mojom.BOOL:
       arguments.append(GetFieldType(kind.kind))
     if mojom.IsNullableKind(kind):
@@ -169,7 +153,19 @@ def GetFieldType(kind, field=None):
   if mojom.IsEnumKind(kind):
     return GetFieldType(mojom.INT32)
 
-  return _kind_to_type.get(kind, '_descriptor.TYPE_NONE')
+  if mojom.IsInterfaceKind(kind):
+    arguments = [ 'lambda: %s' % GetFullyQualifiedName(kind) ]
+    if mojom.IsNullableKind(kind):
+      arguments.append('nullable=True')
+    return '_descriptor.InterfaceType(%s)' % ', '.join(arguments)
+
+  if mojom.IsInterfaceRequestKind(kind):
+    arguments = []
+    if mojom.IsNullableKind(kind):
+      arguments.append('nullable=True')
+    return '_descriptor.InterfaceRequestType(%s)' % ', '.join(arguments)
+
+  return _kind_to_type[kind]
 
 def GetFieldDescriptor(packed_field):
   field = packed_field.field

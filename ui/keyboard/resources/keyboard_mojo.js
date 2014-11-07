@@ -7,7 +7,7 @@ var input_focused_event;
 
 if (!chrome.virtualKeyboardPrivate) {
   define('main', [
-      'mojo/public/js/bindings/connection',
+      'mojo/public/js/connection',
       'ui/keyboard/webui/keyboard.mojom',
       'content/public/renderer/service_provider',
   ], function(connector, keyboard, serviceProvider) {

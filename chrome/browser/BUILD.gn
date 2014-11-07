@@ -189,7 +189,7 @@ static_library("browser") {
       "//mojo/edk/system",
       "//mojo/environment:chromium",
       "//mojo/public/cpp/bindings",
-      "//mojo/public/js/bindings",
+      "//mojo/public/js",
       "//net:extras",
       "//net:net_with_v8",
       "//storage/browser",

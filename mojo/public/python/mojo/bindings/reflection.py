@@ -181,9 +181,9 @@ class MojoInterfaceType(type):
     methods = [_MethodDescriptor(x) for x in descriptor.get('methods', [])]
     for method in methods:
       dictionary[method.name] = _NotImplemented
-    client_class = descriptor.get('client', None)
+    client_class_getter = descriptor.get('client', None)
 
-    interface_manager = InterfaceManager(name, methods, client_class)
+    interface_manager = InterfaceManager(name, methods, client_class_getter)
     dictionary.update({
         'client': None,
         'manager': None,
@@ -207,6 +207,31 @@ class MojoInterfaceType(type):
     raise AttributeError, 'can\'t delete attribute'
 
 
+class InterfaceProxy(object):
+  """
+  A proxy allows to access a remote interface through a message pipe.
+  """
+  pass
+
+
+class InterfaceRequest(object):
+  """
+  An interface request allows to send a request for an interface to a remote
+  object and start using it immediately.
+  """
+
+  def __init__(self, handle):
+    self._handle = handle
+
+  def IsPending(self):
+    return self._handle.IsValid()
+
+  def PassMessagePipe(self):
+    result = self._handle
+    self._handle = None
+    return result
+
+
 class InterfaceManager(object):
   """
   Manager for an interface class. The manager contains the operation that allows
@@ -214,16 +239,23 @@ class InterfaceManager(object):
   over a pipe.
   """
 
-  def __init__(self, name, methods, client_class):
+  def __init__(self, name, methods, client_class_getter):
     self.name = name
     self.methods = methods
-    if client_class:
-      self.client_manager = client_class.manager
-    else:
-      self.client_manager = None
     self.interface_class = None
+    self._client_class_getter = client_class_getter
+    self._client_manager = None
+    self._client_manager_computed = False
     self._proxy_class = None
     self._stub_class = None
+
+  @property
+  def client_manager(self):
+    if not self._client_manager_computed:
+      self._client_manager_computed = True
+      if self._client_class_getter:
+        self._client_manager = self._client_class_getter().manager
+    return self._client_manager
 
   def Proxy(self, handle):
     router = messaging.Router(handle)
@@ -267,7 +299,7 @@ class InterfaceManager(object):
       for method in self.methods:
         dictionary[method.name] = _ProxyMethodCall(method)
       self._proxy_class = type('%sProxy' % self.name,
-                               (self.interface_class,),
+                               (self.interface_class, InterfaceProxy),
                                dictionary)
 
     proxy = self._proxy_class(router, error_handler)
@@ -300,6 +332,9 @@ class InstanceManager(object):
 
   def Close(self):
     self.router.Close()
+
+  def PassMessagePipe(self):
+    return self.router.PassMessagePipe()
 
 
 class _MethodDescriptor(object):

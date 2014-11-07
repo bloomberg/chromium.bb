@@ -266,7 +266,7 @@ test("extensions_unittests") {
     "//extensions/common",
     "//extensions/renderer",
     "//extensions/strings",
-    "//mojo/bindings/js",
+    "//mojo/edk/js",
     "//mojo/edk/system",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
