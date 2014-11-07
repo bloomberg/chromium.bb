@@ -25,7 +25,7 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate,
   NativeDisplayDelegateDri(DriWrapper* dri,
                            ScreenManager* screen_manager,
                            DeviceManager* device_manager);
-  virtual ~NativeDisplayDelegateDri();
+  ~NativeDisplayDelegateDri() override;
 
   DisplaySnapshot* FindDisplaySnapshot(int64_t id);
   const DisplayMode* FindDisplayMode(const gfx::Size& size,
@@ -33,36 +33,32 @@ class NativeDisplayDelegateDri : public NativeDisplayDelegate,
                                      float refresh_rate);
 
   // NativeDisplayDelegate overrides:
-  virtual void Initialize() override;
-  virtual void GrabServer() override;
-  virtual void UngrabServer() override;
-  virtual bool TakeDisplayControl() override;
-  virtual bool RelinquishDisplayControl() override;
-  virtual void SyncWithServer() override;
-  virtual void SetBackgroundColor(uint32_t color_argb) override;
-  virtual void ForceDPMSOn() override;
-  virtual std::vector<DisplaySnapshot*> GetDisplays() override;
-  virtual void AddMode(const DisplaySnapshot& output,
-                       const DisplayMode* mode) override;
-  virtual bool Configure(const DisplaySnapshot& output,
-                         const DisplayMode* mode,
-                         const gfx::Point& origin) override;
-  virtual void CreateFrameBuffer(const gfx::Size& size) override;
-  virtual bool GetHDCPState(const DisplaySnapshot& output,
-                            HDCPState* state) override;
-  virtual bool SetHDCPState(const DisplaySnapshot& output,
-                            HDCPState state) override;
-  virtual std::vector<ui::ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(
+  void Initialize() override;
+  void GrabServer() override;
+  void UngrabServer() override;
+  bool TakeDisplayControl() override;
+  bool RelinquishDisplayControl() override;
+  void SyncWithServer() override;
+  void SetBackgroundColor(uint32_t color_argb) override;
+  void ForceDPMSOn() override;
+  std::vector<DisplaySnapshot*> GetDisplays() override;
+  void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
+  bool Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
+                 const gfx::Point& origin) override;
+  void CreateFrameBuffer(const gfx::Size& size) override;
+  bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
+  bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;
+  std::vector<ui::ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
       const ui::DisplaySnapshot& output) override;
-  virtual bool SetColorCalibrationProfile(
+  bool SetColorCalibrationProfile(
       const ui::DisplaySnapshot& output,
       ui::ColorCalibrationProfile new_profile) override;
-  virtual void AddObserver(NativeDisplayObserver* observer) override;
-  virtual void RemoveObserver(NativeDisplayObserver* observer) override;
+  void AddObserver(NativeDisplayObserver* observer) override;
+  void RemoveObserver(NativeDisplayObserver* observer) override;
 
   // DeviceEventObserver overrides:
-  virtual void OnDeviceEvent(const DeviceEvent& event) override;
+  void OnDeviceEvent(const DeviceEvent& event) override;
 
  private:
   // Notify ScreenManager of all the displays that were present before the

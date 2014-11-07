@@ -28,7 +28,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdevImpl
                           CursorDelegateEvdev* cursor,
                           KeyboardEvdev* keyboard,
                           const EventDispatchCallback& callback);
-  virtual ~EventConverterEvdevImpl();
+  ~EventConverterEvdevImpl() override;
 
   // EventConverterEvdev:
   void OnFileCanReadWithoutBlocking(int fd) override;

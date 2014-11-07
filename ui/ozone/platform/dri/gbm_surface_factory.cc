@@ -26,10 +26,9 @@ namespace {
 class SingleOverlay : public OverlayCandidatesOzone {
  public:
   SingleOverlay() {}
-  virtual ~SingleOverlay() {}
+  ~SingleOverlay() override {}
 
-  virtual void CheckOverlaySupport(
-      OverlaySurfaceCandidateList* candidates) override {
+  void CheckOverlaySupport(OverlaySurfaceCandidateList* candidates) override {
     if (candidates->size() == 2) {
       OverlayCandidatesOzone::OverlaySurfaceCandidate* first =
           &(*candidates)[0];

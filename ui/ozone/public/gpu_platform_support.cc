@@ -15,8 +15,8 @@ namespace {
 class StubGpuPlatformSupport : public GpuPlatformSupport {
  public:
   // GpuPlatformSupport:
-  virtual void OnChannelEstablished(IPC::Sender* sender) override {}
-  virtual bool OnMessageReceived(const IPC::Message&) override { return false; }
+  void OnChannelEstablished(IPC::Sender* sender) override {}
+  bool OnMessageReceived(const IPC::Message&) override { return false; }
 };
 
 }  // namespace

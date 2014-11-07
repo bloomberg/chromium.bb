@@ -42,7 +42,7 @@ class EventReaderLibevdevCros : public EventConverterEvdev {
   ~EventReaderLibevdevCros();
 
   // EventConverterEvdev:
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
 
  private:
   static void OnSynReport(void* data,

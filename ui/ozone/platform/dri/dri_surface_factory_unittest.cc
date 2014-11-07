@@ -36,11 +36,11 @@ class MockScreenManager : public ui::ScreenManager {
                     ui::ScanoutBufferGenerator* buffer_generator)
       : ScreenManager(dri, buffer_generator),
         dri_(dri) {}
-  virtual ~MockScreenManager() {}
+  ~MockScreenManager() override {}
 
   // Normally we'd use DRM to figure out the controller configuration. But we
   // can't use DRM in unit tests, so we just create a fake configuration.
-  virtual void ForceInitializationOfPrimaryDisplay() override {
+  void ForceInitializationOfPrimaryDisplay() override {
     ConfigureDisplayController(
         kDefaultCrtc, kDefaultConnector, gfx::Point(), kDefaultMode);
   }
@@ -57,8 +57,8 @@ class DriSurfaceFactoryTest : public testing::Test {
  public:
   DriSurfaceFactoryTest() {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;

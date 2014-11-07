@@ -37,7 +37,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
  public:
   EventFactoryEvdev(CursorDelegateEvdev* cursor,
                     DeviceManager* device_manager);
-  virtual ~EventFactoryEvdev();
+  ~EventFactoryEvdev() override;
 
   void WarpCursorTo(gfx::AcceleratedWidget widget,
                     const gfx::PointF& location);
@@ -46,10 +46,10 @@ class EVENTS_OZONE_EVDEV_EXPORT EventFactoryEvdev : public DeviceEventObserver,
   // DeviceEventObserver overrides:
   //
   // Callback for device add (on UI thread).
-  virtual void OnDeviceEvent(const DeviceEvent& event) override;
+  void OnDeviceEvent(const DeviceEvent& event) override;
 
   // PlatformEventSource:
-  virtual void OnDispatcherListChanged() override;
+  void OnDispatcherListChanged() override;
 
  private:
   // Post a task to dispatch an event.

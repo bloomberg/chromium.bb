@@ -47,14 +47,13 @@ class EVENTS_OZONE_EVDEV_EXPORT GestureInterpreterLibevdevCros
                                  KeyboardEvdev* keyboard,
                                  GesturePropertyProvider* property_provider,
                                  const EventDispatchCallback& callback);
-  virtual ~GestureInterpreterLibevdevCros();
+  ~GestureInterpreterLibevdevCros() override;
 
   // Overriden from ui::EventReaderLibevdevCros::Delegate
-  virtual void OnLibEvdevCrosOpen(Evdev* evdev,
-                                  EventStateRec* evstate) override;
-  virtual void OnLibEvdevCrosEvent(Evdev* evdev,
-                                   EventStateRec* evstate,
-                                   const timeval& time) override;
+  void OnLibEvdevCrosOpen(Evdev* evdev, EventStateRec* evstate) override;
+  void OnLibEvdevCrosEvent(Evdev* evdev,
+                           EventStateRec* evstate,
+                           const timeval& time) override;
 
   // Handler for gesture events generated from libgestures.
   void OnGestureReady(const Gesture* gesture);

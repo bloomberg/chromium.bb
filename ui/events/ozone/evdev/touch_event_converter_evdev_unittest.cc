@@ -39,7 +39,7 @@ namespace ui {
 class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
  public:
   MockTouchEventConverterEvdev(int fd, base::FilePath path);
-  virtual ~MockTouchEventConverterEvdev() {};
+  ~MockTouchEventConverterEvdev() override {}
 
   void ConfigureReadMock(struct input_event* queue,
                          long read_this_many,
@@ -63,7 +63,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
     dispatched_events_.push_back(event.release());
   }
 
-  virtual bool Reinitialize() override { return true; }
+  bool Reinitialize() override { return true; }
 
  private:
   int read_pipe_;
@@ -124,7 +124,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
   TouchEventConverterEvdevTest() {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Set up pipe to satisfy message pump (unused).
     int evdev_io[2];
     if (pipe(evdev_io))
@@ -137,7 +137,7 @@ class TouchEventConverterEvdevTest : public testing::Test {
         events_in_, base::FilePath(kTestDevicePath));
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     delete device_;
     delete loop_;
   }

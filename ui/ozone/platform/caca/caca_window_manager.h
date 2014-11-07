@@ -20,7 +20,7 @@ class CacaWindow;
 class CacaWindowManager : public SurfaceFactoryOzone {
  public:
   CacaWindowManager();
-  virtual ~CacaWindowManager();
+  ~CacaWindowManager() override;
 
   // Register a new libcaca window/instance. Returns the window id.
   int32_t AddWindow(CacaWindow* window);
@@ -29,10 +29,10 @@ class CacaWindowManager : public SurfaceFactoryOzone {
   void RemoveWindow(int32_t window_id, CacaWindow* window);
 
   // ui::SurfaceFactoryOzone overrides:
-  virtual bool LoadEGLGLES2Bindings(
+  bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
-  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
 
  private:

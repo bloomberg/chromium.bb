@@ -33,7 +33,7 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
   DriSurfaceFactory(DriWrapper* drm,
                     ScreenManager* screen_manager,
                     DriWindowDelegateManager* window_manager);
-  virtual ~DriSurfaceFactory();
+  ~DriSurfaceFactory() override;
 
   // Describes the state of the hardware after initialization.
   enum HardwareState {
@@ -49,19 +49,19 @@ class DriSurfaceFactory : public SurfaceFactoryOzone,
   void ShutdownHardware();
 
   // SurfaceFactoryOzone:
-  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget widget) override;
-  virtual bool LoadEGLGLES2Bindings(
+  bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 
   // HardwareCursorDelegate:
-  virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                 const std::vector<SkBitmap>& bitmaps,
-                                 const gfx::Point& location,
-                                 int frame_delay_ms) override;
-  virtual void MoveHardwareCursor(gfx::AcceleratedWidget window,
-                                  const gfx::Point& location) override;
+  void SetHardwareCursor(gfx::AcceleratedWidget widget,
+                         const std::vector<SkBitmap>& bitmaps,
+                         const gfx::Point& location,
+                         int frame_delay_ms) override;
+  void MoveHardwareCursor(gfx::AcceleratedWidget window,
+                          const gfx::Point& location) override;
 
  protected:
   // Draw the last set cursor & update the cursor plane.

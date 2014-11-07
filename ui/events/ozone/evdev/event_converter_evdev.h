@@ -18,7 +18,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
     : public base::MessagePumpLibevent::Watcher {
  public:
   EventConverterEvdev(int fd, const base::FilePath& path, int id);
-  virtual ~EventConverterEvdev();
+  ~EventConverterEvdev() override;
 
   int id() const { return id_; }
 
@@ -42,7 +42,7 @@ class EVENTS_OZONE_EVDEV_EXPORT EventConverterEvdev
 
  protected:
   // base::MessagePumpLibevent::Watcher:
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   // File descriptor to read.
   int fd_;

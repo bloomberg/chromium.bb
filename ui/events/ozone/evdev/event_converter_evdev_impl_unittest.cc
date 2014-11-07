@@ -35,7 +35,7 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
                                 callback) {
     Start();
   }
-  virtual ~MockEventConverterEvdevImpl() {}
+  ~MockEventConverterEvdevImpl() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockEventConverterEvdevImpl);
@@ -44,18 +44,18 @@ class MockEventConverterEvdevImpl : public EventConverterEvdevImpl {
 class MockCursorEvdev : public CursorDelegateEvdev {
  public:
   MockCursorEvdev() {}
-  virtual ~MockCursorEvdev() {}
+  ~MockCursorEvdev() override {}
 
   // CursorDelegateEvdev:
-  virtual void MoveCursorTo(gfx::AcceleratedWidget widget,
-                            const gfx::PointF& location) override {
+  void MoveCursorTo(gfx::AcceleratedWidget widget,
+                    const gfx::PointF& location) override {
     cursor_location_ = location;
   }
-  virtual void MoveCursor(const gfx::Vector2dF& delta) override {
+  void MoveCursor(const gfx::Vector2dF& delta) override {
     cursor_location_ = gfx::PointF(delta.x(), delta.y());
   }
-  virtual bool IsCursorVisible() override { return 1; }
-  virtual gfx::PointF location() override { return cursor_location_; }
+  bool IsCursorVisible() override { return 1; }
+  gfx::PointF location() override { return cursor_location_; }
 
  private:
   // The location of the mock cursor.

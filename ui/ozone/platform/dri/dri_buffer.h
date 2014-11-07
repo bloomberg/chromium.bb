@@ -28,12 +28,12 @@ class DriBuffer : public ScanoutBuffer {
   SkCanvas* GetCanvas() const;
 
   // ScanoutBuffer:
-  virtual uint32_t GetFramebufferId() const override;
-  virtual uint32_t GetHandle() const override;
-  virtual gfx::Size GetSize() const override;
+  uint32_t GetFramebufferId() const override;
+  uint32_t GetHandle() const override;
+  gfx::Size GetSize() const override;
 
  protected:
-  virtual ~DriBuffer();
+  ~DriBuffer() override;
 
   DriWrapper* dri_;  // Not owned.
 
@@ -56,10 +56,10 @@ class DriBuffer : public ScanoutBuffer {
 class DriBufferGenerator : public ScanoutBufferGenerator {
  public:
   DriBufferGenerator(DriWrapper* dri);
-  virtual ~DriBufferGenerator();
+  ~DriBufferGenerator() override;
 
   // ScanoutBufferGenerator:
-  virtual scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override;
+  scoped_refptr<ScanoutBuffer> Create(const gfx::Size& size) override;
 
  private:
   DriWrapper* dri_;  // Not owned.

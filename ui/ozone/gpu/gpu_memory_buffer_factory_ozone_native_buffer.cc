@@ -25,17 +25,17 @@ class GLImageOzoneNativePixmap : public gfx::GLImageEGL {
     return true;
   }
 
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int z_order,
-                                    gfx::OverlayTransform transform,
-                                    const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) override {
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override {
     return SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
         widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
   }
 
  protected:
-  virtual ~GLImageOzoneNativePixmap() {}
+  ~GLImageOzoneNativePixmap() override {}
 
  private:
   using gfx::GLImageEGL::Initialize;
@@ -57,17 +57,17 @@ class GLImageOzoneNativePixmapDmaBuf : public gfx::GLImageLinuxDMABuffer {
     return true;
   }
 
-  virtual bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
-                                    int z_order,
-                                    gfx::OverlayTransform transform,
-                                    const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) override {
+  bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
+                            int z_order,
+                            gfx::OverlayTransform transform,
+                            const gfx::Rect& bounds_rect,
+                            const gfx::RectF& crop_rect) override {
     return SurfaceFactoryOzone::GetInstance()->ScheduleOverlayPlane(
         widget, z_order, transform, pixmap_, bounds_rect, crop_rect);
   }
 
  protected:
-  virtual ~GLImageOzoneNativePixmapDmaBuf() {}
+  ~GLImageOzoneNativePixmapDmaBuf() override {}
 
  private:
   scoped_refptr<NativePixmap> pixmap_;

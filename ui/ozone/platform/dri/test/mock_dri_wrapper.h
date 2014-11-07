@@ -20,7 +20,7 @@ class CrtcController;
 class MockDriWrapper : public ui::DriWrapper {
  public:
   MockDriWrapper(int fd);
-  virtual ~MockDriWrapper();
+  ~MockDriWrapper() override;
 
   int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
@@ -56,51 +56,48 @@ class MockDriWrapper : public ui::DriWrapper {
   }
 
   // DriWrapper:
-  virtual ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) override;
-  virtual bool SetCrtc(uint32_t crtc_id,
+  ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) override;
+  bool SetCrtc(uint32_t crtc_id,
+               uint32_t framebuffer,
+               std::vector<uint32_t> connectors,
+               drmModeModeInfo* mode) override;
+  bool SetCrtc(drmModeCrtc* crtc, std::vector<uint32_t> connectors) override;
+  ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
+  bool AddFramebuffer(uint32_t width,
+                      uint32_t height,
+                      uint8_t depth,
+                      uint8_t bpp,
+                      uint32_t stride,
+                      uint32_t handle,
+                      uint32_t* framebuffer) override;
+  bool RemoveFramebuffer(uint32_t framebuffer) override;
+  bool PageFlip(uint32_t crtc_id, uint32_t framebuffer, void* data) override;
+  bool PageFlipOverlay(uint32_t crtc_id,
                        uint32_t framebuffer,
-                       std::vector<uint32_t> connectors,
-                       drmModeModeInfo* mode) override;
-  virtual bool SetCrtc(drmModeCrtc* crtc,
-                       std::vector<uint32_t> connectors) override;
-  virtual ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
-  virtual bool AddFramebuffer(uint32_t width,
-                              uint32_t height,
-                              uint8_t depth,
-                              uint8_t bpp,
-                              uint32_t stride,
-                              uint32_t handle,
-                              uint32_t* framebuffer) override;
-  virtual bool RemoveFramebuffer(uint32_t framebuffer) override;
-  virtual bool PageFlip(uint32_t crtc_id,
-                        uint32_t framebuffer,
-                        void* data) override;
-  virtual bool PageFlipOverlay(uint32_t crtc_id,
-                               uint32_t framebuffer,
-                               const gfx::Rect& location,
-                               const gfx::RectF& source,
-                               int overlay_plane) override;
-  virtual ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
+                       const gfx::Rect& location,
+                       const gfx::RectF& source,
+                       int overlay_plane) override;
+  ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
+                                   const char* name) override;
+  bool SetProperty(uint32_t connector_id,
+                   uint32_t property_id,
+                   uint64_t value) override;
+  bool GetCapability(uint64_t capability, uint64_t* value) override;
+  ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
                                            const char* name) override;
-  virtual bool SetProperty(uint32_t connector_id,
-                           uint32_t property_id,
-                           uint64_t value) override;
-  virtual bool GetCapability(uint64_t capability, uint64_t* value) override;
-  virtual ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
-                                                   const char* name) override;
-  virtual bool SetCursor(uint32_t crtc_id,
+  bool SetCursor(uint32_t crtc_id,
+                 uint32_t handle,
+                 const gfx::Size& size) override;
+  bool MoveCursor(uint32_t crtc_id, const gfx::Point& point) override;
+  void HandleEvent(drmEventContext& event) override;
+  bool CreateDumbBuffer(const SkImageInfo& info,
+                        uint32_t* handle,
+                        uint32_t* stride,
+                        void** pixels) override;
+  void DestroyDumbBuffer(const SkImageInfo& info,
                          uint32_t handle,
-                         const gfx::Size& size) override;
-  virtual bool MoveCursor(uint32_t crtc_id, const gfx::Point& point) override;
-  virtual void HandleEvent(drmEventContext& event) override;
-  virtual bool CreateDumbBuffer(const SkImageInfo& info,
-                                uint32_t* handle,
-                                uint32_t* stride,
-                                void** pixels) override;
-  virtual void DestroyDumbBuffer(const SkImageInfo& info,
-                                 uint32_t handle,
-                                 uint32_t stride,
-                                 void* pixels) override;
+                         uint32_t stride,
+                         void* pixels) override;
 
  private:
   int get_crtc_call_count_;

@@ -25,45 +25,41 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
  public:
   NativeDisplayDelegateProxy(DriGpuPlatformSupportHost* proxy,
                              DeviceManager* device_manager);
-  virtual ~NativeDisplayDelegateProxy();
+  ~NativeDisplayDelegateProxy() override;
 
   // NativeDisplayDelegate overrides:
-  virtual void Initialize() override;
-  virtual void GrabServer() override;
-  virtual void UngrabServer() override;
-  virtual bool TakeDisplayControl() override;
-  virtual bool RelinquishDisplayControl() override;
-  virtual void SyncWithServer() override;
-  virtual void SetBackgroundColor(uint32_t color_argb) override;
-  virtual void ForceDPMSOn() override;
-  virtual std::vector<DisplaySnapshot*> GetDisplays() override;
-  virtual void AddMode(const DisplaySnapshot& output,
-                       const DisplayMode* mode) override;
-  virtual bool Configure(const DisplaySnapshot& output,
-                         const DisplayMode* mode,
-                         const gfx::Point& origin) override;
-  virtual void CreateFrameBuffer(const gfx::Size& size) override;
-  virtual bool GetHDCPState(const DisplaySnapshot& output,
-                            HDCPState* state) override;
-  virtual bool SetHDCPState(const DisplaySnapshot& output,
-                            HDCPState state) override;
-  virtual std::vector<ColorCalibrationProfile>
-  GetAvailableColorCalibrationProfiles(const DisplaySnapshot& output) override;
-  virtual bool SetColorCalibrationProfile(
-      const DisplaySnapshot& output,
-      ColorCalibrationProfile new_profile) override;
-  virtual void AddObserver(NativeDisplayObserver* observer) override;
-  virtual void RemoveObserver(NativeDisplayObserver* observer) override;
+  void Initialize() override;
+  void GrabServer() override;
+  void UngrabServer() override;
+  bool TakeDisplayControl() override;
+  bool RelinquishDisplayControl() override;
+  void SyncWithServer() override;
+  void SetBackgroundColor(uint32_t color_argb) override;
+  void ForceDPMSOn() override;
+  std::vector<DisplaySnapshot*> GetDisplays() override;
+  void AddMode(const DisplaySnapshot& output, const DisplayMode* mode) override;
+  bool Configure(const DisplaySnapshot& output,
+                 const DisplayMode* mode,
+                 const gfx::Point& origin) override;
+  void CreateFrameBuffer(const gfx::Size& size) override;
+  bool GetHDCPState(const DisplaySnapshot& output, HDCPState* state) override;
+  bool SetHDCPState(const DisplaySnapshot& output, HDCPState state) override;
+  std::vector<ColorCalibrationProfile> GetAvailableColorCalibrationProfiles(
+      const DisplaySnapshot& output) override;
+  bool SetColorCalibrationProfile(const DisplaySnapshot& output,
+                                  ColorCalibrationProfile new_profile) override;
+  void AddObserver(NativeDisplayObserver* observer) override;
+  void RemoveObserver(NativeDisplayObserver* observer) override;
 
   // DeviceEventObserver overrides:
-  virtual void OnDeviceEvent(const DeviceEvent& event) override;
+  void OnDeviceEvent(const DeviceEvent& event) override;
 
   // GpuPlatformSupportHost:
-  virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
-  virtual void OnChannelDestroyed(int host_id) override;
+  void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
+  void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener overrides:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnUpdateNativeDisplays(

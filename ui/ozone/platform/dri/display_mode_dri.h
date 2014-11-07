@@ -16,7 +16,7 @@ namespace ui {
 class DisplayModeDri : public DisplayMode {
  public:
   DisplayModeDri(const drmModeModeInfo& mode);
-  virtual ~DisplayModeDri();
+  ~DisplayModeDri() override;
 
   // Native details about this mode. Only used internally in the DRI
   // implementation.

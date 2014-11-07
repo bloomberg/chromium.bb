@@ -29,14 +29,14 @@ class GbmSurface : public GbmSurfaceless {
   GbmSurface(DriWindowDelegate* window_delegate,
              gbm_device* device,
              DriWrapper* dri);
-  virtual ~GbmSurface();
+  ~GbmSurface() override;
 
   bool Initialize();
 
   // GbmSurfaceless:
-  virtual intptr_t GetNativeWindow() override;
-  virtual bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
-  virtual bool OnSwapBuffers() override;
+  intptr_t GetNativeWindow() override;
+  bool ResizeNativeWindow(const gfx::Size& viewport_size) override;
+  bool OnSwapBuffers() override;
 
  private:
   gbm_device* gbm_device_;

@@ -22,13 +22,13 @@ class GbmBufferBase : public ScanoutBuffer {
   gbm_bo* bo() const { return bo_; }
 
   // ScanoutBuffer:
-  virtual uint32_t GetFramebufferId() const override;
-  virtual uint32_t GetHandle() const override;
-  virtual gfx::Size GetSize() const override;
+  uint32_t GetFramebufferId() const override;
+  uint32_t GetHandle() const override;
+  gfx::Size GetSize() const override;
 
  protected:
   GbmBufferBase(DriWrapper* dri, gbm_bo* bo, bool scanout);
-  virtual ~GbmBufferBase();
+  ~GbmBufferBase() override;
 
  private:
   DriWrapper* dri_;

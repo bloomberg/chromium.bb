@@ -20,7 +20,7 @@ class CacaWindow;
 class CacaEventSource : public PlatformEventSource {
  public:
   CacaEventSource();
-  virtual ~CacaEventSource();
+  ~CacaEventSource() override;
 
   // Poll for an event on a particular window. Input events will be
   // dispatched on the given dispatcher.

@@ -34,16 +34,16 @@ class MockDriWindowDelegate : public ui::DriWindowDelegate {
     EXPECT_TRUE(buffer->Initialize(info));
     EXPECT_TRUE(controller_->Modeset(ui::OverlayPlane(buffer), kDefaultMode));
   }
-  virtual ~MockDriWindowDelegate() {}
+  ~MockDriWindowDelegate() override {}
 
   // DriWindowDelegate:
-  virtual void Initialize() override {}
-  virtual void Shutdown() override {}
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override { return 1; }
-  virtual ui::HardwareDisplayController* GetController() override {
+  void Initialize() override {}
+  void Shutdown() override {}
+  gfx::AcceleratedWidget GetAcceleratedWidget() override { return 1; }
+  ui::HardwareDisplayController* GetController() override {
     return controller_.get();
   }
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) override {}
+  void OnBoundsChanged(const gfx::Rect& bounds) override {}
 
  private:
   scoped_ptr<ui::HardwareDisplayController> controller_;
@@ -57,8 +57,8 @@ class DriSurfaceTest : public testing::Test {
  public:
   DriSurfaceTest() {}
 
-  virtual void SetUp() override;
-  virtual void TearDown() override;
+  void SetUp() override;
+  void TearDown() override;
 
  protected:
   scoped_ptr<base::MessageLoop> message_loop_;

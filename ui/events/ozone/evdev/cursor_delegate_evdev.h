@@ -17,6 +17,8 @@ namespace ui {
 
 class EVENTS_OZONE_EVDEV_EXPORT CursorDelegateEvdev {
  public:
+  virtual ~CursorDelegateEvdev() {}
+
   // Move the cursor.
   virtual void MoveCursor(const gfx::Vector2dF& delta) = 0;
   virtual void MoveCursorTo(gfx::AcceleratedWidget widget,

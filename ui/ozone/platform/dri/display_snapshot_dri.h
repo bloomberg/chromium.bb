@@ -18,7 +18,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
                      drmModeConnector* connector,
                      drmModeCrtc* crtc,
                      uint32_t index);
-  virtual ~DisplaySnapshotDri();
+  ~DisplaySnapshotDri() override;
 
   // Native properties of a display used by the DRI implementation in
   // configuring this display.
@@ -27,7 +27,7 @@ class DisplaySnapshotDri : public DisplaySnapshot {
   drmModePropertyRes* dpms_property() const { return dpms_property_.get(); }
 
   // DisplaySnapshot overrides:
-  virtual std::string ToString() const override;
+  std::string ToString() const override;
 
  private:
   uint32_t connector_;

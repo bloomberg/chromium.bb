@@ -28,7 +28,7 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
                                   public IPC::Sender {
  public:
   DriGpuPlatformSupportHost();
-  virtual ~DriGpuPlatformSupportHost();
+  ~DriGpuPlatformSupportHost() override;
 
   bool IsConnected() const;
 
@@ -39,22 +39,22 @@ class DriGpuPlatformSupportHost : public GpuPlatformSupportHost,
   void RemoveChannelObserver(ChannelObserver* observer);
 
   // GpuPlatformSupportHost:
-  virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
-  virtual void OnChannelDestroyed(int host_id) override;
+  void OnChannelEstablished(int host_id, IPC::Sender* sender) override;
+  void OnChannelDestroyed(int host_id) override;
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender:
-  virtual bool Send(IPC::Message* message) override;
+  bool Send(IPC::Message* message) override;
 
   // HardwareCursorDelegate:
-  virtual void SetHardwareCursor(gfx::AcceleratedWidget widget,
-                                 const std::vector<SkBitmap>& bitmaps,
-                                 const gfx::Point& location,
-                                 int frame_delay_ms) override;
-  virtual void MoveHardwareCursor(gfx::AcceleratedWidget widget,
-                                  const gfx::Point& location) override;
+  void SetHardwareCursor(gfx::AcceleratedWidget widget,
+                         const std::vector<SkBitmap>& bitmaps,
+                         const gfx::Point& location,
+                         int frame_delay_ms) override;
+  void MoveHardwareCursor(gfx::AcceleratedWidget widget,
+                          const gfx::Point& location) override;
 
  private:
   int host_id_;

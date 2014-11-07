@@ -20,25 +20,25 @@ class TestWindow : public PlatformWindow {
   TestWindow(PlatformWindowDelegate* delegate,
              TestWindowManager* manager,
              const gfx::Rect& bounds);
-  virtual ~TestWindow();
+  ~TestWindow() override;
 
   // Path for image file for this window.
   base::FilePath path();
 
   // PlatformWindow:
-  virtual gfx::Rect GetBounds() override;
-  virtual void SetBounds(const gfx::Rect& bounds) override;
-  virtual void Show() override;
-  virtual void Hide() override;
-  virtual void Close() override;
-  virtual void SetCapture() override;
-  virtual void ReleaseCapture() override;
-  virtual void ToggleFullscreen() override;
-  virtual void Maximize() override;
-  virtual void Minimize() override;
-  virtual void Restore() override;
-  virtual void SetCursor(PlatformCursor cursor) override;
-  virtual void MoveCursorTo(const gfx::Point& location) override;
+  gfx::Rect GetBounds() override;
+  void SetBounds(const gfx::Rect& bounds) override;
+  void Show() override;
+  void Hide() override;
+  void Close() override;
+  void SetCapture() override;
+  void ReleaseCapture() override;
+  void ToggleFullscreen() override;
+  void Maximize() override;
+  void Minimize() override;
+  void Restore() override;
+  void SetCursor(PlatformCursor cursor) override;
+  void MoveCursorTo(const gfx::Point& location) override;
 
  private:
   PlatformWindowDelegate* delegate_;

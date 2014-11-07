@@ -21,15 +21,15 @@ namespace {
 class CacaSurface : public ui::SurfaceOzoneCanvas {
  public:
   CacaSurface(CacaWindow* window);
-  virtual ~CacaSurface();
+  ~CacaSurface() override;
 
   bool Initialize();
 
   // ui::SurfaceOzoneCanvas overrides:
-  virtual skia::RefPtr<SkCanvas> GetCanvas() override;
-  virtual void ResizeCanvas(const gfx::Size& viewport_size) override;
-  virtual void PresentCanvas(const gfx::Rect& damage) override;
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  skia::RefPtr<SkCanvas> GetCanvas() override;
+  void ResizeCanvas(const gfx::Size& viewport_size) override;
+  void PresentCanvas(const gfx::Rect& damage) override;
+  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
   CacaWindow* window_;  // Not owned.

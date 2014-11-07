@@ -39,28 +39,27 @@ class OzonePlatformDri : public OzonePlatform {
   OzonePlatformDri()
       : dri_(new DriWrapper(kDefaultGraphicsCardPath)),
         buffer_generator_(new DriBufferGenerator(dri_.get())),
-        screen_manager_(new ScreenManager(dri_.get(),
-                                          buffer_generator_.get())),
+        screen_manager_(new ScreenManager(dri_.get(), buffer_generator_.get())),
         device_manager_(CreateDeviceManager()) {
     base::AtExitManager::RegisterTask(
         base::Bind(&base::DeletePointer<OzonePlatformDri>, this));
   }
-  virtual ~OzonePlatformDri() {}
+  ~OzonePlatformDri() override {}
 
   // OzonePlatform:
-  virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
+  ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override {
     return surface_factory_ozone_.get();
   }
-  virtual CursorFactoryOzone* GetCursorFactoryOzone() override {
+  CursorFactoryOzone* GetCursorFactoryOzone() override {
     return cursor_factory_ozone_.get();
   }
-  virtual GpuPlatformSupport* GetGpuPlatformSupport() override {
+  GpuPlatformSupport* GetGpuPlatformSupport() override {
     return gpu_platform_support_.get();
   }
-  virtual GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
+  GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
     return gpu_platform_support_host_.get();
   }
-  virtual scoped_ptr<PlatformWindow> CreatePlatformWindow(
+  scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
@@ -69,12 +68,11 @@ class OzonePlatformDri : public OzonePlatform {
     platform_window->Initialize();
     return platform_window.Pass();
   }
-  virtual scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      override {
+  scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
         dri_.get(), screen_manager_.get(), device_manager_.get()));
   }
-  virtual void InitializeUI() override {
+  void InitializeUI() override {
     dri_->Initialize();
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_delegate_manager_));
@@ -94,7 +92,7 @@ class OzonePlatformDri : public OzonePlatform {
       LOG(FATAL) << "Failed to initialize dummy channel.";
   }
 
-  virtual void InitializeGPU() override {}
+  void InitializeGPU() override {}
 
  private:
   scoped_ptr<DriWrapper> dri_;

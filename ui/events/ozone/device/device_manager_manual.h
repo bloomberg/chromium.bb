@@ -13,13 +13,13 @@ namespace ui {
 class DeviceManagerManual : public DeviceManager {
  public:
   DeviceManagerManual();
-  virtual ~DeviceManagerManual();
+  ~DeviceManagerManual() override;
 
  private:
   // DeviceManager overrides:
-  virtual void ScanDevices(DeviceEventObserver* observer) override;
-  virtual void AddObserver(DeviceEventObserver* observer) override;
-  virtual void RemoveObserver(DeviceEventObserver* observer) override;
+  void ScanDevices(DeviceEventObserver* observer) override;
+  void AddObserver(DeviceEventObserver* observer) override;
+  void RemoveObserver(DeviceEventObserver* observer) override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceManagerManual);
 };

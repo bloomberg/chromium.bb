@@ -26,7 +26,7 @@ class GbmSurfaceBuffer : public GbmBufferBase {
 
  private:
   GbmSurfaceBuffer(DriWrapper* dri, gbm_bo* bo);
-  virtual ~GbmSurfaceBuffer();
+  ~GbmSurfaceBuffer() override;
 
   static void Destroy(gbm_bo* buffer, void* data);
 

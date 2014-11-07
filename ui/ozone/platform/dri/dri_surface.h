@@ -24,13 +24,13 @@ class HardwareDisplayController;
 class DriSurface : public SurfaceOzoneCanvas {
  public:
   DriSurface(DriWindowDelegate* window_delegate, DriWrapper* dri);
-  virtual ~DriSurface();
+  ~DriSurface() override;
 
   // SurfaceOzoneCanvas:
-  virtual skia::RefPtr<SkCanvas> GetCanvas() override;
-  virtual void ResizeCanvas(const gfx::Size& viewport_size) override;
-  virtual void PresentCanvas(const gfx::Rect& damage) override;
-  virtual scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
+  skia::RefPtr<SkCanvas> GetCanvas() override;
+  void ResizeCanvas(const gfx::Size& viewport_size) override;
+  void PresentCanvas(const gfx::Rect& damage) override;
+  scoped_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;
 
  private:
   void UpdateNativeSurface(const gfx::Rect& damage);

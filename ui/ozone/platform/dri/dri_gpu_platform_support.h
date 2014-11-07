@@ -35,15 +35,15 @@ class DriGpuPlatformSupport : public GpuPlatformSupport {
                         DriWindowDelegateManager* window_manager,
                         ScreenManager* screen_manager,
                         scoped_ptr<NativeDisplayDelegateDri> ndd);
-  virtual ~DriGpuPlatformSupport();
+  ~DriGpuPlatformSupport() override;
 
   void AddHandler(scoped_ptr<GpuPlatformSupport> handler);
 
   // GpuPlatformSupport:
-  virtual void OnChannelEstablished(IPC::Sender* sender) override;
+  void OnChannelEstablished(IPC::Sender* sender) override;
 
   // IPC::Listener:
-  virtual bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
   void OnCreateWindowDelegate(gfx::AcceleratedWidget widget);

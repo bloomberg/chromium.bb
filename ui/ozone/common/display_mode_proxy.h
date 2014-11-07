@@ -14,7 +14,7 @@ struct DisplayMode_Params;
 class DisplayModeProxy : public DisplayMode {
  public:
   DisplayModeProxy(const DisplayMode_Params& params);
-  virtual ~DisplayModeProxy();
+  ~DisplayModeProxy() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayModeProxy);

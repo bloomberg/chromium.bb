@@ -17,7 +17,7 @@ namespace ui {
 class TestWindowManager : public SurfaceFactoryOzone {
  public:
   explicit TestWindowManager(const base::FilePath& dump_location);
-  virtual ~TestWindowManager();
+  ~TestWindowManager() override;
 
   // Initialize (mainly check that we have a place to write output to).
   void Initialize();
@@ -32,9 +32,9 @@ class TestWindowManager : public SurfaceFactoryOzone {
   base::FilePath base_path() const;
 
   // SurfaceFactoryOzone:
-  virtual scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
+  scoped_ptr<SurfaceOzoneCanvas> CreateCanvasForWidget(
       gfx::AcceleratedWidget w) override;
-  virtual bool LoadEGLGLES2Bindings(
+  bool LoadEGLGLES2Bindings(
       AddGLLibraryCallback add_gl_library,
       SetGLGetProcAddressProcCallback set_gl_get_proc_address) override;
 

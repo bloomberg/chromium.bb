@@ -166,13 +166,13 @@ class TypedGesturesProp : public GesturesProp {
         is_allocated_(false) {
     Init();
   }
-  virtual ~TypedGesturesProp() override {
+  ~TypedGesturesProp() override {
     if (is_allocated_)
       delete[] value_;
   }
 
   // Accessors.
-  virtual bool IsReadOnly() const override { return is_read_only_; }
+  bool IsReadOnly() const override { return is_read_only_; }
 
  protected:
   // Functions for setting/getting numerical properties.
@@ -268,7 +268,7 @@ class TypedGesturesProp : public GesturesProp {
   }
 
   // Accessors.
-  virtual bool IsAllocated() const override { return is_allocated_; }
+  bool IsAllocated() const override { return is_allocated_; }
 
   // If the flag is on, it means the memory that the data pointer points to is
   // allocated here. We will need to free the memory by ourselves when the
@@ -286,10 +286,10 @@ class GesturesIntProp : public TypedGesturesProp<int> {
       : TypedGesturesProp<int>(name, PropertyType::PT_INT, count, value) {
     InitializeNumericalProperty(init, default_property);
   }
-  virtual std::vector<int> GetIntValue() const override {
+  std::vector<int> GetIntValue() const override {
     return this->template GetNumericalPropertyValue<int>();
   }
-  virtual bool SetIntValue(const std::vector<int>& value) override {
+  bool SetIntValue(const std::vector<int>& value) override {
     return this->template SetNumericalPropertyValue(value);
   }
 };
@@ -304,10 +304,10 @@ class GesturesShortProp : public TypedGesturesProp<short> {
       : TypedGesturesProp<short>(name, PropertyType::PT_SHORT, count, value) {
     InitializeNumericalProperty(init, default_property);
   }
-  virtual std::vector<int16_t> GetShortValue() const override {
+  std::vector<int16_t> GetShortValue() const override {
     return this->template GetNumericalPropertyValue<int16_t>();
   }
-  virtual bool SetShortValue(const std::vector<int16_t>& value) override {
+  bool SetShortValue(const std::vector<int16_t>& value) override {
     return this->template SetNumericalPropertyValue(value);
   }
 };
@@ -325,10 +325,10 @@ class GesturesBoolProp : public TypedGesturesProp<GesturesPropBool> {
                                             value) {
     InitializeNumericalProperty(init, default_property);
   }
-  virtual std::vector<bool> GetBoolValue() const override {
+  std::vector<bool> GetBoolValue() const override {
     return this->template GetNumericalPropertyValue<bool>();
   }
-  virtual bool SetBoolValue(const std::vector<bool>& value) override {
+  bool SetBoolValue(const std::vector<bool>& value) override {
     return this->template SetNumericalPropertyValue(value);
   }
 };
@@ -343,10 +343,10 @@ class GesturesDoubleProp : public TypedGesturesProp<double> {
       : TypedGesturesProp<double>(name, PropertyType::PT_REAL, count, value) {
     InitializeNumericalProperty(init, default_property);
   }
-  virtual std::vector<double> GetDoubleValue() const override {
+  std::vector<double> GetDoubleValue() const override {
     return this->template GetNumericalPropertyValue<double>();
   }
-  virtual bool SetDoubleValue(const std::vector<double>& value) override {
+  bool SetDoubleValue(const std::vector<double>& value) override {
     return this->template SetNumericalPropertyValue(value);
   }
 };
@@ -366,11 +366,11 @@ class GesturesStringProp : public TypedGesturesProp<std::string> {
         write_back_(NULL) {
     InitializeStringProperty(value, init, default_property);
   }
-  virtual std::string GetStringValue() const override {
+  std::string GetStringValue() const override {
     OnGet();
     return *value_;
   }
-  virtual bool SetStringValue(const std::string& value) override {
+  bool SetStringValue(const std::string& value) override {
     if (is_read_only_)
       return false;
     *value_ = value;
@@ -416,9 +416,7 @@ class GesturesStringProp : public TypedGesturesProp<std::string> {
             default_property->type() == PropertyType::PT_STRING);
   }
 
-  virtual const char** GetStringWritebackPtr() const override {
-    return write_back_;
-  }
+  const char** GetStringWritebackPtr() const override { return write_back_; }
 
   // In some cases, we don't directly use the data pointer provided by the
   // creators due to its limitation and instead use our own types (e.g., in

@@ -14,10 +14,10 @@ struct DisplaySnapshot_Params;
 class DisplaySnapshotProxy : public DisplaySnapshot {
  public:
   DisplaySnapshotProxy(const DisplaySnapshot_Params& params);
-  virtual ~DisplaySnapshotProxy();
+  ~DisplaySnapshotProxy() override;
 
   // DisplaySnapshot override:
-  virtual std::string ToString() const override;
+  std::string ToString() const override;
 
  private:
   std::string string_representation_;

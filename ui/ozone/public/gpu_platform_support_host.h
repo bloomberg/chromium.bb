@@ -23,7 +23,7 @@ namespace ui {
 class OZONE_BASE_EXPORT GpuPlatformSupportHost : public IPC::Listener {
  public:
   GpuPlatformSupportHost();
-  virtual ~GpuPlatformSupportHost();
+  ~GpuPlatformSupportHost() override;
 
   // Called when the GPU process is spun up & channel established.
   virtual void OnChannelEstablished(int host_id, IPC::Sender* sender) = 0;

@@ -19,7 +19,7 @@ class DeviceManagerUdev
     : public DeviceManager, base::MessagePumpLibevent::Watcher {
  public:
   DeviceManagerUdev();
-  virtual ~DeviceManagerUdev();
+  ~DeviceManagerUdev() override;
 
  private:
   scoped_ptr<DeviceEvent> ProcessMessage(udev_device* device);
@@ -28,13 +28,13 @@ class DeviceManagerUdev
   void CreateMonitor();
 
   // DeviceManager overrides:
-  virtual void ScanDevices(DeviceEventObserver* observer) override;
-  virtual void AddObserver(DeviceEventObserver* observer) override;
-  virtual void RemoveObserver(DeviceEventObserver* observer) override;
+  void ScanDevices(DeviceEventObserver* observer) override;
+  void AddObserver(DeviceEventObserver* observer) override;
+  void RemoveObserver(DeviceEventObserver* observer) override;
 
   // base::MessagePumpLibevent::Watcher overrides:
-  virtual void OnFileCanReadWithoutBlocking(int fd) override;
-  virtual void OnFileCanWriteWithoutBlocking(int fd) override;
+  void OnFileCanReadWithoutBlocking(int fd) override;
+  void OnFileCanWriteWithoutBlocking(int fd) override;
 
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr monitor_;

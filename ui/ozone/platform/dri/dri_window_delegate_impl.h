@@ -22,14 +22,14 @@ class DriWindowDelegateImpl : public DriWindowDelegate {
  public:
   DriWindowDelegateImpl(gfx::AcceleratedWidget widget,
                         ScreenManager* screen_manager);
-  virtual ~DriWindowDelegateImpl();
+  ~DriWindowDelegateImpl() override;
 
   // DriWindowDelegate:
-  virtual void Initialize() override;
-  virtual void Shutdown() override;
-  virtual gfx::AcceleratedWidget GetAcceleratedWidget() override;
-  virtual HardwareDisplayController* GetController() override;
-  virtual void OnBoundsChanged(const gfx::Rect& bounds) override;
+  void Initialize() override;
+  void Shutdown() override;
+  gfx::AcceleratedWidget GetAcceleratedWidget() override;
+  HardwareDisplayController* GetController() override;
+  void OnBoundsChanged(const gfx::Rect& bounds) override;
 
  private:
   gfx::AcceleratedWidget widget_;
