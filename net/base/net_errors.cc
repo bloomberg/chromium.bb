@@ -56,6 +56,18 @@ bool IsCertificateError(int error) {
          (error == ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN);
 }
 
+bool IsClientCertificateError(int error) {
+  switch (error) {
+    case ERR_BAD_SSL_CLIENT_AUTH_CERT:
+    case ERR_SSL_CLIENT_AUTH_PRIVATE_KEY_ACCESS_DENIED:
+    case ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY:
+    case ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED:
+      return true;
+    default:
+      return false;
+  }
+}
+
 std::vector<int> GetAllErrorCodesForUma() {
   return base::CustomHistogram::ArrayToCustomRanges(
       kAllErrorCodes, arraysize(kAllErrorCodes));

@@ -2182,6 +2182,12 @@ TEST_F(NetErrorHelperCoreAutoReloadTest, DoesNotReload) {
 
   DoErrorLoad(net::ERR_UNKNOWN_URL_SCHEME);
   EXPECT_FALSE(timer()->IsRunning());
+
+  DoErrorLoad(net::ERR_SSL_PROTOCOL_ERROR);
+  EXPECT_FALSE(timer()->IsRunning());
+
+  DoErrorLoad(net::ERR_BAD_SSL_CLIENT_AUTH_CERT);
+  EXPECT_FALSE(timer()->IsRunning());
 }
 
 TEST_F(NetErrorHelperCoreAutoReloadTest, ShouldSuppressErrorPage) {

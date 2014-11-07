@@ -90,19 +90,6 @@ void ProcessAlternateProtocol(
       *session);
 }
 
-// Returns true if |error| is a client certificate authentication error.
-bool IsClientCertificateError(int error) {
-  switch (error) {
-    case ERR_BAD_SSL_CLIENT_AUTH_CERT:
-    case ERR_SSL_CLIENT_AUTH_PRIVATE_KEY_ACCESS_DENIED:
-    case ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY:
-    case ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED:
-      return true;
-    default:
-      return false;
-  }
-}
-
 base::Value* NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,

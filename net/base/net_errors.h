@@ -39,6 +39,11 @@ NET_EXPORT std::string ErrorToShortString(int error);
 // Returns true if |error| is a certificate error code.
 NET_EXPORT bool IsCertificateError(int error);
 
+// Returns true if |error| is a client certificate authentication error. This
+// does not include ERR_SSL_PROTOCOL_ERROR which may also signal a bad client
+// certificate.
+NET_EXPORT bool IsClientCertificateError(int error);
+
 // Map system error code to Error.
 NET_EXPORT Error MapSystemError(int os_error);
 

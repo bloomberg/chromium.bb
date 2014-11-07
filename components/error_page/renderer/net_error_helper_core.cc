@@ -433,6 +433,13 @@ bool NetErrorHelperCore::IsReloadableError(
          // For now, net::ERR_UNKNOWN_URL_SCHEME is only being displayed on
          // Chrome for Android.
          info.error.reason != net::ERR_UNKNOWN_URL_SCHEME &&
+         // Do not trigger if the server rejects a client certificate.
+         // https://crbug.com/431387
+         !net::IsClientCertificateError(info.error.reason) &&
+         // Some servers reject client certificates with a generic
+         // handshake_failure alert.
+         // https://crbug.com/431387
+         info.error.reason != net::ERR_SSL_PROTOCOL_ERROR &&
          !info.was_failed_post;
 }
 
