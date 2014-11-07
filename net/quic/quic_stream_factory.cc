@@ -944,6 +944,14 @@ int QuicStreamFactory::CreateSession(
     }
   }
 
+  if (quic_server_info_factory_ && !server_info) {
+    // Start the disk cache loading so that we can persist the newer QUIC server
+    // information and/or inform the disk cache that we have reused
+    // |server_info|.
+    server_info.reset(quic_server_info_factory_->GetForServer(server_id));
+    server_info->Start();
+  }
+
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
       server_info.Pass(), config, server_id.is_https(),

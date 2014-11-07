@@ -38,6 +38,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   bool IsDataReady() override;
   bool IsReadyToPersist() override;
   void Persist() override;
+  void OnExternalCacheHit() override;
 
  private:
   struct CacheOperationDataShim;

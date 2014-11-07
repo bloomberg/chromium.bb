@@ -64,6 +64,9 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
   // callback.
   virtual void Persist() = 0;
 
+  // Called whenever an external cache reuses quic server config.
+  virtual void OnExternalCacheHit() = 0;
+
   struct State {
     State();
     ~State();

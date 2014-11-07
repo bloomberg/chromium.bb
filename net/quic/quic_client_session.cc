@@ -590,6 +590,8 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       ++it;
       observer->OnCryptoHandshakeConfirmed();
     }
+    if (server_info_)
+      server_info_->OnExternalCacheHit();
   }
   QuicSession::OnCryptoHandshakeEvent(event);
 }

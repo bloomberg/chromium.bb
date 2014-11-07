@@ -121,6 +121,8 @@ class MockQuicServerInfo : public QuicServerInfo {
   virtual bool IsReadyToPersist() override { return false; }
 
   virtual void Persist() override {};
+
+  virtual void OnExternalCacheHit() override {};
 };
 
 class MockQuicServerInfoFactory : public QuicServerInfoFactory {

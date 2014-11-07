@@ -26,7 +26,8 @@ enum QuicServerInfoAPICall {
   QUIC_SERVER_INFO_WAIT_FOR_DATA_READY_CANCEL = 3,
   QUIC_SERVER_INFO_READY_TO_PERSIST = 4,
   QUIC_SERVER_INFO_PERSIST = 5,
-  QUIC_SERVER_INFO_NUM_OF_API_CALLS = 6,
+  QUIC_SERVER_INFO_EXTERNAL_CACHE_HIT = 6,
+  QUIC_SERVER_INFO_NUM_OF_API_CALLS = 7,
 };
 
 // Histogram that tracks failure reasons to read/load/write of QuicServerInfo to
@@ -174,6 +175,19 @@ void DiskCacheBasedQuicServerInfo::Persist() {
 
   state_ = CREATE_OR_OPEN;
   DoLoop(OK);
+}
+
+void DiskCacheBasedQuicServerInfo::OnExternalCacheHit() {
+  DCHECK(CalledOnValidThread());
+  DCHECK_NE(GET_BACKEND, state_);
+
+  RecordQuicServerInfoStatus(QUIC_SERVER_INFO_EXTERNAL_CACHE_HIT);
+  if (!backend_) {
+    RecordQuicServerInfoFailure(PERSIST_NO_BACKEND_FAILURE);
+    return;
+  }
+
+  backend_->OnExternalCacheHit(key());
 }
 
 DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
