@@ -17,7 +17,10 @@ test(function () {
         // Reserved names:
         // hyphen-containing names from the applicable specifications,
         // namely the SVG and the MathML.
-        'annotation-xml'
+        'annotation-xml',
+        // names containing colon
+        ':-xfoo',
+        'xfoo-:yfoo'
     ];
 
     for (var i = 0; i < invalidNames.length; i++) {
