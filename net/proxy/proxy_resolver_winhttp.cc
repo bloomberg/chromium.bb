@@ -54,8 +54,8 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   WINHTTP_AUTOPROXY_OPTIONS options = {0};
   options.fAutoLogonIfChallenged = FALSE;
   options.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
-  std::wstring pac_url_wide = base::ASCIIToWide(pac_url_.spec());
-  options.lpszAutoConfigUrl = pac_url_wide.c_str();
+  base::string16 pac_url16 = base::ASCIIToUTF16(pac_url_.spec());
+  options.lpszAutoConfigUrl = pac_url16.c_str();
 
   WINHTTP_PROXY_INFO info = {0};
   DCHECK(session_handle_);
@@ -66,13 +66,13 @@ int ProxyResolverWinHttp::GetProxyForURL(const GURL& query_url,
   // get good performance in the case where WinHTTP uses an out-of-process
   // resolver.  This is important for Vista and Win2k3.
   BOOL ok = WinHttpGetProxyForUrl(session_handle_,
-                                  base::ASCIIToWide(query_url.spec()).c_str(),
+                                  base::ASCIIToUTF16(query_url.spec()).c_str(),
                                   &options, &info);
   if (!ok) {
     if (ERROR_WINHTTP_LOGIN_FAILURE == GetLastError()) {
       options.fAutoLogonIfChallenged = TRUE;
       ok = WinHttpGetProxyForUrl(
-          session_handle_, base::ASCIIToWide(query_url.spec()).c_str(),
+          session_handle_, base::ASCIIToUTF16(query_url.spec()).c_str(),
           &options, &info);
     }
     if (!ok) {

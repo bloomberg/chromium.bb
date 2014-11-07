@@ -741,7 +741,7 @@ int CertVerifyProcWin::VerifyInternal(
   if (CertSubjectCommonNameHasNull(cert_handle))
     verify_result->cert_status |= CERT_STATUS_INVALID;
 
-  std::wstring wstr_hostname = base::ASCIIToWide(hostname);
+  base::string16 hostname16 = base::ASCIIToUTF16(hostname);
 
   SSL_EXTRA_CERT_CHAIN_POLICY_PARA extra_policy_para;
   memset(&extra_policy_para, 0, sizeof(extra_policy_para));
@@ -752,7 +752,7 @@ int CertVerifyProcWin::VerifyInternal(
   extra_policy_para.fdwChecks =
       0x00001000;  // SECURITY_FLAG_IGNORE_CERT_CN_INVALID
   extra_policy_para.pwszServerName =
-      const_cast<wchar_t*>(wstr_hostname.c_str());
+      const_cast<base::char16*>(hostname16.c_str());
 
   CERT_CHAIN_POLICY_PARA policy_para;
   memset(&policy_para, 0, sizeof(policy_para));

@@ -397,7 +397,7 @@ int DiffImages(const base::FilePath& file1, const base::FilePath& file2,
 // paths as non-wide strings anyway.
 base::FilePath FilePathFromASCII(const std::string& str) {
 #if defined(OS_WIN)
-  return base::FilePath(base::ASCIIToWide(str));
+  return base::FilePath(base::ASCIIToUTF16(str));
 #else
   return base::FilePath(str);
 #endif

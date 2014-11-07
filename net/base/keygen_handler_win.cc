@@ -65,7 +65,7 @@ bool GetSubjectPublicKeyInfo(HCRYPTPROV prov, std::vector<BYTE>* output) {
 bool GetSignedPublicKeyAndChallenge(HCRYPTPROV prov,
                                     const std::string& challenge,
                                     std::string* output) {
-  std::wstring wide_challenge = base::ASCIIToWide(challenge);
+  base::string16 challenge16 = base::ASCIIToUTF16(challenge);
   std::vector<BYTE> spki;
 
   if (!GetSubjectPublicKeyInfo(prov, &spki))
@@ -79,7 +79,7 @@ bool GetSignedPublicKeyAndChallenge(HCRYPTPROV prov,
   pkac.dwVersion = CERT_KEYGEN_REQUEST_V1;
   pkac.SubjectPublicKeyInfo =
       *reinterpret_cast<PCERT_PUBLIC_KEY_INFO>(&spki[0]);
-  pkac.pwszChallengeString = const_cast<wchar_t*>(wide_challenge.c_str());
+  pkac.pwszChallengeString = const_cast<base::char16*>(challenge16.c_str());
 
   CRYPT_ALGORITHM_IDENTIFIER sig_alg;
   memset(&sig_alg, 0, sizeof(sig_alg));

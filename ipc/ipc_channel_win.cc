@@ -231,13 +231,13 @@ const base::string16 ChannelWin::PipeName(
   if (index != std::string::npos) {
     if (secret)  // Retrieve the secret if asked for.
       base::StringToInt(channel_id.substr(index + 1), secret);
-    return base::ASCIIToWide(name.append(channel_id.substr(0, index - 1)));
+    return base::ASCIIToUTF16(name.append(channel_id.substr(0, index - 1)));
   }
 
   // This case is here to support predictable named pipes in tests.
   if (secret)
     *secret = 0;
-  return base::ASCIIToWide(name.append(channel_id));
+  return base::ASCIIToUTF16(name.append(channel_id));
 }
 
 bool ChannelWin::CreatePipe(const IPC::ChannelHandle &channel_handle,

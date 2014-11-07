@@ -508,7 +508,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
   // Disable the message box for assertions.
   _CrtSetReportMode(_CRT_ASSERT, 0);
 
-  std::wstring process_type = base::ASCIIToWide(process_type_switch);
+  base::string16 process_type = base::ASCIIToUTF16(process_type_switch);
   if (process_type.empty())
     process_type = L"browser";
 
@@ -555,7 +555,7 @@ void InitCrashReporter(const std::string& process_type_switch) {
       InitDefaultCrashCallback(default_filter);
     return;
   }
-  std::wstring pipe_name = base::ASCIIToWide(pipe_name_ascii);
+  base::string16 pipe_name = base::ASCIIToUTF16(pipe_name_ascii);
 
 #ifdef _WIN64
   // The protocol for connecting to the out-of-process Breakpad crash

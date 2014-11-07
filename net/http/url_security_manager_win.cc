@@ -53,10 +53,10 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
   if (!const_cast<URLSecurityManagerWin*>(this)->EnsureSystemSecurityManager())
     return false;
 
-  std::wstring url_w = base::ASCIIToWide(auth_origin.spec());
+  base::string16 url16 = base::ASCIIToUTF16(auth_origin.spec());
   DWORD policy = 0;
   HRESULT hr;
-  hr = security_manager_->ProcessUrlAction(url_w.c_str(),
+  hr = security_manager_->ProcessUrlAction(url16.c_str(),
                                            URLACTION_CREDENTIALS_USE,
                                            reinterpret_cast<BYTE*>(&policy),
                                            sizeof(policy), NULL, 0,
@@ -84,7 +84,7 @@ bool URLSecurityManagerWin::CanUseDefaultCredentials(
       // URLZONE_INTERNET      3
       // URLZONE_UNTRUSTED     4
       DWORD zone = 0;
-      hr = security_manager_->MapUrlToZone(url_w.c_str(), &zone, 0);
+      hr = security_manager_->MapUrlToZone(url16.c_str(), &zone, 0);
       if (FAILED(hr)) {
         LOG(ERROR) << "IInternetSecurityManager::MapUrlToZone failed: " << hr;
         return false;

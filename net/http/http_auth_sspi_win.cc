@@ -360,11 +360,11 @@ int HttpAuthSSPI::GetNextSecurityToken(
 
   // This returns a token that is passed to the remote server.
   DWORD context_attribute;
-  std::wstring spn_wide = base::ASCIIToWide(spn);
+  base::string16 spn16 = base::ASCIIToUTF16(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
       &cred_,  // phCredential
       ctxt_ptr,  // phContext
-      const_cast<wchar_t *>(spn_wide.c_str()),  // pszTargetName
+      const_cast<base::char16*>(spn16.c_str()),  // pszTargetName
       context_flags,  // fContextReq
       0,  // Reserved1 (must be 0)
       SECURITY_NATIVE_DREP,  // TargetDataRep

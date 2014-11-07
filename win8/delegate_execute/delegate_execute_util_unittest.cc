@@ -29,7 +29,7 @@ TEST(DelegateExecuteUtil, CommandLineFromParametersTest) {
   // Parameters with a switch are parsed properly.
   cl = delegate_execute::CommandLineFromParameters(
       base::StringPrintf(L"--%ls",
-                         base::ASCIIToWide(kSomeSwitch).c_str()).c_str());
+                         base::ASCIIToUTF16(kSomeSwitch).c_str()).c_str());
   EXPECT_EQ(std::wstring(), cl.GetProgram().value());
   EXPECT_TRUE(cl.HasSwitch(kSomeSwitch));
 }
@@ -62,7 +62,7 @@ TEST(DelegateExecuteUtil, MakeChromeCommandLineTest) {
   cl = delegate_execute::MakeChromeCommandLine(
       this_exe, delegate_execute::CommandLineFromParameters(
           base::StringPrintf(L"--%ls -- %ls",
-                             base::ASCIIToWide(kSomeSwitch).c_str(),
+                             base::ASCIIToUTF16(kSomeSwitch).c_str(),
                              kOtherArgument).c_str()),
       base::string16(kSomeArgument));
   EXPECT_EQ(5, cl.argv().size());

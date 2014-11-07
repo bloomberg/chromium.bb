@@ -136,7 +136,7 @@ HGLOBAL CreateGlobalData(const std::basic_string<charT>& str) {
     ::GlobalUnlock(data);
   }
   return data;
-};
+}
 
 bool BitmapHasInvalidPremultipliedColors(const SkBitmap& bitmap) {
   for (int x = 0; x < bitmap.width(); ++x) {
@@ -238,7 +238,7 @@ bool Clipboard::FormatType::Equals(const FormatType& other) const {
 Clipboard::FormatType Clipboard::GetFormatType(
     const std::string& format_string) {
   return FormatType(
-      ::RegisterClipboardFormat(base::ASCIIToWide(format_string).c_str()));
+      ::RegisterClipboardFormat(base::ASCIIToUTF16(format_string).c_str()));
 }
 
 // static
@@ -727,7 +727,7 @@ void ClipboardWin::WriteBookmark(const char* title_data,
   bookmark.append(1, L'\n');
   bookmark.append(url_data, url_len);
 
-  base::string16 wide_bookmark = base::UTF8ToWide(bookmark);
+  base::string16 wide_bookmark = base::UTF8ToUTF16(bookmark);
   HGLOBAL glob = CreateGlobalData(wide_bookmark);
 
   WriteToClipboard(GetUrlWFormatType().ToFormatEtc().cfFormat, glob);

@@ -155,7 +155,7 @@ class ScopedGroupPolicyRegistrySandbox {
   // Deletes the sandbox keys.
   void DeleteKeys();
 
-  std::wstring key_name_;
+  base::string16 key_name_;
 
   // Keys are created for the lifetime of a test to contain
   // the sandboxed HKCU and HKLM hives, respectively.
@@ -296,7 +296,7 @@ ScopedGroupPolicyRegistrySandbox::ScopedGroupPolicyRegistrySandbox() {
   // Generate a unique registry key for the override for each test. This
   // makes sure that tests executing in parallel won't delete each other's
   // key, at DeleteKeys().
-  key_name_ = base::ASCIIToWide(base::StringPrintf(
+  key_name_ = base::ASCIIToUTF16(base::StringPrintf(
         "SOFTWARE\\chromium unittest %d", base::GetCurrentProcId()));
   std::wstring hklm_key_name = key_name_ + L"\\HKLM";
   std::wstring hkcu_key_name = key_name_ + L"\\HKCU";

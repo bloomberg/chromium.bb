@@ -242,7 +242,7 @@ TEST_F(SavePackageTest, MAYBE_TestLongSafePureFilename) {
   const base::FilePath::StringType ext(FPL_HTML_EXTENSION);
   base::FilePath::StringType filename =
 #if defined(OS_WIN)
-      base::ASCIIToWide(long_file_name);
+      base::ASCIIToUTF16(long_file_name);
 #else
       long_file_name;
 #endif
