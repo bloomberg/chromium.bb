@@ -859,9 +859,8 @@
               },
             ],
           }],
-          # ARM helper library build or PNaCl PPAPI shim for nonsfi
-          # build.
-          ['nlib_target!="" and (build_nonsfi_helper!=0 or (pnacl_native_biased!=0 and enable_arm_nonsfi==1))', {
+          # PNaCl PPAPI shim for nonsfi build.
+          ['nlib_target!="" and pnacl_native_biased!=0 and enable_arm_nonsfi==1', {
             'variables': {
               'tool_name': 'nonsfi_helper',
               'out_newlib_arm_nonsfi%': '<(SHARED_INTERMEDIATE_DIR)/tc_<(tool_name)/libarm/>(nlib_target)',
