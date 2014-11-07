@@ -2030,6 +2030,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Blink.MediaElement.Autoplay" enum="MediaElementAutoPlay">
+  <owner>oysteine@chromium.org</owner>
+  <summary>
+    Records user observation and interaction with Media HTML elements that
+    feature autoplay, either script-controlled or through the attribute.
+  </summary>
+</histogram>
+
 <histogram name="BlinkGC.CollectGarbage" units="milliseconds">
   <owner>haraken@chromium.org</owner>
   <summary>Duration of time taken to run Heap::collectGarbage().</summary>
@@ -48836,6 +48844,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="37" label="WTV (Windows Television)"/>
   <int value="38" label="DASH"/>
   <int value="39" label="SmoothStream"/>
+</enum>
+
+<enum name="MediaElementAutoPlay" type="int">
+  <int value="0" label="Media element with autoplay seen"/>
+  <int value="1"
+      label="Autoplay enabled and user stopped media play at any point"/>
+  <int value="2"
+      label="Autoplay enabled but user bailed out on media play early"/>
+  <int value="3" label="Autoplay disabled but user manually started media"/>
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">
