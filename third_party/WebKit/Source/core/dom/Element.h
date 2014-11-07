@@ -413,7 +413,6 @@ public:
     bool matches(const String& selectors, ExceptionState&);
     virtual bool shouldAppearIndeterminate() const { return false; }
 
-    Element* closest(const String& selectors, ExceptionState&);
     DOMTokenList& classList();
 
     DOMStringMap& dataset();

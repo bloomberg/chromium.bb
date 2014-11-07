@@ -56,7 +56,6 @@ interface Element : Node {
     readonly attribute DOMString? localName;
 
     [RaisesException] boolean matches(DOMString selectors);
-    [RaisesException] Element closest(DOMString selectors);
 
     // Common extensions
 
