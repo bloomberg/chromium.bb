@@ -63,13 +63,15 @@ class CONTENT_EXPORT P2PSocketHostUdp : public P2PSocketHost {
 
   void OnError();
 
+  void SetSendBufferSize();
+
   void DoRead();
   void OnRecv(int result);
   void HandleReadResult(int result);
 
   void DoSend(const PendingPacket& packet);
-  void OnSend(uint64 packet_id, int result);
-  void HandleSendResult(uint64 packet_id, int result);
+  void OnSend(uint64 packet_id, uint64 tick_received, int result);
+  void HandleSendResult(uint64 packet_id, uint64 tick_received, int result);
 
   scoped_ptr<net::DatagramServerSocket> socket_;
   scoped_refptr<net::IOBuffer> recv_buffer_;

@@ -40073,6 +40073,17 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.SystemSendPacketDuration" units="milliseconds">
+  <owner>guoweis@chromium.org</owner>
+  <summary>
+    The duration that it takes to send out a packet in system layer. This
+    includes both the queuing time (under the condition when socket returns
+    EWOULDBLOCK from system) as well as the time system takes to finish the
+    asynchronous send. For UDP, it's the time from P2PSocketHostUdp::Send to
+    P2PSocketHostUdp::HandleSendResult. Tcp part is to be implemented.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.UnreliableDataChannelMessageSize" units="bytes">
   <owner>perkj@chromium.org</owner>
   <summary>
@@ -56937,6 +56948,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="TCP"/>
   <affected-histogram name="WebRTC.SystemMaxConsecutiveBytesDelayed"/>
   <affected-histogram name="WebRTC.SystemPercentPacketsDelayed"/>
+  <affected-histogram name="WebRTC.SystemSendPacketDuration"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="IPv6_Probe">

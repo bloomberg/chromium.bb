@@ -6,7 +6,10 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/p2p/socket_host_throttler.h"
 #include "content/common/p2p_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -84,6 +87,21 @@ P2PSocketHostUdp::~P2PSocketHostUdp() {
   }
 }
 
+void P2PSocketHostUdp::SetSendBufferSize() {
+  unsigned int send_buffer_size = 0;
+
+  base::StringToUint(
+      base::FieldTrialList::FindFullName("WebRTC-SystemUDPSendSocketSize"),
+      &send_buffer_size);
+
+  if (send_buffer_size > 0) {
+    if (!SetOption(P2P_SOCKET_OPT_SNDBUF, send_buffer_size)) {
+      LOG(WARNING) << "Failed to set socket send buffer size to "
+                   << send_buffer_size;
+    }
+  }
+}
+
 bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
                             const P2PHostAndIPEndPoint& remote_address) {
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
@@ -112,6 +130,8 @@ bool P2PSocketHostUdp::Init(const net::IPEndPoint& local_address,
   VLOG(1) << "Local address: " << address.ToString();
 
   state_ = STATE_OPEN;
+
+  SetSendBufferSize();
 
   // NOTE: Remote address will be same as what renderer provided.
   message_sender_->Send(new P2PMsg_OnSocketCreated(
@@ -245,43 +265,51 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
       last_dscp_ = net::DSCP_NO_CHANGE;
     }
   }
+
+  uint64 tick_received = base::TimeTicks::Now().ToInternalValue();
+
   packet_processing_helpers::ApplyPacketOptions(
       packet.data->data(), packet.size, packet.packet_options, 0);
-  int result = socket_->SendTo(
-      packet.data.get(),
-      packet.size,
-      packet.to,
-      base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this), packet.id));
+  int result = socket_->SendTo(packet.data.get(),
+                               packet.size,
+                               packet.to,
+                               base::Bind(&P2PSocketHostUdp::OnSend,
+                                          base::Unretained(this),
+                                          packet.id,
+                                          tick_received));
 
   // sendto() may return an error, e.g. if we've received an ICMP Destination
   // Unreachable message. When this happens try sending the same packet again,
   // and just drop it if it fails again.
   if (IsTransientError(result)) {
-    result = socket_->SendTo(
-        packet.data.get(),
-        packet.size,
-        packet.to,
-        base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this),
-                   packet.id));
+    result = socket_->SendTo(packet.data.get(),
+                             packet.size,
+                             packet.to,
+                             base::Bind(&P2PSocketHostUdp::OnSend,
+                                        base::Unretained(this),
+                                        packet.id,
+                                        tick_received));
   }
 
   if (result == net::ERR_IO_PENDING) {
     send_pending_ = true;
   } else {
-    HandleSendResult(packet.id, result);
+    HandleSendResult(packet.id, tick_received, result);
   }
 
   if (dump_outgoing_rtp_packet_)
     DumpRtpPacket(packet.data->data(), packet.size, false);
 }
 
-void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
+void P2PSocketHostUdp::OnSend(uint64 packet_id,
+                              uint64 tick_received,
+                              int result) {
   DCHECK(send_pending_);
   DCHECK_NE(result, net::ERR_IO_PENDING);
 
   send_pending_ = false;
 
-  HandleSendResult(packet_id, result);
+  HandleSendResult(packet_id, tick_received, result);
 
   // Send next packets if we have them waiting in the buffer.
   while (state_ == STATE_OPEN && !send_queue_.empty() && !send_pending_) {
@@ -292,7 +320,9 @@ void P2PSocketHostUdp::OnSend(uint64 packet_id, int result) {
   }
 }
 
-void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
+void P2PSocketHostUdp::HandleSendResult(uint64 packet_id,
+                                        uint64 tick_received,
+                                        int result) {
   TRACE_EVENT_ASYNC_END1("p2p", "Send", packet_id,
                          "result", result);
   if (result < 0) {
@@ -304,6 +334,14 @@ void P2PSocketHostUdp::HandleSendResult(uint64 packet_id, int result) {
     VLOG(0) << "sendto() has failed twice returning a "
                " transient error. Dropping the packet.";
   }
+
+  // UMA to track the histograms from 1ms to 1 sec for how long a packet spends
+  // in the browser process.
+  UMA_HISTOGRAM_TIMES(
+      "WebRTC.SystemSendPacketDuration_UDP" /* name */,
+      base::TimeTicks::Now() -
+          base::TimeTicks::FromInternalValue(tick_received) /* sample */);
+
   message_sender_->Send(new P2PMsg_OnSendComplete(id_));
 }
 
