@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
-import("//native_client/build/toolchain/nacl/nacl_sdk.gni")
-
 # These objects are included in both dfa_validate_x86_xx and rdfa_validator
 # libraries, so we have to introduce intermediate scons nodes.
 validator32 = "gen/validator_x86_32.c"

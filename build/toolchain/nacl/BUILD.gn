@@ -8,7 +8,6 @@ import("//native_client/build/toolchain/nacl_toolchain.gni")
 
 nacl_toolchain("newlib_arm") {
   package = "nacl_arm_newlib"
-  nacl_libc = "newlib"
   toolchain_cpu_arch = "arm"
   toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
 
@@ -20,7 +19,6 @@ nacl_toolchain("newlib_arm") {
 
 nacl_toolchain("newlib_x86") {
   package = "nacl_x86_newlib"
-  nacl_libc = "newlib"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
 
@@ -32,7 +30,6 @@ nacl_toolchain("newlib_x86") {
 
 nacl_toolchain("newlib_x64") {
   package = "nacl_x86_newlib"
-  nacl_libc = "newlib"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
 
@@ -44,7 +41,6 @@ nacl_toolchain("newlib_x64") {
 
 nacl_toolchain("glibc_x86") {
   package = "nacl_x86_glibc"
-  nacl_libc = "glibc"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/i686-nacl-"
 
@@ -56,7 +52,6 @@ nacl_toolchain("glibc_x86") {
 
 nacl_toolchain("glibc_x64") {
   package = "nacl_x86_glibc"
-  nacl_libc = "glibc"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/x86_64-nacl-"
 

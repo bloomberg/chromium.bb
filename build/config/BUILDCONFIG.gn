@@ -17,9 +17,6 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
-  # The current NaCl libc and preps stage, none for trusted toolchains.
-  nacl_libc = "none"
-
   use_newlib = true
   use_glibc = false
   use_pnacl = false
