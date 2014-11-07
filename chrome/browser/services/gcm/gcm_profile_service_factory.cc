@@ -20,7 +20,8 @@
 namespace gcm {
 
 // static
-GCMProfileService* GCMProfileServiceFactory::GetForProfile(Profile* profile) {
+GCMProfileService* GCMProfileServiceFactory::GetForProfile(
+    content::BrowserContext* profile) {
   // GCM is not supported in incognito mode.
   if (profile->IsOffTheRecord())
     return NULL;

@@ -10,8 +10,6 @@
 #include "components/gcm_driver/system_encryptor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class Profile;
-
 namespace gcm {
 
 class GCMProfileService;
@@ -20,7 +18,7 @@ class GCMProfileService;
 // Profiles.
 class GCMProfileServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static GCMProfileService* GetForProfile(Profile* profile);
+  static GCMProfileService* GetForProfile(content::BrowserContext* profile);
   static GCMProfileServiceFactory* GetInstance();
 
  private:
