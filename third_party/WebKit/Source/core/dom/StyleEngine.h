@@ -85,7 +85,7 @@ public:
     void modifiedStyleSheet(StyleSheet*);
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*);
-    void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode, TreeScope&);
+    void removeStyleSheetCandidateNode(Node*, TreeScope&);
     void modifiedStyleSheetCandidateNode(Node*);
     void enableExitTransitionStylesheets();
     void addXSLStyleSheet(ProcessingInstruction*, bool createdByParser);

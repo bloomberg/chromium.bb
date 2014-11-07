@@ -39,6 +39,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/svg/SVGStyleElement.h"
 
 namespace blink {
 
@@ -50,10 +51,10 @@ TreeScope* ScopedStyleResolver::treeScopeFor(Document& document, const CSSStyleS
         return 0;
 
     Node* ownerNode = sheet->ownerNode();
-    if (!isHTMLStyleElement(ownerNode))
+    if (!isHTMLStyleElement(ownerNode) && !isSVGStyleElement(ownerNode))
         return &document;
 
-    HTMLStyleElement& styleElement = toHTMLStyleElement(*ownerNode);
+    Element& styleElement = toElement(*ownerNode);
     if (styleElement.isInShadowTree())
         return styleElement.containingShadowRoot();
     return &document;

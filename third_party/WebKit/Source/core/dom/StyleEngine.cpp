@@ -79,6 +79,11 @@ StyleEngine::~StyleEngine()
 {
 }
 
+static bool isStyleElement(Node& node)
+{
+    return isHTMLStyleElement(node) || isSVGStyleElement(node);
+}
+
 #if !ENABLE(OILPAN)
 void StyleEngine::detachFromDocument()
 {
@@ -253,7 +258,7 @@ void StyleEngine::addPendingSheet()
 void StyleEngine::removePendingSheet(Node* styleSheetCandidateNode)
 {
     ASSERT(styleSheetCandidateNode);
-    TreeScope* treeScope = isHTMLStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
+    TreeScope* treeScope = isStyleElement(*styleSheetCandidateNode) ? &styleSheetCandidateNode->treeScope() : m_document.get();
     markTreeScopeDirty(*treeScope);
 
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
@@ -277,8 +282,8 @@ void StyleEngine::modifiedStyleSheet(StyleSheet* sheet)
     if (!node || !node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(*node) ? node->treeScope() : *m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
+    ASSERT(isStyleElement(*node) || treeScope == m_document);
 
     markTreeScopeDirty(treeScope);
 }
@@ -288,8 +293,8 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
     if (!node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(*node) ? node->treeScope() : *m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
+    ASSERT(isStyleElement(*node) || treeScope == m_document);
     ASSERT(!isXSLStyleSheet(*node));
     TreeScopeStyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
     ASSERT(collection);
@@ -302,17 +307,17 @@ void StyleEngine::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 
 void StyleEngine::removeStyleSheetCandidateNode(Node* node)
 {
-    removeStyleSheetCandidateNode(node, 0, *m_document);
+    removeStyleSheetCandidateNode(node, *m_document);
 }
 
-void StyleEngine::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode, TreeScope& treeScope)
+void StyleEngine::removeStyleSheetCandidateNode(Node* node, TreeScope& treeScope)
 {
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    ASSERT(isStyleElement(*node) || treeScope == m_document);
     ASSERT(!isXSLStyleSheet(*node));
 
     TreeScopeStyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
     ASSERT(collection);
-    collection->removeStyleSheetCandidateNode(node, scopingNode);
+    collection->removeStyleSheetCandidateNode(node);
 
     markTreeScopeDirty(treeScope);
     m_activeTreeScopes.remove(&treeScope);
@@ -354,8 +359,8 @@ void StyleEngine::modifiedStyleSheetCandidateNode(Node* node)
     if (!node->inDocument())
         return;
 
-    TreeScope& treeScope = isHTMLStyleElement(*node) ? node->treeScope() : *m_document;
-    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    TreeScope& treeScope = isStyleElement(*node) ? node->treeScope() : *m_document;
+    ASSERT(isStyleElement(*node) || treeScope == m_document);
     markTreeScopeDirty(treeScope);
 }
 

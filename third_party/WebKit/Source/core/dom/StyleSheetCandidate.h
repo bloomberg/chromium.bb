@@ -59,6 +59,7 @@ public:
     bool isEnabledAndLoading() const;
     bool hasPreferrableName(const String& currentPreferrableName) const;
     bool canBeActivated(const String& currentPreferrableName) const;
+    bool isCSSStyle() const;
 
     StyleSheet* sheet() const;
     AtomicString title() const;

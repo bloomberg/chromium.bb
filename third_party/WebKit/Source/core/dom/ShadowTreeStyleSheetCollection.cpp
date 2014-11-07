@@ -32,6 +32,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/StyleSheetCandidate.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 
@@ -46,44 +47,26 @@ ShadowTreeStyleSheetCollection::ShadowTreeStyleSheetCollection(ShadowRoot& shado
 
 void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* engine, StyleSheetCollection& collection)
 {
-    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
-    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
-    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
-        Node* node = *it;
-        StyleSheet* sheet = 0;
-        CSSStyleSheet* activeSheet = 0;
+    for (Node* n : m_styleSheetCandidateNodes) {
+        StyleSheetCandidate candidate(*n);
+        ASSERT(!candidate.isXSL());
 
-        if (!isHTMLStyleElement(*node))
+        if (!candidate.isCSSStyle())
             continue;
 
-        HTMLStyleElement* element = toHTMLStyleElement(node);
-        const AtomicString& title = element->fastGetAttribute(titleAttr);
-        bool enabledViaScript = false;
-
-        sheet = element->sheet();
-        if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-            activeSheet = toCSSStyleSheet(sheet);
+        StyleSheet* sheet = candidate.sheet();
+        if (!sheet)
+            continue;
 
         // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
         // Should we set preferred/selected stylesheets name in shadow trees and
         // use the name in document?
-        if (!enabledViaScript && sheet && !title.isEmpty()) {
-            if (engine->preferredStylesheetSetName().isEmpty()) {
-                engine->setPreferredStylesheetSetName(title);
-                engine->setSelectedStylesheetSetName(title);
-            }
-            if (title != engine->preferredStylesheetSetName())
-                activeSheet = 0;
-        }
+        if (candidate.hasPreferrableName(engine->preferredStylesheetSetName()))
+            engine->selectStylesheetSetName(candidate.title());
 
-        const AtomicString& rel = element->fastGetAttribute(relAttr);
-        if (rel.contains("alternate") && title.isEmpty())
-            activeSheet = 0;
-
-        if (sheet)
-            collection.appendSheetForList(sheet);
-        if (activeSheet)
-            collection.appendActiveStyleSheet(activeSheet);
+        collection.appendSheetForList(sheet);
+        if (candidate.canBeActivated(engine->preferredStylesheetSetName()))
+            collection.appendActiveStyleSheet(toCSSStyleSheet(sheet));
     }
 }
 

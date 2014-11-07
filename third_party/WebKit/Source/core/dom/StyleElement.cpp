@@ -75,17 +75,29 @@ void StyleElement::processStyleSheet(Document& document, Element* element)
     process(element);
 }
 
-void StyleElement::removedFromDocument(Document& document, Element* element)
+void StyleElement::insertedInto(Element* element, ContainerNode* insertionPoint)
 {
-    removedFromDocument(document, element, 0, document);
+    if (!insertionPoint->inDocument() || !element->isInShadowTree())
+        return;
+    if (ShadowRoot* scope = element->containingShadowRoot())
+        scope->registerScopedHTMLStyleChild();
 }
 
-void StyleElement::removedFromDocument(Document& document, Element* element, ContainerNode* scopingNode, TreeScope& treeScope)
+void StyleElement::removedFrom(Element* element, ContainerNode* insertionPoint)
 {
-    ASSERT(element);
+    if (!insertionPoint->inDocument())
+        return;
 
+    ShadowRoot* shadowRoot = element->containingShadowRoot();
+    if (!shadowRoot)
+        shadowRoot = insertionPoint->containingShadowRoot();
+
+    if (shadowRoot)
+        shadowRoot->unregisterScopedHTMLStyleChild();
+
+    Document& document = element->document();
     if (m_registeredAsCandidate) {
-        document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
+        document.styleEngine()->removeStyleSheetCandidateNode(element, shadowRoot ? *toTreeScope(shadowRoot) : toTreeScope(document));
         m_registeredAsCandidate = false;
     }
 
@@ -103,9 +115,9 @@ void StyleElement::clearDocumentData(Document& document, Element* element)
         m_sheet->clearOwnerNode();
 
     if (element->inDocument()) {
-        ContainerNode* scopingNode = isHTMLStyleElement(element) ? toHTMLStyleElement(element)->scopingNode() :  0;
-        TreeScope& treeScope = scopingNode ? scopingNode->treeScope() : element->treeScope();
-        document.styleEngine()->removeStyleSheetCandidateNode(element, scopingNode, treeScope);
+        // HTMLLinkElement in shadow tree is not supported.
+        TreeScope& treeScope = isHTMLStyleElement(element) || isSVGStyleElement(element) ? element->treeScope() : element->document();
+        document.styleEngine()->removeStyleSheetCandidateNode(element, treeScope);
     }
 }
 

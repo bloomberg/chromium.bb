@@ -61,11 +61,6 @@ void TreeScopeStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool 
         m_styleSheetCandidateNodes.add(node);
 }
 
-void TreeScopeStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
-{
-    m_styleSheetCandidateNodes.remove(node);
-}
-
 TreeScopeStyleSheetCollection::StyleResolverUpdateType TreeScopeStyleSheetCollection::compareStyleSheets(const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& oldStyleSheets, const WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& newStylesheets, WillBeHeapVector<RawPtrWillBeMember<StyleSheetContents> >& addedSheets)
 {
     unsigned newStyleSheetCount = newStylesheets.size();

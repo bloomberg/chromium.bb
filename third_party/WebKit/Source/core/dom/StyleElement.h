@@ -47,9 +47,9 @@ protected:
     bool sheetLoaded(Document&);
     void startLoadingDynamicSheet(Document&);
 
+    void insertedInto(Element*, ContainerNode* insertionPoint);
+    void removedFrom(Element*, ContainerNode* insertionPoint);
     void processStyleSheet(Document&, Element*);
-    void removedFromDocument(Document&, Element*);
-    void removedFromDocument(Document&, Element*, ContainerNode* scopingNode, TreeScope&);
     void clearDocumentData(Document&, Element*);
     void childrenChanged(Element*);
     void finishParsingChildren(Element*);

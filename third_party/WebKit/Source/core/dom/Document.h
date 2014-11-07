@@ -1419,6 +1419,8 @@ inline bool Node::isDocumentNode() const
 
 Node* eventTargetNodeForDocument(Document*);
 
+DEFINE_TYPE_CASTS(TreeScope, Document, document, true, true);
+
 } // namespace blink
 
 #ifndef NDEBUG

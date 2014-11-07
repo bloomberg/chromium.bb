@@ -55,6 +55,11 @@ bool StyleSheetCandidate::isImport() const
     return m_type == HTMLLink && toHTMLLinkElement(node()).isImport();
 }
 
+bool StyleSheetCandidate::isCSSStyle() const
+{
+    return m_type == HTMLStyle || m_type == SVGStyle;
+}
+
 Document* StyleSheetCandidate::importedDocument() const
 {
     ASSERT(isImport());

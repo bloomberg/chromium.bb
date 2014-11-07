@@ -165,6 +165,7 @@ inline Element* ShadowRoot::activeElement() const
 
 DEFINE_NODE_TYPE_CASTS(ShadowRoot, isShadowRoot());
 DEFINE_TYPE_CASTS(ShadowRoot, TreeScope, treeScope, treeScope->rootNode().isShadowRoot(), treeScope.rootNode().isShadowRoot());
+DEFINE_TYPE_CASTS(TreeScope, ShadowRoot, shadowRoot, true, true);
 
 } // namespace blink
 
