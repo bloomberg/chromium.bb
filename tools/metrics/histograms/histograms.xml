@@ -58353,6 +58353,15 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Net.ProxyResolver.ExecutionTime"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="NetQuicDiskCacheBackend" separator=".">
+  <owner>rtenneti@chromium.org</owner>
+  <suffix name="NoBackend" label="DiskCache didn't have a backend"/>
+  <suffix name="DiskCache" label="DiskCache backend is using disk cache."/>
+  <suffix name="MemoryCache" label="DiskCache backend is using memory cache."/>
+  <affected-histogram name="Net.QuicDiskCache.APICall"/>
+  <affected-histogram name="Net.QuicDiskCache.FailureReason"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="NetworkErrors" separator=".">
   <suffix name="AuthExtTimeout" label="with the last error AuthExtTimeout"/>
   <suffix name="Offline" label="with the last error Offline"/>

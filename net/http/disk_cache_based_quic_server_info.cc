@@ -17,45 +17,6 @@
 
 namespace net {
 
-// Histogram that tracks number of times data read/parse/write API calls of
-// QuicServerInfo to and from disk cache is called.
-enum QuicServerInfoAPICall {
-  QUIC_SERVER_INFO_START = 0,
-  QUIC_SERVER_INFO_WAIT_FOR_DATA_READY = 1,
-  QUIC_SERVER_INFO_PARSE = 2,
-  QUIC_SERVER_INFO_WAIT_FOR_DATA_READY_CANCEL = 3,
-  QUIC_SERVER_INFO_READY_TO_PERSIST = 4,
-  QUIC_SERVER_INFO_PERSIST = 5,
-  QUIC_SERVER_INFO_EXTERNAL_CACHE_HIT = 6,
-  QUIC_SERVER_INFO_NUM_OF_API_CALLS = 7,
-};
-
-// Histogram that tracks failure reasons to read/load/write of QuicServerInfo to
-// and from disk cache.
-enum FailureReason {
-  WAIT_FOR_DATA_READY_INVALID_ARGUMENT_FAILURE = 0,
-  GET_BACKEND_FAILURE = 1,
-  OPEN_FAILURE = 2,
-  CREATE_OR_OPEN_FAILURE = 3,
-  PARSE_NO_DATA_FAILURE = 4,
-  PARSE_FAILURE = 5,
-  READ_FAILURE = 6,
-  READY_TO_PERSIST_FAILURE = 7,
-  PERSIST_NO_BACKEND_FAILURE = 8,
-  WRITE_FAILURE = 9,
-  NUM_OF_FAILURES = 10,
-};
-
-void RecordQuicServerInfoStatus(QuicServerInfoAPICall call) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall", call,
-                            QUIC_SERVER_INFO_NUM_OF_API_CALLS);
-}
-
-void RecordQuicServerInfoFailure(FailureReason failure) {
-  UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason", failure,
-                            NUM_OF_FAILURES);
-}
-
 // Some APIs inside disk_cache take a handle that the caller must keep alive
 // until the API has finished its asynchronous execution.
 //
@@ -393,6 +354,34 @@ int DiskCacheBasedQuicServerInfo::DoSetDone() {
   new_data_.clear();
   state_ = NONE;
   return OK;
+}
+
+void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoStatus(
+    QuicServerInfoAPICall call) {
+  if (!backend_) {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall.NoBackend", call,
+                              QUIC_SERVER_INFO_NUM_OF_API_CALLS);
+  } else if (backend_->GetCacheType() == net::MEMORY_CACHE) {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall.MemoryCache", call,
+                              QUIC_SERVER_INFO_NUM_OF_API_CALLS);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.APICall.DiskCache", call,
+                              QUIC_SERVER_INFO_NUM_OF_API_CALLS);
+  }
+}
+
+void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoFailure(
+    FailureReason failure) {
+  if (!backend_) {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.NoBackend",
+                              failure, NUM_OF_FAILURES);
+  } else if (backend_->GetCacheType() == net::MEMORY_CACHE) {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.MemoryCache",
+                              failure, NUM_OF_FAILURES);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.DiskCache",
+                              failure, NUM_OF_FAILURES);
+  }
 }
 
 }  // namespace net
