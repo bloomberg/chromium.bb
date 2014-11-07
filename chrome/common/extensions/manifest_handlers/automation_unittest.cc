@@ -93,7 +93,7 @@ TEST_F(AutomationManifestTest, Matches) {
   std::vector<base::string16> warnings =
       extension->permissions_data()->GetPermissionMessageStrings();
   ASSERT_EQ(1u, warnings.size());
-  EXPECT_EQ("Read and change your data on www.google.com and www.twitter.com",
+  EXPECT_EQ("Read your data on www.google.com and www.twitter.com",
             base::UTF16ToUTF8(warnings[0]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -122,7 +122,7 @@ TEST_F(AutomationManifestTest, MatchesAndPermissions) {
   ASSERT_EQ(2u, warnings.size());
   EXPECT_EQ("Read and change your data on www.google.com",
             base::UTF16ToUTF8(warnings[0]));
-  EXPECT_EQ("Read and change your data on www.twitter.com",
+  EXPECT_EQ("Read your data on www.twitter.com",
             base::UTF16ToUTF8(warnings[1]));
 
   const AutomationInfo* info = AutomationInfo::Get(extension.get());
@@ -278,4 +278,44 @@ TEST_F(AutomationManifestTest, Desktop_MatchesSpecified) {
   EXPECT_TRUE(info->matches.is_empty());
 }
 
+TEST_F(AutomationManifestTest, AllHostsInteractFalse) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("automation_all_hosts_interact_false.json");
+  ASSERT_TRUE(extension.get());
+
+  std::vector<base::string16> warnings =
+      extension->permissions_data()->GetPermissionMessageStrings();
+  ASSERT_EQ(1u, warnings.size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(
+                IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY),
+            warnings[0]);
+
+  const AutomationInfo* info = AutomationInfo::Get(extension.get());
+  ASSERT_TRUE(info);
+
+  EXPECT_FALSE(info->desktop);
+  EXPECT_FALSE(info->interact);
+  EXPECT_FALSE(info->matches.is_empty());
+  EXPECT_TRUE(info->matches.MatchesAllURLs());
+}
+
+TEST_F(AutomationManifestTest, AllHostsInteractTrue) {
+  scoped_refptr<Extension> extension =
+      LoadAndExpectSuccess("automation_all_hosts_interact_true.json");
+  ASSERT_TRUE(extension.get());
+
+  std::vector<base::string16> warnings =
+      extension->permissions_data()->GetPermissionMessageStrings();
+  ASSERT_EQ(1u, warnings.size());
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS),
+            warnings[0]);
+
+  const AutomationInfo* info = AutomationInfo::Get(extension.get());
+  ASSERT_TRUE(info);
+
+  EXPECT_FALSE(info->desktop);
+  EXPECT_TRUE(info->interact);
+  EXPECT_FALSE(info->matches.is_empty());
+  EXPECT_TRUE(info->matches.MatchesAllURLs());
+}
 }  // namespace extensions

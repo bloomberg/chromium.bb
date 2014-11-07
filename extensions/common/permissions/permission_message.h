@@ -92,6 +92,11 @@ class PermissionMessage {
     kU2fDevices,
     kVpnProvider,
     kDocumentScan,
+    kHosts1ReadOnly,
+    kHosts2ReadOnly,
+    kHosts3ReadOnly,
+    kHosts4OrMoreReadOnly,
+    kHostsAllReadOnly,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission2" enum in tools/metrics/histograms/histograms.xml.
     kEnumBoundary,

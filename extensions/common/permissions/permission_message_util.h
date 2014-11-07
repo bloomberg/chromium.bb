@@ -16,10 +16,14 @@ class URLPatternSet;
 
 namespace permission_message_util {
 
+enum PermissionMessageProperties { kReadOnly, kReadWrite };
+
 // Creates the corresponding permission message for a list of hosts.
-// The messages change depending on what hosts are present.
+// The messages change depending on how many hosts are present, and whether
+// |read_only| is true.
 extensions::PermissionMessage CreateFromHostList(
-    const std::set<std::string>& hosts);
+    const std::set<std::string>& hosts,
+    PermissionMessageProperties);
 
 std::set<std::string> GetDistinctHosts(
     const extensions::URLPatternSet& host_patterns,

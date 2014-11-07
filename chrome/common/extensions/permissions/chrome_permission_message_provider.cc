@@ -382,7 +382,8 @@ ChromePermissionMessageProvider::GetHostPermissionMessages(
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
     if (!hosts.empty())
-      messages.insert(permission_message_util::CreateFromHostList(hosts));
+      messages.insert(permission_message_util::CreateFromHostList(
+          hosts, permission_message_util::kReadWrite));
   }
   return messages;
 }

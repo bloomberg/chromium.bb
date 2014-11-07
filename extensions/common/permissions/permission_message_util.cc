@@ -4,6 +4,7 @@
 
 #include "extensions/common/permissions/permission_message_util.h"
 
+#include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -39,9 +40,10 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
 
 namespace permission_message_util {
 
-PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
+PermissionMessage CreateFromHostList(const std::set<std::string>& hosts,
+                                     PermissionMessageProperties properties) {
   typedef std::pair<PermissionMessage::ID, int> MsgPair;
-  const MsgPair kMessagesList[] = {
+  static const MsgPair kReadWriteMessagesList[] = {
       std::make_pair(PermissionMessage::kHosts1,
                      IDS_EXTENSION_PROMPT_WARNING_1_HOST),
       std::make_pair(PermissionMessage::kHosts2,
@@ -50,8 +52,23 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
                      IDS_EXTENSION_PROMPT_WARNING_3_HOSTS),
       std::make_pair(PermissionMessage::kHosts4OrMore,
                      IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST)};
+  static const MsgPair kReadOnlyMessagesList[] = {
+      std::make_pair(PermissionMessage::kHosts1ReadOnly,
+                     IDS_EXTENSION_PROMPT_WARNING_1_HOST_READ_ONLY),
+      std::make_pair(PermissionMessage::kHosts2ReadOnly,
+                     IDS_EXTENSION_PROMPT_WARNING_2_HOSTS_READ_ONLY),
+      std::make_pair(PermissionMessage::kHosts3ReadOnly,
+                     IDS_EXTENSION_PROMPT_WARNING_3_HOSTS_READ_ONLY),
+      std::make_pair(PermissionMessage::kHosts4OrMoreReadOnly,
+                     IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY)};
+  COMPILE_ASSERT(
+      arraysize(kReadWriteMessagesList) == arraysize(kReadOnlyMessagesList),
+      message_lists_different_size);
+  static const int kNumMessages = arraysize(kReadWriteMessagesList);
+  const MsgPair(&messages_list)[kNumMessages] =
+      properties == kReadOnly ? kReadOnlyMessagesList : kReadWriteMessagesList;
 
-  int host_msg_id = hosts.size() < arraysize(kMessagesList)
+  int host_msg_id = hosts.size() < kNumMessages
                         ? IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN
                         : IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST;
   std::vector<base::string16> host_list;
@@ -67,11 +84,11 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
   }
   DCHECK(host_list.size());
 
-  if (host_list.size() < arraysize(kMessagesList)) {
+  if (host_list.size() < kNumMessages) {
     return PermissionMessage(
-        kMessagesList[host_list.size() - 1].first,
-        l10n_util::GetStringFUTF16(
-            kMessagesList[host_list.size() - 1].second, host_list, NULL));
+        messages_list[host_list.size() - 1].first,
+        l10n_util::GetStringFUTF16(messages_list[host_list.size() - 1].second,
+                                   host_list, NULL));
   }
 
   base::string16 details;
@@ -81,9 +98,9 @@ PermissionMessage CreateFromHostList(const std::set<std::string>& hosts) {
     details += host_list[i];
   }
   return PermissionMessage(
-      kMessagesList[arraysize(kMessagesList) - 1].first,
+      messages_list[arraysize(messages_list) - 1].first,
       l10n_util::GetStringUTF16(
-          kMessagesList[arraysize(kMessagesList) - 1].second),
+          messages_list[arraysize(messages_list) - 1].second),
       details);
 }
 

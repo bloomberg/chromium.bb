@@ -85,9 +85,16 @@ PermissionMessages AutomationManifestPermission::GetMessages() const {
         PermissionMessage::kFullAccess,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_FULL_ACCESS)));
   } else if (automation_info_->matches.MatchesAllURLs()) {
-    messages.push_back(PermissionMessage(
-        PermissionMessage::kHostsAll,
-        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
+    if (automation_info_->interact) {
+      messages.push_back(PermissionMessage(
+          PermissionMessage::kHostsAll,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS)));
+    } else {
+      messages.push_back(PermissionMessage(
+          PermissionMessage::kHostsAllReadOnly,
+          l10n_util::GetStringUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_ALL_HOSTS_READ_ONLY)));
+    }
   } else {
     URLPatternSet regular_hosts;
     std::set<PermissionMessage> message_set;
@@ -97,8 +104,12 @@ PermissionMessages AutomationManifestPermission::GetMessages() const {
 
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
-    if (!hosts.empty())
-      messages.push_back(permission_message_util::CreateFromHostList(hosts));
+    if (!hosts.empty()) {
+      messages.push_back(permission_message_util::CreateFromHostList(
+          hosts,
+          automation_info_->interact ? permission_message_util::kReadWrite
+                                     : permission_message_util::kReadOnly));
+    }
   }
 
   return messages;
