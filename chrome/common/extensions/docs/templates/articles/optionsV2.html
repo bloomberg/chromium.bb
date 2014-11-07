@@ -132,6 +132,31 @@ behavior you should consider while writing them, mostly caused by not being
 hosted inside their own tabs.
 </p>
 
+<h3 id="linking">Linking to your options page</h3>
+<p>
+To link to your extension's options page, use a URL like
+<em style="white-space:nowrap">chrome://extensions<strong>?options=yourextensionid</strong></em>.
+This loads <em>chrome://extensions</em> then automatically opens your options
+page in a dialogue.
+
+<pre data-filename="popup.html">
+&lt;a href="chrome://extensions?options=aebdgjojlaaljcehfkjaknmlilmblnip"&gt;
+  Go to options.
+&lt;/a&gt;
+</pre>
+</p>
+
+<p>
+Of course, this is only supported in Chrome 40 onwards.
+</p>
+
+<p>
+If you link to your options page directly with <em
+style="white-space:nowrap">chrome-extension://<strong>yourextensionid/youroptionspage.html</strong></em>,
+it will always open in its own tab. This is a bad user experience (but it can
+be useful in development).
+</p>
+
 <h3 id="tabs-api">Tabs API</h3>
 <p>
 Options page code cannot assume that it's hosted inside a tab, and this may
@@ -160,10 +185,9 @@ options page is an extension page.
 <h3 id="messaging-api">Messaging APIs</h3>
 <p>
 If your options page sends a message using $(ref:runtime.connect) or
-$(ref:runtime.sendMessage) then the $(ref:runtime.MessageSender.tab Tab's) URL
-and $(ref:runtime.MessageSender.url MessageSender's URL) properties won't agree
-- the tab URL will be of <em>chrome://settings</em> while the URL will be your
-options page URL.
+$(ref:runtime.sendMessage), the $(ref:runtime.MessageSender.tab Sender's tab)
+won't be set, and the $(ref:runtime.MessageSender.url Sender's URL) will be
+your options page URL.
 </p>
 
 <h3 id="sizing">Sizing</h3>
@@ -189,6 +213,7 @@ only open in tabs. Chrome 40 and onwards prefer to use the
 <code>options_ui</code> field if it's specified.
 </p>
 
+<p>
 The <code>options_ui</code> manifest field and embedded extension options
 were introduced in Chrome 40. Prior to these changes, options pages were always
 displayed in new tabs and were declared using the <code>options_page</code>
@@ -208,10 +233,9 @@ See <a href="options">this document</a> for full details.
 </p>
 
 <p>
-Chrome will continue to support extensions that use the legacy
-<code>options_page</code> manifest field, but new and existing extensions
-should use the <code>options_ui</code> manifest field to ensure that their
-options pages are displayed as intended.
+Chrome will continue to support the <code>options_page</code> manifest field,
+but new and existing extensions should use the <code>options_ui</code> to
+ensure that their options pages are displayed as intended.
 </p>
 <p>
 If you specify both, Chrome 40 and onwards will ignore the value of
