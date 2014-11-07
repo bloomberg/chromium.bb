@@ -1192,7 +1192,7 @@ class PreCQLauncherStage(SyncStage):
     to_process = set(changes) - already_passed
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.
-    can_submit = set(c for c in (verified and to_process) if
+    can_submit = set(c for c in (verified.intersection(to_process)) if
                      self.CanSubmitChangeInPreCQ(c))
     # Changes that will be submitted.
     will_submit = set()
