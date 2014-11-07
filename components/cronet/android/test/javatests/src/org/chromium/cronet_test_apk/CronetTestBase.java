@@ -66,6 +66,13 @@ public class CronetTestBase extends
                     commandLineArgs);
         }
         setActivityIntent(intent);
+        // Make sure the activity was created as expected.
+        assertNotNull(getActivity());
+        try {
+            waitForActiveShellToBeDoneLoading();
+        } catch (Throwable e) {
+            fail("Test activity has failed to load.");
+        }
         return getActivity();
     }
 

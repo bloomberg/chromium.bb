@@ -43,6 +43,9 @@ struct URLRequestContextConfig {
   URLRequestContextConfig();
   ~URLRequestContextConfig();
 
+  // Load config values from JSON format.
+  bool LoadFromJSON(const std::string& config_string);
+
   // Configure |context_builder| based on |this|.
   void ConfigureURLRequestContextBuilder(
       net::URLRequestContextBuilder* context_builder);
@@ -62,6 +65,8 @@ struct URLRequestContextConfig {
   int http_cache_max_size;
   // Storage path for http cache and cookie storage.
   std::string storage_path;
+  // User-Agent request header field.
+  std::string user_agent;
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;
 

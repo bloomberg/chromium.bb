@@ -8,6 +8,7 @@
 #error "DEFINE_CONTEXT_CONFIG should be defined before including this file"
 #endif
 // See HttpUrlRequestFactoryConfig.java for description of these parameters.
+DEFINE_CONTEXT_CONFIG(USER_AGENT)
 DEFINE_CONTEXT_CONFIG(STORAGE_PATH)
 DEFINE_CONTEXT_CONFIG(ENABLE_LEGACY_MODE)
 DEFINE_CONTEXT_CONFIG(NATIVE_LIBRARY_NAME)

@@ -4,7 +4,6 @@
 
 package org.chromium.net;
 
-import java.net.URL;
 import java.nio.ByteBuffer;
 
 /**
@@ -20,10 +19,11 @@ public interface UrlRequestListener {
      *
      * @param request Request being redirected.
      * @param info Response information.
-     * @param newLocation Location where request is redirected.
+     * @param newLocationUrl Location where request is redirected.
      */
-    public void onRedirect(UrlRequest request, ResponseInfo info,
-                           URL newLocation);
+    public void onRedirect(UrlRequest request,
+            ResponseInfo info,
+            String newLocationUrl);
 
     /**
      * Called when the final set of headers, after all redirects,
@@ -41,25 +41,32 @@ public interface UrlRequestListener {
      * Cancelling the request also invalidates the buffer.
      *
      * @param request Request that received data.
+     * @param info Response information.
      * @param byteBuffer Received data.
      */
-    public void onDataReceived(UrlRequest request, ByteBuffer byteBuffer);
+    public void onDataReceived(UrlRequest request,
+            ResponseInfo info,
+            ByteBuffer byteBuffer);
 
     /**
-     * Called when request is complete, no callbacks will be called afterwards.
+     * Called when request is completed successfully, no callbacks will be
+     * called afterwards.
      *
-     * @param request Request that is complete.
+     * @param request Request that succeeded.
+     * @param info Response information.
      */
-    public void onComplete(UrlRequest request);
+    public void onSucceeded(UrlRequest request, ExtendedResponseInfo info);
 
     /**
-     * Can be called at any point between start() and onComplete().  Once
+     * Called if request failed for any reason after start().  Once
      * called, no other functions can be called.  UrlRequestException
      * provides information about error.
      *
-     * @param request Request that received an error.
+     * @param request Request that failed.
+     * @param info Response information.
      * @param error information about error.
      */
-    public void onError(UrlRequest request,
-                        UrlRequestException error);
+    public void onFailed(UrlRequest request,
+            ResponseInfo info,
+            UrlRequestException error);
 }

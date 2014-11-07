@@ -9,6 +9,16 @@ package org.chromium.net;
  * Note:  All methods must be called on the Executor passed in during creation.
  */
 public interface UrlRequest {
+    public static final int REQUEST_PRIORITY_IDLE = 0;
+
+    public static final int REQUEST_PRIORITY_LOWEST = 1;
+
+    public static final int REQUEST_PRIORITY_LOW = 2;
+
+    public static final int REQUEST_PRIORITY_MEDIUM = 3;
+
+    public static final int REQUEST_PRIORITY_HIGHEST = 4;
+
     /**
      * More setters go here.  They may only be called before start (Maybe
      * also allow during redirects).  Could optionally instead use arguments
@@ -16,7 +26,8 @@ public interface UrlRequest {
      */
 
     /**
-     * Sets the HTTP method verb to use for this request.
+     * Sets the HTTP method verb to use for this request. Must be done before
+     * request has started.
      *
      * <p>The default when this method is not called is "GET" if the request has
      * no body or "POST" if it does.
@@ -34,20 +45,25 @@ public interface UrlRequest {
     public void addHeader(String header, String value);
 
     /**
-     * Starts the request, all callbacks go to listener.
-     * @param listener
+     * Starts the request, all callbacks go to listener. May only be called
+     * once. May not be called if cancel has been called on the request.
      */
-    public void start(UrlRequestListener listener);
+    public void start();
 
     /**
-     * Can be called at any time.
+     * Cancels the request.
+     *
+     * Can be called at any time.  If the Executor passed to UrlRequest on
+     * construction runs tasks on a single thread, and cancel is called on that
+     * thread, no listener methods will be invoked after cancel is called.
+     * Otherwise, at most one listener method may be made after cancel has
+     * completed.
      */
     public void cancel();
 
     /**
-     *
      * @return True if the request has been cancelled by the embedder.
-     * TBD(mmenke): False in all other cases (Including errors).
+     * False in all other cases (Including errors).
      */
     public boolean isCanceled();
 

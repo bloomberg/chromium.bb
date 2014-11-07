@@ -16,6 +16,7 @@ import org.chromium.net.HttpUrlRequest;
 import org.chromium.net.HttpUrlRequestFactory;
 import org.chromium.net.HttpUrlRequestFactoryConfig;
 import org.chromium.net.HttpUrlRequestListener;
+import org.chromium.net.UrlRequestContext;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
@@ -38,6 +39,7 @@ public class CronetTestActivity extends Activity {
     public static final String SKIP_FACTORY_INIT_KEY = "skipFactoryInit";
 
     HttpUrlRequestFactory mRequestFactory;
+    UrlRequestContext mUrlRequestContext;
 
     String mUrl;
 
@@ -115,6 +117,9 @@ public class CronetTestActivity extends Activity {
 
         // Setting this here so it isn't overridden on the command line
         config.setLibraryName("cronet_tests");
+
+        mUrlRequestContext = UrlRequestContext.createContext(
+                getApplicationContext(), config);
 
         return HttpUrlRequestFactory.createFactory(getApplicationContext(),
                                                    config);
@@ -226,8 +231,8 @@ public class CronetTestActivity extends Activity {
 
     public void startNetLog() {
         mRequestFactory.startNetLogToFile(
-                Environment.getExternalStorageDirectory().getPath() +
-                        "/cronet_sample_netlog.json");
+                Environment.getExternalStorageDirectory().getPath()
+                        + "/cronet_sample_netlog.json");
     }
 
     public void stopNetLog() {

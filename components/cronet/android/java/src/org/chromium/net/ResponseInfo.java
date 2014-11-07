@@ -4,7 +4,6 @@
 
 package org.chromium.net;
 
-import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -12,47 +11,47 @@ import java.util.Map;
  * Contains basic information about a response. Sent to the embedder whenever
  * headers are received.
  */
-public abstract interface ResponseInfo {
+public interface ResponseInfo {
     /**
-     * Return the url the response is for (Not the original URL - after
-     * redirects, it's the new URL).
+     * @return the URL the response is for (Not the original URL - after
+     * redirects, it's the new URL). Includes scheme, path, and query.
      */
-    URL getUrl();
+    String getUrl();
 
     /**
      *
-     * @return the url chain, including all redirects.  The originally
+     * @return the url chain, including all redirects. The originally
      * requested URL is first.
      */
-    URL[] getUrlChain();
+    String[] getUrlChain();
 
     /**
-     * Returns the HTTP status code.
+     * @return the HTTP status code.
      */
     int getHttpStatusCode();
 
     /**
-     * Returns an unmodifiable map of the response-header fields and values.
+     * @return an unmodifiable map of the response-header fields and values.
      * The null key is mapped to the HTTP status line for compatibility with
      * HttpUrlConnection.
      */
     Map<String, List<String>> getAllHeaders();
 
-    /** True if the response came from the cache.  Requests that were
+    /**
+     * @return True if the response came from the cache. Requests that were
      * revalidated over the network before being retrieved from the cache are
-     * considered cached.
+     * considered cached. When a resource is retrieved from the cache
+     * (Whether it was revalidated or not), getHttpStatusCode returns the
+     * original status code.
      */
     boolean wasCached();
 
     /**
-     *
-     * @return
+     * @return protocol (e.g. "quic/1+spdy/3") negotiated with server. Returns
+     * empty string if no protocol was negotiated, or the protocol is not known.
+     * Returns empty when using plain http or https.
+     * TODO(mef): Figure out what this returns in the cached case, both with
+     * and without a revalidation request.
      */
-    boolean wasFetchedOverSPDY();
-
-    /**
-     *
-     * @return
-     */
-    boolean wasFetchedOverQUIC();
+    String getNegotiatedProtocol();
 };

@@ -4,6 +4,8 @@
 
 #include "components/cronet/url_request_context_config.h"
 
+#include "base/json/json_reader.h"
+#include "base/values.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace cronet {
@@ -37,6 +39,21 @@ URLRequestContextConfig::URLRequestContextConfig() {
 URLRequestContextConfig::~URLRequestContextConfig() {
 }
 
+bool URLRequestContextConfig::LoadFromJSON(const std::string& config_string) {
+  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config_string));
+  if (!config_value || !config_value->IsType(base::Value::TYPE_DICTIONARY)) {
+    DLOG(ERROR) << "Bad JSON: " << config_string;
+    return false;
+  }
+
+  base::JSONValueConverter<URLRequestContextConfig> converter;
+  if (!converter.Convert(*config_value, this)) {
+    DLOG(ERROR) << "Bad Config: " << config_value;
+    return false;
+  }
+  return true;
+}
+
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder) {
   std::string config_cache;
@@ -55,7 +72,7 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   } else {
     context_builder->DisableHttpCache();
   }
-
+  context_builder->set_user_agent(user_agent);
   context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
   // TODO(mef): Use |config| to set cookies.
 }
@@ -63,6 +80,10 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
 // static
 void URLRequestContextConfig::RegisterJSONConverter(
     base::JSONValueConverter<URLRequestContextConfig>* converter) {
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_USER_AGENT,
+                                 &URLRequestContextConfig::user_agent);
+  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_STORAGE_PATH,
+                                 &URLRequestContextConfig::storage_path);
   converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_QUIC,
                                &URLRequestContextConfig::enable_quic);
   converter->RegisterBoolField(REQUEST_CONTEXT_CONFIG_ENABLE_SPDY,
@@ -71,8 +92,6 @@ void URLRequestContextConfig::RegisterJSONConverter(
                                  &URLRequestContextConfig::http_cache);
   converter->RegisterIntField(REQUEST_CONTEXT_CONFIG_HTTP_CACHE_MAX_SIZE,
                               &URLRequestContextConfig::http_cache_max_size);
-  converter->RegisterStringField(REQUEST_CONTEXT_CONFIG_STORAGE_PATH,
-                                 &URLRequestContextConfig::storage_path);
   converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,
                                      &URLRequestContextConfig::quic_hints);
 }
