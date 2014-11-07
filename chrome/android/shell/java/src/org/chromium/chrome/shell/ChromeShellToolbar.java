@@ -162,6 +162,9 @@ public class ChromeShellToolbar extends LinearLayout {
                         || event.getAction() != KeyEvent.ACTION_DOWN)) {
                     return false;
                 }
+                if (mTabManager.isTabSwitcherVisible()) {
+                    mTabManager.hideTabSwitcher();
+                }
 
                 // This will set |mTab| by calling showTab().
                 // TODO(aurimas): Factor out initial tab creation to the activity level.
