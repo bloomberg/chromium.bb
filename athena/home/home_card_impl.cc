@@ -169,7 +169,9 @@ class HomeCardView : public views::WidgetDelegateView {
   }
 
   void Init() {
-    main_view_->Init(GetWidget()->GetNativeView(), -1, search_box_view_);
+    main_view_->Init(GetWidget()->GetNativeView(),
+                     -1, /* inital apps page: -1 means default */
+                     search_box_view_);
   }
 
   void SetStateProgress(HomeCard::State from_state,
@@ -419,6 +421,9 @@ void HomeCardImpl::Init() {
   widget_params.delegate = home_card_view_;
   widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   home_card_widget_->Init(widget_params);
+  // AppListMainView in home card may move outside of home card layer partially
+  // in an transition animation. This flag is set to clip the parts outside of
+  // home card.
   home_card_widget_->GetNativeWindow()->layer()->SetMasksToBounds(true);
 
   home_card_view_->Init();

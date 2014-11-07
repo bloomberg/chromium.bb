@@ -140,7 +140,7 @@ void AppListViewDelegate::ShowForProfileByPath(
 
 views::View* AppListViewDelegate::CreateStartPageWebView(
     const gfx::Size& size) {
-  return NULL;
+  return nullptr;
 }
 
 std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
