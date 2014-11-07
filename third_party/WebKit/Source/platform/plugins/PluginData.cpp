@@ -45,7 +45,7 @@ public:
     {
         if (!m_loaded) {
             PluginListBuilder builder(&m_plugins);
-            blink::Platform::current()->getPluginList(m_refresh, &builder);
+            Platform::current()->getPluginList(m_refresh, &builder);
             m_loaded = true;
             m_refresh = false;
         }
@@ -140,4 +140,4 @@ String getPluginMimeTypeFromExtension(const String& extension)
     return String();
 }
 
-}
+} // namespace blink

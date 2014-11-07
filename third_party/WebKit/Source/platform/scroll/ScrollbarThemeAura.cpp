@@ -65,104 +65,104 @@ int ScrollbarThemeAura::scrollbarThickness(ScrollbarControlSize controlSize)
     // In unit tests we don't have the mock theme engine (because of layering violations), so we hard code the size (see bug 327470).
     if (useMockTheme())
         return 15;
-    IntSize scrollbarSize = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalTrack);
+    IntSize scrollbarSize = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
 }
 
 void ScrollbarThemeAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
-    blink::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? blink::WebThemeEngine::StateHover : blink::WebThemeEngine::StateNormal;
+    WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebThemeEngine::StateHover : WebThemeEngine::StateNormal;
 
     if (useMockTheme() && !scrollbar->enabled())
-        state = blink::WebThemeEngine::StateDisabled;
+        state = WebThemeEngine::StateDisabled;
 
     IntRect alignRect = trackRect(scrollbar, false);
-    blink::WebThemeEngine::ExtraParams extraParams;
-    blink::WebCanvas* canvas = gc->canvas();
+    WebThemeEngine::ExtraParams extraParams;
+    WebCanvas* canvas = gc->canvas();
     extraParams.scrollbarTrack.isBack = (partType == BackTrackPart);
     extraParams.scrollbarTrack.trackX = alignRect.x();
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
     extraParams.scrollbarTrack.trackHeight = alignRect.height();
-    blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalTrack : blink::WebThemeEngine::PartScrollbarVerticalTrack, state, blink::WebRect(rect), &extraParams);
+    Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalTrack : WebThemeEngine::PartScrollbarVerticalTrack, state, WebRect(rect), &extraParams);
 }
 
 void ScrollbarThemeAura::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
-    blink::WebThemeEngine::Part paintPart;
-    blink::WebThemeEngine::State state = blink::WebThemeEngine::StateNormal;
-    blink::WebCanvas* canvas = gc->canvas();
+    WebThemeEngine::Part paintPart;
+    WebThemeEngine::State state = WebThemeEngine::StateNormal;
+    WebCanvas* canvas = gc->canvas();
     bool checkMin = false;
     bool checkMax = false;
 
     if (scrollbar->orientation() == HorizontalScrollbar) {
         if (part == BackButtonStartPart) {
-            paintPart = blink::WebThemeEngine::PartScrollbarLeftArrow;
+            paintPart = WebThemeEngine::PartScrollbarLeftArrow;
             checkMin = true;
         } else if (useMockTheme() && part != ForwardButtonEndPart) {
             return;
         } else {
-            paintPart = blink::WebThemeEngine::PartScrollbarRightArrow;
+            paintPart = WebThemeEngine::PartScrollbarRightArrow;
             checkMax = true;
         }
     } else {
         if (part == BackButtonStartPart) {
-            paintPart = blink::WebThemeEngine::PartScrollbarUpArrow;
+            paintPart = WebThemeEngine::PartScrollbarUpArrow;
             checkMin = true;
         } else if (useMockTheme() && part != ForwardButtonEndPart) {
             return;
         } else {
-            paintPart = blink::WebThemeEngine::PartScrollbarDownArrow;
+            paintPart = WebThemeEngine::PartScrollbarDownArrow;
             checkMax = true;
         }
     }
     if (useMockTheme() && !scrollbar->enabled()) {
-        state = blink::WebThemeEngine::StateDisabled;
+        state = WebThemeEngine::StateDisabled;
     } else if (!useMockTheme() && ((checkMin && (scrollbar->currentPos() <= 0))
         || (checkMax && scrollbar->currentPos() >= scrollbar->maximum()))) {
-        state = blink::WebThemeEngine::StateDisabled;
+        state = WebThemeEngine::StateDisabled;
     } else {
         if (part == scrollbar->pressedPart())
-            state = blink::WebThemeEngine::StatePressed;
+            state = WebThemeEngine::StatePressed;
         else if (part == scrollbar->hoveredPart())
-            state = blink::WebThemeEngine::StateHover;
+            state = WebThemeEngine::StateHover;
     }
-    blink::Platform::current()->themeEngine()->paint(canvas, paintPart, state, blink::WebRect(rect), 0);
+    Platform::current()->themeEngine()->paint(canvas, paintPart, state, WebRect(rect), 0);
 }
 
 void ScrollbarThemeAura::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    blink::WebThemeEngine::State state;
-    blink::WebCanvas* canvas = gc->canvas();
+    WebThemeEngine::State state;
+    WebCanvas* canvas = gc->canvas();
     if (scrollbar->pressedPart() == ThumbPart)
-        state = blink::WebThemeEngine::StatePressed;
+        state = WebThemeEngine::StatePressed;
     else if (scrollbar->hoveredPart() == ThumbPart)
-        state = blink::WebThemeEngine::StateHover;
+        state = WebThemeEngine::StateHover;
     else
-        state = blink::WebThemeEngine::StateNormal;
-    blink::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::PartScrollbarHorizontalThumb : blink::WebThemeEngine::PartScrollbarVerticalThumb, state, blink::WebRect(rect), 0);
+        state = WebThemeEngine::StateNormal;
+    Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebThemeEngine::PartScrollbarHorizontalThumb : WebThemeEngine::PartScrollbarVerticalThumb, state, WebRect(rect), 0);
 }
 
 IntSize ScrollbarThemeAura::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
-        IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarUpArrow);
+        IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarUpArrow);
         return IntSize(size.width(), scrollbar->height() < 2 * size.height() ? scrollbar->height() / 2 : size.height());
     }
 
     // HorizontalScrollbar
-    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarLeftArrow);
+    IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarLeftArrow);
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
 int ScrollbarThemeAura::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
-        IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarVerticalThumb);
+        IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarVerticalThumb);
         return size.height();
     }
 
-    IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartScrollbarHorizontalThumb);
+    IntSize size = Platform::current()->themeEngine()->getSize(WebThemeEngine::PartScrollbarHorizontalThumb);
     return size.width();
 }
 

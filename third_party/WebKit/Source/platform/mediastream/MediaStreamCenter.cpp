@@ -30,7 +30,6 @@
  */
 
 #include "config.h"
-
 #include "platform/mediastream/MediaStreamCenter.h"
 
 #include "platform/mediastream/MediaStreamDescriptor.h"
@@ -55,7 +54,7 @@ MediaStreamCenter& MediaStreamCenter::instance()
 }
 
 MediaStreamCenter::MediaStreamCenter()
-    : m_private(adoptPtr(blink::Platform::current()->createMediaStreamCenter(this)))
+    : m_private(adoptPtr(Platform::current()->createMediaStreamCenter(this)))
 {
 }
 
@@ -106,15 +105,15 @@ void MediaStreamCenter::didCreateMediaStreamAndTracks(MediaStreamDescriptor* str
     for (size_t i = 0; i < stream->numberOfVideoComponents(); ++i)
         didCreateMediaStreamTrack(stream->videoComponent(i));
 
-    blink::WebMediaStream webStream(stream);
+    WebMediaStream webStream(stream);
     m_private->didCreateMediaStream(webStream);
 }
 
 void MediaStreamCenter::didCreateMediaStream(MediaStreamDescriptor* stream)
 {
     if (m_private) {
-        blink::WebMediaStream WebMediaStream(stream);
-        m_private->didCreateMediaStream(WebMediaStream);
+        WebMediaStream webStream(stream);
+        m_private->didCreateMediaStream(webStream);
     }
 }
 
@@ -135,7 +134,7 @@ PassOwnPtr<AudioSourceProvider> MediaStreamCenter::createWebAudioSourceFromMedia
     return nullptr;
 }
 
-void MediaStreamCenter::stopLocalMediaStream(const blink::WebMediaStream& webStream)
+void MediaStreamCenter::stopLocalMediaStream(const WebMediaStream& webStream)
 {
     MediaStreamDescriptor* stream = webStream;
     MediaStreamDescriptorClient* client = stream->client();

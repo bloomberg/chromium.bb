@@ -995,7 +995,7 @@ private:
     };
 
     static Visitor* s_markingVisitor;
-    static Vector<OwnPtr<blink::WebThread> >* s_markingThreads;
+    static Vector<OwnPtr<WebThread>>* s_markingThreads;
     static CallbackStack* s_markingStack;
     static CallbackStack* s_postMarkingCallbackStack;
     static CallbackStack* s_weakCallbackStack;
@@ -2402,6 +2402,6 @@ struct IfWeakMember<WeakMember<T> > {
     static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.get()); }
 };
 
-}
+} // namespace blink
 
 #endif // Heap_h

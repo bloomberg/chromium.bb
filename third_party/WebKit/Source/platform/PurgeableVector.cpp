@@ -218,8 +218,8 @@ bool PurgeableVector::reservePurgeableCapacity(size_t capacity, PurgeableAllocat
     if (allocationStrategy == UseExponentialGrowth)
         capacity = adjustPurgeableCapacity(capacity);
 
-    OwnPtr<blink::WebDiscardableMemory> discardable = adoptPtr(
-        blink::Platform::current()->allocateAndLockDiscardableMemory(capacity));
+    OwnPtr<WebDiscardableMemory> discardable = adoptPtr(
+        Platform::current()->allocateAndLockDiscardableMemory(capacity));
     if (!discardable) {
         // Discardable memory is not supported.
         m_isPurgeable = false;

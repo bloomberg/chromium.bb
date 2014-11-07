@@ -30,7 +30,6 @@
  */
 
 #include "config.h"
-
 #include "platform/mediastream/MediaStreamComponent.h"
 
 #include "platform/UUID.h"
@@ -60,7 +59,7 @@ MediaStreamComponent::MediaStreamComponent(const String& id, PassRefPtr<MediaStr
 }
 
 #if ENABLE(WEB_AUDIO)
-void MediaStreamComponent::AudioSourceProviderImpl::wrap(blink::WebAudioSourceProvider* provider)
+void MediaStreamComponent::AudioSourceProviderImpl::wrap(WebAudioSourceProvider* provider)
 {
     MutexLocker locker(m_provideInputLock);
     m_webAudioSourceProvider = provider;
@@ -80,7 +79,7 @@ void MediaStreamComponent::AudioSourceProviderImpl::provideInput(AudioBus* bus, 
 
     // Wrap the AudioBus channel data using WebVector.
     size_t n = bus->numberOfChannels();
-    blink::WebVector<float*> webAudioData(n);
+    WebVector<float*> webAudioData(n);
     for (size_t i = 0; i < n; ++i)
         webAudioData[i] = bus->channel(i)->mutableData();
 

@@ -69,7 +69,7 @@ class PLATFORM_EXPORT ImageDecoder {
 public:
     enum SizeType { ActualSize, SizeForMemoryAllocation };
 
-    static const size_t noDecodedImageByteLimit = blink::Platform::noDecodedImageByteLimit;
+    static const size_t noDecodedImageByteLimit = Platform::noDecodedImageByteLimit;
 
     ImageDecoder(ImageSource::AlphaOption alphaOption, ImageSource::GammaAndColorProfileOption gammaAndColorProfileOption, size_t maxDecodedBytes)
         : m_premultiplyAlpha(alphaOption == ImageSource::AlphaPremultiplied)

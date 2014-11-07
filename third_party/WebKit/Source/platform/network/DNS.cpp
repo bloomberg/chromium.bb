@@ -34,12 +34,8 @@ namespace blink {
 
 void prefetchDNS(const String& hostname)
 {
-    blink::WebPrescientNetworking* prescientNetworking = blink::Platform::current()->prescientNetworking();
-
-    if (!prescientNetworking)
-        return;
-
-    prescientNetworking->prefetchDNS(hostname);
+    if (WebPrescientNetworking* prescientNetworking = Platform::current()->prescientNetworking())
+        prescientNetworking->prefetchDNS(hostname);
 }
 
 } // namespace blink

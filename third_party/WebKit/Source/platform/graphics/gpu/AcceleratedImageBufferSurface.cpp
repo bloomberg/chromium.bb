@@ -45,7 +45,7 @@ namespace blink {
 AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(const IntSize& size, OpacityMode opacityMode, int msaaSampleCount)
     : ImageBufferSurface(size, opacityMode)
 {
-    m_contextProvider = adoptPtr(blink::Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
+    m_contextProvider = adoptPtr(Platform::current()->createSharedOffscreenGraphicsContext3DProvider());
     if (!m_contextProvider)
         return;
     GrContext* grContext = m_contextProvider->grContext();

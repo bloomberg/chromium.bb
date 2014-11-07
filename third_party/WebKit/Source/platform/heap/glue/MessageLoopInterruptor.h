@@ -38,7 +38,7 @@ namespace blink {
 
 class MessageLoopInterruptor : public ThreadState::Interruptor {
 public:
-    explicit MessageLoopInterruptor(blink::WebThread* thread) : m_thread(thread) { }
+    explicit MessageLoopInterruptor(WebThread* thread) : m_thread(thread) { }
 
     virtual void requestInterrupt() override
     {
@@ -51,7 +51,7 @@ public:
     virtual void clearInterrupt() override { }
 
 private:
-    class GCTask : public blink::WebThread::Task {
+    class GCTask : public WebThread::Task {
     public:
         virtual ~GCTask() { }
 
@@ -65,9 +65,9 @@ private:
         }
     };
 
-    blink::WebThread* m_thread;
+    WebThread* m_thread;
 };
 
-}
+} // namespace blink
 
 #endif

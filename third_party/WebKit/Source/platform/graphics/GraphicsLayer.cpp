@@ -52,18 +52,11 @@
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/WTFString.h"
-
 #include <algorithm>
 
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
-
-using blink::Platform;
-using blink::WebCompositorAnimation;
-using blink::WebFilterOperations;
-using blink::WebLayer;
-using blink::WebPoint;
 
 namespace blink {
 

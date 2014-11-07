@@ -85,8 +85,8 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassOwnPtr<ExtraData> extraData) { m_extraData = extraData; }
 
-    void setConstraints(blink::WebMediaConstraints constraints) { m_constraints = constraints; }
-    blink::WebMediaConstraints constraints() { return m_constraints; }
+    void setConstraints(WebMediaConstraints constraints) { m_constraints = constraints; }
+    WebMediaConstraints constraints() { return m_constraints; }
 
     void setAudioFormat(size_t numberOfChannels, float sampleRate);
     void consumeAudio(AudioBus*, size_t numberOfFrames);
@@ -110,7 +110,7 @@ private:
     Mutex m_audioConsumersLock;
     PersistentHeapHashSet<Member<AudioDestinationConsumer> > m_audioConsumers;
     OwnPtr<ExtraData> m_extraData;
-    blink::WebMediaConstraints m_constraints;
+    WebMediaConstraints m_constraints;
 };
 
 typedef Vector<RefPtr<MediaStreamSource> > MediaStreamSourceVector;

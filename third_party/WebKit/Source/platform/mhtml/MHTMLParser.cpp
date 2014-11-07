@@ -95,7 +95,7 @@ private:
 
 typedef HashMap<String, String> KeyValueMap;
 
-static KeyValueMap retrieveKeyValuePairs(blink::SharedBufferChunkReader* buffer)
+static KeyValueMap retrieveKeyValuePairs(SharedBufferChunkReader* buffer)
 {
     KeyValueMap keyValuePairs;
     String line;
@@ -392,4 +392,4 @@ ArchiveResource* MHTMLParser::subResourceAt(size_t index) const
     return m_resources[index].get();
 }
 
-}
+} // namespace blink

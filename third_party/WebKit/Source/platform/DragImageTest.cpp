@@ -90,7 +90,7 @@ public:
         return false;
     }
 
-    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, blink::WebBlendMode) override
+    virtual void draw(GraphicsContext*, const FloatRect&, const FloatRect&, CompositeOperator, WebBlendMode) override
     {
     }
 

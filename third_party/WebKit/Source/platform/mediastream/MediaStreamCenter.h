@@ -40,18 +40,15 @@
 #include "wtf/text/WTFString.h"
 
 namespace blink {
-class WebMediaStream;
-class WebMediaStreamCenter;
-class WebMediaStreamTrack;
-}
-
-namespace blink {
 
 class AudioSourceProvider;
 class MediaStreamComponent;
 class MediaStreamDescriptor;
+class WebMediaStream;
+class WebMediaStreamCenter;
+class WebMediaStreamTrack;
 
-class PLATFORM_EXPORT MediaStreamCenter final : public blink::WebMediaStreamCenterClient {
+class PLATFORM_EXPORT MediaStreamCenter final : public WebMediaStreamCenterClient {
     WTF_MAKE_NONCOPYABLE(MediaStreamCenter);
 public:
     virtual ~MediaStreamCenter();
@@ -70,12 +67,12 @@ public:
     void didStopLocalMediaStream(MediaStreamDescriptor*);
 
     // blink::WebMediaStreamCenterClient
-    virtual void stopLocalMediaStream(const blink::WebMediaStream&) override;
+    virtual void stopLocalMediaStream(const WebMediaStream&) override;
 
 private:
     MediaStreamCenter();
 
-    OwnPtr<blink::WebMediaStreamCenter> m_private;
+    OwnPtr<WebMediaStreamCenter> m_private;
 };
 
 } // namespace blink

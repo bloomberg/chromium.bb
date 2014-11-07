@@ -179,17 +179,17 @@ public:
     ExtraData* extraData() const { return m_extraData.get(); }
     void setExtraData(PassRefPtr<ExtraData> extraData) { m_extraData = extraData; }
 
-    blink::WebURLRequest::RequestContext requestContext() const { return m_requestContext; }
-    void setRequestContext(blink::WebURLRequest::RequestContext context) { m_requestContext = context; }
+    WebURLRequest::RequestContext requestContext() const { return m_requestContext; }
+    void setRequestContext(WebURLRequest::RequestContext context) { m_requestContext = context; }
 
-    blink::WebURLRequest::FrameType frameType() const { return m_frameType; }
-    void setFrameType(blink::WebURLRequest::FrameType frameType) { m_frameType = frameType; }
+    WebURLRequest::FrameType frameType() const { return m_frameType; }
+    void setFrameType(WebURLRequest::FrameType frameType) { m_frameType = frameType; }
 
-    blink::WebURLRequest::FetchRequestMode fetchRequestMode() const { return m_fetchRequestMode; }
-    void setFetchRequestMode(blink::WebURLRequest::FetchRequestMode mode) { m_fetchRequestMode = mode; }
+    WebURLRequest::FetchRequestMode fetchRequestMode() const { return m_fetchRequestMode; }
+    void setFetchRequestMode(WebURLRequest::FetchRequestMode mode) { m_fetchRequestMode = mode; }
 
-    blink::WebURLRequest::FetchCredentialsMode fetchCredentialsMode() const { return m_fetchCredentialsMode; }
-    void setFetchCredentialsMode(blink::WebURLRequest::FetchCredentialsMode mode) { m_fetchCredentialsMode = mode; }
+    WebURLRequest::FetchCredentialsMode fetchCredentialsMode() const { return m_fetchCredentialsMode; }
+    void setFetchCredentialsMode(WebURLRequest::FetchCredentialsMode mode) { m_fetchCredentialsMode = mode; }
 
     bool cacheControlContainsNoCache() const;
     bool cacheControlContainsNoStore() const;
@@ -224,10 +224,10 @@ private:
     int m_requestorProcessID;
     int m_appCacheHostID;
     RefPtr<ExtraData> m_extraData;
-    blink::WebURLRequest::RequestContext m_requestContext;
-    blink::WebURLRequest::FrameType m_frameType;
-    blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
-    blink::WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
+    WebURLRequest::RequestContext m_requestContext;
+    WebURLRequest::FrameType m_frameType;
+    WebURLRequest::FetchRequestMode m_fetchRequestMode;
+    WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
 
     mutable CacheControlHeader m_cacheControlHeaderCache;
@@ -263,10 +263,10 @@ public:
     int m_requestorID;
     int m_requestorProcessID;
     int m_appCacheHostID;
-    blink::WebURLRequest::RequestContext m_requestContext;
-    blink::WebURLRequest::FrameType m_frameType;
-    blink::WebURLRequest::FetchRequestMode m_fetchRequestMode;
-    blink::WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
+    WebURLRequest::RequestContext m_requestContext;
+    WebURLRequest::FrameType m_frameType;
+    WebURLRequest::FetchRequestMode m_fetchRequestMode;
+    WebURLRequest::FetchCredentialsMode m_fetchCredentialsMode;
     ReferrerPolicy m_referrerPolicy;
 };
 

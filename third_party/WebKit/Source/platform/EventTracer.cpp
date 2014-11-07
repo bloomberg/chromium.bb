@@ -38,7 +38,7 @@
 
 namespace blink {
 
-COMPILE_ASSERT(sizeof(blink::Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
+COMPILE_ASSERT(sizeof(Platform::TraceEventHandle) == sizeof(TraceEvent::TraceEventHandle), TraceEventHandle_types_must_be_compatible);
 
 // The dummy variable is needed to avoid a crash when someone updates the state variables
 // before EventTracer::initialize() is called.
@@ -48,17 +48,17 @@ long* traceSamplingState[3] = {&dummyTraceSamplingState, &dummyTraceSamplingStat
 void EventTracer::initialize()
 {
     // current() might not exist in unit tests.
-    if (!blink::Platform::current())
+    if (!Platform::current())
         return;
 
-    traceSamplingState[0] = blink::Platform::current()->getTraceSamplingState(0);
+    traceSamplingState[0] = Platform::current()->getTraceSamplingState(0);
     // FIXME: traceSamplingState[0] can be 0 in split-dll build. http://crbug.com/256965
     if (!traceSamplingState[0])
         traceSamplingState[0] = &dummyTraceSamplingState;
-    traceSamplingState[1] = blink::Platform::current()->getTraceSamplingState(1);
+    traceSamplingState[1] = Platform::current()->getTraceSamplingState(1);
     if (!traceSamplingState[1])
         traceSamplingState[1] = &dummyTraceSamplingState;
-    traceSamplingState[2] = blink::Platform::current()->getTraceSamplingState(2);
+    traceSamplingState[2] = Platform::current()->getTraceSamplingState(2);
     if (!traceSamplingState[2])
         traceSamplingState[2] = &dummyTraceSamplingState;
 }
@@ -67,10 +67,10 @@ const unsigned char* EventTracer::getTraceCategoryEnabledFlag(const char* catego
 {
     static const char* dummyCategoryEnabledFlag = "*";
     // current() might not exist in unit tests.
-    if (!blink::Platform::current())
+    if (!Platform::current())
         return reinterpret_cast<const unsigned char*>(dummyCategoryEnabledFlag);
 
-    return blink::Platform::current()->getTraceCategoryEnabledFlag(categoryName);
+    return Platform::current()->getTraceCategoryEnabledFlag(categoryName);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
@@ -79,16 +79,16 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     TraceEvent::ConvertableToTraceFormat* convertableValues[],
     unsigned char flags)
 {
-    blink::WebConvertableToTraceFormat webConvertableValues[2];
+    WebConvertableToTraceFormat webConvertableValues[2];
     if (numArgs <= static_cast<int>(WTF_ARRAY_LENGTH(webConvertableValues))) {
         for (int i = 0; i < numArgs; ++i) {
             if (convertableValues[i])
-                webConvertableValues[i] = blink::WebConvertableToTraceFormat(convertableValues[i]);
+                webConvertableValues[i] = WebConvertableToTraceFormat(convertableValues[i]);
         }
     } else {
         ASSERT_NOT_REACHED();
     }
-    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, webConvertableValues, flags);
 }
 
 TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsigned char* categoryEnabledFlag,
@@ -96,12 +96,12 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
     const unsigned char* argTypes, const unsigned long long* argValues,
     unsigned char flags)
 {
-    return blink::Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, 0, flags);
+    return Platform::current()->addTraceEvent(phase, categoryEnabledFlag, name, id, numArgs, argNames, argTypes, argValues, 0, flags);
 }
 
 void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)
 {
-    blink::Platform::current()->updateTraceEventDuration(categoryEnabledFlag, name, handle);
+    Platform::current()->updateTraceEventDuration(categoryEnabledFlag, name, handle);
 }
 
 } // namespace blink

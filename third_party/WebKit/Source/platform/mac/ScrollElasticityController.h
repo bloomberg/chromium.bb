@@ -53,7 +53,7 @@ public:
     virtual bool canScrollVertically() = 0;
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual blink::IntPoint absoluteScrollPosition() = 0;
+    virtual IntPoint absoluteScrollPosition() = 0;
 
     virtual void immediateScrollBy(const FloatSize&) = 0;
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) = 0;

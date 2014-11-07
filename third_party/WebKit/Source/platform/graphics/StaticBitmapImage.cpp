@@ -36,7 +36,7 @@ bool StaticBitmapImage::currentFrameKnownToBeOpaque()
     return m_image->isOpaque();
 }
 
-void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, blink::WebBlendMode blendMode)
+void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator compositeOp, WebBlendMode blendMode)
 {
     FloatRect normDstRect = adjustForNegativeSize(dstRect);
     FloatRect normSrcRect = adjustForNegativeSize(srcRect);
@@ -62,4 +62,4 @@ void StaticBitmapImage::draw(GraphicsContext* ctx, const FloatRect& dstRect, con
         observer->didDraw(this);
 }
 
-}
+} // namespace blink

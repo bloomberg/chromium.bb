@@ -346,7 +346,7 @@ private:
 } // namespace blink
 
 #ifndef NDEBUG
-// Outside the WebCore namespace for ease of invocation from gdb.
+// Outside the blink namespace for ease of invocation from gdb.
 void PLATFORM_EXPORT showGraphicsLayerTree(const blink::GraphicsLayer*);
 #endif
 

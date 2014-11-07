@@ -38,9 +38,6 @@
 
 namespace blink {
 
-using blink::Platform;
-using blink::WebLocalizedString;
-
 class DateTimeStringBuilder : private DateTimeFormat::TokenHandler {
     WTF_MAKE_NONCOPYABLE(DateTimeStringBuilder);
 public:
@@ -422,4 +419,4 @@ String Locale::formatDateTime(const DateComponents& date, FormatType formatType)
     return builder.toString();
 }
 
-}
+} // namespace blink

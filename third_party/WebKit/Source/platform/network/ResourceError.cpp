@@ -38,7 +38,7 @@ const char errorDomainBlinkInternal[] = "BlinkInternal";
 
 ResourceError ResourceError::cancelledError(const String& failingURL)
 {
-    return blink::Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
+    return Platform::current()->cancelledError(KURL(ParsedURLString, failingURL));
 }
 
 ResourceError ResourceError::copy() const

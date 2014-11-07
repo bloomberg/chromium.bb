@@ -51,7 +51,7 @@ public:
 
 private:
     OwnPtr<SkSurface> m_surface;
-    OwnPtr<blink::WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
 };
 
 

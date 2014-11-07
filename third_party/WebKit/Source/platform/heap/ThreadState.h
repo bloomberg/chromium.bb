@@ -840,7 +840,7 @@ private:
     bool m_shouldFlushHeapDoesNotContainCache;
     bool m_lowCollectionRate;
 
-    OwnPtr<blink::WebThread> m_sweeperThread;
+    OwnPtr<WebThread> m_sweeperThread;
     int m_numberOfSweeperTasks;
     Mutex m_sweepMutex;
     ThreadCondition m_sweepThreadCondition;
@@ -979,6 +979,6 @@ private:
     uintptr_t m_promptlyFreedSize : 17; // == blinkPageSizeLog2
 };
 
-}
+} // namespace blink
 
 #endif // ThreadState_h

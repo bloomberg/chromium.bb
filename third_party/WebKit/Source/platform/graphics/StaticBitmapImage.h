@@ -17,7 +17,7 @@ public:
     virtual void destroyDecodedData(bool destroyAll) { }
     virtual bool currentFrameKnownToBeOpaque();
     virtual IntSize size() const;
-    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, blink::WebBlendMode);
+    virtual void draw(GraphicsContext*, const FloatRect& dstRect, const FloatRect& srcRect, CompositeOperator, WebBlendMode);
 
 
     PassRefPtr<SkImage> skImage() override { return m_image; }
@@ -28,6 +28,6 @@ protected:
     RefPtr<SkImage> m_image;
 };
 
-} // namespace
+} // namespace blink
 
 #endif

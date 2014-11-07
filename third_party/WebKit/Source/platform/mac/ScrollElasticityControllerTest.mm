@@ -26,7 +26,7 @@ public:
     virtual bool canScrollVertically() override { return true; }
 
     // Return the absolute scroll position, not relative to the scroll origin.
-    virtual blink::IntPoint absoluteScrollPosition() override { return IntPoint(m_stretchX, 0); }
+    virtual IntPoint absoluteScrollPosition() override { return IntPoint(m_stretchX, 0); }
 
     virtual void immediateScrollBy(const FloatSize& size) override { m_stretchX += size.width(); }
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize& size) override { m_stretchX += size.width(); }

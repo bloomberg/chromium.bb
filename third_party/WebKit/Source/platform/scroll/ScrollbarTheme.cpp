@@ -210,7 +210,7 @@ void ScrollbarTheme::paintScrollCorner(GraphicsContext* context, const IntRect& 
 #if OS(MACOSX)
     context->fillRect(cornerRect, Color::white);
 #else
-    blink::Platform::current()->themeEngine()->paint(context->canvas(), blink::WebThemeEngine::PartScrollbarCorner, blink::WebThemeEngine::StateNormal, blink::WebRect(cornerRect), 0);
+    Platform::current()->themeEngine()->paint(context->canvas(), WebThemeEngine::PartScrollbarCorner, WebThemeEngine::StateNormal, WebRect(cornerRect), 0);
 #endif
 }
 
@@ -225,14 +225,14 @@ void ScrollbarTheme::paintOverhangBackground(GraphicsContext* context, const Int
 
 bool ScrollbarTheme::shouldCenterOnThumb(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
 {
-    return blink::Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(static_cast<blink::WebScrollbarBehavior::Button>(evt.button()), evt.shiftKey(), evt.altKey());
+    return Platform::current()->scrollbarBehavior()->shouldCenterOnThumb(static_cast<WebScrollbarBehavior::Button>(evt.button()), evt.shiftKey(), evt.altKey());
 }
 
 bool ScrollbarTheme::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
 {
     IntPoint mousePosition = scrollbar->convertFromContainingWindow(evt.position());
     mousePosition.move(scrollbar->x(), scrollbar->y());
-    return blink::Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
+    return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar->orientation() == HorizontalScrollbar);
 }
 
 // Returns the size represented by track taking into account scrolling past
@@ -359,4 +359,4 @@ bool ScrollbarTheme::mockScrollbarsEnabled()
     return gMockScrollbarsEnabled;
 }
 
-}
+} // namespace blink

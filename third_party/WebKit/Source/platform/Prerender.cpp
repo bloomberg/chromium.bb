@@ -62,26 +62,20 @@ void Prerender::removeClient()
 
 void Prerender::add()
 {
-    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
-    if (!platform)
-        return;
-    platform->add(blink::WebPrerender(this));
+    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+        platform->add(WebPrerender(this));
 }
 
 void Prerender::cancel()
 {
-    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
-    if (!platform)
-        return;
-    platform->cancel(blink::WebPrerender(this));
+    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+        platform->cancel(WebPrerender(this));
 }
 
 void Prerender::abandon()
 {
-    blink::WebPrerenderingSupport* platform = blink::WebPrerenderingSupport::current();
-    if (!platform)
-        return;
-    platform->abandon(blink::WebPrerender(this));
+    if (WebPrerenderingSupport* platform = WebPrerenderingSupport::current())
+        platform->abandon(WebPrerender(this));
 }
 
 void Prerender::didStartPrerender()
@@ -108,4 +102,4 @@ void Prerender::didSendDOMContentLoadedForPrerender()
         m_client->didSendDOMContentLoadedForPrerender();
 }
 
-}
+} // namespace blink

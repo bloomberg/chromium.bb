@@ -13,7 +13,7 @@ PassOwnPtr<WebThreadSupportingGC> WebThreadSupportingGC::create(const char* name
 }
 
 WebThreadSupportingGC::WebThreadSupportingGC(const char* name)
-    : m_thread(adoptPtr(blink::Platform::current()->createThread(name)))
+    : m_thread(adoptPtr(Platform::current()->createThread(name)))
 {
 }
 

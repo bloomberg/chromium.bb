@@ -354,8 +354,8 @@ ThreadState::ThreadState()
 
     m_weakCallbackStack = new CallbackStack();
 
-    if (blink::Platform::current())
-        m_sweeperThread = adoptPtr(blink::Platform::current()->createThread("Blink GC Sweeper Thread"));
+    if (Platform::current())
+        m_sweeperThread = adoptPtr(Platform::current()->createThread("Blink GC Sweeper Thread"));
 }
 
 ThreadState::~ThreadState()
@@ -1119,8 +1119,8 @@ void ThreadState::performPendingSweep()
     // perform the next GC.
     setLowCollectionRate(m_stats.totalObjectSpace() > (objectSpaceBeforeSweep / 2));
 
-    if (blink::Platform::current()) {
-        blink::Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+    if (Platform::current()) {
+        Platform::current()->histogramCustomCounts("BlinkGC.PerformPendingSweep", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
     }
 
     if (isMainThread()) {
@@ -1283,4 +1283,4 @@ const GCInfo* ThreadState::findGCInfoFromAllThreads(Address address)
 }
 #endif
 
-}
+} // namespace blink

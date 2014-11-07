@@ -36,7 +36,7 @@
 
 namespace blink {
 
-class PendingGCRunner : public blink::WebThread::TaskObserver {
+class PendingGCRunner : public WebThread::TaskObserver {
 public:
     PendingGCRunner() : m_nesting(0) { }
 
@@ -60,14 +60,14 @@ public:
         if (m_nesting)
             m_nesting--;
 
-        blink::ThreadState* state = blink::ThreadState::current();
-        state->safePoint(m_nesting ? blink::ThreadState::HeapPointersOnStack : blink::ThreadState::NoHeapPointersOnStack);
+        ThreadState* state = ThreadState::current();
+        state->safePoint(m_nesting ? ThreadState::HeapPointersOnStack : ThreadState::NoHeapPointersOnStack);
     }
 
 private:
     int m_nesting;
 };
 
-}
+} // namespace blink
 
 #endif

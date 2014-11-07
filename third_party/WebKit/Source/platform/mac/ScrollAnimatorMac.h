@@ -137,7 +137,7 @@ private:
     virtual bool pinnedInDirection(const FloatSize&) override;
     virtual bool canScrollHorizontally() override;
     virtual bool canScrollVertically() override;
-    virtual blink::IntPoint absoluteScrollPosition() override;
+    virtual IntPoint absoluteScrollPosition() override;
     virtual void immediateScrollByWithoutContentEdgeConstraints(const FloatSize&) override;
     virtual void immediateScrollBy(const FloatSize&) override;
     virtual void startSnapRubberbandTimer() override;

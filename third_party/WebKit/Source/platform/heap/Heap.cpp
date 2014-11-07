@@ -2157,12 +2157,12 @@ void Heap::init()
     s_markingVisitor = new MarkingVisitor(s_markingStack);
     s_freePagePool = new FreePagePool();
     s_orphanedPagePool = new OrphanedPagePool();
-    s_markingThreads = new Vector<OwnPtr<blink::WebThread> >();
-    if (blink::Platform::current()) {
-        int processors = blink::Platform::current()->numberOfProcessors();
+    s_markingThreads = new Vector<OwnPtr<WebThread>>();
+    if (Platform::current()) {
+        int processors = Platform::current()->numberOfProcessors();
         int numberOfMarkingThreads = std::min(processors, maxNumberOfMarkingThreads);
         for (int i = 0; i < numberOfMarkingThreads; i++)
-            s_markingThreads->append(adoptPtr(blink::Platform::current()->createThread("Blink GC Marking Thread")));
+            s_markingThreads->append(adoptPtr(Platform::current()->createThread("Blink GC Marking Thread")));
     }
 }
 
@@ -2510,13 +2510,13 @@ void Heap::collectGarbage(ThreadState::StackState stackState, ThreadState::Cause
     static_cast<MarkingVisitor*>(s_markingVisitor)->reportStats();
 #endif
 
-    if (blink::Platform::current()) {
+    if (Platform::current()) {
         uint64_t objectSpaceSize;
         uint64_t allocatedSpaceSize;
         getHeapSpaceSize(&objectSpaceSize, &allocatedSpaceSize);
-        blink::Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
-        blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", objectSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
-        blink::Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", allocatedSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.CollectGarbage", WTF::currentTimeMS() - timeStamp, 0, 10 * 1000, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.TotalObjectSpace", objectSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
+        Platform::current()->histogramCustomCounts("BlinkGC.TotalAllocatedSpace", allocatedSpaceSize / 1024, 0, 4 * 1024 * 1024, 50);
     }
 
     if (state->isMainThread())
@@ -2938,7 +2938,7 @@ template class ThreadHeap<FinalizedHeapObjectHeader>;
 template class ThreadHeap<HeapObjectHeader>;
 
 Visitor* Heap::s_markingVisitor;
-Vector<OwnPtr<blink::WebThread> >* Heap::s_markingThreads;
+Vector<OwnPtr<WebThread>>* Heap::s_markingThreads;
 CallbackStack* Heap::s_markingStack;
 CallbackStack* Heap::s_postMarkingCallbackStack;
 CallbackStack* Heap::s_weakCallbackStack;
@@ -2950,4 +2950,4 @@ FreePagePool* Heap::s_freePagePool;
 OrphanedPagePool* Heap::s_orphanedPagePool;
 Heap::RegionTree* Heap::s_regionTree = 0;
 
-}
+} // namespace blink

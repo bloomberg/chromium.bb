@@ -33,8 +33,6 @@
 
 #include "platform/fonts/FontRenderStyle.h"
 
-using blink::FontRenderStyle;
-
 namespace blink {
 
 void WebFontRenderStyle::toFontRenderStyle(FontRenderStyle* out)

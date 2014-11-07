@@ -37,14 +37,14 @@
 
 namespace blink {
 
-class PluginListBuilder final : public blink::WebPluginListBuilder {
+class PluginListBuilder final : public WebPluginListBuilder {
 public:
-    PluginListBuilder(Vector<blink::PluginInfo>* results) : m_results(results) { }
+    PluginListBuilder(Vector<PluginInfo>* results) : m_results(results) { }
 
     // WebPluginListBuilder methods:
-    virtual void addPlugin(const blink::WebString& name, const blink::WebString& description, const blink::WebString& fileName) override;
-    virtual void addMediaTypeToLastPlugin(const blink::WebString& name, const blink::WebString& description) override;
-    virtual void addFileExtensionToLastMediaType(const blink::WebString& extension) override;
+    virtual void addPlugin(const WebString& name, const WebString& description, const WebString& fileName) override;
+    virtual void addMediaTypeToLastPlugin(const WebString& name, const WebString& description) override;
+    virtual void addFileExtensionToLastMediaType(const WebString& extension) override;
 
 private:
     Vector<PluginInfo>* m_results;
