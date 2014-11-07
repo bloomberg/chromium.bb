@@ -242,16 +242,11 @@ bool Printer::IsAssignment(const ParseNode* node) {
 
 bool Printer::ShouldAddBlankLineInBetween(const ParseNode* a,
                                           const ParseNode* b) {
-  if ((IsAssignment(a) || a->AsFunctionCall()) &&
-      (!a->comments() || a->comments()->after().size() == 0) &&
-      (IsAssignment(b) || b->AsFunctionCall()) &&
-      (!b->comments() || b->comments()->before().size() == 0)) {
-    Metrics first = GetLengthOfExpr(a, kPrecedenceLowest);
-    Metrics second = GetLengthOfExpr(b, kPrecedenceLowest);
-    if (!first.multiline || !second.multiline)
-      return false;
-  }
-  return true;
+  LocationRange a_range = a->GetRange();
+  LocationRange b_range = b->GetRange();
+  // If they're already separated by 1 or more lines, then we want to keep a
+  // blank line.
+  return b_range.begin().line_number() > a_range.end().line_number() + 1;
 }
 
 int Printer::CurrentColumn() {

@@ -3,5 +3,6 @@ executable("test") {
     "stuff.cc",
     "things.cc",
   ]
+
   deps = [ "//base" ]
 }
