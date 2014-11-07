@@ -870,11 +870,12 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
 
 // PPB_Graphics3D.
-IPC_SYNC_MESSAGE_ROUTED3_2(PpapiHostMsg_PPBGraphics3D_Create,
+IPC_SYNC_MESSAGE_ROUTED3_3(PpapiHostMsg_PPBGraphics3D_Create,
                            PP_Instance /* instance */,
                            ppapi::HostResource /* share_context */,
                            std::vector<int32_t> /* attrib_list */,
                            ppapi::HostResource /* result */,
+                           gpu::Capabilities /* capabilities */,
                            ppapi::proxy::SerializedHandle /* shared_state */)
 IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBGraphics3D_SetGetBuffer,
                            ppapi::HostResource /* context */,

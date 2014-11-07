@@ -32,6 +32,10 @@ struct PP_NetAddress_IPv6;
 struct PP_NetAddress_Private;
 struct PP_Size;
 
+namespace gpu {
+struct Capabilities;
+}
+
 namespace ppapi {
 
 struct FileRefCreateInfo;
@@ -134,6 +138,7 @@ class ResourceCreationAPI {
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list,
+      gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state) = 0;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) = 0;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) = 0;

@@ -29,6 +29,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
  public:
   PpapiCommandBufferProxy(const HostResource& resource,
                           ProxyChannel* channel,
+                          const gpu::Capabilities& capabilities,
                           const SerializedHandle& shared_state);
   virtual ~PpapiCommandBufferProxy();
 
@@ -75,6 +76,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;
 
+  gpu::Capabilities capabilities_;
   State last_state_;
   scoped_ptr<base::SharedMemory> shared_state_shm_;
 

@@ -120,6 +120,7 @@ class ResourceCreationProxy : public InterfaceProxy,
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list,
+      gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state) override;
   virtual PP_Resource CreateHostResolver(PP_Instance instance) override;
   virtual PP_Resource CreateHostResolverPrivate(PP_Instance instance) override;

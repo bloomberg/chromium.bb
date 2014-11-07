@@ -5,9 +5,10 @@
 #ifndef GPU_IPC_GPU_PARAM_TRAITS_H_
 #define GPU_IPC_GPU_PARAM_TRAITS_H_
 
-#include "ipc/ipc_message_utils.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/gpu_export.h"
+#include "gpu/ipc/gpu_command_buffer_traits_multi.h"
+#include "ipc/ipc_message_utils.h"
 
 namespace gpu {
 struct Mailbox;

@@ -11,6 +11,10 @@
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 
+namespace gpu {
+struct Capabilities;
+}
+
 namespace content {
 class CommandBufferProxyImpl;
 class GpuChannelHost;
@@ -24,6 +28,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
       PP_Instance instance,
       PP_Resource share_context,
       const int32_t* attrib_list,
+      gpu::Capabilities* capabilities,
       base::SharedMemoryHandle* shared_state_handle);
 
   // PPB_Graphics3D_API trusted implementation.
@@ -74,6 +79,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   bool Init(PPB_Graphics3D_API* share_context, const int32_t* attrib_list);
   bool InitRaw(PPB_Graphics3D_API* share_context,
                const int32_t* attrib_list,
+               gpu::Capabilities* capabilities,
                base::SharedMemoryHandle* shared_state_handle);
 
   // Notifications received from the GPU process.

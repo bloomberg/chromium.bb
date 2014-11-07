@@ -16,8 +16,10 @@ namespace proxy {
 PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     const ppapi::HostResource& resource,
     ProxyChannel* channel,
+    const gpu::Capabilities& capabilities,
     const SerializedHandle& shared_state)
-    : resource_(resource),
+    : capabilities_(capabilities),
+      resource_(resource),
       channel_(channel) {
   shared_state_shm_.reset(
       new base::SharedMemory(shared_state.shmem(), false));
@@ -190,9 +192,7 @@ void PpapiCommandBufferProxy::SetSurfaceVisible(bool visible) {
 }
 
 gpu::Capabilities PpapiCommandBufferProxy::GetCapabilities() {
-  // TODO(boliu): Need to implement this to use cc in Pepper. Tracked in
-  // crbug.com/325391.
-  return gpu::Capabilities();
+  return capabilities_;
 }
 
 int32 PpapiCommandBufferProxy::CreateImage(ClientBuffer buffer,

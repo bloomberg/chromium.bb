@@ -53,13 +53,14 @@ Graphics3D::~Graphics3D() {
 }
 
 bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2,
+                      const gpu::Capabilities& capabilities,
                       const SerializedHandle& shared_state) {
   PluginDispatcher* dispatcher = PluginDispatcher::GetForResource(this);
   if (!dispatcher)
     return false;
 
-  command_buffer_.reset(
-      new PpapiCommandBufferProxy(host_resource(), dispatcher, shared_state));
+  command_buffer_.reset(new PpapiCommandBufferProxy(
+      host_resource(), dispatcher, capabilities, shared_state));
 
   return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize,
                          share_gles2);
@@ -168,15 +169,16 @@ PP_Resource PPB_Graphics3D_Proxy::CreateProxyResource(
   attribs.push_back(PP_GRAPHICS3DATTRIB_NONE);
 
   HostResource result;
+  gpu::Capabilities capabilities;
   ppapi::proxy::SerializedHandle shared_state;
   dispatcher->Send(new PpapiHostMsg_PPBGraphics3D_Create(API_ID_PPB_GRAPHICS_3D,
-        instance, share_host, attribs, &result, &shared_state));
+        instance, share_host, attribs, &result, &capabilities, &shared_state));
 
   if (result.is_null())
     return 0;
 
   scoped_refptr<Graphics3D> graphics_3d(new Graphics3D(result));
-  if (!graphics_3d->Init(share_gles2, shared_state))
+  if (!graphics_3d->Init(share_gles2, capabilities, shared_state))
     return 0;
   return graphics_3d->GetReference();
 }
@@ -222,6 +224,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
                                        HostResource share_context,
                                        const std::vector<int32_t>& attribs,
                                        HostResource* result,
+                                       gpu::Capabilities* capabilities,
                                        SerializedHandle* shared_state) {
   shared_state->set_null_shmem();
   if (attribs.empty() ||
@@ -240,6 +243,7 @@ void PPB_Graphics3D_Proxy::OnMsgCreate(PP_Instance instance,
       enter.functions()->CreateGraphics3DRaw(instance,
                                              share_context.host_resource(),
                                              &attribs.front(),
+                                             capabilities,
                                              &handle));
   if (!result->is_null()) {
     shared_state->set_shmem(TransportSHMHandle(dispatcher(), handle),

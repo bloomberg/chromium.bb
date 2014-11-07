@@ -18,6 +18,10 @@
 #include "ppapi/shared_impl/resource.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+namespace gpu {
+struct Capabilities;
+}
+
 namespace ppapi {
 
 class HostResource;
@@ -33,6 +37,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   virtual ~Graphics3D();
 
   bool Init(gpu::gles2::GLES2Implementation* share_gles2,
+            const gpu::Capabilities& capabilities,
             const SerializedHandle& shared_state);
 
   // Graphics3DTrusted API. These are not implemented in the proxy.
@@ -81,6 +86,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
                    HostResource share_context,
                    const std::vector<int32_t>& attribs,
                    HostResource* result,
+                   gpu::Capabilities* capabilities,
                    SerializedHandle* handle);
   void OnMsgSetGetBuffer(const HostResource& context,
                          int32 id);
