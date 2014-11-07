@@ -31,9 +31,8 @@ class FormCache {
   ~FormCache();
 
   // Scans the DOM in |frame| extracting and storing forms that have not been
-  // seen before. Fills |forms| with extracted forms.
-  void ExtractNewForms(const blink::WebFrame& frame,
-                       std::vector<FormData>* forms);
+  // seen before. Returns the extracted forms.
+  std::vector<FormData> ExtractNewForms(const blink::WebFrame& frame);
 
   // Resets the forms for the specified |frame|.
   void ResetFrame(const blink::WebFrame& frame);
@@ -49,6 +48,14 @@ class FormCache {
   bool ShowPredictions(const FormDataPredictions& form);
 
  private:
+  // Scans |control_elements| and returns the number of editable elements.
+  // Also remembers the initial <select> and <input> element states, and
+  // logs warning messages for deprecated attribute if
+  // |log_deprecation_messages| is set.
+  size_t ScanFormControlElements(
+      const std::vector<blink::WebFormControlElement>& control_elements,
+      bool log_deprecation_messages);
+
   // The cached web frames.
   std::set<blink::WebDocument> web_documents_;
 

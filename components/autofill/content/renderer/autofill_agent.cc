@@ -710,8 +710,7 @@ void AutofillAgent::ProcessForms(const WebLocalFrame& frame) {
   // measure the overhead of the Autofill feature.
   base::TimeTicks forms_seen_timestamp = base::TimeTicks::Now();
 
-  std::vector<FormData> forms;
-  form_cache_.ExtractNewForms(frame, &forms);
+  std::vector<FormData> forms = form_cache_.ExtractNewForms(frame);
 
   // Always communicate to browser process for topmost frame.
   if (!forms.empty() ||

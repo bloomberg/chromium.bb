@@ -10,8 +10,6 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_data_predictions.h"
-#include "components/autofill/core/common/form_field_data.h"
-#include "components/autofill/core/common/form_field_data_predictions.h"
 #include "grit/components_strings.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -21,7 +19,6 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
-#include "third_party/WebKit/public/web/WebNodeList.h"
 #include "third_party/WebKit/public/web/WebSelectElement.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -39,6 +36,8 @@ using blink::WebVector;
 
 namespace autofill {
 
+namespace {
+
 // Helper function to discard state of various WebFormElements when they go out
 // of web frame's scope. This is done to release memory that we no longer need
 // to hold.
@@ -49,7 +48,7 @@ void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
   std::vector<K> to_remove;
   for (typename std::map<const K, V>::const_iterator it = states->begin();
        it != states->end(); ++it) {
-    WebFormElement form_element = it->first.form();
+    const WebFormElement& form_element = it->first.form();
     if (form_element.isNull()) {
       to_remove.push_back(it->first);
     } else {
@@ -65,17 +64,36 @@ void RemoveOldElements(const WebFrame& frame, std::map<const K, V>* states) {
   }
 }
 
+void LogDeprecationMessages(const WebFormControlElement& element) {
+  std::string autocomplete_attribute =
+      base::UTF16ToUTF8(element.getAttribute("autocomplete"));
+
+  static const char* const deprecated[] = { "region", "locality" };
+  for (size_t i = 0; i < arraysize(deprecated); ++i) {
+    if (autocomplete_attribute.find(deprecated[i]) == std::string::npos)
+      continue;
+    std::string msg = std::string("autocomplete='") + deprecated[i] +
+        "' is deprecated and will soon be ignored. See http://goo.gl/YjeSsW";
+    WebConsoleMessage console_message = WebConsoleMessage(
+        WebConsoleMessage::LevelWarning,
+        WebString(base::ASCIIToUTF16(msg)));
+    element.document().frame()->addMessageToConsole(console_message);
+  }
+}
+
+}  // namespace
+
 FormCache::FormCache() {
 }
 
 FormCache::~FormCache() {
 }
 
-void FormCache::ExtractNewForms(const WebFrame& frame,
-                                std::vector<FormData>* forms) {
+std::vector<FormData> FormCache::ExtractNewForms(const WebFrame& frame) {
+  std::vector<FormData> forms;
   WebDocument document = frame.document();
   if (document.isNull())
-    return;
+    return forms;
 
   web_documents_.insert(document);
 
@@ -89,54 +107,13 @@ void FormCache::ExtractNewForms(const WebFrame& frame,
 
   size_t num_fields_seen = 0;
   for (size_t i = 0; i < web_forms.size(); ++i) {
-    WebFormElement form_element = web_forms[i];
+    const WebFormElement& form_element = web_forms[i];
 
     std::vector<WebFormControlElement> control_elements;
     ExtractAutofillableElements(form_element, autofill::REQUIRE_NONE,
                                 &control_elements);
-
-    size_t num_editable_elements = 0;
-    for (size_t j = 0; j < control_elements.size(); ++j) {
-      WebFormControlElement element = control_elements[j];
-
-      if (log_deprecation_messages) {
-        std::string autocomplete_attribute =
-            base::UTF16ToUTF8(element.getAttribute("autocomplete"));
-
-        static const char* const deprecated[] = { "region", "locality" };
-        for (size_t i = 0; i < arraysize(deprecated); ++i) {
-          if (autocomplete_attribute.find(deprecated[i]) != std::string::npos) {
-            WebConsoleMessage console_message = WebConsoleMessage(
-                WebConsoleMessage::LevelWarning,
-                WebString(base::ASCIIToUTF16(std::string("autocomplete='") +
-                    deprecated[i] + "' is deprecated and will soon be ignored. "
-                    "See http://goo.gl/YjeSsW")));
-            element.document().frame()->addMessageToConsole(console_message);
-          }
-        }
-      }
-
-      // Save original values of <select> elements so we can restore them
-      // when |ClearFormWithNode()| is invoked.
-      if (IsSelectElement(element)) {
-        const WebSelectElement select_element =
-            element.toConst<WebSelectElement>();
-        initial_select_values_.insert(std::make_pair(select_element,
-                                                     select_element.value()));
-        ++num_editable_elements;
-      } else if (IsTextAreaElement(element)) {
-        ++num_editable_elements;
-      } else {
-        const WebInputElement input_element =
-            element.toConst<WebInputElement>();
-        if (IsCheckableElement(&input_element)) {
-          initial_checked_state_.insert(
-              std::make_pair(input_element, input_element.isChecked()));
-        } else {
-          ++num_editable_elements;
-        }
-      }
-    }
+    size_t num_editable_elements =
+        ScanFormControlElements(control_elements, log_deprecation_messages);
 
     // To avoid overly expensive computation, we impose a minimum number of
     // allowable fields.  The corresponding maximum number of allowable fields
@@ -161,10 +138,11 @@ void FormCache::ExtractNewForms(const WebFrame& frame,
 
     if (form.fields.size() >= kRequiredAutofillFields &&
         !parsed_forms_[&frame].count(form)) {
-      forms->push_back(form);
+      forms.push_back(form);
       parsed_forms_[&frame].insert(form);
     }
   }
+  return forms;
 }
 
 void FormCache::ResetFrame(const WebFrame& frame) {
@@ -312,6 +290,40 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form) {
   }
 
   return true;
+}
+
+size_t FormCache::ScanFormControlElements(
+    const std::vector<WebFormControlElement>& control_elements,
+    bool log_deprecation_messages) {
+  size_t num_editable_elements = 0;
+  for (size_t i = 0; i < control_elements.size(); ++i) {
+    const WebFormControlElement& element = control_elements[i];
+
+    if (log_deprecation_messages)
+      LogDeprecationMessages(element);
+
+    // Save original values of <select> elements so we can restore them
+    // when |ClearFormWithNode()| is invoked.
+    if (IsSelectElement(element)) {
+      const WebSelectElement select_element =
+          element.toConst<WebSelectElement>();
+      initial_select_values_.insert(
+          std::make_pair(select_element, select_element.value()));
+      ++num_editable_elements;
+    } else if (IsTextAreaElement(element)) {
+      ++num_editable_elements;
+    } else {
+      const WebInputElement input_element =
+          element.toConst<WebInputElement>();
+      if (IsCheckableElement(&input_element)) {
+        initial_checked_state_.insert(
+            std::make_pair(input_element, input_element.isChecked()));
+      } else {
+        ++num_editable_elements;
+      }
+    }
+  }
+  return num_editable_elements;
 }
 
 }  // namespace autofill
