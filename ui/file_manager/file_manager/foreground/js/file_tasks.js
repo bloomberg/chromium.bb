@@ -53,6 +53,13 @@ FileTasks.WEB_STORE_HANDLER_BASE_URL =
 FileTasks.VIDEO_PLAYER_ID = 'jcgeabjmjgoblfofpppfkcoakmfobdko';
 
 /**
+ * The task id of the zip unpacker app.
+ * @const
+ * @type {string}
+ */
+FileTasks.ZIP_UNPACKER_TASK_ID = 'oedeeodfidgoollimchfdnbmhcpnklnd|app|zip';
+
+/**
  * Returns URL of the Chrome Web Store which show apps supporting the given
  * file-extension and mime-type.
  *
@@ -619,7 +626,12 @@ FileTasks.prototype.display_ = function(combobutton) {
 
   // If there exist defaultTask show it on the combobutton.
   if (this.defaultTask_) {
-    combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
+    if (this.defaultTask_.taskId === FileTasks.ZIP_UNPACKER_TASK_ID) {
+      combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_,
+          str('ACTION_OPEN'));
+    } else {
+      combobutton.defaultItem = this.createCombobuttonItem_(this.defaultTask_);
+    }
   } else {
     combobutton.defaultItem = {
       label: loadTimeData.getString('MORE_ACTIONS')

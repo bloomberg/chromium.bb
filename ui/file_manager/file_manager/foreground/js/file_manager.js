@@ -2848,7 +2848,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.actionMenuItem_.style.backgroundImage = '';
       }
 
-      this.actionMenuItem_.label = actionItem.title;
+      this.actionMenuItem_.label =
+          actionItem.taskId === FileTasks.ZIP_UNPACKER_TASK_ID ?
+          str('ACTION_OPEN') : actionItem.title;
       this.actionMenuItem_.disabled = !!actionItem.disabled;
       this.actionMenuItem_.taskId = actionItem.taskId;
     }
