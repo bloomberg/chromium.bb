@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.ui.DropdownItem;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillSuggestion;
 
@@ -84,7 +85,7 @@ public class AwAutofillClient {
     @CalledByNative
     private static void addToAutofillSuggestionArray(AutofillSuggestion[] array, int index,
             String name, String label, int uniqueId) {
-        array[index] = new AutofillSuggestion(name, label, uniqueId);
+        array[index] = new AutofillSuggestion(name, label, DropdownItem.NO_ICON, uniqueId);
     }
 
     private native void nativeSuggestionSelected(long nativeAwAutofillClient,

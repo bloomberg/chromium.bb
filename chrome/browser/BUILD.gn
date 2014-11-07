@@ -509,6 +509,7 @@ static_library("browser") {
       "//components/cdm/browser",
       "//components/enhanced_bookmarks",
       "//components/history/core/android",
+      "//components/resources:components_resources",
       "//components/web_contents_delegate_android",
       "//third_party/android_opengl/etc1",
     ]

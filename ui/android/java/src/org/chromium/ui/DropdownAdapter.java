@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView.LayoutParams;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -62,18 +63,6 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             ApiCompatibilityUtils.setBackgroundForView(layout, new DropdownDividerDrawable());
         }
 
-        DropdownItem item = getItem(position);
-
-        TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
-        labelView.setText(item.getLabel());
-
-        labelView.setEnabled(item.isEnabled());
-        if (item.isGroupHeader()) {
-            labelView.setTypeface(null, Typeface.BOLD);
-        } else {
-            labelView.setTypeface(null, Typeface.NORMAL);
-        }
-
         DropdownDividerDrawable divider = (DropdownDividerDrawable) layout.getBackground();
         int height = mContext.getResources().getDimensionPixelSize(R.dimen.dropdown_item_height);
         if (position == 0) {
@@ -93,6 +82,17 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         }
         layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, height));
 
+        DropdownItem item = getItem(position);
+        TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
+        labelView.setText(item.getLabel());
+
+        labelView.setEnabled(item.isEnabled());
+        if (item.isGroupHeader()) {
+            labelView.setTypeface(null, Typeface.BOLD);
+        } else {
+            labelView.setTypeface(null, Typeface.NORMAL);
+        }
+
         TextView sublabelView = (TextView) layout.findViewById(R.id.dropdown_sublabel);
         CharSequence sublabel = item.getSublabel();
         if (TextUtils.isEmpty(sublabel)) {
@@ -100,6 +100,14 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         } else {
             sublabelView.setText(sublabel);
             sublabelView.setVisibility(View.VISIBLE);
+        }
+
+        ImageView iconView = (ImageView) layout.findViewById(R.id.dropdown_icon);
+        if (item.getIconId() == DropdownItem.NO_ICON) {
+            iconView.setVisibility(View.GONE);
+        } else {
+            iconView.setImageResource(item.getIconId());
+            iconView.setVisibility(View.VISIBLE);
         }
 
         return layout;

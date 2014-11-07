@@ -15,6 +15,7 @@ import org.chromium.chrome.shell.ChromeShellTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
+import org.chromium.ui.DropdownItem;
 import org.chromium.ui.autofill.AutofillPopup;
 import org.chromium.ui.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.ui.autofill.AutofillSuggestion;
@@ -88,18 +89,20 @@ public class AutofillTest extends ChromeShellTestBase {
 
     private AutofillSuggestion[] createTwoAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", 42),
-            new AutofillSuggestion("Arthur Dent", "West Country", 43),
+            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
+                42),
+            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43),
         };
     }
 
     private AutofillSuggestion[] createFiveAutofillSuggestionArray() {
         return new AutofillSuggestion[] {
-            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", 42),
-            new AutofillSuggestion("Arthur Dent", "West Country", 43),
-            new AutofillSuggestion("Arthos", "France", 44),
-            new AutofillSuggestion("Porthos", "France", 45),
-            new AutofillSuggestion("Aramis", "France", 46),
+            new AutofillSuggestion("Sherlock Holmes", "221B Baker Street", DropdownItem.NO_ICON,
+                42),
+            new AutofillSuggestion("Arthur Dent", "West Country", DropdownItem.NO_ICON, 43),
+            new AutofillSuggestion("Arthos", "France", DropdownItem.NO_ICON, 44),
+            new AutofillSuggestion("Porthos", "France", DropdownItem.NO_ICON, 45),
+            new AutofillSuggestion("Aramis", "France", DropdownItem.NO_ICON, 46),
         };
     }
 

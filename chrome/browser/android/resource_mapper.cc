@@ -8,6 +8,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "grit/components_scaled_resources.h"
 #include "grit/theme_resources.h"
 
 namespace {

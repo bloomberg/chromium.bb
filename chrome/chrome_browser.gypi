@@ -3303,6 +3303,7 @@
             '../components/components.gyp:enhanced_bookmarks',
             '../components/components.gyp:history_core_android',
             '../components/components.gyp:web_contents_delegate_android',
+            '../components/components_resources.gyp:components_resources',
             '../third_party/android_opengl/etc1/etc1.gyp:etc1',
             'chrome_browser_jni_headers',
           ],

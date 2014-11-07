@@ -30,6 +30,11 @@ public class SelectPopupItem implements DropdownItem {
     }
 
     @Override
+    public int getIconId() {
+        return NO_ICON;
+    }
+
+    @Override
     public boolean isEnabled() {
         return mType == PopupItemType.ENABLED || mType == PopupItemType.GROUP;
     }
