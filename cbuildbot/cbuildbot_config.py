@@ -1449,6 +1449,7 @@ _x86_release_boards = frozenset([
   'mccloud',
   'monroe',
   'panther',
+  'panther_freon',
   'panther_moblab',
   'parrot',
   'parrot_ivb',
