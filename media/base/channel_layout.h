@@ -105,8 +105,11 @@ enum ChannelLayout {
   // of that.
   CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC = 30,
 
+  // Front L, Front R, Side L, Side R, LFE
+  CHANNEL_LAYOUT_4_1_QUAD_SIDE = 31,
+
   // Max value, must always equal the largest entry ever logged.
-  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC
+  CHANNEL_LAYOUT_MAX = CHANNEL_LAYOUT_4_1_QUAD_SIDE
 };
 
 enum Channels {

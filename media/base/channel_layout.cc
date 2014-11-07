@@ -41,6 +41,7 @@ static const int kLayoutToChannels[] = {
     8,   // CHANNEL_LAYOUT_OCTAGONAL
     0,   // CHANNEL_LAYOUT_DISCRETE
     3,   // CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC
+    5,   // CHANNEL_LAYOUT_4_1_QUAD_SIDE
 };
 
 // The channel orderings for each layout as specified by FFmpeg. Each value
@@ -149,6 +150,9 @@ static const int kChannelOrderings[CHANNEL_LAYOUT_MAX + 1][CHANNELS_MAX + 1] = {
     // CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC
     {  0  , 1  , 2  , -1  , -1 , -1 , -1    , -1    , -1 , -1 , -1 },
 
+    // CHANNEL_LAYOUT_4_1_QUAD_SIDE
+    {  0  , 1  , -1 ,  4  , -1 , -1 , -1    , -1    , -1 , 2  ,  3 },
+
     // FL | FR | FC | LFE | BL | BR | FLofC | FRofC | BC | SL | SR
 };
 
@@ -205,7 +209,7 @@ const char* ChannelLayoutToString(ChannelLayout layout) {
     case CHANNEL_LAYOUT_4_0:
       return "4.0";
     case CHANNEL_LAYOUT_2_2:
-      return "2.2";
+      return "QUAD_SIDE";
     case CHANNEL_LAYOUT_QUAD:
       return "QUAD";
     case CHANNEL_LAYOUT_5_0:
@@ -252,6 +256,8 @@ const char* ChannelLayoutToString(ChannelLayout layout) {
       return "DISCRETE";
     case CHANNEL_LAYOUT_STEREO_AND_KEYBOARD_MIC:
       return "STEREO_AND_KEYBOARD_MIC";
+    case CHANNEL_LAYOUT_4_1_QUAD_SIDE:
+      return "4.1_QUAD_SIDE";
   }
   NOTREACHED() << "Invalid channel layout provided: " << layout;
   return "";

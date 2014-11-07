@@ -70,7 +70,8 @@ enum ChannelLayout {
   k_OCTAGONAL = 28,
   k_DISCRETE = 29,
   k_STEREO_AND_KEYBOARD_MIC = 30,
-  k_MAX = k_STEREO_AND_KEYBOARD_MIC,
+  k_4_1_QUAD_SIDE = 31,
+  k_MAX = k_4_1_QUAD_SIDE,
 };
 
 // See media/base/sample_format.h for descriptions.

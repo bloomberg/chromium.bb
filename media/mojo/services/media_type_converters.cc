@@ -84,6 +84,7 @@ ASSERT_ENUM_EQ(ChannelLayout,
                CHANNEL_LAYOUT,
                CHANNEL_LAYOUT_k,
                _STEREO_AND_KEYBOARD_MIC);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _4_1_QUAD_SIDE);
 ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _MAX);
 
 // SampleFormat.
