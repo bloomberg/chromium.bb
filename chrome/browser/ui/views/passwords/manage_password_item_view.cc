@@ -61,7 +61,9 @@ void BuildColumnSet(views::GridLayout* layout, int column_set_id) {
 }
 
 views::Label* GenerateUsernameLabel(const autofill::PasswordForm& form) {
-  views::Label* label = new views::Label(form.username_value);
+  views::Label* label = new views::Label(form.username_value.empty() ?
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN) :
+      form.username_value);
   label->SetFontList(ui::ResourceBundle::GetSharedInstance().GetFontList(
       ui::ResourceBundle::SmallFont));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

@@ -103,6 +103,12 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
   return textField.autorelease();
 }
 
+base::string16 GetDisplayUsername(const autofill::PasswordForm& form) {
+  return form.username_value.empty() ?
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN) :
+      form.username_value;
+}
+
 }  // namespace
 
 @implementation ManagePasswordItemUndoView
@@ -180,7 +186,7 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
     CGFloat curY = views::kRelatedControlVerticalSpacing;
 
     // Add the username.
-    usernameField_.reset([UsernameLabel(form.username_value) retain]);
+    usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
     [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:usernameField_];
 
@@ -228,7 +234,7 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
     CGFloat curY = views::kRelatedControlVerticalSpacing;
 
     // Add the username.
-    usernameField_.reset([UsernameLabel(form.username_value) retain]);
+    usernameField_.reset([UsernameLabel(GetDisplayUsername(form)) retain]);
     [usernameField_ setFrameOrigin:NSMakePoint(curX, curY)];
     [self addSubview:usernameField_];
 
