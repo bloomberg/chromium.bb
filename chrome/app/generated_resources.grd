@@ -11777,7 +11777,7 @@ Chrome ran out of memory.
         Default
       </message>
       <message name="IDS_PROFILE_ADD_PERSON_ENABLE" desc="The text for the settings checkbox that indicates whether new profiles can be added from the user manager.">
-        Enable user creation from the profile manager
+        Let anyone add a person to Chrome
       </message>
       <message name="IDS_PROFILE_BROWSER_GUEST_ENABLE" desc="The text for the settings checkbox that indicates whether guest mode is available for this browser.">
         Enable Guest browsing
