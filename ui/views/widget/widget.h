@@ -946,13 +946,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Whether native widget has been destroyed.
   bool native_widget_destroyed_;
 
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
+  // If true, the mouse is currently down.
+  bool is_mouse_button_pressed_;
+
   // True if capture losses should be ignored.
   bool ignore_capture_loss_;
 
+  // TODO(beng): Remove NativeWidgetGtk's dependence on these:
   // The following are used to detect duplicate mouse move events and not
   // deliver them. Displaying a window may result in the system generating
   // duplicate move events even though the mouse hasn't moved.
-  // TODO(tdanderson): We may be able to remove these members.
   bool last_mouse_event_was_move_;
   gfx::Point last_mouse_event_position_;
 

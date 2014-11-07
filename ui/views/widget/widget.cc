@@ -162,6 +162,7 @@ Widget::Widget()
       is_top_level_(false),
       native_widget_initialized_(false),
       native_widget_destroyed_(false),
+      is_mouse_button_pressed_(false),
       ignore_capture_loss_(false),
       last_mouse_event_was_move_(false),
       auto_release_capture_(true),
@@ -344,6 +345,10 @@ void Widget::Init(const InitParams& in_params) {
                    AsNativeWidgetPrivate();
   root_view_.reset(CreateRootView());
   default_theme_provider_.reset(new ui::DefaultThemeProvider);
+  if (params.type == InitParams::TYPE_MENU) {
+    is_mouse_button_pressed_ =
+        internal::NativeWidgetPrivate::IsMouseButtonDown();
+  }
   native_widget_->InitNativeWidget(params);
   if (RequiresNonClientView(params.type)) {
     non_client_view_ = new NonClientView;
@@ -941,6 +946,8 @@ void Widget::SetCapture(View* view) {
       return;
   }
 
+  if (internal::NativeWidgetPrivate::IsMouseButtonDown())
+    is_mouse_button_pressed_ = true;
   root_view_->SetMouseHandler(view);
 }
 
@@ -1181,12 +1188,11 @@ void Widget::OnKeyEvent(ui::KeyEvent* event) {
 //                   RootView from anywhere in Widget. Use
 //                   SendEventToProcessor() instead. See crbug.com/348087.
 void Widget::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_MOVED)
-    last_mouse_event_was_move_ = false;
-
   View* root_view = GetRootView();
   switch (event->type()) {
     case ui::ET_MOUSE_PRESSED: {
+      last_mouse_event_was_move_ = false;
+
       // We may get deleted by the time we return from OnMousePressed. So we
       // use an observer to make sure we are still alive.
       WidgetDeletionObserver widget_deletion_observer(this);
@@ -1204,6 +1210,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       if (root_view && root_view->OnMousePressed(*event) &&
           widget_deletion_observer.IsWidgetAlive() && IsVisible() &&
           internal::NativeWidgetPrivate::IsMouseButtonDown()) {
+        is_mouse_button_pressed_ = true;
         if (!native_widget_->HasCapture())
           native_widget_->SetCapture();
         event->SetHandled();
@@ -1212,6 +1219,8 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
     }
 
     case ui::ET_MOUSE_RELEASED:
+      last_mouse_event_was_move_ = false;
+      is_mouse_button_pressed_ = false;
       // Release capture first, to avoid confusion if OnMouseReleased blocks.
       if (auto_release_capture_ && native_widget_->HasCapture()) {
         base::AutoReset<bool> resetter(&ignore_capture_loss_, true);
@@ -1224,8 +1233,13 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSE_MOVED:
-      if (!last_mouse_event_was_move_ ||
-          last_mouse_event_position_ != event->location()) {
+    case ui::ET_MOUSE_DRAGGED:
+      if (native_widget_->HasCapture() && is_mouse_button_pressed_) {
+        last_mouse_event_was_move_ = false;
+        if (root_view)
+          root_view->OnMouseDragged(*event);
+      } else if (!last_mouse_event_was_move_ ||
+                 last_mouse_event_position_ != event->location()) {
         last_mouse_event_position_ = event->location();
         last_mouse_event_was_move_ = true;
         if (root_view)
@@ -1233,12 +1247,8 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
       }
       return;
 
-    case ui::ET_MOUSE_DRAGGED:
-      if (root_view)
-        root_view->OnMouseDragged(*event);
-      return;
-
     case ui::ET_MOUSE_EXITED:
+      last_mouse_event_was_move_ = false;
       if (root_view)
         root_view->OnMouseExited(*event);
       return;
@@ -1261,6 +1271,7 @@ void Widget::OnMouseCaptureLost() {
   View* root_view = GetRootView();
   if (root_view)
     root_view->OnMouseCaptureLost();
+  is_mouse_button_pressed_ = false;
 }
 
 void Widget::OnScrollEvent(ui::ScrollEvent* event) {

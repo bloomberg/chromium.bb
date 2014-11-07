@@ -413,7 +413,6 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 bool RootView::OnMouseDragged(const ui::MouseEvent& event) {
-  CHECK_EQ(ui::ET_MOUSE_DRAGGED, event.type());
   if (mouse_pressed_handler_) {
     SetMouseLocationAndFlags(event);
 
@@ -471,7 +470,6 @@ void RootView::OnMouseCaptureLost() {
 }
 
 void RootView::OnMouseMoved(const ui::MouseEvent& event) {
-  CHECK_EQ(ui::ET_MOUSE_MOVED, event.type());
   View* v = GetEventHandlerForPoint(event.location());
   // Find the first enabled view, or the existing move handler, whichever comes
   // first.  The check for the existing handler is because if a view becomes
