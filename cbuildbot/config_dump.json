@@ -30067,7 +30067,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-chromium-pfq": {
@@ -30139,7 +30138,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "rush_ryu-payloads": {
