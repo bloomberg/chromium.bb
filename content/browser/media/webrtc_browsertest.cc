@@ -36,6 +36,10 @@ namespace content {
 #elif defined(OS_ANDROID) && defined(__aarch64__)
 // Failures on ARM64 Android: http://crbug.com/408179.
 #define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
+#elif defined(OS_ANDROID)
+// TEMPORARY disable: http://crbug.com/430001.
+// WebRTC stats-parsing tests broken due to renderer crash.
+#define MAYBE_WebRtcBrowserTest DISABLED_WebRtcBrowserTest
 #else
 #define MAYBE_WebRtcBrowserTest WebRtcBrowserTest
 #endif
