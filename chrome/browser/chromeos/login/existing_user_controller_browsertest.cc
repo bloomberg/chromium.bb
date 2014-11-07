@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_screen.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display.h"
 #include "chrome/browser/chromeos/login/ui/mock_login_display_host.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -86,6 +87,10 @@ const int kAutoLoginLongDelay = 10000;
 
 ACTION_P(CreateAuthenticator, user_context) {
   return new MockAuthenticator(arg0, user_context);
+}
+
+void DeleteUserFlow(UserFlow* user_flow) {
+  delete user_flow;
 }
 
 // Wait for cros settings to become permanently untrusted and run |callback|.
@@ -436,14 +441,16 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerUntrustedTest,
-                       DISABLED_SupervisedUserCreationForbidden) {
+                       SupervisedUserCreationForbidden) {
   MockBaseScreenDelegate mock_base_screen_delegate;
   SupervisedUserCreationScreenHandler supervised_user_creation_screen_handler;
   SupervisedUserCreationScreen supervised_user_creation_screen(
       &mock_base_screen_delegate,
       &supervised_user_creation_screen_handler);
 
-  EXPECT_CALL(*mock_user_manager_, SetUserFlow(kUsername, _)).Times(1);
+  EXPECT_CALL(*mock_user_manager_, SetUserFlow(kUsername, _))
+      .Times(1)
+      .WillOnce(WithArg<1>(Invoke(DeleteUserFlow)));
   supervised_user_creation_screen.AuthenticateManager(kUsername, kPassword);
 }
 
