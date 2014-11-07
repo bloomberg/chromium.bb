@@ -59,6 +59,8 @@ class PageHandler {
   Response ClearGeolocationOverride();
 
   Response SetTouchEmulationEnabled(bool enabled);
+  Response SetTouchEmulationEnabled(bool enabled,
+                                    const std::string* configuration);
 
   scoped_refptr<DevToolsProtocol::Response> CaptureScreenshot(
       scoped_refptr<DevToolsProtocol::Command> command);
@@ -105,6 +107,7 @@ class PageHandler {
 
   bool enabled_;
   bool touch_emulation_enabled_;
+  std::string touch_emulation_configuration_;
 
   bool screencast_enabled_;
   std::string screencast_format_;

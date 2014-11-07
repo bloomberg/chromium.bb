@@ -270,9 +270,17 @@ Response PageHandler::ClearGeolocationOverride() {
   return Response::OK();
 }
 
-
 Response PageHandler::SetTouchEmulationEnabled(bool enabled) {
   touch_emulation_enabled_ = enabled;
+  UpdateTouchEventEmulationState();
+  return Response::FallThrough();
+}
+
+Response PageHandler::SetTouchEmulationEnabled(
+    bool enabled, const std::string* configuration) {
+  touch_emulation_enabled_ = enabled;
+  touch_emulation_configuration_ =
+      configuration ? *configuration : std::string();
   UpdateTouchEventEmulationState();
   return Response::FallThrough();
 }
@@ -405,6 +413,7 @@ void PageHandler::UpdateTouchEventEmulationState() {
   if (!host_)
     return;
   bool enabled = touch_emulation_enabled_ || screencast_enabled_;
+  // TODO(dgozman): pass |touch_emulation_configuration_| once supported.
   host_->SetTouchEventEmulationEnabled(enabled);
   WebContentsImpl* web_contents = static_cast<WebContentsImpl*>(
       WebContents::FromRenderViewHost(host_));
