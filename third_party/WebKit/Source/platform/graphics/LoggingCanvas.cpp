@@ -151,7 +151,8 @@ void LoggingCanvas::drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar t
     params->setNumber("left", left);
     params->setNumber("top", top);
     params->setObject("bitmap", objectForSkBitmap(bitmap));
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     this->SkCanvas::drawBitmap(bitmap, left, top, paint);
 }
 
@@ -160,9 +161,11 @@ void LoggingCanvas::drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* s
     AutoLogger logger(this);
     RefPtr<JSONObject> params = logger.logItemWithParams("drawBitmapRectToRect");
     params->setObject("bitmap", objectForSkBitmap(bitmap));
-    params->setObject("src", objectForSkRect(*src));
+    if (src)
+        params->setObject("src", objectForSkRect(*src));
     params->setObject("dst", objectForSkRect(dst));
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     params->setNumber("flags", flags);
     this->SkCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
 }
@@ -173,7 +176,8 @@ void LoggingCanvas::drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m, 
     RefPtr<JSONObject> params = logger.logItemWithParams("drawBitmapMatrix");
     params->setObject("bitmap", objectForSkBitmap(bitmap));
     params->setArray("matrix", arrayForSkMatrix(m));
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     this->SkCanvas::drawBitmapMatrix(bitmap, m, paint);
 }
 
@@ -184,7 +188,8 @@ void LoggingCanvas::drawBitmapNine(const SkBitmap& bitmap, const SkIRect& center
     params->setObject("bitmap", objectForSkBitmap(bitmap));
     params->setObject("center", objectForSkIRect(center));
     params->setObject("dst", objectForSkRect(dst));
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     this->SkCanvas::drawBitmapNine(bitmap, center, dst, paint);
 }
 
@@ -195,7 +200,8 @@ void LoggingCanvas::drawSprite(const SkBitmap& bitmap, int left, int top, const 
     params->setObject("bitmap", objectForSkBitmap(bitmap));
     params->setNumber("left", left);
     params->setNumber("top", top);
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     this->SkCanvas::drawSprite(bitmap, left, top, paint);
 }
 
@@ -290,7 +296,8 @@ void LoggingCanvas::onDrawTextOnPath(const void* text, size_t byteLength, const 
     RefPtr<JSONObject> params = logger.logItemWithParams("drawTextOnPath");
     params->setString("text", stringForText(text, byteLength, paint));
     params->setObject("path", objectForSkPath(path));
-    params->setArray("matrix", arrayForSkMatrix(*matrix));
+    if (matrix)
+        params->setArray("matrix", arrayForSkMatrix(*matrix));
     params->setObject("paint", objectForSkPaint(paint));
     this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
 }
@@ -411,7 +418,8 @@ SkCanvas::SaveLayerStrategy LoggingCanvas::willSaveLayer(const SkRect* bounds, c
     RefPtr<JSONObject> params = logger.logItemWithParams("saveLayer");
     if (bounds)
         params->setObject("bounds", objectForSkRect(*bounds));
-    params->setObject("paint", objectForSkPaint(*paint));
+    if (paint)
+        params->setObject("paint", objectForSkPaint(*paint));
     params->setString("saveFlags", saveFlagsToString(flags));
     return this->SkCanvas::willSaveLayer(bounds, paint, flags);
 }
