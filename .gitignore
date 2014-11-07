@@ -307,6 +307,7 @@ v8.log
 /third_party/jsoncpp/source
 /third_party/jsr-305/src
 /third_party/junit/src
+/third_party/khronos_glcts
 /third_party/leveldatabase/src
 /third_party/leveldb
 /third_party/libaddressinput/src
