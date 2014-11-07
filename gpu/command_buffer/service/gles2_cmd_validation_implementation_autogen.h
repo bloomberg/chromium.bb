@@ -413,6 +413,10 @@ static const GLenum valid_string_type_table[] = {
     GL_EXTENSIONS,
 };
 
+static const GLenum valid_subscription_target_table[] = {
+    GL_MOUSE_POSITION_CHROMIUM,
+};
+
 static const GLenum valid_texture_bind_target_table[] = {
     GL_TEXTURE_2D,
     GL_TEXTURE_CUBE_MAP,
@@ -491,6 +495,10 @@ static const GLenum valid_texture_wrap_mode_table[] = {
     GL_CLAMP_TO_EDGE,
     GL_MIRRORED_REPEAT,
     GL_REPEAT,
+};
+
+static const GLenum valid_value_buffer_target_table[] = {
+    GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
 };
 
 static const GLint valid_vertex_attrib_size_table[] = {
@@ -593,6 +601,8 @@ Validators::Validators()
                        arraysize(valid_src_blend_factor_table)),
       stencil_op(valid_stencil_op_table, arraysize(valid_stencil_op_table)),
       string_type(valid_string_type_table, arraysize(valid_string_type_table)),
+      subscription_target(valid_subscription_target_table,
+                          arraysize(valid_subscription_target_table)),
       texture_bind_target(valid_texture_bind_target_table,
                           arraysize(valid_texture_bind_target_table)),
       texture_format(valid_texture_format_table,
@@ -616,6 +626,8 @@ Validators::Validators()
                     arraysize(valid_texture_usage_table)),
       texture_wrap_mode(valid_texture_wrap_mode_table,
                         arraysize(valid_texture_wrap_mode_table)),
+      value_buffer_target(valid_value_buffer_target_table,
+                          arraysize(valid_value_buffer_target_table)),
       vertex_attrib_size(valid_vertex_attrib_size_table,
                          arraysize(valid_vertex_attrib_size_table)),
       vertex_attrib_type(valid_vertex_attrib_type_table,

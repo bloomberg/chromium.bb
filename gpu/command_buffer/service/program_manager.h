@@ -39,6 +39,7 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   };
 
   enum UniformApiType {
+    kUniformNone = 0,
     kUniform1i = 1 << 0,
     kUniform2i = 1 << 1,
     kUniform3i = 1 << 2,

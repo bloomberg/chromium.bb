@@ -34,6 +34,7 @@ class RenderbufferManager;
 class ProgramManager;
 class ShaderManager;
 class TextureManager;
+class ValuebufferManager;
 class MemoryTracker;
 struct DisallowedFeatures;
 
@@ -126,6 +127,10 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
     return renderbuffer_manager_.get();
   }
 
+  ValuebufferManager* valuebuffer_manager() const {
+    return valuebuffer_manager_.get();
+  }
+
   TextureManager* texture_manager() const {
     return texture_manager_.get();
   }
@@ -198,6 +203,8 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
   scoped_ptr<FramebufferManager> framebuffer_manager_;
 
   scoped_ptr<RenderbufferManager> renderbuffer_manager_;
+
+  scoped_ptr<ValuebufferManager> valuebuffer_manager_;
 
   scoped_ptr<TextureManager> texture_manager_;
 

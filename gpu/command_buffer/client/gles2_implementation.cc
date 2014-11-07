@@ -99,6 +99,7 @@ GLES2Implementation::GLES2Implementation(
       bound_framebuffer_(0),
       bound_read_framebuffer_(0),
       bound_renderbuffer_(0),
+      bound_valuebuffer_(0),
       current_program_(0),
       bound_array_buffer_id_(0),
       bound_pixel_pack_transfer_buffer_id_(0),
@@ -2364,6 +2365,11 @@ void GLES2Implementation::GenQueriesEXTHelper(
     GLsizei /* n */, const GLuint* /* queries */) {
 }
 
+void GLES2Implementation::GenValuebuffersCHROMIUMHelper(
+    GLsizei /* n */,
+    const GLuint* /* valuebuffers */) {
+}
+
 // NOTE #1: On old versions of OpenGL, calling glBindXXX with an unused id
 // generates a new resource. On newer versions of OpenGL they don't. The code
 // related to binding below will need to change if we switch to the new OpenGL
@@ -2513,6 +2519,26 @@ bool GLES2Implementation::BindVertexArrayOESHelper(GLuint array) {
   return changed;
 }
 
+bool GLES2Implementation::BindValuebufferCHROMIUMHelper(GLenum target,
+                                                        GLuint valuebuffer) {
+  bool changed = false;
+  switch (target) {
+    case GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM:
+      if (bound_valuebuffer_ != valuebuffer) {
+        bound_valuebuffer_ = valuebuffer;
+        changed = true;
+      }
+      break;
+    default:
+      changed = true;
+      break;
+  }
+  // TODO(gman): There's a bug here. If the target is invalid the ID will not be
+  // used even though it's marked it as used here.
+  GetIdHandler(id_namespaces::kValuebuffers)->MarkAsUsedForBind(valuebuffer);
+  return changed;
+}
+
 bool GLES2Implementation::UseProgramHelper(GLuint program) {
   bool changed = false;
   if (current_program_ != program) {
@@ -2629,6 +2655,11 @@ void GLES2Implementation::DeleteTexturesHelper(
   }
 }
 
+void GLES2Implementation::DeleteTexturesStub(GLsizei n,
+                                             const GLuint* textures) {
+  helper_->DeleteTexturesImmediate(n, textures);
+}
+
 void GLES2Implementation::DeleteVertexArraysOESHelper(
     GLsizei n, const GLuint* arrays) {
   vertex_array_object_manager_->DeleteVertexArrays(n, arrays);
@@ -2646,9 +2677,27 @@ void GLES2Implementation::DeleteVertexArraysOESStub(
   helper_->DeleteVertexArraysOESImmediate(n, arrays);
 }
 
-void GLES2Implementation::DeleteTexturesStub(
-    GLsizei n, const GLuint* textures) {
-  helper_->DeleteTexturesImmediate(n, textures);
+void GLES2Implementation::DeleteValuebuffersCHROMIUMHelper(
+    GLsizei n,
+    const GLuint* valuebuffers) {
+  if (!GetIdHandler(id_namespaces::kValuebuffers)
+           ->FreeIds(this, n, valuebuffers,
+                     &GLES2Implementation::DeleteValuebuffersCHROMIUMStub)) {
+    SetGLError(GL_INVALID_VALUE, "glDeleteValuebuffersCHROMIUM",
+               "id not created by this context.");
+    return;
+  }
+  for (GLsizei ii = 0; ii < n; ++ii) {
+    if (valuebuffers[ii] == bound_valuebuffer_) {
+      bound_valuebuffer_ = 0;
+    }
+  }
+}
+
+void GLES2Implementation::DeleteValuebuffersCHROMIUMStub(
+    GLsizei n,
+    const GLuint* valuebuffers) {
+  helper_->DeleteValuebuffersCHROMIUMImmediate(n, valuebuffers);
 }
 
 void GLES2Implementation::DisableVertexAttribArray(GLuint index) {

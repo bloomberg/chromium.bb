@@ -8171,6 +8171,287 @@ COMPILE_ASSERT(
     offsetof(BindUniformLocationCHROMIUMBucket, name_bucket_id) == 12,
     OffsetOf_BindUniformLocationCHROMIUMBucket_name_bucket_id_not_12);
 
+struct GenValuebuffersCHROMIUMImmediate {
+  typedef GenValuebuffersCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId = kGenValuebuffersCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, GLuint* _buffers) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _buffers, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, GLuint* _buffers) {
+    static_cast<ValueType*>(cmd)->Init(_n, _buffers);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(GenValuebuffersCHROMIUMImmediate) == 8,
+               Sizeof_GenValuebuffersCHROMIUMImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(GenValuebuffersCHROMIUMImmediate, header) == 0,
+               OffsetOf_GenValuebuffersCHROMIUMImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(GenValuebuffersCHROMIUMImmediate, n) == 4,
+               OffsetOf_GenValuebuffersCHROMIUMImmediate_n_not_4);
+
+struct DeleteValuebuffersCHROMIUMImmediate {
+  typedef DeleteValuebuffersCHROMIUMImmediate ValueType;
+  static const CommandId kCmdId = kDeleteValuebuffersCHROMIUMImmediate;
+  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeDataSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(GLuint) * n);  // NOLINT
+  }
+
+  static uint32_t ComputeSize(GLsizei n) {
+    return static_cast<uint32_t>(sizeof(ValueType) +
+                                 ComputeDataSize(n));  // NOLINT
+  }
+
+  void SetHeader(GLsizei n) {
+    header.SetCmdByTotalSize<ValueType>(ComputeSize(n));
+  }
+
+  void Init(GLsizei _n, const GLuint* _valuebuffers) {
+    SetHeader(_n);
+    n = _n;
+    memcpy(ImmediateDataAddress(this), _valuebuffers, ComputeDataSize(_n));
+  }
+
+  void* Set(void* cmd, GLsizei _n, const GLuint* _valuebuffers) {
+    static_cast<ValueType*>(cmd)->Init(_n, _valuebuffers);
+    const uint32_t size = ComputeSize(_n);
+    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
+  }
+
+  gpu::CommandHeader header;
+  int32_t n;
+};
+
+COMPILE_ASSERT(sizeof(DeleteValuebuffersCHROMIUMImmediate) == 8,
+               Sizeof_DeleteValuebuffersCHROMIUMImmediate_is_not_8);
+COMPILE_ASSERT(offsetof(DeleteValuebuffersCHROMIUMImmediate, header) == 0,
+               OffsetOf_DeleteValuebuffersCHROMIUMImmediate_header_not_0);
+COMPILE_ASSERT(offsetof(DeleteValuebuffersCHROMIUMImmediate, n) == 4,
+               OffsetOf_DeleteValuebuffersCHROMIUMImmediate_n_not_4);
+
+struct IsValuebufferCHROMIUM {
+  typedef IsValuebufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kIsValuebufferCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _valuebuffer,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    valuebuffer = _valuebuffer;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLuint _valuebuffer,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)
+        ->Init(_valuebuffer, _result_shm_id, _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t valuebuffer;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+COMPILE_ASSERT(sizeof(IsValuebufferCHROMIUM) == 16,
+               Sizeof_IsValuebufferCHROMIUM_is_not_16);
+COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, header) == 0,
+               OffsetOf_IsValuebufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, valuebuffer) == 4,
+               OffsetOf_IsValuebufferCHROMIUM_valuebuffer_not_4);
+COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, result_shm_id) == 8,
+               OffsetOf_IsValuebufferCHROMIUM_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(IsValuebufferCHROMIUM, result_shm_offset) == 12,
+               OffsetOf_IsValuebufferCHROMIUM_result_shm_offset_not_12);
+
+struct BindValuebufferCHROMIUM {
+  typedef BindValuebufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kBindValuebufferCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLuint _valuebuffer) {
+    SetHeader();
+    target = _target;
+    valuebuffer = _valuebuffer;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _valuebuffer) {
+    static_cast<ValueType*>(cmd)->Init(_target, _valuebuffer);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t valuebuffer;
+};
+
+COMPILE_ASSERT(sizeof(BindValuebufferCHROMIUM) == 12,
+               Sizeof_BindValuebufferCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, header) == 0,
+               OffsetOf_BindValuebufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, target) == 4,
+               OffsetOf_BindValuebufferCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(BindValuebufferCHROMIUM, valuebuffer) == 8,
+               OffsetOf_BindValuebufferCHROMIUM_valuebuffer_not_8);
+
+struct SubscribeValueCHROMIUM {
+  typedef SubscribeValueCHROMIUM ValueType;
+  static const CommandId kCmdId = kSubscribeValueCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLenum _subscription) {
+    SetHeader();
+    target = _target;
+    subscription = _subscription;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLenum _subscription) {
+    static_cast<ValueType*>(cmd)->Init(_target, _subscription);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t subscription;
+};
+
+COMPILE_ASSERT(sizeof(SubscribeValueCHROMIUM) == 12,
+               Sizeof_SubscribeValueCHROMIUM_is_not_12);
+COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, header) == 0,
+               OffsetOf_SubscribeValueCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, target) == 4,
+               OffsetOf_SubscribeValueCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(SubscribeValueCHROMIUM, subscription) == 8,
+               OffsetOf_SubscribeValueCHROMIUM_subscription_not_8);
+
+struct PopulateSubscribedValuesCHROMIUM {
+  typedef PopulateSubscribedValuesCHROMIUM ValueType;
+  static const CommandId kCmdId = kPopulateSubscribedValuesCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target) {
+    SetHeader();
+    target = _target;
+  }
+
+  void* Set(void* cmd, GLenum _target) {
+    static_cast<ValueType*>(cmd)->Init(_target);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+};
+
+COMPILE_ASSERT(sizeof(PopulateSubscribedValuesCHROMIUM) == 8,
+               Sizeof_PopulateSubscribedValuesCHROMIUM_is_not_8);
+COMPILE_ASSERT(offsetof(PopulateSubscribedValuesCHROMIUM, header) == 0,
+               OffsetOf_PopulateSubscribedValuesCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(PopulateSubscribedValuesCHROMIUM, target) == 4,
+               OffsetOf_PopulateSubscribedValuesCHROMIUM_target_not_4);
+
+struct UniformValuebufferCHROMIUM {
+  typedef UniformValuebufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kUniformValuebufferCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8 cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLint _location, GLenum _target, GLenum _subscription) {
+    SetHeader();
+    location = _location;
+    target = _target;
+    subscription = _subscription;
+  }
+
+  void* Set(void* cmd, GLint _location, GLenum _target, GLenum _subscription) {
+    static_cast<ValueType*>(cmd)->Init(_location, _target, _subscription);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  int32_t location;
+  uint32_t target;
+  uint32_t subscription;
+};
+
+COMPILE_ASSERT(sizeof(UniformValuebufferCHROMIUM) == 16,
+               Sizeof_UniformValuebufferCHROMIUM_is_not_16);
+COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, header) == 0,
+               OffsetOf_UniformValuebufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, location) == 4,
+               OffsetOf_UniformValuebufferCHROMIUM_location_not_4);
+COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, target) == 8,
+               OffsetOf_UniformValuebufferCHROMIUM_target_not_8);
+COMPILE_ASSERT(offsetof(UniformValuebufferCHROMIUM, subscription) == 12,
+               OffsetOf_UniformValuebufferCHROMIUM_subscription_not_12);
+
 struct BindTexImage2DCHROMIUM {
   typedef BindTexImage2DCHROMIUM ValueType;
   static const CommandId kCmdId = kBindTexImage2DCHROMIUM;
