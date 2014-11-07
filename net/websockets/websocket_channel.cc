@@ -44,9 +44,16 @@ using base::StreamingUtf8Validator;
 const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
 const size_t kWebSocketCloseCodeLength = 2;
-// This timeout is based on TCPMaximumSegmentLifetime * 2 from
-// MainThreadWebSocketChannel.cpp in Blink.
-const int kClosingHandshakeTimeoutSeconds = 2 * 2 * 60;
+// Timeout for waiting for the server to acknowledge a closing handshake.
+const int kClosingHandshakeTimeoutSeconds = 60;
+// We wait for the server to close the underlying connection as recommended in
+// https://tools.ietf.org/html/rfc6455#section-7.1.1
+// We don't use 2MSL since there're server implementations that don't follow
+// the recommendation and wait for the client to close the underlying
+// connection. It leads to unnecessarily long time before CloseEvent
+// invocation. We want to avoid this rather than strictly following the spec
+// recommendation.
+const int kUnderlyingConnectionCloseTimeoutSeconds = 2;
 
 typedef WebSocketEventInterface::ChannelState ChannelState;
 const ChannelState CHANNEL_ALIVE = WebSocketEventInterface::CHANNEL_ALIVE;
@@ -296,7 +303,10 @@ WebSocketChannel::WebSocketChannel(
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
       current_receive_quota_(0),
-      timeout_(base::TimeDelta::FromSeconds(kClosingHandshakeTimeoutSeconds)),
+      closing_handshake_timeout_(base::TimeDelta::FromSeconds(
+          kClosingHandshakeTimeoutSeconds)),
+      underlying_connection_close_timeout_(base::TimeDelta::FromSeconds(
+          kUnderlyingConnectionCloseTimeoutSeconds)),
       has_received_close_frame_(false),
       received_close_code_(0),
       state_(FRESHLY_CONSTRUCTED),
@@ -312,7 +322,7 @@ WebSocketChannel::~WebSocketChannel() {
   stream_.reset();
   // The timer may have a callback pointing back to us, so stop it just in case
   // someone decides to run the event loop from their destructor.
-  timer_.Stop();
+  close_timer_.Stop();
 }
 
 void WebSocketChannel::SendAddChannelRequest(
@@ -478,6 +488,15 @@ void WebSocketChannel::StartClosingHandshake(uint16 code,
     NOTREACHED() << "StartClosingHandshake() called in state " << state_;
     return;
   }
+
+  DCHECK(!close_timer_.IsRunning());
+  // This use of base::Unretained() is safe because we stop the timer in the
+  // destructor.
+  close_timer_.Start(
+      FROM_HERE,
+      closing_handshake_timeout_,
+      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
+
   // Javascript actually only permits 1000 and 3000-4999, but the implementation
   // itself may produce different codes. The length of |reason| is also checked
   // by Javascript.
@@ -513,7 +532,12 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
     base::TimeDelta delay) {
-  timeout_ = delay;
+  closing_handshake_timeout_ = delay;
+}
+
+void WebSocketChannel::SetUnderlyingConnectionCloseTimeoutForTesting(
+    base::TimeDelta delay) {
+  underlying_connection_close_timeout_ = delay;
 }
 
 void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
@@ -839,10 +863,20 @@ ChannelState WebSocketChannel::HandleFrameByState(
       switch (state_) {
         case CONNECTED:
           SetState(RECV_CLOSED);
+
           if (SendClose(code, reason) == CHANNEL_DELETED)
             return CHANNEL_DELETED;
           DCHECK_EQ(RECV_CLOSED, state_);
+
           SetState(CLOSE_WAIT);
+          DCHECK(!close_timer_.IsRunning());
+          // This use of base::Unretained() is safe because we stop the timer
+          // in the destructor.
+          close_timer_.Start(
+              FROM_HERE,
+              underlying_connection_close_timeout_,
+              base::Bind(
+                  &WebSocketChannel::CloseTimeout, base::Unretained(this)));
 
           if (event_interface_->OnClosingHandshake() == CHANNEL_DELETED)
             return CHANNEL_DELETED;
@@ -853,6 +887,16 @@ ChannelState WebSocketChannel::HandleFrameByState(
 
         case SEND_CLOSED:
           SetState(CLOSE_WAIT);
+          DCHECK(close_timer_.IsRunning());
+          close_timer_.Stop();
+          // This use of base::Unretained() is safe because we stop the timer
+          // in the destructor.
+          close_timer_.Start(
+              FROM_HERE,
+              underlying_connection_close_timeout_,
+              base::Bind(
+                  &WebSocketChannel::CloseTimeout, base::Unretained(this)));
+
           // From RFC6455 section 7.1.5: "Each endpoint
           // will see the status code sent by the other end as _The WebSocket
           // Connection Close Code_."
@@ -1027,12 +1071,6 @@ ChannelState WebSocketChannel::SendClose(uint16 code,
     std::copy(
         reason.begin(), reason.end(), body->data() + kWebSocketCloseCodeLength);
   }
-  // This use of base::Unretained() is safe because we stop the timer in the
-  // destructor.
-  timer_.Start(
-      FROM_HERE,
-      timeout_,
-      base::Bind(&WebSocketChannel::CloseTimeout, base::Unretained(this)));
   if (SendFrameFromIOBuffer(
           true, WebSocketFrameHeader::kOpCodeClose, body, size) ==
       CHANNEL_DELETED)

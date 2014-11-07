@@ -127,6 +127,8 @@ const size_t kDefaultInitialQuota = 1 << 17;
 // kDefaultSendQuotaLowWaterMark change.
 const size_t kDefaultQuotaRefreshTrigger = (1 << 16) + 1;
 
+const int kVeryBigTimeoutMillis = 60 * 60 * 24 * 1000;
+
 // TestTimeouts::tiny_timeout() is 100ms! I could run halfway around the world
 // in that time! I would like my tests to run a bit quicker.
 const int kVeryTinyTimeoutMillis = 1;
@@ -2145,6 +2147,8 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   // was fired by the behaviour of the WebSocketChannel object.
   channel_->SetClosingHandshakeTimeoutForTesting(
       TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
+  channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
+      TimeDelta::FromMilliseconds(kVeryBigTimeoutMillis));
   channel_->StartClosingHandshake(kWebSocketNormalClosure, "");
   checkpoint.Call(1);
   completion.WaitForResult();
@@ -2175,6 +2179,8 @@ TEST_F(WebSocketChannelEventInterfaceTest,
   }
   CreateChannelAndConnectSuccessfully();
   channel_->SetClosingHandshakeTimeoutForTesting(
+      TimeDelta::FromMilliseconds(kVeryBigTimeoutMillis));
+  channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
       TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
   checkpoint.Call(1);
   completion.WaitForResult();
@@ -3303,6 +3309,8 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
     CreateChannelAndConnect();
     channel_->SendFlowControl(kPlentyOfQuota);
     channel_->SetClosingHandshakeTimeoutForTesting(
+        TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
+    channel_->SetUnderlyingConnectionCloseTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
     connect_data_.creator.connect_delegate->OnSuccess(stream_.Pass());
   }

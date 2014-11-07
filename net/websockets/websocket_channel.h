@@ -110,6 +110,11 @@ class NET_EXPORT WebSocketChannel {
   // set it to a very small value for testing purposes.
   void SetClosingHandshakeTimeoutForTesting(base::TimeDelta delay);
 
+  // The default timout for the underlying connection close is a sensible value
+  // (see kUnderlyingConnectionCloseTimeoutSeconds in websocket_channel.cc).
+  // However, we can set it to a very small value for testing purposes.
+  void SetUnderlyingConnectionCloseTimeoutForTesting(base::TimeDelta delay);
+
   // Called when the stream starts the WebSocket Opening Handshake.
   // This method is public for testing.
   void OnStartOpeningHandshake(
@@ -371,10 +376,14 @@ class NET_EXPORT WebSocketChannel {
   uint64 current_receive_quota_;
 
   // Timer for the closing handshake.
-  base::OneShotTimer<WebSocketChannel> timer_;
+  base::OneShotTimer<WebSocketChannel> close_timer_;
 
   // Timeout for the closing handshake.
-  base::TimeDelta timeout_;
+  base::TimeDelta closing_handshake_timeout_;
+
+  // Timeout for the underlying connection close after completion of closing
+  // handshake.
+  base::TimeDelta underlying_connection_close_timeout_;
 
   // Storage for the status code and reason from the time the Close frame
   // arrives until the connection is closed and they are passed to
