@@ -79,11 +79,9 @@
   color: rgb(48, 57, 66);
 }
 
-.device-show-more-tabs,
-.device-show-more-tabs:active,
-.device-show-more-tabs:visited,
-.device-show-more-tabs:link {
+.device-show-more-tabs {
   color: rgb(151, 156, 160);
+  padding: 0;
 }
 
 .other-devices-bottom {
