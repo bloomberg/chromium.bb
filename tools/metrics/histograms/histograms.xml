@@ -12002,6 +12002,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.KeySystemSupport.Widevine"
+    enum="MediaKeySystemSupportStatus">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Key system support query status and result. Each enum value will be reported
+    at most once per renderer process.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.NeedKey">
   <owner>xhwang@chromium.org</owner>
   <summary>EME NeedKey event count.</summary>
@@ -48893,6 +48902,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="kSuccess"/>
   <int value="2" label="kKeySystemNotSupported"/>
   <int value="3" label="kInvalidPlayerState"/>
+</enum>
+
+<enum name="MediaKeySystemSupportStatus" type="int">
+  <int value="0" label="Queried"/>
+  <int value="1" label="Supported"/>
+  <int value="2" label="Queried with type"/>
+  <int value="3" label="Supported with type"/>
 </enum>
 
 <enum name="MediaOutputProtectionStatus" type="int">

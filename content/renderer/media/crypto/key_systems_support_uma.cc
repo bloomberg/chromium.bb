@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/metrics/histogram.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/media/crypto/key_systems.h"
 
@@ -13,31 +14,34 @@ namespace content {
 
 namespace {
 
-const char kKeySystemSupportActionPrefix[] = "KeySystemSupport.";
+const char kKeySystemSupportUMAPrefix[] = "Media.EME.KeySystemSupport.";
+
+// These values are reported to UMA. Do not change the existing values!
+enum KeySystemSupportStatus {
+  KEY_SYSTEM_QUERIED = 0,
+  KEY_SYSTEM_SUPPORTED = 1,
+  KEY_SYSTEM_WITH_TYPE_QUERIED = 2,
+  KEY_SYSTEM_WITH_TYPE_SUPPORTED = 3,
+  KEY_SYSTEM_SUPPORT_STATUS_COUNT
+};
 
 // Reports an event only once.
 class OneTimeReporter {
  public:
-  OneTimeReporter(const std::string& key_system,
-                  bool has_type,
-                  const std::string& event);
+  OneTimeReporter(const std::string& key_system, KeySystemSupportStatus status);
   ~OneTimeReporter();
 
   void Report();
 
  private:
   bool is_reported_;
-  std::string action_;
+  const std::string key_system_;
+  const KeySystemSupportStatus status_;
 };
 
 OneTimeReporter::OneTimeReporter(const std::string& key_system,
-                                 bool has_type,
-                                 const std::string& event)
-    : is_reported_(false) {
-  action_ = kKeySystemSupportActionPrefix + KeySystemNameForUMA(key_system);
-  if (has_type)
-    action_ += "WithType";
-  action_ += '.' + event;
+                                 KeySystemSupportStatus status)
+    : is_reported_(false), key_system_(key_system), status_(status) {
 }
 
 OneTimeReporter::~OneTimeReporter() {}
@@ -45,7 +49,14 @@ OneTimeReporter::~OneTimeReporter() {}
 void OneTimeReporter::Report() {
   if (is_reported_)
     return;
-  RenderThread::Get()->RecordComputedAction(action_);
+
+  // Not using UMA_HISTOGRAM_ENUMERATION directly because UMA_* macros require
+  // the names to be constant throughout the process' lifetime.
+  base::LinearHistogram::FactoryGet(
+      kKeySystemSupportUMAPrefix + KeySystemNameForUMA(key_system_), 1,
+      KEY_SYSTEM_SUPPORT_STATUS_COUNT, KEY_SYSTEM_SUPPORT_STATUS_COUNT + 1,
+      base::Histogram::kUmaTargetedHistogramFlag)->Add(status_);
+
   is_reported_ = true;
 }
 
@@ -69,10 +80,10 @@ class KeySystemsSupportUMA::Reporter {
 
 KeySystemsSupportUMA::Reporter::Reporter(const std::string& key_system)
     : key_system_(key_system),
-      call_reporter_(key_system, false, "Queried"),
-      call_with_type_reporter_(key_system, true, "Queried"),
-      support_reporter_(key_system, false, "Supported"),
-      support_with_type_reporter_(key_system, true, "Supported") {}
+      call_reporter_(key_system, KEY_SYSTEM_QUERIED),
+      call_with_type_reporter_(key_system, KEY_SYSTEM_WITH_TYPE_QUERIED),
+      support_reporter_(key_system, KEY_SYSTEM_SUPPORTED),
+      support_with_type_reporter_(key_system, KEY_SYSTEM_WITH_TYPE_SUPPORTED) {}
 
 KeySystemsSupportUMA::Reporter::~Reporter() {}
 
