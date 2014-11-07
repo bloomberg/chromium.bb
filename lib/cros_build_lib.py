@@ -518,6 +518,7 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
   # If we are using enter_chroot we need to use enterchroot pass env through
   # to the final command.
   env = env.copy() if env is not None else os.environ.copy()
+  env.update(extra_env if extra_env else {})
   if enter_chroot and not IsInsideChroot():
     wrapper = ['cros_sdk']
 
@@ -528,9 +529,6 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
       wrapper.extend('%s=%s' % (k, v) for k, v in extra_env.iteritems())
 
     cmd = wrapper + ['--'] + cmd
-
-  elif extra_env:
-    env.update(extra_env)
 
   for var in constants.ENV_PASSTHRU:
     if var not in env and var in os.environ:

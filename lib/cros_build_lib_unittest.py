@@ -486,6 +486,25 @@ class TestRunCommand(cros_test_lib.MockTestCase):
                   sp_kv=dict(env=total_env),
                   rc_kv=dict(env=env, extra_env=extra_env))
 
+  @mock.patch('chromite.lib.cros_build_lib.IsInsideChroot', return_value=False)
+  def testChrootExtraEnvWorks(self, _inchroot_mock):
+    """Test RunCommand(..., enter_chroot=True, env=xy, extra_env=z) works."""
+    # We'll put this bogus environment together, just to make sure
+    # subprocess.Popen gets passed it.
+    env = {'Tom': 'Jerry', 'Itchy': 'Scratchy'}
+    extra_env = {'Pinky': 'Brain'}
+    total_env = {'Tom': 'Jerry', 'Itchy': 'Scratchy', 'Pinky': 'Brain'}
+
+    # This is a simple case, copied from testReturnCodeZeroWithArrayCmd()
+    self.proc_mock.returncode = 0
+    cmd_list = ['foo', 'bar', 'roger']
+
+    # Run.  We expect the env= to be passed through from sp (subprocess.Popen)
+    # to rc (RunCommand).
+    self._TestCmd(cmd_list, ['cros_sdk', 'Pinky=Brain', '--'] + cmd_list,
+                  sp_kv=dict(env=total_env),
+                  rc_kv=dict(env=env, extra_env=extra_env, enter_chroot=True))
+
   def testExceptionEquality(self):
     """Verify equality methods for RunCommandError"""
 
