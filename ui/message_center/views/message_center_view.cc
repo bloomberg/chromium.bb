@@ -54,6 +54,13 @@ const int kAnimateClearingNextNotificationDelayMS = 40;
 
 const int kDefaultAnimationDurationMs = 120;
 const int kDefaultFrameRateHz = 60;
+
+void SetViewHierarchyEnabled(views::View* view, bool enabled) {
+  for (int i = 0; i < view->child_count(); i++)
+    SetViewHierarchyEnabled(view->child_at(i), enabled);
+  view->SetEnabled(enabled);
+}
+
 }  // namespace
 
 class NoNotificationMessageView : public views::View {
@@ -685,13 +692,13 @@ void MessageCenterView::ClearAllNotifications() {
   if (is_closing_)
     return;
 
-  scroller_->SetEnabled(false);
+  SetViewHierarchyEnabled(scroller_, false);
   button_bar_->SetAllButtonsEnabled(false);
   message_list_view_->ClearAllNotifications(scroller_->GetVisibleRect());
 }
 
 void MessageCenterView::OnAllNotificationsCleared() {
-  scroller_->SetEnabled(true);
+  SetViewHierarchyEnabled(scroller_, true);
   button_bar_->SetAllButtonsEnabled(true);
   button_bar_->SetCloseAllButtonEnabled(false);
   message_center_->RemoveAllVisibleNotifications(true);  // Action by user.
@@ -863,12 +870,13 @@ void MessageCenterView::OnNotificationRemoved(const std::string& id,
         next_focused_view = message_list_view_->child_at(index - 1);
 
       if (next_focused_view) {
-        if (view->IsCloseButtonFocused())
+        if (view->IsCloseButtonFocused()) {
           // Safe cast since all views in MessageListView are MessageViews.
           static_cast<MessageView*>(
               next_focused_view)->RequestFocusOnCloseButton();
-        else
+        } else {
           next_focused_view->RequestFocus();
+        }
       }
     }
   }
