@@ -49,6 +49,7 @@ import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewStatics;
+import org.chromium.content.browser.SmartClipProvider;
 import org.chromium.content.browser.WebContentsObserver;
 import org.chromium.content.common.CleanupReference;
 import org.chromium.content_public.browser.GestureStateListener;
@@ -81,7 +82,7 @@ import java.util.concurrent.Callable;
  * continuous build & test in the open source SDK-based tree).
  */
 @JNINamespace("android_webview")
-public class AwContents {
+public class AwContents implements SmartClipProvider {
     private static final String TAG = "AwContents";
 
     private static final String WEB_ARCHIVE_EXTENSION = ".mht";
@@ -2234,12 +2235,36 @@ public class AwContents {
         return null;
     }
 
+    @Override
     public void extractSmartClipData(int x, int y, int width, int height) {
         if (!isDestroyed()) mContentViewCore.extractSmartClipData(x, y, width, height);
     }
 
-    public void setSmartClipDataListener(ContentViewCore.SmartClipDataListener listener) {
-        if (!isDestroyed()) mContentViewCore.setSmartClipDataListener(listener);
+    @Override
+    public void setSmartClipResultHandler(final Handler resultHandler) {
+        if (isDestroyed()) return;
+
+        if (resultHandler == null) {
+            mContentViewCore.setSmartClipDataListener(null);
+            return;
+        }
+        mContentViewCore.setSmartClipDataListener(new ContentViewCore.SmartClipDataListener() {
+            public void onSmartClipDataExtracted(String text, String html, Rect clipRect) {
+                Bundle bundle = new Bundle();
+                bundle.putString("url", mContentViewCore.getWebContents().getVisibleUrl());
+                bundle.putString("title", mContentViewCore.getWebContents().getTitle());
+                bundle.putParcelable("rect", clipRect);
+                bundle.putString("text", text);
+                bundle.putString("html", html);
+                try {
+                    Message msg = Message.obtain(resultHandler, 0);
+                    msg.setData(bundle);
+                    msg.sendToTarget();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error calling handler for smart clip data: ", e);
+                }
+            }
+        });
     }
 
     // --------------------------------------------------------------------------------------------
