@@ -299,7 +299,7 @@ GCObservation* Internals::observeGC(ScriptValue scriptValue)
     v8::Handle<v8::Value> observedValue = scriptValue.v8Value();
     ASSERT(!observedValue.IsEmpty());
     if (observedValue->IsNull() || observedValue->IsUndefined()) {
-        V8ThrowException::throwTypeError("value to observe is null or undefined", v8::Isolate::GetCurrent());
+        V8ThrowException::throwTypeError(v8::Isolate::GetCurrent(), "value to observe is null or undefined");
         return nullptr;
     }
 

@@ -44,7 +44,7 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8AtomicString(info.GetIsolate(), "stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate, int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
@@ -81,7 +81,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
 v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
 {
     ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
-    v8::Handle<v8::Value> exception = createDOMException(ec, sanitizedMessage, unsanitizedMessage, creationContext, isolate);
+    v8::Handle<v8::Value> exception = createDOMException(isolate, ec, sanitizedMessage, unsanitizedMessage, creationContext);
     if (exception.IsEmpty())
         return v8Undefined();
 
@@ -104,7 +104,7 @@ v8::Handle<v8::Value> V8ThrowException::createTypeError(v8::Isolate* isolate, co
     return v8::Exception::TypeError(v8String(isolate, message.isNull() ? "Type error" : message));
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwTypeError(const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwTypeError(v8::Isolate* isolate, const String& message)
 {
     v8::Handle<v8::Value> exception = V8ThrowException::createTypeError(isolate, message);
     return V8ThrowException::throwException(exception, isolate);

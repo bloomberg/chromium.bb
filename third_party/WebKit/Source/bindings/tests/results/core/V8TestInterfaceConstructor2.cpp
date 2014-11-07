@@ -49,7 +49,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
     Dictionary dictionaryArg;
     {
         if (!isUndefinedOrNull(info[0]) && !info[0]->IsObject()) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."), info.GetIsolate());
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToConstruct("TestInterfaceConstructor2", "parameter 1 ('dictionaryArg') is not an object."));
             return;
         }
         dictionaryArg = Dictionary(info[0], info.GetIsolate());
@@ -175,7 +175,7 @@ void V8TestInterfaceConstructor2::constructorCallback(const v8::FunctionCallback
 {
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor2"), info.GetIsolate());
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor2"));
         return;
     }
 

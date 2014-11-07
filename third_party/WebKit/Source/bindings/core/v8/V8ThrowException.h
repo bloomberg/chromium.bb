@@ -33,11 +33,11 @@ namespace blink {
 class V8ThrowException {
 public:
 
-    static v8::Handle<v8::Value> createDOMException(int ec, const String& message, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
+    static v8::Handle<v8::Value> createDOMException(v8::Isolate* isolate, int ec, const String& message, const v8::Handle<v8::Object>& creationContext)
     {
-        return createDOMException(ec, message, String(), creationContext, isolate);
+        return createDOMException(isolate, ec, message, String(), creationContext);
     }
-    static v8::Handle<v8::Value> createDOMException(int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext, v8::Isolate*);
+    static v8::Handle<v8::Value> createDOMException(v8::Isolate*, int, const String& sanitizedMessage, const String& unsanitizedMessage, const v8::Handle<v8::Object>& creationContext);
 
     static v8::Handle<v8::Value> throwDOMException(int ec, const String& message, const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
     {
@@ -50,7 +50,7 @@ public:
     static v8::Handle<v8::Value> createGeneralError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> throwGeneralError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> createTypeError(v8::Isolate*, const String&);
-    static v8::Handle<v8::Value> throwTypeError(const String&, v8::Isolate*);
+    static v8::Handle<v8::Value> throwTypeError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> createRangeError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> throwRangeError(v8::Isolate*, const String&);
     static v8::Handle<v8::Value> createSyntaxError(v8::Isolate*, const String&);

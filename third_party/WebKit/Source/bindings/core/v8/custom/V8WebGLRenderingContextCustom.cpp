@@ -427,12 +427,12 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
         v8::TryCatch block;
         V8RethrowTryCatchScope rethrow(block);
         if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::hasInstance(info[0], info.GetIsolate())) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("getUniform", "WebGLRenderingContext", "parameter 1 is not of type 'WebGLProgram'."), info.GetIsolate());
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("getUniform", "WebGLRenderingContext", "parameter 1 is not of type 'WebGLProgram'."));
             return;
         }
         TONATIVE_VOID_INTERNAL(program, V8WebGLProgram::toImplWithTypeCheck(info.GetIsolate(), info[0]));
         if (info.Length() > 1 && !isUndefinedOrNull(info[1]) && !V8WebGLUniformLocation::hasInstance(info[1], info.GetIsolate())) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("getUniform", "WebGLRenderingContext", "parameter 2 is not of type 'WebGLUniformLocation'."), info.GetIsolate());
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("getUniform", "WebGLRenderingContext", "parameter 2 is not of type 'WebGLUniformLocation'."));
             return;
         }
         TONATIVE_VOID_INTERNAL(location, V8WebGLUniformLocation::toImplWithTypeCheck(info.GetIsolate(), info[1]));

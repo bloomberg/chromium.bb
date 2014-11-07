@@ -177,7 +177,7 @@ static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
     Node* node;
     {
         if (info.Length() > 0 && !V8Node::hasInstance(info[0], info.GetIsolate())) {
-            V8ThrowException::throwTypeError(ExceptionMessages::failedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."), info.GetIsolate());
+            V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("partial2VoidMethod", "TestInterface", "parameter 1 is not of type 'Node'."));
             return;
         }
         node = V8Node::toImpl(v8::Handle<v8::Object>::Cast(info[0]));

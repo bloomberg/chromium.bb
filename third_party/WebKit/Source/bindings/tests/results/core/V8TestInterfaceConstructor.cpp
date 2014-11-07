@@ -214,7 +214,7 @@ const WrapperTypeInfo V8TestInterfaceConstructorConstructor::wrapperTypeInfo = {
 static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("Audio"), info.GetIsolate());
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("Audio"));
         return;
     }
 
@@ -282,7 +282,7 @@ void V8TestInterfaceConstructor::constructorCallback(const v8::FunctionCallbackI
     TRACE_EVENT_SCOPED_SAMPLING_STATE("blink", "DOMConstructor");
     UseCounter::countIfNotPrivateScript(info.GetIsolate(), callingExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
     if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor"), info.GetIsolate());
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("TestInterfaceConstructor"));
         return;
     }
 

@@ -94,7 +94,7 @@ ScriptPromise::ScriptPromise(ScriptState* scriptState, v8::Handle<v8::Value> val
 
     if (!value->IsPromise()) {
         m_promise = ScriptValue(scriptState, v8::Handle<v8::Value>());
-        V8ThrowException::throwTypeError("the given value is not a Promise", scriptState->isolate());
+        V8ThrowException::throwTypeError(scriptState->isolate(), "the given value is not a Promise");
         return;
     }
     m_promise = ScriptValue(scriptState, value);

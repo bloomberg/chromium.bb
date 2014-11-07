@@ -283,7 +283,7 @@ exceptionState.throwTypeError({{error_message}});
 {% elif method.idl_type == 'Promise' %}
 v8SetReturnValue(info, ScriptPromise::rejectRaw(info.GetIsolate(), V8ThrowException::createTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}})));
 {% else %}
-V8ThrowException::throwTypeError({{type_error_message(method, error_message)}}, info.GetIsolate());
+V8ThrowException::throwTypeError(info.GetIsolate(), {{type_error_message(method, error_message)}});
 {% endif %}{# method.has_exception_state #}
 {% endmacro %}
 
@@ -540,7 +540,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if constructor.is_named_constructor %}
     if (!info.IsConstructCall()) {
-        V8ThrowException::throwTypeError(ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"), info.GetIsolate());
+        V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::constructorNotCallableAsFunction("{{constructor.name}}"));
         return;
     }
 

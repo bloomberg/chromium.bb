@@ -80,7 +80,7 @@ void V8InjectedScriptHost::inspectedObjectMethodCustom(const v8::FunctionCallbac
         return;
 
     if (!info[0]->IsInt32()) {
-        V8ThrowException::throwTypeError("argument has to be an integer", info.GetIsolate());
+        V8ThrowException::throwTypeError(info.GetIsolate(), "argument has to be an integer");
         return;
     }
 
