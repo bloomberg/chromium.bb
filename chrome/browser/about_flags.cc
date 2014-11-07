@@ -871,6 +871,7 @@ const Experiment kExperiments[] = {
     kOsDesktop,
     SINGLE_VALUE_TYPE(switches::kSilentDebuggerExtensionAPI)
   },
+#if defined(ENABLE_SPELLCHECK)
   {
     "spellcheck-autocorrect",
     IDS_FLAGS_SPELLCHECK_AUTOCORRECT,
@@ -878,6 +879,7 @@ const Experiment kExperiments[] = {
     kOsWin | kOsLinux | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kEnableSpellingAutoCorrect)
   },
+#endif
   {
     "enable-scroll-prediction",
     IDS_FLAGS_ENABLE_SCROLL_PREDICTION_NAME,
@@ -1438,6 +1440,7 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kTabCaptureDownscaleQualityChoices)
   },
 #endif
+#if defined(ENABLE_SPELLCHECK)
   {
     "enable-spelling-feedback-field-trial",
     IDS_FLAGS_ENABLE_SPELLING_FEEDBACK_FIELD_TRIAL_NAME,
@@ -1445,6 +1448,7 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableSpellingFeedbackFieldTrial)
   },
+#endif
   {
     "enable-webgl-draft-extensions",
     IDS_FLAGS_ENABLE_WEBGL_DRAFT_EXTENSIONS_NAME,

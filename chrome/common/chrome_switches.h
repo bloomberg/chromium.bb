@@ -171,8 +171,6 @@ extern const char kEnableSettingsWindow[];
 extern const char kEnableShowModalDialog[];
 extern const char kDisableSettingsWindow[];
 extern const char kEnableSpdy4[];
-extern const char kEnableSpellingAutoCorrect[];
-extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kEnableSSLConnectJobWaiting[];
 extern const char kEnableStaleWhileRevalidate[];
 extern const char kEnableStreamlinedHostedApps[];
@@ -307,8 +305,12 @@ extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
+#if defined(ENABLE_SPELLCHECK)
+extern const char kEnableSpellingAutoCorrect[];
+extern const char kEnableSpellingFeedbackFieldTrial[];
 extern const char kSpellingServiceFeedbackUrl[];
 extern const char kSpellingServiceFeedbackIntervalSeconds[];
+#endif
 extern const char kSSLVersionMax[];
 extern const char kSSLVersionMin[];
 extern const char kSSLVersionFallbackMin[];
