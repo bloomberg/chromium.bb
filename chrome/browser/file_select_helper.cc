@@ -13,8 +13,10 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
@@ -64,6 +66,11 @@ std::vector<ui::SelectedFileInfo> FilePathListToSelectedFileInfoList(
 void DeleteFiles(const std::vector<base::FilePath>& paths) {
   for (auto& file_path : paths)
     base::DeleteFile(file_path, false);
+}
+
+bool IsValidProfile(Profile* profile) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return g_browser_process->profile_manager()->IsValidProfile(profile);
 }
 
 }  // namespace
@@ -122,7 +129,8 @@ void FileSelectHelper::FileSelectedWithExtraInfo(
     const ui::SelectedFileInfo& file,
     int index,
     void* params) {
-  profile_->set_last_selected_directory(file.file_path.DirName());
+  if (IsValidProfile(profile_))
+    profile_->set_last_selected_directory(file.file_path.DirName());
 
   if (!render_view_host_) {
     RunFileChooserEnd();
@@ -160,7 +168,7 @@ void FileSelectHelper::MultiFilesSelected(
 void FileSelectHelper::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
-  if (!files.empty())
+  if (!files.empty() && IsValidProfile(profile_))
     profile_->set_last_selected_directory(files[0].file_path.DirName());
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -241,6 +249,10 @@ void FileSelectHelper::NotifyRenderViewHostAndEnd(
 
 #if defined(OS_CHROMEOS)
   if (!files.empty()) {
+    if (!IsValidProfile(profile_)) {
+      RunFileChooserEnd();
+      return;
+    }
     // Converts |files| into FileChooserFileInfo with handling of non-native
     // files.
     file_manager::util::ConvertSelectedFileInfoListToFileChooserFileInfoList(
@@ -415,7 +427,7 @@ void FileSelectHelper::RunFileChooserOnFileThread(
 
 void FileSelectHelper::RunFileChooserOnUIThread(
     const FileChooserParams& params) {
-  if (!render_view_host_ || !web_contents_) {
+  if (!render_view_host_ || !web_contents_ || !IsValidProfile(profile_)) {
     // If the renderer was destroyed before we started, just cancel the
     // operation.
     RunFileChooserEnd();
