@@ -2638,11 +2638,12 @@ bool LayerTreeHostImpl::ShouldTopControlsConsumeScroll(
   return false;
 }
 
-bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
-                                 const gfx::Vector2dF& scroll_delta) {
+InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
+    const gfx::Point& viewport_point,
+    const gfx::Vector2dF& scroll_delta) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
   if (!CurrentlyScrollingLayer())
-    return false;
+    return InputHandlerScrollResult();
 
   gfx::Vector2dF pending_delta = scroll_delta;
   gfx::Vector2dF unused_root_delta;
@@ -2763,15 +2764,14 @@ bool LayerTreeHostImpl::ScrollBy(const gfx::Point& viewport_point,
     accumulated_root_overscroll_.set_x(0);
   if (did_scroll_y)
     accumulated_root_overscroll_.set_y(0);
-
   accumulated_root_overscroll_ += unused_root_delta;
-  bool did_overscroll = !unused_root_delta.IsZero();
-  if (did_overscroll && input_handler_client_) {
-    input_handler_client_->DidOverscroll(
-        viewport_point, accumulated_root_overscroll_, unused_root_delta);
-  }
 
-  return did_scroll_content || did_scroll_top_controls;
+  InputHandlerScrollResult scroll_result;
+  scroll_result.did_scroll = did_scroll_content || did_scroll_top_controls;
+  scroll_result.did_overscroll_root = !unused_root_delta.IsZero();
+  scroll_result.accumulated_root_overscroll = accumulated_root_overscroll_;
+  scroll_result.unused_scroll_delta = unused_root_delta;
+  return scroll_result;
 }
 
 // This implements scrolling by page as described here:

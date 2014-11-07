@@ -6,6 +6,7 @@
 #define CC_INPUT_INPUT_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/swap_promise_monitor.h"
@@ -24,6 +25,21 @@ namespace cc {
 
 class LayerScrollOffsetDelegate;
 
+struct CC_EXPORT InputHandlerScrollResult {
+  InputHandlerScrollResult();
+  // Did any layer scroll as a result this ScrollBy call?
+  bool did_scroll;
+  // Was any of the scroll delta argument to this ScrollBy call not used?
+  bool did_overscroll_root;
+  // The total overscroll that has been accumulated by all ScrollBy calls that
+  // have had overscroll since the last ScrollBegin call. This resets upon a
+  // ScrollBy with no overscroll.
+  gfx::Vector2dF accumulated_root_overscroll;
+  // The amount of the scroll delta argument to this ScrollBy call that was not
+  // used for scrolling.
+  gfx::Vector2dF unused_scroll_delta;
+};
+
 class CC_EXPORT InputHandlerClient {
  public:
   virtual ~InputHandlerClient() {}
@@ -31,13 +47,6 @@ class CC_EXPORT InputHandlerClient {
   virtual void WillShutdown() = 0;
   virtual void Animate(base::TimeTicks time) = 0;
   virtual void MainThreadHasStoppedFlinging() = 0;
-
-  // Called when scroll deltas reaching the root scrolling layer go unused.
-  // The accumulated overscroll is scoped by the most recent call to
-  // InputHandler::ScrollBegin.
-  virtual void DidOverscroll(const gfx::PointF& causal_event_viewport_point,
-                             const gfx::Vector2dF& accumulated_overscroll,
-                             const gfx::Vector2dF& latest_overscroll_delta) = 0;
 
  protected:
   InputHandlerClient() {}
@@ -85,15 +94,16 @@ class CC_EXPORT InputHandler {
   // should be in viewport (logical pixel) coordinates. Otherwise they are in
   // scrolling layer's (logical pixel) space. If there is no room to move the
   // layer in the requested direction, its first ancestor layer that can be
-  // scrolled will be moved instead. If no layer can be moved in the requested
-  // direction at all, then false is returned. If any layer is moved, then
-  // true is returned.
+  // scrolled will be moved instead. The return value's |did_scroll| field is
+  // set to false if no layer can be moved in the requested direction at all,
+  // and set to true if any layer is moved.
   // If the scroll delta hits the root layer, and the layer can no longer move,
   // the root overscroll accumulated within this ScrollBegin() scope is reported
-  // to the client.
+  // in the return value's |accumulated_overscroll| field.
   // Should only be called if ScrollBegin() returned ScrollStarted.
-  virtual bool ScrollBy(const gfx::Point& viewport_point,
-                        const gfx::Vector2dF& scroll_delta) = 0;
+  virtual InputHandlerScrollResult ScrollBy(
+      const gfx::Point& viewport_point,
+      const gfx::Vector2dF& scroll_delta) = 0;
 
   virtual bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                                       ScrollDirection direction) = 0;

@@ -777,27 +777,40 @@ TEST_F(LayerTreeHostImplTest, ScrollByReturnsCorrectValue) {
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
 
   // Trying to scroll to the left/top will not succeed.
-  EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)));
-  EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10)));
-  EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, -10)));
+  EXPECT_FALSE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)).did_scroll);
+  EXPECT_FALSE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10)).did_scroll);
+  EXPECT_FALSE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, -10)).did_scroll);
 
   // Scrolling to the right/bottom will succeed.
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 0)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 10)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 0)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 10)).did_scroll);
 
   // Scrolling to left/top will now succeed.
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, -10)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, -10)).did_scroll);
 
   // Scrolling diagonally against an edge will succeed.
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, -10)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)));
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 10)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, -10)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 0)).did_scroll);
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-10, 10)).did_scroll);
 
   // Trying to scroll more than the available space will also succeed.
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(5000, 5000)).did_scroll);
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollVerticallyByPageReturnsCorrectValue) {
@@ -3710,6 +3723,7 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
+  InputHandlerScrollResult scroll_result;
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));
   host_impl_->active_tree()->SetPageScaleFactorAndLimits(1.f, 0.5f, 4.f);
@@ -3719,38 +3733,105 @@ TEST_F(LayerTreeHostImplTest, OverscrollRoot) {
   // In-bounds scrolling does not affect overscroll.
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Wheel));
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_FALSE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(), host_impl_->accumulated_root_overscroll());
 
   // Overscroll events are reflected immediately.
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 50));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 50));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, 10), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, 10), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
 
   // In-bounds scrolling resets accumulated overscroll for the scrolled axes.
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -50));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -50));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_FALSE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, 0), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -10));
+  EXPECT_FALSE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 0));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, 0));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_FALSE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, 0), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-15, 0));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(-15, 0));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(-5, 0), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(-5, -10), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 60));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 60));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, 10), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(-5, 10), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, -60));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(10, -60));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
 
   // Overscroll accumulates within the scope of ScrollBegin/ScrollEnd as long
   // as no scroll occurs.
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  EXPECT_FALSE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, -20), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -30), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  EXPECT_FALSE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, -20), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -50), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
   // Overscroll resets on valid scroll.
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_FALSE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, 0), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, 0), host_impl_->accumulated_root_overscroll());
-  host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
+  scroll_result = host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -20));
+  EXPECT_TRUE(scroll_result.did_scroll);
+  EXPECT_TRUE(scroll_result.did_overscroll_root);
+  EXPECT_EQ(gfx::Vector2dF(0, -10), scroll_result.unused_scroll_delta);
   EXPECT_EQ(gfx::Vector2dF(0, -10), host_impl_->accumulated_root_overscroll());
+  EXPECT_EQ(scroll_result.accumulated_root_overscroll,
+            host_impl_->accumulated_root_overscroll());
+
   host_impl_->ScrollEnd();
 }
 
@@ -6554,7 +6635,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
     gfx::Vector2d scroll_delta(0, -2);
     EXPECT_EQ(InputHandler::ScrollStarted,
               host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta));
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
 
     // The grand child should have scrolled up to its limit.
     scroll_info = host_impl_->ProcessScrollDeltas();
@@ -6564,7 +6645,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
 
     // The child should have received the bubbled delta, but the locked
     // scrolling layer should remain set as the grand child.
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta));
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
     scroll_info = host_impl_->ProcessScrollDeltas();
     ASSERT_EQ(2u, scroll_info->scrolls.size());
     ExpectContains(*scroll_info, grand_child->id(), scroll_delta);
@@ -6574,7 +6655,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
     // The first |ScrollBy| after the fling should re-lock the scrolling
     // layer to the first layer that scrolled, which is the child.
     EXPECT_EQ(InputHandler::ScrollStarted, host_impl_->FlingScrollBegin());
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta));
+    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child);
 
     // The child should have scrolled up to its limit.
@@ -6584,7 +6665,7 @@ TEST_F(LayerTreeHostImplTest, TouchFlingShouldLockToFirstScrolledLayer) {
     ExpectContains(*scroll_info, child->id(), scroll_delta + scroll_delta);
 
     // As the locked layer is at it's limit, no further scrolling can occur.
-    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta));
+    EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), scroll_delta).did_scroll);
     EXPECT_EQ(host_impl_->CurrentlyScrollingLayer(), child);
     host_impl_->ScrollEnd();
   }
@@ -6982,7 +7063,8 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
     // Scrolling normally should not trigger any forwarding.
     EXPECT_EQ(InputHandler::ScrollStarted,
               host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
+    EXPECT_TRUE(
+        host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)).did_scroll);
     host_impl_->ScrollEnd();
 
     EXPECT_EQ(0, set_needs_commit_count);
@@ -6994,7 +7076,8 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
     scroll_layer->SetHaveScrollEventHandlers(true);
     EXPECT_EQ(InputHandler::ScrollStarted,
               host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
-    EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)));
+    EXPECT_TRUE(
+        host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, 10)).did_scroll);
     host_impl_->ScrollEnd();
 
     EXPECT_EQ(0, set_needs_commit_count);
@@ -7049,7 +7132,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
   // Scroll just the top controls and verify that the scroll succeeds.
   const float residue = 10;
   float offset = top_controls_height_ - residue;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->TotalScrollOffset().ToString());
@@ -7057,7 +7141,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
   // Scroll across the boundary
   const float content_scroll = 20;
   offset = residue + content_scroll;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(-top_controls_height_,
             host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF(0, content_scroll).ToString(),
@@ -7065,7 +7150,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
 
   // Now scroll back to the top of the content
   offset = -content_scroll;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(-top_controls_height_,
             host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
@@ -7073,13 +7159,15 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, ScrollHandledByTopControls) {
 
   // And scroll the top controls completely into view
   offset = -top_controls_height_;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->TotalScrollOffset().ToString());
 
   // And attempt to scroll past the end
-  EXPECT_FALSE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_FALSE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->TotalScrollOffset().ToString());
@@ -7103,7 +7191,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAtOrigin) {
   // Scroll the top controls partially.
   const float residue = 35;
   float offset = top_controls_height_ - residue;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF().ToString(),
             scroll_layer->TotalScrollOffset().ToString());
@@ -7171,7 +7260,8 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
   // Scroll the top controls partially.
   const float residue = 15;
   float offset = top_controls_height_ - residue;
-  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)));
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
   EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
   EXPECT_EQ(gfx::Vector2dF(0, initial_scroll_offset).ToString(),
             scroll_layer->TotalScrollOffset().ToString());

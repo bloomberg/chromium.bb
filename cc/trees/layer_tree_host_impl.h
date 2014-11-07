@@ -136,8 +136,9 @@ class CC_EXPORT LayerTreeHostImpl
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
-  bool ScrollBy(const gfx::Point& viewport_point,
-                const gfx::Vector2dF& scroll_delta) override;
+  InputHandlerScrollResult ScrollBy(
+      const gfx::Point& viewport_point,
+      const gfx::Vector2dF& scroll_delta) override;
   bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                               ScrollDirection direction) override;
   void SetRootLayerScrollOffsetDelegate(

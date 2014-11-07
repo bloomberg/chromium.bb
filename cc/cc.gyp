@@ -140,6 +140,7 @@
         'debug/unittest_only_benchmark.h',
         'debug/unittest_only_benchmark_impl.cc',
         'debug/unittest_only_benchmark_impl.h',
+        'input/input_handler.cc',
         'input/input_handler.h',
         'input/page_scale_animation.cc',
         'input/page_scale_animation.h',
