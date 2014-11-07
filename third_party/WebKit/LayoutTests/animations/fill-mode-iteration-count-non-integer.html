@@ -90,7 +90,7 @@
         for (var i=0; i < expectedValues.length; i++) {
             var el = document.getElementById(expectedValues[i].id);
             var expectedValue = expectedValues[i].end;
-            var realValue = window.getComputedStyle(el).getPropertyCSSValue("left").getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+            var realValue = parseFloat(window.getComputedStyle(el).left);
             log(expectedValue, realValue, false, expectedValues[i].id);
         }
         document.getElementById('result').innerHTML = result;
@@ -103,7 +103,7 @@
         for (var i=0; i < expectedValues.length; i++) {
             var el = document.getElementById(expectedValues[i].id);
             var expectedValue = expectedValues[i].start;
-            var realValue = window.getComputedStyle(el).getPropertyCSSValue("left").getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+            var realValue = parseFloat(window.getComputedStyle(el).left);
             log(expectedValue, realValue, true, expectedValues[i].id);
         }
         document.addEventListener("webkitAnimationEnd", animationEnded, false);
