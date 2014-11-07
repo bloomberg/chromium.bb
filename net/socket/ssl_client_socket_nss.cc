@@ -1630,8 +1630,8 @@ void SSLClientSocketNSS::Core::HandshakeCallback(
 }
 
 void SSLClientSocketNSS::Core::HandshakeSucceeded() {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::HandshakeSucceeded"));
 
@@ -1661,8 +1661,8 @@ void SSLClientSocketNSS::Core::HandshakeSucceeded() {
 }
 
 int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::HandleNSSError"));
 
@@ -1813,8 +1813,8 @@ int SSLClientSocketNSS::Core::DoHandshake() {
   int net_error = OK;
   SECStatus rv = SSL_ForceHandshake(nss_fd_);
 
-  // TODO(vadimt): Remove ScopedProfile below once crbug.com/424386 is fixed.
-  tracked_objects::ScopedProfile tracking_profile1(
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/424386 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "424386 SSLClientSocketNSS::Core::DoHandshake 1"));
 
