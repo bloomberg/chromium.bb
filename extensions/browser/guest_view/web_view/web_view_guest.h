@@ -294,10 +294,6 @@ class WebViewGuest : public GuestView<WebViewGuest>,
       bool user_gesture,
       content::WebContents* new_contents);
 
-  // Destroy unattached new windows that have been opened by this
-  // WebViewGuest.
-  void DestroyUnattachedWindows();
-
   // Requests resolution of a potentially relative URL.
   GURL ResolveURL(const std::string& src);
 

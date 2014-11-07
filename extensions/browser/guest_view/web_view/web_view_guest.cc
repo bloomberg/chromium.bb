@@ -419,7 +419,6 @@ bool WebViewGuest::IsDragAndDropEnabled() const {
 void WebViewGuest::WillDestroy() {
   if (!attached() && GetOpener())
     GetOpener()->pending_new_windows_.erase(this);
-  DestroyUnattachedWindows();
 }
 
 bool WebViewGuest::AddMessageToConsole(WebContents* source,
@@ -1212,21 +1211,6 @@ void WebViewGuest::RequestNewWindowPermission(
                                    weak_ptr_factory_.GetWeakPtr(),
                                    guest->guest_instance_id()),
                                    false /* allowed_by_default */);
-}
-
-void WebViewGuest::DestroyUnattachedWindows() {
-  // Destroy() reaches in and removes the WebViewGuest from its opener's
-  // pending_new_windows_ set. To avoid mutating the set while iterating, we
-  // create a copy of the pending new windows set and iterate over the copy.
-  PendingWindowMap pending_new_windows(pending_new_windows_);
-  // Clean up unattached new windows opened by this guest.
-  for (PendingWindowMap::const_iterator it = pending_new_windows.begin();
-       it != pending_new_windows.end(); ++it) {
-    it->first->Destroy();
-  }
-  // All pending windows should be removed from the set after Destroy() is
-  // called on all of them.
-  DCHECK(pending_new_windows_.empty());
 }
 
 GURL WebViewGuest::ResolveURL(const std::string& src) {

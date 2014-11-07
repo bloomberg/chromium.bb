@@ -101,6 +101,31 @@ class GuestViewBase::EmbedderLifetimeObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(EmbedderLifetimeObserver);
 };
 
+// This observer ensures that the GuestViewBase destroys itself when its
+// embedder goes away.
+class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
+ public:
+  OpenerLifetimeObserver(GuestViewBase* guest)
+      : WebContentsObserver(guest->GetOpener()->web_contents()),
+        guest_(guest) {}
+
+  ~OpenerLifetimeObserver() override {}
+
+  // WebContentsObserver implementation.
+  void WebContentsDestroyed() override {
+    if (guest_->attached())
+      return;
+
+    // If the opener is destroyed then destroy the guest.
+    guest_->Destroy();
+  }
+
+ private:
+  GuestViewBase* guest_;
+
+  DISALLOW_COPY_AND_ASSIGN(OpenerLifetimeObserver);
+};
+
 GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
                              int guest_instance_id)
     : embedder_web_contents_(NULL),
@@ -110,6 +135,7 @@ GuestViewBase::GuestViewBase(content::BrowserContext* browser_context,
       view_instance_id_(guestview::kInstanceIDNone),
       element_instance_id_(guestview::kInstanceIDNone),
       initialized_(false),
+      is_being_destroyed_(false),
       auto_size_enabled_(false),
       weak_ptr_factory_(this) {
 }
@@ -180,7 +206,7 @@ void GuestViewBase::InitWithWebContents(
   // At this point, we have just created the guest WebContents, we need to add
   // an observer to the embedder WebContents. This observer will be responsible
   // for destroying the guest WebContents if the embedder goes away.
-  embedder_web_contents_observer_.reset(
+  embedder_lifetime_observer_.reset(
       new EmbedderLifetimeObserver(this, embedder_web_contents));
 
   WebContentsObserver::Observe(guest_web_contents);
@@ -287,6 +313,8 @@ bool GuestViewBase::IsDragAndDropEnabled() const {
 }
 
 void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
+  opener_lifetime_observer_.reset();
+
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
 
@@ -313,6 +341,11 @@ void GuestViewBase::GuestSizeChanged(const gfx::Size& old_size,
 }
 
 void GuestViewBase::Destroy() {
+  if (is_being_destroyed_)
+    return;
+
+  is_being_destroyed_ = true;
+
   DCHECK(web_contents());
 
   // Give the derived class an opportunity to perform some cleanup.
@@ -344,9 +377,12 @@ void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
   if (guest && guest->IsViewType(GetViewType())) {
     opener_ = guest->weak_ptr_factory_.GetWeakPtr();
+    if (!attached())
+      opener_lifetime_observer_.reset(new OpenerLifetimeObserver(this));
     return;
   }
   opener_ = base::WeakPtr<GuestViewBase>();
+  opener_lifetime_observer_.reset();
 }
 
 void GuestViewBase::RegisterDestructionCallback(
@@ -360,9 +396,8 @@ void GuestViewBase::WillAttach(content::WebContents* embedder_web_contents,
 
   // If we are attaching to a different WebContents than the one that created
   // the guest, we need to create a new LifetimeObserver.
-  if (embedder_web_contents !=
-      embedder_web_contents_observer_->web_contents()) {
-    embedder_web_contents_observer_.reset(
+  if (embedder_web_contents != embedder_lifetime_observer_->web_contents()) {
+    embedder_lifetime_observer_.reset(
         new EmbedderLifetimeObserver(this, embedder_web_contents));
   }
 

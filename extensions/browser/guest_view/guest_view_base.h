@@ -248,6 +248,8 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
  private:
   class EmbedderLifetimeObserver;
 
+  class OpenerLifetimeObserver;
+
   void SendQueuedEvents();
 
   void CompleteInit(const std::string& embedder_extension_id,
@@ -290,6 +292,9 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
 
   bool initialized_;
 
+  // Indicates that this guest is in the process of being destroyed.
+  bool is_being_destroyed_;
+
   // This is a queue of Events that are destined to be sent to the embedder once
   // the guest is attached to a particular embedder.
   std::deque<linked_ptr<Event> > pending_events_;
@@ -305,7 +310,13 @@ class GuestViewBase : public content::BrowserPluginGuestDelegate,
   // guests that are created from this guest.
   scoped_ptr<base::DictionaryValue> attach_params_;
 
-  scoped_ptr<EmbedderLifetimeObserver> embedder_web_contents_observer_;
+  // This observer ensures that this guest self-destructs if the embedder goes
+  // away.
+  scoped_ptr<EmbedderLifetimeObserver> embedder_lifetime_observer_;
+
+  // This observer ensures that if the guest is unattached and its opener goes
+  // away then this guest also self-destructs.
+  scoped_ptr<OpenerLifetimeObserver> opener_lifetime_observer_;
 
   // The size of the container element.
   gfx::Size element_size_;
