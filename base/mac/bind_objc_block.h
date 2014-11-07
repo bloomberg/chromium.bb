@@ -21,51 +21,32 @@
 //     BindBlock(^(const std::string& arg0, const std::string& arg1) {
 //         ...
 //     });
+//
+// These variadic templates will accommodate any number of arguments, however
+// the underlying templates in bind_internal.h and callback.h are limited to
+// seven total arguments, and the bound block itself is used as one of these
+// arguments, so functionally the templates are limited to binding blocks with
+// zero through six arguments.
 
 namespace base {
 
 namespace internal {
 
-// Helper functions to run the block contained in the parameter.
-template<typename R>
-R RunBlock(base::mac::ScopedBlock<R(^)()> block) {
-  R(^extracted_block)() = block.get();
-  return extracted_block();
-}
-
-template<typename R, typename A1>
-R RunBlock(base::mac::ScopedBlock<R(^)(A1)> block, A1 a) {
-  R(^extracted_block)(A1) = block.get();
-  return extracted_block(a);
-}
-
-template<typename R, typename A1, typename A2>
-R RunBlock(base::mac::ScopedBlock<R(^)(A1, A2)> block, A1 a, A2 b) {
-  R(^extracted_block)(A1, A2) = block.get();
-  return extracted_block(a, b);
+// Helper function to run the block contained in the parameter.
+template<typename R, typename... Args>
+R RunBlock(base::mac::ScopedBlock<R(^)(Args...)> block, Args... args) {
+  R(^extracted_block)(Args...) = block.get();
+  return extracted_block(args...);
 }
 
 }  // namespace internal
 
-// Construct a callback with no argument from an objective-C block.
-template<typename R>
-base::Callback<R(void)> BindBlock(R(^block)()) {
-  return base::Bind(&base::internal::RunBlock<R>,
-                    base::mac::ScopedBlock<R(^)()>(Block_copy(block)));
-}
-
-// Construct a callback with one argument from an objective-C block.
-template<typename R, typename A1>
-base::Callback<R(A1)> BindBlock(R(^block)(A1)) {
-  return base::Bind(&base::internal::RunBlock<R, A1>,
-                    base::mac::ScopedBlock<R(^)(A1)>(Block_copy(block)));
-}
-
-// Construct a callback with two arguments from an objective-C block.
-template<typename R, typename A1, typename A2>
-base::Callback<R(A1, A2)> BindBlock(R(^block)(A1, A2)) {
-  return base::Bind(&base::internal::RunBlock<R, A1, A2>,
-                    base::mac::ScopedBlock<R(^)(A1, A2)>(Block_copy(block)));
+// Construct a callback from an objective-C block with up to six arguments (see
+// note above).
+template<typename R, typename... Args>
+base::Callback<R(Args...)> BindBlock(R(^block)(Args...)) {
+  return base::Bind(&base::internal::RunBlock<R, Args...>,
+                    base::mac::ScopedBlock<R(^)(Args...)>(Block_copy(block)));
 }
 
 }  // namespace base

@@ -64,4 +64,36 @@ TEST(BindObjcBlockTest, TestTwoArguments) {
   EXPECT_EQ(result, "fortytwo");
 }
 
+TEST(BindObjcBlockTest, TestThreeArguments) {
+  std::string result;
+  std::string* ptr = &result;
+  base::Callback<void(const std::string&,
+                      const std::string&,
+                      const std::string&)> c =
+      base::BindBlock(^(const std::string& a,
+                        const std::string& b,
+                        const std::string& c) {
+          *ptr = a + b + c;
+      });
+  c.Run("six", "times", "nine");
+  EXPECT_EQ(result, "sixtimesnine");
+}
+
+TEST(BindObjcBlockTest, TestSixArguments) {
+  std::string result1;
+  std::string* ptr = &result1;
+  int result2;
+  int* ptr2 = &result2;
+  base::Callback<void(int, int, const std::string&, const std::string&,
+                      int, const std::string&)> c =
+      base::BindBlock(^(int a, int b, const std::string& c,
+                        const std::string& d, int e, const std::string& f) {
+          *ptr = c + d + f;
+          *ptr2 = a + b + e;
+      });
+  c.Run(1, 2, "infinite", "improbability", 3, "drive");
+  EXPECT_EQ(result1, "infiniteimprobabilitydrive");
+  EXPECT_EQ(result2, 6);
+}
+
 }  // namespace
