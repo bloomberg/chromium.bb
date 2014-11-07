@@ -61,6 +61,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/intent_helper.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -227,10 +231,8 @@ void LaunchDateAndTimeSettings() {
       ProfileManager::GetActiveUserProfile(), sub_page);
   return;
 #elif defined(OS_ANDROID)
-  CommandLine command(base::FilePath("/system/bin/am"));
-  command.AppendArg("start");
-  command.AppendArg(
-      "'com.android.settings/.Settings$DateTimeSettingsActivity'");
+  chrome::android::OpenDateAndTimeSettings();
+  return;
 #elif defined(OS_IOS)
   // iOS does not have a way to launch the date and time settings.
   NOTREACHED();
@@ -283,7 +285,7 @@ void LaunchDateAndTimeSettings() {
   return;
 #endif
 
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   base::LaunchOptions options;
   options.wait = false;
 #if defined(OS_LINUX)

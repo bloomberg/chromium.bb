@@ -40,6 +40,12 @@ void SendEmail(const base::string16& d_email,
                               j_file_to_attach.obj());
 }
 
+void OpenDateAndTimeSettings() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_IntentHelper_openDateAndTimeSettings(env,
+      base::android::GetApplicationContext());
+}
+
 bool RegisterIntentHelper(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
