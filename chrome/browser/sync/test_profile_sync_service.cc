@@ -37,8 +37,8 @@ SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
     base::Closure callback)
     : browser_sync::SyncBackendHostImpl(
-        profile->GetDebugName(), profile, invalidator,
-        sync_prefs, base::FilePath(FILE_PATH_LITERAL("test"))),
+        profile->GetDebugName(), profile, invalidator, sync_prefs,
+        profile->GetPath().Append(base::FilePath(FILE_PATH_LITERAL("test")))),
       callback_(callback) {}
 
 SyncBackendHostForProfileSyncTest::~SyncBackendHostForProfileSyncTest() {}

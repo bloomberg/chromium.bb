@@ -163,7 +163,7 @@ class SyncBackendHostTest : public testing::Test {
         invalidation::ProfileInvalidationProviderFactory::GetForProfile(
             profile_)->GetInvalidationService(),
         sync_prefs_->AsWeakPtr(),
-        base::FilePath(kTestSyncDir)));
+        profile_->GetPath().Append(base::FilePath(kTestSyncDir))));
     credentials_.email = "user@example.com";
     credentials_.sync_token = "sync_token";
     credentials_.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
@@ -214,7 +214,6 @@ class SyncBackendHostTest : public testing::Test {
         syncer::WeakHandle<syncer::JsEventHandler>(),
         GURL(std::string()),
         credentials_,
-        true,
         fake_manager_factory_.Pass(),
         make_scoped_ptr(new syncer::TestUnrecoverableErrorHandler),
         NULL,
@@ -720,21 +719,6 @@ TEST_F(SyncBackendHostTest, DownloadControlTypesRestart) {
   InitializeBackend(true);
   EXPECT_EQ(syncer::CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
             fake_manager_->GetAndResetConfigureReason());
-}
-
-// It is SyncBackendHostCore responsibility to cleanup Sync Data folder if sync
-// setup hasn't been completed. This test ensures that cleanup happens.
-TEST_F(SyncBackendHostTest, TestStartupWithOldSyncData) {
-  const char* nonsense = "slon";
-  base::FilePath temp_directory =
-      profile_->GetPath().Append(base::FilePath(kTestSyncDir));
-  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
-  ASSERT_TRUE(base::CreateDirectory(temp_directory));
-  ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));
-
-  InitializeBackend(true);
-
-  EXPECT_FALSE(base::PathExists(sync_file));
 }
 
 // If bookmarks encounter an error that results in disabling without purging

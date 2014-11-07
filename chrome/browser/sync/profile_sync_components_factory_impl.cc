@@ -440,9 +440,9 @@ ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
     Profile* profile,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<sync_driver::SyncPrefs>& sync_prefs,
-    const base::FilePath& sync_folder) {
+    const base::FilePath& directory_path) {
   return new browser_sync::SyncBackendHostImpl(name, profile, invalidator,
-                                               sync_prefs, sync_folder);
+                                               sync_prefs, directory_path);
 }
 
 scoped_ptr<sync_driver::LocalDeviceInfoProvider>

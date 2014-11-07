@@ -11,6 +11,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
@@ -788,6 +789,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // killed in the near future.
   void FlushDirectory() const;
 
+  // Needed to test whether the directory is deleted properly.
+  base::FilePath GetDirectoryPathForTest() const;
+
  protected:
   // Helper to configure the priority data types.
   void ConfigurePriorityDataTypes();
@@ -891,9 +895,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Return true if backend should start from a fresh sync DB.
   bool ShouldDeleteSyncFolder();
 
-  // If |delete_sync_data_folder| is true, then this method will delete all
-  // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
-  void InitializeBackend(bool delete_sync_data_folder);
+  // Initialize the backend object.
+  void InitializeBackend();
 
   // Initializes the various settings from the command line.
   void InitSettings();
@@ -973,7 +976,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Clean up prefs and backup DB when rollback is not needed.
   void CleanUpBackup();
 
- // Factory used to create various dependent objects.
+  // Delete the sync data folder to cleanup backend data.  Happens the first
+  // time sync is enabled for a user (to prevent accidentally reusing old
+  // sync databases), as well as on shutdown when sync has been disabled for
+  // the user.
+  void DeleteSyncDataFolder() const;
+
+  // Factory used to create various dependent objects.
   scoped_ptr<ProfileSyncComponentsFactory> factory_;
 
   // The profile whose data we are synchronizing.
@@ -1155,6 +1164,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   scoped_ptr<base::Time> last_backup_time_;
 
   BrowsingDataRemover::Observer* browsing_data_remover_observer_;
+
+  // The full path to the sync data directory.
+  base::FilePath directory_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

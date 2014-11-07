@@ -188,6 +188,15 @@ void ClearBrowsingData(BrowsingDataRemover::Observer* observer,
   password->RemoveLoginsSyncedBetween(start, end);
 }
 
+// Perform the actual sync data folder deletion on the FILE thread.
+void DoDeleteSyncDataFolder(const base::FilePath& directory_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+  if (base::DirectoryExists(directory_path)) {
+    if (!base::DeleteFile(directory_path, true))
+      LOG(DFATAL) << "Could not delete the Sync Data folder.";
+  }
+}
+
 }  // anonymous namespace
 
 bool ShouldShowActionOnUI(
@@ -494,7 +503,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
 bool ProfileSyncService::ShouldDeleteSyncFolder() {
   switch (backend_mode_) {
     case SYNC:
-      return !HasSyncSetupCompleted();
+      return sync_prefs_.GetFirstSyncTime().is_null();
     case BACKUP:
       return true;
     case ROLLBACK:
@@ -506,7 +515,7 @@ bool ProfileSyncService::ShouldDeleteSyncFolder() {
   return true;
 }
 
-void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
+void ProfileSyncService::InitializeBackend() {
   if (!backend_) {
     NOTREACHED();
     return;
@@ -516,9 +525,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
   scoped_refptr<net::URLRequestContextGetter> request_context_getter(
       profile_->GetRequestContext());
-
-  if (backend_mode_ == SYNC && delete_stale_data)
-    ClearStaleErrors();
 
   scoped_ptr<syncer::UnrecoverableErrorHandler>
       backend_unrecoverable_error_handler(
@@ -531,7 +537,6 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
       GetJsEventHandler(),
       sync_service_url_,
       credentials,
-      delete_stale_data,
       scoped_ptr<syncer::SyncManagerFactory>(
           new syncer::SyncManagerFactory(GetManagerType())).Pass(),
       backend_unrecoverable_error_handler.Pass(),
@@ -658,10 +663,6 @@ void ProfileSyncService::StartUpSlowBackendComponents(
   else if (backend_mode_ == SYNC)
     CheckSyncBackupIfNeeded();
 
-  base::FilePath sync_folder = backend_mode_ == SYNC ?
-      base::FilePath(kSyncDataFolderName) :
-      base::FilePath(kSyncBackupDataFolderName);
-
   invalidation::InvalidationService* invalidator = NULL;
   if (backend_mode_ == SYNC) {
     invalidation::ProfileInvalidationProvider* provider =
@@ -671,18 +672,30 @@ void ProfileSyncService::StartUpSlowBackendComponents(
       invalidator = provider->GetInvalidationService();
   }
 
+  directory_path_ = profile_->GetPath().Append(mode == SYNC ?
+      base::FilePath(kSyncDataFolderName) :
+      base::FilePath(kSyncBackupDataFolderName));
+
   backend_.reset(
       factory_->CreateSyncBackendHost(
           profile_->GetDebugName(),
           profile_,
           invalidator,
           sync_prefs_.AsWeakPtr(),
-          sync_folder));
+          directory_path_));
+
+  // Blow away the partial or corrupt sync data folder before doing any more
+  // initialization, if necessary.
+  if (ShouldDeleteSyncFolder()) {
+    if (backend_mode_ == SYNC)
+      ClearStaleErrors();
+    DeleteSyncDataFolder();
+  }
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
   // be there.
-  InitializeBackend(ShouldDeleteSyncFolder());
+  InitializeBackend();
 
   UpdateFirstSyncTimePref();
 }
@@ -807,8 +820,13 @@ void ProfileSyncService::Shutdown() {
 }
 
 void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
-  if (!backend_)
+  if (!backend_) {
+    if (reason == syncer::ShutdownReason::DISABLE_SYNC) {
+      // Make sure the data directory is deleted.
+      DeleteSyncDataFolder();
+    }
     return;
+  }
 
   non_blocking_data_type_manager_.DisconnectSyncBackend();
 
@@ -843,6 +861,10 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
   if (doomed_backend) {
     sync_thread_ = doomed_backend->Shutdown(reason);
     doomed_backend.reset();
+    if (reason == syncer::ShutdownReason::DISABLE_SYNC) {
+      // Make sure the data directory is deleted.
+      DeleteSyncDataFolder();
+    }
   }
   base::TimeDelta shutdown_time = base::Time::Now() - shutdown_start_time;
   UMA_HISTOGRAM_TIMES("Sync.Shutdown.BackendDestroyedTime", shutdown_time);
@@ -2736,4 +2758,13 @@ void ProfileSyncService::FlushDirectory() const {
   // If sync is not initialized yet, we fail silently.
   if (backend_initialized_)
     backend_->FlushDirectory();
+}
+
+base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
+  return directory_path_;
+}
+
+void ProfileSyncService::DeleteSyncDataFolder() const {
+  content::BrowserThread::PostTask(content::BrowserThread::FILE,
+      FROM_HERE, base::Bind(&DoDeleteSyncDataFolder, directory_path_));
 }

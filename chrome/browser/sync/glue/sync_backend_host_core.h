@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_CORE_H_
 #define CHROME_BROWSER_SYNC_GLUE_SYNC_BACKEND_HOST_CORE_H_
 
+#include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-
 #include "base/timer/timer.h"
 #include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "components/sync_driver/system_encryptor.h"
@@ -34,7 +34,6 @@ struct DoInitializeOptions {
       const syncer::SyncCredentials& credentials,
       const std::string& invalidator_client_id,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      bool delete_sync_data_folder,
       const std::string& restored_key_for_bootstrapping,
       const std::string& restored_keystore_key_for_bootstrapping,
       scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory,
@@ -56,7 +55,6 @@ struct DoInitializeOptions {
   const std::string invalidator_client_id;
   scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory;
   std::string lsid;
-  bool delete_sync_data_folder;
   std::string restored_key_for_bootstrapping;
   std::string restored_keystore_key_for_bootstrapping;
   scoped_ptr<syncer::InternalComponentsFactory> internal_components_factory;
@@ -83,9 +81,14 @@ class SyncBackendHostCore
       public syncer::TypeDebugInfoObserver {
  public:
   SyncBackendHostCore(const std::string& name,
-       const base::FilePath& sync_data_folder_path,
+       const base::FilePath& directory_path,
        bool has_sync_setup_completed,
        const base::WeakPtr<SyncBackendHostImpl>& backend);
+
+  // Kick off the core initialization process. This method can be
+  // called from the UI thread. It will create the directory on the
+  // FILE thread and then complete the initialization on the sync thread.
+  void Initialize(scoped_ptr<DoInitializeOptions> options);
 
   // SyncManager::Observer implementation.  The Core just acts like an air
   // traffic controller here, forwarding incoming messages to appropriate
@@ -215,11 +218,6 @@ class SyncBackendHostCore
   // Disables forwarding of directory type debug counters.
   void DisableDirectoryTypeDebugInfoForwarding();
 
-  // Delete the sync data folder to cleanup backend data.  Happens the first
-  // time sync is enabled for a user (to prevent accidentally reusing old
-  // sync databases), as well as shutdown when you're no longer syncing.
-  void DeleteSyncDataFolder();
-
   // We expose this member because it's required in the construction of the
   // HttpBridgeFactory.
   syncer::CancelationSignal* GetRequestContextCancelationSignal() {
@@ -243,6 +241,10 @@ class SyncBackendHostCore
 
   ~SyncBackendHostCore() override;
 
+  // Called on the FILE thread. Ensures the sync directory exists and
+  // then posts DoInitialize to the sync thread.
+  void CreateDirectoryAndDoInitialize(scoped_ptr<DoInitializeOptions> options);
+
   // Invoked when initialization of syncapi is complete and we can start
   // our timer.
   // This must be called from the thread on which SaveChanges is intended to
@@ -253,7 +255,7 @@ class SyncBackendHostCore
   const std::string name_;
 
   // Path of the folder that stores the sync data files.
-  const base::FilePath sync_data_folder_path_;
+  const base::FilePath directory_path_;
 
   // Our parent SyncBackendHost.
   syncer::WeakHandle<SyncBackendHostImpl> host_;

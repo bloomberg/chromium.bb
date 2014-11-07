@@ -55,8 +55,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
   ~SyncBackendHost() override;
 
   // Called on the frontend's thread to kick off asynchronous initialization.
-  // Optionally deletes the "Sync Data" folder during init in order to make
-  // sure we're starting fresh.
   //
   // |report_unrecoverable_error_function| can be NULL.  Note:
   // |unrecoverable_error_handler| may be invoked from any thread.
@@ -66,7 +64,6 @@ class SyncBackendHost : public sync_driver::BackendDataTypeConfigurer {
       const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
       const GURL& service_url,
       const syncer::SyncCredentials& credentials,
-      bool delete_sync_data_folder,
       scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
       scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
       syncer::ReportUnrecoverableErrorFunction

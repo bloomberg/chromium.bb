@@ -19,7 +19,6 @@ void SyncBackendHostMock::Initialize(
     const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
     const GURL& service_url,
     const syncer::SyncCredentials& credentials,
-    bool delete_sync_data_folder,
     scoped_ptr<syncer::SyncManagerFactory> sync_manager_factory,
     scoped_ptr<syncer::UnrecoverableErrorHandler> unrecoverable_error_handler,
     syncer::ReportUnrecoverableErrorFunction
