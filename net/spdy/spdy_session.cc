@@ -2205,11 +2205,7 @@ void SpdySession::OnSynStream(SpdyStreamId stream_id,
                               const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);
 
-  if (GetProtocolVersion() >= SPDY4) {
-    DCHECK_EQ(0u, associated_stream_id);
-    OnHeaders(stream_id, fin, headers);
-    return;
-  }
+  DCHECK_LE(GetProtocolVersion(), SPDY3);
 
   base::Time response_time = base::Time::Now();
   base::TimeTicks recv_first_byte_time = time_func_();
@@ -2332,6 +2328,8 @@ void SpdySession::OnSynReply(SpdyStreamId stream_id,
 }
 
 void SpdySession::OnHeaders(SpdyStreamId stream_id,
+                            bool has_priority,
+                            SpdyPriority priority,
                             bool fin,
                             const SpdyHeaderBlock& headers) {
   CHECK(in_io_loop_);

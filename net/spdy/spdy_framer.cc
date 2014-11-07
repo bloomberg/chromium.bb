@@ -1497,33 +1497,19 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           }
           DCHECK(reader.IsDoneReading());
           if (debug_visitor_) {
-            // SPDY 4 reports HEADERS with PRIORITY as SYN_STREAM.
-            SpdyFrameType reported_type = current_frame_type_;
-            if (protocol_version() > SPDY3 && has_priority) {
-              reported_type = SYN_STREAM;
-            }
             debug_visitor_->OnReceiveCompressedFrame(
                 current_frame_stream_id_,
-                reported_type,
+                current_frame_type_,
                 current_frame_length_);
           }
           if (current_frame_type_ == SYN_REPLY) {
             visitor_->OnSynReply(
                 current_frame_stream_id_,
                 (current_frame_flags_ & CONTROL_FLAG_FIN) != 0);
-          } else if (protocol_version() > SPDY3 &&
-              current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
-            // SPDY 4+ is missing SYN_STREAM. Simulate it so that API changes
-            // can be made independent of wire changes.
-            visitor_->OnSynStream(
-                current_frame_stream_id_,
-                0,  // associated_to_stream_id
-                priority,
-                current_frame_flags_ & CONTROL_FLAG_FIN,
-                false);  // unidirectional
           } else {
             visitor_->OnHeaders(
                 current_frame_stream_id_,
+                (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, priority,
                 (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
                 expect_continuation_ == 0);
           }

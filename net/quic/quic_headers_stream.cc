@@ -115,7 +115,11 @@ class QuicHeadersStream::SpdyFramerVisitor
     CloseConnection("SPDY GOAWAY frame received.");
   }
 
-  void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override {
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
+                 bool fin,
+                 bool end) override {
     CloseConnection("SPDY HEADERS frame received.");
   }
 

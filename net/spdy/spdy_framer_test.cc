@@ -154,10 +154,15 @@ class SpdyFramerTestUtil {
       LOG(FATAL);
     }
 
-    void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override {
+    void OnHeaders(SpdyStreamId stream_id, bool has_priority,
+                   SpdyPriority priority, bool fin, bool end) override {
       SpdyFramer framer(version_);
       framer.set_enable_compression(false);
       SpdyHeadersIR headers(stream_id);
+      headers.set_has_priority(has_priority);
+      if (headers.has_priority()) {
+        headers.set_priority(priority);
+      }
       headers.set_fin(fin);
       scoped_ptr<SpdyFrame> frame(framer.SerializeHeaders(headers));
       ResetBuffer();
@@ -389,7 +394,8 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
     ++goaway_count_;
   }
 
-  void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override {
+  void OnHeaders(SpdyStreamId stream_id, bool has_priority,
+                 SpdyPriority priority, bool fin, bool end) override {
     ++headers_frame_count_;
     InitHeaderStreaming(HEADERS, stream_id);
     if (fin) {
@@ -1225,18 +1231,19 @@ TEST_P(SpdyFramerTest, Basic) {
     visitor.SimulateInFramer(kV4Input, sizeof(kV4Input));
   }
 
-  EXPECT_EQ(2, visitor.syn_frame_count_);
   EXPECT_EQ(0, visitor.syn_reply_frame_count_);
-  EXPECT_EQ(1, visitor.headers_frame_count_);
   EXPECT_EQ(24, visitor.data_bytes_);
-
   EXPECT_EQ(0, visitor.error_count_);
   EXPECT_EQ(2, visitor.fin_frame_count_);
 
   if (IsSpdy4()) {
+    EXPECT_EQ(3, visitor.headers_frame_count_);
+    EXPECT_EQ(0, visitor.syn_frame_count_);
     base::StringPiece reset_stream = "RESETSTREAM";
     EXPECT_EQ(reset_stream, visitor.fin_opaque_data_);
   } else {
+    EXPECT_EQ(1, visitor.headers_frame_count_);
+    EXPECT_EQ(2, visitor.syn_frame_count_);
     EXPECT_TRUE(visitor.fin_opaque_data_.empty());
   }
 
@@ -1339,11 +1346,12 @@ TEST_P(SpdyFramerTest, FinOnDataFrame) {
   }
 
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1, visitor.syn_frame_count_);
   if (IsSpdy4()) {
+    EXPECT_EQ(0, visitor.syn_frame_count_);
     EXPECT_EQ(0, visitor.syn_reply_frame_count_);
-    EXPECT_EQ(1, visitor.headers_frame_count_);
+    EXPECT_EQ(2, visitor.headers_frame_count_);
   } else {
+    EXPECT_EQ(1, visitor.syn_frame_count_);
     EXPECT_EQ(1, visitor.syn_reply_frame_count_);
     EXPECT_EQ(0, visitor.headers_frame_count_);
   }
@@ -1418,11 +1426,12 @@ TEST_P(SpdyFramerTest, FinOnSynReplyFrame) {
   }
 
   EXPECT_EQ(0, visitor.error_count_);
-  EXPECT_EQ(1, visitor.syn_frame_count_);
   if (IsSpdy4()) {
+    EXPECT_EQ(0, visitor.syn_frame_count_);
     EXPECT_EQ(0, visitor.syn_reply_frame_count_);
-    EXPECT_EQ(1, visitor.headers_frame_count_);
+    EXPECT_EQ(2, visitor.headers_frame_count_);
   } else {
+    EXPECT_EQ(1, visitor.syn_frame_count_);
     EXPECT_EQ(1, visitor.syn_reply_frame_count_);
     EXPECT_EQ(0, visitor.headers_frame_count_);
   }
@@ -5210,13 +5219,14 @@ TEST_P(SpdyFramerTest, HeadersFrameFlags) {
       EXPECT_CALL(visitor, OnError(_));
     } else {
       if (spdy_version_ > SPDY3 && flags & HEADERS_FLAG_PRIORITY) {
-        EXPECT_CALL(visitor, OnSynStream(57,        // stream id
-                                         0,         // associated stream id
-                                         3,         // priority
-                                         flags & CONTROL_FLAG_FIN,
-                                         false));  // unidirectional
+        EXPECT_CALL(visitor, OnHeaders(57,    // stream id
+                                       true,  // has priority?
+                                       3,     // priority
+                                       flags & CONTROL_FLAG_FIN,  // fin?
+                                       (flags & HEADERS_FLAG_END_HEADERS) ||
+                                           !IsSpdy4()));  // end headers?
       } else {
-        EXPECT_CALL(visitor, OnHeaders(57,
+        EXPECT_CALL(visitor, OnHeaders(57, false, 0,
                                        flags & CONTROL_FLAG_FIN,
                                        (flags & HEADERS_FLAG_END_HEADERS) ||
                                         !IsSpdy4()));
@@ -5391,7 +5401,7 @@ TEST_P(SpdyFramerTest, ContinuationFrameFlags) {
 
     EXPECT_CALL(debug_visitor, OnSendCompressedFrame(42, HEADERS, _, _));
     EXPECT_CALL(debug_visitor, OnReceiveCompressedFrame(42, HEADERS, _));
-    EXPECT_CALL(visitor, OnHeaders(42, 0, false));
+    EXPECT_CALL(visitor, OnHeaders(42, false, 0, 0, false));
     EXPECT_CALL(visitor, OnControlFrameHeaderData(42, _, _))
           .WillRepeatedly(testing::Return(true));
 

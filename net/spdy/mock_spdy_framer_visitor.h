@@ -42,7 +42,8 @@ class MockSpdyFramerVisitor : public SpdyFramerVisitorInterface {
   MOCK_METHOD0(OnSettingsEnd, void());
   MOCK_METHOD2(OnGoAway, void(SpdyStreamId last_accepted_stream_id,
                               SpdyGoAwayStatus status));
-  MOCK_METHOD3(OnHeaders, void(SpdyStreamId stream_id, bool fin, bool end));
+  MOCK_METHOD5(OnHeaders, void(SpdyStreamId stream_id, bool has_priority,
+                               SpdyPriority priority, bool fin, bool end));
   MOCK_METHOD2(OnWindowUpdate, void(SpdyStreamId stream_id,
                                     uint32 delta_window_size));
   MOCK_METHOD1(OnBlocked, void(SpdyStreamId stream_id));

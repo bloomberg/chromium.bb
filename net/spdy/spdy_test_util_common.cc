@@ -229,8 +229,14 @@ class PriorityGetter : public BufferedSpdyFramerVisitorInterface {
                   bool fin,
                   const SpdyHeaderBlock& headers) override {}
   void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
                  bool fin,
-                 const SpdyHeaderBlock& headers) override {}
+                 const SpdyHeaderBlock& headers) override {
+    if (has_priority) {
+      priority_ = priority;
+    }
+  }
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override {}
@@ -786,6 +792,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyFrame(
       break;
     case HEADERS:
       frame = framer.CreateHeaders(header_info.id, header_info.control_flags,
+                                   header_info.priority,
                                    headers.get());
       break;
     default:

@@ -844,6 +844,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                   bool fin,
                   const SpdyHeaderBlock& headers) override;
   void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
                  bool fin,
                  const SpdyHeaderBlock& headers) override;
   bool OnUnknownFrame(SpdyStreamId stream_id, int frame_type) override;

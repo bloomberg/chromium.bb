@@ -81,6 +81,8 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface, public SMInterface {
 
   // Called after all the header data for HEADERS control frame is received.
   void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
                  bool fin,
                  const SpdyHeaderBlock& headers) override;
 

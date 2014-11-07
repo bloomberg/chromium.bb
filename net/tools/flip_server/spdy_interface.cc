@@ -285,6 +285,8 @@ void SpdySM::OnSynReply(SpdyStreamId stream_id,
 }
 
 void SpdySM::OnHeaders(SpdyStreamId stream_id,
+                       bool has_priority,
+                       SpdyPriority priority,
                        bool fin,
                        const SpdyHeaderBlock& headers) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: OnHeaders(" << stream_id << ")";

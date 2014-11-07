@@ -237,7 +237,11 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Called when a HEADERS frame is received.
   // Note that header block data is not included. See
   // OnControlFrameHeaderData().
-  virtual void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) = 0;
+  virtual void OnHeaders(SpdyStreamId stream_id,
+                         bool has_priority,
+                         SpdyPriority priority,
+                         bool fin,
+                         bool end) = 0;
 
   // Called when a WINDOW_UPDATE frame has been parsed.
   virtual void OnWindowUpdate(SpdyStreamId stream_id,

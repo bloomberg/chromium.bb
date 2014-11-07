@@ -76,6 +76,8 @@ void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
 }
 
 void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
+                                   bool has_priority,
+                                   SpdyPriority priority,
                                    bool fin,
                                    bool end) {
   frames_received_++;
@@ -83,6 +85,10 @@ void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
   control_frame_fields_.reset(new ControlFrameFields());
   control_frame_fields_->type = HEADERS;
   control_frame_fields_->stream_id = stream_id;
+  control_frame_fields_->has_priority = has_priority;
+  if (control_frame_fields_->has_priority) {
+    control_frame_fields_->priority = priority;
+  }
   control_frame_fields_->fin = fin;
 
   InitHeaderStreaming(stream_id);
@@ -136,6 +142,8 @@ bool BufferedSpdyFramer::OnControlFrameHeaderData(SpdyStreamId stream_id,
         break;
       case HEADERS:
         visitor_->OnHeaders(control_frame_fields_->stream_id,
+                            control_frame_fields_->has_priority,
+                            control_frame_fields_->priority,
                             control_frame_fields_->fin,
                             headers);
         break;
@@ -346,9 +354,14 @@ SpdyFrame* BufferedSpdyFramer::CreateGoAway(
 SpdyFrame* BufferedSpdyFramer::CreateHeaders(
     SpdyStreamId stream_id,
     SpdyControlFlags flags,
+    SpdyPriority priority,
     const SpdyHeaderBlock* headers) {
   SpdyHeadersIR headers_ir(stream_id);
   headers_ir.set_fin((flags & CONTROL_FLAG_FIN) != 0);
+  if (flags & HEADERS_FLAG_PRIORITY) {
+    headers_ir.set_has_priority(true);
+    headers_ir.set_priority(priority);
+  }
   headers_ir.set_name_value_block(*headers);
   return spdy_framer_.SerializeHeaders(headers_ir);
 }

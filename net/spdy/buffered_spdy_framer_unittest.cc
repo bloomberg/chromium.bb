@@ -59,6 +59,8 @@ class TestBufferedSpdyVisitor : public BufferedSpdyFramerVisitorInterface {
   }
 
   void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
                  bool fin,
                  const SpdyHeaderBlock& headers) override {
     header_stream_id_ = stream_id;
@@ -293,6 +295,7 @@ TEST_P(BufferedSpdyFramerTest, ReadHeadersHeaderBlock) {
   scoped_ptr<SpdyFrame> control_frame(
       framer.CreateHeaders(1,                        // stream_id
                            CONTROL_FLAG_NONE,
+                           0,                        // priority
                            &headers));
   EXPECT_TRUE(control_frame.get() != NULL);
 

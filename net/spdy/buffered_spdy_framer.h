@@ -49,6 +49,8 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramerVisitorInterface {
 
   // Called after all the header data for HEADERS control frame is received.
   virtual void OnHeaders(SpdyStreamId stream_id,
+                         bool has_priority,
+                         SpdyPriority priority,
                          bool fin,
                          const SpdyHeaderBlock& headers) = 0;
 
@@ -142,7 +144,11 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
                    bool fin,
                    bool unidirectional) override;
   void OnSynReply(SpdyStreamId stream_id, bool fin) override;
-  void OnHeaders(SpdyStreamId stream_id, bool fin, bool end) override;
+  void OnHeaders(SpdyStreamId stream_id,
+                 bool has_priority,
+                 SpdyPriority priority,
+                 bool fin,
+                 bool end) override;
   bool OnControlFrameHeaderData(SpdyStreamId stream_id,
                                 const char* header_data,
                                 size_t len) override;
@@ -194,6 +200,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
       SpdyGoAwayStatus status) const;
   SpdyFrame* CreateHeaders(SpdyStreamId stream_id,
                            SpdyControlFlags flags,
+                           SpdyPriority priority,
                            const SpdyHeaderBlock* headers);
   SpdyFrame* CreateWindowUpdate(
       SpdyStreamId stream_id,
@@ -262,6 +269,7 @@ class NET_EXPORT_PRIVATE BufferedSpdyFramer
     SpdyStreamId stream_id;
     SpdyStreamId associated_stream_id;
     SpdyStreamId promised_stream_id;
+    bool has_priority;
     SpdyPriority priority;
     uint8 credential_slot;
     bool fin;
