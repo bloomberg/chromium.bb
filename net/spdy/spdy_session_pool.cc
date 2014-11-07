@@ -55,7 +55,7 @@ SpdySessionPool::SpdySessionPool(
       // |default_protocol_|.
       default_protocol_(
           (default_protocol == kProtoUnknown) ?
-          kProtoSPDY3 : default_protocol),
+          kProtoSPDY31 : default_protocol),
       stream_initial_recv_window_size_(stream_initial_recv_window_size),
       initial_max_concurrent_streams_(initial_max_concurrent_streams),
       max_concurrent_streams_limit_(max_concurrent_streams_limit),

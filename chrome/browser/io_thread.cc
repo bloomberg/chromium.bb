@@ -897,11 +897,11 @@ void IOThread::EnableSpdy(const std::string& mode) {
     if (option == kOff) {
       net::HttpStreamFactory::set_spdy_enabled(false);
     } else if (option == kDisableSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY3);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY31);
       globals_->force_spdy_over_ssl.set(false);
       globals_->force_spdy_always.set(true);
     } else if (option == kSSL) {
-      globals_->spdy_default_protocol.set(net::kProtoSPDY3);
+      globals_->spdy_default_protocol.set(net::kProtoSPDY31);
       globals_->force_spdy_over_ssl.set(true);
       globals_->force_spdy_always.set(true);
     } else if (option == kDisablePing) {

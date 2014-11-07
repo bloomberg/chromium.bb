@@ -81,7 +81,6 @@ TEST_F(IOThreadTest, SpdyFieldTrialHoldbackControl) {
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11,
                           net::kProtoQUIC1SPDY3,
-                          net::kProtoSPDY3,
                           net::kProtoSPDY31));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
@@ -93,7 +92,6 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Enabled) {
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11,
                           net::kProtoQUIC1SPDY3,
-                          net::kProtoSPDY3,
                           net::kProtoSPDY31,
                           net::kProtoSPDY4));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
@@ -106,7 +104,6 @@ TEST_F(IOThreadTest, SpdyFieldTrialSpdy4Control) {
   EXPECT_THAT(globals_.next_protos,
               ElementsAre(net::kProtoHTTP11,
                           net::kProtoQUIC1SPDY3,
-                          net::kProtoSPDY3,
                           net::kProtoSPDY31));
   globals_.use_alternate_protocols.CopyToIfSet(&use_alternate_protocols);
   EXPECT_TRUE(use_alternate_protocols);
