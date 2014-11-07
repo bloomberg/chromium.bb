@@ -2583,6 +2583,9 @@ bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, bool& didAllowNavigatio
     if (!body())
         return true;
 
+    if (processingBeforeUnload())
+        return false;
+
     RefPtrWillBeRawPtr<Document> protect(this);
 
     RefPtrWillBeRawPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
