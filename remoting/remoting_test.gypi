@@ -139,7 +139,6 @@
         'host/chromoting_host_context_unittest.cc',
         'host/chromoting_host_unittest.cc',
         'host/client_session_unittest.cc',
-        'host/clipboard_aura_unittest.cc',
         'host/config_file_watcher_unittest.cc',
         'host/daemon_process_unittest.cc',
         'host/desktop_process_unittest.cc',
@@ -249,7 +248,6 @@
           'sources!': [
             'client/plugin/normalizing_input_filter_cros_unittest.cc',
             'host/chromeos/aura_desktop_capturer_unittest.cc',
-            'host/clipboard_aura_unittest.cc',
           ],
         }],
         ['enable_remoting_host == 0', {
