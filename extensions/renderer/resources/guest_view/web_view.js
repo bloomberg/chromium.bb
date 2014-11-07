@@ -15,15 +15,6 @@ var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
-// Attributes.
-var AUTO_SIZE_ATTRIBUTES = [
-  WebViewConstants.ATTRIBUTE_AUTOSIZE,
-  WebViewConstants.ATTRIBUTE_MAXHEIGHT,
-  WebViewConstants.ATTRIBUTE_MAXWIDTH,
-  WebViewConstants.ATTRIBUTE_MINHEIGHT,
-  WebViewConstants.ATTRIBUTE_MINWIDTH
-];
-
 // Represents the internal state of the WebView node.
 function WebView(webviewNode) {
   privates(webviewNode).internal = this;
@@ -41,7 +32,6 @@ function WebView(webviewNode) {
   this.browserPluginNode = this.createBrowserPluginNode();
   var shadowRoot = this.webviewNode.createShadowRoot();
   this.setupWebViewAttributes();
-  this.setupWebViewSrcAttributeMutationObserver();
   this.setupFocusPropagation();
   this.setupWebviewNodeProperties();
 
@@ -121,10 +111,6 @@ WebView.prototype.validateExecuteCodeCall  = function() {
 };
 
 WebView.prototype.setupWebviewNodeProperties = function() {
-  for (var attributeName in this.attributes) {
-    this.attributes[attributeName].define();
-  }
-
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
   Object.defineProperty(this.webviewNode, 'contentWindow', {
@@ -140,126 +126,20 @@ WebView.prototype.setupWebviewNodeProperties = function() {
   });
 };
 
-// The purpose of this mutation observer is to catch assignment to the src
-// attribute without any changes to its value. This is useful in the case
-// where the webview guest has crashed and navigating to the same address
-// spawns off a new process.
-WebView.prototype.setupWebViewSrcAttributeMutationObserver =
-    function() {
-  this.srcAndPartitionObserver = new MutationObserver(function(mutations) {
-    $Array.forEach(mutations, function(mutation) {
-      var oldValue = mutation.oldValue;
-      var newValue = this.attributes[mutation.attributeName].getValue();
-      if (oldValue != newValue) {
-        return;
-      }
-      this.handleWebviewAttributeMutation(
-          mutation.attributeName, oldValue, newValue);
-    }.bind(this));
-  }.bind(this));
-  var params = {
-    attributes: true,
-    attributeOldValue: true,
-    attributeFilter: [WebViewConstants.ATTRIBUTE_SRC,
-                      WebViewConstants.ATTRIBUTE_PARTITION]
-  };
-  this.srcAndPartitionObserver.observe(this.webviewNode, params);
-};
-
 // This observer monitors mutations to attributes of the <webview> and
 // updates the BrowserPlugin properties accordingly. In turn, updating
 // a BrowserPlugin property will update the corresponding BrowserPlugin
 // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
 // details.
-WebView.prototype.handleWebviewAttributeMutation =
-      function(attributeName, oldValue, newValue) {
-  // Certain changes (such as internally-initiated changes) to attributes should
-  // not be handled normally.
-  if (this.attributes[attributeName] &&
-      this.attributes[attributeName].ignoreNextMutation) {
-    this.attributes[attributeName].ignoreNextMutation = false;
+WebView.prototype.handleWebviewAttributeMutation = function(
+    attributeName, oldValue, newValue) {
+  if (!this.attributes[attributeName] ||
+      this.attributes[attributeName].ignoreMutation) {
     return;
   }
 
-  if (AUTO_SIZE_ATTRIBUTES.indexOf(attributeName) > -1) {
-    if (!this.guestInstanceId) {
-      return;
-    }
-    GuestViewInternal.setAutoSize(this.guestInstanceId, {
-      'enableAutoSize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].
-          getValue(),
-      'min': {
-        'width': parseInt(this.
-            attributes[WebViewConstants.ATTRIBUTE_MINWIDTH].getValue() || 0),
-        'height': parseInt(this.
-            attributes[WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue() || 0)
-      },
-      'max': {
-        'width': parseInt(this.
-            attributes[WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue() || 0),
-        'height': parseInt(this.
-            attributes[WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue() || 0)
-      }
-    });
-    return;
-  } else if (attributeName == WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY) {
-    // We treat null attribute (attribute removed) and the empty string as
-    // one case.
-    oldValue = oldValue || '';
-    newValue = newValue || '';
-
-    if (oldValue === newValue || !this.guestInstanceId) {
-      return;
-    }
-
-    WebViewInternal.setAllowTransparency(
-        this.guestInstanceId,
-        this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].
-            getValue());
-    return;
-  } else if (attributeName == WebViewConstants.ATTRIBUTE_NAME) {
-    // We treat null attribute (attribute removed) and the empty string as
-    // one case.
-    oldValue = oldValue || '';
-    newValue = newValue || '';
-
-    if (oldValue === newValue) {
-      return;
-    }
-
-    if (!this.guestInstanceId) {
-      return;
-    }
-    WebViewInternal.setName(this.guestInstanceId, newValue);
-    return;
-  } else if (attributeName == WebViewConstants.ATTRIBUTE_SRC) {
-    // We treat null attribute (attribute removed) and the empty string as
-    // one case.
-    oldValue = oldValue || '';
-    newValue = newValue || '';
-    // Once we have navigated, we don't allow clearing the src attribute.
-    // Once <webview> enters a navigated state, it cannot return to a
-    // placeholder state.
-    if (newValue == '' && oldValue != '') {
-      // src attribute changes normally initiate a navigation. We suppress
-      // the next src attribute handler call to avoid reloading the page
-      // on every guest-initiated navigation.
-      this.ignoreNextSrcAttributeChange = true;
-      this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_SRC, oldValue);
-      return;
-    }
-
-    if (this.ignoreNextSrcAttributeChange) {
-      // Don't allow the src mutation observer to see this change.
-      this.srcAndPartitionObserver.takeRecords();
-      this.ignoreNextSrcAttributeChange = false;
-      return;
-    }
-    this.parseSrcAttribute();
-  } else if (attributeName == WebViewConstants.ATTRIBUTE_PARTITION) {
-    this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].handleMutation(
-        oldValue, newValue);
-  }
+  // Let the changed attribute handle its own mutation;
+  this.attributes[attributeName].handleMutation(oldValue, newValue);
 };
 
 WebView.prototype.handleBrowserPluginAttributeMutation =
@@ -388,7 +268,7 @@ WebView.prototype.createGuest = function() {
   }
   var params = {
     'storagePartitionId': this.attributes[
-      WebViewConstants.ATTRIBUTE_PARTITION].getValue()
+        WebViewConstants.ATTRIBUTE_PARTITION].getValue()
   };
   GuestViewInternal.createGuest(
       'webview',
@@ -450,9 +330,9 @@ WebView.prototype.onLoadCommit = function(
   if (isTopLevel && (oldValue != newValue)) {
     // Touching the src attribute triggers a navigation. To avoid
     // triggering a page reload on every guest-initiated navigation,
-    // we use the flag ignoreNextSrcAttributeChange here.
-    this.ignoreNextSrcAttributeChange = true;
-    this.webviewNode.setAttribute(WebViewConstants.ATTRIBUTE_SRC, newValue);
+    // we do not handle this mutation.
+    this.attributes[WebViewConstants.ATTRIBUTE_SRC].setValueIgnoreMutation(
+        newValue);
   }
 };
 
@@ -462,24 +342,14 @@ WebView.prototype.onAttach = function(storagePartitionId) {
 };
 
 WebView.prototype.buildAttachParams = function() {
-  return {
+  var params = {
     'instanceId': this.viewInstanceId,
-    'userAgentOverride': this.userAgentOverride,
-    // Attributes:
-    'allowtransparency': this.attributes[
-        WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY].getValue(),
-    'autosize': this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue(),
-    'maxheight': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MAXHEIGHT].
-        getValue() || 0),
-    'maxwidth': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MAXWIDTH].
-        getValue() || 0),
-    'minheight': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MINHEIGHT].
-        getValue() || 0),
-    'minwidth': parseInt(this.attributes[WebViewConstants.ATTRIBUTE_MINWIDTH].
-        getValue() || 0),
-    'name': this.attributes[WebViewConstants.ATTRIBUTE_NAME].getValue(),
-    'src':  this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue(),
+    'userAgentOverride': this.userAgentOverride
   };
+  for (var i in this.attributes) {
+    params[i] = this.attributes[i].getValue();
+  }
+  return params;
 };
 
 WebView.prototype.attachWindow = function(guestInstanceId) {
