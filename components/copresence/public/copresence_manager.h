@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_MANAGER_H_
 #define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_MANAGER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/copresence/public/copresence_delegate.h"
 
@@ -28,14 +30,10 @@ class CopresenceManager {
   // to relay it to the requester.
   virtual void ExecuteReportRequest(const ReportRequest& request,
                                     const std::string& app_id,
+                                    const std::string& auth_token,
                                     const StatusCallback& callback) = 0;
 
-  // Factory method for CopresenceManagers. The delegate is owned
-  // by the caller, and must outlive the manager.
-  static scoped_ptr<CopresenceManager> Create(CopresenceDelegate* delegate);
-
  private:
-
   DISALLOW_COPY_AND_ASSIGN(CopresenceManager);
 };
 

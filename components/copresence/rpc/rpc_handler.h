@@ -5,12 +5,14 @@
 #ifndef COMPONENTS_COPRESENCE_RPC_RPC_HANDLER_H_
 #define COMPONENTS_COPRESENCE_RPC_RPC_HANDLER_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/public/copresence_delegate.h"
 #include "components/copresence/timed_map.h"
@@ -60,26 +62,12 @@ class RpcHandler {
 
   // Constructor. |delegate| and |directive_handler|
   // are owned by the caller and must outlive the RpcHandler.
+  // |server_post_callback| should be set only by tests.
   RpcHandler(CopresenceDelegate* delegate,
              DirectiveHandler* directive_handler,
              const PostCallback& server_post_callback = PostCallback());
 
   virtual ~RpcHandler();
-
-  // Before accepting any other calls, the server requires registration,
-  // which is tied to the auth token (or lack thereof) used to call Report.
-  // Clients must call RegisterForToken() for each new token,
-  // *including the empty token*, they need to pass to SendReportRequest(),
-  // and then wait for |init_done_callback| to be invoked.
-  void RegisterForToken(const std::string& auth_token,
-                        const SuccessCallback& init_done_callback);
-
-  // Check if a given auth token is already active (registered).
-  bool IsRegisteredForToken(const std::string& auth_token) const;
-
-  // Send a ReportRequest from Chrome itself, i.e. no app id.
-  void SendReportRequest(scoped_ptr<ReportRequest> request,
-                         const std::string& auth_token);
 
   // Send a ReportRequest from a specific app, and get notified of completion.
   void SendReportRequest(scoped_ptr<ReportRequest> request,
@@ -92,11 +80,35 @@ class RpcHandler {
   void ReportTokens(const std::vector<AudioToken>& tokens);
 
  private:
+  // A queued ReportRequest along with its metadata.
+  struct PendingRequest {
+    PendingRequest(scoped_ptr<ReportRequest> report,
+                   const std::string& app_id,
+                   const std::string& auth_token,
+                   const StatusCallback& callback);
+    ~PendingRequest();
+
+    scoped_ptr<ReportRequest> report;
+    const std::string app_id;
+    const std::string auth_token;
+    const StatusCallback callback;
+  };
+
   friend class RpcHandlerTest;
 
+  // Before accepting any other calls, the server requires registration,
+  // which is tied to the auth token (or lack thereof) used to call Report.
+  void RegisterForToken(const std::string& auth_token);
+
+  // Device registration has completed. Send the requests that it was blocking.
+  void ProcessQueuedRequests(const std::string& auth_token);
+
+  // Send a ReportRequest from Chrome itself, i.e. no app id.
+  void SendReportRequest(scoped_ptr<ReportRequest> request,
+                         const std::string& auth_token);
+
   // Server call response handlers.
-  void RegisterResponseHandler(const SuccessCallback& init_done_callback,
-                               const std::string& auth_token,
+  void RegisterResponseHandler(const std::string& auth_token,
                                HttpPost* completed_post,
                                int http_status_code,
                                const std::string& response_data);
@@ -143,10 +155,10 @@ class RpcHandler {
   CopresenceDelegate* delegate_;
   DirectiveHandler* directive_handler_;
 
-  TimedMap<std::string, bool> invalid_audio_token_cache_;
-
   PostCallback server_post_callback_;
 
+  ScopedVector<PendingRequest> pending_requests_queue_;
+  TimedMap<std::string, bool> invalid_audio_token_cache_;
   std::map<std::string, std::string> device_id_by_auth_token_;
   std::set<HttpPost*> pending_posts_;
 

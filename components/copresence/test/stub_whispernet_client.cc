@@ -9,13 +9,20 @@
 
 namespace copresence {
 
-StubWhispernetClient::StubWhispernetClient() {
+StubWhispernetClient::StubWhispernetClient(bool complete_initialization)
+    : complete_initialization_(complete_initialization) {
   tokens_.push_back(AudioToken("abcdef", true));
   tokens_.push_back(AudioToken("123456", false));
   samples_ = CreateRandomAudioRefCounted(0x123, 1, 0x321);
 }
 
 StubWhispernetClient::~StubWhispernetClient() {
+}
+
+void StubWhispernetClient::Initialize(const SuccessCallback& init_callback) {
+  // TODO(ckehoe): Consider updating tests to use this.
+  if (complete_initialization_)
+    init_callback.Run(true);
 }
 
 void StubWhispernetClient::EncodeToken(const std::string& token,

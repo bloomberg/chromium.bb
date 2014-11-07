@@ -10,7 +10,6 @@
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "components/copresence/public/copresence_manager.h"
 
 namespace base {
@@ -26,19 +25,7 @@ namespace copresence {
 class DirectiveHandler;
 class ReportRequest;
 class RpcHandler;
-
-struct PendingRequest {
-  PendingRequest(const ReportRequest& report,
-                 const std::string& app_id,
-                 const std::string& auth_token,
-                 const StatusCallback& callback);
-  ~PendingRequest();
-
-  scoped_ptr<ReportRequest> report;
-  std::string app_id;
-  std::string auth_token;
-  StatusCallback callback;
-};
+class WhispernetClient;
 
 // The implementation for CopresenceManager. Responsible primarily for
 // client-side initialization. The RpcHandler handles all the details
@@ -46,18 +33,18 @@ struct PendingRequest {
 // TODO(rkc): Add tests for this class.
 class CopresenceManagerImpl : public CopresenceManager {
  public:
+  // The delegate is owned by the caller, and must outlive the manager.
+  explicit CopresenceManagerImpl(CopresenceDelegate* delegate);
+
   ~CopresenceManagerImpl() override;
+
   void ExecuteReportRequest(const ReportRequest& request,
                             const std::string& app_id,
+                            const std::string& auth_token,
                             const StatusCallback& callback) override;
 
  private:
-  // Create managers with the CopresenceManager::Create() method.
-  friend class CopresenceManager;
-  CopresenceManagerImpl(CopresenceDelegate* delegate);
-
-  void CompleteInitialization();
-  void InitStepComplete(const std::string& step, bool success);
+  void WhispernetInitComplete(bool success);
 
   // This function will be called every kPollTimerIntervalMs milliseconds to
   // poll the server for new messages.
@@ -70,11 +57,9 @@ class CopresenceManagerImpl : public CopresenceManager {
   // Belongs to the caller.
   CopresenceDelegate* const delegate_;
 
-  int pending_init_operations_;
+  // We use a CancelableCallback here because Whispernet
+  // does not provide a way to unregister its init callback.
   base::CancelableCallback<void(bool)> whispernet_init_callback_;
-  bool init_failed_;
-
-  ScopedVector<PendingRequest> pending_requests_queue_;
 
   // The |directive handler_| needs to destruct before |rpc_handler_|, do not
   // change this order.
@@ -83,6 +68,8 @@ class CopresenceManagerImpl : public CopresenceManager {
 
   scoped_ptr<base::Timer> poll_timer_;
   scoped_ptr<base::Timer> audio_check_timer_;
+
+  bool init_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceManagerImpl);
 };

@@ -76,6 +76,7 @@ class MockCopresenceManager : public CopresenceManager {
   void ExecuteReportRequest(
       const ReportRequest& request,
       const std::string& app_id,
+      const std::string& /* auth_token */,
       const copresence::StatusCallback& status_callback) override {
     request_ = request;
     app_id_ = app_id;
@@ -174,7 +175,7 @@ TEST_F(CopresenceApiUnittest, Subscribe) {
   scoped_ptr<SubscribeOperation> subscribe(CreateSubscribe("sub"));
   subscribe->strategies.reset(new Strategy);
   subscribe->strategies->only_broadcast.reset(new bool(true));  // Not default
-  subscribe->strategies->audible.reset(new bool(true)); // Not default
+  subscribe->strategies->audible.reset(new bool(true));  // Not default
 
   scoped_ptr<Operation> operation(new Operation);
   operation->subscribe = subscribe.Pass();
@@ -271,3 +272,5 @@ TEST_F(CopresenceApiUnittest, MultipleOperations) {
 }
 
 }  // namespace extensions
+
+// TODO(ckehoe): add tests for auth tokens and api key functionality

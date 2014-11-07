@@ -9,10 +9,10 @@
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/copresence.h"
+#include "components/copresence/copresence_manager_impl.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
-#include "components/copresence/public/copresence_manager.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -46,7 +46,7 @@ void CopresenceService::Shutdown() {
 
 copresence::CopresenceManager* CopresenceService::manager() {
   if (!manager_ && !is_shutting_down_)
-    manager_ = copresence::CopresenceManager::Create(this);
+    manager_.reset(new copresence::CopresenceManagerImpl(this));
   return manager_.get();
 }
 
@@ -141,10 +141,6 @@ const std::string CopresenceService::GetAPIKey(const std::string& app_id)
   return key == api_keys_by_app_.end() ? std::string() : key->second;
 }
 
-const std::string CopresenceService::GetAuthToken() const {
-  return auth_token_;
-}
-
 copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
   return whispernet_client();
 }
@@ -181,6 +177,7 @@ ExtensionFunction::ResponseAction CopresenceExecuteFunction::Run() {
   service->manager()->ExecuteReportRequest(
       request,
       extension_id(),
+      service->auth_token(),
       base::Bind(&CopresenceExecuteFunction::SendResult, this));
   return RespondLater();
 }

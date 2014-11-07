@@ -4,13 +4,12 @@
 
 #include "components/copresence/rpc/rpc_handler.h"
 
-#include <map>
-
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 
 // TODO(ckehoe): time.h includes windows.h, which #defines DeviceCapabilities
 // to DeviceCapabilitiesW. This breaks the pb.h headers below. For now,
@@ -39,6 +38,9 @@ using google::protobuf::RepeatedPtrField;
 
 const char RpcHandler::kReportRequestRpcName[] = "report";
 
+// Number of characters of suffix to log for auth tokens
+const int kTokenSuffix = 5;
+
 namespace {
 
 // UrlSafe is defined as:
@@ -59,7 +61,7 @@ const char kDefaultCopresenceServer[] =
 // Logging
 
 // Checks for a copresence error. If there is one, logs it and returns true.
-bool CopresenceErrorLogged(const Status& status) {
+bool IsErrorStatus(const Status& status) {
   if (status.code() != OK) {
     LOG(ERROR) << "Copresence error code " << status.code()
                << (status.message().empty() ? "" : ": " + status.message());
@@ -76,7 +78,7 @@ void LogIfErrorStatus(const util::error::Code& code,
 
 // If any errors occurred, logs them and returns true.
 bool ReportErrorLogged(const ReportResponse& response) {
-  bool result = CopresenceErrorLogged(response.header().status());
+  bool result = IsErrorStatus(response.header().status());
 
   // The Report fails or succeeds as a unit. If any responses had errors,
   // the header will too. Thus we don't need to propagate individual errors.
@@ -147,19 +149,28 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
   signals->set_observed_time_millis(base::Time::Now().ToJsTime());
 }
 
+const std::string LoggingStrForToken(const std::string& auth_token) {
+  std::string token_str = auth_token.empty() ? "anonymous" :
+      base::StringPrintf("token ...%s",
+                         auth_token.substr(auth_token.length() - kTokenSuffix,
+                                           kTokenSuffix).c_str());
+  return token_str;
+}
+
 }  // namespace
 
-// Public methods
+
+// Public functions.
 
 RpcHandler::RpcHandler(CopresenceDelegate* delegate,
                        DirectiveHandler* directive_handler,
                        const PostCallback& server_post_callback)
     : delegate_(delegate),
       directive_handler_(directive_handler),
+      server_post_callback_(server_post_callback),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
-          kMaxInvalidTokens),
-      server_post_callback_(server_post_callback) {
+          kMaxInvalidTokens) {
     DCHECK(delegate_);
     DCHECK(directive_handler_);
 
@@ -170,59 +181,10 @@ RpcHandler::RpcHandler(CopresenceDelegate* delegate,
   }
 
 RpcHandler::~RpcHandler() {
-  // Do not use |directive_handler_| here, it will already have been
-  // destructed.
+  // Do not use |directive_handler_| here.
+  // It will already have been destructed.
   for (HttpPost* post : pending_posts_)
     delete post;
-}
-
-void RpcHandler::RegisterForToken(const std::string& auth_token,
-                                  const SuccessCallback& init_done_callback) {
-  if (IsRegisteredForToken(auth_token)) {
-    LOG(WARNING) << "Attempted re-registration for the same auth token.";
-    init_done_callback.Run(true);
-    return;
-  }
-  scoped_ptr<RegisterDeviceRequest> request(new RegisterDeviceRequest);
-
-  request->mutable_push_service()->set_service(PUSH_SERVICE_NONE);
-
-  DVLOG(2) << "Sending " << (auth_token.empty() ? "anonymous" : "authenticated")
-           << " registration to server.";
-
-  // Only identify as a Chrome device if we're in anonymous mode.
-  // Authenticated calls come from a "GAIA device".
-  if (auth_token.empty()) {
-    Identity* identity =
-        request->mutable_device_identifiers()->mutable_registrant();
-    identity->set_type(CHROME);
-    identity->set_chrome_id(base::GenerateGUID());
-  }
-
-  SendServerRequest(
-      kRegisterDeviceRpcName,
-      std::string(), // device ID
-      std::string(), // app ID
-      auth_token,
-      request.Pass(),
-      base::Bind(&RpcHandler::RegisterResponseHandler,
-                 // On destruction, this request will be cancelled.
-                 base::Unretained(this),
-                 init_done_callback,
-                 auth_token));
-}
-
-bool RpcHandler::IsRegisteredForToken(const std::string& auth_token) const {
-  return device_id_by_auth_token_.find(auth_token) !=
-      device_id_by_auth_token_.end();
-}
-
-void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
-                                   const std::string& auth_token) {
-  SendReportRequest(request.Pass(),
-                    std::string(),
-                    auth_token,
-                    StatusCallback());
 }
 
 void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
@@ -230,10 +192,24 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
                                    const std::string& auth_token,
                                    const StatusCallback& status_callback) {
   DCHECK(request.get());
-  auto registration_entry = device_id_by_auth_token_.find(auth_token);
-  DCHECK(registration_entry != device_id_by_auth_token_.end())
-      << "RegisterForToken() must complete successfully "
-      << "for new tokens before calling SendReportRequest().";
+
+  // Check that we have a "device" registered for this auth token.
+  bool queue_request = true;
+  const auto& registration = device_id_by_auth_token_.find(auth_token);
+  if (registration == device_id_by_auth_token_.end()) {
+    // Not registered.
+    RegisterForToken(auth_token);
+  } else if (!registration->second.empty()) {
+    // Registration complete.
+    queue_request = false;
+  }
+
+  // We're not registered, or registration is in progress.
+  if (queue_request) {
+    pending_requests_queue_.push_back(new PendingRequest(
+        request.Pass(), app_id, auth_token, status_callback));
+    return;
+  }
 
   DVLOG(3) << "Sending ReportRequest to server.";
 
@@ -247,7 +223,7 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
   AddPlayingTokens(request.get());
 
   SendServerRequest(kReportRequestRpcName,
-                    registration_entry->second,
+                    registration->second,
                     app_id,
                     auth_token,
                     request.Pass(),
@@ -284,41 +260,121 @@ void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
 
 // Private methods
 
+RpcHandler::PendingRequest::PendingRequest(scoped_ptr<ReportRequest> report,
+                                           const std::string& app_id,
+                                           const std::string& auth_token,
+                                           const StatusCallback& callback)
+    : report(report.Pass()),
+      app_id(app_id),
+      auth_token(auth_token),
+      callback(callback) {}
+
+RpcHandler::PendingRequest::~PendingRequest() {}
+
+void RpcHandler::RegisterForToken(const std::string& auth_token) {
+  DVLOG(2) << "Sending " << LoggingStrForToken(auth_token)
+           << " registration to server.";
+
+  // Mark registration as in progress.
+  device_id_by_auth_token_[auth_token] = "";
+
+  scoped_ptr<RegisterDeviceRequest> request(new RegisterDeviceRequest);
+  request->mutable_push_service()->set_service(PUSH_SERVICE_NONE);
+
+  // Only identify as a Chrome device if we're in anonymous mode.
+  // Authenticated calls come from a "GAIA device".
+  if (auth_token.empty()) {
+    Identity* identity =
+        request->mutable_device_identifiers()->mutable_registrant();
+    identity->set_type(CHROME);
+    identity->set_chrome_id(base::GenerateGUID());
+  }
+
+  SendServerRequest(
+      kRegisterDeviceRpcName,
+      std::string(),  // device ID
+      std::string(),  // app ID
+      auth_token,
+      request.Pass(),
+      base::Bind(&RpcHandler::RegisterResponseHandler,
+                 // On destruction, this request will be cancelled.
+                 base::Unretained(this),
+                 auth_token));
+}
+
+void RpcHandler::ProcessQueuedRequests(const std::string& auth_token) {
+  // Track requests that are not on this auth token.
+  ScopedVector<PendingRequest> still_pending_requests;
+
+  // If there is no device ID for this auth token, registration failed.
+  bool registration_failed =
+      (device_id_by_auth_token_.count(auth_token) == 0);
+
+  // We momentarily take ownership of all the pointers in the queue.
+  // They are either deleted here or passed on to a new queue.
+  for (PendingRequest* request : pending_requests_queue_) {
+    if (request->auth_token == auth_token) {
+      if (registration_failed) {
+        request->callback.Run(FAIL);
+      } else {
+        SendReportRequest(request->report.Pass(),
+                          request->app_id,
+                          request->auth_token,
+                          request->callback);
+      }
+      delete request;
+    } else {
+      // The request is on a different auth token.
+      still_pending_requests.push_back(request);
+    }
+  }
+
+  // Only keep the requests that weren't processed.
+  // All the pointers in the queue are now spoken for.
+  pending_requests_queue_.weak_clear();
+  pending_requests_queue_ = still_pending_requests.Pass();
+}
+
+void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
+                                   const std::string& auth_token) {
+  SendReportRequest(request.Pass(),
+                    std::string(),
+                    auth_token,
+                    StatusCallback());
+}
+
 void RpcHandler::RegisterResponseHandler(
-    const SuccessCallback& init_done_callback,
     const std::string& auth_token,
     HttpPost* completed_post,
     int http_status_code,
     const std::string& response_data) {
   if (completed_post) {
     int elements_erased = pending_posts_.erase(completed_post);
-    DCHECK(elements_erased);
+    DCHECK_GT(elements_erased, 0);
     delete completed_post;
   }
 
-  if (http_status_code != net::HTTP_OK) {
-    init_done_callback.Run(false);
-    return;
-  }
+  // Registration is no longer in progress.
+  // If it was successful, we'll update below.
+  device_id_by_auth_token_.erase(auth_token);
 
   RegisterDeviceResponse response;
-  if (!response.ParseFromString(response_data)) {
+  if (http_status_code != net::HTTP_OK) {
+    // TODO(ckehoe): Retry registration if appropriate.
+    LOG(ERROR) << LoggingStrForToken(auth_token)
+               << " device registration failed";
+  } else if (!response.ParseFromString(response_data)) {
     LOG(ERROR) << "Invalid RegisterDeviceResponse:\n" << response_data;
-    init_done_callback.Run(false);
-    return;
+  } else if (!IsErrorStatus(response.header().status())) {
+    const std::string& device_id = response.registered_device_id();
+    DCHECK(!device_id.empty());
+    device_id_by_auth_token_[auth_token] = device_id;
+    DVLOG(2) << LoggingStrForToken(auth_token)
+             << " device registration successful. Id: " << device_id;
   }
 
-  if (CopresenceErrorLogged(response.header().status())) {
-    init_done_callback.Run(false);
-    return;
-  }
-
-  const std::string& device_id = response.registered_device_id();
-  DCHECK(!device_id.empty());
-  device_id_by_auth_token_[auth_token] = device_id;
-  DVLOG(2) << (auth_token.empty() ? "Anonymous" : "Authenticated")
-           << " device registration successful: id " << device_id;
-  init_done_callback.Run(true);
+  // Send or fail requests on this auth token.
+  ProcessQueuedRequests(auth_token);
 }
 
 void RpcHandler::ReportResponseHandler(const StatusCallback& status_callback,

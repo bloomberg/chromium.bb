@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_
-#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_
+#ifndef COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_
+#define COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_
 
 #include <string>
 #include <vector>
@@ -74,4 +74,4 @@ using SamplesCallback =
                         const scoped_refptr<media::AudioBusRefCounted>&)>;
 }  // namespace copresence
 
-#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_
+#endif  // COMPONENTS_COPRESENCE_PUBLIC_COPRESENCE_CONSTANTS_H_

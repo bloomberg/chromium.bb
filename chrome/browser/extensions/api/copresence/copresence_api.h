@@ -47,6 +47,11 @@ class CopresenceService : public BrowserContextKeyedAPI,
 
   void set_api_key(const std::string& app_id,
                    const std::string& api_key);
+
+  std::string auth_token() const {
+    return auth_token_;
+  }
+
   void set_auth_token(const std::string& token);
 
   // Manager override for testing.
@@ -67,7 +72,6 @@ class CopresenceService : public BrowserContextKeyedAPI,
   net::URLRequestContextGetter* GetRequestContext() const override;
   const std::string GetPlatformVersionString() const override;
   const std::string GetAPIKey(const std::string& app_id) const override;
-  const std::string GetAuthToken() const override;
   copresence::WhispernetClient* GetWhispernetClient() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -121,7 +125,7 @@ class CopresenceSetAuthTokenFunction : public ChromeUIThreadExtensionFunction {
 
  protected:
   virtual ~CopresenceSetAuthTokenFunction() {}
-  virtual ExtensionFunction::ResponseAction Run() override;
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions
