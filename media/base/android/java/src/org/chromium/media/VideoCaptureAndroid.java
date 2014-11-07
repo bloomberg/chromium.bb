@@ -22,44 +22,12 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
 
     // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
     // newer OS. To work around the issues on those devices, we have to request
-    // NV21. Some other devices have troubles with certain capture resolutions
-    // under a given one: for those, the resolution is swapped with a known
-    // good. Both are supposed to be temporary hacks.
+    // NV21. This is supposed to be a temporary hack.
     private static class BuggyDeviceHack {
-        private static class IdAndSizes {
-            IdAndSizes(String model, String device, int minWidth, int minHeight) {
-                mModel = model;
-                mDevice = device;
-                mMinWidth = minWidth;
-                mMinHeight = minHeight;
-            }
-            public final String mModel;
-            public final String mDevice;
-            public final int mMinWidth;
-            public final int mMinHeight;
-        }
-
-        private static final IdAndSizes CAPTURESIZE_BUGGY_DEVICE_LIST[] = {
-            new IdAndSizes("Nexus 7", "flo", 640, 480)
-        };
-
         private static final String[] COLORSPACE_BUGGY_DEVICE_LIST = {
             "SAMSUNG-SGH-I747",
             "ODROID-U2",
         };
-
-        static void applyMinDimensions(CaptureFormat format) {
-            // NOTE: this can discard requested aspect ratio considerations.
-            for (IdAndSizes buggyDevice : CAPTURESIZE_BUGGY_DEVICE_LIST) {
-                if (buggyDevice.mModel.contentEquals(android.os.Build.MODEL)
-                        && buggyDevice.mDevice.contentEquals(android.os.Build.DEVICE)) {
-                    format.mWidth = (buggyDevice.mMinWidth > format.mWidth)
-                            ? buggyDevice.mMinWidth : format.mWidth;
-                    format.mHeight = (buggyDevice.mMinHeight > format.mHeight)
-                            ? buggyDevice.mMinHeight : format.mHeight;
-                }
-            }
-        }
 
         static int getImageFormat() {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.JELLY_BEAN) {
@@ -165,9 +133,6 @@ public class VideoCaptureAndroid extends VideoCaptureCamera {
             android.hardware.Camera.Parameters cameraParameters) {
         mCaptureFormat = new CaptureFormat(
                 width, height, frameRate, BuggyDeviceHack.getImageFormat());
-        // Hack to avoid certain capture resolutions under a minimum one,
-        // see http://crbug.com/305294.
-        BuggyDeviceHack.applyMinDimensions(mCaptureFormat);
     }
 
     @Override

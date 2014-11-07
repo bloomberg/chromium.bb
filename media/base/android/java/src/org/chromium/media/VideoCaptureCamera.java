@@ -114,9 +114,9 @@ public abstract class VideoCaptureCamera extends VideoCapture
         int frameRateScaled = frameRate * 1000;
         // Use the first range as the default chosen range.
         int[] chosenFpsRange = listFpsRange.get(0);
-        int frameRateNearest = Math.abs(frameRateScaled - chosenFpsRange[0]) <
-                               Math.abs(frameRateScaled - chosenFpsRange[1]) ?
-                               chosenFpsRange[0] : chosenFpsRange[1];
+        int frameRateNearest = Math.abs(frameRateScaled - chosenFpsRange[0])
+                               < Math.abs(frameRateScaled - chosenFpsRange[1])
+                               ? chosenFpsRange[0] : chosenFpsRange[1];
         int chosenFrameRate = (frameRateNearest + 999) / 1000;
         int fpsRangeSize = Integer.MAX_VALUE;
         for (int[] fpsRange : listFpsRange) {
@@ -166,8 +166,8 @@ public abstract class VideoCaptureCamera extends VideoCapture
         }
 
         setCaptureParameters(matchedWidth, matchedHeight, chosenFrameRate, parameters);
-        parameters.setPreviewSize(mCaptureFormat.mWidth,
-                                  mCaptureFormat.mHeight);
+        parameters.setPictureSize(matchedWidth, matchedHeight);
+        parameters.setPreviewSize(matchedWidth, matchedHeight);
         parameters.setPreviewFpsRange(chosenFpsRange[0], chosenFpsRange[1]);
         parameters.setPreviewFormat(mCaptureFormat.mPixelFormat);
         try {
