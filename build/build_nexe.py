@@ -663,7 +663,7 @@ class Builder(object):
                 '-MD', '-MF', outd] + compile_options
     if self.gomacc:
       cmd_line.insert(0, self.gomacc)
-    err = self.Run(cmd_line, out)
+    err = self.Run(cmd_line)
     if err:
       self.CleanOutput(outd)
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
@@ -752,7 +752,7 @@ class Builder(object):
 
   def RunLink(self, cmd_line, link_out):
     self.CleanOutput(link_out)
-    err = self.Run(cmd_line, link_out)
+    err = self.Run(cmd_line)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
@@ -793,7 +793,7 @@ class Builder(object):
 
     if self.tls_edit is not None:
       tls_edit_cmd = [FixPath(self.tls_edit), link_out, out]
-      tls_edit_err = self.Run(tls_edit_cmd, out, possibly_batch=False)
+      tls_edit_err = self.Run(tls_edit_cmd, possibly_batch=False)
       if tls_edit_err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(tls_edit_cmd)))
 
@@ -808,7 +808,7 @@ class Builder(object):
     cmd_line = [bin_name, '-arch', self.arch, src, '-o', out]
     cmd_line += self.link_options
 
-    err = self.Run(cmd_line, out)
+    err = self.Run(cmd_line)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
@@ -832,7 +832,7 @@ class Builder(object):
 
     MakeDir(os.path.dirname(out))
     self.CleanOutput(out)
-    err = self.Run(cmd_line, out)
+    err = self.Run(cmd_line)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
@@ -852,12 +852,12 @@ class Builder(object):
     # pnacl does not have an objcopy so there are no way to embed a link
     if self.is_pnacl_toolchain:
       cmd_line = [strip_name, strip_option, src, '-o', out]
-      err = self.Run(cmd_line, out)
+      err = self.Run(cmd_line)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     else:
       cmd_line = [strip_name, strip_option, src, '-o', pre_debug_tagging]
-      err = self.Run(cmd_line, pre_debug_tagging)
+      err = self.Run(cmd_line)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
@@ -865,7 +865,7 @@ class Builder(object):
       objcopy_name = self.GetObjCopy()
       cmd_line = [objcopy_name, '--add-gnu-debuglink', src,
                   pre_debug_tagging, out]
-      err = self.Run(cmd_line, out)
+      err = self.Run(cmd_line)
       if err:
         raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
 
@@ -882,7 +882,7 @@ class Builder(object):
     self.CleanOutput(out)
     bin_name = self.GetPnaclFinalize()
     cmd_line = [bin_name, src, '-o', out]
-    err = self.Run(cmd_line, out)
+    err = self.Run(cmd_line)
     if err:
       raise Error('FAILED with %d: %s' % (err, ' '.join(cmd_line)))
     return out
