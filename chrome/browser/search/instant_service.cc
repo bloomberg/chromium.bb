@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_observer.h"
-#include "chrome/browser/search/local_ntp_source.h"
 #include "chrome/browser/search/most_visited_iframe_source.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search/suggestions/suggestions_source.h"
@@ -36,6 +35,9 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/sys_color_change_listener.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/search/local_ntp_source.h"
+#endif
 
 namespace {
 
@@ -117,6 +119,7 @@ InstantService::InstantService(Profile* profile)
   // TODO(aurimas) remove this #if once instant_service.cc is no longer compiled
   // on Android.
 #if !defined(OS_ANDROID)
+  content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, false));
   content::URLDataSource::Add(profile_, new ThumbnailSource(profile_, true));
   content::URLDataSource::Add(profile_, new ThumbnailListSource(profile_));
@@ -124,7 +127,6 @@ InstantService::InstantService(Profile* profile)
 
   content::URLDataSource::Add(
       profile_, new FaviconSource(profile_, FaviconSource::FAVICON));
-  content::URLDataSource::Add(profile_, new LocalNtpSource(profile_));
   content::URLDataSource::Add(profile_, new MostVisitedIframeSource());
   content::URLDataSource::Add(
       profile_, new suggestions::SuggestionsSource(profile_));

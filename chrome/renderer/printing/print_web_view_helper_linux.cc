@@ -174,6 +174,7 @@ void PrintWebViewHelper::PrintPageInternal(
   MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
   skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
 
+#if defined(ENABLE_PRINT_PREVIEW)
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
     // TODO(vitalybuka) : why does it work only with 1.25?
@@ -185,6 +186,8 @@ void PrintWebViewHelper::PrintPageInternal(
                          page_layout_in_points,
                          params.params);
   }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+
   RenderPageContent(frame, params.page_number, canvas_area, content_area,
                     scale_factor, canvas.get());
 

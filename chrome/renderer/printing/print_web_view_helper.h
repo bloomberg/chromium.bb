@@ -265,6 +265,7 @@ class PrintWebViewHelper
       double* scale_factor,
       PageSizeMargins* page_layout_in_points);
 
+#if defined(ENABLE_PRINT_PREVIEW)
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
   static void PrintHeaderAndFooter(blink::WebCanvas* canvas,
@@ -274,6 +275,7 @@ class PrintWebViewHelper
                                    float webkit_scale_factor,
                                    const PageSizeMargins& page_layout_in_points,
                                    const PrintMsg_Print_Params& params);
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
   bool GetPrintFrame(blink::WebLocalFrame** frame);
 

@@ -303,9 +303,9 @@
       <if expr="(is_macosx or is_ios) and not toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />
       </if>
+      <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="common/menu_check.png" />
       <if expr="toolkit_views">
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK" file="cros/menu_check.png" />
-        <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED" file="common/menu_check.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_CHECK_CHECKED_DARK_BACKGROUND" file="common/menu_check_white.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_EMPTY" file="common/menu_radio_empty.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_RADIO_SELECTED" file="common/menu_radio_selected.png" />

@@ -62,16 +62,15 @@ enum PrintPreviewHelperEvents {
 
 const double kMinDpi = 1.0;
 
+#if !defined(ENABLE_PRINT_PREVIEW)
+bool g_is_preview_enabled_ = false;
+#else
+bool g_is_preview_enabled_ = true;
+
 const char kPageLoadScriptFormat[] =
     "document.open(); document.write(%s); document.close();";
 
 const char kPageSetupScriptFormat[] = "setup(%s);";
-
-#if defined(ENABLE_PRINT_PREVIEW)
-bool g_is_preview_enabled_ = true;
-#else
-bool g_is_preview_enabled_ = false;
-#endif
 
 void ExecuteScript(blink::WebFrame* frame,
                    const char* script_format,
@@ -81,6 +80,7 @@ void ExecuteScript(blink::WebFrame* frame,
   std::string script = base::StringPrintf(script_format, json.c_str());
   frame->executeScript(blink::WebString(base::UTF8ToUTF16(script)));
 }
+#endif  // !defined(ENABLE_PRINT_PREVIEW)
 
 int GetDPI(const PrintMsg_Print_Params* print_params) {
 #if defined(OS_MACOSX)
@@ -443,6 +443,7 @@ blink::WebView* FrameReference::view() {
   return view_;
 }
 
+#if defined(ENABLE_PRINT_PREVIEW)
 // static - Not anonymous so that platform implementations can use it.
 void PrintWebViewHelper::PrintHeaderAndFooter(
     blink::WebCanvas* canvas,
@@ -505,6 +506,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   device->setDrawingArea(SkPDFDevice::kContent_DrawingArea);
 }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 // static - Not anonymous so that platform implementations can use it.
 float PrintWebViewHelper::RenderPageContent(blink::WebFrame* frame,

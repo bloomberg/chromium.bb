@@ -2070,8 +2070,11 @@
         ],
       }],
       ['OS=="android"', {
-        'grit_defines': ['-t', 'android',
-                         '-E', 'ANDROID_JAVA_TAGGED_ONLY=true'],
+        'grit_defines': [
+          '-t', 'android',
+          '-E', 'ANDROID_JAVA_TAGGED_ONLY=true',
+          '--no-output-all-resource-defines',
+        ],
       }],
       ['OS=="mac" or OS=="ios"', {
         'grit_defines': ['-D', 'scale_factors=2x'],
