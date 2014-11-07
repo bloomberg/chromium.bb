@@ -16,14 +16,6 @@
 namespace content {
 namespace {
 
-void GpuMemoryBufferAllocatedForChildProcess(
-    const BrowserGpuMemoryBufferManager::AllocationCallback& callback,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  callback.Run(handle);
-}
-
 BrowserGpuMemoryBufferManager* g_gpu_memory_buffer_manager = nullptr;
 
 // Global atomic to generate gpu memory buffer unique IDs.
@@ -96,14 +88,30 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     const AllocationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  gfx::GpuMemoryBufferId new_id = g_next_gpu_memory_buffer_id.GetNext();
+
+  BufferMap& buffers = clients_[child_client_id];
+  DCHECK(buffers.find(new_id) == buffers.end());
+
+  // Note: Handling of cases where the child process is removed before the
+  // allocation completes is less subtle if we set the buffer type to
+  // EMPTY_BUFFER here and verify that this has not changed when allocation
+  // completes.
+  buffers[new_id] = gfx::EMPTY_BUFFER;
+
   GpuMemoryBufferImpl::AllocateForChildProcess(
-      g_next_gpu_memory_buffer_id.GetNext(),
+      new_id,
       size,
       format,
       usage,
       child_process_handle,
       child_client_id,
-      base::Bind(&GpuMemoryBufferAllocatedForChildProcess, callback));
+      base::Bind(&BrowserGpuMemoryBufferManager::
+                     GpuMemoryBufferAllocatedForChildProcess,
+                 base::Unretained(this),
+                 child_process_handle,
+                 child_client_id,
+                 callback));
 }
 
 gfx::GpuMemoryBuffer*
@@ -112,21 +120,108 @@ BrowserGpuMemoryBufferManager::GpuMemoryBufferFromClientBuffer(
   return GpuMemoryBufferImpl::FromClientBuffer(buffer);
 }
 
+void BrowserGpuMemoryBufferManager::SetDestructionSyncPoint(
+    gfx::GpuMemoryBuffer* buffer,
+    uint32 sync_point) {
+  static_cast<GpuMemoryBufferImpl*>(buffer)
+      ->set_destruction_sync_point(sync_point);
+}
+
 void BrowserGpuMemoryBufferManager::ChildProcessDeletedGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     base::ProcessHandle child_process_handle,
     int child_client_id,
     uint32 sync_point) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(clients_.find(child_client_id) != clients_.end());
+
+  BufferMap& buffers = clients_[child_client_id];
+
+  BufferMap::iterator buffer_it = buffers.find(id);
+  if (buffer_it == buffers.end()) {
+    LOG(ERROR) << "Invalid GpuMemoryBuffer ID for child process.";
+    return;
+  }
+
+  // This can happen if a child process managed to trigger a call to this while
+  // a buffer is in the process of being allocated.
+  if (buffer_it->second == gfx::EMPTY_BUFFER) {
+    LOG(ERROR) << "Invalid GpuMemoryBuffer type.";
+    return;
+  }
 
   GpuMemoryBufferImpl::DeletedByChildProcess(
-      type, id, child_process_handle, child_client_id, sync_point);
+      buffer_it->second, id, child_process_handle, child_client_id, sync_point);
+
+  buffers.erase(buffer_it);
 }
 
 void BrowserGpuMemoryBufferManager::ProcessRemoved(
-    base::ProcessHandle process_handle) {
-  // TODO(reveman): Handle child process removal correctly.
+    base::ProcessHandle process_handle,
+    int client_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ClientMap::iterator client_it = clients_.find(client_id);
+  if (client_it == clients_.end())
+    return;
+
+  for (auto &buffer_it : client_it->second) {
+    // This might happen if buffer is currenlty in the process of being
+    // allocated. The buffer will in that case be cleaned up when allocation
+    // completes.
+    if (buffer_it.second == gfx::EMPTY_BUFFER)
+      continue;
+
+    GpuMemoryBufferImpl::DeletedByChildProcess(buffer_it.second,
+                                               buffer_it.first,
+                                               process_handle,
+                                               client_id,
+                                               0);
+  }
+
+  clients_.erase(client_it);
+}
+
+void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedForChildProcess(
+    base::ProcessHandle child_process_handle,
+    int child_client_id,
+    const AllocationCallback& callback,
+    const gfx::GpuMemoryBufferHandle& handle) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  ClientMap::iterator client_it = clients_.find(child_client_id);
+
+  // This can happen if the child process is removed while the buffer is being
+  // allocated.
+  if (client_it == clients_.end()) {
+    if (!handle.is_null()) {
+      GpuMemoryBufferImpl::DeletedByChildProcess(handle.type,
+                                                 handle.id,
+                                                 child_process_handle,
+                                                 child_client_id,
+                                                 0);
+    }
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+  BufferMap& buffers = client_it->second;
+
+  BufferMap::iterator buffer_it = buffers.find(handle.id);
+  DCHECK(buffer_it != buffers.end());
+  DCHECK_EQ(buffer_it->second, gfx::EMPTY_BUFFER);
+
+  if (handle.is_null()) {
+    buffers.erase(buffer_it);
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
+  // Store the type for this buffer so it can be cleaned up if the child
+  // process is removed.
+  buffer_it->second = handle.type;
+
+  callback.Run(handle);
 }
 
 // static
@@ -150,13 +245,6 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferCreatedOnIO(
 
   request->result = buffer.Pass();
   request->event.Signal();
-}
-
-void BrowserGpuMemoryBufferManager::SetDestructionSyncPoint(
-    gfx::GpuMemoryBuffer* buffer,
-    uint32 sync_point) {
-  static_cast<GpuMemoryBufferImpl*>(buffer)
-      ->set_destruction_sync_point(sync_point);
 }
 
 }  // namespace content

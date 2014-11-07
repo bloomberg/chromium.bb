@@ -347,7 +347,6 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
 }
 
 void ChildProcessHostImpl::OnDeletedGpuMemoryBuffer(
-    gfx::GpuMemoryBufferType type,
     gfx::GpuMemoryBufferId id,
     uint32 sync_point) {
   // Note: Nothing to do here as ownership of shared memory backed
