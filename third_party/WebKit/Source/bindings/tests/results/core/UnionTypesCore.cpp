@@ -98,19 +98,18 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Han
 
 v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isBoolean())
+    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeBoolean:
         return v8Boolean(impl.getAsBoolean(), isolate);
-
-    if (impl.isString())
+    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeString:
         return v8String(isolate, impl.getAsString());
-
-    if (impl.isUnrestrictedDouble())
+    case BooleanOrStringOrUnrestrictedDouble::SpecificTypeUnrestrictedDouble:
         return v8::Number::New(isolate, impl.getAsUnrestrictedDouble());
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -167,16 +166,16 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 v8::Handle<v8::Value> toV8(DoubleOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case DoubleOrString::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isDouble())
+    case DoubleOrString::SpecificTypeDouble:
         return v8::Number::New(isolate, impl.getAsDouble());
-
-    if (impl.isString())
+    case DoubleOrString::SpecificTypeString:
         return v8String(isolate, impl.getAsString());
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -239,16 +238,16 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 v8::Handle<v8::Value> toV8(NodeOrNodeList& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case NodeOrNodeList::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isNode())
+    case NodeOrNodeList::SpecificTypeNode:
         return toV8(impl.getAsNode(), creationContext, isolate);
-
-    if (impl.isNodeList())
+    case NodeOrNodeList::SpecificTypeNodeList:
         return toV8(impl.getAsNodeList(), creationContext, isolate);
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -324,19 +323,18 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Ha
 
 v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case StringOrArrayBufferOrArrayBufferView::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isString())
+    case StringOrArrayBufferOrArrayBufferView::SpecificTypeString:
         return v8String(isolate, impl.getAsString());
-
-    if (impl.isArrayBuffer())
+    case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBuffer:
         return toV8(impl.getAsArrayBuffer(), creationContext, isolate);
-
-    if (impl.isArrayBufferView())
+    case StringOrArrayBufferOrArrayBufferView::SpecificTypeArrayBufferView:
         return toV8(impl.getAsArrayBufferView(), creationContext, isolate);
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -393,16 +391,16 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
 
 v8::Handle<v8::Value> toV8(StringOrDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case StringOrDouble::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isString())
+    case StringOrDouble::SpecificTypeString:
         return v8String(isolate, impl.getAsString());
-
-    if (impl.isDouble())
+    case StringOrDouble::SpecificTypeDouble:
         return v8::Number::New(isolate, impl.getAsDouble());
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -464,16 +462,16 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::H
 
 v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case TestInterfaceGarbageCollectedOrString::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isTestInterfaceGarbageCollected())
+    case TestInterfaceGarbageCollectedOrString::SpecificTypeTestInterfaceGarbageCollected:
         return toV8(impl.getAsTestInterfaceGarbageCollected(), creationContext, isolate);
-
-    if (impl.isString())
+    case TestInterfaceGarbageCollectedOrString::SpecificTypeString:
         return v8String(isolate, impl.getAsString());
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -536,16 +534,16 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v
 
 v8::Handle<v8::Value> toV8(TestInterfaceOrLong& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case TestInterfaceOrLong::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isTestInterface())
+    case TestInterfaceOrLong::SpecificTypeTestInterface:
         return toV8(impl.getAsTestInterface(), creationContext, isolate);
-
-    if (impl.isLong())
+    case TestInterfaceOrLong::SpecificTypeLong:
         return v8::Integer::New(isolate, impl.getAsLong());
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -602,16 +600,16 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Handl
 
 v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isTestInterface())
+    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterface:
         return toV8(impl.getAsTestInterface(), creationContext, isolate);
-
-    if (impl.isTestInterfaceEmpty())
+    case TestInterfaceOrTestInterfaceEmpty::SpecificTypeTestInterfaceEmpty:
         return toV8(impl.getAsTestInterfaceEmpty(), creationContext, isolate);
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 
@@ -674,16 +672,16 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
 
 v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeNone:
         return v8::Null(isolate);
-
-    if (impl.isTestInterfaceWillBeGarbageCollected())
+    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeTestInterfaceWillBeGarbageCollected:
         return toV8(impl.getAsTestInterfaceWillBeGarbageCollected(), creationContext, isolate);
-
-    if (impl.isTestDictionary())
+    case TestInterfaceWillBeGarbageCollectedOrTestDictionary::SpecificTypeTestDictionary:
         return toV8(impl.getAsTestDictionary(), creationContext, isolate);
-
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 

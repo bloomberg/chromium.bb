@@ -138,16 +138,17 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
 
 v8::Handle<v8::Value> toV8({{container.cpp_class}}& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
-    {# FIXME: We might want to return undefined in some cases #}
-    if (impl.isNull())
+    switch (impl.m_type) {
+    case {{container.cpp_class}}::SpecificTypeNone:
+        {# FIXME: We might want to return undefined in some cases #}
         return v8::Null(isolate);
-
     {% for member in container.members %}
-    if (impl.is{{member.type_name}}())
+    case {{container.cpp_class}}::{{member.specific_type_enum}}:
         return {{member.cpp_value_to_v8_value}};
-
     {% endfor %}
-    ASSERT_NOT_REACHED();
+    default:
+        ASSERT_NOT_REACHED();
+    }
     return v8::Handle<v8::Value>();
 }
 

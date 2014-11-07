@@ -46,6 +46,8 @@ private:
     {% for member in container.members %}
     {{member.cpp_type}} m_{{member.cpp_name}};
     {% endfor %}
+
+    friend v8::Handle<v8::Value> toV8({{container.cpp_class}}&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8{{container.cpp_class}} final {

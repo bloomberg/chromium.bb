@@ -53,6 +53,8 @@ private:
     bool m_boolean;
     String m_string;
     double m_unrestrictedDouble;
+
+    friend v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8BooleanOrStringOrUnrestrictedDouble final {
@@ -92,6 +94,8 @@ private:
 
     double m_double;
     String m_string;
+
+    friend v8::Handle<v8::Value> toV8(DoubleOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8DoubleOrString final {
@@ -133,6 +137,8 @@ private:
 
     RefPtrWillBeMember<Node> m_node;
     RefPtrWillBeMember<NodeList> m_nodeList;
+
+    friend v8::Handle<v8::Value> toV8(NodeOrNodeList&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8NodeOrNodeList final {
@@ -178,6 +184,8 @@ private:
     String m_string;
     RefPtr<TestArrayBuffer> m_arrayBuffer;
     RefPtr<TestArrayBufferView> m_arrayBufferView;
+
+    friend v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrArrayBufferOrArrayBufferView final {
@@ -217,6 +225,8 @@ private:
 
     String m_string;
     double m_double;
+
+    friend v8::Handle<v8::Value> toV8(StringOrDouble&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8StringOrDouble final {
@@ -258,6 +268,8 @@ private:
 
     Member<TestInterfaceGarbageCollected> m_testInterfaceGarbageCollected;
     String m_string;
+
+    friend v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceGarbageCollectedOrString final {
@@ -297,6 +309,8 @@ private:
 
     RefPtr<TestInterfaceImplementation> m_testInterface;
     int m_long;
+
+    friend v8::Handle<v8::Value> toV8(TestInterfaceOrLong&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrLong final {
@@ -336,6 +350,8 @@ private:
 
     RefPtr<TestInterfaceImplementation> m_testInterface;
     RefPtr<TestInterfaceEmpty> m_testInterfaceEmpty;
+
+    friend v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceOrTestInterfaceEmpty final {
@@ -377,6 +393,8 @@ private:
 
     RefPtrWillBeMember<TestInterfaceWillBeGarbageCollected> m_testInterfaceWillBeGarbageCollected;
     TestDictionary m_testDictionary;
+
+    friend v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
 };
 
 class V8TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
