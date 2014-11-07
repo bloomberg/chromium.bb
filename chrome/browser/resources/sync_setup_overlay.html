@@ -20,7 +20,7 @@
             <input id="confirm-everything-cancel" type="button"
                 i18n-values="value:cancel">
             <input id="confirm-everything-ok" type="button"
-                i18n-values="value:syncEverything">
+                class="default-button" i18n-values="value:syncEverything">
           </div>
         </div>
       </div>
@@ -198,7 +198,7 @@
           <div class="button-strip">
             <input id="choose-datatypes-cancel" type="button"
                 i18n-values="value:cancel">
-            <input id="choose-datatypes-ok" type="submit"
+            <input id="choose-datatypes-ok" type="submit" class="default-button"
                 i18n-values="value:ok">
           </div>
         </div>
@@ -208,7 +208,8 @@
   <div id="sync-setup-spinner" hidden>
     <h1 i18n-content="syncSetupSpinnerTitle"></h1>
     <div class="action-area button-strip">
-      <input id="sync-spinner-cancel" type="button" i18n-values="value:cancel">
+      <input id="sync-spinner-cancel" type="button" class="default-button"
+          i18n-values="value:cancel">
     </div>
   </div>
   <div id="sync-setup-timeout" hidden>
@@ -217,7 +218,7 @@
       <span i18n-content="syncSetupTimeoutContent"></span>
     </div>
     <div class="action-area button-strip">
-      <button id="timeout-ok" i18n-content="ok"></button>
+      <button id="timeout-ok" i18n-content="ok" class="default-button"></button>
     </div>
   </div>
   <div id="sync-setup-stop-syncing" hidden>
@@ -236,7 +237,7 @@
     <div class="action-area button-strip">
       <input id="stop-syncing-cancel" type="button"
           i18n-values="value:cancel">
-      <input id="stop-syncing-ok" type="button"
+      <input id="stop-syncing-ok" type="button" class="default-button"
           i18n-values="value:stopSyncingConfirm">
     </div>
   </div>
