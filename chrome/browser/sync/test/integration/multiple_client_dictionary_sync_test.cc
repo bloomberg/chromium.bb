@@ -58,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddDifferentToAll) {
 // MAX_SYNCABLE_DICTIONARY_WORDS limit.
 // Crashes on Windows. crbug.com/431354
 #if defined(OS_WIN)
-#define MAYBE_Limit DISABLE_Limit
+#define MAYBE_Limit DISABLED_Limit
 #else
 #define MAYBE_Limit Limit
 #endif
