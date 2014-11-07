@@ -159,19 +159,6 @@ void MockableQuicClient::UseConnectionId(QuicConnectionId connection_id) {
 
 QuicTestClient::QuicTestClient(IPEndPoint server_address,
                                const string& server_hostname,
-                               const QuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(server_address,
-                                     QuicServerId(server_hostname,
-                                                  server_address.port(),
-                                                  false,
-                                                  PRIVACY_MODE_DISABLED),
-                                     supported_versions,
-                                     &epoll_server_)) {
-  Initialize(true);
-}
-
-QuicTestClient::QuicTestClient(IPEndPoint server_address,
-                               const string& server_hostname,
                                bool secure,
                                const QuicVersionVector& supported_versions)
     : client_(new MockableQuicClient(server_address,

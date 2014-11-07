@@ -364,7 +364,8 @@ QuicSession* QuicDispatcher::CreateQuicSession(
   QuicServerSession* session = new QuicServerSession(
       config_,
       CreateQuicConnection(connection_id, server_address, client_address),
-      this);
+      this,
+      crypto_config_.HasProofSource());
   session->InitializeSession(crypto_config_);
   return session;
 }

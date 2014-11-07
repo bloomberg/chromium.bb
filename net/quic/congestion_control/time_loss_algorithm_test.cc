@@ -60,7 +60,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossFor500Nacks) {
     unacked_packets_.NackPacket(1, i);
     VerifyLosses(2, nullptr, 0);
   }
-  EXPECT_EQ(rtt_stats_.SmoothedRtt().Multiply(1.25),
+  EXPECT_EQ(rtt_stats_.smoothed_rtt().Multiply(1.25),
             loss_algorithm_.GetLossTimeout().Subtract(clock_.Now()));
 }
 
@@ -69,7 +69,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossUntilTimeout) {
   // Transmit 10 packets at 1/10th an RTT interval.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
-    clock_.AdvanceTime(rtt_stats_.SmoothedRtt().Multiply(0.1));
+    clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.1));
   }
   // Expect the timer to not be set.
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
@@ -78,11 +78,11 @@ TEST_F(TimeLossAlgorithmTest, NoLossUntilTimeout) {
   unacked_packets_.RemoveFromInFlight(2);
   VerifyLosses(2, nullptr, 0);
   // Expect the timer to be set to 0.25 RTT's in the future.
-  EXPECT_EQ(rtt_stats_.SmoothedRtt().Multiply(0.25),
+  EXPECT_EQ(rtt_stats_.smoothed_rtt().Multiply(0.25),
             loss_algorithm_.GetLossTimeout().Subtract(clock_.Now()));
   unacked_packets_.NackPacket(1, 5);
   VerifyLosses(2, nullptr, 0);
-  clock_.AdvanceTime(rtt_stats_.SmoothedRtt().Multiply(0.25));
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
   QuicPacketSequenceNumber lost[] = { 1 };
   VerifyLosses(2, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
@@ -93,7 +93,7 @@ TEST_F(TimeLossAlgorithmTest, NoLossWithoutNack) {
   // Transmit 10 packets at 1/10th an RTT interval.
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
-    clock_.AdvanceTime(rtt_stats_.SmoothedRtt().Multiply(0.1));
+    clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.1));
   }
   // Expect the timer to not be set.
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
@@ -102,9 +102,9 @@ TEST_F(TimeLossAlgorithmTest, NoLossWithoutNack) {
   VerifyLosses(1, nullptr, 0);
   // The timer should still not be set.
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
-  clock_.AdvanceTime(rtt_stats_.SmoothedRtt().Multiply(0.25));
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
   VerifyLosses(1, nullptr, 0);
-  clock_.AdvanceTime(rtt_stats_.SmoothedRtt());
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
   VerifyLosses(1, nullptr, 0);
 
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
@@ -116,7 +116,7 @@ TEST_F(TimeLossAlgorithmTest, MultipleLossesAtOnce) {
   for (size_t i = 1; i <= kNumSentPackets; ++i) {
     SendDataPacket(i);
   }
-  clock_.AdvanceTime(rtt_stats_.SmoothedRtt());
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
   // Expect the timer to not be set.
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());
   // The packet should not be lost until 1.25 RTTs pass.
@@ -126,9 +126,9 @@ TEST_F(TimeLossAlgorithmTest, MultipleLossesAtOnce) {
   unacked_packets_.RemoveFromInFlight(10);
   VerifyLosses(10, nullptr, 0);
   // Expect the timer to be set to 0.25 RTT's in the future.
-  EXPECT_EQ(rtt_stats_.SmoothedRtt().Multiply(0.25),
+  EXPECT_EQ(rtt_stats_.smoothed_rtt().Multiply(0.25),
             loss_algorithm_.GetLossTimeout().Subtract(clock_.Now()));
-  clock_.AdvanceTime(rtt_stats_.SmoothedRtt().Multiply(0.25));
+  clock_.AdvanceTime(rtt_stats_.smoothed_rtt().Multiply(0.25));
   QuicPacketSequenceNumber lost[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
   VerifyLosses(10, lost, arraysize(lost));
   EXPECT_EQ(QuicTime::Zero(), loss_algorithm_.GetLossTimeout());

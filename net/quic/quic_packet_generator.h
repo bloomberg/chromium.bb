@@ -100,7 +100,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   virtual ~QuicPacketGenerator();
 
   // Called by the connection in the event of the congestion window changing.
-  void OnCongestionWindowChange(QuicByteCount congestion_window);
+  void OnCongestionWindowChange(QuicPacketCount max_packets_in_flight);
 
   // Indicates that an ACK frame should be sent.  If |also_send_feedback| is
   // true, then it also indicates a CONGESTION_FEEDBACK frame should be sent.
@@ -165,7 +165,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // can be safely changed.
   void UpdateSequenceNumberLength(
       QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicByteCount congestion_window);
+      QuicPacketCount max_packets_in_flight);
 
   // Set the minimum number of bytes for the connection id length;
   void SetConnectionIdLength(uint32 length);

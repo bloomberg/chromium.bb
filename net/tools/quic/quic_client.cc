@@ -199,7 +199,8 @@ bool QuicClient::StartConnect() {
                          factory,
                          /* owns_writer= */ false,
                          /* is_server= */ false,
-                         supported_versions_)));
+                         supported_versions_),
+      server_id_.is_https()));
 
   // Reset |writer_| after |session_| so that the old writer outlives the old
   // session.

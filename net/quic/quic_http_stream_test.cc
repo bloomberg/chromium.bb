@@ -232,11 +232,13 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               &transport_security_state_,
                               make_scoped_ptr((QuicServerInfo*)nullptr),
                               DefaultQuicConfig(),
+                              /*is_secure=*/false,
                               base::MessageLoop::current()->
                                   message_loop_proxy().get(),
                               nullptr));
     session_->InitializeSession(QuicServerId(kServerHostname, kServerPort,
-                                             false, PRIVACY_MODE_DISABLED),
+                                             /*is_secure=*/false,
+                                             PRIVACY_MODE_DISABLED),
                                 &crypto_config_,
                                 &crypto_client_stream_factory_);
     session_->GetCryptoStream()->CryptoConnect();
@@ -285,7 +287,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
       QuicPacketSequenceNumber sequence_number) {
     return maker_.MakeRstPacket(
         sequence_number, true, stream_id_,
-        AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
+        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
   }
 
   scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(

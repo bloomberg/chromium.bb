@@ -940,11 +940,11 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   const QuicSentPacketManager& server_sent_packet_manager =
       *GetSentPacketManagerFromFirstServerSession();
 
-  // The client shouldn't set it's initial window based on the negotiated value.
-  EXPECT_EQ(kDefaultInitialWindow * kDefaultTCPMSS,
-            client_sent_packet_manager.GetCongestionWindow());
-  EXPECT_EQ(kMaxInitialWindow * kDefaultTCPMSS,
-            server_sent_packet_manager.GetCongestionWindow());
+  // The client shouldn't set its initial window based on the negotiated value.
+  EXPECT_EQ(kDefaultInitialWindow,
+            client_sent_packet_manager.GetCongestionWindowInTcpMss());
+  EXPECT_EQ(kMaxInitialWindow,
+            server_sent_packet_manager.GetCongestionWindowInTcpMss());
 
   EXPECT_EQ(GetParam().use_pacing, server_sent_packet_manager.using_pacing());
   EXPECT_EQ(GetParam().use_pacing, client_sent_packet_manager.using_pacing());
@@ -987,18 +987,17 @@ TEST_P(EndToEndTest, MaxInitialRTT) {
   QuicSession* session = dispatcher->session_map().begin()->second;
   const QuicSentPacketManager& client_sent_packet_manager =
       client_->client()->session()->connection()->sent_packet_manager();
-  const QuicSentPacketManager& server_sent_packet_manager =
-      session->connection()->sent_packet_manager();
 
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
   EXPECT_FALSE(
-      client_sent_packet_manager.GetRttStats()->SmoothedRtt().IsInfinite());
+      client_sent_packet_manager.GetRttStats()->smoothed_rtt().IsInfinite());
+  const RttStats& server_rtt_stats =
+      *session->connection()->sent_packet_manager().GetRttStats();
   EXPECT_EQ(static_cast<int64>(kMaxInitialRoundTripTimeUs),
-            server_sent_packet_manager.GetRttStats()->initial_rtt_us());
-  EXPECT_GE(
-      static_cast<int64>(kMaxInitialRoundTripTimeUs),
-      server_sent_packet_manager.GetRttStats()->SmoothedRtt().ToMicroseconds());
+            server_rtt_stats.initial_rtt_us());
+  EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
+            server_rtt_stats.smoothed_rtt().ToMicroseconds());
   server_thread_->Resume();
 }
 
@@ -1024,7 +1023,7 @@ TEST_P(EndToEndTest, MinInitialRTT) {
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
   EXPECT_FALSE(
-      client_sent_packet_manager.GetRttStats()->SmoothedRtt().IsInfinite());
+      client_sent_packet_manager.GetRttStats()->smoothed_rtt().IsInfinite());
   // Expect the default rtt of 100ms.
   EXPECT_EQ(static_cast<int64>(100 * base::Time::kMicrosecondsPerMillisecond),
             server_sent_packet_manager.GetRttStats()->initial_rtt_us());

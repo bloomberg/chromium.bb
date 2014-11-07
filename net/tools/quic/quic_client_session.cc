@@ -15,8 +15,9 @@ namespace net {
 namespace tools {
 
 QuicClientSession::QuicClientSession(const QuicConfig& config,
-                                     QuicConnection* connection)
-    : QuicClientSessionBase(connection, config) {
+                                     QuicConnection* connection,
+                                     bool is_secure)
+    : QuicClientSessionBase(connection, config, is_secure) {
 }
 
 QuicClientSession::~QuicClientSession() {

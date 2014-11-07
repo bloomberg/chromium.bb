@@ -1420,6 +1420,10 @@ string QuicCryptoServerConfig::NewSourceAddressToken(
       rand, source_address_token.SerializeAsString());
 }
 
+bool QuicCryptoServerConfig::HasProofSource() const {
+  return proof_source_ != nullptr;
+}
+
 HandshakeFailureReason QuicCryptoServerConfig::ValidateSourceAddressToken(
     const Config& config,
     StringPiece token,

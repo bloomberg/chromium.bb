@@ -22,7 +22,6 @@ namespace {
 // fast retransmission.  The cwnd after a timeout is still 1.
 const QuicPacketCount kMinimumCongestionWindow = 2;
 const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
-const int64 kInitialCongestionWindow = 10;
 const int kMaxBurstLength = 3;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
 const uint32 kDefaultNumConnections = 2;  // N-connection emulation.
@@ -44,7 +43,7 @@ TcpCubicSender::TcpCubicSender(
       largest_sent_sequence_number_(0),
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
-      congestion_window_(kInitialCongestionWindow),
+      congestion_window_(kDefaultInitialWindow),
       previous_congestion_window_(0),
       slowstart_threshold_(max_tcp_congestion_window),
       previous_slowstart_threshold_(0),
@@ -63,11 +62,13 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
       // Initial window experiment.  Ignore the initial congestion
       // window suggested by the client and use the default ICWND of
       // 10 instead.
-      congestion_window_ = kInitialCongestionWindow;
+      congestion_window_ = kDefaultInitialWindow;
     } else if (config.HasReceivedInitialCongestionWindow()) {
       // Set the initial window size.
-      congestion_window_ = min(kMaxInitialWindow,
-                               config.ReceivedInitialCongestionWindow());
+      congestion_window_ = max(kMinimumCongestionWindow,
+          min(kMaxInitialWindow,
+              static_cast<QuicPacketCount>(
+                  config.ReceivedInitialCongestionWindow())));
     }
   }
 }
@@ -92,7 +93,7 @@ void TcpCubicSender::OnCongestionEvent(
     const CongestionVector& lost_packets) {
   if (rtt_updated && InSlowStart() &&
       hybrid_slow_start_.ShouldExitSlowStart(rtt_stats_->latest_rtt(),
-                                             rtt_stats_->MinRtt(),
+                                             rtt_stats_->min_rtt(),
                                              congestion_window_)) {
     slowstart_threshold_ = congestion_window_;
   }
@@ -203,27 +204,34 @@ QuicBandwidth TcpCubicSender::PacingRate() const {
   // We pace at twice the rate of the underlying sender's bandwidth estimate
   // during slow start and 1.25x during congestion avoidance to ensure pacing
   // doesn't prevent us from filling the window.
-  return BandwidthEstimate().Scale(InSlowStart() ? 2 : 1.25);
+  QuicTime::Delta srtt = rtt_stats_->smoothed_rtt();
+  if (srtt.IsZero()) {
+    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_->initial_rtt_us());
+  }
+  const QuicBandwidth bandwidth =
+      QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(), srtt);
+  return bandwidth.Scale(InSlowStart() ? 2 : 1.25);
 }
 
 QuicBandwidth TcpCubicSender::BandwidthEstimate() const {
-  if (rtt_stats_->SmoothedRtt().IsZero()) {
-    LOG(DFATAL) << "In BandwidthEstimate(), smoothed RTT is zero!";
+  QuicTime::Delta srtt = rtt_stats_->smoothed_rtt();
+  if (srtt.IsZero()) {
+    // If we haven't measured an rtt, the bandwidth estimate is unknown.
     return QuicBandwidth::Zero();
   }
-  return QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(),
-                                              rtt_stats_->SmoothedRtt());
+  return QuicBandwidth::FromBytesAndTimeDelta(GetCongestionWindow(), srtt);
 }
 
 bool TcpCubicSender::HasReliableBandwidthEstimate() const {
-  return !InSlowStart() && !InRecovery();
+  return !InSlowStart() && !InRecovery() &&
+      !rtt_stats_->smoothed_rtt().IsZero();;
 }
 
 QuicTime::Delta TcpCubicSender::RetransmissionDelay() const {
-  if (!rtt_stats_->HasUpdates()) {
+  if (rtt_stats_->smoothed_rtt().IsZero()) {
     return QuicTime::Delta::Zero();
   }
-  return rtt_stats_->SmoothedRtt().Add(
+  return rtt_stats_->smoothed_rtt().Add(
       rtt_stats_->mean_deviation().Multiply(4));
 }
 
@@ -299,7 +307,7 @@ void TcpCubicSender::MaybeIncreaseCwnd(
   } else {
     congestion_window_ = min(max_tcp_congestion_window_,
                              cubic_.CongestionWindowAfterAck(
-                                 congestion_window_, rtt_stats_->MinRtt()));
+                                 congestion_window_, rtt_stats_->min_rtt()));
     DVLOG(1) << "Cubic; congestion window: " << congestion_window_
              << " slowstart threshold: " << slowstart_threshold_;
   }

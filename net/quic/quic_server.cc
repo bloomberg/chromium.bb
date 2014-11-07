@@ -29,8 +29,6 @@ const char kSourceAddressTokenSecret[] = "secret";
 // the limit.
 const int kReadBufferSize = 2 * kMaxPacketSize;
 
-const uint32 kServerInitialFlowControlWindow = 100 * kMaxPacketSize;
-
 } // namespace
 
 QuicServer::QuicServer(const QuicConfig& config,
@@ -53,11 +51,9 @@ void QuicServer::Initialize() {
   QuicInMemoryCache::GetInstance();
 
   scoped_ptr<CryptoHandshakeMessage> scfg(
-      crypto_config_.AddDefaultConfig(helper_.GetRandomGenerator(),
-                                      helper_.GetClock(),
-                                      QuicCryptoServerConfig::ConfigOptions()));
-
-  config_.SetInitialCongestionWindowToSend(kServerInitialFlowControlWindow);
+      crypto_config_.AddDefaultConfig(
+          helper_.GetRandomGenerator(), helper_.GetClock(),
+          QuicCryptoServerConfig::ConfigOptions()));
 }
 
 QuicServer::~QuicServer() {

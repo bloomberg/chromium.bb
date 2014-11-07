@@ -10,8 +10,9 @@ namespace net {
 
 QuicClientSessionBase::QuicClientSessionBase(
     QuicConnection* connection,
-    const QuicConfig& config)
-    : QuicSession(connection, config) {}
+    const QuicConfig& config,
+    bool is_secure)
+    : QuicSession(connection, config, is_secure) {}
 
 QuicClientSessionBase::~QuicClientSessionBase() {}
 

@@ -187,16 +187,14 @@ void QuicPacketCreator::StopSendingVersion() {
 
 void QuicPacketCreator::UpdateSequenceNumberLength(
       QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicByteCount congestion_window) {
+      QuicPacketCount max_packets_in_flight) {
   DCHECK_LE(least_packet_awaited_by_peer, sequence_number_ + 1);
   // Since the packet creator will not change sequence number length mid FEC
   // group, include the size of an FEC group to be safe.
   const QuicPacketSequenceNumber current_delta =
       max_packets_per_fec_group_ + sequence_number_ + 1
       - least_packet_awaited_by_peer;
-  const uint64 congestion_window_packets =
-      congestion_window / max_packet_length_;
-  const uint64 delta = max(current_delta, congestion_window_packets);
+  const uint64 delta = max(current_delta, max_packets_in_flight);
   next_sequence_number_length_ =
       QuicFramer::GetMinSequenceNumberLength(delta * 4);
 }

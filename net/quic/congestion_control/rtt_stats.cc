@@ -32,10 +32,6 @@ RttStats::RttStats()
       num_min_rtt_samples_remaining_(0),
       recent_min_rtt_window_(QuicTime::Delta::Infinite()) {}
 
-bool RttStats::HasUpdates() const {
-  return !smoothed_rtt_.IsZero();
-}
-
 void RttStats::SampleNewRecentMinRtt(uint32 num_samples) {
   num_min_rtt_samples_remaining_ = num_samples;
   new_min_rtt_ = RttSample();
@@ -78,7 +74,7 @@ void RttStats::UpdateRtt(QuicTime::Delta send_delta,
   }
   latest_rtt_ = rtt_sample;
   // First time call.
-  if (!HasUpdates()) {
+  if (smoothed_rtt_.IsZero()) {
     smoothed_rtt_ = rtt_sample;
     mean_deviation_ = QuicTime::Delta::FromMicroseconds(
         rtt_sample.ToMicroseconds() / 2);
@@ -129,20 +125,6 @@ void RttStats::UpdateRecentMinRtt(QuicTime::Delta rtt_sample, QuicTime now) {
       now.Subtract(recent_min_rtt_window_.Multiply(kQuarterWindow))) {
     quarter_window_rtt_ = RttSample(rtt_sample, now);
   }
-}
-
-QuicTime::Delta RttStats::SmoothedRtt() const {
-  if (!HasUpdates()) {
-    return QuicTime::Delta::FromMicroseconds(initial_rtt_us_);
-  }
-  return smoothed_rtt_;
-}
-
-QuicTime::Delta RttStats::MinRtt() const {
-  if (!HasUpdates()) {
-    return QuicTime::Delta::FromMicroseconds(initial_rtt_us_);
-  }
-  return min_rtt_;
 }
 
 }  // namespace net

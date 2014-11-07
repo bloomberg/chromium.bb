@@ -15,8 +15,9 @@ namespace net {
 
 QuicServerSession::QuicServerSession(const QuicConfig& config,
                                      QuicConnection* connection,
-                                     QuicServerSessionVisitor* visitor)
-    : QuicSession(connection, config),
+                                     QuicServerSessionVisitor* visitor,
+                                     bool is_secure)
+    : QuicSession(connection, config, is_secure),
       visitor_(visitor),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
       last_scup_time_(QuicTime::Zero()),
@@ -73,7 +74,7 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   const QuicSentPacketManager& sent_packet_manager =
       connection()->sent_packet_manager();
   int64 srtt_ms =
-      sent_packet_manager.GetRttStats()->SmoothedRtt().ToMilliseconds();
+      sent_packet_manager.GetRttStats()->smoothed_rtt().ToMilliseconds();
   int64 now_ms = now.Subtract(last_scup_time_).ToMilliseconds();
   int64 packets_since_last_scup =
       connection()->sequence_number_of_last_sent_packet() -
@@ -127,7 +128,7 @@ void QuicServerSession::OnCongestionWindowChange(QuicTime now) {
   cached_network_params.set_max_bandwidth_timestamp_seconds(
       max_bandwidth_timestamp);
   cached_network_params.set_min_rtt_ms(
-      sent_packet_manager.GetRttStats()->MinRtt().ToMilliseconds());
+      sent_packet_manager.GetRttStats()->min_rtt().ToMilliseconds());
   cached_network_params.set_previous_connection_state(
       bandwidth_recorder.EstimateRecordedDuringSlowStart()
           ? CachedNetworkParameters::SLOW_START

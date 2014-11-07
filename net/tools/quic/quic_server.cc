@@ -36,7 +36,6 @@ namespace {
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const char kSourceAddressTokenSecret[] = "secret";
-const uint32 kServerInitialFlowControlWindow = 100 * net::kMaxPacketSize;
 
 }  // namespace
 
@@ -78,9 +77,6 @@ void QuicServer::Initialize() {
       crypto_config_.AddDefaultConfig(
           QuicRandom::GetInstance(), &clock,
           QuicCryptoServerConfig::ConfigOptions()));
-
-  // Set flow control options in the config.
-  config_.SetInitialCongestionWindowToSend(kServerInitialFlowControlWindow);
 }
 
 QuicServer::~QuicServer() {

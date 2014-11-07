@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // can be safely changed.
   void UpdateSequenceNumberLength(
       QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicByteCount congestion_window);
+      QuicPacketCount max_packets_in_flight);
 
   // The overhead the framing will add for a packet with one frame.
   static size_t StreamFramePacketOverhead(

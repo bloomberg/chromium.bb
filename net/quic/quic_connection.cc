@@ -1139,13 +1139,11 @@ void QuicConnection::SendBlocked(QuicStreamId id) {
 const QuicConnectionStats& QuicConnection::GetStats() {
   // Update rtt and estimated bandwidth.
   stats_.min_rtt_us =
-      sent_packet_manager_.GetRttStats()->MinRtt().ToMicroseconds();
+      sent_packet_manager_.GetRttStats()->min_rtt().ToMicroseconds();
   stats_.srtt_us =
-      sent_packet_manager_.GetRttStats()->SmoothedRtt().ToMicroseconds();
+      sent_packet_manager_.GetRttStats()->smoothed_rtt().ToMicroseconds();
   stats_.estimated_bandwidth =
       sent_packet_manager_.BandwidthEstimate().ToBytesPerSecond();
-  stats_.congestion_window = sent_packet_manager_.GetCongestionWindow();
-  stats_.slow_start_threshold = sent_packet_manager_.GetSlowStartThreshold();
   stats_.max_packet_size = packet_generator_.max_packet_length();
   return stats_;
 }
@@ -1276,7 +1274,7 @@ bool QuicConnection::ProcessValidatedPacket() {
 
   if (is_server_ && encryption_level_ == ENCRYPTION_NONE &&
       last_size_ > packet_generator_.max_packet_length()) {
-    packet_generator_.set_max_packet_length(last_size_);
+    set_max_packet_length(last_size_);
   }
   return true;
 }
@@ -1496,7 +1494,7 @@ bool QuicConnection::WritePacketInner(QueuedPacket* packet) {
   // perhaps via the NetworkChangeVisitor.
   packet_generator_.UpdateSequenceNumberLength(
       sent_packet_manager_.least_packet_awaited_by_peer(),
-      sent_packet_manager_.GetCongestionWindow());
+      sent_packet_manager_.EstimateMaxPacketsInFlight(max_packet_length()));
 
   bool reset_retransmission_alarm = sent_packet_manager_.OnPacketSent(
       &packet->serialized_packet,
@@ -1586,7 +1584,7 @@ void QuicConnection::OnSerializedPacket(
 
 void QuicConnection::OnCongestionWindowChange() {
   packet_generator_.OnCongestionWindowChange(
-      sent_packet_manager_.GetCongestionWindow());
+      sent_packet_manager_.EstimateMaxPacketsInFlight(max_packet_length()));
   visitor_->OnCongestionWindowChange(clock_->ApproximateNow());
 }
 
@@ -1686,7 +1684,8 @@ void QuicConnection::SetEncrypter(EncryptionLevel level,
         // 3 times the current congestion window (in slow start) should cover
         // about two full round trips worth of packets, which should be
         // sufficient.
-        3 * sent_packet_manager_.GetCongestionWindow() / max_packet_length();
+        3 * sent_packet_manager_.EstimateMaxPacketsInFlight(
+            max_packet_length());
   }
 }
 
@@ -1940,11 +1939,7 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
 
   if (timeout < idle_network_timeout_) {
     idle_network_timeout_ = timeout;
-    if (FLAGS_quic_timeouts_only_from_alarms) {
-      SetTimeoutAlarm();
-    } else {
-      CheckForTimeout();
-    }
+    SetTimeoutAlarm();
   } else {
     idle_network_timeout_ = timeout;
   }
@@ -1953,11 +1948,7 @@ void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
 void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
   if (timeout < overall_connection_timeout_) {
     overall_connection_timeout_ = timeout;
-    if (FLAGS_quic_timeouts_only_from_alarms) {
-      SetTimeoutAlarm();
-    } else {
-      CheckForTimeout();
-    }
+    SetTimeoutAlarm();
   } else {
     overall_connection_timeout_ = timeout;
   }

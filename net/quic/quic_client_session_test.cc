@@ -46,11 +46,13 @@ class QuicClientSessionTest : public ::testing::TestWithParam<QuicVersion> {
         session_(connection_, GetSocket().Pass(), nullptr,
                  &transport_security_state_,
                  make_scoped_ptr((QuicServerInfo*)nullptr), DefaultQuicConfig(),
+                 /*is_secure=*/false,
                  base::MessageLoop::current()->message_loop_proxy().get(),
                  &net_log_) {
-    session_.InitializeSession(QuicServerId(kServerHostname, kServerPort, false,
+    session_.InitializeSession(QuicServerId(kServerHostname, kServerPort,
+                                            /*is_secure=*/false,
                                             PRIVACY_MODE_DISABLED),
-                                &crypto_config_, nullptr);
+        &crypto_config_, nullptr);
   }
 
   void TearDown() override { session_.CloseSessionOnError(ERR_ABORTED); }

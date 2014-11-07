@@ -126,7 +126,8 @@ class TestSession : public QuicSession {
  public:
   explicit TestSession(QuicConnection* connection)
       : QuicSession(connection,
-                    DefaultQuicConfig()),
+                    DefaultQuicConfig(),
+                    false),
         crypto_stream_(this),
         writev_consumes_all_data_(false) {
     InitializeSession();
@@ -399,7 +400,7 @@ TEST_P(QuicSessionTest, OnCanWriteBundlesStreams) {
   EXPECT_CALL(*send_algorithm, TimeUntilSend(_, _, _)).WillRepeatedly(
       Return(QuicTime::Delta::Zero()));
   EXPECT_CALL(*send_algorithm, GetCongestionWindow())
-      .WillOnce(Return(kMaxPacketSize * 10));
+      .WillRepeatedly(Return(kMaxPacketSize * 10));
   EXPECT_CALL(*stream2, OnCanWrite())
       .WillOnce(IgnoreResult(Invoke(CreateFunctor(
           &session_, &TestSession::SendStreamData, stream2->id()))));

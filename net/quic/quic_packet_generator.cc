@@ -19,10 +19,10 @@ namespace {
 // avoid losing them both within the same loss episode. On the other hand,
 // we expect to be able to recover from any loss in about an RTT.
 // We resolve this tradeoff by sending an FEC packet atmost half an RTT,
-// or equivalently, half a cwnd, after the first protected packet. Since we
-// don't want to delay an FEC packet past half an RTT, we set the max FEC
-// group size to be half the current congestion window.
-const float kCongestionWindowMultiplierForFecGroupSize = 0.5;
+// or equivalently, half the max number of in-flight packets,  the first
+// protected packet. Since we don't want to delay an FEC packet past half an
+// RTT, we set the max FEC group size to be half the current congestion window.
+const float kMaxPacketsInFlightMultiplierForFecGroupSize = 0.5;
 
 }  // namespace
 
@@ -85,10 +85,10 @@ QuicPacketGenerator::~QuicPacketGenerator() {
 }
 
 void QuicPacketGenerator::OnCongestionWindowChange(
-    QuicByteCount congestion_window) {
+    QuicPacketCount max_packets_in_flight) {
   packet_creator_.set_max_packets_per_fec_group(
-      static_cast<size_t>(kCongestionWindowMultiplierForFecGroupSize *
-                          congestion_window / kDefaultTCPMSS));
+      static_cast<size_t>(kMaxPacketsInFlightMultiplierForFecGroupSize *
+                          max_packets_in_flight));
 }
 
 void QuicPacketGenerator::SetShouldSendAck(bool also_send_feedback,
@@ -378,9 +378,9 @@ SerializedPacket QuicPacketGenerator::ReserializeAllFrames(
 
 void QuicPacketGenerator::UpdateSequenceNumberLength(
       QuicPacketSequenceNumber least_packet_awaited_by_peer,
-      QuicByteCount congestion_window) {
+      QuicPacketCount max_packets_in_flight) {
   return packet_creator_.UpdateSequenceNumberLength(
-      least_packet_awaited_by_peer, congestion_window);
+      least_packet_awaited_by_peer, max_packets_in_flight);
 }
 
 void QuicPacketGenerator::SetConnectionIdLength(uint32 length) {

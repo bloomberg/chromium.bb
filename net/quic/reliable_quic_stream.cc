@@ -457,7 +457,7 @@ void ReliableQuicStream::OnClose() {
     // written on this stream before termination. Done here if needed, using a
     // RST frame.
     DVLOG(1) << ENDPOINT << "Sending RST in OnClose: " << id();
-    session_->SendRstStream(id(), QUIC_RST_FLOW_CONTROL_ACCOUNTING,
+    session_->SendRstStream(id(), QUIC_RST_ACKNOWLEDGEMENT,
                             stream_bytes_written_);
     rst_sent_ = true;
   }

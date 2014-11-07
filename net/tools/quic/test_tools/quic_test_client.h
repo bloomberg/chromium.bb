@@ -64,9 +64,6 @@ class QuicTestClient : public SimpleClient,
  public:
   QuicTestClient(IPEndPoint server_address,
                  const string& server_hostname,
-                 const QuicVersionVector& supported_versions);
-  QuicTestClient(IPEndPoint server_address,
-                 const string& server_hostname,
                  bool secure,
                  const QuicVersionVector& supported_versions);
   QuicTestClient(IPEndPoint server_address,

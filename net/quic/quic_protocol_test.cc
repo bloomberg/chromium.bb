@@ -18,9 +18,9 @@ TEST(QuicProtocolTest, AdjustErrorForVersion) {
 
   // If we ever add different RST codes, we should have a test akin to the
   // following.
-  //  EXPECT_EQ(QUIC_RST_FLOW_CONTROL_ACCOUNTING, AdjustErrorForVersion(
-  //      QUIC_RST_FLOW_CONTROL_ACCOUNTING,
-  //      QUIC_VERSION_18));
+  //  EXPECT_EQ(QUIC_RST_ACKNOWLEDGEMENT, AdjustErrorForVersion(
+  //      QUIC_RST_ACKNOWLEDGEMENT,
+  //      QUIC_VERSION_23));
 }
 
 TEST(QuicProtocolTest, MakeQuicTag) {

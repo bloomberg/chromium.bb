@@ -41,12 +41,11 @@ class NET_EXPORT_PRIVATE RttStats {
   // |num_samples| UpdateRtt calls.
   void SampleNewRecentMinRtt(uint32 num_samples);
 
-  QuicTime::Delta SmoothedRtt() const;
-
-  // Returns the min_rtt for the entire connection if a min has been measured.
-  // This returns an initial non-zero RTT estimate if no measurements have yet
-  // been made.
-  QuicTime::Delta MinRtt() const;
+  // Returns the EWMA smoothed RTT for the connection.
+  // May return Zero if no valid updates have occurred.
+  QuicTime::Delta smoothed_rtt() const {
+    return smoothed_rtt_;
+  }
 
   int64 initial_rtt_us() const {
     return initial_rtt_us_;
@@ -57,8 +56,16 @@ class NET_EXPORT_PRIVATE RttStats {
     initial_rtt_us_ = initial_rtt_us;
   }
 
+  // The most recent rtt measurement.
+  // May return Zero if no valid updates have occurred.
   QuicTime::Delta latest_rtt() const {
     return latest_rtt_;
+  }
+
+  // Returns the min_rtt for the entire connection.
+  // May return Zero if no valid updates have occurred.
+  QuicTime::Delta min_rtt() const {
+    return min_rtt_;
   }
 
   // Returns the min_rtt since SampleNewRecentMinRtt has been called, or the

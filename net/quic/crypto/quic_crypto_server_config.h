@@ -326,6 +326,9 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // Set and take ownership of the callback to invoke on primary config changes.
   void AcquirePrimaryConfigChangedCb(PrimaryConfigChangedCallback* cb);
 
+  // Returns true if this config has a |proof_source_|.
+  bool HasProofSource() const;
+
  private:
   friend class test::QuicCryptoServerConfigPeer;
 

@@ -182,15 +182,22 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
 
   const QuicSustainedBandwidthRecorder& SustainedBandwidthRecorder() const;
 
-  // Returns the size of the current congestion window in bytes.  Note, this is
-  // not the *available* window.  Some send algorithms may not use a congestion
-  // window and will return 0.
-  QuicByteCount GetCongestionWindow() const;
+  // Returns the size of the current congestion window in number of
+  // kDefaultTCPMSS-sized segments. Note, this is not the *available* window.
+  // Some send algorithms may not use a congestion window and will return 0.
+  QuicPacketCount GetCongestionWindowInTcpMss() const;
 
-  // Returns the size of the slow start congestion window in bytes,
-  // aka ssthresh.  Some send algorithms do not define a slow start
-  // threshold and will return 0.
-  QuicByteCount GetSlowStartThreshold() const;
+  // Returns the number of packets of length |max_packet_length| which fit in
+  // the current congestion window. More packets may end up in flight if the
+  // congestion window has been recently reduced, of if non-full packets are
+  // sent.
+  QuicPacketCount EstimateMaxPacketsInFlight(
+      QuicByteCount max_packet_length) const;
+
+  // Returns the size of the slow start congestion window in nume of 1460 byte
+  // TCP segments, aka ssthresh.  Some send algorithms do not define a slow
+  // start threshold and will return 0.
+  QuicPacketCount GetSlowStartThresholdInTcpMss() const;
 
   // Enables pacing if it has not already been enabled.
   void EnablePacing();

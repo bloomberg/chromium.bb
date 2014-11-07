@@ -36,7 +36,7 @@ SequenceNumberSet TimeLossAlgorithm::DetectLostPackets(
   loss_detection_timeout_ = QuicTime::Zero();
   QuicTime::Delta loss_delay = QuicTime::Delta::Max(
       QuicTime::Delta::FromMilliseconds(kMinLossDelayMs),
-      QuicTime::Delta::Max(rtt_stats.SmoothedRtt(), rtt_stats.latest_rtt())
+      QuicTime::Delta::Max(rtt_stats.smoothed_rtt(), rtt_stats.latest_rtt())
           .Multiply(kLossDelayMultiplier));
 
   QuicPacketSequenceNumber sequence_number = unacked_packets.GetLeastUnacked();

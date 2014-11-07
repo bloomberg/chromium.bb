@@ -431,14 +431,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   void SetIdleNetworkTimeout(QuicTime::Delta timeout);
 
   // Sets (or resets) the total time delta the connection can be alive for.
-  // Also, checks and times out the connection if timer has expired for
-  // |timeout|. Used to limit the time a connection can be alive before crypto
-  // handshake finishes.
+  // Used to limit the time a connection can be alive before crypto handshake
+  // finishes.
   void SetOverallConnectionTimeout(QuicTime::Delta timeout);
 
   // Sets the overall and idle state connection timeouts.
-  // Times out the connection if the timeout has been reached and
-  // the quic_timeouts_only_from_alarms flag is false.
   void SetNetworkTimeouts(QuicTime::Delta overall_timeout,
                           QuicTime::Delta idle_timeout);
 

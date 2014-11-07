@@ -1025,7 +1025,7 @@ TEST_F(QuicSentPacketManagerTest, ResetRecentMinRTTWithEmptyWindow) {
   QuicSentPacketManagerPeer::GetRttStats(&manager_)->UpdateRtt(
       min_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
   EXPECT_EQ(min_rtt,
-            QuicSentPacketManagerPeer::GetRttStats(&manager_)->MinRtt());
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
   EXPECT_EQ(min_rtt,
             QuicSentPacketManagerPeer::GetRttStats(
                 &manager_)->recent_min_rtt());
@@ -1052,7 +1052,7 @@ TEST_F(QuicSentPacketManagerTest, ResetRecentMinRTTWithEmptyWindow) {
   manager_.OnIncomingAck(ack_frame, clock_.Now());
 
   EXPECT_EQ(min_rtt,
-            QuicSentPacketManagerPeer::GetRttStats(&manager_)->MinRtt());
+            QuicSentPacketManagerPeer::GetRttStats(&manager_)->min_rtt());
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100),
             QuicSentPacketManagerPeer::GetRttStats(
                 &manager_)->recent_min_rtt());
@@ -1079,16 +1079,16 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
   SendCryptoPacket(1);
 
   // Check the min.
-  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
-      1 * base::Time::kMicrosecondsPerMillisecond);
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
+  rtt_stats->set_initial_rtt_us(1 * base::Time::kMicrosecondsPerMillisecond);
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
-      100 * base::Time::kMicrosecondsPerMillisecond);
+  rtt_stats->set_initial_rtt_us(100 * base::Time::kMicrosecondsPerMillisecond);
 
-  QuicTime::Delta srtt = manager_.GetRttStats()->SmoothedRtt();
+  QuicTime::Delta srtt =
+      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
   QuicTime expected_time = clock_.Now().Add(srtt.Multiply(1.5));
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
 
@@ -1108,15 +1108,15 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
   SendDataPacket(2);
 
   // Check the min.
-  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
-      1 * base::Time::kMicrosecondsPerMillisecond);
+  RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
+  rtt_stats->set_initial_rtt_us(1 * base::Time::kMicrosecondsPerMillisecond);
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  QuicSentPacketManagerPeer::GetRttStats(&manager_)->set_initial_rtt_us(
-      100 * base::Time::kMicrosecondsPerMillisecond);
-  QuicTime::Delta srtt = manager_.GetRttStats()->SmoothedRtt();
+  rtt_stats->set_initial_rtt_us(100 * base::Time::kMicrosecondsPerMillisecond);
+  QuicTime::Delta srtt =
+      QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
   QuicTime::Delta expected_tlp_delay = srtt.Multiply(2);
   QuicTime expected_time = clock_.Now().Add(expected_tlp_delay);
   EXPECT_EQ(expected_time, manager_.GetRetransmissionTime());
@@ -1420,7 +1420,7 @@ TEST_F(QuicSentPacketManagerTest, NegotiateReceiveWindowFromOptions) {
 TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
   uint32 initial_rtt_us = 325000;
   EXPECT_NE(initial_rtt_us,
-            manager_.GetRttStats()->SmoothedRtt().ToMicroseconds());
+            manager_.GetRttStats()->smoothed_rtt().ToMicroseconds());
 
   QuicConfig config;
   config.SetInitialRoundTripTimeUsToSend(initial_rtt_us);
@@ -1428,8 +1428,8 @@ TEST_F(QuicSentPacketManagerTest, UseInitialRoundTripTimeToSend) {
   EXPECT_CALL(*network_change_visitor_, OnCongestionWindowChange());
   manager_.SetFromConfig(config);
 
-  EXPECT_EQ(initial_rtt_us,
-            manager_.GetRttStats()->SmoothedRtt().ToMicroseconds());
+  EXPECT_EQ(0, manager_.GetRttStats()->smoothed_rtt().ToMicroseconds());
+  EXPECT_EQ(initial_rtt_us, manager_.GetRttStats()->initial_rtt_us());
 }
 
 }  // namespace

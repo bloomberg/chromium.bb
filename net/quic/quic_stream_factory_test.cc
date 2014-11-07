@@ -240,7 +240,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<QuicVersion> {
     QuicStreamId stream_id = kClientDataStreamId1;
     return maker_.MakeRstPacket(
         1, true, stream_id,
-        AdjustErrorForVersion(QUIC_RST_FLOW_CONTROL_ACCOUNTING, GetParam()));
+        AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
   }
 
   MockQuicServerInfoFactory quic_server_info_factory_;

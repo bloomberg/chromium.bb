@@ -192,7 +192,7 @@ void QuicSentPacketManager::OnIncomingAck(const QuicAckFrame& ack_frame,
       send_algorithm_->BandwidthEstimate(),
       ack_receive_time,
       clock_->WallNow(),
-      rtt_stats_.SmoothedRtt());
+      rtt_stats_.smoothed_rtt());
 
   // If we have received a truncated ack, then we need to clear out some
   // previous transmissions to allow the peer to actually ACK new packets.
@@ -819,15 +819,21 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
     const {
   // This is equivalent to the TailLossProbeDelay, but slightly more aggressive
   // because crypto handshake messages don't incur a delayed ack time.
-  int64 delay_ms =
-      max(kMinHandshakeTimeoutMs,
-          static_cast<int64>(1.5 * rtt_stats_.SmoothedRtt().ToMilliseconds()));
+  QuicTime::Delta srtt = rtt_stats_.smoothed_rtt();
+  if (srtt.IsZero()) {
+    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
+  }
+  int64 delay_ms = max(kMinHandshakeTimeoutMs,
+                       static_cast<int64>(1.5 * srtt.ToMilliseconds()));
   return QuicTime::Delta::FromMilliseconds(
       delay_ms << consecutive_crypto_retransmission_count_);
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
-  QuicTime::Delta srtt = rtt_stats_.SmoothedRtt();
+  QuicTime::Delta srtt = rtt_stats_.smoothed_rtt();
+  if (srtt.IsZero()) {
+    srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
+  }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return QuicTime::Delta::Max(
         srtt.Multiply(2), srtt.Multiply(1.5).Add(
@@ -865,6 +871,8 @@ const RttStats* QuicSentPacketManager::GetRttStats() const {
 }
 
 QuicBandwidth QuicSentPacketManager::BandwidthEstimate() const {
+  // TODO(ianswett): Remove BandwidthEstimate from SendAlgorithmInterface
+  // and implement the logic here.
   return send_algorithm_->BandwidthEstimate();
 }
 
@@ -877,12 +885,17 @@ QuicSentPacketManager::SustainedBandwidthRecorder() const {
   return sustained_bandwidth_recorder_;
 }
 
-QuicByteCount QuicSentPacketManager::GetCongestionWindow() const {
-  return send_algorithm_->GetCongestionWindow();
+QuicPacketCount QuicSentPacketManager::EstimateMaxPacketsInFlight(
+    QuicByteCount max_packet_length) const {
+  return send_algorithm_->GetCongestionWindow() / max_packet_length;
 }
 
-QuicByteCount QuicSentPacketManager::GetSlowStartThreshold() const {
-  return send_algorithm_->GetSlowStartThreshold();
+QuicPacketCount QuicSentPacketManager::GetCongestionWindowInTcpMss() const {
+  return send_algorithm_->GetCongestionWindow() / kDefaultTCPMSS;
+}
+
+QuicPacketCount QuicSentPacketManager::GetSlowStartThresholdInTcpMss() const {
+  return send_algorithm_->GetSlowStartThreshold() / kDefaultTCPMSS;
 }
 
 void QuicSentPacketManager::EnablePacing() {

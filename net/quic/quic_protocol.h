@@ -60,8 +60,8 @@ const QuicByteCount kMaxPacketSize = 1452;
 const QuicByteCount kDefaultTCPMSS = 1460;
 
 // Maximum size of the initial congestion window in packets.
-const size_t kDefaultInitialWindow = 10;
-const uint32 kMaxInitialWindow = 100;
+const QuicPacketCount kDefaultInitialWindow = 10;
+const QuicPacketCount kMaxInitialWindow = 100;
 
 // Default size of initial flow control window, for both stream and session.
 const uint32 kDefaultFlowControlSendWindow = 16 * 1024;  // 16 KB
@@ -396,8 +396,9 @@ enum QuicRstStreamErrorCode {
   QUIC_STREAM_PEER_GOING_AWAY,
   // The stream has been cancelled.
   QUIC_STREAM_CANCELLED,
-  // Sending a RST to allow for proper flow control accounting.
-  QUIC_RST_FLOW_CONTROL_ACCOUNTING,
+  // Closing stream locally, sending a RST to allow for proper flow control
+  // accounting. Sent in response to a RST from the peer.
+  QUIC_RST_ACKNOWLEDGEMENT,
 
   // No error. Used as bound while iterating.
   QUIC_STREAM_LAST_ERROR,

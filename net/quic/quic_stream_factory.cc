@@ -946,7 +946,7 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
-      server_info.Pass(), config,
+      server_info.Pass(), config, server_id.is_https(),
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
   all_sessions_[*session] = server_id;  // owning pointer

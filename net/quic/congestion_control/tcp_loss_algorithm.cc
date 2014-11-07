@@ -31,7 +31,7 @@ SequenceNumberSet TCPLossAlgorithm::DetectLostPackets(
   SequenceNumberSet lost_packets;
   loss_detection_timeout_ = QuicTime::Zero();
   QuicTime::Delta loss_delay =
-      rtt_stats.SmoothedRtt().Multiply(kEarlyRetransmitLossDelayMultiplier);
+      rtt_stats.smoothed_rtt().Multiply(kEarlyRetransmitLossDelayMultiplier);
   QuicPacketSequenceNumber sequence_number = unacked_packets.GetLeastUnacked();
   for (QuicUnackedPacketMap::const_iterator it = unacked_packets.begin();
        it != unacked_packets.end() && sequence_number <= largest_observed;

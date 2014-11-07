@@ -21,8 +21,7 @@ using std::min;
 namespace net {
 namespace test {
 
-const int64 kInitialCongestionWindow = 10;
-const uint32 kDefaultWindowTCP = kInitialCongestionWindow * kDefaultTCPMSS;
+const uint32 kDefaultWindowTCP = kDefaultInitialWindow * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
 
 // TODO(ianswett): Remove 10000 once b/10075719 is fixed.
@@ -188,6 +187,8 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
       0,
       HAS_RETRANSMITTABLE_DATA).IsZero());
+  EXPECT_FALSE(sender_->HasReliableBandwidthEstimate());
+  EXPECT_EQ(QuicBandwidth::Zero(), sender_->BandwidthEstimate());
   // Make sure we can send.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(),
                                      0,
@@ -198,9 +199,12 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
     SendAvailableSendWindow();
     AckNPackets(2);
   }
-  QuicByteCount bytes_to_send = sender_->GetCongestionWindow();
-  EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * kNumberOfAcks,
-            bytes_to_send);
+  const QuicByteCount cwnd = sender_->GetCongestionWindow();
+  EXPECT_EQ(kDefaultWindowTCP + kDefaultTCPMSS * 2 * kNumberOfAcks, cwnd);
+  EXPECT_FALSE(sender_->HasReliableBandwidthEstimate());
+  EXPECT_EQ(QuicBandwidth::FromBytesAndTimeDelta(
+                cwnd, sender_->rtt_stats_.smoothed_rtt()),
+            sender_->BandwidthEstimate());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
@@ -301,7 +305,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
 
 TEST_F(TcpCubicSenderTest, NoPRRWhenLessThanOnePacketInFlight) {
   SendAvailableSendWindow();
-  LoseNPackets(kInitialCongestionWindow - 1);
+  LoseNPackets(kDefaultInitialWindow - 1);
   AckNPackets(1);
   // PRR will allow 2 packets for every ack during recovery.
   EXPECT_EQ(2, SendAvailableSendWindow());
@@ -469,13 +473,13 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   }
   expected_delay = QuicTime::Delta::FromMilliseconds(kRttMs + kDeviationMs * 4);
 
-  EXPECT_NEAR(kRttMs, sender_->rtt_stats_.SmoothedRtt().ToMilliseconds(), 1);
+  EXPECT_NEAR(kRttMs, sender_->rtt_stats_.smoothed_rtt().ToMilliseconds(), 1);
   EXPECT_NEAR(expected_delay.ToMilliseconds(),
               sender_->RetransmissionDelay().ToMilliseconds(),
               1);
   EXPECT_EQ(static_cast<int64>(
                 sender_->GetCongestionWindow() * kNumMicrosPerSecond /
-                sender_->rtt_stats_.SmoothedRtt().ToMicroseconds()),
+                sender_->rtt_stats_.smoothed_rtt().ToMicroseconds()),
             sender_->BandwidthEstimate().ToBytesPerSecond());
 }
 

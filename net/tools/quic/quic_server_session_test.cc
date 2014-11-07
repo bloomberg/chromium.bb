@@ -79,7 +79,8 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
     connection_ =
         new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
-    session_.reset(new QuicServerSession(config_, connection_, &owner_));
+    session_.reset(new QuicServerSession(config_, connection_, &owner_,
+                                         /*is_secure=*/false));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
@@ -129,8 +130,8 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
 
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
-  EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1,
-                                          QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -145,8 +146,8 @@ TEST_P(QuicServerSessionTest, CloseStreamDueToReset) {
 TEST_P(QuicServerSessionTest, NeverOpenStreamDueToReset) {
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst1(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
-  EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1,
-                                          QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst1);
   EXPECT_EQ(0u, session_->GetNumOpenStreams());
 
@@ -173,8 +174,8 @@ TEST_P(QuicServerSessionTest, AcceptClosedStream) {
 
   // Send a reset (and expect the peer to send a RST in response).
   QuicRstStreamFrame rst(kClientDataStreamId1, QUIC_STREAM_NO_ERROR, 0);
-  EXPECT_CALL(*connection_, SendRstStream(kClientDataStreamId1,
-                                          QUIC_RST_FLOW_CONTROL_ACCOUNTING, 0));
+  EXPECT_CALL(*connection_,
+              SendRstStream(kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT, 0));
   visitor_->OnRstStream(rst);
 
   // If we were tracking, we'd probably want to reject this because it's data
@@ -305,6 +306,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   if (version() <= QUIC_VERSION_21) {
     return;
   }
+
   // Test that bandwidth estimate updates are sent to the client, only after the
   // bandwidth estimate has changes sufficiently, and enough time has passed.
 
@@ -323,6 +325,11 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
       QuicConnectionPeer::GetSentPacketManager(session_->connection());
   QuicSustainedBandwidthRecorder& bandwidth_recorder =
       QuicSentPacketManagerPeer::GetBandwidthRecorder(sent_packet_manager);
+  // Seed an rtt measurement equal to the initial default rtt.
+  RttStats* rtt_stats =
+      QuicSentPacketManagerPeer::GetRttStats(sent_packet_manager);
+  rtt_stats->UpdateRtt(QuicTime::Delta::FromMicroseconds(
+      rtt_stats->initial_rtt_us()), QuicTime::Delta::Zero(), QuicTime::Zero());
   QuicSustainedBandwidthRecorderPeer::SetBandwidthEstimate(
       &bandwidth_recorder, bandwidth_estimate_kbytes_per_second);
   QuicSustainedBandwidthRecorderPeer::SetMaxBandwidthEstimate(
@@ -342,7 +349,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   // Bandwidth estimate has now changed sufficiently and enough time has passed,
   // but not enough packets have been sent.
   int64 srtt_ms =
-      sent_packet_manager->GetRttStats()->SmoothedRtt().ToMilliseconds();
+      sent_packet_manager->GetRttStats()->smoothed_rtt().ToMilliseconds();
   now = now.Add(QuicTime::Delta::FromMilliseconds(
       kMinIntervalBetweenServerConfigUpdatesRTTs * srtt_ms));
   session_->OnCongestionWindowChange(now);
@@ -363,7 +370,7 @@ TEST_P(QuicServerSessionTest, BandwidthEstimates) {
   expected_network_params.set_min_rtt_ms(session_->connection()
                                              ->sent_packet_manager()
                                              .GetRttStats()
-                                             ->MinRtt()
+                                             ->min_rtt()
                                              .ToMilliseconds());
   expected_network_params.set_previous_connection_state(
       CachedNetworkParameters::CONGESTION_AVOIDANCE);
