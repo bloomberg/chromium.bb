@@ -94,6 +94,17 @@ decltype specifier</a></td>
 </tr>
 
 <tr>
+<td>Default Function Creation</td>
+<td><code><i>Function</i>(<i>arguments</i>) = default;</code></td>
+<td>Instructs the compiler to generate a default version
+of the indicated function</td>
+<td><a href="http://stackoverflow.com/questions/823935/whats-the-point-in-defaulting-functions-in-c11">
+What's the point in defaulting functions in C++11?</a></td>
+<td>Doesn't work for move constructors and move assignment operators in MSVC2013.
+<a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/qgU4mh_MpGA">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Enumerated Type Classes and Enum Bases</td>
 <td><code>enum class <i>classname</i></code><br>
     <code>enum class <i>classname</i> : <i>base-type</i></code><br>
@@ -113,6 +124,15 @@ enum classes and regular enums.</td>
 <td> Indicates that a class or function is final and cannot be overridden</td>
 <td><a href="http://en.cppreference.com/w/cpp/language/final">final Language Reference</a></td>
 <td>Recommended for new code. Existing uses of the <code>FINAL</code> macro will be <a href="https://crbug.com/417463">replaced throughout the codebase</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/VTNZzizN0zo">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Function Suppression</td>
+<td><code><i>Function</i>(<i>arguments</i>) = delete;</code></td>
+<td>Suppresses the implementation of a function, especially a
+synthetic function such as a copy constructor</td>
+<td>TODO: documentation link</td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/i1o7-RNRnMs">Discussion thread</a></td>
 </tr>
 
 <tr>
@@ -373,16 +393,6 @@ C++11 generalized attributes</a></td>
 </tr>
 
 <tr>
-<td>Default Function Creation</td>
-<td><code><i>Function</i>(<i>arguments</i>) = default;</code></td>
-<td>Instructs the compiler to generate a default version
-of the indicated function</td>
-<td><a href="http://stackoverflow.com/questions/823935/whats-the-point-in-defaulting-functions-in-c11">
-What's the point in defaulting functions in C++11?</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/qgU4mh_MpGA">Discussion thread</a></td>
-</tr>
-
-<tr>
 <td>Default Function Template Arguments</td>
 <td><code>template &lt;typename T = <i>type</i>&gt; <br />
 &nbsp;&nbsp;<i>type</i> <i>Function</i>(T <i>var</i>) {}</code></td>
@@ -412,15 +422,6 @@ and <code>nested_exception</code></td>
 std::exception</a></td>
 <td>Exceptions are banned by the
 <a href="https://google-styleguide.googlecode.com/svn/trunk/cppguide.html#Exceptions"> C++ Style Guide</a>. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/8i4tMqNpHhg">Discussion thread</a></td>
-</tr>
-
-<tr>
-<td>Function Suppression</td>
-<td><code><i>Function</i>(<i>arguments</i>) = delete;</code></td>
-<td>Suppresses the implementation of a function, especially a
-synthetic function such as a copy constructor</td>
-<td>TODO: documentation link</td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/i1o7-RNRnMs">Discussion thread</a></td>
 </tr>
 
 <tr>
