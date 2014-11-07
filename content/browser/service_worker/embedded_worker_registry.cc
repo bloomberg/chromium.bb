@@ -113,14 +113,21 @@ void EmbeddedWorkerRegistry::OnWorkerScriptEvaluated(int process_id,
 
 void EmbeddedWorkerRegistry::OnWorkerStarted(
     int process_id, int embedded_worker_id) {
-  DCHECK(!ContainsKey(worker_process_map_, process_id) ||
-         worker_process_map_[process_id].count(embedded_worker_id) == 0);
   WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  // TODO(falken): Instead of DCHECK, we should terminate the process on
+  // unexpected message. Same with most of the DCHECKs in this file.
   DCHECK(found != worker_map_.end());
   DCHECK_EQ(found->second->process_id(), process_id);
   if (found == worker_map_.end() || found->second->process_id() != process_id)
     return;
-  worker_process_map_[process_id].insert(embedded_worker_id);
+
+  DCHECK(ContainsKey(worker_process_map_, process_id) &&
+         worker_process_map_[process_id].count(embedded_worker_id) == 1);
+  if (!ContainsKey(worker_process_map_, process_id) ||
+      worker_process_map_[process_id].count(embedded_worker_id) == 0) {
+    return;
+  }
+
   found->second->OnStarted();
 }
 
@@ -232,7 +239,20 @@ ServiceWorkerStatusCode EmbeddedWorkerRegistry::SendStartWorker(
   // is created, and keep an entry in process_sender_map_ for its whole
   // lifetime.
   DCHECK(ContainsKey(process_sender_map_, process_id));
-  return Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));
+
+  int embedded_worker_id = params->embedded_worker_id;
+  WorkerInstanceMap::iterator found = worker_map_.find(embedded_worker_id);
+  DCHECK(found != worker_map_.end());
+  DCHECK_EQ(found->second->process_id(), process_id);
+
+  DCHECK(!ContainsKey(worker_process_map_, process_id) ||
+         worker_process_map_[process_id].count(embedded_worker_id) == 0);
+
+  ServiceWorkerStatusCode status =
+      Send(process_id, new EmbeddedWorkerMsg_StartWorker(*params));
+  if (status == SERVICE_WORKER_OK)
+    worker_process_map_[process_id].insert(embedded_worker_id);
+  return status;
 }
 
 ServiceWorkerStatusCode EmbeddedWorkerRegistry::Send(

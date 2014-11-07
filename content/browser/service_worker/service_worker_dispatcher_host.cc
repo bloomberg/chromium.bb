@@ -119,6 +119,7 @@ void ServiceWorkerDispatcherHost::Init(
                    this, make_scoped_refptr(context_wrapper)));
     return;
   }
+
   context_wrapper_ = context_wrapper;
   GetContext()->embedded_worker_registry()->AddChildProcessSender(
       render_process_id_, this);
@@ -127,13 +128,24 @@ void ServiceWorkerDispatcherHost::Init(
 void ServiceWorkerDispatcherHost::OnFilterAdded(IPC::Sender* sender) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerDispatcherHost::OnFilterAdded");
-  BrowserMessageFilter::OnFilterAdded(sender);
   channel_ready_ = true;
   std::vector<IPC::Message*> messages;
   pending_messages_.release(&messages);
   for (size_t i = 0; i < messages.size(); ++i) {
     BrowserMessageFilter::Send(messages[i]);
   }
+}
+
+void ServiceWorkerDispatcherHost::OnFilterRemoved() {
+  // Don't wait until the destructor to teardown since a new dispatcher host
+  // for this process might be created before then.
+  if (GetContext()) {
+    GetContext()->RemoveAllProviderHostsForProcess(render_process_id_);
+    GetContext()->embedded_worker_registry()->RemoveChildProcessSender(
+        render_process_id_);
+  }
+  context_wrapper_ = nullptr;
+  channel_ready_ = false;
 }
 
 void ServiceWorkerDispatcherHost::OnDestruct() const {
@@ -786,6 +798,10 @@ void ServiceWorkerDispatcherHost::GetRegistrationComplete(
                          "Registration ID",
                          registration.get() ? registration->id()
                              : kInvalidServiceWorkerRegistrationId);
+
+  if (!GetContext())
+    return;
+
   if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
     SendGetRegistrationError(thread_id, request_id, status);
     return;
@@ -842,6 +858,8 @@ void ServiceWorkerDispatcherHost::SendGetRegistrationError(
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
+  if (!context_wrapper_.get())
+    return nullptr;
   return context_wrapper_->context();
 }
 

@@ -115,7 +115,7 @@ class ServiceWorkerVersionTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    helper_.reset(new MessageReceiver());
+    helper_ = GetMessageReceiver();
 
     pattern_ = GURL("http://www.example.com/");
     registration_ = new ServiceWorkerRegistration(
@@ -134,6 +134,10 @@ class ServiceWorkerVersionTest : public testing::Test {
         ->PatternHasProcessToRun(pattern_));
   }
 
+  virtual scoped_ptr<MessageReceiver> GetMessageReceiver() {
+    return make_scoped_ptr(new MessageReceiver());
+  }
+
   void TearDown() override {
     version_ = 0;
     registration_ = 0;
@@ -148,6 +152,37 @@ class ServiceWorkerVersionTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersionTest);
+};
+
+class MessageReceiverDisallowStart : public MessageReceiver {
+ public:
+  MessageReceiverDisallowStart()
+      : MessageReceiver() {}
+  ~MessageReceiverDisallowStart() override {}
+
+  void OnStartWorker(int embedded_worker_id,
+                     int64 service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url,
+                     bool pause_after_download) override {
+    // Do nothing.
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
+};
+
+class ServiceWorkerFailToStartTest : public ServiceWorkerVersionTest {
+ protected:
+  ServiceWorkerFailToStartTest()
+      : ServiceWorkerVersionTest() {}
+
+  virtual scoped_ptr<MessageReceiver> GetMessageReceiver() override {
+    return make_scoped_ptr(new MessageReceiverDisallowStart());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ServiceWorkerFailToStartTest);
 };
 
 TEST_F(ServiceWorkerVersionTest, ConcurrentStartAndStop) {
@@ -392,6 +427,29 @@ TEST_F(ServiceWorkerVersionTest, ListenerAvailability) {
 
   // Recreated when the worker starts again.
   EXPECT_TRUE(version_->cache_listener_.get());
+}
+
+TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
+  version_->StartWorker(
+      CreateReceiverOnCurrentThread(&status));
+  base::RunLoop().RunUntilIdle();
+
+  // Callback has not completed yet.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
+  EXPECT_EQ(ServiceWorkerVersion::STARTING, version_->running_status());
+
+  // Simulate renderer crash: do what
+  // ServiceWorkerDispatcherHost::OnFilterRemoved does.
+  int process_id = helper_->mock_render_process_id();
+  helper_->context()->RemoveAllProviderHostsForProcess(process_id);
+  helper_->context()->embedded_worker_registry()->RemoveChildProcessSender(
+      process_id);
+  base::RunLoop().RunUntilIdle();
+
+  // Callback completed.
+  EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version_->running_status());
 }
 
 }  // namespace content

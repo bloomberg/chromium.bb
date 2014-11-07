@@ -124,7 +124,7 @@ class CONTENT_EXPORT EmbeddedWorkerRegistry
   ProcessToSenderMap process_sender_map_;
 
   // Map from process_id to embedded_worker_id.
-  // This map only contains running workers.
+  // This map only contains starting and running workers.
   std::map<int, std::set<int> > worker_process_map_;
 
   int next_embedded_worker_id_;

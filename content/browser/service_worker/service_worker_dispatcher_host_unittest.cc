@@ -23,6 +23,17 @@
 
 namespace content {
 
+namespace {
+
+static void SaveStatusCallback(bool* called,
+                               ServiceWorkerStatusCode* out,
+                               ServiceWorkerStatusCode status) {
+  *called = true;
+  *out = status;
+}
+
+}
+
 static const int kRenderProcessId = 1;
 
 class TestingServiceWorkerDispatcherHost : public ServiceWorkerDispatcherHost {
@@ -449,6 +460,60 @@ TEST_F(ServiceWorkerDispatcherHostTest, GetRegistration_EarlyContextDeletion) {
   GetRegistration(-1,
                   GURL(),
                   ServiceWorkerMsg_ServiceWorkerGetRegistrationError::ID);
+}
+
+TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
+  // Add a provider and worker.
+  const int64 kProviderId = 99;  // Dummy value
+  dispatcher_host_->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId));
+
+  GURL pattern = GURL("http://www.example.com/");
+  scoped_refptr<ServiceWorkerRegistration> registration(
+      new ServiceWorkerRegistration(pattern,
+                                    1L,
+                                    helper_->context()->AsWeakPtr()));
+  scoped_refptr<ServiceWorkerVersion> version(
+      new ServiceWorkerVersion(registration.get(),
+                               GURL("http://www.example.com/service_worker.js"),
+                               1L,
+                               helper_->context()->AsWeakPtr()));
+  helper_->SimulateAddProcessToPattern(pattern, kRenderProcessId);
+
+  // Start up the worker.
+  bool called;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  version->StartWorker(base::Bind(&SaveStatusCallback, &called, &status));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(called);
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+
+  EXPECT_TRUE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_EQ(ServiceWorkerVersion::RUNNING, version->running_status());
+
+  // Simulate the render process crashing.
+  dispatcher_host_->OnFilterRemoved();
+
+  // The dispatcher host should clean up the state from the process.
+  EXPECT_FALSE(context()->GetProviderHost(kRenderProcessId, kProviderId));
+  EXPECT_EQ(ServiceWorkerVersion::STOPPED, version->running_status());
+
+  // We should be able to hook up a new dispatcher host although the old object
+  // is not yet destroyed. This is what the browser does when reusing a crashed
+  // render process.
+  scoped_refptr<TestingServiceWorkerDispatcherHost> new_dispatcher_host(
+      new TestingServiceWorkerDispatcherHost(kRenderProcessId,
+                                             context_wrapper(),
+                                             &resource_context_,
+                                             helper_.get()));
+
+  // To show the new dispatcher can operate, simulate provider creation. Since
+  // the old dispatcher cleaned up the old provider host, the new one won't
+  // complain.
+  new_dispatcher_host->OnMessageReceived(
+      ServiceWorkerHostMsg_ProviderCreated(kProviderId));
+  EXPECT_EQ(0, new_dispatcher_host->bad_messages_received_count_);
 }
 
 }  // namespace content
