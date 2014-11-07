@@ -22,6 +22,9 @@
 #include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/input_device_event_observer.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/gfx/screen.h"
 #include "ui/wm/core/compound_event_filter.h"
 #include "ui/wm/core/cursor_manager.h"
@@ -38,6 +41,48 @@ AthenaEnv* instance = nullptr;
 
 // Screen object used during shutdown.
 gfx::Screen* screen_for_shutdown = nullptr;
+
+gfx::Transform GetTouchTransform(const ui::DisplaySnapshot& display,
+                                 const ui::TouchscreenDevice& touchscreen,
+                                 const gfx::SizeF& framebuffer_size) {
+  if (!display.current_mode())
+    return gfx::Transform();
+
+  gfx::SizeF display_size = display.current_mode()->size();
+#if defined(USE_X11)
+  gfx::SizeF touchscreen_size = framebuffer_size;
+#elif defined(USE_OZONE)
+  gfx::SizeF touchscreen_size = touchscreen.size;
+#endif
+
+  if (display_size.IsEmpty() || touchscreen_size.IsEmpty())
+    return gfx::Transform();
+
+  gfx::Transform transform;
+  transform.Scale(display_size.width() / touchscreen_size.width(),
+                  display_size.height() / touchscreen_size.height());
+
+  return transform;
+}
+
+double GetTouchRadiusScale(const ui::DisplaySnapshot& display,
+                           const ui::TouchscreenDevice& touchscreen,
+                           const gfx::SizeF& framebuffer_size) {
+  if (!display.current_mode())
+    return 1;
+
+  gfx::SizeF display_size = display.current_mode()->size();
+#if defined(USE_X11)
+  gfx::SizeF touchscreen_size = framebuffer_size;
+#elif defined(USE_OZONE)
+  gfx::SizeF touchscreen_size = touchscreen.size;
+#endif
+
+  if (display_size.IsEmpty() || touchscreen_size.IsEmpty())
+    return 1;
+
+  return std::sqrt(display_size.GetArea() / touchscreen_size.GetArea());
+}
 
 // TODO(flackr:oshima): Remove this once athena switches to share
 // ash::DisplayManager.
@@ -152,12 +197,15 @@ class AthenaNativeCursorManager : public wm::NativeCursorManager {
 
 class AthenaEnvImpl : public AthenaEnv,
                       public aura::WindowTreeHostObserver,
-                      public ui::DisplayConfigurator::Observer {
+                      public ui::DisplayConfigurator::Observer,
+                      public ui::InputDeviceEventObserver {
  public:
   AthenaEnvImpl() : display_configurator_(new ui::DisplayConfigurator) {
     display_configurator_->Init(false);
     display_configurator_->ForceInitialConfigure(0);
     display_configurator_->AddObserver(this);
+
+    ui::DeviceDataManager::GetInstance()->AddObserver(this);
 
     gfx::Size screen_size = GetPrimaryDisplaySize();
     if (screen_size.IsEmpty()) {
@@ -234,6 +282,8 @@ class AthenaEnvImpl : public AthenaEnv,
     screen_.reset();
     aura::Env::DeleteInstance();
 
+    ui::DeviceDataManager::GetInstance()->RemoveObserver(this);
+
     display_configurator_->RemoveObserver(this);
     display_configurator_.reset();
   }
@@ -286,10 +336,19 @@ class AthenaEnvImpl : public AthenaEnv,
   void OnDisplayModeChanged(
       const std::vector<ui::DisplayConfigurator::DisplayState>& displays)
       override {
+    MapTouchscreenToDisplay();
+
     gfx::Size size = GetPrimaryDisplaySize();
     if (!size.IsEmpty())
       host_->UpdateRootWindowSize(size);
   }
+
+  // ui::InputDeviceEventObserver:
+  void OnTouchscreenDeviceConfigurationChanged() override {
+    MapTouchscreenToDisplay();
+  }
+
+  void OnKeyboardDeviceConfigurationChanged() override {}
 
   // aura::WindowTreeHostObserver:
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override {
@@ -304,6 +363,29 @@ class AthenaEnvImpl : public AthenaEnv,
       return gfx::Size();
     const ui::DisplayMode* mode = displays[0].display->current_mode();
     return mode ? mode->size() : gfx::Size();
+  }
+
+  void MapTouchscreenToDisplay() const {
+    auto device_manager = ui::DeviceDataManager::GetInstance();
+    auto displays = display_configurator_->cached_displays();
+    auto touchscreens = device_manager->touchscreen_devices();
+
+    if (displays.empty() || touchscreens.empty())
+      return;
+
+    gfx::SizeF framebuffer_size = display_configurator_->framebuffer_size();
+    device_manager->ClearTouchTransformerRecord();
+    device_manager->UpdateTouchInfoForDisplay(
+        displays[0].display->display_id(),
+        touchscreens[0].id,
+        GetTouchTransform(*displays[0].display,
+                          touchscreens[0],
+                          framebuffer_size));
+    device_manager->UpdateTouchRadiusScale(
+        touchscreens[0].id,
+        GetTouchRadiusScale(*displays[0].display,
+                            touchscreens[0],
+                            framebuffer_size));
   }
 
   scoped_ptr<aura::TestScreen> screen_;
