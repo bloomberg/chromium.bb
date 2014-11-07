@@ -1454,6 +1454,7 @@ _x86_release_boards = frozenset([
   'parrot_ivb',
   'parry',
   'peppy',
+  'peppy_freon',
   'quawks',
   'rambi',
   'samus',
