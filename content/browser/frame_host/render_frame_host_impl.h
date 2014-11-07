@@ -451,6 +451,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params);
   void OnAccessibilityFindInPageResult(
       const AccessibilityHostMsg_FindInPageResultParams& params);
+  void OnRequestPushPermission(int request_id, bool user_gesture);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -470,6 +471,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool CanCommitURL(const GURL& url);
 
   void PlatformNotificationPermissionRequestDone(int request_id, bool granted);
+
+  void PushPermissionRequestDone(int request_id, bool allowed);
 
   // Update the the singleton FrameAccessibility instance with a map
   // from accessibility node id to the frame routing id of a cross-process

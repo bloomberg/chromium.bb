@@ -61,6 +61,8 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
+#include "chrome/browser/services/gcm/push_messaging_permission_context.h"
+#include "chrome/browser/services/gcm/push_messaging_permission_context_factory.h"
 #include "chrome/browser/signin/principals_message_filter.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -1950,11 +1952,12 @@ void ChromeContentBrowserClient::RequestPermission(
 #endif
       break;
     case content::PERMISSION_PUSH_MESSAGING:
-      // Push messaging does not require this flow as it goes directly through
-      // the push service implementation so there is no reason to
-      // implement it here.
-      NOTIMPLEMENTED() << "RequestPermission not implemented for "
-                       << permission;
+      gcm::PushMessagingPermissionContextFactory::GetForProfile(profile)
+          ->RequestPermission(web_contents,
+                              request_id,
+                              requesting_frame.GetOrigin(),
+                              user_gesture,
+                              result_callback);
       break;
     case content::PERMISSION_NUM:
       NOTREACHED() << "Invalid RequestPermission for " << permission;
@@ -2017,6 +2020,8 @@ static ContentSettingsType PermissionToContentSetting(
   switch (permission) {
     case content::PERMISSION_MIDI_SYSEX:
       return CONTENT_SETTINGS_TYPE_MIDI_SYSEX;
+    case content::PERMISSION_PUSH_MESSAGING:
+      return CONTENT_SETTINGS_TYPE_PUSH_MESSAGING;
     case content::PERMISSION_NOTIFICATIONS:
       return CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
     case content::PERMISSION_GEOLOCATION:
