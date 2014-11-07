@@ -10,11 +10,13 @@
  * @param {!cr.ui.dialogs.ConfirmDialog} confirmDialog
  * @param {!DirectoryModel} directoryModel
  * @param {!FileFilter} fileFilter
+ * @param {!FileSelectionHandler} selectionHandler
  * @constructor
  * @struct
  */
 function NamingController(
-    listContainer, alertDialog, confirmDialog, directoryModel, fileFilter) {
+    listContainer, alertDialog, confirmDialog, directoryModel, fileFilter,
+    selectionHandler) {
   /**
    * @type {!ListContainer}
    * @const
@@ -50,6 +52,12 @@ function NamingController(
    */
   this.fileFilter_ = fileFilter;
 
+  /**
+   * @type {!FileSelectionHandler}
+   * @const
+   * @private
+   */
+  this.selectionHandler_ = selectionHandler;
 
   // Register events.
   this.listContainer_.renameInput.addEventListener(
@@ -279,11 +287,19 @@ NamingController.prototype.commitRename_ = function() {
     util.rename(
         entry, newName,
         function(newEntry) {
-          this.directoryModel_.onRenameEntry(entry, newEntry);
-          renamedItemElement.removeAttribute('renaming');
-          this.listContainer_.endBatchUpdates();
-          // Focus may go out of the list. Back it to the list.
-          this.listContainer_.currentList.focus();
+          this.directoryModel_.onRenameEntry(entry, newEntry, function() {
+            // Select new entry.
+            this.listContainer_.currentList.selectionModel.selectedIndex =
+                this.directoryModel_.getFileList().indexOf(newEntry);
+            // Force to update selection immediately.
+            this.selectionHandler_.onFileSelectionChanged();
+
+            renamedItemElement.removeAttribute('renaming');
+            this.listContainer_.endBatchUpdates();
+
+            // Focus may go out of the list. Back it to the list.
+            this.listContainer_.currentList.focus();
+          }.bind(this));
         }.bind(this),
         function(error) {
           // Write back to the old name.

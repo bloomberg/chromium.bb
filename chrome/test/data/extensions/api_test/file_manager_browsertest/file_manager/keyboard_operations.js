@@ -157,6 +157,56 @@ function renameFile(windowId, oldName, newName) {
 }
 
 /**
+ * Test for renaming a new directory.
+ * @param {string} path Initial path.
+ * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * @param {string} pathInBreadcrumb Initial path which is shown in breadcrumb.
+ * @return {Promise} Promise to be fulfilled on success.
+ */
+function testRenameNewDirectory(path, initialEntrySet, pathInBreadcrumb) {
+  var expectedRows = TestEntryInfo.getExpectedRows(initialEntrySet);
+
+  return new Promise(function(resolve) {
+    setupAndWaitUntilReady(null, path, resolve);
+  }).then(function(windowId) {
+    return remoteCall.waitForFiles(windowId, expectedRows).then(function() {
+      return remoteCall.fakeKeyDown(windowId, '#list-container', 'U+0045',
+          true);
+    }).then(function() {
+      // Wait for rename text field.
+      return remoteCall.waitForElement(windowId, 'input.rename');
+    }).then(function() {
+      // Type new file name.
+      return remoteCall.callRemoteTestUtil(
+          'inputText', windowId, ['input.rename', 'foo']);
+    }).then(function() {
+      // Press Enter.
+      return remoteCall.fakeKeyDown(windowId, 'input.rename', 'Enter', false);
+    }).then(function() {
+      // Press Enter again to try to get into the new directory.
+      return remoteCall.fakeKeyDown(windowId, '#list-container', 'Enter',
+          false);
+    }).then(function() {
+      // Confirm that it doesn't move the directory since it's in renaming
+      // process.
+      return remoteCall.waitUntilCurrentDirectoryIsChanged(windowId,
+          pathInBreadcrumb);
+    }).then(function() {
+      // Wait until rename is completed.
+      return remoteCall.waitForElementLost(windowId, 'li[renaming]');
+    }).then(function() {
+      // Press Enter again.
+      return remoteCall.fakeKeyDown(windowId, '#list-container', 'Enter',
+          false);
+    }).then(function() {
+      // Confirm that it moves to renamed directory.
+      return remoteCall.waitUntilCurrentDirectoryIsChanged(windowId,
+          pathInBreadcrumb + '/foo');
+    });
+  });
+}
+
+/**
  * Test for renaming a file.
  * @param {string} path Initial path.
  * @param {Array.<TestEntryInfo>} initialEntrySet Initial set of entries.
@@ -231,4 +281,14 @@ testcase.renameFileDownloads = function() {
 
 testcase.renameFileDrive = function() {
   testPromise(testRenameFile(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
+};
+
+testcase.renameNewDirectoryDownloads = function() {
+  testPromise(testRenameNewDirectory(RootPath.DOWNLOADS,
+      BASIC_LOCAL_ENTRY_SET, '/Downloads'));
+};
+
+testcase.renameNewDirectoryDrive = function() {
+  testPromise(testRenameNewDirectory(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET,
+      '/My Drive'));
 };

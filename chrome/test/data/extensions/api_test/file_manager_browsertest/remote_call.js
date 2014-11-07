@@ -288,3 +288,21 @@ RemoteCallFilesApp.prototype.waitUntilTaskExecutes =
         });
   }.bind(this));
 };
+
+/**
+ * Waits until the current directory is changed.
+ * @param {string} windowId Target window ID.
+ * @param {string} expectedPath Path to be changed to.
+ * @return {Promise} Promise to be fulfilled when the current directory is
+ *     changed to expectedPath.
+ */
+RemoteCallFilesApp.prototype.waitUntilCurrentDirectoryIsChanged =
+    function(windowId, expectedPath) {
+  return repeatUntil(function () {
+    return this.callRemoteTestUtil('getBreadcrumbPath', windowId, []).then(
+      function(path) {
+        if(path !== expectedPath)
+          return pending('Expected path is %s', expectedPath);
+      });
+  }.bind(this));
+};

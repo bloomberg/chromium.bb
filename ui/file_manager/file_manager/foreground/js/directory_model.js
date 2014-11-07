@@ -737,10 +737,35 @@ DirectoryModel.prototype.onRenameEntry = function(
     if (util.isSameEntry(oldEntry, this.getCurrentDirEntry()))
       this.changeDirectoryEntry(newEntry);
 
-    // Replace the old item with the new item.
-    // If the entry doesn't exist in the list, it has been updated from
-    // outside (probably by directory rescan) and is just ignored.
-    this.getFileList().replaceItem(oldEntry, newEntry);
+    // Replace the old item with the new item. oldEntry instance itself may
+    // have been removed/replaced from the list during the async process, we
+    // find an entry which should be replaced by checking toURL().
+    var list = this.getFileList();
+    var oldEntryExist = false;
+    var newEntryExist = false;
+    var oldEntryUrl = oldEntry.toURL();
+    var newEntryUrl = newEntry.toURL();
+
+    for (var i = 0; i < list.length; i++) {
+      var item = list.item(i);
+      var url = item.toURL();
+      if (url === oldEntryUrl) {
+        list.replaceItem(item, newEntry);
+        oldEntryExist = true;
+        break;
+      }
+
+      if (url === newEntryUrl) {
+        newEntryExist = true;
+      }
+    }
+
+    // When both old and new entries don't exist, it may be in the middle of
+    // update process. In DirectoryContent.update deletion is executed at first
+    // and insertion is executed as a async call. There is a chance that this
+    // method is called in the middle of update process.
+    if (!oldEntryExist && !newEntryExist)
+      list.push(newEntry);
 
     // Run callback, finally.
     if (opt_callback)

@@ -672,6 +672,24 @@ test.util.sync.unload = function(contentWindow) {
 };
 
 /**
+ * Obtains the path which is shown in the breadcrumb.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {string} Path which is shown in the breadcrumb.
+ */
+test.util.sync.getBreadcrumbPath = function(contentWindow) {
+  var breadcrumb = contentWindow.document.querySelector(
+      '#location-breadcrumbs');
+  var paths = breadcrumb.querySelectorAll('.breadcrumb-path');
+
+  var path = '';
+  for(var i = 0; i < paths.length; i++) {
+    path += '/' + paths[i].textContent;
+  }
+  return path;
+};
+
+/**
  * Obtains the list of notification ID.
  * @param {function(Object.<string, boolean>)} callback Callback function with
  *     results returned by the script.

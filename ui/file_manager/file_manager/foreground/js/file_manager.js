@@ -1390,7 +1390,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.ui_.alertDialog,
         this.ui_.confirmDialog,
         this.directoryModel_,
-        this.fileFilter_);
+        this.fileFilter_,
+        this.selectionHandler_);
 
     // Create spinner controller.
     this.spinnerController_ = new SpinnerController(
@@ -2688,8 +2689,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onListKeyDown_ = function(event) {
-    switch (util.getKeyModifiers(event) + event.keyCode) {
-      case '8':  // Backspace => Up one directory.
+    switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+      case 'U+0008':  // Backspace => Up one directory.
         event.preventDefault();
         // TODO(mtomasz): Use Entry.getParent() instead.
         if (!this.getCurrentDirectoryEntry())
@@ -2705,14 +2706,20 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         }
         break;
 
-      case '13':  // Enter => Change directory or perform default action.
+      case 'Enter':  // Enter => Change directory or perform default action.
         // TODO(dgozman): move directory action to dispatchSelectionAction.
         var selection = this.getSelection();
-        if (selection.totalCount == 1 &&
+        if (selection.totalCount === 1 &&
             selection.entries[0].isDirectory &&
             !DialogType.isFolderDialog(this.dialogType)) {
-          event.preventDefault();
-          this.onDirectoryAction_(selection.entries[0]);
+          var item = this.ui.listContainer.currentList.getListItemByIndex(
+              selection.indexes[0]);
+          // If the item is in renaming process, we don't allow to change
+          // directory.
+          if (!item.hasAttribute('renaming')) {
+            event.preventDefault();
+            this.onDirectoryAction_(selection.entries[0]);
+          }
         } else if (this.dispatchSelectionAction_()) {
           event.preventDefault();
         }

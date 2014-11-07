@@ -900,7 +900,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
                       TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive")));
+                      TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
+                      TestParameter(IN_GUEST_MODE,
+                                    "renameNewDirectoryDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "renameNewDirectoryDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE,
+                                    "renameNewDirectoryDrive")));
 
 // Slow tests are disabled on debug build. http://crbug.com/327719
 // Fails on official build. http://crbug.com/429294
