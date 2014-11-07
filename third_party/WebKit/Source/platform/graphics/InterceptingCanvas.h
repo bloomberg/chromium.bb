@@ -64,6 +64,7 @@ public:
     virtual void onDrawPosText(const void* text, size_t byteLength, const SkPoint pos[], const SkPaint&) override = 0;
     virtual void onDrawPosTextH(const void* text, size_t byteLength, const SkScalar xpos[], SkScalar constY, const SkPaint&) override = 0;
     virtual void onDrawTextOnPath(const void* text, size_t byteLength, const SkPath&, const SkMatrix*, const SkPaint&) override = 0;
+    virtual void onDrawTextBlob(const SkTextBlob*, SkScalar x, SkScalar y, const SkPaint&) override = 0;
     virtual void onPushCull(const SkRect& cullRect) override = 0;
     virtual void onPopCull() override = 0;
     virtual void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override = 0;

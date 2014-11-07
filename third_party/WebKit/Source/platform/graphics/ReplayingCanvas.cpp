@@ -217,6 +217,12 @@ void ReplayingCanvas::onDrawTextOnPath(const void* text, size_t byteLength, cons
     this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
 }
 
+void ReplayingCanvas::onDrawTextBlob(const SkTextBlob* blob, SkScalar x, SkScalar y, const SkPaint& paint)
+{
+    AutoReplayer replayer(this);
+    this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
+}
+
 void ReplayingCanvas::onPushCull(const SkRect& cullRect)
 {
     AutoReplayer replayer(this);

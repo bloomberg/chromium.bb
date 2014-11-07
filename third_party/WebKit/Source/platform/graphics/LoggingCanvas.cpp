@@ -295,6 +295,16 @@ void LoggingCanvas::onDrawTextOnPath(const void* text, size_t byteLength, const 
     this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
 }
 
+void LoggingCanvas::onDrawTextBlob(const SkTextBlob *blob, SkScalar x, SkScalar y, const SkPaint &paint)
+{
+    AutoLogger logger(this);
+    RefPtr<JSONObject> params = logger.logItemWithParams("drawTextBlob");
+    params->setNumber("x", x);
+    params->setNumber("y", y);
+    params->setObject("paint", objectForSkPaint(paint));
+    this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
+}
+
 void LoggingCanvas::onPushCull(const SkRect& cullRect)
 {
     AutoLogger logger(this);

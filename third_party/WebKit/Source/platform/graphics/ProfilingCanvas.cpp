@@ -203,6 +203,12 @@ void ProfilingCanvas::onDrawTextOnPath(const void* text, size_t byteLength, cons
     this->SkCanvas::onDrawTextOnPath(text, byteLength, path, matrix, paint);
 }
 
+void ProfilingCanvas::onDrawTextBlob(const SkTextBlob *blob, SkScalar x, SkScalar y, const SkPaint& paint)
+{
+    AutoStamper stamper(this);
+    this->SkCanvas::onDrawTextBlob(blob, x, y, paint);
+}
+
 void ProfilingCanvas::onPushCull(const SkRect& cullRect)
 {
     AutoStamper stamper(this);
