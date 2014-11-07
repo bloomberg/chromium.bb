@@ -32,6 +32,7 @@
 #include "wtf/PartitionAlloc.h"
 
 #include "wtf/BitwiseOperations.h"
+#include "wtf/CPU.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include <gtest/gtest.h>
@@ -40,6 +41,8 @@
 
 #if OS(POSIX)
 #include <sys/mman.h>
+#include <sys/resource.h>
+#include <sys/time.h>
 
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
@@ -83,6 +86,44 @@ static void TestShutdown()
     // detection.
     EXPECT_TRUE(allocator.shutdown());
     EXPECT_TRUE(genericAllocator.shutdown());
+}
+
+static bool SetAddressSpaceLimit()
+{
+#if !CPU(64BIT)
+    // 32 bits => address space is limited already.
+    return true;
+#elif OS(POSIX)
+    const size_t kAddressSpaceLimit = static_cast<size_t>(4096) * 1024 * 1024;
+    struct rlimit limit;
+    if (getrlimit(RLIMIT_AS, &limit) != 0)
+        return false;
+    if (limit.rlim_cur == RLIM_INFINITY || limit.rlim_cur > kAddressSpaceLimit) {
+        limit.rlim_cur = kAddressSpaceLimit;
+        if (setrlimit(RLIMIT_AS, &limit) != 0)
+            return false;
+    }
+    return true;
+#else
+    return false;
+#endif
+}
+
+static bool ClearAddressSpaceLimit()
+{
+#if !CPU(64BIT)
+    return true;
+#elif OS(POSIX)
+    struct rlimit limit;
+    if (getrlimit(RLIMIT_AS, &limit) != 0)
+        return false;
+    limit.rlim_cur = limit.rlim_max;
+    if (setrlimit(RLIMIT_AS, &limit) != 0)
+        return false;
+    return true;
+#else
+    return false;
+#endif
 }
 
 static WTF::PartitionPage* GetFullPage(size_t size)
@@ -1096,6 +1137,54 @@ TEST(PartitionAllocTest, LostFreePagesBug)
 
     TestShutdown();
 }
+
+#if !CPU(64BIT) || OS(POSIX)
+
+// Tests that if an allocation fails in "return null" mode, repeating it doesn't
+// crash, and still returns null. The test tries to allocate 6 GB of memory in
+// 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
+// using setrlimit() first.
+TEST(PartitionAllocTest, RepeatedReturnNull)
+{
+    TestSetup();
+
+    EXPECT_TRUE(SetAddressSpaceLimit());
+
+    // 512 kB x 12288 == 6 GB
+    const size_t blockSize = 512 * 1024;
+    const int numAllocations = 12288;
+
+    void* ptrs[numAllocations];
+    int i;
+
+    for (i = 0; i < numAllocations; ++i) {
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), WTF::PartitionAllocReturnNull, blockSize);
+        if (!ptrs[i]) {
+            ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), WTF::PartitionAllocReturnNull, blockSize);
+            EXPECT_FALSE(ptrs[i]);
+            break;
+        }
+    }
+
+    // We shouldn't succeed in allocating all 6 GB of memory. If we do, then
+    // we're not actually testing anything here.
+    EXPECT_LT(i, numAllocations);
+
+    // Free, reallocate and free again each block we allocated. We do this to
+    // check that freeing memory also works correctly after a failed allocation.
+    for (--i; i >= 0; --i) {
+        partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
+        ptrs[i] = partitionAllocGenericFlags(genericAllocator.root(), WTF::PartitionAllocReturnNull, blockSize);
+        EXPECT_TRUE(ptrs[i]);
+        partitionFreeGeneric(genericAllocator.root(), ptrs[i]);
+    }
+
+    EXPECT_TRUE(ClearAddressSpaceLimit());
+
+    TestShutdown();
+}
+
+#endif // !CPU(64BIT) || OS(POSIX)
 
 #if !OS(ANDROID)
 

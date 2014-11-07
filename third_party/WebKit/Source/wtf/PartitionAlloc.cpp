@@ -699,8 +699,13 @@ void* partitionAllocSlowPath(PartitionRootBase* root, int flags, size_t size, Pa
     return partitionPageAllocAndFillFreelist(newPage);
 
 partitionAllocSlowPathFailed:
-    if (returnNull)
+    if (returnNull) {
+        // If we get here, we will set the active page to null, which is an
+        // invalid state. To support continued use of this bucket, we need to
+        // restore a valid state, by setting the active page to the seed page.
+        bucket->activePagesHead = &PartitionRootGeneric::gSeedPage;
         return nullptr;
+    }
     partitionOutOfMemory();
     return nullptr;
 }
@@ -763,7 +768,6 @@ void partitionFreeSlowPath(PartitionPage* page)
 {
     PartitionBucket* bucket = page->bucket;
     ASSERT(page != &PartitionRootGeneric::gSeedPage);
-    ASSERT(bucket->activePagesHead != &PartitionRootGeneric::gSeedPage);
     if (LIKELY(page->numAllocatedSlots == 0)) {
         // Page became fully unused.
         if (UNLIKELY(partitionBucketIsDirectMapped(bucket))) {
@@ -801,7 +805,10 @@ void partitionFreeSlowPath(PartitionPage* page)
         // non-full page list. Also make it the current page to increase the
         // chances of it being filled up again. The old current page will be
         // the next page.
-        page->nextPage = bucket->activePagesHead;
+        if (UNLIKELY(bucket->activePagesHead == &PartitionRootGeneric::gSeedPage))
+            page->nextPage = 0;
+        else
+            page->nextPage = bucket->activePagesHead;
         bucket->activePagesHead = page;
         --bucket->numFullPages;
         // Special case: for a partition page with just a single slot, it may
