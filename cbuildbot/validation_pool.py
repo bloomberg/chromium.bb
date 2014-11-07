@@ -10,7 +10,6 @@ ready for the commit queue to try.
 
 from __future__ import print_function
 
-import ConfigParser
 import contextlib
 import cPickle
 import functools
@@ -204,74 +203,6 @@ def _RunCommand(cmd, dryrun):
     cros_build_lib.RunCommand(cmd)
   except cros_build_lib.RunCommandError:
     cros_build_lib.Error('Command failed', exc_info=True)
-
-
-def _GetOptionFromConfigFile(config_path, section, option):
-  """Get |option| from |section| in |config_path|.
-
-  Args:
-    config_path: Filename to look at.
-    section: Section header name.
-    option: Option name.
-
-  Returns:
-    The value of the option.
-  """
-  parser = ConfigParser.SafeConfigParser()
-  parser.read(config_path)
-  if parser.has_option(section, option):
-    return parser.get(section, option)
-
-
-# TODO(akeshet): Move this function to somewhere more sensible.
-def GetOptionForChange(build_root, change, section, option):
-  """Get |option| from |section| in the config file for |change|.
-
-  Args:
-    build_root: The root of the checkout.
-    change: Change to examine, as a PatchQuery object.
-    section: Section header name.
-    option: Option name.
-
-  Returns:
-    The value of the option.
-  """
-  manifest = git.ManifestCheckout.Cached(build_root)
-  checkout = change.GetCheckout(manifest)
-  if checkout:
-    dirname = checkout.GetPath(absolute=True)
-    config_path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
-    return _GetOptionFromConfigFile(config_path, section, option)
-
-
-def GetStagesToIgnoreForChange(build_root, change):
-  """Get a list of stages that the CQ should ignore for a given |change|.
-
-  The list of stage name prefixes to ignore for each project is specified in a
-  config file inside the project, named COMMIT-QUEUE.ini. The file would look
-  like this:
-
-  [GENERAL]
-    ignored-stages: HWTest VMTest
-
-  The CQ will submit changes to the given project even if the listed stages
-  failed. These strings are stage name prefixes, meaning that "HWTest" would
-  match any HWTest stage (e.g. "HWTest [bvt]" or "HWTest [foo]")
-
-  Args:
-    build_root: The root of the checkout.
-    change: Change to examine, as a PatchQuery object.
-
-  Returns:
-    A list of stages to ignore for the given |change|.
-  """
-  result = None
-  try:
-    result = GetOptionForChange(build_root, change, 'GENERAL',
-                                'ignored-stages')
-  except ConfigParser.Error:
-    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
-  return result.split() if result else []
 
 
 class GerritHelperNotAvailable(gerrit.GerritException):
@@ -2081,7 +2012,59 @@ class ValidationPool(object):
     if self.changes_that_failed_to_apply_earlier:
       self._HandleApplyFailure(self.changes_that_failed_to_apply_earlier)
 
-  def SubmitPartialPool(self, messages):
+  @classmethod
+  def _GetShouldSubmitChanges(cls, changes, messages, build_root, no_stat):
+    """Examine failure |messages| to filter a set of |changes| to submit.
+
+    This function has been factored out from SubmitPartialPool() so
+    that we can switch to using _GetFullyVerifiedChanges() in the near
+    future. There is no functional change at all.
+
+    TODO(yjhong): Deprecate this function once crbug.com/422639 is completed.
+
+    Args:
+      changes: A list of GerritPatch instances to examine.
+      messages: A list of BuildFailureMessage or NoneType objects from
+        the failed slaves.
+      build_root: Build root directory.
+      no_stat: Set of builder names of slave builders that had status None.
+
+    Returns:
+      A set of changes to submit.
+    """
+    if no_stat:
+      # If a builder did not return any status, we do not have
+      # sufficient information about the failure. Don't submit any
+      # changes.
+      return set()
+
+    # Create a list of the failing stage prefixes.
+    failing_stages = set()
+    for message in messages:
+      stages = None if not message else message.GetFailingStages()
+      if not stages:
+        # If there are no tracebacks, that means that the builder did not
+        # report its status properly. Don't submit anything.
+        return set()
+      failing_stages.update(stages)
+
+    # For each CL, look at whether it cares about the failures. Based on this,
+    # filter out CLs that don't care about the failure.
+    rejection_candidates = []
+    for change in changes:
+      ignored_stages = triage_lib.GetStagesToIgnoreForChange(build_root, change)
+      if not ignored_stages or not failing_stages.issubset(ignored_stages):
+        rejection_candidates.append(change)
+
+    # Filter out innocent internal overlay changes from our list of candidates.
+    rejected = triage_lib.CalculateSuspects.FilterOutInnocentChanges(
+        build_root, rejection_candidates, messages)
+
+    should_submit = set(changes) - set(rejected)
+    return should_submit
+
+  def SubmitPartialPool(self, changes, messages, changes_by_config, failing,
+                        inflight, no_stat):
     """If the build failed, push any CLs that don't care about the failure.
 
     In this function we calculate what CLs are definitely innocent and submit
@@ -2092,41 +2075,48 @@ class ValidationPool(object):
     those stages fail.
 
     Args:
+      changes: A list of GerritPatch instances to examine.
       messages: A list of BuildFailureMessage or NoneType objects from
         the failed slaves.
+      changes_by_config: A dictionary of relevant changes indexed by the
+        config names.
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
 
     Returns:
-      A list of the rejected changes.
+      A set of the non-submittable changes.
     """
-    # Create a list of the failing stage prefixes.
-    tracebacks = set()
-    for message in messages:
-      # If there are no tracebacks, that means that the builder did not
-      # report its status properly. Don't submit anything.
-      if not message or not message.tracebacks:
-        return self.changes
-      tracebacks.update(message.tracebacks)
-    failing_stages = set(traceback.failed_prefix for traceback in tracebacks)
+    should_submit = self._GetShouldSubmitChanges(
+        changes, messages, self.build_root, no_stat)
+    fully_verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+        changes, changes_by_config, failing, inflight, no_stat,
+        messages, self.build_root)
 
-    # For each CL, look at whether it cares about the failures. Based on this,
-    # filter out CLs that don't care about the failure.
-    rejection_candidates = []
-    for change in self.changes:
-      ignored_stages = GetStagesToIgnoreForChange(self.build_root, change)
-      if not ignored_stages or not failing_stages.issubset(ignored_stages):
-        rejection_candidates.append(change)
+    logging.info('The following changes will be submitted: %s',
+                 cros_patch.GetChangesAsString(should_submit))
+    logging.info('The following changes would be submitted if we switch to '
+                 'using board-specific triaging logic: %s',
+                 cros_patch.GetChangesAsString(fully_verified))
 
-    # TODO(yjhong): Deprecate the logic here once crbug.com/422639 is completed.
-    # Filter out innocent internal overlay changes from our list of candidates.
-    rejected = triage_lib.CalculateSuspects.FilterOutInnocentChanges(
-        self.build_root, rejection_candidates, messages)
+    # TODO(yjhong): send the stats to either GS or CIDB.
+    if should_submit - fully_verified:
+      logging.warning('Board-specific triaging logic would not have '
+                      'submitted changes: %s',
+                      cros_patch.GetChangesAsString(
+                          should_submit - fully_verified))
+    if fully_verified - should_submit:
+      logging.info('Board-specific triaging logic would have '
+                   'submitted changes: %s',
+                   cros_patch.GetChangesAsString(
+                       fully_verified - should_submit))
 
-    # Actually submit the accepted changes.
-    accepted = list(set(self.changes) - set(rejected))
-    self.SubmitChanges(accepted)
+    # TODO(yjhong): Replace should_submit with fully_verified once we
+    # confirm there will be no regression (crbug.com/422639).
+    self.SubmitChanges(should_submit)
 
     # Return the list of rejected changes.
-    return rejected
+    return set(changes) - set(should_submit)
 
   def _HandleApplyFailure(self, failures):
     """Handles changes that were not able to be applied cleanly.
@@ -2520,11 +2510,9 @@ class ValidationPool(object):
     Args:
       changes: A set of irrelevant changes to record.
     """
-    formatted_changes = ['CL:%s' % cros_patch.AddPrefix(x, x.gerrit_number)
-                         for x in changes]
-    if formatted_changes:
+    if changes:
       logging.info('The following changes are irrelevant to this build: %s',
-                   ' '.join(formatted_changes))
+                   cros_patch.GetChangesAsString(changes))
     else:
       logging.info('All changes are considered relevant to this build.')
 

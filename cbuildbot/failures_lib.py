@@ -295,6 +295,17 @@ class BuildFailureMessage(object):
   def __str__(self):
     return self.message
 
+  def GetFailingStages(self):
+    """Get a list of the failing stage prefixes from tracebacks.
+
+    Returns:
+      A list of failing stage prefixes if there are tracebacks; None otherwise.
+    """
+    failing_stages = None
+    if self.tracebacks:
+      failing_stages = set(x.failed_prefix for x in self.tracebacks)
+    return failing_stages
+
   def MatchesFailureType(self, cls):
     """Check if all of the tracebacks match the specified failure type."""
     for tb in self.tracebacks:

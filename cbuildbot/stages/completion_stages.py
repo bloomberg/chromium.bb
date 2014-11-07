@@ -21,6 +21,7 @@ from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
+from chromite.lib import clactions
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import portage_util
@@ -568,6 +569,64 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     if self._run.config.master:
       self.CQMasterHandleFailure(failing, inflight, no_stat)
 
+  def _GetSlaveMappingAndCLActions(self, changes):
+    """Query CIDB to for slaves and CL actions.
+
+    Args:
+      changes: A list of GerritPatch instances to examine.
+
+    Returns:
+      A tuple of (config_map, action_history), where the config_map
+      is a dictionary mapping build_id to config name for all slaves
+      in this run, and action_history is a list of all CL actions
+      associated with |changes|.
+    """
+    # build_id is the master build id for the run.
+    build_id, db = self._run.GetCIDBHandle()
+    assert db, 'No database connection to use.'
+    slave_list = db.GetSlaveStatuses(build_id)
+    action_history = db.GetActionsForChanges(changes)
+
+    config_map = dict()
+    # Build the build_id to config_name mapping. Note that if add the
+    # "relaunch" feature in cbuildbot, there may be multiple build ids
+    # for the same slave config. We will have to make sure
+    # GetSlaveStatuses() returns only the valid slaves (e.g. with
+    # latest start time).
+    for d in slave_list:
+      config_map[d['id']] = d['build_config']
+
+    return config_map, action_history
+
+  def GetRelevantChangesForSlaves(self, changes, no_stat):
+    """Compile a set of relevant changes for each slave.
+
+    Args:
+      changes: A list of GerritPatch instances to examine.
+      no_stat: Set of builder names of slave builders that had status None.
+
+    Returns:
+      A dictionary mapping a slave config name to a set of relevant changes.
+    """
+    # Retrieve the slaves and clactions from CIDB.
+    config_map, action_history = self._GetSlaveMappingAndCLActions(changes)
+    changes_by_build_id = clactions.GetRelevantChangesForBuilds(
+        changes, action_history, config_map.keys())
+
+    # Convert index from build_ids to config names.
+    changes_by_config = dict()
+    for k, v in changes_by_build_id.iteritems():
+      changes_by_config[config_map[k]] = v
+
+    for config in no_stat:
+      # If a slave is in |no_stat|, it means that the slave never
+      # finished applying the changes in the sync stage. Hence the CL
+      # pickup actions for this slave may be
+      # inaccurate. Conservatively assume all changes are relevant.
+      changes_by_config[config] = set(changes)
+
+    return changes_by_config
+
   def CQMasterHandleFailure(self, failing, inflight, no_stat):
     """Handle changes in the validation pool upon build failure or timeout.
 
@@ -581,15 +640,16 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       no_stat: Set of builder names of slave builders that had status None.
     """
     messages = self._GetFailedMessages(failing)
-    # Start with all the changes in the validation pool.
-    changes = self.sync_stage.pool.changes
-
     self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
-    if failing and not inflight and not no_stat:
-      # Even if there was a failure, we can submit the changes that indicate
-      # that they don't care about this failure.
-      changes = self.sync_stage.pool.SubmitPartialPool(messages)
+    # Start with all the changes in the validation pool.
+    changes = self.sync_stage.pool.changes
+    changes_by_config = self.GetRelevantChangesForSlaves(changes, no_stat)
+
+    # Even if there was a failure, we can submit the changes that indicate
+    # that they don't care about this failure.
+    changes = self.sync_stage.pool.SubmitPartialPool(
+        changes, messages, changes_by_config, failing, inflight, no_stat)
 
     tot_sanity = self._ToTSanity(
         self._run.config.sanity_check_slaves, self._slave_statuses)

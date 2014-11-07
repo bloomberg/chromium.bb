@@ -17,13 +17,16 @@ from chromite.cbuildbot import constants
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import results_lib
-from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
 from chromite.cbuildbot.stages import sync_stages
 from chromite.lib import alerts
+from chromite.lib import clactions
 from chromite.lib import cros_test_lib
+from chromite.lib import patch_unittest
+
+import mock
 
 
 # pylint: disable=R0901,W0212
@@ -291,7 +294,7 @@ class CanaryCompletionStageTest(
 
 
 class CommitQueueCompletionStageTest(
-    generic_stages_unittest.AbstractStageTest):
+    generic_stages_unittest.AbstractStageTest, patch_unittest.MockPatchBase):
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
   BOT_ID = 'master-paladin'
 
@@ -307,30 +310,32 @@ class CommitQueueCompletionStageTest(
     self.partial_submit_changes = ['C', 'D']
     self.other_changes = ['A', 'B']
     self.changes = self.other_changes + self.partial_submit_changes
+    self.tot_sanity_mock = self.PatchObject(
+        completion_stages.CommitQueueCompletionStage, '_ToTSanity')
 
-    self.mox.StubOutWithMock(completion_stages.MasterSlaveSyncCompletionStage,
-                             'HandleFailure')
-    self.mox.StubOutWithMock(completion_stages.CommitQueueCompletionStage,
-                             '_ToTSanity')
-    self.mox.StubOutWithMock(alerts, '_SendEmailHelper')
-
+    self.alert_email_mock = self.PatchObject(alerts, '_SendEmailHelper')
+    self.PatchObject(completion_stages.MasterSlaveSyncCompletionStage,
+                     'HandleFailure')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      '_GetFailedMessages')
     self.PatchObject(completion_stages.CommitQueueCompletionStage,
                      'ShouldDisableAlerts', return_value=False)
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetSlaveMappingAndCLActions',
+                     return_value=(dict(), []))
+    self.PatchObject(clactions, 'GetRelevantChangesForBuilds')
 
   def ConstructStage(self):
     """Returns a CommitQueueCompletionStage object."""
+    # pylint: disable=W0201
     sync_stage = sync_stages.CommitQueueSyncStage(self._run)
-    sync_stage.pool = mox.MockObject(validation_pool.ValidationPool)
+    sync_stage.pool = mock.MagicMock()
     sync_stage.pool.changes = self.changes
-    self.mox.StubOutWithMock(sync_stage.pool,
-                             'HandleValidationFailure')
-    self.mox.StubOutWithMock(sync_stage.pool,
-                             'HandleValidationTimeout')
-    self.mox.StubOutWithMock(sync_stage.pool,
-                             'SubmitPartialPool')
 
+    sync_stage.pool.handle_failure_mock = self.PatchObject(
+        sync_stage.pool, 'HandleValidationFailure')
+    sync_stage.pool.handle_timeout_mock = self.PatchObject(
+        sync_stage.pool, 'HandleValidationTimeout')
     return completion_stages.CommitQueueCompletionStage(
         self._run, sync_stage, success=True)
 
@@ -349,28 +354,27 @@ class CommitQueueCompletionStageTest(
     stage = self.ConstructStage()
 
     if submit_partial:
-      stage.sync_stage.pool.SubmitPartialPool(
-          mox.IgnoreArg()).AndReturn(self.other_changes)
+      self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
+                       return_value=self.other_changes)
+    else:
+      self.PatchObject(stage.sync_stage.pool, 'SubmitPartialPool',
+                       return_value=self.changes)
 
+    stage.CQMasterHandleFailure(failing, inflight, [])
+
+    # Verify the calls.
+    self.tot_sanity_mock.assert_called_once_with(mock.ANY, mock.ANY)
     if alert:
-      alerts._SendEmailHelper(mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg(),
-                              mox.IgnoreArg())
-
-    completion_stages.CommitQueueCompletionStage._ToTSanity(
-        mox.IgnoreArg(), mox.IgnoreArg())
+      self.alert_email_mock.called_once_with(
+          mock.ANY, mock.ANY, mock.ANY, mock.ANY)
 
     if handle_failure:
-      stage.sync_stage.pool.HandleValidationFailure(
-        mox.IgnoreArg(), no_stat=[], sanity=mox.IgnoreArg(),
-        changes=self.other_changes)
+      stage.sync_stage.pool.handle_failure_mock.assert_called_once_with(
+          mock.ANY, no_stat=[], sanity=mock.ANY, changes=self.other_changes)
 
     if handle_timeout:
-      stage.sync_stage.pool.HandleValidationTimeout(
-          sanity=mox.IgnoreArg(), changes=self.changes)
-
-    self.mox.ReplayAll()
-    stage.CQMasterHandleFailure(failing, inflight, [])
-    self.mox.VerifyAll()
+      stage.sync_stage.pool.handle_timeout_mock.assert_called_once_with(
+          sanity=mock.ANY, changes=self.changes)
 
   def testNoInflightBuildersNoInfraFail(self):
     """Test case where there are no inflight builders and no infra failures."""
@@ -420,6 +424,32 @@ class CommitQueueCompletionStageTest(
     # An alert is sent, since we have an inflight build still.
     self.VerifyStage(failing, inflight, handle_failure=False,
                      handle_timeout=True, alert=True)
+
+  def testGetRelevantChangesForSlave(self):
+    """Tests the logic of GetRelevantChangesForSlaves()."""
+    change_set1 = set(self.GetPatches(how_many=2))
+    change_set2 = set(self.GetPatches(how_many=3))
+    changes = set.union(change_set1, change_set2)
+    no_stat = ['no_stat-paladin']
+    config_map = {'123': 'foo-paladin',
+                  '124': 'bar-paladin',
+                  '125': 'no_stat-paladin'}
+    changes_by_build_id = {'123': change_set1,
+                           '124': change_set2}
+    # If a slave did not report status (no_stat), assume all changes
+    # are relevant.
+    expected = {'foo-paladin': change_set1,
+                'bar-paladin': change_set2,
+                'no_stat-paladin': changes}
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetSlaveMappingAndCLActions',
+                     return_value=(config_map, []))
+    self.PatchObject(clactions, 'GetRelevantChangesForBuilds',
+                     return_value=changes_by_build_id)
+
+    stage = self.ConstructStage()
+    results = stage.GetRelevantChangesForSlaves(changes, no_stat)
+    self.assertEqual(results, expected)
 
 
 class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):

@@ -148,7 +148,7 @@ class IgnoredStagesTest(patch_unittest.MockPatchBase):
   """Tests for functions that calculate what stages to ignore."""
 
   def GetOption(self, path, section='GENERAL', option='ignored-stages'):
-    return validation_pool._GetOptionFromConfigFile(path, section, option)
+    return triage_lib._GetOptionFromConfigFile(path, section, option)
 
   def testBadConfigFile(self):
     """Test if we can handle an incorrectly formatted config file."""
@@ -1337,7 +1337,6 @@ class MockValidationPool(partial_mock.PartialMock):
   RemoveCommitReady = None
 
 
-
 class BaseSubmitPoolTestCase(MoxBase):
   """Test full ability to submit and reject CL pools."""
 
@@ -1378,14 +1377,15 @@ class BaseSubmitPoolTestCase(MoxBase):
     """
     # self.ignores maps changes to a list of stages to ignore. Use it.
     self.PatchObject(
-        validation_pool, 'GetStagesToIgnoreForChange',
+        triage_lib, 'GetStagesToIgnoreForChange',
         side_effect=lambda _, change: self.ignores[change])
 
     # Set up our pool and submit the patches.
     pool = self.SetUpPatchPool(**kwargs)
     messages = self.GetMessages()
     if messages:
-      actually_rejected = sorted(pool.SubmitPartialPool(self.GetMessages()))
+      actually_rejected = sorted(pool.SubmitPartialPool(
+          pool.changes, self.GetMessages(), dict(), [], [], []))
     else:
       actually_rejected = pool.SubmitChanges(self.patches)
 
@@ -1533,6 +1533,7 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     self.messages = [
         triage_lib_unittest.TestFindSuspects.GetFailedMessage(
             [Exception()], stage=self.stage_name)]
+    self.PatchObject(triage_lib.CalculateSuspects, 'GetFullyVerfiedChanges')
 
   def GetMessages(self):
     """Return a list of failure messages containing a single traceback.
@@ -1541,7 +1542,6 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     during the CQ run.
     """
     return self.messages
-
 
   def IgnoreFailures(self, patch):
     """Set us up to ignore failures for the specified |patch|."""

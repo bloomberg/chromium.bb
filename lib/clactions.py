@@ -374,3 +374,27 @@ def GetPreCQConfigsToTest(changes, progress_map):
   return configs_to_test
 
 
+def GetRelevantChangesForBuilds(changes, action_history, build_ids):
+  """Get relevant changes for |build_ids| by examing CL actions.
+
+  Args:
+    changes: A list of GerritPatch instances to examine.
+    action_history: A list of CLAction instances.
+    build_ids: A list of build id to examine.
+
+  Returns:
+    A dictionary mapping a build id to a set of changes.
+  """
+  changes_map = dict()
+  relevant_actions = [x for x in action_history if x.build_id in build_ids]
+  for change in changes:
+    actions = ActionsForPatch(change, relevant_actions)
+    pickups = set([x.build_id for x in actions if
+                   x.action == constants.CL_ACTION_PICKED_UP])
+    discards = set([x.build_id for x in actions if
+                    x.action == constants.CL_ACTION_IRRELEVANT_TO_SLAVE])
+    relevant_build_ids = pickups - discards
+    for build_id in relevant_build_ids:
+      changes_map.setdefault(build_id, set()).add(change)
+
+  return changes_map

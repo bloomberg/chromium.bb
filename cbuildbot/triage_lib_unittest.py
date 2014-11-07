@@ -237,5 +237,68 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.assertEquals(candidates, changes[1:])
 
 
+class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
+  """Tests GetFullyVerifiedChanges() and related functions."""
+
+  def setUp(self):
+    self.build_root = '/foo/build/root'
+    self.changes = self.GetPatches(how_many=5)
+    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures')
+
+  def testChangesNoAllTested(self):
+    """Tests that we assume no changes are fully verified in this case."""
+    no_stat = failing = messages = []
+    inflight = ['foo-paladin']
+    changes_by_config = {'foo-paladin': []}
+
+    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+        self.changes, changes_by_config, no_stat, failing, inflight,
+        messages, self.build_root)
+
+    self.assertEquals(verified, set())
+
+  def testChangesNotVerified(self):
+    """Tests that changes are not verified if builds failed prematurely."""
+    failing = messages = []
+    inflight = ['foo-paladin']
+    no_stat = ['puppy-paladin']
+    changes_by_config = {'foo-paladin': set(self.changes[:2]),
+                         'bar-paladin': set(self.changes),
+                         'puppy-paladin': set(self.changes[-2:])}
+
+    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+        self.changes, changes_by_config, no_stat, failing, inflight,
+        messages, self.build_root)
+    self.assertEquals(verified, set(self.changes[2:-2]))
+
+  def testChangesNotVerifiedOnFailures(self):
+    """Tests that changes are not verified if failures cannot be ignored."""
+    messages = no_stat = inflight = []
+    failing = ['cub-paladin']
+    changes_by_config = {'bar-paladin': set(self.changes),
+                         'cub-paladin': set(self.changes[:2])}
+
+    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
+                     return_value=False)
+    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+        self.changes, changes_by_config, no_stat, failing, inflight,
+        messages, self.build_root)
+    self.assertEquals(verified, set(self.changes[2:]))
+
+  def testChangesVerifiedWhenFailuresCanBeIgnored(self):
+    """Tests that changes are verified if failures can be ignored."""
+    messages = no_stat = inflight = []
+    failing = ['cub-paladin']
+    changes_by_config = {'bar-paladin': set(self.changes),
+                         'cub-paladin': set(self.changes[:2])}
+
+    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
+                     return_value=True)
+    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+        self.changes, changes_by_config, no_stat, failing, inflight,
+        messages, self.build_root)
+    self.assertEquals(verified, set(self.changes))
+
+
 if __name__ == '__main__':
   cros_test_lib.main()

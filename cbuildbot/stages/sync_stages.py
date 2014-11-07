@@ -24,6 +24,7 @@ from chromite.cbuildbot import lkgm_manager
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
+from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import trybot_patch_pool
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import generic_stages
@@ -961,7 +962,7 @@ class PreCQLauncherStage(SyncStage):
     """
     configs_to_test = constants.PRE_CQ_DEFAULT_CONFIGS
     try:
-      result = validation_pool.GetOptionForChange(
+      result = triage_lib.GetOptionForChange(
           self._build_root, change, 'GENERAL', 'pre-cq-configs')
       if (result and result.split() and
           all(c in cbuildbot_config.config for c in result.split())):
@@ -1012,7 +1013,7 @@ class PreCQLauncherStage(SyncStage):
     """
     result = None
     try:
-      result = validation_pool.GetOptionForChange(
+      result = triage_lib.GetOptionForChange(
           self._build_root, change, 'GENERAL', 'submit-in-pre-cq')
     except ConfigParser.Error:
       cros_build_lib.Error('%s has malformed config file', change,
@@ -1079,22 +1080,24 @@ class PreCQLauncherStage(SyncStage):
       # there's no need to launch a trybot run.
       plan = set(plan)
       if not plan.issubset(screened_changes):
-        logging.info('CLs waiting to be screened: %r',
-                     ' '.join(map(str, plan.difference(screened_changes))))
+        logging.info('CLs waiting to be screened: %s',
+                     cros_patch.GetChangesAsString(
+                         plan.difference(screened_changes)))
       elif plan.issubset(verified):
-        logging.info('CLs already verified: %r', ' '.join(map(str, plan)))
+        logging.info('CLs already verified: %s',
+                     cros_patch.GetChangesAsString(plan))
       elif plan.intersection(busy):
-        logging.info('CLs currently being verified: %r',
-                     ' '.join(map(str, plan.intersection(busy))))
+        logging.info('CLs currently being verified: %s',
+                     cros_patch.GetChangesAsString(plan.intersection(busy)))
         if plan.difference(busy):
           logging.info('CLs waiting on verification of dependencies: %r',
-              ' '.join(map(str, plan.difference(busy))))
+                       cros_patch.GetChangesAsString(plan.difference(busy)))
       # TODO(akeshet): Consider using a database time rather than gerrit
       # approval time and local clock for launch delay.
       elif any(x.approval_timestamp + self.LAUNCH_DELAY * 60 > time.time()
                for x in plan):
-        logging.info('CLs waiting on launch delay: %r',
-                     ' '.join(map(str, plan)))
+        logging.info('CLs waiting on launch delay: %s',
+                     cros_patch.GetChangesAsString(plan))
       else:
         pending_configs = clactions.GetPreCQConfigsToTest(plan, progress_map)
         for config in pending_configs:

@@ -24,6 +24,7 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import manifest_version_unittest
 from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
+from chromite.cbuildbot import triage_lib
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
@@ -426,35 +427,35 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     change = MockPatch()
     configs_to_test = cbuildbot_config.config.keys()[:5]
     return_string = ' '.join(configs_to_test)
-    self.PatchObject(validation_pool, 'GetOptionForChange',
+    self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=return_string)
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      configs_to_test)
 
   def testVerificationsForChangeMalformedConfigFile(self):
     change = MockPatch()
-    self.PatchObject(validation_pool, 'GetOptionForChange',
+    self.PatchObject(triage_lib, 'GetOptionForChange',
                      side_effect=ConfigParser.Error)
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoSuchConfig(self):
     change = MockPatch()
-    self.PatchObject(validation_pool, 'GetOptionForChange',
+    self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value='this_config_does_not_exist')
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeEmptyField(self):
     change = MockPatch()
-    self.PatchObject(validation_pool, 'GetOptionForChange',
+    self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=' ')
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)
 
   def testVerificationsForChangeNoneField(self):
     change = MockPatch()
-    self.PatchObject(validation_pool, 'GetOptionForChange',
+    self.PatchObject(triage_lib, 'GetOptionForChange',
                      return_value=None)
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)

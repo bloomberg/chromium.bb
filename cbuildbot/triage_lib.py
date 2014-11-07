@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import ConfigParser
 import logging
 import os
 import pprint
@@ -13,6 +14,7 @@ import pprint
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
+from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
@@ -68,8 +70,79 @@ def GetAffectedOverlays(change, manifest, all_overlays):
       return subdirs
 
 
+def _GetOptionFromConfigFile(config_path, section, option):
+  """Get |option| from |section| in |config_path|.
+
+  Args:
+    config_path: Filename to look at.
+    section: Section header name.
+    option: Option name.
+
+  Returns:
+    The value of the option.
+  """
+  parser = ConfigParser.SafeConfigParser()
+  parser.read(config_path)
+  if parser.has_option(section, option):
+    return parser.get(section, option)
+
+
+def GetOptionForChange(build_root, change, section, option):
+  """Get |option| from |section| in the config file for |change|.
+
+  Args:
+    build_root: The root of the checkout.
+    change: Change to examine, as a PatchQuery object.
+    section: Section header name.
+    option: Option name.
+
+  Returns:
+    The value of the option.
+  """
+  manifest = git.ManifestCheckout.Cached(build_root)
+  checkout = change.GetCheckout(manifest)
+  if checkout:
+    dirname = checkout.GetPath(absolute=True)
+    config_path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
+    return _GetOptionFromConfigFile(config_path, section, option)
+
+
+def GetStagesToIgnoreForChange(build_root, change):
+  """Get a list of stages that the CQ should ignore for a given |change|.
+
+  The list of stage name prefixes to ignore for each project is specified in a
+  config file inside the project, named COMMIT-QUEUE.ini. The file would look
+  like this:
+
+  [GENERAL]
+    ignored-stages: HWTest VMTest
+
+  The CQ will submit changes to the given project even if the listed stages
+  failed. These strings are stage name prefixes, meaning that "HWTest" would
+  match any HWTest stage (e.g. "HWTest [bvt]" or "HWTest [foo]")
+
+  Args:
+    build_root: The root of the checkout.
+    change: Change to examine, as a PatchQuery object.
+
+  Returns:
+    A list of stages to ignore for the given |change|.
+  """
+  result = None
+  try:
+    result = GetOptionForChange(build_root, change, 'GENERAL',
+                                'ignored-stages')
+  except ConfigParser.Error:
+    cros_build_lib.Error('%s has malformed config file', change, exc_info=True)
+  return result.split() if result else []
+
+
 class CategorizeChanges(object):
-  """A collection of methods to help categorize GerritPatch changes."""
+  """A collection of methods to help categorize GerritPatch changes.
+
+  This class is mainly used on a build slave to categorize changes
+  applied in the build.
+  """
 
   @classmethod
   def ClassifyOverlayChanges(cls, changes, config, build_root, manifest):
@@ -273,8 +346,9 @@ class CalculateSuspects(object):
     return suspects
 
   @classmethod
-  def FilterChromiteChanges(cls, changes):
-    """Returns a list of chromite changes in |changes|."""
+  def FilterChangesForInfraFail(cls, changes):
+    """Returns a list of changes responsible for infra failures."""
+    # Chromite changes could cause infra failures.
     return [x for x in changes if x.project == constants.CHROMITE_PROJECT]
 
   @classmethod
@@ -369,7 +443,7 @@ class CalculateSuspects(object):
       logging.warning(
           'Detected that the build failed due to non-lab infrastructure '
           'issue(s). Will only reject chromite changes')
-      return set(cls.FilterChromiteChanges(changes))
+      return set(cls.FilterChangesForInfraFail(changes))
 
     if all(message and message.IsPackageBuildFailure()
            for message in messages):
@@ -458,3 +532,97 @@ class CalculateSuspects(object):
       if overlays is None or overlays.issubset(responsible_overlays):
         candidates.append(change)
     return candidates
+
+  @classmethod
+  def _CanIgnoreFailures(cls, messages, change, build_root):
+    """Examine whether we can ignore the failures for |change|.
+
+    Examine the |failed_messages| to see if we are allowed to ignore
+    the failures base on the per-repository settings in
+    COMMIT_QUEUE.ini.
+
+    Args:
+      messages: A list of BuildFailureMessage or NoneType objects from
+        the failed slaves.
+      change: A GerritPatch instance to examine.
+      build_root: Build root directory.
+
+    Returns:
+      True if we can ignore the failures; False otherwise.
+    """
+    # Some repositories may opt to ignore certain stage failures.
+    failing_stages = set()
+    if any(x.GetFailingStages() is None for x in messages):
+      # If there are no tracebacks, that means that the builder
+      # did not report its status properly. We don't know what
+      # stages failed and cannot safely ignore any stage.
+      return False
+
+    for message in messages:
+      failing_stages.update(message.GetFailingStages())
+    ignored_stages = GetStagesToIgnoreForChange(build_root, change)
+    if ignored_stages and failing_stages.issubset(ignored_stages):
+      return True
+
+    return False
+
+  @classmethod
+  def GetFullyVerfiedChanges(cls, changes, changes_by_config, no_stat, failing,
+                             inflight, messages, build_root):
+
+    """Examines build failures and returns a set of fully verified changes.
+
+    A change is fully verified if all the build configs relevant to
+    this change have either passed or failed in a manner that can be
+    safely ignored by the change.
+
+    Args:
+      changes: A list of GerritPatch instances to examine.
+      changes_by_config: A dictionary of relevant changes indexed by the
+        config names.
+      failing: Names of the builders that failed.
+      inflight: Names of the builders that timed out.
+      no_stat: Set of builder names of slave builders that had status None.
+      messages: A list of BuildFailureMessage or NoneType objects from
+        the failed slaves.
+      build_root: Build root directory.
+
+    Returns:
+      A set of fully verified changes.
+    """
+    changes = set(changes)
+    no_stat = set(no_stat)
+    failing = set(failing)
+    inflight = set(inflight)
+    # Verify that every change is at least tested on one slave. If
+    # not, somethings has gone seriously wrong. No changes should be
+    # marked fully verified.
+    all_tested_changes = set()
+    for tested_changes in changes_by_config.itervalues():
+      all_tested_changes.update(tested_changes)
+    untested_changes = changes - all_tested_changes
+    if untested_changes:
+      logging.warning('Some changes were not tested on any slave: %s',
+                      cros_patch.GetChangesAsString(untested_changes))
+      return set()
+
+    fully_verified = set()
+    for change in all_tested_changes:
+      # If all relevant configs associated with a change passed, the
+      # change is fully verified.
+      relevant_configs = [k for k, v in changes_by_config.iteritems() if
+                          change in v]
+      if any(x in set.union(no_stat, inflight) for x in relevant_configs):
+        continue
+
+      failed_configs = [x for x in relevant_configs if x in failing]
+      if not failed_configs:
+        fully_verified.add(change)
+      else:
+        # Examine the failures and see if we can safely ignore them
+        # for the change.
+        failed_messages = [x for x in messages if x.builder in failed_configs]
+        if cls._CanIgnoreFailures(failed_messages, change, build_root):
+          fully_verified.add(change)
+
+    return fully_verified

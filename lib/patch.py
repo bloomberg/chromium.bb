@@ -1624,10 +1624,14 @@ def PrepareRemotePatches(patches):
   return patch_info
 
 
-def GetChangesAsString(changes):
+def GetChangesAsString(changes, prefix='CL:', delimiter=' '):
   """Gets a human readable string listing |changes| in CL:1234 form.
 
   Args:
     changes: A list of GerritPatch objects.
+    prefix: Prefix to use. Defaults to 'CL:'
+    delimiter: Delimiter to use. Defaults to a space.
   """
-  return ', '.join(sorted('CL:%s' % x.gerrit_number_str for x in changes))
+  formatted_changes = ['%s%s' % (prefix, AddPrefix(x, x.gerrit_number))
+                       for x in changes]
+  return delimiter.join(sorted(formatted_changes))
