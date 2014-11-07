@@ -126,6 +126,7 @@ bool FileSystemProviderUnmountFunction::RunSync() {
 
 bool FileSystemProviderGetAllFunction::RunSync() {
   using api::file_system_provider::FileSystemInfo;
+  using api::file_system_provider::Watcher;
   Service* const service = Service::Get(GetProfile());
   DCHECK(service);
 
@@ -133,12 +134,35 @@ bool FileSystemProviderGetAllFunction::RunSync() {
       service->GetProvidedFileSystemInfoList();
   std::vector<linked_ptr<FileSystemInfo>> items;
 
-  for (size_t i = 0; i < file_systems.size(); ++i) {
-    if (file_systems[i].extension_id() == extension_id()) {
-      linked_ptr<FileSystemInfo> item(new FileSystemInfo);
-      item->file_system_id = file_systems[i].file_system_id();
-      item->display_name = file_systems[i].display_name();
-      item->writable = file_systems[i].writable();
+  for (const auto& file_system_info : file_systems) {
+    if (file_system_info.extension_id() == extension_id()) {
+      const linked_ptr<FileSystemInfo> item(new FileSystemInfo);
+      item->file_system_id = file_system_info.file_system_id();
+      item->display_name = file_system_info.display_name();
+      item->writable = file_system_info.writable();
+
+      chromeos::file_system_provider::ProvidedFileSystemInterface* const
+          file_system =
+              service->GetProvidedFileSystem(file_system_info.extension_id(),
+                                             file_system_info.file_system_id());
+      DCHECK(file_system);
+
+      std::vector<linked_ptr<Watcher>> watcher_items;
+      chromeos::file_system_provider::Watchers* const watchers =
+          file_system->GetWatchers();
+      DCHECK(watchers);
+
+      for (const auto& watcher : *watchers) {
+        const linked_ptr<Watcher> watcher_item(new Watcher);
+        watcher_item->entry_path = watcher.second.entry_path.value();
+        watcher_item->recursive = watcher.second.recursive;
+        if (!watcher.second.last_tag.empty())
+          watcher_item->last_tag.reset(
+              new std::string(watcher.second.last_tag));
+        watcher_items.push_back(watcher_item);
+      }
+
+      item->watchers = watcher_items;
       items.push_back(item);
     }
   }

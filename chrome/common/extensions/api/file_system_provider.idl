@@ -443,11 +443,11 @@ namespace fileSystemProvider {
     // Returns all file systems mounted by the extension.
     static void getAll(GetAllCallback callback);
 
-    // Notifies about changes in the observed directory at <code>
-    // observedPath</code>. If the file system is mounted with <code>
-    // supportsNofityTag</code>, then <code>tag</code> must be provided, and
-    // all changes since the last notification always reported, even if the
-    // system was shutdown. The last tag can be obtained with <code>
+    // Notifies about changes in the watched directory at <code>
+    // observedPath</code> in <code>recursive</code mode. If the file system is
+    // mounted with <code>supportsNofityTag</code>, then <code>tag</code> must
+    // be provided, and all changes since the last notification always reported,
+    // even if the system was shutdown. The last tag can be obtained with <code>
     // getAll()</code>. Note, that <code>tag</code> is required in order to
     // enable the internal cache.
     //
@@ -455,11 +455,18 @@ namespace fileSystemProvider {
     // so it's possible to identify the last registered notification. Eg. if
     // the providing extension starts after a reboot, and the last registered
     // notification's tag is equal to "123", then it should call notify() for
-    // all changes which happened since the change tagged as "123".
+    // all changes which happened since the change tagged as "123". It cannot
+    // be an empty string.
     //
     // Not all providers are able to provide a tag, but if the file system has
     // a changelog, then the tag can be eg. a change number, or a revision
     // number.
+    //
+    // Note that if a parent directory is removed, then all descendant entries
+    // are also removed, and if they are watched, then the API must be notified
+    // about the fact. Also, if a directory is renamed, then all descendant
+    // entries are in fact removed, as there is no entry under their original
+    // paths anymore.
     //
     // In case of an error, <code>chrome.runtime.lastError</code> will be set
     // will a corresponding error code.

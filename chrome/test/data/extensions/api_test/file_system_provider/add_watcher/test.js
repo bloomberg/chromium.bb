@@ -89,6 +89,16 @@ function runTests() {
                 fileEntry.toURL(),
                 chrome.test.callbackPass(function(result) {
                   chrome.test.assertTrue(result);
+                  chrome.fileSystemProvider.getAll(
+                      chrome.test.callbackPass(function(fileSystems) {
+                        chrome.test.assertEq(1, fileSystems.length);
+                        chrome.test.assertEq(1, fileSystems[0].watchers.length);
+                        var watcher = fileSystems[0].watchers[0];
+                        chrome.test.assertEq(
+                            '/' + TESTING_FILE.name, watcher.entryPath);
+                        chrome.test.assertFalse(watcher.recursive);
+                        chrome.test.assertEq(undefined, watcher.tag);
+                      }));
                 }));
           }), function(error) {
             chrome.test.fail(error.name);
@@ -107,6 +117,11 @@ function runTests() {
                 fileEntry.toURL(),
                 chrome.test.callbackFail('Unknown error.', function(result) {
                   chrome.test.assertFalse(result);
+                  chrome.fileSystemProvider.getAll(
+                      chrome.test.callbackPass(function(fileSystems) {
+                        chrome.test.assertEq(1, fileSystems.length);
+                        chrome.test.assertEq(1, fileSystems[0].watchers.length);
+                      }));
                 }));
           }), function(error) {
             chrome.test.fail(error.name);
@@ -124,6 +139,11 @@ function runTests() {
                 fileEntry.toURL(),
                 chrome.test.callbackFail('Unknown error.', function(result) {
                   chrome.test.assertFalse(result);
+                  chrome.fileSystemProvider.getAll(
+                      chrome.test.callbackPass(function(fileSystems) {
+                        chrome.test.assertEq(1, fileSystems.length);
+                        chrome.test.assertEq(1, fileSystems[0].watchers.length);
+                      }));
                 }));
           }), function(error) {
             chrome.test.fail(error.name);

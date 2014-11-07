@@ -8,12 +8,24 @@
  * @type {Object}
  * @const
  */
-var TESTING_FILE = Object.freeze({
+var TESTING_DIRECTORY = Object.freeze({
   isDirectory: true,
-  name: 'tiramisu.txt',
-  size: 4096,
+  name: 'nakameguro',
+  size: 0,
   modificationTime: new Date(2014, 4, 28, 10, 39, 15)
 });
+
+/**
+ * @type {string}
+ * @const
+ */
+var TESTING_TAG = "hello-puppy";
+
+/**
+ * @type {string}
+ * @const
+ */
+var TESTING_ANOTHER_TAG = "hello-giraffe";
 
 /**
  * List of directory changed events received from the chrome.fileManagerPrivate
@@ -54,9 +66,9 @@ function setUp(callback) {
   chrome.fileSystemProvider.onRemoveWatcherRequested.addListener(
       test_util.onRemoveWatcherRequested);
 
-  test_util.defaultMetadata['/' + TESTING_FILE.name] = TESTING_FILE;
+  test_util.defaultMetadata['/' + TESTING_DIRECTORY.name] = TESTING_DIRECTORY;
 
-  test_util.mountFileSystem(callback);
+  test_util.mountFileSystem(callback, {supportsNotifyTag: true});
 }
 
 /**
@@ -65,13 +77,13 @@ function setUp(callback) {
 function runTests() {
   chrome.test.runTests([
 
-    // Adds a watcher, and then notifies that the entry has changed.
+    // Add a watcher, and then notifies that the entry has changed.
     function notifyChanged() {
       test_util.fileSystem.root.getDirectory(
-          TESTING_FILE.name,
+          TESTING_DIRECTORY.name,
           {create: false},
           chrome.test.callbackPass(function(fileEntry) {
-            chrome.test.assertEq(TESTING_FILE.name, fileEntry.name);
+            chrome.test.assertEq(TESTING_DIRECTORY.name, fileEntry.name);
             chrome.fileManagerPrivate.addFileWatch(
                 fileEntry.toURL(),
                 chrome.test.callbackPass(function(result) {
@@ -80,20 +92,140 @@ function runTests() {
                   directoryChangedCallback = chrome.test.callbackPass(
                       function() {
                         chrome.test.assertEq(1, directoryChangedEvents.length);
+                        chrome.test.assertEq(
+                            'changed', directoryChangedEvents[0].eventType);
+                        chrome.test.assertEq(
+                            fileEntry.toURL(),
+                            directoryChangedEvents[0].entry.toURL());
+                        // Confirm that the tag is updated.
+                        chrome.fileSystemProvider.getAll(
+                            chrome.test.callbackPass(function(fileSystems) {
+                              chrome.test.assertEq(1, fileSystems.length);
+                              chrome.test.assertEq(
+                                  1, fileSystems[0].watchers.length);
+                              var watcher = fileSystems[0].watchers[0];
+                              chrome.test.assertEq(
+                                  TESTING_TAG, watcher.lastTag);
+                            }));
                       });
-                  // TODO(mtomasz): Add more advanced tests, eg. for the tag
-                  // and for details of changes.
+                  // TODO(mtomasz): Add more advanced tests, eg. for the details
+                  // of changes.
                   chrome.fileSystemProvider.notify({
                     fileSystemId: test_util.FILE_SYSTEM_ID,
                     observedPath: fileEntry.fullPath,
                     recursive: false,
-                    changeType: 'CHANGED'
+                    changeType: 'CHANGED',
+                    tag: TESTING_TAG
                   }, chrome.test.callbackPass());
                 }));
           }), function(error) {
             chrome.test.fail(error.name);
           });
     },
+
+    // Passing an empty tag (or no tag) is invalid when the file system supports
+    // the tag.
+    function notifyEmptyTag() {
+      test_util.fileSystem.root.getDirectory(
+          TESTING_DIRECTORY.name,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.test.assertEq(TESTING_DIRECTORY.name, fileEntry.name);
+            directoryChangedCallback = function() {
+              chrome.test.fail();
+            };
+            // TODO(mtomasz): NOT_FOUND error should be returned instead.
+            chrome.fileSystemProvider.notify({
+              fileSystemId: test_util.FILE_SYSTEM_ID,
+              observedPath: fileEntry.fullPath,
+              recursive: false,
+              changeType: 'CHANGED',
+            }, chrome.test.callbackFail('SECURITY'));
+          }),
+          function(error) {
+            chrome.test.fail(error.name);
+          });
+    },
+
+    // Notifying for the watched entry but in a wrong mode (recursive, while the
+    // watcher is not recursive) should fail.
+    function notifyWatchedPathButDifferentModeTag() {
+      test_util.fileSystem.root.getDirectory(
+          TESTING_DIRECTORY.name,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.test.assertEq(TESTING_DIRECTORY.name, fileEntry.name);
+            directoryChangedCallback = function() {
+              chrome.test.fail();
+            };
+            // TODO(mtomasz): NOT_FOUND error should be returned instead.
+            chrome.fileSystemProvider.notify({
+              fileSystemId: test_util.FILE_SYSTEM_ID,
+              observedPath: fileEntry.fullPath,
+              recursive: true,
+              changeType: 'CHANGED',
+              tag: TESTING_ANOTHER_TAG,
+            }, chrome.test.callbackFail('SECURITY'));
+          }));
+    },
+
+    // Notify about the watched entry being removed. That should result in the
+    // watcher being removed.
+    function notifyDeleted() {
+      test_util.fileSystem.root.getDirectory(
+          TESTING_DIRECTORY.name,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.test.assertEq(TESTING_DIRECTORY.name, fileEntry.name);
+            // Verify closure called when an even arrives.
+            directoryChangedCallback = chrome.test.callbackPass(
+                function() {
+                  chrome.test.assertEq(2, directoryChangedEvents.length);
+                  chrome.test.assertEq(
+                      'changed', directoryChangedEvents[1].eventType);
+                  chrome.test.assertEq(fileEntry.toURL(),
+                                       directoryChangedEvents[1].entry.toURL());
+                  // Confirm that the watcher is removed.
+                  chrome.fileSystemProvider.getAll(
+                      chrome.test.callbackPass(function(fileSystems) {
+                        chrome.test.assertEq(1, fileSystems.length);
+                        chrome.test.assertEq(
+                            0, fileSystems[0].watchers.length);
+                      }));
+                });
+            // TODO(mtomasz): Add more advanced tests, eg. for the details
+            // of changes.
+            chrome.fileSystemProvider.notify({
+              fileSystemId: test_util.FILE_SYSTEM_ID,
+              observedPath: fileEntry.fullPath,
+              recursive: false,
+              changeType: 'DELETED',
+              tag: TESTING_ANOTHER_TAG
+            }, chrome.test.callbackPass());
+          }));
+    },
+
+    // Notify about an entry which is not watched. That should result in an
+    // error.
+    function notifyNotWatched() {
+      test_util.fileSystem.root.getDirectory(
+          TESTING_DIRECTORY.name,
+          {create: false},
+          chrome.test.callbackPass(function(fileEntry) {
+            chrome.test.assertEq(TESTING_DIRECTORY.name, fileEntry.name);
+            directoryChangedCallback = function() {
+              chrome.test.fail();
+            };
+            // TODO(mtomasz): NOT_FOUND error should be returned instead.
+            chrome.fileSystemProvider.notify({
+              fileSystemId: test_util.FILE_SYSTEM_ID,
+              observedPath: fileEntry.fullPath,
+              recursive: false,
+              changeType: 'CHANGED',
+              tag: TESTING_ANOTHER_TAG
+            }, chrome.test.callbackFail('SECURITY'));
+          }));
+    }
   ]);
 }
 

@@ -72,14 +72,24 @@ test_util.getVolumeInfo = function(fileSystemId, callback) {
  * On failure, the current test case is failed on an assertion.
  *
  * @param {function()} callback Success callback.
+ * @param {Object=} opt_options Optional extra options.
  */
-test_util.mountFileSystem = function(callback) {
+test_util.mountFileSystem = function(callback, opt_options) {
+  var options = {
+    fileSystemId: test_util.FILE_SYSTEM_ID,
+    displayName: test_util.FILE_SYSTEM_NAME,
+    writable: true
+  };
+
+  // If any extra options are provided then merge then. They may override the
+  // default ones.
+  if (opt_options) {
+    for (var key in opt_options)
+      options[key] = opt_options[key];
+  }
+
   chrome.fileSystemProvider.mount(
-      {
-        fileSystemId: test_util.FILE_SYSTEM_ID,
-        displayName: test_util.FILE_SYSTEM_NAME,
-        writable: true
-      },
+      options,
       function() {
         // Note that chrome.test.callbackPass() cannot be used, as it would
         // prematurely finish the test at the setUp() stage.
@@ -87,10 +97,10 @@ test_util.mountFileSystem = function(callback) {
           chrome.test.fail(chrome.runtime.lastError.message);
 
         var volumeId =
-            'provided:' + chrome.runtime.id + '-' + test_util.FILE_SYSTEM_ID +
+            'provided:' + chrome.runtime.id + '-' + options.fileSystemId +
             '-user';
 
-        test_util.getVolumeInfo(test_util.FILE_SYSTEM_ID, function(volumeInfo) {
+        test_util.getVolumeInfo(options.fileSystemId, function(volumeInfo) {
           chrome.test.assertTrue(!!volumeInfo);
           chrome.fileManagerPrivate.requestFileSystem(
               volumeInfo.volumeId,
