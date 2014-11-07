@@ -104,6 +104,7 @@ AudioContext::AudioContext(Document* document)
     , m_audioThread(0)
     , m_isOfflineContext(false)
 {
+    m_referencedNodes = new HeapVector<Member<AudioNode>>();
     m_destinationNode = DefaultAudioDestinationNode::create(this);
 
     initialize();
@@ -124,6 +125,7 @@ AudioContext::AudioContext(Document* document, unsigned numberOfChannels, size_t
     , m_audioThread(0)
     , m_isOfflineContext(true)
 {
+    m_referencedNodes = new HeapVector<Member<AudioNode>>();
     // Create a new destination for offline rendering.
     m_renderTarget = AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate);
     if (m_renderTarget.get())
@@ -139,7 +141,6 @@ AudioContext::~AudioContext()
 #endif
     // AudioNodes keep a reference to their context, so there should be no way to be in the destructor if there are still AudioNodes around.
     ASSERT(!m_isInitialized);
-    ASSERT(!m_referencedNodes.size());
     ASSERT(!m_finishedNodes.size());
     ASSERT(!m_automaticPullNodes.size());
     if (m_automaticPullNodesNeedUpdating)
@@ -550,7 +551,7 @@ void AudioContext::refNode(AudioNode* node)
     ASSERT(isMainThread());
     AutoLocker locker(this);
 
-    m_referencedNodes.append(node);
+    m_referencedNodes->append(node);
     node->makeConnection();
 }
 
@@ -558,10 +559,10 @@ void AudioContext::derefNode(AudioNode* node)
 {
     ASSERT(isGraphOwner());
 
-    for (unsigned i = 0; i < m_referencedNodes.size(); ++i) {
-        if (node == m_referencedNodes[i].get()) {
+    for (unsigned i = 0; i < m_referencedNodes->size(); ++i) {
+        if (node == m_referencedNodes->at(i).get()) {
             node->breakConnection();
-            m_referencedNodes.remove(i);
+            m_referencedNodes->remove(i);
             break;
         }
     }
@@ -570,10 +571,10 @@ void AudioContext::derefNode(AudioNode* node)
 void AudioContext::derefUnfinishedSourceNodes()
 {
     ASSERT(isMainThread());
-    for (unsigned i = 0; i < m_referencedNodes.size(); ++i)
-        m_referencedNodes[i]->breakConnection();
+    for (unsigned i = 0; i < m_referencedNodes->size(); ++i)
+        m_referencedNodes->at(i)->breakConnection();
 
-    m_referencedNodes.clear();
+    m_referencedNodes->clear();
 }
 
 void AudioContext::lock()
@@ -839,7 +840,14 @@ void AudioContext::trace(Visitor* visitor)
     visitor->trace(m_renderTarget);
     visitor->trace(m_destinationNode);
     visitor->trace(m_listener);
-    visitor->trace(m_referencedNodes);
+    // trace() can be called in AudioContext constructor, and
+    // m_contextGraphMutex might be unavailable.  We can use m_contextGraphMutex
+    // if m_referencedNodes is not null because m_referencedNodes is initialized
+    // after m_contextGraphMutex.
+    if (m_referencedNodes) {
+        AutoLocker lock(this);
+        visitor->trace(m_referencedNodes);
+    }
     visitor->trace(m_liveNodes);
     visitor->trace(m_liveAudioSummingJunctions);
     EventTargetWithInlineData::trace(visitor);

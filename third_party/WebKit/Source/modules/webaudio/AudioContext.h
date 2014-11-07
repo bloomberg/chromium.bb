@@ -273,7 +273,7 @@ private:
     // Oilpan: This Vector holds connection references. We must call
     // AudioNode::makeConnection when we add an AudioNode to this, and must call
     // AudioNode::breakConnection() when we remove an AudioNode from this.
-    HeapVector<Member<AudioNode> > m_referencedNodes;
+    Member<HeapVector<Member<AudioNode>>> m_referencedNodes;
 
     class AudioNodeDisposer {
     public:
