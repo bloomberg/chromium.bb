@@ -32,7 +32,6 @@
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/events/Event.h"
@@ -61,6 +60,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "wtf/ArrayBuffer.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/TextEncoding.h"
 
@@ -482,7 +482,7 @@ bool FileContentRequest::didGetFile(File* file)
 
 void FileContentRequest::didRead()
 {
-    RefPtr<DOMArrayBuffer> buffer = m_reader->arrayBufferResult();
+    RefPtr<ArrayBuffer> buffer = m_reader->arrayBufferResult();
 
     if (!m_readAsText) {
         String result = base64Encode(static_cast<char*>(buffer->data()), buffer->byteLength());

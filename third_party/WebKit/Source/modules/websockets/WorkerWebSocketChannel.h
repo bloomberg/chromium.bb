@@ -64,7 +64,7 @@ public:
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) override;
     virtual void send(const String& message) override;
-    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     virtual void send(PassRefPtr<BlobDataHandle>) override;
     virtual void send(PassOwnPtr<Vector<char> >) override
     {
@@ -134,7 +134,7 @@ public:
         void initialize(const String& sourceURLAtConnection, unsigned lineNumberAtConnection);
         bool connect(const KURL&, const String& protocol);
         void send(const String& message);
-        void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength);
+        void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength);
         void send(PassRefPtr<BlobDataHandle>);
         unsigned long bufferedAmount();
         void close(int code, const String& reason);

@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
 
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -201,7 +200,7 @@ void DocumentWebSocketChannel::send(PassRefPtr<BlobDataHandle> blobDataHandle)
     sendInternal();
 }
 
-void DocumentWebSocketChannel::send(const DOMArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
+void DocumentWebSocketChannel::send(const ArrayBuffer& buffer, unsigned byteOffset, unsigned byteLength)
 {
     WTF_LOG(Network, "DocumentWebSocketChannel %p sendArrayBuffer(%p, %u, %u)", this, buffer.data(), byteOffset, byteLength);
     if (m_identifier) {
@@ -288,7 +287,7 @@ DocumentWebSocketChannel::Message::Message(PassRefPtr<BlobDataHandle> blobDataHa
     : type(MessageTypeBlob)
     , blobDataHandle(blobDataHandle) { }
 
-DocumentWebSocketChannel::Message::Message(PassRefPtr<DOMArrayBuffer> arrayBuffer)
+DocumentWebSocketChannel::Message::Message(PassRefPtr<ArrayBuffer> arrayBuffer)
     : type(MessageTypeArrayBuffer)
     , arrayBuffer(arrayBuffer) { }
 
@@ -329,7 +328,7 @@ void DocumentWebSocketChannel::sendInternal()
         case MessageTypeArrayBuffer: {
             WebSocketHandle::MessageType type =
                 m_sentSizeOfTopMessage ? WebSocketHandle::MessageTypeContinuation : WebSocketHandle::MessageTypeBinary;
-            unsigned long size = std::min(static_cast<unsigned long>(m_sendingQuota), message->arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
+            size_t size = std::min(static_cast<size_t>(m_sendingQuota), message->arrayBuffer->byteLength() - m_sentSizeOfTopMessage);
             final = (m_sentSizeOfTopMessage + size == message->arrayBuffer->byteLength());
             m_handle->send(final, type, static_cast<const char*>(message->arrayBuffer->data()) + m_sentSizeOfTopMessage, size);
             m_sentSizeOfTopMessage += size;
@@ -562,7 +561,7 @@ void DocumentWebSocketChannel::didStartClosingHandshake(WebSocketHandle* handle)
         m_client->didStartClosingHandshake();
 }
 
-void DocumentWebSocketChannel::didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer> buffer)
+void DocumentWebSocketChannel::didFinishLoadingBlob(PassRefPtr<ArrayBuffer> buffer)
 {
     m_blobLoader.clear();
     ASSERT(m_handle);

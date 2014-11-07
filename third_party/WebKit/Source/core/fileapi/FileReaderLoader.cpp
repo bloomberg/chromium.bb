@@ -33,7 +33,6 @@
 #include "core/fileapi/FileReaderLoader.h"
 
 #include "core/FetchInitiatorTypeNames.h"
-#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
@@ -307,7 +306,7 @@ FileError::ErrorCode FileReaderLoader::httpStatusCodeToErrorCode(int httpStatusC
     }
 }
 
-PassRefPtr<DOMArrayBuffer> FileReaderLoader::arrayBufferResult() const
+PassRefPtr<ArrayBuffer> FileReaderLoader::arrayBufferResult() const
 {
     ASSERT(m_readType == ReadAsArrayBuffer);
 
@@ -315,7 +314,7 @@ PassRefPtr<DOMArrayBuffer> FileReaderLoader::arrayBufferResult() const
     if (!m_rawData || m_errorCode)
         return nullptr;
 
-    return DOMArrayBuffer::create(m_rawData->toArrayBuffer());
+    return m_rawData->toArrayBuffer();
 }
 
 String FileReaderLoader::stringResult()

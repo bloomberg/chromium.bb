@@ -46,7 +46,7 @@ public:
 
     MOCK_METHOD2(connect, bool(const KURL&, const String&));
     MOCK_METHOD1(send, void(const String&));
-    MOCK_METHOD3(send, void(const DOMArrayBuffer&, unsigned, unsigned));
+    MOCK_METHOD3(send, void(const ArrayBuffer&, unsigned, unsigned));
     MOCK_METHOD1(send, void(PassRefPtr<BlobDataHandle>));
     MOCK_METHOD1(send, void(PassOwnPtr<Vector<char> >));
     MOCK_CONST_METHOD0(bufferedAmount, unsigned long());
@@ -611,7 +611,7 @@ TEST_F(DOMWebSocketTest, sendArrayBufferSuccess)
     {
         InSequence s;
         EXPECT_CALL(channel(), connect(KURL(KURL(), "ws://example.com/"), String())).WillOnce(Return(true));
-        EXPECT_CALL(channel(), send(Ref(*view->buffer()), 0, 8));
+        EXPECT_CALL(channel(), send(Ref(*view->view()->buffer()), 0, 8));
     }
     m_websocket->connect("ws://example.com/", Vector<String>(), m_exceptionState);
 

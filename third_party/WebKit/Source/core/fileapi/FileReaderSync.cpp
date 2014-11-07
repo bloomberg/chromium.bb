@@ -55,7 +55,7 @@ PassRefPtr<DOMArrayBuffer> FileReaderSync::readAsArrayBuffer(ExecutionContext* e
     FileReaderLoader loader(FileReaderLoader::ReadAsArrayBuffer, 0);
     startLoading(executionContext, loader, *blob, exceptionState);
 
-    return loader.arrayBufferResult();
+    return DOMArrayBuffer::create(loader.arrayBufferResult());
 }
 
 String FileReaderSync::readAsBinaryString(ExecutionContext* executionContext, Blob* blob, ExceptionState& exceptionState)

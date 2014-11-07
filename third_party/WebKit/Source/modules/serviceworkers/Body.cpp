@@ -167,13 +167,13 @@ void Body::didFinishLoading()
 
     switch (m_responseType) {
     case ResponseAsArrayBuffer:
-        m_resolver->resolve(m_loader->arrayBufferResult());
+        m_resolver->resolve(DOMArrayBuffer::create(m_loader->arrayBufferResult()));
         break;
     case ResponseAsBlob: {
         ASSERT(blobDataHandle()->size() == kuint64max);
         OwnPtr<BlobData> blobData = BlobData::create();
-        RefPtr<DOMArrayBuffer> buffer = m_loader->arrayBufferResult();
-        blobData->appendArrayBuffer(buffer->buffer());
+        RefPtr<ArrayBuffer> buffer = m_loader->arrayBufferResult();
+        blobData->appendArrayBuffer(buffer.get());
         const size_t length = blobData->length();
         m_resolver->resolve(Blob::create(BlobDataHandle::create(blobData.release(), length)));
         break;

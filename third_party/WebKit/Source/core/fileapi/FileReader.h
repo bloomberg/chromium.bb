@@ -44,7 +44,6 @@
 namespace blink {
 
 class Blob;
-class DOMArrayBuffer;
 class ExceptionState;
 class ExecutionContext;
 
@@ -75,7 +74,7 @@ public:
     ReadyState readyState() const { return m_state; }
     FileError* error() { return m_error; }
     FileReaderLoader::ReadType readType() const { return m_readType; }
-    PassRefPtr<DOMArrayBuffer> arrayBufferResult() const;
+    PassRefPtr<ArrayBuffer> arrayBufferResult() const;
     String stringResult();
 
     // ActiveDOMObject
