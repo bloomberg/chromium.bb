@@ -2560,6 +2560,19 @@ bool Element::matches(const String& selectors, ExceptionState& exceptionState)
     return selectorQuery->matches(*this);
 }
 
+Element* Element::closest(const String& selectors, ExceptionState& exceptionState)
+{
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selectors), document(), exceptionState);
+    if (selectorQuery) {
+        for (Element* currentElement = this; currentElement; currentElement = currentElement->parentElement()) {
+            if (selectorQuery->matches(*currentElement))
+                return currentElement;
+        }
+    }
+
+    return nullptr;
+}
+
 DOMTokenList& Element::classList()
 {
     ElementRareData& rareData = ensureElementRareData();
