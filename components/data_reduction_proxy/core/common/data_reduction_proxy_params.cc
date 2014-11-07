@@ -15,6 +15,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/proxy/proxy_config.h"
 #include "net/proxy/proxy_info.h"
+#include "net/proxy/proxy_list.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "net/proxy/proxy_service.h"
@@ -429,10 +430,15 @@ bool DataReductionProxyParams::AreProxiesBypassed(
   if (proxy_rules.type != net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME)
     return false;
 
+  const net::ProxyList* proxies = is_https ?
+      proxy_rules.MapUrlSchemeToProxyList(url::kHttpsScheme) :
+      proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme);
+
+  if (!proxies)
+    return false;
+
   scoped_ptr<base::ListValue> proxy_list =
-      scoped_ptr<base::ListValue>(is_https ?
-          proxy_rules.MapUrlSchemeToProxyList(url::kHttpsScheme)->ToValue() :
-          proxy_rules.MapUrlSchemeToProxyList(url::kHttpScheme)->ToValue());
+      scoped_ptr<base::ListValue>(proxies->ToValue());
 
   base::TimeDelta min_delay = base::TimeDelta::Max();
   base::TimeDelta delay;

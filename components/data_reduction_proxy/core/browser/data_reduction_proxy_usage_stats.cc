@@ -250,7 +250,8 @@ void DataReductionProxyUsageStats::RecordBypassedBytesHistograms(
     return;
   }
 
-  if (data_reduction_proxy_params_->AreDataReductionProxiesBypassed(*request,
+  if (data_reduction_proxy_enabled.GetValue() &&
+      data_reduction_proxy_params_->AreDataReductionProxiesBypassed(*request,
                                                                     NULL)) {
     RecordBypassedBytes(last_bypass_type_,
                         DataReductionProxyUsageStats::NETWORK_ERROR,
