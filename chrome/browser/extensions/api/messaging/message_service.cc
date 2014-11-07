@@ -332,25 +332,17 @@ void MessageService::OpenChannelToExtension(
 
   // Include info about the opener's tab (if it was a tab).
   scoped_ptr<base::DictionaryValue> source_tab;
-  GURL source_url_for_tab;
-
   if (source_contents && ExtensionTabUtil::GetTabId(source_contents) >= 0) {
     // Only the tab id is useful to platform apps for internal use. The
     // unnecessary bits will be stripped out in
     // MessagingBindings::DispatchOnConnect().
     source_tab.reset(ExtensionTabUtil::CreateTabValue(source_contents));
-    source_url_for_tab = source_url;
   }
 
-  OpenChannelParams* params = new OpenChannelParams(source,
-                                                    source_tab.Pass(),
-                                                    receiver,
-                                                    receiver_port_id,
-                                                    source_extension_id,
-                                                    target_extension_id,
-                                                    source_url_for_tab,
-                                                    channel_name,
-                                                    include_tls_channel_id);
+  OpenChannelParams* params = new OpenChannelParams(
+      source, source_tab.Pass(), receiver, receiver_port_id,
+      source_extension_id, target_extension_id, source_url, channel_name,
+      include_tls_channel_id);
 
   // If the target requests the TLS channel id, begin the lookup for it.
   // The target might also be a lazy background page, checked next, but the

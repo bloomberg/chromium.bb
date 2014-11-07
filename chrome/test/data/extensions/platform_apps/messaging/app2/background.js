@@ -15,7 +15,10 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 });
 
 chrome.runtime.onMessageExternal.addListener(function(msg, sender, callback) {
-  chrome.test.assertEq({id: otherId}, sender);
+  chrome.test.assertEq({
+    id: otherId,
+    url: 'chrome-extension://' + otherId + '/_generated_background_page.html'
+  }, sender);
   if (msg == 'hello')
     callback('hello_response');
   else
