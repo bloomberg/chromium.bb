@@ -221,6 +221,8 @@ namespace blink {
 
         virtual void dispatchDidChangeManifest() { }
 
+        virtual unsigned backForwardLength() { return 0; }
+
         virtual bool isFrameLoaderClientImpl() const { return false; }
     };
 

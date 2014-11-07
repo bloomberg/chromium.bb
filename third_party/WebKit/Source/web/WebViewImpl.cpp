@@ -373,7 +373,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_dragClientImpl(this)
     , m_editorClientImpl(this)
     , m_inspectorClientImpl(this)
-    , m_backForwardClientImpl(this)
     , m_spellCheckerClientImpl(this)
     , m_storageClientImpl(this)
     , m_shouldAutoResize(false)
@@ -427,7 +426,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.editorClient = &m_editorClientImpl;
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
-    pageClients.backForwardClient = &m_backForwardClientImpl;
     pageClients.spellCheckerClient = &m_spellCheckerClientImpl;
     pageClients.storageClient = &m_storageClientImpl;
 

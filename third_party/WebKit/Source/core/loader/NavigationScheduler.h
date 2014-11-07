@@ -81,7 +81,6 @@ public:
     void schedulePageBlock(Document*);
     void scheduleFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission>);
     void scheduleReload();
-    void scheduleHistoryNavigation(int steps);
 
     void startTimer();
     void cancel();

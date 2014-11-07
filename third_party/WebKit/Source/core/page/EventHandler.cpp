@@ -64,7 +64,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/AutoscrollController.h"
-#include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DragController.h"
@@ -3386,11 +3385,7 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
 
     if (!m_frame->editor().behavior().shouldNavigateBackOnBackspace())
         return;
-
-    Page* page = m_frame->page();
-    if (!page || !page->mainFrame()->isLocalFrame())
-        return;
-    bool handledEvent = page->deprecatedLocalMainFrame()->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
+    bool handledEvent = m_frame->loader().client()->navigateBackForward(event->shiftKey() ? 1 : -1);
     if (handledEvent)
         event->setDefaultHandled();
 }

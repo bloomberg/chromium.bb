@@ -540,9 +540,9 @@ bool FrameLoaderClientImpl::navigateBackForward(int offset) const
         return false;
 
     ASSERT(offset);
-    offset = std::min(offset, webview->client()->historyForwardListCount());
-    offset = std::max(offset, -webview->client()->historyBackListCount());
-    if (!offset)
+    if (offset > webview->client()->historyForwardListCount())
+        return false;
+    if (offset < -webview->client()->historyBackListCount())
         return false;
     webview->client()->navigateBackForwardSoon(offset);
     return true;
@@ -864,6 +864,14 @@ void FrameLoaderClientImpl::dispatchDidChangeManifest()
 {
     if (m_webFrame->client())
         m_webFrame->client()->didChangeManifest(m_webFrame);
+}
+
+unsigned FrameLoaderClientImpl::backForwardLength()
+{
+    WebViewImpl* webview = m_webFrame->viewImpl();
+    if (!webview || !webview->client())
+        return 0;
+    return webview->client()->historyBackListCount() + 1 + webview->client()->historyForwardListCount();
 }
 
 } // namespace blink

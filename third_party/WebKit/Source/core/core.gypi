@@ -1441,7 +1441,6 @@
             'loader/appcache/ApplicationCacheHost.h',
             'page/AutoscrollController.cpp',
             'page/AutoscrollController.h',
-            'page/BackForwardClient.h',
             'page/Chrome.cpp',
             'page/ContextMenuController.cpp',
             'page/ContextMenuProvider.h',

@@ -46,7 +46,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
-#include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
 #include "platform/SharedBuffer.h"
 #include "platform/UserGestureIndicator.h"
@@ -185,26 +184,6 @@ public:
     }
 };
 
-class ScheduledHistoryNavigation final : public ScheduledNavigation {
-public:
-    explicit ScheduledHistoryNavigation(int historySteps)
-        : ScheduledNavigation(0, false, true)
-        , m_historySteps(historySteps)
-    {
-    }
-
-    virtual void fire(LocalFrame* frame) override
-    {
-        OwnPtr<UserGestureIndicator> gestureIndicator = createUserGestureIndicator();
-        // go(i!=0) from a frame navigates into the history of the frame only,
-        // in both IE and NS (but not in Mozilla). We can't easily do that.
-        frame->page()->deprecatedLocalMainFrame()->loader().client()->navigateBackForward(m_historySteps);
-    }
-
-private:
-    int m_historySteps;
-};
-
 class ScheduledFormSubmission final : public ScheduledNavigation {
 public:
     ScheduledFormSubmission(PassRefPtrWillBeRawPtr<FormSubmission> submission, bool lockBackForwardList)
@@ -338,26 +317,6 @@ void NavigationScheduler::scheduleReload()
     if (m_frame->document()->url().isEmpty())
         return;
     schedule(adoptPtr(new ScheduledReload));
-}
-
-void NavigationScheduler::scheduleHistoryNavigation(int steps)
-{
-    if (!shouldScheduleNavigation())
-        return;
-
-    // Invalid history navigations (such as history.forward() during a new load) have the side effect of cancelling any scheduled
-    // redirects. We also avoid the possibility of cancelling the current load by avoiding the scheduled redirection altogether.
-    BackForwardClient& backForward = m_frame->page()->backForward();
-    if (steps > backForward.forwardListCount() || -steps > backForward.backListCount()) {
-        cancel();
-        return;
-    }
-
-    // In all other cases, schedule the history traversal to occur asynchronously.
-    if (steps)
-        schedule(adoptPtr(new ScheduledHistoryNavigation(steps)));
-    else
-        schedule(adoptPtr(new ScheduledReload));
 }
 
 void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)

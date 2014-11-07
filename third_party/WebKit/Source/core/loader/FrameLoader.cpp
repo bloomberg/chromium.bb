@@ -71,7 +71,6 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/page/BackForwardClient.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/CreateWindow.h"
@@ -655,7 +654,7 @@ FrameLoadType FrameLoader::determineFrameLoadType(const FrameLoadRequest& reques
 {
     if (m_frame->tree().parent() && !m_stateMachine.committedFirstRealDocumentLoad())
         return FrameLoadTypeInitialInChildFrame;
-    if (!m_frame->tree().parent() && !m_frame->page()->backForward().backForwardListCount())
+    if (!m_frame->tree().parent() && !client()->backForwardLength())
         return FrameLoadTypeStandard;
     if (m_provisionalDocumentLoader && request.substituteData().failingURL() == m_provisionalDocumentLoader->url() && m_loadType == FrameLoadTypeBackForward)
         return FrameLoadTypeBackForward;

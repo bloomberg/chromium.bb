@@ -34,7 +34,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/HistoryItem.h"
-#include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -55,11 +54,9 @@ void History::trace(Visitor* visitor)
 
 unsigned History::length() const
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->loader().client())
         return 0;
-    if (!m_frame->page())
-        return 0;
-    return m_frame->page()->backForward().backForwardListCount();
+    return m_frame->loader().client()->backForwardLength();
 }
 
 SerializedScriptValue* History::state()
@@ -101,7 +98,7 @@ void History::forward(ExecutionContext* context)
 
 void History::go(ExecutionContext* context, int distance)
 {
-    if (!m_frame)
+    if (!m_frame || !m_frame->loader().client())
         return;
 
     ASSERT(isMainThread());
@@ -112,7 +109,10 @@ void History::go(ExecutionContext* context, int distance)
     if (!activeDocument->canNavigate(*m_frame))
         return;
 
-    m_frame->navigationScheduler().scheduleHistoryNavigation(distance);
+    if (distance)
+        m_frame->loader().client()->navigateBackForward(distance);
+    else
+        m_frame->navigationScheduler().scheduleReload();
 }
 
 KURL History::urlForState(const String& urlString)

@@ -47,7 +47,6 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebView.h"
-#include "web/BackForwardClientImpl.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ContextMenuClientImpl.h"
 #include "web/DragClientImpl.h"
@@ -610,7 +609,6 @@ private:
     DragClientImpl m_dragClientImpl;
     EditorClientImpl m_editorClientImpl;
     InspectorClientImpl m_inspectorClientImpl;
-    BackForwardClientImpl m_backForwardClientImpl;
     SpellCheckerClientImpl m_spellCheckerClientImpl;
     StorageClientImpl m_storageClientImpl;
 

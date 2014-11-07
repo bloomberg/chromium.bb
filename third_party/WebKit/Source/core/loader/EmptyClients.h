@@ -32,7 +32,6 @@
 #include "core/editing/UndoStep.h"
 #include "core/inspector/InspectorClient.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/page/BackForwardClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/DragClient.h"
@@ -324,13 +323,6 @@ public:
 
     virtual void highlight() override { }
     virtual void hideHighlight() override { }
-};
-
-class EmptyBackForwardClient final : public BackForwardClient {
-public:
-    virtual int backListCount() override { return 0; }
-    virtual int forwardListCount() override { return 0; }
-    virtual int backForwardListCount() override { return 0; }
 };
 
 class EmptyStorageClient final : public StorageClient {

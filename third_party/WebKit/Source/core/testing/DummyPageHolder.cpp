@@ -60,7 +60,6 @@ DummyPageHolder::DummyPageHolder(
         m_pageClients.editorClient = pageClients->editorClient;
         m_pageClients.dragClient = pageClients->dragClient;
         m_pageClients.inspectorClient = pageClients->inspectorClient;
-        m_pageClients.backForwardClient = pageClients->backForwardClient;
         m_pageClients.spellCheckerClient = pageClients->spellCheckerClient;
         m_pageClients.storageClient = pageClients->storageClient;
     }

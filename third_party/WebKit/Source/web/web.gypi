@@ -4,8 +4,6 @@
       'AssertMatchingEnums.cpp',
       'AssociatedURLLoader.cpp',
       'AssociatedURLLoader.h',
-      'BackForwardClientImpl.cpp',
-      'BackForwardClientImpl.h',
       'ChromeClientImpl.cpp',
       'ChromeClientImpl.h',
       'ColorChooserPopupUIController.cpp',

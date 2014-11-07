@@ -171,6 +171,8 @@ public:
 
     virtual void dispatchDidChangeManifest() override;
 
+    virtual unsigned backForwardLength() override;
+
 private:
     virtual bool isFrameLoaderClientImpl() const override { return true; }
 

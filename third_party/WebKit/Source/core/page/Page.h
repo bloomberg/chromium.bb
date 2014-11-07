@@ -40,7 +40,6 @@
 namespace blink {
 
 class AutoscrollController;
-class BackForwardClient;
 class Chrome;
 class ChromeClient;
 class ClientRectList;
@@ -90,7 +89,6 @@ public:
         EditorClient* editorClient;
         DragClient* dragClient;
         InspectorClient* inspectorClient;
-        BackForwardClient* backForwardClient;
         SpellCheckerClient* spellCheckerClient;
         StorageClient* storageClient;
     };
@@ -152,7 +150,6 @@ public:
     PassRefPtrWillBeRawPtr<ClientRectList> nonFastScrollableRects(const LocalFrame*);
 
     Settings& settings() const { return *m_settings; }
-    BackForwardClient& backForward() const { return *m_backForwardClient; }
 
     UseCounter& useCounter() { return m_useCounter; }
 
@@ -253,7 +250,6 @@ private:
 
     mutable RefPtr<PluginData> m_pluginData;
 
-    BackForwardClient* m_backForwardClient;
     EditorClient* const m_editorClient;
     SpellCheckerClient* const m_spellCheckerClient;
     StorageClient* m_storageClient;
