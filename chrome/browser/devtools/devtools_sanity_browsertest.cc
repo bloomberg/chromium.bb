@@ -928,7 +928,13 @@ class RemoteDebuggingTest: public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, RemoteDebugger) {
+// Fails on CrOS. crbug.com/431399
+#if defined(OS_CHROMEOS)
+#define MAYBE_RemoteDebugger DISABLED_RemoteDebugger
+#else
+#define MAYBE_RemoteDebugger RemoteDebugger
+#endif
+IN_PROC_BROWSER_TEST_F(RemoteDebuggingTest, MAYBE_RemoteDebugger) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
