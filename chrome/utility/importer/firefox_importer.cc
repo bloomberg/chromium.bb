@@ -370,7 +370,11 @@ void FirefoxImporter::ImportPasswords() {
 
   if (!cancelled()) {
     for (size_t i = 0; i < forms.size(); ++i) {
-      bridge_->SetPasswordForm(forms[i]);
+      if (!forms[i].username_value.empty() ||
+          !forms[i].password_value.empty() ||
+          forms[i].blacklisted_by_user) {
+        bridge_->SetPasswordForm(forms[i]);
+      }
     }
   }
 }

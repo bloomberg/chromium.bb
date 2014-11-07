@@ -67,10 +67,18 @@ const BookmarkInfo kFirefoxBookmarks[] = {
 };
 
 const PasswordInfo kFirefoxPasswords[] = {
+  {"http://blacklist.com/", "", "http://blacklist.com/",
+      "", "", "", "", true},
   {"http://localhost:8080/", "http://localhost:8080/", "http://localhost:8080/",
     "loginuser", "abc", "loginpass", "123", false},
   {"http://localhost:8080/", "", "http://localhost:8080/localhost",
-    "", "http", "", "Http1+1abcdefg", false},
+      "", "http", "", "Http1+1abcdefg", false},
+  {"http://server.com:1234/", "", "http://server.com:1234/http_realm",
+      "loginuser", "user", "loginpass", "password", false},
+  {"http://server.com:4321/", "", "http://server.com:4321/http_realm",
+      "loginuser", "user", "loginpass", "", false},
+  {"http://server.com:4321/", "", "http://server.com:4321/http_realm",
+      "loginuser", "", "loginpass", "password", false},
 };
 
 const KeywordInfo kFirefoxKeywords[] = {

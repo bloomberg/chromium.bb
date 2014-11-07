@@ -28,14 +28,6 @@ const int kNumHistoryRowsToSend = 100;
 const int kNumFaviconsToSend = 100;
 const int kNumAutofillFormDataToSend = 100;
 
-// http://crbug.com/404012. Let's see where the empty fields come from.
-void CheckForEmptyUsernameAndPassword(const autofill::PasswordForm& form) {
-  if (form.username_value.empty() &&
-      form.password_value.empty() &&
-      !form.blacklisted_by_user) {
-    base::debug::DumpWithoutCrashing();
-  }
-}
 } // namespace
 
 ExternalProcessImporterBridge::ExternalProcessImporterBridge(
@@ -148,7 +140,6 @@ void ExternalProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
 
 void ExternalProcessImporterBridge::SetPasswordForm(
     const autofill::PasswordForm& form) {
-  CheckForEmptyUsernameAndPassword(form);
   Send(new ProfileImportProcessHostMsg_NotifyPasswordFormReady(form));
 }
 
