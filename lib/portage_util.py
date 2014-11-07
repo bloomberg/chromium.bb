@@ -1172,7 +1172,7 @@ def BuildFullWorkonPackageDictionary(buildroot, overlay_type, manifest):
     for path in paths:
       checkout = manifest.FindCheckoutFromPath(path)
       project = checkout['name']
-      branch = git.StripRefs(checkout['upstream'])
+      branch = git.StripRefs(checkout['tracking_branch'])
       pkg_list = pkg_map.get((project, branch), [])
       pkg_list.append(package)
       pkg_map[(project, branch)] = pkg_list

@@ -554,11 +554,6 @@ class ManifestVersionedSyncStage(SyncStage):
     else:
       yield manifest
 
-  def RecordLocalManifestPath(self, manifest_path):
-    """Records |manifest_path| in the metadata dictionary."""
-    self._run.attrs.metadata.UpdateWithDict(
-        {'local_manifest_path': manifest_path})
-
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
     self.Initialize()
@@ -578,9 +573,6 @@ class ManifestVersionedSyncStage(SyncStage):
     if self.manifest_manager:
       self._Print('\nRELEASETAG: %s\n' % (
           self.manifest_manager.current_version))
-
-    # Record the path to the local manifest for this build.
-    self.RecordLocalManifestPath(next_manifest)
 
     self._SetChromeVersionIfApplicable(next_manifest)
     # To keep local trybots working, remove restricted checkouts from the

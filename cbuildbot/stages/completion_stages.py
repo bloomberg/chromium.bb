@@ -674,12 +674,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
   def _RecordIrrelevantChanges(self):
     """Calculates irrelevant changes and record them into cidb."""
-    # Get a ManifestCheckout instance using the original manifest
-    # created by the master.
-    manifest = git.ManifestCheckout.Cached(
-        self._build_root,
-        manifest_path=self._run.attrs.metadata.GetValue('local_manifest_path'))
-
+    manifest = git.ManifestCheckout.Cached(self._build_root)
     changes = set(self.sync_stage.pool.changes)
     packages = self._GetPackagesUnderTest()
 
