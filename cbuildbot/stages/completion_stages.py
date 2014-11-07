@@ -586,7 +586,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
 
     self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
 
-    if failing and not inflight:
+    if failing and not inflight and not no_stat:
       # Even if there was a failure, we can submit the changes that indicate
       # that they don't care about this failure.
       changes = self.sync_stage.pool.SubmitPartialPool(messages)

@@ -274,8 +274,6 @@ def GetStagesToIgnoreForChange(build_root, change):
   return result.split() if result else []
 
 
-
-
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
 
