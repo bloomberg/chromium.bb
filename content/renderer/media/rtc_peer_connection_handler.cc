@@ -374,6 +374,7 @@ class StatsResponse : public webrtc::StatsObserver {
     // callback might be doing.
     TRACE_EVENT_ASYNC_END0("webrtc", "getStats_Native", this);
     request_->requestSucceeded(response);
+    request_ = nullptr;  // must be freed on the main thread.
   }
 
   void AddReport(LocalRTCStatsResponse* response, const StatsReport& report) {
