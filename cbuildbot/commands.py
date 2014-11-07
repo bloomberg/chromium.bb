@@ -1335,71 +1335,50 @@ def GenerateHtmlIndex(index, files, url_base=None, head=None, tail=None):
   osutils.WriteFile(index, html)
 
 
-def AppendToFile(file_path, string):
-  """Append the string to the given file.
-
-  This method provides atomic appends if the string is smaller than
-  PIPE_BUF (> 512 bytes). It does not guarantee atomicity once the
-  string is greater than that.
-
-  Args:
-     file_path: File to be appended to.
-     string: String to append to the file.
-  """
-  osutils.WriteFile(file_path, string, mode='a')
-
-
-def UpdateUploadedList(last_uploaded, archive_path, upload_urls,
-                       debug):
-  """Updates the archive's UPLOADED file, and uploads it to Google Storage.
-
-  Args:
-     buildroot: The root directory where the build occurs.
-     last_uploaded: Filename of the last uploaded file.
-     archive_path: Path to archive_dir.
-     upload_urls: Iterable of GS locations where the UPLOADED file should be
-                  uploaded.
-     debug: Whether we are in debug mode.
-  """
-  # Append to the uploaded list.
-  filename = UPLOADED_LIST_FILENAME
-  AppendToFile(os.path.join(archive_path, filename), last_uploaded + '\n')
-
-  # Upload the updated list to Google Storage.
-  UploadArchivedFile(archive_path, upload_urls, filename, debug,
-                     update_list=False)
-
-
 @failures_lib.SetFailureType(failures_lib.GSUploadFailure)
-def UploadArchivedFile(archive_path, upload_urls, filename, debug,
-                       update_list=False, timeout=2 * 60 * 60, acl=None):
-  """Upload the specified file from the archive dir to Google Storage.
+def _UploadPathToGS(local_path, upload_urls, debug, timeout, acl=None):
+  """Upload |local_path| to Google Storage.
 
   Args:
-    archive_path: Path to archive dir.
-    upload_urls: Iterable of GS locations where the UPLOADED file should be
-                 uploaded.
+    local_path: Local path to upload.
+    upload_urls: Iterable of GS locations to upload to.
     debug: Whether we are in debug mode.
     filename: Filename of the file to upload.
-    update_list: Flag to update the list of uploaded files.
-    timeout: Raise an exception if the upload takes longer than this timeout.
-    acl: Canned gsutil acl to use (e.g. 'public-read'), otherwise the internal
-         (private) one is used.
+    timeout: Timeout in seconds.
+    acl: Canned gsutil acl to use.
   """
-  local_path = os.path.join(archive_path, filename)
   gs_context = gs.GSContext(acl=acl, dry_run=debug)
+  for upload_url in upload_urls:
+    with timeout_util.Timeout(timeout):
+      gs_context.CopyInto(local_path, upload_url, parallel=True,
+                          recursive=True)
 
-  try:
-    for upload_url in upload_urls:
-      with timeout_util.Timeout(timeout):
-        gs_context.CopyInto(local_path, upload_url, parallel=True,
-                            recursive=True)
-  except timeout_util.TimeoutError:
-    raise timeout_util.TimeoutError('Timed out uploading %s' % filename)
-  else:
-    # Update the list of uploaded files.
-    if update_list:
-      UpdateUploadedList(filename, archive_path, upload_urls, debug)
+
+@failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
+def UploadArchivedFile(archive_dir, upload_urls, filename, debug,
+                       update_list=False, timeout=2 * 60 * 60, acl=None):
+  """Uploads |filename| in |archive_dir| to Google Storage.
+
+  Args:
+    archive_dir: Path to the archive directory.
+    upload_urls: Iterable of GS locations to upload to.
+    debug: Whether we are in debug mode.
+    filename: Name of the file to upload.
+    update_list: Flag to update the list of uploaded files.
+    timeout: Timeout in seconds.
+    acl: Canned gsutil acl to use.
+  """
+  # Upload the file.
+  file_path = os.path.join(archive_dir, filename)
+  _UploadPathToGS(file_path, upload_urls, debug, timeout, acl=acl)
+
+  if update_list:
+    # Append |filename| to the local list of uploaded files and archive
+    # the list to Google Storage. As long as the |filename| string is
+    # less than PIPE_BUF (> 512 bytes), the append is atomic.
+    uploaded_file_path = os.path.join(archive_dir, UPLOADED_LIST_FILENAME)
+    osutils.WriteFile(uploaded_file_path, filename + '\n', mode='a')
+    _UploadPathToGS(uploaded_file_path, upload_urls, debug, timeout)
 
 
 def UploadSymbols(buildroot, board, official, cnt, failed_list):
