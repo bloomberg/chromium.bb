@@ -17616,7 +17616,6 @@
         "trybot_list": true,
         "unittests": false,
         "upload_standalone_images": false,
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "mipsel-o32-generic-payloads": {
@@ -35459,7 +35458,6 @@
         "useflags": [
             "chrome_internal"
         ],
-        "usepkg_toolchain": false,
         "vm_tests": []
     },
     "urara-pre-cq": {
