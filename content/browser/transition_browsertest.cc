@@ -86,7 +86,7 @@ class TransitionBrowserTestObserver
           ResourceRequestInfoImpl::ForRequest(request_);
       TransitionLayerData transition_data;
       did_clear_data_ = !TransitionRequestManager::GetInstance(
-          )->HasPendingTransitionRequest(info->GetChildID(),
+          )->GetPendingTransitionRequest(info->GetChildID(),
                                          info->GetRenderFrameID(),
                                          request_->url(),
                                          &transition_data);

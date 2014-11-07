@@ -150,7 +150,7 @@ bool CrossSiteResourceHandler::OnResponseStarted(
 
   TransitionLayerData transition_data;
   bool is_navigation_transition =
-      TransitionRequestManager::GetInstance()->HasPendingTransitionRequest(
+      TransitionRequestManager::GetInstance()->GetPendingTransitionRequest(
           info->GetChildID(), info->GetRenderFrameID(), request()->url(),
           &transition_data);
 
