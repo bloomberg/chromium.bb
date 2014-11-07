@@ -14,10 +14,20 @@ function checkSingleTest(renderedBuffer, i) {
     var offsetFrame = i * testSpacingFrames;
 
     var test = tests[i];
-    var description = test.description;
     var expected = test.expected;
-
     var success = true;
+    var description;
+
+    if (test.description) {
+        description = test.description;
+    } else {
+        // No description given, so create a basic one from the given test parameters.
+        description = "loop from " + test.loopStartFrame + " -> " + test.loopEndFrame;
+        if (test.offsetFrame)
+            description += " with offset " + test.offsetFrame;
+        if (test.playbackRate && test.playbackRate != 1)
+            description += " with playbackRate of " + test.playbackRate;
+    }
 
     for (var j = 0; j < test.renderFrames; ++j) {
         if (expected[j] != renderedData[offsetFrame + j]) {

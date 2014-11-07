@@ -35,6 +35,15 @@ var tests = [
 { description: "start(when, 4_frames, 4_frames): play with explicit non-zero offset and duration",
   offsetFrame: 4, durationFrames: 4, renderFrames: 16, playbackRate: 1, expected: [4,5,6,7,0,0,0,0,0,0,0,0,0,0,0,0] },
 
+{ description: "start(when, 7_frames): play with explicit non-zero offset near end of buffer",
+  offsetFrame: 7, durationFrames: 1, renderFrames: 16, playbackRate: 1, expected: [7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+
+{ description: "start(when, 8_frames): play with explicit offset at end of buffer",
+  offsetFrame: 8, durationFrames: 0, renderFrames: 16, playbackRate: 1, expected: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+
+{ description: "start(when, 9_frames): play with explicit offset past end of buffer",
+  offsetFrame: 8, durationFrames: 0, renderFrames: 16, playbackRate: 1, expected: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] },
+      
 // Enable test when AudioBufferSourceNode hack is fixed: https://bugs.webkit.org/show_bug.cgi?id=77224
 // { description: "start(when, 3_frames, 3_frames): play a middle section with explicit offset and duration",
 //   offsetFrame: 3, durationFrames: 3, renderFrames: 16, playbackRate: 1, expected: [4,5,6,7,0,0,0,0,0,0,0,0,0,0,0,0] },

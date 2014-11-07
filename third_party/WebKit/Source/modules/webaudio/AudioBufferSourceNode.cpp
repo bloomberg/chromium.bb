@@ -215,8 +215,6 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
     // Do some sanity checking.
     if (endFrame > bufferLength)
         endFrame = bufferLength;
-    if (m_virtualReadIndex >= endFrame)
-        m_virtualReadIndex = 0; // reset to start
 
     // If the .loop attribute is true, then values of m_loopStart == 0 && m_loopEnd == 0 implies
     // that we should use the entire buffer as the loop, otherwise use the loop values in m_loopStart and m_loopEnd.
@@ -232,6 +230,10 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
         virtualDeltaFrames = virtualEndFrame - loopStartFrame;
     }
 
+    // If we're looping and the offset (virtualReadIndex) is past the end of the loop, wrap back to
+    // the beginning of the loop. For other cases, nothing needs to be done.
+    if (loop() && m_virtualReadIndex >= virtualEndFrame)
+        m_virtualReadIndex = m_loopStart * buffer()->sampleRate();
 
     double pitchRate = totalPitchRate();
 
@@ -267,6 +269,10 @@ bool AudioBufferSourceNode::renderFromBuffer(AudioBus* bus, unsigned destination
             writeIndex += framesThisTime;
             readIndex += framesThisTime;
             framesToProcess -= framesThisTime;
+
+            // It can happen that framesThisTime is 0. Assert that we will actually exit the loop in
+            // this case.  framesThisTime is 0 only if readIndex >= endFrame;
+            ASSERT(framesThisTime ? true : readIndex >= endFrame);
 
             // Wrap-around.
             if (readIndex >= endFrame) {

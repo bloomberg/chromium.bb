@@ -6,10 +6,13 @@ PASS loop whole buffer by default with loopStart == loopEnd == 0
 PASS loop whole buffer explicitly
 PASS loop from middle to end of buffer
 PASS loop from start to middle of buffer
-PASS loop internally from 4 -> 6
-PASS loop internally from 3 -> 7
-PASS loop internally from 4 -> 6 with playbackRate of 0.5
-PASS loop internally from 4 -> 6 with playbackRate of 1.5
+PASS loop from 4 -> 6
+PASS loop from 3 -> 7
+PASS loop from 4 -> 6 with playbackRate of 0.5
+PASS loop from 4 -> 6 with playbackRate of 1.5
+PASS loop from 2 -> 5 with offset 6
+PASS loop from 3 -> 6 with offset 1
+PASS loop from 3 -> 6 with offset 4
 PASS illegal playbackRate of 47 greater than loop length
 PASS illegal loop: loopStartFrame > loopEndFrame
 PASS illegal loop: loopStartFrame == loopEndFrame
