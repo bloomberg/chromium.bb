@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "net/base/backoff_entry.h"
 #include "net/http/http_response_info.h"
 
 namespace domain_reliability {
@@ -80,6 +81,21 @@ class DOMAIN_RELIABILITY_EXPORT ActualTime : public MockableTime {
   base::Time Now() override;
   base::TimeTicks NowTicks() override;
   scoped_ptr<MockableTime::Timer> CreateTimer() override;
+};
+
+// A subclass of BackoffEntry that uses a MockableTime to keep track of time.
+class MockableTimeBackoffEntry : public net::BackoffEntry {
+ public:
+  MockableTimeBackoffEntry(const net::BackoffEntry::Policy* const policy,
+                           MockableTime* time);
+
+  virtual ~MockableTimeBackoffEntry();
+
+ protected:
+  virtual base::TimeTicks ImplGetTimeNow() const override;
+
+ private:
+  MockableTime* time_;
 };
 
 }  // namespace domain_reliability
