@@ -62,10 +62,10 @@ TEST_F(PluginDispatcherTest, SupportsInterface) {
   RegisterTestInterface(PPP_INSTANCE_INTERFACE, &dummy_ppp_instance_interface);
 
   // Sending a request for a random interface should fail.
-  EXPECT_FALSE(SupportsInterface("Random interface"));
+  EXPECT_FALSE(IsInterfaceSupported("Random interface"));
 
   // Sending a request for a supported PPP interface should succeed.
-  EXPECT_TRUE(SupportsInterface(PPP_INSTANCE_INTERFACE));
+  EXPECT_TRUE(IsInterfaceSupported(PPP_INSTANCE_INTERFACE));
 }
 
 TEST_F(PluginDispatcherTest, PPBCreation) {

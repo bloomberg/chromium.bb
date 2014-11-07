@@ -223,7 +223,8 @@ bool PluginDispatcher::OnMessageReceived(const IPC::Message& msg) {
     // Handle some plugin-specific control messages.
     bool handled = true;
     IPC_BEGIN_MESSAGE_MAP(PluginDispatcher, msg)
-      IPC_MESSAGE_HANDLER(PpapiMsg_SupportsInterface, OnMsgSupportsInterface)
+      IPC_MESSAGE_HANDLER(PpapiMsg_IsInterfaceSupported,
+                          OnMsgIsInterfaceSupported)
       IPC_MESSAGE_HANDLER(PpapiMsg_SetPreferences, OnMsgSetPreferences)
       IPC_MESSAGE_UNHANDLED(handled = false);
     IPC_END_MESSAGE_MAP()
@@ -297,7 +298,7 @@ void PluginDispatcher::ForceFreeAllInstances() {
   }
 }
 
-void PluginDispatcher::OnMsgSupportsInterface(
+void PluginDispatcher::OnMsgIsInterfaceSupported(
     const std::string& interface_name,
     bool* result) {
   *result = !!GetPluginInterface(interface_name);

@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
+#include "ppapi/c/dev/ppp_video_decoder_dev.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -194,6 +195,14 @@ PP_Resource PPB_VideoDecoder_Proxy::CreateProxyResource(
 
   if (!dispatcher->preferences().is_accelerated_video_decode_enabled)
     return 0;
+
+  // We must get the plugin interface now, prior to doing Create synchronously.
+  // Otherwise, the browser will try to get the interface via a re-entrant
+  // sync message back to us, which would deadlock.
+  const std::string if_name = PPP_VIDEODECODER_DEV_INTERFACE_0_11;
+  if (!dispatcher->GetPluginInterface(if_name))
+    return 0;
+  dispatcher->Send(new PpapiHostMsg_PluginSupportsInterface(if_name));
 
   EnterResourceNoLock<PPB_Graphics3D_API> enter_context(graphics_context,
                                                         true);
