@@ -977,9 +977,12 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   gfx::QuadF surface_quad = SharedGeometryQuad();
   float edge[24];
   bool use_aa = settings_->allow_antialiasing &&
-                SetupQuadForAntialiasing(contents_device_transform, quad,
-                                         settings_->force_antialiasing,
-                                         &surface_quad, edge);
+                ShouldAntialiasQuad(contents_device_transform, quad,
+                                    settings_->force_antialiasing);
+
+  if (use_aa)
+    SetupQuadForAntialiasing(contents_device_transform, quad,
+                             &surface_quad, edge);
 
   bool need_background_texture = !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
                                  ShouldApplyBackgroundFilters(frame, quad);
@@ -1490,12 +1493,9 @@ static gfx::QuadF GetDeviceQuadWithAntialiasingOnExteriorEdges(
 }
 
 // static
-bool GLRenderer::SetupQuadForAntialiasing(
-    const gfx::Transform& device_transform,
-    const DrawQuad* quad,
-    bool force_antialiasing,
-    gfx::QuadF* local_quad,
-    float edge[24]) {
+bool GLRenderer::ShouldAntialiasQuad(const gfx::Transform& device_transform,
+                                     const DrawQuad* quad,
+                                     bool force_antialiasing) {
   bool is_render_pass_quad = (quad->material == DrawQuad::RENDER_PASS);
   // For render pass quads, |device_transform| already contains quad's rect.
   // TODO(rosca@adobe.com): remove branching on is_render_pass_quad
@@ -1519,8 +1519,22 @@ bool GLRenderer::SetupQuadForAntialiasing(
                                        kAntiAliasingEpsilon);
   // AAing clipped quads is not supported by the code yet.
   bool use_aa = !clipped && !is_nearest_rect_within_epsilon;
-  if (!use_aa && !force_antialiasing)
-    return false;
+  return use_aa || force_antialiasing;
+}
+
+// static
+void GLRenderer::SetupQuadForAntialiasing(
+    const gfx::Transform& device_transform,
+    const DrawQuad* quad,
+    gfx::QuadF* local_quad,
+    float edge[24]) {
+  bool is_render_pass_quad = (quad->material == DrawQuad::RENDER_PASS);
+  gfx::RectF content_rect =
+      is_render_pass_quad ? QuadVertexRect() : quad->visibleContentRect();
+
+  bool clipped = false;
+  gfx::QuadF device_layer_quad =
+      MathUtil::MapQuad(device_transform, gfx::QuadF(content_rect), &clipped);
 
   LayerQuad device_layer_bounds(gfx::QuadF(device_layer_quad.BoundingBox()));
   device_layer_bounds.InflateAntiAliasingDistance();
@@ -1553,8 +1567,6 @@ bool GLRenderer::SetupQuadForAntialiasing(
   // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
   // cause device_quad to become clipped. To our knowledge this scenario does
   // not need to be handled differently than the unclipped case.
-
-  return true;
 }
 
 void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
@@ -1581,14 +1593,15 @@ void GLRenderer::DrawSolidColorQuad(const DrawingFrame* frame,
   float edge[24];
   bool use_aa = settings_->allow_antialiasing &&
                 !quad->force_anti_aliasing_off &&
-                SetupQuadForAntialiasing(device_transform, quad, force_aa,
-                                         &local_quad, edge);
+                ShouldAntialiasQuad(device_transform, quad, force_aa);
 
   SolidColorProgramUniforms uniforms;
-  if (use_aa)
+  if (use_aa) {
+    SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
     SolidColorUniformLocation(GetSolidColorProgramAA(), &uniforms);
-  else
+  } else {
     SolidColorUniformLocation(GetSolidColorProgram(), &uniforms);
+  }
   SetUseProgram(uniforms.program);
 
   GLC(gl_,
@@ -1662,6 +1675,29 @@ void GLRenderer::DrawTileQuad(const DrawingFrame* frame,
 void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
                                  const ContentDrawQuadBase* quad,
                                  ResourceProvider::ResourceId resource_id) {
+  gfx::Transform device_transform =
+      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
+  device_transform.FlattenTo2d();
+
+  bool use_aa = settings_->allow_antialiasing &&
+                ShouldAntialiasQuad(device_transform, quad, false);
+
+  // TODO(timav): simplify coordinate transformations in DrawContentQuadAA
+  // similar to the way DrawContentQuadNoAA works and then consider
+  // combining DrawContentQuadAA and DrawContentQuadNoAA into one method.
+  if (use_aa)
+    DrawContentQuadAA(frame, quad, resource_id, device_transform);
+  else
+    DrawContentQuadNoAA(frame, quad, resource_id);
+}
+
+void GLRenderer::DrawContentQuadAA(const DrawingFrame* frame,
+                                   const ContentDrawQuadBase* quad,
+                                   ResourceProvider::ResourceId resource_id,
+                                   const gfx::Transform& device_transform) {
+  if (!device_transform.IsInvertible())
+    return;
+
   gfx::Rect tile_rect = quad->visible_rect;
 
   gfx::RectF tex_coord_rect = MathUtil::ScaleRectProportional(
@@ -1701,26 +1737,12 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       gl_, &highp_threshold_cache_, highp_threshold_min_, quad->texture_size);
 
-  gfx::Transform device_transform =
-      frame->window_matrix * frame->projection_matrix * quad->quadTransform();
-  device_transform.FlattenTo2d();
-  if (!device_transform.IsInvertible())
-    return;
-
-  bool force_aa = false;
   gfx::QuadF local_quad = gfx::QuadF(gfx::RectF(tile_rect));
   float edge[24];
-  bool use_aa = settings_->allow_antialiasing &&
-                SetupQuadForAntialiasing(device_transform, quad, force_aa,
-                                         &local_quad, edge);
+  SetupQuadForAntialiasing(device_transform, quad, &local_quad, edge);
 
-  bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
-  GLenum filter = (use_aa || scaled ||
-                   !quad->quadTransform().IsIdentityOrIntegerTranslation())
-                      ? GL_LINEAR
-                      : GL_NEAREST;
   ResourceProvider::ScopedSamplerGL quad_resource_lock(
-      resource_provider_, resource_id, filter);
+      resource_provider_, resource_id, GL_LINEAR);
   SamplerType sampler =
       SamplerTypeFromTextureTarget(quad_resource_lock.target());
 
@@ -1740,81 +1762,41 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   }
 
   TileProgramUniforms uniforms;
-  if (use_aa) {
-    if (quad->swizzle_contents) {
-      TileUniformLocation(GetTileProgramSwizzleAA(tex_coord_precision, sampler),
-                          &uniforms);
-    } else {
-      TileUniformLocation(GetTileProgramAA(tex_coord_precision, sampler),
-                          &uniforms);
-    }
+  if (quad->swizzle_contents) {
+    TileUniformLocation(GetTileProgramSwizzleAA(tex_coord_precision, sampler),
+                        &uniforms);
   } else {
-    if (quad->ShouldDrawWithBlending()) {
-      if (quad->swizzle_contents) {
-        TileUniformLocation(GetTileProgramSwizzle(tex_coord_precision, sampler),
-                            &uniforms);
-      } else {
-        TileUniformLocation(GetTileProgram(tex_coord_precision, sampler),
-                            &uniforms);
-      }
-    } else {
-      if (quad->swizzle_contents) {
-        TileUniformLocation(
-            GetTileProgramSwizzleOpaque(tex_coord_precision, sampler),
-            &uniforms);
-      } else {
-        TileUniformLocation(GetTileProgramOpaque(tex_coord_precision, sampler),
-                            &uniforms);
-      }
-    }
+    TileUniformLocation(GetTileProgramAA(tex_coord_precision, sampler),
+                        &uniforms);
   }
 
   SetUseProgram(uniforms.program);
   GLC(gl_, gl_->Uniform1i(uniforms.sampler_location, 0));
 
-  if (use_aa) {
-    float viewport[4] = {static_cast<float>(viewport_.x()),
-                         static_cast<float>(viewport_.y()),
-                         static_cast<float>(viewport_.width()),
-                         static_cast<float>(viewport_.height()), };
-    GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
-    GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
+  float viewport[4] = {
+      static_cast<float>(viewport_.x()),
+      static_cast<float>(viewport_.y()),
+      static_cast<float>(viewport_.width()),
+      static_cast<float>(viewport_.height()),
+  };
+  GLC(gl_, gl_->Uniform4fv(uniforms.viewport_location, 1, viewport));
+  GLC(gl_, gl_->Uniform3fv(uniforms.edge_location, 8, edge));
 
-    GLC(gl_,
-        gl_->Uniform4f(uniforms.vertex_tex_transform_location,
-                       vertex_tex_translate_x,
-                       vertex_tex_translate_y,
-                       vertex_tex_scale_x,
-                       vertex_tex_scale_y));
-    GLC(gl_,
-        gl_->Uniform4f(uniforms.fragment_tex_transform_location,
-                       fragment_tex_translate_x,
-                       fragment_tex_translate_y,
-                       fragment_tex_scale_x,
-                       fragment_tex_scale_y));
-  } else {
-    // Move fragment shader transform to vertex shader. We can do this while
-    // still producing correct results as fragment_tex_transform_location
-    // should always be non-negative when tiles are transformed in a way
-    // that could result in sampling outside the layer.
-    vertex_tex_scale_x *= fragment_tex_scale_x;
-    vertex_tex_scale_y *= fragment_tex_scale_y;
-    vertex_tex_translate_x *= fragment_tex_scale_x;
-    vertex_tex_translate_y *= fragment_tex_scale_y;
-    vertex_tex_translate_x += fragment_tex_translate_x;
-    vertex_tex_translate_y += fragment_tex_translate_y;
+  GLC(gl_,
+      gl_->Uniform4f(uniforms.vertex_tex_transform_location,
+                     vertex_tex_translate_x,
+                     vertex_tex_translate_y,
+                     vertex_tex_scale_x,
+                     vertex_tex_scale_y));
+  GLC(gl_,
+      gl_->Uniform4f(uniforms.fragment_tex_transform_location,
+                     fragment_tex_translate_x,
+                     fragment_tex_translate_y,
+                     fragment_tex_scale_x,
+                     fragment_tex_scale_y));
 
-    GLC(gl_,
-        gl_->Uniform4f(uniforms.vertex_tex_transform_location,
-                       vertex_tex_translate_x,
-                       vertex_tex_translate_y,
-                       vertex_tex_scale_x,
-                       vertex_tex_scale_y));
-  }
-
-  // Enable blending when the quad properties require it or if we decided
-  // to use antialiasing.
-  SetBlendEnabled(quad->ShouldDrawWithBlending() || use_aa);
+  // Blending is required for antialiasing.
+  SetBlendEnabled(true);
 
   // Normalize to tile_rect.
   local_quad.Scale(1.0f / tile_rect.width(), 1.0f / tile_rect.height());
@@ -1831,6 +1813,103 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
       tile_rect.size());
   DrawQuadGeometry(
       frame, quad->quadTransform(), centered_rect, uniforms.matrix_location);
+}
+
+void GLRenderer::DrawContentQuadNoAA(const DrawingFrame* frame,
+                                     const ContentDrawQuadBase* quad,
+                                     ResourceProvider::ResourceId resource_id) {
+  gfx::RectF tex_coord_rect = MathUtil::ScaleRectProportional(
+      quad->tex_coord_rect, quad->rect, quad->visible_rect);
+  float tex_to_geom_scale_x = quad->rect.width() / quad->tex_coord_rect.width();
+  float tex_to_geom_scale_y =
+      quad->rect.height() / quad->tex_coord_rect.height();
+
+  bool scaled = (tex_to_geom_scale_x != 1.f || tex_to_geom_scale_y != 1.f);
+  GLenum filter =
+      (scaled || !quad->quadTransform().IsIdentityOrIntegerTranslation())
+          ? GL_LINEAR
+          : GL_NEAREST;
+
+  ResourceProvider::ScopedSamplerGL quad_resource_lock(
+      resource_provider_, resource_id, filter);
+  SamplerType sampler =
+      SamplerTypeFromTextureTarget(quad_resource_lock.target());
+
+  float vertex_tex_translate_x = tex_coord_rect.x();
+  float vertex_tex_translate_y = tex_coord_rect.y();
+  float vertex_tex_scale_x = tex_coord_rect.width();
+  float vertex_tex_scale_y = tex_coord_rect.height();
+
+  // Map to normalized texture coordinates.
+  if (sampler != SamplerType2DRect) {
+    gfx::Size texture_size = quad->texture_size;
+    DCHECK(!texture_size.IsEmpty());
+    vertex_tex_translate_x /= texture_size.width();
+    vertex_tex_translate_y /= texture_size.height();
+    vertex_tex_scale_x /= texture_size.width();
+    vertex_tex_scale_y /= texture_size.height();
+  }
+
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
+      gl_, &highp_threshold_cache_, highp_threshold_min_, quad->texture_size);
+
+  TileProgramUniforms uniforms;
+  if (quad->ShouldDrawWithBlending()) {
+    if (quad->swizzle_contents) {
+      TileUniformLocation(GetTileProgramSwizzle(tex_coord_precision, sampler),
+                          &uniforms);
+    } else {
+      TileUniformLocation(GetTileProgram(tex_coord_precision, sampler),
+                          &uniforms);
+    }
+  } else {
+    if (quad->swizzle_contents) {
+      TileUniformLocation(
+          GetTileProgramSwizzleOpaque(tex_coord_precision, sampler), &uniforms);
+    } else {
+      TileUniformLocation(GetTileProgramOpaque(tex_coord_precision, sampler),
+                          &uniforms);
+    }
+  }
+
+  SetUseProgram(uniforms.program);
+  GLC(gl_, gl_->Uniform1i(uniforms.sampler_location, 0));
+
+  GLC(gl_,
+      gl_->Uniform4f(uniforms.vertex_tex_transform_location,
+                     vertex_tex_translate_x,
+                     vertex_tex_translate_y,
+                     vertex_tex_scale_x,
+                     vertex_tex_scale_y));
+
+  SetBlendEnabled(quad->ShouldDrawWithBlending());
+
+  SetShaderOpacity(quad->opacity(), uniforms.alpha_location);
+
+  // Pass quad coordinates to the uniform in the same order as GeometryBinding
+  // does, then vertices will match the texture mapping in the vertex buffer.
+  // The method SetShaderQuadF() changes the order of vertices and so it's
+  // not used here.
+
+  gfx::RectF tile_rect = quad->visible_rect;
+  float gl_quad[8] = {
+    tile_rect.x(),
+    tile_rect.bottom(),
+    tile_rect.x(),
+    tile_rect.y(),
+    tile_rect.right(),
+    tile_rect.y(),
+    tile_rect.right(),
+    tile_rect.bottom(),
+  };
+  GLC(gl_, gl_->Uniform2fv(uniforms.quad_location, 4, gl_quad));
+
+  static float gl_matrix[16];
+  ToGLMatrix(&gl_matrix[0], frame->projection_matrix * quad->quadTransform());
+  GLC(gl_,
+      gl_->UniformMatrix4fv(uniforms.matrix_location, 1, false, &gl_matrix[0]));
+
+  GLC(gl_, gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0));
 }
 
 void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,

@@ -5964,7 +5964,7 @@ TEST_F(LayerTreeHostImplTest, MaskLayerForSurfaceWithClippedLayer) {
 
 class GLRendererWithSetupQuadForAntialiasing : public GLRenderer {
  public:
-  using GLRenderer::SetupQuadForAntialiasing;
+  using GLRenderer::ShouldAntialiasQuad;
 };
 
 TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
@@ -6022,12 +6022,9 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
   ASSERT_LE(1u, frame.render_passes[0]->quad_list.size());
   const DrawQuad* quad = frame.render_passes[0]->quad_list.front();
 
-  bool force_aa = false;
-  float edge[24];
-  gfx::QuadF device_layer_quad;
   bool antialiased =
-      GLRendererWithSetupQuadForAntialiasing::SetupQuadForAntialiasing(
-          quad->quadTransform(), quad, force_aa, &device_layer_quad, edge);
+      GLRendererWithSetupQuadForAntialiasing::ShouldAntialiasQuad(
+          quad->quadTransform(), quad, false);
   EXPECT_FALSE(antialiased);
 
   host_impl_->DrawLayers(&frame, gfx::FrameTime::Now());

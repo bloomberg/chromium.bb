@@ -546,6 +546,7 @@ std::string VertexShaderTile::GetShaderString() const {
   return VERTEX_SHADER(
       // clang-format on
       attribute TexCoordPrecision vec4 a_position;
+      attribute TexCoordPrecision vec2 a_texCoord;
       attribute float a_index;
       uniform mat4 matrix;
       uniform TexCoordPrecision vec2 quad[4];
@@ -554,7 +555,7 @@ std::string VertexShaderTile::GetShaderString() const {
       void main() {
         vec2 pos = quad[int(a_index)];  // NOLINT
         gl_Position = matrix * vec4(pos, a_position.z, a_position.w);
-        v_texCoord = pos.xy * vertexTexTransform.zw + vertexTexTransform.xy;
+        v_texCoord = a_texCoord * vertexTexTransform.zw + vertexTexTransform.xy;
       }
       // clang-format off
   );  // NOLINT(whitespace/parens)
