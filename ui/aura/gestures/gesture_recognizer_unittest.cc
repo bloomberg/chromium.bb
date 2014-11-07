@@ -639,7 +639,23 @@ class GestureRecognizerTest : public AuraTestBase,
     ui::GestureConfiguration::GetInstance()->set_long_press_time_in_ms(3);
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerTest);
+};
+
+class GestureRecognizerWithSwitchTest : public GestureRecognizerTest {
+ public:
+  GestureRecognizerWithSwitchTest() {}
+
+  void SetUp() override {
+    GestureRecognizerTest::SetUp();
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kCompensateForUnstablePinchZoom);
+    ui::GestureConfiguration::GetInstance()->set_min_pinch_update_span_delta(5);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GestureRecognizerWithSwitchTest);
 };
 
 // Check that appropriate touch events generate tap gesture events.
@@ -4151,10 +4167,7 @@ TEST_F(GestureRecognizerTest, GestureEventLongPressDeletingWindow) {
   EXPECT_EQ(NULL, window);
 }
 
-TEST_F(GestureRecognizerTest, GestureEventSmallPinchDisabled) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kCompensateForUnstablePinchZoom);
-  ui::GestureConfiguration::GetInstance()->set_min_pinch_update_span_delta(5);
+TEST_F(GestureRecognizerWithSwitchTest, GestureEventSmallPinchDisabled) {
   scoped_ptr<GestureEventConsumeDelegate> delegate(
       new GestureEventConsumeDelegate());
   TimedEvents tes;
