@@ -1,5 +1,2 @@
 # Flaky under Valgrind, see http://crbug.com/348331
 WindowEventDispatcherTest.TouchMovesHeld
-
-# Failing on cros/win. crbug.com/427729
-GestureRecognizerTest.GestureEventSmallPinchEnabled
