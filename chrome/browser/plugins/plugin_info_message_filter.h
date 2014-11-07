@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_member.h"
 #include "base/sequenced_task_runner_helpers.h"
@@ -99,6 +100,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   void PluginsLoaded(const GetPluginInfo_Params& params,
                      IPC::Message* reply_msg,
                      const std::vector<content::WebPluginInfo>& plugins);
+  void ReportMetrics(const GetPluginInfo_Params& params);
 
 #if defined(ENABLE_PEPPER_CDMS)
   // Returns whether any internal plugin supporting |mime_type| is registered
@@ -118,6 +120,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   Context context_;
 
   base::WeakPtrFactory<PluginInfoMessageFilter> weak_ptr_factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(PluginInfoMessageFilter);
 };

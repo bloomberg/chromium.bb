@@ -20,6 +20,7 @@ const char kFlashPluginSwfDescription[] = "Shockwave Flash";
 const char kFlashPluginSplMimeType[] = "application/futuresplash";
 const char kFlashPluginSplExtension[] = "spl";
 const char kFlashPluginSplDescription[] = "FutureSplash Player";
+const char kSilverlightPluginMimeTypePrefix[] = "application/x-silverlight";
 
 // This number used to be limited to 32 in the past (see b/535234).
 const size_t kMaxRendererProcessCount = 82;

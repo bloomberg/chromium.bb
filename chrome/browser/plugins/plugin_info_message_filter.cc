@@ -9,19 +9,25 @@
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_finder.h"
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/rappor/rappor_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/plugin_service_filter.h"
+#include "content/public/common/content_constants.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -113,12 +119,12 @@ PluginInfoMessageFilter::Context::Context(int render_process_id,
 PluginInfoMessageFilter::Context::~Context() {
 }
 
-PluginInfoMessageFilter::PluginInfoMessageFilter(
-    int render_process_id,
-    Profile* profile)
+PluginInfoMessageFilter::PluginInfoMessageFilter(int render_process_id,
+                                                 Profile* profile)
     : BrowserMessageFilter(ChromeMsgStart),
       context_(render_process_id, profile),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
 }
 
 bool PluginInfoMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -195,6 +201,10 @@ void PluginInfoMessageFilter::PluginsLoaded(
 
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
+  if (output.status.value != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&PluginInfoMessageFilter::ReportMetrics, this, params));
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -457,4 +467,36 @@ void PluginInfoMessageFilter::Context::MaybeGrantAccess(
 bool PluginInfoMessageFilter::Context::IsPluginEnabled(
     const content::WebPluginInfo& plugin) const {
   return plugin_prefs_->IsPluginEnabled(plugin);
+}
+
+void PluginInfoMessageFilter::ReportMetrics(
+    const GetPluginInfo_Params& params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (chrome::IsOffTheRecordSessionActive())
+    return;
+  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  if (!rappor_service)
+    return;
+
+  if (StartsWithASCII(params.mime_type,
+                      content::kSilverlightPluginMimeTypePrefix, false)) {
+    rappor_service->RecordSample(
+        "Plugins.SilverlightOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            params.top_origin_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  } else if (params.mime_type == content::kFlashPluginSwfMimeType ||
+             params.mime_type == content::kFlashPluginSplMimeType) {
+    rappor_service->RecordSample(
+        "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            params.top_origin_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+    rappor_service->RecordSample(
+        "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            params.url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  }
 }

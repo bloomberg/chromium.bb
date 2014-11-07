@@ -99,6 +99,37 @@ components/rappor/rappor_service.cc.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Plugins.SilverlightOriginUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the top level URL of a page which attempts to
+    launch a Silverlight NPAPI plugin, if the client has Silverlight installed
+    and enabled. Recorded when the plugin frame appears for each Silverlight
+    object found on the page, even if the plugin is click-to-play.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Plugins.FlashUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL from where Flash SWF or SPL content is
+    being loaded from, while attempting to launch a Flash (NPAPI or PPAPI)
+    plugin that is installed and enabled.  Recorded when the plugin frame
+    appears for each Flash object found in the page, even if the plugin is
+    click-to-play.
+  </summary>
+</rappor-metric>
+
+<rappor-metric name="Plugins.FlashOriginUrl" type="ETLD_PLUS_ONE">
+  <owner>wfh@chromium.org</owner>
+  <summary>
+    The domain and registry of the top level URL of a page which attempts to
+    launch a Flash NPAPI or PPAPI plugin, if the client has Flash installed
+    and enabled. Recorded when the plugin frame appears for each Flash object
+    found on the page, even if the plugin is click-to-play.
+  </summary>
+</rappor-metric>
+
 </rappor-metrics>
 
 </rappor-configuration>

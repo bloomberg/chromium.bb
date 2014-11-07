@@ -31,6 +31,7 @@ CONTENT_EXPORT extern const char kFlashPluginSwfDescription[];
 CONTENT_EXPORT extern const char kFlashPluginSplMimeType[];
 CONTENT_EXPORT extern const char kFlashPluginSplExtension[];
 CONTENT_EXPORT extern const char kFlashPluginSplDescription[];
+CONTENT_EXPORT extern const char kSilverlightPluginMimeTypePrefix[];
 
 CONTENT_EXPORT extern const size_t kMaxRendererProcessCount;
 
