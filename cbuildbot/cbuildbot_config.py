@@ -2073,7 +2073,6 @@ internal_paladin.add_config('panther_moblab-paladin',
   moblab,
   boards=['panther_moblab'],
   paladin_builder_name='panther_moblab paladin',
-  important=False,
 )
 
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
@@ -2111,7 +2110,6 @@ internal_notest_paladin.add_config('kayle-paladin',
   brillo,
   boards=['kayle'],
   paladin_builder_name='kayle paladin',
-  important=False,
   manifest='kayle.xml',
   dev_manifest='kayle.xml',
   factory_toolkit=False,
@@ -2137,7 +2135,6 @@ internal_notest_paladin.add_config('rush_ryu-paladin',
   boards=['rush_ryu'],
   usepkg_toolchain=False,
   paladin_builder_name='rush_ryu paladin',
-  important=False,
 )
 
 internal_notest_paladin.add_config('storm-paladin',
