@@ -1631,10 +1631,12 @@ cr.define('options', function() {
       $('metricsReportingEnabled').disabled = disabled;
 
       // If checkbox gets disabled then add an attribute for displaying the
-      // special icon. The opposite shouldn't be possible to do.
+      // special icon. Otherwise remove the indicator attribute.
       if (disabled) {
         $('metrics-reporting-disabled-icon').setAttribute('controlled-by',
                                                           'policy');
+      } else {
+        $('metrics-reporting-disabled-icon').removeAttribute('controlled-by');
       }
     },
 

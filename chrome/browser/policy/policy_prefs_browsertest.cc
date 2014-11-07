@@ -659,6 +659,15 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
             std::string(),
             "policy",
             false);
+        // Check that no controlled setting indicator is visible when previously
+        // enforced value is removed.
+        ClearProviderPolicy();
+        VerifyControlledSettingIndicators(
+            browser(),
+            policy_test_case->indicator_selector(),
+            std::string(),
+            std::string(),
+            false);
       }
 
       for (ScopedVector<PrefMapping>::const_iterator

@@ -324,6 +324,7 @@
     "official_only": true,
     "can_be_recommended": true,
     "test_policy": { "MetricsReportingEnabled": false },
+    "indicator_selector": "#metrics-reporting-disabled-icon",
     "pref_mappings": [
       { "pref": "user_experience_metrics.reporting_enabled",
         "local_state": true

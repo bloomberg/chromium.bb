@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/options/browser_options_handler.h"
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -69,6 +70,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_service.h"
 #include "components/proximity_auth/switches.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
@@ -89,6 +93,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "policy/policy_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -191,6 +196,9 @@ BrowserOptionsHandler::~BrowserOptionsHandler() {
   // away so they don't try and call back to us.
   if (select_folder_dialog_.get())
     select_folder_dialog_->ListenerDestroyed();
+
+  g_browser_process->policy_service()->RemoveObserver(
+      policy::POLICY_DOMAIN_CHROME, this);
 }
 
 void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
@@ -823,6 +831,9 @@ void BrowserOptionsHandler::InitializeHandler() {
             base::Bind(&BrowserOptionsHandler::SetupPageZoomSelector,
                        base::Unretained(this)));
   }
+
+  g_browser_process->policy_service()->AddObserver(
+      policy::POLICY_DOMAIN_CHROME, this);
 
   ProfileSyncService* sync_service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
@@ -2008,6 +2019,15 @@ void BrowserOptionsHandler::SetMetricsReportingCheckbox(bool checked,
       "BrowserOptions.setMetricsReportingCheckboxState",
       base::FundamentalValue(checked),
       base::FundamentalValue(disabled));
+}
+
+void BrowserOptionsHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                                            const policy::PolicyMap& previous,
+                                            const policy::PolicyMap& current) {
+  std::set<std::string> different_keys;
+  current.GetDifferingKeys(previous, &different_keys);
+  if (ContainsKey(different_keys, policy::key::kMetricsReportingEnabled))
+    SetupMetricsReportingCheckbox();
 }
 
 }  // namespace options
