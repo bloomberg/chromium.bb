@@ -63,6 +63,19 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
         profile_id_, request, network_delegate);
   }
 
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override {
+    return nullptr;
+  }
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return nullptr;
+  }
+
   virtual bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == chrome::kExternalFileScheme;
   }

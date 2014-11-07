@@ -275,10 +275,16 @@ class TestNetworkDelegate : public NetworkDelegate {
   int observed_before_proxy_headers_sent_callbacks() const {
     return observed_before_proxy_headers_sent_callbacks_;
   }
+  int before_send_headers_count() const { return before_send_headers_count_; }
+  int headers_received_count() const { return headers_received_count_; }
 
   // Last observed proxy in proxy header sent callback.
   HostPortPair last_observed_proxy() {
     return last_observed_proxy_;
+  }
+
+  void set_can_be_intercepted_on_error(bool can_be_intercepted_on_error) {
+    will_be_intercepted_on_next_error_ = can_be_intercepted_on_error;
   }
 
  protected:
@@ -343,6 +349,8 @@ class TestNetworkDelegate : public NetworkDelegate {
   int blocked_set_cookie_count_;
   int set_cookie_count_;
   int observed_before_proxy_headers_sent_callbacks_;
+  int before_send_headers_count_;
+  int headers_received_count_;
   // Last observed proxy in before proxy header sent callback.
   HostPortPair last_observed_proxy_;
 
@@ -365,6 +373,7 @@ class TestNetworkDelegate : public NetworkDelegate {
   bool can_access_files_;  // true by default
   bool can_throttle_requests_;  // true by default
   bool cancel_request_with_policy_violating_referrer_;  // false by default
+  bool will_be_intercepted_on_next_error_;
 };
 
 // Overrides the host used by the LocalHttpTestServer in

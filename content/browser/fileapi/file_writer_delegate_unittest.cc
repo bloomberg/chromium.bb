@@ -219,6 +219,19 @@ class BlobURLRequestJobFactory : public net::URLRequestJobFactory {
         request, network_delegate, *content_data_);
   }
 
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override {
+    return nullptr;
+  }
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return nullptr;
+  }
+
   bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "blob";
   }

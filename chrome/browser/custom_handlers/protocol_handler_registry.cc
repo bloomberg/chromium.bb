@@ -190,6 +190,22 @@ MaybeCreateJobWithProtocolHandler(
       scheme, request, network_delegate);
 }
 
+net::URLRequestJob*
+ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  return job_factory_->MaybeInterceptRedirect(
+      request, network_delegate, location);
+}
+
+net::URLRequestJob*
+ProtocolHandlerRegistry::JobInterceptorFactory::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return job_factory_->MaybeInterceptResponse(request, network_delegate);
+}
+
 bool ProtocolHandlerRegistry::JobInterceptorFactory::IsHandledProtocol(
     const std::string& scheme) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

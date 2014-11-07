@@ -32,6 +32,33 @@ MaybeCreateJobWithProtocolHandler(
       scheme, request, network_delegate);
 }
 
+URLRequestJob* URLRequestInterceptingJobFactory::MaybeInterceptRedirect(
+    URLRequest* request,
+    NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  DCHECK(CalledOnValidThread());
+  URLRequestJob* job = interceptor_->MaybeInterceptRedirect(request,
+                                                            network_delegate,
+                                                            location);
+  if (job)
+    return job;
+  return job_factory_->MaybeInterceptRedirect(request,
+                                              network_delegate,
+                                              location);
+}
+
+URLRequestJob* URLRequestInterceptingJobFactory::MaybeInterceptResponse(
+    URLRequest* request,
+    NetworkDelegate* network_delegate) const {
+  DCHECK(CalledOnValidThread());
+  URLRequestJob* job = interceptor_->MaybeInterceptResponse(request,
+                                                            network_delegate);
+  if (job)
+    return job;
+  return job_factory_->MaybeInterceptResponse(request,
+                                              network_delegate);
+}
+
 bool URLRequestInterceptingJobFactory::IsHandledProtocol(
     const std::string& scheme) const {
   return job_factory_->IsHandledProtocol(scheme);

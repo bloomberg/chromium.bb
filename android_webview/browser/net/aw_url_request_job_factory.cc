@@ -57,6 +57,20 @@ URLRequestJob* AwURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
       request, network_delegate, net::ERR_UNKNOWN_URL_SCHEME);
 }
 
+net::URLRequestJob* AwURLRequestJobFactory::MaybeInterceptRedirect(
+     net::URLRequest* request,
+     net::NetworkDelegate* network_delegate,
+     const GURL& location) const  {
+   return next_factory_->MaybeInterceptRedirect(
+       request, network_delegate, location);
+}
+
+net::URLRequestJob* AwURLRequestJobFactory::MaybeInterceptResponse(
+     net::URLRequest* request,
+     net::NetworkDelegate* network_delegate) const {
+   return next_factory_->MaybeInterceptResponse(request, network_delegate);
+}
+
 bool AwURLRequestJobFactory::SetProtocolHandler(
     const std::string& scheme,
     ProtocolHandler* protocol_handler) {

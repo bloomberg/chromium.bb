@@ -128,6 +128,13 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptRedirect(
     if (job)
       return job;
   }
+
+  URLRequestJob* job =
+      request->context()->job_factory()->MaybeInterceptRedirect(
+          request, network_delegate, location);
+  if (job)
+    return job;
+
   return NULL;
 }
 
@@ -154,6 +161,13 @@ URLRequestJob* URLRequestJobManager::MaybeInterceptResponse(
     if (job)
       return job;
   }
+
+  URLRequestJob* job =
+      request->context()->job_factory()->MaybeInterceptResponse(
+          request, network_delegate);
+  if (job)
+    return job;
+
   return NULL;
 }
 

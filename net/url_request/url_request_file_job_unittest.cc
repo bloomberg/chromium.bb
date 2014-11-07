@@ -82,6 +82,19 @@ class CallbacksJobFactory : public URLRequestJobFactory {
     return job;
   }
 
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override {
+    return nullptr;
+  }
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    return nullptr;
+  }
+
   bool IsHandledProtocol(const std::string& scheme) const override {
     return scheme == "file";
   }

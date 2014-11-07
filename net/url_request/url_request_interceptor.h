@@ -8,6 +8,8 @@
 #include "base/macros.h"
 #include "net/base/net_export.h"
 
+class GURL;
+
 namespace net {
 
 class URLRequest;
@@ -27,6 +29,20 @@ class NET_EXPORT URLRequestInterceptor {
   // Otherwise, returns NULL.
   virtual URLRequestJob* MaybeInterceptRequest(
       URLRequest* request, NetworkDelegate* network_delegate) const = 0;
+
+  // Returns a URLRequestJob to handle |request|, if the interceptor wants to
+  // take over the handling of the request after a redirect is received,
+  // instead of using the default ProtocolHandler. Otherwise, returns NULL.
+  virtual URLRequestJob* MaybeInterceptRedirect(
+      URLRequest* request,
+      NetworkDelegate* network_delegate,
+      const GURL& location) const;
+
+  // Returns a URLRequestJob to handle |request, if the interceptor wants to
+  // take over the handling of the request after a response has started,
+  // instead of using the default ProtocolHandler. Otherwise, returns NULL.
+  virtual URLRequestJob* MaybeInterceptResponse(
+      URLRequest* request, NetworkDelegate* network_delegate) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestInterceptor);

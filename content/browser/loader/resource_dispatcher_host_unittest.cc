@@ -492,6 +492,15 @@ class TestURLRequestJobFactory : public net::URLRequestJobFactory {
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override;
 
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override;
+
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+
   bool IsHandledProtocol(const std::string& scheme) const override {
     return supported_schemes_.count(scheme) > 0;
   }
@@ -2998,6 +3007,19 @@ net::URLRequestJob* TestURLRequestJobFactory::MaybeCreateJobWithProtocolHandler(
           false);
     }
   }
+}
+
+net::URLRequestJob* TestURLRequestJobFactory::MaybeInterceptRedirect(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const GURL& location) const {
+  return nullptr;
+}
+
+net::URLRequestJob* TestURLRequestJobFactory::MaybeInterceptResponse(
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) const {
+  return nullptr;
 }
 
 }  // namespace content
