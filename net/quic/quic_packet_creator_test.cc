@@ -466,6 +466,52 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   delete serialized.packet;
 }
 
+TEST_P(QuicPacketCreatorTest, ReserializeFramesWithPadding) {
+  scoped_ptr<QuicStreamFrame> stream_frame(
+      new QuicStreamFrame(kCryptoStreamId, /*fin=*/ false, /*offset=*/ 0,
+                          MakeIOVector("fake handshake message data")));
+  frames_.push_back(QuicFrame(stream_frame.get()));
+  SerializedPacket serialized =
+      creator_.ReserializeAllFrames(frames_,
+                                    creator_.next_sequence_number_length());
+
+  EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize),
+            serialized.packet->length());
+  delete serialized.packet;
+}
+
+TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
+  const size_t overhead = GetPacketHeaderOverhead(NOT_IN_FEC_GROUP)
+      + GetEncryptionOverhead() + GetStreamFrameOverhead(NOT_IN_FEC_GROUP);
+  size_t capacity = kDefaultMaxPacketSize - overhead;
+  for (int delta = -5; delta <= 0; ++delta) {
+    string data(capacity + delta, 'A');
+    size_t bytes_free = 0 - delta;
+
+    scoped_ptr<QuicStreamFrame> stream_frame(
+        new QuicStreamFrame(kCryptoStreamId, /*fin=*/ false, kOffset,
+                            MakeIOVector(data)));
+    frames_.push_back(QuicFrame(stream_frame.get()));
+    SerializedPacket serialized =
+        creator_.ReserializeAllFrames(frames_,
+                                      creator_.next_sequence_number_length());
+
+    // If there is not enough space in the packet to fit a padding frame
+    // (1 byte) and to expand the stream frame (another 2 bytes) the packet
+    // will not be padded.
+    if (bytes_free < 3) {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize)
+                - bytes_free, serialized.packet->length());
+    } else {
+      EXPECT_EQ(client_framer_.GetMaxPlaintextSize(kDefaultMaxPacketSize),
+                serialized.packet->length());
+    }
+
+    delete serialized.packet;
+    frames_.clear();
+  }
+}
+
 TEST_P(QuicPacketCreatorTest, SerializeConnectionClose) {
   QuicConnectionCloseFrame frame;
   frame.error_code = QUIC_NO_ERROR;
