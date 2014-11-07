@@ -449,7 +449,6 @@ void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
   std::list<const BookmarkNode*> folders;
   std::vector<const BookmarkNode*> result;
   folders.push_back(bookmark_model_->root_node());
-  folders.push_back(partner_bookmarks_shim_->GetPartnerBookmarksRoot());
 
   for (std::list<const BookmarkNode*>::iterator folder_iter = folders.begin();
       folder_iter != folders.end(); ++folder_iter) {
@@ -461,7 +460,8 @@ void BookmarksBridge::GetAllBookmarkIDsOrderedByCreationDate(
 
     for (int i = 0; i < (*folder_iter)->child_count(); ++i) {
       const BookmarkNode* child = (*folder_iter)->GetChild(i);
-      if (!IsFolderAvailable(child) || !IsReachable(child))
+      if (!IsFolderAvailable(child) || !IsReachable(child) ||
+          client_->IsDescendantOfManagedNode(child))
         continue;
 
       if (child->is_folder()) {
