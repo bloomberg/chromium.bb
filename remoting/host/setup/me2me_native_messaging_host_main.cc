@@ -32,6 +32,10 @@
 #include "remoting/host/pairing_registry_delegate_win.h"
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX)
+#include <glib-object.h>
+#endif  // defined(OS_LINUX)
+
 using remoting::protocol::PairingRegistry;
 
 namespace {
@@ -69,6 +73,12 @@ int StartMe2MeNativeMessagingHost() {
   // Needed so we don't leak objects when threads are created.
   base::mac::ScopedNSAutoreleasePool pool;
 #endif  // defined(OS_MACOSX)
+
+#if defined(OS_LINUX)
+  // g_type_init() is needed prior to GTK 2.36, which includes Ubuntu 12.04
+  // (Precise Pangolin) systems.
+  g_type_init();
+#endif  // defined(OS_LINUX)
 
   // Required to find the ICU data file, used by some file_util routines.
   base::i18n::InitializeICU();
