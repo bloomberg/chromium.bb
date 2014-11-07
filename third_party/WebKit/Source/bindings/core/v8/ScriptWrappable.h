@@ -32,7 +32,6 @@
 #define ScriptWrappable_h
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"
 #include <v8.h>
 
@@ -153,20 +152,6 @@ public:
         return m_wrapper == other;
     }
 
-    static bool wrapperCanBeStoredInObject(const void*) { return false; }
-    static bool wrapperCanBeStoredInObject(const ScriptWrappable*) { return true; }
-
-    static ScriptWrappable* fromObject(const void*)
-    {
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
-
-    static ScriptWrappable* fromObject(ScriptWrappable* object)
-    {
-        return object;
-    }
-
     // Provides a way to convert Node* to ScriptWrappable* without including
     // "core/dom/Node.h".
     //
@@ -205,31 +190,6 @@ public:
     {
         isolate->SetReference(parent, m_wrapper);
     }
-
-    template<typename V8T, typename T>
-    static void assertWrapperSanity(v8::Local<v8::Object> object, T* objectAsT)
-    {
-        ASSERT(objectAsT);
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
-            || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
-    }
-
-    template<typename V8T, typename T>
-    static void assertWrapperSanity(void* object, T* objectAsT)
-    {
-        ASSERT_NOT_REACHED();
-    }
-
-    template<typename V8T, typename T>
-    static void assertWrapperSanity(ScriptWrappable* object, T* objectAsT)
-    {
-        ASSERT(object);
-        ASSERT(objectAsT);
-        RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object->m_wrapper.IsEmpty()
-            || v8::Object::GetAlignedPointerFromInternalField(object->m_wrapper, v8DOMWrapperObjectIndex) == V8T::toScriptWrappableBase(objectAsT));
-    }
-
-    using ScriptWrappableBase::assertWrapperSanity;
 
     bool containsWrapper() const { return !m_wrapper.IsEmpty(); }
 

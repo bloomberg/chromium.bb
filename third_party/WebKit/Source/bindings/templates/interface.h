@@ -236,8 +236,8 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp
     return v8SetReturnValue(callbackInfo, impl);
 }
 
-template<typename CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable* wrappable)
+template<typename CallbackInfo, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable*)
 {
     return v8SetReturnValue(callbackInfo, impl);
 }
@@ -265,8 +265,8 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp
     return v8SetReturnValue(callbackInfo, impl);
 }
 
-template<typename CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable* wrappable)
+template<typename CallbackInfo, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable*)
 {
     // Since |impl| is not ScriptWrappable, it doesn't matter much if it's the
     // main world or not.

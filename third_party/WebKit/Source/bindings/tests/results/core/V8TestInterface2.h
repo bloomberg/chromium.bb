@@ -76,8 +76,8 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestI
     return v8SetReturnValue(callbackInfo, impl);
 }
 
-template<typename CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface2* impl, Wrappable* wrappable)
+template<typename CallbackInfo, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterface2* impl, Wrappable*)
 {
     return v8SetReturnValue(callbackInfo, impl);
 }

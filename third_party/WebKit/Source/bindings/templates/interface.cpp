@@ -579,9 +579,9 @@ void {{v8_class}}::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* sc
     {% for set_wrapper_reference_to in set_wrapper_reference_to_list %}
     {{set_wrapper_reference_to.cpp_type}} {{set_wrapper_reference_to.name}} = impl->{{set_wrapper_reference_to.name}}();
     if ({{set_wrapper_reference_to.name}}) {
-        if (!DOMDataStore::containsWrapper<{{set_wrapper_reference_to.v8_type}}>({{set_wrapper_reference_to.name}}, isolate))
+        if (!DOMDataStore::containsWrapperNonTemplate({{set_wrapper_reference_to.name}}, isolate))
             {{set_wrapper_reference_to.name}}->wrap(creationContext, isolate);
-        DOMDataStore::setWrapperReference<{{set_wrapper_reference_to.v8_type}}>(wrapper, {{set_wrapper_reference_to.name}}, isolate);
+        DOMDataStore::setWrapperReferenceNonTemplate(wrapper, {{set_wrapper_reference_to.name}}, isolate);
     }
     {% endfor %}
     {% endif %}

@@ -63,8 +63,8 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TestI
     return v8SetReturnValue(callbackInfo, impl);
 }
 
-template<typename CallbackInfo, class Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfaceNotScriptWrappable* impl, Wrappable* wrappable)
+template<typename CallbackInfo, typename Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestInterfaceNotScriptWrappable* impl, Wrappable*)
 {
     // Since |impl| is not ScriptWrappable, it doesn't matter much if it's the
     // main world or not.

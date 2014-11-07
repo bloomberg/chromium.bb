@@ -22,7 +22,6 @@
             'CustomElementBinding.h',
             'CustomElementConstructorBuilder.cpp',
             'CustomElementConstructorBuilder.h',
-            'DOMDataStore.cpp',
             'DOMDataStore.h',
             'DOMWrapperMap.h',
             'DOMWrapperWorld.cpp',
