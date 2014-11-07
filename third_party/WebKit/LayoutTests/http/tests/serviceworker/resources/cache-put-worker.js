@@ -2,27 +2,11 @@ importScripts('worker-testharness.js');
 importScripts('/resources/testharness-helpers.js');
 
 var test_url = 'https://example.com/foo';
-
-// Construct a generic Request object. The URL is |test_url|. All other fields
-// are defaults.
-function new_test_request() {
-  return new Request(test_url);
-}
-
-// Construct a generic Response object. The URL is empty. If specified |body|
-// will be set as the response body string.
-function new_test_response(body) {
-  body = body || 'Hello world!';
-  return new Response(body, {
-      status: 200,
-      statusText: 'OK',
-      headers: [['Content-Type', 'text/plain']]
-    });
-}
+var test_response_body = 'Hello world!';
 
 cache_test(function(cache) {
-    var request = new_test_request();
-    var response = new_test_response();
+    var request = new Request(test_url);
+    var response = new Response(test_response_body);
     return cache.put(request, response)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -59,7 +43,7 @@ cache_test(function(cache) {
         method: 'GET',
         body: 'Hello'
       });
-    var response = new_test_response();
+    var response = new Response(test_response_body);
     assert_false(request.bodyUsed,
                  '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
                  'Request.bodyUsed should be initially false.');
@@ -78,8 +62,8 @@ cache_test(function(cache) {
   }, 'Cache.put with Request containing a body');
 
 cache_test(function(cache) {
-    var request = new_test_request();
-    var response = new_test_response();
+    var request = new Request(test_url);
+    var response = new Response(test_response_body);
     return cache.put(request, response)
       .then(function() {
           return cache.match(test_url);
@@ -92,7 +76,7 @@ cache_test(function(cache) {
   }, 'Cache.put with a Response containing an empty URL');
 
 cache_test(function(cache) {
-    var request = new_test_request();
+    var request = new Request(test_url);
     var response = new Response('', {
         status: 200,
         headers: [['Content-Type', 'text/plain']]
@@ -119,6 +103,8 @@ cache_test(function(cache) {
     var response;
     return fetch(test_url)
       .then(function(fetch_result) {
+          assert_equals(fetch_result.status, 500,
+                        'Test framework error: The status code should be 500.');
           response = fetch_result.clone();
           return cache.put(request, fetch_result);
         })
@@ -138,10 +124,13 @@ cache_test(function(cache) {
   }, 'Cache.put with HTTP 500 response');
 
 cache_test(function(cache) {
-    var alternate_response = new_test_response('Lorem ipsum');
-    return cache.put(new_test_request(), new_test_response())
+    var alternate_response_body = 'New body';
+    var alternate_response = new Response(alternate_response_body,
+                                          { statusText: 'New status' });
+    return cache.put(new Request(test_url),
+                     new Response('Old body', { statusText: 'Old status' }))
       .then(function() {
-          return cache.put(new_test_request(), alternate_response);
+          return cache.put(new Request(test_url), alternate_response);
         })
       .then(function() {
           return cache.match(test_url);
@@ -150,36 +139,104 @@ cache_test(function(cache) {
           assert_object_equals(result, alternate_response,
                                'Cache.put should replace existing ' +
                                'response with new response.');
+          return result.text();
+        })
+      .then(function(body) {
+          assert_equals(body, alternate_response_body,
+                        'Cache put should store new response body.');
         });
-  }, 'Cache.put called twice with same Request and different Responses');
+  }, 'Cache.put called twice with matching Requests and different Responses');
+
+cache_test(function(cache) {
+    var first_url = test_url;
+    var second_url = first_url + '#(O_o)';
+    var alternate_response_body = 'New body';
+    var alternate_response = new Response(alternate_response_body,
+                                          { statusText: 'New status' });
+    return cache.put(new Request(first_url),
+                     new Response('Old body', { statusText: 'Old status' }))
+      .then(function() {
+          return cache.put(new Request(second_url), alternate_response);
+        })
+      .then(function() {
+          return cache.match(test_url);
+        })
+      .then(function(result) {
+          assert_object_equals(result, alternate_response,
+                               'Cache.put should replace existing ' +
+                               'response with new response.');
+          return result.text();
+        })
+      .then(function(body) {
+          assert_equals(body, alternate_response_body,
+                        'Cache put should store new response body.');
+        });
+  }, 'Cache.put called twice with request URLs that differ only by a fragment');
+
+cache_test(function(cache) {
+    var entries = {
+      dark: {
+        url: 'http://darkhelmet:12345@example.com/spaceballs',
+        body: 'Moranis'
+      },
+
+      skroob: {
+        url: 'http://skroob:12345@example.com/spaceballs',
+        body: 'Brooks'
+      },
+
+      control: {
+        url: 'http://example.com/spaceballs',
+        body: 'v(o.o)v'
+      }
+    };
+
+    return Promise.all(Object.keys(entries).map(function(key) {
+        return cache.put(new Request(entries[key].url),
+                         new Response(entries[key].body));
+      }))
+      .then(function() {
+          return Promise.all(Object.keys(entries).map(function(key) {
+              return cache.match(entries[key].url)
+                .then(function(result) {
+                    return result.text();
+                  })
+                .then(function(body) {
+                    assert_equals(body, entries[key].body,
+                                  'Cache put should store response body.');
+                  });
+            }));
+        });
+  }, 'Cache.put with request URLs containing embedded credentials');
 
 cache_test(function(cache) {
     var url = 'http://example.com/foo';
-    return cache.put(url, new_test_response('some body'))
+    return cache.put(url, new Response('some body'))
       .then(function() { return cache.match(url); })
       .then(function(response) { return response.text(); })
       .then(function(body) {
           assert_equals(body, 'some body',
                         'Cache.put should accept a string as request.');
         });
-  }, 'Cache.put with an string request');
+  }, 'Cache.put with a string request');
 
 cache_test(function(cache) {
     return assert_promise_rejects(
-      cache.put(new_test_request(), 'Hello world!'),
+      cache.put(new Request(test_url), 'Hello world!'),
       new TypeError(),
       'Cache.put should only accept a Response object as the response.');
   }, 'Cache.put with an invalid response');
 
 cache_test(function(cache) {
     return assert_promise_rejects(
-      cache.put(new Request('file:///etc/passwd'), new_test_response()),
+      cache.put(new Request('file:///etc/passwd'),
+                new Response(test_response_body)),
       new TypeError(),
       'Cache.put should reject non-HTTP/HTTPS requests with a TypeError.');
   }, 'Cache.put with a non-HTTP/HTTPS request');
 
 cache_test(function(cache) {
-    var response = new_test_response();
+    var response = new Response(test_response_body);
     return cache.put(new Request('relative-url'), response)
       .then(function() {
           return cache.match(new URL('relative-url', location.href).href);
@@ -192,16 +249,16 @@ cache_test(function(cache) {
   }, 'Cache.put with a relative URL');
 
 cache_test(function(cache) {
-    var request = new Request('http://example.com/foo', {method: 'HEAD'});
+    var request = new Request('http://example.com/foo', { method: 'HEAD' });
     return assert_promise_rejects(
-      cache.put(request, new_test_response()),
+      cache.put(request, new Response(test_response_body)),
       new TypeError(),
       'Cache.put should throw a TypeError for non-GET requests.');
   }, 'Cache.put with a non-GET request');
 
 cache_test(function(cache) {
     return assert_promise_rejects(
-      cache.put(new_test_request(), null),
+      cache.put(new Request(test_url), null),
       new TypeError(),
       'Cache.put should throw a TypeError for an empty response.');
   }, 'Cache.put with an empty response');

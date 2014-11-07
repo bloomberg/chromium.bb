@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS Service Worker: Cache.put 
+PASS Cache.put called with simple Request and Response 
+PASS Cache.put called with Request and Response from fetch() 
+PASS Cache.put with Request containing a body 
+PASS Cache.put with a Response containing an empty URL 
+PASS Cache.put with an empty response body 
+PASS Cache.put with HTTP 500 response 
+PASS Cache.put called twice with matching Requests and different Responses 
+FAIL Cache.put called twice with request URLs that differ only by a fragment assert_equals: Cache.put should replace existing response with new response.: Response.statusText expected "New status" but got "Old status"
+PASS Cache.put with request URLs containing embedded credentials 
+PASS Cache.put with a string request 
+PASS Cache.put with an invalid response 
+PASS Cache.put with a non-HTTP/HTTPS request 
+PASS Cache.put with a relative URL 
+PASS Cache.put with a non-GET request 
+PASS Cache.put with an empty response 
+Harness: the test ran to completion.
+
