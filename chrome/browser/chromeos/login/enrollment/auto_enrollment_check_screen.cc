@@ -65,6 +65,10 @@ void AutoEnrollmentCheckScreen::Start() {
   portal_detector->AddAndFireObserver(this);
 }
 
+void AutoEnrollmentCheckScreen::ClearState() {
+   auto_enrollment_state_ = policy::AUTO_ENROLLMENT_STATE_IDLE;
+}
+
 bool AutoEnrollmentCheckScreen::IsStartNeeded() {
   // Check that forced reenrollment is wanted and if the check is needed or we
   // already know the outcome.

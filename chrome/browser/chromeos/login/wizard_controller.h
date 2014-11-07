@@ -378,6 +378,10 @@ class WizardController : public BaseScreenDelegate,
   // instance.
   bool enrollment_recovery_;
 
+  // Whether the auto-enrollment check should be retried or the cached result
+  // returned if present.
+  bool retry_auto_enrollment_check_;
+
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.
   base::Time time_eula_accepted_;

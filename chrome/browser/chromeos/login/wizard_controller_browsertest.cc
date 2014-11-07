@@ -1093,7 +1093,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
   CheckCurrentScreen(WizardController::kNetworkScreenName);
-  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
   EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
   OnExit(BaseScreenDelegate::NETWORK_CONNECTED);
@@ -1122,9 +1121,10 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   // Make sure enterprise enrollment page shows up right after update screen.
   CheckCurrentScreen(WizardController::kEnrollmentScreenName);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
   OnExit(BaseScreenDelegate::ENTERPRISE_ENROLLMENT_BACK);
 
-  CheckCurrentScreen(WizardController::kNetworkScreenName);
+  CheckCurrentScreen(WizardController::kAutoEnrollmentCheckScreenName);
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
 }
 

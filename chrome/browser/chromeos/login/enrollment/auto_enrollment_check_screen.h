@@ -39,6 +39,9 @@ class AutoEnrollmentCheckScreen
   // flow back to the caller via the |base_screen_delegate_|'s OnExit function.
   void Start();
 
+  // Clears the cached state causing the forced enrollment check to be retried.
+  void ClearState();
+
   void set_auto_enrollment_controller(
       AutoEnrollmentController* auto_enrollment_controller) {
     auto_enrollment_controller_ = auto_enrollment_controller;

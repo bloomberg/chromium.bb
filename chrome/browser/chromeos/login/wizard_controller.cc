@@ -499,6 +499,8 @@ void WizardController::ShowAutoEnrollmentCheckScreen() {
   VLOG(1) << "Showing Auto-enrollment check screen.";
   SetStatusAreaVisible(true);
   AutoEnrollmentCheckScreen* screen = AutoEnrollmentCheckScreen::Get(this);
+  if (retry_auto_enrollment_check_)
+    screen->ClearState();
   screen->set_auto_enrollment_controller(host_->GetAutoEnrollmentController());
   SetCurrentScreen(screen);
 }
@@ -993,7 +995,8 @@ void WizardController::OnExit(ExitCodes exit_code) {
       OnEnrollmentDone();
       break;
     case ENTERPRISE_ENROLLMENT_BACK:
-      ShowNetworkScreen();
+      retry_auto_enrollment_check_ = true;
+      ShowAutoEnrollmentCheckScreen();
       break;
     case RESET_CANCELED:
       OnResetCanceled();
