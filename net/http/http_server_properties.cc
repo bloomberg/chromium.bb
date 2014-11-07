@@ -20,7 +20,7 @@ const char* const kAlternateProtocolStrings[] = {
   "npn-spdy/2",
   "npn-spdy/3",
   "npn-spdy/3.1",
-  "npn-h2-14",  // HTTP/2 draft 14. Called SPDY4 internally.
+  "npn-h2-15",  // HTTP/2 draft-15. Called SPDY4 internally.
   "quic"
 };
 
