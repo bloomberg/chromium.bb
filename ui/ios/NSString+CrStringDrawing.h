@@ -9,6 +9,26 @@
 
 @interface NSString (CrStringDrawing)
 
+// Calculates and returns the bounding rect for the receiver drawn using the
+// given size and font.
+// This method is implemented as a wrapper around
+// |boundingRectWithSize:options:attributes:context:| using the following values
+// for the parameters:
+//  - size: the provided |size|
+//  - options: NSStringDrawingUsesLineFragmentOrigin
+//  - attributes: a NSDictionary with the provided |font|
+//  - context: nil.
+//
+// Note that the rect returned may contain fractional values.
+- (CGRect)cr_boundingRectWithSize:(CGSize)size
+                             font:(UIFont*)font;
+
+// Convenience wrapper to just return the size of |boundingRectWithSize:font:|.
+//
+// Note that the size returned may contain fractional values.
+- (CGSize)cr_boundingSizeWithSize:(CGSize)size
+                             font:(UIFont*)font;
+
 // Returns the size of the string if it were to be rendered with the specified
 // font on a single line. The width and height of the CGSize returned are
 // pixel-aligned.

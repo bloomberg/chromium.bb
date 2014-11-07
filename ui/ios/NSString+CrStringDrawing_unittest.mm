@@ -13,10 +13,55 @@ namespace {
 
 typedef PlatformTest NSStringCrStringDrawing;
 
-// These test verifies that the category methods return the same values as the
+// These tests verify that the category methods return the same values as the
 // deprecated methods, so ignore warnings about using deprecated methods.
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
+// Verifies that |cr_boundingSizeWithSize| returns the same size as the
+// deprecated |sizeWithFont:constrainedToSize| for most values.
+// Note that the methods return different values in a few cases (so they are not
+// included in the test cases):
+//  - the constrained size.width is less than a character.
+//  - the constrained size.height is less than the font height.
+//  - the string is empty.
+TEST_F(NSStringCrStringDrawing, BoundingSizeWithSize) {
+  NSArray* fonts = @[
+    [UIFont systemFontOfSize:16],
+    [UIFont boldSystemFontOfSize:10],
+    [UIFont fontWithName:@"Helvetica" size:12.0],
+  ];
+  NSArray* strings = @[
+    @"Test",
+    @"multi word test",
+    @"你好",
+    @"★ This is a test string that is very long.",
+  ];
+  NSArray* sizes = @[
+    [NSValue valueWithCGSize:CGSizeMake(20, 100)],
+    [NSValue valueWithCGSize:CGSizeMake(100, 100)],
+    [NSValue valueWithCGSize:CGSizeMake(CGFLOAT_MAX, CGFLOAT_MAX)],
+  ];
+  for (UIFont* font in fonts) {
+    for (NSString* string in strings) {
+      for (NSValue* sizeValue in sizes) {
+        CGSize test_size = [sizeValue CGSizeValue];
+        std::string test_tag = base::StringPrintf(
+            "for string '%s' with font %s and size %s",
+            base::SysNSStringToUTF8(string).c_str(),
+            base::SysNSStringToUTF8([font description]).c_str(),
+            base::SysNSStringToUTF8(NSStringFromCGSize(test_size)).c_str());
+
+        CGSize size_with_font =
+            [string sizeWithFont:font constrainedToSize:test_size];
+        CGSize bounding_size =
+            [string cr_boundingSizeWithSize:test_size font:font];
+        EXPECT_EQ(size_with_font.width, bounding_size.width) << test_tag;
+        EXPECT_EQ(size_with_font.height, bounding_size.height) << test_tag;
+      }
+    }
+  }
+}
 
 TEST_F(NSStringCrStringDrawing, SizeWithFont) {
   NSArray* fonts = @[
@@ -102,6 +147,5 @@ TEST_F(NSStringCrStringDrawing, PixelAlignedSizeWithFont) {
     }
   }
 }
-
 
 }  // namespace
