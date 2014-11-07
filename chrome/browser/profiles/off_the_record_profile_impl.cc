@@ -216,7 +216,11 @@ std::string OffTheRecordProfileImpl::GetProfileName() {
 }
 
 Profile::ProfileType OffTheRecordProfileImpl::GetProfileType() const {
+#if !defined(OS_CHROMEOS)
+  return profile_->IsGuestSession() ? GUEST_PROFILE : INCOGNITO_PROFILE;
+#else
   return INCOGNITO_PROFILE;
+#endif
 }
 
 base::FilePath OffTheRecordProfileImpl::GetPath() const {

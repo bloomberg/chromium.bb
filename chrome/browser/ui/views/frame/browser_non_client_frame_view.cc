@@ -163,10 +163,30 @@ void BrowserNonClientFrameView::DrawTaskbarDecoration(
   // TODO(calamity): ideally this should not be necessary but due to issues with
   // the default shortcut being pinned, we add the runtime badge for safety.
   // See crbug.com/313800.
+  bool show_decoration = AvatarMenu::ShouldShowAvatarMenu() &&
+      !browser_view_->browser()->profile()->IsGuestSession();
+  // In tests, make sure that the browser process and profile manager are valid
+  // before using.
+  if (g_browser_process && g_browser_process->profile_manager()) {
+    const ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    show_decoration = show_decoration && cache.GetNumberOfProfiles() > 1;
+  }
   chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
-      AvatarMenu::ShouldShowAvatarMenu()
+      show_decoration
           ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
           : NULL);
+}
+
+void BrowserNonClientFrameView::OnProfileAdded(
+    const base::FilePath& profile_path) {
+  OnProfileAvatarChanged(profile_path);
+}
+
+void BrowserNonClientFrameView::OnProfileWasRemoved(
+    const base::FilePath& profile_path,
+    const base::string16& profile_name) {
+  OnProfileAvatarChanged(profile_path);
 }
 
 void BrowserNonClientFrameView::OnProfileAvatarChanged(

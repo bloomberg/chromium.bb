@@ -75,6 +75,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                              const gfx::Image& taskbar_badge_avatar);
 
   // Overriden from ProfileInfoCacheObserver.
+  void OnProfileAdded(const base::FilePath& profile_path) override;
+  void OnProfileWasRemoved(const base::FilePath& profile_path,
+                           const base::string16& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
 
   // The frame that hosts this view.
