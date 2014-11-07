@@ -695,8 +695,8 @@ class BuildData(object):
 
   @property
   def patches(self):
-    return [GerritPatchTuple(gerrit_number=change['gerrit_number'],
-                             patch_number=change['patch_number'],
+    return [GerritPatchTuple(gerrit_number=int(change['gerrit_number']),
+                             patch_number=int(change['patch_number']),
                              internal=change['internal'])
             for change in self.metadata_dict.get('changes', [])]
 
