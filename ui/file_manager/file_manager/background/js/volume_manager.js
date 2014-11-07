@@ -174,7 +174,7 @@ VolumeInfo.prototype.resolveDisplayRoot = function(opt_onSuccess,
       // For Drive, we need to resolve.
       var displayRootURL = this.fileSystem_.root.toURL() + '/root';
       this.displayRootPromise_ = new Promise(
-          webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
+          window.webkitResolveLocalFileSystemURL.bind(null, displayRootURL));
     }
 
     // Store the obtained displayRoot.

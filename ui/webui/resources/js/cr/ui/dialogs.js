@@ -298,6 +298,11 @@ cr.define('cr.ui.dialogs', function() {
     }
   };
 
+  /**
+   * @suppress {checkTypes}
+   * TODO(fukino): remove suppression if there is a better way to avoid warning
+   * about overriding method with different signature.
+   */
   PromptDialog.prototype.show = function(message, defaultValue, onOk, onCancel,
                                         onShow) {
     this.input_.value = defaultValue || '';

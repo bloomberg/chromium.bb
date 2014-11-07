@@ -126,7 +126,7 @@ ImageLoaderClient.prototype.handleMessage_ = function(message) {
  */
 ImageLoaderClient.prototype.load = function(
     url, callback, opt_options, opt_isValid) {
-  opt_options = opt_options || {};
+  opt_options = /** @type {{cache: (boolean|undefined)}} */(opt_options || {});
   opt_isValid = opt_isValid || function() { return true; };
 
   // Record cache usage.

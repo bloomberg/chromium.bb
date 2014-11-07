@@ -154,7 +154,7 @@ cr.define('cr.ui.table', function() {
     /**
      * Creates a new list item.
      * @param {*} dataItem The value to use for the item.
-     * @return {!ListItem} The newly created list item.
+     * @return {!cr.ui.ListItem} The newly created list item.
      */
     createItem: function(dataItem) {
       return this.table_.getRenderFunction().call(null, dataItem, this.table_);

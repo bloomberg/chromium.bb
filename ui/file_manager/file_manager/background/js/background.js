@@ -298,19 +298,27 @@ var FILE_MANAGER_WINDOW_CREATE_OPTIONS = Object.freeze({
  */
 function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
   var type = opt_type || LaunchType.ALWAYS_CREATE;
+  opt_appState =
+      /**
+       * @type {(undefined|
+       *         {currentDirectoryURL: (string|undefined),
+       *          selectionURL: (string|undefined),
+       *          displayedId: (string|undefined)})}
+       */
+      (opt_appState);
 
   // Wait until all windows are created.
-  background.queue.run(function(onTaskCompleted) {
+  window.background.queue.run(function(onTaskCompleted) {
     // Check if there is already a window with the same URL. If so, then
     // reuse it instead of opening a new one.
     if (type == LaunchType.FOCUS_SAME_OR_CREATE ||
         type == LaunchType.FOCUS_ANY_OR_CREATE) {
       if (opt_appState) {
-        for (var key in background.appWindows) {
+        for (var key in window.background.appWindows) {
           if (!key.match(FILES_ID_PATTERN))
             continue;
 
-          var contentWindow = background.appWindows[key].contentWindow;
+          var contentWindow = window.background.appWindows[key].contentWindow;
           if (!contentWindow.appState)
             continue;
 
@@ -328,7 +336,7 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
           }
 
           AppWindowWrapper.focusOnDesktop(
-              background.appWindows[key], opt_appState.displayedId);
+              window.background.appWindows[key], opt_appState.displayedId);
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -340,14 +348,14 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
     // Focus any window if none is focused. Try restored first.
     if (type == LaunchType.FOCUS_ANY_OR_CREATE) {
       // If there is already a focused window, then finish.
-      for (var key in background.appWindows) {
+      for (var key in window.background.appWindows) {
         if (!key.match(FILES_ID_PATTERN))
           continue;
 
         // The isFocused() method should always be available, but in case
         // Files.app's failed on some error, wrap it with try catch.
         try {
-          if (background.appWindows[key].contentWindow.isFocused()) {
+          if (window.background.appWindows[key].contentWindow.isFocused()) {
             if (opt_callback)
               opt_callback(key);
             onTaskCompleted();
@@ -358,13 +366,14 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         }
       }
       // Try to focus the first non-minimized window.
-      for (var key in background.appWindows) {
+      for (var key in window.background.appWindows) {
         if (!key.match(FILES_ID_PATTERN))
           continue;
 
-        if (!background.appWindows[key].isMinimized()) {
+        if (!window.background.appWindows[key].isMinimized()) {
           AppWindowWrapper.focusOnDesktop(
-              background.appWindows[key], (opt_appState || {}).displayedId);
+              window.background.appWindows[key],
+              (opt_appState || {}).displayedId);
           if (opt_callback)
             opt_callback(key);
           onTaskCompleted();
@@ -372,12 +381,13 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
         }
       }
       // Restore and focus any window.
-      for (var key in background.appWindows) {
+      for (var key in window.background.appWindows) {
         if (!key.match(FILES_ID_PATTERN))
           continue;
 
         AppWindowWrapper.focusOnDesktop(
-            background.appWindows[key], (opt_appState || {}).displayedId);
+            window.background.appWindows[key],
+            (opt_appState || {}).displayedId);
         if (opt_callback)
           opt_callback(key);
         onTaskCompleted();
@@ -413,9 +423,9 @@ function launchFileManager(opt_appState, opt_id, opt_type, opt_callback) {
  */
 function registerDialog(dialogWindow) {
   var id = DIALOG_ID_PREFIX + (nextFileManagerDialogID++);
-  background.dialogs[id] = dialogWindow;
+  window.background.dialogs[id] = dialogWindow;
   dialogWindow.addEventListener('pagehide', function() {
-    delete background.dialogs[id];
+    delete window.background.dialogs[id];
   });
 }
 
@@ -491,20 +501,20 @@ FileBrowserBackground.prototype.onRestarted_ = function() {
 
 /**
  * Handles clicks on a custom item on the launcher context menu.
- * @param {OnClickData} info Event details.
+ * @param {!Object} info Event details.
  * @private
  */
 FileBrowserBackground.prototype.onContextMenuClicked_ = function(info) {
   if (info.menuItemId == 'new-window') {
     // Find the focused window (if any) and use it's current url for the
     // new window. If not found, then launch with the default url.
-    for (var key in background.appWindows) {
+    for (var key in window.background.appWindows) {
       try {
-        if (background.appWindows[key].contentWindow.isFocused()) {
+        if (window.background.appWindows[key].contentWindow.isFocused()) {
           var appState = {
             // Do not clone the selection url, only the current directory.
-            currentDirectoryURL: background.appWindows[key].contentWindow.
-                appState.currentDirectoryURL
+            currentDirectoryURL: window.background.appWindows[key].
+                contentWindow.appState.currentDirectoryURL
           };
           launchFileManager(appState);
           return;

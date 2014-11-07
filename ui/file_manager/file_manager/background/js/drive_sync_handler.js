@@ -164,7 +164,7 @@ DriveSyncHandler.prototype.onFileTransfersUpdated_ = function(status) {
  */
 DriveSyncHandler.prototype.updateItem_ = function(status) {
   this.queue_.run(function(callback) {
-    webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
+    window.webkitResolveLocalFileSystemURL(status.fileUrl, function(entry) {
       this.item_.state = ProgressItemState.PROGRESSING;
       this.item_.type = ProgressItemType.SYNC;
       this.item_.quiet = true;
@@ -217,7 +217,7 @@ DriveSyncHandler.prototype.requestCancel_ = function(entry) {
  * @private
  */
 DriveSyncHandler.prototype.onDriveSyncError_ = function(event) {
-  webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
+  window.webkitResolveLocalFileSystemURL(event.fileUrl, function(entry) {
     var item = new ProgressCenterItem();
     item.id =
         DriveSyncHandler.DRIVE_SYNC_ERROR_PREFIX + (this.errorIdCounter_++);

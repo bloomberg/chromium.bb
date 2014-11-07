@@ -465,7 +465,7 @@ FileOperationManager.EventRouter.prototype.dispatchEntryChangedEvent_ =
  *
  * @param {string} reason Event type. One of "BEGIN", "PROGRESS", "SUCCESS",
  *     or "ERROR". TODO(hidehiko): Use enum.
- * @param {FileOperationManager.Task} task Delete task related with the event.
+ * @param {!Object} task Delete task related with the event.
  */
 FileOperationManager.EventRouter.prototype.sendDeleteEvent = function(
     reason, task) {
@@ -759,7 +759,8 @@ FileOperationManager.CopyTask.prototype.run = function(
     // Updates progress bar in limited frequency so that intervals between
     // updates have at least 200ms.
     this.updateProgressRateLimiter_.run();
-  }.bind(this);
+  };
+  updateProgress = updateProgress.bind(this);
 
   this.updateProgressRateLimiter_ = new AsyncUtil.RateLimiter(progressCallback);
 

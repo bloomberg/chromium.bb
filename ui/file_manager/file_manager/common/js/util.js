@@ -234,8 +234,17 @@ util.getKeyModifiers = function(event) {
 };
 
 /**
+ * @typedef {?{
+ *   scaleX: number,
+ *   scaleY: number,
+ *   rotate90: number
+ * }}
+ */
+util.Transform;
+
+/**
  * @param {Element} element Element to transform.
- * @param {Object} transform Transform object,
+ * @param {util.Transform} transform Transform object,
  *                           contains scaleX, scaleY and rotate90 properties.
  */
 util.applyTransform = function(element, transform) {
@@ -917,8 +926,8 @@ util.splitExtension = function(path) {
 /**
  * Returns the localized name of the entry.
  *
- * @param {(VolumeManager|VolumeManagerWrapper)} volumeManager The volume
- *     manager.
+ * @param {{getLocationInfo: (function(!Entry): EntryLocation)}}
+ *     volumeManager The volume manager.
  * @param {!Entry} entry The entry to be retrieve the name of.
  * @return {?string} The localized name.
  */

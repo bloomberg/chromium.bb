@@ -52,3 +52,22 @@ EntriesChangedEvent.prototype.kind;
 
 /** @type {Array.<!Entry>} */
 EntriesChangedEvent.prototype.entries;
+
+
+/**
+ * @param {string} url
+ * @param {function(!Entry)} successCallback
+ * @param {function(!FileError)=} opt_errorCallback
+ */
+Window.prototype.webkitResolveLocalFileSystemURL =
+    function(url, successCallback, opt_errorCallback) {};
+
+/**
+ * @type {string}
+ */
+Window.prototype.appID;
+
+/**
+ * @type {boolean}
+ */
+Window.prototype.closing;

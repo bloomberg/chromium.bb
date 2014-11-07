@@ -118,7 +118,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
 
   // Get similar windows, it means with the same initial url, eg. different
   // main windows of Files.app.
-  var similarWindows = background.getSimilarWindows(this.url_);
+  var similarWindows = window.background.getSimilarWindows(this.url_);
 
   // Restore maximized windows, to avoid hiding them to tray, which can be
   // confusing for users.
@@ -201,7 +201,7 @@ AppWindowWrapper.prototype.launch = function(appState, reopen, opt_callback) {
 
     // Save the properties.
     var appWindow = this.window_;
-    background.appWindows[this.id_] = appWindow;
+    window.background.appWindows[this.id_] = appWindow;
     var contentWindow = appWindow.contentWindow;
     contentWindow.appID = this.id_;
     contentWindow.appState = this.appState_;
@@ -248,12 +248,12 @@ AppWindowWrapper.prototype.onClosed_ = function() {
   chrome.storage.local.remove(this.id_);  // Forget the persisted state.
 
   // Remove the window from the set.
-  delete background.appWindows[this.id_];
+  delete window.background.appWindows[this.id_];
 
   // If there is no application window, reset window ID.
-  if (!Object.keys(background.appWindows).length)
+  if (!Object.keys(window.background.appWindows).length)
     nextFileManagerWindowID = 0;
-  background.tryClose();
+  window.background.tryClose();
 };
 
 /**
