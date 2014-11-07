@@ -203,12 +203,12 @@ bool AppendMirrorRequestHeaderIfPossible(
     return false;
   }
 
-  // Only set the header for Drive always, and other Google properties if
-  // new-profile-management is enabled.
+  // Only set the header for Drive and Gaia always, and other Google properties
+  // if new-profile-management is enabled.
   // Vasquette, which is integrated with most Google properties, needs the
-  // header to redirect certain user actions to Chrome native UI. Drive needs
-  // the header to tell if the current user is connected. The drive path is a
-  // temporary workaround until the more generic chrome.principals API is
+  // header to redirect certain user actions to Chrome native UI. Drive and Gaia
+  // need the header to tell if the current user is connected. The drive path is
+  // a temporary workaround until the more generic chrome.principals API is
   // available.
   const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
   GURL origin(url.GetOrigin());
@@ -224,8 +224,10 @@ bool AppendMirrorRequestHeaderIfPossible(
            url,
            google_util::ALLOW_SUBDOMAIN,
            google_util::DISALLOW_NON_STANDARD_PORTS));
-  if (!is_google_url && !IsDriveOrigin(origin))
+  if (!is_google_url && !IsDriveOrigin(origin) &&
+      !gaia::IsGaiaSignonRealm(origin)) {
     return false;
+  }
 
   std::string account_id(io_data->google_services_account_id()->GetValue());
 
@@ -236,7 +238,6 @@ bool AppendMirrorRequestHeaderIfPossible(
     profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
   }
 
-  // TODO(guohui): needs to make a new flag for enabling account consistency.
   std::string header_value(base::StringPrintf("%s=%s,%s=%s,%s=%s",
       kGaiaIdAttrName, account_id.c_str(),
       kProfileModeAttrName, base::IntToString(profile_mode_mask).c_str(),
