@@ -14,10 +14,10 @@
 #include "native_client/src/include/elf_constants.h"
 #include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/nonsfi/linux/irt_exception_handling.h"
 #include "native_client/src/nonsfi/linux/linux_sys_private.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_defines.h"
 #include "native_client/src/nonsfi/linux/linux_syscall_structs.h"
+#include "native_client/src/public/nonsfi/irt_exception_handling.h"
 #include "native_client/src/untrusted/irt/irt.h"
 
 typedef struct compat_sigaltstack {

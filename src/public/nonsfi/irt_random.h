@@ -4,8 +4,8 @@
  * found in the LICENSE file.
  */
 
-#ifndef NATIVE_CLIENT_SRC_NONSFI_IRT_IRT_RANDOM_H_
-#define NATIVE_CLIENT_SRC_NONSFI_IRT_IRT_RANDOM_H_ 1
+#ifndef NATIVE_CLIENT_SRC_PUBLIC_NONSFI_IRT_RANDOM_H_
+#define NATIVE_CLIENT_SRC_PUBLIC_NONSFI_IRT_RANDOM_H_ 1
 
 #include "native_client/src/include/nacl_base.h"
 

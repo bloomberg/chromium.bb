@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  */
 
-#include "native_client/src/nonsfi/irt/irt_random.h"
+#include "native_client/src/public/nonsfi/irt_random.h"
 #include "native_client/src/untrusted/nacl/nacl_random.h"
 
 #include <errno.h>
