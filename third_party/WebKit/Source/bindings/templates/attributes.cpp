@@ -85,7 +85,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
     {% endif %}
     {# v8SetReturnValue #}
     {% if attribute.is_keep_alive_for_gc %}
-    if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}NonTemplate(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
+    if ({{attribute.cpp_value}} && DOMDataStore::setReturnValue{{world_suffix}}(info.GetReturnValue(), {{attribute.cpp_value}}.get()))
         return;
     v8::Handle<v8::Value> wrapper = toV8({{attribute.cpp_value}}.get(), holder, info.GetIsolate());
     if (!wrapper.IsEmpty()) {

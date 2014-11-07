@@ -3265,7 +3265,7 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
     // object gets associated with the wrapper.
     RefPtrWillBeRawPtr<Element> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     ASSERT(!creationContext.IsEmpty());
     v8::Handle<v8::Context> context = creationContext->CreationContext();
@@ -3286,7 +3286,7 @@ v8::Handle<v8::Object> Element::wrapCustomElement(v8::Handle<v8::Object> creatio
 
     wrapper->SetPrototype(binding->prototype());
 
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperType, wrapper);
+    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
 }
 
 } // namespace blink

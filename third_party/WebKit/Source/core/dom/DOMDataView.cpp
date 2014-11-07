@@ -24,7 +24,7 @@ v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext,
     // object gets associated with the wrapper.
     RefPtr<DOMDataView> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();
     v8::Local<v8::Value> v8Buffer = toV8(buffer(), creationContext, isolate);
@@ -37,7 +37,7 @@ v8::Handle<v8::Object> DOMDataView::wrap(v8::Handle<v8::Object> creationContext,
 
 v8::Handle<v8::Object> DOMDataView::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperTypeInfo, wrapper);
+    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 } // namespace blink

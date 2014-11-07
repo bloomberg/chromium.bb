@@ -49,7 +49,7 @@ inline v8::Handle<v8::Value> toV8(TestInterface2* impl, v8::Handle<v8::Object> c
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -63,7 +63,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterface2* i
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = wrapCustom(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);

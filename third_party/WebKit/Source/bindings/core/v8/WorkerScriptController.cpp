@@ -185,7 +185,7 @@ bool WorkerScriptController::initializeContextIfNeeded()
         return false;
     }
 
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(m_isolate, &m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
+    V8DOMWrapper::associateObjectWithWrapper(m_isolate, &m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Handle<v8::Object> globalObject = v8::Handle<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());

@@ -55,14 +55,14 @@ v8::Handle<v8::Object> ScriptWrappableBase::wrap(v8::Handle<v8::Object> creation
     // object gets associated with the wrapper.
     ScriptWrappableBaseProtector protect(this, wrapperTypeInfo);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperTypeInfo, this, isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
     wrapperTypeInfo->installConditionallyEnabledProperties(wrapper, isolate);
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperTypeInfo, wrapper);
+    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 // ScriptWrappable
@@ -76,7 +76,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
     // object gets associated with the wrapper.
     ScriptWrappableBaseProtector protect(this, wrapperTypeInfo);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperTypeInfo, toScriptWrappableBase(), isolate);
     if (UNLIKELY(wrapper.IsEmpty()))
@@ -88,7 +88,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
 
 v8::Handle<v8::Object> ScriptWrappable::associateWithWrapper(const WrapperTypeInfo* wrapperTypeInfo, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperTypeInfo, wrapper);
+    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
 }
 
 } // namespace blink

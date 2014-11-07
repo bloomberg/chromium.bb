@@ -314,7 +314,7 @@ bool WindowProxy::installDOMWindow()
     v8::Handle<v8::Object> innerGlobalObject = toInnerGlobalObject(m_scriptState->context());
     V8DOMWrapper::setNativeInfo(innerGlobalObject, wrapperTypeInfo, window->toScriptWrappableBase());
     innerGlobalObject->SetPrototype(windowWrapper);
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(m_isolate, window, wrapperTypeInfo, windowWrapper);
+    V8DOMWrapper::associateObjectWithWrapper(m_isolate, window, wrapperTypeInfo, windowWrapper);
     wrapperTypeInfo->installConditionallyEnabledProperties(windowWrapper, m_isolate);
     return true;
 }

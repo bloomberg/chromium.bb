@@ -5735,13 +5735,13 @@ v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8
     // object gets associated with the wrapper.
     RefPtrWillBeRawPtr<Document> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
     if (frame() && frame()->script().initializeMainWorld()) {
         // initializeMainWorld may have created a wrapper for the object, retry from the start.
-        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperNonTemplate(this, isolate);
+        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapper(this, isolate);
         if (!wrapper.IsEmpty())
             return wrapper;
     }
@@ -5756,7 +5756,7 @@ v8::Handle<v8::Object> Document::wrap(v8::Handle<v8::Object> creationContext, v8
 
 v8::Handle<v8::Object> Document::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperType, wrapper);
+    V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     if (world.isMainWorld() && frame())
         frame()->script().windowProxy(world)->updateDocumentWrapper(wrapper);

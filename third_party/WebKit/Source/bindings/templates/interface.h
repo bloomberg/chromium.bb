@@ -209,7 +209,7 @@ inline v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> cr
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -223,7 +223,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* im
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = wrapCustom(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);

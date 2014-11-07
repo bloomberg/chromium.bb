@@ -182,7 +182,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappableBa
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate(), wrapperTypeInfo);
     v8SetReturnValue(callbackInfo, wrapper);
@@ -195,7 +195,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* 
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -208,7 +208,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Node* impl)
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -234,7 +234,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Scrip
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueForMainWorldNonTemplate(callbackInfo.GetReturnValue(), impl))
+    if (DOMDataStore::setReturnValueForMainWorld(callbackInfo.GetReturnValue(), impl))
         return;
     v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -282,7 +282,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappab
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueFastNonTemplate(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+    if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
     v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -295,7 +295,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, c
         v8SetReturnValueNull(callbackInfo);
         return;
     }
-    if (DOMDataStore::setReturnValueFastNonTemplate(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+    if (DOMDataStore::setReturnValueFast(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
         return;
     v8::Handle<v8::Object> wrapper = ScriptWrappable::fromNode(impl)->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate());
     v8SetReturnValue(callbackInfo, wrapper);
@@ -389,7 +389,7 @@ inline v8::Handle<v8::Value> toV8(ScriptWrappableBase* impl, v8::Handle<v8::Obje
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -400,7 +400,7 @@ inline v8::Handle<v8::Value> toV8(ScriptWrappable* impl, v8::Handle<v8::Object> 
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 
@@ -411,7 +411,7 @@ inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationCon
 {
     if (UNLIKELY(!impl))
         return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
 

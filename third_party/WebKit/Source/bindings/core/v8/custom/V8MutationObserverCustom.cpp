@@ -63,7 +63,7 @@ void V8MutationObserver::constructorCustom(const v8::FunctionCallbackInfo<v8::Va
     OwnPtr<MutationCallback> callback = V8MutationCallback::create(v8::Handle<v8::Function>::Cast(arg), wrapper, ScriptState::current(info.GetIsolate()));
     RefPtrWillBeRawPtr<MutationObserver> observer = MutationObserver::create(callback.release());
 
-    V8DOMWrapper::associateObjectWithWrapperNonTemplate(info.GetIsolate(), observer.get(), &wrapperTypeInfo, wrapper);
+    V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), observer.get(), &wrapperTypeInfo, wrapper);
     info.GetReturnValue().Set(wrapper);
 }
 

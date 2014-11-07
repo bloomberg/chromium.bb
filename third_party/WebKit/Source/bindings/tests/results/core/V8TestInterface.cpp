@@ -1781,9 +1781,9 @@ void V8TestInterface::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase*
     V8WrapperInstantiationScope scope(creationContext, isolate);
     TestInterfaceImplementation* referencedName = impl->referencedName();
     if (referencedName) {
-        if (!DOMDataStore::containsWrapperNonTemplate(referencedName, isolate))
+        if (!DOMDataStore::containsWrapper(referencedName, isolate))
             referencedName->wrap(creationContext, isolate);
-        DOMDataStore::setWrapperReferenceNonTemplate(wrapper, referencedName, isolate);
+        DOMDataStore::setWrapperReference(wrapper, referencedName, isolate);
     }
     setObjectGroup(isolate, scriptWrappableBase, wrapper);
 }

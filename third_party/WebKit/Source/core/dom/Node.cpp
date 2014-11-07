@@ -2423,7 +2423,7 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
     // object gets associated with the wrapper.
     RefPtrWillBeRawPtr<Node> protect(this);
 
-    ASSERT(!DOMDataStore::containsWrapperNonTemplate(this, isolate));
+    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
     const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
 
@@ -2437,7 +2437,7 @@ v8::Handle<v8::Object> Node::wrap(v8::Handle<v8::Object> creationContext, v8::Is
 
 v8::Handle<v8::Object> Node::associateWithWrapper(const WrapperTypeInfo* wrapperType, v8::Handle<v8::Object> wrapper, v8::Isolate* isolate)
 {
-    return V8DOMWrapper::associateObjectWithWrapperNonTemplate(isolate, this, wrapperType, wrapper);
+    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType, wrapper);
 }
 
 } // namespace blink

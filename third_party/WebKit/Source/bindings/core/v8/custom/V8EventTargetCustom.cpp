@@ -44,7 +44,7 @@ v8::Handle<v8::Value> toV8(EventTarget* impl, v8::Handle<v8::Object> creationCon
     if (impl->interfaceName() == EventTargetNames::LocalDOMWindow)
         return toV8(static_cast<LocalDOMWindow*>(impl), creationContext, isolate);
 
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperNonTemplate(impl, isolate);
+    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
     if (!wrapper.IsEmpty())
         return wrapper;
     return impl->wrap(creationContext, isolate);
