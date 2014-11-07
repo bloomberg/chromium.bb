@@ -262,6 +262,12 @@ class BuildPackagesStageTest(AllConfigsTestCase):
     """Test that self.options.tests = False works."""
     self.RunTestsWithBotId('x86-generic-paladin', options_tests=False)
 
+  def testIgnoreExtractDependenciesError(self):
+    """Igore errors when failing to extract dependencies."""
+    self.PatchObject(commands, 'ExtractDependencies',
+                     side_effect=Exception('unmet dependency'))
+    self.RunTestsWithBotId('x86-generic-paladin')
+
 
 class BuildImageStageMock(partial_mock.PartialMock):
   """Partial mock for BuildImageStage."""

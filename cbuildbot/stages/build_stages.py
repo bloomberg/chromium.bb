@@ -270,14 +270,23 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     packages = ['virtual/target-sdk']
     # Include chromite because we are running cbuildbot.
     packages += ['chromeos-base/chromite']
-    deps.update(commands.ExtractDependencies(self._build_root, packages))
+    try:
+      deps.update(commands.ExtractDependencies(self._build_root, packages))
 
-    # Include packages that will be built as part of the board.
-    deps.update(commands.ExtractDependencies(self._build_root,
-                                             packages_to_build,
-                                             board=self._current_board))
-    cros_build_lib.Info('Recording packages under test')
-    self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
+      # Include packages that will be built as part of the board.
+      deps.update(commands.ExtractDependencies(self._build_root,
+                                               packages_to_build,
+                                               board=self._current_board))
+    except Exception as e:
+      # Dependency extraction may fail due to bad ebuild changes. Let
+      # the build continues because we have logic to triage build
+      # packages failures separately. Note that we only categorize CLs
+      # on the package-level if dependencies are extracted
+      # successfully, so it is safe to ignore the exception.
+      cros_build_lib.Warning('Unable to gather packages under test: %s', e)
+    else:
+      cros_build_lib.Info('Recording packages under test')
+      self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def PerformStage(self):
     # If we have rietveld patches, always compile Chrome from source.

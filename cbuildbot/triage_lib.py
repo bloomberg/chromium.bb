@@ -225,10 +225,17 @@ class CategorizeChanges(object):
 
     # Handles workon package changes.
     if packages_under_test is not None:
-      workon_changes, irrelevant_workon_changes = cls.ClassifyWorkOnChanges(
+      try:
+        workon_changes, irrelevant_workon_changes = cls.ClassifyWorkOnChanges(
           untriaged_changes, config, build_root, manifest, packages_under_test)
-      untriaged_changes -= workon_changes
-      irrelevant_changes |= irrelevant_workon_changes
+      except Exception as e:
+        # Ignore the exception if we cannot categorize workon
+        # changes. We will conservatively assume the changes are
+        # relevant.
+        logging.warning('Unable to categorize cros workon changes: %s', e)
+      else:
+        untriaged_changes -= workon_changes
+        irrelevant_changes |= irrelevant_workon_changes
 
     return irrelevant_changes
 
