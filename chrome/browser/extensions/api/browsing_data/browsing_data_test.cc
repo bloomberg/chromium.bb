@@ -305,9 +305,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemovalProhibited) {
   CheckRemovalPermitted("{\"cookies\": true, \"downloads\": false}", true);
 }
 
-// Use-after-free, see http://crbug.com/116522
-IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest,
-                       DISABLED_RemoveBrowsingDataAll) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, RemoveBrowsingDataAll) {
   scoped_refptr<BrowsingDataRemoveFunction> function =
       new BrowsingDataRemoveFunction();
   EXPECT_EQ(NULL, RunFunctionAndReturnSingleResult(function.get(),
