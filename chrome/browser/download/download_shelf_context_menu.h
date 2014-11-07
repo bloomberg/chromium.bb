@@ -75,9 +75,10 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
 
   int GetAlwaysOpenStringId() const;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
   bool IsDownloadPdf() const;
-  bool CanOpenPdfInReader() const;
+  bool CanOpenPdfInSystemViewer() const;
 #endif
 
   // We show slightly different menus if the download is in progress vs. if the
@@ -95,7 +96,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
   content::PageNavigator* navigator_;
 
 #if defined(OS_WIN)
-  bool is_pdf_reader_up_to_date_;
+  bool is_adobe_pdf_reader_up_to_date_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenu);

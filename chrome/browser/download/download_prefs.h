@@ -73,13 +73,15 @@ class DownloadPrefs {
   // Disables auto-open based on file extension.
   void DisableAutoOpenBasedOnExtension(const base::FilePath& file_name);
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
   // Store the user preference to disk. If |should_open| is true, also disable
   // the built-in PDF plugin. If |should_open| is false, enable the PDF plugin.
-  void SetShouldOpenPdfInAdobeReader(bool should_open);
+  void SetShouldOpenPdfInSystemReader(bool should_open);
 
-  // Return whether the user prefers to open PDF downloads in Adobe Reader.
-  bool ShouldOpenPdfInAdobeReader() const;
+  // Return whether the user prefers to open PDF downloads in the platform's
+  // default reader.
+  bool ShouldOpenPdfInSystemReader() const;
 #endif
 
   void ResetAutoOpen();
@@ -103,8 +105,9 @@ class DownloadPrefs {
                    AutoOpenCompareFunctor> AutoOpenSet;
   AutoOpenSet auto_open_;
 
-#if defined(OS_WIN)
-  bool should_open_pdf_in_adobe_reader_;
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  bool should_open_pdf_in_system_reader_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DownloadPrefs);

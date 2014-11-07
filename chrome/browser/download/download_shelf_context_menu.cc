@@ -50,9 +50,9 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(
   download_item_->AddObserver(this);
 
 #if defined(OS_WIN)
-  is_pdf_reader_up_to_date_ = false;
+  is_adobe_pdf_reader_up_to_date_ = false;
   if (IsDownloadPdf() && IsAdobeReaderDefaultPDFViewer()) {
-    is_pdf_reader_up_to_date_ =
+    is_adobe_pdf_reader_up_to_date_ =
         DownloadTargetDeterminer::IsAdobeReaderUpToDate();
   }
 #endif  // defined(OS_WIN)
@@ -122,11 +122,12 @@ bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
       return download_item_->GetOpenWhenComplete() ||
           download_crx_util::IsExtensionDownload(*download_item_);
     case ALWAYS_OPEN_TYPE:
-#if defined(OS_WIN)
-      if (CanOpenPdfInReader()) {
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+      if (CanOpenPdfInSystemViewer()) {
         DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
             download_item_->GetBrowserContext());
-        return prefs->ShouldOpenPdfInAdobeReader();
+        return prefs->ShouldOpenPdfInSystemReader();
       }
 #endif
       return download_item_->ShouldOpenFileBasedOnExtension();
@@ -161,9 +162,10 @@ void DownloadShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
       bool is_checked = IsCommandIdChecked(ALWAYS_OPEN_TYPE);
       DownloadPrefs* prefs = DownloadPrefs::FromBrowserContext(
           download_item_->GetBrowserContext());
-#if defined(OS_WIN)
-      if (CanOpenPdfInReader()) {
-        prefs->SetShouldOpenPdfInAdobeReader(!is_checked);
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+      if (CanOpenPdfInSystemViewer()) {
+        prefs->SetShouldOpenPdfInSystemReader(!is_checked);
         DownloadItemModel(download_item_).SetShouldPreferOpeningInBrowser(
             is_checked);
         break;
@@ -386,19 +388,28 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMaliciousMenuModel() {
 
 int DownloadShelfContextMenu::GetAlwaysOpenStringId() const {
 #if defined(OS_WIN)
-  if (CanOpenPdfInReader())
+  if (CanOpenPdfInSystemViewer())
     return IDS_DOWNLOAD_MENU_ALWAYS_OPEN_PDF_IN_READER;
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  if (CanOpenPdfInSystemViewer())
+    return IDS_DOWNLOAD_MENU_PLATFORM_OPEN_ALWAYS;
 #endif
   return IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE;
 }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 bool DownloadShelfContextMenu::IsDownloadPdf() const {
   base::FilePath path = download_item_->GetTargetFilePath();
   return path.MatchesExtension(FILE_PATH_LITERAL(".pdf"));
 }
-
-bool DownloadShelfContextMenu::CanOpenPdfInReader() const {
-  return (is_pdf_reader_up_to_date_ && IsDownloadPdf());
-}
 #endif
+
+bool DownloadShelfContextMenu::CanOpenPdfInSystemViewer() const {
+#if defined(OS_WIN)
+  return IsDownloadPdf() &&
+         (IsAdobeReaderDefaultPDFViewer() ? is_adobe_pdf_reader_up_to_date_ :
+                                            true);
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
+  return IsDownloadPdf();
+#endif
+}

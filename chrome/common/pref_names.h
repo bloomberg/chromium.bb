@@ -486,8 +486,9 @@ extern const char kMemoryCacheSize[];
 extern const char kDownloadDefaultDirectory[];
 extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadDirUpgraded[];
-#if defined(OS_WIN)
-extern const char kOpenPdfDownloadInAdobeReader[];
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+extern const char kOpenPdfDownloadInSystemReader[];
 #endif
 
 extern const char kSaveFileDefaultDirectory[];

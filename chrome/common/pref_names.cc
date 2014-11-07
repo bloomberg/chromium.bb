@@ -1425,10 +1425,10 @@ const char kDownloadDefaultDirectory[] = "download.default_directory";
 // upgrade a unsafe location to a safe location.
 const char kDownloadDirUpgraded[] = "download.directory_upgrade";
 
-#if defined(OS_WIN)
-// Whether downloaded PDFs should be opened in Adobe Acrobat Reader.
-const char kOpenPdfDownloadInAdobeReader[] =
-    "download.open_pdf_in_adobe_reader";
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+const char kOpenPdfDownloadInSystemReader[] =
+    "download.open_pdf_in_system_reader";
 #endif
 
 // String which specifies where to save html files to by default.

@@ -719,11 +719,10 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
 bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
     const base::FilePath& path) {
-  // On Windows, PDFs should open in Acrobat Reader if the user chooses.
-#if defined(OS_WIN)
-  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf")) &&
-      DownloadTargetDeterminer::IsAdobeReaderUpToDate()) {
-    return !download_prefs_->ShouldOpenPdfInAdobeReader();
+#if defined(OS_WIN) || defined(OS_LINUX) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
+  if (path.MatchesExtension(FILE_PATH_LITERAL(".pdf"))) {
+    return !download_prefs_->ShouldOpenPdfInSystemReader();
   }
 #endif
 
