@@ -19,6 +19,7 @@
 declare_args() {
   use_newlib = true
   use_glibc = false
+  use_clang = false
   use_pnacl = false
 
   use_nacl_x86 = (cpu_arch == "x86")

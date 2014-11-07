@@ -27,6 +27,11 @@ template("base_nacl_toolchain") {
     ar = invoker.ar
     ld = invoker.ld
 
+    if (defined(invoker.asm_flags)) {
+      asm_flags = invoker.asm_flags + " "
+    } else {
+      asm_flags = ""
+    }
     executable_extension = invoker.executable_extension
 
     # Bring these into our scope for string interpolation with default values.
@@ -81,7 +86,7 @@ template("base_nacl_toolchain") {
     tool("asm") {
       # For GCC we can just use the C compiler to compile assembly.
       depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
+      command = "$cc -MMD -MF $depfile ${asm_flags}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
       depsformat = "gcc"
       description = "ASM ($target_name) {{output}}"
       outputs = [
@@ -211,6 +216,9 @@ template("nacl_toolchain") {
          "nacl_toolchain() must specify a \"package\" value")
 
   toolchain_os = "nacl"
+  if (defined(invoker.asm_flags)) {
+    asm_flags = invoker.asm_flags
+  }
   if (defined(invoker.executable_extension)) {
     executable_extension = invoker.executable_extension
   } else {

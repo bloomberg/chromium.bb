@@ -52,6 +52,12 @@ group("untrusted") {
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x86)"
       ]
     }
+    if (use_clang) {
+      deps += [
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)",
+        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)"
+      ]
+    }
   }
   if (use_nacl_x64) {
     if (use_newlib) {
@@ -63,6 +69,12 @@ group("untrusted") {
     if (use_glibc) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x64)"
+      ]
+    }
+    if (use_clang) {
+      deps += [
+        "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)",
+        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)"
       ]
     }
   }

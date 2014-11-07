@@ -367,4 +367,11 @@ if (current_toolchain == "//native_client/build/toolchain/nacl:toolchain_prep") 
     package_arch = "x86"
     package_libc = "glibc"
   }
+
+  prep_toolchain("prep_pnacl_newlib") {
+    package = "pnacl_newlib"
+    toolchain_prefix = "clang_newlib"
+    package_arch = "x86"
+    package_libc = "newlib"
+  }
 }

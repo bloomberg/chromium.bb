@@ -9,7 +9,7 @@ import("//native_client/build/toolchain/nacl_toolchain.gni")
 nacl_toolchain("newlib_arm") {
   package = "nacl_arm_newlib"
   toolchain_cpu_arch = "arm"
-  toolprefix = "toolchain/${os}_x86/nacl_arm_newlib/bin/arm-nacl-"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/arm-nacl-"
 
   cc = "gcc"
   cxx = "g++"
@@ -20,7 +20,7 @@ nacl_toolchain("newlib_arm") {
 nacl_toolchain("newlib_x86") {
   package = "nacl_x86_newlib"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/i686-nacl-"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
 
   cc = "gcc"
   cxx = "g++"
@@ -31,7 +31,7 @@ nacl_toolchain("newlib_x86") {
 nacl_toolchain("newlib_x64") {
   package = "nacl_x86_newlib"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/nacl_x86_newlib/bin/x86_64-nacl-"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
 
   cc = "gcc"
   cxx = "g++"
@@ -42,7 +42,7 @@ nacl_toolchain("newlib_x64") {
 nacl_toolchain("glibc_x86") {
   package = "nacl_x86_glibc"
   toolchain_cpu_arch = "x86"
-  toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/i686-nacl-"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
 
   cc = "gcc"
   cxx = "g++"
@@ -53,10 +53,36 @@ nacl_toolchain("glibc_x86") {
 nacl_toolchain("glibc_x64") {
   package = "nacl_x86_glibc"
   toolchain_cpu_arch = "x64"
-  toolprefix = "toolchain/${os}_x86/nacl_x86_glibc/bin/x86_64-nacl-"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
 
   cc = "gcc"
   cxx = "g++"
+  ar = "ar"
+  ld = cxx
+}
+
+nacl_toolchain("clang_newlib_x86") {
+  package = "pnacl_newlib"
+  toolchain_cpu_arch = "x86"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
+
+  asm_flags = "-no-integrated-as"
+
+  cc = "clang"
+  cxx = "clang++"
+  ar = "ar"
+  ld = cxx
+}
+
+nacl_toolchain("clang_newlib_x64") {
+  package = "pnacl_newlib"
+  toolchain_cpu_arch = "x64"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
+
+  asm_flags = "-no-integrated-as"
+
+  cc = "clang"
+  cxx = "clang++"
   ar = "ar"
   ld = cxx
 }
