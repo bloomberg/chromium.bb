@@ -228,7 +228,7 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
              v8::String::NewFromUtf8(
                  isolate, SkDrawCommand::GetCommandString(cmd_type)));
 
-    SkTDArray<SkString*>* info = canvas.getCommandInfo(i);
+    const SkTDArray<SkString*>* info = canvas.getCommandInfo(i);
     DCHECK(info);
 
     v8::Local<v8::Array> v8_info = v8::Array::New(isolate, info->count());

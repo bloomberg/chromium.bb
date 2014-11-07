@@ -15,7 +15,7 @@ namespace {
 testing::AssertionResult HasInfoField(SkDebugCanvas& canvas, int index,
                                       const char* field) {
 
-  SkTDArray<SkString*>* info = canvas.getCommandInfo(index);
+  const SkTDArray<SkString*>* info = canvas.getCommandInfo(index);
   if (info == NULL)
     return testing::AssertionFailure() << " command info not found for index "
                                        << index;
