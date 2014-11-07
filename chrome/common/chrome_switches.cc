@@ -344,9 +344,6 @@ const char kDisableSearchButtonInOmnibox[]  =
 // Disables using bubbles for session restore request.
 const char kDisableSessionCrashedBubble[] = "disable-session-crashed-bubble";
 
-// Disable SPDY/3.1. This is a temporary testing flag.
-const char kDisableSpdy31[]                 = "disable-spdy31";
-
 // Disables the suggestions service.
 const char kDisableSuggestionsService[]     = "disable-suggestions-service";
 

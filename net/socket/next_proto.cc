@@ -31,26 +31,10 @@ NextProtoVector NextProtosWithSpdyAndQuic(bool spdy_enabled,
   return next_protos;
 }
 
-NextProtoVector NextProtosSpdy3() {
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  return next_protos;
-}
-
 NextProtoVector NextProtosSpdy31() {
   NextProtoVector next_protos;
   next_protos.push_back(kProtoHTTP11);
   next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoSPDY31);
-  return next_protos;
-}
-
-NextProtoVector NextProtosSpdy31WithSpdy2() {
-  NextProtoVector next_protos;
-  next_protos.push_back(kProtoHTTP11);
-  next_protos.push_back(kProtoQUIC1SPDY3);
-  next_protos.push_back(kProtoDeprecatedSPDY2);
   next_protos.push_back(kProtoSPDY31);
   return next_protos;
 }

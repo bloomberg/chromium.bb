@@ -214,7 +214,7 @@ class QuicNetworkTransactionTest
 
     if (use_next_protos) {
       params_.use_alternate_protocols = true;
-      params_.next_protos = NextProtosSpdy3();
+      params_.next_protos = NextProtosWithSpdyAndQuic(true, true);
     }
 
     session_ = new HttpNetworkSession(params_);

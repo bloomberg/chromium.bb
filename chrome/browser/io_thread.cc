@@ -800,9 +800,6 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     } else if (command_line.HasSwitch(switches::kEnableSpdy4)) {
       globals_->next_protos = net::NextProtosSpdy4Http2();
       globals_->use_alternate_protocols.set(true);
-    } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
-      globals_->next_protos = net::NextProtosSpdy3();
-      globals_->use_alternate_protocols.set(true);
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       globals_->next_protos = net::NextProtosHttpOnly();
       globals_->use_alternate_protocols.set(false);
