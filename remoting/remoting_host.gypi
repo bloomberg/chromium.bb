@@ -90,6 +90,8 @@
             'host/client_session.h',
             'host/client_session_control.h',
             'host/clipboard.h',
+            'host/clipboard_aura.cc',
+            'host/clipboard_aura.h',
             'host/clipboard_mac.mm',
             'host/clipboard_win.cc',
             'host/clipboard_x11.cc',
@@ -337,10 +339,11 @@
                 '../third_party/skia/include/utils',
               ],
               'sources!' : [
-                'host/policy_hack/policy_watcher_linux.cc',
+                'host/clipboard_x11.cc',
                 'host/continue_window_linux.cc',
                 'host/disconnect_window.cc',
                 'host/disconnect_window_linux.cc',
+                'host/policy_hack/policy_watcher_linux.cc',
                 'host/remoting_me2me_host.cc',
               ]
             }, {  # chromeos==0
@@ -349,6 +352,8 @@
                  'host/chromeos/aura_desktop_capturer.h',
                  'host/chromeos/message_box.cc',
                  'host/chromeos/message_box.h',
+                 'host/clipboard_aura.cc',
+                 'host/clipboard_aura.h',
                  'host/continue_window_chromeos.cc',
                  'host/disconnect_window_chromeos.cc',
                  'host/policy_hack/policy_watcher_chromeos.cc',
