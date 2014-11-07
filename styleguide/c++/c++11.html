@@ -105,6 +105,16 @@ What's the point in defaulting functions in C++11?</a></td>
 </tr>
 
 <tr>
+<td>Delegated Constructors</td>
+<td><code>Class() : Class(0) {}</code><br />
+<code>Class(<i>type</i> <i>var</i>) : Class(<i>var</i>, 0)</code></td>
+<td>Allow overloaded constructors to use common initialization code</td>
+<td><a href="https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/introduction_to_the_c_11_feature_delegating_constructors?lang=en">
+Introduction to the C++11 feature: delegating constructors</a></td>
+<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/0zVA8Ctx3Xo">Discussion thread</a></td>
+</tr>
+
+<tr>
 <td>Enumerated Type Classes and Enum Bases</td>
 <td><code>enum class <i>classname</i></code><br>
     <code>enum class <i>classname</i> : <i>base-type</i></code><br>
@@ -400,16 +410,6 @@ C++11 generalized attributes</a></td>
 <td><a href="http://stackoverflow.com/questions/2447458/default-template-arguments-for-function-templates">
 Default Template Arguments for Function Templates</a></td>
 <td></td>
-</tr>
-
-<tr>
-<td>Delegated Constructors</td>
-<td><code>Class() : Class(0) {}</code><br />
-<code>Class(<i>type</i> <i>var</i>) : Class(<i>var</i>, 0)</code></td>
-<td>Allow overloaded constructors to use common initialization code</td>
-<td><a href="https://www.ibm.com/developerworks/community/blogs/5894415f-be62-4bc0-81c5-3956e82276f3/entry/introduction_to_the_c_11_feature_delegating_constructors?lang=en">
-Introduction to the C++11 feature: delegating constructors</a></td>
-<td><a href="https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/0zVA8Ctx3Xo">Discussion thread</a></td>
 </tr>
 
 <tr>

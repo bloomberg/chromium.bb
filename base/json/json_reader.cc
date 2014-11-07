@@ -31,7 +31,7 @@ const char JSONReader::kUnquotedDictionaryKey[] =
     "Dictionary keys must be quoted.";
 
 JSONReader::JSONReader()
-    : parser_(new internal::JSONParser(JSON_PARSE_RFC)) {
+    : JSONReader(JSON_PARSE_RFC) {
 }
 
 JSONReader::JSONReader(int options)
