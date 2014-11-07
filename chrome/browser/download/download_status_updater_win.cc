@@ -28,7 +28,7 @@ void UpdateTaskbarProgressBar(int download_count,
   HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result)) {
-    VLOG(1) << "Failed creating a TaskbarList object: " << result;
+    DVLOG(1) << "Failed creating a TaskbarList object: " << result;
     return;
   }
 

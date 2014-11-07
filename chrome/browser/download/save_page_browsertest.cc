@@ -148,28 +148,28 @@ bool DownloadStoredProperly(
   // false doesn't necessarily mean that the test has failed or will fail, it
   // might just mean that the test hasn't passed yet.
   if (info.target_path != expected_path) {
-    VLOG(20) << __FUNCTION__ << " " << info.target_path.value()
-             << " != " << expected_path.value();
+    DVLOG(20) << __FUNCTION__ << " " << info.target_path.value()
+              << " != " << expected_path.value();
     return false;
   }
   if (info.url_chain.size() != 1u) {
-    VLOG(20) << __FUNCTION__ << " " << info.url_chain.size()
-             << " != 1";
+    DVLOG(20) << __FUNCTION__ << " " << info.url_chain.size()
+              << " != 1";
     return false;
   }
   if (info.url_chain[0] != expected_url) {
-    VLOG(20) << __FUNCTION__ << " " << info.url_chain[0].spec()
-             << " != " << expected_url.spec();
+    DVLOG(20) << __FUNCTION__ << " " << info.url_chain[0].spec()
+              << " != " << expected_url.spec();
     return false;
   }
   if ((num_files >= 0) && (info.received_bytes != num_files)) {
-    VLOG(20) << __FUNCTION__ << " " << num_files
-             << " != " << info.received_bytes;
+    DVLOG(20) << __FUNCTION__ << " " << num_files
+              << " != " << info.received_bytes;
     return false;
   }
   if (info.state != expected_state) {
-    VLOG(20) << __FUNCTION__ << " " << info.state
-             << " != " << expected_state;
+    DVLOG(20) << __FUNCTION__ << " " << info.state
+              << " != " << expected_state;
     return false;
   }
   return true;

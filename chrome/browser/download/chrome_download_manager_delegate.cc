@@ -301,8 +301,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     // Begin the safe browsing download protection check.
     DownloadProtectionService* service = GetDownloadProtectionService();
     if (service) {
-      VLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
-              << item->DebugString(false);
+      DVLOG(2) << __FUNCTION__ << "() Start SB download check for download = "
+               << item->DebugString(false);
       state = new SafeBrowsingState();
       state->set_callback(internal_complete_callback);
       item->SetUserData(&kSafeBrowsingUserDataKey, state);
@@ -605,8 +605,8 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
   if (service) {
     bool is_content_check_supported =
         service->IsSupportedDownload(*download, suggested_path);
-    VLOG(2) << __FUNCTION__ << "() Start SB URL check for download = "
-            << download->DebugString(false);
+    DVLOG(2) << __FUNCTION__ << "() Start SB URL check for download = "
+             << download->DebugString(false);
     service->CheckDownloadUrl(*download,
                               base::Bind(&CheckDownloadUrlDone,
                                          callback,
@@ -635,8 +635,8 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
   if (!item || (item->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
-  VLOG(2) << __FUNCTION__ << "() download = " << item->DebugString(false)
-          << " verdict = " << result;
+  DVLOG(2) << __FUNCTION__ << "() download = " << item->DebugString(false)
+           << " verdict = " << result;
   // We only mark the content as being dangerous if the download's safety state
   // has not been set to DANGEROUS yet.  We don't want to show two warnings.
   if (item->GetDangerType() == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
