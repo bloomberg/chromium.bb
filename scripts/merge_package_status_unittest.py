@@ -8,7 +8,6 @@
 from __future__ import print_function
 
 import exceptions
-import mox
 import os
 import sys
 import tempfile
@@ -226,7 +225,8 @@ class MergeTest(cros_test_lib.OutputTestCase, cros_test_lib.TempDirTestCase):
     for ix, row_out in enumerate(final_rows):
       self.assertRowsEqual(row_out, self._table[ix])
 
-class MainTest(cros_test_lib.MoxOutputTestCase):
+
+class MainTest(cros_test_lib.MockOutputTestCase):
   """Test argument handling at the main method level."""
 
   def testHelp(self):
@@ -273,14 +273,13 @@ class MainTest(cros_test_lib.MoxOutputTestCase):
 
     Expected: LoadAndMergeTables, WriteTable.
     """
-    self.mox.StubOutWithMock(mps, 'LoadAndMergeTables')
-    self.mox.StubOutWithMock(mps, 'WriteTable')
-    mps.LoadAndMergeTables(mox.IgnoreArg()).AndReturn('csv_table')
-    mps.WriteTable(mox.Regex(r'csv_table'), 'any-out')
-    self.mox.ReplayAll()
+    self.PatchObject(mps, 'LoadAndMergeTables', return_value='csv_table')
+    m = self.PatchObject(mps, 'WriteTable')
 
     mps.main(['--out=any-out', 'any-package'])
-    self.mox.VerifyAll()
+
+    m.assert_called_with('csv_table', 'any-out')
+
 
 if __name__ == '__main__':
   cros_test_lib.main()

@@ -691,7 +691,7 @@ class TestTimedCommand(RunCommandTestCase):
     cros_build_lib.TimedCommand(cros_build_lib.RunCommand, 'fun',
                                 timed_log_msg='msg! %s', shell=True)
     self.rc.assertCommandCalled('fun', shell=True)
-    m.assert_called()
+    self.assertEqual(m.call_count, 2)
 
 
 class TestListFiles(cros_test_lib.TempDirTestCase):

@@ -21,8 +21,14 @@ from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
 from chromite.scripts import cros_mark_as_stable
 
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
-# pylint: disable=W0212,R0904
+
+# pylint: disable=W0212
+
+
 class NonClassTests(cros_test_lib.MoxTestCase):
   """Test the flow for pushing a change."""
   def setUp(self):
@@ -107,46 +113,41 @@ class CleanStalePackagesTest(cros_build_lib_unittest.RunCommandTestCase):
                         (), ['no/pkg'])
 
 
-class GitBranchTest(cros_test_lib.MoxTestCase):
+class GitBranchTest(cros_test_lib.MockTestCase):
   """Tests for cros_mark_as_stable.GitBranch."""
 
   def setUp(self):
     # Always stub RunCommmand out as we use it in every method.
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self._branch = self.mox.CreateMock(cros_mark_as_stable.GitBranch)
+    self.rc_mock = self.PatchObject(cros_build_lib, 'RunCommand')
+
     self._branch_name = 'test_branch'
-    self._branch.branch_name = self._branch_name
     self._target_manifest_branch = 'cros/test'
-    self._branch.tracking_branch = self._target_manifest_branch
-    self._branch.cwd = '.'
+    self._branch = cros_mark_as_stable.GitBranch(
+        branch_name=self._branch_name,
+        tracking_branch=self._target_manifest_branch,
+        cwd='.')
 
   def testCheckoutCreate(self):
-    # Test init with no previous branch existing.
-    self._branch.Exists(self._branch_name).AndReturn(False)
-    cros_build_lib.RunCommand(['repo', 'start', self._branch_name, '.'],
-                              print_cmd=False, cwd='.', capture_output=True)
-    self.mox.ReplayAll()
+    """Test init with no previous branch existing."""
+    self.PatchObject(self._branch, 'Exists', return_value=False)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.mox.VerifyAll()
+    self.rc_mock.assert_call(mock.call(
+        ['repo', 'start', self._branch_name, '.'],
+        print_cmd=False, cwd='.', capture_output=True))
 
   def testCheckoutNoCreate(self):
-    # Test init with previous branch existing.
-    self._branch.Exists(self._branch_name).AndReturn(True)
-    cros_build_lib.RunCommand(['git', 'checkout', '-f', self._branch_name],
-                              print_cmd=False, cwd='.', capture_output=True)
-    self.mox.ReplayAll()
+    """Test init with previous branch existing."""
+    self.PatchObject(self._branch, 'Exists', return_value=True)
     cros_mark_as_stable.GitBranch.Checkout(self._branch)
-    self.mox.VerifyAll()
+    self.rc_mock.assert_call(mock.call(
+        ['git', 'checkout', '-f', self._branch_name],
+        print_cmd=False, cwd='.', capture_output=True))
 
   def testExists(self):
-    branch = cros_mark_as_stable.GitBranch(self._branch_name,
-                                           self._target_manifest_branch, '.')
-    # Test if branch exists that is created
+    """Test if branch exists that is created."""
     result = cros_build_lib.CommandResult(output=self._branch_name + '\n')
-    git.RunGit('.', ['branch']).AndReturn(result)
-    self.mox.ReplayAll()
-    self.assertTrue(branch.Exists())
-    self.mox.VerifyAll()
+    self.PatchObject(git, 'RunGit', return_value=result)
+    self.assertTrue(self._branch.Exists())
 
 
 if __name__ == '__main__':

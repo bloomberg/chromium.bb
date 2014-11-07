@@ -7,28 +7,22 @@
 
 from __future__ import print_function
 
-import functools
 import os
 import sys
 
 import constants
 sys.path.insert(0, constants.SOURCE_ROOT)
 from chromite.cbuildbot import repository
-from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 
-# pylint: disable=W0212,R0904,E1101,W0613
-class RepositoryTests(cros_test_lib.MoxTestCase):
-  """Test cases related to repository checkout methods."""
 
-  def RunCommand_Mock(self, result, *args, **kwargs):
-    output = self.mox.CreateMockAnything()
-    output.output = result
-    return output
+# pylint: disable=W0212,R0904,E1101,W0613
+class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
+  """Test cases related to repository checkout methods."""
 
   def testExternalRepoCheckout(self):
     """Test we detect external checkouts properly."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     tests = [
         'https://chromium.googlesource.com/chromiumos/manifest.git',
         'test@abcdef.bla.com:39291/bla/manifest.git',
@@ -37,23 +31,22 @@ class RepositoryTests(cros_test_lib.MoxTestCase):
      ]
 
     for test in tests:
-      cros_build_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
+      self.rc.SetDefaultCmdResult(output=test)
       self.assertFalse(repository.IsInternalRepoCheckout('.'))
 
   def testInternalRepoCheckout(self):
     """Test we detect internal checkouts properly."""
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     tests = [
         'https://chrome-internal.googlesource.com/chromeos/manifest-internal',
         'test@abcdef.bla.com:39291/bla/manifest-internal.git',
     ]
 
     for test in tests:
-      cros_build_lib.RunCommand = functools.partial(self.RunCommand_Mock, test)
+      self.rc.SetDefaultCmdResult(output=test)
       self.assertTrue(repository.IsInternalRepoCheckout('.'))
 
 
-class RepoInitTests(cros_test_lib.MoxTempDirTestCase):
+class RepoInitTests(cros_test_lib.TempDirTestCase):
   """Test cases related to repository initialization."""
 
   def _Initialize(self, branch='master'):

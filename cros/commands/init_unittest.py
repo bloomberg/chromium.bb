@@ -75,7 +75,7 @@ class CommandTest(cros_test_lib.MockTestCase):
 
     commands._ImportCommands()
 
-    load_mock.assert_called(fake_module, *module_tuple)
+    load_mock.assert_called_with(fake_module, *module_tuple)
 
 
 if __name__ == '__main__':
