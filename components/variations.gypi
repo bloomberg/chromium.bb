@@ -74,6 +74,9 @@
         "components.gyp:metrics",
         'variations',
       ],
+      'export_dependent_settings': [
+        "components.gyp:metrics",
+      ],
       'sources': [
         'variations/net/variations_http_header_provider.cc',
         'variations/net/variations_http_header_provider.h',
