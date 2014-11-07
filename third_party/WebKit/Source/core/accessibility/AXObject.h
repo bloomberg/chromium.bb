@@ -353,6 +353,7 @@ public:
     virtual bool isNativeTextControl() const { return false; } // input or textarea
     virtual bool isNonNativeTextControl() const { return false; } // contenteditable or role=textbox
     virtual bool isPasswordField() const { return false; }
+    virtual bool isPasswordFieldAndShouldHideValue() const;
     virtual bool isProgressIndicator() const { return false; }
     bool isRadioButton() const { return roleValue() == RadioButtonRole; }
     bool isScrollbar() const { return roleValue() == ScrollBarRole; }

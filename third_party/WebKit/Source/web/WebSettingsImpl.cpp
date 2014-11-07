@@ -176,6 +176,11 @@ void WebSettingsImpl::setAccessibilityEnabled(bool enabled)
     m_settings->setAccessibilityEnabled(enabled);
 }
 
+void WebSettingsImpl::setAccessibilityPasswordValuesEnabled(bool enabled)
+{
+    m_settings->setAccessibilityPasswordValuesEnabled(enabled);
+}
+
 void WebSettingsImpl::setInlineTextBoxAccessibilityEnabled(bool enabled)
 {
     m_settings->setInlineTextBoxAccessibilityEnabled(enabled);

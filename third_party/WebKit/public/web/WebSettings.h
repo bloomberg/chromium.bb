@@ -100,6 +100,7 @@ public:
     // FrameLoaderClient set to the frame may override the value set by this
     // method.
     virtual void setAccessibilityEnabled(bool) = 0;
+    virtual void setAccessibilityPasswordValuesEnabled(bool) = 0;
     virtual void setAllowDisplayOfInsecureContent(bool) = 0;
     virtual void setAllowFileAccessFromFileURLs(bool) = 0;
     virtual void setAllowCustomScrollbarInMainFrame(bool) = 0;

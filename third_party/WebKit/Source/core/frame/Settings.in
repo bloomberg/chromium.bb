@@ -297,5 +297,11 @@ availableHoverTypes type=int, initial=HoverTypeNone, invalidate=MediaQuery
 primaryPointerType type=PointerType, initial=PointerTypeNone, invalidate=MediaQuery
 primaryHoverType type=HoverType, initial=HoverTypeNone, invalidate=MediaQuery
 
+# Whether accessibility support is enabled at all.
 accessibilityEnabled initial=false, invalidate=AccessibilityState
+
+# If true, the value in password fields is exposed to assistive technologies.
+accessibilityPasswordValuesEnabled initial=false
+
+# If true, static text nodes expose inline text box children.
 inlineTextBoxAccessibilityEnabled initial=false

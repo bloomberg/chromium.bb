@@ -55,6 +55,7 @@ public:
     virtual void setAcceleratedCompositingEnabled(bool) override;
     virtual void setPreferCompositingToLCDTextEnabled(bool) override;
     virtual void setAccessibilityEnabled(bool) override;
+    virtual void setAccessibilityPasswordValuesEnabled(bool) override;
     virtual void setAllowDisplayOfInsecureContent(bool) override;
     virtual void setAllowFileAccessFromFileURLs(bool) override;
     virtual void setAllowCustomScrollbarInMainFrame(bool) override;

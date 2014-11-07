@@ -34,6 +34,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
@@ -214,6 +215,15 @@ bool AXObject::isMenuRelated() const
     default:
         return false;
     }
+}
+
+bool AXObject::isPasswordFieldAndShouldHideValue() const
+{
+    Settings* settings = document()->settings();
+    if (!settings || settings->accessibilityPasswordValuesEnabled())
+        return false;
+
+    return isPasswordField();
 }
 
 bool AXObject::isTextControl() const

@@ -846,7 +846,7 @@ AccessibilityOrientation AXRenderObject::orientation() const
 
 String AXRenderObject::text() const
 {
-    if (isPasswordField())
+    if (isPasswordFieldAndShouldHideValue())
         return String();
 
     return AXNodeObject::text();
@@ -857,7 +857,7 @@ int AXRenderObject::textLength() const
     if (!isTextControl())
         return -1;
 
-    if (isPasswordField())
+    if (isPasswordFieldAndShouldHideValue())
         return -1; // need to return something distinct from 0
 
     return text().length();
@@ -916,7 +916,7 @@ String AXRenderObject::stringValue() const
     if (!m_renderer)
         return String();
 
-    if (isPasswordField())
+    if (isPasswordFieldAndShouldHideValue())
         return String();
 
     RenderBoxModelObject* cssBox = renderBoxModelObject();
@@ -1645,7 +1645,7 @@ AXObject::PlainTextRange AXRenderObject::selectedTextRange() const
     if (!isTextControl())
         return PlainTextRange();
 
-    if (isPasswordField())
+    if (isPasswordFieldAndShouldHideValue())
         return PlainTextRange();
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
