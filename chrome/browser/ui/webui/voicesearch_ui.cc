@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/voicesearch_ui.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "base/path_service.h"
@@ -67,19 +69,24 @@ content::WebUIDataSource* CreateVoiceSearchUiHtmlSource() {
 
 // Helper functions for collecting a list of key-value pairs that will
 // be displayed.
-void AddPair(base::ListValue* list,
-             const base::string16& key,
-             const base::string16& value) {
+void AddPair16(base::ListValue* list,
+               const base::string16& key,
+               const base::string16& value) {
   scoped_ptr<base::DictionaryValue> results(new base::DictionaryValue());
   results->SetString("key", key);
   results->SetString("value", value);
   list->Append(results.release());
 }
 
+void AddPair(base::ListValue* list,
+             const base::StringPiece& key,
+             const base::StringPiece& value) {
+  AddPair16(list, UTF8ToUTF16(key), UTF8ToUTF16(value));
+}
+
 // Generate an empty data-pair which acts as a line break.
 void AddLineBreak(base::ListValue* list) {
-  AddPair(list, ASCIIToUTF16(base::StringPiece()),
-          ASCIIToUTF16(base::StringPiece()));
+  AddPair(list, "", "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,10 +152,9 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     // Obtain the Chrome version info.
     chrome::VersionInfo version_info;
     AddPair(list,
-            l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
-            ASCIIToUTF16(
-                version_info.Version() + " (" +
-                chrome::VersionInfo::GetVersionStringModifier() + ")"));
+            l10n_util::GetStringUTF8(IDS_PRODUCT_NAME),
+            version_info.Version() + " (" +
+            chrome::VersionInfo::GetVersionStringModifier() + ")");
 
     // OS version information.
     std::string os_label = version_info.OSType();
@@ -182,9 +188,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     if (os->architecture() == base::win::OSInfo::X64_ARCHITECTURE)
       os_label += " 64 bit";
 #endif
-    AddPair(list,
-            l10n_util::GetStringUTF16(IDS_ABOUT_VERSION_OS),
-            ASCIIToUTF16(os_label));
+    AddPair(list, l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_OS), os_label);
 
     AddLineBreak(list);
   }
@@ -210,17 +214,16 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     }
 #endif
 
-    AddPair(list, ASCIIToUTF16("NaCl Enabled"), ASCIIToUTF16(nacl_enabled));
+    AddPair(list, "NaCl Enabled", nacl_enabled);
 
-    AddPair(list, ASCIIToUTF16("Microphone"),
-            ASCIIToUTF16(
-                HotwordServiceFactory::IsMicrophoneAvailable() ? "Yes" : "No"));
+    AddPair(list,
+            "Microphone",
+            HotwordServiceFactory::IsMicrophoneAvailable() ? "Yes" : "No");
 
     std::string audio_capture = "No";
     if (profile_->GetPrefs()->GetBoolean(prefs::kAudioCaptureAllowed))
       audio_capture = "Yes";
-    AddPair(list, ASCIIToUTF16("Audio Capture Allowed"),
-            ASCIIToUTF16(audio_capture));
+    AddPair(list, "Audio Capture Allowed", audio_capture);
 
     AddLineBreak(list);
   }
@@ -234,11 +237,11 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
 #else
         g_browser_process->GetApplicationLocale();
 #endif
-    AddPair(list, ASCIIToUTF16("Current Language"), ASCIIToUTF16(locale));
+    AddPair(list, "Current Language", locale);
 
-    AddPair(list, ASCIIToUTF16("Hotword Previous Language"),
-            ASCIIToUTF16(profile_->GetPrefs()->GetString(
-                prefs::kHotwordPreviousLanguage)));
+    AddPair(list,
+            "Hotword Previous Language",
+            profile_->GetPrefs()->GetString(prefs::kHotwordPreviousLanguage));
 
     AddLineBreak(list);
   }
@@ -248,38 +251,33 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
     std::string search_enabled = "No";
     if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordSearchEnabled))
       search_enabled = "Yes";
-    AddPair(list, ASCIIToUTF16("Hotword Search Enabled"),
-            ASCIIToUTF16(search_enabled));
+    AddPair(list, "Hotword Search Enabled", search_enabled);
 
     std::string always_on_search_enabled = "No";
     if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAlwaysOnSearchEnabled))
       always_on_search_enabled = "Yes";
-    AddPair(list, ASCIIToUTF16("Always-on Hotword Search Enabled"),
-            ASCIIToUTF16(always_on_search_enabled));
+    AddPair(list, "Always-on Hotword Search Enabled", always_on_search_enabled);
 
     std::string audio_logging_enabled = "No";
     HotwordService* hotword_service =
         HotwordServiceFactory::GetForProfile(profile_);
     if (hotword_service && hotword_service->IsOptedIntoAudioLogging())
       audio_logging_enabled = "Yes";
-    AddPair(list, ASCIIToUTF16("Hotword Audio Logging Enabled"),
-            ASCIIToUTF16(audio_logging_enabled));
+    AddPair(list, "Hotword Audio Logging Enabled", audio_logging_enabled);
 
     std::string audio_history_enabled = "No";
     if (profile_->GetPrefs()->GetBoolean(prefs::kHotwordAudioHistoryEnabled))
       audio_history_enabled = "Yes";
-    AddPair(list, ASCIIToUTF16("Audio History Enabled"),
-            ASCIIToUTF16(audio_history_enabled));
+    AddPair(list, "Audio History Enabled", audio_history_enabled);
 
     std::string group = base::FieldTrialList::FindFullName(
         hotword_internal::kHotwordFieldTrialName);
-    AddPair(list, ASCIIToUTF16("Field trial"), ASCIIToUTF16(group));
+    AddPair(list, "Field trial", group);
 
     std::string new_hotwording_enabled = "No";
     if (hotword_service && hotword_service->IsExperimentalHotwordingEnabled())
       new_hotwording_enabled = "Yes";
-    AddPair(list, ASCIIToUTF16("New Hotwording Enabled"),
-            ASCIIToUTF16(new_hotwording_enabled));
+    AddPair(list, "New Hotwording Enabled", new_hotwording_enabled);
 
     AddLineBreak(list);
   }
@@ -306,12 +304,12 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
         path = extension->path();
       }
     }
-    AddPair(list, ASCIIToUTF16(name_prefix + " Id"),
-            ASCIIToUTF16(id));
-    AddPair(list, ASCIIToUTF16(name_prefix + " Version"),
-            ASCIIToUTF16(version));
-    AddPair(list, ASCIIToUTF16(name_prefix + " Path"),
-            path.empty() ? ASCIIToUTF16("undefined") : path.LossyDisplayName());
+    AddPair(list, name_prefix + " Id", id);
+    AddPair(list, name_prefix + " Version", version);
+    AddPair16(list,
+              ASCIIToUTF16(name_prefix + " Path"),
+              path.empty() ?
+              ASCIIToUTF16("undefined") : path.LossyDisplayName());
 
     extensions::ExtensionPrefs* extension_prefs =
         extensions::ExtensionPrefs::Get(profile_);
@@ -332,7 +330,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
         state = "undefined";
     }
 
-    AddPair(list, ASCIIToUTF16(name_prefix + " State"), ASCIIToUTF16(state));
+    AddPair(list, name_prefix + " State", state);
 
     AddLineBreak(list);
   }
@@ -372,7 +370,7 @@ class VoiceSearchDomHandler : public WebUIMessageHandler {
           state = "undefined";
       }
     }
-    AddPair(list, ASCIIToUTF16("Start Page State"), ASCIIToUTF16(state));
+    AddPair(list, "Start Page State", state);
 #endif
   }
 
