@@ -26,6 +26,8 @@ class InfoBarManager {
   // Observer class for infobar events.
   class Observer {
    public:
+    virtual ~Observer();
+
     virtual void OnInfoBarAdded(InfoBar* infobar);
     virtual void OnInfoBarRemoved(InfoBar* infobar, bool animate);
     virtual void OnInfoBarReplaced(InfoBar* old_infobar,

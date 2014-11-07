@@ -13,6 +13,9 @@ namespace infobars {
 
 // InfoBarManager::Observer ---------------------------------------------------
 
+InfoBarManager::Observer::~Observer() {
+}
+
 void InfoBarManager::Observer::OnInfoBarAdded(InfoBar* infobar) {
 }
 
