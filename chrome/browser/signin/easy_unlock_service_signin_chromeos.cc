@@ -273,9 +273,8 @@ bool EasyUnlockServiceSignin::IsAllowedInternal() {
 }
 
 void EasyUnlockServiceSignin::OnScreenDidLock() {
-  // Ensure the hardlock UI is updated when the account picker on login screen
-  // is ready.
-  MaybeShowHardlockUI();
+  // Update initial UI is when the account picker on login screen is ready.
+  ShowInitialUserState();
 }
 
 void EasyUnlockServiceSignin::OnScreenDidUnlock() {
@@ -293,7 +292,7 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(const std::string& user_id) {
   user_id_ = user_id;
 
   ResetScreenlockState();
-  MaybeShowHardlockUI();
+  ShowInitialUserState();
 
   if (should_update_app_state) {
     UpdateAppState();

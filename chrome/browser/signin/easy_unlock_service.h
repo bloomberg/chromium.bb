@@ -125,9 +125,15 @@ class EasyUnlockService : public KeyedService {
   // Returns the hardlock state for the associated user.
   EasyUnlockScreenlockStateHandler::HardlockState GetHardlockState() const;
 
-  // Ensures the hardlock state is visible even when there is no cryptohome
-  // keys and no state update from the app.
-  void MaybeShowHardlockUI();
+  // Gets the persisted hardlock state. Return true if there is persisted
+  // hardlock state and the value would be set to |state|. Otherwise,
+  // returns false and |state| is unchanged.
+  bool GetPersistedHardlockState(
+      EasyUnlockScreenlockStateHandler::HardlockState* state) const;
+
+  // Shows the hardlock or connecting state as initial UI before cryptohome
+  // keys checking and state update from the app.
+  void ShowInitialUserState();
 
   // Updates the user pod on the signin/lock screen for the user associated with
   // the service to reflect the provided screenlock state.
