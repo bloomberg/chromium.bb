@@ -143,6 +143,9 @@ remoting.MockClientPlugin.prototype.setConnectionStatusUpdateHandler =
   this.connectionStatusUpdateHandler_ = handler;
 };
 
+remoting.MockClientPlugin.prototype.setRouteChangedHandler =
+    function(handler) {};
+
 remoting.MockClientPlugin.prototype.setConnectionReadyHandler =
     function(handler) {};
 

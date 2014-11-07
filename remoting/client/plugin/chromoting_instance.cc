@@ -485,10 +485,10 @@ void ChromotingInstance::OnConnectionReady(bool ready) {
 void ChromotingInstance::OnRouteChanged(const std::string& channel_name,
                                         const protocol::TransportRoute& route) {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
-  std::string message = "Channel " + channel_name + " using " +
-      protocol::TransportRoute::GetTypeString(route.type) + " connection.";
-  data->SetString("message", message);
-  PostLegacyJsonMessage("logDebugMessage", data.Pass());
+  data->SetString("channel", channel_name);
+  data->SetString("connectionType",
+                  protocol::TransportRoute::GetTypeString(route.type));
+  PostLegacyJsonMessage("onRouteChanged", data.Pass());
 }
 
 void ChromotingInstance::SetCapabilities(const std::string& capabilities) {

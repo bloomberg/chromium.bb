@@ -532,6 +532,7 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
 
   this.plugin_.setConnectionStatusUpdateHandler(
       this.onConnectionStatusUpdate_.bind(this));
+  this.plugin_.setRouteChangedHandler(this.onRouteChanged_.bind(this));
   this.plugin_.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
   this.plugin_.setDesktopSizeUpdateHandler(
       this.onDesktopSizeChanged_.bind(this));
@@ -837,11 +838,6 @@ remoting.ClientSession.prototype.sendIq_ = function(message) {
  * @param {string} msg
  */
 remoting.ClientSession.prototype.onDebugMessage_ = function(msg) {
-  var isConnectionTypeMessage = msg.match(
-      /^Channel (.*) using (.*) connection.$/);
-  if (isConnectionTypeMessage) {
-    this.logToServer.setConnectionType(isConnectionTypeMessage[2]);
-  }
   console.log('plugin: ' + msg.trimRight());
 };
 
@@ -972,6 +968,21 @@ remoting.ClientSession.prototype.onConnectionStatusUpdate_ =
     }
   }
   this.setState_(/** @type {remoting.ClientSession.State} */ (status));
+};
+
+/**
+ * Callback that the plugin invokes to indicate that the connection type for
+ * a channel has changed.
+ *
+ * @private
+ * @param {string} channel The channel name.
+ * @param {string} connectionType The new connection type.
+ */
+remoting.ClientSession.prototype.onRouteChanged_ =
+    function(channel, connectionType) {
+  console.log('plugin: Channel ' + channel + ' using ' +
+              connectionType + ' connection.');
+  this.logToServer.setConnectionType(connectionType);
 };
 
 /**

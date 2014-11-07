@@ -56,6 +56,14 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage) {
    * @private
    */
   this.onConnectionStatusUpdateHandler_ = function(state, error) {};
+
+  /**
+   * @param {string} channel The channel name.
+   * @param {string} connectionType The connection type.
+   * @private
+   */
+  this.onRouteChangedHandler_ = function(channel, connectionType) {};
+
   /**
    * @param {boolean} ready Connection ready state.
    * @private
@@ -222,6 +230,13 @@ remoting.ClientPluginImpl.prototype.setOnDebugMessageHandler =
 remoting.ClientPluginImpl.prototype.setConnectionStatusUpdateHandler =
     function(handler) {
   this.onConnectionStatusUpdateHandler_ = handler;
+};
+
+/**
+ * @param {function(string, string):void} handler
+ */
+remoting.ClientPluginImpl.prototype.setRouteChangedHandler = function(handler) {
+  this.onRouteChangedHandler_ =  handler;
 };
 
 /**
@@ -394,10 +409,15 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
 
   } else if (message.method == 'onConnectionStatus') {
     var state = remoting.ClientSession.State.fromString(
-        getStringAttr(message.data, 'state'))
+        getStringAttr(message.data, 'state'));
     var error = remoting.ClientSession.ConnectionError.fromString(
         getStringAttr(message.data, 'error'));
     this.onConnectionStatusUpdateHandler_(state, error);
+
+  } else if (message.method == 'onRouteChanged') {
+    var channel = getStringAttr(message.data, 'channel');
+    var connectionType = getStringAttr(message.data, 'connectionType');
+    this.onRouteChangedHandler_(channel, connectionType);
 
   } else if (message.method == 'onDesktopSize') {
     this.desktopWidth_ = getNumberAttr(message.data, 'width');

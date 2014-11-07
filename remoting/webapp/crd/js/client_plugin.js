@@ -205,6 +205,13 @@ remoting.ClientPlugin.prototype.setConnectionStatusUpdateHandler =
     function(handler) {};
 
 /**
+ * @param {function(string, string):void} handler Callback for route-change
+ *     notifications. The first parameter is the channel name, and the second
+ *     is the connection type.
+ */
+remoting.ClientPlugin.prototype.setRouteChangedHandler = function(handler) {};
+
+/**
  * @param {function(boolean):void} handler Callback for connection readiness
  *     notifications.
  */
