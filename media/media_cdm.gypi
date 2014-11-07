@@ -113,6 +113,9 @@
           'variables': {
             'output_dir': '.',
             'template_input_path': '../chrome/app/chrome_version.rc.version',
+            'extra_variable_files_arguments':
+              [ '-f', 'cdm/ppapi/external_clear_key/BRANDING' ],
+            'extra_variable_files': [ 'cdm/ppapi/external_clear_key/BRANDING' ],
           },
           'sources': [
             'clearkeycdmadapter.ver',

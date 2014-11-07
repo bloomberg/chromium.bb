@@ -70,6 +70,8 @@
       'variables': {
         'output_dir': '.',
         'template_input_path': '../../../chrome/app/chrome_version.rc.version',
+        'extra_variable_files_arguments': [ '-f', 'BRANDING' ],
+        'extra_variable_files': [ 'BRANDING' ], # NOTE: matches that above
       },
       'sources': [
         'widevinecdmadapter.ver',
