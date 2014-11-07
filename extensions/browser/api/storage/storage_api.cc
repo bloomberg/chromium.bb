@@ -149,14 +149,18 @@ std::vector<std::string> GetKeys(const base::DictionaryValue& dict) {
 
 // Creates quota heuristics for settings modification.
 void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
-  QuotaLimitHeuristic::Config longLimitConfig = {
-    // See storage.json for current value.
-    core_api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
-    base::TimeDelta::FromHours(1)
-  };
+  // See storage.json for the current value of these limits.
+  QuotaLimitHeuristic::Config short_limit_config = {
+      core_api::storage::sync::MAX_WRITE_OPERATIONS_PER_MINUTE,
+      base::TimeDelta::FromMinutes(1)};
+  QuotaLimitHeuristic::Config long_limit_config = {
+      core_api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
+      base::TimeDelta::FromHours(1)};
   heuristics->push_back(new QuotaService::TimedLimit(
-      longLimitConfig,
-      new QuotaLimitHeuristic::SingletonBucketMapper(),
+      short_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
+      "MAX_WRITE_OPERATIONS_PER_MINUTE"));
+  heuristics->push_back(new QuotaService::TimedLimit(
+      long_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
       "MAX_WRITE_OPERATIONS_PER_HOUR"));
 };
 

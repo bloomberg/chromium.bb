@@ -189,8 +189,12 @@
             "description": "The maximum number of items that can be stored in sync storage. Updates that would cause this limit to be exceeded will fail immediately and set $(ref:runtime.lastError)."
           },
           "MAX_WRITE_OPERATIONS_PER_HOUR": {
-            "value": 1000,
-            "description": "The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError)."
+            "value": 1800,
+            "description": "<p>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each hour. This is 1 every 2 seconds, a lower ceiling than the short term higher writes-per-minute limit.</p><p>Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError).</p>"
+          },
+          "MAX_WRITE_OPERATIONS_PER_MINUTE": {
+            "value": 120,
+            "description": "<p>The maximum number of <code>set</code>, <code>remove</code>, or <code>clear</code> operations that can be performed each minute. This is 2 per second, providing higher throughput than writes-per-hour over a shorter period of time.</p><p>Updates that would cause this limit to be exceeded fail immediately and set $(ref:runtime.lastError).</p>"
           },
           "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE": {
             "value": 1000000,
