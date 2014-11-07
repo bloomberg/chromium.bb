@@ -6,6 +6,8 @@
 #define MEDIA_FILTERS_FFMPEG_H264_TO_ANNEX_B_BITSTREAM_CONVERTER_H_
 
 #include "base/basictypes.h"
+#include "media/base/media_export.h"
+#include "media/filters/ffmpeg_bitstream_converter.h"
 #include "media/filters/h264_to_annex_b_bitstream_converter.h"
 
 // Forward declarations for FFmpeg datatypes used.
@@ -16,14 +18,18 @@ namespace media {
 
 // Bitstream converter that converts H.264 bitstream based FFmpeg packets into
 // H.264 Annex B bytestream format.
-class MEDIA_EXPORT FFmpegH264ToAnnexBBitstreamConverter {
+class MEDIA_EXPORT FFmpegH264ToAnnexBBitstreamConverter
+    : public FFmpegBitstreamConverter {
  public:
-  // The |stream_context| will be used during conversion and should be the
+  // The |stream_codec_context| will be used during conversion and should be the
   // AVCodecContext for the stream sourcing these packets. A reference to
-  // |stream_context| is retained, so it must outlive this class.
-  explicit FFmpegH264ToAnnexBBitstreamConverter(AVCodecContext* stream_context);
-  ~FFmpegH264ToAnnexBBitstreamConverter();
+  // |stream_codec_context| is retained, so it must outlive this class.
+  explicit FFmpegH264ToAnnexBBitstreamConverter(
+      AVCodecContext* stream_codec_context);
 
+  ~FFmpegH264ToAnnexBBitstreamConverter() override;
+
+  // FFmpegBitstreamConverter implementation.
   // Converts |packet| to H.264 Annex B bytestream format. This conversion is
   // on single NAL unit basis which is contained within the |packet| with the
   // exception of the first packet which is prepended with the AVC decoder
@@ -42,7 +48,7 @@ class MEDIA_EXPORT FFmpegH264ToAnnexBBitstreamConverter {
   //
   // Returns false if conversion failed. In this case, the |packet| will not
   // be changed.
-  bool ConvertPacket(AVPacket* packet);
+  bool ConvertPacket(AVPacket* packet) override;
 
  private:
   // Actual converter class.
@@ -53,7 +59,7 @@ class MEDIA_EXPORT FFmpegH264ToAnnexBBitstreamConverter {
 
   // Variable to hold a pointer to memory where we can access the global
   // data from the FFmpeg file format's global headers.
-  AVCodecContext* stream_context_;
+  AVCodecContext* stream_codec_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegH264ToAnnexBBitstreamConverter);
 };

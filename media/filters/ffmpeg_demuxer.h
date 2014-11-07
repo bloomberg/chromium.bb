@@ -48,9 +48,9 @@ struct AVStream;
 namespace media {
 
 class MediaLog;
+class FFmpegBitstreamConverter;
 class FFmpegDemuxer;
 class FFmpegGlue;
-class FFmpegH264ToAnnexBBitstreamConverter;
 
 typedef scoped_ptr<AVPacket, ScopedPtrAVFreePacket> ScopedAVPacket;
 
@@ -124,8 +124,11 @@ class FFmpegDemuxerStream : public DemuxerStream {
   static base::TimeDelta ConvertStreamTimestamp(const AVRational& time_base,
                                                 int64 timestamp);
 
-  // Resets any currently active bitstream converters.
+  // Resets any currently active bitstream converter.
   void ResetBitstreamConverter();
+
+  // Create new bitstream converter, destroying active converter if present.
+  void InitBitstreamConverter();
 
   FFmpegDemuxer* demuxer_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -144,10 +147,8 @@ class FFmpegDemuxerStream : public DemuxerStream {
   ReadCB read_cb_;
 
 #if defined(USE_PROPRIETARY_CODECS)
-  scoped_ptr<FFmpegH264ToAnnexBBitstreamConverter> bitstream_converter_;
+  scoped_ptr<FFmpegBitstreamConverter> bitstream_converter_;
 #endif
-
-  bool bitstream_converter_enabled_;
 
   std::string encryption_key_id_;
   bool fixup_negative_ogg_timestamps_;

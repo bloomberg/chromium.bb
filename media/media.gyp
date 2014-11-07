@@ -409,6 +409,7 @@
         'filters/decrypting_video_decoder.h',
         'filters/ffmpeg_audio_decoder.cc',
         'filters/ffmpeg_audio_decoder.h',
+        'filters/ffmpeg_bitstream_converter.h',
         'filters/ffmpeg_demuxer.cc',
         'filters/ffmpeg_demuxer.h',
         'filters/ffmpeg_glue.cc',
@@ -604,8 +605,11 @@
             'filters/audio_file_reader.h',
             'filters/blocking_url_protocol.cc',
             'filters/blocking_url_protocol.h',
+            'filters/ffmpeg_aac_bitstream_converter.cc',
+            'filters/ffmpeg_aac_bitstream_converter.h',
             'filters/ffmpeg_audio_decoder.cc',
             'filters/ffmpeg_audio_decoder.h',
+            'filters/ffmpeg_bitstream_converter.h',
             'filters/ffmpeg_demuxer.cc',
             'filters/ffmpeg_demuxer.h',
             'filters/ffmpeg_glue.cc',
@@ -936,6 +940,8 @@
         }],
         ['proprietary_codecs==1', {
           'sources': [
+            'filters/ffmpeg_aac_bitstream_converter.cc',
+            'filters/ffmpeg_aac_bitstream_converter.h',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter.h',
             'filters/h264_to_annex_b_bitstream_converter.cc',
@@ -1333,6 +1339,7 @@
             'filters/audio_decoder_unittest.cc',
             'filters/audio_file_reader_unittest.cc',
             'filters/blocking_url_protocol_unittest.cc',
+            'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_demuxer_unittest.cc',
             'filters/ffmpeg_glue_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
@@ -1401,6 +1408,7 @@
         }],
         ['proprietary_codecs==1', {
           'sources': [
+            'filters/ffmpeg_aac_bitstream_converter_unittest.cc',
             'filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc',
             'filters/h264_to_annex_b_bitstream_converter_unittest.cc',
             'formats/common/stream_parser_test_base.cc',

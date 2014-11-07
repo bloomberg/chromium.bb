@@ -328,8 +328,7 @@ TEST_F(FFmpegH264ToAnnexBBitstreamConverterTest, Conversion_FailureNullParams) {
   CreatePacket(test_packet.get(), kPacketDataOkWithFieldLen4,
                sizeof(kPacketDataOkWithFieldLen4));
 
-  // Try out the actual conversion (should be successful and allocate new
-  // packet and destroy the old one). This should fail due to missing extradata.
+  // Try out the actual conversion. This should fail due to missing extradata.
   EXPECT_FALSE(converter.ConvertPacket(test_packet.get()));
 
   // Converted will be automatically cleaned up.

@@ -254,6 +254,7 @@ component("media") {
       "filters/blocking_url_protocol.h",
       "filters/ffmpeg_audio_decoder.cc",
       "filters/ffmpeg_audio_decoder.h",
+      "filters/ffmpeg_bitstream_converter.h",
       "filters/ffmpeg_demuxer.cc",
       "filters/ffmpeg_demuxer.h",
       "filters/ffmpeg_glue.cc",
@@ -265,6 +266,8 @@ component("media") {
     ]
     if (proprietary_codecs) {
       sources += [
+        "filters/ffmpeg_aac_bitstream_converter.cc",
+        "filters/ffmpeg_aac_bitstream_converter.h",
         "filters/ffmpeg_h264_to_annex_b_bitstream_converter.cc",
         "filters/ffmpeg_h264_to_annex_b_bitstream_converter.h",
       ]
@@ -572,6 +575,7 @@ test("media_unittests") {
 
   if (proprietary_codecs) {
     sources += [
+      "filters/ffmpeg_aac_bitstream_converter_unittest.cc",
       "filters/ffmpeg_h264_to_annex_b_bitstream_converter_unittest.cc",
       "filters/h264_to_annex_b_bitstream_converter_unittest.cc",
       "formats/common/stream_parser_test_base.cc",
