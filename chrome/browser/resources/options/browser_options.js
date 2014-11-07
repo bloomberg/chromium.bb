@@ -1205,7 +1205,7 @@ cr.define('options', function() {
     /**
      * Event listener for the 'hotword always on search enabled' preference.
      * Updates the visibility of the 'retrain' link.
-     * @param {Event} show The preference change event.
+     * @param {Event} event The preference change event.
      * @private
      */
     onHotwordAlwaysOnChanged_: function(event) {
