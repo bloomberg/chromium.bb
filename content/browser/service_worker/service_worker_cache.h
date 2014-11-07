@@ -108,15 +108,6 @@ class CONTENT_EXPORT ServiceWorkerCache
   class BlobReader;
   struct KeysContext;
   struct PutContext;
-
-  // The backend progresses from uninitialized, to open, to closed, and cannot
-  // reverse direction.  The open step may be skipped.
-  enum BackendState {
-    BackendUninitialized,  // No backend, create backend on first operation.
-    BackendOpen,           // Backend can be used.
-    BackendClosed          // Backend cannot be used.  All ops should fail.
-  };
-
   typedef std::vector<disk_cache::Entry*> Entries;
 
   ServiceWorkerCache(
@@ -157,7 +148,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   // success). The callback will always be called. Virtual for tests.
   virtual void CreateBackend(const ErrorCallback& callback);
 
-  void InitBackend(const base::Closure& callback);
+  void Init(const base::Closure& callback);
   void InitDone(ErrorType error);
 
   void IncPendingOps() { pending_ops_++; }
@@ -180,7 +171,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   net::URLRequestContext* request_context_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  BackendState backend_state_;
+  bool initialized_;
   std::vector<base::Closure> init_callbacks_;
 
   // Whether or not to store data in disk or memory.
