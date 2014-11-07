@@ -220,18 +220,16 @@ Viewport.prototype = {
       throw 'Called Viewport.setZoomInternal_ without calling ' +
             'Viewport.mightZoom_.';
     }
-    var oldZoom = this.zoom_;
-    this.zoom_ = newZoom;
-    // Record the scroll position (relative to the middle of the window).
+    // Record the scroll position (relative to the top-left of the window).
     var currentScrollPos = [
-      (this.window_.pageXOffset + this.window_.innerWidth / 2) / oldZoom,
-      (this.window_.pageYOffset + this.window_.innerHeight / 2) / oldZoom
+      this.window_.pageXOffset / this.zoom_,
+      this.window_.pageYOffset / this.zoom_
     ];
+    this.zoom_ = newZoom;
     this.contentSizeChanged_();
     // Scroll to the scaled scroll position.
-    this.window_.scrollTo(
-        currentScrollPos[0] * newZoom - this.window_.innerWidth / 2,
-        currentScrollPos[1] * newZoom - this.window_.innerHeight / 2);
+    this.window_.scrollTo(currentScrollPos[0] * newZoom,
+                          currentScrollPos[1] * newZoom);
   },
 
   /**

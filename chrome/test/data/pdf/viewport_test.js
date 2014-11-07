@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-function MockWindow(width, height) {
+function MockWindow(width, height, sizer) {
   this.innerWidth = width;
   this.innerHeight = height;
   this.addEventListener = function(e, f) {
@@ -12,10 +12,19 @@ function MockWindow(width, height) {
       this.resizeCallback = f;
   },
   this.scrollTo = function(x, y) {
+    if (sizer) {
+      x = Math.min(x, parseInt(sizer.style.width) - width);
+      y = Math.min(y, parseInt(sizer.style.height) - height);
+    }
     this.pageXOffset = Math.max(0, x);
     this.pageYOffset = Math.max(0, y);
     this.scrollCallback();
   };
+  if (sizer) {
+    sizer.resizeCallback_ = function() {
+      this.scrollTo(this.pageXOffset, this.pageYOffset);
+    }.bind(this);
+  }
   this.pageXOffset = 0;
   this.pageYOffset = 0;
   this.scrollCallback = null;
@@ -23,9 +32,22 @@ function MockWindow(width, height) {
 }
 
 function MockSizer() {
+  var sizer = this;
   this.style = {
-    width: '0px',
-    height: '0px'
+    width_: '0px',
+    height_: '0px',
+    get height() { return this.height_; },
+    set height(height) {
+      this.height_ = height;
+      if (sizer.resizeCallback_)
+        sizer.resizeCallback_();
+    },
+    get width() { return this.width_; },
+    set width(width) {
+      this.width_ = width;
+      if (sizer.resizeCallback_)
+        sizer.resizeCallback_();
+    },
   };
 }
 
@@ -104,8 +126,8 @@ var tests = [
   },
 
   function testSetZoom() {
-    var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();
+    var mockWindow = new MockWindow(100, 100, mockSizer);
     var mockCallback = new MockViewportChangedCallback();
     var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
                                 function() {}, function() {}, 0);
@@ -141,15 +163,21 @@ var tests = [
     chrome.test.assertEq('400px', mockSizer.style.height);
 
     // Test that the scroll position scales correctly. It scales relative to the
-    // center of the page.
+    // top-left of the page.
     viewport.setZoom(1);
     mockWindow.pageXOffset = 50;
     mockWindow.pageYOffset = 50;
     viewport.setZoom(2);
     chrome.test.assertEq('400px', mockSizer.style.width);
     chrome.test.assertEq('400px', mockSizer.style.height);
-    chrome.test.assertEq(150, mockWindow.pageXOffset);
-    chrome.test.assertEq(150, mockWindow.pageYOffset);
+    chrome.test.assertEq(100, mockWindow.pageXOffset);
+    chrome.test.assertEq(100, mockWindow.pageYOffset);
+    mockWindow.scrollTo(250, 250);
+    viewport.setZoom(1);
+    chrome.test.assertEq('200px', mockSizer.style.width);
+    chrome.test.assertEq('200px', mockSizer.style.height);
+    chrome.test.assertEq(100, mockWindow.pageXOffset);
+    chrome.test.assertEq(100, mockWindow.pageYOffset);
     chrome.test.succeed();
   },
 
