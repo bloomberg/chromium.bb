@@ -35,13 +35,13 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class BlobDataHandle;
-class KURL;
+class DOMArrayBuffer;
 class ExecutionContext;
+class KURL;
 class WebSocketChannelClient;
 
 // FIXME: WebSocketChannel needs to be RefCountedGarbageCollected to support manual ref/deref
@@ -74,7 +74,7 @@ public:
 
     virtual bool connect(const KURL&, const String& protocol) = 0;
     virtual void send(const String& message) = 0;
-    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
+    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) = 0;
     virtual void send(PassRefPtr<BlobDataHandle>) = 0;
 
     // For WorkerWebSocketChannel.

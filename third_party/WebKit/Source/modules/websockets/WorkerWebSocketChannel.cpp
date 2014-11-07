@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-
 #include "modules/websockets/WorkerWebSocketChannel.h"
 
 #include "bindings/core/v8/ScriptCallStackFactory.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
@@ -46,7 +46,6 @@
 #include "modules/websockets/DocumentWebSocketChannel.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
 #include "wtf/MainThread.h"
@@ -132,7 +131,7 @@ void WorkerWebSocketChannel::send(const String& message)
     m_bridge->send(message);
 }
 
-void WorkerWebSocketChannel::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void WorkerWebSocketChannel::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
     ASSERT(m_bridge);
     m_bridge->send(binaryData, byteOffset, byteLength);
@@ -410,7 +409,7 @@ void Bridge::send(const String& message)
     m_loaderProxy.postTaskToLoader(createCrossThreadTask(&Peer::send, m_peer.get(), message));
 }
 
-void Bridge::send(const ArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
+void Bridge::send(const DOMArrayBuffer& binaryData, unsigned byteOffset, unsigned byteLength)
 {
     ASSERT(m_peer);
     // ArrayBuffer isn't thread-safe, hence the content of ArrayBuffer is copied into Vector<char>.

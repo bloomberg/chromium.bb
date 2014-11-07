@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -44,7 +45,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/Logging.h"
 #include "platform/Supplementable.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Deque.h"
 #include "wtf/HashSet.h"
@@ -470,7 +470,7 @@ void FileReader::fireEvent(const AtomicString& type)
     InspectorInstrumentation::traceAsyncCallbackCompleted(cookie);
 }
 
-PassRefPtr<ArrayBuffer> FileReader::arrayBufferResult() const
+PassRefPtr<DOMArrayBuffer> FileReader::arrayBufferResult() const
 {
     if (!m_loader || m_error)
         return nullptr;

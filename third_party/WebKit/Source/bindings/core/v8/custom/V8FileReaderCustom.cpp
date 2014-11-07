@@ -42,7 +42,7 @@ void V8FileReader::resultAttributeGetterCustom(const v8::PropertyCallbackInfo<v8
     v8::Handle<v8::Object> holder = info.Holder();
     FileReader* impl = V8FileReader::toImpl(holder);
     if (impl->readType() == FileReaderLoader::ReadAsArrayBuffer) {
-        v8SetReturnValueFast(info, DOMArrayBuffer::create(impl->arrayBufferResult()), impl);
+        v8SetReturnValueFast(info, impl->arrayBufferResult(), impl);
         return;
     }
     v8SetReturnValueStringOrNull(info, impl->stringResult(), info.GetIsolate());
