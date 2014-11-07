@@ -11,15 +11,6 @@
 namespace tracked_objects {
 
 
-ScopedProfile::ScopedProfile(const Location& location)
-    : birth_(ThreadData::TallyABirthIfActive(location)) {
-  if (!birth_)
-    return;
-
-  ThreadData::PrepareForStartOfRun(birth_);
-  stopwatch_.Start();
-}
-
 ScopedProfile::ScopedProfile(const Location& location, Mode mode)
     : birth_(NULL) {
   if (mode == DISABLED)

@@ -25,10 +25,10 @@
 // Defines the containing scope as a profiled region. This allows developers to
 // profile their code and see results on their about:profiler page, as well as
 // on the UMA dashboard.
-#define TRACK_RUN_IN_THIS_SCOPED_REGION(dispatch_function_name)                \
-    ::tracked_objects::ScopedProfile LINE_BASED_VARIABLE_NAME_FOR_PROFILING(   \
-        FROM_HERE_WITH_EXPLICIT_FUNCTION(#dispatch_function_name))
-
+#define TRACK_RUN_IN_THIS_SCOPED_REGION(dispatch_function_name)            \
+  ::tracked_objects::ScopedProfile LINE_BASED_VARIABLE_NAME_FOR_PROFILING( \
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(#dispatch_function_name),           \
+      ::tracked_objects::ScopedProfile::ENABLED)
 
 namespace tracked_objects {
 class Births;
@@ -42,8 +42,6 @@ class BASE_EXPORT ScopedProfile {
     ENABLED    // Create and tally a task.
   };
 
-  // TODO(vadimt): Remove this constructor.
-  explicit ScopedProfile(const Location& location);
   ScopedProfile(const Location& location, Mode mode);
   ~ScopedProfile();
 

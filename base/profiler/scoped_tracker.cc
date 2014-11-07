@@ -15,7 +15,7 @@ ScopedProfile::Mode g_scoped_profile_mode = ScopedProfile::DISABLED;
 // Executes |callback|, augmenting it with provided |location|.
 void ExecuteAndTrackCallback(const Location& location,
                              const base::Closure& callback) {
-  ScopedProfile tracking_profile(location);
+  ScopedProfile tracking_profile(location, ScopedProfile::ENABLED);
   callback.Run();
 }
 
