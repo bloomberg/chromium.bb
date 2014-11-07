@@ -5,43 +5,43 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "9f755a64e2f1cc5f67ba75143ecb9dbbe63291d9",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_i686_linux_2414d3f4b683019d5894b8c2fed264e045e592fb.log",
+          "hash": "dec2568af90c984f0c744b496a619974e57b0ea7",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_i686_linux_1bec788d992034285b5b78b6cd478529887ae71b.log",
           "name": "binutils_arm_i686_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_i686_linux_2414d3f4b683019d5894b8c2fed264e045e592fb.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_i686_linux_1bec788d992034285b5b78b6cd478529887ae71b.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "050a1a1b1f154c188406c0e703d2e9b54b7a814b",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_i686_linux_c6e3cdd7478a0387e2f805b610fad240eb81af31.log",
+          "hash": "b37c3e09ab9be0a1ea07591a512392227c93bdc7",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_i686_linux_b6635eb4636d3577fb38d3ef0bb2205e442ad1a6.log",
           "name": "gcc_arm_i686_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_i686_linux_c6e3cdd7478a0387e2f805b610fad240eb81af31.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_i686_linux_b6635eb4636d3577fb38d3ef0bb2205e442ad1a6.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "74c5a69ba25dd0b03825ee9ba3de4af454abc02c",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.log",
+          "hash": "ba0c00c61f1c6f03c3a7107bd1879674a397e441",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.log",
           "name": "gcc_libs_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "ab1f5c38907c955707c48e128461c6b641b6db1d",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_i686_linux_6bbde2e05e59e7c317f12109eac37a226cef9302.log",
+          "hash": "41e2c6003192bb96665be2fdad55d1d4d145810d",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_i686_linux_e59e6d67076cdcd23e926cdf97b3c6df1964e3a0.log",
           "name": "gdb_i686_linux.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_linux_6bbde2e05e59e7c317f12109eac37a226cef9302.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_linux_e59e6d67076cdcd23e926cdf97b3c6df1964e3a0.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "46b03ccd97be4e800b994bfef44fa9bcd44f5ab5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.log",
+          "hash": "2525b4e55e465a8d494ac5afc7a5c3fae762e9ba",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.log",
           "name": "newlib_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.tgz"
         }
       ],
       "version": 1
@@ -50,43 +50,43 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "f2fd416584d5adc44f4861cba43fea1f55eb514b",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_x86_64_apple_darwin_aad008a29fd14cdec5f9e40627357247f50d010a.log",
+          "hash": "aef4aced6fd9843690ccbc31d02c945cad62babf",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_x86_64_apple_darwin_2af21598ff0a33516fa7b01f60673ef687e2bae5.log",
           "name": "binutils_arm_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_x86_64_apple_darwin_aad008a29fd14cdec5f9e40627357247f50d010a.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_x86_64_apple_darwin_2af21598ff0a33516fa7b01f60673ef687e2bae5.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "71f8fb8f3ec1c367bd2f97d18ffb8eef70006d1e",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_x86_64_apple_darwin_931c7b8d562e45ec47f2d075d13997d500acac3e.log",
+          "hash": "09f8045ecfae6ba396889e1c3ae1365c545380e5",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_x86_64_apple_darwin_3eeae220081e3aa55f56ccb522a2fe1de6472112.log",
           "name": "gcc_arm_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_x86_64_apple_darwin_931c7b8d562e45ec47f2d075d13997d500acac3e.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_x86_64_apple_darwin_3eeae220081e3aa55f56ccb522a2fe1de6472112.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "74c5a69ba25dd0b03825ee9ba3de4af454abc02c",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.log",
+          "hash": "ba0c00c61f1c6f03c3a7107bd1879674a397e441",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.log",
           "name": "gcc_libs_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "b3451ab55131fd03253ff6528fd5acfc10d4336a",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_x86_64_apple_darwin_e7bdac29b0f3afc41948b764f621896bd3d51003.log",
+          "hash": "f6b5eb0f5a5250126c91dd259d87a0b51cd9125b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_x86_64_apple_darwin_6edff940f958cc3dacd1bc2092e195d2bbc710bc.log",
           "name": "gdb_x86_64_apple_darwin.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_x86_64_apple_darwin_e7bdac29b0f3afc41948b764f621896bd3d51003.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_x86_64_apple_darwin_6edff940f958cc3dacd1bc2092e195d2bbc710bc.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "46b03ccd97be4e800b994bfef44fa9bcd44f5ab5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.log",
+          "hash": "2525b4e55e465a8d494ac5afc7a5c3fae762e9ba",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.log",
           "name": "newlib_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.tgz"
         }
       ],
       "version": 1
@@ -95,48 +95,48 @@
       "archives": [
         {
           "extract_dir": "",
-          "hash": "8e45e0521c4b9fd85bf804fb46767b2cf62b6b00",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_i686_w64_mingw32_415b05b210cf122ca28b2210681748bea8babf41.log",
+          "hash": "074dca9b4978147caa311421c7cee8edf73c7e4b",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/binutils_arm_i686_w64_mingw32_0f531e4dd2c2028bca38515c7ea7b686eeb3c5b1.log",
           "name": "binutils_arm_i686_w64_mingw32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_i686_w64_mingw32_415b05b210cf122ca28b2210681748bea8babf41.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/binutils_arm_i686_w64_mingw32_0f531e4dd2c2028bca38515c7ea7b686eeb3c5b1.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "e53d38640747b8e6a8a846d1fb6540c17f6534af",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_i686_w64_mingw32_e8d2f6dde0132ceb65a822f51cfc9b328d5f51aa.log",
+          "hash": "249017831a045059756798f348499ddc8ed79bc0",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_arm_i686_w64_mingw32_3371d66cb71222a39d13d1948ed2e8ecdcc8aaec.log",
           "name": "gcc_arm_i686_w64_mingw32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_i686_w64_mingw32_e8d2f6dde0132ceb65a822f51cfc9b328d5f51aa.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_arm_i686_w64_mingw32_3371d66cb71222a39d13d1948ed2e8ecdcc8aaec.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "74c5a69ba25dd0b03825ee9ba3de4af454abc02c",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.log",
+          "hash": "ba0c00c61f1c6f03c3a7107bd1879674a397e441",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.log",
           "name": "gcc_libs_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_9c4327fa702518cbc127c7dc8ae13e3a7f30635e.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gcc_libs_arm_dfa0856cb4c330c606a0ea2a6038f16c4afc2893.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "c704a8301fda3abfcdfb5910d4609fd89add564d",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_i686_w64_mingw32_2bf6bc84a2e6b502438ee4ac39ac1b3cd1cc60cc.log",
+          "hash": "8b32aa8518854fadcfd7054e48413159d81737dc",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/gdb_i686_w64_mingw32_01e35e79b33524a9928aad2e699c1304b2652fda.log",
           "name": "gdb_i686_w64_mingw32.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_w64_mingw32_2bf6bc84a2e6b502438ee4ac39ac1b3cd1cc60cc.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/gdb_i686_w64_mingw32_01e35e79b33524a9928aad2e699c1304b2652fda.tgz"
         },
         {
           "extract_dir": "",
-          "hash": "46b03ccd97be4e800b994bfef44fa9bcd44f5ab5",
-          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.log",
+          "hash": "2525b4e55e465a8d494ac5afc7a5c3fae762e9ba",
+          "log_url": "https://storage.googleapis.com/nativeclient-once/log/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.log",
           "name": "newlib_arm.tgz",
           "tar_src_dir": "",
-          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_05683e36d1d621ffeaa852b0be4cfbb54055af93.tgz"
+          "url": "https://storage.googleapis.com/nativeclient-once/object/newlib_arm_f08096ca6fc4de6577c6f723184fe52f269b72a7.tgz"
         }
       ],
       "version": 1
     }
   },
-  "revision": 13918,
-  "revision_hash": "9417148876ab4b93f2f1ea45677d2ef3da990405"
+  "revision": 14060,
+  "revision_hash": "b69479af0b2fcab70a1ddff4c7573ad988d0d96b"
 }
