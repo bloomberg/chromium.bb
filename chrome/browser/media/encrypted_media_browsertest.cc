@@ -89,7 +89,7 @@ enum EmeVersion {
 static bool IsMSESupported() {
 #if defined(OS_ANDROID)
   if (base::android::BuildInfo::GetInstance()->sdk_int() < 16) {
-    VLOG(0) << "MSE is only supported in Android 4.1 and later.";
+    DVLOG(0) << "MSE is only supported in Android 4.1 and later.";
     return false;
   }
 #endif  // defined(OS_ANDROID)
@@ -146,7 +146,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
                              bool force_invalid_response,
                              const std::string& expected_title) {
     if (src_type == MSE && !IsMSESupported()) {
-      VLOG(0) << "Skipping test - MSE not supported.";
+      DVLOG(0) << "Skipping test - MSE not supported.";
       return;
     }
     base::StringPairs query_params;
@@ -561,11 +561,11 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, InvalidResponseKeyError) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, ConfigChangeVideo) {
   if (CurrentSourceType() != MSE || !IsMSESupported()) {
-    VLOG(0) << "Skipping test - ConfigChange test requires MSE.";
+    DVLOG(0) << "Skipping test - ConfigChange test requires MSE.";
     return;
   }
   if (!IsPlayBackPossible(CurrentKeySystem())) {
-    VLOG(0) << "Skipping test - ConfigChange test requires video playback.";
+    DVLOG(0) << "Skipping test - ConfigChange test requires video playback.";
     return;
   }
   TestConfigChange();
@@ -578,7 +578,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
     return;
 #endif
   if (!IsPlayBackPossible(CurrentKeySystem())) {
-    VLOG(0) << "Skipping test - FrameSizeChange test requires video playback.";
+    DVLOG(0) << "Skipping test - FrameSizeChange test requires video playback.";
     return;
   }
   TestFrameSizeChange();
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != MSE) {
-    VLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
   TestSimplePlayback("bear-640x360-v_frag-cenc.mp4", kMP4VideoOnly);
@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
   // MP4 without MSE is not support yet, http://crbug.com/170793.
   if (CurrentSourceType() != MSE) {
-    VLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
+    DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
     return;
   }
   TestSimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly);

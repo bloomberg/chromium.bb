@@ -72,7 +72,7 @@ void MediaBrowserTest::AddWaitForTitles(content::TitleWatcher* title_watcher) {
 
 void MediaBrowserTest::PluginCrashed(const base::FilePath& plugin_path,
                                      base::ProcessId plugin_pid) {
-  VLOG(0) << "Plugin crashed: " << plugin_path.value();
+  DVLOG(0) << "Plugin crashed: " << plugin_path.value();
   if (ignore_plugin_crash_)
     return;
   // Update document title to quit TitleWatcher early.

@@ -96,7 +96,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendArg("--admin_port=9998");
     command_line.AppendArg("--skip_sdk_update_check");
 
-    VLOG(1) << "Running " << command_line.GetCommandLineString();
+    DVLOG(1) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &dev_appserver_);
   }
@@ -193,7 +193,7 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
     command_line.AppendSwitchPath("--binary", firefox_binary);
     command_line.AppendSwitchASCII("--webpage", url.spec());
 
-    VLOG(1) << "Running " << command_line.GetCommandLineString();
+    DVLOG(1) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &firefox_);
   }
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
-    VLOG(1) << "Waiting for AppRTC to come up...";
+    DVLOG(1) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL(base::StringPrintf("localhost:9999?r=room_%d",
                                           base::RandInt(0, 65536)));
@@ -270,7 +270,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest,
   DetectErrorsInJavaScript();
   ASSERT_TRUE(LaunchApprtcInstanceOnLocalhost());
   while (!LocalApprtcInstanceIsUp())
-    VLOG(1) << "Waiting for AppRTC to come up...";
+    DVLOG(1) << "Waiting for AppRTC to come up...";
 
   GURL room_url = GURL(
       "http://localhost:9999?r=some_room_id&firefox_fake_device=1");

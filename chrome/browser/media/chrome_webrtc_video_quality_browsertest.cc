@@ -178,10 +178,10 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
 
     // We produce an output file that will later be used as an input to the
     // barcode decoder and frame analyzer tools.
-    VLOG(0) << "Running " << converter_command.GetCommandLineString();
+    DVLOG(0) << "Running " << converter_command.GetCommandLineString();
     std::string result;
     bool ok = base::GetAppOutput(converter_command, &result);
-    VLOG(0) << "Output was:\n\n" << result;
+    DVLOG(0) << "Output was:\n\n" << result;
     return ok;
   }
 
@@ -237,7 +237,7 @@ class WebRtcVideoQualityBrowserTest : public WebRtcTestBase,
     compare_command.AppendArg("--stats_file");
     compare_command.AppendArgPath(stats_file);
 
-    VLOG(0) << "Running " << compare_command.GetCommandLineString();
+    DVLOG(0) << "Running " << compare_command.GetCommandLineString();
     std::string output;
     bool ok = base::GetAppOutput(compare_command, &output);
     // Print to stdout to ensure the perf numbers are parsed properly by the

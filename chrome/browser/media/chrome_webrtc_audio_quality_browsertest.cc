@@ -212,7 +212,7 @@ class AudioRecorder {
     command_line.AppendArgPath(output_file);
 #endif
 
-    VLOG(0) << "Running " << command_line.GetCommandLineString();
+    DVLOG(0) << "Running " << command_line.GetCommandLineString();
     return base::LaunchProcess(command_line, base::LaunchOptions(),
                                &recording_application_);
   }
@@ -232,7 +232,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
   // Note: the force binary isn't in tools since it's one of our own.
   CommandLine command_line(test::GetReferenceFilesDir().Append(
       FILE_PATH_LITERAL("force_mic_volume_max.exe")));
-  VLOG(0) << "Running " << command_line.GetCommandLineString();
+  DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
   if (!base::GetAppOutput(command_line, &result)) {
     LOG(ERROR) << "Failed to set source volume: output was " << result;
@@ -261,7 +261,7 @@ bool ForceMicrophoneVolumeTo100Percent() {
     command_line.AppendArg("set-source-volume");
     command_line.AppendArg(base::StringPrintf("%d", device_index));
     command_line.AppendArg(kHundredPercentVolume);
-    VLOG(0) << "Running " << command_line.GetCommandLineString();
+    DVLOG(0) << "Running " << command_line.GetCommandLineString();
     if (!base::GetAppOutput(command_line, &result)) {
       LOG(ERROR) << "Failed to set source volume: output was " << result;
       return false;
@@ -314,10 +314,10 @@ bool RemoveSilence(const base::FilePath& input_file,
   command_line.AppendArg(kTreshold);
   command_line.AppendArg("reverse");
 
-  VLOG(0) << "Running " << command_line.GetCommandLineString();
+  DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
   bool ok = base::GetAppOutput(command_line, &result);
-  VLOG(0) << "Output was:\n\n" << result;
+  DVLOG(0) << "Output was:\n\n" << result;
   return ok;
 }
 
@@ -365,13 +365,13 @@ bool RunPesq(const base::FilePath& reference_file,
   command_line.AppendArgPath(reference_file);
   command_line.AppendArgPath(actual_file);
 
-  VLOG(0) << "Running " << command_line.GetCommandLineString();
+  DVLOG(0) << "Running " << command_line.GetCommandLineString();
   std::string result;
   if (!base::GetAppOutput(command_line, &result)) {
     LOG(ERROR) << "Failed to run PESQ.";
     return false;
   }
-  VLOG(0) << "Output was:\n\n" << result;
+  DVLOG(0) << "Output was:\n\n" << result;
 
   const std::string result_anchor = "Prediction (Raw MOS, MOS-LQO):  = ";
   std::size_t anchor_pos = result.find(result_anchor);
@@ -453,14 +453,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioQualityBrowserTest,
   PlayAudioFile(left_tab);
 
   ASSERT_TRUE(recorder.WaitForRecordingToEnd());
-  VLOG(0) << "Done recording to " << recording.value() << std::endl;
+  DVLOG(0) << "Done recording to " << recording.value() << std::endl;
 
   HangUp(left_tab);
 
   base::FilePath trimmed_recording = CreateTemporaryWaveFile();
 
   ASSERT_TRUE(RemoveSilence(recording, trimmed_recording));
-  VLOG(0) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
+  DVLOG(0) << "Trimmed silence: " << trimmed_recording.value() << std::endl;
 
   std::string raw_mos;
   std::string mos_lqo;
