@@ -25,6 +25,7 @@
         '../ui/aura/aura.gyp:aura_test_support',
         '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
         '../ui/display/display.gyp:display',
+        '../ui/events/devices/events_devices.gyp:events_devices',
         '../ui/events/events.gyp:events_base',
         '../ui/strings/ui_strings.gyp:ui_strings',
         '../ui/views/views.gyp:views',
