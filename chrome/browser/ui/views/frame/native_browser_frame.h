@@ -7,6 +7,7 @@
 
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
+#include "ui/views/widget/widget.h"
 
 class BrowserFrame;
 class BrowserView;
@@ -19,8 +20,8 @@ class NativeBrowserFrame {
  public:
   virtual ~NativeBrowserFrame() {}
 
-  virtual views::NativeWidget* AsNativeWidget() = 0;
-  virtual const views::NativeWidget* AsNativeWidget() const = 0;
+  // Returns the platform specific InitParams for initializing our widget.
+  virtual views::Widget::InitParams GetWidgetParams() = 0;
 
   // Returns true if the OS takes care of showing the system menu. Returning
   // false means BrowserFrame handles showing the system menu.

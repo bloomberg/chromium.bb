@@ -34,8 +34,7 @@ class BrowserFrameAsh : public views::NativeWidgetAura,
   void OnWindowTargetVisibilityChanged(bool visible) override;
 
   // Overridden from NativeBrowserFrame:
-  views::NativeWidget* AsNativeWidget() override;
-  const views::NativeWidget* AsNativeWidget() const override;
+  views::Widget::InitParams GetWidgetParams() override;
   bool UsesNativeSystemMenu() const override;
   int GetMinimizeButtonOffset() const override;
   bool ShouldSaveWindowPlacement() const override;

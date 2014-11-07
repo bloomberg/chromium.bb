@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller_stub.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller_stub.h"
 
 namespace chrome {
 
