@@ -971,10 +971,13 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSE_MOVED:
-      CHECK(!event->IsAnyButton());
-      OnMouseMoved(*event);
-      return;
-
+      if ((event->flags() & (ui::EF_LEFT_MOUSE_BUTTON |
+                             ui::EF_RIGHT_MOUSE_BUTTON |
+                             ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
+        OnMouseMoved(*event);
+        return;
+      }
+      // FALL-THROUGH
     case ui::ET_MOUSE_DRAGGED:
       if (ProcessMouseDragged(*event))
         event->SetHandled();
@@ -2261,8 +2264,6 @@ bool View::ProcessMousePressed(const ui::MouseEvent& event) {
 }
 
 bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
-  CHECK_EQ(ui::ET_MOUSE_DRAGGED, event.type());
-
   // Copy the field, that way if we're deleted after drag and drop no harm is
   // done.
   ContextMenuController* context_menu_controller = context_menu_controller_;
