@@ -413,7 +413,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
         client_->GetLayer()->SetShowSurface(
             surface_id_,
             base::Bind(&SatisfyCallback, base::Unretained(manager)),
-            base::Bind(&RequireCallback, base::Unretained(manager)),
+            base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
             frame_size_in_dip);
         current_surface_size_ = frame_size;
       }
@@ -1021,7 +1021,7 @@ void DelegatedFrameHost::OnLayerRecreated(ui::Layer* old_layer,
     new_layer->SetShowSurface(
         surface_id_, base::Bind(&SatisfyCallback, base::Unretained(manager)),
         base::Bind(&RequireCallback, base::Unretained(manager)),
-        current_frame_size_in_dip_);
+        current_surface_size_, current_frame_size_in_dip_);
   }
 }
 

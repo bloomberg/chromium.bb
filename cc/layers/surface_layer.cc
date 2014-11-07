@@ -53,9 +53,10 @@ SurfaceLayer::~SurfaceLayer() {
   DCHECK(destroy_sequence_.is_null());
 }
 
-void SurfaceLayer::SetSurfaceId(SurfaceId surface_id) {
+void SurfaceLayer::SetSurfaceId(SurfaceId surface_id, const gfx::Size& size) {
   SatisfyDestroySequence();
   surface_id_ = surface_id;
+  surface_size_ = size;
   CreateNewDestroySequence();
 
   UpdateDrawsContent(HasDrawableContent());
@@ -86,6 +87,19 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
 
   layer_impl->SetSurfaceId(surface_id_);
+}
+
+void SurfaceLayer::CalculateContentsScale(float ideal_contents_scale,
+                                          float* contents_scale_x,
+                                          float* contents_scale_y,
+                                          gfx::Size* content_bounds) {
+  *content_bounds = surface_size_;
+  *contents_scale_x =
+      bounds().IsEmpty() ? 1.f : static_cast<float>(content_bounds->width()) /
+                                     bounds().width();
+  *contents_scale_y =
+      bounds().IsEmpty() ? 1.f : static_cast<float>(content_bounds->height()) /
+                                     bounds().height();
 }
 
 void SurfaceLayer::CreateNewDestroySequence() {
