@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -83,6 +84,8 @@ ScopedDisableInternalMouseAndKeyboardX11::
       if (device_name == kInternalTouchpadName) {
         touchpad_device_id_ = xi_dev_list[i].deviceid;
         device_data_manager->DisableDevice(touchpad_device_id_);
+        aura::client::GetCursorClient(
+            Shell::GetInstance()->GetPrimaryRootWindow())->HideCursor();
       } else if (device_name == kInternalKeyboardName) {
         keyboard_device_id_ = xi_dev_list[i].deviceid;
         device_data_manager->DisableDevice(keyboard_device_id_);
