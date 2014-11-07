@@ -1249,8 +1249,6 @@ crbug.com/407915 virtual/deferred/inspector/tracing/timeline-event-dispatch.html
 crbug.com/407915 virtual/implsidepainting/inspector/tracing/timeline-event-dispatch.html [ Failure Pass ]
 crbug.com/407915 virtual/implsidepainting/inspector/timeline/timeline-frames.html [ Failure Pass ]
 
-crbug.com/423539 fonts/cursive.html [ NeedsRebaseline ]
-
 crbug.com/409580 inspector/device-emulation/device-emulation-320-2x.html [ Crash Pass ]
 crbug.com/407993 [ Win ] media/encrypted-media/prefixed/encrypted-media-events.html [ Crash Pass ]
 crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-in-foreign-domain-subframe.html [ Pass Timeout ]
