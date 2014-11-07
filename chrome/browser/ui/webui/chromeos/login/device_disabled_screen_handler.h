@@ -24,6 +24,7 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenActor,
   void Show(const std::string& message) override;
   void Hide() override;
   void SetDelegate(Delegate* delegate) override;
+  void UpdateMessage(const std::string& message) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(LocalizedValuesBuilder* builder) override;

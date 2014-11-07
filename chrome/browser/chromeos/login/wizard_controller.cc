@@ -1119,6 +1119,15 @@ void WizardController::AutoLaunchKioskApp() {
     return;
   }
 
+  bool device_disabled = false;
+  CrosSettings::Get()->GetBoolean(kDeviceDisabled, &device_disabled);
+  if (device_disabled && system::DeviceDisablingManager::
+                             HonorDeviceDisablingDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+    return;
+  }
+
   host_->StartAppLaunch(app_id, false /* diagnostic_mode */);
 }
 

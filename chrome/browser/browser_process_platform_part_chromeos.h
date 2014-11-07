@@ -24,6 +24,7 @@ namespace chromeos {
 namespace system {
 class AutomaticRebootManager;
 class DeviceDisablingManager;
+class DeviceDisablingManagerDefaultDelegate;
 }
 }
 
@@ -106,6 +107,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
 
   scoped_ptr<chromeos::ChromeUserManager> chrome_user_manager_;
 
+  scoped_ptr<chromeos::system::DeviceDisablingManagerDefaultDelegate>
+      device_disabling_manager_delegate_;
   scoped_ptr<chromeos::system::DeviceDisablingManager>
       device_disabling_manager_;
 

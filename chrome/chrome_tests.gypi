@@ -210,6 +210,7 @@
       'browser/chromeos/power/peripheral_battery_observer_browsertest.cc',
       'browser/chromeos/preferences_browsertest.cc',
       'browser/chromeos/profiles/profile_helper_browsertest.cc',
+      'browser/chromeos/system/device_disabling_browsertest.cc',
       'browser/chromeos/system/tray_accessibility_browsertest.cc',
       'browser/chromeos/ui/idle_logout_dialog_view_browsertest.cc',
       'browser/collected_cookies_browsertest.cc',

@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 
 namespace chromeos {
 
@@ -18,16 +17,20 @@ DeviceDisabledScreen::DeviceDisabledScreen(
     BaseScreenDelegate* base_screen_delegate,
     DeviceDisabledScreenActor* actor)
     : BaseScreen(base_screen_delegate),
-      showing_(false),
-      actor_(actor) {
+      actor_(actor),
+      device_disabling_manager_(g_browser_process->platform_part()->
+                                    device_disabling_manager()),
+      showing_(false) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
+  device_disabling_manager_->AddObserver(this);
 }
 
 DeviceDisabledScreen::~DeviceDisabledScreen() {
   if (actor_)
     actor_->SetDelegate(nullptr);
+  device_disabling_manager_->RemoveObserver(this);
 }
 
 void DeviceDisabledScreen::PrepareToShow() {
@@ -38,8 +41,7 @@ void DeviceDisabledScreen::Show() {
     return;
 
   showing_ = true;
-  actor_->Show(g_browser_process->platform_part()->device_disabling_manager()->
-                  disabled_message());
+  actor_->Show(device_disabling_manager_->disabled_message());
 }
 
 void DeviceDisabledScreen::Hide() {
@@ -58,6 +60,12 @@ std::string DeviceDisabledScreen::GetName() const {
 void DeviceDisabledScreen::OnActorDestroyed(DeviceDisabledScreenActor* actor) {
   if (actor_ == actor)
     actor_ = nullptr;
+}
+
+void DeviceDisabledScreen::OnDisabledMessageChanged(
+    const std::string& disabled_message) {
+  if (actor_)
+    actor_->UpdateMessage(disabled_message);
 }
 
 }  // namespace chromeos

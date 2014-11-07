@@ -10,23 +10,82 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/settings/cros_settings_names.h"
+#include "chromeos/settings/cros_settings_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user_manager.h"
 
 namespace chromeos {
 namespace system {
 
+DeviceDisablingManager::Observer::~Observer() {
+}
+
+DeviceDisablingManager::Delegate::~Delegate() {
+}
+
 DeviceDisablingManager::DeviceDisablingManager(
-    policy::BrowserPolicyConnectorChromeOS* browser_policy_connector)
-    : browser_policy_connector_(browser_policy_connector),
+    Delegate* delegate,
+    CrosSettings* cros_settings,
+    user_manager::UserManager* user_manager)
+    : delegate_(delegate),
+      browser_policy_connector_(g_browser_process->platform_part()->
+          browser_policy_connector_chromeos()),
+      cros_settings_(cros_settings),
+      user_manager_(user_manager),
+      device_disabled_(false),
       weak_factory_(this) {
+  CHECK(delegate_);
+  Init();
 }
 
 DeviceDisablingManager::~DeviceDisablingManager() {
+}
+
+void DeviceDisablingManager::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void DeviceDisablingManager::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void DeviceDisablingManager::Init() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDeviceDisabling)) {
+    // If device disabling is turned off by flags, do not start monitoring cros
+    // settings.
+    return;
+  }
+
+  device_disabled_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceDisabled,
+      base::Bind(&DeviceDisablingManager::UpdateFromCrosSettings,
+                 weak_factory_.GetWeakPtr()));
+  disabled_message_subscription_ = cros_settings_->AddSettingsObserver(
+      kDeviceDisabledMessage,
+      base::Bind(&DeviceDisablingManager::UpdateFromCrosSettings,
+                 weak_factory_.GetWeakPtr()));
+
+  UpdateFromCrosSettings();
+}
+
+void DeviceDisablingManager::CacheDisabledMessageAndNotify(
+    const std::string& disabled_message) {
+  if (disabled_message == disabled_message_)
+    return;
+
+  disabled_message_ = disabled_message;
+  FOR_EACH_OBSERVER(Observer,
+                    observers_,
+                    OnDisabledMessageChanged(disabled_message_));
 }
 
 void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
@@ -68,15 +127,87 @@ void DeviceDisablingManager::CheckWhetherDeviceDisabledDuringOOBE(
   // off by flag and the device is still unowned, we honor the information in
   // local state and consider the device disabled.
 
-  // Cache the disabled message.
-  disabled_message_.clear();
+  // Update the disabled message.
+  std::string disabled_message;
   g_browser_process->local_state()->GetDictionary(
       prefs::kServerBackedDeviceState)->GetString(
           policy::kDeviceStateDisabledMessage,
-          &disabled_message_);
+          &disabled_message);
+  CacheDisabledMessageAndNotify(disabled_message);
 
   // Indicate that the device is disabled.
   callback.Run(true);
+}
+
+// static
+bool DeviceDisablingManager::HonorDeviceDisablingDuringNormalOperation() {
+  // Device disabling should be honored when the device is enterprise managed
+  // and device disabling has not been turned off by flag.
+  return g_browser_process->platform_part()->
+            browser_policy_connector_chromeos()->IsEnterpriseManaged() &&
+         !CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableDeviceDisabling);
+}
+
+void DeviceDisablingManager::UpdateFromCrosSettings() {
+  if (cros_settings_->PrepareTrustedValues(base::Bind(
+          &DeviceDisablingManager::UpdateFromCrosSettings,
+          weak_factory_.GetWeakPtr())) != CrosSettingsProvider::TRUSTED) {
+    // If the cros settings are not trusted yet, request to be called back
+    // later.
+    return;
+  }
+
+  if (!HonorDeviceDisablingDuringNormalOperation()) {
+    // If the device is not enterprise managed or device disabling has been
+    // turned of by flag, device disabling is not available.
+    return;
+  }
+
+  bool device_disabled = false;
+  if (!cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled) ||
+      !device_disabled) {
+    if (!device_disabled_) {
+      // If the device was not disabled and has not been disabled, there is
+      // nothing to do.
+      return;
+    }
+    device_disabled_ = false;
+
+    // The device was disabled and has been re-enabled. Normal function should
+    // be resumed. Since the device disabled screen abruptly interrupts the
+    // regular login screen flows, Chrome should be restarted to return to a
+    // well-defined state.
+    delegate_->RestartToLoginScreen();
+    return;
+  }
+
+  // Update the disabled message.
+  std::string disabled_message;
+  cros_settings_->GetString(kDeviceDisabledMessage, &disabled_message);
+  CacheDisabledMessageAndNotify(disabled_message);
+
+  if (device_disabled_) {
+    // If the device was disabled already, updating the disabled message is the
+    // only action required.
+    return;
+  }
+  device_disabled_ = true;
+
+  const ExistingUserController* existing_user_controller =
+      ExistingUserController::current_controller();
+  if (user_manager_->GetActiveUser() ||
+      (existing_user_controller &&
+       existing_user_controller->IsSigninInProgress())) {
+    // If a session or a login is in progress, restart Chrome and return to the
+    // login screen. Chrome will show the device disabled screen after the
+    // restart.
+    delegate_->RestartToLoginScreen();
+    return;
+  }
+
+  // If no session or login is in progress, show the device disabled screen.
+  delegate_->ShowDeviceDisabledScreen();
 }
 
 }  // namespace system

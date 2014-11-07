@@ -41,6 +41,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
 #include "chrome/browser/ui/webui/chromeos/login/l10n_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -435,9 +436,22 @@ void ExistingUserController::Login(const UserContext& user_context,
                               1,
                               HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 
-    // Reenable clicking on other windows and the status area. Do not start the
+    // Re-enable clicking on other windows and the status area. Do not start the
     // auto-login timer though. Without trusted |cros_settings_|, no auto-login
     // can succeed.
+    login_display_->SetUIEnabled(true);
+    return;
+  }
+
+  bool device_disabled = false;
+  cros_settings_->GetBoolean(kDeviceDisabled, &device_disabled);
+  if (device_disabled && system::DeviceDisablingManager::
+                             HonorDeviceDisablingDuringNormalOperation()) {
+    // If the device is disabled, bail out. A device disabled screen will be
+    // shown by the DeviceDisablingManager.
+
+    // Re-enable clicking on other windows and the status area. Do not start the
+    // auto-login timer though. On a disabled device, no auto-login can succeed.
     login_display_->SetUIEnabled(true);
     return;
   }

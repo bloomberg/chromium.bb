@@ -19,6 +19,7 @@ class MockDeviceDisabledScreenActor : public DeviceDisabledScreenActor {
 
   MOCK_METHOD1(Show, void(const std::string&));
   MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(UpdateMessage, void(const std::string& message));
 
  private:
   MOCK_METHOD1(MockSetDelegate, void(Delegate* delegate));

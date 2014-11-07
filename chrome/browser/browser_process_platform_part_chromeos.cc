@@ -14,10 +14,13 @@
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/automatic_reboot_manager.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager_default_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user_manager.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()
     : created_profile_helper_(false) {
@@ -52,12 +55,17 @@ void BrowserProcessPlatformPart::DestroyChromeUserManager() {
 void BrowserProcessPlatformPart::InitializeDeviceDisablingManager() {
   DCHECK(!device_disabling_manager_);
 
+  device_disabling_manager_delegate_.reset(
+      new chromeos::system::DeviceDisablingManagerDefaultDelegate);
   device_disabling_manager_.reset(new chromeos::system::DeviceDisablingManager(
-      browser_policy_connector_chromeos()));
+      device_disabling_manager_delegate_.get(),
+      chromeos::CrosSettings::Get(),
+      user_manager::UserManager::Get()));
 }
 
 void BrowserProcessPlatformPart::ShutdownDeviceDisablingManager() {
   device_disabling_manager_.reset();
+  device_disabling_manager_delegate_.reset();
 }
 
 void BrowserProcessPlatformPart::InitializeSessionManager(

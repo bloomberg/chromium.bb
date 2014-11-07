@@ -29,6 +29,7 @@ class DeviceDisabledScreenActor {
   virtual void Show(const std::string& message) = 0;
   virtual void Hide() = 0;
   virtual void SetDelegate(Delegate* delegate) = 0;
+  virtual void UpdateMessage(const std::string& message) = 0;
 };
 
 }  // namespace chromeos

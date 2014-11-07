@@ -48,6 +48,12 @@ void DeviceDisabledScreenHandler::SetDelegate(Delegate* delegate) {
     Initialize();
 }
 
+void DeviceDisabledScreenHandler::UpdateMessage(const std::string& message) {
+  message_ = message;
+  if (page_is_ready())
+    CallJS("setMessage", message);
+}
+
 void DeviceDisabledScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("deviceDisabledHeading", IDS_DEVICE_DISABLED_HEADING);

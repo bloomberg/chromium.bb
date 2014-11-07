@@ -8,14 +8,20 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/system/device_disabling_manager.h"
 
 namespace chromeos {
+
+namespace system {
+class DeviceDisablingManager;
+}
 
 class BaseScreenDelegate;
 
 // Screen informing the user that the device has been disabled by its owner.
 class DeviceDisabledScreen : public BaseScreen,
-                             public DeviceDisabledScreenActor::Delegate {
+                             public DeviceDisabledScreenActor::Delegate,
+                             public system::DeviceDisablingManager::Observer {
  public:
   DeviceDisabledScreen(BaseScreenDelegate* base_screen_delegate,
                        DeviceDisabledScreenActor* actor);
@@ -30,11 +36,15 @@ class DeviceDisabledScreen : public BaseScreen,
   // DeviceDisabledScreenActor::Delegate:
   void OnActorDestroyed(DeviceDisabledScreenActor* actor) override;
 
+  // system::DeviceDisablingManager::Observer:
+  void OnDisabledMessageChanged(const std::string& disabled_message) override;
+
  private:
+  DeviceDisabledScreenActor* actor_;
+  system::DeviceDisablingManager* device_disabling_manager_;
+
   // Whether the screen is currently showing.
   bool showing_;
-
-  DeviceDisabledScreenActor* actor_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreen);
 };
