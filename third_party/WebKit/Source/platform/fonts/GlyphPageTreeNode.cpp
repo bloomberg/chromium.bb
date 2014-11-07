@@ -165,10 +165,9 @@ void GlyphPageTreeNode::initializePage(const FontData* fontData, unsigned pageNu
                         buffer[i] = zeroWidthSpace;
                     buffer[softHyphen] = zeroWidthSpace;
 
-                    // \n, \t, and nonbreaking space must render as a space.
+                    // \n and \t must render as a space.
                     buffer[newlineCharacter] = space;
                     buffer[characterTabulation] = space;
-                    buffer[noBreakSpace] = space;
                 } else if (start == (arabicLetterMark & ~(GlyphPage::size - 1))) {
                     buffer[arabicLetterMark - start] = zeroWidthSpace;
                 } else if (start == (leftToRightMark & ~(GlyphPage::size - 1))) {
