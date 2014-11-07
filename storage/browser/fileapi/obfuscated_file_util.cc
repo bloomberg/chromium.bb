@@ -15,6 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -66,6 +67,8 @@ void InitFileInfo(
 // on quota by storing data in paths, it doesn't need to be all that accurate.
 const int64 kPathCreationQuotaCost = 146;  // Bytes per inode, basically.
 const int64 kPathByteQuotaCost = 2;  // Bytes per byte of path length in UTF-8.
+
+const char kDirectoryDatabaseKeySeparator = ' ';
 
 int64 UsageForPath(size_t length) {
   return kPathCreationQuotaCost +
@@ -855,28 +858,22 @@ base::FilePath ObfuscatedFileUtil::GetDirectoryForOriginAndType(
 bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     const GURL& origin,
     const std::string& type_string) {
-  base::File::Error error = base::File::FILE_OK;
-  base::FilePath origin_type_path = GetDirectoryForOriginAndType(
-      origin, type_string, false, &error);
-  if (origin_type_path.empty())
-    return true;
-  if (error != base::File::FILE_ERROR_NOT_FOUND) {
-    // TODO(dmikurube): Consider the return value of DestroyDirectoryDatabase.
-    // We ignore its error now since 1) it doesn't matter the final result, and
-    // 2) it always returns false in Windows because of LevelDB's
-    // implementation.
-    // Information about failure would be useful for debugging.
-    if (!type_string.empty())
-      DestroyDirectoryDatabase(origin, type_string);
-    if (!base::DeleteFile(origin_type_path, true /* recursive */))
-      return false;
-  }
+  DestroyDirectoryDatabase(origin, type_string);
 
-  base::FilePath origin_path = VirtualPath::DirName(origin_type_path);
-  DCHECK_EQ(origin_path.value(),
-            GetDirectoryForOrigin(origin, false, NULL).value());
-
+  const base::FilePath origin_path = GetDirectoryForOrigin(origin, false, NULL);
   if (!type_string.empty()) {
+    // Delete the filesystem type directory.
+    base::File::Error error = base::File::FILE_OK;
+    const base::FilePath origin_type_path =
+        GetDirectoryForOriginAndType(origin, type_string, false, &error);
+    if (error == base::File::FILE_ERROR_FAILED)
+      return false;
+    if (error == base::File::FILE_OK &&
+        !origin_type_path.empty() &&
+        !base::DeleteFile(origin_type_path, true /* recursive */)) {
+      return false;
+    }
+
     // At this point we are sure we had successfully deleted the origin/type
     // directory (i.e. we're ready to just return true).
     // See if we have other directories in this origin directory.
@@ -898,10 +895,7 @@ bool ObfuscatedFileUtil::DeleteDirectoryForOriginAndType(
     origin_database_->RemovePathForOrigin(
         storage::GetIdentifierFromOrigin(origin));
   }
-  if (!base::DeleteFile(origin_path, true /* recursive */))
-    return false;
-
-  return true;
+  return base::DeleteFile(origin_path, true /* recursive */);
 }
 
 ObfuscatedFileUtil::AbstractOriginEnumerator*
@@ -913,18 +907,23 @@ ObfuscatedFileUtil::CreateOriginEnumerator() {
       origin_database_.get(), file_system_directory_);
 }
 
-bool ObfuscatedFileUtil::DestroyDirectoryDatabase(
+void ObfuscatedFileUtil::DestroyDirectoryDatabase(
     const GURL& origin,
     const std::string& type_string) {
-  std::string key = GetDirectoryDatabaseKey(origin, type_string);
-  if (key.empty())
-    return true;
-  DirectoryMap::iterator iter = directories_.find(key);
-  if (iter == directories_.end())
-    return true;
-  scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
-  directories_.erase(iter);
-  return database->DestroyDatabase();
+  // If |type_string| is empty, delete all filesystem types under |origin|.
+  const std::string key_prefix = GetDirectoryDatabaseKey(origin, type_string);
+  for (DirectoryMap::iterator iter = directories_.lower_bound(key_prefix);
+       iter != directories_.end();) {
+    if (!StartsWithASCII(iter->first, key_prefix, true))
+      break;
+    DCHECK(type_string.empty() || iter->first == key_prefix);
+    scoped_ptr<SandboxDirectoryDatabase> database(iter->second);
+    directories_.erase(iter++);
+
+    // Continue to destroy databases even if it failed because it doesn't affect
+    // the final result.
+    database->DestroyDatabase();
+  }
 }
 
 // static
@@ -1136,12 +1135,9 @@ base::FilePath ObfuscatedFileUtil::DataPathToLocalPath(
 
 std::string ObfuscatedFileUtil::GetDirectoryDatabaseKey(
     const GURL& origin, const std::string& type_string) {
-  if (type_string.empty()) {
-    LOG(WARNING) << "Unknown filesystem type requested:" << type_string;
-    return std::string();
-  }
   // For isolated origin we just use a type string as a key.
-  return storage::GetIdentifierFromOrigin(origin) + type_string;
+  return storage::GetIdentifierFromOrigin(origin) +
+      kDirectoryDatabaseKeySeparator + type_string;
 }
 
 // TODO(ericu): How to do the whole validation-without-creation thing?

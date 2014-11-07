@@ -28,7 +28,8 @@ namespace content {
 
 namespace {
 
-const GURL kOrigin("http://www.example.com");
+const GURL kOrigin1("http://www.example.com");
+const GURL kOrigin2("https://www.example.com");
 const std::string kPlugin1("plugin1");
 const std::string kPlugin2("plugin2");
 const storage::FileSystemType kType = storage::kFileSystemTypePluginPrivate;
@@ -72,14 +73,16 @@ class PluginPrivateFileSystemBackendTest : public testing::Test {
   base::ScopedTempDir data_dir_;
   base::MessageLoop message_loop_;
   scoped_refptr<FileSystemContext> context_;
-  std::string filesystem_id_;
 };
+
+// TODO(kinuko,nhiroki): There are a lot of duplicate code in these tests. Write
+// helper functions to simplify the tests.
 
 TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   const std::string filesystem_id1 = RegisterFileSystem();
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin,
+      kOrigin1,
       kType,
       filesystem_id1,
       kPlugin1,
@@ -92,7 +95,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   const std::string filesystem_id2 = RegisterFileSystem();
   error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin,
+      kOrigin1,
       kType,
       filesystem_id2,
       kPlugin1,
@@ -102,7 +105,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, OpenFileSystemBasic) {
   ASSERT_EQ(base::File::FILE_OK, error);
 
   const GURL root_url(storage::GetIsolatedFileSystemRootURIString(
-      kOrigin, filesystem_id1, kRootName));
+      kOrigin1, filesystem_id1, kRootName));
   FileSystemURL file = CreateURL(root_url, "foo");
   base::FilePath platform_path;
   EXPECT_EQ(base::File::FILE_OK,
@@ -119,7 +122,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   const std::string filesystem_id1 = RegisterFileSystem();
   base::File::Error error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin,
+      kOrigin1,
       kType,
       filesystem_id1,
       kPlugin1,
@@ -131,7 +134,7 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
   const std::string filesystem_id2 = RegisterFileSystem();
   error = base::File::FILE_ERROR_FAILED;
   backend()->OpenPrivateFileSystem(
-      kOrigin,
+      kOrigin1,
       kType,
       filesystem_id2,
       kPlugin2,
@@ -142,9 +145,8 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
 
   // Create 'foo' in kPlugin1.
   const GURL root_url1(storage::GetIsolatedFileSystemRootURIString(
-      kOrigin, filesystem_id1, kRootName));
+      kOrigin1, filesystem_id1, kRootName));
   FileSystemURL file1 = CreateURL(root_url1, "foo");
-  base::FilePath platform_path;
   EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::CreateFile(context_.get(), file1));
   EXPECT_TRUE(AsyncFileTestHelper::FileExists(
@@ -152,13 +154,137 @@ TEST_F(PluginPrivateFileSystemBackendTest, PluginIsolation) {
 
   // See the same path is not available in kPlugin2.
   const GURL root_url2(storage::GetIsolatedFileSystemRootURIString(
-      kOrigin, filesystem_id2, kRootName));
+      kOrigin1, filesystem_id2, kRootName));
   FileSystemURL file2 = CreateURL(root_url2, "foo");
   EXPECT_FALSE(AsyncFileTestHelper::FileExists(
       context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
 }
 
-// TODO(kinuko,nhiroki): also test if DeleteOriginDataOnFileThread
-// works fine when there's multiple plugin partitions.
+TEST_F(PluginPrivateFileSystemBackendTest, OriginIsolation) {
+  // Open filesystem for kOrigin1 and kOrigin2.
+  const std::string filesystem_id1 = RegisterFileSystem();
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
+  backend()->OpenPrivateFileSystem(
+      kOrigin1,
+      kType,
+      filesystem_id1,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(&DidOpenFileSystem, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(base::File::FILE_OK, error);
+
+  const std::string filesystem_id2 = RegisterFileSystem();
+  error = base::File::FILE_ERROR_FAILED;
+  backend()->OpenPrivateFileSystem(
+      kOrigin2,
+      kType,
+      filesystem_id2,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(&DidOpenFileSystem, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(base::File::FILE_OK, error);
+
+  // Create 'foo' in kOrigin1.
+  const GURL root_url1(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin1, filesystem_id1, kRootName));
+  FileSystemURL file1 = CreateURL(root_url1, "foo");
+  EXPECT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(context_.get(), file1));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file1, AsyncFileTestHelper::kDontCheckSize));
+
+  // See the same path is not available in kOrigin2.
+  const GURL root_url2(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin2, filesystem_id2, kRootName));
+  FileSystemURL file2 = CreateURL(root_url2, "foo");
+  EXPECT_FALSE(AsyncFileTestHelper::FileExists(
+      context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
+}
+
+TEST_F(PluginPrivateFileSystemBackendTest, DeleteOriginDirectory) {
+  // Open filesystem for kOrigin1 and kOrigin2.
+  const std::string filesystem_id1 = RegisterFileSystem();
+  base::File::Error error = base::File::FILE_ERROR_FAILED;
+  backend()->OpenPrivateFileSystem(
+      kOrigin1,
+      kType,
+      filesystem_id1,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(&DidOpenFileSystem, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(base::File::FILE_OK, error);
+
+  const std::string filesystem_id2 = RegisterFileSystem();
+  error = base::File::FILE_ERROR_FAILED;
+  backend()->OpenPrivateFileSystem(
+      kOrigin2,
+      kType,
+      filesystem_id2,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(&DidOpenFileSystem, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(base::File::FILE_OK, error);
+
+  // Create 'foo' in kOrigin1.
+  const GURL root_url1(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin1, filesystem_id1, kRootName));
+  FileSystemURL file1 = CreateURL(root_url1, "foo");
+  EXPECT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(context_.get(), file1));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file1, AsyncFileTestHelper::kDontCheckSize));
+
+  // Create 'foo' in kOrigin2.
+  const GURL root_url2(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin2, filesystem_id2, kRootName));
+  FileSystemURL file2 = CreateURL(root_url2, "foo");
+  EXPECT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(context_.get(), file2));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
+
+  // Delete data for kOrigin1.
+  error = backend()->DeleteOriginDataOnFileTaskRunner(
+      context_.get(), NULL, kOrigin1, kType);
+  EXPECT_EQ(base::File::FILE_OK, error);
+
+  // Confirm 'foo' in kOrigin1 is deleted.
+  EXPECT_FALSE(AsyncFileTestHelper::FileExists(
+      context_.get(), file1, AsyncFileTestHelper::kDontCheckSize));
+
+  // Confirm 'foo' in kOrigin2 is NOT deleted.
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file2, AsyncFileTestHelper::kDontCheckSize));
+
+  // Re-open filesystem for kOrigin1.
+  const std::string filesystem_id3 = RegisterFileSystem();
+  error = base::File::FILE_ERROR_FAILED;
+  backend()->OpenPrivateFileSystem(
+      kOrigin1,
+      kType,
+      filesystem_id3,
+      kPlugin1,
+      storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
+      base::Bind(&DidOpenFileSystem, &error));
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(base::File::FILE_OK, error);
+
+  // Re-create 'foo' in kOrigin1.
+  const GURL root_url3(storage::GetIsolatedFileSystemRootURIString(
+      kOrigin1, filesystem_id3, kRootName));
+  FileSystemURL file3 = CreateURL(root_url3, "foo");
+  EXPECT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(context_.get(), file3));
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file3, AsyncFileTestHelper::kDontCheckSize));
+
+  // Confirm 'foo' in kOrigin1 is re-created.
+  EXPECT_TRUE(AsyncFileTestHelper::FileExists(
+      context_.get(), file3, AsyncFileTestHelper::kDontCheckSize));
+}
 
 }  // namespace content

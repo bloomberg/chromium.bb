@@ -197,7 +197,7 @@ class STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
 
   // Deletes a directory database from the database list in the ObfuscatedFSFU
   // and destroys the database on the disk.
-  bool DestroyDirectoryDatabase(const GURL& origin,
+  void DestroyDirectoryDatabase(const GURL& origin,
                                 const std::string& type_string);
 
   // Computes a cost for storing a given file in the obfuscated FSFU.
