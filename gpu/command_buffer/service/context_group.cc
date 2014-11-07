@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/shader_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace gpu {
@@ -122,7 +121,6 @@ bool ContextGroup::Initialize(
   renderbuffer_manager_.reset(new RenderbufferManager(
       memory_tracker_.get(), max_renderbuffer_size, max_samples,
       depth24_supported));
-  valuebuffer_manager_.reset(new ValuebufferManager());
   shader_manager_.reset(new ShaderManager());
 
   // Lookup GL things we need to know.
@@ -300,11 +298,6 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   if (renderbuffer_manager_ != NULL) {
     renderbuffer_manager_->Destroy(have_context);
     renderbuffer_manager_.reset();
-  }
-
-  if (valuebuffer_manager_ != NULL) {
-    valuebuffer_manager_->Destroy();
-    valuebuffer_manager_.reset();
   }
 
   if (texture_manager_ != NULL) {

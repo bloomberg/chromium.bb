@@ -107,8 +107,6 @@ source_set("service") {
     "texture_manager.cc",
     "transfer_buffer_manager.cc",
     "transfer_buffer_manager.h",
-    "valuebuffer_manager.h",
-    "valuebuffer_manager.cc",
     "vertex_array_manager.h",
     "vertex_array_manager.cc",
     "vertex_attrib_manager.h",

@@ -13,7 +13,6 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "gpu/command_buffer/service/valuebuffer_manager.h"
 #include "gpu/command_buffer/service/vertex_attrib_manager.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
 #include "gpu/gpu_export.h"
@@ -200,9 +199,6 @@ struct GPU_EXPORT ContextState {
   // The currently bound renderbuffer
   scoped_refptr<Renderbuffer> bound_renderbuffer;
   bool bound_renderbuffer_valid;
-
-  // The currently bound valuebuffer
-  scoped_refptr<Valuebuffer> bound_valuebuffer;
 
   // A map of of target -> Query for current queries
   typedef std::map<GLuint, scoped_refptr<QueryManager::Query> > QueryMap;

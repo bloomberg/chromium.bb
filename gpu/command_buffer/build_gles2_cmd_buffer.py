@@ -1195,18 +1195,6 @@ _NAMED_TYPE_INFO = {
       'GL_SCANOUT_CHROMIUM'
     ],
   },
-  'ValueBufferTarget': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM',
-    ],
-  },
-  'SubscriptionTarget': {
-    'type': 'GLenum',
-    'valid': [
-      'GL_MOUSE_POSITION_CHROMIUM',
-    ],
-  },
   'VertexAttribType': {
     'type': 'GLenum',
     'valid': [
@@ -1458,57 +1446,6 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'client_test': False,
     'extension': "CHROMIUM_texture_mailbox",
-    'chromium': True,
-  },
-  'GenValuebuffersCHROMIUM': {
-    'type': 'GENn',
-    'gl_test_func': 'glGenValuebuffersCHROMIUM',
-    'resource_type': 'Valuebuffer',
-    'resource_types': 'Valuebuffers',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'DeleteValuebuffersCHROMIUM': {
-    'type': 'DELn',
-    'gl_test_func': 'glDeleteValuebuffersCHROMIUM',
-    'resource_type': 'Valuebuffer',
-    'resource_types': 'Valuebuffers',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'IsValuebufferCHROMIUM': {
-    'type': 'Is',
-    'decoder_func': 'DoIsValuebufferCHROMIUM',
-    'expectation': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'BindValuebufferCHROMIUM': {
-    'type': 'Bind',
-    'decoder_func': 'DoBindValueBufferCHROMIUM',
-    'gen_func': 'GenValueBuffersCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'SubscribeValueCHROMIUM': {
-    'decoder_func': 'DoSubscribeValueCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'PopulateSubscribedValuesCHROMIUM': {
-    'decoder_func': 'DoPopulateSubscribedValuesCHROMIUM',
-    'unit_test': False,
-    'extension': True,
-    'chromium': True,
-  },
-  'UniformValuebufferCHROMIUM': {
-    'decoder_func': 'DoUniformValueBufferCHROMIUM',
-    'unit_test': False,
-    'extension': True,
     'chromium': True,
   },
   'ClearStencil': {

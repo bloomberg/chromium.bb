@@ -682,31 +682,6 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): ConsumeTextureCHROMIUMImmediate
 // TODO(gman): CreateAndConsumeTextureCHROMIUMImmediate
 // TODO(gman): BindUniformLocationCHROMIUMBucket
-// TODO(gman): GenValuebuffersCHROMIUMImmediate
-// TODO(gman): DeleteValuebuffersCHROMIUMImmediate
-
-TEST_P(GLES2DecoderTest2, IsValuebufferCHROMIUMValidArgs) {
-  SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(true);
-  cmds::IsValuebufferCHROMIUM cmd;
-  cmd.Init(client_valuebuffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_NO_ERROR, GetGLError());
-}
-
-TEST_P(GLES2DecoderTest2, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
-  SpecializedSetup<cmds::IsValuebufferCHROMIUM, 0>(false);
-  cmds::IsValuebufferCHROMIUM cmd;
-  cmd.Init(client_valuebuffer_id_, kInvalidSharedMemoryId,
-           shared_memory_offset_);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-  cmd.Init(client_valuebuffer_id_, shared_memory_id_,
-           kInvalidSharedMemoryOffset);
-  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
-}
-// TODO(gman): BindValuebufferCHROMIUM
-// TODO(gman): SubscribeValueCHROMIUM
-// TODO(gman): PopulateSubscribedValuesCHROMIUM
-// TODO(gman): UniformValuebufferCHROMIUM
 // TODO(gman): BindTexImage2DCHROMIUM
 // TODO(gman): ReleaseTexImage2DCHROMIUM
 // TODO(gman): TraceBeginCHROMIUM
@@ -720,4 +695,13 @@ TEST_P(GLES2DecoderTest2, IsValuebufferCHROMIUMInvalidArgsBadSharedMemoryId) {
 
 // TODO(gman): WaitAllAsyncTexImage2DCHROMIUM
 
+// TODO(gman): LoseContextCHROMIUM
+// TODO(gman): InsertSyncPointCHROMIUM
+
+// TODO(gman): WaitSyncPointCHROMIUM
+
+// TODO(gman): DrawBuffersEXTImmediate
+// TODO(gman): DiscardBackbufferCHROMIUM
+
+// TODO(gman): ScheduleOverlayPlaneCHROMIUM
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_

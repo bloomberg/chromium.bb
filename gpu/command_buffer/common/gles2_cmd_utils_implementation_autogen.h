@@ -3065,14 +3065,6 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
      "GL_MAX_GEOMETRY_OUTPUT_VERTICES_EXT",
     },
     {
-     0x924C,
-     "GL_MOUSE_POSITION_CHROMIUM",
-    },
-    {
-     0x924B,
-     "GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM",
-    },
-    {
      0x924A,
      "GL_OVERLAY_TRANSFORM_ROTATE_270_CHROMIUM",
     },
@@ -4363,14 +4355,6 @@ std::string GLES2Util::GetStringStringType(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringSubscriptionTarget(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_MOUSE_POSITION_CHROMIUM, "GL_MOUSE_POSITION_CHROMIUM"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
 std::string GLES2Util::GetStringTextureBindTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_2D, "GL_TEXTURE_2D"},
@@ -4490,15 +4474,6 @@ std::string GLES2Util::GetStringTextureWrapMode(uint32_t value) {
       {GL_CLAMP_TO_EDGE, "GL_CLAMP_TO_EDGE"},
       {GL_MIRRORED_REPEAT, "GL_MIRRORED_REPEAT"},
       {GL_REPEAT, "GL_REPEAT"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringValueBufferTarget(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM,
-       "GL_SUBSCRIBED_VALUES_BUFFER_CHROMIUM"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

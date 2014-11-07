@@ -483,18 +483,6 @@ class WEBKIT_GPU_EXPORT WebGraphicsContext3DImpl
   virtual WebGLId createAndConsumeTextureCHROMIUM(WGC3Denum target,
                                       const WGC3Dbyte* mailbox);
 
-  virtual void genValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids);
-  virtual WebGLId createValuebufferCHROMIUM();
-  virtual void deleteValuebuffersCHROMIUM(WGC3Dsizei count, WebGLId* ids);
-  virtual void deleteValuebufferCHROMIUM(WebGLId);
-  virtual void bindValuebufferCHROMIUM(WGC3Denum target, WebGLId valuebuffer);
-  virtual WGC3Dboolean isValuebufferCHROMIUM(WebGLId renderbuffer);
-  virtual void subscribeValueCHROMIUM(WGC3Denum target, WGC3Denum subscription);
-  virtual void populateSubscribedValuesCHROMIUM(WGC3Denum target);
-  virtual void uniformValuebufferCHROMIUM(WGC3Dint location,
-                                          WGC3Denum target,
-                                          WGC3Denum subscription);
-
   virtual void insertEventMarkerEXT(const WGC3Dchar* marker);
   virtual void pushGroupMarkerEXT(const WGC3Dchar* marker);
   virtual void popGroupMarkerEXT();

@@ -193,7 +193,8 @@ bool ProgramManager::IsInvalidPrefix(const char* name, size_t length) {
       memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
 }
 
-Program::Program(ProgramManager* manager, GLuint service_id)
+Program::Program(
+    ProgramManager* manager, GLuint service_id)
     : manager_(manager),
       use_count_(0),
       max_attrib_name_length_(0),
