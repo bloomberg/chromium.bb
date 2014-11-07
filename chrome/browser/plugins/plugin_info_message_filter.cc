@@ -96,6 +96,41 @@ static void SendPluginAvailabilityUMA(const std::string& mime_type,
 
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
+// Report usage metrics for Silverlight and Flash plugin instantiations to the
+// RAPPOR service.
+void ReportMetrics(const std::string& mime_type,
+                   const GURL& url,
+                   const GURL& origin_url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (chrome::IsOffTheRecordSessionActive())
+    return;
+  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
+  if (!rappor_service)
+    return;
+
+  if (StartsWithASCII(mime_type, content::kSilverlightPluginMimeTypePrefix,
+                      false)) {
+    rappor_service->RecordSample(
+        "Plugins.SilverlightOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            origin_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  } else if (mime_type == content::kFlashPluginSwfMimeType ||
+             mime_type == content::kFlashPluginSplMimeType) {
+    rappor_service->RecordSample(
+        "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            origin_url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+    rappor_service->RecordSample(
+        "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
+        net::registry_controlled_domains::GetDomainAndRegistry(
+            url,
+            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
+  }
+}
+
 }  // namespace
 
 PluginInfoMessageFilter::Context::Context(int render_process_id,
@@ -201,10 +236,12 @@ void PluginInfoMessageFilter::PluginsLoaded(
 
   ChromeViewHostMsg_GetPluginInfo::WriteReplyParams(reply_msg, output);
   Send(reply_msg);
-  if (output.status.value != ChromeViewHostMsg_GetPluginInfo_Status::kNotFound)
+  if (output.status.value !=
+      ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(&PluginInfoMessageFilter::ReportMetrics, this, params));
+        FROM_HERE, base::Bind(&ReportMetrics, output.actual_mime_type,
+                              params.url, params.top_origin_url));
+  }
 }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -467,36 +504,4 @@ void PluginInfoMessageFilter::Context::MaybeGrantAccess(
 bool PluginInfoMessageFilter::Context::IsPluginEnabled(
     const content::WebPluginInfo& plugin) const {
   return plugin_prefs_->IsPluginEnabled(plugin);
-}
-
-void PluginInfoMessageFilter::ReportMetrics(
-    const GetPluginInfo_Params& params) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  if (chrome::IsOffTheRecordSessionActive())
-    return;
-  rappor::RapporService* rappor_service = g_browser_process->rappor_service();
-  if (!rappor_service)
-    return;
-
-  if (StartsWithASCII(params.mime_type,
-                      content::kSilverlightPluginMimeTypePrefix, false)) {
-    rappor_service->RecordSample(
-        "Plugins.SilverlightOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            params.top_origin_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-  } else if (params.mime_type == content::kFlashPluginSwfMimeType ||
-             params.mime_type == content::kFlashPluginSplMimeType) {
-    rappor_service->RecordSample(
-        "Plugins.FlashOriginUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            params.top_origin_url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-    rappor_service->RecordSample(
-        "Plugins.FlashUrl", rappor::ETLD_PLUS_ONE_RAPPOR_TYPE,
-        net::registry_controlled_domains::GetDomainAndRegistry(
-            params.url,
-            net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
-  }
 }

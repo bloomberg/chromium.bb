@@ -100,7 +100,6 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
   void PluginsLoaded(const GetPluginInfo_Params& params,
                      IPC::Message* reply_msg,
                      const std::vector<content::WebPluginInfo>& plugins);
-  void ReportMetrics(const GetPluginInfo_Params& params);
 
 #if defined(ENABLE_PEPPER_CDMS)
   // Returns whether any internal plugin supporting |mime_type| is registered
