@@ -56,7 +56,13 @@ IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, AddDifferentToAll) {
 
 // Tests the case where the Nth client pushes the server beyond its
 // MAX_SYNCABLE_DICTIONARY_WORDS limit.
-IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, Limit) {
+// Crashes on Windows. crbug.com/431354
+#if defined(OS_WIN)
+#define MAYBE_Limit DISABLE_Limit
+#else
+#define MAYBE_Limit Limit
+#endif
+IN_PROC_BROWSER_TEST_F(MultipleClientDictionarySyncTest, MAYBE_Limit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
