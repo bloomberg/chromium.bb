@@ -325,7 +325,10 @@ QuicCryptoClientConfig::CachedState* QuicCryptoClientConfig::LookupOrCreate(
 
   CachedState* cached = new CachedState;
   cached_states_.insert(make_pair(server_id, cached));
-  PopulateFromCanonicalConfig(server_id, cached);
+  bool cache_populated = PopulateFromCanonicalConfig(server_id, cached);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig",
+      cache_populated);
   return cached;
 }
 
@@ -829,7 +832,7 @@ void QuicCryptoClientConfig::DisableEcdsa() {
   disable_ecdsa_ = true;
 }
 
-void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
+bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
     const QuicServerId& server_id,
     CachedState* server_state) {
   DCHECK(server_state->IsEmpty());
@@ -840,7 +843,7 @@ void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
     }
   }
   if (i == canonical_suffixes_.size())
-    return;
+    return false;
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
                                 server_id.is_https(),
@@ -849,20 +852,21 @@ void QuicCryptoClientConfig::PopulateFromCanonicalConfig(
     // This is the first host we've seen which matches the suffix, so make it
     // canonical.
     canonical_server_map_[suffix_server_id] = server_id;
-    return;
+    return false;
   }
 
   const QuicServerId& canonical_server_id =
       canonical_server_map_[suffix_server_id];
   CachedState* canonical_state = cached_states_[canonical_server_id];
   if (!canonical_state->proof_valid()) {
-    return;
+    return false;
   }
 
   // Update canonical version to point at the "most recent" entry.
   canonical_server_map_[suffix_server_id] = server_id;
 
   server_state->InitializeFrom(*canonical_state);
+  return true;
 }
 
 }  // namespace net

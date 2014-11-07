@@ -282,8 +282,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // If the suffix of the hostname in |server_id| is in |canonical_suffixes_|,
   // then populate |cached| with the canonical cached state from
-  // |canonical_server_map_| for that suffix.
-  void PopulateFromCanonicalConfig(const QuicServerId& server_id,
+  // |canonical_server_map_| for that suffix. Returns true if |cached| is
+  // initialized with canonical cached state.
+  bool PopulateFromCanonicalConfig(const QuicServerId& server_id,
                                    CachedState* cached);
 
   // cached_states_ maps from the server_id to the cached information about

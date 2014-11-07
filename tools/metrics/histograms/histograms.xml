@@ -17332,6 +17332,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicCryptoClientConfig.PopulatedFromCanonicalConfig"
+    enum="BooleanPopulated">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of times CryptoClientConfig's CachedState is populated from
+    canonical config whenever we create a new CryptoClientConfig::CachedState.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicDiskCache.APICall" enum="QuicDiskCacheAPICall">
   <owner>rtenneti@chromium.org</owner>
   <summary>
@@ -41267,6 +41276,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <enum name="BooleanOrphan" type="int">
   <int value="0" label="Non-orphan"/>
   <int value="1" label="Orphan"/>
+</enum>
+
+<enum name="BooleanPopulated" type="int">
+  <int value="0" label="Not populated"/>
+  <int value="1" label="Populated"/>
 </enum>
 
 <enum name="BooleanPresent" type="int">
