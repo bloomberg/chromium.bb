@@ -2659,7 +2659,7 @@ should be able to be added at any place in this file.
 
 <action name="Flash.PluginInstanceCreated">
   <owner>thestig@chromium.org</owner>
-  <description>Count of frame loads that also load PPAPI Flash.</description>
+  <description>Count of Flash plugin instances.</description>
 </action>
 
 <action name="FocusAppMenu">

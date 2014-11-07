@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -390,6 +391,22 @@ void InitLatencyInfo(ui::LatencyInfo* new_latency,
   }
 }
 
+// How the throttled power saver is unthrottled, if ever.
+// These numeric values are used in UMA logs; do not change them.
+enum PowerSaverUnthrottleMethod {
+  UNTHROTTLE_METHOD_NEVER = 0,
+  UNTHROTTLE_METHOD_BY_CLICK = 1,
+  UNTHROTTLE_METHOD_BY_WHITELIST = 2,
+  UNTHROTTLE_METHOD_NUM_ITEMS
+};
+
+const char kPowerSaverUnthrottleHistogram[] = "Plugin.PowerSaverUnthrottle";
+
+void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method) {
+  UMA_HISTOGRAM_ENUMERATION(kPowerSaverUnthrottleHistogram, method,
+                            UNTHROTTLE_METHOD_NUM_ITEMS);
+}
+
 bool IsFlashPlugin(PluginModule* module) {
   return module->name() == kFlashPluginName;
 }
@@ -495,6 +512,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
       power_saver_enabled_(false),
+      is_peripheral_content_(false),
       plugin_throttled_(false),
       full_frame_(false),
       sent_initial_did_change_view_(false),
@@ -597,6 +615,9 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   DCHECK(!fullscreen_container_);
+
+  if (plugin_throttled_)
+    RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_NEVER);
 
   // Notify all the plugin objects of deletion. This will prevent blink from
   // calling into the plugin any more.
@@ -856,22 +877,28 @@ bool PepperPluginInstanceImpl::Initialize(
   blink::WebRect bounds = container_->element().boundsInViewportSpace();
 
   bool cross_origin = false;
-  power_saver_enabled_ =
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnablePluginPowerSaver) &&
+  is_peripheral_content_ =
       IsFlashPlugin(module_.get()) &&
-      power_saver_helper->ShouldThrottleContent(
-          content_origin, bounds.width, bounds.height, &cross_origin);
+      power_saver_helper->ShouldThrottleContent(content_origin, bounds.width,
+                                                bounds.height, &cross_origin);
 
-  if (power_saver_enabled_) {
+  power_saver_enabled_ = is_peripheral_content_ &&
+                         base::CommandLine::ForCurrentProcess()->HasSwitch(
+                             switches::kEnablePluginPowerSaver);
+
+  if (is_peripheral_content_) {
+    // To collect UMAs, register peripheral content even if we don't throttle.
     power_saver_helper->RegisterPeripheralPlugin(
         content_origin,
-        base::Bind(&PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle,
-                   weak_factory_.GetWeakPtr()));
+        base::Bind(
+            &PepperPluginInstanceImpl::DisablePowerSaverByRetroactiveWhitelist,
+            weak_factory_.GetWeakPtr()));
 
-    throttler_.reset(new PepperPluginInstanceThrottler(
-        base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
-                   weak_factory_.GetWeakPtr(), true /* throttled */)));
+    if (power_saver_enabled_) {
+      throttler_.reset(new PepperPluginInstanceThrottler(
+          base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
+                     weak_factory_.GetWeakPtr(), true /* throttled */)));
+    }
   } else if (cross_origin) {
     power_saver_helper->WhitelistContentOrigin(content_origin);
   }
@@ -1131,14 +1158,16 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
-  if (event.type == blink::WebInputEvent::MouseUp && power_saver_enabled_)
+  if (event.type == blink::WebInputEvent::MouseUp && is_peripheral_content_) {
+    is_peripheral_content_ = false;
     power_saver_enabled_ = false;
 
-  if (plugin_throttled_) {
-    if (event.type == blink::WebInputEvent::MouseUp)
-      SetPluginThrottled(false /* throttled */);
+    RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_CLICK);
 
-    return true;
+    if (plugin_throttled_) {
+      SetPluginThrottled(false /* throttled */);
+      return true;
+    }
   }
 
   if (!render_frame_)
@@ -3332,10 +3361,15 @@ void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
   SendDidChangeView();
 }
 
-void PepperPluginInstanceImpl::DisablePowerSaverAndUnthrottle() {
-  DCHECK(power_saver_enabled_);
+void PepperPluginInstanceImpl::DisablePowerSaverByRetroactiveWhitelist() {
+  if (!is_peripheral_content_)
+    return;
+
+  is_peripheral_content_ = false;
   power_saver_enabled_ = false;
   SetPluginThrottled(false);
+
+  RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_WHITELIST);
 }
 
 }  // namespace content

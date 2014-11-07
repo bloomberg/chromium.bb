@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
+#include "base/metrics/histogram.h"
 #include "content/common/frame_messages.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/navigation_state.h"
@@ -16,10 +17,28 @@ namespace content {
 
 namespace {
 
+// Initial decision of the peripheral content decision.
+// These numeric values are used in UMA logs; do not change them.
+enum PeripheralHeuristicDecision {
+  HEURISTIC_DECISION_PERIPHERAL = 0,
+  HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN = 1,
+  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG = 2,
+  HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
+  HEURISTIC_DECISION_NUM_ITEMS
+};
+
+const char kPeripheralHeuristicHistogram[] =
+    "Plugin.PowerSaverPeripheralHeuristic";
+
 // Maximum dimensions plug-in content may have while still being considered
 // peripheral content. These match the sizes used by Safari.
 const int kPeripheralContentMaxWidth = 400;
 const int kPeripheralContentMaxHeight = 300;
+
+void RecordDecisionMetric(PeripheralHeuristicDecision decision) {
+  UMA_HISTOGRAM_ENUMERATION(kPeripheralHeuristicHistogram, decision,
+                            HEURISTIC_DECISION_NUM_ITEMS);
+}
 
 }  // namespace
 
@@ -89,23 +108,33 @@ bool PluginPowerSaverHelper::ShouldThrottleContent(const GURL& content_origin,
   // --site-per-process mode.
   blink::WebFrame* main_frame =
       render_frame()->GetWebFrame()->view()->mainFrame();
-  if (main_frame->isWebRemoteFrame())
+  if (main_frame->isWebRemoteFrame()) {
+    RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
     return true;
+  }
 
   // All same-origin plugin content is essential.
   GURL main_frame_origin = GURL(main_frame->document().url()).GetOrigin();
   if (content_origin == main_frame_origin) {
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_SAME_ORIGIN);
     *cross_origin = false;
     return false;
   }
 
   // Whitelisted plugin origins are also essential.
-  if (origin_whitelist_.count(content_origin))
+  if (origin_whitelist_.count(content_origin)) {
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_WHITELISTED);
     return false;
+  }
 
   // Cross-origin plugin content is peripheral if smaller than a maximum size.
   bool content_is_small = width < kPeripheralContentMaxWidth ||
                           height < kPeripheralContentMaxHeight;
+
+  if (content_is_small)
+    RecordDecisionMetric(HEURISTIC_DECISION_PERIPHERAL);
+  else
+    RecordDecisionMetric(HEURISTIC_DECISION_ESSENTIAL_CROSS_ORIGIN_BIG);
 
   return content_is_small;
 }

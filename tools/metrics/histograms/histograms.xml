@@ -25088,6 +25088,26 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Collects Flash usage data.</summary>
 </histogram>
 
+<histogram name="Plugin.PowerSaverPeripheralHeuristic"
+    enum="PluginPowerSaverPeripheralHeuristicDecision">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Record the initial decision of the Plugin Power Saver peripheral content
+    heuristic. For each plugin instance, this heuristic decides whether the
+    plugin instance is essential content or peripheral. All same-origin content
+    is essential. Cross-origin content is peripheral if it is small and not on
+    the origin whitelist.
+  </summary>
+</histogram>
+
+<histogram name="Plugin.PowerSaverUnthrottle"
+    enum="PluginPowerSaverUnthrottleMethod">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Record how many throttled plugins are unthrottled, and by what method.
+  </summary>
+</histogram>
+
 <histogram name="Plugin.PpapiBrokerLoadErrorCode" units="code">
   <owner>xhwang@chromium.org</owner>
   <summary>The error code of a PPAPI broker load failure.</summary>
@@ -51274,6 +51294,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="ENTRY_POINT_MISSING"/>
   <int value="3" label="INIT_FAILED"/>
   <int value="4" label="FILE_MISSING"/>
+</enum>
+
+<enum name="PluginPowerSaverPeripheralHeuristicDecision" type="int">
+  <int value="0" label="Peripheral"/>
+  <int value="1" label="Essential Same-Origin"/>
+  <int value="2" label="Essential Cross-Origin Big"/>
+  <int value="3" label="Essential Cross-Origin Whitelisted"/>
+</enum>
+
+<enum name="PluginPowerSaverUnthrottleMethod" type="int">
+  <int value="0" label="Never Unthrottled"/>
+  <int value="1" label="Unthrottled by Click"/>
+  <int value="2" label="Unthrottled by Retroactive Whitelist"/>
 </enum>
 
 <enum name="PNaClOptionsOptLevelEnum" type="int">
