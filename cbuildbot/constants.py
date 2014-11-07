@@ -494,6 +494,11 @@ CL_ACTION_PRE_CQ_READY_TO_SUBMIT = 'pre_cq_ready_to_submit'
 # it is seen by the pre-cq-launcher.
 CL_ACTION_REQUEUED = 'requeued'
 
+# Recorded by pre-cq launcher when it begins handling a change that isn't marked
+# as CQ+1. This indicates that all actions between this and the next
+# CL_ACTION_REQUEUED action have occured on a non-CQ+1 change.
+CL_ACTION_SPECULATIVE = 'speculative'
+
 # Recorded by pre-cq launcher when it has screened a change for necessary
 # tryjobs
 CL_ACTION_SCREENED_FOR_PRE_CQ = 'screened_for_pre_cq'
@@ -525,7 +530,8 @@ CL_ACTIONS = [CL_ACTION_PICKED_UP,
               CL_ACTION_SCREENED_FOR_PRE_CQ,
               CL_ACTION_VALIDATION_PENDING_PRE_CQ,
               CL_ACTION_IRRELEVANT_TO_SLAVE,
-              CL_ACTION_TRYBOT_LAUNCHING]
+              CL_ACTION_TRYBOT_LAUNCHING,
+              CL_ACTION_SPECULATIVE]
 
 # Per-config status strings for a CL.
 CL_PRECQ_CONFIG_STATUS_PENDING = 'pending'
