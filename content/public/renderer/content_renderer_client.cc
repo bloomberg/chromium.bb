@@ -198,7 +198,8 @@ bool ContentRendererClient::IsPluginAllowedToUseDevChannelAPIs() {
 
 BrowserPluginDelegate* ContentRendererClient::CreateBrowserPluginDelegate(
     RenderFrame* render_frame,
-    const std::string& mime_type) {
+    const std::string& mime_type,
+    const GURL& original_url) {
   return nullptr;
 }
 

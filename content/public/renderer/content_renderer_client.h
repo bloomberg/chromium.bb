@@ -115,7 +115,8 @@ class CONTENT_EXPORT ContentRendererClient {
   // Creates a delegate for browser plugin.
   virtual BrowserPluginDelegate* CreateBrowserPluginDelegate(
       RenderFrame* render_frame,
-      const std::string& mime_type);
+      const std::string& mime_type,
+      const GURL& original_url);
 
   // Returns true if the embedder has an error page to show for the given http
   // status code. If so |error_domain| should be set to according to WebURLError

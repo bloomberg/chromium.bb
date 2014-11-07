@@ -179,11 +179,14 @@ bool ShellContentRendererClient::ShouldEnableSiteIsolationPolicy() const {
 content::BrowserPluginDelegate*
 ShellContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
-    const std::string& mime_type) {
-  if (mime_type == content::kBrowserPluginMimeType)
+    const std::string& mime_type,
+    const GURL& original_url) {
+  if (mime_type == content::kBrowserPluginMimeType) {
     return new extensions::ExtensionsGuestViewContainer(render_frame);
-  else
-    return new extensions::MimeHandlerViewContainer(render_frame, mime_type);
+  } else {
+    return new extensions::MimeHandlerViewContainer(
+        render_frame, mime_type, original_url);
+  }
 }
 
 }  // namespace extensions

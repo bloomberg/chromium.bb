@@ -97,6 +97,11 @@ void PluginManager::OnExtensionLoaded(content::BrowserContext* browser_context,
          mime_type != handler->mime_type_set().end(); ++mime_type) {
       content::WebPluginMimeType mime_type_info;
       mime_type_info.mime_type = *mime_type;
+      base::FilePath::StringType file_extension;
+      if (net::GetPreferredExtensionForMimeType(*mime_type, &file_extension)) {
+        mime_type_info.file_extensions.push_back(
+            base::FilePath(file_extension).AsUTF8Unsafe());
+      }
       info.mime_types.push_back(mime_type_info);
     }
 

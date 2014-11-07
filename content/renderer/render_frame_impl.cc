@@ -1673,7 +1673,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   if (base::UTF16ToUTF8(params.mimeType) == kBrowserPluginMimeType) {
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(this,
-            kBrowserPluginMimeType));
+            kBrowserPluginMimeType, GURL(params.url)));
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
         render_view_.get(), frame, browser_plugin_delegate.Pass());
   }
@@ -1691,7 +1691,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   if (info.type == WebPluginInfo::PLUGIN_TYPE_BROWSER_PLUGIN) {
     scoped_ptr<BrowserPluginDelegate> browser_plugin_delegate(
         GetContentClient()->renderer()->CreateBrowserPluginDelegate(
-            this, base::UTF16ToUTF8(params.mimeType)));
+            this, mime_type, GURL(params.url)));
     return render_view_->GetBrowserPluginManager()->CreateBrowserPlugin(
         render_view_.get(), frame, browser_plugin_delegate.Pass());
   }

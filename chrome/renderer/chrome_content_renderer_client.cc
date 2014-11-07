@@ -1596,12 +1596,15 @@ bool ChromeContentRendererClient::IsPluginAllowedToUseVideoDecodeAPI(
 content::BrowserPluginDelegate*
 ChromeContentRendererClient::CreateBrowserPluginDelegate(
     content::RenderFrame* render_frame,
-    const std::string& mime_type) {
+    const std::string& mime_type,
+    const GURL& original_url) {
 #if defined(ENABLE_EXTENSIONS)
-  if (mime_type == content::kBrowserPluginMimeType)
+  if (mime_type == content::kBrowserPluginMimeType) {
     return new extensions::ExtensionsGuestViewContainer(render_frame);
-  else
-    return new extensions::MimeHandlerViewContainer(render_frame, mime_type);
+  } else {
+    return new extensions::MimeHandlerViewContainer(
+        render_frame, mime_type, original_url);
+  }
 #else
   return NULL;
 #endif

@@ -49,7 +49,8 @@ class ShellContentRendererClient : public content::ContentRendererClient {
   bool ShouldEnableSiteIsolationPolicy() const override;
   content::BrowserPluginDelegate* CreateBrowserPluginDelegate(
       content::RenderFrame* render_frame,
-      const std::string& mime_type) override;
+      const std::string& mime_type,
+      const GURL& original_url) override;
 
  private:
   scoped_ptr<ShellExtensionsClient> extensions_client_;
