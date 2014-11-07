@@ -117,7 +117,7 @@ class UploadPrebuiltsStageTest(
     generic_stages_unittest.RunCommandAbstractStageTest):
   """Tests for the UploadPrebuilts stage."""
 
-  CMD = './upload_prebuilts'
+  cmd = 'upload_prebuilts'
   RELEASE_TAG = ''
 
   def setUp(self):
@@ -125,7 +125,8 @@ class UploadPrebuiltsStageTest(
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(UploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
-
+    self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
+                            'upload_prebuilts')
     self._run.options.prebuilts = True
 
   def ConstructStage(self):
@@ -145,8 +146,8 @@ class UploadPrebuiltsStageTest(
     """
     self._Prepare(bot_id)
     self.RunStage()
-    public_prefix = [self.CMD] + (public_args or [])
-    private_prefix = [self.CMD] + (private_args or [])
+    public_prefix = [self.cmd] + (public_args or [])
+    private_prefix = [self.cmd] + (private_args or [])
     for board, public in board_map.iteritems():
       if public or public_args:
         public_cmd = public_prefix + ['--slave-board', board]
@@ -156,8 +157,8 @@ class UploadPrebuiltsStageTest(
       self.assertCommandContains(private_cmd, expected=not public)
       count -= 1
     if board_map:
-      self.assertCommandContains([self.CMD, '--set-version',
-                                  self._run.GetVersion()])
+      self.assertCommandContains([self.cmd, '--set-version',
+                                  self._run.GetVersion()], )
       count -= 1
     self.assertEqual(count, 0,
         'Number of asserts performed does not match (%d remaining)' % count)
@@ -165,7 +166,7 @@ class UploadPrebuiltsStageTest(
   def testFullPrebuiltsUpload(self):
     """Test uploading of full builder prebuilts."""
     self._VerifyBoardMap('x86-generic-full', 0, {})
-    self.assertCommandContains([self.CMD, '--git-sync'])
+    self.assertCommandContains([self.cmd, '--git-sync'])
 
   def testIncorrectCount(self):
     """Test that _VerifyBoardMap asserts when the count is wrong."""
@@ -177,7 +178,7 @@ class MasterUploadPrebuiltsStageTest(
     generic_stages_unittest.RunCommandAbstractStageTest):
   """Tests for the MasterUploadPrebuilts stage."""
 
-  CMD = './upload_prebuilts'
+  cmd = 'upload_prebuilts'
   RELEASE_TAG = '1234.5.6'
   VERSION = 'R%s-%s' % (DEFAULT_CHROME_BRANCH, RELEASE_TAG)
 
@@ -186,7 +187,8 @@ class MasterUploadPrebuiltsStageTest(
 
   def _Prepare(self, bot_id=None, **kwargs):
     super(MasterUploadPrebuiltsStageTest, self)._Prepare(bot_id, **kwargs)
-
+    self.cmd = os.path.join(self.build_root, constants.CHROMITE_BIN_SUBDIR,
+                            'upload_prebuilts')
     self._run.options.prebuilts = True
 
   def ConstructStage(self):
@@ -219,28 +221,28 @@ class MasterUploadPrebuiltsStageTest(
     if public_slave_boards:
       # It would be nice to confirm that --private is not in command, but note
       # that --sync-host should not appear in the --private command.
-      cmd = [self.CMD, '--sync-binhost-conf', '--sync-host']
+      cmd = [self.cmd, '--sync-binhost-conf', '--sync-host']
       self.assertCommandContains(cmd, expected=True)
 
     # Some args are expected for any private run.
     if private_slave_boards:
-      cmd = [self.CMD, '--sync-binhost-conf', '--private']
+      cmd = [self.cmd, '--sync-binhost-conf', '--private']
       self.assertCommandContains(cmd, expected=True)
 
     # Assert public slave boards are mentioned in public run.
     for board in public_slave_boards:
       # This check does not actually confirm that this board was in the public
       # run rather than the private run, unfortunately.
-      cmd = [self.CMD, '--slave-board', board]
+      cmd = [self.cmd, '--slave-board', board]
       self.assertCommandContains(cmd, expected=True)
 
     # Assert private slave boards are mentioned in private run.
     for board in private_slave_boards:
-      cmd = [self.CMD, '--slave-board', board, '--private']
+      cmd = [self.cmd, '--slave-board', board, '--private']
       self.assertCommandContains(cmd, expected=True)
 
     # We expect --set-version so long as build config has manifest_version=True.
-    self.assertCommandContains([self.CMD, '--set-version', self.VERSION],
+    self.assertCommandContains([self.cmd, '--set-version', self.VERSION],
                                expected=self._run.config.manifest_version)
 
   def testMasterPaladinUpload(self):
