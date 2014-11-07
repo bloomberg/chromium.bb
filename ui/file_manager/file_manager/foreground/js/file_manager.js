@@ -177,6 +177,13 @@ function FileManager() {
   this.searchController_ = null;
 
   /**
+   * Controller for directory scan.
+   * @type {ScanController}
+   * @private
+   */
+  this.scanController_ = null;
+
+  /**
    * Controller for spinner.
    * @type {SpinnerController}
    * @private
@@ -333,37 +340,6 @@ function FileManager() {
    * @private
    */
   this.onEntriesChangedBound_ = null;
-
-  // --------------------------------------------------------------------------
-  // Scan state.
-
-  /**
-   * Whether a scan is in progress.
-   * @type {boolean}
-   * @private
-   */
-  this.scanInProgress_ = false;
-
-  /**
-   * Whether a scan is updated at least once. If true, spinner should disappear.
-   * @type {boolean}
-   * @private
-   */
-  this.scanUpdatedAtLeastOnceOrCompleted_ = false;
-
-  /**
-   * Timer ID to delay UI refresh after a scan is completed.
-   * @type {number}
-   * @private
-   */
-  this.scanCompletedTimer_ = 0;
-
-  /**
-   * Timer ID to delay UI refresh after a scan is updated.
-   * @type {number}
-   * @private
-   */
-  this.scanUpdatedTimer_ = 0;
 
   // --------------------------------------------------------------------------
   // Miscellaneous FileManager's states.
@@ -715,13 +691,18 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       listBeingUpdated = null;
     });
 
-    dm.addEventListener('scan-started', this.onScanStarted_.bind(this));
-    dm.addEventListener('scan-completed', this.onScanCompleted_.bind(this));
-    dm.addEventListener('scan-failed', this.onScanCancelled_.bind(this));
-    dm.addEventListener('scan-cancelled', this.onScanCancelled_.bind(this));
-    dm.addEventListener('scan-updated', this.onScanUpdated_.bind(this));
-    dm.addEventListener('rescan-completed',
-                        this.onRescanCompleted_.bind(this));
+    this.initContextMenus_();
+    this.initCommands_();
+    assert(this.directoryModel_);
+    assert(this.spinnerController_);
+    assert(this.commandHandler);
+    assert(this.selectionHandler_);
+    this.scanController_ = new ScanController(
+        this.directoryModel_,
+        this.ui_.listContainer,
+        this.spinnerController_,
+        this.commandHandler,
+        this.selectionHandler_);
 
     this.directoryTree_.addEventListener('change', function() {
       this.ensureDirectoryTreeItemNotBehindPreviewPanel_();
@@ -751,8 +732,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }.bind(this));
 
     this.initDataTransferOperations_();
-    this.initContextMenus_();
-    this.initCommands_();
 
     this.updateFileTypeFilter_();
     this.selectionHandler_.onFileSelectionChanged();
@@ -2576,132 +2555,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         input.selectionEnd = selectionEnd;
       }
     }, 0);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onScanStarted_ = function() {
-    if (this.scanInProgress_)
-      this.ui_.listContainer.endBatchUpdates();
-
-    if (this.commandHandler)
-      this.commandHandler.updateAvailability();
-
-    this.ui_.listContainer.startBatchUpdates();
-    this.scanInProgress_ = true;
-
-    this.scanUpdatedAtLeastOnceOrCompleted_ = false;
-    if (this.scanCompletedTimer_) {
-      clearTimeout(this.scanCompletedTimer_);
-      this.scanCompletedTimer_ = 0;
-    }
-
-    if (this.scanUpdatedTimer_) {
-      clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = 0;
-    }
-
-    this.spinnerController_.showLater();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onScanCompleted_ = function() {
-    if (!this.scanInProgress_) {
-      console.error('Scan-completed event recieved. But scan is not started.');
-      return;
-    }
-
-    if (this.commandHandler)
-      this.commandHandler.updateAvailability();
-    this.spinnerController_.hide();
-
-    if (this.scanUpdatedTimer_) {
-      clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = 0;
-    }
-
-    // To avoid flickering postpone updating the ui by a small amount of time.
-    // There is a high chance, that metadata will be received within 50 ms.
-    this.scanCompletedTimer_ = setTimeout(function() {
-      // Check if batch updates are already finished by onScanUpdated_().
-      if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
-        this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-      }
-
-      this.scanInProgress_ = false;
-      this.ui_.listContainer.endBatchUpdates();
-      this.scanCompletedTimer_ = 0;
-    }.bind(this), 50);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onScanUpdated_ = function() {
-    if (!this.scanInProgress_) {
-      console.error('Scan-updated event recieved. But scan is not started.');
-      return;
-    }
-
-    if (this.scanUpdatedTimer_ || this.scanCompletedTimer_)
-      return;
-
-    // Show contents incrementally by finishing batch updated, but only after
-    // 200ms elapsed, to avoid flickering when it is not necessary.
-    this.scanUpdatedTimer_ = setTimeout(function() {
-      // We need to hide the spinner only once.
-      if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
-        this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-        this.spinnerController_.hide();
-      }
-
-      // Update the UI.
-      if (this.scanInProgress_) {
-        this.ui_.listContainer.endBatchUpdates();
-        this.ui_.listContainer.startBatchUpdates();
-      }
-      this.scanUpdatedTimer_ = 0;
-    }.bind(this), 200);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onScanCancelled_ = function() {
-    if (!this.scanInProgress_) {
-      console.error('Scan-cancelled event recieved. But scan is not started.');
-      return;
-    }
-
-    if (this.commandHandler)
-      this.commandHandler.updateAvailability();
-    this.spinnerController_.hide();
-    if (this.scanCompletedTimer_) {
-      clearTimeout(this.scanCompletedTimer_);
-      this.scanCompletedTimer_ = 0;
-    }
-    if (this.scanUpdatedTimer_) {
-      clearTimeout(this.scanUpdatedTimer_);
-      this.scanUpdatedTimer_ = 0;
-    }
-    // Finish unfinished batch updates.
-    if (!this.scanUpdatedAtLeastOnceOrCompleted_) {
-      this.scanUpdatedAtLeastOnceOrCompleted_ = true;
-    }
-
-    this.scanInProgress_ = false;
-    this.ui_.listContainer.endBatchUpdates();
-  };
-
-  /**
-   * Handle the 'rescan-completed' from the DirectoryModel.
-   * @private
-   */
-  FileManager.prototype.onRescanCompleted_ = function() {
-    this.selectionHandler_.onFileSelectionChanged();
   };
 
   FileManager.prototype.createNewFolder = function() {

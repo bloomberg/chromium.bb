@@ -161,6 +161,7 @@ function FileSelectionHandler(fileManager) {
   this.filenameInput_ = fileManager.ui.dialogFooter.filenameInput;
   this.previewPanel_ = fileManager.ui.previewPanel;
   this.taskItems_ = fileManager.taskItems_;
+  this.selection = new FileSelection(this.fileManager_, []);
 }
 
 /**

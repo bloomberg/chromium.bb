@@ -75,6 +75,7 @@
           './naming_controller.js',
           './navigation_list_model.js',
           './progress_center_item_group.js',
+          './scan_controller.js',
           './search_controller.js',
           './spinner_controller.js',
           './share_client.js',
