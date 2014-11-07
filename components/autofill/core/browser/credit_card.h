@@ -31,8 +31,12 @@ class CreditCard : public AutofillDataModel {
   // The user-visible type of the card, e.g. 'Mastercard'.
   static base::string16 TypeForDisplay(const std::string& type);
 
+// This method is not compiled on iOS because the resources are not used and
+// should not be shipped.
+#if !defined(OS_IOS)
   // The ResourceBundle ID for the appropriate credit card image.
   static int IconResourceId(const std::string& type);
+#endif  // #if !defined(OS_IOS)
 
   // Returns the internal representation of credit card type corresponding to
   // the given |number|.  The credit card type is determined purely according to

@@ -163,6 +163,9 @@ TEST(CreditCardTest, Compare) {
   EXPECT_LT(0, b.Compare(a));
 }
 
+// This method is not compiled for iOS because these resources are not used and
+// should not be shipped.
+#if !defined(OS_IOS)
 // Test we get the correct icon for each card type.
 TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_AMEX,
@@ -178,6 +181,7 @@ TEST(CreditCardTest, IconResourceId) {
   EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
             CreditCard::IconResourceId(kVisaCard));
 }
+#endif  // #if !defined(OS_IOS)
 
 TEST(CreditCardTest, UpdateFromImportedCard) {
   CreditCard original_card(base::GenerateGUID(), "https://www.example.com");
