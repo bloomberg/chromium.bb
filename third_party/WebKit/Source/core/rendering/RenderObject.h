@@ -784,7 +784,7 @@ public:
     // Build an array of quads in absolute coords for line boxes
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* /*wasFixed*/ = 0) const { }
 
-    virtual void absoluteFocusRingQuads(Vector<FloatQuad>&);
+    virtual IntRect absoluteFocusRingBoundingBoxRect() const;
 
     static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 

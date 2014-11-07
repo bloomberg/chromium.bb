@@ -1028,14 +1028,12 @@ IntRect RenderObject::absoluteBoundingBoxRectIgnoringTransforms() const
     return pixelSnappedIntRect(result);
 }
 
-void RenderObject::absoluteFocusRingQuads(Vector<FloatQuad>& quads)
+IntRect RenderObject::absoluteFocusRingBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
     const RenderLayerModelObject* container = containerForPaintInvalidation();
     addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)), container);
-    size_t count = rects.size();
-    for (size_t i = 0; i < count; ++i)
-        quads.append(container->localToAbsoluteQuad(FloatQuad(rects[i])));
+    return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
 }
 
 FloatRect RenderObject::absoluteBoundingBoxRectForRange(const Range* range)

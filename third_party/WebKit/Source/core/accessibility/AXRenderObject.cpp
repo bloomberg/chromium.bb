@@ -2395,19 +2395,20 @@ LayoutRect AXRenderObject::computeElementRect() const
     if (obj->node()) // If we are a continuation, we want to make sure to use the primary renderer.
         obj = obj->node()->renderer();
 
-    // absoluteFocusRingQuads will query the hierarchy below this element, which for large webpages can be very slow.
+    // absoluteFocusRingBoundingBox will query the hierarchy below this element, which for large webpages can be very slow.
     // For a web area, which will have the most elements of any element, absoluteQuads should be used.
     // We should also use absoluteQuads for SVG elements, otherwise transforms won't be applied.
-    Vector<FloatQuad> quads;
 
-    if (obj->isText())
+    LayoutRect result;
+    if (obj->isText()) {
+        Vector<FloatQuad> quads;
         toRenderText(obj)->absoluteQuads(quads, 0, RenderText::ClipToEllipsis);
-    else if (isWebArea() || obj->isSVGRoot())
-        obj->absoluteQuads(quads);
-    else
-        obj->absoluteFocusRingQuads(quads);
-
-    LayoutRect result = boundingBoxForQuads(obj, quads);
+        result = boundingBoxForQuads(obj, quads);
+    } else if (isWebArea() || obj->isSVGRoot()) {
+        result = obj->absoluteBoundingBoxRect();
+    } else {
+        result = obj->absoluteFocusRingBoundingBoxRect();
+    }
 
     Document* document = this->document();
     if (document && document->isSVGDocument())

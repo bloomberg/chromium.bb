@@ -52,10 +52,7 @@ LayoutRect AXSpinButton::elementRect() const
     if (!m_spinButtonElement || !m_spinButtonElement->renderer())
         return LayoutRect();
 
-    Vector<FloatQuad> quads;
-    m_spinButtonElement->renderer()->absoluteFocusRingQuads(quads);
-
-    return boundingBoxForQuads(m_spinButtonElement->renderer(), quads);
+    return m_spinButtonElement->renderer()->absoluteFocusRingBoundingBoxRect();
 }
 
 void AXSpinButton::addChildren()
