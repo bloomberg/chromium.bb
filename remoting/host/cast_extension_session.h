@@ -69,7 +69,6 @@ class CastExtensionSession : public HostExtensionSession,
                           const protocol::ExtensionMessage& message) override;
 
   // webrtc::PeerConnectionObserver interface.
-  void OnError() override;
   void OnSignalingChange(
       webrtc::PeerConnectionInterface::SignalingState new_state) override;
   void OnStateChange(

@@ -553,7 +553,7 @@ bool CastExtensionSession::SetupVideoStream(
   stream_ = peer_conn_factory_->CreateLocalMediaStream(kStreamLabel);
 
   if (!stream_->AddTrack(video_track) ||
-      !peer_connection_->AddStream(stream_, NULL)) {
+      !peer_connection_->AddStream(stream_)) {
     return false;
   }
 
@@ -587,11 +587,6 @@ bool CastExtensionSession::connection_active() const {
 }
 
 // webrtc::PeerConnectionObserver implementation -------------------------------
-
-void CastExtensionSession::OnError() {
-  VLOG(1) << "PeerConnectionObserver: an error occurred.";
-}
-
 void CastExtensionSession::OnSignalingChange(
     webrtc::PeerConnectionInterface::SignalingState new_state) {
   VLOG(1) << "PeerConnectionObserver: SignalingState changed to:" << new_state;
