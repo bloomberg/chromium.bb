@@ -561,6 +561,7 @@ void TileManager::AssignGpuMemoryToTiles(
 
     ManagedTileState& mts = tile->managed_state();
     mts.scheduled_priority = schedule_priority++;
+    mts.resolution = priority.resolution;
 
     DCHECK(mts.draw_info.mode() ==
                ManagedTileState::DrawInfo::PICTURE_PILE_MODE ||
