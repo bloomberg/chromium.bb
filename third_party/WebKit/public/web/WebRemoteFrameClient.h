@@ -12,6 +12,7 @@ namespace blink {
 class WebInputEvent;
 class WebLocalFrame;
 class WebRemoteFrame;
+struct WebRect;
 
 class WebRemoteFrameClient {
 public:
