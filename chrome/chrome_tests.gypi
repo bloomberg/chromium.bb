@@ -1525,6 +1525,12 @@
             'test/base/view_event_test_platform_part_ash.cc',
           ],
         }],
+        ['chromeos==1 and branding=="Chrome"', {
+          'sources!': [
+            # These tests are failing on official cros bots. crbug.com/431450.
+            'browser/ui/views/bookmarks/bookmark_bar_view_test.cc',
+          ],
+        }],
         ['OS=="win"', {
           'include_dirs': [
             '../third_party/wtl/include',
