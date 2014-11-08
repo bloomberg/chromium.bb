@@ -230,6 +230,9 @@ class GCMClientImpl
   // |gcm_store_| fails.
   void DefaultStoreCallback(bool success);
 
+  // Callback for store operation where result does not matter.
+  void IgnoreWriteResultCallback(bool success);
+
   // Completes the registration request.
   void OnRegisterCompleted(const std::string& app_id,
                            const std::vector<std::string>& sender_ids,

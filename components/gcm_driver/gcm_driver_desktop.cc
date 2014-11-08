@@ -363,6 +363,10 @@ GCMDriverDesktop::GCMDriverDesktop(
       gcm_enabled_(true),
       connected_(false),
       account_mapper_(new GCMAccountMapper(this)),
+      // Setting to max, to make sure it does not prompt for token reporting
+      // Before reading a reasonable value from the DB, which might be never,
+      // in which case the fetching will be triggered.
+      last_token_fetch_time_(base::Time::Max()),
       ui_thread_(ui_thread),
       io_thread_(io_thread),
       weak_ptr_factory_(this) {
@@ -772,9 +776,10 @@ void GCMDriverDesktop::GCMClientReady(
     const base::Time& last_token_fetch_time) {
   DCHECK(ui_thread_->RunsTasksOnCurrentThread());
 
+  last_token_fetch_time_ = last_token_fetch_time;
+
   GCMDriver::AddAppHandler(kGCMAccountMapperAppId, account_mapper_.get());
   account_mapper_->Initialize(account_mappings);
-  last_token_fetch_time_ = last_token_fetch_time;
 
   delayed_task_controller_->SetReady();
 }

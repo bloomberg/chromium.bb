@@ -8,8 +8,6 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "components/gcm_driver/fake_gcm_driver.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
@@ -76,6 +74,8 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   void AddConnectionObserver(GCMConnectionObserver* observer) override;
   void RemoveConnectionObserver(GCMConnectionObserver* observer) override;
   bool IsConnected() const override { return connected_; }
+  base::Time GetLastTokenFetchTime() override;
+  void SetLastTokenFetchTime(const base::Time& time) override;
 
   // Test results and helpers.
   void SetConnected(bool connected);
@@ -98,6 +98,7 @@ class CustomFakeGCMDriver : public FakeGCMDriver {
   GCMConnectionObserver* last_connection_observer_;
   GCMConnectionObserver* removed_connection_observer_;
   net::IPEndPoint ip_endpoint_;
+  base::Time last_token_fetch_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFakeGCMDriver);
 };
@@ -141,6 +142,15 @@ void CustomFakeGCMDriver::ResetResults() {
   removed_connection_observer_ = NULL;
 }
 
+
+base::Time CustomFakeGCMDriver::GetLastTokenFetchTime() {
+  return last_token_fetch_time_;
+}
+
+void CustomFakeGCMDriver::SetLastTokenFetchTime(const base::Time& time) {
+  last_token_fetch_time_ = time;
+}
+
 }  // namespace
 
 class GCMAccountTrackerTest : public testing::Test {
@@ -164,6 +174,11 @@ class GCMAccountTrackerTest : public testing::Test {
   // Accessors to account tracker and gcm driver.
   GCMAccountTracker* tracker() { return tracker_.get(); }
   CustomFakeGCMDriver* driver() { return &driver_; }
+
+  // Accessors to private methods of account tracker.
+  bool IsFetchingRequired() const;
+  bool IsTokenReportingRequired() const;
+  base::TimeDelta GetTimeToNextTokenReporting() const;
 
  private:
   CustomFakeGCMDriver driver_;
@@ -235,6 +250,18 @@ void GCMAccountTrackerTest::IssueError(const std::string& account_key) {
   fake_token_service_->IssueErrorForAllPendingRequestsForAccount(
       account_key,
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE));
+}
+
+bool GCMAccountTrackerTest::IsFetchingRequired() const {
+  return tracker_->IsTokenFetchingRequired();
+}
+
+bool GCMAccountTrackerTest::IsTokenReportingRequired() const {
+  return tracker_->IsTokenReportingRequired();
+}
+
+base::TimeDelta GCMAccountTrackerTest::GetTimeToNextTokenReporting() const {
+  return tracker_->GetTimeToNextTokenReporting();
 }
 
 TEST_F(GCMAccountTrackerTest, NoAccounts) {
@@ -403,7 +430,7 @@ TEST_F(GCMAccountTrackerTest, PostponeTokenFetchingUntilConnected) {
   EXPECT_EQ(1UL, tracker()->get_pending_token_request_count());
 }
 
-TEST_F(GCMAccountTrackerTest, IvalidateExpiredTokens) {
+TEST_F(GCMAccountTrackerTest, InvalidateExpiredTokens) {
   StartAccountSignIn(kAccountId1);
   StartAccountSignIn(kAccountId2);
   tracker()->Start();
@@ -419,6 +446,63 @@ TEST_F(GCMAccountTrackerTest, IvalidateExpiredTokens) {
   // token request will be issued
   EXPECT_FALSE(driver()->update_accounts_called());
   EXPECT_EQ(1UL, tracker()->get_pending_token_request_count());
+}
+
+// Testing for whether there are still more tokens to be fetched. Typically the
+// need for token fetching triggers immediate request, unless there is no
+// connection, that is why connection is set on and off in this test.
+TEST_F(GCMAccountTrackerTest, IsTokenFetchingRequired) {
+  tracker()->Start();
+  driver()->SetConnected(false);
+  EXPECT_FALSE(IsFetchingRequired());
+  StartAccountSignIn(kAccountId1);
+  FinishAccountSignIn(kAccountId1);
+  EXPECT_TRUE(IsFetchingRequired());
+
+  driver()->SetConnected(true);
+  EXPECT_FALSE(IsFetchingRequired());  // Indicates that fetching has started.
+  IssueAccessToken(kAccountId1);
+  EXPECT_FALSE(IsFetchingRequired());
+
+  driver()->SetConnected(false);
+  StartAccountSignIn(kAccountId2);
+  FinishAccountSignIn(kAccountId2);
+  EXPECT_TRUE(IsFetchingRequired());
+
+  IssueExpiredAccessToken(kAccountId2);
+  // Make sure that if the token was expired it is still needed.
+  EXPECT_TRUE(IsFetchingRequired());
+}
+
+// Tests what is the expected time to the next token fetching.
+TEST_F(GCMAccountTrackerTest, GetTimeToNextTokenReporting) {
+  tracker()->Start();
+  // At this point the last token fetch time is never.
+  EXPECT_EQ(base::TimeDelta(), GetTimeToNextTokenReporting());
+
+  driver()->SetLastTokenFetchTime(base::Time::Now());
+  EXPECT_TRUE(GetTimeToNextTokenReporting() <=
+                  base::TimeDelta::FromSeconds(12 * 60 * 60));
+}
+
+// Tests conditions when token reporting is required.
+TEST_F(GCMAccountTrackerTest, IsTokenReportingRequired) {
+  tracker()->Start();
+  // Required because it is overdue.
+  EXPECT_TRUE(IsTokenReportingRequired());
+
+  // Not required because it just happened.
+  driver()->SetLastTokenFetchTime(base::Time::Now());
+  EXPECT_FALSE(IsTokenReportingRequired());
+
+  SignInAccount(kAccountId1);
+  IssueAccessToken(kAccountId1);
+  driver()->ResetResults();
+  // Reporting was triggered, which means testing for required will give false,
+  // but we have the update call.
+  SignOutAccount(kAccountId1);
+  EXPECT_TRUE(driver()->update_accounts_called());
+  EXPECT_FALSE(IsTokenReportingRequired());
 }
 
 // TODO(fgorski): Add test for adding account after removal >> make sure it does
