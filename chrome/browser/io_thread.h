@@ -184,7 +184,6 @@ class IOThread : public content::BrowserThreadDelegate {
     std::set<net::HostPortPair> forced_spdy_exclusions;
     Optional<bool> use_alternate_protocols;
     Optional<double> alternate_protocol_probability_threshold;
-    Optional<bool> enable_websocket_over_spdy;
 
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_port_selection;

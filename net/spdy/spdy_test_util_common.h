@@ -222,7 +222,6 @@ struct SpdySessionDependencies {
   bool force_spdy_over_ssl;
   bool force_spdy_always;
   bool use_alternate_protocols;
-  bool enable_websocket_over_spdy;
   NetLog* net_log;
 };
 

@@ -271,9 +271,7 @@ NET_ERROR(SPDY_SESSION_ALREADY_EXISTS, -143)
 // due to a malformed frame or other protocol violation.
 NET_ERROR(WS_PROTOCOL_ERROR, -145)
 
-// Connection was aborted for switching to another ptotocol.
-// WebSocket abort SocketStream connection when alternate protocol is found.
-NET_ERROR(PROTOCOL_SWITCHED, -146)
+// Error -146 was removed (PROTOCOL_SWITCHED)
 
 // Returned when attempting to bind an address that is already in use.
 NET_ERROR(ADDRESS_IN_USE, -147)
@@ -305,9 +303,7 @@ NET_ERROR(SSL_DECRYPT_ERROR_ALERT, -153)
 // pushed to the queue.
 NET_ERROR(WS_THROTTLE_QUEUE_TOO_LARGE, -154)
 
-// There are too many active SocketStream instances, so the new connect request
-// was rejected.
-NET_ERROR(TOO_MANY_SOCKET_STREAMS, -155)
+// Error -155 was removed (TOO_MANY_SOCKET_STREAMS)
 
 // The SSL server certificate changed in a renegotiation.
 NET_ERROR(SSL_SERVER_CERT_CHANGED, -156)

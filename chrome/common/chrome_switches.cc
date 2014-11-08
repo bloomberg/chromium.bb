@@ -631,9 +631,6 @@ const char kEnableTranslateNewUX[]         = "enable-translate-new-ux";
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
 
-// Uses WebSocket over SPDY.
-const char kEnableWebSocketOverSpdy[]       = "enable-websocket-over-spdy";
-
 // Enables the Website Settings page on the Settings page.
 const char kEnableWebsiteSettingsManager[]  = "enable-website-settings-manager";
 

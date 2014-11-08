@@ -26,8 +26,7 @@ EVENT_TYPE(CANCELLED)
 //   }
 EVENT_TYPE(FAILED)
 
-// Marks the creation/destruction of a request (net::URLRequest or
-// SocketStream).
+// Marks the creation/destruction of a request (net::URLRequest).
 EVENT_TYPE(REQUEST_ALIVE)
 
 // ------------------------------------------------------------------------
@@ -1692,49 +1691,6 @@ EVENT_TYPE(QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS)
 
 // Measures the time to read HTTP response headers from the server.
 EVENT_TYPE(HTTP_STREAM_PARSER_READ_HEADERS)
-
-// ------------------------------------------------------------------------
-// SocketStream
-// ------------------------------------------------------------------------
-
-// Measures the time between SocketStream::Connect() and
-// SocketStream::DidEstablishConnection()
-//
-// For the BEGIN phase, the following parameters are attached:
-//   {
-//      "url": <String of URL being loaded>,
-//   }
-//
-// For the END phase, if there was an error, the following parameters are
-// attached:
-//   {
-//      "net_error": <Net error code of the failure>,
-//   }
-EVENT_TYPE(SOCKET_STREAM_CONNECT)
-
-// A message sent on the SocketStream.
-EVENT_TYPE(SOCKET_STREAM_SENT)
-
-// A message received on the SocketStream.
-EVENT_TYPE(SOCKET_STREAM_RECEIVED)
-
-// ------------------------------------------------------------------------
-// WebSocketJob
-// ------------------------------------------------------------------------
-
-// This event is sent for a WebSocket handshake request.
-// The following parameters are attached:
-//   {
-//     "headers": <handshake request message>,
-//   }
-EVENT_TYPE(WEB_SOCKET_SEND_REQUEST_HEADERS)
-
-// This event is sent on receipt of the WebSocket handshake response headers.
-// The following parameters are attached:
-//   {
-//     "headers": <handshake response message>,
-//   }
-EVENT_TYPE(WEB_SOCKET_READ_RESPONSE_HEADERS)
 
 // ------------------------------------------------------------------------
 // SOCKS5ClientSocket

@@ -376,12 +376,7 @@
         }],
         [ 'enable_websockets != 1', {
             'sources/': [
-              ['exclude', '^socket_stream/'],
               ['exclude', '^websockets/'],
-            ],
-            'sources!': [
-              'spdy/spdy_websocket_stream.cc',
-              'spdy/spdy_websocket_stream.h',
             ],
         }],
         [ 'enable_mdns != 1', {
@@ -654,9 +649,7 @@
         }],
         [ 'enable_websockets != 1', {
             'sources/': [
-              ['exclude', '^socket_stream/'],
               ['exclude', '^websockets/'],
-              ['exclude', '^spdy/spdy_websocket_stream_unittest\\.cc$'],
             ],
         }],
         ['disable_file_support==1', {

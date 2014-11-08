@@ -803,18 +803,11 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       globals_->next_protos = net::NextProtosHttpOnly();
       globals_->use_alternate_protocols.set(false);
-    } else if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy)) {
-      // Use the current SPDY default (SPDY/3.1).
-      globals_->next_protos = net::NextProtosSpdy31();
-      globals_->use_alternate_protocols.set(true);
     } else {
       // No SPDY command-line flags have been specified. Examine trial groups.
       ConfigureSpdyFromTrial(
           base::FieldTrialList::FindFullName(kSpdyFieldTrialName), globals_);
     }
-
-    if (command_line.HasSwitch(switches::kEnableWebSocketOverSpdy))
-      globals_->enable_websocket_over_spdy.set(true);
   }
 
   ConfigureTCPFastOpen(command_line);
@@ -1028,8 +1021,6 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->use_alternate_protocols);
   globals.alternate_protocol_probability_threshold.CopyToIfSet(
       &params->alternate_protocol_probability_threshold);
-  globals.enable_websocket_over_spdy.CopyToIfSet(
-      &params->enable_websocket_over_spdy);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(

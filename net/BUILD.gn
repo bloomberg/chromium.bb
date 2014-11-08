@@ -381,16 +381,6 @@ component("net") {
 
   if (!enable_websockets) {
     sources -= [
-      "socket_stream/socket_stream.cc",
-      "socket_stream/socket_stream.h",
-      "socket_stream/socket_stream_job.cc",
-      "socket_stream/socket_stream_job.h",
-      "socket_stream/socket_stream_job_manager.cc",
-      "socket_stream/socket_stream_job_manager.h",
-      "socket_stream/socket_stream_metrics.cc",
-      "socket_stream/socket_stream_metrics.h",
-      "spdy/spdy_websocket_stream.cc",
-      "spdy/spdy_websocket_stream.h",
       "websockets/websocket_basic_handshake_stream.cc",
       "websockets/websocket_basic_handshake_stream.h",
       "websockets/websocket_basic_stream.cc",
@@ -427,15 +417,9 @@ component("net") {
       "websockets/websocket_handshake_stream_create_helper.h",
       "websockets/websocket_inflater.cc",
       "websockets/websocket_inflater.h",
-      "websockets/websocket_job.cc",
-      "websockets/websocket_job.h",
       "websockets/websocket_mux.h",
-      "websockets/websocket_net_log_params.cc",
-      "websockets/websocket_net_log_params.h",
       "websockets/websocket_stream.cc",
       "websockets/websocket_stream.h",
-      "websockets/websocket_throttle.cc",
-      "websockets/websocket_throttle.h",
     ]
   }
 
@@ -1226,9 +1210,6 @@ test("net_unittests") {
 
   if (!enable_websockets) {
     sources -= [
-      "socket_stream/socket_stream_metrics_unittest.cc",
-      "socket_stream/socket_stream_unittest.cc",
-      "spdy/spdy_websocket_stream_unittest.cc",
       "websockets/websocket_basic_stream_test.cc",
       "websockets/websocket_channel_test.cc",
       "websockets/websocket_deflate_predictor_impl_test.cc",
@@ -1242,12 +1223,9 @@ test("net_unittests") {
       "websockets/websocket_handshake_handler_test.cc",
       "websockets/websocket_handshake_stream_create_helper_test.cc",
       "websockets/websocket_inflater_test.cc",
-      "websockets/websocket_job_test.cc",
-      "websockets/websocket_net_log_params_test.cc",
       "websockets/websocket_stream_test.cc",
       "websockets/websocket_test_util.cc",
       "websockets/websocket_test_util.h",
-      "websockets/websocket_throttle_test.cc",
     ]
   }
 

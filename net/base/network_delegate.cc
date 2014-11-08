@@ -176,19 +176,6 @@ NetworkDelegate::AuthRequiredResponse NetworkDelegate::NotifyAuthRequired(
   return OnAuthRequired(request, auth_info, callback, credentials);
 }
 
-int NetworkDelegate::NotifyBeforeSocketStreamConnect(
-    SocketStream* socket,
-    const CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(socket);
-  DCHECK(!callback.is_null());
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/423948 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "423948 NetworkDelegate::OnBeforeSocketStreamConnect"));
-  return OnBeforeSocketStreamConnect(socket, callback);
-}
-
 bool NetworkDelegate::CanGetCookies(const URLRequest& request,
                                     const CookieList& cookie_list) {
   DCHECK(CalledOnValidThread());

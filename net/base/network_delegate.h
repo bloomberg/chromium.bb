@@ -105,9 +105,6 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   bool CanEnablePrivacyMode(const GURL& url,
                             const GURL& first_party_for_cookies) const;
 
-  int NotifyBeforeSocketStreamConnect(SocketStream* socket,
-                                      const CompletionCallback& callback);
-
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,
       const GURL& target_url,

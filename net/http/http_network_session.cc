@@ -89,7 +89,6 @@ HttpNetworkSession::Params::Params()
       force_spdy_always(false),
       use_alternate_protocols(false),
       alternate_protocol_probability_threshold(1),
-      enable_websocket_over_spdy(false),
       enable_quic(false),
       enable_quic_port_selection(true),
       quic_always_require_handshake_confirmation(false),

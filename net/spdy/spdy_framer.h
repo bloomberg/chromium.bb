@@ -37,8 +37,6 @@ class SpdyNetworkTransactionTest;
 class SpdyProxyClientSocketTest;
 class SpdySessionTest;
 class SpdyStreamTest;
-class SpdyWebSocketStreamTest;
-class WebSocketJobTest;
 
 class SpdyFramer;
 class SpdyFrameBuilder;
@@ -624,8 +622,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   friend class net::SpdyProxyClientSocketTest;
   friend class net::SpdySessionTest;
   friend class net::SpdyStreamTest;
-  friend class net::SpdyWebSocketStreamTest;
-  friend class net::WebSocketJobTest;
   friend class test::TestSpdyVisitor;
 
  private:
