@@ -122,7 +122,6 @@ class PPAPI_PROXY_EXPORT HostDispatcher : public Dispatcher {
                               int int_log_level,
                               const std::string& source,
                               const std::string& value);
-  void OnHostMsgPluginSupportsInterface(const std::string& interface_name);
 
   void RemoveSyncMessageStatusObserver(SyncMessageStatusObserver* obs);
 

@@ -224,7 +224,10 @@ const void* HostDispatcher::GetProxiedInterface(const std::string& iface_name) {
     // Need to query. Cache the result so we only do this once.
     bool supported = false;
 
-    Send(new PpapiMsg_IsInterfaceSupported(iface_name, &supported));
+    bool previous_reentrancy_value = allow_plugin_reentrancy_;
+    allow_plugin_reentrancy_ = true;
+    Send(new PpapiMsg_SupportsInterface(iface_name, &supported));
+    allow_plugin_reentrancy_ = previous_reentrancy_value;
 
     std::pair<PluginSupportedMap::iterator, bool> iter_success_pair;
     iter_success_pair = plugin_supported_.insert(
@@ -269,11 +272,6 @@ void HostDispatcher::OnHostMsgLogWithSource(PP_Instance instance,
     PpapiGlobals::Get()->BroadcastLogWithSource(pp_module_, level,
                                                 source, value);
   }
-}
-
-void HostDispatcher::OnHostMsgPluginSupportsInterface(
-    const std::string& interface_name) {
-  plugin_supported_[interface_name] = true;
 }
 
 // ScopedModuleReference -------------------------------------------------------

@@ -76,7 +76,7 @@ class ProxyTestHarnessBase {
 
   // Sends a "supports interface" message to the current dispatcher and returns
   // true if it's supported. This is just for the convenience of tests.
-  bool IsInterfaceSupported(const char* name);
+  bool SupportsInterface(const char* name);
 
  private:
   // Destination for IPC messages sent by the test.

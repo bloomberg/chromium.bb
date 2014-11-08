@@ -122,13 +122,13 @@ void ProxyTestHarnessBase::RegisterTestInterface(const char* name,
   registered_interfaces_[name] = test_interface;
 }
 
-bool ProxyTestHarnessBase::IsInterfaceSupported(const char* name) {
+bool ProxyTestHarnessBase::SupportsInterface(const char* name) {
   sink().ClearMessages();
 
   // IPC doesn't actually write to this when we send a message manually
   // not actually using IPC.
   bool unused_result = false;
-  PpapiMsg_IsInterfaceSupported msg(name, &unused_result);
+  PpapiMsg_SupportsInterface msg(name, &unused_result);
   GetDispatcher()->OnMessageReceived(msg);
 
   const IPC::Message* reply_msg =
@@ -137,8 +137,8 @@ bool ProxyTestHarnessBase::IsInterfaceSupported(const char* name) {
   if (!reply_msg)
     return false;
 
-  TupleTypes<PpapiMsg_IsInterfaceSupported::ReplyParam>::ValueTuple reply_data;
-  EXPECT_TRUE(PpapiMsg_IsInterfaceSupported::ReadReplyParam(
+  TupleTypes<PpapiMsg_SupportsInterface::ReplyParam>::ValueTuple reply_data;
+  EXPECT_TRUE(PpapiMsg_SupportsInterface::ReadReplyParam(
       reply_msg, &reply_data));
 
   sink().ClearMessages();

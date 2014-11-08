@@ -175,8 +175,7 @@ class PPAPI_PROXY_EXPORT PluginDispatcher
   void ForceFreeAllInstances();
 
   // IPC message handlers.
-  void OnMsgIsInterfaceSupported(
-      const std::string& interface_name, bool* result);
+  void OnMsgSupportsInterface(const std::string& interface_name, bool* result);
   void OnMsgSetPreferences(const Preferences& prefs);
 
   virtual bool SendMessage(IPC::Message* msg);

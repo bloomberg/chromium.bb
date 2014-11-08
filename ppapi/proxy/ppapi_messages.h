@@ -486,13 +486,9 @@ IPC_MESSAGE_CONTROL1(PpapiMsg_SetPreferences,
 
 // Sent in both directions to see if the other side supports the given
 // interface.
-IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_IsInterfaceSupported,
+IPC_SYNC_MESSAGE_CONTROL1_1(PpapiMsg_SupportsInterface,
                             std::string /* interface_name */,
                             bool /* result */)
-// Sent by the plugin side of the proxy to inform the renderer that a given
-// plugin interface (PPP_*) is supported.
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_PluginSupportsInterface,
-                     std::string /* interface_name */)
 
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_LogInterfaceUsage,
                      int /* interface_hash */)
@@ -1184,9 +1180,9 @@ IPC_SYNC_MESSAGE_ROUTED3_1(
 IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBTesting_GetLiveObjectsForInstance,
                            PP_Instance /* instance */,
                            uint32 /* result */)
-IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBTesting_SimulateInputEvent,
-                    PP_Instance /* instance */,
-                    ppapi::InputEventData /* input_event */)
+IPC_SYNC_MESSAGE_ROUTED2_0(PpapiHostMsg_PPBTesting_SimulateInputEvent,
+                           PP_Instance /* instance */,
+                           ppapi::InputEventData /* input_event */)
 IPC_SYNC_MESSAGE_ROUTED1_0(
     PpapiHostMsg_PPBTesting_SetMinimumArrayBufferSizeForShmem,
     uint32_t /* threshold */)
