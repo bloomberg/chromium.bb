@@ -69,6 +69,7 @@ bool TooltipContainsDeviceType(EasyUnlockScreenlockStateHandler::State state) {
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNLOCKABLE ||
          state == EasyUnlockScreenlockStateHandler::STATE_NO_BLUETOOTH ||
          state == EasyUnlockScreenlockStateHandler::STATE_PHONE_UNSUPPORTED ||
+         state == EasyUnlockScreenlockStateHandler::STATE_RSSI_TOO_LOW ||
          state == EasyUnlockScreenlockStateHandler::STATE_TX_POWER_TOO_HIGH;
 }
 

@@ -10160,7 +10160,7 @@ Chrome ran out of memory.
           Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> will be unlocked when your Android phone is unlocked and nearby.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL" desc="The text label that describes the checkbox that controls whether the user's Android phone must be in close proximity to the Chromebook in order to unlock it..">
-          Allow unlocking this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> only when the phone is within an arm's length away.
+          Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach.
         </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
           Turn off
@@ -15001,11 +15001,11 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_PHONE_UNLOCKABLE" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it does not have lock screen enabled, in which case it is not allowed to unlock Chromebooks.">
       Your Android phone must have a lock screen enabled before it can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Otherwise, you will need to type in your password.
     </message>
-    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not in the Chromebook's proximity (roughly >30 meters away).">
-      Bring your phone closer to your Chromebook to enter.
+    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not in the Chromebook's proximity (> 30 feet away).">
+      Your Android phone is too far away from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Bring it closer to enter.
     </message>
-    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not right next to the Chromebook. This is only shown to users who turn on an advanced setting.">
-      Your Android phone is too far away. Bring it right next to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to enter.
+    <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not in the Chromebook's proximity (> 1 foot away).">
+      Your Android phone is too far away from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Bring it closer to enter.
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_INITIAL_AUTHENTICATED" desc="Tooltip text shown on lock screen when a phone eligible to unlock the Chromebook via Easy Unlock is detected and authenticated for the first time.">
       When your phone is unlocked and nearby, you can just click to enter. Otherwise, you'll see a locked icon and need to type your password.
