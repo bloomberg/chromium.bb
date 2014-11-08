@@ -150,6 +150,78 @@ public class ClassName {
     with self.assertRaises(Exception):
       HeaderParser(test_data).ParseDefinitions()
 
+  def testParseEnumClass(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum class Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(1, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('Foo', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('A', 0)]),
+                     definition.entries)
+
+  def testParseEnumStruct(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum struct Foo {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(1, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('Foo', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual(collections.OrderedDict([('A', 0)]),
+                     definition.entries)
+
+  def testParseFixedTypeEnum(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum Foo : int {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(1, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('Foo', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual('int', definition.fixed_type)
+    self.assertEqual(collections.OrderedDict([('A', 0)]),
+                     definition.entries)
+
+  def testParseFixedTypeEnumClass(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum class Foo: unsigned short {
+        FOO_A,
+      };
+    """.split('\n')
+    definitions = HeaderParser(test_data).ParseDefinitions()
+    self.assertEqual(1, len(definitions))
+    definition = definitions[0]
+    self.assertEqual('Foo', definition.class_name)
+    self.assertEqual('test.namespace', definition.enum_package)
+    self.assertEqual('unsigned short', definition.fixed_type)
+    self.assertEqual(collections.OrderedDict([('A', 0)]),
+                     definition.entries)
+
+  def testParseUnknownFixedTypeRaises(self):
+    test_data = """
+      // GENERATED_JAVA_ENUM_PACKAGE: test.namespace
+      enum class Foo: foo_type {
+        FOO_A,
+      };
+    """.split('\n')
+    with self.assertRaises(Exception):
+      HeaderParser(test_data).ParseDefinitions()
+
   def testEnumValueAssignmentNoneDefined(self):
     definition = EnumDefinition(original_enum_name='c', enum_package='p')
     definition.AppendEntry('A', None)
