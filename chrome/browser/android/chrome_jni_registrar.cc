@@ -49,6 +49,7 @@
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 #include "chrome/browser/lifetime/application_lifetime_android.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings_android.h"
+#include "chrome/browser/notifications/notification_ui_manager_android.h"
 #include "chrome/browser/prerender/external_prerender_handler_android.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search_engines/template_url_service_android.h"
@@ -169,6 +170,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
   { "NavigationPopup", NavigationPopup::RegisterNavigationPopup },
   { "NewTabPagePrefs",
     NewTabPagePrefs::RegisterNewTabPagePrefs },
+  { "NotificationUIManager",
+    NotificationUIManagerAndroid::RegisterNotificationUIManager },
   { "OmniboxPrerender", RegisterOmniboxPrerender },
   { "OmniboxViewUtil", OmniboxViewUtil::RegisterOmniboxViewUtil },
   { "PasswordGenerationPopup",

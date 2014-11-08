@@ -24,7 +24,7 @@ component("message_center") {
 
   defines = [ "MESSAGE_CENTER_IMPLEMENTATION" ]
 
-  if (enable_notifications) {
+  if (enable_notifications && !is_android) {
     sources = [
       "cocoa/notification_controller.h",
       "cocoa/notification_controller.mm",
@@ -197,7 +197,7 @@ test("message_center_unittests") {
     "//url",
   ]
 
-  if (enable_notifications) {
+  if (enable_notifications && !is_android) {
     sources += [
       "cocoa/notification_controller_unittest.mm",
       "cocoa/popup_collection_unittest.mm",
@@ -232,5 +232,5 @@ test("message_center_unittests") {
         "//ui/views:test_support",
       ]
     }
-  }  # enable_notifications
+  }  # enable_notifications && !is_android
 }

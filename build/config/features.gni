@@ -77,9 +77,8 @@ enable_print_preview = !is_android
 use_seccomp_bpf = (is_linux || is_android) &&
   (cpu_arch == "x86" || cpu_arch == "x64" || cpu_arch == "arm")
 
-# Enable notifications everywhere except Android/iOS.
-# Android is http://crbug.com/115320
-enable_notifications = !is_android && !is_ios
+# Enable notifications everywhere except iOS.
+enable_notifications = !is_ios
 
 # TODO(brettw) this should be moved to net and only dependents get this define.
 disable_ftp_support = is_ios

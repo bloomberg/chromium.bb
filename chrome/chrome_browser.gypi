@@ -2766,6 +2766,7 @@
       'android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java',
       'android/java/src/org/chromium/chrome/browser/NavigationPopup.java',
       'android/java/src/org/chromium/chrome/browser/net/spdyproxy/DataReductionProxySettings.java',
+      'android/java/src/org/chromium/chrome/browser/NotificationUIManager.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java',
       'android/java/src/org/chromium/chrome/browser/omnibox/OmniboxPrerender.java',
