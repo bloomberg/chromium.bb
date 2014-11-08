@@ -1236,9 +1236,9 @@
       'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
       'browser/ui/webui/options/language_options_handler_unittest.cc',
       'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
+      'browser/ui/webui/options/sync_setup_handler_unittest.cc',
       'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',
       'browser/ui/webui/signin/login_ui_service_unittest.cc',
-      'browser/ui/webui/sync_setup_handler_unittest.cc',
       'browser/ui/webui/theme_source_unittest.cc',
       'browser/ui/webui/web_dialog_web_contents_delegate_unittest.cc',
       'browser/ui/window_sizer/window_sizer_ash_unittest.cc',
@@ -2570,7 +2570,7 @@
             'common/multi_process_lock_unittest.cc',
 
             # Sync setup uses native ui.
-            'browser/ui/webui/sync_setup_handler_unittest.cc',
+            'browser/ui/webui/options/sync_setup_handler_unittest.cc',
             'browser/sync/sync_ui_util_unittest.cc',
 
             'browser/browser_commands_unittest.cc',

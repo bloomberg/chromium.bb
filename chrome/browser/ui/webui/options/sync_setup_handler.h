@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
@@ -166,4 +166,4 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBUI_SYNC_SETUP_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_OPTIONS_SYNC_SETUP_HANDLER_H_

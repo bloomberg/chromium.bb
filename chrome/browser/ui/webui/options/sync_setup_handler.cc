@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/sync_setup_handler.h"
+#include "chrome/browser/ui/webui/options/sync_setup_handler.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
