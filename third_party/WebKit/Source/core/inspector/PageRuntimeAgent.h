@@ -55,7 +55,6 @@ public:
     virtual void run(ErrorString*) override;
 
     void didClearDocumentOfWindowObject(LocalFrame*);
-    void didCreateMainWorldContext(LocalFrame*, ScriptState*, SecurityOrigin*);
     void didCreateIsolatedContext(LocalFrame*, ScriptState*, SecurityOrigin*);
     void frameWindowDiscarded(LocalDOMWindow*);
 
@@ -65,8 +64,7 @@ private:
     virtual InjectedScript injectedScriptForEval(ErrorString*, const int* executionContextId) override;
     virtual void muteConsole() override;
     virtual void unmuteConsole() override;
-    void registerMainWorldContext(LocalFrame*);
-    void reportExecutionContextsToFrontend();
+    void reportExecutionContextCreation();
 
     InspectorClient* m_client;
     RawPtrWillBeMember<Page> m_inspectedPage;

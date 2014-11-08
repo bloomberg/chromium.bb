@@ -226,10 +226,7 @@ bool WindowProxy::initialize()
         // ActivityLogger for main world is updated within updateDocument().
         updateDocument();
         if (m_frame->document()) {
-            SecurityOrigin* origin = m_frame->document()->securityOrigin();
-            ASSERT(origin);
-            setSecurityToken(origin);
-            InspectorInstrumentation::didCreateMainWorldContext(m_frame, m_scriptState.get(), origin);
+            setSecurityToken(m_frame->document()->securityOrigin());
             ContentSecurityPolicy* csp = m_frame->document()->contentSecurityPolicy();
             context->AllowCodeGenerationFromStrings(csp->allowEval(0, ContentSecurityPolicy::SuppressReport));
             context->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, csp->evalDisabledErrorMessage()));
@@ -238,8 +235,9 @@ bool WindowProxy::initialize()
         updateActivityLogger();
         SecurityOrigin* origin = m_world->isolatedWorldSecurityOrigin();
         setSecurityToken(origin);
-        if (origin)
+        if (origin && InspectorInstrumentation::hasFrontends()) {
             InspectorInstrumentation::didCreateIsolatedContext(m_frame, m_scriptState.get(), origin);
+        }
     }
     m_frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     return true;

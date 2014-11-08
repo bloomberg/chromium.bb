@@ -11,15 +11,6 @@ function createFrame()
     document.body.appendChild(frame);
 }
 
-function createCraftedFrame()
-{
-    var frame = document.createElement("iframe");
-    frame.src = "../resources/blank.html";
-    frame.id = "crafted-iframe";
-    document.body.appendChild(frame);
-    frame.contentDocument.write("<div>crafted</div>");
-}
-
 function test()
 {
     InspectorTest.evaluate = function(expression)
@@ -77,25 +68,6 @@ function test()
             return;
         }
         InspectorTest.log("Frame's context was destroyed");
-        InspectorTest.log("Create new crafted frame");
-        InspectorTest.evaluate("createCraftedFrame()");
-    }
-
-    function craftedFrameContextCreated(executionContextId)
-    {
-        InspectorTest.log("Crafted frame context was created");
-        frameExecutionContextId = executionContextId;
-        InspectorTest.log("Remove crafted frame");
-        InspectorTest.evaluate("document.querySelector(\"#crafted-iframe\").remove()");
-    }
-
-    function craftedFrameContextDestroyedAfterFrameRemoved(executionContextId)
-    {
-        if (frameExecutionContextId !== executionContextId) {
-            InspectorTest.fail("Deleted frame had execution context with id = " + frameExecutionContextId + " , but executionContext with id = " + executionContextId + " was removed");
-            return;
-        }
-        InspectorTest.log("Crafted frame's context was destroyed");
         InspectorTest.completeTest();
     }
 
@@ -115,9 +87,6 @@ function test()
         case 3:
             frameContextCreatedAfterNavigation(executionContextId);
             break;
-        case 4:
-            craftedFrameContextCreated(executionContextId);
-            break;
         }
     }
 
@@ -132,9 +101,6 @@ function test()
             break;
         case 2:
             frameContextDestroyedAfterFrameRemoved(executionContextId);
-            break;
-        case 3:
-            craftedFrameContextDestroyedAfterFrameRemoved(executionContextId);
             break;
         }
     }
