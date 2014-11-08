@@ -1192,6 +1192,7 @@
             'browser/accessibility/accessibility_ipc_error_browsertest.cc',
             'browser/accessibility/accessibility_mode_browsertest.cc',
             'browser/accessibility/accessibility_win_browsertest.cc',
+            'browser/accessibility/android_granularity_movement_browsertest.cc',
             'browser/accessibility/android_hit_testing_browsertest.cc',
             'browser/accessibility/cross_platform_accessibility_browsertest.cc',
             'browser/accessibility/dump_accessibility_tree_browsertest.cc',
@@ -1333,6 +1334,7 @@
             }],
             ['OS!="android"', {
               'sources!': [
+                'browser/accessibility/android_granularity_movement_browsertest.cc',
                 'browser/accessibility/android_hit_testing_browsertest.cc',
               ]
             }],

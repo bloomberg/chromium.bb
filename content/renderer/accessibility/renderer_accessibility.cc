@@ -43,12 +43,9 @@ RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
   WebSettings* settings = web_view->settings();
   settings->setAccessibilityEnabled(true);
 
-#if !defined(OS_ANDROID)
-  // Skip inline text boxes on Android - since there are no native Android
-  // APIs that compute the bounds of a range of text, it's a waste to
-  // include these in the AX tree.
+  // TODO(dmazzoni): remove this on Android while still supporting
+  // moving by granularities.
   settings->setInlineTextBoxAccessibilityEnabled(true);
-#endif
 
   const WebDocument& document = GetMainDocument();
   if (!document.isNull()) {

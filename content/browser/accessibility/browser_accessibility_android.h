@@ -10,7 +10,7 @@
 
 namespace content {
 
-class BrowserAccessibilityAndroid : public BrowserAccessibility {
+class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
  public:
   // Overrides from BrowserAccessibility.
   virtual void OnDataChanged() override;
@@ -79,6 +79,26 @@ class BrowserAccessibilityAndroid : public BrowserAccessibility {
   float RangeMin() const;
   float RangeMax() const;
   float RangeCurrentValue() const;
+
+  // Calls GetLineBoundaries or GetWordBoundaries depending on the value
+  // of |granularity|, or fails if anything else is passed in |granularity|.
+  void GetGranularityBoundaries(int granularity,
+                                std::vector<int32>* starts,
+                                std::vector<int32>* ends,
+                                int offset);
+
+  // Append line start and end indices for the text of this node
+  // (as returned by GetText()), adding |offset| to each one.
+  void GetLineBoundaries(std::vector<int32>* line_starts,
+                         std::vector<int32>* line_ends,
+                         int offset);
+
+  // Append word start and end indices for the text of this node
+  // (as returned by GetText()) to |word_starts| and |word_ends|,
+  // adding |offset| to each one.
+  void GetWordBoundaries(std::vector<int32>* word_starts,
+                         std::vector<int32>* word_ends,
+                         int offset);
 
  private:
   // This gives BrowserAccessibility::Create access to the class constructor.

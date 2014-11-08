@@ -4,6 +4,8 @@
 
 #include "content/browser/accessibility/browser_accessibility_android.h"
 
+#include "base/i18n/break_iterator.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/common/accessibility_messages.h"
@@ -609,6 +611,116 @@ float BrowserAccessibilityAndroid::RangeMax() const {
 
 float BrowserAccessibilityAndroid::RangeCurrentValue() const {
   return GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE);
+}
+
+void BrowserAccessibilityAndroid::GetGranularityBoundaries(
+    int granularity,
+    std::vector<int32>* starts,
+    std::vector<int32>* ends,
+    int offset) {
+  switch (granularity) {
+    case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_LINE:
+      GetLineBoundaries(starts, ends, offset);
+      break;
+    case ANDROID_ACCESSIBILITY_NODE_INFO_MOVEMENT_GRANULARITY_WORD:
+      GetWordBoundaries(starts, ends, offset);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void BrowserAccessibilityAndroid::GetLineBoundaries(
+    std::vector<int32>* line_starts,
+    std::vector<int32>* line_ends,
+    int offset) {
+  // If this node has no children, treat it as all one line.
+  if (GetText().size() > 0 && !InternalChildCount()) {
+    line_starts->push_back(offset);
+    line_ends->push_back(offset + GetText().size());
+  }
+
+  // If this is a static text node, get the line boundaries from the
+  // inline text boxes if possible.
+  if (GetRole() == ui::AX_ROLE_STATIC_TEXT) {
+    int last_y = 0;
+    for (uint32 i = 0; i < InternalChildCount(); i++) {
+      BrowserAccessibilityAndroid* child =
+          static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+      CHECK_EQ(ui::AX_ROLE_INLINE_TEXT_BOX, child->GetRole());
+      // TODO(dmazzoni): replace this with a proper API to determine
+      // if two inline text boxes are on the same line. http://crbug.com/421771
+      int y = child->GetLocation().y();
+      if (i == 0) {
+        line_starts->push_back(offset);
+      } else if (y != last_y) {
+        line_ends->push_back(offset);
+        line_starts->push_back(offset);
+      }
+      offset += child->GetText().size();
+      last_y = y;
+    }
+    line_ends->push_back(offset);
+    return;
+  }
+
+  // Otherwise, call GetLineBoundaries recursively on the children.
+  for (uint32 i = 0; i < InternalChildCount(); i++) {
+    BrowserAccessibilityAndroid* child =
+        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+    child->GetLineBoundaries(line_starts, line_ends, offset);
+    offset += child->GetText().size();
+  }
+}
+
+void BrowserAccessibilityAndroid::GetWordBoundaries(
+    std::vector<int32>* word_starts,
+    std::vector<int32>* word_ends,
+    int offset) {
+  if (GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX) {
+    const std::vector<int32>& starts = GetIntListAttribute(
+        ui::AX_ATTR_WORD_STARTS);
+    const std::vector<int32>& ends = GetIntListAttribute(
+        ui::AX_ATTR_WORD_ENDS);
+    for (size_t i = 0; i < starts.size(); ++i) {
+      word_starts->push_back(offset + starts[i]);
+      word_ends->push_back(offset + ends[i]);
+    }
+    return;
+  }
+
+  base::string16 concatenated_text;
+  for (uint32 i = 0; i < InternalChildCount(); i++) {
+    BrowserAccessibilityAndroid* child =
+        static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+    base::string16 child_text = child->GetText();
+    concatenated_text += child->GetText();
+  }
+
+  base::string16 text = GetText();
+  if (text.empty() || concatenated_text == text) {
+    // Great - this node is just the concatenation of its children, so
+    // we can get the word boundaries recursively.
+    for (uint32 i = 0; i < InternalChildCount(); i++) {
+      BrowserAccessibilityAndroid* child =
+          static_cast<BrowserAccessibilityAndroid*>(InternalGetChild(i));
+      child->GetWordBoundaries(word_starts, word_ends, offset);
+      offset += child->GetText().size();
+    }
+  } else {
+    // This node has its own accessible text that doesn't match its
+    // visible text - like alt text for an image or something with an
+    // aria-label, so split the text into words locally.
+    base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
+    if (!iter.Init())
+      return;
+    while (iter.Advance()) {
+      if (iter.IsWord()) {
+        word_starts->push_back(iter.prev());
+        word_ends->push_back(iter.pos());
+      }
+    }
+  }
 }
 
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {

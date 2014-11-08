@@ -59,6 +59,9 @@ public class BrowserAccessibilityManager {
     private boolean mUserHasTouchExplored;
     private boolean mPendingScrollToMakeNodeVisible;
     private boolean mNotifyFrameInfoInitializedCalled;
+    private int mSelectionGranularity;
+    private int mSelectionStartIndex;
+    private int mSelectionEndIndex;
 
     /**
      * Create a BrowserAccessibilityManager object, which is owned by the C++
@@ -158,6 +161,16 @@ public class BrowserAccessibilityManager {
         return new ArrayList<AccessibilityNodeInfo>();
     }
 
+    protected static boolean isValidMovementGranularity(int granularity) {
+        switch (granularity) {
+            case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER:
+            case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD:
+            case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE:
+                return true;
+        }
+        return false;
+    }
+
     /**
      * @see AccessibilityNodeProvider#performAction(int, int, Bundle)
      */
@@ -237,6 +250,28 @@ public class BrowserAccessibilityManager {
                 nativeSetSelection(mNativeObj, virtualViewId, selectionStart, selectionEnd);
                 break;
             }
+            case AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY: {
+                if (arguments == null) return false;
+                int granularity = arguments.getInt(
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT);
+                boolean extend = arguments.getBoolean(
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN);
+                if (!isValidMovementGranularity(granularity)) {
+                    return false;
+                }
+                return nextAtGranularity(granularity, extend);
+            }
+            case AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY: {
+                if (arguments == null) return false;
+                int granularity = arguments.getInt(
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_MOVEMENT_GRANULARITY_INT);
+                boolean extend = arguments.getBoolean(
+                        AccessibilityNodeInfo.ACTION_ARGUMENT_EXTEND_SELECTION_BOOLEAN);
+                if (!isValidMovementGranularity(granularity)) {
+                    return false;
+                }
+                return previousAtGranularity(granularity, extend);
+            }
             default:
                 break;
         }
@@ -305,11 +340,96 @@ public class BrowserAccessibilityManager {
         return true;
     }
 
+    private void setGranularityAndUpdateSelection(int granularity) {
+        if (mSelectionGranularity == 0) {
+            mSelectionStartIndex = -1;
+            mSelectionEndIndex = -1;
+        }
+        mSelectionGranularity = granularity;
+        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)) {
+            mSelectionStartIndex = nativeGetEditableTextSelectionStart(
+                    mNativeObj, mAccessibilityFocusId);
+            mSelectionEndIndex = nativeGetEditableTextSelectionEnd(
+                    mNativeObj, mAccessibilityFocusId);
+        }
+    }
+
+    private boolean nextAtGranularity(int granularity, boolean extendSelection) {
+        setGranularityAndUpdateSelection(granularity);
+        // This calls finishGranularityMove when it's done.
+        return nativeNextAtGranularity(mNativeObj, mSelectionGranularity, extendSelection,
+                mAccessibilityFocusId, mSelectionEndIndex);
+    }
+
+    private boolean previousAtGranularity(int granularity, boolean extendSelection) {
+        setGranularityAndUpdateSelection(granularity);
+        // This calls finishGranularityMove when it's done.
+        return nativePreviousAtGranularity(mNativeObj, mSelectionGranularity, extendSelection,
+                mAccessibilityFocusId, mSelectionEndIndex);
+    }
+
+    @CalledByNative
+    private void finishGranularityMove(String text, boolean extendSelection,
+            int itemStartIndex, int itemEndIndex, boolean forwards) {
+        // Prepare to send both a selection and a traversal event in sequence.
+        AccessibilityEvent selectionEvent = buildAccessibilityEvent(mAccessibilityFocusId,
+                AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
+        if (selectionEvent == null) return;
+        AccessibilityEvent traverseEvent = buildAccessibilityEvent(mAccessibilityFocusId,
+                AccessibilityEvent.TYPE_VIEW_TEXT_TRAVERSED_AT_MOVEMENT_GRANULARITY);
+        if (traverseEvent == null) {
+            selectionEvent.recycle();
+            return;
+        }
+
+        // Update the cursor or selection based on the traversal. If it's an editable
+        // text node, set the real editing cursor too.
+        if (forwards)
+            mSelectionEndIndex = itemEndIndex;
+        else
+            mSelectionEndIndex = itemStartIndex;
+        if (!extendSelection) {
+            mSelectionStartIndex = mSelectionEndIndex;
+        }
+        if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)) {
+            nativeSetSelection(mNativeObj, mAccessibilityFocusId,
+                    mSelectionStartIndex, mSelectionEndIndex);
+        }
+
+        // The selection event's "from" and "to" indices are just a cursor at the focus
+        // end of the movement, or a selection if extendSelection is true.
+        selectionEvent.setFromIndex(mSelectionStartIndex);
+        selectionEvent.setToIndex(mSelectionStartIndex);
+        selectionEvent.setItemCount(text.length());
+
+        // The traverse event's "from" and "to" indices surround the item (e.g. the word,
+        // etc.) with no whitespace.
+        traverseEvent.setFromIndex(itemStartIndex);
+        traverseEvent.setToIndex(itemEndIndex);
+        traverseEvent.setItemCount(text.length());
+        traverseEvent.setMovementGranularity(mSelectionGranularity);
+        traverseEvent.setContentDescription(text);
+
+        // The traverse event needs to set its associated action that triggered it.
+        if (forwards) {
+            traverseEvent.setAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
+        } else {
+            traverseEvent.setAction(
+                    AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+        }
+
+        mView.requestSendAccessibilityEvent(mView, selectionEvent);
+        mView.requestSendAccessibilityEvent(mView, traverseEvent);
+    }
+
     private boolean moveAccessibilityFocusToId(int newAccessibilityFocusId) {
         if (newAccessibilityFocusId == mAccessibilityFocusId) return false;
 
         mAccessibilityFocusId = newAccessibilityFocusId;
         mAccessibilityFocusRect = null;
+        mSelectionGranularity = 0;
+        mSelectionStartIndex = 0;
+        mSelectionEndIndex = 0;
         sendAccessibilityEvent(mAccessibilityFocusId,
                 AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
         return true;
@@ -329,20 +449,6 @@ public class BrowserAccessibilityManager {
     }
 
     private void sendAccessibilityEvent(int virtualViewId, int eventType) {
-        // If we don't have any frame info, then the virtual hierarchy
-        // doesn't exist in the view of the Android framework, so should
-        // never send any events.
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
-                || !isFrameInfoInitialized()) {
-            return;
-        }
-
-        // This is currently needed if we want Android to draw the yellow box around
-        // the item that has accessibility focus. In practice, this doesn't seem to slow
-        // things down, because it's only called when the accessibility focus moves.
-        // TODO(dmazzoni): remove this if/when Android framework fixes bug.
-        mView.postInvalidate();
-
         // The container view is indicated by a virtualViewId of NO_ID; post these events directly
         // since there's no web-specific information to attach.
         if (virtualViewId == View.NO_ID) {
@@ -350,15 +456,35 @@ public class BrowserAccessibilityManager {
             return;
         }
 
+        AccessibilityEvent event = buildAccessibilityEvent(virtualViewId, eventType);
+        if (event != null) {
+            mView.requestSendAccessibilityEvent(mView, event);
+        }
+    }
+
+    private AccessibilityEvent buildAccessibilityEvent(int virtualViewId, int eventType) {
+        // If we don't have any frame info, then the virtual hierarchy
+        // doesn't exist in the view of the Android framework, so should
+        // never send any events.
+        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
+                || !isFrameInfoInitialized()) {
+            return null;
+        }
+
+        // This is currently needed if we want Android to visually highlight
+        // the item that has accessibility focus. In practice, this doesn't seem to slow
+        // things down, because it's only called when the accessibility focus moves.
+        // TODO(dmazzoni): remove this if/when Android framework fixes bug.
+        mView.postInvalidate();
+
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
         event.setPackageName(mContentViewCore.getContext().getPackageName());
         event.setSource(mView, virtualViewId);
         if (!nativePopulateAccessibilityEvent(mNativeObj, event, virtualViewId, eventType)) {
             event.recycle();
-            return;
+            return null;
         }
-
-        mView.requestSendAccessibilityEvent(mView, event);
+        return event;
     }
 
     private Bundle getOrCreateBundleForAccessibilityEvent(AccessibilityEvent event) {
@@ -520,6 +646,12 @@ public class BrowserAccessibilityManager {
 
         node.addAction(AccessibilityNodeInfo.ACTION_NEXT_HTML_ELEMENT);
         node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
+        node.addAction(AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
+        node.addAction(AccessibilityNodeInfo.ACTION_PREVIOUS_AT_MOVEMENT_GRANULARITY);
+        node.setMovementGranularities(
+                AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD
+                | AccessibilityNodeInfo.MOVEMENT_GRANULARITY_LINE);
 
         if (editableText && enabled) {
             node.addAction(ACTION_SET_TEXT);
@@ -756,6 +888,12 @@ public class BrowserAccessibilityManager {
 
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);
     private native boolean nativeIsNodeValid(long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native boolean nativeIsEditableText(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native int nativeGetEditableTextSelectionStart(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
+    private native int nativeGetEditableTextSelectionEnd(
+            long nativeBrowserAccessibilityManagerAndroid, int id);
     private native void nativeHitTest(long nativeBrowserAccessibilityManagerAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
             long nativeBrowserAccessibilityManagerAndroid, AccessibilityNodeInfo info, int id);
@@ -773,4 +911,9 @@ public class BrowserAccessibilityManager {
             int id, String newValue);
     private native void nativeSetSelection(long nativeBrowserAccessibilityManagerAndroid,
             int id, int start, int end);
+    private native boolean nativeNextAtGranularity(long nativeBrowserAccessibilityManagerAndroid,
+            int selectionGranularity, boolean extendSelection, int id, int cursorIndex);
+    private native boolean nativePreviousAtGranularity(
+            long nativeBrowserAccessibilityManagerAndroid,
+            int selectionGranularity, boolean extendSelection, int id, int cursorIndex);
 }
