@@ -64,6 +64,20 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_c
 }
 
 {% endfor %}
+{% for cpp_type in nullable_cpp_types %}
+class V8{{cpp_type}}OrNull final {
+public:
+    static void toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{cpp_type}}& impl, ExceptionState& exceptionState)
+    {
+        {# http://heycam.github.io/webidl/#es-union #}
+        {# 1. null or undefined #}
+        if (isUndefinedOrNull(v8Value))
+            return;
+        V8{{cpp_type}}::toImpl(isolate, v8Value, impl, exceptionState);
+    }
+};
+
+{% endfor %}
 } // namespace blink
 
 #endif // {{macro_guard}}

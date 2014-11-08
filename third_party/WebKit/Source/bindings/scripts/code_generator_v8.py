@@ -269,8 +269,7 @@ class CodeGeneratorUnionType(object):
         header_template = self.jinja_env.get_template('union.h')
         cpp_template = self.jinja_env.get_template('union.cpp')
         template_context = v8_union.union_context(
-            sorted(union_types, key=lambda union_type: union_type.name),
-            self.interfaces_info)
+            union_types, self.interfaces_info)
         template_context['code_generator'] = module_pyname
         capitalized_component = self.target_component.capitalize()
         template_context['header_filename'] = 'bindings/%s/v8/UnionTypes%s.h' % (

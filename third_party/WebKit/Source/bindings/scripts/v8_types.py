@@ -193,7 +193,14 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
     if idl_type.is_dictionary:
         return base_idl_type
     if idl_type.is_union_type:
-        return idl_type.name
+        # Avoid "AOrNullOrB" for cpp type of (A? or B) because we generate
+        # V8AOrBOrNull to handle nulle for (A? or B), (A or B?) and (A or B)?
+        def member_cpp_name(idl_type):
+            if idl_type.is_nullable:
+                return idl_type.inner_type.name
+            return idl_type.name
+        return "Or".join(member_cpp_name(member)
+                         for member in idl_type.member_types)
 
     # Default, assume native type is a pointer with same type name as idl type
     return base_idl_type + '*'
@@ -517,7 +524,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
     # Simple types
     idl_type = idl_type.preprocessed_type
     add_includes_for_type(idl_type)
-    base_idl_type = idl_type.name if idl_type.is_union_type else idl_type.base_type
+    base_idl_type = idl_type.as_union_type.name if idl_type.is_union_type else idl_type.base_type
 
     if 'EnforceRange' in extended_attributes:
         arguments = ', '.join([v8_value, 'EnforceRange', 'exceptionState'])
@@ -534,7 +541,9 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::toImpl(v8::Handle<v8::{idl_type}>::Cast({v8_value})) : 0')
-    elif idl_type.is_dictionary or idl_type.is_union_type:
+    elif idl_type.use_output_parameter_for_result:
+        if idl_type.includes_nullable_type:
+            base_idl_type = idl_type.cpp_type + 'OrNull'
         cpp_expression_format = 'V8{idl_type}::toImpl({isolate}, {v8_value}, {variable_name}, exceptionState)'
     elif needs_type_check:
         cpp_expression_format = (
@@ -860,9 +869,11 @@ def cpp_type_has_null_value(idl_type):
     # - Enum types, as they are implemented as Strings.
     # - Wrapper types (raw pointer or RefPtr/PassRefPtr) represent null as
     #   a null pointer.
+    # - Union types, as thier container classes can represent null value.
     # - 'Object' type. We use ScriptValue for object type.
     return (idl_type.is_string_type or idl_type.is_wrapper_type or
-            idl_type.is_enum or idl_type.base_type == 'object')
+            idl_type.is_enum or idl_type.is_union_type
+            or idl_type.base_type == 'object')
 
 IdlTypeBase.cpp_type_has_null_value = property(cpp_type_has_null_value)
 
@@ -880,3 +891,27 @@ def is_explicit_nullable(idl_type):
 IdlTypeBase.is_implicit_nullable = property(is_implicit_nullable)
 IdlUnionType.is_implicit_nullable = False
 IdlTypeBase.is_explicit_nullable = property(is_explicit_nullable)
+
+
+def number_of_nullable_member_types_union(idl_type):
+    # http://heycam.github.io/webidl/#dfn-number-of-nullable-member-types
+    count = 0
+    for member in idl_type.member_types:
+        if member.is_nullable:
+            count += 1
+            member = member.inner_type
+        if member.is_union_type:
+            count += number_of_nullable_member_types_union(member)
+    return count
+
+IdlUnionType.number_of_nullable_member_types = property(
+    number_of_nullable_member_types_union)
+
+
+def includes_nullable_type_union(idl_type):
+    # http://heycam.github.io/webidl/#dfn-includes-a-nullable-type
+    return idl_type.number_of_nullable_member_types == 1
+
+IdlTypeBase.includes_nullable_type = False
+IdlNullableType.includes_nullable_type = True
+IdlUnionType.includes_nullable_type = property(includes_nullable_type_union)

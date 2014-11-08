@@ -157,6 +157,8 @@ interface TestObject {
     attribute EventHandler eventHandlerAttribute;
     // Union types
     attribute (double or DOMString) doubleOrStringAttribute;
+    attribute (double or DOMString)? doubleOrStringOrNullAttribute;
+    attribute (double? or DOMString) doubleOrNullStringAttribute;
 
     // Extended attributes
     [LogActivity, LogAllWorlds] attribute long activityLoggingAccessForAllWorldsLongAttribute;
@@ -356,8 +358,10 @@ interface TestObject {
     (TestInterfaceWillBeGarbageCollected or TestDictionary) testInterfaceWillBeGarbageCollectedOrTestDictionaryMethod();
     (boolean or DOMString or unrestricted double) booleanOrDOMStringOrUnrestrictedDoubleMethod();
     (TestInterface or long) testInterfaceOrLongMethod();
-    void voidMethodDOMStringOrDouble((DOMString or double) arg);
-    void voidMethodDOMStringOrArrayBufferOrArrayBufferView((DOMString or ArrayBuffer or ArrayBufferView) arg);
+    void voidMethodDoubleOrDOMStringArg((double or DOMString) arg);
+    void voidMethodDoubleOrDOMStringOrNullArg((double or DOMString)? arg);
+    void voidMethodDoubleOrNullOrDOMStringArg((double? or DOMString) arg);
+    void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg((DOMString or ArrayBuffer or ArrayBufferView) arg);
     // Currently only used on interface type arguments
     void voidMethodTestInterfaceEmptyOrNullArg(TestInterfaceEmpty? nullableTestInterfaceEmptyArg);
     // Callback interface types

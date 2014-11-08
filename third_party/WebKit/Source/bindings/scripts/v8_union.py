@@ -16,12 +16,32 @@ header_forward_decls = set()
 
 
 def union_context(union_types, interfaces_info):
+    # For container classes we strip nullable wrappers. For example,
+    # both (A or B)? and (A? or B) will become AOrB. This should be OK
+    # because container classes can handle null and it seems that
+    # distinguishing (A or B)? and (A? or B) doesn't make sense.
+    container_cpp_types = set()
+    union_types_for_containers = set()
+    nullable_cpp_types = set()
+    for union_type in union_types:
+        cpp_type = union_type.cpp_type
+        if cpp_type not in container_cpp_types:
+            union_types_for_containers.add(union_type)
+            container_cpp_types.add(cpp_type)
+        if union_type.includes_nullable_type:
+            nullable_cpp_types.add(cpp_type)
+
+    union_types_for_containers = sorted(union_types_for_containers,
+                                        key=lambda union_type: union_type.cpp_type)
+    nullable_cpp_types = sorted(nullable_cpp_types)
+
     return {
         'containers': [container_context(union_type, interfaces_info)
-                       for union_type in union_types],
+                       for union_type in union_types_for_containers],
         'cpp_includes': sorted(cpp_includes),
         'header_forward_decls': sorted(header_forward_decls),
         'header_includes': sorted(UNION_H_INCLUDES),
+        'nullable_cpp_types': nullable_cpp_types,
     }
 
 
@@ -69,12 +89,20 @@ def container_context(union_type, interfaces_info):
         else:
             raise Exception('%s is not supported as an union member.' % member.name)
 
+    # Nullable restriction checks
+    nullable_members = union_type.number_of_nullable_member_types
+    if nullable_members > 1:
+        raise Exception('%s contains more than one nullable members' % union_type.name)
+    if dictionary_type and nullable_members == 1:
+        raise Exception('%s has a dictionary and a nullable member' % union_type.name)
+
     return {
         'array_buffer_type': array_buffer_type,
         'array_buffer_view_type': array_buffer_view_type,
         'boolean_type': boolean_type,
-        'cpp_class': union_type.name,
+        'cpp_class': union_type.cpp_type,
         'dictionary_type': dictionary_type,
+        'includes_nullable_type': union_type.includes_nullable_type,
         'interface_types': interface_types,
         'members': members,
         'needs_trace': any(member['is_traceable'] for member in members),
@@ -89,6 +117,8 @@ def member_context(member, interfaces_info):
     if interface_info:
         cpp_includes.update(interface_info.get('dependencies_include_paths', []))
         header_forward_decls.add(member.implemented_as)
+    if member.is_nullable:
+        member = member.inner_type
     return {
         'cpp_name': v8_utilities.uncapitalize(member.name),
         'cpp_type': member.cpp_type_args(used_in_cpp_sequence=True),

@@ -274,6 +274,11 @@ class IdlUnionType(IdlTypeBase):
         return True
 
     @property
+    def as_union_type(self):
+        # Note: Use this to "look through" a possible IdlNullableType wrapper.
+        return self
+
+    @property
     def name(self):
         """Return type name (or inner type name if nullable)
 

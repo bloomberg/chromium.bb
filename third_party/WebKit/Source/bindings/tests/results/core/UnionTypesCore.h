@@ -410,6 +410,16 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWill
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+class V8DoubleOrStringOrNull final {
+public:
+    static void toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, DoubleOrString& impl, ExceptionState& exceptionState)
+    {
+        if (isUndefinedOrNull(v8Value))
+            return;
+        V8DoubleOrString::toImpl(isolate, v8Value, impl, exceptionState);
+    }
+};
+
 } // namespace blink
 
 #endif // UnionTypeCore_h

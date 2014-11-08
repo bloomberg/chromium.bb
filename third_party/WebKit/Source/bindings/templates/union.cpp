@@ -52,14 +52,12 @@ void {{container.cpp_class}}::trace(Visitor* visitor)
 {% endif %}
 void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, {{container.cpp_class}}& impl, ExceptionState& exceptionState)
 {
-    {# FIXME: We don't follow the spec on handling null and undefined at this
-       moment. Should be fixed once we implement all necessary conversion steps
-       below. #}
     if (v8Value.IsEmpty())
         return;
 
     {# The numbers in the following comments refer to the steps described in
        http://heycam.github.io/webidl/#es-union
+       NOTE: Step 1 (null or undefined) is handled in *OrNull::toImpl()
        FIXME: Implement all necessary steps #}
     {# 3. Platform objects (interfaces) #}
     {% for interface in container.interface_types %}
