@@ -252,10 +252,6 @@ IN_PROC_BROWSER_TEST_F(ChromePluginTest, InstalledPlugins) {
     "Shockwave Flash",
     "Native Client",
     "Chrome Remote Desktop Viewer",
-#if defined(OS_CHROMEOS)
-    "Google Talk Plugin",
-    "Google Talk Plugin Video Accelerator",
-#endif
   };
 
   std::vector<content::WebPluginInfo> plugins = GetPlugins();
