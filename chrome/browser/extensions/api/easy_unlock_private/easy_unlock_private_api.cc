@@ -207,6 +207,14 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupIntroHowIsThisSecureLinkText",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT));
+  // Step 1.5: Phone found but is not secured with lock screen
+  strings->SetString("setupSecurePhoneHeaderTitle",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TITLE));
+  strings->SetString(
+      "setupSecurePhoneHeaderText",
+      l10n_util::GetStringFUTF16(IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT,
+                                 device_type));
   // Step 2: Found a viable phone.
   strings->SetString(
       "setupFoundPhoneHeaderTitle",
@@ -220,10 +228,33 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupFoundPhoneUseThisPhoneButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL));
+  strings->SetString("setupFoundPhoneDeviceFormattedButtonLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_DEVICE_FORMATTED_BUTTON_LABEL));
+  strings->SetString(
+      "setupFoundPhoneSwitchPhoneLinkLabel",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_SWITCH_PHONE_LINK_LABEL));
   strings->SetString(
       "setupPairingPhoneFailedButtonLabel",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_PAIRING_PHONE_FAILED_BUTTON_LABEL));
+  // Step 2.5: Recommend user to set up Android Smart Lock
+  strings->SetString(
+      "setupAndroidSmartLockHeaderTitle",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TITLE));
+  strings->SetString("setupAndroidSmartLockHeaderText",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TEXT));
+  strings->SetString(
+      "setupAndroidSmartLockDoneButtonText",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_DONE_BUTTON_LABEL));
+  strings->SetString(
+      "setupAndroidSmartLockAboutLinkText",
+      l10n_util::GetStringUTF16(
+          IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_ABOUT_LINK_TEXT));
   // Step 3: Setup completed successfully.
   strings->SetString(
       "setupCompleteHeaderTitle",
@@ -241,6 +272,16 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
       "setupCompleteSettingsLinkText",
       l10n_util::GetStringUTF16(
           IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT));
+  // Step 4: Post lockscreen confirmation.
+  strings->SetString(
+      "setupPostLockHeaderTitle",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TITLE));
+  strings->SetString(
+      "setupPostLockHeaderText",
+      l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TEXT));
+  strings->SetString("setupPostLockTryItOutButtonLabel",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL));
 
   // Error strings.
   strings->SetString(

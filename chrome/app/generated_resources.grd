@@ -10176,6 +10176,12 @@ Chrome ran out of memory.
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_BUTTON" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
           Turn off
         </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_NOTIFICATION_OPTION_LABEL" desc="The label of the preference in the Smart Lock settings page to control whether notifications should be shown when unlocking the Chromebook.">
+          Get notified on your phone every time Smart Lock unlocks your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
+        </message>
+        <message name="IDS_OPTIONS_EASY_UNLOCK_MANAGE BLUETOOTH" desc="The label of the link in the Smart Lock settings page to open the Bluetooth settings.">
+          Manage Bluetooth settings
+        </message>
         <message name="IDS_OPTIONS_EASY_UNLOCK_TURN_OFF_TITLE" desc="The title of the Easy unlock turn off dialog.">
           Turn off Chrome Smart Lock
         </message>
@@ -14903,6 +14909,13 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SETUP_INTRO_HOW_IS_THIS_SECURE_LINK_TEXT" desc="The text to show as the 'How is it secure?' link text in the Easy Unlock dialog. This link is visible during the first, introductory step.">
       How is it secure?
     </message>
+    <!-- Step 1.5: "Secure this phone to continue" -->
+    <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog after a phone has been found but is not secured by a lock screen.">
+      Secure this phone to continue.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_SECURE_PHONE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog after a suitable phone has been found but is not secured by a lock screen. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
+      To keep your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> safe, Chrome Smart Lock requires a screen lock on your phone. &lt;a&gt;Learn how to secure your phone&lt;/a&gt;
+    </message>
     <!-- Step 2: Phone Found -->
     <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the second step, after a suitable phone has been found.">
       Use this phone to unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
@@ -14913,21 +14926,50 @@ Do you accept?
     <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_USE_THIS_PHONE_BUTTON_LABEL" desc="The text to show as the 'Use this phone' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
       Use this phone
     </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_DEVICE_FORMATTED_BUTTON_LABEL" desc="The text to show as the 'Use [insert_phone_name]' button label in the Easy Unlock dialog. This button is visible during the second step, after a suitable phone is found.">
+      Use <ph name="PHONE_NAME">$1<ex>Nexus 6</ex></ph>
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_FOUND_PHONE_SWITCH_PHONE_LINK_LABEL" desc="The text to show for the link to switch phones in the Easy Unlock dialog. This button is visible during the second step, after serveral suitable phones are found.">
+      Show another phone
+    </message>
     <message name="IDS_EASY_UNLOCK_SETUP_PAIRING_PHONE_FAILED_BUTTON_LABEL" desc="Text to show as a label for the button in Easy Unlock setup dialog when pairing Chrome with the phone detected during setup fails. Pairing is the second step in the setup. Clicking the button restarts the whole setup flow.">
       Restart
     </message>
+    <!-- Step 2.5: "Recommended: Set up Android Smart Lock" -->
+    <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog to encourage the user to enable Android Smart Lock if it is not currently enabled.">
+      Recommended: Set up Android Smart Lock
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog to encourage the user to enable Android Smart Lock if it is not currently enabled. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
+      Update your phone's screen lock so it turns off when you're nearby. You'll unlock the phone faster, and enjoy a better Chrome Smart Lock experience. &lt;a&gt;About Android Smart Lock&lt;/a&gt;
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_DONE_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog step for encouraging the user to enable Android Smart Lock. Clicking this button advances the dialog to step 3.">
+      Done
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_ANDROID_SMART_LOCK_ABOUT_LINK_TEXT" desc="The text to show as the link text to access the Android Smart Lock help article.">
+      About Android Smart Lock
+    </message>
     <!-- Step 3: "You're all set" -->
-    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the final step, confirming success.">
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the penultimate step, confirming success.">
       You’re all set!
     </message>
-    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the final step, confirming success.">
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_HEADER_TEXT" desc="The text to show as the header body text of the Easy Unlock dialog during the penultimate step, confirming success.">
       If you have other Chrome devices, they’ll be synced automatically, so your Android phone can unlock them, too.
     </message>
-    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL" desc="The text to show as the 'Try it out' button label in the Easy Unlock dialog. This button is visible during the final step, once the Easy Unlock setup succeeds.">
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_TRY_IT_OUT_BUTTON_LABEL" desc="The text to show as the 'Try it out' button label in the Easy Unlock dialog. This button is visible during the penultimate step, once the Easy Unlock setup succeeds.">
       Try it out
     </message>
-    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the final step, once the Easy Unlock setup succeeds.">
+    <message name="IDS_EASY_UNLOCK_SETUP_COMPLETE_SETTINGS_LINK_TEXT" desc="The text to show as the link text to access Easy Unlock settings. This button is visible during the penultimate step, once the Easy Unlock setup succeeds.">
       Smart Lock settings
+    </message>
+    <!-- Step 4: Post Lock Screen -->
+    <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TITLE" desc="The text to show as the header title of the Easy Unlock dialog during the post lockscreen step, giving closure to the setup flow.">
+      Chrome Smart Lock is now on.
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_HEADER_TEXT" desc="The text to show as the header body of the Easy Unlock dialog during the post lockscreen step, giving closure to the setup flow. Note that the &lt;a&gt; element surrounds a link; these HTML elements should be preserved in the translation.">
+      When your phone is unlocked and nearby, you can just click your picture to enter. The lock icon shows Smart Lock status; mouse over it for more details. To change or turn off this feature, visit your &lt;a&gt;<ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>'s settings.&lt;/a&gt;
+    </message>
+    <message name="IDS_EASY_UNLOCK_SETUP_POST_LOCK_DISMISS_BUTTON_LABEL" desc="The text to show as the button label in the Easy Unlock dialog during the post lockscreen step. Clicking this button dismisses the dialog.">
+      Got it, thanks!
     </message>
     <!-- Error strings for the Easy Unlock setup dialog -->
     <message name="IDS_EASY_UNLOCK_LEARN_MORE_LINK_TITLE" desc="Text to use for links that point to more information about Easy Unlock in the easy unlock setup dialog.">
@@ -14971,7 +15013,7 @@ Do you accept?
       Your Android phone must have a lock screen enabled before it can unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. Otherwise, you will need to type in your password.
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_RSSI_TOO_LOW" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not in the Chromebook's proximity (roughly >30 meters away).">
-      Can’t find your Android phone. Make sure it’s nearby.
+      Bring your phone closer to your Chromebook to enter.
     </message>
     <message name="IDS_EASY_UNLOCK_SCREENLOCK_TOOLTIP_TX_POWER_TOO_HIGH" desc="Tooltip for an icon on a user's lock screen pod shown by Easy Unlock when a phone eligible to unlock the Chromebook is detected, but it's not right next to the Chromebook. This is only shown to users who turn on an advanced setting.">
       Your Android phone is too far away. Bring it right next to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> to enter.
