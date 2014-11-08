@@ -14,20 +14,20 @@ PASS node1.style.color is "red"
 PASS node2.style.color is "red"
 PASS node3.style.color is "green"
 PASS node4.style.color is "green"
-PASS window.getComputedStyle(node1).getPropertyCSSValue('background').cssText is window.getComputedStyle(node2).getPropertyCSSValue('background').cssText
-PASS window.getComputedStyle(node3).getPropertyCSSValue('background').cssText is window.getComputedStyle(node4).getPropertyCSSValue('background').cssText
-PASS window.getComputedStyle(node1).getPropertyCSSValue('color').cssText is window.getComputedStyle(node2).getPropertyCSSValue('color').cssText
-PASS window.getComputedStyle(node3).getPropertyCSSValue('color').cssText is window.getComputedStyle(node4).getPropertyCSSValue('color').cssText
+PASS window.getComputedStyle(node1).background is window.getComputedStyle(node2).background
+PASS window.getComputedStyle(node3).background is window.getComputedStyle(node4).background
+PASS window.getComputedStyle(node1).color is window.getComputedStyle(node2).color
+PASS window.getComputedStyle(node3).color is window.getComputedStyle(node4).color
 PASS ops.style.background is ""
-getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText: rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box
+getComputedStyle(clonedOps).background: rgba(0, 0, 0, 0) none repeat scroll 0% 0% / auto padding-box border-box
 PASS ops.style.color is "red"
 PASS clonedOps.style.background is ""
 PASS violetOps.style.background is "rgb(238, 130, 238)"
-PASS window.getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText is window.getComputedStyle(ops).getPropertyCSSValue('background').cssText
-PASS window.getComputedStyle(clonedOps).getPropertyCSSValue('color').cssText is window.getComputedStyle(ops).getPropertyCSSValue('color').cssText
-getComputedStyle(violetOps).getPropertyCSSValue('background').cssText: rgb(238, 130, 238) none repeat scroll 0% 0% / auto padding-box border-box
-PASS window.getComputedStyle(ops).getPropertyCSSValue('background').cssText is not window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText
-PASS window.getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText is not window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText
+PASS window.getComputedStyle(clonedOps).background is window.getComputedStyle(ops).background
+PASS window.getComputedStyle(clonedOps).color is window.getComputedStyle(ops).color
+getComputedStyle(violetOps).background: rgb(238, 130, 238) none repeat scroll 0% 0% / auto padding-box border-box
+PASS window.getComputedStyle(ops).background is not window.getComputedStyle(violetOps).background
+PASS window.getComputedStyle(clonedOps).background is not window.getComputedStyle(violetOps).background
 PASS ops.id is "ops"
 PASS ops.id is clonedOps.id
 This is a div (nodes)

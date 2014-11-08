@@ -35,11 +35,11 @@
             shouldBeEqualToString("node3.style.color", "green");
             shouldBeEqualToString("node4.style.color", "green");
 
-            shouldBe("window.getComputedStyle(node1).getPropertyCSSValue('background').cssText", "window.getComputedStyle(node2).getPropertyCSSValue('background').cssText");
-            shouldBe("window.getComputedStyle(node3).getPropertyCSSValue('background').cssText", "window.getComputedStyle(node4).getPropertyCSSValue('background').cssText");
+            shouldBe("window.getComputedStyle(node1).background", "window.getComputedStyle(node2).background");
+            shouldBe("window.getComputedStyle(node3).background", "window.getComputedStyle(node4).background");
 
-            shouldBe("window.getComputedStyle(node1).getPropertyCSSValue('color').cssText", "window.getComputedStyle(node2).getPropertyCSSValue('color').cssText");
-            shouldBe("window.getComputedStyle(node3).getPropertyCSSValue('color').cssText", "window.getComputedStyle(node4).getPropertyCSSValue('color').cssText");
+            shouldBe("window.getComputedStyle(node1).color", "window.getComputedStyle(node2).color");
+            shouldBe("window.getComputedStyle(node3).color", "window.getComputedStyle(node4).color");
 
             window.ops = document.getElementById('ops');
             ops.style.color = 'red';
@@ -50,16 +50,16 @@
             document.getElementsByTagName('body')[0].appendChild(clonedOps);
 
             shouldBeEqualToString("ops.style.background", "");
-            debug("getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText: " + window.getComputedStyle(ops).getPropertyCSSValue('background').cssText);
+            debug("getComputedStyle(clonedOps).background: " + window.getComputedStyle(ops).background);
             shouldBeEqualToString("ops.style.color", "red");
             shouldBeEqualToString("clonedOps.style.background", "");
             shouldBeEqualToString("violetOps.style.background", "rgb(238, 130, 238)");
 
-            shouldBe("window.getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText", "window.getComputedStyle(ops).getPropertyCSSValue('background').cssText");
-            shouldBe("window.getComputedStyle(clonedOps).getPropertyCSSValue('color').cssText", "window.getComputedStyle(ops).getPropertyCSSValue('color').cssText");
-            debug("getComputedStyle(violetOps).getPropertyCSSValue('background').cssText: " + window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText);
-            shouldNotBe("window.getComputedStyle(ops).getPropertyCSSValue('background').cssText", "window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText");
-            shouldNotBe("window.getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText", "window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText");
+            shouldBe("window.getComputedStyle(clonedOps).background", "window.getComputedStyle(ops).background");
+            shouldBe("window.getComputedStyle(clonedOps).color", "window.getComputedStyle(ops).color");
+            debug("getComputedStyle(violetOps).background: " + window.getComputedStyle(violetOps).background);
+            shouldNotBe("window.getComputedStyle(ops).background", "window.getComputedStyle(violetOps).background");
+            shouldNotBe("window.getComputedStyle(clonedOps).background", "window.getComputedStyle(violetOps).background");
 
             shouldBeEqualToString("ops.id", "ops");
             shouldBe("ops.id", "clonedOps.id");
