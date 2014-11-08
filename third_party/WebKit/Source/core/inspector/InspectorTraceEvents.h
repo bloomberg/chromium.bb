@@ -186,7 +186,6 @@ public:
     static const char RemovedFromSquashingLayer[];
     static const char ReflectionLayerChanged[];
     static const char NewCompositedLayer[];
-    static const char AncestorRequiresNewLayer[];
 
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const RenderLayer*, const char* reason);
 };

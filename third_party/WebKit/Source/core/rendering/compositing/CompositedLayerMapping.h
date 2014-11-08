@@ -116,19 +116,6 @@ public:
     // Contains the bottommost layer in the hierarchy that can contain the children transform.
     GraphicsLayer* layerForChildrenTransform() const;
 
-    // Returns true for a composited layer that has no backing store of its own, so
-    // paints into some ancestor layer.
-    bool paintsIntoCompositedAncestor() const { return !(m_requiresOwnBackingStoreForAncestorReasons || m_requiresOwnBackingStoreForIntrinsicReasons); }
-
-    // Updates whether a backing store is needed based on the layer's compositing ancestor's
-    // properties; returns true if the need for a backing store for ancestor reasons changed.
-    bool updateRequiresOwnBackingStoreForAncestorReasons(const RenderLayer* compositingAncestor);
-
-    // Updates whether a backing store is needed for intrinsic reasons (that is, based on the
-    // layer's own properties or compositing reasons); returns true if the intrinsic need for
-    // a backing store changed.
-    bool updateRequiresOwnBackingStoreForIntrinsicReasons();
-
     void setSquashingContentsNeedDisplay();
     void setContentsNeedDisplay();
     // r is in the coordinate space of the layer's render object
@@ -421,8 +408,7 @@ private:
 
     unsigned m_pendingUpdateScope : 2;
     unsigned m_isMainFrameRenderViewLayer : 1;
-    unsigned m_requiresOwnBackingStoreForIntrinsicReasons : 1;
-    unsigned m_requiresOwnBackingStoreForAncestorReasons : 1;
+
     unsigned m_backgroundLayerPaintsFixedRootBackground : 1;
     unsigned m_scrollingContentsAreEmpty : 1;
 };

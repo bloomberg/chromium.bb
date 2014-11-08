@@ -652,7 +652,7 @@ void RenderLayer::updateScrollingStateAfterCompositingChange()
 
     m_hasNonCompositedChild = false;
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling()) {
-        if (child->compositingState() == NotComposited || child->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
+        if (child->compositingState() == NotComposited) {
             m_hasNonCompositedChild = true;
             return;
         }
@@ -2398,9 +2398,6 @@ CompositingState RenderLayer::compositingState() const
     if (!m_compositedLayerMapping)
         return NotComposited;
 
-    if (compositedLayerMapping()->paintsIntoCompositedAncestor())
-        return HasOwnBackingButPaintsIntoAncestor;
-
     return PaintsIntoOwnBacking;
 }
 
@@ -2491,15 +2488,6 @@ bool RenderLayer::hasCompositedMask() const
 bool RenderLayer::hasCompositedClippingMask() const
 {
     return m_compositedLayerMapping && m_compositedLayerMapping->hasChildClippingMaskLayer();
-}
-
-bool RenderLayer::clipsCompositingDescendantsWithBorderRadius() const
-{
-    RenderStyle* style = renderer()->style();
-    if (!style)
-        return false;
-
-    return compositor()->clipsCompositingDescendants(this) && style->hasBorderRadius();
 }
 
 bool RenderLayer::paintsWithTransform(PaintBehavior paintBehavior) const

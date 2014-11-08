@@ -11,6 +11,7 @@ This layer should not have backing store.
         {
           "position": [8, 8],
           "bounds": [342, 244],
+          "drawsContent": true,
           "children": [
             {
               "position": [1, 1],
@@ -19,6 +20,7 @@ This layer should not have backing store.
                 {
                   "position": [20, 40],
                   "bounds": [342, 182],
+                  "drawsContent": true,
                   "children": [
                     {
                       "position": [1, 1],

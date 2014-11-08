@@ -556,8 +556,6 @@ static void write(TextStream& ts, RenderLayer& l,
                 << l.compositedLayerMapping()->compositedBounds()
                 << ", drawsContent="
                 << l.compositedLayerMapping()->mainGraphicsLayer()->drawsContent()
-                << ", paints into ancestor="
-                << l.compositedLayerMapping()->paintsIntoCompositedAncestor()
                 << (l.shouldIsolateCompositedDescendants() ? ", isolatesCompositedBlending" : "")
                 << ")";
         }

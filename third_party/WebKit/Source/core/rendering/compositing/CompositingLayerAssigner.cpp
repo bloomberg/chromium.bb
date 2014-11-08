@@ -275,8 +275,8 @@ void CompositingLayerAssigner::assignLayersToBackingsInternal(RenderLayer* layer
     }
 
     if (m_layerSquashingEnabled) {
-        // At this point, if the layer is to be "separately" composited, then its backing becomes the most recent in paint-order.
-        if (layer->compositingState() == PaintsIntoOwnBacking || layer->compositingState() == HasOwnBackingButPaintsIntoAncestor) {
+        // At this point, if the layer is to be separately composited, then its backing becomes the most recent in paint-order.
+        if (layer->compositingState() == PaintsIntoOwnBacking) {
             ASSERT(!requiresSquashing(layer->compositingReasons()));
             squashingState.updateSquashingStateForNewMapping(layer->compositedLayerMapping(), layer->hasCompositedLayerMapping());
         }

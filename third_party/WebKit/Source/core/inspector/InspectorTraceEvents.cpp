@@ -492,7 +492,6 @@ const char InspectorLayerInvalidationTrackingEvent::AddedToSquashingLayer[] = "T
 const char InspectorLayerInvalidationTrackingEvent::RemovedFromSquashingLayer[] = "Removed the layer from a squashing layer";
 const char InspectorLayerInvalidationTrackingEvent::ReflectionLayerChanged[] = "Reflection layer change";
 const char InspectorLayerInvalidationTrackingEvent::NewCompositedLayer[] = "Assigned a new composited layer";
-const char InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer[] = "A new composited layer is needed based on the RenderLayer's compositing ancestor's properties";
 
 PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayerInvalidationTrackingEvent::data(const RenderLayer* layer, const char* reason)
 {

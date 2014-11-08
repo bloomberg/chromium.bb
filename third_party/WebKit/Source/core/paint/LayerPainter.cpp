@@ -502,7 +502,6 @@ bool LayerPainter::shouldPaintLayerInSoftwareMode(const LayerPaintingInfo& paint
     DisableCompositingQueryAsserts disabler;
 
     return m_renderLayer.compositingState() == NotComposited
-        || m_renderLayer.compositingState() == HasOwnBackingButPaintsIntoAncestor
         || (paintingInfo.paintBehavior & PaintBehaviorFlattenCompositingLayers)
         || ((paintFlags & PaintLayerPaintingReflection) && !m_renderLayer.has3DTransform())
         || paintForFixedRootBackground(&m_renderLayer, paintFlags);

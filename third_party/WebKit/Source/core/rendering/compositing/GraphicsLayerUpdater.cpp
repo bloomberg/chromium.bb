@@ -97,12 +97,6 @@ void GraphicsLayerUpdater::updateRecursive(RenderLayer& layer, UpdateType update
             const RenderLayer* compositingContainer = context.compositingContainer(layer);
             ASSERT(compositingContainer == layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf));
 
-            if (mapping->updateRequiresOwnBackingStoreForAncestorReasons(compositingContainer)) {
-                TRACE_LAYER_INVALIDATION(&layer, InspectorLayerInvalidationTrackingEvent::AncestorRequiresNewLayer);
-                layersNeedingPaintInvalidation.append(&layer);
-                updateType = ForceUpdate;
-            }
-
             if (mapping->updateGraphicsLayerConfiguration())
                 m_needsRebuildTree = true;
 

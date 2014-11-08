@@ -49,6 +49,7 @@
         {
           "position": [48, 230],
           "bounds": [60, 70],
+          "drawsContent": true,
           "children": [
             {
               "bounds": [60, 70],
@@ -73,6 +74,7 @@
         {
           "position": [240, 230],
           "bounds": [60, 70],
+          "drawsContent": true,
           "children": [
             {
               "bounds": [60, 70],
