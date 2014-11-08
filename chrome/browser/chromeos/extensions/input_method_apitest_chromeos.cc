@@ -74,7 +74,14 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, Basic) {
+// Fails on cros official bot. crbug.com/431446.
+#if defined(OFFICIAL_BUILD)
+#define MAYBE_Basic DISABLED_Basic
+#else
+#define MAYBE_Basic Basic
+#endif
+
+IN_PROC_BROWSER_TEST_F(ExtensionInputMethodApiTest, MAYBE_Basic) {
   // Listener for extension's background ready.
   TestListener listener;
 
