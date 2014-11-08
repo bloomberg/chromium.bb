@@ -437,9 +437,6 @@ class _JSCViewBuilder(object):
     '''Returns an object suitable for use in templates to display availability
     information.
     '''
-    # TODO(rockot): Temporary hack. Remove this very soon.
-    if status == 'master':
-      status = 'trunk'
     return {
       'partial': self._template_cache.GetFromFile(
           '%sintro_tables/%s_message.html' % (PRIVATE_TEMPLATES, status)).Get(),
