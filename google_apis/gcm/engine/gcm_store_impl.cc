@@ -552,11 +552,11 @@ void GCMStoreImpl::Backend::SetGServicesSettings(
   // Remove all existing settings.
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
-  scoped_ptr<leveldb::Iterator> db_iter(db_->NewIterator(read_options));
-  for (db_iter->Seek(MakeSlice(kGServiceSettingKeyStart));
-       db_iter->Valid() && db_iter->key().ToString() < kGServiceSettingKeyEnd;
-       db_iter->Next()) {
-    write_batch.Delete(db_iter->key());
+  scoped_ptr<leveldb::Iterator> iter(db_->NewIterator(read_options));
+  for (iter->Seek(MakeSlice(kGServiceSettingKeyStart));
+       iter->Valid() && iter->key().ToString() < kGServiceSettingKeyEnd;
+       iter->Next()) {
+    write_batch.Delete(iter->key());
   }
 
   // Add the new settings.
