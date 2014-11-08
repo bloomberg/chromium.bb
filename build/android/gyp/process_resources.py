@@ -38,6 +38,11 @@ def ParseArgs(args):
 
   parser.add_option('--android-manifest', help='AndroidManifest.xml path')
   parser.add_option('--custom-package', help='Java package for R.java')
+  parser.add_option(
+      '--shared-resources',
+      action='store_true',
+      help='Make a resource package that can be loaded by a different'
+      'application at runtime to access the package\'s resources.')
 
   parser.add_option('--resource-dirs',
                     help='Directories containing resources of this target.')
@@ -236,6 +241,8 @@ def main():
       package_command += ['--custom-package', options.custom_package]
     if options.proguard_file:
       package_command += ['-G', options.proguard_file]
+    if options.shared_resources:
+      package_command.append('--shared-lib')
     build_utils.CheckOutput(package_command, print_stderr=False)
 
     if options.extra_res_packages:

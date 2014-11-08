@@ -477,6 +477,8 @@ template("jinja_template_resources") {
 #     that the resources are v14-compliant (see
 #     build/android/gyp/generate_v14_compatible_resources.py). Defaults to
 #     false.
+#   shared_resources: If true make a resource package that can be loaded by a
+#     different application at runtime to access the package's resources.
 #
 # Example
 #   android_resources("foo_resources") {
@@ -517,6 +519,10 @@ template("android_resources") {
 
     if (defined(invoker.v14_verify_only)) {
       v14_verify_only = invoker.v14_verify_only
+    }
+
+    if (defined(invoker.shared_resources)) {
+      shared_resources = invoker.shared_resources
     }
   }
 

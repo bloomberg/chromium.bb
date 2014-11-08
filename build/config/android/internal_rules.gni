@@ -718,6 +718,11 @@ template("process_resources") {
       args += ["--v14-verify-only"]
     }
 
+    if (defined(invoker.shared_resources) &&
+        invoker.shared_resources) {
+      args += ["--shared-resources"]
+    }
+
     if (defined(invoker.all_resources_zip_path)) {
       all_resources_zip = invoker.all_resources_zip_path
       outputs += [ all_resources_zip ]
