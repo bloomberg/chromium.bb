@@ -11,6 +11,8 @@ static_library("browser") {
     "data_reduction_proxy_configurator.h",
     "data_reduction_proxy_delegate.cc",
     "data_reduction_proxy_delegate.h",
+    "data_reduction_proxy_interceptor.cc",
+    "data_reduction_proxy_interceptor.h",
     "data_reduction_proxy_metrics.cc",
     "data_reduction_proxy_metrics.h",
     "data_reduction_proxy_prefs.cc",
@@ -65,6 +67,7 @@ source_set("unit_tests") {
   sources = [
     "data_reduction_proxy_auth_request_handler_unittest.cc",
     "data_reduction_proxy_config_service_unittest.cc",
+    "data_reduction_proxy_interceptor_unittest.cc",
     "data_reduction_proxy_metrics_unittest.cc",
     "data_reduction_proxy_prefs_unittest.cc",
     "data_reduction_proxy_protocol_unittest.cc",

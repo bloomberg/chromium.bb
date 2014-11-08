@@ -36,9 +36,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
 #include "components/domain_reliability/monitor.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,6 +56,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/ssl/channel_id_service.h"
+#include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/quota/special_storage_policy.h"
 
@@ -567,6 +570,13 @@ void ProfileImplIOData::InitializeInternal(
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
+  // The data reduction proxy interceptor should be as close to the network
+  // as possible.
+  request_interceptors.insert(
+      request_interceptors.begin(),
+      new data_reduction_proxy::DataReductionProxyInterceptor(
+          data_reduction_proxy_params(),
+          data_reduction_proxy_usage_stats()));
   main_job_factory_ = SetUpJobFactoryDefaults(
       main_job_factory.Pass(),
       request_interceptors.Pass(),
@@ -720,6 +730,13 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
   InstallProtocolHandlers(job_factory.get(), protocol_handlers);
+  // The data reduction proxy interceptor should be as close to the network
+  // as possible.
+  request_interceptors.insert(
+      request_interceptors.begin(),
+      new data_reduction_proxy::DataReductionProxyInterceptor(
+          data_reduction_proxy_params(),
+          data_reduction_proxy_usage_stats()));
   scoped_ptr<net::URLRequestJobFactory> top_job_factory(
       SetUpJobFactoryDefaults(job_factory.Pass(),
                               request_interceptors.Pass(),

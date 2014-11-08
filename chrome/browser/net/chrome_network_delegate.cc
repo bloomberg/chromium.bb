@@ -33,7 +33,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_protocol.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_statistics_prefs.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_usage_stats.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -490,18 +489,6 @@ int ChromeNetworkDelegate::OnHeadersReceived(
     const net::HttpResponseHeaders* original_response_headers,
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
-  data_reduction_proxy::DataReductionProxyBypassType bypass_type;
-  if (data_reduction_proxy::MaybeBypassProxyAndPrepareToRetry(
-      data_reduction_proxy_params_,
-      request,
-      original_response_headers,
-      override_response_headers,
-      &bypass_type)) {
-    if (data_reduction_proxy_usage_stats_)
-      data_reduction_proxy_usage_stats_->SetBypassType(bypass_type);
-    return net::OK;
-  }
-
   return extensions_delegate_->OnHeadersReceived(
       request,
       callback,

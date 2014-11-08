@@ -19,6 +19,7 @@
 #include "base/threading/worker_pool.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_auth_request_handler.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_interceptor.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -253,6 +254,11 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
 
   job_factory_ = CreateJobFactory(&protocol_handlers_,
                                   request_interceptors_.Pass());
+
+  job_factory_.reset(new net::URLRequestInterceptingJobFactory(
+      job_factory_.Pass(), make_scoped_ptr(
+          new data_reduction_proxy::DataReductionProxyInterceptor(
+              data_reduction_proxy_settings->params(), NULL))));
   url_request_context_->set_job_factory(job_factory_.get());
 }
 

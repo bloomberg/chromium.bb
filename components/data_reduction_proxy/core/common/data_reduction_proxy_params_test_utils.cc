@@ -8,7 +8,7 @@ namespace {
 // Test values to replace the values specified in preprocessor defines.
 static const char kDefaultDevOrigin[] = "https://dev.net:443/";
 static const char kDefaultDevFallbackOrigin[] = "http://dev.net:80/";
-static const char kDefaultOrigin[] = "https://origin.net:443/";
+static const char kDefaultOrigin[] = "http://origin.net:80/";
 static const char kDefaultFallbackOrigin[] = "http://fallback.net:80/";
 static const char kDefaultSSLOrigin[] = "http://ssl.net:1080/";
 static const char kDefaultAltOrigin[] = "https://alt.net:443/";

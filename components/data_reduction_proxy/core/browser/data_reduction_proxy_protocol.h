@@ -29,13 +29,12 @@ class DataReductionProxyParams;
 
 // Decides whether to mark the data reduction proxy as temporarily bad and
 // put it on the proxy retry list. Returns true if the request should be
-// retried. Sets |override_response_headers| to redirect if so. Returns
-// the DataReductionProxyBypassType (if not NULL).
+// retried. Updates the load flags in |request| for some bypass types, e.g.,
+// "block-once". Returns the DataReductionProxyBypassType (if not NULL).
 bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* params,
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     DataReductionProxyBypassType* proxy_bypass_type);
 
 // Adds data reduction proxies to |result|, where applicable, if result

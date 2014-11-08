@@ -168,6 +168,11 @@ void DataReductionProxyUsageStats::SetBypassType(
   triggering_request_ = true;
 }
 
+DataReductionProxyBypassType
+DataReductionProxyUsageStats::GetBypassType() const {
+  return last_bypass_type_;
+}
+
 void DataReductionProxyUsageStats::RecordBytesHistograms(
     net::URLRequest* request,
     const BooleanPrefMember& data_reduction_proxy_enabled,

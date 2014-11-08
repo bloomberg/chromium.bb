@@ -44,7 +44,6 @@ bool MaybeBypassProxyAndPrepareToRetry(
     const DataReductionProxyParams* data_reduction_proxy_params,
     net::URLRequest* request,
     const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     DataReductionProxyBypassType* proxy_bypass_type) {
   if (!data_reduction_proxy_params)
     return false;
@@ -79,16 +78,6 @@ bool MaybeBypassProxyAndPrepareToRetry(
   DataReductionProxyBypassType bypass_type =
       GetDataReductionProxyBypassType(original_response_headers,
                                       &data_reduction_proxy_info);
-
-  // Requests with CORS headers do not support block-once, so emulate block-once
-  // with block=1. See crbug.com/418342.
-  // TODO(bengr): Remove this when block-once is supported for all requests.
-  if (bypass_type == BYPASS_EVENT_TYPE_CURRENT &&
-      request->extra_request_headers().HasHeader("origin")) {
-    bypass_type = BYPASS_EVENT_TYPE_SHORT;
-    data_reduction_proxy_info.mark_proxies_as_bad = true;
-    data_reduction_proxy_info.bypass_duration = base::TimeDelta::FromSeconds(1);
-  }
 
   if (bypass_type == BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER &&
       DataReductionProxyParams::
@@ -126,15 +115,15 @@ bool MaybeBypassProxyAndPrepareToRetry(
                           data_reduction_proxy_info.bypass_duration,
                           data_reduction_proxy_info.bypass_all,
                           data_reduction_proxy_type_info.proxy_servers);
+  } else {
+    request->SetLoadFlags(request->load_flags() |
+                          net::LOAD_DISABLE_CACHE |
+                          net::LOAD_BYPASS_PROXY);
   }
 
   // Only retry idempotent methods.
   if (!IsRequestIdempotent(request))
     return false;
-
-  OverrideResponseAsRedirect(request,
-                             original_response_headers,
-                             override_response_headers);
   return true;
 }
 
@@ -177,40 +166,6 @@ bool IsRequestIdempotent(const net::URLRequest* request) {
       request->method() == "TRACE")
     return true;
   return false;
-}
-
-void OverrideResponseAsRedirect(
-    net::URLRequest* request,
-    const net::HttpResponseHeaders* original_response_headers,
-    scoped_refptr<net::HttpResponseHeaders>* override_response_headers) {
-  DCHECK(request);
-  DCHECK(original_response_headers);
-  DCHECK(override_response_headers->get() == NULL);
-
-  request->SetLoadFlags(request->load_flags() |
-                        net::LOAD_DISABLE_CACHE |
-                        net::LOAD_BYPASS_PROXY);
-  *override_response_headers = new net::HttpResponseHeaders(
-      original_response_headers->raw_headers());
-  (*override_response_headers)->ReplaceStatusLine("HTTP/1.1 302 Found");
-  (*override_response_headers)->RemoveHeader("Location");
-  (*override_response_headers)->AddHeader("Location: " +
-                                          request->url().spec());
-  std::string http_origin;
-  const net::HttpRequestHeaders& request_headers =
-      request->extra_request_headers();
-  if (request_headers.GetHeader("Origin", &http_origin)) {
-    // If this redirect is used in a cross-origin request, add CORS headers to
-    // make sure that the redirect gets through. Note that the destination URL
-    // is still subject to the usual CORS policy, i.e. the resource will only
-    // be available to web pages if the server serves the response with the
-    // required CORS response headers.
-    (*override_response_headers)->AddHeader(
-        "Access-Control-Allow-Origin: " + http_origin);
-    (*override_response_headers)->AddHeader(
-        "Access-Control-Allow-Credentials: true");
-  }
-  // TODO(bengr): Should we pop_back the request->url_chain?
 }
 
 void MarkProxiesAsBadUntil(

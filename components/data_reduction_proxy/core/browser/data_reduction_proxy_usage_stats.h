@@ -65,6 +65,9 @@ class DataReductionProxyUsageStats
   // cause the current bypass.
   void SetBypassType(DataReductionProxyBypassType type);
 
+  // Visible for testing.
+  DataReductionProxyBypassType GetBypassType() const;
+
   // Records all the data reduction proxy bytes-related histograms for the
   // completed URLRequest |request|.
   void RecordBytesHistograms(
