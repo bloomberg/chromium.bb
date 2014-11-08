@@ -113,7 +113,7 @@ config("mesa_internal_config") {
   if (is_win) {
     # TODO(scottmg): http://crbug.com/143877 These should be removed if
     # Mesa is ever rolled and the warnings are fixed.
-    cflags = [
+    cflags += [
       "/wd4005",  # Macro defined twice.
       "/wd4065",  # Switch statement contains 'default' but no 'case' labels.
       "/wd4090",  # 'Operation' : different 'modifier' qualifiers
