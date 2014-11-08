@@ -953,6 +953,7 @@ def _CheckSpamLogging(input_api, output_api):
                      r"gl_helper_benchmark\.cc$",
                  r"^courgette[\\\/]courgette_tool\.cc$",
                  r"^extensions[\\\/]renderer[\\\/]logging_native_handler\.cc$",
+                 r"^ipc[\\\/]ipc_logging\.cc$",
                  r"^native_client_sdk[\\\/]",
                  r"^remoting[\\\/]base[\\\/]logging\.h$",
                  r"^remoting[\\\/]host[\\\/].*",
