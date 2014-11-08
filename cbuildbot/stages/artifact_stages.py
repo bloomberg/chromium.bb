@@ -762,6 +762,14 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
         for payload in os.listdir(tempdir):
           queue.put([os.path.join(tempdir, payload)])
 
+  def _GenerateAUControlFiles(self):
+    """Generate and update AUTest control files."""
+    with osutils.TempDir() as tempdir:
+      tarball = commands.BuildAUTestTarball(
+          self._build_root, self._current_board, tempdir,
+          self.version, self.upload_url)
+      self.UploadArtifact(tarball)
+
   def BuildUpdatePayloads(self):
     """Archives update payloads when they are ready."""
     got_images = self.GetParallel('images_generated', pretty_name='images')
@@ -778,6 +786,8 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
     self._GeneratePayloads(image_name, full=True, stateful=True)
     self.board_runattrs.SetParallel('payloads_generated', True)
     self._GeneratePayloads(image_name, delta=True)
+    logging.info('Generating AU control files')
+    self._GenerateAUControlFiles()
     self.board_runattrs.SetParallel('delta_payloads_generated', True)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
@@ -795,7 +805,7 @@ class UploadTestArtifactsStage(generic_stages.BoardSpecificBuilderStage,
 
   def _HandleStageException(self, exc_info):
     # Tell the HWTestStage not to wait for payloads to be uploaded
-    # in case UploadHWTestArtifacts throws an exception.
+    # in case UploadTestArtifacts throws an exception.
     self.board_runattrs.SetParallelDefault('payloads_generated', False)
     self.board_runattrs.SetParallelDefault('delta_payloads_generated', False)
     return super(UploadTestArtifactsStage, self)._HandleStageException(exc_info)
