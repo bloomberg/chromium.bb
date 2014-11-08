@@ -36764,6 +36764,34 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Tabs.SwitchFromCloseLatency" units="ms">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Time between the event that closes a tab and the start of rendering.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SwitchFromExitLatency" units="ms">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Time between the event that exits an app and the start of rendering.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SwitchFromNewLatency" units="ms">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Time between the event that creates a tab and the start of rendering.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.SwitchFromUserLatency" units="ms">
+  <owner>simonb@chromium.org</owner>
+  <summary>
+    Time between the event that selects a tab and the start of rendering.
+  </summary>
+</histogram>
+
 <histogram name="TileManager.ExceededMemoryBudget" enum="TileMemoryBudget">
   <owner>reveman@chromium.org</owner>
   <owner>vmpstr@chromium.org</owner>
@@ -59591,6 +59619,23 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="Google" label="New Tab page for Google."/>
   <suffix name="Other" label="New Tab page for a non-Google provider."/>
   <affected-histogram name="Tab.NewTabOnload"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Tabs.SwitchLatency">
+  <suffix name="Perceived"
+      label="The time it takes to show something on the screen after the user
+             selects a tab. This might be a fake snapshot or it might just be
+             the time it takes to show the real content if no snapshot was
+             available."/>
+  <suffix name="Actual"
+      label="The time it takes to show a real live frame from the renderer on
+             the screen after the user selects a tab. This doesn not include
+             fake snapshots or other tricks, but the actual time to get real
+             interactable content displayed."/>
+  <affected-histogram name="Tabs.SwitchFromCloseLatency"/>
+  <affected-histogram name="Tabs.SwitchFromExitLatency"/>
+  <affected-histogram name="Tabs.SwitchFromNewLatency"/>
+  <affected-histogram name="Tabs.SwitchFromUserLatency"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Tps65090Fets" separator=".">
