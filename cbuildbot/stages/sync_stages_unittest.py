@@ -433,6 +433,13 @@ class PreCQLauncherStageTest(MasterCQSyncTestCase):
     self.assertEqual(self.sync_stage.VerificationsForChange(change),
                      constants.PRE_CQ_DEFAULT_CONFIGS)
 
+  def testVerificationsForChangeNoneField(self):
+    change = MockPatch()
+    self.PatchObject(validation_pool, 'GetOptionForChange',
+                     return_value=None)
+    self.assertEqual(self.sync_stage.VerificationsForChange(change),
+                     constants.PRE_CQ_DEFAULT_CONFIGS)
+
   def _PrepareChangesWithPendingVerifications(self, verifications=None):
     """Prepare changes and pending verifications for them.
 

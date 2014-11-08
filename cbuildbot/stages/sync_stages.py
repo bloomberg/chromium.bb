@@ -958,9 +958,9 @@ class PreCQLauncherStage(SyncStage):
     try:
       result = validation_pool.GetOptionForChange(
           self._build_root, change, 'GENERAL', 'pre-cq-configs')
-      result = result.split()
-      if result and all(c in cbuildbot_config.config for c in result):
-        configs_to_test = result
+      if (result and result.split() and
+          all(c in cbuildbot_config.config for c in result.split())):
+        configs_to_test = result.split()
     except ConfigParser.Error:
       cros_build_lib.Error('%s has malformed config file', change,
                            exc_info=True)
