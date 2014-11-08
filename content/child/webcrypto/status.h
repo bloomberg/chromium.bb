@@ -54,16 +54,16 @@ class CONTENT_EXPORT Status {
   // convertable to a dictionary.
   static Status ErrorJwkNotDictionary();
 
-  // The required property |property| was missing.
-  static Status ErrorJwkPropertyMissing(const std::string& property);
+  // The required JWK member |member_name| was missing.
+  static Status ErrorJwkMemberMissing(const std::string& member_name);
 
-  // The property |property| was not of type |expected_type|.
-  static Status ErrorJwkPropertyWrongType(const std::string& property,
-                                          const std::string& expected_type);
+  // The JWK member |member_name| was not of type |expected_type|.
+  static Status ErrorJwkMemberWrongType(const std::string& member_name,
+                                        const std::string& expected_type);
 
-  // The property |property| was a string, however could not be successfully
-  // base64 decoded.
-  static Status ErrorJwkBase64Decode(const std::string& property);
+  // The JWK member |member_name| was a string, however could not be
+  // successfully base64 decoded.
+  static Status ErrorJwkBase64Decode(const std::string& member_name);
 
   // The "ext" parameter was specified but was
   // incompatible with the value requested by the Web Crypto call.
@@ -103,13 +103,14 @@ class CONTENT_EXPORT Status {
   // given that is an error.
   static Status ErrorJwkIncorrectKeyLength();
 
-  // The JWK property |property| is supposed to represent a big-endian unsigned
+  // The JWK member |member_name| is supposed to represent a big-endian unsigned
   // integer, however was the empty string.
-  static Status ErrorJwkEmptyBigInteger(const std::string& property);
+  static Status ErrorJwkEmptyBigInteger(const std::string& member_name);
 
-  // The big-endian unsigned integer |property| contained leading zeros. This
+  // The big-endian unsigned integer |member_name| contained leading zeros. This
   // violates the JWA requirement that such octet strings be minimal.
-  static Status ErrorJwkBigIntegerHasLeadingZero(const std::string& property);
+  static Status ErrorJwkBigIntegerHasLeadingZero(
+      const std::string& member_name);
 
   // The key_ops lists a usage more than once.
   static Status ErrorJwkDuplicateKeyOps();

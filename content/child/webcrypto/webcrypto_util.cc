@@ -84,7 +84,7 @@ Status GetWebCryptoUsagesFromJwkKeyOps(const base::ListValue* key_ops,
   for (size_t i = 0; i < key_ops->GetSize(); ++i) {
     std::string key_op;
     if (!key_ops->GetString(i, &key_op)) {
-      return Status::ErrorJwkPropertyWrongType(
+      return Status::ErrorJwkMemberWrongType(
           base::StringPrintf("key_ops[%d]", static_cast<int>(i)), "string");
     }
 

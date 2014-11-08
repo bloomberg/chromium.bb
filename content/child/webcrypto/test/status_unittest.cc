@@ -29,8 +29,8 @@ TEST(WebCryptoStatusTest, Basic) {
   EXPECT_NE(Status::Success(), Status::OperationError());
 
   EXPECT_EQ(Status::Success(), Status::Success());
-  EXPECT_EQ(Status::ErrorJwkPropertyWrongType("kty", "string"),
-            Status::ErrorJwkPropertyWrongType("kty", "string"));
+  EXPECT_EQ(Status::ErrorJwkMemberWrongType("kty", "string"),
+            Status::ErrorJwkMemberWrongType("kty", "string"));
 
   Status status = Status::Success();
 
@@ -52,13 +52,13 @@ TEST(WebCryptoStatusTest, Basic) {
   EXPECT_EQ("The requested operation is unsupported", status.error_details());
   EXPECT_EQ(blink::WebCryptoErrorTypeNotSupported, status.error_type());
 
-  status = Status::ErrorJwkPropertyMissing("kty");
+  status = Status::ErrorJwkMemberMissing("kty");
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("The required JWK property \"kty\" was missing",
             status.error_details());
   EXPECT_EQ(blink::WebCryptoErrorTypeData, status.error_type());
 
-  status = Status::ErrorJwkPropertyWrongType("kty", "string");
+  status = Status::ErrorJwkMemberWrongType("kty", "string");
   EXPECT_TRUE(status.IsError());
   EXPECT_EQ("The JWK property \"kty\" must be a string",
             status.error_details());

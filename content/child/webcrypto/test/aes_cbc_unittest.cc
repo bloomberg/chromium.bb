@@ -557,7 +557,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkMissingKty) {
   base::DictionaryValue dict;
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
   EXPECT_EQ(
-      Status::ErrorJwkPropertyMissing("kty"),
+      Status::ErrorJwkMemberMissing("kty"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,
@@ -574,7 +574,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKtyWrongType) {
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 
   EXPECT_EQ(
-      Status::ErrorJwkPropertyWrongType("kty", "string"),
+      Status::ErrorJwkMemberWrongType("kty", "string"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,
@@ -610,7 +610,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkUseWrongType) {
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 
   EXPECT_EQ(
-      Status::ErrorJwkPropertyWrongType("use", "string"),
+      Status::ErrorJwkMemberWrongType("use", "string"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,
@@ -628,7 +628,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkExtWrongType) {
   dict.SetString("k", "GADWrMRHwQfoNaXU5fZvTg==");
 
   EXPECT_EQ(
-      Status::ErrorJwkPropertyWrongType("ext", "boolean"),
+      Status::ErrorJwkMemberWrongType("ext", "boolean"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,
@@ -646,7 +646,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkKeyOpsWrongType) {
   dict.SetBoolean("key_ops", true);
 
   EXPECT_EQ(
-      Status::ErrorJwkPropertyWrongType("key_ops", "list"),
+      Status::ErrorJwkMemberWrongType("key_ops", "list"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,
@@ -718,7 +718,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkNonStringKeyOp) {
   dict.Set("key_ops", key_ops);
   key_ops->AppendString("encrypt");
   key_ops->AppendInteger(3);
-  EXPECT_EQ(Status::ErrorJwkPropertyWrongType("key_ops[1]", "string"),
+  EXPECT_EQ(Status::ErrorJwkMemberWrongType("key_ops[1]", "string"),
             ImportKeyJwkFromDict(dict, algorithm, false, usages, &key));
 }
 
@@ -730,7 +730,7 @@ TEST(WebCryptoAesCbcTest, ImportJwkMissingK) {
   dict.SetString("kty", "oct");
 
   EXPECT_EQ(
-      Status::ErrorJwkPropertyMissing("k"),
+      Status::ErrorJwkMemberMissing("k"),
       ImportKeyJwkFromDict(dict,
                            CreateAlgorithm(blink::WebCryptoAlgorithmIdAesCbc),
                            false,

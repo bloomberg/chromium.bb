@@ -6,6 +6,10 @@
 
 namespace content {
 
+// TODO(eroman): The error text for JWK uses the terminology "property" however
+// it should instead call it a "member". Changing this needs to coordinate with
+// the Blink LayoutTests as they depend on the old names.
+
 namespace webcrypto {
 
 bool Status::IsError() const {
@@ -33,22 +37,23 @@ Status Status::ErrorJwkNotDictionary() {
                 "JWK input could not be parsed to a JSON dictionary");
 }
 
-Status Status::ErrorJwkPropertyMissing(const std::string& property) {
-  return Status(blink::WebCryptoErrorTypeData,
-                "The required JWK property \"" + property + "\" was missing");
-}
-
-Status Status::ErrorJwkPropertyWrongType(const std::string& property,
-                                         const std::string& expected_type) {
+Status Status::ErrorJwkMemberMissing(const std::string& member_name) {
   return Status(
       blink::WebCryptoErrorTypeData,
-      "The JWK property \"" + property + "\" must be a " + expected_type);
+      "The required JWK property \"" + member_name + "\" was missing");
 }
 
-Status Status::ErrorJwkBase64Decode(const std::string& property) {
+Status Status::ErrorJwkMemberWrongType(const std::string& member_name,
+                                       const std::string& expected_type) {
   return Status(
       blink::WebCryptoErrorTypeData,
-      "The JWK property \"" + property + "\" could not be base64 decoded");
+      "The JWK property \"" + member_name + "\" must be a " + expected_type);
+}
+
+Status Status::ErrorJwkBase64Decode(const std::string& member_name) {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The JWK property \"" + member_name + "\" could not be base64 decoded");
 }
 
 Status Status::ErrorJwkExtInconsistent() {
@@ -105,15 +110,16 @@ Status Status::ErrorJwkIncorrectKeyLength() {
                 "of key data for the given algorithm.");
 }
 
-Status Status::ErrorJwkEmptyBigInteger(const std::string& property) {
+Status Status::ErrorJwkEmptyBigInteger(const std::string& member_name) {
   return Status(blink::WebCryptoErrorTypeData,
-                "The JWK \"" + property + "\" property was empty.");
+                "The JWK \"" + member_name + "\" property was empty.");
 }
 
-Status Status::ErrorJwkBigIntegerHasLeadingZero(const std::string& property) {
+Status Status::ErrorJwkBigIntegerHasLeadingZero(
+    const std::string& member_name) {
   return Status(
       blink::WebCryptoErrorTypeData,
-      "The JWK \"" + property + "\" property contained a leading zero.");
+      "The JWK \"" + member_name + "\" property contained a leading zero.");
 }
 
 Status Status::ErrorJwkDuplicateKeyOps() {

@@ -345,9 +345,9 @@ Status JwkReader::GetString(const std::string& member_name,
                             std::string* result) const {
   base::Value* value = NULL;
   if (!dict_->Get(member_name, &value))
-    return Status::ErrorJwkPropertyMissing(member_name);
+    return Status::ErrorJwkMemberMissing(member_name);
   if (!value->GetAsString(result))
-    return Status::ErrorJwkPropertyWrongType(member_name, "string");
+    return Status::ErrorJwkMemberWrongType(member_name, "string");
   return Status::Success();
 }
 
@@ -360,7 +360,7 @@ Status JwkReader::GetOptionalString(const std::string& member_name,
     return Status::Success();
 
   if (!value->GetAsString(result))
-    return Status::ErrorJwkPropertyWrongType(member_name, "string");
+    return Status::ErrorJwkMemberWrongType(member_name, "string");
 
   *member_exists = true;
   return Status::Success();
@@ -375,7 +375,7 @@ Status JwkReader::GetOptionalList(const std::string& member_name,
     return Status::Success();
 
   if (!value->GetAsList(result))
-    return Status::ErrorJwkPropertyWrongType(member_name, "list");
+    return Status::ErrorJwkMemberWrongType(member_name, "list");
 
   *member_exists = true;
   return Status::Success();
@@ -421,7 +421,7 @@ Status JwkReader::GetOptionalBool(const std::string& member_name,
     return Status::Success();
 
   if (!value->GetAsBoolean(result))
-    return Status::ErrorJwkPropertyWrongType(member_name, "boolean");
+    return Status::ErrorJwkMemberWrongType(member_name, "boolean");
 
   *member_exists = true;
   return Status::Success();
