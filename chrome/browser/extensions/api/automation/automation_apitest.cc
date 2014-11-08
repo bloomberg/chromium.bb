@@ -180,6 +180,12 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, QuerySelector) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, Find) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(RunExtensionSubtest("automation/tests/tabs", "find.html"))
+      << message_;
+}
+
 static const int kPid = 1;
 static const int kTab0Rid = 1;
 static const int kTab1Rid = 2;

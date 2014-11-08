@@ -101,6 +101,14 @@ AutomationNodeImpl.prototype = {
       this.querySelectorCallback_.bind(this, callback));
   },
 
+  find: function(params) {
+    return this.findInternal_(params);
+  },
+
+  findAll: function(params) {
+    return this.findInternal_(params, []);
+  },
+
   addEventListener: function(eventType, callback, capture) {
     this.removeEventListener(eventType, callback);
     if (!this.listeners[eventType])
@@ -241,6 +249,77 @@ AutomationNodeImpl.prototype = {
       userCallback(null);
     }
     userCallback(resultNode);
+  },
+
+  findInternal_: function(params, opt_results) {
+    var result = null;
+    this.forAllDescendants_(function(node) {
+      if (privates(node).impl.matchInternal_(params)) {
+        if (opt_results)
+          opt_results.push(node);
+        else
+          result = node;
+        return !opt_results;
+      }
+    });
+    if (opt_results)
+      return opt_results;
+    return result;
+  },
+
+  /**
+   * Executes a closure for all of this node's descendants, in pre-order.
+   * Early-outs if the closure returns true.
+   * @param {Function(AutomationNode):boolean} closure Closure to be executed
+   *     for each node. Return true to early-out the traversal.
+   */
+  forAllDescendants_: function(closure) {
+    var stack = this.wrapper.children().reverse();
+    while (stack.length > 0) {
+      var node = stack.pop();
+      if (closure(node))
+        return;
+
+      var children = node.children();
+      for (var i = children.length - 1; i >= 0; i--)
+        stack.push(children[i]);
+    }
+  },
+
+  matchInternal_: function(params) {
+    if (Object.keys(params).length == 0)
+      return false;
+
+    if ('role' in params && this.role != params.role)
+        return false;
+
+    if ('state' in params) {
+      for (var state in params.state) {
+        if (params.state[state] != (state in this.state))
+          return false;
+      }
+    }
+    if ('attributes' in params) {
+      for (var attribute in params.attributes) {
+        if (!(attribute in this.attributesInternal))
+          return false;
+
+        var attrValue = params.attributes[attribute];
+        if (typeof attrValue != 'object') {
+          if (this.attributesInternal[attribute] !== attrValue)
+            return false;
+        } else if (attrValue instanceof RegExp) {
+          if (typeof this.attributesInternal[attribute] != 'string')
+            return false;
+          if (!attrValue.test(this.attributesInternal[attribute]))
+            return false;
+        } else {
+          // TODO(aboxhall): handle intlist case.
+          return false;
+        }
+      }
+    }
+    return true;
   }
 };
 
@@ -638,6 +717,8 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'previousSibling',
                                                 'nextSibling',
                                                 'doDefault',
+                                                'find',
+                                                'findAll',
                                                 'focus',
                                                 'makeVisible',
                                                 'setSelection',

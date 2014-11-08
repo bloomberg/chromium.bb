@@ -219,6 +219,33 @@
     long height;
   };
 
+  // Arguments for the find() and findAll() methods.
+  [nocompile, noinline_doc] dictionary FindParams {
+    automation.RoleType? role;
+
+    // A map of $(ref:automation.StateType) to boolean, indicating for each
+    // state whether it should be set or not. For example:
+    // <code>{ StateType.enabled: false }</code> would only match if
+    // <code>StateType.enabled</code> was <em>not</em> present in the node's
+    // <code>state</code> object.
+    object? state;
+
+    // A map of attribute name to expected value, for example
+    // <code>{ name: 'Root directory', button_mixed: true }</code>.
+    // String attribute values may be specified as a regex, for example
+    // <code>{ name: /stralia$/</code> }</code>.
+    // Unless specifying a regex, the expected value must be an exact match
+    // in type and value for the actual value. Thus, the type of expected value
+    // must be one of:
+    // <ul>
+    // <li>string</li>
+    // <li>integer</li>
+    // <li>float</li>
+    // <li>boolean</li>
+    // </ul>
+    object? attributes;
+  };
+
   // Called when the result for a <code>query</code> is available.
   callback QueryCallback = void(AutomationNode node);
 
@@ -307,6 +334,14 @@
     // aria-hidden), this will return the nearest ancestor which does correspond
     // to an automation node.
     static void querySelector(DOMString selector, QueryCallback callback);
+
+    // Finds the first AutomationNode in this node's subtree which matches the
+    // given search parameters.
+    static AutomationNode find(FindParams params);
+
+    // Finds all the AutomationNodes in this node's subtree which matches the
+    // given search parameters.
+    static AutomationNode[] findAll(FindParams params);
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.
