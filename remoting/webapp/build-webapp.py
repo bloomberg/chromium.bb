@@ -278,7 +278,7 @@ def buildWebApp(buildtype, version, destination, zip_path,
   oauth2RedirectPath = '/talkgadget/oauth/chrome-remote-desktop'
   oauth2RedirectBaseUrlJs = oauth2RedirectHostJs + oauth2RedirectPath
   oauth2RedirectBaseUrlJson = oauth2RedirectHostJson + oauth2RedirectPath
-  if buildtype != 'Dev':
+  if buildtype == 'Official':
     oauth2RedirectUrlJs = ("'" + oauth2RedirectBaseUrlJs +
                            "/rel/' + chrome.i18n.getMessage('@@extension_id')")
     oauth2RedirectUrlJson = oauth2RedirectBaseUrlJson + '/rel/*'
@@ -315,7 +315,9 @@ def buildWebApp(buildtype, version, destination, zip_path,
   replaceString(destination, 'API_CLIENT_SECRET', apiClientSecret)
 
   # Use a consistent extension id for dev builds.
-  if buildtype == 'Dev':
+  # AppRemoting builds always use the dev app id - the correct app id gets
+  # written into the manifest later.
+  if buildtype != 'Official' or webapp_type == 'app_remoting':
     manifestKey = '"key": "remotingdevbuild",'
   else:
     manifestKey = ''
