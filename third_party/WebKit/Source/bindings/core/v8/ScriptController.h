@@ -79,6 +79,7 @@ public:
     void trace(Visitor*);
 
     bool initializeMainWorld();
+    bool isMainWorldInitialized();
     WindowProxy* windowProxy(DOMWrapperWorld&);
     WindowProxy* existingWindowProxy(DOMWrapperWorld&);
 

@@ -85,7 +85,7 @@ void PageRuntimeAgent::enable(ErrorString* errorString)
     // unintentionally initialize contexts in the frames which may trigger some listeners
     // that are expected to be triggered only after the load is committed, see http://crbug.com/131623
     if (m_mainWorldContextCreated)
-        reportExecutionContextCreation();
+        reportExecutionContextsToFrontend();
 }
 
 void PageRuntimeAgent::run(ErrorString* errorString)
@@ -104,9 +104,27 @@ void PageRuntimeAgent::didClearDocumentOfWindowObject(LocalFrame* frame)
     if (frame == m_inspectedPage->mainFrame()) {
         m_scriptStateToId.clear();
         m_frontend->executionContextsCleared();
+        registerMainWorldContext(frame);
     }
+}
+
+void PageRuntimeAgent::registerMainWorldContext(LocalFrame* frame)
+{
+    if (!frame->script().isMainWorldInitialized())
+        return;
+
     String frameId = m_pageAgent->frameId(frame);
     addExecutionContextToFrontend(ScriptState::forMainWorld(frame), true, "", frameId);
+}
+
+void PageRuntimeAgent::didCreateMainWorldContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin)
+{
+    if (!m_enabled)
+        return;
+    ASSERT(m_frontend);
+
+    String frameId = m_pageAgent->frameId(frame);
+    addExecutionContextToFrontend(scriptState, true, origin->toRawString(), frameId);
 }
 
 void PageRuntimeAgent::didCreateIsolatedContext(LocalFrame* frame, ScriptState* scriptState, SecurityOrigin* origin)
@@ -143,7 +161,7 @@ void PageRuntimeAgent::unmuteConsole()
     FrameConsole::unmute();
 }
 
-void PageRuntimeAgent::reportExecutionContextCreation()
+void PageRuntimeAgent::reportExecutionContextsToFrontend()
 {
     Vector<std::pair<ScriptState*, SecurityOrigin*> > isolatedContexts;
     for (Frame* frame = m_inspectedPage->mainFrame(); frame; frame = frame->tree().traverseNext()) {
@@ -154,8 +172,7 @@ void PageRuntimeAgent::reportExecutionContextCreation()
             continue;
         String frameId = m_pageAgent->frameId(localFrame);
 
-        ScriptState* scriptState = ScriptState::forMainWorld(localFrame);
-        addExecutionContextToFrontend(scriptState, true, "", frameId);
+        registerMainWorldContext(localFrame);
         localFrame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
             continue;

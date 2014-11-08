@@ -218,6 +218,11 @@ bool ScriptController::initializeMainWorld()
     return windowProxy(DOMWrapperWorld::mainWorld())->isContextInitialized();
 }
 
+bool ScriptController::isMainWorldInitialized()
+{
+    return m_windowProxy->isContextInitialized();
+}
+
 WindowProxy* ScriptController::existingWindowProxy(DOMWrapperWorld& world)
 {
     if (world.isMainWorld())

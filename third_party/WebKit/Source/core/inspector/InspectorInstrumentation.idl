@@ -214,6 +214,9 @@ interface InspectorInstrumentation {
     [PageRuntime, Inline=FastReturn]
     void didCreateIsolatedContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*);
 
+    [PageRuntime, Inline=FastReturn]
+    void didCreateMainWorldContext([Keep] LocalFrame*, ScriptState*, SecurityOrigin*);
+
     [DOMDebugger, Debugger, Timeline, Inline=FastReturn]
     InspectorInstrumentationCookie willFireTimer([Keep] ExecutionContext*, int timerId);
 
