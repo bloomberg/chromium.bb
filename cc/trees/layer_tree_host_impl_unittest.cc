@@ -2592,6 +2592,14 @@ TEST_F(LayerTreeHostImplTopControlsTest, TopControlsViewportOffsetClamping) {
   EXPECT_EQ(InputHandler::ScrollStarted,
             host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
   host_impl_->ScrollBy(gfx::Point(), scroll_delta);
+
+  // scrolling down at the max extents no longer hides the top controls
+  EXPECT_EQ(0.f,
+            settings_.top_controls_height -
+                host_impl_->active_tree()->total_top_controls_content_offset());
+
+  // forcefully hide the top controls by 25px
+  host_impl_->top_controls_manager()->ScrollBy(scroll_delta);
   host_impl_->ScrollEnd();
 
   EXPECT_EQ(scroll_delta.y(),
@@ -7299,6 +7307,68 @@ TEST_F(LayerTreeHostImplWithTopControlsTest, TopControlsAnimationAfterScroll) {
     }
   }
   EXPECT_FALSE(host_impl_->top_controls_manager()->animation());
+}
+
+TEST_F(LayerTreeHostImplWithTopControlsTest,
+       TopControlsScrollDeltaInOverScroll) {
+  // test varifies that the overscroll delta should not have accumulated in
+  // the top controls if we do a hide and show without releasing finger.
+
+  LayerImpl* scroll_layer = SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  host_impl_->SetViewportSize(gfx::Size(100, 100));
+  host_impl_->top_controls_manager()->UpdateTopControlsState(BOTH, SHOWN,
+                                                             false);
+  DrawFrame();
+
+  EXPECT_EQ(InputHandler::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture));
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
+
+  float offset = 50;
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
+  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+  EXPECT_EQ(gfx::Vector2dF().ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
+  EXPECT_EQ(gfx::Vector2dF(0, offset).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, offset)).did_scroll);
+
+  // Should have fully scrolled
+  EXPECT_EQ(gfx::Vector2dF(0, scroll_layer->MaxScrollOffset().y()).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  float overscrollamount = 10;
+
+  // Overscroll the content
+  EXPECT_FALSE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, overscrollamount))
+          .did_scroll);
+  EXPECT_EQ(gfx::Vector2dF(0, 2 * offset).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+  EXPECT_EQ(gfx::Vector2dF(0, overscrollamount).ToString(),
+            host_impl_->accumulated_root_overscroll().ToString());
+
+  EXPECT_TRUE(host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -2 * offset))
+                  .did_scroll);
+  EXPECT_EQ(gfx::Vector2dF(0, 0).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+  EXPECT_EQ(-offset, host_impl_->top_controls_manager()->ControlsTopOffset());
+
+  EXPECT_TRUE(
+      host_impl_->ScrollBy(gfx::Point(), gfx::Vector2d(0, -offset)).did_scroll);
+  EXPECT_EQ(gfx::Vector2dF(0, 0).ToString(),
+            scroll_layer->TotalScrollOffset().ToString());
+
+  // Top controls should be fully visible
+  EXPECT_EQ(0, host_impl_->top_controls_manager()->ControlsTopOffset());
+
+  host_impl_->ScrollEnd();
 }
 
 class LayerTreeHostImplVirtualViewportTest : public LayerTreeHostImplTest {

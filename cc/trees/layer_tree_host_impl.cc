@@ -2629,11 +2629,8 @@ bool LayerTreeHostImpl::ShouldTopControlsConsumeScroll(
       CurrentlyScrollingLayer() != OuterViewportScrollLayer())
     return false;
 
-  if (InnerViewportScrollLayer()->MaxScrollOffset().y() > 0)
-    return true;
-
-  if (OuterViewportScrollLayer() &&
-      OuterViewportScrollLayer()->MaxScrollOffset().y() > 0)
+  if (active_tree()->TotalScrollOffset().y() <
+      active_tree()->TotalMaxScrollOffset().y())
     return true;
 
   return false;
