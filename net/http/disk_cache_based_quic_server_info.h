@@ -90,6 +90,10 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
 
   ~DiskCacheBasedQuicServerInfo() override;
 
+  // Persists |pending_write_data_| if it is not empty, otherwise serializes the
+  // data and pesists it.
+  void PersistInternal();
+
   std::string key() const;
 
   // The |unused| parameter is a small hack so that we can have the
@@ -131,6 +135,7 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   bool ready_;
   bool found_entry_;  // Controls the behavior of DoCreateOrOpen.
   std::string new_data_;
+  std::string pending_write_data_;
   const QuicServerId server_id_;
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;

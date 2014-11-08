@@ -684,7 +684,7 @@ void QuicClientSession::OnProofValid(
     const QuicCryptoClientConfig::CachedState& cached) {
   DCHECK(cached.proof_valid());
 
-  if (!server_info_ || !server_info_->IsReadyToPersist()) {
+  if (!server_info_) {
     return;
   }
 
