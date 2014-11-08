@@ -936,6 +936,8 @@
             'css/parser/CSSParser.h',
             'css/parser/CSSParserFastPaths.cpp',
             'css/parser/CSSParserFastPaths.h',
+            'css/parser/CSSParserImpl.cpp',
+            'css/parser/CSSParserImpl.h',
             'css/parser/CSSParserMode.cpp',
             'css/parser/CSSParserMode.h',
             'css/parser/CSSParserValues.cpp',

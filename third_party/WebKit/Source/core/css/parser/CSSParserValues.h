@@ -25,6 +25,7 @@
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/parser/CSSParserToken.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
@@ -156,6 +157,7 @@ struct CSSParserValue {
     int unit;
 
     inline void setFromNumber(double value, int unit = CSSPrimitiveValue::CSS_NUMBER);
+    inline void setFromOperator(UChar);
     inline void setFromFunction(CSSParserFunction*);
     inline void setFromValueList(PassOwnPtr<CSSParserValueList>);
 };
@@ -167,6 +169,7 @@ public:
         : m_current(0)
     {
     }
+    CSSParserValueList(CSSParserTokenIterator start, CSSParserTokenIterator end);
     ~CSSParserValueList();
 
     void addValue(const CSSParserValue&);
@@ -265,6 +268,14 @@ inline void CSSParserValue::setFromNumber(double value, int unit)
     else
         fValue = 0;
     this->unit = unit;
+}
+
+inline void CSSParserValue::setFromOperator(UChar c)
+{
+    id = CSSValueInvalid;
+    unit = Operator;
+    iValue = c;
+    isInt = false;
 }
 
 inline void CSSParserValue::setFromFunction(CSSParserFunction* function)

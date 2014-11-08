@@ -55,6 +55,7 @@ CSSParserToken::CSSParserToken(CSSParserTokenType type, double numericValue, Num
 
 CSSParserToken::CSSParserToken(CSSParserTokenType type, UChar32 start, UChar32 end)
     : m_type(UnicodeRangeToken)
+    , m_value(String::format("U+%X-%X", start, end)) // FIXME: Remove this once CSSParserValues is gone
     , m_delimiter(0)
     , m_numericValue(0)
     , m_unit(CSSPrimitiveValue::CSS_UNKNOWN)

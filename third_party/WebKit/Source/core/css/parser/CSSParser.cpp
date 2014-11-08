@@ -10,6 +10,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSParserFastPaths.h"
+#include "core/css/parser/CSSParserImpl.h"
 
 namespace blink {
 
@@ -52,6 +53,8 @@ bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID p
 
 bool CSSParser::parseValue(MutableStylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, const CSSParserContext& context)
 {
+    if (RuntimeEnabledFeatures::newCSSParserEnabled())
+        return CSSParserImpl::parseValue(declaration, propertyID, string, important, context);
     return BisonCSSParser::parseValue(declaration, propertyID, string, important, context);
 }
 
