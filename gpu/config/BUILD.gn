@@ -66,6 +66,9 @@ source_set("config") {
         "//third_party/amd/amd_videocard_info_win.cc",
       ]
     }
+
+    # TODO(jschuh): size_t to int.
+    cflags = [ "/wd4267" ]
   }
   if (use_libpci) {
     defines += [ "USE_LIBPCI=1" ]

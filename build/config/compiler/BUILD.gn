@@ -560,6 +560,7 @@ config("no_chromium_code") {
     cflags += [
       "/W3",  # Warning level 3.
       "/wd4800",  # Disable warning when forcing value to bool.
+      "/wd4267",  # TODO(jschuh): size_t to int.
     ]
     defines += [
       "_CRT_NONSTDC_NO_WARNINGS",

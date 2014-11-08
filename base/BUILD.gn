@@ -858,7 +858,7 @@ component("base") {
     ]
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-    #cflags = [ "/wd4267" ]
+    cflags = [ "/wd4267" ]
 
     libs = [
       "cfgmgr32.lib",
@@ -1015,6 +1015,11 @@ component("i18n") {
   if (is_android && !is_debug) {
     configs -= [ "//build/config/compiler:optimize" ]
     configs += [ "//build/config/compiler:optimize_max" ]
+  }
+
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
   }
 }
 
