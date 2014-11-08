@@ -63,6 +63,7 @@ public:
     // provided by the service worker in the fetch events, so fallback to native.
     virtual void didHandleFetchEvent(int fetchEventID) = 0;
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse&) = 0;
+    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult) = 0;
     virtual void didHandleSyncEvent(int syncEventID) = 0;
     virtual void postMessageToClient(int clientID, const WebString& message, PassOwnPtr<WebMessagePortChannelArray>) = 0;
 

@@ -48,6 +48,7 @@
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "modules/serviceworkers/WaitUntilObserver.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "public/platform/WebServiceWorkerEventResult.h"
 #include "public/platform/WebServiceWorkerRequest.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/WebServiceWorkerContextClient.h"
@@ -118,6 +119,10 @@ void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebStri
 {
     ASSERT(m_workerGlobalScope);
     m_workerGlobalScope->dispatchEvent(PushEvent::create(EventTypeNames::push, data));
+    // TODO(mvanouwerkerk): Instead of calling didHandlePushEvent here, it
+    // should get called from WaitUntilObserver::decrementPendingActivity once
+    // the push event is hooked up to event.waitUntil (crbug.com/430888).
+    ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandlePushEvent(eventID, WebServiceWorkerEventResultCompleted);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)

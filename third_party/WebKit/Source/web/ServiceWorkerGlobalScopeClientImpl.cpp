@@ -83,6 +83,11 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, c
     m_client.didHandleFetchEvent(fetchEventID, webResponse);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandlePushEvent(pushEventID, result);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(int syncEventID)
 {
     m_client.didHandleSyncEvent(syncEventID);

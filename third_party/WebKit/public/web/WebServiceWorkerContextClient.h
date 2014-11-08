@@ -122,6 +122,11 @@ public:
     virtual void didHandleFetchEvent(int fetchEventID) { }
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& response) { }
 
+    // ServiceWorker specific method. Called after PushEvent (dispatched via
+    // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
+    // context.
+    virtual void didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result) { }
+
     // ServiceWorker specific method. Called after SyncEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
     // context.
