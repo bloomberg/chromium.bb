@@ -170,7 +170,7 @@ Chrome supports. -->
           Google Chrome Binaries
         </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_LEARN_MORE_URL" desc="Link to knowledge-base article about Chrome Frame turndown">
-          http://support.google.com/chrome/?p=ib_chromeframe
+          https://support.google.com/chrome/?p=ib_chromeframe
         </message>
         <message name="IDS_CHROME_FRAME_TURNDOWN_TEXT_IE_OLDER" desc="Text of Chrome Frame turndown prompt for IE 6, 7, and 8">
           This site is using the retired Chrome Frame plug-in which no longer receives security and stability updates. Please uninstall it and upgrade to a modern browser.
@@ -457,7 +457,7 @@ Google Chrome is unable to recover your settings.
           A conflicting installation of Google Chrome was found on the system. Please uninstall it and try again.
         </message>
         <message name="IDS_INSTALL_INCONSISTENT_UPDATE_POLICY" desc="Error during install if the update policies settings in Group Policy are inconsistent.">
-          Google Chrome cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see http://goo.gl/uJ9gV for details.
+          Google Chrome cannot be updated due to inconsistent Google Update Group Policy settings. Use the Group Policy Editor to set the update policy override for the Google Chrome Binaries application and try again; see https://goo.gl/uJ9gV for details.
         </message>
       </if>
       <!-- Options Dialog -->
