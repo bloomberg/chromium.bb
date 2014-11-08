@@ -201,6 +201,10 @@ class BaseTestServer {
     // Whether to staple the OCSP response.
     bool staple_ocsp_response;
 
+    // Whether to make the OCSP server unavailable. This does not affect the
+    // stapled OCSP response.
+    bool ocsp_server_unavailable;
+
     // Whether to enable NPN support.
     bool enable_npn;
 

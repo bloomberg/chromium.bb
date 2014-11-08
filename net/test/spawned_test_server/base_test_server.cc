@@ -101,6 +101,7 @@ BaseTestServer::SSLOptions::SSLOptions()
       tls_intolerance_type(TLS_INTOLERANCE_ALERT),
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
+      ocsp_server_unavailable(false),
       enable_npn(false),
       disable_session_cache(false) {
 }
@@ -118,6 +119,7 @@ BaseTestServer::SSLOptions::SSLOptions(
       tls_intolerance_type(TLS_INTOLERANCE_ALERT),
       fallback_scsv_enabled(false),
       staple_ocsp_response(false),
+      ocsp_server_unavailable(false),
       enable_npn(false),
       disable_session_cache(false) {
 }
@@ -476,6 +478,10 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
     }
     if (ssl_options_.staple_ocsp_response)
       arguments->Set("staple-ocsp-response", base::Value::CreateNullValue());
+    if (ssl_options_.ocsp_server_unavailable) {
+      arguments->Set("ocsp-server-unavailable",
+                     base::Value::CreateNullValue());
+    }
     if (ssl_options_.enable_npn)
       arguments->Set("enable-npn", base::Value::CreateNullValue());
     if (ssl_options_.disable_session_cache)

@@ -1976,6 +1976,7 @@ class ServerRunner(testserver_base.TestServerRunner):
     if self.options.server_type == SERVER_HTTP:
       if self.options.https:
         pem_cert_and_key = None
+        ocsp_der = None
         if self.options.cert_and_key_file:
           if not os.path.isfile(self.options.cert_and_key_file):
             raise testserver_base.OptionError(
@@ -1988,7 +1989,6 @@ class ServerRunner(testserver_base.TestServerRunner):
           print ('OCSP server started on %s:%d...' %
               (host, self.__ocsp_server.server_port))
 
-          ocsp_der = None
           ocsp_state = None
 
           if self.options.ocsp == 'ok':
@@ -2012,7 +2012,11 @@ class ServerRunner(testserver_base.TestServerRunner):
               ocsp_state = ocsp_state,
               serial = self.options.cert_serial)
 
-          self.__ocsp_server.ocsp_response = ocsp_der
+          if self.options.ocsp_server_unavailable:
+            # SEQUENCE containing ENUMERATED with value 3 (tryLater).
+            self.__ocsp_server.ocsp_response = '30030a0103'.decode('hex')
+          else:
+            self.__ocsp_server.ocsp_response = ocsp_der
 
         for ca_cert in self.options.ssl_client_ca:
           if not os.path.isfile(ca_cert):
@@ -2021,8 +2025,8 @@ class ServerRunner(testserver_base.TestServerRunner):
                 ' exiting...')
 
         stapled_ocsp_response = None
-        if self.__ocsp_server and self.options.staple_ocsp_response:
-          stapled_ocsp_response = self.__ocsp_server.ocsp_response
+        if self.options.staple_ocsp_response:
+          stapled_ocsp_response = ocsp_der
 
         server = HTTPSServer((host, port), TestPageHandler, pem_cert_and_key,
                              self.options.ssl_client_auth,
@@ -2269,6 +2273,12 @@ class ServerRunner(testserver_base.TestServerRunner):
     self.option_parser.add_option('--ws-basic-auth', action='store_true',
                                   dest='ws_basic_auth',
                                   help='Enable basic-auth for WebSocket')
+    self.option_parser.add_option('--ocsp-server-unavailable',
+                                  dest='ocsp_server_unavailable',
+                                  default=False, action='store_true',
+                                  help='If set, the OCSP server will return '
+                                  'a tryLater status rather than the actual '
+                                  'OCSP response.')
 
 
 if __name__ == '__main__':

@@ -218,8 +218,6 @@ bool IsOCSPStaplingSupported() {
   return GetCacheOCSPResponseFromSideChannelFunction() != NULL;
 }
 #else
-// TODO(agl): Figure out if we can plumb the OCSP response into Mac's system
-// certificate validation functions.
 bool IsOCSPStaplingSupported() {
   return false;
 }
@@ -2436,8 +2434,6 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
       reinterpret_cast<char*>(ocsp_responses->items[0].data),
       ocsp_responses->items[0].len);
 
-  // TODO(agl): figure out how to plumb an OCSP response into the Mac
-  // system library and update IsOCSPStaplingSupported for Mac.
   if (IsOCSPStaplingSupported()) {
   #if defined(OS_WIN)
     if (nss_handshake_state_.server_cert) {
