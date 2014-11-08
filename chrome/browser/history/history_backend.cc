@@ -810,8 +810,8 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     // QueryRedirectsTo(url, &redirects);
     NotifyURLVisited(transition, url_info, redirects, time);
   } else {
-    VLOG(0) << "Failed to build visit insert statement:  "
-            << "url_id = " << url_id;
+    DVLOG(0) << "Failed to build visit insert statement:  "
+             << "url_id = " << url_id;
   }
 
   return std::make_pair(url_id, visit_id);
@@ -1229,15 +1229,15 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
 
     // Add a result row for this visit, get the URL info from the DB.
     if (!db_->GetURLRow(visit.url_id, &url_result)) {
-      VLOG(0) << "Failed to get id " << visit.url_id
-              << " from history.urls.";
+      DVLOG(0) << "Failed to get id " << visit.url_id
+               << " from history.urls.";
       continue;  // DB out of sync and URL doesn't exist, try to recover.
     }
 
     if (!url_result.url().is_valid()) {
-      VLOG(0) << "Got invalid URL from history.urls with id "
-              << visit.url_id << ":  "
-              << url_result.url().possibly_invalid_spec();
+      DVLOG(0) << "Got invalid URL from history.urls with id "
+               << visit.url_id << ":  "
+               << url_result.url().possibly_invalid_spec();
       continue;  // Don't report invalid URLs in case of corruption.
     }
 

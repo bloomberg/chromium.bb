@@ -154,8 +154,8 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
   statement.BindInt64(5, visit->visit_duration.ToInternalValue());
 
   if (!statement.Run()) {
-    VLOG(0) << "Failed to execute visit insert statement:  "
-            << "url_id = " << visit->url_id;
+    DVLOG(0) << "Failed to execute visit insert statement:  "
+             << "url_id = " << visit->url_id;
     return 0;
   }
 
@@ -169,8 +169,8 @@ VisitID VisitDatabase::AddVisit(VisitRow* visit, VisitSource source) {
     statement1.BindInt64(1, source);
 
     if (!statement1.Run()) {
-      VLOG(0) << "Failed to execute visit_source insert statement:  "
-              << "id = " << visit->visit_id;
+      DVLOG(0) << "Failed to execute visit_source insert statement:  "
+               << "id = " << visit->visit_id;
       return 0;
     }
   }
