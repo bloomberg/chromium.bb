@@ -7,11 +7,15 @@ config("zlib_config") {
 }
 
 static_library("zlib_x86_simd") {
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (!is_win && (cpu_arch == "x86" || cpu_arch == "x64")) {
     sources = [ "crc_folding.c", "fill_window_sse.c" ]
     cflags = [ "-msse2", "-msse4.2", "-mpclmul" ]
   } else {
     sources = [ "simd_stub.c"]
+    if (is_win) {
+      # TODO(GYP): crbug.com/431462 disable warning about structure padding.
+      cflags = [ "/wd4324" ]
+    }
   }
 }
 
@@ -52,7 +56,7 @@ static_library("zlib") {
     "zutil.h",
   ]
 
-  if (cpu_arch == "x86" || cpu_arch == "x64") {
+  if (!is_win && (cpu_arch == "x86" || cpu_arch == "x64")) {
     sources += [ "x86.c" ]
   }
 

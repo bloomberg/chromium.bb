@@ -918,15 +918,28 @@ config("optimize_max") {
   cflags = common_optimize_on_cflags
   ldflags = common_optimize_on_ldflags
   if (is_win) {
+    cflags -= [
+      "/Os",
+    ]
     cflags += [
       "/Ot",   # Favor speed over size.
-      "/GL",   # Whole program optimization.
-      # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
-      # Probably anything that this would catch that wouldn't be caught in a
-      # normal build isn't going to actually be a bug, so the incremental value
-      # of C4702 for PGO builds is likely very small.
-      "/wd4702",
     ]
+    if (is_official_build) {
+      # TODO(GYP): TODO(dpranke): Should these only be on in an official
+      # build, or on all the time? For now we'll require official build so
+      # that the compile is clean.
+      cflags += [
+        "/GL",   # Whole program optimization.
+        # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
+        # Probably anything that this would catch that wouldn't be caught in a
+        # normal build isn't going to actually be a bug, so the incremental
+        # value of C4702 for PGO builds is likely very small.
+        "/wd4702",
+      ]
+      ldflags += [
+        "/LTCG",
+      ]
+    }
   } else {
     cflags += [
       "-O2",

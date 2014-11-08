@@ -1159,6 +1159,10 @@ if (is_linux) {
           "USE_HW_AES",
           "INTEL_GCM",
         ]
+        sources -= [
+          "nss/lib/freebl/mpi/mpi_amd64.c",
+        ]
+
       } else if (cpu_arch == "x64") {
         sources -= [
           "nss/lib/freebl/intel-aes-x86-masm.asm",

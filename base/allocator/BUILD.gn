@@ -37,7 +37,7 @@ if (is_win) {
   }
 }
 
-if (!is_android) {
+if (use_allocator == "tcmalloc") {
   # tcmalloc currently won't compile on Android.
   source_set("tcmalloc") {
     tcmalloc_dir = "//third_party/tcmalloc/chromium"
