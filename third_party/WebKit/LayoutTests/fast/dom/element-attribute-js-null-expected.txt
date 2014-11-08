@@ -1,8 +1,6 @@
-CONSOLE WARNING: Setting 'Element.prefix' is deprecated, as it is read-only per DOM (http://dom.spec.whatwg.org/#element).
 This test setting various attributes of a elements to JavaScript null.
 
 TEST SUCCEEDED: The value was null. [tested Node.nodeValue]
-TEST SUCCEEDED: The value was null. [tested Node.prefix]
 TEST SUCCEEDED: The value was the empty string. [tested Node.textContent]
 
 TEST SUCCEEDED: The value was the string 'null'. [tested Element.id]

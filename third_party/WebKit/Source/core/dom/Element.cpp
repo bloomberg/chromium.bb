@@ -1164,34 +1164,6 @@ String Element::nodeName() const
     return m_tagName.toString();
 }
 
-void Element::setPrefix(const AtomicString& prefix, ExceptionState& exceptionState)
-{
-    UseCounter::countDeprecation(document(), UseCounter::ElementSetPrefix);
-
-    if (!prefix.isEmpty() && !Document::isValidName(prefix)) {
-        exceptionState.throwDOMException(InvalidCharacterError, "The prefix '" + prefix + "' is not a valid name.");
-        return;
-    }
-
-    // FIXME: Raise NamespaceError if prefix is malformed per the Namespaces in XML specification.
-
-    const AtomicString& nodeNamespaceURI = namespaceURI();
-    if (nodeNamespaceURI.isEmpty() && !prefix.isEmpty()) {
-        exceptionState.throwDOMException(NamespaceError, "No namespace is set, so a namespace prefix may not be set.");
-        return;
-    }
-
-    if (prefix == xmlAtom && nodeNamespaceURI != XMLNames::xmlNamespaceURI) {
-        exceptionState.throwDOMException(NamespaceError, "The prefix '" + xmlAtom + "' may not be set on namespace '" + nodeNamespaceURI + "'.");
-        return;
-    }
-
-    if (exceptionState.hadException())
-        return;
-
-    m_tagName.setPrefix(prefix.isEmpty() ? AtomicString() : prefix);
-}
-
 const AtomicString& Element::locateNamespacePrefix(const AtomicString& namespaceToLocate) const
 {
     if (!prefix().isNull() && namespaceURI() == namespaceToLocate)

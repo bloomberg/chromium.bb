@@ -477,8 +477,6 @@ public:
     InputMethodContext& inputMethodContext();
     bool hasInputMethodContext() const;
 
-    void setPrefix(const AtomicString&, ExceptionState&);
-
     void synchronizeAttribute(const AtomicString& localName) const;
 
     MutableStylePropertySet& ensureMutableInlineStyle();

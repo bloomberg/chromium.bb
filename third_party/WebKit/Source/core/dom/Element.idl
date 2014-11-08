@@ -52,7 +52,7 @@ interface Element : Node {
     // DOM4
     [Reflect] attribute DOMString id;
     readonly attribute DOMString? namespaceURI;
-    [RaisesException=Setter] attribute DOMString? prefix;
+    readonly attribute DOMString? prefix;
     readonly attribute DOMString? localName;
 
     [RaisesException] boolean matches(DOMString selectors);

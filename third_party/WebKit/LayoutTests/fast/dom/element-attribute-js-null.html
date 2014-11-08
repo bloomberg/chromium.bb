@@ -77,10 +77,6 @@
                     elementToUse: document.createElement('div'),
                     attributes: [
                         {name: 'nodeValue', expectedNull: null},
-                         // 'prefix' only works because this is an HTMLElement type node, if it were an
-                         // XML node (created using createElementNS()) this would throw an exception. We
-                         // should test this further as Firefox has a different behavior.
-                        {name: 'prefix', expectedNull: null},
                         {name: 'textContent', expectedNull: ''}
                     ]
                 },

@@ -230,7 +230,6 @@ public:
         // The above items are available in M33 branch.
 
         InitMessageEvent = 222,
-        ElementSetPrefix = 224, // Element.prefix is readonly in DOM4.
         CSSStyleDeclarationGetPropertyCSSValue = 225,
         PrefixedMediaCancelKeyRequest = 229,
         DOMImplementationHasFeature = 230,
