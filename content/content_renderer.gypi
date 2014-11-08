@@ -346,8 +346,6 @@
       'renderer/renderer_blink_platform_impl.h',
       'renderer/renderer_clipboard_client.cc',
       'renderer/renderer_clipboard_client.h',
-      'renderer/renderer_font_platform_win.cc',
-      'renderer/renderer_font_platform_win.h',
       'renderer/renderer_main.cc',
       'renderer/renderer_main_platform_delegate.h',
       'renderer/renderer_main_platform_delegate_android.cc',
