@@ -402,6 +402,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    launcher_controller_->SetShelfItemDelegateManagerForTest(nullptr);
     if (!ash::Shell::HasInstance())
       delete item_delegate_manager_;
     model_->RemoveObserver(model_observer_.get());
@@ -428,9 +429,9 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   }
 
   void InitLauncherControllerWithBrowser() {
+    InitLauncherController();
     chrome::NewTab(browser());
     BrowserList::SetLastActive(browser());
-    InitLauncherController();
   }
 
   void SetAppIconLoader(extensions::AppIconLoader* loader) {
@@ -2595,6 +2596,7 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
   EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[2].type);
   EXPECT_EQ(ash::TYPE_BROWSER_SHORTCUT, model_->items()[3].type);
 
+  SetShelfItemDelegateManager(nullptr);
   launcher_controller_.reset();
   if (!ash::Shell::HasInstance()) {
     delete item_delegate_manager_;
@@ -2650,6 +2652,7 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
   EXPECT_FALSE(launcher_controller_->IsAppPinned("0"));
   EXPECT_EQ(initial_size + 1, model_->items().size());
 
+  SetShelfItemDelegateManager(nullptr);
   launcher_controller_.reset();
   if (!ash::Shell::HasInstance()) {
     delete item_delegate_manager_;

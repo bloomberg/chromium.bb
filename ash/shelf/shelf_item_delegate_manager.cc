@@ -24,6 +24,16 @@ ShelfItemDelegateManager::~ShelfItemDelegateManager() {
                                        id_to_item_delegate_map_.end());
 }
 
+void ShelfItemDelegateManager::AddObserver(
+    ShelfItemDelegateManagerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ShelfItemDelegateManager::RemoveObserver(
+    ShelfItemDelegateManagerObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ShelfItemDelegateManager::SetShelfItemDelegate(
     ShelfID id,
     scoped_ptr<ShelfItemDelegate> item_delegate) {
@@ -31,6 +41,11 @@ void ShelfItemDelegateManager::SetShelfItemDelegate(
   // that this request is replacing ShelfItemDelegate for |id| with
   // |item_delegate|.
   RemoveShelfItemDelegate(id);
+
+  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver,
+                    observers_,
+                    OnSetShelfItemDelegate(id, item_delegate.get()));
+
   id_to_item_delegate_map_[id] = item_delegate.release();
 }
 
@@ -48,6 +63,9 @@ void ShelfItemDelegateManager::ShelfItemAdded(int index) {
 
 void ShelfItemDelegateManager::ShelfItemRemoved(int index, ShelfID id) {
   RemoveShelfItemDelegate(id);
+  FOR_EACH_OBSERVER(ShelfItemDelegateManagerObserver,
+                    observers_,
+                    OnSetShelfItemDelegate(id, nullptr));
 }
 
 void ShelfItemDelegateManager::ShelfItemMoved(int start_index,

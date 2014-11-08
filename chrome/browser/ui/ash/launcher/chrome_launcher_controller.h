@@ -14,6 +14,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/shelf/shelf_delegate.h"
 #include "ash/shelf/shelf_item_delegate.h"
+#include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_item_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_model_observer.h"
@@ -98,7 +99,8 @@ class ChromeLauncherController : public ash::ShelfDelegate,
                                  public PrefServiceSyncableObserver,
                                  public AppSyncUIStateObserver,
                                  public ExtensionEnableFlowDelegate,
-                                 public ash::ShelfLayoutManagerObserver {
+                                 public ash::ShelfLayoutManagerObserver,
+                                 public ash::ShelfItemDelegateManagerObserver {
  public:
   // Indicates if a shelf item is incognito or not.
   enum IncognitoState {
@@ -156,7 +158,9 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status);
 
   // Updates the controller associated with id (which should be a shortcut).
-  // |controller| remains owned by caller.
+  // |controller| will be owned by the |ChromeLauncherController| and then
+  // passed on to |ShelfItemDelegateManager|.
+  // TODO(skuhne): Pass in scoped_ptr to make ownership clear.
   void SetItemController(ash::ShelfID id, LauncherItemController* controller);
 
   // Closes or unpins the shelf item.
@@ -290,7 +294,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   void ActivateWindowOrMinimizeIfActive(ui::BaseWindow* window,
                                         bool allow_minimize);
 
-  // ash::ShelfDelegate overrides:
+  // ash::ShelfDelegate:
   void OnShelfCreated(ash::Shelf* shelf) override;
   void OnShelfDestroyed(ash::Shelf* shelf) override;
   ash::ShelfID GetShelfIDForAppID(const std::string& app_id) override;
@@ -300,20 +304,24 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   bool CanPin() const override;
   void UnpinAppWithID(const std::string& app_id) override;
 
-  // ash::ShelfModelObserver overrides:
+  // ash::ShelfItemDelegateManagerObserver:
+  void OnSetShelfItemDelegate(ash::ShelfID id,
+                              ash::ShelfItemDelegate* item_delegate) override;
+
+  // ash::ShelfModelObserver:
   void ShelfItemAdded(int index) override;
   void ShelfItemRemoved(int index, ash::ShelfID id) override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemChanged(int index, const ash::ShelfItem& old_item) override;
   void ShelfStatusChanged() override;
 
-  // ash::ShellObserver overrides:
+  // ash::ShellObserver:
   void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
-  // ash::DisplayController::Observer overrides:
+  // ash::DisplayController::Observer:
   void OnDisplayConfigurationChanged() override;
 
-  // ExtensionRegistryObserver overrides:
+  // ExtensionRegistryObserver:
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
   void OnExtensionUnloaded(
@@ -321,21 +329,21 @@ class ChromeLauncherController : public ash::ShelfDelegate,
       const extensions::Extension* extension,
       extensions::UnloadedExtensionInfo::Reason reason) override;
 
-  // PrefServiceSyncableObserver overrides:
+  // PrefServiceSyncableObserver:
   void OnIsSyncingChanged() override;
 
-  // AppSyncUIStateObserver overrides:
+  // AppSyncUIStateObserver:
   void OnAppSyncUIStatusChanged() override;
 
-  // ExtensionEnableFlowDelegate overrides:
+  // ExtensionEnableFlowDelegate:
   void ExtensionEnableFlowFinished() override;
   void ExtensionEnableFlowAborted(bool user_initiated) override;
 
-  // extensions::AppIconLoader overrides:
+  // extensions::AppIconLoader:
   void SetAppImage(const std::string& app_id,
                    const gfx::ImageSkia& image) override;
 
-  // ash::ShelfLayoutManagerObserver overrides:
+  // ash::ShelfLayoutManagerObserver:
   void OnAutoHideBehaviorChanged(
       aura::Window* root_window,
       ash::ShelfAutoHideBehavior new_behavior) override;
@@ -564,6 +572,7 @@ class ChromeLauncherController : public ash::ShelfDelegate,
   // profile new windows are created with.
   Profile* profile_;
 
+  // Controller items in this map are owned by |ShelfItemDelegateManager|.
   IDToItemControllerMap id_to_item_controller_map_;
 
   // Direct access to app_id for a web contents.

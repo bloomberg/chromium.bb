@@ -130,6 +130,9 @@ BrowserStatusMonitor::~BrowserStatusMonitor() {
   if (ash::Shell::HasInstance())
     ash::Shell::GetInstance()->GetScreen()->RemoveObserver(this);
 
+  chrome::SettingsWindowManager::GetInstance()->RemoveObserver(
+      settings_window_observer_.get());
+
   BrowserList::RemoveObserver(this);
 
   BrowserList* browser_list =

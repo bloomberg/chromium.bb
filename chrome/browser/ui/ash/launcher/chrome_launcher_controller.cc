@@ -421,12 +421,20 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   // TODO(mukai): Allows it to observe display change and write tests.
   if (ash::Shell::HasInstance()) {
     ash::Shell::GetInstance()->display_controller()->AddObserver(this);
+    // If it got already set, we remove the observer first again and swap the
+    // ItemDelegateManager.
+    if (item_delegate_manager_)
+      item_delegate_manager_->RemoveObserver(this);
     item_delegate_manager_ =
         ash::Shell::GetInstance()->shelf_item_delegate_manager();
+    item_delegate_manager_->AddObserver(this);
   }
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
+  if (item_delegate_manager_)
+    item_delegate_manager_->RemoveObserver(this);
+
   // Reset the BrowserStatusMonitor as it has a weak pointer to this.
   browser_status_monitor_.reset();
 
@@ -576,9 +584,9 @@ void ChromeLauncherController::Pin(ash::ShelfID id) {
 }
 
 void ChromeLauncherController::Unpin(ash::ShelfID id) {
-  DCHECK(HasItemController(id));
+  LauncherItemController* controller = GetLauncherItemController(id);
+  CHECK(controller);
 
-  LauncherItemController* controller = id_to_item_controller_map_[id];
   if (controller->type() == LauncherItemController::TYPE_APP ||
       controller->locked()) {
     UnpinRunningAppInternal(model_->ItemIndexByID(id));
@@ -620,14 +628,14 @@ bool ChromeLauncherController::IsPinnable(ash::ShelfID id) const {
 }
 
 void ChromeLauncherController::Install(ash::ShelfID id) {
-  if (!HasItemController(id))
+  LauncherItemController* controller = GetLauncherItemController(id);
+  if (!controller)
     return;
 
   std::string app_id = GetAppIDForShelfID(id);
   if (extensions::util::IsExtensionInstalledPermanently(app_id, profile_))
     return;
 
-  LauncherItemController* controller = id_to_item_controller_map_[id];
   if (controller->type() == LauncherItemController::TYPE_APP) {
     AppWindowLauncherItemController* app_window_controller =
         static_cast<AppWindowLauncherItemController*>(controller);
@@ -647,8 +655,7 @@ bool ChromeLauncherController::CanInstall(ash::ShelfID id) {
   return extensions::util::IsEphemeralApp(GetAppIDForShelfID(id), profile_);
 }
 
-void ChromeLauncherController::LockV1AppWithID(
-    const std::string& app_id) {
+void ChromeLauncherController::LockV1AppWithID(const std::string& app_id) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (!IsPinned(id) && !IsWindowedAppInLauncher(app_id)) {
     CreateAppShortcutLauncherItemWithType(app_id,
@@ -662,8 +669,8 @@ void ChromeLauncherController::LockV1AppWithID(
 
 void ChromeLauncherController::UnlockV1AppWithID(const std::string& app_id) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
-  CHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
   CHECK(id);
+  CHECK(IsPinned(id) || IsWindowedAppInLauncher(app_id));
   LauncherItemController* controller = id_to_item_controller_map_[id];
   controller->unlock();
   if (!controller->locked() && !IsPinned(id))
@@ -671,21 +678,24 @@ void ChromeLauncherController::UnlockV1AppWithID(const std::string& app_id) {
 }
 
 void ChromeLauncherController::Launch(ash::ShelfID id, int event_flags) {
-  if (!HasItemController(id))
+  LauncherItemController* controller = GetLauncherItemController(id);
+  if (!controller)
     return;  // In case invoked from menu and item closed while menu up.
-  id_to_item_controller_map_[id]->Launch(ash::LAUNCH_FROM_UNKNOWN, event_flags);
+  controller->Launch(ash::LAUNCH_FROM_UNKNOWN, event_flags);
 }
 
 void ChromeLauncherController::Close(ash::ShelfID id) {
-  if (!HasItemController(id))
+  LauncherItemController* controller = GetLauncherItemController(id);
+  if (!controller)
     return;  // May happen if menu closed.
-  id_to_item_controller_map_[id]->Close();
+  controller->Close();
 }
 
 bool ChromeLauncherController::IsOpen(ash::ShelfID id) {
-  if (!HasItemController(id))
+  LauncherItemController* controller = GetLauncherItemController(id);
+  if (!controller)
     return false;
-  return id_to_item_controller_map_[id]->IsOpen();
+  return controller->IsOpen();
 }
 
 bool ChromeLauncherController::IsPlatformApp(ash::ShelfID id) {
@@ -752,7 +762,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
   // If there is an existing non-shortcut controller for this app, open it.
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id) {
-    LauncherItemController* controller = id_to_item_controller_map_[id];
+    LauncherItemController* controller = GetLauncherItemController(id);
     controller->Activate(source);
     return;
   }
@@ -769,10 +779,7 @@ void ChromeLauncherController::ActivateApp(const std::string& app_id,
 
 extensions::LaunchType ChromeLauncherController::GetLaunchType(
     ash::ShelfID id) {
-  DCHECK(HasItemController(id));
-
-  const Extension* extension = GetExtensionForAppID(
-      id_to_item_controller_map_[id]->app_id());
+  const Extension* extension = GetExtensionForAppID(GetAppIDForShelfID(id));
 
   // An extension can be unloaded/updated/unavailable at any time.
   if (!extension)
@@ -797,8 +804,9 @@ ash::ShelfID ChromeLauncherController::GetShelfIDForAppID(
 
 const std::string& ChromeLauncherController::GetAppIDForShelfID(
     ash::ShelfID id) {
-  CHECK(HasItemController(id));
-  return id_to_item_controller_map_[id]->app_id();
+  LauncherItemController* controller = GetLauncherItemController(id);
+  CHECK(controller);
+  return controller->app_id();
 }
 
 void ChromeLauncherController::SetAppImage(const std::string& id,
@@ -875,12 +883,13 @@ void ChromeLauncherController::PinAppWithID(const std::string& app_id) {
 void ChromeLauncherController::SetLaunchType(
     ash::ShelfID id,
     extensions::LaunchType launch_type) {
-  if (!HasItemController(id))
+  LauncherItemController* controller = GetLauncherItemController(id);
+  if (!controller)
     return;
 
   extensions::SetLaunchType(
       extensions::ExtensionSystem::Get(profile_)->extension_service(),
-      id_to_item_controller_map_[id]->app_id(),
+      controller->app_id(),
       launch_type);
 }
 
@@ -889,6 +898,18 @@ void ChromeLauncherController::UnpinAppWithID(const std::string& app_id) {
     DoUnpinAppWithID(app_id);
   else
     NOTREACHED();
+}
+
+void ChromeLauncherController::OnSetShelfItemDelegate(
+    ash::ShelfID id,
+    ash::ShelfItemDelegate* item_delegate) {
+  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
+  // get into this state in the first place.
+  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  if (iter == id_to_item_controller_map_.end() || item_delegate == iter->second)
+    return;
+  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+  id_to_item_controller_map_.erase(iter);
 }
 
 bool ChromeLauncherController::IsLoggedInAsGuest() {
@@ -926,9 +947,10 @@ void ChromeLauncherController::PersistPinnedState() {
     for (size_t i = 0; i < model_->items().size(); ++i) {
       if (model_->items()[i].type == ash::TYPE_APP_SHORTCUT) {
         ash::ShelfID id = model_->items()[i].id;
-        if (HasItemController(id) && IsPinned(id)) {
+        LauncherItemController* controller = GetLauncherItemController(id);
+        if (controller && IsPinned(id)) {
           base::DictionaryValue* app_value = ash::CreateAppDict(
-              id_to_item_controller_map_[id]->app_id());
+              controller->app_id());
           if (app_value)
             updater->Append(app_value);
         }
@@ -1035,8 +1057,8 @@ ash::ShelfID ChromeLauncherController::GetShelfIDForWebContents(
 
 void ChromeLauncherController::SetRefocusURLPatternForTest(ash::ShelfID id,
                                                            const GURL& url) {
-  DCHECK(HasItemController(id));
-  LauncherItemController* controller = id_to_item_controller_map_[id];
+  LauncherItemController* controller = GetLauncherItemController(id);
+  DCHECK(controller);
 
   int index = model_->ItemIndexByID(id);
   if (index == -1) {
@@ -1115,6 +1137,15 @@ void ChromeLauncherController::ShelfItemAdded(int index) {
 }
 
 void ChromeLauncherController::ShelfItemRemoved(int index, ash::ShelfID id) {
+  // TODO(skuhne): This fixes crbug.com/429870, but it does not answer why we
+  // get into this state in the first place.
+  IDToItemControllerMap::iterator iter = id_to_item_controller_map_.find(id);
+  if (iter == id_to_item_controller_map_.end())
+    return;
+
+  LOG(ERROR) << "Unexpected change of shelf item id: " << id;
+
+  id_to_item_controller_map_.erase(iter);
 }
 
 void ChromeLauncherController::ShelfItemMoved(int start_index,
@@ -1274,11 +1305,11 @@ ChromeLauncherAppMenuItems ChromeLauncherController::GetApplicationList(
     int event_flags) {
   // Make sure that there is a controller associated with the id and that the
   // extension itself is a valid application and not a panel.
-  if (!HasItemController(item.id) ||
-      !GetShelfIDForAppID(id_to_item_controller_map_[item.id]->app_id()))
+  LauncherItemController* controller = GetLauncherItemController(item.id);
+  if (!controller || !GetShelfIDForAppID(controller->app_id()))
     return ChromeLauncherAppMenuItems().Pass();
 
-  return id_to_item_controller_map_[item.id]->GetApplicationList(event_flags);
+  return controller->GetApplicationList(event_flags);
 }
 
 std::vector<content::WebContents*>
@@ -1287,7 +1318,7 @@ ChromeLauncherController::GetV1ApplicationsFromAppId(std::string app_id) {
 
   // If there is no such an item pinned to the launcher, no menu gets created.
   if (id) {
-    LauncherItemController* controller = id_to_item_controller_map_[id];
+    LauncherItemController* controller = GetLauncherItemController(id);
     DCHECK(controller);
     if (controller->type() == LauncherItemController::TYPE_SHORTCUT)
       return GetV1ApplicationsFromController(controller);
@@ -1299,8 +1330,8 @@ void ChromeLauncherController::ActivateShellApp(const std::string& app_id,
                                                 int index) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id) {
-    LauncherItemController* controller = id_to_item_controller_map_[id];
-    if (controller->type() == LauncherItemController::TYPE_APP) {
+    LauncherItemController* controller = GetLauncherItemController(id);
+    if (controller && controller->type() == LauncherItemController::TYPE_APP) {
       AppWindowLauncherItemController* app_window_controller =
           static_cast<AppWindowLauncherItemController*>(controller);
       app_window_controller->ActivateIndexedApp(index);
@@ -1388,7 +1419,13 @@ const std::string& ChromeLauncherController::GetAppIdFromShelfIdForTest(
 
 void ChromeLauncherController::SetShelfItemDelegateManagerForTest(
     ash::ShelfItemDelegateManager* manager) {
+  if (item_delegate_manager_)
+    item_delegate_manager_->RemoveObserver(this);
+
   item_delegate_manager_ = manager;
+
+  if (item_delegate_manager_)
+    item_delegate_manager_->AddObserver(this);
 }
 
 void ChromeLauncherController::RememberUnpinnedRunningApplicationOrder() {
@@ -1534,9 +1571,8 @@ void ChromeLauncherController::UnpinRunningAppInternal(int index) {
   item.type = ash::TYPE_WINDOWED_APP;
   // A platform app and a windowed app are sharing TYPE_APP_SHORTCUT. As such
   // we have to check here what this was before it got a shortcut.
-  if (HasItemController(item.id) &&
-      id_to_item_controller_map_[item.id]->type() ==
-          LauncherItemController::TYPE_APP)
+  LauncherItemController* controller = GetLauncherItemController(item.id);
+  if (controller && controller->type() == LauncherItemController::TYPE_APP)
     item.type = ash::TYPE_PLATFORM_APP;
   model_->Set(index, item);
 }
@@ -1575,12 +1611,10 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
         bool is_chrome = item.type == ash::TYPE_BROWSER_SHORTCUT;
         if (item.type != ash::TYPE_APP_SHORTCUT && !is_app_list && !is_chrome)
           continue;
-        IDToItemControllerMap::const_iterator entry =
-            id_to_item_controller_map_.find(item.id);
+        LauncherItemController* controller = GetLauncherItemController(item.id);
         if ((kAppShelfIdPlaceholder == *pref_app_id && is_app_list) ||
             (extension_misc::kChromeAppId == *pref_app_id && is_chrome) ||
-            (entry != id_to_item_controller_map_.end() &&
-             entry->second->app_id() == *pref_app_id)) {
+            (controller && controller->app_id() == *pref_app_id)) {
           // Check if an item needs to be moved here.
           MoveChromeOrApplistToFinalPosition(
               is_chrome, is_app_list, index, &chrome_index, &app_list_index);
@@ -1603,15 +1637,16 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
           } else {
             // Check if this is a platform or a windowed app.
             if (item.type == ash::TYPE_APP_SHORTCUT &&
-                (id_to_item_controller_map_[item.id]->locked() ||
-                 id_to_item_controller_map_[item.id]->type() ==
-                     LauncherItemController::TYPE_APP)) {
+                controller &&
+                (controller->locked() ||
+                 controller->type() == LauncherItemController::TYPE_APP)) {
               // Note: This will not change the amount of items (|max_index|).
               // Even changes to the actual |index| due to item weighting
               // changes should be fine.
               UnpinRunningAppInternal(index);
             } else {
-              LauncherItemClosed(item.id);
+              if (controller)
+                LauncherItemClosed(item.id);
               --max_index;
             }
           }
@@ -1641,12 +1676,15 @@ void ChromeLauncherController::UpdateAppLaunchersFromPref() {
   while (index < model_->item_count()) {
     const ash::ShelfItem& item(model_->items()[index]);
     if (item.type == ash::TYPE_APP_SHORTCUT) {
-      if (id_to_item_controller_map_[item.id]->locked() ||
-          id_to_item_controller_map_[item.id]->type() ==
-              LauncherItemController::TYPE_APP)
-        UnpinRunningAppInternal(index);
-      else
-        LauncherItemClosed(item.id);
+      LauncherItemController* controller = GetLauncherItemController(item.id);
+      if (controller) {
+        if (controller->locked() ||
+            controller->type() == LauncherItemController::TYPE_APP) {
+          UnpinRunningAppInternal(index);
+        } else {
+          LauncherItemClosed(item.id);
+        }
+      }
     } else {
       if (item.type == ash::TYPE_BROWSER_SHORTCUT)
         chrome_index = index;
@@ -1840,12 +1878,8 @@ ChromeLauncherController::GetBrowserShortcutLauncherItemController() {
     if (item.type == ash::TYPE_BROWSER_SHORTCUT)
       return static_cast<BrowserShortcutLauncherItemController*>(i->second);
   }
-  // Create a LauncherItemController for the Browser shortcut if it does not
-  // exist yet.
-  ash::ShelfID id = CreateBrowserShortcutLauncherItem();
-  DCHECK(id_to_item_controller_map_[id]);
-  return static_cast<BrowserShortcutLauncherItemController*>(
-      id_to_item_controller_map_[id]);
+  NOTREACHED() << "There should be always a BrowserLauncherItemController.";
+  return nullptr;
 }
 
 ash::ShelfID ChromeLauncherController::CreateBrowserShortcutLauncherItem() {
