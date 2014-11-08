@@ -18,7 +18,7 @@ var EventBindings = require('event_bindings');
 var idGeneratorNatives = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 var utils = require('utils');
-var WebView = require('webView').WebView;
+var WebViewImpl = require('webView').WebViewImpl;
 
 function GetUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();
@@ -94,7 +94,7 @@ var WebViewContextMenus = utils.expose(
     { functions: ['create', 'remove', 'removeAll', 'update'] });
 
 /** @private */
-WebView.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
+WebViewImpl.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
   var requestId = e.requestId;
   // Construct the event.menu object.
   var actionTaken = false;
@@ -132,7 +132,7 @@ WebView.prototype.maybeHandleContextMenu = function(e, webViewEvent) {
 };
 
 /** @private */
-WebView.prototype.setupExperimentalContextMenus = function() {
+WebViewImpl.prototype.setupExperimentalContextMenus = function() {
   var createContextMenus = function() {
     return function() {
       if (this.contextMenus_) {

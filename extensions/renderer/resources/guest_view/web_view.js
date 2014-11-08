@@ -16,7 +16,7 @@ var WebViewEvents = require('webViewEvents').WebViewEvents;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 // Represents the internal state of the WebView node.
-function WebView(webviewNode) {
+function WebViewImpl(webviewNode) {
   privates(webviewNode).internal = this;
   this.webviewNode = webviewNode;
   this.attached = false;
@@ -42,20 +42,20 @@ function WebView(webviewNode) {
   shadowRoot.appendChild(this.browserPluginNode);
 }
 
-WebView.prototype.createBrowserPluginNode = function() {
+WebViewImpl.prototype.createBrowserPluginNode = function() {
   // We create BrowserPlugin as a custom element in order to observe changes
   // to attributes synchronously.
-  var browserPluginNode = new WebView.BrowserPlugin();
+  var browserPluginNode = new WebViewImpl.BrowserPlugin();
   privates(browserPluginNode).internal = this;
   return browserPluginNode;
 };
 
-WebView.prototype.getGuestInstanceId = function() {
+WebViewImpl.prototype.getGuestInstanceId = function() {
   return this.guestInstanceId;
 };
 
 // Resets some state upon reattaching <webview> element to the DOM.
-WebView.prototype.reset = function() {
+WebViewImpl.prototype.reset = function() {
   // If guestInstanceId is defined then the <webview> has navigated and has
   // already picked up a partition ID. Thus, we need to reset the initialization
   // state. However, it may be the case that beforeFirstNavigation is false BUT
@@ -74,7 +74,7 @@ WebView.prototype.reset = function() {
 };
 
 // Sets the <webview>.request property.
-WebView.prototype.setRequestPropertyOnWebViewNode = function(request) {
+WebViewImpl.prototype.setRequestPropertyOnWebViewNode = function(request) {
   Object.defineProperty(
       this.webviewNode,
       'request',
@@ -85,7 +85,7 @@ WebView.prototype.setRequestPropertyOnWebViewNode = function(request) {
   );
 };
 
-WebView.prototype.setupFocusPropagation = function() {
+WebViewImpl.prototype.setupFocusPropagation = function() {
   if (!this.webviewNode.hasAttribute('tabIndex')) {
     // <webview> needs a tabIndex in order to be focusable.
     // TODO(fsamuel): It would be nice to avoid exposing a tabIndex attribute
@@ -104,13 +104,13 @@ WebView.prototype.setupFocusPropagation = function() {
 };
 
 // Validation helper function for executeScript() and insertCSS().
-WebView.prototype.validateExecuteCodeCall  = function() {
+WebViewImpl.prototype.validateExecuteCodeCall  = function() {
   if (!this.guestInstanceId) {
     throw new Error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
   }
 };
 
-WebView.prototype.setupWebviewNodeProperties = function() {
+WebViewImpl.prototype.setupWebviewNodeProperties = function() {
   // We cannot use {writable: true} property descriptor because we want a
   // dynamic getter value.
   Object.defineProperty(this.webviewNode, 'contentWindow', {
@@ -131,7 +131,7 @@ WebView.prototype.setupWebviewNodeProperties = function() {
 // a BrowserPlugin property will update the corresponding BrowserPlugin
 // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
 // details.
-WebView.prototype.handleWebviewAttributeMutation = function(
+WebViewImpl.prototype.handleWebviewAttributeMutation = function(
     attributeName, oldValue, newValue) {
   if (!this.attributes[attributeName] ||
       this.attributes[attributeName].ignoreMutation) {
@@ -142,7 +142,7 @@ WebView.prototype.handleWebviewAttributeMutation = function(
   this.attributes[attributeName].handleMutation(oldValue, newValue);
 };
 
-WebView.prototype.handleBrowserPluginAttributeMutation =
+WebViewImpl.prototype.handleBrowserPluginAttributeMutation =
     function(attributeName, oldValue, newValue) {
   if (attributeName == WebViewConstants.ATTRIBUTE_INTERNALINSTANCEID &&
       !oldValue && !!newValue) {
@@ -164,7 +164,7 @@ WebView.prototype.handleBrowserPluginAttributeMutation =
   }
 };
 
-WebView.prototype.onSizeChanged = function(webViewEvent) {
+WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
   var newWidth = webViewEvent.newWidth;
   var newHeight = webViewEvent.newHeight;
 
@@ -227,15 +227,15 @@ WebView.prototype.onSizeChanged = function(webViewEvent) {
 };
 
 // Returns if <object> is in the render tree.
-WebView.prototype.isPluginInRenderTree = function() {
+WebViewImpl.prototype.isPluginInRenderTree = function() {
   return !!this.internalInstanceId && this.internalInstanceId != 0;
 };
 
-WebView.prototype.hasNavigated = function() {
+WebViewImpl.prototype.hasNavigated = function() {
   return !this.beforeFirstNavigation;
 };
 
-WebView.prototype.parseSrcAttribute = function() {
+WebViewImpl.prototype.parseSrcAttribute = function() {
   if (!this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].validPartitionId ||
       !this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue()) {
     return;
@@ -255,14 +255,14 @@ WebView.prototype.parseSrcAttribute = function() {
       this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue());
 };
 
-WebView.prototype.parseAttributes = function() {
+WebViewImpl.prototype.parseAttributes = function() {
   if (!this.elementAttached) {
     return;
   }
   this.parseSrcAttribute();
 };
 
-WebView.prototype.createGuest = function() {
+WebViewImpl.prototype.createGuest = function() {
   if (this.pendingGuestCreation) {
     return;
   }
@@ -285,7 +285,7 @@ WebView.prototype.createGuest = function() {
   this.pendingGuestCreation = true;
 };
 
-WebView.prototype.onFrameNameChanged = function(name) {
+WebViewImpl.prototype.onFrameNameChanged = function(name) {
   name = name || '';
   if (name === '') {
     this.webviewNode.removeAttribute(WebViewConstants.ATTRIBUTE_NAME);
@@ -294,13 +294,13 @@ WebView.prototype.onFrameNameChanged = function(name) {
   }
 };
 
-WebView.prototype.dispatchEvent = function(webViewEvent) {
+WebViewImpl.prototype.dispatchEvent = function(webViewEvent) {
   return this.webviewNode.dispatchEvent(webViewEvent);
 };
 
 // Adds an 'on<event>' property on the webview, which can be used to set/unset
 // an event handler.
-WebView.prototype.setupEventProperty = function(eventName) {
+WebViewImpl.prototype.setupEventProperty = function(eventName) {
   var propertyName = 'on' + eventName.toLowerCase();
   Object.defineProperty(this.webviewNode, propertyName, {
     get: function() {
@@ -318,7 +318,7 @@ WebView.prototype.setupEventProperty = function(eventName) {
 };
 
 // Updates state upon loadcommit.
-WebView.prototype.onLoadCommit = function(
+WebViewImpl.prototype.onLoadCommit = function(
     baseUrlForDataUrl, currentEntryIndex, entryCount,
     processId, url, isTopLevel) {
   this.baseUrlForDataUrl = baseUrlForDataUrl;
@@ -336,12 +336,12 @@ WebView.prototype.onLoadCommit = function(
   }
 };
 
-WebView.prototype.onAttach = function(storagePartitionId) {
+WebViewImpl.prototype.onAttach = function(storagePartitionId) {
   this.attributes[WebViewConstants.ATTRIBUTE_PARTITION].setValue(
       storagePartitionId);
 };
 
-WebView.prototype.buildAttachParams = function() {
+WebViewImpl.prototype.buildAttachParams = function() {
   var params = {
     'instanceId': this.viewInstanceId,
     'userAgentOverride': this.userAgentOverride
@@ -352,7 +352,7 @@ WebView.prototype.buildAttachParams = function() {
   return params;
 };
 
-WebView.prototype.attachWindow = function(guestInstanceId) {
+WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
   this.guestInstanceId = guestInstanceId;
   var params = this.buildAttachParams();
 
@@ -374,23 +374,23 @@ WebView.prototype.attachWindow = function(guestInstanceId) {
 
 
 // Navigates to the previous history entry.
-WebView.prototype.back = function(callback) {
+WebViewImpl.prototype.back = function(callback) {
   return this.go(-1, callback);
 };
 
 // Returns whether there is a previous history entry to navigate to.
-WebView.prototype.canGoBack = function() {
+WebViewImpl.prototype.canGoBack = function() {
   return this.entryCount > 1 && this.currentEntryIndex > 0;
 };
 
 // Returns whether there is a subsequent history entry to navigate to.
-WebView.prototype.canGoForward = function() {
+WebViewImpl.prototype.canGoForward = function() {
   return this.currentEntryIndex >= 0 &&
       this.currentEntryIndex < (this.entryCount - 1);
 };
 
 // Clears browsing data for the WebView partition.
-WebView.prototype.clearData = function() {
+WebViewImpl.prototype.clearData = function() {
   if (!this.guestInstanceId) {
     return;
   }
@@ -399,7 +399,7 @@ WebView.prototype.clearData = function() {
 };
 
 // Injects JavaScript code into the guest page.
-WebView.prototype.executeScript = function(var_args) {
+WebViewImpl.prototype.executeScript = function(var_args) {
   this.validateExecuteCodeCall();
   var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
   if (this.baseUrlForDataUrl != '') {
@@ -411,7 +411,7 @@ WebView.prototype.executeScript = function(var_args) {
 };
 
 // Initiates a find-in-page request.
-WebView.prototype.find = function(search_text, options, callback) {
+WebViewImpl.prototype.find = function(search_text, options, callback) {
   if (!this.guestInstanceId) {
     return;
   }
@@ -419,23 +419,23 @@ WebView.prototype.find = function(search_text, options, callback) {
 };
 
 // Navigates to the subsequent history entry.
-WebView.prototype.forward = function(callback) {
+WebViewImpl.prototype.forward = function(callback) {
   return this.go(1, callback);
 };
 
 // Returns Chrome's internal process ID for the guest web page's current
 // process.
-WebView.prototype.getProcessId = function() {
+WebViewImpl.prototype.getProcessId = function() {
   return this.processId;
 };
 
 // Returns the user agent string used by the webview for guest page requests.
-WebView.prototype.getUserAgent = function() {
+WebViewImpl.prototype.getUserAgent = function() {
   return this.userAgentOverride || navigator.userAgent;
 };
 
 // Gets the current zoom factor.
-WebView.prototype.getZoom = function(callback) {
+WebViewImpl.prototype.getZoom = function(callback) {
   if (!this.guestInstanceId) {
     return;
   }
@@ -444,7 +444,7 @@ WebView.prototype.getZoom = function(callback) {
 
 // Navigates to a history entry using a history index relative to the current
 // navigation.
-WebView.prototype.go = function(relativeIndex, callback) {
+WebViewImpl.prototype.go = function(relativeIndex, callback) {
   if (!this.guestInstanceId) {
     return;
   }
@@ -452,7 +452,7 @@ WebView.prototype.go = function(relativeIndex, callback) {
 };
 
 // Injects CSS into the guest page.
-WebView.prototype.insertCSS = function(var_args) {
+WebViewImpl.prototype.insertCSS = function(var_args) {
   this.validateExecuteCodeCall();
   var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
   if (this.baseUrlForDataUrl != '') {
@@ -464,18 +464,18 @@ WebView.prototype.insertCSS = function(var_args) {
 };
 
 // Indicates whether or not the webview's user agent string has been overridden.
-WebView.prototype.isUserAgentOverridden = function() {
+WebViewImpl.prototype.isUserAgentOverridden = function() {
   return !!this.userAgentOverride &&
       this.userAgentOverride != navigator.userAgent;
 };
 
 // Prints the contents of the webview.
-WebView.prototype.print = function() {
+WebViewImpl.prototype.print = function() {
   this.executeScript({code: 'window.print();'});
 };
 
 // Reloads the current top-level page.
-WebView.prototype.reload = function() {
+WebViewImpl.prototype.reload = function() {
   if (!this.guestInstanceId) {
     return;
   }
@@ -483,7 +483,7 @@ WebView.prototype.reload = function() {
 };
 
 // Override the user agent string used by the webview for guest page requests.
-WebView.prototype.setUserAgentOverride = function(userAgentOverride) {
+WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {
   this.userAgentOverride = userAgentOverride;
   if (!this.guestInstanceId) {
     // If we are not attached yet, then we will pick up the user agent on
@@ -494,7 +494,7 @@ WebView.prototype.setUserAgentOverride = function(userAgentOverride) {
 };
 
 // Changes the zoom factor of the page.
-WebView.prototype.setZoom = function(zoomFactor, callback) {
+WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
   if (!this.guestInstanceId) {
     return;
   }
@@ -502,7 +502,7 @@ WebView.prototype.setZoom = function(zoomFactor, callback) {
 };
 
 // Stops loading the current navigation if one is in progress.
-WebView.prototype.stop = function() {
+WebViewImpl.prototype.stop = function() {
   if (!this.guestInstanceId) {
     return;
   }
@@ -510,7 +510,7 @@ WebView.prototype.stop = function() {
 };
 
 // Ends the current find session.
-WebView.prototype.stopFinding = function(action) {
+WebViewImpl.prototype.stopFinding = function(action) {
   if (!this.guestInstanceId) {
     return;
   }
@@ -518,7 +518,7 @@ WebView.prototype.stopFinding = function(action) {
 };
 
 // Forcibly kills the guest web page's renderer process.
-WebView.prototype.terminate = function() {
+WebViewImpl.prototype.terminate = function() {
   if (!this.guestInstanceId) {
     return;
   }
@@ -552,7 +552,7 @@ function registerBrowserPluginElement() {
     var unused = this.nonExistentAttribute;
   };
 
-  WebView.BrowserPlugin =
+  WebViewImpl.BrowserPlugin =
       DocumentNatives.RegisterElement('browserplugin', {extends: 'object',
                                                         prototype: proto});
 
@@ -567,7 +567,7 @@ function registerWebViewElement() {
   var proto = Object.create(HTMLElement.prototype);
 
   proto.createdCallback = function() {
-    new WebView(this);
+    new WebViewImpl(this);
   };
 
   proto.attributeChangedCallback = function(name, oldValue, newValue) {
@@ -624,10 +624,10 @@ function registerWebViewElement() {
 
   // Add the experimental API methods, if available.
   var experimentalMethods =
-      WebView.maybeGetExperimentalAPIs();
+      WebViewImpl.maybeGetExperimentalAPIs();
   methods = $Array.concat(methods, experimentalMethods);
 
-  // Forward proto.foo* method calls to WebView.foo*.
+  // Forward proto.foo* method calls to WebViewImpl.foo*.
   var createHandler = function(m) {
     return function(var_args) {
       var internal = privates(this).internal;
@@ -660,13 +660,13 @@ window.addEventListener('readystatechange', function listener(event) {
 }, useCapture);
 
 // Implemented when the ChromeWebView API is available.
-WebView.prototype.maybeGetChromeWebViewEvents = function() {};
+WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 
 // Implemented when the experimental WebView API is available.
-WebView.maybeGetExperimentalAPIs = function() {};
-WebView.prototype.maybeGetExperimentalEvents = function() {};
-WebView.prototype.setupExperimentalContextMenus = function() {};
+WebViewImpl.maybeGetExperimentalAPIs = function() {};
+WebViewImpl.prototype.maybeGetExperimentalEvents = function() {};
+WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
 
 // Exports.
-exports.WebView = WebView;
+exports.WebViewImpl = WebViewImpl;
 exports.WebViewInternal = WebViewInternal;

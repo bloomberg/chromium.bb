@@ -6,7 +6,7 @@
 
 var GuestViewInternal =
     require('binding').Binding.create('guestViewInternal').generate();
-var WebView = require('webView').WebView;
+var WebViewImpl = require('webView').WebViewImpl;
 var WebViewConstants = require('webViewConstants').WebViewConstants;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
@@ -230,7 +230,7 @@ SrcAttribute.prototype.setupMutationObserver =
 // -----------------------------------------------------------------------------
 
 // Sets up all of the webview attributes.
-WebView.prototype.setupWebViewAttributes = function() {
+WebViewImpl.prototype.setupWebViewAttributes = function() {
   this.attributes = {};
 
   this.attributes[WebViewConstants.ATTRIBUTE_ALLOWTRANSPARENCY] =

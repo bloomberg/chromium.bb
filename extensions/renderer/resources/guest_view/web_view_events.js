@@ -178,8 +178,8 @@ DeclarativeWebRequestEvent.prototype = {
 };
 
 // Constructor.
-function WebViewEvents(webViewInternal, viewInstanceId) {
-  this.webViewInternal = webViewInternal;
+function WebViewEvents(webViewImpl, viewInstanceId) {
+  this.webViewImpl = webViewImpl;
   this.viewInstanceId = viewInstanceId;
   this.permissionTypes = ['media',
                           'geolocation',
@@ -191,7 +191,7 @@ function WebViewEvents(webViewInternal, viewInstanceId) {
   // Set up the events.
   this.setupFrameNameChangedEvent();
   this.setupWebRequestEvents();
-  this.webViewInternal.setupExperimentalContextMenus();
+  this.webViewImpl.setupExperimentalContextMenus();
   var events = this.getEvents();
   for (var eventName in events) {
     this.setupEvent(eventName, events[eventName]);
@@ -200,7 +200,7 @@ function WebViewEvents(webViewInternal, viewInstanceId) {
 
 WebViewEvents.prototype.setupFrameNameChangedEvent = function() {
   FrameNameChangedEvent.addListener(function(e) {
-    this.webViewInternal.onFrameNameChanged(e.name);
+    this.webViewImpl.onFrameNameChanged(e.name);
   }.bind(this), {instanceId: this.viewInstanceId});
 };
 
@@ -265,15 +265,15 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
     );
   }
 
-  this.webViewInternal.setRequestPropertyOnWebViewNode(request);
+  this.webViewImpl.setRequestPropertyOnWebViewNode(request);
 };
 
 WebViewEvents.prototype.getEvents = function() {
-  var experimentalEvents = this.webViewInternal.maybeGetExperimentalEvents();
+  var experimentalEvents = this.webViewImpl.maybeGetExperimentalEvents();
   for (var eventName in experimentalEvents) {
     WEB_VIEW_EVENTS[eventName] = experimentalEvents[eventName];
   }
-  var chromeEvents = this.webViewInternal.maybeGetChromeWebViewEvents();
+  var chromeEvents = this.webViewImpl.maybeGetChromeWebViewEvents();
   for (var eventName in chromeEvents) {
     WEB_VIEW_EVENTS[eventName] = chromeEvents[eventName];
   }
@@ -296,10 +296,10 @@ WebViewEvents.prototype.setupEvent = function(name, info) {
       info.customHandler(this, e, webViewEvent);
       return;
     }
-    this.webViewInternal.dispatchEvent(webViewEvent);
+    this.webViewImpl.dispatchEvent(webViewEvent);
   }.bind(this), {instanceId: this.viewInstanceId});
 
-  this.webViewInternal.setupEventProperty(name);
+  this.webViewImpl.setupEventProperty(name);
 };
 
 
@@ -327,7 +327,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
 
   var getGuestInstanceId = function() {
-    return this.webViewInternal.getGuestInstanceId();
+    return this.webViewImpl.getGuestInstanceId();
   }.bind(this);
 
   var dialog = {
@@ -344,7 +344,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
   webViewEvent.dialog = dialog;
 
-  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -384,17 +384,17 @@ WebViewEvents.prototype.handleLoadAbortEvent = function(event, webViewEvent) {
         'The load has aborted with reason "%1".';
     window.console.warn(WARNING_MSG_LOAD_ABORTED.replace('%1', reason));
   };
-  if (this.webViewInternal.dispatchEvent(webViewEvent)) {
+  if (this.webViewImpl.dispatchEvent(webViewEvent)) {
     showWarningMessage(event.reason);
   }
 };
 
 WebViewEvents.prototype.handleLoadCommitEvent = function(event, webViewEvent) {
-  this.webViewInternal.onLoadCommit(event.baseUrlForDataUrl,
+  this.webViewImpl.onLoadCommit(event.baseUrlForDataUrl,
                                     event.currentEntryIndex, event.entryCount,
                                     event.processId, event.url,
                                     event.isTopLevel);
-  this.webViewInternal.dispatchEvent(webViewEvent);
+  this.webViewImpl.dispatchEvent(webViewEvent);
 };
 
 WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
@@ -402,7 +402,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       'An action has already been taken for this "newwindow" event.';
 
   var ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH = '<webview>: ' +
-      'Unable to attach the new window to the provided webViewInternal.';
+      'Unable to attach the new window to the provided webViewImpl.';
 
   var ERROR_MSG_WEBVIEW_EXPECTED = '<webview> element expected.';
 
@@ -414,7 +414,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   var requestId = event.requestId;
   var actionTaken = false;
   var getGuestInstanceId = function() {
-    return this.webViewInternal.getGuestInstanceId();
+    return this.webViewImpl.getGuestInstanceId();
   }.bind(this);
 
   var validateCall = function() {
@@ -435,13 +435,13 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
       // Note: Any subsequent errors cannot be exceptions because they happen
       // asynchronously.
       setTimeout(function() {
-        var webViewInternal = privates(webview).internal;
+        var webViewImpl = privates(webview).internal;
         // Update the partition.
         if (event.storagePartitionId) {
-          webViewInternal.onAttach(event.storagePartitionId);
+          webViewImpl.onAttach(event.storagePartitionId);
         }
 
-        var attached = webViewInternal.attachWindow(event.windowId);
+        var attached = webViewImpl.attachWindow(event.windowId);
 
         if (!attached) {
           window.console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
@@ -475,7 +475,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   };
   webViewEvent.window = windowObj;
 
-  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
   if (actionTaken) {
     return;
   }
@@ -530,7 +530,7 @@ WebViewEvents.prototype.handlePermissionEvent =
 
   var requestId = event.requestId;
   var getGuestInstanceId = function() {
-    return this.webViewInternal.getGuestInstanceId();
+    return this.webViewImpl.getGuestInstanceId();
   }.bind(this);
 
   if (this.permissionTypes.indexOf(event.permission) < 0) {
@@ -564,7 +564,7 @@ WebViewEvents.prototype.handlePermissionEvent =
   };
   webViewEvent.request = request;
 
-  var defaultPrevented = !this.webViewInternal.dispatchEvent(webViewEvent);
+  var defaultPrevented = !this.webViewImpl.dispatchEvent(webViewEvent);
   if (decisionMade) {
     return;
   }
@@ -599,7 +599,7 @@ WebViewEvents.prototype.handlePermissionEvent =
 
 WebViewEvents.prototype.handleSizeChangedEvent = function(
     event, webViewEvent) {
-  this.webViewInternal.onSizeChanged(webViewEvent);
+  this.webViewImpl.onSizeChanged(webViewEvent);
 };
 
 exports.WebViewEvents = WebViewEvents;

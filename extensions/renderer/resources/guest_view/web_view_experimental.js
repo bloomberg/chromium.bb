@@ -8,21 +8,21 @@
 // <webview> Experimental API is only available on canary and dev channels of
 // Chrome.
 
-var WebView = require('webView').WebView;
+var WebViewImpl = require('webView').WebViewImpl;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
 // Returns a map of experimental <webview> DOM event names to their associated
 // extension event descriptor objects. See |WEB_VIEW_EVENTS| in
 // web_view_events.js for more information and details on how this map should
 // be formatted.
-WebView.prototype.maybeGetExperimentalEvents = function() {
+WebViewImpl.prototype.maybeGetExperimentalEvents = function() {
   return {};
 };
 
 // Loads a data URL with a specified base URL used for relative links.
 // Optionally, a virtual URL can be provided to be shown to the user instead
 // of the data URL.
-WebView.prototype.loadDataWithBaseUrl = function(
+WebViewImpl.prototype.loadDataWithBaseUrl = function(
     dataUrl, baseUrl, virtualUrl) {
   if (!this.guestInstanceId) {
     return;
@@ -39,7 +39,7 @@ WebView.prototype.loadDataWithBaseUrl = function(
 };
 
 // Registers the experimantal WebVIew API when available.
-WebView.maybeGetExperimentalAPIs = function() {
+WebViewImpl.maybeGetExperimentalAPIs = function() {
   var experimentalMethods = [
     'loadDataWithBaseUrl'
   ];
