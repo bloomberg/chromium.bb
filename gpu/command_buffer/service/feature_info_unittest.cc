@@ -669,6 +669,26 @@ TEST_F(FeatureInfoTest, InitializeARB_texture_float) {
       GL_RGB32F));
 }
 
+TEST_F(FeatureInfoTest, Initialize_texture_floatGLES3) {
+  SetupInitExpectationsWithGLVersion("", "", "OpenGL ES 3.0");
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_OES_texture_float")));
+  EXPECT_THAT(info_->extensions(), Not(HasSubstr("GL_OES_texture_half_float")));
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_OES_texture_float_linear")));
+  EXPECT_THAT(info_->extensions(),
+              Not(HasSubstr("GL_OES_texture_half_float_linear")));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGB).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_RGBA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_LUMINANCE_ALPHA).IsValid(
+      GL_FLOAT));
+  EXPECT_FALSE(info_->GetTextureFormatValidator(GL_ALPHA).IsValid(
+      GL_FLOAT));
+}
+
 TEST_F(FeatureInfoTest, InitializeOES_texture_floatGLES2) {
   SetupInitExpectations("GL_OES_texture_float");
   EXPECT_FALSE(info_->feature_flags().enable_texture_float_linear);

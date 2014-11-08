@@ -477,16 +477,22 @@ void FeatureInfo::InitializeFeatures() {
     enable_texture_half_float_linear = true;
     may_enable_chromium_color_buffer_float = true;
   } else {
-    if (is_es3 || extensions.Contains("GL_OES_texture_float")) {
+    // GLES3 adds support for Float type by default but it doesn't support all
+    // formats as GL_OES_texture_float(i.e.LUMINANCE_ALPHA,LUMINANCE and Alpha)
+    if (extensions.Contains("GL_OES_texture_float")) {
       enable_texture_float = true;
       if (extensions.Contains("GL_OES_texture_float_linear")) {
         enable_texture_float_linear = true;
       }
+      // This extension allows a variety of floating point formats to be
+      // rendered to via framebuffer objects. Enable it's usage only if
+      // support for Floating textures is enabled.
       if ((is_es3 && extensions.Contains("GL_EXT_color_buffer_float")) ||
           feature_flags_.is_angle) {
         may_enable_chromium_color_buffer_float = true;
       }
     }
+
     // TODO(dshwang): GLES3 supports half float by default but GL_HALF_FLOAT_OES
     // isn't equal to GL_HALF_FLOAT.
     if (extensions.Contains("GL_OES_texture_half_float")) {
