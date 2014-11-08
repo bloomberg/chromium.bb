@@ -75,9 +75,12 @@ int StartMe2MeNativeMessagingHost() {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
-  // g_type_init() is needed prior to GTK 2.36, which includes Ubuntu 12.04
-  // (Precise Pangolin) systems.
+// g_type_init will be deprecated in 2.36. 2.35 is the development
+// version for 2.36, hence do not call g_type_init starting 2.35.
+// http://developer.gnome.org/gobject/unstable/gobject-Type-Information.html#g-type-init
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
+#endif
 #endif  // defined(OS_LINUX)
 
   // Required to find the ICU data file, used by some file_util routines.
