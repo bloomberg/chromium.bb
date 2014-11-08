@@ -1,22 +1,20 @@
-function testElementStyle(propertyJS, propertyCSS, type, value)
+function testElementStyle(propertyJS, propertyCSS, value)
 {
     shouldBe("e.style." + propertyJS, "'" + value + "'");
-    shouldBe("e.style.getPropertyCSSValue('" + propertyCSS + "').cssText", "'" + value + "'");
 }
 
-function testComputedStyle(propertyJS, propertyCSS, type, value)
+function testComputedStyle(propertyJS, propertyCSS, value)
 {
     computedStyle = window.getComputedStyle(e, null);
     shouldBe("computedStyle." + propertyJS, "'" + value + "'");
-    shouldBe("computedStyle.getPropertyCSSValue('" + propertyCSS + "').cssText", "'" + value + "'");
 }
 
 function valueSettingTest(value)
 {
     debug("Value '" + value + "':");
     e.style.textAlignLast = value;
-    testElementStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", value);
-    testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", value);
+    testElementStyle("textAlignLast", "text-align-last", value);
+    testComputedStyle("textAlignLast", "text-align-last", value);
     debug('');
 }
 
@@ -24,8 +22,8 @@ function invalidValueSettingTest(value, defaultValue)
 {
     debug("Invalid value test - '" + value + "':");
     e.style.textAlignLast = value;
-    testElementStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", defaultValue);
-    testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", defaultValue);
+    testElementStyle("textAlignLast", "text-align-last", defaultValue);
+    testComputedStyle("textAlignLast", "text-align-last", defaultValue);
     debug('');
 }
 
@@ -34,7 +32,7 @@ description("This test checks that text-align-last parses properly the propertie
 e = document.getElementById('test');
 
 debug("Test the initial value:");
-testComputedStyle("textAlignLast", "text-align-last", "[object CSSPrimitiveValue]", 'auto');
+testComputedStyle("textAlignLast", "text-align-last", 'auto');
 debug('');
 
 valueSettingTest('start');

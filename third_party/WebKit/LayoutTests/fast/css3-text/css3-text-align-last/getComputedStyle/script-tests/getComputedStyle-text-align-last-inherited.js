@@ -1,7 +1,7 @@
 function testComputedStyle(a_value, c_value)
 {
-    shouldBe("window.getComputedStyle(ancestor).getPropertyCSSValue('text-align-last').cssText",  "'" + a_value + "'");
-    shouldBe("window.getComputedStyle(child).getPropertyCSSValue('text-align-last').cssText",  "'" + c_value + "'");
+    shouldBe("window.getComputedStyle(ancestor).textAlignLast",  "'" + a_value + "'");
+    shouldBe("window.getComputedStyle(child).textAlignLast",  "'" + c_value + "'");
     debug('');
 }
 

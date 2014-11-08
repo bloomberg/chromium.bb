@@ -11,14 +11,12 @@
   function testElementStyle(value)
   {
       shouldBe("element.style.textJustify", "'" + value + "'");
-      shouldBe("element.style.getPropertyCSSValue('text-justify').cssText", "'" + value + "'");
   }
 
   function testComputedStyle(value)
   {
       computedStyle = window.getComputedStyle(element, null);
       shouldBe("computedStyle.textJustify", "'" + value + "'");
-      shouldBe("computedStyle.getPropertyCSSValue('text-justify').cssText", "'" + value + "'");
   }
 
   function valueSettingTest(value)
