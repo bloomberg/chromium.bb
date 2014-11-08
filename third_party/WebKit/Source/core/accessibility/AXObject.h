@@ -141,6 +141,7 @@ enum AccessibilityRole {
     RootWebAreaRole,
     RowHeaderRole,
     RowRole,
+    RubyRole,
     RulerMarkerRole,
     RulerRole,
     SVGRootRole,

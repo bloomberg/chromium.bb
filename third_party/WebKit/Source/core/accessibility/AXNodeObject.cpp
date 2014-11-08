@@ -253,6 +253,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
         return ParagraphRole;
     if (isHTMLLabelElement(*node()))
         return LabelRole;
+    if (isHTMLRubyElement(*node()))
+        return RubyRole;
     if (isHTMLDListElement(*node()))
         return DescriptionListRole;
     if (node()->isElementNode() && node()->hasTagName(blockquoteTag))

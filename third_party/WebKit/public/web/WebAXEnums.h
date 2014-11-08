@@ -160,6 +160,7 @@ enum WebAXRole {
     WebAXRoleRootWebArea,
     WebAXRoleRowHeader,
     WebAXRoleRow,
+    WebAXRoleRuby,
     WebAXRoleRulerMarker,
     WebAXRoleRuler,
     WebAXRoleSVGRoot,

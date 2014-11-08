@@ -385,6 +385,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (isHTMLLabelElement(node))
         return LabelRole;
 
+    if (isHTMLRubyElement(node))
+        return RubyRole;
+
     if (isHTMLDivElement(node))
         return DivRole;
 
@@ -732,6 +735,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     if (roleValue() == MeterRole)
+        return false;
+
+    if (roleValue() == RubyRole)
         return false;
 
     // if this element has aria attributes on it, it should not be ignored.
