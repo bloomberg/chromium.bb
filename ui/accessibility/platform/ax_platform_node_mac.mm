@@ -61,7 +61,6 @@ RoleMap BuildRoleMap() {
       {ui::AX_ROLE_GROW_AREA, NSAccessibilityGrowAreaRole},
       {ui::AX_ROLE_HEADING, @"AXHeading"},
       {ui::AX_ROLE_HELP_TAG, NSAccessibilityHelpTagRole},
-      {ui::AX_ROLE_HORIZONTAL_RULE, NSAccessibilityGroupRole},
       {ui::AX_ROLE_IFRAME, NSAccessibilityGroupRole},
       {ui::AX_ROLE_IGNORED, NSAccessibilityUnknownRole},
       {ui::AX_ROLE_IMAGE, NSAccessibilityImageRole},

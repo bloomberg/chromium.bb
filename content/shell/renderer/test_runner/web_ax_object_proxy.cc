@@ -106,8 +106,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("Heading");
     case blink::WebAXRoleHelpTag:
       return result.append("HelpTag");
-    case blink::WebAXRoleHorizontalRule:
-      return result.append("HorizontalRule");
     case blink::WebAXRoleIgnored:
       return result.append("Ignored");
     case blink::WebAXRoleImageMapLink:

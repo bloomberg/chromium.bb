@@ -3559,9 +3559,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       role_name_ = html_tag;
       ia2_role_ = IA2_ROLE_HEADING;
       break;
-    case ui::AX_ROLE_HORIZONTAL_RULE:
-      ia_role_ = ROLE_SYSTEM_SEPARATOR;
-      break;
     case ui::AX_ROLE_IFRAME:
       ia_role_ = ROLE_SYSTEM_DOCUMENT;
       ia2_role_ = IA2_ROLE_INTERNAL_FRAME;
