@@ -22,6 +22,7 @@ namespace copresence {
 struct AudioToken;
 class CopresenceDelegate;
 class DirectiveHandler;
+class GCMHandler;
 class HttpPost;
 class ReportRequest;
 class RequestHeader;
@@ -65,6 +66,7 @@ class RpcHandler {
   // |server_post_callback| should be set only by tests.
   RpcHandler(CopresenceDelegate* delegate,
              DirectiveHandler* directive_handler,
+             GCMHandler* gcm_handler,
              const PostCallback& server_post_callback = PostCallback());
 
   virtual ~RpcHandler();
@@ -107,8 +109,12 @@ class RpcHandler {
   void SendReportRequest(scoped_ptr<ReportRequest> request,
                          const std::string& auth_token);
 
+  // Store a GCM ID and send it to the server if needed.
+  void RegisterGcmId(const std::string& gcm_id);
+
   // Server call response handlers.
   void RegisterResponseHandler(const std::string& auth_token,
+                               bool gcm_pending,
                                HttpPost* completed_post,
                                int http_status_code,
                                const std::string& response_data);
@@ -152,8 +158,9 @@ class RpcHandler {
                     const PostCleanupCallback& callback);
 
   // These belong to the caller.
-  CopresenceDelegate* delegate_;
-  DirectiveHandler* directive_handler_;
+  CopresenceDelegate* const delegate_;
+  DirectiveHandler* const directive_handler_;
+  GCMHandler* const gcm_handler_;
 
   PostCallback server_post_callback_;
 
@@ -161,6 +168,7 @@ class RpcHandler {
   TimedMap<std::string, bool> invalid_audio_token_cache_;
   std::map<std::string, std::string> device_id_by_auth_token_;
   std::set<HttpPost*> pending_posts_;
+  std::string gcm_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RpcHandler);
 };

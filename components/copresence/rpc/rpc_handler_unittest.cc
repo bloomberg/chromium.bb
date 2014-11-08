@@ -17,6 +17,7 @@
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/enums.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
+#include "components/copresence/test/fake_directive_handler.h"
 #include "components/copresence/test/stub_whispernet_client.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -43,45 +44,6 @@ void CreateSubscribedMessage(const std::vector<std::string>& subscription_ids,
   }
 }
 
-// TODO(ckehoe): Make DirectiveHandler an interface.
-class FakeDirectiveHandler final : public DirectiveHandler {
- public:
-  FakeDirectiveHandler() : DirectiveHandler(nullptr) {}
-
-  const std::vector<std::string>& added_directives() const {
-    return added_directives_;
-  }
-
-  const std::vector<std::string>& removed_directives() const {
-    return removed_directives_;
-  }
-
-  void Start(WhispernetClient* /* whispernet_client */,
-             const TokensCallback& /* tokens_cb */) override {
-    NOTREACHED();
-  }
-
-  void AddDirective(const Directive& directive) override {
-    added_directives_.push_back(directive.subscription_id());
-  }
-
-  void RemoveDirectives(const std::string& op_id) override {
-    removed_directives_.push_back(op_id);
-  }
-
-  const std::string GetCurrentAudioToken(AudioType type) const override {
-    return type == AUDIBLE ? "current audible" : "current inaudible";
-  }
-
-  bool IsAudioTokenHeard(AudioType type) const override { return true; }
-
- private:
-  std::vector<std::string> added_directives_;
-  std::vector<std::string> removed_directives_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeDirectiveHandler);
-};
-
 }  // namespace
 
 class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
@@ -90,6 +52,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
       : whispernet_client_(new StubWhispernetClient),
         rpc_handler_(this,
                      &directive_handler_,
+                     nullptr,
                      base::Bind(&RpcHandlerTest::CaptureHttpPost,
                                 base::Unretained(this))),
         status_(SUCCESS) {}
@@ -123,6 +86,11 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     return whispernet_client_.get();
   }
 
+  // TODO(ckehoe): Add GCM tests.
+  gcm::GCMDriver* GetGCMDriver() override {
+    return nullptr;
+  }
+
  protected:
 
   // Send test input to RpcHandler
@@ -140,7 +108,7 @@ class RpcHandlerTest : public testing::Test, public CopresenceDelegate {
     std::string serialized_response;
     response.SerializeToString(&serialized_response);
     rpc_handler_.RegisterResponseHandler(
-        auth_token, nullptr, net::HTTP_OK, serialized_response);
+        auth_token, false, nullptr, net::HTTP_OK, serialized_response);
   }
 
   void SendReport(scoped_ptr<ReportRequest> request,

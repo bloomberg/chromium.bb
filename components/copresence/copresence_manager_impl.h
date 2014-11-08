@@ -23,6 +23,7 @@ class URLContextGetter;
 namespace copresence {
 
 class DirectiveHandler;
+class GCMHandler;
 class ReportRequest;
 class RpcHandler;
 class WhispernetClient;
@@ -61,15 +62,16 @@ class CopresenceManagerImpl : public CopresenceManager {
   // does not provide a way to unregister its init callback.
   base::CancelableCallback<void(bool)> whispernet_init_callback_;
 
-  // The |directive handler_| needs to destruct before |rpc_handler_|, do not
-  // change this order.
+  bool init_failed_;
+
+  // The GCMHandler must destruct before the DirectiveHandler,
+  // which must destruct before the RpcHandler. Do not change this order.
   scoped_ptr<RpcHandler> rpc_handler_;
   scoped_ptr<DirectiveHandler> directive_handler_;
+  scoped_ptr<GCMHandler> gcm_handler_;
 
   scoped_ptr<base::Timer> poll_timer_;
   scoped_ptr<base::Timer> audio_check_timer_;
-
-  bool init_failed_;
 
   DISALLOW_COPY_AND_ASSIGN(CopresenceManagerImpl);
 };

@@ -7,6 +7,8 @@
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
+#include "chrome/browser/services/gcm/gcm_profile_service.h"
+#include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/api/copresence.h"
 #include "components/copresence/copresence_manager_impl.h"
@@ -143,6 +145,11 @@ const std::string CopresenceService::GetAPIKey(const std::string& app_id)
 
 copresence::WhispernetClient* CopresenceService::GetWhispernetClient() {
   return whispernet_client();
+}
+
+gcm::GCMDriver* CopresenceService::GetGCMDriver() {
+  return gcm::GCMProfileServiceFactory::GetForProfile(browser_context_)
+      ->driver();
 }
 
 template <>

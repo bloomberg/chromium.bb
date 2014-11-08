@@ -15,6 +15,10 @@ message Status {
 }
 message PushServiceRegistration {
   optional PushService service = 1;
+  optional GcmRegistration gcm_registration = 2;
+}
+message GcmRegistration {
+  optional string device_token = 1;
 }
 message DeviceIdentifiers {
   optional int32 ulr_device_id = 1;

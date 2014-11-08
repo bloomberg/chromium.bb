@@ -11,6 +11,7 @@ proto_library("proto") {
     "data.proto",
     "enums.proto",
     "identity.proto",
+    "push_message.proto",
     "rpcs.proto",
   ]
 }

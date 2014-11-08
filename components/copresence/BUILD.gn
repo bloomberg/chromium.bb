@@ -17,6 +17,8 @@ static_library("copresence") {
     "handlers/audio/tick_clock_ref_counted.h",
     "handlers/directive_handler.cc",
     "handlers/directive_handler.h",
+    "handlers/gcm_handler.cc",
+    "handlers/gcm_handler.h",
     "mediums/audio/audio_manager.h",
     "mediums/audio/audio_manager_impl.cc",
     "mediums/audio/audio_manager_impl.h",

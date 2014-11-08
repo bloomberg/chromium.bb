@@ -699,6 +699,7 @@
                 'copresence/handlers/audio/audio_directive_handler_unittest.cc',
                 'copresence/handlers/audio/audio_directive_list_unittest.cc',
                 'copresence/handlers/directive_handler_unittest.cc',
+                'copresence/handlers/gcm_handler_unittest.cc',
                 'copresence/mediums/audio/audio_manager_unittest.cc',
                 'copresence/mediums/audio/audio_player_unittest.cc',
                 'copresence/mediums/audio/audio_recorder_unittest.cc',

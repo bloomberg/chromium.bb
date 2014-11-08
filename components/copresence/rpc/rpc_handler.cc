@@ -21,6 +21,7 @@
 
 #include "components/copresence/copresence_switches.h"
 #include "components/copresence/handlers/directive_handler.h"
+#include "components/copresence/handlers/gcm_handler.h"
 #include "components/copresence/proto/codes.pb.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/proto/rpcs.pb.h"
@@ -38,10 +39,14 @@ using google::protobuf::RepeatedPtrField;
 
 const char RpcHandler::kReportRequestRpcName[] = "report";
 
-// Number of characters of suffix to log for auth tokens
-const int kTokenSuffix = 5;
-
 namespace {
+
+const int kTokenLoggingSuffix = 5;
+const int kInvalidTokenExpiryTimeMs = 10 * 60 * 1000;  // 10 minutes.
+const int kMaxInvalidTokens = 10000;
+const char kRegisterDeviceRpcName[] = "registerdevice";
+const char kDefaultCopresenceServer[] =
+    "https://www.googleapis.com/copresence/v2/copresence";
 
 // UrlSafe is defined as:
 // '/' represented by a '_' and '+' represented by a '-'
@@ -52,11 +57,6 @@ std::string ToUrlSafe(std::string token) {
   return token;
 }
 
-const int kInvalidTokenExpiryTimeMs = 10 * 60 * 1000;  // 10 minutes.
-const int kMaxInvalidTokens = 10000;
-const char kRegisterDeviceRpcName[] = "registerdevice";
-const char kDefaultCopresenceServer[] =
-    "https://www.googleapis.com/copresence/v2/copresence";
 
 // Logging
 
@@ -93,6 +93,16 @@ bool ReportErrorLogged(const ReportResponse& response) {
 
   return result;
 }
+
+const std::string LoggingStrForToken(const std::string& auth_token) {
+  if (auth_token.empty())
+    return "anonymous";
+
+  std::string token_suffix = auth_token.substr(
+      auth_token.length() - kTokenLoggingSuffix, kTokenLoggingSuffix);
+  return base::StringPrintf("token ...%s", token_suffix.c_str());
+}
+
 
 // Request construction
 // TODO(ckehoe): Move these into a separate file?
@@ -149,14 +159,6 @@ void AddTokenToRequest(const AudioToken& token, ReportRequest* request) {
   signals->set_observed_time_millis(base::Time::Now().ToJsTime());
 }
 
-const std::string LoggingStrForToken(const std::string& auth_token) {
-  std::string token_str = auth_token.empty() ? "anonymous" :
-      base::StringPrintf("token ...%s",
-                         auth_token.substr(auth_token.length() - kTokenSuffix,
-                                           kTokenSuffix).c_str());
-  return token_str;
-}
-
 }  // namespace
 
 
@@ -164,25 +166,33 @@ const std::string LoggingStrForToken(const std::string& auth_token) {
 
 RpcHandler::RpcHandler(CopresenceDelegate* delegate,
                        DirectiveHandler* directive_handler,
+                       GCMHandler* gcm_handler,
                        const PostCallback& server_post_callback)
     : delegate_(delegate),
       directive_handler_(directive_handler),
+      gcm_handler_(gcm_handler),
       server_post_callback_(server_post_callback),
       invalid_audio_token_cache_(
           base::TimeDelta::FromMilliseconds(kInvalidTokenExpiryTimeMs),
           kMaxInvalidTokens) {
     DCHECK(delegate_);
     DCHECK(directive_handler_);
+    // |gcm_handler_| is optional.
 
     if (server_post_callback_.is_null()) {
       server_post_callback_ =
           base::Bind(&RpcHandler::SendHttpPost, base::Unretained(this));
     }
+
+    if (gcm_handler_) {
+      gcm_handler_->GetGcmId(
+          base::Bind(&RpcHandler::RegisterGcmId, base::Unretained(this)));
+    }
   }
 
 RpcHandler::~RpcHandler() {
-  // Do not use |directive_handler_| here.
-  // It will already have been destructed.
+  // Do not use |directive_handler_| or |gcm_handler_| here.
+  // They will already have been destructed.
   for (HttpPost* post : pending_posts_)
     delete post;
 }
@@ -258,7 +268,8 @@ void RpcHandler::ReportTokens(const std::vector<AudioToken>& tokens) {
   }
 }
 
-// Private methods
+
+// Private functions.
 
 RpcHandler::PendingRequest::PendingRequest(scoped_ptr<ReportRequest> report,
                                            const std::string& app_id,
@@ -275,11 +286,17 @@ void RpcHandler::RegisterForToken(const std::string& auth_token) {
   DVLOG(2) << "Sending " << LoggingStrForToken(auth_token)
            << " registration to server.";
 
-  // Mark registration as in progress.
-  device_id_by_auth_token_[auth_token] = "";
-
   scoped_ptr<RegisterDeviceRequest> request(new RegisterDeviceRequest);
-  request->mutable_push_service()->set_service(PUSH_SERVICE_NONE);
+
+  // Add a GCM ID for authenticated registration, if we have one.
+  if (auth_token.empty() || gcm_id_.empty()) {
+    request->mutable_push_service()->set_service(PUSH_SERVICE_NONE);
+  } else {
+    DVLOG(2) << "Registering GCM ID with " << LoggingStrForToken(auth_token);
+    request->mutable_push_service()->set_service(GCM);
+    request->mutable_push_service()->mutable_gcm_registration()
+        ->set_device_token(gcm_id_);
+  }
 
   // Only identify as a Chrome device if we're in anonymous mode.
   // Authenticated calls come from a "GAIA device".
@@ -288,18 +305,28 @@ void RpcHandler::RegisterForToken(const std::string& auth_token) {
         request->mutable_device_identifiers()->mutable_registrant();
     identity->set_type(CHROME);
     identity->set_chrome_id(base::GenerateGUID());
+
+    // Since we're generating a new "Chrome ID" here,
+    // we need to make sure this isn't a duplicate registration.
+    DCHECK_EQ(0u, device_id_by_auth_token_.count(std::string()))
+        << "Attempted anonymous re-registration";
   }
 
+  bool gcm_pending = !auth_token.empty() && gcm_handler_ && gcm_id_.empty();
   SendServerRequest(
       kRegisterDeviceRpcName,
-      std::string(),  // device ID
+      // This will have the side effect of populating an empty device ID
+      // for this auth token in the map. This is what we want,
+      // to mark registration as being in progress.
+      device_id_by_auth_token_[auth_token],
       std::string(),  // app ID
       auth_token,
       request.Pass(),
       base::Bind(&RpcHandler::RegisterResponseHandler,
                  // On destruction, this request will be cancelled.
                  base::Unretained(this),
-                 auth_token));
+                 auth_token,
+                 gcm_pending));
 }
 
 void RpcHandler::ProcessQueuedRequests(const std::string& auth_token) {
@@ -343,8 +370,41 @@ void RpcHandler::SendReportRequest(scoped_ptr<ReportRequest> request,
                     StatusCallback());
 }
 
+// Store a GCM ID and send it to the server if needed. The constructor passes
+// this callback to the GCMHandler to receive the ID whenever it's ready.
+// It may be returned immediately, if the ID is cached, or require a server
+// round-trip. This ID must then be passed along to the copresence server.
+// There are a few ways this can happen for each auth token:
+//
+// 1. The GCM ID is available when we first register, and is passed along
+//    with the RegisterDeviceRequest.
+//
+// 2. The GCM ID becomes available after the RegisterDeviceRequest has
+//    completed. Then the loop in this function will invoke RegisterForToken()
+//    again to pass on the ID.
+//
+// 3. The GCM ID becomes available after the RegisterDeviceRequest is sent,
+//    but before it completes. In this case, the gcm_pending flag is passed
+//    through to the RegisterResponseHandler, which invokes RegisterForToken()
+//    again to pass on the ID. The loop here must skip pending registrations,
+//    as the device ID will be empty.
+//
+// TODO(ckehoe): Add tests for these scenarios.
+void RpcHandler::RegisterGcmId(const std::string& gcm_id) {
+  gcm_id_ = gcm_id;
+  if (!gcm_id.empty()) {
+    for (const auto& registration : device_id_by_auth_token_) {
+      const std::string& auth_token = registration.first;
+      const std::string& device_id = registration.second;
+      if (!auth_token.empty() && !device_id.empty())
+        RegisterForToken(auth_token);
+    }
+  }
+}
+
 void RpcHandler::RegisterResponseHandler(
     const std::string& auth_token,
+    bool gcm_pending,
     HttpPost* completed_post,
     int http_status_code,
     const std::string& response_data) {
@@ -371,6 +431,10 @@ void RpcHandler::RegisterResponseHandler(
     device_id_by_auth_token_[auth_token] = device_id;
     DVLOG(2) << LoggingStrForToken(auth_token)
              << " device registration successful. Id: " << device_id;
+
+    // If we have a GCM ID now, and didn't before, pass it on to the server.
+    if (gcm_pending && !gcm_id_.empty())
+      RegisterForToken(auth_token);
   }
 
   // Send or fail requests on this auth token.
@@ -519,7 +583,8 @@ RequestHeader* RpcHandler::CreateRequestHeader(
         CreateVersion(client_name, std::string()));
   }
   header->set_current_time_millis(base::Time::Now().ToJsTime());
-  header->set_registered_device_id(device_id);
+  if (!device_id.empty())
+    header->set_registered_device_id(device_id);
 
   DeviceFingerprint* fingerprint = new DeviceFingerprint;
   fingerprint->set_platform_version(delegate_->GetPlatformVersionString());
