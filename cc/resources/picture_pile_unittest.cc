@@ -7,7 +7,6 @@
 
 #include "cc/resources/picture_pile.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -68,16 +67,10 @@ class PicturePileTestBase {
                                    const gfx::Size& layer_size,
                                    const gfx::Rect& visible_layer_rect) {
     frame_number_++;
-    return pile_.UpdateAndExpandInvalidation(&client_,
-                                             invalidation,
-                                             background_color_,
-                                             contents_opaque_,
-                                             false,
-                                             layer_size,
-                                             visible_layer_rect,
-                                             frame_number_,
-                                             Picture::RECORD_NORMALLY,
-                                             &stats_instrumentation_);
+    return pile_.UpdateAndExpandInvalidation(
+        &client_, invalidation, background_color_, contents_opaque_, false,
+        layer_size, visible_layer_rect, frame_number_,
+        Picture::RECORD_NORMALLY);
   }
 
   bool UpdateWholePile() {
@@ -89,7 +82,6 @@ class PicturePileTestBase {
   }
 
   FakeContentLayerClient client_;
-  FakeRenderingStatsInstrumentation stats_instrumentation_;
   TestPicturePile pile_;
   SkColor background_color_;
   float min_scale_;

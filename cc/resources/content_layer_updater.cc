@@ -5,7 +5,6 @@
 #include "cc/resources/content_layer_updater.h"
 
 #include "base/debug/trace_event.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/layer_painter.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRect.h"
@@ -16,12 +15,9 @@
 
 namespace cc {
 
-ContentLayerUpdater::ContentLayerUpdater(
-    scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    int layer_id)
-    : rendering_stats_instrumentation_(stats_instrumentation),
-      layer_id_(layer_id),
+ContentLayerUpdater::ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
+                                         int layer_id)
+    : layer_id_(layer_id),
       layer_is_opaque_(false),
       layer_fills_bounds_completely_(false),
       painter_(painter.Pass()),
@@ -29,11 +25,6 @@ ContentLayerUpdater::ContentLayerUpdater(
 }
 
 ContentLayerUpdater::~ContentLayerUpdater() {}
-
-void ContentLayerUpdater::set_rendering_stats_instrumentation(
-    RenderingStatsInstrumentation* rsi) {
-  rendering_stats_instrumentation_ = rsi;
-}
 
 void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
                                         const gfx::Size& layer_content_size,

@@ -24,17 +24,15 @@ class CC_EXPORT PicturePile : public PicturePileBase {
   // that was either recorded/changed or that has no recording, leaving out only
   // pieces that we had a recording for and it was not changed.
   // Return true iff the pile was modified.
-  bool UpdateAndExpandInvalidation(
-      ContentLayerClient* painter,
-      Region* invalidation,
-      SkColor background_color,
-      bool contents_opaque,
-      bool contents_fill_bounds_completely,
-      const gfx::Size& layer_size,
-      const gfx::Rect& visible_layer_rect,
-      int frame_number,
-      Picture::RecordingMode recording_mode,
-      RenderingStatsInstrumentation* stats_instrumentation);
+  bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
+                                   Region* invalidation,
+                                   SkColor background_color,
+                                   bool contents_opaque,
+                                   bool contents_fill_bounds_completely,
+                                   const gfx::Size& layer_size,
+                                   const gfx::Rect& visible_layer_rect,
+                                   int frame_number,
+                                   Picture::RecordingMode recording_mode);
 
   void SetEmptyBounds();
 

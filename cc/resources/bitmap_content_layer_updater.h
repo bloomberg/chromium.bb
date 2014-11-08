@@ -42,7 +42,6 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
 
   static scoped_refptr<BitmapContentLayerUpdater> Create(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumenation,
       int layer_id);
 
   scoped_ptr<LayerUpdater::Resource> CreateResource(
@@ -63,7 +62,6 @@ class CC_EXPORT BitmapContentLayerUpdater : public ContentLayerUpdater {
  protected:
   BitmapContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumenation,
       int layer_id);
   ~BitmapContentLayerUpdater() override;
 

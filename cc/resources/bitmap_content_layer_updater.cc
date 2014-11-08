@@ -32,19 +32,17 @@ void BitmapContentLayerUpdater::Resource::Update(
 
 scoped_refptr<BitmapContentLayerUpdater> BitmapContentLayerUpdater::Create(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
     int layer_id) {
   return make_scoped_refptr(
       new BitmapContentLayerUpdater(painter.Pass(),
-                                    stats_instrumentation,
                                     layer_id));
 }
 
 BitmapContentLayerUpdater::BitmapContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
     int layer_id)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id) {}
+    : ContentLayerUpdater(painter.Pass(), layer_id) {
+}
 
 BitmapContentLayerUpdater::~BitmapContentLayerUpdater() {}
 
@@ -71,17 +69,11 @@ void BitmapContentLayerUpdater::PrepareToUpdate(const gfx::Size& content_size,
     DCHECK_EQ(paint_rect.height(), canvas_->getBaseLayerSize().height());
   }
 
-  base::TimeTicks start_time =
-      rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas_.get(),
                 content_size,
                 paint_rect,
                 contents_width_scale,
                 contents_height_scale);
-  base::TimeDelta duration =
-      rendering_stats_instrumentation_->EndRecording(start_time);
-  rendering_stats_instrumentation_->AddPaint(
-      duration, paint_rect.width() * paint_rect.height());
 }
 
 void BitmapContentLayerUpdater::UpdateTexture(ResourceUpdateQueue* queue,

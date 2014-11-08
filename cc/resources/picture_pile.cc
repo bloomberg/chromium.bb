@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "cc/base/region.h"
-#include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 
@@ -165,8 +164,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
     const gfx::Size& layer_size,
     const gfx::Rect& visible_layer_rect,
     int frame_number,
-    Picture::RecordingMode recording_mode,
-    RenderingStatsInstrumentation* stats_instrumentation) {
+    Picture::RecordingMode recording_mode) {
   background_color_ = background_color;
   contents_opaque_ = contents_opaque;
   contents_fill_bounds_completely_ = contents_fill_bounds_completely;
@@ -489,9 +487,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
     bool gather_pixel_refs = RasterWorkerPool::GetNumRasterThreads() > 1;
 
     {
-      base::TimeDelta best_duration = base::TimeDelta::Max();
       for (int i = 0; i < repeat_count; i++) {
-        base::TimeTicks start_time = stats_instrumentation->StartRecording();
         picture = Picture::Create(record_rect,
                                   painter,
                                   tile_grid_info_,
@@ -505,13 +501,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
         // the pile after each invalidation.
         is_suitable_for_gpu_rasterization_ &=
             picture->IsSuitableForGpuRasterization();
-        base::TimeDelta duration =
-            stats_instrumentation->EndRecording(start_time);
-        best_duration = std::min(duration, best_duration);
       }
-      int recorded_pixel_count =
-          picture->LayerRect().width() * picture->LayerRect().height();
-      stats_instrumentation->AddRecord(best_duration, recorded_pixel_count);
     }
 
     bool found_tile_for_recorded_picture = false;

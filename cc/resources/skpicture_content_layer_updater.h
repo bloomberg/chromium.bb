@@ -21,7 +21,6 @@ class SkPictureContentLayerUpdater : public ContentLayerUpdater {
  protected:
   SkPictureContentLayerUpdater(
       scoped_ptr<LayerPainter> painter,
-      RenderingStatsInstrumentation* stats_instrumentation,
       int layer_id);
   ~SkPictureContentLayerUpdater() override;
 

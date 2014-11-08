@@ -124,17 +124,11 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   // to the impl side so that it drops tiles that may not have a recording
   // for them.
   DCHECK(client_);
-  updated |=
-      pile_.UpdateAndExpandInvalidation(client_,
-                                        &pile_invalidation_,
-                                        SafeOpaqueBackgroundColor(),
-                                        contents_opaque(),
-                                        client_->FillsBoundsCompletely(),
-                                        layer_size,
-                                        visible_layer_rect,
-                                        update_source_frame_number_,
-                                        Picture::RECORD_NORMALLY,
-                                        rendering_stats_instrumentation());
+  updated |= pile_.UpdateAndExpandInvalidation(
+      client_, &pile_invalidation_, SafeOpaqueBackgroundColor(),
+      contents_opaque(), client_->FillsBoundsCompletely(), layer_size,
+      visible_layer_rect, update_source_frame_number_,
+      Picture::RECORD_NORMALLY);
   last_updated_visible_content_rect_ = visible_content_rect();
 
   if (updated) {

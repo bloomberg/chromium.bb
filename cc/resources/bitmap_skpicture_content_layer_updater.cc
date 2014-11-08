@@ -53,9 +53,8 @@ BitmapSkPictureContentLayerUpdater::BitmapSkPictureContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
     RenderingStatsInstrumentation* stats_instrumentation,
     int layer_id)
-    : SkPictureContentLayerUpdater(painter.Pass(),
-                                   stats_instrumentation,
-                                   layer_id) {}
+    : SkPictureContentLayerUpdater(painter.Pass(), layer_id) {
+}
 
 BitmapSkPictureContentLayerUpdater::~BitmapSkPictureContentLayerUpdater() {}
 

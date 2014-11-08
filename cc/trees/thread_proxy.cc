@@ -851,12 +851,6 @@ void ThreadProxy::BeginMainFrame(
                    &completion,
                    queue.release()));
     completion.Wait();
-
-    RenderingStatsInstrumentation* stats_instrumentation =
-        layer_tree_host()->rendering_stats_instrumentation();
-    benchmark_instrumentation::IssueMainThreadRenderingStatsEvent(
-        stats_instrumentation->main_thread_rendering_stats());
-    stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
 
   layer_tree_host()->CommitComplete();

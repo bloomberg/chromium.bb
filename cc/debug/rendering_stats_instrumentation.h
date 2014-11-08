@@ -18,18 +18,11 @@ class CC_EXPORT RenderingStatsInstrumentation {
   static scoped_ptr<RenderingStatsInstrumentation> Create();
   virtual ~RenderingStatsInstrumentation();
 
-  // Return copy of current main thread rendering stats.
-  RenderingStats::MainThreadRenderingStats main_thread_rendering_stats();
-
   // Return copy of current impl thread rendering stats.
-  RenderingStats::ImplThreadRenderingStats impl_thread_rendering_stats();
+  RenderingStats impl_thread_rendering_stats();
 
   // Return the accumulated, combined rendering stats.
   RenderingStats GetRenderingStats();
-
-  // Add current main thread rendering stats to accumulator and
-  // clear current stats.
-  void AccumulateAndClearMainThreadStats();
 
   // Add current impl thread rendering stats to accumulator and
   // clear current stats.
@@ -48,8 +41,6 @@ class CC_EXPORT RenderingStatsInstrumentation {
   base::TimeDelta EndRecording(base::TimeTicks start_time) const;
 
   void IncrementFrameCount(int64 count);
-  void AddPaint(base::TimeDelta duration, int64 pixels);
-  void AddRecord(base::TimeDelta duration, int64 pixels);
   void AddVisibleContentArea(int64 area);
   void AddApproximatedVisibleContentArea(int64 area);
   void AddDrawDuration(base::TimeDelta draw_duration,
@@ -65,10 +56,8 @@ class CC_EXPORT RenderingStatsInstrumentation {
   RenderingStatsInstrumentation();
 
  private:
-  RenderingStats::MainThreadRenderingStats main_thread_rendering_stats_;
-  RenderingStats::MainThreadRenderingStats main_thread_rendering_stats_accu_;
-  RenderingStats::ImplThreadRenderingStats impl_thread_rendering_stats_;
-  RenderingStats::ImplThreadRenderingStats impl_thread_rendering_stats_accu_;
+  RenderingStats impl_thread_rendering_stats_;
+  RenderingStats impl_thread_rendering_stats_accu_;
 
   bool record_rendering_stats_;
 

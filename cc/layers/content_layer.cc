@@ -57,13 +57,6 @@ void ContentLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
   if (!updater_.get())
     return;
-
-  if (host) {
-    updater_->set_rendering_stats_instrumentation(
-        host->rendering_stats_instrumentation());
-  } else {
-    updater_->set_rendering_stats_instrumentation(nullptr);
-  }
 }
 
 void ContentLayer::SetTexturePriorities(
@@ -108,7 +101,6 @@ void ContentLayer::CreateUpdaterIfNeeded() {
   } else {
     updater_ = BitmapContentLayerUpdater::Create(
         painter.Pass(),
-        rendering_stats_instrumentation(),
         id());
   }
   updater_->SetOpaque(contents_opaque());

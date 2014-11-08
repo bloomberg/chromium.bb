@@ -16,9 +16,9 @@ namespace cc {
 
 SkPictureContentLayerUpdater::SkPictureContentLayerUpdater(
     scoped_ptr<LayerPainter> painter,
-    RenderingStatsInstrumentation* stats_instrumentation,
     int layer_id)
-    : ContentLayerUpdater(painter.Pass(), stats_instrumentation, layer_id) {}
+    : ContentLayerUpdater(painter.Pass(), layer_id) {
+}
 
 SkPictureContentLayerUpdater::~SkPictureContentLayerUpdater() {}
 
@@ -33,17 +33,11 @@ void SkPictureContentLayerUpdater::PrepareToUpdate(
       recorder.beginRecording(paint_rect.width(), paint_rect.height(), NULL, 0);
   DCHECK_EQ(paint_rect.width(), canvas->getBaseLayerSize().width());
   DCHECK_EQ(paint_rect.height(), canvas->getBaseLayerSize().height());
-  base::TimeTicks start_time =
-      rendering_stats_instrumentation_->StartRecording();
   PaintContents(canvas,
                 content_size,
                 paint_rect,
                 contents_width_scale,
                 contents_height_scale);
-  base::TimeDelta duration =
-      rendering_stats_instrumentation_->EndRecording(start_time);
-  rendering_stats_instrumentation_->AddRecord(
-      duration, paint_rect.width() * paint_rect.height());
   picture_ = skia::AdoptRef(recorder.endRecording());
 }
 

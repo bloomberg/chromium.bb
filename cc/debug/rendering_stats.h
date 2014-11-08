@@ -31,51 +31,27 @@ struct CC_EXPORT RenderingStats {
     base::TimeDelta GetLastTimeDelta() const;
 
    private:
-    std::list<base::TimeDelta> values;
+    std::vector<base::TimeDelta> values;
   };
 
-  struct CC_EXPORT MainThreadRenderingStats {
-    // Note: when adding new members, please remember to update Add in
-    // rendering_stats.cc.
+  RenderingStats();
+  ~RenderingStats();
 
-    base::TimeDelta paint_time;
-    int64 painted_pixel_count;
-    base::TimeDelta record_time;
-    int64 recorded_pixel_count;
+  // Note: when adding new members, please remember to update Add in
+  // rendering_stats.cc.
 
-    MainThreadRenderingStats();
-    ~MainThreadRenderingStats();
-    scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData()
-        const;
-    void Add(const MainThreadRenderingStats& other);
-  };
+  int64 frame_count;
+  int64 visible_content_area;
+  int64 approximated_visible_content_area;
 
-  struct CC_EXPORT ImplThreadRenderingStats {
-    // Note: when adding new members, please remember to update Add in
-    // rendering_stats.cc.
+  TimeDeltaList draw_duration;
+  TimeDeltaList draw_duration_estimate;
+  TimeDeltaList begin_main_frame_to_commit_duration;
+  TimeDeltaList begin_main_frame_to_commit_duration_estimate;
+  TimeDeltaList commit_to_activate_duration;
+  TimeDeltaList commit_to_activate_duration_estimate;
 
-    int64 frame_count;
-    int64 visible_content_area;
-    int64 approximated_visible_content_area;
-
-    TimeDeltaList draw_duration;
-    TimeDeltaList draw_duration_estimate;
-    TimeDeltaList begin_main_frame_to_commit_duration;
-    TimeDeltaList begin_main_frame_to_commit_duration_estimate;
-    TimeDeltaList commit_to_activate_duration;
-    TimeDeltaList commit_to_activate_duration_estimate;
-
-    ImplThreadRenderingStats();
-    ~ImplThreadRenderingStats();
-    scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData()
-        const;
-    void Add(const ImplThreadRenderingStats& other);
-  };
-
-  MainThreadRenderingStats main_stats;
-  ImplThreadRenderingStats impl_stats;
-
-  // Add fields of |other| to the fields in this structure.
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsTraceableData() const;
   void Add(const RenderingStats& other);
 };
 

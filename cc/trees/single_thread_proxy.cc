@@ -212,12 +212,6 @@ void SingleThreadProxy::DoCommit() {
     DCHECK(!scroll_info->scrolls.size());
     DCHECK_EQ(1.f, scroll_info->page_scale_delta);
 #endif
-
-    RenderingStatsInstrumentation* stats_instrumentation =
-        layer_tree_host_->rendering_stats_instrumentation();
-    benchmark_instrumentation::IssueMainThreadRenderingStatsEvent(
-        stats_instrumentation->main_thread_rendering_stats());
-    stats_instrumentation->AccumulateAndClearMainThreadStats();
   }
 
   if (layer_tree_host_->settings().impl_side_painting) {

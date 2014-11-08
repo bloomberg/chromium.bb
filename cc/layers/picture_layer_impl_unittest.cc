@@ -4497,21 +4497,13 @@ void PictureLayerImplTest::TestQuadsForSolidColor(bool test_for_solid) {
   host_impl_.SetViewportSize(layer_bounds);
 
   int frame_number = 0;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   client.set_fill_with_nonsolid_color(!test_for_solid);
 
   Region invalidation(layer_rect);
-  pile->UpdateAndExpandInvalidation(&client,
-                                    &invalidation,
-                                    SK_ColorWHITE,
-                                    false,
-                                    false,
-                                    layer_bounds,
-                                    layer_rect,
-                                    frame_number++,
-                                    Picture::RECORD_NORMALLY,
-                                    &stats_instrumentation);
+  pile->UpdateAndExpandInvalidation(&client, &invalidation, SK_ColorWHITE,
+                                    false, false, layer_bounds, layer_rect,
+                                    frame_number++, Picture::RECORD_NORMALLY);
 
   scoped_refptr<PicturePileImpl> pending_pile =
       PicturePileImpl::CreateFromOther(pile);
@@ -4572,21 +4564,13 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   host_impl_.SetViewportSize(layer_bounds);
 
   int frame_number = 0;
-  FakeRenderingStatsInstrumentation stats_instrumentation;
 
   client.set_fill_with_nonsolid_color(true);
 
   Region invalidation1(layer_rect);
-  pile->UpdateAndExpandInvalidation(&client,
-                                    &invalidation1,
-                                    SK_ColorWHITE,
-                                    false,
-                                    false,
-                                    layer_bounds,
-                                    layer_rect,
-                                    frame_number++,
-                                    Picture::RECORD_NORMALLY,
-                                    &stats_instrumentation);
+  pile->UpdateAndExpandInvalidation(&client, &invalidation1, SK_ColorWHITE,
+                                    false, false, layer_bounds, layer_rect,
+                                    frame_number++, Picture::RECORD_NORMALLY);
 
   scoped_refptr<PicturePileImpl> pending_pile1 =
       PicturePileImpl::CreateFromOther(pile);
@@ -4602,16 +4586,9 @@ TEST_F(PictureLayerImplTest, NonSolidToSolidNoTilings) {
   client.set_fill_with_nonsolid_color(false);
 
   Region invalidation2(layer_rect);
-  pile->UpdateAndExpandInvalidation(&client,
-                                    &invalidation2,
-                                    SK_ColorWHITE,
-                                    false,
-                                    false,
-                                    layer_bounds,
-                                    layer_rect,
-                                    frame_number++,
-                                    Picture::RECORD_NORMALLY,
-                                    &stats_instrumentation);
+  pile->UpdateAndExpandInvalidation(&client, &invalidation2, SK_ColorWHITE,
+                                    false, false, layer_bounds, layer_rect,
+                                    frame_number++, Picture::RECORD_NORMALLY);
 
   scoped_refptr<PicturePileImpl> pending_pile2 =
       PicturePileImpl::CreateFromOther(pile);

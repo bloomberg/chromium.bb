@@ -12,16 +12,7 @@ namespace benchmark_instrumentation {
 // tools/perf/measurements/rendering_stats.py accordingly.
 // The benchmarks search for events and their arguments by name.
 
-void IssueMainThreadRenderingStatsEvent(
-    const RenderingStats::MainThreadRenderingStats& stats) {
-  TRACE_EVENT_INSTANT1("benchmark",
-                       "BenchmarkInstrumentation::MainThreadRenderingStats",
-                       TRACE_EVENT_SCOPE_THREAD,
-                       "data", stats.AsTraceableData());
-}
-
-void IssueImplThreadRenderingStatsEvent(
-    const RenderingStats::ImplThreadRenderingStats& stats) {
+void IssueImplThreadRenderingStatsEvent(const RenderingStats& stats) {
   TRACE_EVENT_INSTANT1("benchmark",
                        "BenchmarkInstrumentation::ImplThreadRenderingStats",
                        TRACE_EVENT_SCOPE_THREAD,

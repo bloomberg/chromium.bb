@@ -21,15 +21,12 @@ class RenderingStatsInstrumentation;
 // their respective PaintContents implementations.
 class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
  public:
-  void set_rendering_stats_instrumentation(RenderingStatsInstrumentation* rsi);
   void SetOpaque(bool opaque) override;
   void SetFillsBoundsCompletely(bool fills_bounds) override;
   void SetBackgroundColor(SkColor background_color) override;
 
  protected:
-  ContentLayerUpdater(scoped_ptr<LayerPainter> painter,
-                      RenderingStatsInstrumentation* stats_instrumentation,
-                      int layer_id);
+  ContentLayerUpdater(scoped_ptr<LayerPainter> painter, int layer_id);
   ~ContentLayerUpdater() override;
 
   // Paints the contents. |content_size| size of the underlying layer in
@@ -49,7 +46,6 @@ class CC_EXPORT ContentLayerUpdater : public LayerUpdater {
 
   SkColor background_color() const { return background_color_; }
 
-  RenderingStatsInstrumentation* rendering_stats_instrumentation_;
   int layer_id_;
 
   // True when it is known that all output pixels will be opaque.
