@@ -33,7 +33,6 @@ ClientHintsDpr status=experimental
 CompositedSelectionUpdate
 ContextMenu status=experimental
 CredentialManager status=test
-Crypto status=stable
 CSS3Text status=experimental
 CSS3TextDecorations status=experimental
 CSSAnimationUnprefixed status=experimental
