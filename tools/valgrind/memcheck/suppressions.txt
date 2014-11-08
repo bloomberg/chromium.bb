@@ -2506,19 +2506,6 @@
    fun:nssTrustDomain_UpdateCachedTokenCerts
 }
 {
-   bug_331063
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN5blink11RenderImage12imageChangedEPvPKNS_7IntRectE
-   fun:_ZN5blink12RenderObject12imageChangedEPNS_13ImageResourceEPKNS_7IntRectE
-   fun:_ZN5blink13ImageResource12didAddClientEPNS_14ResourceClientE
-   fun:_ZN5blink8Resource9addClientEPNS_14ResourceClientE
-   fun:_ZN5blink19RenderImageResource16setImageResourceEPNS_13ImageResourceE
-   fun:_ZN5blink30PasswordGeneratorButtonElement11updateImageEv
-   fun:_ZN5blink30PasswordGeneratorButtonElement6attachERKNS_4Node13AttachContextE
-   fun:_ZN5blink13ContainerNode14attachChildrenERKNS_4Node13AttachContextE
-}
-{
    bug_331925
    Memcheck:Leak
    ...
