@@ -10,6 +10,7 @@
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserToken.h"
+#include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
@@ -18,6 +19,7 @@ namespace blink {
 class MutableStylePropertySet;
 
 class CSSParserImpl {
+    STACK_ALLOCATED();
 public:
     CSSParserImpl(const CSSParserContext&, const String&);
     static bool parseValue(MutableStylePropertySet*, CSSPropertyID, const String&, bool important, const CSSParserContext&);
