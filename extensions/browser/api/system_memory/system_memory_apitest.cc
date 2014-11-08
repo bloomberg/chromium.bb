@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/browser/api/system_memory/memory_info_provider.h"
+#include "extensions/shell/test/shell_apitest.h"
 
 namespace extensions {
 
@@ -19,17 +19,18 @@ class MockMemoryInfoProviderImpl : public MemoryInfoProvider {
     info_.available_capacity = 1024;
     return true;
   }
+
  private:
   ~MockMemoryInfoProviderImpl() override {}
 };
 
-class SystemMemoryApiTest: public ExtensionApiTest {
+class SystemMemoryApiTest : public ShellApiTest {
  public:
   SystemMemoryApiTest() {}
   ~SystemMemoryApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    ShellApiTest::SetUpInProcessBrowserTestFixture();
     message_loop_.reset(new base::MessageLoopForUI);
   }
 
@@ -41,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(SystemMemoryApiTest, Memory) {
   scoped_refptr<MemoryInfoProvider> provider = new MockMemoryInfoProviderImpl();
   // The provider is owned by the single MemoryInfoProvider instance.
   MemoryInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("system/memory")) << message_;
+  ASSERT_TRUE(RunAppTest("system/memory")) << message_;
 }
 
 }  // namespace extensions
