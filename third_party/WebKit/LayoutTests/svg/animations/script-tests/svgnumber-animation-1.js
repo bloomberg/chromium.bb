@@ -24,15 +24,15 @@ rootSVGElement.appendChild(rect);
 // Setup animation test
 function sample1() {
     // Check initial/end conditions
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0");
 }
 
 function sample2() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.5");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.5");
 }
 
 function sample3() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "1");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "1");
 }
 
 function executeTest() {
