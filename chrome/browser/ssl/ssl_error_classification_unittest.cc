@@ -199,10 +199,16 @@ TEST_F(SSLErrorClassificationTest, TestNameMismatch) {
 }
 
 TEST_F(SSLErrorClassificationTest, TestHostNameHasKnownTLD) {
-  std::string url1 = "www.google.com";
-  std::string url2 = "b.appspot.com";
-  std::string url3 = "a.private";
-  EXPECT_TRUE(SSLErrorClassification::IsHostNameKnownTLD(url1));
-  EXPECT_TRUE(SSLErrorClassification::IsHostNameKnownTLD(url2));
-  EXPECT_FALSE(SSLErrorClassification::IsHostNameKnownTLD(url3));
+  EXPECT_TRUE(SSLErrorClassification::IsHostNameKnownTLD("www.google.com"));
+  EXPECT_TRUE(SSLErrorClassification::IsHostNameKnownTLD("b.appspot.com"));
+  EXPECT_FALSE(SSLErrorClassification::IsHostNameKnownTLD("a.private"));
+}
+
+TEST_F(SSLErrorClassificationTest, TestPrivateURL) {
+  EXPECT_FALSE(SSLErrorClassification::IsHostnameNonUniqueOrDotless(
+      "www.foogoogle.com."));
+  EXPECT_TRUE(SSLErrorClassification::IsHostnameNonUniqueOrDotless("go"));
+  EXPECT_TRUE(
+      SSLErrorClassification::IsHostnameNonUniqueOrDotless("172.17.108.108"));
+  EXPECT_TRUE(SSLErrorClassification::IsHostnameNonUniqueOrDotless("foo.blah"));
 }

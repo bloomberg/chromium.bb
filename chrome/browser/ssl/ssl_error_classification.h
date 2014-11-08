@@ -44,6 +44,12 @@ class SSLErrorClassification : public content::NotificationObserver {
   // On other platforms, returns false always.
   static bool MaybeWindowsLacksSHA256Support();
 
+  // Returns true if any one of the following conditions hold:
+  // 1.|hostname| is an IP Address in an IANA-reserved range.
+  // 2.|hostname| is a not-yet-assigned by ICANN gTLD.
+  // 3.|hostname| is a dotless domain.
+  static bool IsHostnameNonUniqueOrDotless(const std::string& hostname);
+
   // A function which calculates the severity score when the ssl error is
   // |CERT_DATE_INVALID|. The calculated score is between 0.0 and 1.0, higher
   // being more severe, indicating how severe the certificate's
@@ -55,6 +61,12 @@ class SSLErrorClassification : public content::NotificationObserver {
   // higher being more severe, indicating how severe the certificate's common
   // name invalid error is.
   void InvalidCommonNameSeverityScore();
+
+  // A function which calculates the severity score when the ssl error is
+  // |CERT_AUTHORITY_INVALID|, returns a score between 0.0 and 1.0, higher
+  // values being more severe, indicating how severe the certificate's
+  // authority invalid error is.
+  void InvalidAuthoritySeverityScore();
 
   void RecordUMAStatistics(bool overridable) const;
   void RecordCaptivePortalUMAStatistics(bool overridable) const;

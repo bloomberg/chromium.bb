@@ -11094,12 +11094,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="interstitial.ssl" enum="SSLResponseTypesV2">
   <owner>felt@chromium.org</owner>
   <summary>
-    User action when the user is shown a SSL interstitial.  SHOW_ALL and MORE
+    User action when the user is shown a SSL interstitial. SHOW_ALL and MORE
     refer to the total number of SSL errors; all of the other numbers pertain to
-    the number of actions related to SSL errors that are overridable.  The
-    counts do not sum to 100%; SHOW_ALL is a superset of SHOW_OVERRIDABLE, which
-    in turn will be a supserset of the PROCEED/DONT_PROCEED variables.
-    SHOW_UNDERSTAND is only being used by an experimental field trial.
+    the number of actions related to SSL errors that are overridable. The counts
+    do not sum to 100%; SHOW_ALL is a superset of SHOW_OVERRIDABLE, which in
+    turn will be a supserset of the PROCEED/DONT_PROCEED variables.
+    SHOW_UNDERSTAND is only being used by an experimental field trial. The
+    interstitials due to captive portals are now recorded in the
+    &quot;SSLCaptivePortal&quot;.
   </summary>
 </histogram>
 
@@ -11173,6 +11175,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
     Records when a user has made a decision to proceed on an overridable SSL
     interstitial. Also records whether a prior decision had been made but the
     decision expired.
+  </summary>
+</histogram>
+
+<histogram name="interstitial.ssl.severity_score.authority_invalid" units="%">
+  <owner>felt@chromium.org</owner>
+  <summary>
+    The likelihood of a |CERT_AUTHORITY_INVALID| error being an attack.
   </summary>
 </histogram>
 
@@ -54503,6 +54512,17 @@ To add a new entry, add it with any value and run test to compute valid value.
     of the heuristics which decide as to what constitutes a shared certificate.
     In cases of overlap, we emit to only one bucket.
   </int>
+  <int value="8" label="LOCALHOST: The user is trying to connect to local host">
+    This cause is recorded only for CERT_AUTHORITY_INVALID errors.
+  </int>
+  <int value="9" label="PRIVATE_URL: The user is trying to connect to a VPN">
+    This cause is recorded only for CERT_AUTHORITY_INVALID errors. The user did
+    not receive a certificate signed by a valid CA.
+  </int>
+  <int value="10"
+      label="AUTHORTIY_ERROR_CAPTIVE_PORTAL: Captive portal was detected">
+    This cause is recorded only for CERT_AUTHORITY_INVALID errors.
+  </int>
 </enum>
 
 <enum name="SSLProtocolNegotiation" type="int">
@@ -54539,8 +54559,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="DONT_PROCEED_AUTHORITY"/>
   <int value="10" label="MORE"/>
   <int value="11" label="SHOW_UNDERSTAND"/>
-  <int value="12" label="SHOW_INTERNAL_HOSTNAME"/>
-  <int value="13" label="PROCEED_INTERNAL_HOSTNAME"/>
+  <int value="12" label="SHOW_INTERNAL_HOSTNAME">
+    As of M40, this now also includes dotless domains.
+  </int>
+  <int value="13" label="PROCEED_INTERNAL_HOSTNAME">
+    As of M40, this now also includes dotless domains.
+  </int>
   <int value="14" label="SHOW_NEW_SITE"/>
   <int value="15" label="PROCEED_NEW_SITE"/>
   <int value="16"
@@ -54565,7 +54589,8 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Received no response or Non-HTTP login page on an overridable
              SSL error page
              (DEPRECATED_CAPTIVE_PORTAL_NO_RESPONSE_OVERRIDABLE)"/>
-  <int value="23" label="Detected captive portal (CAPTIVE_PORTAL_DETECTED)"/>
+  <int value="23"
+      label="Detected captive portal (DEPRECATED_CAPTIVE_PORTAL_DETECTED)"/>
   <int value="24"
       label="Detected captive portal on an overridable SSL error page
              (DEPRECATED_CAPTIVE_PORTAL_DETECTED_OVERRIDABLE)"/>

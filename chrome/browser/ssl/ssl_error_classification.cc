@@ -50,6 +50,9 @@ enum SSLInterstitialCause {
   SUBDOMAIN_OUTSIDE_WILDCARD,
   HOST_NAME_NOT_KNOWN_TLD,
   LIKELY_MULTI_TENANT_HOSTING,
+  LOCALHOST,
+  PRIVATE_URL,
+  AUTHORITY_ERROR_CAPTIVE_PORTAL,
   UNUSED_INTERSTITIAL_CAUSE_ENTRY,
 };
 
@@ -76,6 +79,11 @@ void RecordSSLInterstitialSeverityScore(float ssl_severity_score,
       SSLErrorInfo::CERT_COMMON_NAME_INVALID) {
     UMA_HISTOGRAM_COUNTS_100(
         "interstitial.ssl.severity_score.common_name_invalid",
+        static_cast<int>(ssl_severity_score * 100));
+  } else if (SSLErrorInfo::NetErrorToErrorType(cert_error) ==
+             SSLErrorInfo::CERT_AUTHORITY_INVALID) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "interstitial.ssl.severity_score.authority_invalid",
         static_cast<int>(ssl_severity_score * 100));
   }
 }
@@ -190,7 +198,7 @@ void SSLErrorClassification::RecordCaptivePortalUMAStatistics(
 void SSLErrorClassification::InvalidDateSeverityScore() {
   SSLErrorInfo::ErrorType type =
       SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  DCHECK(type == SSLErrorInfo::CERT_DATE_INVALID);
+  DCHECK_EQ(type, SSLErrorInfo::CERT_DATE_INVALID);
 
   // Client-side characteristics. Check whether or not the system's clock is
   // wrong and whether or not the user has encountered this error before.
@@ -229,7 +237,7 @@ void SSLErrorClassification::InvalidDateSeverityScore() {
 void SSLErrorClassification::InvalidCommonNameSeverityScore() {
   SSLErrorInfo::ErrorType type =
       SSLErrorInfo::NetErrorToErrorType(cert_error_);
-  DCHECK(type == SSLErrorInfo::CERT_COMMON_NAME_INVALID);
+  DCHECK_EQ(type, SSLErrorInfo::CERT_COMMON_NAME_INVALID);
   float severity_name_score = 0.0f;
 
   static const float kWWWDifferenceWeight = 0.3f;
@@ -263,6 +271,27 @@ void SSLErrorClassification::InvalidCommonNameSeverityScore() {
       CalculateScoreEnvironments();
 
   RecordSSLInterstitialSeverityScore(severity_name_score, cert_error_);
+}
+
+void SSLErrorClassification::InvalidAuthoritySeverityScore() {
+  SSLErrorInfo::ErrorType type = SSLErrorInfo::NetErrorToErrorType(cert_error_);
+  DCHECK_EQ(type, SSLErrorInfo::CERT_AUTHORITY_INVALID);
+
+  // For |CERT_AUTHORITY_INVALID| errors if captive portals have been detected
+  // then don't calculate the score, just return.
+  if (captive_portal_probe_completed_ && captive_portal_detected_)
+    return;
+
+  float severity_authority_score = 0.0f;
+
+  static const float kLocalhostWeight = 0.7f;
+  static const float kPrivateURLWeight = 0.3f;
+  if (net::IsLocalhost(request_url_.HostNoBrackets()))
+    severity_authority_score += kClientWeight * kLocalhostWeight;
+  if (IsHostnameNonUniqueOrDotless(request_url_.HostNoBrackets()))
+    severity_authority_score += kClientWeight * kPrivateURLWeight;
+
+  RecordSSLInterstitialSeverityScore(severity_authority_score, cert_error_);
 }
 
 void SSLErrorClassification::RecordUMAStatistics(
@@ -299,9 +328,18 @@ void SSLErrorClassification::RecordUMAStatistics(
       }
       break;
     }
-    default: {
+    case SSLErrorInfo::CERT_AUTHORITY_INVALID: {
+      const std::string& hostname = request_url_.HostNoBrackets();
+      if (net::IsLocalhost(hostname))
+        RecordSSLInterstitialCause(overridable, LOCALHOST);
+      if (IsHostnameNonUniqueOrDotless(hostname))
+        RecordSSLInterstitialCause(overridable, PRIVATE_URL);
+      if (captive_portal_probe_completed_ && captive_portal_detected_)
+        RecordSSLInterstitialCause(overridable, AUTHORITY_ERROR_CAPTIVE_PORTAL);
       break;
     }
+    default:
+      break;
   }
 }
 
@@ -575,6 +613,13 @@ bool SSLErrorClassification::IsCertLikelyFromMultiTenantHosting() const {
     }
   }
   return true;
+}
+
+// static
+bool SSLErrorClassification::IsHostnameNonUniqueOrDotless(
+    const std::string& hostname) {
+  return net::IsHostnameNonUnique(hostname) ||
+         hostname.find('.') == std::string::npos;
 }
 
 void SSLErrorClassification::Observe(

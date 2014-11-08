@@ -331,7 +331,8 @@ SSLBlockingPage::SSLBlockingPage(content::WebContents* web_contents,
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
   // For UMA stats.
-  if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
+  if (SSLErrorClassification::IsHostnameNonUniqueOrDotless(
+          request_url_.HostNoBrackets()))
     internal_ = true;
   RecordSSLBlockingPageEventStats(SHOW_ALL);
   if (overridable_) {
@@ -392,6 +393,9 @@ SSLBlockingPage::~SSLBlockingPage() {
       break;
     case SSLErrorInfo::CERT_COMMON_NAME_INVALID:
       ssl_error_classification_->InvalidCommonNameSeverityScore();
+      break;
+    case SSLErrorInfo::CERT_AUTHORITY_INVALID:
+      ssl_error_classification_->InvalidAuthoritySeverityScore();
       break;
     default:
       break;
