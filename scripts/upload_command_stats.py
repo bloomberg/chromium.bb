@@ -4,6 +4,8 @@
 
 """Upload a single build command stats file to appengine."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import logging

@@ -13,6 +13,8 @@ example: cros lint.
 See cros/command/cros_XXX.py for actual command implementations.
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import sys

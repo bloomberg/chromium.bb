@@ -7,6 +7,8 @@
 For a description of AFDO see gcc.gnu.org/wiki/AutoFDO.
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import datetime

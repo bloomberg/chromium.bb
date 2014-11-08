@@ -5,6 +5,8 @@
 
 """Configuration options for various cbuildbot builders."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 # Disable relative import warning from pylint.

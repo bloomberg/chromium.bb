@@ -5,6 +5,9 @@
 
 """Unittests for manifest_version. Needs to be run inside of chroot."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import mox

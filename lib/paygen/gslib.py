@@ -4,6 +4,8 @@
 
 """Common Google Storage interface library."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import base64

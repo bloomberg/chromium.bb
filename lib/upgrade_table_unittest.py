@@ -5,6 +5,8 @@
 
 """Unit tests for the upgrade_table module."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import os

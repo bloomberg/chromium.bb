@@ -4,6 +4,9 @@
 
 """Module that handles the processing of patches to the source tree."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import calendar

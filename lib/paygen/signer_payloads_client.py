@@ -4,6 +4,8 @@
 
 """This library manages the interfaces to the signer for update payloads."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import logging

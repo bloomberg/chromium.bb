@@ -5,6 +5,8 @@
 
 """Unit tests for chromite.lib.git and helpers for testing that module."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import functools

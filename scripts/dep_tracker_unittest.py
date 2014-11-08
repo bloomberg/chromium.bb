@@ -5,6 +5,8 @@
 
 """Unit tests for dep_tracker.py."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import os

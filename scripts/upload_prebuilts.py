@@ -17,6 +17,8 @@ Example of uploading x86-dogfood binhosts to Google Storage:
 upload_prebuilts -b x86-dogfood -p /b/cbuild/build/ -u gs://chromeos-prebuilt -g
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import datetime

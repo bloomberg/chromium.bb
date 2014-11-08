@@ -4,6 +4,8 @@
 
 """cros deploy: Deploy the packages onto the target device."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import os

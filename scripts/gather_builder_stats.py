@@ -4,6 +4,9 @@
 
 """Script for gathering stats from builder runs."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import division
 from __future__ import print_function
 

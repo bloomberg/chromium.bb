@@ -5,6 +5,9 @@
 
 """Test the cros_build_lib module."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import os

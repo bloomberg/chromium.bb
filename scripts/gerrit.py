@@ -9,6 +9,8 @@ To expose a function directly to the command line interface, name your function
 with the prefix "UserAct".
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import inspect

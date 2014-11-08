@@ -5,6 +5,9 @@
 
 """Module that contains unittests for validation_pool module."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import collections

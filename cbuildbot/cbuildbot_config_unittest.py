@@ -5,6 +5,8 @@
 
 """Unittests for config.  Needs to be run inside of chroot for mox."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import mock

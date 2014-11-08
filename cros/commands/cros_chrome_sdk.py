@@ -4,6 +4,9 @@
 
 """The cros chrome-sdk command for the simple chrome workflow."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import argparse

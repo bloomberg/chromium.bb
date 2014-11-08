@@ -16,6 +16,8 @@ build directory) and rsyncs the contents of the staging directory onto your
 device's rootfs.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

@@ -5,6 +5,9 @@
 
 """Unit tests for the table module."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import cStringIO

@@ -14,6 +14,8 @@ to the above test instance.
 
 # pylint: disable= W0212
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import datetime

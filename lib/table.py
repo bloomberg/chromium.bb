@@ -4,6 +4,8 @@
 
 """Support generic spreadsheet-like table information."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import inspect

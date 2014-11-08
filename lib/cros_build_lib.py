@@ -4,6 +4,8 @@
 
 """Common python commands used by various build scripts."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import __main__

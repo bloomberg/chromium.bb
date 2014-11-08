@@ -5,6 +5,8 @@
 """Module containing methods and classes to interact with a devserver instance.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import logging

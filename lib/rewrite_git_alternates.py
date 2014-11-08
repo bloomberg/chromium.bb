@@ -8,6 +8,8 @@ In particular, this in combination w/ enter_chroot's mount binding, allows
 us to access the same repo from inside and outside a chroot at the same time
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 __all__ = ('RebuildRepoCheckout',)

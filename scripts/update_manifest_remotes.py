@@ -11,6 +11,8 @@ It doesn't commit or push any changes, just updates files in a working
 directory.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

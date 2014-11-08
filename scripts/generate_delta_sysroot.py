@@ -8,6 +8,8 @@ Script that generates a tarball containing changes that are needed to create a
 complete sysroot from extracted prebuilt packages.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import os

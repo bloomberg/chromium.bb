@@ -4,6 +4,9 @@
 
 """Install/copy the image to the device."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import cStringIO

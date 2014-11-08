@@ -8,6 +8,8 @@ This ranges from optparse, to a basic script wrapper setup (much like
 what is used for chromite.bin.*).
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import argparse

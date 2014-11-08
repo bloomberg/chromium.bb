@@ -4,6 +4,8 @@
 
 """Cros unit test library, with utility functions."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

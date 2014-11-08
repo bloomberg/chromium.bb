@@ -8,6 +8,8 @@ The validation pool is the set of commits that are ready to be validated i.e.
 ready for the commit queue to try.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import contextlib

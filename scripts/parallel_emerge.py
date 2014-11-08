@@ -13,6 +13,8 @@ Portage APIs. It is faster than standard emerge because it has a
 multiprocess model instead of an asynchronous model.
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import codecs

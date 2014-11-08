@@ -4,6 +4,8 @@
 
 """Validate or replace the standard gdata authorization token."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import filecmp

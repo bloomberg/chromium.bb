@@ -5,6 +5,9 @@
 
 """Test paygen_payload_lib library."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import mox

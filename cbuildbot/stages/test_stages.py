@@ -4,6 +4,8 @@
 
 """Module containing the test stages."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

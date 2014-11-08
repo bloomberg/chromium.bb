@@ -4,6 +4,8 @@
 
 """Utilities for standard operations on URIs of different kinds."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import re

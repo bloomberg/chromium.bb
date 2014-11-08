@@ -4,6 +4,8 @@
 
 """Synchronize issues in Package Status spreadsheet with Issue Tracker."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import optparse

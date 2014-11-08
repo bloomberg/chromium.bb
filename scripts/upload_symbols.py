@@ -9,6 +9,8 @@ crashes on non-release builds (in which case try to only upload the symbols
 for those executables involved).
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import ctypes

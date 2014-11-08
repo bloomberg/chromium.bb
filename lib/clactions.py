@@ -4,6 +4,8 @@
 
 """Utility functions for interacting with a CL's action history."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

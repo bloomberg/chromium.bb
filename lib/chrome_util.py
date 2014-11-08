@@ -4,6 +4,9 @@
 
 """Library containing utility functions used for Chrome-specific build tasks."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import functools

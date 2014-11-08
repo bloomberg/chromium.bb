@@ -4,6 +4,8 @@
 
 """Module containing utils to get and check lab status."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import json

@@ -6,6 +6,9 @@
 one csv file, in preparation for uploading to a Google Docs spreadsheet.
 """
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import optparse

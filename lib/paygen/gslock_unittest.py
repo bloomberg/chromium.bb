@@ -5,6 +5,8 @@
 
 """Test gslock library."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import multiprocessing

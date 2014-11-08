@@ -8,6 +8,8 @@ This module implements the concept of an operation, which has regular progress
 updates, verbose text display and perhaps some errors.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import contextlib

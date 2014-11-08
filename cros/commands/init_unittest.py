@@ -5,6 +5,8 @@
 
 """This module tests the init module."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import glob

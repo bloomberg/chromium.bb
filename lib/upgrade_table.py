@@ -4,6 +4,8 @@
 
 """UpgradeTable class is used in Portage package upgrade process."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 from chromite.lib import table

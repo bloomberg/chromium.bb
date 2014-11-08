@@ -4,6 +4,9 @@
 
 """Should be run on a GCE instance to set up the build environment."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import getpass

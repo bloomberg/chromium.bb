@@ -4,6 +4,8 @@
 
 """Repository module to handle different types of repositories."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import constants

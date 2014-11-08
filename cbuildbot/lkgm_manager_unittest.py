@@ -5,6 +5,9 @@
 
 """Unittests for lkgm_manager. Needs to be run inside of chroot for mox."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import contextlib

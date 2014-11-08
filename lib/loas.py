@@ -10,6 +10,8 @@ Google production resources.
 If you don't know what any of this means, then you don't need this module :).
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import datetime

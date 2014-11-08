@@ -4,6 +4,9 @@
 
 """This module contains constants used by cbuildbot and related code."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import os

@@ -4,6 +4,8 @@
 
 """This module contains Google Compute Engine configurations."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 from chromite.cbuildbot import constants

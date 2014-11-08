@@ -4,6 +4,8 @@
 
 """This module allows adding and deleting of projects to the local manifest."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import logging

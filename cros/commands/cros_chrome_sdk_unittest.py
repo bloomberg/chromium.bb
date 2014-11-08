@@ -5,6 +5,8 @@
 
 """This module tests the cros image command."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import copy

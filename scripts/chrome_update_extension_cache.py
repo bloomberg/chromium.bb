@@ -20,6 +20,8 @@ Run inside the chroot:
 $ ebuild chromeos-default-apps-1.0.0.ebuild manifest --force
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import json

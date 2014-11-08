@@ -4,6 +4,8 @@
 
 """cros build: Build the requested packages."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import os

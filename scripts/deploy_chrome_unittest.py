@@ -5,6 +5,8 @@
 
 """Unit tests for the deploy_chrome script."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import os

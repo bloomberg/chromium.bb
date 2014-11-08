@@ -5,6 +5,8 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import exceptions

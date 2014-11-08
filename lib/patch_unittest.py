@@ -5,6 +5,9 @@
 
 """Unittests for chromite.lib.patch."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import copy

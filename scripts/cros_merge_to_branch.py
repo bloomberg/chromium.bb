@@ -32,6 +32,8 @@ http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/working-on-a-br\
 anch
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import errno

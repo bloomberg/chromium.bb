@@ -4,6 +4,8 @@
 
 """Module containing class for recording metadata about a run."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

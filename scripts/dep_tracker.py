@@ -17,6 +17,8 @@ libraries loaded at runtime with dlopen(). It also computes size and file type
 in several cases to help understand the contents of the built image.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import itertools

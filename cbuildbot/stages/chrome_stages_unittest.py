@@ -5,6 +5,8 @@
 
 """Unittests for chrome stages."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import os

@@ -8,6 +8,8 @@ Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import argparse

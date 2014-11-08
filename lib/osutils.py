@@ -4,6 +4,9 @@
 
 """Common file and os related utilities, including tempdir manipulation."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import collections

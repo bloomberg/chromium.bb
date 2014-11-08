@@ -5,6 +5,8 @@
 """A library to generate and store the manifests for cros builders to use.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import cPickle

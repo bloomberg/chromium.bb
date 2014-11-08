@@ -4,6 +4,9 @@
 
 """Module containing the various individual commands a builder can run."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import base64

@@ -5,6 +5,9 @@
 
 """Unit tests for cros_portage_upgrade.py."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import exceptions

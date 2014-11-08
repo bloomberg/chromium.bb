@@ -4,6 +4,9 @@
 
 """Perform various tasks related to updating Portage packages."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import filecmp

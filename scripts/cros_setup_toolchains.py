@@ -4,6 +4,9 @@
 
 """This script manages the installed toolchains in the chroot."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import copy

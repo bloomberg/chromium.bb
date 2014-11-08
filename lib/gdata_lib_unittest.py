@@ -5,6 +5,9 @@
 
 """Unit tests for the gdata_lib module."""
 
+# pylint: disable=bad-continuation
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import getpass

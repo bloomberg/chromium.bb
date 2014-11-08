@@ -14,6 +14,8 @@ must be logged in with an @google.com account to view chromeOS perf data there.
 This module is similar to src/third_party/autotest/files/tko/perf_uploader.py.
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import collections

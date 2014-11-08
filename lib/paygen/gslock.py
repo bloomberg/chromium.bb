@@ -27,6 +27,8 @@ Note that lock files will be left behind forever if not explicitly cleaned up by
 the creating server.
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import fixup_path

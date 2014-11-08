@@ -4,6 +4,8 @@
 
 """Connect to a DUT in firmware via remote GDB, install custom GDB commands."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import errno

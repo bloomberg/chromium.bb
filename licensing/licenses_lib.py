@@ -8,6 +8,8 @@ Documentation on this script is also available here:
   http://www.chromium.org/chromium-os/licensing
 """
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import cgi

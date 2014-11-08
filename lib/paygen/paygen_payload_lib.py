@@ -4,6 +4,8 @@
 
 """Hold the functions that do the real work generating payloads."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import base64

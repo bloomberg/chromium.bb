@@ -8,6 +8,8 @@ This pushes files from the archive bucket to the signer bucket and marks
 artifacts for signing (which a signing process will look for).
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import ConfigParser

@@ -4,6 +4,8 @@
 
 """Fake CIDB for unit testing."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import datetime

@@ -14,6 +14,8 @@ Returns chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 emerge-x86-generic =chrome-base/chromeos-chrome-8.0.552.0_alpha_r1
 """
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import base64

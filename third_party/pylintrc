@@ -44,6 +44,7 @@ rcfile=../pylintrc
 # C0321: More than one statement on a single line
 # E1103: Instance has no '*' member (but some types could not be inferred)
 # I0011: Locally disabling warning.
+# I0012: Locally enabling warning.
 # R0201: Method could be a function
 # R0902: Too many instance attributes (N/7)
 # R0903: Too few public methods (N/2)
@@ -64,7 +65,7 @@ rcfile=../pylintrc
 # W0622: Redefining built-in
 # R0904: Too many public methods
 # R0921: Abstract class not referenced.
-disable=C0103,C0111,C0301,C0302,C0321,E1103,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0102,W0122,W0141,W0142,W0212,W0311,W0312,W0403,W0511,W0622,R0904,R0921
+disable=C0103,C0111,C0301,C0302,C0321,E1103,I0011,I0012,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0102,W0122,W0141,W0142,W0212,W0311,W0312,W0403,W0511,W0622,R0904,R0921
 
 
 [REPORTS]
@@ -72,10 +73,6 @@ disable=C0103,C0111,C0301,C0302,C0321,E1103,I0011,R0201,R0902,R0903,R0911,R0912,
 # Set the output format. Available formats are text, parseable, colorized, msvs
 # (visual studio) and html
 #output-format=text
-
-# Include message's id in output
-# CHANGE: Include message ids in output.
-include-ids=yes
 
 # Put messages in a separate file for each module / package specified on the
 # command line instead of printing them on stdout. Reports (if any) will be

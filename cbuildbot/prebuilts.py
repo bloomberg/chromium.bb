@@ -4,6 +4,8 @@
 
 """cbuildbot logic for uploading prebuilts and managing binhosts."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 from datetime import datetime

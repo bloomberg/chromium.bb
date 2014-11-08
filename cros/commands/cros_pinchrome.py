@@ -4,6 +4,8 @@
 
 """cros pinchrome: Pin chrome to an earlier version."""
 
+# pylint: disable=bad-continuation
+
 from __future__ import print_function
 
 import fnmatch

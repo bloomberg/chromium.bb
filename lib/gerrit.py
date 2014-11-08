@@ -4,6 +4,8 @@
 
 """Module containing helper class and methods for interacting with Gerrit."""
 
+# pylint: disable=bad-whitespace
+
 from __future__ import print_function
 
 import logging
