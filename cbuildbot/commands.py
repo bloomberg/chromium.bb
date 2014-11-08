@@ -97,11 +97,9 @@ def RunBuildScript(buildroot, cmd, chromite_cmd=False, **kwargs):
 
   if chromite_cmd:
     cmd = cmd[:]
+    cmd[0] = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0])
     if enter_chroot:
-      cmd[0] = git.ReinterpretPathForChroot(
-          os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0]))
-    else:
-      cmd[0] = os.path.join(buildroot, constants.CHROMITE_BIN_SUBDIR, cmd[0])
+      cmd[0] = git.ReinterpretPathForChroot(cmd[0])
 
   # If we are entering the chroot, create status file for tracking what
   # packages failed to build.
