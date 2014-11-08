@@ -119,14 +119,17 @@ final class CronetUrlRequest implements UrlRequest {
     static final class NativeResponseInfo implements ResponseInfo {
         private final String[] mResponseInfoUrlChain;
         private final int mHttpStatusCode;
+        private final String mHttpStatusText;
         private final HeadersMap mAllHeaders = new HeadersMap();
         private final boolean mWasCached;
         private final String mNegotiatedProtocol;
 
         NativeResponseInfo(String[] urlChain, int httpStatusCode,
-                boolean wasCached, String negotiatedProtocol) {
+                String httpStatusText, boolean wasCached,
+                String negotiatedProtocol) {
             mResponseInfoUrlChain = urlChain;
             mHttpStatusCode = httpStatusCode;
+            mHttpStatusText = httpStatusText;
             mWasCached = wasCached;
             mNegotiatedProtocol = negotiatedProtocol;
         }
@@ -144,6 +147,11 @@ final class CronetUrlRequest implements UrlRequest {
         @Override
         public int getHttpStatusCode() {
             return mHttpStatusCode;
+        }
+
+        @Override
+        public String getHttpStatusText() {
+            return mHttpStatusText;
         }
 
         @Override
@@ -336,6 +344,7 @@ final class CronetUrlRequest implements UrlRequest {
         NativeResponseInfo responseInfo = new NativeResponseInfo(
                 mUrlChain.toArray(new String[mUrlChain.size()]),
                 httpStatusCode,
+                nativeGetHttpStatusText(urlRequestAdapter),
                 nativeGetWasCached(urlRequestAdapter),
                 nativeGetNegotiatedProtocol(urlRequestAdapter));
         nativePopulateResponseHeaders(urlRequestAdapter,
@@ -592,6 +601,8 @@ final class CronetUrlRequest implements UrlRequest {
             HeadersMap headers);
 
     private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
+
+    private native String nativeGetHttpStatusText(long urlRequestAdapter);
 
     private native boolean nativeGetWasCached(long urlRequestAdapter);
 

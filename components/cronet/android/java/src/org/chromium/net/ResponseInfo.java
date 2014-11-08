@@ -31,6 +31,12 @@ public interface ResponseInfo {
     int getHttpStatusCode();
 
     /**
+     * @return the HTTP status text of the status line. For example, if the
+     * request has a "HTTP/1.1 200 OK" response, this method returns "OK".
+     */
+    String getHttpStatusText();
+
+    /**
      * @return an unmodifiable map of the response-header fields and values.
      * The null key is mapped to the HTTP status line for compatibility with
      * HttpUrlConnection.

@@ -67,11 +67,13 @@ public class CronetUrlRequestTest extends CronetTestBase {
     }
 
     private void checkResponseInfo(ResponseInfo responseInfo,
-            String expectedUrl, int expectedStatusHttpCode) {
+            String expectedUrl, int expectedHttpStatusCode,
+            String expectedHttpStatusText) {
         assertEquals(expectedUrl, responseInfo.getUrl());
         assertEquals(expectedUrl, responseInfo.getUrlChain()[
                 responseInfo.getUrlChain().length - 1]);
-        assertEquals(expectedStatusHttpCode, responseInfo.getHttpStatusCode());
+        assertEquals(expectedHttpStatusCode, responseInfo.getHttpStatusCode());
+        assertEquals(expectedHttpStatusText, responseInfo.getHttpStatusText());
         assertFalse(responseInfo.wasCached());
     }
 
@@ -95,7 +97,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertFalse(listener.mOnRedirectCalled);
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
         checkResponseInfo(listener.mResponseInfo,
-                UploadTestServer.getEchoMethodURL(), 200);
+                UploadTestServer.getEchoMethodURL(), 200, "OK");
     }
 
     @SmallTest
@@ -286,7 +288,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(MOCK_CRONET_TEST_SUCCESS_URL,
                 mResponseInfo.getUrlChain()[1]);
         checkResponseInfo(listener.mRedirectResponseInfoList.get(0),
-                MOCK_CRONET_TEST_REDIRECT_URL, 302);
+                MOCK_CRONET_TEST_REDIRECT_URL, 302, "Found");
         checkResponseInfoHeader(listener.mRedirectResponseInfoList.get(0),
                 "redirect-header", "header-value");
         assertTrue(listener.mHttpResponseDataLength != 0);
@@ -311,7 +313,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(MOCK_CRONET_TEST_MULTI_REDIRECT_URL,
                 firstRedirectResponseInfo.getUrlChain()[0]);
         checkResponseInfo(firstRedirectResponseInfo,
-                MOCK_CRONET_TEST_MULTI_REDIRECT_URL, 302);
+                MOCK_CRONET_TEST_MULTI_REDIRECT_URL, 302, "Found");
         checkResponseInfoHeader(firstRedirectResponseInfo,
                 "redirect-header0", "header-value");
 
@@ -324,7 +326,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(MOCK_CRONET_TEST_REDIRECT_URL,
                 secondRedirectResponseInfo.getUrlChain()[1]);
         checkResponseInfo(secondRedirectResponseInfo,
-                MOCK_CRONET_TEST_REDIRECT_URL, 302);
+                MOCK_CRONET_TEST_REDIRECT_URL, 302, "Found");
         checkResponseInfoHeader(secondRedirectResponseInfo,
                 "redirect-header", "header-value");
 

@@ -266,4 +266,16 @@ static jlong GetTotalReceivedBytes(JNIEnv* env,
   return request_adapter->GetTotalReceivedBytes();
 }
 
+static jstring GetHttpStatusText(JNIEnv* env,
+                                 jobject jurl_request,
+                                 jlong jurl_request_adapter) {
+  DCHECK(jurl_request_adapter);
+  CronetURLRequestAdapter* request_adapter =
+      reinterpret_cast<CronetURLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter->IsOnNetworkThread());
+  const net::HttpResponseHeaders* headers =
+      request_adapter->GetResponseHeaders();
+  return ConvertUTF8ToJavaString(env, headers->GetStatusText()).Release();
+}
+
 }  // namespace cronet
