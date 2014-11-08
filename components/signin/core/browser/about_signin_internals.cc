@@ -359,7 +359,8 @@ AboutSigninInternals::TokenInfo::~TokenInfo() {}
 
 bool AboutSigninInternals::TokenInfo::LessThan(const TokenInfo* a,
                                                const TokenInfo* b) {
-  return a->consumer_id < b->consumer_id || a->scopes < b->scopes;
+  return a->consumer_id < b->consumer_id ||
+      (a->consumer_id == b->consumer_id && a->scopes < b->scopes);
 }
 
 void AboutSigninInternals::TokenInfo::Invalidate() { removed_ = true; }
