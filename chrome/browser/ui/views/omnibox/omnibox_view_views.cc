@@ -392,7 +392,7 @@ void OmniboxViewViews::OnPaste() {
 }
 
 bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
-  // This must run before acclerator handling invokes a focus change on tab.
+  // This must run before accelerator handling invokes a focus change on tab.
   // Note the parallel with SkipDefaultKeyEventProcessing above.
   if (!views::FocusManager::IsTabTraversalKeyEvent(event))
     return false;

@@ -75,7 +75,7 @@ class UI_BASE_EXPORT MenuModel {
   // If NULL, then the default font list should be used.
   virtual const gfx::FontList* GetLabelFontListAt(int index) const;
 
-  // Gets the acclerator information for the specified index, returning true if
+  // Gets the accelerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.
   virtual bool GetAcceleratorAt(int index,
                                 ui::Accelerator* accelerator) const = 0;

@@ -55,7 +55,7 @@ const int kStackedPanelHeightShrinkThresholdToBecomeMinimized =
 #endif
 
 // Supported accelerators.
-// Note: We can't use the acclerator table defined in chrome/browser/ui/views
+// Note: We can't use the accelerator table defined in chrome/browser/ui/views
 // due to checkdeps violation.
 struct AcceleratorMapping {
   ui::KeyboardCode keycode;

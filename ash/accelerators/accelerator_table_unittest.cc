@@ -27,10 +27,10 @@ struct Cmp {
 }  // namespace
 
 TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
-  std::set<AcceleratorData, Cmp> acclerators;
+  std::set<AcceleratorData, Cmp> accelerators;
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {
     const AcceleratorData& entry = kAcceleratorData[i];
-    EXPECT_TRUE(acclerators.insert(entry).second)
+    EXPECT_TRUE(accelerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.trigger_on_press << ", "
         << entry.keycode << ", " << (entry.modifiers & ui::EF_SHIFT_DOWN)
         << ", " << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "

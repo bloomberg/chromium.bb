@@ -30,12 +30,12 @@ struct Cmp {
 }  // namespace
 
 TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
-  std::set<AcceleratorMapping, Cmp> acclerators;
+  std::set<AcceleratorMapping, Cmp> accelerators;
   const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
   for (std::vector<AcceleratorMapping>::const_iterator it =
            accelerator_list.begin(); it != accelerator_list.end(); ++it) {
     const AcceleratorMapping& entry = *it;
-    EXPECT_TRUE(acclerators.insert(entry).second)
+    EXPECT_TRUE(accelerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
         << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "
@@ -45,12 +45,12 @@ TEST(AcceleratorTableTest, CheckDuplicatedAccelerators) {
 
 #if defined(OS_CHROMEOS)
 TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
-  std::set<AcceleratorMapping, Cmp> acclerators;
+  std::set<AcceleratorMapping, Cmp> accelerators;
   const std::vector<AcceleratorMapping> accelerator_list(GetAcceleratorList());
   for (std::vector<AcceleratorMapping>::const_iterator it =
            accelerator_list.begin(); it != accelerator_list.end(); ++it) {
     const AcceleratorMapping& entry = *it;
-    acclerators.insert(entry);
+    accelerators.insert(entry);
   }
   for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i) {
     const ash::AcceleratorData& ash_entry = ash::kAcceleratorData[i];
@@ -68,7 +68,7 @@ TEST(AcceleratorTableTest, CheckDuplicatedAcceleratorsAsh) {
     entry.keycode = ash_entry.keycode;
     entry.modifiers = ash_entry.modifiers;
     entry.command_id = 0;  // dummy
-    EXPECT_TRUE(acclerators.insert(entry).second)
+    EXPECT_TRUE(accelerators.insert(entry).second)
         << "Duplicated accelerator: " << entry.keycode << ", "
         << (entry.modifiers & ui::EF_SHIFT_DOWN) << ", "
         << (entry.modifiers & ui::EF_CONTROL_DOWN) << ", "

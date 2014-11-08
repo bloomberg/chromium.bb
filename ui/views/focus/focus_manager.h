@@ -287,7 +287,7 @@ class VIEWS_EXPORT FocusManager {
   // keyboard accelerator, or NULL if no view is registered for that keyboard
   // accelerator.
   ui::AcceleratorTarget* GetCurrentTargetForAccelerator(
-      const ui::Accelerator& accelertor) const;
+      const ui::Accelerator& accelerator) const;
 
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const ui::Accelerator& accelerator) const;

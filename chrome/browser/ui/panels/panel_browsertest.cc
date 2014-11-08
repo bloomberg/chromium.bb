@@ -1689,7 +1689,7 @@ IN_PROC_BROWSER_TEST_F(PanelBrowserTest, MAYBE_Accelerator) {
   Panel* panel = CreatePanelWithParams(params);
   EXPECT_EQ(1, panel_manager->num_panels());
 
-  // Close the panel by acclerator.
+  // Close the panel by accelerator.
   content::WindowedNotificationObserver signal(
       chrome::NOTIFICATION_PANEL_CLOSED,
       content::Source<Panel>(panel));

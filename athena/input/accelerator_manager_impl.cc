@@ -33,7 +33,7 @@ class AcceleratorManagerImpl::AcceleratorWrapper {
                           ui::AcceleratorTarget* target) = 0;
   virtual bool Process(const ui::Accelerator& accelerator) = 0;
   virtual ui::AcceleratorTarget* GetCurrentTarget(
-      const ui::Accelerator& accelertor) const = 0;
+      const ui::Accelerator& accelerator) const = 0;
 };
 
 namespace {

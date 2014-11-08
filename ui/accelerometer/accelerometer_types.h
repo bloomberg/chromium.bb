@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ACCEROMETER_ACCELEROMETER_TYPES_H_
-#define UI_ACCEROMETER_ACCELEROMETER_TYPES_H_
+#ifndef UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_
+#define UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_
 
 #include "base/macros.h"
 #include "ui/accelerometer/ui_accelerometer_export.h"
@@ -71,6 +71,6 @@ class UI_ACCELEROMETER_EXPORT AccelerometerUpdate {
   DISALLOW_COPY_AND_ASSIGN(AccelerometerUpdate);
 };
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // UI_ACCEROMETER_ACCELEROMETER_TYPES_H_
+#endif  // UI_ACCELEROMETER_ACCELEROMETER_TYPES_H_

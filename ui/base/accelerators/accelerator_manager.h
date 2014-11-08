@@ -65,7 +65,7 @@ class UI_BASE_EXPORT AcceleratorManager {
   // Returns the AcceleratorTarget that should be activated for the specified
   // keyboard accelerator, or NULL if no view is registered for that keyboard
   // accelerator.
-  AcceleratorTarget* GetCurrentTarget(const Accelerator& accelertor) const;
+  AcceleratorTarget* GetCurrentTarget(const Accelerator& accelerator) const;
 
   // Whether the given |accelerator| has a priority handler associated with it.
   bool HasPriorityHandler(const Accelerator& accelerator) const;

@@ -60,7 +60,7 @@ class ATHENA_EXPORT AcceleratorHandler {
 
 class ATHENA_EXPORT AcceleratorManager {
  public:
-  // Returns an AccelerarManager for global acelerators.
+  // Returns an AcceleratorManager for global accelerators.
   static AcceleratorManager* Get();
 
   // Creates an AcceleratorManager for application windows that
