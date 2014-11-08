@@ -21,6 +21,8 @@
 #include "chrome/browser/printing/print_view_manager_basic.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
@@ -44,6 +46,7 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/Tab_jni.h"
@@ -300,6 +303,34 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
       did_finish_load);
 }
 
+void TabAndroid::DefaultSearchProviderChanged() {
+  // TODO(kmadhusu): Move this function definition to a common place and update
+  // BrowserInstantController::DefaultSearchProviderChanged to use the same.
+  if (!web_contents())
+    return;
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(GetProfile());
+  if (!instant_service)
+    return;
+
+  // Send new search URLs to the renderer.
+  content::RenderProcessHost* rph = web_contents()->GetRenderProcessHost();
+  instant_service->SendSearchURLsToRenderer(rph);
+
+  // Reload the contents to ensure that it gets assigned to a non-previledged
+  // renderer.
+  if (!instant_service->IsInstantProcess(rph->GetID()))
+    return;
+  web_contents()->GetController().Reload(false);
+
+  // As the reload was not triggered by the user we don't want to close any
+  // infobars. We have to tell the InfoBarService after the reload, otherwise it
+  // would ignore this call when
+  // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
+  InfoBarService::FromWebContents(web_contents())->set_ignore_next_reload();
+}
+
 void TabAndroid::OnWebContentsInstantSupportDisabled(
     const content::WebContents* contents) {
   DCHECK(contents);
@@ -416,6 +447,11 @@ void TabAndroid::InitWebContents(JNIEnv* env,
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(GetProfile());
+  if (instant_service)
+    instant_service->AddObserver(this);
 }
 
 void TabAndroid::DestroyWebContents(JNIEnv* env,
@@ -438,6 +474,11 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
 
   if (favicon_tab_helper)
     favicon_tab_helper->RemoveObserver(this);
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(GetProfile());
+  if (instant_service)
+    instant_service->RemoveObserver(this);
 
   web_contents()->SetDelegate(NULL);
 

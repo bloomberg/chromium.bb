@@ -12,6 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/favicon/favicon_tab_helper_observer.h"
+#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
 #include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
@@ -44,6 +45,7 @@ class PrerenderManager;
 }
 
 class TabAndroid : public CoreTabHelperDelegate,
+                   public InstantServiceObserver,
                    public SearchTabHelperDelegate,
                    public content::NotificationObserver,
                    public FaviconTabHelperObserver {
@@ -113,6 +115,9 @@ class TabAndroid : public CoreTabHelperDelegate,
                                content::WebContents* new_contents,
                                bool did_start_load,
                                bool did_finish_load) override;
+
+  // Overridden from InstantServiceObserver:
+  void DefaultSearchProviderChanged() override;
 
   // Overridden from SearchTabHelperDelegate:
   virtual void OnWebContentsInstantSupportDisabled(
