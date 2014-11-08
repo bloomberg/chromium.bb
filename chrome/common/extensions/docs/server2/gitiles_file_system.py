@@ -14,6 +14,7 @@ import traceback
 from appengine_url_fetcher import AppEngineUrlFetcher
 from appengine_wrappers import IsDownloadError, app_identity
 from docs_server_utils import StringIdentity
+from environment import IsDevServer
 from file_system import (FileNotFoundError,
                          FileSystem,
                          FileSystemError,
@@ -65,7 +66,10 @@ class GitilesFileSystem(FileSystem):
       logging.info('Got token %s for scope %s' % (token, GITILES_OAUTH2_SCOPE))
       cls._logged_tokens.add(token)
 
-    path_prefix = '' if token is None else _AUTH_PATH_PREFIX
+    # Only include forced-auth (/a/) in the Gitiles URL if we have a token and
+    # this is not the development server.
+    path_prefix = ('' if token is None or IsDevServer()
+                      else _AUTH_PATH_PREFIX)
     if commit:
       base_url = '%s%s/%s/%s' % (
           GITILES_BASE, path_prefix, GITILES_SRC_ROOT, commit)
