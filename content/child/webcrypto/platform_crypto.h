@@ -33,9 +33,6 @@ AlgorithmImplementation* CreatePlatformRsaOaepImplementation();
 AlgorithmImplementation* CreatePlatformRsaSsaImplementation();
 AlgorithmImplementation* CreatePlatformRsaPssImplementation();
 
-bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8_t>* key_data);
-
 }  // namespace webcrypto
 
 }  // namespace content

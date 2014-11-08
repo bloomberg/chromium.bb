@@ -84,13 +84,6 @@ PrivateKeyNss::PrivateKeyNss(crypto::ScopedSECKEYPrivateKey key,
     : KeyNss(pkcs8_data), key_(key.Pass()) {
 }
 
-bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8_t>* key_data) {
-  const KeyNss* nss_key = static_cast<KeyNss*>(key.handle());
-  *key_data = nss_key->serialized_key_data();
-  return true;
-}
-
 }  // namespace webcrypto
 
 }  // namespace content

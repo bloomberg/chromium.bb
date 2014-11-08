@@ -148,6 +148,40 @@ class AlgorithmImplementation {
 
   virtual Status ExportKeyJwk(const blink::WebCryptoKey& key,
                               std::vector<uint8_t>* buffer) const;
+
+  // -----------------------------------------------
+  // Structured clone
+  // -----------------------------------------------
+
+  // The Structured clone methods are used for synchronous serialization /
+  // deserialization of a WebCryptoKey.
+  //
+  // This serialized format is used by Blink to:
+  //   * Copy WebCryptoKeys between threads (postMessage to WebWorkers)
+  //   * Copy WebCryptoKeys between domains (postMessage)
+  //   * Copy WebCryptoKeys within the same domain (postMessage)
+  //   * Persist the key to storage (IndexedDB)
+  //
+  // Implementations of structured cloning must:
+  //   * Be threadsafe (structured cloning is called directly on the Blink
+  //     thread, in contrast to the other methods of AlgorithmImplementation).
+  //   * Use a stable format (a serialized key must forever be de-serializable,
+  //     and be able to survive future migrations to crypto libraries)
+  //   * Work for all keys (including ones marked as non-extractable).
+  //
+  // Tests to verify structured cloning are available in:
+  //   LayoutTests/crypto/clone-*.html
+  virtual Status SerializeKeyForClone(
+      const blink::WebCryptoKey& key,
+      blink::WebVector<uint8_t>* key_data) const;
+
+  virtual Status DeserializeKeyForClone(
+      const blink::WebCryptoKeyAlgorithm& algorithm,
+      blink::WebCryptoKeyType type,
+      bool extractable,
+      blink::WebCryptoKeyUsageMask usages,
+      const CryptoData& key_data,
+      blink::WebCryptoKey* key) const;
 };
 
 }  // namespace webcrypto

@@ -847,6 +847,67 @@ Status RsaHashedAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
   }
 }
 
+Status RsaHashedAlgorithm::SerializeKeyForClone(
+    const blink::WebCryptoKey& key,
+    blink::WebVector<uint8_t>* key_data) const {
+  key_data->assign(static_cast<KeyNss*>(key.handle())->serialized_key_data());
+  return Status::Success();
+}
+
+// TODO(eroman): Defer import to the crypto thread. http://crbug.com/430763
+Status RsaHashedAlgorithm::DeserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    const CryptoData& key_data,
+    blink::WebCryptoKey* key) const {
+  blink::WebCryptoAlgorithm import_algorithm = CreateRsaHashedImportAlgorithm(
+      algorithm.id(), algorithm.rsaHashedParams()->hash().id());
+
+  Status status;
+
+  switch (type) {
+    case blink::WebCryptoKeyTypePublic:
+      status =
+          ImportKeySpki(key_data, import_algorithm, extractable, usages, key);
+      break;
+    case blink::WebCryptoKeyTypePrivate:
+      status =
+          ImportKeyPkcs8(key_data, import_algorithm, extractable, usages, key);
+      break;
+    default:
+      return Status::ErrorUnexpected();
+  }
+
+  // There is some duplicated information in the serialized format used by
+  // structured clone (since the KeyAlgorithm is serialized separately from the
+  // key data). Use this extra information to further validate what was
+  // deserialized from the key data.
+
+  if (algorithm.id() != key->algorithm().id())
+    return Status::ErrorUnexpected();
+
+  if (key->type() != type)
+    return Status::ErrorUnexpected();
+
+  if (algorithm.rsaHashedParams()->modulusLengthBits() !=
+      key->algorithm().rsaHashedParams()->modulusLengthBits()) {
+    return Status::ErrorUnexpected();
+  }
+
+  if (algorithm.rsaHashedParams()->publicExponent().size() !=
+          key->algorithm().rsaHashedParams()->publicExponent().size() ||
+      0 !=
+          memcmp(algorithm.rsaHashedParams()->publicExponent().data(),
+                 key->algorithm().rsaHashedParams()->publicExponent().data(),
+                 key->algorithm().rsaHashedParams()->publicExponent().size())) {
+    return Status::ErrorUnexpected();
+  }
+
+  return Status::Success();
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

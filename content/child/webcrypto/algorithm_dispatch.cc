@@ -114,7 +114,6 @@ Status GenerateKey(const blink::WebCryptoAlgorithm& algorithm,
   return impl->GenerateKey(algorithm, extractable, usages, result);
 }
 
-// Note that this function may be called from the target Blink thread.
 Status ImportKey(blink::WebCryptoKeyFormat format,
                  const CryptoData& key_data,
                  const blink::WebCryptoAlgorithm& algorithm,
@@ -246,6 +245,33 @@ scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm) {
   PlatformInit();
   return CreatePlatformDigestor(algorithm);
+}
+
+bool SerializeKeyForClone(const blink::WebCryptoKey& key,
+                          blink::WebVector<uint8_t>* key_data) {
+  const AlgorithmImplementation* impl = NULL;
+  Status status = GetAlgorithmImplementation(key.algorithm().id(), &impl);
+  if (status.IsError())
+    return false;
+
+  status = impl->SerializeKeyForClone(key, key_data);
+  return status.IsSuccess();
+}
+
+bool DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                            blink::WebCryptoKeyType type,
+                            bool extractable,
+                            blink::WebCryptoKeyUsageMask usages,
+                            const CryptoData& key_data,
+                            blink::WebCryptoKey* key) {
+  const AlgorithmImplementation* impl = NULL;
+  Status status = GetAlgorithmImplementation(algorithm.id(), &impl);
+  if (status.IsError())
+    return false;
+
+  status = impl->DeserializeKeyForClone(algorithm, type, extractable, usages,
+                                        key_data, key);
+  return status.IsSuccess();
 }
 
 }  // namespace webcrypto

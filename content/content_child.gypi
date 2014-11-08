@@ -229,8 +229,6 @@
       'child/webcrypto/platform_crypto.h',
       'child/webcrypto/status.cc',
       'child/webcrypto/status.h',
-      'child/webcrypto/structured_clone.cc',
-      'child/webcrypto/structured_clone.h',
       'child/webcrypto/webcrypto_impl.cc',
       'child/webcrypto/webcrypto_impl.h',
       'child/webcrypto/webcrypto_util.cc',

@@ -203,6 +203,24 @@ class HmacImplementation : public AlgorithmImplementation {
 
     return Status::Success();
   }
+
+  Status SerializeKeyForClone(
+      const blink::WebCryptoKey& key,
+      blink::WebVector<uint8_t>* key_data) const override {
+    key_data->assign(SymKeyOpenSsl::Cast(key)->serialized_key_data());
+    return Status::Success();
+  }
+
+  Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                                blink::WebCryptoKeyType type,
+                                bool extractable,
+                                blink::WebCryptoKeyUsageMask usages,
+                                const CryptoData& key_data,
+                                blink::WebCryptoKey* key) const override {
+    return ImportKeyRaw(key_data, CreateHmacImportAlgorithm(
+                                      algorithm.hmacParams()->hash().id()),
+                        extractable, usages, key);
+  }
 };
 
 }  // namespace

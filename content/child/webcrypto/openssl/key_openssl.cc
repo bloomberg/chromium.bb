@@ -61,13 +61,6 @@ AsymKeyOpenSsl::AsymKeyOpenSsl(crypto::ScopedEVP_PKEY key,
     : KeyOpenSsl(serialized_key_data), key_(key.Pass()) {
 }
 
-bool PlatformSerializeKeyForClone(const blink::WebCryptoKey& key,
-                                  blink::WebVector<uint8_t>* key_data) {
-  const KeyOpenSsl* openssl_key = static_cast<KeyOpenSsl*>(key.handle());
-  *key_data = openssl_key->serialized_key_data();
-  return true;
-}
-
 }  // namespace webcrypto
 
 }  // namespace content

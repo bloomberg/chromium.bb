@@ -71,6 +71,17 @@ class RsaHashedAlgorithm : public AlgorithmImplementation {
   Status ExportKeyJwk(const blink::WebCryptoKey& key,
                       std::vector<uint8_t>* buffer) const override;
 
+  Status SerializeKeyForClone(
+      const blink::WebCryptoKey& key,
+      blink::WebVector<uint8_t>* key_data) const override;
+
+  Status DeserializeKeyForClone(const blink::WebCryptoKeyAlgorithm& algorithm,
+                                blink::WebCryptoKeyType type,
+                                bool extractable,
+                                blink::WebCryptoKeyUsageMask usages,
+                                const CryptoData& key_data,
+                                blink::WebCryptoKey* key) const override;
+
  private:
   blink::WebCryptoKeyUsageMask all_public_key_usages_;
   blink::WebCryptoKeyUsageMask all_private_key_usages_;

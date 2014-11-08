@@ -90,6 +90,17 @@ CONTENT_EXPORT Status
 CONTENT_EXPORT scoped_ptr<blink::WebCryptoDigestor> CreateDigestor(
     blink::WebCryptoAlgorithmId algorithm);
 
+CONTENT_EXPORT bool SerializeKeyForClone(const blink::WebCryptoKey& key,
+                                         blink::WebVector<uint8_t>* key_data);
+
+CONTENT_EXPORT bool DeserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    const CryptoData& key_data,
+    blink::WebCryptoKey* key);
+
 }  // namespace webcrypto
 
 }  // namespace content

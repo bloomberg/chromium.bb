@@ -129,6 +129,24 @@ Status AesAlgorithm::ExportKeyJwk(const blink::WebCryptoKey& key,
   return Status::Success();
 }
 
+Status AesAlgorithm::SerializeKeyForClone(
+    const blink::WebCryptoKey& key,
+    blink::WebVector<uint8_t>* key_data) const {
+  key_data->assign(SymKeyNss::Cast(key)->serialized_key_data());
+  return Status::Success();
+}
+
+Status AesAlgorithm::DeserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    const CryptoData& key_data,
+    blink::WebCryptoKey* key) const {
+  return ImportKeyRaw(key_data, CreateAlgorithm(algorithm.id()), extractable,
+                      usages, key);
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

@@ -19,7 +19,6 @@
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/generate_key_result.h"
 #include "content/child/webcrypto/status.h"
-#include "content/child/webcrypto/structured_clone.h"
 #include "content/child/webcrypto/webcrypto_util.h"
 #include "content/child/worker_thread_task_runner.h"
 #include "third_party/WebKit/public/platform/WebCryptoKeyAlgorithm.h"
@@ -36,14 +35,14 @@ namespace {
 // ---------------------
 //
 // WebCrypto operations can be slow. For instance generating an RSA key can
-// take hundreds of milliseconds to several seconds.
+// seconds.
 //
 // Moreover the underlying crypto libraries are not threadsafe when operating
 // on the same key.
 //
 // The strategy used here is to run a sequenced worker pool for all WebCrypto
-// operations. This pool (of 1 threads) is also used by requests started from
-// Blink Web Workers.
+// operations (except structured cloning). This same pool is also used by
+// requests started from Blink Web Workers.
 //
 // A few notes to keep in mind:
 //
@@ -707,8 +706,6 @@ bool WebCryptoImpl::deserializeKeyForClone(
     const unsigned char* key_data,
     unsigned key_data_size,
     blink::WebCryptoKey& key) {
-  // TODO(eroman): Rather than do the import immediately on the current thread,
-  //               it could defer to the crypto thread.
   return webcrypto::DeserializeKeyForClone(
       algorithm,
       type,

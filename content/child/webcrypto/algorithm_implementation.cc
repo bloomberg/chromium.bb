@@ -126,6 +126,22 @@ Status AlgorithmImplementation::ExportKeyJwk(
   return Status::ErrorUnsupportedExportKeyFormat();
 }
 
+Status AlgorithmImplementation::SerializeKeyForClone(
+    const blink::WebCryptoKey& key,
+    blink::WebVector<uint8_t>* key_data) const {
+  return Status::ErrorUnsupported();
+}
+
+Status AlgorithmImplementation::DeserializeKeyForClone(
+    const blink::WebCryptoKeyAlgorithm& algorithm,
+    blink::WebCryptoKeyType type,
+    bool extractable,
+    blink::WebCryptoKeyUsageMask usages,
+    const CryptoData& key_data,
+    blink::WebCryptoKey* key) const {
+  return Status::ErrorUnsupported();
+}
+
 }  // namespace webcrypto
 
 }  // namespace content
