@@ -23,7 +23,6 @@ class FakeCIDBConnection(object):
     self.clActionTable = []
     self.fake_time = None
 
-
   def SetTime(self, fake_time):
     """Sets a fake time to be retrieved by GetTime.
 
@@ -31,7 +30,6 @@ class FakeCIDBConnection(object):
       fake_time: datetime.datetime object.
     """
     self.fake_time = fake_time
-
 
   def GetTime(self):
     """Gets the current database time."""
@@ -83,18 +81,27 @@ class FakeCIDBConnection(object):
       change_source = 'internal' if change.internal else 'external'
       clauses.add((int(change.gerrit_number), change_source))
     values = []
-    for item, action_id in zip(self.clActionTable, itertools.count()):
-      if (item['change_number'], item['change_source']) in clauses:
-        row = (
-            action_id,
-            item['build_id'],
-            item['action'],
-            item['reason'],
-            self.buildTable[item['build_id']]['build_config'],
-            item['change_number'],
-            item['patch_number'],
-            item['change_source'],
-            item['timestamp'])
+    for row in self.GetActionHistory():
+      if (row.change_number, row.change_source) in clauses:
         values.append(row)
+    return values
+
+  def GetActionHistory(self, *args, **kwargs):
+    """Get all the actions for all changes."""
+    # pylint: disable=W0613
+    values = []
+    for item, action_id in zip(self.clActionTable, itertools.count()):
+      row = (
+          action_id,
+          item['build_id'],
+          item['action'],
+          item['reason'],
+          self.buildTable[item['build_id']]['build_config'],
+          self.buildTable[item['build_id']]['build_number'],
+          item['change_number'],
+          item['patch_number'],
+          item['change_source'],
+          item['timestamp'])
+      values.append(row)
 
     return [clactions.CLAction(*row) for row in values]

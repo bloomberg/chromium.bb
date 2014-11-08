@@ -27,10 +27,14 @@ assert len(_PRECQ_STATUS_TO_ACTION) == len(_PRECQ_ACTION_TO_STATUS), \
     '_PRECQ_STATUS_TO_ACTION values are not unique.'
 
 CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
-                     'build_config', 'change_number', 'patch_number',
-                     'change_source', 'timestamp']
+                     'build_config', 'build_number', 'change_number',
+                     'patch_number', 'change_source', 'timestamp']
 
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
+
+GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
+                                          ['gerrit_number', 'patch_number',
+                                           'internal'])
 
 
 # pylint: disable=E1101,W0232
@@ -48,7 +52,7 @@ class CLAction(_CLActionTuple):
       reason: Optional reason string.
       timestamp: Optional datetime.datetime timestamp.
     """
-    return CLAction(None, None, action, reason, None,
+    return CLAction(None, None, action, reason, None, None,
                     int(change.gerrit_number), int(change.patch_number),
                     BoolToChangeSource(change.internal), timestamp)
 
@@ -59,10 +63,11 @@ class CLAction(_CLActionTuple):
     Args:
       entry: An action tuple as retrieved from metadata.json (previously known
              as a CLActionTuple).
+      build_metadata: The full build metadata.json entry.
     """
     change_dict = entry[0]
-    return CLAction(None, None, entry[1], entry[3],
-                    None, int(change_dict['gerrit_number']),
+    return CLAction(None, None, entry[1], entry[3], None, None,
+                    int(change_dict['gerrit_number']),
                     int(change_dict['patch_number']),
                     BoolToChangeSource(change_dict['internal']),
                     entry[2])
@@ -70,11 +75,17 @@ class CLAction(_CLActionTuple):
 
   def AsMetadataEntry(self):
     """Get a tuple representation, suitable for metadata.json."""
-    change_dict = {
-        'gerrit_number': self.change_number,
-        'patch_number': self.patch_number,
-        'internal': self.change_source == constants.CHANGE_SOURCE_INTERNAL}
-    return (change_dict, self.action, self.timestamp, self.reason)
+    # pylint: disable=W0212
+    return (self.patch._asdict(), self.action, self.timestamp, self.reason)
+
+  @property
+  def patch(self):
+    """The GerritPatch this action affects."""
+    return GerritPatchTuple(
+        gerrit_number=self.change_number,
+        patch_number=self.patch_number,
+        internal=self.change_source == constants.CHANGE_SOURCE_INTERNAL
+    )
 
 
 def TranslatePreCQStatusToAction(status):

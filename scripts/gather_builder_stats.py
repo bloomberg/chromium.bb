@@ -18,6 +18,7 @@ import sys
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import metadata_lib
 from chromite.cbuildbot import constants
+from chromite.lib import cidb
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import gdata_lib
@@ -597,14 +598,16 @@ class StatsManager(object):
   # This is needed if you are writing data to the Google Sheets spreadsheet.
   GET_SHEETS_VERSION = True
 
-  def __init__(self, config_target, ss_key=None,
+  def __init__(self, config_target, db=None, ss_key=None,
                no_sheets_version_filter=False):
     self.builds = []
     self.gs_ctx = gs.GSContext()
     self.config_target = config_target
+    self.db = db
     self.ss_key = ss_key
     self.no_sheets_version_filter = no_sheets_version_filter
     self.summary = {}
+    self.actions = None
 
 
   # pylint: disable=W0613
@@ -637,23 +640,6 @@ class StatsManager(object):
       self.builds = [b for b in self.builds
                      if b.build_number >= starting_build_number]
 
-  def CollectActions(self):
-    """Collects the CL actions from the set of gathered builds.
-
-    Returns a list of CLActionWithBuildTuple for all the actions in the
-    gathered builds.
-    """
-    actions = []
-    for b in self.builds:
-      if not 'cl_actions' in b.metadata_dict:
-        logging.warn('No cl_actions for metadata at %s.', b.metadata_url)
-        continue
-      for a in b.metadata_dict['cl_actions']:
-        actions.append(metadata_lib.CLActionWithBuildTuple(*a,
-            bot_type=self.BOT_TYPE, build=b))
-
-    return actions
-
   def CollateActions(self, actions):
     """Collates a list of actions into per-patch and per-cl actions.
 
@@ -664,10 +650,10 @@ class StatsManager(object):
     per_patch_actions = {}
     per_cl_actions = {}
     for a in actions:
-      change_dict = a.change.copy()
-      change_with_patch = metadata_lib.GerritPatchTuple(**change_dict)
-      change_dict.pop('patch_number')
-      change_no_patch = metadata_lib.GerritChangeTuple(**change_dict)
+      change_with_patch = a.patch
+      change_no_patch = metadata_lib.GerritChangeTuple(
+          a.change_number, change_with_patch.internal
+      )
 
       per_patch_actions.setdefault(change_with_patch, []).append(a)
       per_cl_actions.setdefault(change_no_patch, []).append(a)
@@ -821,7 +807,7 @@ class CQSlaveStats(StatsManager):
   GET_SHEETS_VERSION = True
 
   def __init__(self, slave_target, **kwargs):
-    super(CQSlaveStats, self).__init__(slave_target, kwargs)
+    super(CQSlaveStats, self).__init__(slave_target, **kwargs)
 
   # TODO(mtennant): This is totally untested, but is a refactoring of the
   # graphite code that was in place before for CQ slaves.
@@ -925,7 +911,8 @@ class CLStats(StatsManager):
     self.reasons = {}
     self.blames = {}
     self.summary = {}
-    self.pre_cq_stats = PreCQStats()
+    self.builds_by_number = {}
+    self.pre_cq_stats = PreCQStats(db=self.db)
 
   def GatherFailureReasons(self, creds):
     """Gather the reasons why our builds failed and the blamed bugs or CLs.
@@ -1023,6 +1010,7 @@ class CLStats(StatsManager):
                                 end_date,
                                 sort_by_build_number=sort_by_build_number,
                                 starting_build_number=starting_build_number)
+    self.actions = self.db.GetActionHistory(start_date, end_date)
     self.GatherFailureReasons(creds)
 
     # Gather the pre-cq stats as well. The build number won't apply here since
@@ -1031,6 +1019,10 @@ class CLStats(StatsManager):
     self.pre_cq_stats.Gather(start_date,
                              end_date,
                              sort_by_build_number=sort_by_build_number)
+
+    self.builds_by_number = {(CQ, b.build_number): b for b in self.builds}
+    self.builds_by_number.update({(PRE_CQ, b.build_number): b
+                                  for b in self.pre_cq_stats.builds})
 
   def GetSubmittedPatchNumber(self, actions):
     """Get the patch number of the final patchset submitted.
@@ -1043,7 +1035,7 @@ class CLStats(StatsManager):
     submit = [a for a in actions if a.action == constants.CL_ACTION_SUBMITTED]
     assert len(submit) == 1, \
         'Expected change to be submitted exactly once, got %r' % submit
-    return submit[-1].change['patch_number']
+    return submit[-1].patch_number
 
   def ClassifyRejections(self, submitted_changes):
     """Categorize rejected CLs, deciding whether the rejection was incorrect.
@@ -1067,14 +1059,16 @@ class CLStats(StatsManager):
     for change, actions in submitted_changes.iteritems():
       submitted_patch_number = self.GetSubmittedPatchNumber(actions)
       for a in actions:
-        # If the patch wasn't included in the run, this means that it "failed
-        # to apply" rather than "failed to validate". Ignore it.
-        patch = metadata_lib.GerritPatchTuple(**a.change)
-        if (a.action == constants.CL_ACTION_KICKED_OUT and
-            patch in a.build.patches):
-          # Check whether the patch was updated after submission.
-          falsely_rejected = a.change['patch_number'] == submitted_patch_number
-          yield change, actions, a, falsely_rejected
+        if a.action == constants.CL_ACTION_KICKED_OUT:
+          # If the patch wasn't picked up in the run, this means that it "failed
+          # to apply" rather than "failed to validate". Ignore it.
+          picked_up = [x for x in actions if x.build_id == a.build_id and
+                       x.patch == a.patch and
+                       x.action == constants.CL_ACTION_PICKED_UP]
+          falsely_rejected = a.patch_number == submitted_patch_number
+          if picked_up:
+            # Check whether the patch was updated after submission.
+            yield change, actions, a, falsely_rejected
 
   def _PrintCounts(self, reasons, fmt):
     """Print a sorted list of reasons in descending order of frequency.
@@ -1089,6 +1083,14 @@ class CLStats(StatsManager):
       logging.info(fmt, dict(cnt=cnt, reason=reason))
     if not d:
       logging.info('  None')
+
+  def BotType(self, action):
+    """Return whether |action| applies to the CQ or PRE_CQ."""
+    build_config = action.build_config
+    if build_config.endswith('-%s' % cbuildbot_config.CONFIG_TYPE_PALADIN):
+      return CQ
+    else:
+      return PRE_CQ
 
   def CalculateStageFailures(self, reject_actions, submitted_changes,
                              good_patch_rejections):
@@ -1113,30 +1115,33 @@ class CLStats(StatsManager):
     # These are used to ensure that we don't treat real failures as being flaky.
     bad_cl_builds = set()
     for a in reject_actions:
-      if a.bot_type == CQ:
-        reason = self.reasons.get(a.build.build_number)
+      if self.BotType(a) == CQ:
+        reason = self.reasons.get(a.build_number)
         if reason == self.REASON_BAD_CL:
-          bad_cl_builds.add((a.build.bot_id, a.build.build_number))
+          bad_cl_builds.add(a.build_id)
 
     # Keep track of the stages that correctly detected a bad CL. We assume
     # here that all of the stages that are broken were broken by the bad CL.
     correctly_rejected_by_stage = {}
     for _, _, a, falsely_rejected in self.ClassifyRejections(submitted_changes):
       if not falsely_rejected:
-        good = correctly_rejected_by_stage.setdefault(a.bot_type, {})
-        for stage_name in a.build.GetFailedStages():
-          good[stage_name] = good.get(stage_name, 0) + 1
+        good = correctly_rejected_by_stage.setdefault(self.BotType(a), {})
+        build = self.builds_by_number.get((self.BotType(a), a.build_number))
+        if build:
+          for stage_name in build.GetFailedStages():
+            good[stage_name] = good.get(stage_name, 0) + 1
 
     # Keep track of the stages that failed flakily.
     incorrectly_rejected_by_stage = {}
     for rejections in good_patch_rejections.values():
       for a in rejections:
         # A stage only failed flakily if it wasn't broken by another CL.
-        build_tuple = (a.build.bot_id, a.build.build_number)
-        if build_tuple not in bad_cl_builds:
-          bad = incorrectly_rejected_by_stage.setdefault(a.bot_type, {})
-          for stage_name in a.build.GetFailedStages():
-            bad[stage_name] = bad.get(stage_name, 0) + 1
+        if a.build_id not in bad_cl_builds:
+          bad = incorrectly_rejected_by_stage.setdefault(self.BotType(a), {})
+          build = self.builds_by_number.get((self.BotType(a), a.build_number))
+          if build:
+            for stage_name in build.GetFailedStages():
+              bad[stage_name] = bad.get(stage_name, 0) + 1
 
     return correctly_rejected_by_stage, incorrectly_rejected_by_stage
 
@@ -1156,11 +1161,10 @@ class CLStats(StatsManager):
     falsely_rejected_changes = {}
     bad_cl_builds = set()
     for x in self.ClassifyRejections(submitted_changes):
-      change, actions, a, falsely_rejected = x
-      patch = metadata_lib.GerritPatchTuple(**a.change)
+      _, actions, a, falsely_rejected = x
       if falsely_rejected:
-        falsely_rejected_changes[change] = actions
-      elif a.bot_type == PRE_CQ:
+        falsely_rejected_changes[a.patch] = actions
+      elif self.BotType(a) == PRE_CQ:
         # If a developer writes a bad patch and it fails the Pre-CQ, it
         # may cause many other patches from the same developer to be
         # rejected. This is expected and correct behavior. Treat all of
@@ -1174,7 +1178,7 @@ class CLStats(StatsManager):
         # NOTE: We intentionally only apply this logic to the Pre-CQ here.
         # The CQ is different because it may have many innocent patches in
         # a single run which should not be treated as bad.
-        bad_cl_builds.add((a.build.bot_id, a.build.build_number))
+        bad_cl_builds.add(a.build_id)
 
     # Make a list of candidate patches that got incorrectly rejected. We track
     # them in a dict, setting good_patch_rejections[patch] = rejections for
@@ -1183,9 +1187,8 @@ class CLStats(StatsManager):
     for v in falsely_rejected_changes.itervalues():
       for a in v:
         if (a.action == constants.CL_ACTION_KICKED_OUT and
-            (a.build.bot_id, a.build.build_number) not in bad_cl_builds):
-          patch = metadata_lib.GerritPatchTuple(**a.change)
-          good_patch_rejections[patch].append(a)
+            a.build_id not in bad_cl_builds):
+          good_patch_rejections[a.patch].append(a)
 
     return good_patch_rejections
 
@@ -1226,9 +1229,6 @@ class CLStats(StatsManager):
     """
     super_summary = super(CLStats, self).Summarize()
 
-    self.actions = (self.CollectActions() +
-                    self.pre_cq_stats.CollectActions())
-
     (self.per_patch_actions,
      self.per_cl_actions) = self.CollateActions(self.actions)
 
@@ -1258,8 +1258,8 @@ class CLStats(StatsManager):
                          if any(a.action==constants.CL_ACTION_SUBMITTED
                                 for a in v)}
 
-    patch_handle_times =  [v[-1].timestamp - v[0].timestamp
-                           for v in submitted_patches.values()]
+    patch_handle_times = [(v[-1].timestamp - v[0].timestamp).total_seconds()
+                          for v in submitted_patches.values()]
 
     # Count CLs that were rejected, then a subsequent patch was submitted.
     # These are good candidates for bad CLs. We track them in a dict, setting
@@ -1268,7 +1268,7 @@ class CLStats(StatsManager):
     for x in self.ClassifyRejections(submitted_changes):
       change, actions, a, falsely_rejected = x
       if not falsely_rejected:
-        d = submitted_after_new_patch.setdefault(a.bot_type, {})
+        d = submitted_after_new_patch.setdefault(self.BotType(a), {})
         d[change] = actions
 
     # Sort the candidate bad CLs in order of submit time.
@@ -1288,9 +1288,9 @@ class CLStats(StatsManager):
     for k, v in good_patch_rejections.iteritems():
       for a in v:
         if a.action == constants.CL_ACTION_KICKED_OUT:
-          if a.bot_type == CQ:
-            reason = self.reasons[a.build.build_number]
-            blames = self.blames[a.build.build_number]
+          if self.BotType(a) == CQ:
+            reason = self.reasons.get(a.build_number, 'None')
+            blames = self.blames.get(a.build_number, ['None'])
             patch_reason_counts[reason] = patch_reason_counts.get(reason, 0) + 1
             for blame in blames:
               patch_blame_counts[blame] = patch_blame_counts.get(blame, 0) + 1
@@ -1302,7 +1302,7 @@ class CLStats(StatsManager):
     good_patch_rejection_count = collections.defaultdict(int)
     for k, v in good_patch_rejections.iteritems():
       for a in v:
-        good_patch_rejection_count[a.bot_type] += 1
+        good_patch_rejection_count[self.BotType(a)] += 1
     false_rejection_rate = self.FalseRejectionRate(good_patch_count,
                                                    good_patch_rejection_count)
 
@@ -1505,6 +1505,11 @@ def GetParser():
   mode.add_argument('--override-ss-key', action='store', default=None,
                     dest='ss_key',
                     help='Override spreadsheet key.')
+  parser.add_argument('cred_dir', action='store',
+                      metavar='CIDB_CREDENTIALS_DIR',
+                      help='Database credentials directory with certificates '
+                           'and other connection information. Obtain your '
+                           'credentials at go/cros-cidb-admin .')
 
   return parser
 
@@ -1515,6 +1520,8 @@ def main(argv):
 
   if not _CheckOptions(options):
     sys.exit(1)
+
+  db = cidb.CIDBConnection(options.cred_dir)
 
   if options.end_date:
     end_date = options.end_date
@@ -1539,6 +1546,7 @@ def main(argv):
   if options.cq_master:
     stats_managers.append(
         CQMasterStats(
+            db=db,
             ss_key=options.ss_key or CQ_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
@@ -1547,30 +1555,33 @@ def main(argv):
     stats_managers.append(
         CLStats(
             options.email,
+            db=db,
             ss_key=options.ss_key or CQ_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.pfq_master:
     stats_managers.append(
         PFQMasterStats(
+            db=db,
             ss_key=options.ss_key or PFQ_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.canary_master:
     stats_managers.append(
       CanaryMasterStats(
+            db=db,
             ss_key=options.ss_key or CANARY_SS_KEY,
             no_sheets_version_filter=options.no_sheets_version_filter))
 
   if options.pre_cq:
     # TODO(mtennant): Add spreadsheet and/or graphite support for pre-cq.
-    stats_managers.append(PreCQStats())
+    stats_managers.append(PreCQStats(db=db))
 
   if options.cq_slaves:
     targets = _GetSlavesOfMaster(CQ_MASTER)
     for target in targets:
       # TODO(mtennant): Add spreadsheet and/or graphite support for cq-slaves.
-      stats_managers.append(CQSlaveStats(target))
+      stats_managers.append(CQSlaveStats(target, db=db))
 
   # If options.save is set and any of the instructions include a table class,
   # or specify summary columns for upload, prepare spreadsheet creds object

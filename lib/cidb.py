@@ -489,6 +489,12 @@ class SchemaVersionedMySQLConnection(object):
 
 class CIDBConnection(SchemaVersionedMySQLConnection):
   """Connection to a Continuous Integration database."""
+
+  _SQL_FETCH_ACTIONS = (
+    'SELECT c.id, b.id, action, c.reason, build_config, build_number, '
+    'change_number, patch_number, change_source, timestamp FROM '
+    'clActionTable c JOIN buildTable b ON build_id = b.id ')
+
   def __init__(self, db_credentials_dir):
     super(CIDBConnection, self).__init__('cidb', CIDB_MIGRATIONS_DIR,
                                          db_credentials_dir)
@@ -797,10 +803,34 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                      (change_number, change_source))
     clause = ' OR '.join(clauses)
     results = self._Execute(
-        'SELECT c.id, b.id, action, c.reason, build_config, change_number, '
-        'patch_number, change_source, timestamp FROM '
-        'clActionTable c JOIN buildTable b ON build_id = b.id '
-        'WHERE %s' % clause).fetchall()
+        '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, clause)).fetchall()
+    return [clactions.CLAction(*values) for values in results]
+
+  @minimum_schema(11)
+  def GetActionHistory(self, start_date, end_date=None):
+    """Get the action history of CLs in the specified range.
+
+    This will get the full action history of any patches that were touched
+    by the CQ or Pre-CQ during the specified time range. Note: Since this
+    includes the full action history of these patches, it may include actions
+    outside the time range.
+
+    Args:
+      start_date: The first date on which you want action history.
+      end_date: The last date on which you want action history.
+    """
+    values = {'start_date': str(start_date),
+              'end_date': str(end_date)}
+
+    # Enforce start and end date.
+    conds = 'timestamp >= %(start_date)s'
+    if end_date:
+      conds += ' AND timestamp <= %(end_date)s'
+
+    changes = ('SELECT DISTINCT change_number, patch_number, change_source '
+               'FROM clActionTable WHERE %s' % conds)
+    query = '%s NATURAL JOIN (%s) as w' % (self._SQL_FETCH_ACTIONS, changes)
+    results = self._Execute(query, values).fetchall()
     return [clactions.CLAction(*values) for values in results]
 
 

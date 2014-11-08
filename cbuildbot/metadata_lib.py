@@ -35,9 +35,7 @@ METADATA_URL_GLOB = os.path.join(ARCHIVE_ROOT,
 LATEST_URL = os.path.join(ARCHIVE_ROOT, 'LATEST-master')
 
 
-GerritPatchTuple = collections.namedtuple('GerritPatchTuple',
-                                          ['gerrit_number', 'patch_number',
-                                           'internal'])
+GerritPatchTuple = clactions.GerritPatchTuple
 GerritChangeTuple = collections.namedtuple('GerritChangeTuple',
                                            ['gerrit_number', 'internal'])
 CLActionTuple = collections.namedtuple('CLActionTuple',
