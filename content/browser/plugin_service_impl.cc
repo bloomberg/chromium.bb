@@ -200,7 +200,7 @@ void PluginServiceImpl::StartWatchingPlugins() {
                        KEY_NOTIFY) == ERROR_SUCCESS) {
     base::win::RegKey::ChangeCallback callback =
         base::Bind(&PluginServiceImpl::OnKeyChanged, base::Unretained(this),
-                   base::Unretained(&hkcu_key_));
+                   base::Unretained(&hklm_key_));
     hklm_key_.StartWatching(callback);
   }
 #endif
@@ -630,7 +630,7 @@ void PluginServiceImpl::GetPluginsOnIOThread(
 void PluginServiceImpl::OnKeyChanged(base::win::RegKey* key) {
   key->StartWatching(base::Bind(&PluginServiceImpl::OnKeyChanged,
                                 base::Unretained(this),
-                                base::Unretained(&hkcu_key_)));
+                                base::Unretained(key)));
 
   PluginList::Singleton()->RefreshPlugins();
   PurgePluginListCache(NULL, false);
