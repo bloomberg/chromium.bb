@@ -14,21 +14,12 @@
 #include "google_apis/gaia/account_tracker.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace base {
-class Time;
-}
-
 namespace gcm {
 
 class GCMDriver;
 
 // Class for reporting back which accounts are signed into. It is only meant to
 // be used when the user is signed into sync.
-//
-// This class makes a check for tokens periodically, to make sure the user is
-// still logged into the profile, so that in the case that the user is not, we
-// can immediately report that to the GCM and stop messages addressed to that
-// user from ever reaching Chrome.
 class GCMAccountTracker : public gaia::AccountTracker::Observer,
                           public OAuth2TokenService::Consumer,
                           public GCMConnectionObserver {
@@ -85,8 +76,6 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   }
 
  private:
-  friend class GCMAccountTrackerTest;
-
   // Maps account keys to account states. Keyed by account_ids as used by
   // OAuth2TokenService.
   typedef std::map<std::string, AccountInfo> AccountInfos;
@@ -108,22 +97,13 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   void OnConnected(const net::IPEndPoint& ip_endpoint) override;
   void OnDisconnected() override;
 
-  // Schedules token reporting.
-  void ScheduleReportTokens();
   // Report the list of accounts with OAuth2 tokens back using the |callback_|
   // function. If there are token requests in progress, do nothing.
-  void ReportTokens();
+  void CompleteCollectingTokens();
   // Verify that all of the tokens are ready to be passed down to the GCM
   // Driver, e.g. none of them has expired or is missing. Returns true if not
   // all tokens are valid and a fetching yet more tokens is required.
-  void SanitizeTokens();
-  // Indicates whether token reporting is required, either because it is due, or
-  // some of the accounts were removed.
-  bool IsTokenReportingRequired() const;
-  // Indicates whether there are tokens that still need fetching.
-  bool IsTokenFetchingRequired() const;
-  // Gets the time until next token reporting.
-  base::TimeDelta GetTimeToNextTokenReporting() const;
+  bool SanitizeTokens();
   // Deletes a token request. Should be called from OnGetTokenSuccess(..) or
   // OnGetTokenFailure(..).
   void DeleteTokenRequest(const OAuth2TokenService::Request* request);
@@ -152,10 +132,6 @@ class GCMAccountTracker : public gaia::AccountTracker::Observer,
   bool shutdown_called_;
 
   ScopedVector<OAuth2TokenService::Request> pending_token_requests_;
-
-  // Creates weak pointers used to postpone reporting tokens. See
-  // ScheduleReportTokens.
-  base::WeakPtrFactory<GCMAccountTracker> reporting_weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCMAccountTracker);
 };

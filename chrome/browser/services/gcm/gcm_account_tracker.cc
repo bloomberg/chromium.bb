@@ -15,18 +15,11 @@
 namespace gcm {
 
 namespace {
-
-// Scopes needed by the OAuth2 access tokens.
 const char kGCMGroupServerScope[] = "https://www.googleapis.com/auth/gcm";
 const char kGCMCheckinServerScope[] =
     "https://www.googleapis.com/auth/android_checkin";
-// Name of the GCM account tracker for the OAuth2TokenService.
 const char kGCMAccountTrackerName[] = "gcm_account_tracker";
-// Minimum token validity when sending to GCM groups server.
 const int64 kMinimumTokenValidityMs = 500;
-// Token reporting interval, when no account changes are detected.
-const int64 kTokenReportingIntervalMs = 12 * 60 * 60 * 1000;  // 12 hours in ms.
-
 }  // namespace
 
 GCMAccountTracker::AccountInfo::AccountInfo(const std::string& email,
@@ -43,8 +36,7 @@ GCMAccountTracker::GCMAccountTracker(
     : OAuth2TokenService::Consumer(kGCMAccountTrackerName),
       account_tracker_(account_tracker.release()),
       driver_(driver),
-      shutdown_called_(false),
-      reporting_weak_ptr_factory_(this) {
+      shutdown_called_(false) {
 }
 
 GCMAccountTracker::~GCMAccountTracker() {
@@ -64,6 +56,11 @@ void GCMAccountTracker::Start() {
   driver_->AddConnectionObserver(this);
 
   std::vector<gaia::AccountIds> accounts = account_tracker_->GetAccounts();
+  if (accounts.empty()) {
+    CompleteCollectingTokens();
+    return;
+  }
+
   for (std::vector<gaia::AccountIds>::const_iterator iter = accounts.begin();
        iter != accounts.end();
        ++iter) {
@@ -73,22 +70,7 @@ void GCMAccountTracker::Start() {
     }
   }
 
-  if (IsTokenReportingRequired())
-    ReportTokens();
-  else
-    ScheduleReportTokens();
-}
-
-void GCMAccountTracker::ScheduleReportTokens() {
-  DVLOG(1) << "Deferring the token reporting for: "
-           << GetTimeToNextTokenReporting().InSeconds() << " seconds.";
-
-  reporting_weak_ptr_factory_.InvalidateWeakPtrs();
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GCMAccountTracker::ReportTokens,
-                 reporting_weak_ptr_factory_.GetWeakPtr()),
-      GetTimeToNextTokenReporting());
+  GetAllNeededTokens();
 }
 
 void GCMAccountTracker::OnAccountAdded(const gaia::AccountIds& ids) {
@@ -133,7 +115,7 @@ void GCMAccountTracker::OnGetTokenSuccess(
   }
 
   DeleteTokenRequest(request);
-  ReportTokens();
+  CompleteCollectingTokens();
 }
 
 void GCMAccountTracker::OnGetTokenFailure(
@@ -155,22 +137,21 @@ void GCMAccountTracker::OnGetTokenFailure(
   }
 
   DeleteTokenRequest(request);
-  ReportTokens();
+  CompleteCollectingTokens();
 }
 
 void GCMAccountTracker::OnConnected(const net::IPEndPoint& ip_endpoint) {
-  if (IsTokenReportingRequired())
-    ReportTokens();
+  if (SanitizeTokens())
+    GetAllNeededTokens();
 }
 
 void GCMAccountTracker::OnDisconnected() {
   // We are disconnected, so no point in trying to work with tokens.
 }
 
-void GCMAccountTracker::ReportTokens() {
-  SanitizeTokens();
+void GCMAccountTracker::CompleteCollectingTokens() {
   // Make sure all tokens are valid.
-  if (IsTokenFetchingRequired()) {
+  if (SanitizeTokens()) {
     GetAllNeededTokens();
     return;
   }
@@ -217,14 +198,13 @@ void GCMAccountTracker::ReportTokens() {
   if (!account_tokens.empty() || account_removed) {
     DVLOG(1) << "Reporting the tokens to driver: " << account_tokens.size();
     driver_->SetAccountTokens(account_tokens);
-    driver_->SetLastTokenFetchTime(base::Time::Now());
-    ScheduleReportTokens();
   } else {
     DVLOG(1) << "No tokens and nothing removed. Skipping callback.";
   }
 }
 
-void GCMAccountTracker::SanitizeTokens() {
+bool GCMAccountTracker::SanitizeTokens() {
+  bool tokens_needed = false;
   for (AccountInfos::iterator iter = account_infos_.begin();
        iter != account_infos_.end();
        ++iter) {
@@ -236,43 +216,12 @@ void GCMAccountTracker::SanitizeTokens() {
       iter->second.state = TOKEN_NEEDED;
       iter->second.expiration_time = base::Time();
     }
-  }
-}
 
-bool GCMAccountTracker::IsTokenReportingRequired() const {
-  if (GetTimeToNextTokenReporting() == base::TimeDelta())
-    return true;
-
-  bool reporting_required = false;
-  for (AccountInfos::const_iterator iter = account_infos_.begin();
-       iter != account_infos_.end();
-       ++iter) {
-    if (iter->second.state == ACCOUNT_REMOVED)
-      reporting_required = true;
-  }
-
-  return reporting_required;
-}
-
-bool GCMAccountTracker::IsTokenFetchingRequired() const {
-  bool token_needed = false;
-  for (AccountInfos::const_iterator iter = account_infos_.begin();
-       iter != account_infos_.end();
-       ++iter) {
     if (iter->second.state == TOKEN_NEEDED)
-      token_needed = true;
+      tokens_needed = true;
   }
 
-  return token_needed;
-}
-
-base::TimeDelta GCMAccountTracker::GetTimeToNextTokenReporting() const {
-  base::TimeDelta time_till_next_reporting =
-      driver_->GetLastTokenFetchTime() +
-      base::TimeDelta::FromMilliseconds(kTokenReportingIntervalMs) -
-      base::Time::Now();
-  return time_till_next_reporting < base::TimeDelta() ?
-             base::TimeDelta() : time_till_next_reporting;
+  return tokens_needed;
 }
 
 void GCMAccountTracker::DeleteTokenRequest(
@@ -286,9 +235,6 @@ void GCMAccountTracker::DeleteTokenRequest(
 void GCMAccountTracker::GetAllNeededTokens() {
   // Only start fetching tokens if driver is running, they have a limited
   // validity time and GCM connection is a good indication of network running.
-  // If the GetAllNeededTokens was called as part of periodic schedule, it may
-  // not have network. In that case the next network change will trigger token
-  // fetching.
   if (!driver_->IsConnected())
     return;
 
@@ -336,7 +282,7 @@ void GCMAccountTracker::OnAccountSignedOut(const gaia::AccountIds& ids) {
 
   iter->second.access_token.clear();
   iter->second.state = ACCOUNT_REMOVED;
-  ReportTokens();
+  CompleteCollectingTokens();
 }
 
 OAuth2TokenService* GCMAccountTracker::GetTokenService() {
