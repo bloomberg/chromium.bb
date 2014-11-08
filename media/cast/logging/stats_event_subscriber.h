@@ -57,6 +57,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, PlayoutDelay);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, E2ELatency);
   FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Packets);
+  FRIEND_TEST_ALL_PREFIXES(StatsEventSubscriberTest, Histograms);
 
   static const size_t kMaxFrameInfoMapSize = 100;
 
@@ -113,15 +114,22 @@ class StatsEventSubscriber : public RawEventSubscriber {
     ENCODE_FPS,
     // Decode frame rate.
     DECODE_FPS,
+    // Average capture latency in milliseconds.
+    AVG_CAPTURE_LATENCY_MS,
     // Average encode duration in milliseconds.
-    // TODO(imcheng): This stat is not populated yet because we do not have
-    // the time when encode started. Record it in FRAME_ENCODED event.
     AVG_ENCODE_TIME_MS,
-    // Average playout delay in milliseconds.
-    AVG_PLAYOUT_DELAY_MS,
+    // Duration from when a frame is encoded to when the packet is first
+    // sent.
+    AVG_QUEUEING_LATENCY_MS,
     // Duration from when a packet is transmitted to when it is received.
     // This measures latency from sender to receiver.
     AVG_NETWORK_LATENCY_MS,
+    // Duration from when a frame is encoded to when the packet is first
+    // received.
+    AVG_PACKET_LATENCY_MS,
+    // Average latency between frame encoded and the moment when the frame
+    // is fully received.
+    AVG_FRAME_LATENCY_MS,
     // Duration from when a frame is captured to when it should be played out.
     AVG_E2E_LATENCY_MS,
     // Encode bitrate in kbps.
@@ -130,8 +138,6 @@ class StatsEventSubscriber : public RawEventSubscriber {
     TRANSMISSION_KBPS,
     // Packet retransmission bitrate in kbps.
     RETRANSMISSION_KBPS,
-    // Fraction of packet loss.
-    PACKET_LOSS_FRACTION,
     // Duration in milliseconds since last receiver response.
     MS_SINCE_LAST_RECEIVER_RESPONSE,
     // Number of frames captured.
@@ -144,6 +150,8 @@ class StatsEventSubscriber : public RawEventSubscriber {
     NUM_PACKETS_SENT,
     // Number of packets that were retransmitted.
     NUM_PACKETS_RETRANSMITTED,
+    // Number of packets that were received by receiver.
+    NUM_PACKETS_RECEIVED,
     // Number of packets that had their retransmission cancelled.
     NUM_PACKETS_RTX_REJECTED,
     // Unix time in milliseconds of first event since reset.
@@ -153,9 +161,12 @@ class StatsEventSubscriber : public RawEventSubscriber {
 
     // Histograms
     CAPTURE_LATENCY_MS_HISTO,
-    ENCODE_LATENCY_MS_HISTO,
+    ENCODE_TIME_MS_HISTO,
+    QUEUEING_LATENCY_MS_HISTO,
+    NETWORK_LATENCY_MS_HISTO,
     PACKET_LATENCY_MS_HISTO,
     FRAME_LATENCY_MS_HISTO,
+    E2E_LATENCY_MS_HISTO,
     PLAYOUT_DELAY_MS_HISTO
   };
 
@@ -165,7 +176,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
 
     base::TimeTicks capture_time;
     base::TimeTicks capture_end_time;
-    base::TimeTicks encode_time;
+    base::TimeTicks encode_end_time;
     bool encoded;
   };
 
@@ -186,6 +197,9 @@ class StatsEventSubscriber : public RawEventSubscriber {
   // Assigns |stats_map| with stats data. Used for testing.
   void GetStatsInternal(StatsMap* stats_map) const;
 
+  // Return a histogram of the type specified.
+  SimpleHistogram* GetHistogramForTesting(CastStat stats) const;
+
   void UpdateFirstLastEventTime(base::TimeTicks timestamp,
                                 bool is_receiver_event);
   bool GetReceiverOffset(base::TimeDelta* offset);
@@ -198,7 +212,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
   void RecordE2ELatency(const FrameEvent& frame_event);
   void RecordPacketSentTime(const PacketEvent& packet_event);
   void ErasePacketSentTime(const PacketEvent& packet_event);
-  void RecordNetworkLatency(const PacketEvent& packet_event);
+  void RecordPacketRelatedLatencies(const PacketEvent& packet_event);
   void UpdateLastResponseTime(base::TimeTicks receiver_time);
 
   void PopulateFpsStat(base::TimeTicks now,
@@ -211,13 +225,11 @@ class StatsEventSubscriber : public RawEventSubscriber {
   void PopulatePacketCountStat(CastLoggingEvent event,
                                CastStat stat,
                                StatsMap* stats_map) const;
-  void PopulatePlayoutDelayStat(StatsMap* stats_map) const;
   void PopulateFrameBitrateStat(base::TimeTicks now, StatsMap* stats_map) const;
   void PopulatePacketBitrateStat(base::TimeTicks now,
                                  CastLoggingEvent event,
                                  CastStat stat,
                                  StatsMap* stats_map) const;
-  void PopulatePacketLossPercentageStat(StatsMap* stats_map) const;
 
   const EventMediaType event_media_type_;
 
@@ -230,8 +242,18 @@ class StatsEventSubscriber : public RawEventSubscriber {
   FrameStatsMap frame_stats_;
   PacketStatsMap packet_stats_;
 
+  base::TimeDelta total_capture_latency_;
+  int capture_latency_datapoints_;
+  base::TimeDelta total_encode_time_;
+  int encode_time_datapoints_;
+  base::TimeDelta total_queueing_latency_;
+  int queueing_latency_datapoints_;
   base::TimeDelta total_network_latency_;
   int network_latency_datapoints_;
+  base::TimeDelta total_packet_latency_;
+  int packet_latency_datapoints_;
+  base::TimeDelta total_frame_latency_;
+  int frame_latency_datapoints_;
   base::TimeDelta total_e2e_latency_;
   int e2e_latency_datapoints_;
 

@@ -65,7 +65,10 @@ struct FrameEvent {
 
   EventMediaType media_type;
 
-  // Render / playout delay. Only set for FRAME_PLAYOUT events.
+  // Only set for FRAME_PLAYOUT events.
+  // If this value is zero the frame is rendered on time.
+  // If this value is positive it means the frame is rendered late.
+  // If this value is negative it means the frame is rendered early.
   base::TimeDelta delay_delta;
 
   // Whether the frame is a key frame. Only set for video FRAME_ENCODED event.
