@@ -476,7 +476,7 @@ TEST(FileTest, MemoryCorruption) {
     EXPECT_NE(file.file_.file_memory_checksum_,
               implicit_cast<unsigned int>(file.GetPlatformFile()));
     file.file_.file_memory_checksum_ = file.GetPlatformFile();
-    EXPECT_DEATH(file.IsValid(), "corrupted fd memory");
+    EXPECT_DEATH(file.IsValid(), "");
 
     file.file_.UpdateChecksum();  // Do not crash on File::~File().
   }
@@ -485,7 +485,7 @@ TEST(FileTest, MemoryCorruption) {
     // Test that changing the file descriptor value is detected.
     base::File file;
     file.file_.file_.reset(17);
-    EXPECT_DEATH(file.IsValid(), "corrupted fd memory");
+    EXPECT_DEATH(file.IsValid(), "");
 
     // Do not crash on File::~File().
     ignore_result(file.file_.file_.release());
@@ -496,7 +496,7 @@ TEST(FileTest, MemoryCorruption) {
     // Test that GetPlatformFile() checks for corruption.
     base::File file;
     file.file_.file_memory_checksum_ = file.GetPlatformFile();
-    EXPECT_DEATH(file.GetPlatformFile(), "corrupted fd memory");
+    EXPECT_DEATH(file.GetPlatformFile(), "");
 
     file.file_.UpdateChecksum();  // Do not crash on File::~File().
   }
@@ -505,7 +505,7 @@ TEST(FileTest, MemoryCorruption) {
     // Test that the base::File destructor checks for corruption.
     scoped_ptr<base::File> file(new File());
     file->file_.file_memory_checksum_ = file->GetPlatformFile();
-    EXPECT_DEATH(file.reset(), "corrupted fd memory");
+    EXPECT_DEATH(file.reset(), "");
 
     // Do not crash on this thread's destructor call.
     file->file_.UpdateChecksum();
@@ -515,7 +515,7 @@ TEST(FileTest, MemoryCorruption) {
     // Test that the base::File constructor checks for corruption.
     base::File file;
     file.file_.file_memory_checksum_ = file.GetPlatformFile();
-    EXPECT_DEATH(File f(file.Pass()), "corrupted fd memory");
+    EXPECT_DEATH(File f(file.Pass()), "");
 
     file.file_.UpdateChecksum();  // Do not crash on File::~File().
   }
@@ -525,10 +525,10 @@ TEST(FileTest, MemoryCorruption) {
     base::File file;
     file.file_.file_.reset(17);  // A fake open FD value.
 
-    EXPECT_DEATH(file.Seek(File::FROM_BEGIN, 0), "corrupted fd memory");
-    EXPECT_DEATH(file.Read(0, NULL, 0), "corrupted fd memory");
-    EXPECT_DEATH(file.ReadAtCurrentPos(NULL, 0), "corrupted fd memory");
-    EXPECT_DEATH(file.Write(0, NULL, 0), "corrupted fd memory");
+    EXPECT_DEATH(file.Seek(File::FROM_BEGIN, 0), "");
+    EXPECT_DEATH(file.Read(0, NULL, 0), "");
+    EXPECT_DEATH(file.ReadAtCurrentPos(NULL, 0), "");
+    EXPECT_DEATH(file.Write(0, NULL, 0), "");
 
     ignore_result(file.file_.file_.release());
     file.file_.UpdateChecksum();
