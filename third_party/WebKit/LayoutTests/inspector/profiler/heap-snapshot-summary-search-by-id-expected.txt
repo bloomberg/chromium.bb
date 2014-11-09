@@ -4,6 +4,12 @@ Profiler was enabled.
 Detailed heap profiles were enabled.
 
 Running: testSearch
+PASS: found node @101 with class 'A'
+PASS: node @a was not found
+PASS: node @999 was not found
+PASS: found node @100 with class 'B'
+PASS: found node @400 with class 'B'
+PASS: found node @401 with class 'A'
 
 Profiler was disabled.
 

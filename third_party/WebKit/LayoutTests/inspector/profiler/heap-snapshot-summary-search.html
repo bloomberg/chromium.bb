@@ -16,6 +16,19 @@ function test()
         function testSearch(next)
         {
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1a);
+            function addSearchResultSniffer(step)
+            {
+                function jumpToSearchResult()
+                {
+                    step(InspectorTest.currentProfileView()._searchResults.length);
+                }
+                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_jumpToSearchResult", jumpToSearchResult);
+            }
+
+            function addNodeHighlightSniffer(callback)
+            {
+                InspectorTest.addSniffer(InspectorTest.currentProfileView(), "_didHighlightById", callback);
+            }
 
             function step1a()
             {
@@ -39,33 +52,34 @@ function test()
 
             function step2()
             {
-                InspectorTest.currentProfileView().performSearch("A", step3);
+                addSearchResultSniffer(step3);
+                InspectorTest.currentProfileView().performSearch({query: "A", caseSensitive: false});
             }
 
-            function step3(view, resultCount)
+            function step3(resultCount)
             {
                 InspectorTest.assertEquals(1, resultCount, "Search for existing node");
-                view.searchCanceled();
-                view.performSearch("foo", step4);
+                addSearchResultSniffer(step4);
+                InspectorTest.currentProfileView().performSearch({query: "foo", caseSensitive:false});
             }
 
-            function step4(view, resultCount)
+            function step4(resultCount)
             {
                 InspectorTest.assertEquals(0, resultCount, "Search for not-existing node");
-                view.searchCanceled();
-                view.performSearch("@999", step5);
+                addNodeHighlightSniffer(step5);
+                InspectorTest.currentProfileView().performSearch({query: "@999", caseSensitive: false});
             }
 
-            function step5(view, resultCount)
+            function step5(found)
             {
-                InspectorTest.assertEquals(0, resultCount, "Search for not-existing node by id");
-                view.searchCanceled();
-                view.performSearch("@83", step6);
+                InspectorTest.assertEquals(false, found, "Search for not-existing node by id");
+                addNodeHighlightSniffer(step6);
+                InspectorTest.currentProfileView().performSearch({query: "@83", caseSensitive:false});
             }
 
-            function step6(view, resultCount)
+            function step6(found)
             {
-                InspectorTest.assertEquals(1, resultCount, "Search for existing node by id");
+                InspectorTest.assertEquals(true, found, "Search for existing node by id");
                 next();
             }
         }

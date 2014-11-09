@@ -23,53 +23,56 @@ function test()
             }
 
             var view;
+            function addNodeHighlightSniffer(constructorName, nodeId, onSuccess)
+            {
+                InspectorTest.addSniffer(view, "_didHighlightById", checkNodeIsHighlighted.bind(view, constructorName, nodeId, onSuccess));
+            }
+
             function step2()
             {
                 view = InspectorTest.currentProfileView();
-                view.performSearch("@101", checkNodeIsHighlighted.bind(this, "A", "101", step3));
+                addNodeHighlightSniffer("A", "101", step3);
+                view.performSearch({query:"@101", caseSensitive: false});
             }
 
             function step3()
             {
-                view.searchCanceled();
-                view.performSearch("@a", step4);
-            }
-
-            function step4(view, resultCount)
-            {
-                if (resultCount !== 0) {
+                view.performSearch({query: "@a", caseSensitive: false});
+                if (view._searchResults.length !== 0) {
                     InspectorTest.addResult("FAIL: node @a found");
                     return next();
                 }
-                view.searchCanceled();
-                view.performSearch("@999", step5);
+                InspectorTest.addResult("PASS: node @a was not found");
+                InspectorTest.addSniffer(view, "_didHighlightById", step5);
+                view.performSearch({query: "@999", caseSensitive: false}, step5);
             }
 
-            function step5(view, resultCount)
+            function step5(found)
             {
-                if (resultCount !== 0) {
+                if (found) {
                     InspectorTest.addResult("FAIL: found node @999");
                     return next();
                 }
-                view.searchCanceled();
-                view.performSearch("@100", checkNodeIsHighlighted.bind(this, "B", "100", step6));
+                InspectorTest.addResult("PASS: node @999 was not found");
+                addNodeHighlightSniffer("B", "100", step6);
+                view.performSearch({query: "@100", caseSensitive: false});
             }
 
             function step6()
             {
-                view.searchCanceled();
-                view.performSearch("@400", checkNodeIsHighlighted.bind(this, "B", "400", step7));
+                addNodeHighlightSniffer("B", "400", step7);
+                view.performSearch({query: "@400", caseSensitive: false});
             }
 
             function step7()
             {
-                view.searchCanceled();
-                view.performSearch("@401", checkNodeIsHighlighted.bind(this, "A", "401", next));
+                addNodeHighlightSniffer("A", "401", next);
+                view.performSearch({query: "@401", caseSensitive: false});
             }
 
-            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, view, resultCount)
+            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, found)
             {
-                if (resultCount !== 1) {
+                if (!found) {
                     InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
                     return next();
                 }
@@ -94,6 +97,7 @@ function test()
                                 if (constructorsGrid._nodeToHighlightAfterScroll === instanceNodes[i]) {
                                     function afterScroll(nodeToHighlight)
                                     {
+                                        InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
                                         onSuccess();
                                     }
                                     InspectorTest.addSniffer(WebInspector.HeapSnapshotSortableDataGrid.prototype, "highlightNode", afterScroll);
@@ -103,6 +107,7 @@ function test()
                                     return next();
                                 }
                             }
+                            InspectorTest.addResult("PASS: found node @" + nodeId + " with class '" + constructorName + "'");
                             return onSuccess();
                         }
                     }
