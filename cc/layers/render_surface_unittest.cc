@@ -92,6 +92,9 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   owning_layer->CreateRenderSurface();
   ASSERT_TRUE(owning_layer->render_surface());
   owning_layer->draw_properties().render_target = owning_layer.get();
+
+  SkXfermode::Mode blend_mode = SkXfermode::kSoftLight_Mode;
+  owning_layer->SetBlendMode(blend_mode);
   RenderSurfaceImpl* render_surface = owning_layer->render_surface();
 
   root_layer->AddChild(owning_layer.Pass());
@@ -131,6 +134,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   EXPECT_RECT_EQ(content_rect,
                  gfx::Rect(shared_quad_state->visible_content_rect));
   EXPECT_EQ(1.f, shared_quad_state->opacity);
+  EXPECT_EQ(blend_mode, shared_quad_state->blend_mode);
 }
 
 class TestRenderPassSink : public RenderPassSink {

@@ -323,6 +323,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
     return draw_properties_.screen_space_transform;
   }
   float draw_opacity() const { return draw_properties_.opacity; }
+  SkXfermode::Mode draw_blend_mode() const {
+    return draw_properties_.blend_mode;
+  }
   bool draw_opacity_is_animating() const {
     return draw_properties_.opacity_is_animating;
   }

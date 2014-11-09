@@ -210,14 +210,11 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
       occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
           scaled_draw_transform);
 
-  shared_quad_state->SetAll(scaled_draw_transform,
-                            scaled_content_bounds,
-                            scaled_visible_content_rect,
-                            draw_properties().clip_rect,
-                            draw_properties().is_clipped,
-                            draw_properties().opacity,
-                            blend_mode(),
-                            sorting_context_id_);
+  shared_quad_state->SetAll(
+      scaled_draw_transform, scaled_content_bounds, scaled_visible_content_rect,
+      draw_properties().clip_rect, draw_properties().is_clipped,
+      draw_properties().opacity, draw_properties().blend_mode,
+      sorting_context_id_);
 
   if (current_draw_mode_ == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     AppendDebugBorderQuad(

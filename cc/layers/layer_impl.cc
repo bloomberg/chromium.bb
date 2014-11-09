@@ -255,14 +255,11 @@ void LayerImpl::ClearRenderSurfaceLayerList() {
 }
 
 void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
-  state->SetAll(draw_properties_.target_space_transform,
-                draw_properties_.content_bounds,
-                draw_properties_.visible_content_rect,
-                draw_properties_.clip_rect,
-                draw_properties_.is_clipped,
-                draw_properties_.opacity,
-                blend_mode_,
-                sorting_context_id_);
+  state->SetAll(
+      draw_properties_.target_space_transform, draw_properties_.content_bounds,
+      draw_properties_.visible_content_rect, draw_properties_.clip_rect,
+      draw_properties_.is_clipped, draw_properties_.opacity,
+      draw_properties_.blend_mode, sorting_context_id_);
 }
 
 bool LayerImpl::WillDraw(DrawMode draw_mode,

@@ -159,14 +159,9 @@ void VideoLayerImpl::AppendQuads(RenderPass* render_pass,
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  shared_quad_state->SetAll(transform,
-                            rotated_size,
-                            visible_content_rect(),
-                            clip_rect(),
-                            is_clipped(),
-                            draw_opacity(),
-                            blend_mode(),
-                            sorting_context_id());
+  shared_quad_state->SetAll(transform, rotated_size, visible_content_rect(),
+                            clip_rect(), is_clipped(), draw_opacity(),
+                            draw_blend_mode(), sorting_context_id());
 
   AppendDebugBorderQuad(
       render_pass, rotated_size, shared_quad_state, append_quads_data);

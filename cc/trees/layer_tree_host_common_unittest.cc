@@ -1392,6 +1392,36 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForTransparentChild) {
   EXPECT_EQ(gfx::Rect(), parent->drawable_content_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
+  scoped_refptr<Layer> parent = Layer::Create();
+  scoped_refptr<LayerWithForcedDrawsContent> child =
+      make_scoped_refptr(new LayerWithForcedDrawsContent());
+
+  scoped_ptr<FakeLayerTreeHost> host(CreateFakeLayerTreeHost());
+  host->SetRootLayer(parent);
+
+  const gfx::Transform identity_matrix;
+  const SkXfermode::Mode blend_mode = SkXfermode::kMultiply_Mode;
+  SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false);
+
+  parent->AddChild(child);
+  child->SetBlendMode(blend_mode);
+
+  RenderSurfaceLayerList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      parent.get(), parent->bounds(), &render_surface_layer_list);
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  // Since the child layer has a blend mode other than normal, it should get
+  // its own render surface. Also, layer's draw_properties should contain the
+  // default blend mode, since the render surface becomes responsible for
+  // applying the blend mode.
+  ASSERT_TRUE(child->render_surface());
+  EXPECT_EQ(1U, child->render_surface()->layer_list().size());
+  EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_properties().blend_mode);
+}
+
 TEST_F(LayerTreeHostCommonTest, ForceRenderSurface) {
   scoped_refptr<Layer> parent = Layer::Create();
   scoped_refptr<Layer> render_surface1 = Layer::Create();

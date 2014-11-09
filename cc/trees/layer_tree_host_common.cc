@@ -1883,6 +1883,7 @@ static void CalculateDrawPropertiesInternal(
     render_surface->SetDrawOpacityIsAnimating(animating_opacity_to_target);
     animating_opacity_to_target = false;
     layer_draw_properties.opacity = 1.f;
+    layer_draw_properties.blend_mode = SkXfermode::kSrcOver_Mode;
     layer_draw_properties.opacity_is_animating = animating_opacity_to_target;
     layer_draw_properties.screen_space_opacity_is_animating =
         animating_opacity_to_screen;
@@ -2007,6 +2008,7 @@ static void CalculateDrawPropertiesInternal(
     layer_draw_properties.screen_space_transform_is_animating =
         animating_transform_to_screen;
     layer_draw_properties.opacity = accumulated_draw_opacity;
+    layer_draw_properties.blend_mode = layer->blend_mode();
     layer_draw_properties.opacity_is_animating = animating_opacity_to_target;
     layer_draw_properties.screen_space_opacity_is_animating =
         animating_opacity_to_screen;

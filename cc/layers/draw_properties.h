@@ -6,6 +6,7 @@
 #define CC_LAYERS_DRAW_PROPERTIES_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkXfermode.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -17,6 +18,7 @@ template <typename LayerType>
 struct CC_EXPORT DrawProperties {
   DrawProperties()
       : opacity(0.f),
+        blend_mode(SkXfermode::kSrcOver_Mode),
         opacity_is_animating(false),
         screen_space_opacity_is_animating(false),
         target_space_transform_is_animating(false),
@@ -52,6 +54,10 @@ struct CC_EXPORT DrawProperties {
   // particularly in the case when a RenderSurface re-parents the layer's
   // opacity, or when opacity is compounded by the hierarchy.
   float opacity;
+
+  // DrawProperties::blend_mode may be different than LayerType::blend_mode,
+  // when a RenderSurface re-parents the layer's blend_mode.
+  SkXfermode::Mode blend_mode;
 
   // xxx_is_animating flags are used to indicate whether the DrawProperties
   // are actually meaningful on the main thread. When the properties are
