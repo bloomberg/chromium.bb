@@ -1254,7 +1254,13 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
   window->GetBaseWindow()->Close();
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {
+#if defined(OS_LINUX)
+// http://crbug.com/431604
+#define MAYBE_ShimSrcAttribute DISABLED_ShimSrcAttribute
+#else
+#define MAYBE_ShimSrcAttribute ShimSrcAttribute
+#endif
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_ShimSrcAttribute) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/src_attribute"))
       << message_;
 }
