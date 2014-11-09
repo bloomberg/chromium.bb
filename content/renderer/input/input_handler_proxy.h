@@ -56,7 +56,19 @@ class CONTENT_EXPORT InputHandlerProxy
   }
 
  private:
-  EventDisposition HandleGestureFling(const blink::WebGestureEvent& event);
+  // Helper functions for handling more complicated input events.
+  EventDisposition HandleMouseWheel(
+      const blink::WebMouseWheelEvent& event);
+  EventDisposition HandleGestureScrollBegin(
+      const blink::WebGestureEvent& event);
+  EventDisposition HandleGestureScrollUpdate(
+      const blink::WebGestureEvent& event);
+  EventDisposition HandleGestureScrollEnd(
+      const blink::WebGestureEvent& event);
+  EventDisposition HandleGestureFlingStart(
+      const blink::WebGestureEvent& event);
+  EventDisposition HandleTouchStart(
+      const blink::WebTouchEvent& event);
 
   // Returns true if the event should be suppressed due to to an active,
   // boost-enabled fling, in which case further processing should cease.
