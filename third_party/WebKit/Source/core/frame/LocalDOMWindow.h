@@ -29,43 +29,30 @@
 
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
-#include "core/frame/DOMWindowBase64.h"
 #include "core/frame/FrameDestructionObserver.h"
 #include "core/frame/LocalFrame.h"
 #include "platform/LifecycleContext.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
-#include "platform/scroll/ScrollableArea.h"
 
+#include "wtf/Assertions.h"
 #include "wtf/Forward.h"
 
 namespace blink {
 
-class CSSRuleList;
-class CSSStyleDeclaration;
-class Console;
-class DOMSelection;
-class DOMWindowCSS;
 class DOMWindowEventQueue;
 class DOMWindowLifecycleNotifier;
 class DOMWindowProperty;
 class DocumentInit;
-class Element;
 class EventListener;
 class EventQueue;
 class ExceptionState;
 class FloatRect;
 class FrameConsole;
-class MediaQueryList;
 class Page;
 class PostMessageTimer;
-class RequestAnimationFrameCallback;
-class ScrollOptions;
 class ScriptCallStack;
 class SecurityOrigin;
-class SerializedScriptValue;
-
-typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 
 enum PageshowEventPersistence {
     PageshowEventNotPersisted = 0,
@@ -76,7 +63,7 @@ enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForw
 
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
-class LocalDOMWindow final : public DOMWindow, public DOMWindowBase64, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
+class LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
 public:
@@ -96,6 +83,7 @@ public:
 
     // DOMWindow overrides:
     void trace(Visitor*) override;
+    bool isLocalDOMWindow() const override { return true; }
     virtual LocalFrame* frame() const override;
     Screen* screen() const override;
     History* history() const override;
@@ -140,13 +128,37 @@ public:
     Console* console() const override;
     Performance* performance() const override;
     DOMWindowCSS* css() const override;
+    DOMSelection* getSelection() override;
+    void focus(ExecutionContext* = 0) override;
+    void blur() override;
+    void close(ExecutionContext* = 0) override;
+    void print() override;
+    void stop() override;
+    void alert(const String& message = String()) override;
+    bool confirm(const String& message) override;
+    String prompt(const String& message, const String& defaultValue) override;
+    bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const override;
+    void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
+    void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const override;
+    void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const override;
+    void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const override;
+    void moveBy(float x, float y) const override;
+    void moveTo(float x, float y) const override;
+    void resizeBy(float x, float y) const override;
+    void resizeTo(float width, float height) const override;
+    PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&) override;
+    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const override;
+    PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const override;
+    int requestAnimationFrame(RequestAnimationFrameCallback*) override;
+    int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) override;
+    void cancelAnimationFrame(int id) override;
+    LocalDOMWindow* anonymousIndexedGetter(uint32_t) override;
+    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) override;
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
 
     void reset();
-
-    PassRefPtrWillBeRawPtr<MediaQueryList> matchMedia(const String&);
 
     unsigned pendingUnloadEventListeners() const;
 
@@ -160,15 +172,7 @@ public:
     void setLocation(const String& location, LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow,
         SetLocationLocking = LockHistoryBasedOnGestureState);
 
-    DOMSelection* getSelection();
-
     Element* frameElement() const;
-
-    void focus(ExecutionContext* = 0);
-    void blur();
-    void close(ExecutionContext* = 0);
-    void print();
-    void stop();
 
     PassRefPtrWillBeRawPtr<LocalDOMWindow> open(const String& urlString, const AtomicString& frameName, const String& windowFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow);
@@ -177,47 +181,14 @@ public:
     void showModalDialog(const String& urlString, const String& dialogFeaturesString,
         LocalDOMWindow* callingWindow, LocalDOMWindow* enteredWindow, PrepareDialogFunction, void* functionContext);
 
-    void alert(const String& message = String());
-    bool confirm(const String& message);
-    String prompt(const String& message, const String& defaultValue);
-
-    bool find(const String&, bool caseSensitive, bool backwards, bool wrap, bool wholeWord, bool searchInFrames, bool showDialog) const;
-
-    // DOM Level 2 Style Interface
-
-    PassRefPtrWillBeRawPtr<CSSStyleDeclaration> getComputedStyle(Element*, const String& pseudoElt) const;
-
-    // WebKit extensions
-
-    PassRefPtrWillBeRawPtr<CSSRuleList> getMatchedCSSRules(Element*, const String& pseudoElt) const;
-
     FrameConsole* frameConsole() const;
 
     void printErrorMessage(const String&);
     String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
     String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
 
-    void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&);
     void postMessageTimerFired(PostMessageTimer*);
     void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
-
-    void scrollBy(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollBy(double x, double y, const ScrollOptions&, ExceptionState&) const;
-    void scrollTo(double x, double y, ScrollBehavior = ScrollBehaviorAuto) const;
-    void scrollTo(double x, double y, const ScrollOptions&, ExceptionState&) const;
-    void scroll(double x, double y) const { scrollTo(x, y); }
-    void scroll(double x, double y, const ScrollOptions& scrollOptions, ExceptionState& exceptionState) const { scrollTo(x, y, scrollOptions, exceptionState); }
-
-    void moveBy(float x, float y) const;
-    void moveTo(float x, float y) const;
-
-    void resizeBy(float x, float y) const;
-    void resizeTo(float width, float height) const;
-
-    // WebKit animation extensions
-    int requestAnimationFrame(RequestAnimationFrameCallback*);
-    int webkitRequestAnimationFrame(RequestAnimationFrameCallback*);
-    void cancelAnimationFrame(int id);
 
     // Events
     // EventTarget API
@@ -230,22 +201,6 @@ public:
 
     void dispatchLoadEvent();
 
-    // FIXME: It's not clear how to move these to DOMWindow yet.
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(animationstart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(search);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(transitionend);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(wheel);
-
-    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationstart, webkitAnimationStart);
-    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationiteration, webkitAnimationIteration);
-    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkitanimationend, webkitAnimationEnd);
-    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(webkittransitionend, webkitTransitionEnd);
-
-    void captureEvents() { }
-    void releaseEvents() { }
-
     void finishedLoading();
 
     // HTML 5 key/value storage
@@ -257,12 +212,6 @@ public:
     // recurse on its child frames.
     void sendOrientationChangeEvent();
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(orientationchange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchstart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchmove);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchend);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(touchcancel);
-
     // FIXME: When this LocalDOMWindow is no longer the active LocalDOMWindow (i.e.,
     // when its document is no longer the document that is displayed in its
     // frame), we would like to zero out m_frame to avoid being confused
@@ -270,7 +219,6 @@ public:
     bool isCurrentlyDisplayedInFrame() const;
 
     void willDetachDocumentFromFrame();
-    LocalDOMWindow* anonymousIndexedGetter(uint32_t);
 
     bool isInsecureScriptAccess(LocalDOMWindow& callingWindow, const String& urlString);
 
@@ -381,6 +329,8 @@ private:
 
     HashSet<OwnPtr<PostMessageTimer> > m_postMessageTimers;
 };
+
+DEFINE_TYPE_CASTS(LocalDOMWindow, DOMWindow, x, x->isLocalDOMWindow(), x.isLocalDOMWindow());
 
 inline String LocalDOMWindow::status() const
 {
