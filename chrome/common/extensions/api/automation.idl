@@ -142,6 +142,7 @@
     rootWebArea,
     rowHeader,
     row,
+    ruby,
     rulerMarker,
     ruler,
     svgRoot,

@@ -3705,6 +3705,10 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_ROW_HEADER:
       ia_role_ = ROLE_SYSTEM_ROWHEADER;
       break;
+    case ui::AX_ROLE_RUBY:
+      ia_role_ = ROLE_SYSTEM_TEXT;
+      ia2_role_ = IA2_ROLE_TEXT_FRAME;
+      break;
     case ui::AX_ROLE_RULER:
       ia_role_ = ROLE_SYSTEM_CLIENT;
       ia2_role_ = IA2_ROLE_RULER;

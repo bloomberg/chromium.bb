@@ -1,0 +1,5 @@
+AXWebArea
+    AXGroup
+        AXUnknown
+            AXUnknown
+                AXStaticText AXValue='1'

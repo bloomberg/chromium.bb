@@ -256,6 +256,8 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_ROOT_WEB_AREA;
     case blink::WebAXRoleRow:
       return ui::AX_ROLE_ROW;
+    case blink::WebAXRoleRuby:
+      return ui::AX_ROLE_RUBY;
     case blink::WebAXRoleRowHeader:
       return ui::AX_ROLE_ROW_HEADER;
     case blink::WebAXRoleRuler:

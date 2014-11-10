@@ -192,6 +192,8 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("RowHeader");
     case blink::WebAXRoleRow:
       return result.append("Row");
+    case blink::WebAXRoleRuby:
+      return result.append("Ruby");
     case blink::WebAXRoleRulerMarker:
       return result.append("RulerMarker");
     case blink::WebAXRoleRuler:
