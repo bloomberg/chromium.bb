@@ -573,6 +573,111 @@ class TestPackageVersion(unittest.TestCase):
       self.assertEqual(mock_contents2, dest_mock_contents2)
       self.assertEqual(mock_contents3, dest_mock_contents3)
 
+  def test_OverlayPackageTargets(self):
+    # Tests that we can extract package targets with an overlay directory
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      mock_file1 = self.GenerateMockFile(work_dir, mock_file='mockfile1.txt')
+      mock_file2 = self.GenerateMockFile(work_dir, mock_file='mockfile2.txt')
+      mock_file3 = self.GenerateMockFile(work_dir, mock_file='mockfile3.txt')
+
+      tar_dir = os.path.join(work_dir, 'tar_dir')
+      overlay_dir = os.path.join(work_dir, 'overlay_dir')
+      dest_dir = os.path.join(work_dir, 'dest_dir')
+      package_target = 'custom_package_target'
+      package_name = 'custom_package'
+      package_revision = 10
+
+      # Tar1 (mockfile1) will be a regular archive within the tar directory,
+      # while tar2 (mockfile2) will be overlaid and replaced by
+      # overlay_tar2 (mockfile3).
+      mock_tar1 = package_locations.GetLocalPackageArchiveFile(
+          tar_dir,
+          package_target,
+          package_name,
+          'archive_name1.tar'
+      )
+      os.makedirs(os.path.dirname(mock_tar1))
+      with tarfile.TarFile(mock_tar1, 'w') as f:
+        f.add(mock_file1, arcname=os.path.basename(mock_file1))
+
+      mock_tar2 = package_locations.GetLocalPackageArchiveFile(
+          tar_dir,
+          package_target,
+          package_name,
+          'archive_name2.tar'
+      )
+      with tarfile.TarFile(mock_tar2, 'w') as f:
+        f.add(mock_file2, arcname=os.path.basename(mock_file2))
+
+      overlay_tar2 = package_locations.GetLocalPackageArchiveFile(
+          overlay_dir,
+          package_target,
+          package_name,
+          'archive_name2.tar'
+      )
+      os.makedirs(os.path.dirname(overlay_tar2))
+      with tarfile.TarFile(overlay_tar2, 'w') as f:
+        f.add(mock_file3, arcname=os.path.basename(mock_file3))
+
+      # Generate the regular package file, along with the overlay package file.
+      package_desc = self.GeneratePackageInfo([mock_tar1, mock_tar2])
+      package_file = package_locations.GetLocalPackageFile(
+          tar_dir,
+          package_target,
+          package_name
+      )
+      package_desc.SavePackageFile(package_file)
+
+      overlay_package_desc = self.GeneratePackageInfo([overlay_tar2])
+      overlay_package_file = package_locations.GetLocalPackageFile(
+          overlay_dir,
+          package_target,
+          package_name
+      )
+      overlay_package_desc.SavePackageFile(overlay_package_file)
+
+      package_version.ExtractPackageTargets(
+          [(package_target, package_name)],
+          tar_dir,
+          dest_dir,
+          downloader=self._fake_downloader.Download,
+          overlay_tar_dir=overlay_dir,
+      )
+
+      full_dest_dir = package_locations.GetFullDestDir(
+          dest_dir,
+          package_target,
+          package_name
+      )
+
+      dest_mock_file1 = os.path.join(
+          full_dest_dir,
+          os.path.basename(mock_file1)
+      )
+      dest_mock_file2 = os.path.join(
+          full_dest_dir,
+          os.path.basename(mock_file2)
+      )
+      dest_mock_file3 = os.path.join(
+          full_dest_dir,
+          os.path.basename(mock_file3)
+      )
+
+      # mock_file2 should not exist in the destination since it was replaced.
+      self.assertFalse(os.path.isfile(dest_mock_file2))
+
+      with open(mock_file1, 'rb') as f:
+        mock_contents1 = f.read()
+      with open(mock_file3, 'rb') as f:
+        mock_contents3 = f.read()
+      with open(dest_mock_file1, 'rb') as f:
+        dest_mock_contents1 = f.read()
+      with open(dest_mock_file3, 'rb') as f:
+        dest_mock_contents3 = f.read()
+
+      self.assertEqual(mock_contents1, dest_mock_contents1)
+      self.assertEqual(mock_contents3, dest_mock_contents3)
+
   def test_DownloadMismatchArchiveUponExtraction(self):
     # Tests that mismatching archive files are downloaded upon extraction.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:

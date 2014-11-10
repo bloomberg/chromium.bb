@@ -479,7 +479,8 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
 
 
 def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
-                          downloader=None, skip_missing=False, quiet=False):
+                          downloader=None, skip_missing=False,
+                          overlay_tar_dir=None, quiet=False):
   """Extracts package targets from the tar directory to the destination.
 
   Each package archive within a package will be verified before being
@@ -527,18 +528,48 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       logging.debug('Deleting old package directory: %s', dest_package_dir)
       pynacl.file_tools.RemoveDir(dest_package_dir)
 
+    # Get a list of overlay archives.
+    overlay_archives = {}
+    if overlay_tar_dir:
+      overlay_file = package_locations.GetLocalPackageFile(overlay_tar_dir,
+                                                           package_target,
+                                                           package_name)
+      if os.path.isfile(overlay_file):
+        logging.info('Found overlaid package file: %s', overlay_file)
+        overlay_package_desc = package_info.PackageInfo(overlay_file,
+                                                        skip_missing=True)
+
+        for archive_obj in overlay_package_desc.GetArchiveList():
+          archive_desc = archive_obj.GetArchiveData()
+          overlay_archives[archive_desc.name] = archive_desc
+
     logging.info('Extracting package (%s) to directory: %s',
                  package_name, dest_package_dir)
     archive_list = package_desc.GetArchiveList()
     num_archives = len(archive_list)
     for index, archive_obj in enumerate(archive_list):
       archive_desc = archive_obj.GetArchiveData()
-      archive_file = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          archive_desc.name
-      )
+      archive_file = None
+      overlay_archive_desc = overlay_archives.get(archive_desc.name, None)
+      if overlay_archive_desc:
+        overlay_archive_file = package_locations.GetLocalPackageArchiveFile(
+            overlay_tar_dir,
+            package_target,
+            package_name,
+            archive_desc.name
+        )
+        if os.path.isfile(overlay_archive_file):
+          logging.info('Using overlaid archive: %s', overlay_archive_file)
+          archive_desc = overlay_archive_desc
+          archive_file = overlay_archive_file
+
+      if archive_file is None:
+        archive_file = package_locations.GetLocalPackageArchiveFile(
+            tar_dir,
+            package_target,
+            package_name,
+            archive_desc.name
+        )
 
       # Upon extraction, some files may not be downloaded (or have stale files),
       # we need to check the hash of each file and attempt to download it if
@@ -665,6 +696,11 @@ def _ExtractCmdArgParser(subparser):
     '--skip-missing', dest='extract__skip_missing',
     action='store_true', default=False,
     help='Skip missing archive files when extracting rather than erroring out.')
+  subparser.add_argument(
+    '--overlay-tar-dir', dest='overlay_tar_dir',
+    default=None,
+    help='Extracts tar directorys as usual, except uses any packages' +
+         ' found within the overlay tar directory first.')
 
 
 def _DoExtractCmd(arguments):
@@ -673,6 +709,7 @@ def _DoExtractCmd(arguments):
       arguments.tar_dir,
       arguments.dest_dir,
       skip_missing=arguments.extract__skip_missing,
+      overlay_tar_dir=arguments.overlay_tar_dir,
       quiet=arguments.quiet)
 
 
@@ -934,11 +971,11 @@ def _DoFillEmptyTarsCmd(arguments):
     output_package_desc.SavePackageFile(package_path)
 
 
-def _RecalcRevisions(subparser):
+def _RecalcRevsParser(subparser):
   subparser.description = 'Recalculates hashes for files in revision directory.'
 
 
-def _DoRecalcRevisions(arguments):
+def _DoRecalcRevsCmd(arguments):
   for json_file in os.listdir(arguments.revisions_dir):
     if json_file.endswith('.json'):
       revision_file = os.path.join(arguments.revisions_dir, json_file)
@@ -961,7 +998,7 @@ COMMANDS = {
     'setrevision': CommandFuncs(_SetRevisionCmdArgParser, _DoSetRevisionCmd),
     'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
     'fillemptytars': CommandFuncs(_FillEmptyTarsParser, _DoFillEmptyTarsCmd),
-    'recalcrevisions': CommandFuncs(_RecalcRevisions, _DoRecalcRevisions),
+    'recalcrevisions': CommandFuncs(_RecalcRevsParser, _DoRecalcRevsCmd),
 }
 
 
