@@ -374,7 +374,7 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
         return IgnoredRole;
 
     if (m_renderer->isHR())
-        return HorizontalRuleRole;
+        return SplitterRole;
 
     if (isHTMLOutputElement(node))
         return StatusRole;

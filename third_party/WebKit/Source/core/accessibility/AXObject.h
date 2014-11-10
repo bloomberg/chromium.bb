@@ -95,7 +95,6 @@ enum AccessibilityRole {
     GrowAreaRole,
     HeadingRole,
     HelpTagRole,
-    HorizontalRuleRole,
     IframeRole,
     IgnoredRole,
     ImageMapLinkRole,
