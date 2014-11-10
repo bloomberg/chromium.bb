@@ -13,10 +13,11 @@ namespace chromeos {
 
 class NetworkPolicyObserver {
  public:
-  // Called when the policy for |userhash| was set (also when it was updated).
-  // Note that the policy might not have been applied yet at that time.
-  // An empty |userhash| designates the device policy.
-  virtual void PolicyChanged(const std::string& userhash) {}
+  // Called when the policies for |userhash| were set (also when they were
+  // updated). An empty |userhash| designates the device policy.
+  // Note that the policies might be empty and might not have been applied yet
+  // at that time.
+  virtual void PoliciesChanged(const std::string& userhash) {}
 
   // Called every time a policy application for |userhash| finished. This is
   // only called once no more policies are pending for |userhash|.

@@ -106,6 +106,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandlerImpl
   void OnPoliciesApplied(const NetworkProfile& profile) override;
 
  private:
+  friend class AutoConnectHandlerTest;
   friend class ClientCertResolverTest;
   friend class ManagedNetworkConfigurationHandlerTest;
   friend class NetworkConnectionHandlerTest;

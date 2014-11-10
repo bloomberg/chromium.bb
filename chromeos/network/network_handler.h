@@ -13,6 +13,7 @@
 
 namespace chromeos {
 
+class AutoConnectHandler;
 class ClientCertResolver;
 class GeolocationHandler;
 class ManagedNetworkConfigurationHandler;
@@ -79,6 +80,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   scoped_ptr<ClientCertResolver> client_cert_resolver_;
   scoped_ptr<NetworkActivationHandler> network_activation_handler_;
   scoped_ptr<NetworkConnectionHandler> network_connection_handler_;
+  scoped_ptr<AutoConnectHandler> auto_connect_handler_;
   scoped_ptr<NetworkSmsHandler> network_sms_handler_;
   scoped_ptr<GeolocationHandler> geolocation_handler_;
 

@@ -5,12 +5,14 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_CONNECTION_HANDLER_H_
 #define CHROMEOS_NETWORK_NETWORK_CONNECTION_HANDLER_H_
 
+#include <map>
 #include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/cert_loader.h"
@@ -19,7 +21,6 @@
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
-#include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
@@ -46,9 +47,21 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
     : public LoginState::Observer,
       public CertLoader::Observer,
       public NetworkStateHandlerObserver,
-      public NetworkPolicyObserver,
       public base::SupportsWeakPtr<NetworkConnectionHandler> {
  public:
+  class Observer {
+   public:
+    // Called if a connection to network |service_path| was requested, by
+    // calling ConnectToNetwork.
+    virtual void ConnectToNetworkRequested(const std::string& service_path) = 0;
+
+   protected:
+    virtual ~Observer() {}
+
+   private:
+    DISALLOW_ASSIGN(Observer);
+  };
+
   // Constants for |error_name| from |error_callback| for Connect.
 
   //  No network matching |service_path| is found (hidden networks must be
@@ -93,6 +106,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   virtual ~NetworkConnectionHandler();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
   // ConnectToNetwork() will start an asynchronous connection attempt.
   // On success, |success_callback| will be called.
   // On failure, |error_callback| will be called with |error_name| one of the
@@ -136,9 +152,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // CertLoader::Observer
   virtual void OnCertificatesLoaded(const net::CertificateList& cert_list,
                                     bool initial_load) override;
-
-  // NetworkPolicyObserver
-  virtual void PolicyChanged(const std::string& userhash) override;
 
  private:
   friend class NetworkHandler;
@@ -206,26 +219,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void HandleShillDisconnectSuccess(const std::string& service_path,
                                     const base::Closure& success_callback);
 
-  // If the policy to prevent unmanaged & shared networks to autoconnect is
-  // enabled, then disconnect all such networks except wired networks. Does
-  // nothing on consecutive calls.
-  // This is enforced once after a user logs in 1) to allow mananged networks to
-  // autoconnect and 2) to prevent a previous user from foisting a network on
-  // the new user. Therefore, this function is called on startup, at login and
-  // when the device policy is changed.
-  void DisconnectIfPolicyRequires();
-
-  // Disconnects from all unmanaged and shared WiFi networks that are currently
-  // connected or connecting.
-  void DisconnectFromUnmanagedSharedWiFiNetworks();
-
-  // Requests a connect to the 'best' available network once after login and
-  // after any disconnect required by policy is executed (see
-  // DisconnectIfPolicyRequires()). To include networks with client
-  // certificates, no request is sent until certificates are loaded. Therefore,
-  // this function is called on the initial certificate load and by
-  // DisconnectIfPolicyRequires().
-  void ConnectToBestNetworkAfterLogin();
+  ObserverList<Observer> observers_;
 
   // Local references to the associated handler instances.
   CertLoader* cert_loader_;
@@ -242,14 +236,6 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   bool logged_in_;
   bool certificates_loaded_;
   base::TimeTicks logged_in_time_;
-
-  // Whether the autoconnect policy was applied already, see
-  // DisconnectIfPolicyRequires().
-  bool applied_autoconnect_policy_;
-
-  // Whether the handler already requested a 'ConnectToBestNetwork' after login,
-  // see ConnectToBestNetworkAfterLogin().
-  bool requested_connect_to_best_network_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkConnectionHandler);
 };

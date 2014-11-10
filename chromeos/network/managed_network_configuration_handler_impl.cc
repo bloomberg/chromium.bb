@@ -404,7 +404,8 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
 
   STLDeleteValues(&old_per_network_config);
   ApplyOrQueuePolicies(userhash, &modified_policies);
-  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_, PolicyChanged(userhash));
+  FOR_EACH_OBSERVER(NetworkPolicyObserver, observers_,
+                    PoliciesChanged(userhash));
 }
 
 bool ManagedNetworkConfigurationHandlerImpl::IsAnyPolicyApplicationRunning()

@@ -152,9 +152,7 @@ NetworkConnectionHandler::NetworkConnectionHandler()
       network_state_handler_(NULL),
       configuration_handler_(NULL),
       logged_in_(false),
-      certificates_loaded_(false),
-      applied_autoconnect_policy_(false),
-      requested_connect_to_best_network_(false) {
+      certificates_loaded_(false) {
 }
 
 NetworkConnectionHandler::~NetworkConnectionHandler() {
@@ -191,17 +189,21 @@ void NetworkConnectionHandler::Init(
     network_state_handler_->AddObserver(this, FROM_HERE);
   }
   configuration_handler_ = network_configuration_handler;
-
-  if (managed_network_configuration_handler) {
-    managed_configuration_handler_ = managed_network_configuration_handler;
-    managed_configuration_handler_->AddObserver(this);
-  }
+  managed_configuration_handler_ = managed_network_configuration_handler;
 
   // After this point, the NetworkConnectionHandler is fully initialized (all
   // handler references set, observers registered, ...).
 
   if (LoginState::IsInitialized())
     LoggedInStateChanged();
+}
+
+void NetworkConnectionHandler::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void NetworkConnectionHandler::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void NetworkConnectionHandler::LoggedInStateChanged() {
@@ -212,8 +214,6 @@ void NetworkConnectionHandler::LoggedInStateChanged() {
   NET_LOG_EVENT("Logged In", "");
   logged_in_ = true;
   logged_in_time_ = base::TimeTicks::Now();
-
-  DisconnectIfPolicyRequires();
 }
 
 void NetworkConnectionHandler::OnCertificatesLoaded(
@@ -221,20 +221,8 @@ void NetworkConnectionHandler::OnCertificatesLoaded(
     bool initial_load) {
   certificates_loaded_ = true;
   NET_LOG_EVENT("Certificates Loaded", "");
-  if (queued_connect_) {
+  if (queued_connect_)
     ConnectToQueuedNetwork();
-  } else if (initial_load) {
-    // Connecting to the "best" available network requires certificates to be
-    // loaded. Try to connect now.
-    ConnectToBestNetworkAfterLogin();
-  }
-}
-
-void NetworkConnectionHandler::PolicyChanged(const std::string& userhash) {
-  // Ignore user policies.
-  if (!userhash.empty())
-    return;
-  DisconnectIfPolicyRequires();
 }
 
 void NetworkConnectionHandler::ConnectToNetwork(
@@ -243,6 +231,9 @@ void NetworkConnectionHandler::ConnectToNetwork(
     const network_handler::ErrorCallback& error_callback,
     bool check_error_state) {
   NET_LOG_USER("ConnectToNetwork", service_path);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    ConnectToNetworkRequested(service_path));
+
   // Clear any existing queued connect request.
   queued_connect_.reset();
   if (HasConnectingNetwork(service_path)) {
@@ -759,68 +750,6 @@ void NetworkConnectionHandler::HandleShillDisconnectSuccess(
   NET_LOG_EVENT("Disconnect Request Sent", service_path);
   if (!success_callback.is_null())
     success_callback.Run();
-}
-
-void NetworkConnectionHandler::ConnectToBestNetworkAfterLogin() {
-  if (requested_connect_to_best_network_ || !applied_autoconnect_policy_ ||
-      !certificates_loaded_) {
-    return;
-  }
-
-  requested_connect_to_best_network_ = true;
-  network_state_handler_->ConnectToBestWifiNetwork();
-}
-
-void NetworkConnectionHandler::DisconnectIfPolicyRequires() {
-  if (applied_autoconnect_policy_ || !LoginState::Get()->IsUserLoggedIn())
-    return;
-
-  const base::DictionaryValue* global_network_config =
-      managed_configuration_handler_->GetGlobalConfigFromPolicy(std::string());
-  if (!global_network_config)
-    return;
-
-  applied_autoconnect_policy_ = true;
-
-  bool only_policy_autoconnect = false;
-  global_network_config->GetBooleanWithoutPathExpansion(
-      ::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
-      &only_policy_autoconnect);
-
-  if (only_policy_autoconnect)
-    DisconnectFromUnmanagedSharedWiFiNetworks();
-
-  ConnectToBestNetworkAfterLogin();
-}
-
-void NetworkConnectionHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
-  NET_LOG_DEBUG("DisconnectFromUnmanagedSharedWiFiNetworks", "");
-
-  NetworkStateHandler::NetworkStateList networks;
-  network_state_handler_->GetVisibleNetworkListByType(
-      NetworkTypePattern::Wireless(), &networks);
-  for (NetworkStateHandler::NetworkStateList::const_iterator it =
-           networks.begin();
-       it != networks.end();
-       ++it) {
-    const NetworkState* network = *it;
-    if (!(network->IsConnectingState() || network->IsConnectedState()))
-      break;  // Connected and connecting networks are listed first.
-
-    if (network->IsPrivate())
-      continue;
-
-    const bool network_is_policy_managed =
-        !network->profile_path().empty() && !network->guid().empty() &&
-        managed_configuration_handler_->FindPolicyByGuidAndProfile(
-            network->guid(), network->profile_path());
-    if (network_is_policy_managed)
-      continue;
-
-    NET_LOG_EVENT("Disconnect Forced by Policy", network->path());
-    CallShillDisconnect(
-        network->path(), base::Closure(), network_handler::ErrorCallback());
-  }
 }
 
 }  // namespace chromeos
