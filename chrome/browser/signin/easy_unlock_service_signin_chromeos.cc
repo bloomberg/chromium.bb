@@ -191,12 +191,26 @@ void EasyUnlockServiceSignin::RecordPasswordLoginEvent(
   if (!GetRemoteDevices() ||
       GetHardlockState() == EasyUnlockScreenlockStateHandler::NO_PAIRING) {
     event = chromeos::PASSWORD_SIGN_IN_NO_PAIRING;
-  } else if (GetHardlockState() ==
-             EasyUnlockScreenlockStateHandler::PAIRING_CHANGED) {
-    event = chromeos::PASSWORD_SIGN_IN_PAIRING_CHANGED;
-  } else if (GetHardlockState() ==
-             EasyUnlockScreenlockStateHandler::USER_HARDLOCK) {
-    event = chromeos::PASSWORD_SIGN_IN_USER_HARDLOCK;
+  } else if (GetHardlockState() !=
+             EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
+    switch (GetHardlockState()) {
+      case EasyUnlockScreenlockStateHandler::NO_HARDLOCK:
+      case EasyUnlockScreenlockStateHandler::NO_PAIRING:
+        NOTREACHED();
+        break;
+      case EasyUnlockScreenlockStateHandler::USER_HARDLOCK:
+        event = chromeos::PASSWORD_SIGN_IN_USER_HARDLOCK;
+        break;
+      case EasyUnlockScreenlockStateHandler::PAIRING_CHANGED:
+        event = chromeos::PASSWORD_SIGN_IN_PAIRING_CHANGED;
+        break;
+      case EasyUnlockScreenlockStateHandler::LOGIN_FAILED:
+        event = chromeos::PASSWORD_SIGN_IN_LOGIN_FAILED;
+        break;
+      case EasyUnlockScreenlockStateHandler::PAIRING_ADDED:
+        event = chromeos::PASSWORD_SIGN_IN_PAIRING_ADDED;
+        break;
+    }
   } else if (!screenlock_state_handler()) {
     event = chromeos::PASSWORD_SIGN_IN_SERVICE_NOT_ACTIVE;
   } else {
