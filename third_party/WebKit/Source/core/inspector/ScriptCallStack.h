@@ -41,6 +41,7 @@
 namespace blink {
 
 class ScriptAsyncCallStack;
+class TracedValue;
 
 class ScriptCallStack final : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptCallStack);
@@ -56,6 +57,7 @@ public:
     void setAsyncCallStack(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
+    void toTracedValue(TracedValue*, const char* name) const;
 
     void trace(Visitor*);
 

@@ -57,11 +57,6 @@ void TracedValue::setString(const char* name, const String& value)
     currentDictionary()->setString(name, threadSafeCopy(value));
 }
 
-void TracedValue::setArray(const char* name, PassRefPtr<JSONArray> value)
-{
-    currentDictionary()->setArray(name, value);
-}
-
 void TracedValue::beginDictionary(const char* name)
 {
     RefPtr<JSONObject> dictionary = JSONObject::create();

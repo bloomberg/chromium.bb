@@ -28,7 +28,6 @@ public:
     void setDouble(const char* name, double);
     void setBoolean(const char* name, bool value);
     void setString(const char* name, const String& value);
-    void setArray(const char* name, PassRefPtr<JSONArray> value);
     void beginArray(const char* name);
     void beginDictionary(const char* name);
 

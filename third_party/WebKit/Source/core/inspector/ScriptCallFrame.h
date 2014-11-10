@@ -37,6 +37,8 @@
 
 namespace blink {
 
+class TracedValue;
+
 class ScriptCallFrame  {
 public:
     ScriptCallFrame();
@@ -50,6 +52,7 @@ public:
     unsigned columnNumber() const { return m_column; }
 
     PassRefPtr<TypeBuilder::Console::CallFrame> buildInspectorObject() const;
+    void toTracedValue(TracedValue*) const;
 
 private:
     String m_functionName;

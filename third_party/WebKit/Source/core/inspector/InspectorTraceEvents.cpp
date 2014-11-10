@@ -168,7 +168,7 @@ PassRefPtr<TracedValue> InspectorScheduleStyleInvalidationTrackingEvent::fillCom
     value->setString("invalidationSet", descendantInvalidationSetToIdString(invalidationSet));
     value->setString("invalidatedSelectorId", invalidatedSelector);
     if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
-        value->setArray("stackTrace", stackTrace->buildInspectorArray()->asArray());
+        stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
 
@@ -259,7 +259,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorStyleRecalcInvalidatio
     value->setString("reason", reason.reasonString());
     value->setString("extraData", reason.extraData());
     if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
-        value->setArray("stackTrace", stackTrace->buildInspectorArray()->asArray());
+        stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
 
@@ -326,7 +326,7 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorLayoutInvalidationTrac
     value->setString("frame", toHexString(renderer->frame()));
     setGeneratingNodeInfo(value.get(), renderer, "nodeId", "nodeName");
     if (RefPtrWillBeRawPtr<ScriptCallStack> stackTrace = createScriptCallStack(maxInvalidationTrackingCallstackSize, true))
-        value->setArray("stackTrace", stackTrace->buildInspectorArray()->asArray());
+        stackTrace->toTracedValue(value.get(), "stackTrace");
     return value.release();
 }
 
