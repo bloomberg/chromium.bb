@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <vector>
+
 #include "chrome/browser/android/signin/signin_manager_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -16,11 +19,13 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/android_profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -56,7 +61,7 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
 
   virtual ~ProfileDataRemover() {}
 
-  virtual void OnBrowsingDataRemoverDone() override {
+  void OnBrowsingDataRemoverDone() override {
     remover_->RemoveObserver(this);
     origin_loop_->PostTask(FROM_HERE, callback_);
     origin_loop_->DeleteSoon(FROM_HERE, this);
@@ -134,7 +139,37 @@ void SigninManagerAndroid::FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj) {
 
 void SigninManagerAndroid::OnSignInCompleted(JNIEnv* env,
                                              jobject obj,
-                                             jstring username) {
+                                             jstring username,
+                                             jobjectArray accountIds,
+                                             jobjectArray accountNames) {
+  DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted";
+  // Seed the account tracker with id/email information if provided.
+  if (accountIds && accountNames) {
+    std::vector<std::string> gaia_ids;
+    std::vector<std::string> emails;
+    base::android::AppendJavaStringArrayToStringVector(env, accountIds,
+                                                       &gaia_ids);
+    base::android::AppendJavaStringArrayToStringVector(env, accountNames,
+                                                       &emails);
+    DCHECK_EQ(emails.size(), gaia_ids.size());
+    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding "
+             << emails.size() << " accounts";
+
+    AccountTrackerService* tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile_);
+    for (size_t i = 0; i < emails.size(); ++i) {
+      DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: seeding"
+               << " gaia_id=" << gaia_ids[i]
+               << " email=" << emails[i];
+      if (!gaia_ids[i].empty() && !emails[i].empty())
+        tracker->SeedAccountInfo(gaia_ids[i], emails[i]);
+    }
+  } else {
+    DVLOG(1) << "SigninManagerAndroid::OnSignInCompleted: missing ids/email"
+             << " ids=" << (void*) accountIds
+             << " emails=" << (void*) accountNames;
+  }
+
   SigninManagerFactory::GetForProfile(profile_)->OnExternalSigninCompleted(
       base::android::ConvertJavaStringToUTF8(env, username));
 }

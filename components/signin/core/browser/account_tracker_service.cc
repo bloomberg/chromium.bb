@@ -480,6 +480,10 @@ std::string AccountTrackerService::PickAccountIdForAccount(
 
 void AccountTrackerService::SeedAccountInfo(const std::string& gaia,
                                             const std::string& email) {
+  DVLOG(1) << "AccountTrackerService::SeedAccountInfo"
+           << " gaia_id=" << gaia
+           << " email=" << email;
+
   DCHECK(!gaia.empty());
   DCHECK(!email.empty());
   const std::string account_id = PickAccountIdForAccount(gaia, email);

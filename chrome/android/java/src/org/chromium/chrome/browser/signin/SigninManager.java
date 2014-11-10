@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
@@ -111,6 +112,28 @@ public class SigninManager {
          * if possible.
          */
         void onSigninCancelled();
+    }
+
+    /**
+     * Structure used to pass account ids and names from a background async task to the
+     * foreground post execute function.  This structure contains two arrays of the same
+     * length: one containing strings of stable account ids and the other containing
+     * strings of account names (or emails).  An account id corresponds with the account
+     * name at the same position in the array.
+     */
+    private static class AccountIdsAndNames {
+        public final String[] mAccountIds;
+        public final String[] mAccountNames;
+
+        public AccountIdsAndNames(String[] accountIds, String[] accountNames) {
+            // Make sure that both arrays arguments are either null or have the same length.
+            assert (accountIds == null) == (accountNames == null);
+            if (accountIds != null && accountNames != null) {
+                assert accountIds.length == accountNames.length;
+            }
+            mAccountIds = accountIds;
+            mAccountNames = accountNames;
+        }
     }
 
     /**
@@ -315,11 +338,38 @@ public class SigninManager {
         Log.d(TAG, "Committing the sign-in process now");
         assert mSignInAccount != null;
 
+        // Get mapping from account names to account ids.
+        final AccountIdProvider provider = AccountIdProvider.getInstance();
+        if (provider != null) {
+            new AsyncTask<Void, Void, AccountIdsAndNames>() {
+                @Override
+                public AccountIdsAndNames doInBackground(Void... params) {
+                    Log.d(TAG, "Getting id/email mapping");
+                    String[] accountNames = OAuth2TokenService.getSystemAccounts(mContext);
+                    assert accountNames.length > 0;
+                    String[] accountIds = new String[accountNames.length];
+                    for (int i = 0; i < accountIds.length; ++i) {
+                        accountIds[i] = provider.getAccountId(mContext, accountNames[i]);
+                    }
+                    return new AccountIdsAndNames(accountIds, accountNames);
+                }
+                @Override
+                public void onPostExecute(AccountIdsAndNames accountIdsAndNames) {
+                    finishSignIn(accountIdsAndNames);
+                }
+            }.execute();
+        } else {
+            finishSignIn(new AccountIdsAndNames(null, null));
+        }
+    }
+
+    private void finishSignIn(AccountIdsAndNames accountIdsAndNames) {
         // Cache the signed-in account name.
         ChromeSigninController.get(mContext).setSignedInAccountName(mSignInAccount.name);
 
         // Tell the native side that sign-in has completed.
-        nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name);
+        nativeOnSignInCompleted(mNativeSigninManagerAndroid, mSignInAccount.name,
+                                accountIdsAndNames.mAccountIds, accountIdsAndNames.mAccountNames);
 
         // Register for invalidations.
         InvalidationController invalidationController = InvalidationController.get(mContext);
@@ -470,7 +520,8 @@ public class SigninManager {
     private native void nativeCheckPolicyBeforeSignIn(
             long nativeSigninManagerAndroid, String username);
     private native void nativeFetchPolicyBeforeSignIn(long nativeSigninManagerAndroid);
-    private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username);
+    private native void nativeOnSignInCompleted(long nativeSigninManagerAndroid, String username,
+                                                String[] accountIds, String[] accountNames);
     private native void nativeSignOut(long nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(long nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(long nativeSigninManagerAndroid);

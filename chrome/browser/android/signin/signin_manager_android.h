@@ -42,7 +42,14 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
 
   void FetchPolicyBeforeSignIn(JNIEnv* env, jobject obj);
 
-  void OnSignInCompleted(JNIEnv* env, jobject obj, jstring username);
+  // Indicates that the user has made the choice to sign-in. |username|
+  // contains the email address of the account to use as primary.
+  // |accountIds| and |accoundNames| are two arrays of equal length: one
+  // containing strings of stable account ids and the other containing
+  // strings of account names (or emails).  An account id corresponds
+  // with the account name at the same position in the array.
+  void OnSignInCompleted(JNIEnv* env, jobject obj, jstring username,
+                         jobjectArray accountIds, jobjectArray accountNames);
 
   void SignOut(JNIEnv* env, jobject obj);
 
@@ -73,7 +80,7 @@ class SigninManagerAndroid : public MergeSessionHelper::Observer {
   void OnSigninAllowedPrefChanged();
 
   // MergeSessionHelper::Observer implementation.
-  virtual void MergeSessionCompleted(
+  void MergeSessionCompleted(
       const std::string& account_id,
       const GoogleServiceAuthError& error) override;
 
