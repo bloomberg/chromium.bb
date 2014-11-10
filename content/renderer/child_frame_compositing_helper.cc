@@ -164,6 +164,10 @@ void ChildFrameCompositingHelper::CheckSizeAndAdjustLayerProperties(
 }
 
 void ChildFrameCompositingHelper::OnContainerDestroy() {
+  // If we have a pending ACK, then ACK now so we don't lose frames in the
+  // future.
+  DidCommitCompositorFrame();
+
   if (GetContainer())
     GetContainer()->setWebLayer(NULL);
 
