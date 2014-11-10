@@ -320,6 +320,8 @@ void EmbeddedWorkerContextClient::didHandleFetchEvent(
 void EmbeddedWorkerContextClient::didHandlePushEvent(
     int request_id,
     blink::WebServiceWorkerEventResult result) {
+  DCHECK(script_context_);
+  script_context_->DidHandlePushEvent(request_id, result);
 }
 
 void EmbeddedWorkerContextClient::didHandleSyncEvent(int request_id) {

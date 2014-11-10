@@ -55,6 +55,8 @@ class ServiceWorkerScriptContext {
   void DidHandleFetchEvent(int request_id,
                            ServiceWorkerFetchEventResult result,
                            const ServiceWorkerResponse& response);
+  void DidHandlePushEvent(int request_id,
+                          blink::WebServiceWorkerEventResult result);
   void DidHandleSyncEvent(int request_id);
   void GetClientDocuments(
       blink::WebServiceWorkerClientsCallbacks* callbacks);

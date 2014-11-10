@@ -129,6 +129,14 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
       GetRoutingID(), request_id, result, response));
 }
 
+void ServiceWorkerScriptContext::DidHandlePushEvent(
+    int request_id,
+    blink::WebServiceWorkerEventResult unused) {
+  // TODO(johnme): Plumb through the result.
+  Send(new ServiceWorkerHostMsg_PushEventFinished(
+      GetRoutingID(), request_id));
+}
+
 void ServiceWorkerScriptContext::DidHandleSyncEvent(int request_id) {
   Send(new ServiceWorkerHostMsg_SyncEventFinished(
       GetRoutingID(), request_id));
@@ -222,8 +230,6 @@ void ServiceWorkerScriptContext::OnPushEvent(int request_id,
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnPushEvent");
   proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
-  Send(new ServiceWorkerHostMsg_PushEventFinished(
-      GetRoutingID(), request_id));
 }
 
 void ServiceWorkerScriptContext::OnGeofencingEvent(
