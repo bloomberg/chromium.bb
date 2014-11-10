@@ -32,6 +32,12 @@ const char kAdviseOnGclientSolution[] =
     "}";
 const char kTitlePageOfAppEngineAdminPage[] = "Instances";
 
+const char kIsApprtcCallUpJavascript[] =
+    "var remoteVideoActive ="
+    "    typeof remoteVideo != undefined &&"
+    "    remoteVideo.classList.contains('active');"
+    "window.domAutomationController.send(remoteVideoActive.toString());";
+
 
 // WebRTC-AppRTC integration test. Requires a real webcam and microphone
 // on the running system. This test is not meant to run in the main browser
@@ -117,17 +123,13 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
   }
 
   bool WaitForCallToComeUp(content::WebContents* tab_contents) {
-    // Apprtc will set remoteVideo.style.opacity to 1 when the call comes up.
-    std::string javascript =
-        "window.domAutomationController.send(remoteVideo.style.opacity)";
-    return test::PollingWaitUntil(javascript, "1", tab_contents);
+    return test::PollingWaitUntil(kIsApprtcCallUpJavascript, "true",
+                                  tab_contents);
   }
 
   bool WaitForCallToHangUp(content::WebContents* tab_contents) {
-    // Apprtc will set remoteVideo.style.opacity to 1 when the call comes up.
-    std::string javascript =
-        "window.domAutomationController.send(remoteVideo.style.opacity)";
-    return test::PollingWaitUntil(javascript, "0", tab_contents);
+    return test::PollingWaitUntil(kIsApprtcCallUpJavascript, "false",
+                                  tab_contents);
   }
 
   bool EvalInJavascriptFile(content::WebContents* tab_contents,
@@ -155,14 +157,14 @@ class WebRtcApprtcBrowserTest : public WebRtcTestBase {
       return false;
 
     // The remote video tag is called remoteVideo in the AppRTC code.
-    StartDetectingVideo(tab_contents, "remoteVideo");
+    StartDetectingVideo(tab_contents, "remote-video");
     WaitForVideoToPlay(tab_contents);
     return true;
   }
 
   bool HangUpApprtcCall(content::WebContents* tab_contents) {
     // This is the same as clicking the Hangup button in the AppRTC call.
-    return content::ExecuteScript(tab_contents, "onHangup()");
+    return content::ExecuteScript(tab_contents, "hangup()");
   }
 
   base::FilePath GetSourceDir() {
