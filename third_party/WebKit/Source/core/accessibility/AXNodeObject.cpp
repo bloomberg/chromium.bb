@@ -225,6 +225,8 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole()
                 return MenuItemRadioRole;
             return RadioButtonRole;
         }
+        if (type == InputTypeNames::number)
+            return SpinButtonRole;
         if (input.isTextButton())
             return buttonRoleType();
         if (type == InputTypeNames::range)
