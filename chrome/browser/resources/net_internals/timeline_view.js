@@ -71,7 +71,6 @@ var TimelineView = (function() {
   TimelineView.OPEN_SOCKETS_ID = 'timeline-view-open-sockets';
   TimelineView.IN_USE_SOCKETS_ID = 'timeline-view-in-use-sockets';
   TimelineView.URL_REQUESTS_ID = 'timeline-view-url-requests';
-  TimelineView.DNS_REQUESTS_ID = 'timeline-view-dns-requests';
   TimelineView.DNS_JOBS_ID = 'timeline-view-dns-jobs';
   TimelineView.BYTES_RECEIVED_ID = 'timeline-view-bytes-received';
   TimelineView.BYTES_SENT_ID = 'timeline-view-bytes-sent';
@@ -203,11 +202,6 @@ var TimelineView = (function() {
                               EventSourceType.URL_REQUEST,
                               EventType.REQUEST_ALIVE),
                           TimelineView.URL_REQUESTS_ID);
-
-      this.addDataSeries_(new SourceCountDataSeries(
-                              EventSourceType.HOST_RESOLVER_IMPL_REQUEST,
-                              EventType.HOST_RESOLVER_IMPL_REQUEST),
-                          TimelineView.DNS_REQUESTS_ID);
 
       this.addDataSeries_(new SourceCountDataSeries(
                               EventSourceType.HOST_RESOLVER_IMPL_JOB,

@@ -88,7 +88,6 @@ var SourceEntry = (function() {
         case EventSourceType.CONNECT_JOB:
           this.description_ = e.params.group_name;
           break;
-        case EventSourceType.HOST_RESOLVER_IMPL_REQUEST:
         case EventSourceType.HOST_RESOLVER_IMPL_JOB:
         case EventSourceType.HOST_RESOLVER_IMPL_PROC_TASK:
           this.description_ = e.params.host;

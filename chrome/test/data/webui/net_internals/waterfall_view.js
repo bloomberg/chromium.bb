@@ -11,16 +11,16 @@ GEN_INCLUDE(['net_internals_test.js']);
 TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
   function runTestCase(testCase) {
     var eventPairs = WaterfallRow.findUrlRequestEvents(testCase.sourceEntry);
-    expectEquals(eventPairs.length, testCase.expectedEventPairs.length);
+    expectEquals(testCase.expectedEventPairs.length, eventPairs.length);
     for (var i = 0; i < eventPairs.length; ++i) {
-      expectEquals(eventPairs[i].startEntry.time,
-          testCase.expectedEventPairs[i].startTime);
-      expectEquals(eventPairs[i].endEntry.time,
-          testCase.expectedEventPairs[i].endTime);
-      expectEquals(eventPairs[i].startEntry.type,
-          testCase.expectedEventPairs[i].eventType);
-      expectEquals(eventPairs[i].endEntry.type,
-          testCase.expectedEventPairs[i].eventType);
+      expectEquals(testCase.expectedEventPairs[i].startTime,
+                   eventPairs[i].startEntry.time);
+      expectEquals(testCase.expectedEventPairs[i].endTime,
+                   eventPairs[i].endEntry.time);
+      expectEquals(testCase.expectedEventPairs[i].eventType,
+                   eventPairs[i].startEntry.type);
+      expectEquals(testCase.expectedEventPairs[i].eventType,
+                   eventPairs[i].endEntry.type);
     }
     SourceTracker.getInstance().clearEntries_();
   }
@@ -31,11 +31,6 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
         startTime: "369047367",
         endTime: "369047371",
         eventType: EventType.PROXY_SERVICE
-      },
-      {
-        startTime: "369047371",
-        endTime: "369047372",
-        eventType: EventType.HOST_RESOLVER_IMPL_REQUEST
       },
       {
         startTime: "369047398",
@@ -121,46 +116,18 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
       },
       {
         "params": {
-          "source_dependency": {
-            "id": 113,
-            "type": EventSourceType.HOST_RESOLVER_IMPL_REQUEST
-          }
-        },
-        "phase": EventPhase.PHASE_BEGIN,
-        "source": {
-          "id": 112,
-          "type": EventSourceType.HTTP_STREAM_JOB
-        },
-        "time": "369047371",
-        "type": EventType.HOST_RESOLVER_IMPL
-      },
-      {
-        "params": {
           "address_family": 0,
           "allow_cached_response": true,
           "host": "www.google.com:443",
           "is_speculative": false,
-          "priority": 3,
-          "source_dependency": {
-            "id": 112,
-            "type": EventSourceType.HTTP_STREAM_JOB
-          }
+          "priority": 3
         },
         "phase": EventPhase.PHASE_BEGIN,
         "source": {
-          "id": 113,
-          "type": EventSourceType.HOST_RESOLVER_IMPL_REQUEST
+          "id": 112,
+          "type": EventSourceType.HTTP_STREAM_JOB
         },
         "time": "369047371",
-        "type": EventType.HOST_RESOLVER_IMPL_REQUEST
-      },
-      {
-        "phase": EventPhase.PHASE_END,
-        "source": {
-          "id": 113,
-          "type": EventSourceType.HOST_RESOLVER_IMPL_REQUEST
-        },
-        "time": "369047372",
         "type": EventType.HOST_RESOLVER_IMPL_REQUEST
       },
       {
@@ -170,7 +137,7 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
           "type": EventSourceType.HTTP_STREAM_JOB
         },
         "time": "369047372",
-        "type": EventType.HOST_RESOLVER_IMPL
+        "type": EventType.HOST_RESOLVER_IMPL_REQUEST
       },
       {
         "params": {
@@ -233,35 +200,16 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
       },
       {
         "params": {
-          "source_dependency": {
-            "id": 126,
-            "type": EventSourceType.HOST_RESOLVER_IMPL_REQUEST
-          }
+          "address_family": 0,
+          "allow_cached_response": true,
+          "host": "www.google.com:443",
+          "is_speculative": false,
+          "priority": 3
         },
         "phase": EventPhase.PHASE_BEGIN,
         "source": {
           "id": 112,
           "type": EventSourceType.HTTP_STREAM_JOB
-        },
-        "time": "369047438",
-        "type": EventType.HOST_RESOLVER_IMPL
-      },
-      {
-        "params": {
-          "address_family": 0,
-          "allow_cached_response": true,
-          "host": "www.google.com:443",
-          "is_speculative": false,
-          "priority": 3,
-          "source_dependency": {
-            "id": 112,
-            "type": EventSourceType.HTTP_STREAM_JOB
-          }
-        },
-        "phase": EventPhase.PHASE_BEGIN,
-        "source": {
-          "id": 126,
-          "type": EventSourceType.HOST_RESOLVER_IMPL_REQUEST
         },
         "time": "369047438",
         "type": EventType.HOST_RESOLVER_IMPL_REQUEST
@@ -273,7 +221,7 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
           "type": EventSourceType.HTTP_STREAM_JOB
         },
         "time": "369047439",
-        "type": EventType.HOST_RESOLVER_IMPL
+        "type": EventType.HOST_RESOLVER_IMPL_REQUEST
       },
       {
         "params": {
@@ -444,7 +392,7 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
     testCase.sourceEntry = SourceTracker.getInstance().getSourceEntry(111);
 
     var expectedEventPairs = expectedEventPairsWithoutTcp();
-    expectedEventPairs.splice(2, 0, tcpConnect);
+    expectedEventPairs.splice(1, 0, tcpConnect);
     testCase.expectedEventPairs = expectedEventPairs;
 
     return testCase;
@@ -546,7 +494,7 @@ TEST_F('NetInternalsTest', 'netInternalsWaterfallView', function() {
     testCase.sourceEntry = SourceTracker.getInstance().getSourceEntry(111);
 
     var expectedEventPairs = expectedEventPairsWithoutTcp();
-    expectedEventPairs.splice(2, 0, tcpConnect);
+    expectedEventPairs.splice(1, 0, tcpConnect);
     testCase.expectedEventPairs = expectedEventPairs;
 
     return testCase;

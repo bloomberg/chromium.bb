@@ -33,14 +33,6 @@ EVENT_TYPE(REQUEST_ALIVE)
 // HostResolverImpl
 // ------------------------------------------------------------------------
 
-// The start/end of waiting on a host resolve (DNS) request.
-// The BEGIN phase contains the following parameters:
-//
-//   {
-//     "source_dependency": <Source id of the request being waited on>,
-//   }
-EVENT_TYPE(HOST_RESOLVER_IMPL)
-
 // The start/end of a host resolve (DNS) request.  Note that these events are
 // logged for all DNS requests, though not all requests result in the creation
 // of a HostResolvedImpl::Request object.
@@ -49,12 +41,11 @@ EVENT_TYPE(HOST_RESOLVER_IMPL)
 //
 //   {
 //     "host": <Hostname associated with the request>,
-//     "address_family": <The address family to restrict results to>
+//     "address_family": <The address family to restrict results to>,
 //     "allow_cached_response": <Whether it is ok to return a result from
-//                               the host cache>
+//                               the host cache>,
 //     "is_speculative": <Whether this request was started by the DNS
 //                        prefetcher>
-//     "source_dependency": <Source id, if any, of what created the request>,
 //   }
 //
 // If an error occurred, the END phase will contain these parameters:

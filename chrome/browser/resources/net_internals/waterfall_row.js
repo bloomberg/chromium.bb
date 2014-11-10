@@ -252,19 +252,14 @@ var WaterfallRow = (function() {
       for (var i = 0; i < httpStreamJobSources.length; ++i) {
         // Two levels down from URL Requests.
 
-        var hostResolverImplSources = findDependenciesOfType_(
-            httpStreamJobSources[i], EventType.HOST_RESOLVER_IMPL);
-
         var socketSources = findDependenciesOfType_(
             httpStreamJobSources[i], EventType.SOCKET_POOL_BOUND_TO_SOCKET);
-
-        // Three levels down from URL Requests.
 
         // TODO(mmenke):  Some of these may be nested in the PROXY_SERVICE
         //                event, resulting in incorrect display, since nested
         //                events aren't handled.
-        var hostResolverImplRequestPairs = findEntryPairsFromSourceEntries_(
-            hostResolverImplSources, EventType.HOST_RESOLVER_IMPL_REQUEST);
+        var hostResolverImplRequestPairs = findEntryPairsByType_(
+            httpStreamJobSources[i], EventType.HOST_RESOLVER_IMPL_REQUEST);
         eventPairs = eventPairs.concat(hostResolverImplRequestPairs);
 
         // Truncate times of connection events such that they don't occur before
@@ -310,7 +305,7 @@ var WaterfallRow = (function() {
       return a.startEntry.time - b.startEntry.time;
     });
     return eventPairs;
-  }
+  };
 
   function eventTypeToCssClass_(eventType) {
     return eventType.toLowerCase().replace(/_/g, '-');
