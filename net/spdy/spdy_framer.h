@@ -614,14 +614,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
                            TooLargeHeadersFrameUsesContinuation);
   FRIEND_TEST_ALL_PREFIXES(SpdyFramerTest,
                            TooLargePushPromiseFrameUsesContinuation);
-  friend class net::HttpNetworkLayer;  // This is temporary for the server.
-  friend class net::HttpNetworkTransactionTest;
-  friend class net::HttpProxyClientSocketPoolTest;
-  friend class net::SpdyHttpStreamTest;
-  friend class net::SpdyNetworkTransactionTest;
-  friend class net::SpdyProxyClientSocketTest;
-  friend class net::SpdySessionTest;
-  friend class net::SpdyStreamTest;
+  friend class HttpNetworkLayer;  // This is temporary for the server.
+  friend class HttpNetworkTransactionTest;
+  friend class HttpProxyClientSocketPoolTest;
+  friend class SpdyHttpStreamTest;
+  friend class SpdyNetworkTransactionTest;
+  friend class SpdyProxyClientSocketTest;
+  friend class SpdySessionTest;
+  friend class SpdyStreamTest;
   friend class test::TestSpdyVisitor;
 
  private:
