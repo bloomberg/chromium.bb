@@ -88,6 +88,24 @@ BaseDownloadsWebUITest.prototype = {
   },
 
   /**
+   * Simulates getting no results from C++.
+   */
+  sendEmptyList: function() {
+    downloadsList([]);
+    assertEquals(0, downloads.size());
+  },
+
+  /**
+   * Check that |element| is showing and contains |text|.
+   * @param {Element} element
+   * @param {string} text
+   */
+  checkShowing: function(element, text) {
+    expectFalse(element.hidden);
+    expectNotEquals(-1, element.textContent.indexOf(text));
+  },
+
+  /**
    * Asserts the correctness of the state of the UI elements
    * that delete the download history.
    * @param {boolean} allowDelete True if download history deletion is

@@ -110,7 +110,7 @@ function Downloads() {
 
   window.addEventListener('keydown', this.onKeyDown_.bind(this));
 
-  this.onDownloadListChanged_();
+  this.updateResults();
 }
 
 /**
@@ -151,7 +151,7 @@ Downloads.prototype.setSearchText = function(searchText) {
 };
 
 /**
- * Update the summary block above the results
+ * Update the summary block above the results.
  */
 Downloads.prototype.updateSummary = function() {
   if (this.searchText_) {
@@ -160,6 +160,19 @@ Downloads.prototype.updateSummary = function() {
   } else {
     this.summary_.textContent = '';
   }
+};
+
+/**
+ * Called when either a search or load completes to update whether there are
+ * results or not.
+ */
+Downloads.prototype.updateResults = function() {
+  this.noDownloadsOrResults_.textContent = loadTimeData.getString(
+      this.searchText_ ? 'no_search_results' : 'no_downloads');
+
+  var hasDownloads = this.size() > 0;
+  this.node_.hidden = !hasDownloads;
+  this.noDownloadsOrResults_.hidden = hasDownloads;
 };
 
 /**
@@ -189,12 +202,7 @@ Downloads.prototype.onDownloadListChanged_ = function() {
     }
   }
 
-  this.noDownloadsOrResults_.textContent = loadTimeData.getString(
-      this.searchText_ ? 'no_search_results' : 'no_downloads');
-
-  var hasDownloads = this.size() > 0;
-  this.node_.hidden = !hasDownloads;
-  this.noDownloadsOrResults_.hidden = hasDownloads;
+  this.updateResults();
 };
 
 /**
@@ -953,6 +961,7 @@ function downloadsList(results) {
     downloads.clear();
     downloadUpdated(results);
   }
+  downloads.updateResults();
   downloads.updateSummary();
 }
 
