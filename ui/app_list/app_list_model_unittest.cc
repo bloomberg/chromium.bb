@@ -75,9 +75,9 @@ class AppListModelTest : public testing::Test {
   void TearDown() override { model_.RemoveObserver(&observer_); }
 
  protected:
-  static bool ItemObservedByFolder(AppListFolderItem* folder,
+  static bool ItemObservedByFolder(const AppListFolderItem* folder,
                                    const AppListItem* item) {
-    return item->observers_.HasObserver(folder->folder_image());
+    return item->observers_.HasObserver(&folder->folder_image());
   }
 
   std::string GetItemListContents(AppListItemList* item_list) {

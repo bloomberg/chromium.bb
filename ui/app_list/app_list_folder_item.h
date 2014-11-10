@@ -56,9 +56,7 @@ class APP_LIST_EXPORT AppListFolderItem : public AppListItem,
   const AppListItemList* item_list() const { return item_list_.get(); }
 
   // For tests.
-  // TODO(mgiuca): return a const FolderImage& (requires that
-  // base::ObserverList::HasObserver takes a const*).
-  FolderImage* folder_image() { return &folder_image_; }
+  const FolderImage& folder_image() const { return folder_image_; }
 
   FolderType folder_type() const { return folder_type_; }
 
