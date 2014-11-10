@@ -10,7 +10,8 @@
 
 namespace blink {
 
-class DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>, public ScriptWrappableBase {
+class DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMPointReadOnly* create(double x, double y, double z, double w);
 

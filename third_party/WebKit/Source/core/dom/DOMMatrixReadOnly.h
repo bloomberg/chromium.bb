@@ -14,7 +14,8 @@ namespace blink {
 
 class DOMMatrix;
 
-class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappableBase {
+class DOMMatrixReadOnly : public GarbageCollected<DOMMatrixReadOnly>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     double a() const { return m_matrix.m11(); }
     double b() const { return m_matrix.m12(); }

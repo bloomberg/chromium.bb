@@ -10,6 +10,7 @@
 namespace blink {
 
 class DOMMatrix : public DOMMatrixReadOnly {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMMatrix* create();
     static DOMMatrix* create(DOMMatrixReadOnly*);

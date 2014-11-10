@@ -12,6 +12,7 @@ namespace blink {
 class DOMPointInit;
 
 class DOMPoint final : public DOMPointReadOnly {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMPoint* create(const DOMPointInit&);
     static DOMPoint* create(double x, double y, double z = 0, double w = 1);

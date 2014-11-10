@@ -10,7 +10,8 @@
 
 namespace blink {
 
-class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappableBase {
+class DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static DOMRectReadOnly* create(double x, double y, double width, double height);
 
