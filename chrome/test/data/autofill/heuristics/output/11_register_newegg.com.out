@@ -21,25 +21,25 @@ PHONE_HOME_NUMBER | BDayPhone_tel3 | Last four digits |  | LoginName_1-default
 UNKNOWN_TYPE | BDayPhone_ext1 | Ext |  | LoginName_1-default
 UNKNOWN_TYPE | same | Is this your shipping address?* | 1 | LoginName_1-default
 UNKNOWN_TYPE | same | Yes No | 0 | LoginName_1-default
-NAME_FIRST | SFirstName | First Name* |  | SFirstName_1-default
-NAME_MIDDLE_INITIAL | SMI | MI |  | SFirstName_1-default
-NAME_LAST | SLastName | Last Name* |  | SFirstName_1-default
-COMPANY_NAME | SCompanyName | Company Name |  | SFirstName_1-default
-ADDRESS_HOME_LINE1 | SAddress1 | Address* |  | SFirstName_1-default
-ADDRESS_HOME_LINE2 | SAddress2 | Address 2 |  | SFirstName_1-default
-ADDRESS_HOME_CITY | SCity | City* |  | SFirstName_1-default
-ADDRESS_HOME_STATE | SState | State* | AK | SFirstName_1-default
-ADDRESS_HOME_ZIP | SZip | Zip Code* |  | SFirstName_1-default
-PHONE_HOME_CITY_CODE | ShippingPhone_tel1 | Shipping Phone* |  | SFirstName_1-default
-PHONE_HOME_NUMBER | ShippingPhone_tel2 | ) |  | SFirstName_1-default
-PHONE_HOME_NUMBER | ShippingPhone_tel3 | - |  | SFirstName_1-default
-UNKNOWN_TYPE | ShippingPhone_ext1 | Ext |  | SFirstName_1-default
-UNKNOWN_TYPE | custtype | Is this purchase for personal or business use? | 200 | SFirstName_1-default
-UNKNOWN_TYPE | Age | Age |  | SFirstName_1-default
-UNKNOWN_TYPE | income | Income | 0 | SFirstName_1-default
-UNKNOWN_TYPE | education | Education | 0 | SFirstName_1-default
-UNKNOWN_TYPE | hob | Where did you hear about Newegg.com? | 0 | SFirstName_1-default
-UNKNOWN_TYPE | FirstPurchase | Is this your first Newegg.com purchase? | 0 | SFirstName_1-default
-UNKNOWN_TYPE | GameHours | How many hours per week do you play PC games? | 0 | SFirstName_1-default
-UNKNOWN_TYPE | Spam | Sign me up for exclusive newsletter deals, sweepstakes, and 24-hour sales only available to subscribers | 1 | SFirstName_1-default
-UNKNOWN_TYPE | SMS | I would like to receive SMS messages via my wireless device. | 1 | SFirstName_1-default
+NAME_FIRST | SFirstName | First Name* |  | LoginName_1-default
+NAME_MIDDLE_INITIAL | SMI | MI |  | LoginName_1-default
+NAME_LAST | SLastName | Last Name* |  | LoginName_1-default
+COMPANY_NAME | SCompanyName | Company Name |  | LoginName_1-default
+ADDRESS_HOME_LINE1 | SAddress1 | Address* |  | LoginName_1-default
+ADDRESS_HOME_LINE2 | SAddress2 | Address 2 |  | LoginName_1-default
+ADDRESS_HOME_CITY | SCity | City* |  | LoginName_1-default
+ADDRESS_HOME_STATE | SState | State* | AK | LoginName_1-default
+ADDRESS_HOME_ZIP | SZip | Zip Code* |  | LoginName_1-default
+PHONE_HOME_CITY_CODE | ShippingPhone_tel1 | Shipping Phone* |  | LoginName_1-default
+PHONE_HOME_NUMBER | ShippingPhone_tel2 | ) |  | LoginName_1-default
+PHONE_HOME_NUMBER | ShippingPhone_tel3 | - |  | LoginName_1-default
+UNKNOWN_TYPE | ShippingPhone_ext1 | Ext |  | LoginName_1-default
+UNKNOWN_TYPE | custtype | Is this purchase for personal or business use? | 200 | LoginName_1-default
+UNKNOWN_TYPE | Age | Age |  | LoginName_1-default
+UNKNOWN_TYPE | income | Income | 0 | LoginName_1-default
+UNKNOWN_TYPE | education | Education | 0 | LoginName_1-default
+UNKNOWN_TYPE | hob | Where did you hear about Newegg.com? | 0 | LoginName_1-default
+UNKNOWN_TYPE | FirstPurchase | Is this your first Newegg.com purchase? | 0 | LoginName_1-default
+UNKNOWN_TYPE | GameHours | How many hours per week do you play PC games? | 0 | LoginName_1-default
+UNKNOWN_TYPE | Spam | Sign me up for exclusive newsletter deals, sweepstakes, and 24-hour sales only available to subscribers | 1 | LoginName_1-default
+UNKNOWN_TYPE | SMS | I would like to receive SMS messages via my wireless device. | 1 | LoginName_1-default

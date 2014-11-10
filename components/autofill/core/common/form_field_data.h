@@ -29,6 +29,8 @@ struct FormFieldData {
   // Comparison operator exposed for STL map. Uses label, then name to sort.
   bool operator<(const FormFieldData& field) const;
 
+  // If you add more, be sure to update the comparison operators, serializing
+  // functions (in the .cc file) and the constructor.
   base::string16 label;
   base::string16 name;
   base::string16 value;

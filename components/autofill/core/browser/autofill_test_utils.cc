@@ -48,6 +48,7 @@ void CreateTestFormField(const char* label,
   field->name = ASCIIToUTF16(name);
   field->value = ASCIIToUTF16(value);
   field->form_control_type = type;
+  field->is_focusable = true;
 }
 
 void CreateTestAddressFormData(FormData* form) {

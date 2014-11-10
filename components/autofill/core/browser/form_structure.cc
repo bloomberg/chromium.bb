@@ -1207,6 +1207,10 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       if (AutofillType(current_type).group() == PHONE_HOME)
         already_saw_current_type = false;
 
+      // Ignore non-focusable field while inferring boundaries between sections.
+      if (!(*field)->is_focusable)
+        already_saw_current_type = false;
+
       // Some forms have adjacent fields of the same type.  Two common examples:
       //  * Forms with two email fields, where the second is meant to "confirm"
       //    the first.

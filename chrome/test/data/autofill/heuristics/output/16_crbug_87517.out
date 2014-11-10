@@ -25,18 +25,18 @@ UNKNOWN_TYPE | Tribute_Disclosure | Occasion: | on | f1_1-default
 UNKNOWN_TYPE | Tribute_Notification | I wish to remain anonymous | on | f1_1-default
 UNKNOWN_TYPE | Tribute_IncludeAmount |  | 1 | f1_1-default
 UNKNOWN_TYPE | Tribute_IncludeAmount | Include the amount | 0 | f1_1-default
-NAME_FULL | Tribute_NotifyName | Name: |  | Tribute_NotifyName_1-default
-EMAIL_ADDRESS | Tribute_Email | Email: |  | Tribute_NotifyName_1-default
-ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: |  | Tribute_NotifyName_1-default
-ADDRESS_HOME_CITY | Tribute_NotifyCity | City / St. / Zip: |  | Tribute_NotifyName_1-default
-ADDRESS_HOME_STATE | Tribute_NotifyState | City / St. / Zip: |  | Tribute_NotifyName_1-default
-ADDRESS_HOME_ZIP | Tribute_NotifyZip | City / St. / Zip: |  | Tribute_NotifyName_1-default
-CREDIT_CARD_TYPE | cctype | Credit Card Type * | Visa | Tribute_NotifyName_1-cc
-CREDIT_CARD_NUMBER | ccard | Credit Card Number * |  | Tribute_NotifyName_1-cc
-CREDIT_CARD_VERIFICATION_CODE | csc | CSC Number * What Is This? |  | Tribute_NotifyName_1-cc
-CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1 | Tribute_NotifyName_1-cc
-CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11 | Tribute_NotifyName_1-cc
-UNKNOWN_TYPE | SameAddress | Billing Address - | checkbox | Tribute_NotifyName_1-default
+NAME_FULL | Tribute_NotifyName | Name: |  | f1_1-default
+EMAIL_ADDRESS | Tribute_Email | Email: |  | f1_1-default
+ADDRESS_HOME_LINE1 | Tribute_NotifyAddr | Street: |  | f1_1-default
+ADDRESS_HOME_CITY | Tribute_NotifyCity | City / St. / Zip: |  | f1_1-default
+ADDRESS_HOME_STATE | Tribute_NotifyState | City / St. / Zip: |  | f1_1-default
+ADDRESS_HOME_ZIP | Tribute_NotifyZip | City / St. / Zip: |  | f1_1-default
+CREDIT_CARD_TYPE | cctype | Credit Card Type * | Visa | f1_1-cc
+CREDIT_CARD_NUMBER | ccard | Credit Card Number * |  | f1_1-cc
+CREDIT_CARD_VERIFICATION_CODE | csc | CSC Number * What Is This? |  | f1_1-cc
+CREDIT_CARD_EXP_MONTH | ExpMon | Month | 1 | f1_1-cc
+CREDIT_CARD_EXP_4_DIGIT_YEAR | ExpYear | Year | 11 | f1_1-cc
+UNKNOWN_TYPE | SameAddress | Billing Address - | checkbox | f1_1-default
 ADDRESS_HOME_LINE1 | CC_Addr | Address 1 * |  | CC_Addr_1-default
 ADDRESS_HOME_LINE2 | CC_Addr2 | Address 2 |  | CC_Addr_1-default
 ADDRESS_HOME_CITY | CC_City | City / State / Zip * |  | CC_Addr_1-default

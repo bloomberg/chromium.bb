@@ -70,7 +70,20 @@ bool FormFieldData::operator==(const FormFieldData& field) const {
           name == field.name &&
           form_control_type == field.form_control_type &&
           autocomplete_attribute == field.autocomplete_attribute &&
-          max_length == field.max_length);
+          max_length == field.max_length &&
+          // is_checked and is_autofilled counts as "value" since these change
+          // when we fill things in.
+          is_checkable == field.is_checkable &&
+          is_focusable == field.is_focusable &&
+          should_autocomplete == field.should_autocomplete &&
+          text_direction == field.text_direction);
+          // The option values/contents whith are the list of items in the list
+          // of a drop-down are currently not considered part of the identity of
+          // a form element. This is debatable, since one might base heuristics
+          // on the types of elements that are available. Alternatively, one
+          // could imagine some forms that dynamically change the element
+          // contents (say, insert years starting from the current year) that
+          // should not be considered changes in the structure of the form.
 }
 
 bool FormFieldData::operator!=(const FormFieldData& field) const {
@@ -78,10 +91,28 @@ bool FormFieldData::operator!=(const FormFieldData& field) const {
 }
 
 bool FormFieldData::operator<(const FormFieldData& field) const {
-  if (label == field.label)
-    return name < field.name;
-
-  return label < field.label;
+  // Like operator==, this ignores the value.
+  if (label < field.label) return true;
+  if (label > field.label) return false;
+  if (name < field.name) return true;
+  if (name > field.name) return false;
+  if (form_control_type < field.form_control_type) return true;
+  if (form_control_type > field.form_control_type) return false;
+  if (autocomplete_attribute < field.autocomplete_attribute) return true;
+  if (autocomplete_attribute > field.autocomplete_attribute) return false;
+  if (max_length < field.max_length) return true;
+  if (max_length > field.max_length) return false;
+  // Skip is_checked and is_autofilled as in operator==.
+  if (is_checkable < field.is_checkable) return true;
+  if (is_checkable > field.is_checkable) return false;
+  if (is_focusable < field.is_focusable) return true;
+  if (is_focusable > field.is_focusable) return false;
+  if (should_autocomplete < field.should_autocomplete) return true;
+  if (should_autocomplete > field.should_autocomplete) return false;
+  if (text_direction < field.text_direction) return true;
+  if (text_direction > field.text_direction) return false;
+  // See operator== above for why we don't check option_values/contents.
+  return false;
 }
 
 void SerializeFormFieldData(const FormFieldData& field_data,

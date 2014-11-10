@@ -1749,6 +1749,65 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
   }
 }
 
+// Test that non-focusable field is ignored while inferring boundaries between
+// sections: http://crbug.com/231160
+TEST_F(AutofillManagerTest, FillFormWithNonFocusableFields) {
+  // Create a form with both focusable and non-focusable fields.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  form.user_submitted = true;
+
+  FormFieldData field;
+
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("", "email", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("", "email_", "", "text", &field);
+  field.is_focusable = false;
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Country", "country", "", "text", &field);
+  form.fields.push_back(field);
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Fill the form
+  GUIDPair guid("00000000-0000-0000-0000-000000000001", 0);
+  GUIDPair empty(std::string(), 0);
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, form.fields[0],
+      PackGUIDs(empty, guid), &response_page_id, &response_data);
+
+  // The whole form should be filled as all the fields belong to the same
+  // logical section.
+  ASSERT_EQ(6U, response_data.fields.size());
+  ExpectFilledField("First Name", "firstname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("", "lastname", "Presley", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("", "email", "theking@gmail.com", "text",
+                    response_data.fields[2]);
+  ExpectFilledField("Phone Number", "phonenumber", "12345678901", "tel",
+                    response_data.fields[3]);
+  ExpectFilledField("", "email_", "theking@gmail.com", "text",
+                    response_data.fields[4]);
+  ExpectFilledField("Country", "country", "United States", "text",
+                    response_data.fields[5]);
+}
+
 // Test that we correctly fill a form that has multiple logical sections, e.g.
 // both a billing and a shipping address.
 TEST_F(AutofillManagerTest, FillFormWithMultipleSections) {
