@@ -1243,7 +1243,6 @@ crbug.com/409579 http/tests/security/javascriptURL/xss-DENIED-to-javascript-url-
 crbug.com/409712 http/tests/filesystem/workers/resolve-url.html [ Pass Timeout ]
 crbug.com/409767 crypto/worker-subtle-crypto-concurrent.html [ Crash Pass Timeout ]
 
-crbug.com/409535 [ Win Release ] http/tests/xmlhttprequest/workers/close.html [ Pass Timeout ]
 crbug.com/409534 compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 crbug.com/409534 virtual/prefer_compositing_to_lcd_text/compositing/overflow/do-not-crash-use-after-free-update-widget-positions.html [ Failure Pass ]
 
