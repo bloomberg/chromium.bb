@@ -29,6 +29,21 @@
 
 namespace blink {
 
+WebGLExtensionScopedContext::WebGLExtensionScopedContext(WebGLExtension* extension)
+    : m_context(extension->m_context)
+{
+}
+
+WebGLExtensionScopedContext::~WebGLExtensionScopedContext()
+{
+}
+
+void WebGLExtensionScopedContext::trace(Visitor* visitor)
+{
+    visitor->trace(m_context);
+}
+
+
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : m_context(context)
 {

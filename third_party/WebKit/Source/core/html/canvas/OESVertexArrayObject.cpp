@@ -55,54 +55,58 @@ PassRefPtrWillBeRawPtr<OESVertexArrayObject> OESVertexArrayObject::create(WebGLR
 
 PassRefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> OESVertexArrayObject::createVertexArrayOES()
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return nullptr;
 
-    RefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(m_context, WebGLVertexArrayObjectOES::VaoTypeUser);
-    m_context->addContextObject(o.get());
+    RefPtrWillBeRawPtr<WebGLVertexArrayObjectOES> o = WebGLVertexArrayObjectOES::create(scoped.context(), WebGLVertexArrayObjectOES::VaoTypeUser);
+    scoped.context()->addContextObject(o.get());
     return o.release();
 }
 
 void OESVertexArrayObject::deleteVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    if (!arrayObject || isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (!arrayObject || scoped.isLost())
         return;
 
-    if (!arrayObject->isDefaultObject() && arrayObject == m_context->m_boundVertexArrayObject)
-        m_context->setBoundVertexArrayObject(nullptr);
+    if (!arrayObject->isDefaultObject() && arrayObject == scoped.context()->m_boundVertexArrayObject)
+        scoped.context()->setBoundVertexArrayObject(nullptr);
 
-    arrayObject->deleteObject(m_context->webContext());
+    arrayObject->deleteObject(scoped.context()->webContext());
 }
 
 GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    if (!arrayObject || isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (!arrayObject || scoped.isLost())
         return 0;
 
     if (!arrayObject->hasEverBeenBound())
         return 0;
 
-    return m_context->webContext()->isVertexArrayOES(arrayObject->object());
+    return scoped.context()->webContext()->isVertexArrayOES(arrayObject->object());
 }
 
 void OESVertexArrayObject::bindVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return;
 
-    if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, context()))) {
-        m_context->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+    if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, scoped.context()))) {
+        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
         return;
     }
 
     if (arrayObject && !arrayObject->isDefaultObject() && arrayObject->object()) {
-        m_context->webContext()->bindVertexArrayOES(arrayObject->object());
+        scoped.context()->webContext()->bindVertexArrayOES(arrayObject->object());
 
         arrayObject->setHasEverBeenBound();
-        m_context->setBoundVertexArrayObject(arrayObject);
+        scoped.context()->setBoundVertexArrayObject(arrayObject);
     } else {
-        m_context->webContext()->bindVertexArrayOES(0);
-        m_context->setBoundVertexArrayObject(nullptr);
+        scoped.context()->webContext()->bindVertexArrayOES(0);
+        scoped.context()->setBoundVertexArrayObject(nullptr);
     }
 }
 

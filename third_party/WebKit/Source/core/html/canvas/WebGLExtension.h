@@ -26,6 +26,7 @@
 #ifndef WebGLExtension_h
 #define WebGLExtension_h
 
+#include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/WebGLExtensionName.h"
 #include "core/html/canvas/WebGLRenderingContextBase.h"
 #include "platform/heap/Handle.h"
@@ -33,11 +34,25 @@
 
 namespace blink {
 
+class WebGLExtensionScopedContext : public NoBaseWillBeGarbageCollectedFinalized<WebGLExtensionScopedContext> {
+    WTF_MAKE_NONCOPYABLE(WebGLExtensionScopedContext);
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    WebGLExtensionScopedContext(WebGLExtension*);
+    virtual ~WebGLExtensionScopedContext();
+
+    bool isLost() { return !m_context; }
+    WebGLRenderingContextBase* context() const { return m_context.get(); }
+
+    virtual void trace(Visitor*);
+
+private:
+    RefPtrWillBeMember<WebGLRenderingContextBase> m_context;
+};
+
 class WebGLExtension : public RefCountedWillBeGarbageCollectedFinalized<WebGLExtension> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    WebGLRenderingContextBase* context() { return m_context; }
-
     virtual ~WebGLExtension();
     virtual WebGLExtensionName name() const = 0;
 
@@ -49,15 +64,15 @@ public:
         m_context = nullptr;
     }
 
-    bool isLost()
-    {
-        return !m_context;
-    }
+    bool isLost() { return !m_context; }
 
     virtual void trace(Visitor*);
 
 protected:
     explicit WebGLExtension(WebGLRenderingContextBase*);
+
+private:
+    friend WebGLExtensionScopedContext;
 
     RawPtrWillBeWeakMember<WebGLRenderingContextBase> m_context;
 };

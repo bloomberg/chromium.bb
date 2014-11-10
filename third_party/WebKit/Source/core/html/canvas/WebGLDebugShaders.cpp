@@ -53,11 +53,12 @@ PassRefPtrWillBeRawPtr<WebGLDebugShaders> WebGLDebugShaders::create(WebGLRenderi
 
 String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return String();
-    if (!m_context->validateWebGLObject("getTranslatedShaderSource", shader))
+    if (!scoped.context()->validateWebGLObject("getTranslatedShaderSource", shader))
         return "";
-    return m_context->ensureNotNull(m_context->webContext()->getTranslatedShaderSourceANGLE(shader->object()));
+    return scoped.context()->ensureNotNull(scoped.context()->webContext()->getTranslatedShaderSourceANGLE(shader->object()));
 }
 
 bool WebGLDebugShaders::supported(WebGLRenderingContextBase* context)

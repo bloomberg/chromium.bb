@@ -68,26 +68,29 @@ const char* ANGLEInstancedArrays::extensionName()
 
 void ANGLEInstancedArrays::drawArraysInstancedANGLE(GLenum mode, GLint first, GLsizei count, GLsizei primcount)
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return;
 
-    m_context->drawArraysInstancedANGLE(mode, first, count, primcount);
+    scoped.context()->drawArraysInstancedANGLE(mode, first, count, primcount);
 }
 
 void ANGLEInstancedArrays::drawElementsInstancedANGLE(GLenum mode, GLsizei count, GLenum type, long long offset, GLsizei primcount)
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return;
 
-    m_context->drawElementsInstancedANGLE(mode, count, type, offset, primcount);
+    scoped.context()->drawElementsInstancedANGLE(mode, count, type, offset, primcount);
 }
 
 void ANGLEInstancedArrays::vertexAttribDivisorANGLE(GLuint index, GLuint divisor)
 {
-    if (isLost())
+    WebGLExtensionScopedContext scoped(this);
+    if (scoped.isLost())
         return;
 
-    m_context->vertexAttribDivisorANGLE(index, divisor);
+    scoped.context()->vertexAttribDivisorANGLE(index, divisor);
 }
 
 } // namespace blink
