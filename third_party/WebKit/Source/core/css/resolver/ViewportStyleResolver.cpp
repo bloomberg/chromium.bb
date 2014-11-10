@@ -189,7 +189,9 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     float width = view ? view->width() : 0;
     float height = view ? view->height() : 0;
 
-    Length result = primitiveValue->convertToLength<AnyConversion>(CSSToLengthConversionData(documentStyle, documentStyle, width, height, 1.0f));
+    CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
+    CSSToLengthConversionData::ViewportSize viewportSize(width, height);
+    Length result = primitiveValue->convertToLength<AnyConversion>(CSSToLengthConversionData(documentStyle, fontSizes, viewportSize, 1.0f));
     if (documentStyle->hasViewportUnits())
         m_document->setHasViewportUnits();
     documentStyle->setHasViewportUnits(documentStyleHasViewportUnits);

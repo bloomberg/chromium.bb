@@ -38,17 +38,50 @@ namespace blink {
 
 class RenderStyle;
 class RenderView;
+class Font;
 
 class CSSToLengthConversionData {
 public:
-    CSSToLengthConversionData(const RenderStyle* currStyle, const RenderStyle* rootStyle, const RenderView*, float zoom, bool computingFontSize = false);
-    CSSToLengthConversionData(const RenderStyle* currStyle, const RenderStyle* rootStyle, const RenderView*, bool computingFontSize = false);
-    CSSToLengthConversionData(const RenderStyle* currStyle, const RenderStyle* rootStyle, float viewportWidth, float viewportHeight, float zoom, bool computingFontSize = false);
 
-    const RenderStyle& style() const { return *m_style; }
-    const RenderStyle* rootStyle() const { return m_rootStyle; }
-    float zoom() const;
-    bool computingFontSize() const { return m_computingFontSize; }
+    class FontSizes {
+    public:
+        FontSizes() : m_em(0), m_rem(0), m_font(nullptr) { }
+        FontSizes(float em, float rem, const Font*);
+        FontSizes(const RenderStyle*, const RenderStyle* rootStyle);
+
+        float em() const { return m_em; }
+        float rem() const { return m_rem; }
+        float ex() const;
+        float ch() const;
+    private:
+        float m_em;
+        float m_rem;
+        const Font* m_font;
+    };
+
+    class ViewportSize {
+    public:
+        ViewportSize() : m_width(0), m_height(0) { }
+        ViewportSize(double width, double height) : m_width(width), m_height(height) { }
+        explicit ViewportSize(const RenderView*);
+
+        double width() const { return m_width; }
+        double height() const { return m_height; }
+    private:
+        double m_width;
+        double m_height;
+    };
+
+    CSSToLengthConversionData() { }
+    CSSToLengthConversionData(const RenderStyle*, const FontSizes&, const ViewportSize&, float zoom);
+    CSSToLengthConversionData(const RenderStyle* currStyle, const RenderStyle* rootStyle, const RenderView*, float zoom);
+
+    float zoom() const { return m_zoom; }
+
+    float emFontSize() const { return m_fontSizes.em(); }
+    float remFontSize() const { return m_fontSizes.rem(); }
+    float exFontSize() const { return m_fontSizes.ex(); }
+    float chFontSize() const { return m_fontSizes.ch(); }
 
     // Accessing these marks the style as having viewport units
     double viewportWidthPercent() const;
@@ -56,22 +89,19 @@ public:
     double viewportMinPercent() const;
     double viewportMaxPercent() const;
 
-    void setStyle(const RenderStyle* style) { m_style = style; }
-    void setRootStyle(const RenderStyle* rootStyle) { m_rootStyle = rootStyle; }
+    void setFontSizes(const FontSizes& fontSizes) { m_fontSizes = fontSizes; }
+    void setZoom(float zoom) { m_zoom = zoom; }
 
     CSSToLengthConversionData copyWithAdjustedZoom(float newZoom) const
     {
-        return CSSToLengthConversionData(m_style, m_rootStyle, m_viewportWidth, m_viewportHeight, newZoom, m_computingFontSize);
+        return CSSToLengthConversionData(m_style, m_fontSizes, m_viewportSize, newZoom);
     }
 
 private:
     const RenderStyle* m_style;
-    const RenderStyle* m_rootStyle;
-    float m_viewportWidth;
-    float m_viewportHeight;
+    FontSizes m_fontSizes;
+    ViewportSize m_viewportSize;
     float m_zoom;
-    bool m_useEffectiveZoom;
-    bool m_computingFontSize;
 };
 
 } // namespace blink

@@ -189,29 +189,14 @@ PassRefPtr<FontFeatureSettings> StyleBuilderConverter::convertFontFeatureSetting
     return settings;
 }
 
-class RedirectSetHasViewportUnits {
-public:
-    RedirectSetHasViewportUnits(RenderStyle* from, RenderStyle* to)
-        : m_from(from), m_to(to), m_hadViewportUnits(from->hasViewportUnits())
-    {
-        from->setHasViewportUnits(false);
-    }
-    ~RedirectSetHasViewportUnits()
-    {
-        m_to->setHasViewportUnits(m_from->hasViewportUnits());
-        m_from->setHasViewportUnits(m_hadViewportUnits);
-    }
-private:
-    RenderStyle* m_from;
-    RenderStyle* m_to;
-    bool m_hadViewportUnits;
-};
-
 static float computeFontSize(StyleResolverState& state, CSSPrimitiveValue* primitiveValue, const FontDescription::Size& parentSize)
 {
-    RedirectSetHasViewportUnits redirect(state.parentStyle(), state.style());
+    float em = state.parentStyle()->specifiedFontSize();
+    float rem = state.rootElementStyle() ? state.rootElementStyle()->specifiedFontSize() : 1.0f;
+    CSSToLengthConversionData::FontSizes fontSizes(em, rem, &state.parentStyle()->font());
+    CSSToLengthConversionData::ViewportSize viewportSize(state.document().renderView());
 
-    CSSToLengthConversionData conversionData(state.parentStyle(), state.rootElementStyle(), state.document().renderView(), 1.0f, true);
+    CSSToLengthConversionData conversionData(state.style(), fontSizes, viewportSize, 1.0f);
     if (primitiveValue->isLength())
         return primitiveValue->computeLength<float>(conversionData);
     if (primitiveValue->isCalculatedPercentageWithLength())

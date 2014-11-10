@@ -604,33 +604,20 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
     if (m_primitiveUnitType == CSS_CALC)
         return m_value.calc->computeLengthPx(conversionData);
 
-    const RenderStyle& style = conversionData.style();
-    const RenderStyle* rootStyle = conversionData.rootStyle();
-    bool computingFontSize = conversionData.computingFontSize();
-
     double factor;
 
     switch (primitiveType()) {
         case CSS_EMS:
-            factor = computingFontSize ? style.fontDescription().specifiedSize() : style.fontDescription().computedSize();
+            factor = conversionData.emFontSize();
             break;
         case CSS_EXS:
-            // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
-            // We really need to compute EX using fontMetrics for the original specifiedSize and not use
-            // our actual constructed rendering font.
-            if (style.fontMetrics().hasXHeight())
-                factor = style.fontMetrics().xHeight();
-            else
-                factor = (computingFontSize ? style.fontDescription().specifiedSize() : style.fontDescription().computedSize()) / 2.0;
+            factor = conversionData.exFontSize();
             break;
         case CSS_REMS:
-            if (rootStyle)
-                factor = computingFontSize ? rootStyle->fontDescription().specifiedSize() : rootStyle->fontDescription().computedSize();
-            else
-                factor = 1.0;
+            factor = conversionData.remFontSize();
             break;
         case CSS_CHS:
-            factor = style.fontMetrics().zeroWidth();
+            factor = conversionData.chFontSize();
             break;
         case CSS_PX:
             factor = 1.0;
@@ -675,7 +662,7 @@ double CSSPrimitiveValue::computeLengthDouble(const CSSToLengthConversionData& c
     // for font sizes is much more complicated, since we have to worry about enforcing the minimum font size preference
     // as well as enforcing the implicit "smart minimum."
     double result = getDoubleValue() * factor;
-    if (computingFontSize || isFontRelativeLength())
+    if (isFontRelativeLength())
         return result;
 
     return result * conversionData.zoom();

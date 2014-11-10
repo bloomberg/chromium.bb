@@ -64,7 +64,7 @@ void CSSMatrix::setMatrixValue(const String& string, ExceptionState& exceptionSt
         // FIXME: This has a null pointer crash if we use ex units (crbug.com/414145)
         DEFINE_STATIC_REF(RenderStyle, defaultStyle, RenderStyle::createDefaultStyle());
         TransformOperations operations;
-        if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(defaultStyle, defaultStyle, 0, 0, 1.0f), operations)) {
+        if (!TransformBuilder::createTransformOperations(value.get(), CSSToLengthConversionData(defaultStyle, defaultStyle, nullptr, 1.0f), operations)) {
             exceptionState.throwDOMException(SyntaxError, "Failed to interpret '" + string + "' as a transformation operation.");
             return;
         }

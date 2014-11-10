@@ -91,7 +91,7 @@ TEST(CSSCalculationValue, AccumulatePixelsAndPercent)
 {
     RefPtr<RenderStyle> style = RenderStyle::createDefaultStyle();
     style->setEffectiveZoom(5);
-    CSSToLengthConversionData conversionData(style.get(), style.get(), 0);
+    CSSToLengthConversionData conversionData(style.get(), style.get(), nullptr, style->effectiveZoom());
 
     testAccumulatePixelsAndPercent(conversionData,
         CSSCalcValue::createExpressionNode(CSSPrimitiveValue::create(10, CSSPrimitiveValue::CSS_PX), true),

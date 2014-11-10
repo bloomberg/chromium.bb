@@ -587,8 +587,9 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
             state.setParentStyle(defaultStyleForElement());
     } else {
         if (state.parentStyle()) {
-            state.setStyle(RenderStyle::create());
-            state.style()->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
+            RefPtr<RenderStyle> style = RenderStyle::create();
+            style->inheritFrom(state.parentStyle(), isAtShadowBoundary(element) ? RenderStyle::AtShadowBoundary : RenderStyle::NotAtShadowBoundary);
+            state.setStyle(style.release());
         } else {
             state.setStyle(defaultStyleForElement());
             state.setParentStyle(RenderStyle::clone(state.style()));
@@ -774,8 +775,9 @@ bool StyleResolver::pseudoStyleForElementInternal(Element& element, const Pseudo
     if (baseRenderStyle) {
         state.setStyle(RenderStyle::clone(baseRenderStyle));
     } else if (pseudoStyleRequest.allowsInheritance(state.parentStyle())) {
-        state.setStyle(RenderStyle::create());
-        state.style()->inheritFrom(state.parentStyle());
+        RefPtr<RenderStyle> style = RenderStyle::create();
+        style->inheritFrom(state.parentStyle());
+        state.setStyle(style.release());
     } else {
         state.setStyle(defaultStyleForElement());
         state.setParentStyle(RenderStyle::clone(state.style()));
@@ -853,10 +855,11 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), document().documentElement()); // m_rootElementStyle will be set to the document style.
 
-    state.setStyle(RenderStyle::create());
+    RefPtr<RenderStyle> style = RenderStyle::create();
     const RenderStyle* rootElementStyle = state.rootElementStyle() ? state.rootElementStyle() : document().renderStyle();
     ASSERT(rootElementStyle);
-    state.style()->inheritFrom(rootElementStyle);
+    style->inheritFrom(rootElementStyle);
+    state.setStyle(style.release());
 
     PageRuleCollector collector(rootElementStyle, pageIndex);
 
@@ -904,11 +907,12 @@ void StyleResolver::collectViewportRules()
 
 PassRefPtr<RenderStyle> StyleResolver::defaultStyleForElement()
 {
-    StyleResolverState state(document(), 0);
-    state.setStyle(RenderStyle::create());
-    state.fontBuilder().setInitial(state.style()->effectiveZoom());
-    state.style()->font().update(document().styleEngine()->fontSelector());
-    return state.takeStyle();
+    RefPtr<RenderStyle> style = RenderStyle::create();
+    FontBuilder fontBuilder(document());
+    fontBuilder.setStyle(style.get());
+    fontBuilder.setInitial(style->effectiveZoom());
+    style->font().update(document().styleEngine()->fontSelector());
+    return style.release();
 }
 
 PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
@@ -924,6 +928,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForText(Text* textNode)
 void StyleResolver::updateFont(StyleResolverState& state)
 {
     state.fontBuilder().createFont(document().styleEngine()->fontSelector(), state.parentStyle(), state.style());
+    state.setConversionFontSizes(CSSToLengthConversionData::FontSizes(state.style(), state.rootElementStyle()));
+    state.setConversionZoom(state.style()->effectiveZoom());
 }
 
 PassRefPtrWillBeRawPtr<StyleRuleList> StyleResolver::styleRulesForElement(Element* element, unsigned rulesToInclude)
@@ -1417,6 +1423,9 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
+
+            updateFont(state);
+
             return;
         }
         applyInheritedOnly = true;

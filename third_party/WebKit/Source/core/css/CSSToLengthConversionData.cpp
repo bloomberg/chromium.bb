@@ -36,66 +36,77 @@
 
 namespace blink {
 
-CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, float zoom, bool computingFontSize)
-    : m_style(style)
-    , m_rootStyle(rootStyle)
-    , m_viewportWidth(renderView ? renderView->layoutViewportWidth() : 0)
-    , m_viewportHeight(renderView ? renderView->layoutViewportHeight() : 0)
-    , m_zoom(zoom)
-    , m_useEffectiveZoom(false)
-    , m_computingFontSize(computingFontSize)
+CSSToLengthConversionData::FontSizes::FontSizes(float em, float rem, const Font* font)
+    : m_em(em)
+    , m_rem(rem)
+    , m_font(font)
 {
+    // FIXME: Improve RAII of StyleResolverState to use const Font&.
+    ASSERT(m_font);
+}
+
+CSSToLengthConversionData::FontSizes::FontSizes(const RenderStyle* style, const RenderStyle* rootStyle)
+    : FontSizes(style->computedFontSize(), rootStyle ? rootStyle->computedFontSize() : 1.0f, &style->font())
+{
+}
+
+float CSSToLengthConversionData::FontSizes::ex() const
+{
+    ASSERT(m_font);
+    // FIXME: We have a bug right now where the zoom will be applied twice to EX units.
+    // We really need to compute EX using fontMetrics for the original specifiedSize and not use
+    // our actual constructed rendering font.
+    if (!m_font->fontMetrics().hasXHeight())
+        return m_em / 2.0f;
+    return m_font->fontMetrics().xHeight();
+}
+
+float CSSToLengthConversionData::FontSizes::ch() const
+{
+    ASSERT(m_font);
+    return m_font->fontMetrics().zeroWidth();
+}
+
+CSSToLengthConversionData::ViewportSize::ViewportSize(const RenderView* renderView)
+    : m_width(renderView ? renderView->layoutViewportWidth() : 0)
+    , m_height(renderView ? renderView->layoutViewportHeight() : 0)
+{
+}
+
+CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const FontSizes& fontSizes, const ViewportSize& viewportSize, float zoom)
+    : m_style(style)
+    , m_fontSizes(fontSizes)
+    , m_viewportSize(viewportSize)
+    , m_zoom(zoom)
+{
+    ASSERT(m_style);
     ASSERT(zoom > 0);
 }
 
-CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, bool computingFontSize)
-    : m_style(style)
-    , m_rootStyle(rootStyle)
-    , m_viewportWidth(renderView ? renderView->layoutViewportWidth() : 0)
-    , m_viewportHeight(renderView ? renderView->layoutViewportHeight() : 0)
-    , m_useEffectiveZoom(true)
-    , m_computingFontSize(computingFontSize)
+CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, const RenderView* renderView, float zoom)
+    : CSSToLengthConversionData(style, FontSizes(style, rootStyle), ViewportSize(renderView), zoom)
 {
-}
-
-CSSToLengthConversionData::CSSToLengthConversionData(const RenderStyle* style, const RenderStyle* rootStyle, float viewportWidth, float viewportHeight, float zoom, bool computingFontSize)
-    : m_style(style)
-    , m_rootStyle(rootStyle)
-    , m_viewportWidth(viewportWidth)
-    , m_viewportHeight(viewportHeight)
-    , m_zoom(zoom)
-    , m_useEffectiveZoom(false)
-    , m_computingFontSize(computingFontSize)
-{
-    ASSERT(zoom > 0);
-}
-
-float CSSToLengthConversionData::zoom() const
-{
-    if (m_useEffectiveZoom)
-        return m_style ? m_style->effectiveZoom() : 1;
-    return m_zoom;
 }
 
 double CSSToLengthConversionData::viewportWidthPercent() const
 {
     m_style->setHasViewportUnits();
-    return m_viewportWidth / 100;
+    return m_viewportSize.width() / 100;
 }
 double CSSToLengthConversionData::viewportHeightPercent() const
 {
     m_style->setHasViewportUnits();
-    return m_viewportHeight / 100;
+    return m_viewportSize.height() / 100;
 }
 double CSSToLengthConversionData::viewportMinPercent() const
 {
     m_style->setHasViewportUnits();
-    return std::min(m_viewportWidth, m_viewportHeight) / 100;
+    return std::min(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 double CSSToLengthConversionData::viewportMaxPercent() const
 {
     m_style->setHasViewportUnits();
-    return std::max(m_viewportWidth, m_viewportHeight) / 100;
+    return std::max(m_viewportSize.width(), m_viewportSize.height()) / 100;
 }
 
 } // namespace blink
