@@ -9,6 +9,9 @@
 namespace app_list {
 
 SearchResultTileItemView::SearchResultTileItemView() : item_(NULL) {
+  // When |item_| is null, the tile is invisible. Calling SetSearchResult with a
+  // non-null item makes the tile visible.
+  SetVisible(false);
 }
 
 SearchResultTileItemView::~SearchResultTileItemView() {

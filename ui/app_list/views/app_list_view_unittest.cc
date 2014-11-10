@@ -375,6 +375,7 @@ void AppListViewTestContext::RunStartPageTest() {
 
     // Simulate clicking the "All apps" button. Check that we navigate to the
     // apps grid view.
+    EXPECT_TRUE(start_page_view->all_apps_button()->visible());
     SimulateClick(start_page_view->all_apps_button());
     main_view->contents_view()->Layout();
     EXPECT_TRUE(IsStateShown(AppListModel::STATE_APPS));

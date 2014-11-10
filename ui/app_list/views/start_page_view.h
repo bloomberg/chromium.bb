@@ -15,7 +15,6 @@ namespace app_list {
 class AllAppsTileItemView;
 class AppListMainView;
 class AppListViewDelegate;
-class SearchResultListView;
 class SearchResultTileItemView;
 class TileItemView;
 
@@ -28,9 +27,6 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
   ~StartPageView() override;
 
   void Reset();
-  void ShowSearchResults();
-
-  bool IsShowingSearchResults() const;
 
   void UpdateForTesting();
 
@@ -41,23 +37,14 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
   SearchBoxView* dummy_search_box_view() { return search_box_view_; }
 
   // Overridden from views::View:
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
   void Layout() override;
 
   // Overridden from SearchResultContainerView:
   void Update() override;
 
  private:
-  enum ShowState {
-    SHOW_START_PAGE,
-    SHOW_SEARCH_RESULTS,
-  };
-
   void InitInstantContainer();
   void InitTilesContainer();
-
-  void SetShowState(ShowState show_state);
-  void SetModel(AppListModel* model);
 
   // Overridden from SearchBoxViewDelegate:
   void QueryChanged(SearchBoxView* sender) override;
@@ -68,14 +55,11 @@ class APP_LIST_EXPORT StartPageView : public SearchResultContainerView,
   AppListViewDelegate* view_delegate_;  // Owned by AppListView.
 
   SearchBoxView* search_box_view_;      // Owned by views hierarchy.
-  SearchResultListView* results_view_;  // Owned by views hierarchy.
   views::View* instant_container_;  // Owned by views hierarchy.
   views::View* tiles_container_;    // Owned by views hierarchy.
 
   std::vector<SearchResultTileItemView*> search_result_tile_views_;
   AllAppsTileItemView* all_apps_button_;
-
-  ShowState show_state_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageView);
 };

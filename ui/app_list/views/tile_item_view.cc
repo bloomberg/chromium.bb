@@ -40,10 +40,6 @@ TileItemView::TileItemView()
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
-  // When |item_| is NULL, the tile is invisible. Calling SetSearchResult with a
-  // non-NULL item makes the tile visible.
-  SetVisible(false);
-
   AddChildView(icon_);
   AddChildView(title_);
 }

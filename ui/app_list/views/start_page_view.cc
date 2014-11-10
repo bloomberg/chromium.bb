@@ -42,7 +42,6 @@ const int kDummySearchBoxWidth = 480;
 
 // Tile container constants.
 const size_t kNumStartPageTiles = 4;
-const size_t kNumSearchResultTiles = 5;
 const int kTileSpacing = 10;
 
 // A placeholder search box which is sized to fit within the start page view.
@@ -73,23 +72,18 @@ StartPageView::StartPageView(AppListMainView* app_list_main_view,
     : app_list_main_view_(app_list_main_view),
       view_delegate_(view_delegate),
       search_box_view_(new DummySearchBoxView(this, view_delegate_)),
-      results_view_(
-          new SearchResultListView(app_list_main_view, view_delegate)),
       instant_container_(new views::View),
-      tiles_container_(new views::View),
-      show_state_(SHOW_START_PAGE) {
+      tiles_container_(new views::View) {
   // The view containing the start page WebContents and DummySearchBoxView.
   InitInstantContainer();
   AddChildView(instant_container_);
-
-  // The view containing the search results.
-  AddChildView(results_view_);
 
   // The view containing the start page tiles.
   InitTilesContainer();
   AddChildView(tiles_container_);
 
-  SetModel(view_delegate_->GetModel());
+  SetResults(view_delegate_->GetModel()->results());
+  Reset();
 }
 
 StartPageView::~StartPageView() {
@@ -132,8 +126,7 @@ void StartPageView::InitTilesContainer() {
   tiles_container_->SetLayoutManager(tiles_layout_manager);
 
   // Add SearchResultTileItemViews to the container.
-  for (size_t i = 0; i < std::max(kNumStartPageTiles, kNumSearchResultTiles);
-       ++i) {
+  for (size_t i = 0; i < kNumStartPageTiles; ++i) {
     SearchResultTileItemView* tile_item = new SearchResultTileItemView();
     tiles_container_->AddChildView(tile_item);
     search_result_tile_views_.push_back(tile_item);
@@ -147,47 +140,15 @@ void StartPageView::InitTilesContainer() {
   tiles_container_->AddChildView(all_apps_button_);
 }
 
-void StartPageView::SetModel(AppListModel* model) {
-  DCHECK(model);
-  SetResults(model->results());
-  results_view_->SetResults(model->results());
-  Reset();
-}
-
 void StartPageView::Reset() {
-  SetShowState(SHOW_START_PAGE);
-  Update();
-}
-
-void StartPageView::ShowSearchResults() {
-  SetShowState(SHOW_SEARCH_RESULTS);
-  Update();
-}
-
-void StartPageView::SetShowState(ShowState show_state) {
-  instant_container_->SetVisible(show_state == SHOW_START_PAGE);
-  results_view_->SetVisible(show_state == SHOW_SEARCH_RESULTS);
-
   // This can be called when the app list is closing (widget is invisible). In
   // that case, do not steal focus from other elements.
-  if (show_state == SHOW_START_PAGE && GetWidget() && GetWidget()->IsVisible())
+  if (GetWidget() && GetWidget()->IsVisible())
     search_box_view_->search_box()->RequestFocus();
 
-  if (show_state_ == show_state)
-    return;
+  search_box_view_->ClearSearch();
 
-  show_state_ = show_state;
-
-  if (show_state_ == SHOW_START_PAGE)
-    search_box_view_->ClearSearch();
-
-  results_view_->UpdateAutoLaunchState();
-  if (show_state == SHOW_SEARCH_RESULTS)
-    results_view_->SetSelectedIndex(0);
-}
-
-bool StartPageView::IsShowingSearchResults() const {
-  return show_state_ == SHOW_SEARCH_RESULTS;
+  Update();
 }
 
 void StartPageView::UpdateForTesting() {
@@ -198,19 +159,10 @@ TileItemView* StartPageView::all_apps_button() const {
   return all_apps_button_;
 }
 
-bool StartPageView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (show_state_ == SHOW_SEARCH_RESULTS)
-    return results_view_->OnKeyPressed(event);
-
-  return false;
-}
-
 void StartPageView::Layout() {
-  // Instant and search results take up the height of the instant container.
   gfx::Rect bounds(GetContentsBounds());
   bounds.set_height(instant_container_->GetHeightForWidth(bounds.width()));
   instant_container_->SetBoundsRect(bounds);
-  results_view_->SetBoundsRect(bounds);
 
   // Tiles begin where the instant container ends.
   bounds.set_y(bounds.bottom());
@@ -219,11 +171,10 @@ void StartPageView::Layout() {
 }
 
 void StartPageView::Update() {
-  size_t max_tiles = show_state_ == SHOW_START_PAGE ? kNumStartPageTiles
-                                                    : kNumSearchResultTiles;
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          results(), SearchResult::DISPLAY_TILE, max_tiles);
+          results(), SearchResult::DISPLAY_TILE, kNumStartPageTiles);
+
   // Update the tile item results.
   for (size_t i = 0; i < search_result_tile_views_.size(); ++i) {
     SearchResult* item = NULL;
@@ -231,9 +182,6 @@ void StartPageView::Update() {
       item = display_results[i];
     search_result_tile_views_[i]->SetSearchResult(item);
   }
-
-  // Show or hide the all apps button (depending on the current show state).
-  all_apps_button_->SetVisible(show_state_ == SHOW_START_PAGE);
 
   tiles_container_->Layout();
   Layout();
