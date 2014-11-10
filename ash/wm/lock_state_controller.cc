@@ -85,7 +85,7 @@ void LockStateController::RemoveObserver(LockStateObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool LockStateController::HasObserver(LockStateObserver* observer) {
+bool LockStateController::HasObserver(const LockStateObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 

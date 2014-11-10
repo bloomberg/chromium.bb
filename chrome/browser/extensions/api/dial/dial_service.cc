@@ -407,7 +407,7 @@ void DialServiceImpl::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool DialServiceImpl::HasObserver(Observer* observer) {
+bool DialServiceImpl::HasObserver(const Observer* observer) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return observer_list_.HasObserver(observer);
 }

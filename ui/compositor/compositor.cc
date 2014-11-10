@@ -312,7 +312,7 @@ void Compositor::RemoveObserver(CompositorObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-bool Compositor::HasObserver(CompositorObserver* observer) {
+bool Compositor::HasObserver(const CompositorObserver* observer) const {
   return observer_list_.HasObserver(observer);
 }
 
@@ -326,7 +326,8 @@ void Compositor::RemoveAnimationObserver(
   animation_observer_list_.RemoveObserver(observer);
 }
 
-bool Compositor::HasAnimationObserver(CompositorAnimationObserver* observer) {
+bool Compositor::HasAnimationObserver(
+    const CompositorAnimationObserver* observer) const {
   return animation_observer_list_.HasObserver(observer);
 }
 

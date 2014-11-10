@@ -97,7 +97,7 @@ class SYNC_EXPORT_PRIVATE ModelTypeRegistry
   void UnregisterDirectoryTypeDebugInfoObserver(
       syncer::TypeDebugInfoObserver* observer);
   bool HasDirectoryTypeDebugInfoObserver(
-      syncer::TypeDebugInfoObserver* observer);
+      const syncer::TypeDebugInfoObserver* observer) const;
   void RequestEmitDebugInfo();
 
   base::WeakPtr<SyncContext> AsWeakPtr();

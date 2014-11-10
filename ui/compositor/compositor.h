@@ -216,11 +216,11 @@ class COMPOSITOR_EXPORT Compositor
   // observer to remove itself when it is done observing.
   void AddObserver(CompositorObserver* observer);
   void RemoveObserver(CompositorObserver* observer);
-  bool HasObserver(CompositorObserver* observer);
+  bool HasObserver(const CompositorObserver* observer) const;
 
   void AddAnimationObserver(CompositorAnimationObserver* observer);
   void RemoveAnimationObserver(CompositorAnimationObserver* observer);
-  bool HasAnimationObserver(CompositorAnimationObserver* observer);
+  bool HasAnimationObserver(const CompositorAnimationObserver* observer) const;
 
   // Creates a compositor lock. Returns NULL if it is not possible to lock at
   // this time (i.e. we're waiting to complete a previous unlock).

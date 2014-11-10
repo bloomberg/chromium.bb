@@ -35,7 +35,7 @@ void FakeSessionManagerClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool FakeSessionManagerClient::HasObserver(Observer* observer) {
+bool FakeSessionManagerClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 

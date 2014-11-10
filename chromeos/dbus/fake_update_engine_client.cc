@@ -29,7 +29,7 @@ void FakeUpdateEngineClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool FakeUpdateEngineClient::HasObserver(Observer* observer) {
+bool FakeUpdateEngineClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 

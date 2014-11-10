@@ -21,7 +21,7 @@ class MockSessionManagerClient : public SessionManagerClient {
   MOCK_METHOD1(SetStubDelegate, void(StubDelegate* delegate));
   MOCK_METHOD1(AddObserver, void(Observer*));
   MOCK_METHOD1(RemoveObserver, void(Observer*));
-  MOCK_METHOD1(HasObserver, bool(Observer*));
+  MOCK_CONST_METHOD1(HasObserver, bool(const Observer*));
   MOCK_METHOD0(EmitLoginPromptVisible, void(void));
   MOCK_METHOD2(RestartJob, void(int, const std::string&));
   MOCK_METHOD1(StartSession, void(const std::string&));

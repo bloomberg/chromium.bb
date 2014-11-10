@@ -182,6 +182,9 @@ TEST(ObserverListTest, BasicTest) {
   observer_list.AddObserver(&a);
   observer_list.AddObserver(&b);
 
+  EXPECT_TRUE(observer_list.HasObserver(&a));
+  EXPECT_FALSE(observer_list.HasObserver(&c));
+
   FOR_EACH_OBSERVER(Foo, observer_list, Observe(10));
 
   observer_list.AddObserver(&evil);

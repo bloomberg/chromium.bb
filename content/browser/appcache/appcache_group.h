@@ -122,8 +122,8 @@ class CONTENT_EXPORT AppCacheGroup
   // Update cannot be processed at this time. Queue it for a later run.
   void QueueUpdate(AppCacheHost* host, const GURL& new_master_resource);
   void RunQueuedUpdates();
-  bool FindObserver(UpdateObserver* find_me,
-                    const ObserverList<UpdateObserver>& observer_list);
+  static bool FindObserver(const UpdateObserver* find_me,
+                           const ObserverList<UpdateObserver>& observer_list);
   void ScheduleUpdateRestart(int delay_ms);
   void HostDestructionImminent(AppCacheHost* host);
 

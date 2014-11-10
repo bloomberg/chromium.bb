@@ -67,7 +67,7 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
 
   void AddObserver(ScreenshotTakerObserver* observer);
   void RemoveObserver(ScreenshotTakerObserver* observer);
-  bool HasObserver(ScreenshotTakerObserver* observer) const;
+  bool HasObserver(const ScreenshotTakerObserver* observer) const;
 
  private:
   friend class ash::test::ScreenshotTakerTest;

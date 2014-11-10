@@ -100,7 +100,7 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-  virtual bool HasObserver(Observer* observer) = 0;
+  virtual bool HasObserver(const Observer* observer) const = 0;
 
   // Decreases the screen brightness. |allow_off| controls whether or not
   // it's allowed to turn off the back light.

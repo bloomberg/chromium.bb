@@ -76,7 +76,7 @@ class INVALIDATION_EXPORT InvalidatorRegistrar {
   // to display every registered handlers and its objectsIds.
   std::map<std::string, ObjectIdSet> GetSanitizedHandlersIdsMap();
 
-  bool IsHandlerRegisteredForTest(InvalidationHandler* handler) const;
+  bool IsHandlerRegisteredForTest(const InvalidationHandler* handler) const;
 
   // Needed for death tests.
   void DetachFromThreadForTest();

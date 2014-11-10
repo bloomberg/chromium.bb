@@ -663,7 +663,7 @@ void Window::RemoveObserver(WindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Window::HasObserver(WindowObserver* observer) {
+bool Window::HasObserver(const WindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 

@@ -100,7 +100,7 @@ void DeviceSettingsTestHelper::AddObserver(Observer* observer) {}
 
 void DeviceSettingsTestHelper::RemoveObserver(Observer* observer) {}
 
-bool DeviceSettingsTestHelper::HasObserver(Observer* observer) {
+bool DeviceSettingsTestHelper::HasObserver(const Observer* observer) const {
   return false;
 }
 

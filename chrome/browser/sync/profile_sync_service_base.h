@@ -51,7 +51,7 @@ class ProfileSyncServiceBase {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns true if |observer| has already been added as an observer.
-  virtual bool HasObserver(Observer* observer) const = 0;
+  virtual bool HasObserver(const Observer* observer) const = 0;
 };
 
 #endif  // CHROME_BROWSER_SYNC_PROFILE_SYNC_SERVICE_BASE_H_

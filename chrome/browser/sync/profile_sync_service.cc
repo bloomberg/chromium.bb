@@ -2439,7 +2439,7 @@ void ProfileSyncService::GetAllNodes(
 }
 
 bool ProfileSyncService::HasObserver(
-    ProfileSyncServiceBase::Observer* observer) const {
+    const ProfileSyncServiceBase::Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 

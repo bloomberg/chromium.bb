@@ -59,7 +59,8 @@ UserActivityDetector* UserActivityDetector::Get() {
   return g_instance;
 }
 
-bool UserActivityDetector::HasObserver(UserActivityObserver* observer) const {
+bool UserActivityDetector::HasObserver(
+    const UserActivityObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 

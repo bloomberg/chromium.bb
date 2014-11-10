@@ -364,12 +364,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Add/remove observer.
   void AddObserver(WidgetObserver* observer);
   void RemoveObserver(WidgetObserver* observer);
-  bool HasObserver(WidgetObserver* observer);
+  bool HasObserver(const WidgetObserver* observer) const;
 
   // Add/remove removals observer.
   void AddRemovalsObserver(WidgetRemovalsObserver* observer);
   void RemoveRemovalsObserver(WidgetRemovalsObserver* observer);
-  bool HasRemovalsObserver(WidgetRemovalsObserver* observer);
+  bool HasRemovalsObserver(const WidgetRemovalsObserver* observer) const;
 
   // Returns the accelerator given a command id. Returns false if there is
   // no accelerator associated with a given id, which is a common condition.

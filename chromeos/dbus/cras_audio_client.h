@@ -49,7 +49,7 @@ class CHROMEOS_EXPORT CrasAudioClient : public DBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   // Returns true if this object has the given observer.
-  virtual bool HasObserver(Observer* observer) = 0;
+  virtual bool HasObserver(const Observer* observer) const = 0;
 
   // GetVolumeStateCallback is used for GetVolumeState method. It receives
   // 2 arguments, |volume_state| which containing both input and  output volume

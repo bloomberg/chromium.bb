@@ -78,7 +78,7 @@ void InstantUnitTestBase::NotifyGoogleBaseURLUpdate(
 }
 
 bool InstantUnitTestBase::IsInstantServiceObserver(
-    InstantServiceObserver* observer) {
+    const InstantServiceObserver* observer) const {
   return instant_service_->observers_.HasObserver(observer);
 }
 

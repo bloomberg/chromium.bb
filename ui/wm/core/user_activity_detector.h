@@ -36,7 +36,7 @@ class WM_EXPORT UserActivityDetector : public ui::EventHandler {
 
   void set_now_for_test(base::TimeTicks now) { now_for_test_ = now; }
 
-  bool HasObserver(UserActivityObserver* observer) const;
+  bool HasObserver(const UserActivityObserver* observer) const;
   void AddObserver(UserActivityObserver* observer);
   void RemoveObserver(UserActivityObserver* observer);
 

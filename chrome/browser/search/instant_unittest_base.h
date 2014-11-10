@@ -42,7 +42,7 @@ class InstantUnitTestBase : public BrowserWithTestWindowTest {
   // tests, so this is required.
   void NotifyGoogleBaseURLUpdate(const std::string& new_google_base_url);
 
-  bool IsInstantServiceObserver(InstantServiceObserver* observer);
+  bool IsInstantServiceObserver(const InstantServiceObserver* observer) const;
 
   InstantService* instant_service_;
   TemplateURLService* template_url_service_;

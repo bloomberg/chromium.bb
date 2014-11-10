@@ -75,7 +75,7 @@ void BackendMigrator::AddMigrationObserver(MigrationObserver* observer) {
 }
 
 bool BackendMigrator::HasMigrationObserver(
-    MigrationObserver* observer) const {
+    const MigrationObserver* observer) const {
   return migration_observers_.HasObserver(observer);
 }
 

@@ -393,7 +393,7 @@ void Widget::RemoveObserver(WidgetObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool Widget::HasObserver(WidgetObserver* observer) {
+bool Widget::HasObserver(const WidgetObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
@@ -405,7 +405,7 @@ void Widget::RemoveRemovalsObserver(WidgetRemovalsObserver* observer) {
   removals_observers_.RemoveObserver(observer);
 }
 
-bool Widget::HasRemovalsObserver(WidgetRemovalsObserver* observer) {
+bool Widget::HasRemovalsObserver(const WidgetRemovalsObserver* observer) const {
   return removals_observers_.HasObserver(observer);
 }
 

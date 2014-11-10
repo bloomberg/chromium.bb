@@ -34,7 +34,7 @@ void FakePowerManagerClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool FakePowerManagerClient::HasObserver(Observer* observer) {
+bool FakePowerManagerClient::HasObserver(const Observer* observer) const {
   return false;
 }
 

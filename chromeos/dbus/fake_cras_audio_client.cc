@@ -68,7 +68,7 @@ void FakeCrasAudioClient::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool FakeCrasAudioClient::HasObserver(Observer* observer) {
+bool FakeCrasAudioClient::HasObserver(const Observer* observer) const {
   return observers_.HasObserver(observer);
 }
 

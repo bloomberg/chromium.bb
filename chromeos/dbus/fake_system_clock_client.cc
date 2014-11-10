@@ -21,7 +21,7 @@ void FakeSystemClockClient::AddObserver(Observer* observer) {
 void FakeSystemClockClient::RemoveObserver(Observer* observer) {
 }
 
-bool FakeSystemClockClient::HasObserver(Observer* observer) {
+bool FakeSystemClockClient::HasObserver(const Observer* observer) const {
   return false;
 }
 

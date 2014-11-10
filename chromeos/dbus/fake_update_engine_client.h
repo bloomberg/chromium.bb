@@ -25,7 +25,7 @@ class FakeUpdateEngineClient : public UpdateEngineClient {
   virtual void Init(dbus::Bus* bus) override;
   virtual void AddObserver(Observer* observer) override;
   virtual void RemoveObserver(Observer* observer) override;
-  virtual bool HasObserver(Observer* observer) override;
+  virtual bool HasObserver(const Observer* observer) const override;
   virtual void RequestUpdateCheck(const UpdateCheckCallback& callback) override;
   virtual void RebootAfterUpdate() override;
   virtual void Rollback() override;

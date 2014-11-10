@@ -60,7 +60,8 @@ class InvalidationLogger {
   // Add and remove observers listening for messages.
   void RegisterObserver(InvalidationLoggerObserver* debug_observer);
   void UnregisterObserver(InvalidationLoggerObserver* debug_observer);
-  bool IsObserverRegistered(InvalidationLoggerObserver* debug_observer);
+  bool IsObserverRegistered(
+      const InvalidationLoggerObserver* debug_observer) const;
 
  private:
   // Send to every Observer a OnStateChange event with the latest state.

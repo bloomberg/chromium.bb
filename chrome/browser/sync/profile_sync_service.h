@@ -289,7 +289,8 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   syncer::ModelTypeSet GetActiveDataTypes() const override;
   void AddObserver(ProfileSyncServiceBase::Observer* observer) override;
   void RemoveObserver(ProfileSyncServiceBase::Observer* observer) override;
-  bool HasObserver(ProfileSyncServiceBase::Observer* observer) const override;
+  bool HasObserver(
+      const ProfileSyncServiceBase::Observer* observer) const override;
 
   void AddProtocolEventObserver(browser_sync::ProtocolEventObserver* observer);
   void RemoveProtocolEventObserver(

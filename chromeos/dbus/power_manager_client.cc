@@ -78,7 +78,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) override {
+  virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 
@@ -780,7 +780,7 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) override {
+  virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 

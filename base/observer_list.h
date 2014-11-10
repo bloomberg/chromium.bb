@@ -100,7 +100,8 @@ class ObserverListBase
   // Remove an observer from the list if it is in the list.
   void RemoveObserver(ObserverType* obs);
 
-  bool HasObserver(ObserverType* observer) const;
+  // Determine whether a particular observer is in the list.
+  bool HasObserver(const ObserverType* observer) const;
 
   void Clear();
 
@@ -176,7 +177,8 @@ void ObserverListBase<ObserverType>::RemoveObserver(ObserverType* obs) {
 }
 
 template <class ObserverType>
-bool ObserverListBase<ObserverType>::HasObserver(ObserverType* observer) const {
+bool ObserverListBase<ObserverType>::HasObserver(
+    const ObserverType* observer) const {
   for (size_t i = 0; i < observers_.size(); ++i) {
     if (observers_[i] == observer)
       return true;

@@ -75,7 +75,7 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
   // Returns true if this object has the given observer.
-  virtual bool HasObserver(Observer* observer) = 0;
+  virtual bool HasObserver(const Observer* observer) const = 0;
 
   // Called once RequestUpdateCheck() is complete. Takes one parameter:
   // - UpdateCheckResult: the result of the update check.

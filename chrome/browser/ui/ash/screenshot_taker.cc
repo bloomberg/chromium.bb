@@ -535,7 +535,8 @@ void ScreenshotTaker::RemoveObserver(ScreenshotTakerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ScreenshotTaker::HasObserver(ScreenshotTakerObserver* observer) const {
+bool ScreenshotTaker::HasObserver(
+    const ScreenshotTakerObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 

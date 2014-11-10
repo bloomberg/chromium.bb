@@ -28,7 +28,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
   virtual void SetStubDelegate(StubDelegate* delegate) override;
   virtual void AddObserver(Observer* observer) override;
   virtual void RemoveObserver(Observer* observer) override;
-  virtual bool HasObserver(Observer* observer) override;
+  virtual bool HasObserver(const Observer* observer) const override;
   virtual void EmitLoginPromptVisible() override;
   virtual void RestartJob(int pid, const std::string& command_line) override;
   virtual void StartSession(const std::string& user_email) override;

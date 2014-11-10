@@ -149,7 +149,7 @@ class ASH_EXPORT LockStateController : public aura::WindowTreeHostObserver,
 
   void AddObserver(LockStateObserver* observer);
   void RemoveObserver(LockStateObserver* observer);
-  bool HasObserver(LockStateObserver* observer);
+  bool HasObserver(const LockStateObserver* observer) const;
 
   // Starts locking (with slow animation) that can be cancelled.
   // After locking and |kLockToShutdownTimeoutMs| StartShutdownAnimation()

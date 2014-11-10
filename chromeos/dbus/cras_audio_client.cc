@@ -36,7 +36,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
     observers_.RemoveObserver(observer);
   }
 
-  virtual bool HasObserver(Observer* observer) override {
+  virtual bool HasObserver(const Observer* observer) const override {
     return observers_.HasObserver(observer);
   }
 

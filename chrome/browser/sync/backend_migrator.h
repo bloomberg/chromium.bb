@@ -58,7 +58,7 @@ class BackendMigrator {
   void MigrateTypes(syncer::ModelTypeSet types);
 
   void AddMigrationObserver(MigrationObserver* observer);
-  bool HasMigrationObserver(MigrationObserver* observer) const;
+  bool HasMigrationObserver(const MigrationObserver* observer) const;
   void RemoveMigrationObserver(MigrationObserver* observer);
 
   State state() const;

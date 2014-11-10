@@ -35,7 +35,7 @@ class MockDialService : public DialService {
   MOCK_METHOD0(Discover, bool());
   MOCK_METHOD1(AddObserver, void(DialService::Observer*));
   MOCK_METHOD1(RemoveObserver, void(DialService::Observer*));
-  MOCK_METHOD1(HasObserver, bool(DialService::Observer*));
+  MOCK_CONST_METHOD1(HasObserver, bool(const DialService::Observer*));
 };
 
 class MockDialRegistry : public DialRegistry {

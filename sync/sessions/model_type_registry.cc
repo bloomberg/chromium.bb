@@ -283,7 +283,7 @@ void ModelTypeRegistry::UnregisterDirectoryTypeDebugInfoObserver(
 }
 
 bool ModelTypeRegistry::HasDirectoryTypeDebugInfoObserver(
-    syncer::TypeDebugInfoObserver* observer) {
+    const syncer::TypeDebugInfoObserver* observer) const {
   return type_debug_info_observers_.HasObserver(observer);
 }
 

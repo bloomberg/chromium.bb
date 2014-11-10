@@ -63,7 +63,7 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Adds and removes the observer.
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
-  virtual bool HasObserver(Observer* observer) = 0;
+  virtual bool HasObserver(const Observer* observer) const = 0;
 
   // Kicks off an attempt to emit the "login-prompt-visible" upstart signal.
   virtual void EmitLoginPromptVisible() = 0;

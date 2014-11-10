@@ -116,7 +116,7 @@ void InvalidationLogger::UnregisterObserver(
 }
 
 bool InvalidationLogger::IsObserverRegistered(
-    InvalidationLoggerObserver* debug_observer) {
+    const InvalidationLoggerObserver* debug_observer) const {
   return observer_list_.HasObserver(debug_observer);
 }
 }  // namespace invalidation
