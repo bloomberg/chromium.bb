@@ -30,24 +30,6 @@ class SafeSearchUtilTest : public ::testing::Test {
                                   NULL);
   }
 
-  static void SetCookie(net::HttpRequestHeaders* headers,
-                        const std::string& value) {
-    headers->SetHeader(base::StringPiece(net::HttpRequestHeaders::kCookie),
-                       base::StringPiece(value));
-  }
-
-  static void CheckHeaders(net::URLRequest* request,
-                           const std::string& header_string_original,
-                           const std::string& header_string_expected) {
-    net::HttpRequestHeaders headers;
-    SetCookie(&headers, header_string_original);
-    safe_search_util::ForceYouTubeSafetyMode(request, &headers);
-
-    net::HttpRequestHeaders headers_expected;
-    SetCookie(&headers_expected, header_string_expected);
-    EXPECT_EQ(headers_expected.ToString(), headers.ToString());
-  }
-
   base::MessageLoop message_loop_;
   net::TestURLRequestContext context_;
 };
@@ -56,35 +38,31 @@ class SafeSearchUtilTest : public ::testing::Test {
 // ChromeNetworkDelegateSafeSearchTest (in chrome_network_delegate_unittest.cc),
 // so we won't test it again here.
 
-TEST_F(SafeSearchUtilTest, CreateYoutubePrefCookie) {
+TEST_F(SafeSearchUtilTest, SetYoutubeHeader) {
   scoped_ptr<net::URLRequest> request = CreateYoutubeRequest();
-  CheckHeaders(request.get(),
-               "OtherCookie=value",
-               "OtherCookie=value; PREF=f2=8000000");
+  net::HttpRequestHeaders headers;
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
+  EXPECT_EQ("Active", value);
 }
 
-TEST_F(SafeSearchUtilTest, ModifyYoutubePrefCookie) {
+TEST_F(SafeSearchUtilTest, OverrideYoutubeHeader) {
   scoped_ptr<net::URLRequest> request = CreateYoutubeRequest();
-  CheckHeaders(request.get(),
-               "PREF=f1=123; OtherCookie=value",
-               "PREF=f1=123&f2=8000000; OtherCookie=value");
-  CheckHeaders(request.get(),
-               "PREF=",
-               "PREF=f2=8000000");
-  CheckHeaders(request.get(),
-               "PREF=\"\"",
-               "PREF=\"f2=8000000\"");
-  CheckHeaders(request.get(),
-               "PREF=f1=123&f2=4321&foo=bar",
-               "PREF=f1=123&f2=8004321&foo=bar");
-  CheckHeaders(request.get(),
-               "PREF=\"f1=1&f2=4321\"; OtherCookie=value",
-               "PREF=\"f1=1&f2=8004321\"; OtherCookie=value");
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("Youtube-Safety-Mode", "Off");
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
+  EXPECT_EQ("Active", value);
 }
 
 TEST_F(SafeSearchUtilTest, DoesntTouchNonYoutubeURL) {
   scoped_ptr<net::URLRequest> request = CreateNonYoutubeRequest();
-  CheckHeaders(request.get(),
-               "PREF=f2=0",
-               "PREF=f2=0");
+  net::HttpRequestHeaders headers;
+  headers.SetHeader("Youtube-Safety-Mode", "Off");
+  safe_search_util::ForceYouTubeSafetyMode(request.get(), &headers);
+  std::string value;
+  EXPECT_TRUE(headers.GetHeader("Youtube-Safety-Mode", &value));
+  EXPECT_EQ("Off", value);
 }
