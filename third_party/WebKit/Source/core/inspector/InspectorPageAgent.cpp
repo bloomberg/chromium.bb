@@ -1403,7 +1403,7 @@ void InspectorPageAgent::updateTouchEventEmulationInPage(bool enabled)
     m_page->deprecatedLocalMainFrame()->view()->layout();
 }
 
-void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled)
+void InspectorPageAgent::setTouchEmulationEnabled(ErrorString*, bool enabled, const String* configuration)
 {
     if (m_state->getBoolean(PageAgentState::touchEventEmulationEnabled) == enabled)
         return;

@@ -400,7 +400,6 @@ void WebDevToolsAgentImpl::clearDeviceMetricsOverride()
 
 void WebDevToolsAgentImpl::setTouchEventEmulationEnabled(bool enabled)
 {
-    m_client->setTouchEventEmulationEnabled(enabled, enabled);
     m_touchEventEmulationEnabled = enabled;
     updatePageScaleFactorLimits();
 }
