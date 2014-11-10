@@ -21,7 +21,7 @@ CHROME_PROXY_VIA_HEADER_DEPRECATED = '1.1 Chrome Compression Proxy'
 
 PROXY_SETTING_HTTPS = 'proxy.googlezip.net:443'
 PROXY_SETTING_HTTPS_WITH_SCHEME = 'https://' + PROXY_SETTING_HTTPS
-PROXY_DEV_SETTING_HTTP = 'proxy-dev.googlezip.net:80'
+PROXY_DEV_SETTING_HTTP = 'proxy-xt.googlezip.net:80'
 PROXY_SETTING_HTTP = 'compress.googlezip.net:80'
 PROXY_SETTING_DIRECT = 'direct://'
 
