@@ -15,19 +15,21 @@ import signal
 import subprocess
 import sys
 import traceback
+
 from chromite.lib import cros_build_lib
 
 
 # Max amount of data we're hold in the buffer at a given time.
 _BUFSIZE = 1024
 
-# Custom signal handlers so we can catch the exception and handle
-# it.
+
+# Custom signal handlers so we can catch the exception and handle it.
 class ToldToDie(Exception):
   """Exception thrown via signal handlers."""
 
   def __init__(self, signum):
     Exception.__init__(self, "We received signal %i" % (signum,))
+
 
 # pylint: disable=W0613
 def _TeeProcessSignalHandler(signum, frame):
@@ -36,6 +38,7 @@ def _TeeProcessSignalHandler(signum, frame):
   This is used to decide whether or not to kill our parent.
   """
   raise ToldToDie(signum)
+
 
 def _output(line, output_files, complain):
   """Print line to output_files.
@@ -65,8 +68,7 @@ def _output(line, output_files, complain):
                                                              f.fileno())
           _output(warning, output_files, False)
 
-        warning = '\nWarning: Short write for %s/%d.\n' % (f.name,
-                                                           f.fileno())
+        warning = '\nWarning: Short write for %s/%d.\n' % (f.name, f.fileno())
         _output(warning, output_files, False)
 
 
@@ -114,7 +116,6 @@ class _TeeProcess(multiprocessing.Process):
 
   def run(self):
     """Main function for tee subprocess."""
-
     failed = True
     try:
       signal.signal(signal.SIGINT, _TeeProcessSignalHandler)
@@ -164,6 +165,7 @@ class _TeeProcess(multiprocessing.Process):
 
 class Tee(cros_build_lib.MasterPidContextManager):
   """Class that handles tee-ing output to a file."""
+
   def __init__(self, output_file):
     """Initializes object with path to log file."""
     cros_build_lib.MasterPidContextManager.__init__(self)
