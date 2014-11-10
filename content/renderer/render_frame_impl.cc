@@ -2778,13 +2778,12 @@ void RenderFrameImpl::willSendRequest(
   WebDataSource* data_source =
       provisional_data_source ? provisional_data_source : top_data_source;
 
-  ui::PageTransition transition_type = ui::PAGE_TRANSITION_LINK;
   DocumentState* document_state = DocumentState::FromDataSource(data_source);
   DCHECK(document_state);
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
   NavigationState* navigation_state = document_state->navigation_state();
-  transition_type = navigation_state->transition_type();
+  ui::PageTransition transition_type = navigation_state->transition_type();
 
   GURL request_url(request.url());
   GURL new_url;
