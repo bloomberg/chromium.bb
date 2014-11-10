@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
 #include "base/strings/string16.h"
@@ -49,6 +48,7 @@ class NSString;
 #endif
 
 namespace ui {
+template <typename T>
 class ClipboardTest;
 class ScopedClipboardWriter;
 
@@ -319,8 +319,7 @@ class UI_BASE_EXPORT Clipboard : NON_EXPORTED_BASE(public base::ThreadChecker) {
                          size_t data_len) = 0;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ClipboardTest, SharedBitmapTest);
-  FRIEND_TEST_ALL_PREFIXES(ClipboardTest, EmptyHTMLTest);
+  template <typename T>
   friend class ClipboardTest;
   // For access to WriteObjects().
   // TODO(dcheng): Remove the temporary exception for content.
