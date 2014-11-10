@@ -63,15 +63,17 @@ bool PhoneNumberDetector::FindContent(
   base::string16 utf16_input = base::string16(begin, end);
   std::string utf8_input = base::UTF16ToUTF8(utf16_input);
 
+  PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
+  if (phone_util->IsAlphaNumber(utf8_input))
+    phone_util->ConvertAlphaCharactersInNumber(&utf8_input);
   PhoneNumberMatcher matcher(utf8_input, region_code_);
   if (matcher.HasNext()) {
     PhoneNumberMatch match;
     matcher.Next(&match);
-
-    PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
     phone_util->FormatNumberForMobileDialing(match.number(), region_code_,
                                              false, /* with_formatting */
                                              content_text);
+
     // If the number can't be dialed from the current region, the formatted
     // string will be empty.
     if (content_text->empty())

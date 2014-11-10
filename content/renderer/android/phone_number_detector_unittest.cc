@@ -73,4 +73,17 @@ TEST_F(PhoneNumberDetectorTest, FindAndFormatNumber) {
             "\xEF\xBC\x90", "us"));
 }
 
+TEST_F(PhoneNumberDetectorTest, FindAndFormatAlphaNumber) {
+  // Tests cases with valid alpha numbers.
+  EXPECT_EQ("+18002378289", FindAndFormatNumber("1 800-BestBuy", "us"));
+  EXPECT_EQ("+18002378289", FindAndFormatNumber("1-800-BEST-BUY", "us"));
+  EXPECT_EQ("+18002378289", FindAndFormatNumber("1-800-BEST BUY", "us"));
+  // TODO(qinmin): support alpha number detection when there are characters on
+  // either side of the string.
+  EXPECT_EQ("", FindAndFormatNumber("hello 1-800-BEST-BUY", "us"));
+  EXPECT_EQ("", FindAndFormatNumber("BestBuy", "us"));
+  EXPECT_EQ("", FindAndFormatNumber("1-BestBuy", "us"));
+  EXPECT_EQ("", FindAndFormatNumber("1 BestBuy", "us"));
+}
+
 }  // namespace content
