@@ -86,7 +86,7 @@ void FullscreenController::didEnterFullScreen()
             HTMLVideoElement* videoElement = toHTMLVideoElement(element);
             if (HTMLMediaElement::isMediaStreamURL(videoElement->sourceURL().string()))
                 return;
-            if (videoElement->webMediaPlayer() && videoElement->webMediaPlayer()->canEnterFullscreen()
+            if (videoElement->webMediaPlayer()
                 // FIXME: There is no embedder-side handling in layout test mode.
                 && !LayoutTestSupport::isRunningLayoutTest()) {
                 videoElement->webMediaPlayer()->enterFullscreen();
