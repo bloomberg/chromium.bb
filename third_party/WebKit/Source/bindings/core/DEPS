@@ -1,0 +1,16 @@
+include_rules = [
+    "+bindings/core",
+    "-bindings/modules",
+    "+core",
+    "+heap",
+    "+gin/public",
+    "-modules",
+    "+platform",
+    "+public/platform",
+    "-web",
+
+    # TODO(tasak): Get this list to zero.
+    "!bindings/modules/v8/V8CryptoKey.h",
+    "!bindings/modules/v8/V8DOMFileSystem.h",
+    "!modules/indexeddb/IDBPendingTransactionMonitor.h",
+]

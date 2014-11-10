@@ -1,6 +1,10 @@
 include_rules = [
-    "+bindings",
+    "+bindings/core",
+    "-bindings/modules",
     "+core",
+    "-modules",
     "+platform",
     "+public/platform",
+    "-public/web",
+    "-web",
 ]
