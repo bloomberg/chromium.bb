@@ -48,8 +48,9 @@ void WebDOMMessageEvent::initMessageEvent(const WebString& type, bool canBubble,
     ASSERT(m_private.get());
     ASSERT(isMessageEvent());
     LocalDOMWindow* window = 0;
+    // FIXME: Figure out if this is the right thing to do.
     if (sourceFrame)
-        window = toWebLocalFrameImpl(sourceFrame)->frame()->domWindow();
+        window = toWebLocalFrameImpl(sourceFrame)->frame()->localDOMWindow();
     OwnPtrWillBeRawPtr<MessagePortArray> ports = nullptr;
     if (sourceFrame)
         ports = MessagePort::toMessagePortArray(window->document(), webChannels);

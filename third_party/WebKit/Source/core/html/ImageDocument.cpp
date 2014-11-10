@@ -32,6 +32,7 @@
 #include "core/events/MouseEvent.h"
 #include "core/fetch/ImageResource.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"

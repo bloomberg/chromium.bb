@@ -22,7 +22,7 @@ public:
     // Frame overrides:
     void trace(Visitor*) override;
     virtual bool isRemoteFrame() const override { return true; }
-    virtual LocalDOMWindow* domWindow() const override { return 0; }
+    virtual DOMWindow* domWindow() const override { return 0; }
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) override;
     virtual void detach() override;
 

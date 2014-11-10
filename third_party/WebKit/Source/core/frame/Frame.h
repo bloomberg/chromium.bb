@@ -41,7 +41,7 @@ class FrameClient;
 class FrameHost;
 class FrameOwner;
 class HTMLFrameOwnerElement;
-class LocalDOMWindow;
+class DOMWindow;
 class KURL;
 class Page;
 class RenderPart;
@@ -59,8 +59,7 @@ public:
     virtual bool isLocalFrame() const { return false; }
     virtual bool isRemoteFrame() const { return false; }
 
-    // FIXME: This should return a DOMWindow*.
-    virtual LocalDOMWindow* domWindow() const = 0;
+    virtual DOMWindow* domWindow() const = 0;
 
     virtual void navigate(Document& originDocument, const KURL&, bool lockBackForwardList) = 0;
 

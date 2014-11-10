@@ -64,7 +64,6 @@ enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForw
 // Note: if you're thinking of returning something DOM-related by reference,
 // please ping dcheng@chromium.org first. You probably don't want to do that.
 class LocalDOMWindow final : public DOMWindow, public WillBeHeapSupplementable<LocalDOMWindow>, public LifecycleContext<LocalDOMWindow> {
-    DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LocalDOMWindow);
 public:
     static PassRefPtrWillBeRawPtr<Document> createDocument(const String& mimeType, const DocumentInit&, bool forceXHTML);
@@ -112,12 +111,12 @@ public:
     void setStatus(const String&) override;
     String defaultStatus() const override;
     void setDefaultStatus(const String&) override;
-    LocalDOMWindow* self() const override;
-    LocalDOMWindow* window() const { return self(); }
-    LocalDOMWindow* frames() const { return self(); }
-    LocalDOMWindow* opener() const override;
-    LocalDOMWindow* parent() const override;
-    LocalDOMWindow* top() const override;
+    DOMWindow* self() const override;
+    DOMWindow* window() const { return self(); }
+    DOMWindow* frames() const { return self(); }
+    DOMWindow* opener() const override;
+    DOMWindow* parent() const override;
+    DOMWindow* top() const override;
     Document* document() const override;
     StyleMedia* styleMedia() const override;
     double devicePixelRatio() const override;
@@ -152,8 +151,10 @@ public:
     int requestAnimationFrame(RequestAnimationFrameCallback*) override;
     int webkitRequestAnimationFrame(RequestAnimationFrameCallback*) override;
     void cancelAnimationFrame(int id) override;
-    LocalDOMWindow* anonymousIndexedGetter(uint32_t) override;
+    DOMWindow* anonymousIndexedGetter(uint32_t) override;
     void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) override;
+    String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
+    String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) override;
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -184,8 +185,6 @@ public:
     FrameConsole* frameConsole() const;
 
     void printErrorMessage(const String&);
-    String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
-    String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow);
 
     void postMessageTimerFired(PostMessageTimer*);
     void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);

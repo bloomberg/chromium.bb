@@ -644,8 +644,9 @@ void LocalDOMWindow::sendOrientationChangeEvent()
     dispatchEvent(Event::create(EventTypeNames::orientationchange));
 
     for (size_t i = 0; i < childFrames.size(); ++i) {
-        if (childFrames[i]->domWindow())
-            childFrames[i]->domWindow()->sendOrientationChangeEvent();
+        if (!childFrames[i]->isLocalFrame())
+            continue;
+        toLocalFrame(childFrames[i].get())->localDOMWindow()->sendOrientationChangeEvent();
     }
 }
 
@@ -1295,7 +1296,7 @@ void LocalDOMWindow::setDefaultStatus(const String& string)
     host->chrome().setStatusbarText(frame(), m_defaultStatus);
 }
 
-LocalDOMWindow* LocalDOMWindow::self() const
+DOMWindow* LocalDOMWindow::self() const
 {
     if (!frame())
         return 0;
@@ -1303,7 +1304,7 @@ LocalDOMWindow* LocalDOMWindow::self() const
     return frame()->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::opener() const
+DOMWindow* LocalDOMWindow::opener() const
 {
     if (!frame())
         return 0;
@@ -1315,7 +1316,7 @@ LocalDOMWindow* LocalDOMWindow::opener() const
     return opener->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::parent() const
+DOMWindow* LocalDOMWindow::parent() const
 {
     if (!frame())
         return 0;
@@ -1327,7 +1328,7 @@ LocalDOMWindow* LocalDOMWindow::parent() const
     return frame()->domWindow();
 }
 
-LocalDOMWindow* LocalDOMWindow::top() const
+DOMWindow* LocalDOMWindow::top() const
 {
     if (!frame())
         return 0;
@@ -1854,24 +1855,25 @@ PassRefPtrWillBeRawPtr<LocalDOMWindow> LocalDOMWindow::open(const String& urlStr
     }
     // FIXME: Navigating RemoteFrames is not yet supported.
     if (targetFrame && targetFrame->isLocalFrame()) {
-        if (!activeDocument->canNavigate(*targetFrame))
+        LocalFrame* localTargetFrame = toLocalFrame(targetFrame);
+        if (!activeDocument->canNavigate(*localTargetFrame))
             return nullptr;
 
         KURL completedURL = firstFrame->document()->completeURL(urlString);
 
-        if (targetFrame->domWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
-            return targetFrame->domWindow();
+        if (localTargetFrame->localDOMWindow()->isInsecureScriptAccess(*callingWindow, completedURL))
+            return localTargetFrame->localDOMWindow();
 
         if (urlString.isEmpty())
-            return targetFrame->domWindow();
+            return localTargetFrame->localDOMWindow();
 
-        toLocalFrame(targetFrame)->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, false);
-        return targetFrame->domWindow();
+        localTargetFrame->navigationScheduler().scheduleLocationChange(activeDocument, completedURL, false);
+        return localTargetFrame->localDOMWindow();
     }
 
     WindowFeatures windowFeatures(windowFeaturesString);
     LocalFrame* result = createWindow(urlString, frameName, windowFeatures, *callingWindow, *firstFrame, *frame());
-    return result ? result->domWindow() : 0;
+    return result ? result->localDOMWindow() : 0;
 }
 
 void LocalDOMWindow::showModalDialog(const String& urlString, const String& dialogFeaturesString,
@@ -1900,7 +1902,7 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
     dialogFrame->host()->chrome().runModal();
 }
 
-LocalDOMWindow* LocalDOMWindow::anonymousIndexedGetter(uint32_t index)
+DOMWindow* LocalDOMWindow::anonymousIndexedGetter(uint32_t index)
 {
     if (!frame())
         return 0;

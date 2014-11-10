@@ -33,7 +33,7 @@
 namespace blink {
 
 class IDBFactory;
-class LocalDOMWindow;
+class DOMWindow;
 
 class DOMWindowIndexedDatabase final : public NoBaseWillBeGarbageCollected<DOMWindowIndexedDatabase>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowIndexedDatabase);
@@ -41,7 +41,7 @@ class DOMWindowIndexedDatabase final : public NoBaseWillBeGarbageCollected<DOMWi
 public:
     static DOMWindowIndexedDatabase& from(LocalDOMWindow&);
 
-    static IDBFactory* indexedDB(LocalDOMWindow&);
+    static IDBFactory* indexedDB(DOMWindow&);
 
     virtual void willDestroyGlobalObjectInFrame() override;
     virtual void willDetachGlobalObjectFromFrame() override;

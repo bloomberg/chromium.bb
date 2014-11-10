@@ -30,7 +30,7 @@
 [
     CheckSecurity=Frame,
     Custom=ToV8,
-    ImplementedAs=LocalDOMWindow,
+    ImplementedAs=DOMWindow,
     PrimaryGlobal,
 ] interface Window : EventTarget {
     // DOM Level 0

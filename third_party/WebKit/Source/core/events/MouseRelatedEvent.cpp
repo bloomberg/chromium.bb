@@ -40,9 +40,9 @@ MouseRelatedEvent::MouseRelatedEvent()
 
 static LayoutSize contentsScrollOffset(AbstractView* abstractView)
 {
-    if (!abstractView)
+    if (!abstractView || !abstractView->isLocalDOMWindow())
         return LayoutSize();
-    LocalFrame* frame = abstractView->frame();
+    LocalFrame* frame = toLocalDOMWindow(abstractView)->frame();
     if (!frame)
         return LayoutSize();
     FrameView* frameView = frame->view();
@@ -64,7 +64,7 @@ MouseRelatedEvent::MouseRelatedEvent(const AtomicString& eventType, bool canBubb
     LayoutPoint adjustedPageLocation;
     LayoutPoint scrollPosition;
 
-    LocalFrame* frame = view() ? view()->frame() : 0;
+    LocalFrame* frame = view() && view()->isLocalDOMWindow() ? toLocalDOMWindow(view())->frame() : 0;
     if (frame && !isSimulated) {
         if (FrameView* frameView = frame->view()) {
             scrollPosition = frameView->scrollPosition();
@@ -110,10 +110,9 @@ void MouseRelatedEvent::initCoordinates(const LayoutPoint& clientLocation)
 
 static float pageZoomFactor(const UIEvent* event)
 {
-    LocalDOMWindow* window = event->view();
-    if (!window)
+    if (!event->view() || !event->view()->isLocalDOMWindow())
         return 1;
-    LocalFrame* frame = window->frame();
+    LocalFrame* frame = toLocalDOMWindow(event->view())->frame();
     if (!frame)
         return 1;
     return frame->pageZoomFactor();

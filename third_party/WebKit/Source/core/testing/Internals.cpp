@@ -694,7 +694,7 @@ PassRefPtrWillBeRawPtr<PagePopupController> Internals::pagePopupController()
     return s_pagePopupDriver ? s_pagePopupDriver->pagePopupController() : 0;
 }
 
-LocalDOMWindow* Internals::pagePopupWindow() const
+DOMWindow* Internals::pagePopupWindow() const
 {
     Document* document = contextDocument();
     if (!document)

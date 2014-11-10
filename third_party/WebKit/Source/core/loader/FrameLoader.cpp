@@ -586,7 +586,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
     if (hashChange) {
         m_frame->eventHandler().stopAutoscroll();
-        m_frame->domWindow()->enqueueHashchangeEvent(oldURL, url);
+        m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
     m_documentLoader->setReplacesCurrentHistoryItem(m_loadType == FrameLoadTypeStandard);
@@ -599,7 +599,7 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     scrollToFragmentWithParentBoundary(url);
     checkCompleted();
 
-    m_frame->domWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
+    m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
 }
 
 void FrameLoader::completed()
@@ -943,7 +943,7 @@ void FrameLoader::commitProvisionalLoad()
     // its frame is not in a consistent state for rendering, so avoid setJSStatusBarText
     // since it may cause clients to attempt to render the frame.
     if (!m_stateMachine.creatingInitialEmptyDocument()) {
-        LocalDOMWindow* window = m_frame->domWindow();
+        DOMWindow* window = m_frame->domWindow();
         window->setStatus(String());
         window->setDefaultStatus(String());
     }
@@ -1039,7 +1039,7 @@ bool FrameLoader::checkLoadCompleteForThisFrame()
         return true;
 
     m_progressTracker->progressCompleted();
-    m_frame->domWindow()->finishedLoading();
+    m_frame->localDOMWindow()->finishedLoading();
 
     const ResourceError& error = m_documentLoader->mainDocumentError();
     if (!error.isNull()) {

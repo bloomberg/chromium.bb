@@ -48,6 +48,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeFilter.h"
 #include "core/dom/QualifiedName.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/inspector/BindingVisitors.h"
@@ -695,7 +696,7 @@ PassRefPtrWillBeRawPtr<XPathNSResolver> toXPathNSResolver(v8::Isolate* isolate, 
     return resolver;
 }
 
-LocalDOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
+DOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
 {
     if (value.IsEmpty() || !value->IsObject())
         return 0;
@@ -706,7 +707,7 @@ LocalDOMWindow* toDOMWindow(v8::Handle<v8::Value> value, v8::Isolate* isolate)
     return 0;
 }
 
-LocalDOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
+DOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 {
     if (context.IsEmpty())
         return 0;
@@ -715,7 +716,7 @@ LocalDOMWindow* toDOMWindow(v8::Handle<v8::Context> context)
 
 LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate)
 {
-    LocalDOMWindow* window = toDOMWindow(isolate->GetEnteredContext());
+    LocalDOMWindow* window = toLocalDOMWindow(toDOMWindow(isolate->GetEnteredContext()));
     if (!window) {
         // We don't always have an entered DOM window, for example during microtask callbacks from V8
         // (where the entered context may be the DOM-in-JS context). In that case, we fall back
@@ -728,7 +729,7 @@ LocalDOMWindow* enteredDOMWindow(v8::Isolate* isolate)
 
 LocalDOMWindow* currentDOMWindow(v8::Isolate* isolate)
 {
-    return toDOMWindow(isolate->GetCurrentContext());
+    return toLocalDOMWindow(toDOMWindow(isolate->GetCurrentContext()));
 }
 
 LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
@@ -740,7 +741,7 @@ LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
         // entered context.
         context = isolate->GetEnteredContext();
     }
-    return toDOMWindow(context);
+    return toLocalDOMWindow(toDOMWindow(context));
 }
 
 ExecutionContext* toExecutionContext(v8::Handle<v8::Context> context)
@@ -777,7 +778,7 @@ ExecutionContext* callingExecutionContext(v8::Isolate* isolate)
 
 LocalFrame* toFrameIfNotDetached(v8::Handle<v8::Context> context)
 {
-    LocalDOMWindow* window = toDOMWindow(context);
+    LocalDOMWindow* window = toLocalDOMWindow(toDOMWindow(context));
     if (window && window->isCurrentlyDisplayedInFrame())
         return window->frame();
     // We return 0 here because |context| is detached from the LocalFrame. If we

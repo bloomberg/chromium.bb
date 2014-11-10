@@ -25,6 +25,7 @@ class Document;
 class Element;
 class Frame;
 class History;
+class LocalDOMWindow;
 class Location;
 class MediaQueryList;
 class Navigator;
@@ -39,6 +40,7 @@ class StyleMedia;
 typedef WillBeHeapVector<RefPtrWillBeMember<MessagePort>, 1> MessagePortArray;
 
 class DOMWindow : public RefCountedWillBeGarbageCollectedFinalized<DOMWindow>, public EventTargetWithInlineData, public DOMWindowBase64 {
+    DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(DOMWindow);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindow);
 public:
@@ -168,10 +170,14 @@ public:
     void captureEvents() { }
     void releaseEvents() { }
 
-    // FIXME: Should this be returning DOMWindows?
-    virtual LocalDOMWindow* anonymousIndexedGetter(uint32_t) = 0;
+    virtual DOMWindow* anonymousIndexedGetter(uint32_t) = 0;
 
     virtual void postMessage(PassRefPtr<SerializedScriptValue> message, const MessagePortArray*, const String& targetOrigin, LocalDOMWindow* source, ExceptionState&) = 0;
+
+    // FIXME: These should be non-virtual, but this is blocked on the security
+    // origin replication work.
+    virtual String sanitizedCrossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) = 0;
+    virtual String crossDomainAccessErrorMessage(LocalDOMWindow* callingWindow) = 0;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationend);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(animationiteration);

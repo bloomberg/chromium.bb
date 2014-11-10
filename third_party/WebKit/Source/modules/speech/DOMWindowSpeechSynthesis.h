@@ -33,13 +33,13 @@
 
 namespace blink {
 
-class LocalDOMWindow;
+class DOMWindow;
 
 class DOMWindowSpeechSynthesis final : public NoBaseWillBeGarbageCollected<DOMWindowSpeechSynthesis>, public WillBeHeapSupplement<LocalDOMWindow>, public DOMWindowProperty {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(DOMWindowSpeechSynthesis);
 public:
-    static SpeechSynthesis* speechSynthesis(LocalDOMWindow&);
+    static SpeechSynthesis* speechSynthesis(DOMWindow&);
     static DOMWindowSpeechSynthesis& from(LocalDOMWindow&);
 
     void trace(Visitor*);

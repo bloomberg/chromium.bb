@@ -149,11 +149,11 @@ LocalFrame* createWindow(const String& urlString, const AtomicString& frameName,
 
     newFrame->loader().setOpener(&openerFrame);
 
-    if (newFrame->domWindow()->isInsecureScriptAccess(callingWindow, completedURL))
+    if (newFrame->localDOMWindow()->isInsecureScriptAccess(callingWindow, completedURL))
         return newFrame;
 
     if (function)
-        function(newFrame->domWindow(), functionContext);
+        function(newFrame->localDOMWindow(), functionContext);
 
     if (created)
         newFrame->loader().load(FrameLoadRequest(callingWindow.document(), completedURL));

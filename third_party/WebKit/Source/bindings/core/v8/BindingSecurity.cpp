@@ -72,9 +72,10 @@ static bool canAccessDocument(v8::Isolate* isolate, Document* targetDocument, Se
     if (isDocumentAccessibleFromDOMWindow(targetDocument, callingWindow))
         return true;
 
+    // FIXME: This logic looks unnecessarily convoluted.
     if (reportingOption == ReportSecurityError && targetDocument->domWindow()) {
         if (LocalFrame* frame = targetDocument->frame())
-            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(callingWindow));
+            frame->localDOMWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(callingWindow));
     }
 
     return false;

@@ -50,11 +50,12 @@
 
 namespace blink {
 
-class LocalDOMWindow;
+class DOMWindow;
 class Document;
 class EventListener;
 class ExecutionContext;
 class ExceptionState;
+class LocalDOMWindow;
 class LocalFrame;
 class NodeFilter;
 class XPathNSResolver;
@@ -1130,8 +1131,8 @@ struct NativeValueTraits<Vector<T> > {
 v8::Isolate* toIsolate(ExecutionContext*);
 v8::Isolate* toIsolate(LocalFrame*);
 
-LocalDOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
-LocalDOMWindow* toDOMWindow(v8::Handle<v8::Context>);
+DOMWindow* toDOMWindow(v8::Handle<v8::Value>, v8::Isolate*);
+DOMWindow* toDOMWindow(v8::Handle<v8::Context>);
 LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 LocalDOMWindow* callingDOMWindow(v8::Isolate*);

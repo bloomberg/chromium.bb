@@ -61,7 +61,7 @@
 
 namespace blink {
 
-static LocalFrame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
+static Frame* findFrame(v8::Local<v8::Object> host, v8::Local<v8::Value> data, v8::Isolate* isolate)
 {
     const WrapperTypeInfo* type = WrapperTypeInfo::unwrap(data);
 
@@ -298,10 +298,10 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage message)
 static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8::AccessType type, v8::Local<v8::Value> data)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
-    LocalFrame* target = findFrame(host, data, isolate);
+    Frame* target = findFrame(host, data, isolate);
     if (!target)
         return;
-    LocalDOMWindow* targetWindow = target->domWindow();
+    DOMWindow* targetWindow = target->domWindow();
 
     // FIXME: We should modify V8 to pass in more contextual information (context, property, and object).
     ExceptionState exceptionState(ExceptionState::UnknownContext, 0, 0, isolate->GetCurrentContext()->Global(), isolate);

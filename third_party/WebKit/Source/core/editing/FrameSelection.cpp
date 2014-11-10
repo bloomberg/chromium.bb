@@ -298,7 +298,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
     notifyAccessibilityForSelectionChange();
     notifyCompositorForSelectionChange();
     notifyEventHandlerForSelectionChange();
-    m_frame->domWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
+    m_frame->localDOMWindow()->enqueueDocumentEvent(Event::create(EventTypeNames::selectionchange));
 }
 
 static bool removingNodeRemovesPosition(Node& node, const Position& position)

@@ -32,6 +32,7 @@
 #include "core/events/ScopedEventQueue.h"
 #include "core/events/WindowEventContext.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"

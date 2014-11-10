@@ -26,11 +26,12 @@
 
 #include "core/events/Event.h"
 #include "core/events/EventDispatchMediator.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/DOMWindow.h"
 
 namespace blink {
 
-typedef LocalDOMWindow AbstractView;
+// FIXME: Get rid of this typedef.
+typedef DOMWindow AbstractView;
 
 struct UIEventInit : public EventInit {
     UIEventInit();

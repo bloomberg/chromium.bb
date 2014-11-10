@@ -241,7 +241,7 @@ void LocalFrame::trace(Visitor* visitor)
     Frame::trace(visitor);
 }
 
-LocalDOMWindow* LocalFrame::domWindow() const
+DOMWindow* LocalFrame::domWindow() const
 {
     return m_domWindow.get();
 }

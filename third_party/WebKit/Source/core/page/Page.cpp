@@ -569,7 +569,7 @@ void Page::acceptLanguagesChanged()
     }
 
     for (unsigned i = 0; i < frames.size(); ++i)
-        frames[i]->domWindow()->acceptLanguagesChanged();
+        frames[i]->localDOMWindow()->acceptLanguagesChanged();
 }
 
 PageLifecycleNotifier& Page::lifecycleNotifier()

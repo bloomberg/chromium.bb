@@ -42,10 +42,12 @@ DOMWindowProperty::DOMWindowProperty(LocalFrame* frame)
     // See fast/dom/navigator-detached-no-crash.html for the recipe.
     // We should fix that.  <rdar://problem/11567132>
     if (m_frame) {
+        // FIXME: Need to figure out what to do with DOMWindowProperties on
+        // remote DOM windows.
 #if ENABLE(OILPAN)
-        m_frame->domWindow()->registerProperty(this);
+        m_frame->localDOMWindow()->registerProperty(this);
 #else
-        m_associatedDOMWindow = m_frame->domWindow();
+        m_associatedDOMWindow = m_frame->localDOMWindow();
         m_associatedDOMWindow->registerProperty(this);
 #endif
     }

@@ -962,7 +962,7 @@ WebURLLoader* WebLocalFrameImpl::createAssociatedURLLoader(const WebURLLoaderOpt
 
 unsigned WebLocalFrameImpl::unloadListenerCount() const
 {
-    return frame()->domWindow()->pendingUnloadEventListeners();
+    return frame()->localDOMWindow()->pendingUnloadEventListeners();
 }
 
 void WebLocalFrameImpl::replaceSelection(const WebString& text)
@@ -1413,7 +1413,7 @@ void WebLocalFrameImpl::resetMatchCount()
 void WebLocalFrameImpl::dispatchMessageEventWithOriginCheck(const WebSecurityOrigin& intendedTargetOrigin, const WebDOMEvent& event)
 {
     ASSERT(!event.isNull());
-    frame()->domWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
+    frame()->localDOMWindow()->dispatchMessageEventWithOriginCheck(intendedTargetOrigin.get(), event, nullptr);
 }
 
 int WebLocalFrameImpl::findMatchMarkersVersion() const
@@ -1906,7 +1906,7 @@ void WebLocalFrameImpl::sendOrientationChangeEvent()
 
     // Legacy window.orientation API
     if (RuntimeEnabledFeatures::orientationEventEnabled() && frame()->domWindow())
-        frame()->domWindow()->sendOrientationChangeEvent();
+        frame()->localDOMWindow()->sendOrientationChangeEvent();
 }
 
 v8::Handle<v8::Value> WebLocalFrameImpl::executeScriptAndReturnValueForTests(const WebScriptSource& source)

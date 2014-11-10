@@ -249,8 +249,8 @@ bool WebPagePopupImpl::initializePage()
     if (AXObjectCache* cache = m_popupClient->ownerElement().document().existingAXObjectCache())
         cache->childrenChanged(&m_popupClient->ownerElement());
 
-    ASSERT(frame->domWindow());
-    DOMWindowPagePopup::install(*frame->domWindow(), m_popupClient);
+    ASSERT(frame->localDOMWindow());
+    DOMWindowPagePopup::install(*frame->localDOMWindow(), m_popupClient);
     ASSERT(m_popupClient->ownerElement().document().existingAXObjectCache() == frame->document()->existingAXObjectCache());
 
     RefPtr<SharedBuffer> data = SharedBuffer::create();
@@ -419,8 +419,8 @@ void WebPagePopupImpl::closePopup()
 {
     if (m_page) {
         toLocalFrame(m_page->mainFrame())->loader().stopAllLoaders();
-        ASSERT(m_page->mainFrame()->domWindow());
-        DOMWindowPagePopup::uninstall(*m_page->mainFrame()->domWindow());
+        ASSERT(m_page->deprecatedLocalMainFrame()->localDOMWindow());
+        DOMWindowPagePopup::uninstall(*m_page->deprecatedLocalMainFrame()->localDOMWindow());
     }
     m_closing = true;
 
@@ -437,7 +437,7 @@ void WebPagePopupImpl::closePopup()
 
 LocalDOMWindow* WebPagePopupImpl::window()
 {
-    return m_page->mainFrame()->domWindow();
+    return m_page->deprecatedLocalMainFrame()->localDOMWindow();
 }
 
 void WebPagePopupImpl::compositeAndReadbackAsync(WebCompositeAndReadbackAsyncCallback* callback)

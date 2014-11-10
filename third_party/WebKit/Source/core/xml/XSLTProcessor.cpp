@@ -75,7 +75,7 @@ PassRefPtrWillBeRawPtr<Document> XSLTProcessor::createDocumentFromSource(const S
 
     if (frame) {
         RefPtrWillBeRawPtr<Document> oldDocument = frame->document();
-        result = frame->domWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
+        result = frame->localDOMWindow()->installNewDocument(sourceMIMEType, init, forceXHTML);
 
         // Before parsing, we need to save & detach the old document and get the new document
         // in place. We have to do this only if we're rendering the result document.

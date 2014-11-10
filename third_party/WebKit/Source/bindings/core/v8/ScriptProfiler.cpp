@@ -38,6 +38,7 @@
 #include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/dom/Document.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/inspector/BindingVisitors.h"
 #include "wtf/ThreadSpecific.h"
 
@@ -165,10 +166,10 @@ class GlobalObjectNameResolver final : public v8::HeapProfiler::ObjectNameResolv
 public:
     virtual const char* GetName(v8::Handle<v8::Object> object) override
     {
-        LocalDOMWindow* window = toDOMWindow(object, v8::Isolate::GetCurrent());
+        DOMWindow* window = toDOMWindow(object, v8::Isolate::GetCurrent());
         if (!window)
             return 0;
-        CString url = window->document()->url().string().utf8();
+        CString url = toLocalDOMWindow(window)->document()->url().string().utf8();
         m_strings.append(url);
         return url.data();
     }

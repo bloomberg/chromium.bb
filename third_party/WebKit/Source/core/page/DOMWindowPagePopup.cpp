@@ -49,9 +49,9 @@ const char* DOMWindowPagePopup::supplementName()
     return "DOMWindowPagePopup";
 }
 
-PagePopupController* DOMWindowPagePopup::pagePopupController(LocalDOMWindow& window)
+PagePopupController* DOMWindowPagePopup::pagePopupController(DOMWindow& window)
 {
-    DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(&window, supplementName()));
+    DOMWindowPagePopup* supplement = static_cast<DOMWindowPagePopup*>(from(&toLocalDOMWindow(window), supplementName()));
     ASSERT(supplement);
     return supplement->m_controller.get();
 }

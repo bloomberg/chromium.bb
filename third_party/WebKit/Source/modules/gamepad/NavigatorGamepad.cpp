@@ -174,7 +174,7 @@ void NavigatorGamepad::dispatchOneEvent()
 NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , PlatformEventController(frame ? frame->page() : 0)
-    , DOMWindowLifecycleObserver(frame ? frame->domWindow() : 0)
+    , DOMWindowLifecycleObserver(frame ? frame->localDOMWindow() : 0)
     , m_dispatchOneEventRunner(this, &NavigatorGamepad::dispatchOneEvent)
 {
 }

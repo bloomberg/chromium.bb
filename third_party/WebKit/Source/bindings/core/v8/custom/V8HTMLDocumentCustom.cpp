@@ -38,6 +38,7 @@
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8Window.h"
 #include "core/HTMLNames.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAllCollection.h"
 #include "core/html/HTMLCollection.h"

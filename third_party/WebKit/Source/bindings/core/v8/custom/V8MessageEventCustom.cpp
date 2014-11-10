@@ -112,7 +112,7 @@ void V8MessageEvent::initMessageEventMethodCustom(const v8::FunctionCallbackInfo
     v8::Handle<v8::Value> dataArg = info[3];
     TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
     TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
-    LocalDOMWindow* sourceArg = toDOMWindow(info[6], info.GetIsolate());
+    DOMWindow* sourceArg = toDOMWindow(info[6], info.GetIsolate());
     OwnPtrWillBeRawPtr<MessagePortArray> portArray = nullptr;
     const int portArrayIndex = 7;
     if (!isUndefinedOrNull(info[portArrayIndex])) {

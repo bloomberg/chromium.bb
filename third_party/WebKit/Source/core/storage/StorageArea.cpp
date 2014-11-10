@@ -164,9 +164,10 @@ void StorageArea::dispatchLocalStorageEvent(const String& key, const String& old
             // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
             if (!frame->isLocalFrame())
                 continue;
-            Storage* storage = frame->domWindow()->optionalLocalStorage();
-            if (storage && toLocalFrame(frame)->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
-                frame->domWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
+            LocalFrame* localFrame = toLocalFrame(frame);
+            Storage* storage = localFrame->localDOMWindow()->optionalLocalStorage();
+            if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+                localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
         }
         InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, LocalStorage, securityOrigin);
     }
@@ -195,9 +196,10 @@ void StorageArea::dispatchSessionStorageEvent(const String& key, const String& o
         // FIXME: We do not yet have a way to dispatch events to out-of-process frames.
         if (!frame->isLocalFrame())
             continue;
-        Storage* storage = frame->domWindow()->optionalSessionStorage();
-        if (storage && toLocalFrame(frame)->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
-            frame->domWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
+        LocalFrame* localFrame = toLocalFrame(frame);
+        Storage* storage = localFrame->localDOMWindow()->optionalSessionStorage();
+        if (storage && localFrame->document()->securityOrigin()->canAccess(securityOrigin) && !isEventSource(storage, sourceAreaInstance))
+            localFrame->localDOMWindow()->enqueueWindowEvent(StorageEvent::create(EventTypeNames::storage, key, oldValue, newValue, pageURL, storage));
     }
     InspectorInstrumentation::didDispatchDOMStorageEvent(page, key, oldValue, newValue, SessionStorage, securityOrigin);
 }

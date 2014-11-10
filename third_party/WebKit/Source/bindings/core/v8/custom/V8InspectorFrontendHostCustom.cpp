@@ -158,8 +158,8 @@ void V8InspectorFrontendHost::showContextMenuAtPointMethodCustom(const v8::Funct
         v8::Handle<v8::Object> windowWrapper = V8Window::findInstanceInPrototypeChain(isolate->GetEnteredContext()->Global(), isolate);
         if (windowWrapper.IsEmpty())
             return;
-        LocalDOMWindow* window = V8Window::toImpl(windowWrapper);
-        document = window ? window->document() : nullptr;
+        DOMWindow* window = V8Window::toImpl(windowWrapper);
+        document = window ? toLocalDOMWindow(window)->document() : nullptr;
     }
     if (!document || !document->page())
         return;

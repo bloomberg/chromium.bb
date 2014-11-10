@@ -62,9 +62,9 @@ DOMWindowQuota& DOMWindowQuota::from(LocalDOMWindow& window)
 }
 
 // static
-DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(LocalDOMWindow& window)
+DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow& window)
 {
-    return DOMWindowQuota::from(window).webkitStorageInfo();
+    return DOMWindowQuota::from(toLocalDOMWindow(window)).webkitStorageInfo();
 }
 
 DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const
