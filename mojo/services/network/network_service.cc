@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/base_paths.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -13,15 +11,13 @@
 #include "mojo/public/cpp/application/application_connection.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/interface_factory.h"
-#include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/network_service_impl.h"
 
-class Delegate : public mojo::ApplicationDelegate,
-                 public mojo::InterfaceFactory<mojo::NetworkService> {
- public:
-  Delegate() {}
-
+class NetworkServiceDelegate
+    : public mojo::ApplicationDelegate,
+      public mojo::InterfaceFactory<mojo::NetworkService> {
+ private:
   void Initialize(mojo::ApplicationImpl* app) override {
     base::FilePath base_path;
     CHECK(PathService::Get(base::DIR_TEMP, &base_path));
@@ -44,12 +40,11 @@ class Delegate : public mojo::ApplicationDelegate,
         new mojo::NetworkServiceImpl(connection, context_.get()), &request);
   }
 
- private:
   scoped_ptr<mojo::NetworkContext> context_;
 };
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunnerChromium runner(new Delegate);
+  mojo::ApplicationRunnerChromium runner(new NetworkServiceDelegate);
   runner.set_message_loop_type(base::MessageLoop::TYPE_IO);
   return runner.Run(shell_handle);
 }
