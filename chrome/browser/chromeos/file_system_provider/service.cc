@@ -60,9 +60,9 @@ Service::~Service() {
     const std::string extension_id =
         it->second->GetFileSystemInfo().extension_id();
     ++it;
-    const bool unmount_result = UnmountFileSystem(
+    const base::File::Error unmount_result = UnmountFileSystem(
         extension_id, file_system_id, UNMOUNT_REASON_SHUTDOWN);
-    DCHECK(unmount_result);
+    DCHECK_EQ(base::File::FILE_OK, unmount_result);
   }
 
   DCHECK_EQ(0u, file_system_map_.size());
@@ -95,8 +95,8 @@ void Service::SetRegistryForTesting(scoped_ptr<RegistryInterface> registry) {
   registry_.reset(registry.release());
 }
 
-bool Service::MountFileSystem(const std::string& extension_id,
-                              const MountOptions& options) {
+base::File::Error Service::MountFileSystem(const std::string& extension_id,
+                                           const MountOptions& options) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If already exists a file system provided by the same extension with this
@@ -106,7 +106,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
                       observers_,
                       OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
                                                 base::File::FILE_ERROR_EXISTS));
-    return false;
+    return base::File::FILE_ERROR_EXISTS;
   }
 
   // Restrict number of file systems to prevent system abusing.
@@ -116,7 +116,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
                                   base::File::FILE_ERROR_TOO_MANY_OPENED));
-    return false;
+    return base::File::FILE_ERROR_TOO_MANY_OPENED;
   }
 
   storage::ExternalMountPoints* const mount_points =
@@ -138,7 +138,7 @@ bool Service::MountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemMount(ProvidedFileSystemInfo(),
                                   base::File::FILE_ERROR_INVALID_OPERATION));
-    return false;
+    return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
   // Store the file system descriptor. Use the mount point name as the file
@@ -165,12 +165,12 @@ bool Service::MountFileSystem(const std::string& extension_id,
       observers_,
       OnProvidedFileSystemMount(file_system_info, base::File::FILE_OK));
 
-  return true;
+  return base::File::FILE_OK;
 }
 
-bool Service::UnmountFileSystem(const std::string& extension_id,
-                                const std::string& file_system_id,
-                                UnmountReason reason) {
+base::File::Error Service::UnmountFileSystem(const std::string& extension_id,
+                                             const std::string& file_system_id,
+                                             UnmountReason reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const ProvidedFileSystemMap::iterator file_system_it =
@@ -182,7 +182,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemUnmount(empty_file_system_info,
                                     base::File::FILE_ERROR_NOT_FOUND));
-    return false;
+    return base::File::FILE_ERROR_NOT_FOUND;
   }
 
   storage::ExternalMountPoints* const mount_points =
@@ -200,7 +200,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
         observers_,
         OnProvidedFileSystemUnmount(file_system_info,
                                     base::File::FILE_ERROR_INVALID_OPERATION));
-    return false;
+    return base::File::FILE_ERROR_INVALID_OPERATION;
   }
 
   FOR_EACH_OBSERVER(
@@ -218,7 +218,7 @@ bool Service::UnmountFileSystem(const std::string& extension_id,
   delete file_system_it->second;
   file_system_map_.erase(file_system_it);
 
-  return true;
+  return base::File::FILE_OK;
 }
 
 bool Service::RequestUnmount(const std::string& extension_id,
@@ -275,13 +275,12 @@ void Service::OnExtensionUnloaded(
     // by the UnmountFileSystem() call.
     ++it;
     if (file_system_info.extension_id() == extension->id()) {
-      const bool unmount_result = UnmountFileSystem(
-          file_system_info.extension_id(),
-          file_system_info.file_system_id(),
+      const base::File::Error unmount_result = UnmountFileSystem(
+          file_system_info.extension_id(), file_system_info.file_system_id(),
           reason == extensions::UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN
               ? UNMOUNT_REASON_SHUTDOWN
               : UNMOUNT_REASON_USER);
-      DCHECK(unmount_result);
+      DCHECK_EQ(base::File::FILE_OK, unmount_result);
     }
   }
 }
@@ -292,9 +291,9 @@ void Service::OnExtensionLoaded(content::BrowserContext* browser_context,
       registry_->RestoreFileSystems(extension->id());
 
   for (const auto& restored_file_system : *restored_file_systems) {
-    const bool result = MountFileSystem(restored_file_system.extension_id,
-                                        restored_file_system.options);
-    if (!result) {
+    const base::File::Error result = MountFileSystem(
+        restored_file_system.extension_id, restored_file_system.options);
+    if (result != base::File::FILE_OK) {
       LOG(ERROR) << "Failed to restore a provided file system from "
                  << "registry: " << restored_file_system.extension_id << ", "
                  << restored_file_system.options.file_system_id << ", "

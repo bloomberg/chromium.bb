@@ -113,17 +113,19 @@ class RequestManager {
   int CreateRequest(RequestType type, scoped_ptr<HandlerInterface> handler);
 
   // Handles successful response for the |request_id|. If |has_more| is false,
-  // then the request is disposed, after handling the |response|. On error,
-  // returns false, and the request is disposed. |response| must not be NULL.
-  bool FulfillRequest(int request_id,
-                      scoped_ptr<RequestValue> response,
-                      bool has_more);
+  // then the request is disposed, after handling the |response|. On success,
+  // returns base::File::FILE_OK. Otherwise returns an error code. |response|
+  // must not be NULL.
+  base::File::Error FulfillRequest(int request_id,
+                                   scoped_ptr<RequestValue> response,
+                                   bool has_more);
 
-  // Handles error response for the |request_id|. If handling the error fails,
-  // returns false. Always disposes the request. |response| must not be NULL.
-  bool RejectRequest(int request_id,
-                     scoped_ptr<RequestValue> response,
-                     base::File::Error error);
+  // Handles error response for the |request_id|. If handling the error
+  // succeeds, theen returns base::File::FILE_OK. Otherwise returns an error
+  // code. Always disposes the request. |response| must not be NULL.
+  base::File::Error RejectRequest(int request_id,
+                                  scoped_ptr<RequestValue> response,
+                                  base::File::Error error);
 
   // Sets a custom timeout for tests. The new timeout value will be applied to
   // new requests

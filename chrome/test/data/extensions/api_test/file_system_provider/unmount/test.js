@@ -70,7 +70,7 @@ function runTests() {
     function unmountWrongId() {
       chrome.fileSystemProvider.unmount(
           {fileSystemId: 'wrong-fs-id'},
-          chrome.test.callbackFail('SECURITY'));
+          chrome.test.callbackFail('NOT_FOUND'));
     },
 
     // Tests if fileManagerPrivate.removeMount() for provided file systems emits

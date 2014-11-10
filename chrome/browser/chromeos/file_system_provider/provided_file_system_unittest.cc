@@ -757,12 +757,12 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     const storage::WatcherManager::ChangeType change_type =
         storage::WatcherManager::CHANGED;
     const std::string tag = "hello-world";
-    EXPECT_TRUE(provided_file_system_->Notify(
-        base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-        false /* recursive */,
-        change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
-        tag));
+
+    Log log;
+    provided_file_system_->Notify(
+        base::FilePath::FromUTF8Unsafe(kDirectoryPath), false /* recursive */,
+        change_type, make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
+        tag, base::Bind(&LogStatus, base::Unretained(&log)));
 
     // Confirm that the notification callback was called.
     ASSERT_EQ(1u, notification_log.size());
@@ -785,6 +785,9 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
     // Wait until all observers finish handling the notification.
     base::RunLoop().RunUntilIdle();
 
+    ASSERT_EQ(1u, log.size());
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
+
     // Confirm, that the watcher still exists, and that the tag is updated.
     ASSERT_EQ(1u, watchers->size());
     EXPECT_EQ(tag, watchers->begin()->second.last_tag);
@@ -798,13 +801,15 @@ TEST_F(FileSystemProviderProvidedFileSystemTest, Notify) {
         storage::WatcherManager::DELETED;
     const ProvidedFileSystemObserver::Changes changes;
     const std::string tag = "chocolate-disco";
-    EXPECT_TRUE(provided_file_system_->Notify(
-        base::FilePath::FromUTF8Unsafe(kDirectoryPath),
-        false /* recursive */,
-        change_type,
-        make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
-        tag));
+
+    Log log;
+    provided_file_system_->Notify(
+        base::FilePath::FromUTF8Unsafe(kDirectoryPath), false /* recursive */,
+        change_type, make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
+        tag, base::Bind(&LogStatus, base::Unretained(&log)));
     base::RunLoop().RunUntilIdle();
+    ASSERT_EQ(1u, log.size());
+    EXPECT_EQ(base::File::FILE_OK, log[0]);
 
     // Confirm that the notification callback was called.
     ASSERT_EQ(2u, notification_log.size());

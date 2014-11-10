@@ -77,13 +77,13 @@ bool FileSystemProviderMountFunction::RunSync() {
 
   // It's an error if the file system Id is empty.
   if (params->options.file_system_id.empty()) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
+    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
     return false;
   }
 
   // It's an error if the display name is empty.
   if (params->options.display_name.empty()) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
+    SetError(FileErrorToString(base::File::FILE_ERROR_INVALID_OPERATION));
     return false;
   }
 
@@ -96,9 +96,10 @@ bool FileSystemProviderMountFunction::RunSync() {
   options.writable = params->options.writable;
   options.supports_notify_tag = params->options.supports_notify_tag;
 
-  // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-  if (!service->MountFileSystem(extension_id(), options)) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
+  const base::File::Error result =
+      service->MountFileSystem(extension_id(), options);
+  if (result != base::File::FILE_OK) {
+    SetError(FileErrorToString(result));
     return false;
   }
 
@@ -113,11 +114,11 @@ bool FileSystemProviderUnmountFunction::RunSync() {
   Service* const service = Service::Get(GetProfile());
   DCHECK(service);
 
-  if (!service->UnmountFileSystem(extension_id(),
-                                  params->options.file_system_id,
-                                  Service::UNMOUNT_REASON_USER)) {
-    // TODO(mtomasz): Pass more detailed errors, rather than just a bool.
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
+  const base::File::Error result =
+      service->UnmountFileSystem(extension_id(), params->options.file_system_id,
+                                 Service::UNMOUNT_REASON_USER);
+  if (result != base::File::FILE_OK) {
+    SetError(FileErrorToString(result));
     return false;
   }
 
@@ -171,7 +172,7 @@ bool FileSystemProviderGetAllFunction::RunSync() {
   return true;
 }
 
-bool FileSystemProviderNotifyFunction::RunSync() {
+bool FileSystemProviderNotifyFunction::RunAsync() {
   using api::file_system_provider::Notify::Params;
   scoped_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
@@ -183,23 +184,31 @@ bool FileSystemProviderNotifyFunction::RunSync() {
       service->GetProvidedFileSystem(extension_id(),
                                      params->options.file_system_id);
   if (!file_system) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
+    SetError(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND));
     return false;
   }
 
-  if (!file_system->Notify(
-          base::FilePath::FromUTF8Unsafe(params->options.observed_path),
-          params->options.recursive,
-          ParseChangeType(params->options.change_type),
-          params->options.changes.get()
-              ? ParseChanges(*params->options.changes.get())
-              : make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
-          params->options.tag.get() ? *params->options.tag.get() : "")) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
-    return false;
-  }
+  file_system->Notify(
+      base::FilePath::FromUTF8Unsafe(params->options.observed_path),
+      params->options.recursive, ParseChangeType(params->options.change_type),
+      params->options.changes.get()
+          ? ParseChanges(*params->options.changes.get())
+          : make_scoped_ptr(new ProvidedFileSystemObserver::Changes),
+      params->options.tag.get() ? *params->options.tag.get() : "",
+      base::Bind(&FileSystemProviderNotifyFunction::OnNotifyCompleted, this));
 
   return true;
+}
+
+void FileSystemProviderNotifyFunction::OnNotifyCompleted(
+    base::File::Error result) {
+  if (result != base::File::FILE_OK) {
+    SetError(FileErrorToString(result));
+    SendResponse(false);
+    return;
+  }
+
+  SendResponse(true);
 }
 
 bool FileSystemProviderInternalUnmountRequestedSuccessFunction::RunWhenValid() {

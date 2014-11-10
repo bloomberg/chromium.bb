@@ -135,9 +135,9 @@ class FileSystemProviderProviderAsyncFileUtilTest : public testing::Test {
     service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
-    const bool result = service->MountFileSystem(
+    const base::File::Error result = service->MountFileSystem(
         kExtensionId, MountOptions(kFileSystemId, "Testing File System"));
-    ASSERT_TRUE(result);
+    ASSERT_EQ(base::File::FILE_OK, result);
     const ProvidedFileSystemInfo& file_system_info =
         service->GetProvidedFileSystem(kExtensionId, kFileSystemId)
             ->GetFileSystemInfo();

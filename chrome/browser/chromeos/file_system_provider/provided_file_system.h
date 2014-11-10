@@ -156,11 +156,13 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual Watchers* GetWatchers() override;
   virtual void AddObserver(ProvidedFileSystemObserver* observer) override;
   virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
-  virtual bool Notify(const base::FilePath& entry_path,
-                      bool recursive,
-                      storage::WatcherManager::ChangeType change_type,
-                      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-                      const std::string& tag) override;
+  virtual void Notify(
+      const base::FilePath& entry_path,
+      bool recursive,
+      storage::WatcherManager::ChangeType change_type,
+      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+      const std::string& tag,
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
  private:
@@ -179,14 +181,14 @@ class ProvidedFileSystem : public ProvidedFileSystemInterface {
       base::File::Error result);
 
   // Called when all observers finished handling the change notification. It
-  // updates the tag from |last_tag| to |tag| for the entry at |entry_path|.
+  // updates the tag to |tag| for the entry at |entry_path|.
   void OnNotifyCompleted(
       const base::FilePath& entry_path,
       bool recursive,
       storage::WatcherManager::ChangeType change_type,
       scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-      const std::string& last_tag,
-      const std::string& tag);
+      const std::string& tag,
+      const storage::AsyncFileUtil::StatusCallback& callback);
 
   Profile* profile_;                       // Not owned.
   extensions::EventRouter* event_router_;  // Not owned. May be NULL.

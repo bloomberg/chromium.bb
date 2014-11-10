@@ -146,11 +146,13 @@ class FakeProvidedFileSystem : public ProvidedFileSystemInterface {
   virtual Watchers* GetWatchers() override;
   virtual void AddObserver(ProvidedFileSystemObserver* observer) override;
   virtual void RemoveObserver(ProvidedFileSystemObserver* observer) override;
-  virtual bool Notify(const base::FilePath& entry_path,
-                      bool recursive,
-                      storage::WatcherManager::ChangeType change_type,
-                      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-                      const std::string& tag) override;
+  virtual void Notify(
+      const base::FilePath& entry_path,
+      bool recursive,
+      storage::WatcherManager::ChangeType change_type,
+      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+      const std::string& tag,
+      const storage::AsyncFileUtil::StatusCallback& callback) override;
   virtual base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
   // Factory callback, to be used in Service::SetFileSystemFactory(). The

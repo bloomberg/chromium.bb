@@ -501,34 +501,40 @@ void ProvidedFileSystem::RemoveObserver(ProvidedFileSystemObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-bool ProvidedFileSystem::Notify(
+void ProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-    const std::string& tag) {
+    const std::string& tag,
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const WatcherKey key(entry_path, recursive);
   const auto& watcher_it = watchers_.find(key);
-  if (watcher_it == watchers_.end())
-    return false;
+  if (watcher_it == watchers_.end()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    return;
+  }
 
   // The tag must be provided if and only if it's explicitly supported.
-  if (file_system_info_.supports_notify_tag() == tag.empty())
-    return false;
+  if (file_system_info_.supports_notify_tag() == tag.empty()) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
+
+  // It's illegal to provide a tag which is not unique.
+  if (!tag.empty() && tag == watcher_it->second.last_tag) {
+    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    return;
+  }
 
   // The object is owned by AutoUpdated, so the reference is valid as long as
   // callbacks created with AutoUpdater::CreateCallback().
   const ProvidedFileSystemObserver::Changes& changes_ref = *changes.get();
 
-  scoped_refptr<AutoUpdater> auto_updater(
-      new AutoUpdater(base::Bind(&ProvidedFileSystem::OnNotifyCompleted,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 entry_path,
-                                 recursive,
-                                 change_type,
-                                 base::Passed(&changes),
-                                 watcher_it->second.last_tag,
-                                 tag)));
+  scoped_refptr<AutoUpdater> auto_updater(new AutoUpdater(
+      base::Bind(&ProvidedFileSystem::OnNotifyCompleted,
+                 weak_ptr_factory_.GetWeakPtr(), entry_path, recursive,
+                 change_type, base::Passed(&changes), tag, callback)));
 
   // Call all notification callbacks (if any).
   for (const auto& subscriber_it : watcher_it->second.subscribers) {
@@ -546,8 +552,6 @@ bool ProvidedFileSystem::Notify(
                                      change_type,
                                      changes_ref,
                                      auto_updater->CreateCallback()));
-
-  return true;
 }
 
 base::WeakPtr<ProvidedFileSystemInterface> ProvidedFileSystem::GetWeakPtr() {
@@ -607,23 +611,18 @@ void ProvidedFileSystem::OnNotifyCompleted(
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> /* changes */,
-    const std::string& last_tag,
-    const std::string& tag) {
+    const std::string& tag,
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   const WatcherKey key(entry_path, recursive);
   const Watchers::iterator it = watchers_.find(key);
   // Check if the entry is still watched.
-  if (it == watchers_.end())
+  if (it == watchers_.end()) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
+  }
 
-  // Another following notification finished earlier.
-  if (it->second.last_tag != last_tag)
-    return;
-
-  // It's illegal to provide a tag which is not unique. As for now only an error
-  // message is printed, but we may want to pass the error to the providing
-  // extension. TODO(mtomasz): Consider it.
-  if (!tag.empty() && tag == it->second.last_tag)
-    LOG(ERROR) << "Tag specified, but same as the previous one.";
+  // TODO(mtomasz): Add an async queue around notify and other watcher related
+  // methods so there is no race.
 
   it->second.last_tag = tag;
 
@@ -643,6 +642,8 @@ void ProvidedFileSystem::OnNotifyCompleted(
                     base::Bind(&EmptyStatusCallback));
     }
   }
+
+  callback.Run(base::File::FILE_OK);
 }
 
 }  // namespace file_system_provider

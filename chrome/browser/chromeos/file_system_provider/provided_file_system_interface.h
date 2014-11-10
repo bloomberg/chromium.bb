@@ -198,14 +198,17 @@ class ProvidedFileSystemInterface {
       const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Notifies about changes related to the watcher within the file system.
-  // Invoked by the file system implementation. Returns false if the
-  // notification arguments are malformed or the entry is not watched anymore.
+  // Invoked by the file system implementation. Returns an error code via the
+  // callback if the notification arguments are malformed or the entry is not
+  // watched anymore. On success, returns base::File::FILE_OK.
   // TODO(mtomasz): Replace [entry_path, recursive] with a watcher id.
-  virtual bool Notify(const base::FilePath& entry_path,
-                      bool recursive,
-                      storage::WatcherManager::ChangeType change_type,
-                      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-                      const std::string& tag) = 0;
+  virtual void Notify(
+      const base::FilePath& entry_path,
+      bool recursive,
+      storage::WatcherManager::ChangeType change_type,
+      scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
+      const std::string& tag,
+      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

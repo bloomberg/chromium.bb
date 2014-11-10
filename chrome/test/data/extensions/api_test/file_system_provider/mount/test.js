@@ -19,14 +19,14 @@ chrome.test.runTests([
   function emptyDisplayName() {
     chrome.fileSystemProvider.mount(
         {fileSystemId: 'file-system-id', displayName: ''},
-        chrome.test.callbackFail('SECURITY'));
+        chrome.test.callbackFail('INVALID_OPERATION'));
   },
 
   // Verifies that mounting fails, when an empty string is provided as an Id
   function emptyFileSystemId() {
     chrome.fileSystemProvider.mount(
         {fileSystemId: '', displayName: 'File System Name'},
-        chrome.test.callbackFail('SECURITY'));
+        chrome.test.callbackFail('INVALID_OPERATION'));
   },
 
   // End to end test. Mounts a volume using fileSystemProvider.mount(), then
@@ -97,7 +97,7 @@ chrome.test.runTests([
               fileSystemId: 'over-the-limit-fs-id',
               displayName: 'Over The Limit File System'
             },
-            chrome.test.callbackFail('SECURITY'));
+            chrome.test.callbackFail('TOO_MANY_OPENED'));
       }
     };
     tryNextOne();

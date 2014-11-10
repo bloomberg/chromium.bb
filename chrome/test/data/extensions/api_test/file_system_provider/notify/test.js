@@ -140,7 +140,7 @@ function runTests() {
               observedPath: fileEntry.fullPath,
               recursive: false,
               changeType: 'CHANGED',
-            }, chrome.test.callbackFail('SECURITY'));
+            }, chrome.test.callbackFail('INVALID_OPERATION'));
           }),
           function(error) {
             chrome.test.fail(error.name);
@@ -165,7 +165,7 @@ function runTests() {
               recursive: true,
               changeType: 'CHANGED',
               tag: TESTING_ANOTHER_TAG,
-            }, chrome.test.callbackFail('SECURITY'));
+            }, chrome.test.callbackFail('NOT_FOUND'));
           }));
     },
 
@@ -223,7 +223,7 @@ function runTests() {
               recursive: false,
               changeType: 'CHANGED',
               tag: TESTING_ANOTHER_TAG
-            }, chrome.test.callbackFail('SECURITY'));
+            }, chrome.test.callbackFail('NOT_FOUND'));
           }));
     }
   ]);

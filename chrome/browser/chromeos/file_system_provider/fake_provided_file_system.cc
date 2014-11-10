@@ -367,14 +367,15 @@ void FakeProvidedFileSystem::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool FakeProvidedFileSystem::Notify(
+void FakeProvidedFileSystem::Notify(
     const base::FilePath& entry_path,
     bool recursive,
     storage::WatcherManager::ChangeType change_type,
     scoped_ptr<ProvidedFileSystemObserver::Changes> changes,
-    const std::string& tag) {
+    const std::string& tag,
+    const storage::AsyncFileUtil::StatusCallback& callback) {
   NOTREACHED();
-  return false;
+  callback.Run(base::File::FILE_ERROR_SECURITY);
 }
 
 ProvidedFileSystemInterface* FakeProvidedFileSystem::Create(

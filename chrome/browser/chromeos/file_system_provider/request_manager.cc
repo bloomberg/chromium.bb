@@ -119,13 +119,14 @@ int RequestManager::CreateRequest(RequestType type,
   return request_id;
 }
 
-bool RequestManager::FulfillRequest(int request_id,
-                                    scoped_ptr<RequestValue> response,
-                                    bool has_more) {
+base::File::Error RequestManager::FulfillRequest(
+    int request_id,
+    scoped_ptr<RequestValue> response,
+    bool has_more) {
   CHECK(response.get());
   RequestMap::iterator request_it = requests_.find(request_id);
   if (request_it == requests_.end())
-    return false;
+    return base::File::FILE_ERROR_NOT_FOUND;
 
   FOR_EACH_OBSERVER(Observer,
                     observers_,
@@ -141,16 +142,17 @@ bool RequestManager::FulfillRequest(int request_id,
     ResetTimer(request_id);
   }
 
-  return true;
+  return base::File::FILE_OK;
 }
 
-bool RequestManager::RejectRequest(int request_id,
-                                   scoped_ptr<RequestValue> response,
-                                   base::File::Error error) {
+base::File::Error RequestManager::RejectRequest(
+    int request_id,
+    scoped_ptr<RequestValue> response,
+    base::File::Error error) {
   CHECK(response.get());
   RequestMap::iterator request_it = requests_.find(request_id);
   if (request_it == requests_.end())
-    return false;
+    return base::File::FILE_ERROR_NOT_FOUND;
 
   FOR_EACH_OBSERVER(Observer,
                     observers_,
@@ -158,7 +160,7 @@ bool RequestManager::RejectRequest(int request_id,
   request_it->second->handler->OnError(request_id, response.Pass(), error);
   DestroyRequest(request_id);
 
-  return true;
+  return base::File::FILE_OK;
 }
 
 void RequestManager::SetTimeoutForTesting(const base::TimeDelta& timeout) {

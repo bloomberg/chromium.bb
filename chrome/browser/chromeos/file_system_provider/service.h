@@ -82,15 +82,16 @@ class Service : public KeyedService,
   // Otherwise, only read-only operations are supported. If change notification
   // tags are supported, then |supports_notify_tag| must be true. Note, that
   // it is required in order to enable the internal cache. For success, returns
-  // true, otherwise false.
-  bool MountFileSystem(const std::string& extension_id,
-                       const MountOptions& options);
+  // base::File::FILE_OK, otherwise an error code.
+  base::File::Error MountFileSystem(const std::string& extension_id,
+                                    const MountOptions& options);
 
   // Unmounts a file system with the specified |file_system_id| for the
-  // |extension_id|. For success returns true, otherwise false.
-  bool UnmountFileSystem(const std::string& extension_id,
-                         const std::string& file_system_id,
-                         UnmountReason reason);
+  // |extension_id|. For success returns base::File::FILE_OK, otherwise an error
+  // code.
+  base::File::Error UnmountFileSystem(const std::string& extension_id,
+                                      const std::string& file_system_id,
+                                      UnmountReason reason);
 
   // Requests unmounting of the file system. The callback is called when the
   // request is accepted or rejected, with an error code. Returns false if the

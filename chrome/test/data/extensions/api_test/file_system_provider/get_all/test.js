@@ -46,7 +46,7 @@ chrome.test.runTests([
   function mountError() {
     chrome.fileSystemProvider.mount(
         {fileSystemId: '', displayName: ''},
-        chrome.test.callbackFail('SECURITY', function() {
+        chrome.test.callbackFail('INVALID_OPERATION', function() {
           chrome.fileSystemProvider.getAll(chrome.test.callbackPass(
               function(fileSystems) {
                 chrome.test.assertEq(0, fileSystems.length);

@@ -126,9 +126,10 @@ FileSystemProviderInternalFunction::FileSystemProviderInternalFunction()
 bool FileSystemProviderInternalFunction::RejectRequest(
     scoped_ptr<chromeos::file_system_provider::RequestValue> value,
     base::File::Error error) {
-  if (!request_manager_->RejectRequest(request_id_, value.Pass(), error)) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
-    SendResponse(false);
+  const base::File::Error result =
+      request_manager_->RejectRequest(request_id_, value.Pass(), error);
+  if (result != base::File::FILE_OK) {
+    SetError(FileErrorToString(result));
     return false;
   }
 
@@ -138,9 +139,10 @@ bool FileSystemProviderInternalFunction::RejectRequest(
 bool FileSystemProviderInternalFunction::FulfillRequest(
     scoped_ptr<RequestValue> value,
     bool has_more) {
-  if (!request_manager_->FulfillRequest(request_id_, value.Pass(), has_more)) {
-    SetError(FileErrorToString(base::File::FILE_ERROR_SECURITY));
-    SendResponse(false);
+  const base::File::Error result =
+      request_manager_->FulfillRequest(request_id_, value.Pass(), has_more);
+  if (result != base::File::FILE_OK) {
+    SetError(FileErrorToString(result));
     return false;
   }
 
@@ -150,10 +152,9 @@ bool FileSystemProviderInternalFunction::FulfillRequest(
 bool FileSystemProviderInternalFunction::RunSync() {
   DCHECK(args_);
   if (!Parse())
-    return true;
+    return false;
 
-  SendResponse(RunWhenValid());
-  return true;
+  return RunWhenValid();
 }
 
 bool FileSystemProviderInternalFunction::Parse() {
@@ -162,13 +163,11 @@ bool FileSystemProviderInternalFunction::Parse() {
   if (!args_->GetString(0, &file_system_id) ||
       !args_->GetInteger(1, &request_id_)) {
     bad_message_ = true;
-    SendResponse(false);
     return false;
   }
 
   Service* service = Service::Get(GetProfile());
   if (!service) {
-    SendResponse(false);
     return false;
   }
 
@@ -176,7 +175,6 @@ bool FileSystemProviderInternalFunction::Parse() {
       service->GetProvidedFileSystem(extension_id(), file_system_id);
   if (!file_system) {
     SetError(FileErrorToString(base::File::FILE_ERROR_NOT_FOUND));
-    SendResponse(false);
     return false;
   }
 

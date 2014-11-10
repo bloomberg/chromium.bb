@@ -40,14 +40,18 @@ class FileSystemProviderGetAllFunction : public ChromeSyncExtensionFunction {
   virtual bool RunSync() override;
 };
 
-class FileSystemProviderNotifyFunction : public ChromeSyncExtensionFunction {
+class FileSystemProviderNotifyFunction : public ChromeAsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileSystemProvider.notify",
                              FILESYSTEMPROVIDER_NOTIFY)
 
  protected:
   virtual ~FileSystemProviderNotifyFunction() {}
-  virtual bool RunSync() override;
+  virtual bool RunAsync() override;
+
+ private:
+  // Called when notifying is completed.
+  void OnNotifyCompleted(base::File::Error result);
 };
 
 class FileSystemProviderInternalUnmountRequestedSuccessFunction

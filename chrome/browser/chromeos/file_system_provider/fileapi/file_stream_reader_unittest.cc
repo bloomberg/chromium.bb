@@ -96,9 +96,9 @@ class FileSystemProviderFileStreamReader : public testing::Test {
     service->SetFileSystemFactoryForTesting(
         base::Bind(&FakeProvidedFileSystem::Create));
 
-    const bool result = service->MountFileSystem(
+    const base::File::Error result = service->MountFileSystem(
         kExtensionId, MountOptions(kFileSystemId, "Testing File System"));
-    ASSERT_TRUE(result);
+    ASSERT_EQ(base::File::FILE_OK, result);
     FakeProvidedFileSystem* provided_file_system =
         static_cast<FakeProvidedFileSystem*>(
             service->GetProvidedFileSystem(kExtensionId, kFileSystemId));
