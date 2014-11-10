@@ -97,18 +97,18 @@ WebThreadImpl::~WebThreadImpl() {
 }
 
 WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
-    base::MessageLoopProxy* message_loop)
-    : message_loop_(message_loop),
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : main_thread_task_runner_(main_thread_task_runner),
       thread_id_(base::PlatformThread::CurrentId()) {}
 
 void WebThreadImplForMessageLoop::postTask(Task* task) {
-  message_loop_->PostTask(
+  main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&blink::WebThread::Task::run, base::Owned(task)));
 }
 
 void WebThreadImplForMessageLoop::postDelayedTask(Task* task,
                                                   long long delay_ms) {
-  message_loop_->PostDelayedTask(
+  main_thread_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&blink::WebThread::Task::run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(delay_ms));
@@ -128,7 +128,7 @@ void WebThreadImplForMessageLoop::exitRunLoop() {
 }
 
 bool WebThreadImplForMessageLoop::isCurrentThread() const {
-  return message_loop_->BelongsToCurrentThread();
+  return main_thread_task_runner_->BelongsToCurrentThread();
 }
 
 blink::PlatformThreadId WebThreadImplForMessageLoop::threadId() const {

@@ -57,7 +57,7 @@ class CONTENT_EXPORT WebThreadImpl : public WebThreadBase {
 class WebThreadImplForMessageLoop : public WebThreadBase {
  public:
   CONTENT_EXPORT explicit WebThreadImplForMessageLoop(
-      base::MessageLoopProxy* message_loop);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   CONTENT_EXPORT virtual ~WebThreadImplForMessageLoop();
 
   virtual void postTask(Task* task) override;
@@ -70,7 +70,7 @@ class WebThreadImplForMessageLoop : public WebThreadBase {
   virtual bool isCurrentThread() const override;
   virtual blink::PlatformThreadId threadId() const override;
 
-  scoped_refptr<base::MessageLoopProxy> message_loop_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   blink::PlatformThreadId thread_id_;
 };
 

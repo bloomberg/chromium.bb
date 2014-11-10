@@ -418,12 +418,28 @@ static int ToMessageID(WebLocalizedString::Name name) {
 }
 
 BlinkPlatformImpl::BlinkPlatformImpl()
-    : main_loop_(base::MessageLoop::current()),
+    : main_thread_task_runner_(base::MessageLoopProxy::current()),
       shared_timer_func_(NULL),
       shared_timer_fire_time_(0.0),
       shared_timer_fire_time_was_set_while_suspended_(false),
       shared_timer_suspended_(0),
       current_thread_slot_(&DestroyCurrentThread) {
+  InternalInit();
+}
+
+BlinkPlatformImpl::BlinkPlatformImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    : main_thread_task_runner_(main_thread_task_runner),
+      shared_timer_func_(NULL),
+      shared_timer_fire_time_(0.0),
+      shared_timer_fire_time_was_set_while_suspended_(false),
+      shared_timer_suspended_(0),
+      current_thread_slot_(&DestroyCurrentThread) {
+  // TODO(alexclarke): Use c++11 delegated constructors when allowed.
+  InternalInit();
+}
+
+void BlinkPlatformImpl::InternalInit() {
   // ChildThread may not exist in some tests.
   if (ChildThread::current()) {
     geofencing_provider_.reset(new WebGeofencingProviderImpl(
@@ -431,6 +447,10 @@ BlinkPlatformImpl::BlinkPlatformImpl()
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     notification_dispatcher_ =
         ChildThread::current()->notification_dispatcher();
+  }
+
+  if (main_thread_task_runner_.get()) {
+    shared_timer_.SetTaskRunner(main_thread_task_runner_);
   }
 }
 
@@ -490,12 +510,18 @@ blink::WebThread* BlinkPlatformImpl::currentThread() {
   if (thread)
     return (thread);
 
-  scoped_refptr<base::MessageLoopProxy> message_loop =
-      base::MessageLoopProxy::current();
-  if (!message_loop.get())
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
+  if (main_thread_task_runner_.get() &&
+      main_thread_task_runner_->BelongsToCurrentThread()) {
+    task_runner = main_thread_task_runner_;
+  } else {
+    task_runner = base::MessageLoopProxy::current();
+  }
+
+  if (!task_runner.get())
     return NULL;
 
-  thread = new WebThreadImplForMessageLoop(message_loop.get());
+  thread = new WebThreadImplForMessageLoop(task_runner);
   current_thread_slot_.Set(thread);
   return thread;
 }
@@ -992,7 +1018,7 @@ void BlinkPlatformImpl::stopSharedTimer() {
 
 void BlinkPlatformImpl::callOnMainThread(
     void (*func)(void*), void* context) {
-  main_loop_->PostTask(FROM_HERE, base::Bind(func, context));
+  main_thread_task_runner_->PostTask(FROM_HERE, base::Bind(func, context));
 }
 
 blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(

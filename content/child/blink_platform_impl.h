@@ -42,6 +42,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
     : NON_EXPORTED_BASE(public blink::Platform) {
  public:
   BlinkPlatformImpl();
+  explicit BlinkPlatformImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   virtual ~BlinkPlatformImpl();
 
   // Platform methods (partial implementation):
@@ -162,6 +164,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
+ protected:
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
  private:
   static void DestroyCurrentThread(void*);
 
@@ -170,9 +175,10 @@ class CONTENT_EXPORT BlinkPlatformImpl
       shared_timer_func_();
   }
 
+  void InternalInit();
+
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
-  base::MessageLoop* main_loop_;
   base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
   void (*shared_timer_func_)();
   double shared_timer_fire_time_;

@@ -229,7 +229,8 @@ class RendererBlinkPlatformImpl::SandboxSupport
 
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     RendererScheduler* renderer_scheduler)
-    : web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
+    : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
+      web_scheduler_(new WebSchedulerImpl(renderer_scheduler)),
       clipboard_client_(new RendererClipboardClient),
       clipboard_(new WebClipboardImpl(clipboard_client_.get())),
       mime_registry_(new RendererBlinkPlatformImpl::MimeRegistry),
@@ -262,11 +263,6 @@ RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
 }
 
 //------------------------------------------------------------------------------
-
-void RendererBlinkPlatformImpl::callOnMainThread(void (*func)(void*),
-                                                 void* context) {
-  default_task_runner_->PostTask(FROM_HERE, base::Bind(func, context));
-}
 
 blink::WebScheduler* RendererBlinkPlatformImpl::scheduler() {
   return web_scheduler_.get();

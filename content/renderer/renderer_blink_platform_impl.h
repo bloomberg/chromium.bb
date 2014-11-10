@@ -54,14 +54,13 @@ class WebSchedulerImpl;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
-  RendererBlinkPlatformImpl(RendererScheduler* renderer_scheduler);
+  explicit RendererBlinkPlatformImpl(RendererScheduler* renderer_scheduler);
   virtual ~RendererBlinkPlatformImpl();
 
   void set_plugin_refresh_allowed(bool plugin_refresh_allowed) {
     plugin_refresh_allowed_ = plugin_refresh_allowed;
   }
   // Platform methods:
-  virtual void callOnMainThread(void (*func)(void*), void* context);
   virtual blink::WebClipboard* clipboard();
   virtual blink::WebMimeRegistry* mimeRegistry();
   virtual blink::WebFileUtilities* fileUtilities();
