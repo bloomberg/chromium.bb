@@ -24,6 +24,10 @@ found in the LICENSE file.
         </activity>
     </application>
 
+    <instrumentation android:name="org.chromium.native_test.ChromiumNativeTestInstrumentationTestRunner"
+            android:targetPackage="org.chromium.native_test"
+            android:label="Instrumentation entry point for org.chromium.native_test"/>
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>

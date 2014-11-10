@@ -22,6 +22,11 @@ import org.chromium.base.library_loader.NativeLibraries;
  *  the native activity class loader.
  */
 public class ChromeNativeTestActivity extends Activity {
+    public static final String EXTRA_COMMAND_LINE_FILE =
+            "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFile";
+    public static final String EXTRA_COMMAND_LINE_FLAGS =
+            "org.chromium.native_test.ChromeNativeTestActivity.CommandLineFlags";
+
     private static final String TAG = "ChromeNativeTestActivity";
     private static final String EXTRA_RUN_IN_SUB_THREAD = "RunInSubThread";
     // We post a delayed task to run tests so that we do not block onCreate().
@@ -66,8 +71,15 @@ public class ChromeNativeTestActivity extends Activity {
     }
 
     private void runTests() {
+        String commandLineFlags = getIntent().getStringExtra(EXTRA_COMMAND_LINE_FLAGS);
+        if (commandLineFlags == null) commandLineFlags = "";
+
+        String commandLineFilePath = getIntent().getStringExtra(EXTRA_COMMAND_LINE_FILE);
+        if (commandLineFilePath == null) commandLineFilePath = "";
+
         // This directory is used by build/android/pylib/test_package_apk.py.
-        nativeRunTests(getFilesDir().getAbsolutePath(), getApplicationContext());
+        nativeRunTests(commandLineFlags, commandLineFilePath, getFilesDir().getAbsolutePath(),
+                getApplicationContext());
     }
 
     // Signal a failure of the native test loader to python scripts
@@ -85,5 +97,6 @@ public class ChromeNativeTestActivity extends Activity {
         }
     }
 
-    private native void nativeRunTests(String filesDir, Context appContext);
+    private native void nativeRunTests(String commandLineFlags, String commandLineFilePath,
+            String filesDir, Context appContext);
 }

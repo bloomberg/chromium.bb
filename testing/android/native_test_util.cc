@@ -9,7 +9,8 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
-namespace {
+namespace testing {
+namespace native_test_util {
 
 void ParseArgsFromString(const std::string& command_line,
                          std::vector<std::string>* args) {
@@ -21,11 +22,6 @@ void ParseArgsFromString(const std::string& command_line,
     args->push_back(token);
   }
 }
-
-}  // namespace
-
-namespace testing {
-namespace native_test_util {
 
 void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args) {

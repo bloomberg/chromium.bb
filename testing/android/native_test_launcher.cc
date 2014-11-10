@@ -30,6 +30,7 @@
 
 using testing::native_test_util::ArgsToArgv;
 using testing::native_test_util::ParseArgsFromCommandLineFile;
+using testing::native_test_util::ParseArgsFromString;
 using testing::native_test_util::ScopedMainEntryLogger;
 
 // The main function of the program to be wrapped as a test apk.
@@ -117,6 +118,8 @@ void EnsureRedirectStream(FILE* stream,
 
 static void RunTests(JNIEnv* env,
                      jobject obj,
+                     jstring jcommand_line_flags,
+                     jstring jcommand_line_file_path,
                      jstring jfiles_dir,
                      jobject app_context) {
   base::AtExitManager exit_manager;
@@ -132,7 +135,17 @@ static void RunTests(JNIEnv* env,
   base::android::RegisterJni(env);
 
   std::vector<std::string> args;
-  ParseArgsFromCommandLineFile(kCommandLineFilePath, &args);
+
+  const std::string command_line_file_path(
+      base::android::ConvertJavaStringToUTF8(env, jcommand_line_file_path));
+  if (command_line_file_path.empty())
+    ParseArgsFromCommandLineFile(kCommandLineFilePath, &args);
+  else
+    ParseArgsFromCommandLineFile(command_line_file_path.c_str(), &args);
+
+  const std::string command_line_flags(
+      base::android::ConvertJavaStringToUTF8(env, jcommand_line_flags));
+  ParseArgsFromString(command_line_flags, &args);
 
   std::vector<char*> argv;
   int argc = ArgsToArgv(args, &argv);

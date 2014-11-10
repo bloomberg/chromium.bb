@@ -27,6 +27,8 @@ class ScopedMainEntryLogger {
   }
 };
 
+void ParseArgsFromString(
+    const std::string& command_line, std::vector<std::string>* args);
 void ParseArgsFromCommandLineFile(
     const char* path, std::vector<std::string>* args);
 int ArgsToArgv(const std::vector<std::string>& args, std::vector<char*>* argv);
