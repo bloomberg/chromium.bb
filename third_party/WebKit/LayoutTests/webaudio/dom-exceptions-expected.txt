@@ -127,6 +127,10 @@ PASS script.channelCountMode = 'explicit' did not throw exception.
 PASS script.channelCountMode = 'max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': channelCountMode cannot be changed from 'explicit' to 'max'.
 PASS script.channelCountMode = 'clamped-max' threw exception NotSupportedError: Failed to set the 'channelCountMode' property on 'AudioNode': channelCountMode cannot be changed from 'explicit' to 'clamped-max'.
 PASS script.channelCountMode = 'junk' did not throw exception.
+PASS osc.noteOn is undefined.
+PASS osc.noteOff is undefined.
+PASS source.noteOn is undefined.
+PASS source.noteOff is undefined.
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -248,6 +248,12 @@ function runTest() {
     shouldThrow("script.channelCountMode = 'max'");
     shouldThrow("script.channelCountMode = 'clamped-max'");
     shouldNotThrow("script.channelCountMode = 'junk'");
+
+    // noteOn and noteOff don't exist anymore
+    shouldBeUndefined("osc.noteOn");
+    shouldBeUndefined("osc.noteOff");
+    shouldBeUndefined("source.noteOn");
+    shouldBeUndefined("source.noteOff");
 }
 
 runTest();

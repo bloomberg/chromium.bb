@@ -43,9 +43,6 @@ enum OscillatorType {
     [RaisesException] void start(optional double when);
     [RaisesException] void stop(optional double when);
 
-    [RaisesException, ImplementedAs=start] void noteOn(double when);
-    [RaisesException, ImplementedAs=stop] void noteOff(double when);
-
     void setPeriodicWave(PeriodicWave periodicWave);
 
     attribute EventHandler onended;
