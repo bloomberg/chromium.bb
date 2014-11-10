@@ -83,8 +83,9 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
 
+    ScriptPromise promise = resolver->promise();
     client->getPermissionStatus(new PushPermissionStatusCallback(resolver), serviceWorkerProvider);
-    return resolver->promise();
+    return promise;
 }
 
 void PushManager::doRegister(WebPushClient* client, PassRefPtr<ScriptPromiseResolver> resolver, WebServiceWorkerProvider* serviceWorkerProvider)
