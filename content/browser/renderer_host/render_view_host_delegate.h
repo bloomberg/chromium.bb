@@ -280,6 +280,13 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   // created by the RenderViewHost.
   virtual FrameTree* GetFrameTree();
 
+  // Optional state storage for if the Virtual Keyboard has been requested by
+  // this page or not. If it has, this can be used to suppress things like the
+  // link disambiguation dialog, which doesn't interact well with the virtual
+  // keyboard.
+  virtual void SetIsVirtualKeyboardRequested(bool requested) {}
+  virtual bool IsVirtualKeyboardRequested();
+
  protected:
   virtual ~RenderViewHostDelegate() {}
 };
