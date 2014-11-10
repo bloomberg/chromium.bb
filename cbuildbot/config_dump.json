@@ -26024,6 +26024,7 @@
         "name": "peppy_freon-release",
         "overlays": "both",
         "paygen": true,
+        "paygen_skip_testing": true,
         "push_image": true,
         "signer_tests": true,
         "trybot_list": true,
@@ -26035,11 +26036,7 @@
         ],
         "usepkg_build_packages": false,
         "usepkg_toolchain": false,
-        "vm_tests": [
-            "smoke_suite",
-            "dev_mode_test",
-            "cros_vm_test"
-        ]
+        "vm_tests": []
     },
     "peppy_freon-release-afdo": {
         "afdo_generate_min": true,

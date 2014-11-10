@@ -2451,17 +2451,6 @@ _release.add_config('link-release',
   important=True,
 )
 
-_release.add_config('link_freon-release',
-  boards=['link_freon'],
-  useflags=_release['useflags'] + ['highdpi'],
-  hw_tests=[],
-  # This build can't run vm_tests, bug 387507
-  vm_tests=[],
-  paygen=True,
-  paygen_skip_testing=True,
-  important=True,
-)
-
 _release.add_config('lumpy-release',
   boards=['lumpy'],
   critical_for_chrome=True,
@@ -2481,6 +2470,25 @@ _release.add_config('samus-release',
 _release.add_config('swanky-release',
   boards=['swanky'],
   useflags=_release['useflags'] + ['highdpi'],
+)
+
+### x86 Freon Release configs.
+
+_release_freon = _release.derive(
+  # Freon release builds can't run vm_tests, bug 387507, 431110.
+  vm_tests=[],
+  paygen_skip_testing=True,
+)
+
+_release_freon.add_config('link_freon-release',
+  boards=['link_freon'],
+  useflags=_release['useflags'] + ['highdpi'],
+  hw_tests=[],
+  important=True,
+)
+
+_release_freon.add_config('peppy_freon-release',
+  boards=['peppy_freon'],
 )
 
 ### Arm release configs.
