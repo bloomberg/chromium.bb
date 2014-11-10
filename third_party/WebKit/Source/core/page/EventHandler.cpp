@@ -303,6 +303,19 @@ void EventHandler::clear()
     m_mouseDownMayStartDrag = false;
     m_lastShowPressTimestamp = 0;
     m_lastDeferredTapElement = nullptr;
+    m_eventHandlerWillResetCapturingMouseEventsNode = false;
+    m_mouseDownWasSingleClickInSelection = false;
+    m_selectionInitiationState = HaveNotStartedSelection;
+    m_mouseDownMayStartAutoscroll = false;
+    m_svgPan = false;
+    m_mouseDownPos = IntPoint();
+    m_mouseDownTimestamp = 0;
+    m_longTapShouldInvokeContextMenu = false;
+    m_dragStartPos = LayoutPoint();
+    m_offsetFromResizeCorner = LayoutSize();
+    m_currentMouseCursor = Cursor();
+    m_mouseDown = PlatformMouseEvent();
+
 }
 
 void EventHandler::nodeWillBeRemoved(Node& nodeToBeRemoved)

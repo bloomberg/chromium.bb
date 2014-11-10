@@ -322,6 +322,9 @@ private:
     bool panScrollInProgress() const;
     void setLastKnownMousePosition(const PlatformMouseEvent&);
 
+    // NOTE: If adding a new field to this class please ensure that it is
+    // cleared in |EventHandler::clear()|.
+
     LocalFrame* const m_frame;
 
     bool m_mousePressed;
