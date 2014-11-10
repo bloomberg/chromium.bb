@@ -379,6 +379,10 @@ void CompositorImpl::SetVisible(bool visible) {
       CancelComposite();
     ui_resource_provider_.SetLayerTreeHost(NULL);
     host_.reset();
+    if (current_composite_task_) {
+      current_composite_task_->Cancel();
+      current_composite_task_.reset();
+    }
   } else if (!host_) {
     DCHECK(!WillComposite());
     needs_composite_ = false;
