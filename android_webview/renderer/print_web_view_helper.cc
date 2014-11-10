@@ -25,7 +25,6 @@
 #include "net/base/escape.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
-#include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -426,10 +425,6 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
     const PrintMsg_Print_Params& params) {
 #if 0
   // TODO(sgurun) android_webview hack
-  skia::VectorPlatformDeviceSkia* device =
-      static_cast<skia::VectorPlatformDeviceSkia*>(canvas->getTopDevice());
-  device->setDrawingArea(SkPDFDevice::kMargin_DrawingArea);
-
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->scale(1 / webkit_scale_factor, 1 / webkit_scale_factor);
 
@@ -468,8 +463,6 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   web_view->close();
   frame->close();
-
-  device->setDrawingArea(SkPDFDevice::kContent_DrawingArea);
 #endif
 }
 

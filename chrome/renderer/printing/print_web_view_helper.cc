@@ -28,7 +28,6 @@
 #include "net/base/escape.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
-#include "skia/ext/vector_platform_device_skia.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
@@ -453,10 +452,6 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
     float webkit_scale_factor,
     const PageSizeMargins& page_layout,
     const PrintMsg_Print_Params& params) {
-  skia::VectorPlatformDeviceSkia* device =
-      static_cast<skia::VectorPlatformDeviceSkia*>(canvas->getTopDevice());
-  device->setDrawingArea(SkPDFDevice::kMargin_DrawingArea);
-
   SkAutoCanvasRestore auto_restore(canvas, true);
   canvas->scale(1 / webkit_scale_factor, 1 / webkit_scale_factor);
 
@@ -503,8 +498,6 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 
   web_view->close();
   frame->close();
-
-  device->setDrawingArea(SkPDFDevice::kContent_DrawingArea);
 }
 #endif  // defined(ENABLE_PRINT_PREVIEW)
 

@@ -10,7 +10,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "skia/ext/refptr.h"
-#include "skia/ext/vector_platform_device_skia.h"
+#include "skia/ext/vector_canvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -34,6 +34,7 @@ namespace printing {
 
 struct PdfMetafileSkiaData {
   skia::RefPtr<SkPDFDevice> current_page_;
+  skia::RefPtr<SkCanvas> current_page_canvas_;
   SkPDFDocument pdf_doc_;
   SkDynamicMemoryWStream pdf_stream_;
 #if defined(OS_MACOSX)
@@ -51,11 +52,10 @@ bool PdfMetafileSkia::InitFromData(const void* src_buffer,
   return data_->pdf_stream_.write(src_buffer, src_buffer_size);
 }
 
-SkBaseDevice* PdfMetafileSkia::StartPageForVectorCanvas(
-    const gfx::Size& page_size, const gfx::Rect& content_area,
-    const float& scale_factor) {
-  DCHECK(!page_outstanding_);
-  page_outstanding_ = true;
+bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
+                                const gfx::Rect& content_area,
+                                const float& scale_factor) {
+  DCHECK(!data_->current_page_canvas_);
 
   // Adjust for the margins and apply the scale factor.
   SkMatrix transform;
@@ -67,25 +67,29 @@ SkBaseDevice* PdfMetafileSkia::StartPageForVectorCanvas(
   SkISize pdf_page_size = SkISize::Make(page_size.width(), page_size.height());
   SkISize pdf_content_size =
       SkISize::Make(content_area.width(), content_area.height());
-  skia::RefPtr<SkPDFDevice> pdf_device =
-      skia::AdoptRef(new skia::VectorPlatformDeviceSkia(
-          pdf_page_size, pdf_content_size, transform));
-  data_->current_page_ = pdf_device;
-  return pdf_device.get();
+
+  data_->current_page_ = skia::AdoptRef(
+      new SkPDFDevice(pdf_page_size, pdf_content_size, transform));
+  data_->current_page_canvas_ =
+      skia::AdoptRef(new SkCanvas(data_->current_page_.get()));
+  return true;
 }
 
-bool PdfMetafileSkia::StartPage(const gfx::Size& page_size,
-                                const gfx::Rect& content_area,
-                                const float& scale_factor) {
-  NOTREACHED();
-  return false;
+skia::VectorCanvas* PdfMetafileSkia::GetVectorCanvasForNewPage(
+    const gfx::Size& page_size,
+    const gfx::Rect& content_area,
+    const float& scale_factor) {
+  if (!StartPage(page_size, content_area, scale_factor))
+    return nullptr;
+  return data_->current_page_canvas_.get();
 }
 
 bool PdfMetafileSkia::FinishPage() {
-  DCHECK(data_->current_page_.get());
+  DCHECK(data_->current_page_canvas_);
+  DCHECK(data_->current_page_);
 
+  data_->current_page_canvas_.clear();  // Unref SkCanvas.
   data_->pdf_doc_.appendPage(data_->current_page_.get());
-  page_outstanding_ = false;
   return true;
 }
 
@@ -94,7 +98,7 @@ bool PdfMetafileSkia::FinishDocument() {
   if (data_->pdf_stream_.getOffset())
     return true;
 
-  if (page_outstanding_)
+  if (data_->current_page_canvas_)
     FinishPage();
 
   data_->current_page_.clear();
@@ -179,6 +183,17 @@ bool PdfMetafileSkia::RenderPage(unsigned int page_number,
 }
 #endif
 
+bool PdfMetafileSkia::SaveTo(base::File* file) const {
+  if (GetDataSize() == 0U)
+    return false;
+  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
+  // TODO(halcanary): rewrite this function without extra data copy
+  // using SkStreamAsset.
+  const char* ptr = reinterpret_cast<const char*>(data->data());
+  int size = base::checked_cast<int>(data->size());
+  return file->WriteAtCurrentPos(ptr, size) == size;
+}
+
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
   DCHECK_GT(data_->pdf_stream_.getOffset(), 0U);
@@ -188,10 +203,7 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
     return false;
   }
   base::File file(fd.fd);
-  SkAutoDataUnref data(data_->pdf_stream_.copyToData());
-  bool result =
-      file.WriteAtCurrentPos(reinterpret_cast<const char*>(data->data()),
-                             GetDataSize()) == static_cast<int>(GetDataSize());
+  bool result = SaveTo(&file);
   DLOG_IF(ERROR, !result) << "Failed to save file with fd " << fd.fd;
 
   if (!fd.auto_close)
@@ -200,9 +212,7 @@ bool PdfMetafileSkia::SaveToFD(const base::FileDescriptor& fd) const {
 }
 #endif
 
-PdfMetafileSkia::PdfMetafileSkia()
-    : data_(new PdfMetafileSkiaData),
-      page_outstanding_(false) {
+PdfMetafileSkia::PdfMetafileSkia() : data_(new PdfMetafileSkiaData) {
 }
 
 scoped_ptr<PdfMetafileSkia> PdfMetafileSkia::GetMetafileForCurrentPage() {

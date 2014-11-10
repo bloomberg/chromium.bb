@@ -166,32 +166,26 @@ void PrintWebViewHelper::PrintPageInternal(
   gfx::Rect canvas_area =
       params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-  SkBaseDevice* device = metafile->StartPageForVectorCanvas(page_size,
-                                                            canvas_area,
-                                                            scale_factor);
-  if (!device)
+  skia::VectorCanvas* canvas =
+      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
+  if (!canvas)
     return;
 
-  // The printPage method take a reference to the canvas we pass down, so it
-  // can't be a stack object.
-  skia::RefPtr<skia::VectorCanvas> canvas =
-      skia::AdoptRef(new skia::VectorCanvas(device));
   MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
   skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
 
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
     // TODO(vitalybuka) : why does it work only with 1.25?
-    PrintHeaderAndFooter(canvas.get(), params.page_number + 1,
+    PrintHeaderAndFooter(canvas, params.page_number + 1,
                          print_preview_context_.total_page_count(),
-                         scale_factor / 1.25,
-                         page_layout_in_points, *header_footer_info_,
-                         params.params);
+                         scale_factor / 1.25, page_layout_in_points,
+                         *header_footer_info_, params.params);
   }
   RenderPageContent(frame, params.page_number, canvas_area, content_area,
-                    scale_factor, canvas.get());
+                    scale_factor, canvas);
 
-  // Done printing. Close the device context to retrieve the compiled metafile.
+  // Done printing. Close the canvas to retrieve the compiled metafile.
   if (!metafile->FinishPage())
     NOTREACHED() << "metafile failed";
 }

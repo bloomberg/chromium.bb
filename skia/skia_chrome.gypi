@@ -83,8 +83,6 @@
     'ext/vector_canvas.h',
     'ext/vector_platform_device_emf_win.cc',
     'ext/vector_platform_device_emf_win.h',
-    'ext/vector_platform_device_skia.cc',
-    'ext/vector_platform_device_skia.h',
   ],
   'conditions': [
     [ 'OS == "android" and '
@@ -93,15 +91,7 @@
         'ext/skia_utils_base.cc',
       ],
     }],
-    [ 'enable_basic_printing==0 and enable_print_preview==0', {
-      'sources!': [
-        'ext/vector_platform_device_skia.cc',
-      ],
-    }],
     ['OS == "ios"', {
-      'sources/': [
-        ['exclude', '^ext/vector_platform_device_skia\\.'],
-      ],
       'dependencies!': [
         'skia_chrome_opts',
       ],

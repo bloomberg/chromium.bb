@@ -179,38 +179,26 @@ void PrintWebViewHelper::PrintPageInternal(
       frame->getPrintPageShrink(params.page_number);
   float scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
-  SkBaseDevice* device = metafile->StartPageForVectorCanvas(page_size,
-                                                            canvas_area,
-                                                            scale_factor);
-  if (!device)
+  skia::VectorCanvas* canvas =
+      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
+  if (!canvas)
     return;
 
-  // The printPage method take a reference to the canvas we pass down, so it
-  // can't be a stack object.
-  skia::RefPtr<skia::VectorCanvas> canvas =
-      skia::AdoptRef(new skia::VectorCanvas(device));
   MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
   skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
 
   if (params.params.display_header_footer) {
     // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(canvas.get(),
-                         params.page_number + 1,
-                         print_preview_context_.total_page_count(),
-                         *frame,
-                         scale_factor,
-                         page_layout_in_points,
-                         params.params);
+    PrintHeaderAndFooter(canvas, params.page_number + 1,
+                         print_preview_context_.total_page_count(), *frame,
+                         scale_factor, page_layout_in_points, params.params);
   }
 
-  float webkit_scale_factor = RenderPageContent(frame,
-                                                params.page_number,
-                                                canvas_area,
-                                                content_area,
-                                                scale_factor,
-                                                canvas.get());
+  float webkit_scale_factor =
+      RenderPageContent(frame, params.page_number, canvas_area, content_area,
+                        scale_factor, canvas);
   DCHECK_GT(webkit_scale_factor, 0.0f);
-  // Done printing. Close the device context to retrieve the compiled metafile.
+  // Done printing. Close the canvas to retrieve the compiled metafile.
   if (!metafile->FinishPage())
     NOTREACHED() << "metafile failed";
 }

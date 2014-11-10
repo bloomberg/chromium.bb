@@ -312,8 +312,6 @@ component("skia") {
     "ext/vector_canvas.h",
     "ext/vector_platform_device_emf_win.cc",
     "ext/vector_platform_device_emf_win.h",
-    "ext/vector_platform_device_skia.cc",
-    "ext/vector_platform_device_skia.h",
   ]
 
   # The skia gypi values are relative to the skia_dir, so we need to rebase.
@@ -426,16 +424,12 @@ component("skia") {
   if (is_posix) {
     sources -= [ "ext/SkThread_chrome.cc" ]
   }
-  if (is_ios) {
-    sources -= [ "ext/vector_platform_device_skia.cc" ]
-  }
   if (is_win) {
     sources -= [ "ext/SkThread_chrome.cc" ]
   }
   if (is_android && (!enable_basic_printing && !enable_print_preview)) {
     sources -= [
       "ext/skia_utils_base.cc",
-      "ext/vector_platform_device_skia.cc"
     ]
   }
 
