@@ -437,7 +437,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {
   RunTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaList) {
+//Disabled because of https://codereview.chromium.org/696953002 temporarily.
+//After blink code is merged, it will be enabled.
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       DISABLED_AccessibilityAriaList) {
   RunTest(FILE_PATH_LITERAL("aria-list.html"));
 }
 
