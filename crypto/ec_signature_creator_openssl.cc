@@ -60,24 +60,13 @@ bool ECSignatureCreatorImpl::DecodeSignature(const std::vector<uint8>& der_sig,
 
   // The result is made of two 32-byte vectors.
   const size_t kMaxBytesPerBN = 32;
-  std::vector<uint8> result;
-  result.resize(2 * kMaxBytesPerBN);
-  memset(&result[0], 0, result.size());
+  std::vector<uint8> result(2 * kMaxBytesPerBN);
 
-  BIGNUM* r = ecdsa_sig.get()->r;
-  BIGNUM* s = ecdsa_sig.get()->s;
-  int r_bytes = BN_num_bytes(r);
-  int s_bytes = BN_num_bytes(s);
-  // NOTE: Can't really check for equality here since sometimes the value
-  // returned by BN_num_bytes() will be slightly smaller than kMaxBytesPerBN.
-  if (r_bytes > static_cast<int>(kMaxBytesPerBN) ||
-      s_bytes > static_cast<int>(kMaxBytesPerBN)) {
-    DLOG(ERROR) << "Invalid key sizes r(" << r_bytes << ") s(" << s_bytes
-                << ")";
+  if (!BN_bn2bin_padded(&result[0], kMaxBytesPerBN, ecdsa_sig->r) ||
+      !BN_bn2bin_padded(&result[kMaxBytesPerBN], kMaxBytesPerBN,
+                        ecdsa_sig->s)) {
     return false;
   }
-  BN_bn2bin(ecdsa_sig.get()->r, &result[kMaxBytesPerBN - r_bytes]);
-  BN_bn2bin(ecdsa_sig.get()->s, &result[2 * kMaxBytesPerBN - s_bytes]);
   out_raw_sig->swap(result);
   return true;
 }
