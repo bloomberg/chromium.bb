@@ -173,6 +173,77 @@ size_t GetMaxStagingResourceCount() {
 
 }  // namespace
 
+class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
+ public:
+  static scoped_ptr<LayerTreeHostImplTimeSourceAdapter> Create(
+      LayerTreeHostImpl* layer_tree_host_impl,
+      scoped_refptr<DelayBasedTimeSource> time_source) {
+    return make_scoped_ptr(
+        new LayerTreeHostImplTimeSourceAdapter(layer_tree_host_impl,
+                                               time_source));
+  }
+  ~LayerTreeHostImplTimeSourceAdapter() override {
+    time_source_->SetClient(NULL);
+    time_source_->SetActive(false);
+  }
+
+  void OnTimerTick() override {
+    // In single threaded mode we attempt to simulate changing the current
+    // thread by maintaining a fake thread id. When we switch from one
+    // thread to another, we construct DebugScopedSetXXXThread objects that
+    // update the thread id. This lets DCHECKS that ensure we're on the
+    // right thread to work correctly in single threaded mode. The problem
+    // here is that the timer tasks are run via the message loop, and when
+    // they run, we've had no chance to construct a DebugScopedSetXXXThread
+    // object. The result is that we report that we're running on the main
+    // thread. In multi-threaded mode, this timer is run on the compositor
+    // thread, so to keep this consistent in single-threaded mode, we'll
+    // construct a DebugScopedSetImplThread object. There is no need to do
+    // this in multi-threaded mode since the real thread id's will be
+    // correct. In fact, setting fake thread id's interferes with the real
+    // thread id's and causes breakage.
+    scoped_ptr<DebugScopedSetImplThread> set_impl_thread;
+    if (!layer_tree_host_impl_->proxy()->HasImplThread()) {
+      set_impl_thread.reset(
+          new DebugScopedSetImplThread(layer_tree_host_impl_->proxy()));
+    }
+
+    layer_tree_host_impl_->Animate(
+        layer_tree_host_impl_->CurrentBeginFrameArgs().frame_time);
+    layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
+    bool start_ready_animations = true;
+    layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
+
+    if (layer_tree_host_impl_->pending_tree()) {
+      layer_tree_host_impl_->pending_tree()->UpdateDrawProperties();
+      layer_tree_host_impl_->ManageTiles();
+    }
+
+    layer_tree_host_impl_->ResetCurrentBeginFrameArgsForNextFrame();
+  }
+
+  void SetActive(bool active) {
+    if (active != time_source_->Active())
+      time_source_->SetActive(active);
+  }
+
+  bool Active() const { return time_source_->Active(); }
+
+ private:
+  LayerTreeHostImplTimeSourceAdapter(
+      LayerTreeHostImpl* layer_tree_host_impl,
+      scoped_refptr<DelayBasedTimeSource> time_source)
+      : layer_tree_host_impl_(layer_tree_host_impl),
+        time_source_(time_source) {
+    time_source_->SetClient(this);
+  }
+
+  LayerTreeHostImpl* layer_tree_host_impl_;
+  scoped_refptr<DelayBasedTimeSource> time_source_;
+
+  DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImplTimeSourceAdapter);
+};
+
 LayerTreeHostImpl::FrameData::FrameData()
     : contains_incomplete_tile(false), has_no_damage(false) {}
 
@@ -901,6 +972,28 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 void LayerTreeHostImpl::MainThreadHasStoppedFlinging() {
   if (input_handler_client_)
     input_handler_client_->MainThreadHasStoppedFlinging();
+}
+
+void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
+    bool should_background_tick) {
+  DCHECK(proxy_->IsImplThread());
+  if (should_background_tick)
+    DCHECK(active_tree_->root_layer());
+
+  bool enabled = should_background_tick && needs_animate_layers();
+
+  // Lazily create the time_source adapter so that we can vary the interval for
+  // testing.
+  if (!time_source_client_adapter_) {
+    time_source_client_adapter_ = LayerTreeHostImplTimeSourceAdapter::Create(
+        this,
+        DelayBasedTimeSource::Create(
+            LowFrequencyAnimationInterval(),
+            proxy_->HasImplThread() ? proxy_->ImplThreadTaskRunner()
+                                    : proxy_->MainThreadTaskRunner()));
+  }
+
+  time_source_client_adapter_->SetActive(enabled);
 }
 
 void LayerTreeHostImpl::DidAnimateScrollOffset() {
@@ -1794,6 +1887,9 @@ void LayerTreeHostImpl::ActivateSyncTree() {
         stats.commit_to_activate_duration.GetLastTimeDelta() +
         stats.draw_duration.GetLastTimeDelta());
   }
+
+  if (time_source_client_adapter_ && time_source_client_adapter_->Active())
+    DCHECK(active_tree_->root_layer());
 
   scoped_ptr<PageScaleAnimation> page_scale_animation =
       active_tree_->TakePageScaleAnimation();
@@ -3099,8 +3195,10 @@ void LayerTreeHostImpl::ActivateAnimations() {
        iter != copy.end();
        ++iter)
     (*iter).second->ActivateAnimations();
+}
 
-  SetNeedsAnimate();
+base::TimeDelta LayerTreeHostImpl::LowFrequencyAnimationInterval() const {
+  return base::TimeDelta::FromSeconds(1);
 }
 
 std::string LayerTreeHostImpl::LayerTreeAsJson() const {

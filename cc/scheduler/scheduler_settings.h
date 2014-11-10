@@ -6,7 +6,6 @@
 #define CC_SCHEDULER_SCHEDULER_SETTINGS_H_
 
 #include "base/memory/ref_counted.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "cc/base/cc_export.h"
 
@@ -33,8 +32,6 @@ class CC_EXPORT SchedulerSettings {
   bool using_synchronous_renderer_compositor;
   bool throttle_frame_production;
   bool disable_hi_res_timer_tasks_on_battery;
-
-  base::TimeDelta background_frame_interval;
 
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;
 };
