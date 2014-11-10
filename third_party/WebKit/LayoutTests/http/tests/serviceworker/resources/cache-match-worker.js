@@ -38,13 +38,28 @@ var simple_entries = {
     response: new Response('')
   },
 
-  cat_with_fragment: {
-    request: new Request('http://example.com/cat#mouse'),
+  catmandu: {
+    request: new Request('http://example.com/catmandu'),
+    response: new Response('')
+  },
+
+  cat_num_lives: {
+    request: new Request('http://example.com/cat?lives=9'),
     response: new Response('')
   },
 
   cat_in_the_hat: {
     request: new Request('http://example.com/cat/in/the/hat'),
+    response: new Response('')
+  },
+
+  secret_cat: {
+    request: new Request('http://tom:jerry@example.com/cat'),
+    response: new Response('')
+  },
+
+  top_secret_cat: {
+    request: new Request('http://tom:j3rry@example.com/cat'),
     response: new Response('')
   }
 };
@@ -86,12 +101,21 @@ var vary_entries = {
 };
 
 prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.matchAll('not-present-in-the-cache')
+      .then(function(result) {
+          assert_array_equivalent(
+            result, [],
+            'Cache.matchAll should resolve with an empty array on failure.');
+        });
+  }, 'Cache.matchAll with no matching entries');
+
+prepopulated_cache_test(simple_entries, function(cache) {
     return cache.match('not-present-in-the-cache')
       .then(function(result) {
           assert_equals(result, undefined,
                         'Cache.match failures should resolve with undefined.');
         });
-  }, 'Cache.match failure');
+  }, 'Cache.match with no matching entries');
 
 prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll(simple_entries.a.request.url)
@@ -187,6 +211,23 @@ prepopulated_cache_test(simple_entries, function(cache) {
   'parameters)');
 
 prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match(simple_entries.a.request,
+                       {ignoreSearch: true})
+      .then(function(result) {
+          assert_object_in_array(
+            result,
+            [
+              simple_entries.a.response,
+              simple_entries.a_with_query.response
+            ],
+            'Cache.match with ignoreSearch should ignore the ' +
+            'search parameters of cached request.');
+        });
+  },
+  'Cache.match with ignoreSearch option (request with no search ' +
+  'parameters)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll(simple_entries.a_with_query.request,
                           {ignoreSearch: true})
       .then(function(result) {
@@ -203,17 +244,40 @@ prepopulated_cache_test(simple_entries, function(cache) {
   'Cache.matchAll with ignoreSearch option (request with search parameter)');
 
 prepopulated_cache_test(simple_entries, function(cache) {
-    return cache.matchAll(simple_entries.cat.request)
+    return cache.match(simple_entries.a_with_query.request,
+                       {ignoreSearch: true})
+      .then(function(result) {
+          assert_object_in_array(
+            result,
+            [
+              simple_entries.a.response,
+              simple_entries.a_with_query.response
+            ],
+            'Cache.match with ignoreSearch should ignore the ' +
+            'search parameters of request.');
+        });
+  },
+  'Cache.match with ignoreSearch option (request with search parameter)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.matchAll(simple_entries.cat.request.url + '#mouse')
       .then(function(result) {
           assert_array_equivalent(
             result,
             [
               simple_entries.cat.response,
-              simple_entries.cat_with_fragment.response
             ],
-            'Cache.matchAll should ignore URL hash.');
+            'Cache.matchAll should ignore URL fragment.');
         });
-  }, 'Cache.matchAll with request containing hash');
+  }, 'Cache.matchAll with URL containing fragment');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match(simple_entries.cat.request.url + '#mouse')
+      .then(function(result) {
+          assert_object_equals(result, simple_entries.cat.response,
+                               'Cache.match should ignore URL fragment.');
+        });
+  }, 'Cache.match with URL containing fragment');
 
 prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll('http')
@@ -226,6 +290,16 @@ prepopulated_cache_test(simple_entries, function(cache) {
   }, 'Cache.matchAll with string fragment "http" as query');
 
 prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match('http')
+      .then(function(result) {
+          assert_equals(
+            result, undefined,
+            'Cache.match should treat query as a URL and not ' +
+            'just a string fragment.');
+        });
+  }, 'Cache.match with string fragment "http" as query');
+
+prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll('http://example.com/cat',
                           {prefixMatch: true})
       .then(function(result) {
@@ -233,12 +307,29 @@ prepopulated_cache_test(simple_entries, function(cache) {
             result,
             [
               simple_entries.cat.response,
-              simple_entries.cat_with_fragment.response,
+              simple_entries.catmandu.response,
+              simple_entries.cat_num_lives.response,
               simple_entries.cat_in_the_hat.response
             ],
             'Cache.matchAll should honor prefixMatch.');
         });
   }, 'Cache.matchAll with prefixMatch option');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match('http://example.com/cat',
+                       {prefixMatch: true})
+      .then(function(result) {
+          assert_object_in_array(
+            result,
+            [
+              simple_entries.cat.response,
+              simple_entries.catmandu.response,
+              simple_entries.cat_num_lives.response,
+              simple_entries.cat_in_the_hat.response
+            ],
+            'Cache.match should honor prefixMatch.');
+        });
+  }, 'Cache.match with prefixMatch option');
 
 prepopulated_cache_test(simple_entries, function(cache) {
     return cache.matchAll('http://example.com/cat/',
@@ -248,7 +339,81 @@ prepopulated_cache_test(simple_entries, function(cache) {
             result, [simple_entries.cat_in_the_hat.response],
             'Cache.matchAll should honor prefixMatch.');
         });
-  }, 'Cache.matchAll with prefixMatch option');
+  }, 'Cache.matchAll with prefixMatch option (URL ending with path delimiter)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match('http://example.com/cat/',
+                       {prefixMatch: true})
+      .then(function(result) {
+          assert_object_equals(
+            result, simple_entries.cat_in_the_hat.response,
+            'Cache.match should honor prefixMatch.');
+        });
+  }, 'Cache.match with prefixMatch option (URL ending with path delimiter)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.matchAll('http://tom:jerry@example.com', {prefixMatch: true})
+      .then(function(result) {
+          assert_array_equivalent(
+            result,
+            [
+              simple_entries.secret_cat.response,
+            ],
+            'Cache.matchAll should honor prefixMatch.');
+        });
+  }, 'Cache.matchAll with prefixMatch option (URL with embedded credentials)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match('http://tom:jerry@example.com', {prefixMatch: true})
+      .then(function(result) {
+          assert_object_equals(
+            result, simple_entries.secret_cat.response,
+            'Cache.match should honor prefixMatch.');
+        });
+  }, 'Cache.match with prefixMatch option (URL with embedded credentials)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    // The string 'http://tom' should be converted to a URL and then serialized
+    // yielding 'http://tom/'. The trailing slash prevents the URL from matching
+    // the embedded credentials in the entries already in the cache.
+    return cache.matchAll('http://tom', {prefixMatch: true})
+      .then(function(result) {
+          assert_array_equivalent(
+            result, [],
+            'Cache.matchAll should honor prefixMatch.');
+        });
+  },
+  'Cache.matchAll with prefixMatch option (URL matching embedded credentials)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    // The string 'http://tom' should be converted to a URL and then serialized
+    // yielding 'http://tom/'. The trailing slash prevents the URL from matching
+    // the embedded credentials in the entries already in the cache.
+    return cache.match('http://tom', {prefixMatch: true})
+      .then(function(result) {
+          assert_equals(result, undefined,
+                        'Cache.match should honor prefixMatch.');
+        });
+  },
+  'Cache.match with prefixMatch option (URL matching embedded credentials)');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.matchAll(simple_entries.secret_cat.request.url)
+      .then(function(result) {
+          assert_array_equivalent(
+            result, [simple_entries.secret_cat.response],
+            'Cache.matchAll should not ignore embedded credentials');
+        });
+  }, 'Cache.matchAll with URL containing credentials');
+
+prepopulated_cache_test(simple_entries, function(cache) {
+    return cache.match(simple_entries.secret_cat.request.url)
+      .then(function(result) {
+          assert_object_equals(
+            result, simple_entries.secret_cat.response,
+            'Cache.match should not ignore embedded credentials');
+        });
+  }, 'Cache.match with URL containing credentials');
 
 prepopulated_cache_test(vary_entries, function(cache) {
     return cache.matchAll('http://example.com/c')
@@ -398,11 +563,11 @@ cache_test(function(cache) {
 function prepopulated_cache_test(entries, test_function, description) {
   cache_test(function(cache) {
       return Promise.all(Object.keys(entries).map(function(k) {
-          return cache.put(entries[k].request, entries[k].response);
+          return cache.put(entries[k].request, entries[k].response)
+            .catch(function(e) {
+                assert_unreached('Test setup failed for entry ' + k + ' : ' + e);
+              });
         }))
-        .catch(function(reason) {
-            assert_unreached('Test setup failed: ' + reason.message);
-          })
         .then(function() {
             return test_function(cache);
           });

@@ -108,7 +108,7 @@ self.assert_object_equals = function(actual, expected, description) {
   }
 
   _is_equal(actual, expected,
-            (description ? description + ': ' : '') + _brand(actual));
+            (description ? description + ': ' : '') + _brand(expected));
 };
 
 // Equivalent to assert_in_array, but uses a weaker equivalence relation
