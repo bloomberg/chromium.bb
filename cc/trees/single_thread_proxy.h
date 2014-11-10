@@ -118,6 +118,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   void BeginMainFrame();
   void BeginMainFrameAbortedOnImplThread();
+  void DoAnimate();
   void DoBeginMainFrame(const BeginFrameArgs& begin_frame_args);
   void DoCommit();
   DrawResult DoComposite(base::TimeTicks frame_begin_time,
@@ -127,7 +128,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void CommitComplete();
 
   bool ShouldComposite() const;
-  void UpdateBackgroundAnimateTicking();
   void ScheduleRequestNewOutputSurface();
 
   // Accessed on main thread only.

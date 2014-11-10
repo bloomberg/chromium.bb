@@ -62,9 +62,9 @@ SchedulerFrameSourcesConstructor::ConstructBackgroundFrameSource(
                "SyntheticBeginFrameSource");
   DCHECK(!(scheduler->background_frame_source_internal_));
   scheduler->background_frame_source_internal_ =
-      SyntheticBeginFrameSource::Create(scheduler->task_runner_.get(),
-                                        scheduler->Now(),
-                                        base::TimeDelta::FromSeconds(1));
+      SyntheticBeginFrameSource::Create(
+          scheduler->task_runner_.get(), scheduler->Now(),
+          scheduler->settings_.background_frame_interval);
   return scheduler->background_frame_source_internal_.get();
 }
 

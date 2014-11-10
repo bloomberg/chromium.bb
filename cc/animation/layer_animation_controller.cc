@@ -212,7 +212,11 @@ void LayerAnimationController::UpdateState(bool start_ready_animations,
   if (!HasActiveValueObserver())
     return;
 
-  DCHECK(last_tick_time_ != base::TimeTicks());
+  // Animate hasn't been called, this happens if an observer has been added
+  // between the Commit and Draw phases.
+  if (last_tick_time_ == base::TimeTicks())
+    return;
+
   if (start_ready_animations)
     PromoteStartedAnimations(last_tick_time_, events);
 
