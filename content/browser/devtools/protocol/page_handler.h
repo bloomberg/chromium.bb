@@ -47,8 +47,9 @@ class PageHandler {
 
   Response Navigate(const std::string& url, FrameId* frame_id);
 
+  using NavigationEntries = std::vector<scoped_refptr<NavigationEntry>>;
   Response GetNavigationHistory(int* current_index,
-                                std::vector<NavigationEntry>* entries);
+                                NavigationEntries* entries);
 
   Response NavigateToHistoryEntry(int entry_id);
 
@@ -103,7 +104,7 @@ class PageHandler {
 
   void QueryUsageAndQuotaCompleted(
       scoped_refptr<DevToolsProtocol::Command> command,
-      scoped_ptr<QueryUsageAndQuotaResponse> response);
+      scoped_refptr<QueryUsageAndQuotaResponse> response);
 
   bool enabled_;
   bool touch_emulation_enabled_;

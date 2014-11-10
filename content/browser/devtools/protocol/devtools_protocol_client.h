@@ -60,7 +60,7 @@ class DevToolsProtocolClient {
   virtual ~DevToolsProtocolClient();
 
   void SendNotification(const std::string& method,
-                        base::DictionaryValue* params);
+                        scoped_ptr<base::DictionaryValue> params);
 
   void SendAsyncResponse(scoped_refptr<DevToolsProtocol::Response> response);
 

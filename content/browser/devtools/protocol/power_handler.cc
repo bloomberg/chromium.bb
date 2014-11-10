@@ -25,21 +25,19 @@ void PowerHandler::SetClient(scoped_ptr<Client> client) {
 }
 
 void PowerHandler::OnPowerEvent(const PowerEventVector& events) {
-  std::vector<PowerEvent> event_list;
+  std::vector<scoped_refptr<PowerEvent>> event_list;
   for (const auto& event : events) {
-    PowerEvent event_body;
     DCHECK(event.type < content::PowerEvent::ID_COUNT);
-    event_body.set_type(kPowerTypeNames[event.type]);
     // Use internal value to be consistent with Blink's
     // monotonicallyIncreasingTime.
-    event_body.set_timestamp(event.time.ToInternalValue() /
-        static_cast<double>(base::Time::kMicrosecondsPerMillisecond));
-    event_body.set_value(event.value);
-    event_list.push_back(event_body);
+    double timestamp = event.time.ToInternalValue() /
+        static_cast<double>(base::Time::kMicrosecondsPerMillisecond);
+    event_list.push_back(PowerEvent::Create()
+        ->set_type(kPowerTypeNames[event.type])
+        ->set_timestamp(timestamp)
+        ->set_value(event.value));
   }
-  DataAvailableParams params;
-  params.set_value(event_list);
-  client_->DataAvailable(params);
+  client_->DataAvailable(DataAvailableParams::Create()->set_value(event_list));
 }
 
 void PowerHandler::Detached() {

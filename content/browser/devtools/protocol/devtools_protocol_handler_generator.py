@@ -36,6 +36,33 @@ class DevToolsProtocolHandlerImpl;
 
 namespace devtools {
 
+template<typename T>
+base::Value* CreateValue(const T& param) {
+  return new base::FundamentalValue(param);
+}
+
+template<class T>
+base::Value* CreateValue(scoped_ptr<T>& param) {
+  return param.release();
+}
+
+template<class T>
+base::Value* CreateValue(scoped_refptr<T> param) {
+  return param->ToValue().release();
+}
+
+template<typename T>
+base::Value* CreateValue(const std::vector<T> param) {
+  base::ListValue* result = new base::ListValue();
+  for (auto& item : param) {
+    result->Append(CreateValue(item));
+  }
+  return result;
+}
+
+template<>
+base::Value* CreateValue(const std::string& param);
+
 ${types}\
 
 }  // namespace devtools
@@ -51,8 +78,6 @@ class DevToolsProtocolHandlerImpl : public DevToolsProtocol::Handler {
 ${setters}\
 
  private:
-${friends}\
-
 ${methods}\
 
 ${fields}\
@@ -71,27 +96,68 @@ typedef ${param_type} ${declared_name};
 
 tmpl_struct = string.Template("""\
 namespace ${domain} {
-struct ${declared_name} {
+template<int MASK>
+struct ${declared_name}Builder
+    : base::RefCounted<${declared_name}Builder<MASK>> {
  public:
-  ${declared_name}();
+  enum {
+    kAllSet = 0,
+${fields_enum}\
+  };
 
 ${methods}\
 
- private:
-  friend class ::content::DevToolsProtocolHandlerImpl;
+  static scoped_refptr<${declared_name}Builder<kNoneSet>> Create() {
+    return new ${declared_name}Builder<kNoneSet>();
+  }
 
-${fields}\
+  scoped_ptr<base::DictionaryValue> ToValue() {
+    COMPILE_ASSERT(MASK == kAllSet, required_properties_missing);
+    return make_scoped_ptr(dict_->DeepCopy());
+  }
+
+ private:
+  friend struct ${declared_name}Builder<0>;
+
+  ${declared_name}Builder() : dict_(new base::DictionaryValue()) {
+  }
+
+  template<class T> T* ThisAs() {
+    COMPILE_ASSERT(sizeof(*this) == sizeof(T), cannot_cast);
+    return reinterpret_cast<T*>(this);
+  }
+
+  scoped_ptr<base::DictionaryValue> dict_;
 };
+
+typedef ${declared_name}Builder<0> ${declared_name};
+
 }  // namespace ${domain}
 """)
 
-tmpl_struct_setter = string.Template("""\
-  void set_${param}(${pass_type} ${param});
+tmpl_builder_setter_req = string.Template("""\
+  scoped_refptr<${declared_name}Builder<MASK & ~k${Param}>>
+  set_${param}(${pass_type} ${param}) {
+    COMPILE_ASSERT(MASK & k${Param}, already_set);
+    dict_->Set("${proto_param}", CreateValue(${param}));
+    return ThisAs<${declared_name}Builder<MASK & ~k${Param}>>();
+  }
 """)
 
-tmpl_struct_field = string.Template("""\
-  ${param_type} ${param}_;
-  bool has_${param}_;
+tmpl_builder_setter_opt = string.Template("""\
+  scoped_refptr<${declared_name}Builder<MASK>>
+  set_${param}(${pass_type} ${param}) {
+    dict_->Set("${proto_param}", CreateValue(${param}));
+    return this;
+  }
+""")
+
+tmpl_builder_enum = string.Template("""\
+    k${Param} = 1 << ${ordinal},
+""")
+
+tmpl_builder_none_set = string.Template("""\
+    kNoneSet = ${all_fields}
 """)
 
 tmpl_enum = string.Template("""\
@@ -130,13 +196,13 @@ ${methods}\
 
 tmpl_event = string.Template("""\
   void ${Command}(
-      const ${Command}Params& params);
+      scoped_refptr<${Command}Params> params);
 """)
 
 tmpl_response = string.Template("""\
   void Send${Command}Response(
       scoped_refptr<DevToolsProtocol::Command> command,
-      const ${Command}Response& params);
+      scoped_refptr<${Command}Response> params);
 """)
 
 tmpl_setter = string.Template("""\
@@ -144,19 +210,10 @@ tmpl_setter = string.Template("""\
       devtools::${domain}::${Domain}Handler* ${domain}_handler);
 """)
 
-tmpl_friend = string.Template("""\
-  friend class devtools::${domain}::Client;
-""")
-
 tmpl_callback = string.Template("""\
   scoped_refptr<DevToolsProtocol::Response>
   On${Domain}${Command}(
       scoped_refptr<DevToolsProtocol::Command> command);
-""")
-
-tmpl_to_value = string.Template("""\
-  static base::DictionaryValue* ToValue(
-      const devtools::${domain}::${declared_name}& src);
 """)
 
 tmpl_field = string.Template("""\
@@ -189,7 +246,7 @@ bool CreateCommonResponse(
     scoped_refptr<DevToolsProtocol::Response>* protocol_response) {
   switch (response.status()) {
     case ResponseStatus::RESPONSE_STATUS_FALLTHROUGH:
-      *protocol_response = NULL;
+      *protocol_response = nullptr;
       break;
     case ResponseStatus::RESPONSE_STATUS_OK:
       return false;
@@ -212,6 +269,11 @@ ${methods}\
 
 namespace devtools {
 
+template<>
+base::Value* CreateValue(const std::string& param) {
+  return new base::StringValue(param);
+}
+
 ${types}\
 
 }  // namespace devtools
@@ -223,7 +285,7 @@ tmpl_include = string.Template("""\
 #include "content/browser/devtools/protocol/${domain}_handler.h"
 """)
 
-tmpl_field_init = string.Template("${domain}_handler_(NULL)")
+tmpl_field_init = string.Template("${domain}_handler_(nullptr)")
 
 tmpl_setter_impl = string.Template("""\
 void DevToolsProtocolHandlerImpl::Set${Domain}Handler(
@@ -258,10 +320,14 @@ ${prep}\
   scoped_refptr<DevToolsProtocol::Response> protocol_response;
   if (CreateCommonResponse(command, response, &protocol_response))
     return protocol_response;
-  base::DictionaryValue* dict = new base::DictionaryValue();
+  base::DictionaryValue* result = new base::DictionaryValue();
 ${wrap}\
-  return command->SuccessResponse(dict);
+  return command->SuccessResponse(result);
 }
+""")
+
+tmpl_wrap = string.Template("""\
+  result->Set("${proto_param}", devtools::CreateValue(out_${param}));
 """)
 
 tmpl_callback_async_impl = string.Template("""\
@@ -279,16 +345,15 @@ params_prep = """\
 
 tmpl_prep_req = string.Template("""\
   ${param_type} in_${param}${init};
-  if (!params ||
-      !params->Get${Type}("${proto_param}", &in_${param}))
+  if (!params || !params->Get${Type}("${proto_param}", &in_${param}))
     return command->InvalidParamResponse("${proto_param}");
 """)
 
 tmpl_prep_req_list = string.Template("""\
-  base::ListValue* list_${param} = NULL;
+  base::ListValue* list_${param} = nullptr;
   if (!params || !params->GetList("${proto_param}", &list_${param}))
     return command->InvalidParamResponse("${proto_param}");
-  ${param_type} in_${param};
+  std::vector<${item_type}> in_${param};
   for (base::ListValue::const_iterator it =
       list_${param}->begin(); it != list_${param}->end(); ++it) {
     ${item_type} item${item_init};
@@ -312,45 +377,7 @@ tmpl_prep_output = string.Template("""\
 tmpl_arg_req = string.Template("in_${param}")
 
 tmpl_arg_opt = string.Template(
-    "${param}_found ?\n          &in_${param} : NULL")
-
-tmpl_arg_output = string.Template("&out_${param}")
-
-tmpl_to_value_impl = string.Template("""\
-// static
-base::DictionaryValue* DevToolsProtocolHandlerImpl::ToValue(
-    const devtools::${domain}::${declared_name}& src) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-${dchecks}\
-${wrap}\
-  return dict;
-}
-""")
-
-tmpl_dcheck = string.Template("""\
-  DCHECK(${cond_name});
-""")
-
-tmpl_struct_impl = string.Template("""\
-namespace ${domain} {
-
-${declared_name}::${declared_name}()${fields} {
-}
-
-${methods}\
-
-}  // namespace ${domain}
-""")
-
-tmpl_struct_field_init = string.Template("has_${param}_(false)")
-
-tmpl_struct_setter_impl = string.Template("""\
-void ${declared_name}::set_${param}(
-    ${pass_type} ${param}) {
-  ${param}_ = ${param};
-  has_${param}_ = true;
-}
-""")
+    "${param}_found ? &in_${param} : nullptr")
 
 tmpl_client_impl = string.Template("""\
 namespace ${domain} {
@@ -369,67 +396,24 @@ ${methods}\
 
 tmpl_event_impl = string.Template("""\
 void Client::${Command}(
-    const ${Command}Params& params) {
+    scoped_refptr<${Command}Params> params) {
   SendNotification("${Domain}.${command}",
-      DevToolsProtocolHandlerImpl::ToValue(params));
+                   params->ToValue().Pass());
 }
 """)
 
 tmpl_response_impl = string.Template("""\
 void Client::Send${Command}Response(
     scoped_refptr<DevToolsProtocol::Command> command,
-    const ${Command}Response& params) {
-  SendAsyncResponse(
-      command->SuccessResponse(DevToolsProtocolHandlerImpl::ToValue(params)));
+    scoped_refptr<${Command}Response> params) {
+  SendAsyncResponse(command->SuccessResponse(params->ToValue().release()));
 }
-""")
-
-tmpl_wrap = string.Template("""\
-  dict->Set${Type}("${proto_param}", ${var_name});
-""")
-
-tmpl_wrap_dict = string.Template("""\
-  dict->Set("${proto_param}",
-      DevToolsProtocolHandlerImpl::ToValue(${var_name}));
-""")
-
-tmpl_wrap_obj = string.Template("""\
-  dict->Set("${proto_param}", ${var_name});
-""")
-
-tmpl_wrap_list = string.Template("""\
-  base::ListValue* list_${param} = new base::ListValue();
-  for (${param_type}::const_iterator it =
-      ${var_name}.begin(); it != ${var_name}.end(); ++it) {
-${append}\
-  }
-  dict->Set("${proto_param}", list_${param});
-""")
-
-tmpl_append = string.Template("""\
-    list_${param}->Append${Type}(*it);
-""")
-
-tmpl_append_dict = string.Template("""\
-    list_${param}->Append(DevToolsProtocolHandlerImpl::ToValue(*it));
-""")
-
-tmpl_append_obj = string.Template("""\
-    list_${param}->Append(*it);
-""")
-
-tmpl_wrap_opt = string.Template("""\
-  if (${cond_name})
-    dict->Set${Type}("${proto_param}", ${var_name});
 """)
 
 tmpl_typename = string.Template("devtools::${domain}::${declared_name}")
 
 def Capitalize(s):
   return s[:1].upper() + s[1:]
-
-def Decapitalize(s):
-  return s.lower()
 
 def Uncamelcase(s):
   result = ""
@@ -456,48 +440,33 @@ for json_domain in json_api["domains"]:
 
 def DeclareStruct(json_properties, mapping):
   methods = []
-  fields = []
-  fields_init = []
-  method_impls = []
-  dchecks = []
-  wrap = []
+  fields_enum = []
+  enum_items = []
+  req_fields_num = 0
   for json_prop in json_properties:
     prop_map = mapping.copy()
     prop_map["proto_param"] = json_prop["name"]
     prop_map["param"] = Uncamelcase(json_prop["name"])
-    prop_map["var_name"] = "src.%s_" % prop_map["param"]
-    prop_map["cond_name"] = "src.has_%s_" % prop_map["param"]
+    prop_map["Param"] = Capitalize(json_prop["name"])
     ResolveType(json_prop, prop_map)
     prop_map["declared_name"] = mapping["declared_name"]
-    methods.append(tmpl_struct_setter.substitute(prop_map))
-    fields.append(tmpl_struct_field.substitute(prop_map))
-    fields_init.append(tmpl_struct_field_init.substitute(prop_map))
-    method_impls.append(tmpl_struct_setter_impl.substitute(prop_map))
     if json_prop.get("optional"):
-      if param_map["Type"] in ["List", "Dictionary"]:
-        # TODO(vkuzkokov) Implement.
-        raise Exception(
-          "Optional array and object properties are not implemented")
-      wrap.append(tmpl_wrap_opt.substitute(prop_map))
+      methods.append(tmpl_builder_setter_opt.substitute(prop_map))
     else:
-      dchecks.append(tmpl_dcheck.substitute(prop_map));
-      if not "wrap" in prop_map:
-        raise Exception("Arrays of arrays are not implemented")
-      wrap.append(prop_map["wrap"])
+      methods.append(tmpl_builder_setter_req.substitute(prop_map))
+      enum_items.append("k%s" % prop_map["Param"]);
+      fields_enum.append(tmpl_builder_enum.substitute(prop_map,
+        ordinal = req_fields_num))
+      req_fields_num += 1
 
+  all_fields = "kAllSet"
+  if len(enum_items) > 0:
+    all_fields = " | ".join(enum_items)
+  fields_enum.append(tmpl_builder_none_set.substitute(mapping,
+      all_fields = all_fields))
   type_decls.append(tmpl_struct.substitute(mapping,
-      methods = "".join(methods),
-      fields = "".join(fields)))
-  fields_init_str = ""
-  if len(fields_init) > 0:
-    fields_init_str = "\n    : " + (",\n      ".join(fields_init))
-  type_impls.append(tmpl_struct_impl.substitute(mapping,
-      fields = fields_init_str,
-      methods = "\n".join(method_impls)))
-  handler_methods.append(tmpl_to_value.substitute(mapping))
-  handler_method_impls.append(tmpl_to_value_impl.substitute(mapping,
-      dchecks = "".join(dchecks),
-      wrap = "".join(wrap)))
+      methods = "\n".join(methods),
+      fields_enum = "".join(fields_enum)))
 
 def ResolveRef(json, mapping):
   dot_pos = json["$ref"].find(".")
@@ -510,7 +479,7 @@ def ResolveRef(json, mapping):
   json_type = types["%s.%s" % (domain_name, type_name)]
   mapping["declared_name"] = Capitalize(type_name)
   mapping["Domain"] = domain_name
-  mapping["domain"] = Decapitalize(domain_name)
+  mapping["domain"] = Uncamelcase(domain_name)
   mapping["param_type"] = tmpl_typename.substitute(mapping)
   if json_type.get("enum"):
     # TODO(vkuzkokov) Implement. Approximate template:
@@ -523,22 +492,18 @@ def ResolveRef(json, mapping):
       DeclareStruct(json_type["properties"], mapping)
     else:
       type_decls.append(tmpl_typedef.substitute(mapping))
-  mapping["param_type"] = tmpl_typename.substitute(mapping)
 
 def ResolveArray(json, mapping):
   items_map = mapping.copy()
   ResolveType(json["items"], items_map)
   mapping["param_type"] = "std::vector<%s>" % items_map["param_type"]
   mapping["Type"] = "List"
-  if "append" in items_map:
-    mapping["wrap"] = tmpl_wrap_list.substitute(mapping,
-        append = items_map["append"])
   mapping["pass_type"] = "const %s&" % mapping["param_type"]
   mapping["prep_req"] = tmpl_prep_req_list.substitute(mapping,
       item_type = items_map["param_type"],
       item_init = items_map["init"],
       ItemType = items_map["Type"])
-  # TODO(vkuzkokov) mapping["append"]: template for array of arrays.
+  mapping["arg_out"] = "&out_%s" % mapping["param"]
 
 def ResolveObject(json, mapping):
   mapping["Type"] = "Dictionary"
@@ -546,16 +511,18 @@ def ResolveObject(json, mapping):
     if not "declared_name" in mapping:
       mapping["declared_name"] = ("%s%s" %
           (mapping["Command"], Capitalize(mapping["proto_param"])))
-      mapping["param_type"] = tmpl_typename.substitute(mapping)
+      mapping["param_type"] = ("scoped_refptr<%s>" %
+          tmpl_typename.substitute(mapping))
       DeclareStruct(json["properties"], mapping)
-    mapping["append"] = tmpl_append_dict.substitute(mapping)
-    mapping["wrap"] = tmpl_wrap_dict.substitute(mapping)
-    mapping["pass_type"] = "const %s&" % mapping["param_type"]
-  else:
-    mapping["param_type"] = "base::DictionaryValue*"
-    mapping["append"] = tmpl_append_obj.substitute(mapping)
-    mapping["wrap"] = tmpl_wrap_obj.substitute(mapping)
+    else:
+      mapping["param_type"] = ("scoped_refptr<%s>" %
+          tmpl_typename.substitute(mapping))
     mapping["pass_type"] = mapping["param_type"]
+    mapping["arg_out"] = "&out_%s" % mapping["param"]
+  else:
+    mapping["param_type"] = "base::DictionaryValue"
+    mapping["pass_type"] = "scoped_ptr<base::DictionaryValue>"
+    mapping["arg_out"] = "out_%s.get()" % mapping["param"]
 
 def ResolvePrimitive(json, mapping):
   jsonrpc_type = json["type"]
@@ -595,11 +562,10 @@ def ResolvePrimitive(json, mapping):
           values = "".join(value_defs)))
   else:
     raise Exception("Unknown type: %s" % json_type)
-  mapping["wrap"] = tmpl_wrap.substitute(mapping)
-  mapping["append"] = tmpl_append.substitute(mapping)
   mapping["prep_req"] = tmpl_prep_req.substitute(mapping)
   if jsonrpc_type != "string":
     mapping["pass_type"] = mapping["param_type"]
+  mapping["arg_out"] = "&out_%s" % mapping["param"]
 
 def ResolveType(json, mapping):
   mapping["init"] = ""
@@ -618,7 +584,6 @@ def ResolveType(json, mapping):
         (mapping["Domain"], mapping["command"], mapping["proto_param"]))
 
 setters = []
-friends = []
 fields = []
 
 includes = []
@@ -627,7 +592,7 @@ fields_init = []
 for json_domain in json_api["domains"]:
   domain_map = {}
   domain_map["Domain"] = json_domain["domain"]
-  domain_map["domain"] = Decapitalize(json_domain["domain"])
+  domain_map["domain"] = Uncamelcase(json_domain["domain"])
 
   initializations = []
   client_methods = []
@@ -654,7 +619,6 @@ for json_domain in json_api["domains"]:
           param_map = command_map.copy()
           param_map["proto_param"] = json_param["name"]
           param_map["param"] = Uncamelcase(json_param["name"])
-          param_map["var_name"] = "in_%s" % param_map["param"]
 
           ResolveType(json_param, param_map)
           if len(prep) == 0:
@@ -695,17 +659,14 @@ for json_domain in json_api["domains"]:
             param_map = command_map.copy()
             param_map["proto_param"] = json_param["name"]
             param_map["param"] = Uncamelcase(json_param["name"])
-            param_map["var_name"] = "out_%s" % param_map["param"]
 
             if json_param.get("optional"):
               # TODO(vkuzkokov) Implement Optional<T> for value types.
               raise Exception("Optional return values are not implemented")
             ResolveType(json_param, param_map)
             prep.append(tmpl_prep_output.substitute(param_map))
-            args.append(tmpl_arg_output.substitute(param_map))
-            if not "wrap" in param_map:
-              raise Exception("Arrays of arrays are not implemented")
-            wrap.append(param_map["wrap"])
+            args.append(param_map["arg_out"])
+            wrap.append(tmpl_wrap.substitute(param_map))
 
         args_str = ""
         if len(args) > 0:
@@ -749,7 +710,6 @@ for json_domain in json_api["domains"]:
   if domain_needs_client:
     type_decls.append(tmpl_client.substitute(domain_map,
         methods = "".join(client_methods)))
-    friends.append(tmpl_friend.substitute(domain_map))
     initializations.append(tmpl_init_client.substitute(domain_map))
     type_impls.append(tmpl_client_impl.substitute(domain_map,
         methods = "\n".join(client_method_impls)))
@@ -763,7 +723,6 @@ output_cc_file = open(output_cc_path, "w")
 output_h_file.write(template_h.substitute({},
     types = "\n".join(type_decls),
     setters = "".join(setters),
-    friends = "".join(friends),
     methods = "".join(handler_methods),
     fields = "".join(fields)))
 output_h_file.close()

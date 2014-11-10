@@ -14,10 +14,11 @@ DevToolsProtocolClient::DevToolsProtocolClient(
 DevToolsProtocolClient::~DevToolsProtocolClient() {
 }
 
-void DevToolsProtocolClient::SendNotification(const std::string& method,
-                                              base::DictionaryValue* params) {
+void DevToolsProtocolClient::SendNotification(
+    const std::string& method,
+    scoped_ptr<base::DictionaryValue> params) {
   scoped_refptr<DevToolsProtocol::Notification> notification =
-      new DevToolsProtocol::Notification(method, params);
+      new DevToolsProtocol::Notification(method, params.release());
   SendRawMessage(notification->Serialize());
 }
 

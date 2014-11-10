@@ -15,7 +15,8 @@ namespace page {
 // This class can only be used on IO thread.
 class UsageAndQuotaQuery : public base::RefCounted<UsageAndQuotaQuery> {
  public:
-  using Callback = base::Callback<void(scoped_ptr<QueryUsageAndQuotaResponse>)>;
+  using Callback =
+      base::Callback<void(scoped_refptr<QueryUsageAndQuotaResponse>)>;
 
   UsageAndQuotaQuery(scoped_refptr<storage::QuotaManager> quota_manager,
                      const GURL& security_origin,
@@ -23,6 +24,8 @@ class UsageAndQuotaQuery : public base::RefCounted<UsageAndQuotaQuery> {
 
  private:
   friend class base::RefCounted<UsageAndQuotaQuery>;
+
+  using UsageItems = std::vector<scoped_refptr<UsageItem>>;
 
   virtual ~UsageAndQuotaQuery();
 
@@ -32,20 +35,25 @@ class UsageAndQuotaQuery : public base::RefCounted<UsageAndQuotaQuery> {
 
   void DidGetPersistentQuota(storage::QuotaStatusCode status, int64 value);
 
-  using UsageItemsCallback =
-      base::Callback<void(const std::vector<UsageItem>&)>;
+  void GetHostUsage(UsageItems* list, storage::StorageType storage_type);
 
-  void GetHostUsage(storage::StorageType storage_type,
-                    const UsageItemsCallback& items_callback);
+  void GetUsageForClient(UsageItems* list,
+                         storage::StorageType storage_type,
+                         storage::QuotaClient::ID client_id,
+                         const std::string& client_name);
 
-  void DidGetHostUsage(const UsageItemsCallback& items_callback,
-                       const std::vector<UsageItem>& usage_list);
+  void DidGetUsageForClient(UsageItems* list,
+                            const std::string& client_name,
+                            int64 value);
 
   scoped_refptr<storage::QuotaManager> quota_manager_;
   GURL security_origin_;
   Callback callback_;
-  Quota quota_;
-  Usage usage_;
+  double temporary_quota_;
+  double persistent_quota_;
+  UsageItems temporary_usage_;
+  UsageItems persistent_usage_;
+  UsageItems syncable_usage_;
 };
 
 }  // namespace page

@@ -80,8 +80,7 @@ void TracingHandler::OnTraceDataCollected(const std::string& trace_fragment) {
 }
 
 void TracingHandler::OnTraceComplete() {
-  TracingCompleteParams params;
-  client_->TracingComplete(params);
+  client_->TracingComplete(TracingCompleteParams::Create());
 }
 
 scoped_refptr<DevToolsProtocol::Response> TracingHandler::Start(
@@ -140,23 +139,21 @@ scoped_refptr<DevToolsProtocol::Response> TracingHandler::GetCategories(
 
 void TracingHandler::OnRecordingEnabled(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  StartResponse response;
-  client_->SendStartResponse(command, response);
+  client_->SendStartResponse(command, StartResponse::Create());
 }
 
 void TracingHandler::OnBufferUsage(float usage) {
-  BufferUsageParams params;
-  params.set_value(usage);
-  client_->BufferUsage(params);
+  client_->BufferUsage(BufferUsageParams::Create()->set_value(usage));
 }
 
 void TracingHandler::OnCategoriesReceived(
     scoped_refptr<DevToolsProtocol::Command> command,
     const std::set<std::string>& category_set) {
-  std::vector<std::string> categories(category_set.begin(), category_set.end());
-  GetCategoriesResponse response;
-  response.set_categories(categories);
-  client_->SendGetCategoriesResponse(command, response);
+  std::vector<std::string> categories;
+  for (const std::string& category : category_set)
+    categories.push_back(category);
+  client_->SendGetCategoriesResponse(command,
+      GetCategoriesResponse::Create()->set_categories(categories));
 }
 
 base::debug::TraceOptions TracingHandler::TraceOptionsFromString(

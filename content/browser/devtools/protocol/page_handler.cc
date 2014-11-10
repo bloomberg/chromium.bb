@@ -48,10 +48,10 @@ static int kFrameRateThresholdMs = 100;
 static int kCaptureRetryLimit = 2;
 
 void QueryUsageAndQuotaCompletedOnIOThread(
-  const UsageAndQuotaQuery::Callback& callback,
-  scoped_ptr<QueryUsageAndQuotaResponse> response) {
+    const UsageAndQuotaQuery::Callback& callback,
+    scoped_refptr<QueryUsageAndQuotaResponse> response) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, base::Passed(&response)));
+                          base::Bind(callback, response));
 }
 
 void QueryUsageAndQuotaOnIOThread(
@@ -123,15 +123,13 @@ void PageHandler::OnVisibilityChanged(bool visible) {
 void PageHandler::DidAttachInterstitialPage() {
   if (!enabled_)
     return;
-  InterstitialShownParams params;
-  client_->InterstitialShown(params);
+  client_->InterstitialShown(InterstitialShownParams::Create());
 }
 
 void PageHandler::DidDetachInterstitialPage() {
   if (!enabled_)
     return;
-  InterstitialHiddenParams params;
-  client_->InterstitialHidden(params);
+  client_->InterstitialHidden(InterstitialHiddenParams::Create());
 }
 
 Response PageHandler::Enable() {
@@ -184,9 +182,8 @@ Response PageHandler::Navigate(const std::string& url,
   return Response::FallThrough();
 }
 
-Response PageHandler::GetNavigationHistory(
-    int* current_index,
-    std::vector<NavigationEntry>* entries) {
+Response PageHandler::GetNavigationHistory(int* current_index,
+                                           NavigationEntries* entries) {
   if (!host_)
     return Response::InternalError("Could not connect to view");
 
@@ -197,12 +194,11 @@ Response PageHandler::GetNavigationHistory(
   NavigationController& controller = web_contents->GetController();
   *current_index = controller.GetCurrentEntryIndex();
   for (int i = 0; i != controller.GetEntryCount(); ++i) {
-    NavigationEntry entry;
-    entry.set_id(controller.GetEntryAtIndex(i)->GetUniqueID());
-    entry.set_url(controller.GetEntryAtIndex(i)->GetURL().spec());
-    entry.set_title(
-        base::UTF16ToUTF8(controller.GetEntryAtIndex(i)->GetTitle()));
-    entries->push_back(entry);
+    entries->push_back(NavigationEntry::Create()
+        ->set_id(controller.GetEntryAtIndex(i)->GetUniqueID())
+        ->set_url(controller.GetEntryAtIndex(i)->GetURL().spec())
+        ->set_title(
+            base::UTF16ToUTF8(controller.GetEntryAtIndex(i)->GetTitle())));
   }
   return Response::OK();
 }
@@ -424,9 +420,8 @@ void PageHandler::UpdateTouchEventEmulationState() {
 void PageHandler::NotifyScreencastVisibility(bool visible) {
   if (visible)
     capture_retry_count_ = kCaptureRetryLimit;
-  ScreencastVisibilityChangedParams params;
-  params.set_visible(visible);
-  client_->ScreencastVisibilityChanged(params);
+  client_->ScreencastVisibilityChanged(
+      ScreencastVisibilityChangedParams::Create()->set_visible(visible));
 }
 
 void PageHandler::InnerSwapCompositorFrame() {
@@ -532,45 +527,41 @@ void PageHandler::ScreencastFrameCaptured(
       base::StringPiece(reinterpret_cast<char*>(&data[0]), data.size()),
       &base_64_data);
 
-  ScreencastFrameMetadata param_metadata;
   // Consider metadata empty in case it has no device scale factor.
-  if (metadata.device_scale_factor != 0 && host_) {
-    RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-        host_->GetView());
-    if (!view)
-      return;
+  if (metadata.device_scale_factor == 0 || !host_)
+    return;
 
-    gfx::SizeF viewport_size_dip = gfx::ScaleSize(
-        metadata.scrollable_viewport_size, metadata.page_scale_factor);
-    gfx::SizeF screen_size_dip = gfx::ScaleSize(
-        view->GetPhysicalBackingSize(), 1 / metadata.device_scale_factor);
+  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
+      host_->GetView());
+  if (!view)
+    return;
 
-    param_metadata.set_device_scale_factor(metadata.device_scale_factor);
-    param_metadata.set_page_scale_factor(metadata.page_scale_factor);
-    param_metadata.set_page_scale_factor_min(metadata.min_page_scale_factor);
-    param_metadata.set_page_scale_factor_max(metadata.max_page_scale_factor);
-    param_metadata.set_offset_top(
-        metadata.location_bar_content_translation.y());
-    param_metadata.set_offset_bottom(screen_size_dip.height() -
-        metadata.location_bar_content_translation.y() -
-        viewport_size_dip.height());
-    param_metadata.set_device_width(screen_size_dip.width());
-    param_metadata.set_device_height(screen_size_dip.height());
-    param_metadata.set_scroll_offset_x(metadata.root_scroll_offset.x());
-    param_metadata.set_scroll_offset_y(metadata.root_scroll_offset.y());
-
-    devtools::dom::Rect viewport;
-    viewport.set_x(metadata.root_scroll_offset.x());
-    viewport.set_y(metadata.root_scroll_offset.y());
-    viewport.set_width(metadata.scrollable_viewport_size.width());
-    viewport.set_height(metadata.scrollable_viewport_size.height());
-    param_metadata.set_viewport(viewport);
-  }
-
-  ScreencastFrameParams params;
-  params.set_data(base_64_data);
-  params.set_metadata(param_metadata);
-  client_->ScreencastFrame(params);
+  gfx::SizeF viewport_size_dip = gfx::ScaleSize(
+      metadata.scrollable_viewport_size, metadata.page_scale_factor);
+  gfx::SizeF screen_size_dip = gfx::ScaleSize(
+      view->GetPhysicalBackingSize(), 1 / metadata.device_scale_factor);
+  scoped_refptr<ScreencastFrameMetadata> param_metadata =
+      ScreencastFrameMetadata::Create()
+          ->set_device_scale_factor(metadata.device_scale_factor)
+          ->set_page_scale_factor(metadata.page_scale_factor)
+          ->set_page_scale_factor_min(metadata.min_page_scale_factor)
+          ->set_page_scale_factor_max(metadata.max_page_scale_factor)
+          ->set_offset_top(metadata.location_bar_content_translation.y())
+          ->set_offset_bottom(screen_size_dip.height() -
+                              metadata.location_bar_content_translation.y() -
+                              viewport_size_dip.height())
+          ->set_device_width(screen_size_dip.width())
+          ->set_device_height(screen_size_dip.height())
+          ->set_scroll_offset_x(metadata.root_scroll_offset.x())
+          ->set_scroll_offset_y(metadata.root_scroll_offset.y())
+          ->set_viewport(dom::Rect::Create()
+              ->set_x(metadata.root_scroll_offset.x())
+              ->set_y(metadata.root_scroll_offset.y())
+              ->set_width(metadata.scrollable_viewport_size.width())
+              ->set_height(metadata.scrollable_viewport_size.height()));
+  client_->ScreencastFrame(ScreencastFrameParams::Create()
+      ->set_data(base_64_data)
+      ->set_metadata(param_metadata));
 }
 
 void PageHandler::ScreenshotCaptured(
@@ -588,26 +579,20 @@ void PageHandler::ScreenshotCaptured(
       base::StringPiece(reinterpret_cast<const char*>(png_data), png_size),
       &base_64_data);
 
-  CaptureScreenshotResponse response;
-  response.set_data(base_64_data);
-  client_->SendCaptureScreenshotResponse(command, response);
+  client_->SendCaptureScreenshotResponse(command,
+      CaptureScreenshotResponse::Create()->set_data(base_64_data));
 }
 
 void PageHandler::OnColorPicked(int r, int g, int b, int a) {
-  dom::RGBA color;
-  color.set_r(r);
-  color.set_g(g);
-  color.set_b(b);
-  color.set_a(a);
-  ColorPickedParams params;
-  params.set_color(color);
-  client_->ColorPicked(params);
+  scoped_refptr<dom::RGBA> color =
+      dom::RGBA::Create()->set_r(r)->set_g(g)->set_b(b)->set_a(a);
+  client_->ColorPicked(ColorPickedParams::Create()->set_color(color));
 }
 
 void PageHandler::QueryUsageAndQuotaCompleted(
     scoped_refptr<DevToolsProtocol::Command> command,
-    scoped_ptr<QueryUsageAndQuotaResponse> response_data) {
-  client_->SendQueryUsageAndQuotaResponse(command, *response_data);
+    scoped_refptr<QueryUsageAndQuotaResponse> response_data) {
+  client_->SendQueryUsageAndQuotaResponse(command, response_data);
 }
 
 }  // namespace page
