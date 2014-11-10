@@ -11,7 +11,7 @@ ContentsLayoutManager::ContentsLayoutManager(
     views::View* contents_view)
     : devtools_view_(devtools_view),
       contents_view_(contents_view),
-      host_(NULL),
+      host_(nullptr),
       active_top_margin_(0) {
 }
 
@@ -74,5 +74,5 @@ void ContentsLayoutManager::Installed(views::View* host) {
 
 void ContentsLayoutManager::Uninstalled(views::View* host) {
   DCHECK(host_ == host);
-  host_ = NULL;
+  host_ = nullptr;
 }

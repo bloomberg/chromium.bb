@@ -101,9 +101,9 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserFrame* frame,
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
-      caption_button_container_(NULL),
-      web_app_back_button_(NULL),
-      window_icon_(NULL),
+      caption_button_container_(nullptr),
+      web_app_back_button_(nullptr),
+      window_icon_(nullptr),
       frame_border_hit_test_controller_(
           new ash::FrameBorderHitTestController(frame)) {
   ash::Shell::GetInstance()->AddShellObserver(this);
@@ -123,7 +123,7 @@ void BrowserNonClientFrameViewAsh::Init() {
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view()->ShouldShowWindowIcon()) {
-    window_icon_ = new TabIconView(this, NULL);
+    window_icon_ = new TabIconView(this, nullptr);
     window_icon_->set_is_light(true);
     AddChildView(window_icon_);
     window_icon_->Update();
@@ -431,7 +431,7 @@ void BrowserNonClientFrameViewAsh::OnMaximizeModeEnded() {
 
 bool BrowserNonClientFrameViewAsh::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
-  // TabIconView we host is initialized, so we need to NULL check the selected
+  // TabIconView we host is initialized, so we need to null check the selected
   // WebContents because in this condition there is not yet a selected tab.
   content::WebContents* current_tab = browser_view()->GetActiveWebContents();
   return current_tab ? current_tab->IsLoading() : false;

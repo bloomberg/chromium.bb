@@ -120,17 +120,17 @@ const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
 // BrowserViewLayout, public:
 
 BrowserViewLayout::BrowserViewLayout()
-    : browser_(NULL),
-      browser_view_(NULL),
-      top_container_(NULL),
-      tab_strip_(NULL),
-      toolbar_(NULL),
-      bookmark_bar_(NULL),
-      infobar_container_(NULL),
-      contents_container_(NULL),
-      contents_layout_manager_(NULL),
-      download_shelf_(NULL),
-      immersive_mode_controller_(NULL),
+    : browser_(nullptr),
+      browser_view_(nullptr),
+      top_container_(nullptr),
+      tab_strip_(nullptr),
+      toolbar_(nullptr),
+      bookmark_bar_(nullptr),
+      infobar_container_(nullptr),
+      contents_container_(nullptr),
+      contents_layout_manager_(nullptr),
+      download_shelf_(nullptr),
+      immersive_mode_controller_(nullptr),
       dialog_host_(new WebContentsModalDialogHostViews(this)),
       web_contents_modal_dialog_top_y_(-1) {}
 

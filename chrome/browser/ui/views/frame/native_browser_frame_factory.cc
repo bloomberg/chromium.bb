@@ -8,7 +8,7 @@
 
 namespace {
 
-NativeBrowserFrameFactory* factory = NULL;
+NativeBrowserFrameFactory* factory = nullptr;
 
 }
 

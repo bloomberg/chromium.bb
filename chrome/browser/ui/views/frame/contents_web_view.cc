@@ -15,7 +15,7 @@
 
 ContentsWebView::ContentsWebView(content::BrowserContext* browser_context)
     : views::WebView(browser_context),
-      status_bubble_(NULL) {
+      status_bubble_(nullptr) {
 }
 
 ContentsWebView::~ContentsWebView() {
@@ -105,5 +105,5 @@ void ContentsWebView::CloneWebContentsLayer() {
 void ContentsWebView::DestroyClonedLayer() {
   cloned_layer_tree_.reset();
   SetPaintToLayer(false);
-  set_layer_owner_delegate(NULL);
+  set_layer_owner_delegate(nullptr);
 }

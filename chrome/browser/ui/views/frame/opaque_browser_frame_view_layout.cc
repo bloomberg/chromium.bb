@@ -114,17 +114,17 @@ OpaqueBrowserFrameViewLayout::OpaqueBrowserFrameViewLayout(
       has_trailing_buttons_(false),
       extra_caption_y_(kExtraCaption),
       window_caption_spacing_(kCaptionButtonSpacing),
-      minimize_button_(NULL),
-      maximize_button_(NULL),
-      restore_button_(NULL),
-      close_button_(NULL),
-      window_icon_(NULL),
-      window_title_(NULL),
+      minimize_button_(nullptr),
+      maximize_button_(nullptr),
+      restore_button_(nullptr),
+      close_button_(nullptr),
+      window_icon_(nullptr),
+      window_title_(nullptr),
 #if defined(ENABLE_MANAGED_USERS)
-      supervised_user_avatar_label_(NULL),
+      supervised_user_avatar_label_(nullptr),
 #endif
-      avatar_button_(NULL),
-      new_avatar_button_(NULL) {
+      avatar_button_(nullptr),
+      new_avatar_button_(nullptr) {
   trailing_buttons_.push_back(views::FRAME_BUTTON_MINIMIZE);
   trailing_buttons_.push_back(views::FRAME_BUTTON_MAXIMIZE);
   trailing_buttons_.push_back(views::FRAME_BUTTON_CLOSE);
@@ -713,5 +713,5 @@ void OpaqueBrowserFrameViewLayout::ViewAdded(views::View* host,
 
 void OpaqueBrowserFrameViewLayout::ViewRemoved(views::View* host,
                                                views::View* view) {
-  SetView(view->id(), NULL);
+  SetView(view->id(), nullptr);
 }

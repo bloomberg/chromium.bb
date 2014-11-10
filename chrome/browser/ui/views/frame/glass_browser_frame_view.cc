@@ -203,7 +203,7 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
   if (!browser_view()->IsTabStripVisible() && hwnd) {
     // If we don't have a tabstrip, we're either a popup or an app window, in
     // which case we have a standard size non-client area and can just use
-    // AdjustWindowRectEx to obtain it. We check for a non-NULL window handle in
+    // AdjustWindowRectEx to obtain it. We check for a non-null window handle in
     // case this gets called before the window is actually created.
     RECT rect = client_bounds.ToRECT();
     AdjustWindowRectEx(&rect, GetWindowLong(hwnd, GWL_STYLE), FALSE,
@@ -539,7 +539,7 @@ void GlassBrowserFrameView::StopThrobber() {
   if (throbber_running_) {
     throbber_running_ = false;
 
-    HICON frame_icon = NULL;
+    HICON frame_icon = nullptr;
 
     // Check if hosted BrowserView has a window icon to use.
     if (browser_view()->ShouldShowWindowIcon()) {
@@ -555,7 +555,7 @@ void GlassBrowserFrameView::StopThrobber() {
     }
 
     // This will reset the small icon which we set in the throbber code.
-    // WM_SETICON with NULL icon restores the icon for title bar but not
+    // WM_SETICON with null icon restores the icon for title bar but not
     // for taskbar. See http://crbug.com/29996
     SendMessage(views::HWNDForWidget(frame()), WM_SETICON,
                 static_cast<WPARAM>(ICON_SMALL),

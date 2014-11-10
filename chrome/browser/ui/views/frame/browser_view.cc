@@ -381,17 +381,17 @@ void BookmarkExtensionBackground::Paint(gfx::Canvas* canvas,
 // BrowserView, public:
 
 BrowserView::BrowserView()
-    : views::ClientView(NULL, NULL),
+    : views::ClientView(nullptr, nullptr),
       last_focused_view_storage_id_(
           views::ViewStorage::GetInstance()->CreateStorageID()),
-      frame_(NULL),
-      top_container_(NULL),
-      tabstrip_(NULL),
-      toolbar_(NULL),
-      find_bar_host_view_(NULL),
-      infobar_container_(NULL),
-      contents_web_view_(NULL),
-      contents_container_(NULL),
+      frame_(nullptr),
+      top_container_(nullptr),
+      tabstrip_(nullptr),
+      toolbar_(nullptr),
+      find_bar_host_view_(nullptr),
+      infobar_container_(nullptr),
+      contents_web_view_(nullptr),
+      contents_container_(nullptr),
       initialized_(false),
       in_process_fullscreen_(false),
 #if defined(OS_WIN)
@@ -430,7 +430,7 @@ BrowserView::~BrowserView() {
   // notifications will call back into deleted objects).
   BrowserViewLayout* browser_view_layout = GetBrowserViewLayout();
   if (browser_view_layout)
-    browser_view_layout->set_download_shelf(NULL);
+    browser_view_layout->set_download_shelf(nullptr);
   download_shelf_.reset();
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
@@ -438,16 +438,16 @@ BrowserView::~BrowserView() {
   if (tabstrip_) {
     tabstrip_->parent()->RemoveChildView(tabstrip_);
     if (browser_view_layout)
-      browser_view_layout->set_tab_strip(NULL);
+      browser_view_layout->set_tab_strip(nullptr);
     delete tabstrip_;
-    tabstrip_ = NULL;
+    tabstrip_ = nullptr;
   }
   // Child views maintain PrefMember attributes that point to
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews(true);
-  toolbar_ = NULL;
+  toolbar_ = nullptr;
 
-  // Explicitly set browser_ to NULL.
+  // Explicitly set browser_ to null.
   browser_.reset();
 }
 
@@ -464,7 +464,7 @@ BrowserView* BrowserView::GetBrowserViewForNativeWindow(
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
   return widget ?
       reinterpret_cast<BrowserView*>(widget->GetNativeWindowProperty(
-          kBrowserViewKey)) : NULL;
+          kBrowserViewKey)) : nullptr;
 }
 
 // static
@@ -681,7 +681,7 @@ gfx::NativeWindow BrowserView::GetNativeWindow() const {
   // but utility functions like FindBrowserWithWindow will come here and crash.
   // We short circuit therefore.
   if (!GetWidget())
-    return NULL;
+    return nullptr;
   return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
 }
 
@@ -775,8 +775,8 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   // we don't want any WebContents to be attached, so that we
   // avoid an unnecessary resize and re-layout of a WebContents.
   if (change_tab_contents) {
-    contents_web_view_->SetWebContents(NULL);
-    devtools_web_view_->SetWebContents(NULL);
+    contents_web_view_->SetWebContents(nullptr);
+    devtools_web_view_->SetWebContents(nullptr);
   }
 
   // Do this before updating InfoBarContainer as the InfoBarContainer may
@@ -791,7 +791,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
       InfoBarService::FromWebContents(new_contents));
 
   if (old_contents && PermissionBubbleManager::FromWebContents(old_contents))
-    PermissionBubbleManager::FromWebContents(old_contents)->SetView(NULL);
+    PermissionBubbleManager::FromWebContents(old_contents)->SetView(nullptr);
 
   if (new_contents && PermissionBubbleManager::FromWebContents(new_contents)) {
     PermissionBubbleManager::FromWebContents(new_contents)->SetView(
@@ -910,7 +910,7 @@ bool BrowserView::IsFullscreen() const {
 }
 
 bool BrowserView::IsFullscreenBubbleVisible() const {
-  return fullscreen_bubble_ != NULL;
+  return fullscreen_bubble_ != nullptr;
 }
 
 #if defined(OS_WIN)
@@ -1037,7 +1037,7 @@ void BrowserView::FocusToolbar() {
 
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
-  toolbar_->SetPaneFocus(NULL);
+  toolbar_->SetPaneFocus(nullptr);
 }
 
 void BrowserView::FocusBookmarksToolbar() {
@@ -1124,8 +1124,8 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
 
 void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
-  chrome::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url, NULL,
-                           profile);
+  chrome::EditSearchEngine(GetWidget()->GetNativeWindow(), template_url,
+                           nullptr, profile);
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
@@ -1203,7 +1203,7 @@ void BrowserView::ShowOneClickSigninBubble(
 void BrowserView::SetDownloadShelfVisible(bool visible) {
   // This can be called from the superclass destructor, when it destroys our
   // child views. At that point, browser_ is already gone.
-  if (browser_ == NULL)
+  if (!browser_)
     return;
 
   if (visible && IsDownloadShelfVisible() != visible) {
@@ -1211,7 +1211,7 @@ void BrowserView::SetDownloadShelfVisible(bool visible) {
     GetDownloadShelf();
   }
 
-  if (browser_ != NULL)
+  if (!browser_)
     browser_->UpdateDownloadShelfVisibility(visible);
 
   // SetDownloadShelfVisible can force-close the shelf, so make sure we lay out
@@ -1328,7 +1328,7 @@ bool BrowserView::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
   // command execution cannot be blocked and true is returned. However, it is
   // okay as long as is_app() is false. See comments in this function.
   const bool processed = focus_manager->ProcessAccelerator(accelerator);
-  const int id = controller->GetLastBlockedCommand(NULL);
+  const int id = controller->GetLastBlockedCommand(nullptr);
   controller->SetBlockCommandExecution(original_block_command_state);
 
   // Executing the command may cause |this| object to be destroyed.
@@ -1399,7 +1399,7 @@ BookmarkBarView* BrowserView::GetBookmarkBarView() const {
 }
 
 LocationBarView* BrowserView::GetLocationBarView() const {
-  return toolbar_ ? toolbar_->location_bar() : NULL;
+  return toolbar_ ? toolbar_->location_bar() : nullptr;
 }
 
 views::View* BrowserView::GetTabContentsContainerView() const {
@@ -1435,25 +1435,25 @@ void BrowserView::TabInsertedAt(WebContents* contents,
 
 void BrowserView::TabDetachedAt(WebContents* contents, int index) {
   if (PermissionBubbleManager::FromWebContents(contents))
-    PermissionBubbleManager::FromWebContents(contents)->SetView(NULL);
+    PermissionBubbleManager::FromWebContents(contents)->SetView(nullptr);
 
   // We use index here rather than comparing |contents| because by this time
   // the model has already removed |contents| from its list, so
-  // browser_->GetActiveWebContents() will return NULL or something else.
+  // browser_->GetActiveWebContents() will return null or something else.
   if (index == browser_->tab_strip_model()->active_index()) {
-    // We need to reset the current tab contents to NULL before it gets
+    // We need to reset the current tab contents to null before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.
     web_contents_close_handler_->ActiveTabChanged();
-    contents_web_view_->SetWebContents(NULL);
-    infobar_container_->ChangeInfoBarManager(NULL);
-    UpdateDevToolsForContents(NULL, true);
+    contents_web_view_->SetWebContents(nullptr);
+    infobar_container_->ChangeInfoBarManager(nullptr);
+    UpdateDevToolsForContents(nullptr, true);
   }
 }
 
 void BrowserView::TabDeactivated(WebContents* contents) {
   if (PermissionBubbleManager::FromWebContents(contents))
-    PermissionBubbleManager::FromWebContents(contents)->SetView(NULL);
+    PermissionBubbleManager::FromWebContents(contents)->SetView(nullptr);
 
   // We do not store the focus when closing the tab to work-around bug 4633.
   // Some reports seem to show that the focus manager and/or focused view can
@@ -1466,7 +1466,7 @@ void BrowserView::TabStripEmpty() {
   // Make sure all optional UI is removed before we are destroyed, otherwise
   // there will be consequences (since our view hierarchy will still have
   // references to freed views).
-  UpdateUIForContents(NULL);
+  UpdateUIForContents(nullptr);
 }
 
 void BrowserView::WillCloseAllTabs() {
@@ -1537,7 +1537,7 @@ base::string16 BrowserView::GetAccessibleWindowTitle() const {
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
-  return NULL;
+  return nullptr;
 }
 
 bool BrowserView::ShouldShowWindowTitle() const {
@@ -1556,7 +1556,7 @@ gfx::ImageSkia BrowserView::GetWindowAppIcon() {
   if (browser_->is_app()) {
     WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
     extensions::TabHelper* extensions_tab_helper =
-        contents ? extensions::TabHelper::FromWebContents(contents) : NULL;
+        contents ? extensions::TabHelper::FromWebContents(contents) : nullptr;
     if (extensions_tab_helper && extensions_tab_helper->GetExtensionAppIcon())
       return gfx::ImageSkia::CreateFrom1xBitmap(
           *extensions_tab_helper->GetExtensionAppIcon());
@@ -1695,7 +1695,7 @@ void BrowserView::OnWidgetMove() {
   // Comment out for one cycle to see if this fixes dist tests.
   // tabstrip_->DestroyDragController();
 
-  // status_bubble_ may be NULL if this is invoked during construction.
+  // status_bubble_ may be null if this is invoked during construction.
   if (status_bubble_.get())
     status_bubble_->Reposition();
 
@@ -2011,7 +2011,7 @@ void BrowserView::LoadingAnimationCallback() {
     // ... or in the window icon area for popups and app windows.
     WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
-    // GetActiveWebContents can return NULL for example under Purify when
+    // GetActiveWebContents can return null for example under Purify when
     // the animations are running slowly and this function is called on a timer
     // through LoadingAnimationCallback.
     frame_->UpdateThrobber(web_contents && web_contents->IsLoading());
@@ -2057,7 +2057,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
 
   // Update parenting for the bookmark bar. This may detach it from all views.
   bool needs_layout = false;
-  views::View* new_parent = NULL;
+  views::View* new_parent = nullptr;
   if (show_bookmark_bar) {
     if (bookmark_bar_view_->IsDetached())
       new_parent = this;
@@ -2460,7 +2460,8 @@ void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
   if (DoCutCopyPasteForWebContents(contents, method))
     return;
 
-  WebContents* devtools = DevToolsWindow::GetInTabWebContents(contents, NULL);
+  WebContents* devtools = DevToolsWindow::GetInTabWebContents(contents,
+                                                              nullptr);
   if (devtools && DoCutCopyPasteForWebContents(devtools, method))
     return;
 
@@ -2514,7 +2515,7 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
     gfx::Point icon_bottom(
         toolbar_->location_bar()->GetLocationBarAnchorPoint());
     ConvertPointToTarget(toolbar_->location_bar(), this, &icon_bottom);
-    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
+    gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(nullptr));
     ConvertPointToTarget(infobar_container_, this, &infobar_top);
     top_arrow_height = infobar_top.y() - icon_bottom.y();
   }

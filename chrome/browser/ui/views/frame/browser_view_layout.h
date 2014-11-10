@@ -45,7 +45,7 @@ class BrowserViewLayout : public views::LayoutManager {
   ~BrowserViewLayout() override;
 
   // Sets all the views to be managed. Takes ownership of |delegate|.
-  // |browser_view| may be NULL in tests.
+  // |browser_view| may be null in tests.
   void Init(BrowserViewLayoutDelegate* delegate,
             Browser* browser,
             views::ClientView* browser_view,

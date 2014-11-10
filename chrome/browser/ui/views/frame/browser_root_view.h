@@ -56,7 +56,7 @@ class BrowserRootView : public views::internal::RootView {
   inline TabStrip* tabstrip() const;
 
   // Returns true if |data| has string contents and the user can "paste and go".
-  // If |url| is non-NULL and the user can "paste and go", |url| is set to the
+  // If |url| is non-null and the user can "paste and go", |url| is set to the
   // desired destination.
   bool GetPasteAndGoURL(const ui::OSExchangeData& data, GURL* url);
 

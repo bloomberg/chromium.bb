@@ -94,12 +94,12 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
                                                BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       layout_(new OpaqueBrowserFrameViewLayout(this)),
-      minimize_button_(NULL),
-      maximize_button_(NULL),
-      restore_button_(NULL),
-      close_button_(NULL),
-      window_icon_(NULL),
-      window_title_(NULL),
+      minimize_button_(nullptr),
+      maximize_button_(nullptr),
+      restore_button_(nullptr),
+      close_button_(nullptr),
+      window_icon_(nullptr),
+      window_title_(nullptr),
       frame_background_(new views::FrameBackground()) {
   SetLayoutManager(layout_);
 
@@ -266,7 +266,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate) {
-    LOG(WARNING) << "delegate is NULL, returning safe default.";
+    LOG(WARNING) << "delegate is null, returning safe default.";
     return HTCAPTION;
   }
   int window_component = GetHTComponentForFrame(point, TopResizeHeight(),
@@ -351,7 +351,7 @@ void OpaqueBrowserFrameView::OnMenuButtonClicked(views::View* source,
 
 bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
   // This function is queried during the creation of the window as the
-  // TabIconView we host is initialized, so we need to NULL check the selected
+  // TabIconView we host is initialized, so we need to null check the selected
   // WebContents because in this condition there is not yet a selected tab.
   WebContents* current_tab = browser_view()->GetActiveWebContents();
   return current_tab ? current_tab->IsLoading() : false;
@@ -360,7 +360,7 @@ bool OpaqueBrowserFrameView::ShouldTabIconViewAnimate() const {
 gfx::ImageSkia OpaqueBrowserFrameView::GetFaviconForTabIconView() {
   views::WidgetDelegate* delegate = frame()->widget_delegate();
   if (!delegate) {
-    LOG(WARNING) << "delegate is NULL, returning safe default.";
+    LOG(WARNING) << "delegate is null, returning safe default.";
     return gfx::ImageSkia();
   }
   return delegate->GetWindowIcon();
@@ -398,7 +398,7 @@ bool OpaqueBrowserFrameView::ShouldShowWindowIcon() const {
 }
 
 bool OpaqueBrowserFrameView::ShouldShowWindowTitle() const {
-  // |delegate| may be NULL if called from callback of InputMethodChanged while
+  // |delegate| may be null if called from callback of InputMethodChanged while
   // a window is being destroyed.
   // See more discussion at http://crosbug.com/8958
   views::WidgetDelegate* delegate = frame()->widget_delegate();
@@ -919,7 +919,7 @@ gfx::ImageSkia* OpaqueBrowserFrameView::GetFrameOverlayImage() const {
     return tp->GetImageSkiaNamed(ShouldPaintAsActive() ?
         IDR_THEME_FRAME_OVERLAY : IDR_THEME_FRAME_OVERLAY_INACTIVE);
   }
-  return NULL;
+  return nullptr;
 }
 
 int OpaqueBrowserFrameView::GetTopAreaHeight() const {

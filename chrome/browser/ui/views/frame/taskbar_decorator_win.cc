@@ -33,7 +33,7 @@ namespace {
 // valid.
 void SetOverlayIcon(HWND hwnd, scoped_ptr<SkBitmap> bitmap) {
   base::win::ScopedComPtr<ITaskbarList3> taskbar;
-  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, NULL,
+  HRESULT result = taskbar.CreateInstance(CLSID_TaskbarList, nullptr,
                                           CLSCTX_INPROC_SERVER);
   if (FAILED(result) || FAILED(taskbar->HrInit()))
     return;

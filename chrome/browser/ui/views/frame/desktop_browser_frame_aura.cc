@@ -29,7 +29,7 @@ DesktopBrowserFrameAura::DesktopBrowserFrameAura(
     : views::DesktopNativeWidgetAura(browser_frame),
       browser_view_(browser_view),
       browser_frame_(browser_frame),
-      browser_desktop_window_tree_host_(NULL) {
+      browser_desktop_window_tree_host_(nullptr) {
   GetNativeWindow()->SetName("BrowserFrameAura");
 }
 
@@ -47,7 +47,7 @@ void DesktopBrowserFrameAura::OnHostClosed() {
   // calling back to one of the Views/LayoutManagers or supporting classes of
   // BrowserView. By destroying here we ensure all said classes are valid.
   DestroyBrowserWebContents(browser_view_->browser());
-  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), NULL);
+  aura::client::SetVisibilityClient(GetNativeView()->GetRootWindow(), nullptr);
   DesktopNativeWidgetAura::OnHostClosed();
 }
 

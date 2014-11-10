@@ -176,7 +176,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
  protected:
   views::ImageButton* InitWindowCaptionButton(ViewID view_id,
                                               const gfx::Size& size) {
-    views::ImageButton* button = new views::ImageButton(NULL);
+    views::ImageButton* button = new views::ImageButton(nullptr);
     gfx::ImageSkiaRep rep(size, 1.0f);
     gfx::ImageSkia image(rep);
     button->SetImage(views::CustomButton::STATE_NORMAL, &image);
@@ -186,7 +186,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   }
 
   void AddWindowTitleIcons() {
-    tab_icon_view_ = new TabIconView(NULL, NULL);
+    tab_icon_view_ = new TabIconView(nullptr, nullptr);
     tab_icon_view_->set_is_light(true);
     tab_icon_view_->set_id(VIEW_ID_WINDOW_ICON);
     root_view_->AddChildView(tab_icon_view_);
@@ -204,7 +204,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     // Disable the New Avatar Menu.
     switches::DisableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
 
-    menu_button_ = new AvatarMenuButton(NULL, false);
+    menu_button_ = new AvatarMenuButton(nullptr, false);
     menu_button_->set_id(VIEW_ID_AVATAR_BUTTON);
     delegate_->SetShouldShowAvatar(true);
     root_view_->AddChildView(menu_button_);
@@ -212,7 +212,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
 
 #if defined(ENABLE_MANAGED_USERS)
   void AddSupervisedUserAvatarLabel() {
-    supervised_user_avatar_label_ = new SupervisedUserAvatarLabel(NULL);
+    supervised_user_avatar_label_ = new SupervisedUserAvatarLabel(nullptr);
     supervised_user_avatar_label_->set_id(VIEW_ID_SUPERVISED_USER_AVATAR_LABEL);
     root_view_->AddChildView(supervised_user_avatar_label_);
 
@@ -226,7 +226,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
     switches::EnableNewAvatarMenuForTesting(CommandLine::ForCurrentProcess());
 
     new_avatar_button_ =
-        new views::MenuButton(NULL, base::string16(), NULL, false);
+        new views::MenuButton(nullptr, base::string16(), nullptr, false);
     new_avatar_button_->set_id(VIEW_ID_NEW_AVATAR_BUTTON);
     root_view_->AddChildView(new_avatar_button_);
   }

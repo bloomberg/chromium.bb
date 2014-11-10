@@ -99,8 +99,8 @@ void BrowserFrameAsh::OnWindowTargetVisibilityChanged(bool visible) {
 }
 
 bool BrowserFrameAsh::ShouldSaveWindowPlacement() const {
-  return NULL == GetWidget()->GetNativeWindow()->GetProperty(
-                     ash::kRestoreBoundsOverrideKey);
+  return nullptr == GetWidget()->GetNativeWindow()->GetProperty(
+                        ash::kRestoreBoundsOverrideKey);
 }
 
 void BrowserFrameAsh::GetWindowPlacement(

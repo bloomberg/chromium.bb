@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowPropertyManagerTest, DISABLED_HostedApp) {
                                     browser()->host_desktop_type()));
 
   // Find the new browser.
-  Browser* app_browser = NULL;
+  Browser* app_browser = nullptr;
   for (chrome::BrowserIterator it; !it.done() && !app_browser; it.Next()) {
     if (*it != browser())
       app_browser = *it;

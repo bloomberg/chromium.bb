@@ -70,7 +70,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
  private:
   // Draws a taskbar icon if avatar are enabled, erases it otherwise.  If
-  // |taskbar_badge_avatar| is NULL, then |avatar| is used.
+  // |taskbar_badge_avatar| is null, then |avatar| is used.
   void DrawTaskbarDecoration(const gfx::Image& avatar,
                              const gfx::Image& taskbar_badge_avatar);
 
@@ -87,7 +87,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   BrowserView* browser_view_;
 
   // Menu button that displays that either the incognito icon or the profile
-  // icon.  May be NULL for some frame styles.
+  // icon.  May be null for some frame styles.
   AvatarMenuButton* avatar_button_;
 
 #if defined(ENABLE_MANAGED_USERS)
@@ -95,7 +95,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 #endif
 
   // Menu button that displays the name of the active or guest profile.
-  // May be NULL and will not be displayed for off the record profiles.
+  // May be null and will not be displayed for off the record profiles.
   NewAvatarButton* new_avatar_button_;
 };
 

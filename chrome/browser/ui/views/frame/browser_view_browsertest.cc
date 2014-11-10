@@ -21,7 +21,7 @@
 
 class BrowserViewTest : public InProcessBrowserTest {
  public:
-  BrowserViewTest() : InProcessBrowserTest(), devtools_(NULL) {}
+  BrowserViewTest() : InProcessBrowserTest(), devtools_(nullptr) {}
 
  protected:
   BrowserView* browser_view() {

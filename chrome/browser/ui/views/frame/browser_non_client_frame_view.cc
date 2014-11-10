@@ -32,12 +32,12 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
-      avatar_button_(NULL),
+      avatar_button_(nullptr),
 #if defined(ENABLE_MANAGED_USERS)
-      supervised_user_avatar_label_(NULL),
+      supervised_user_avatar_label_(nullptr),
 #endif
-      new_avatar_button_(NULL) {
-  // The profile manager may by NULL in tests.
+      new_avatar_button_(nullptr) {
+  // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -46,7 +46,7 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
 }
 
 BrowserNonClientFrameView::~BrowserNonClientFrameView() {
-  // The profile manager may by NULL in tests.
+  // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     ProfileInfoCache& cache =
         g_browser_process->profile_manager()->GetProfileInfoCache();
@@ -107,12 +107,12 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
     if (supervised_user_avatar_label_) {
       RemoveChildView(supervised_user_avatar_label_);
       delete supervised_user_avatar_label_;
-      supervised_user_avatar_label_ = NULL;
+      supervised_user_avatar_label_ = nullptr;
     }
 #endif
     RemoveChildView(avatar_button_);
     delete avatar_button_;
-    avatar_button_ = NULL;
+    avatar_button_ = nullptr;
     frame_->GetRootView()->Layout();
   }
 
@@ -147,7 +147,7 @@ void BrowserNonClientFrameView::UpdateNewStyleAvatarInfo(
     }
   } else if (new_avatar_button_) {
     delete new_avatar_button_;
-    new_avatar_button_ = NULL;
+    new_avatar_button_ = nullptr;
     frame_->GetRootView()->Layout();
   }
 }
@@ -175,7 +175,7 @@ void BrowserNonClientFrameView::DrawTaskbarDecoration(
   chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(),
       show_decoration
           ? (taskbar_badge_avatar.IsEmpty() ? &avatar : &taskbar_badge_avatar)
-          : NULL);
+          : nullptr);
 }
 
 void BrowserNonClientFrameView::OnProfileAdded(

@@ -41,7 +41,7 @@ int GetMinimizeButtonOffsetForWindow(HWND hwnd) {
 int MinimizeButtonMetrics::last_cached_minimize_button_x_delta_ = 0;
 
 MinimizeButtonMetrics::MinimizeButtonMetrics()
-    : hwnd_(NULL),
+    : hwnd_(nullptr),
       cached_minimize_button_x_delta_(last_cached_minimize_button_x_delta_),
       was_activated_(false) {
 }

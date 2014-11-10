@@ -54,7 +54,7 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   }
 
   FullscreenExitBubbleViews* GetFullscreenExitBubble() const override {
-    return NULL;
+    return nullptr;
   }
 
  private:
@@ -107,7 +107,7 @@ class MockImmersiveModeController : public ImmersiveModeController {
   }
   ImmersiveRevealedLock* GetRevealedLock(AnimateReveal animate_reveal) override
       WARN_UNUSED_RESULT {
-    return NULL;
+    return nullptr;
   }
   void OnFindBarVisibleBoundsChanged(
       const gfx::Rect& new_visible_bounds) override {}
@@ -122,14 +122,14 @@ class MockImmersiveModeController : public ImmersiveModeController {
 class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
  public:
   BrowserViewLayoutTest()
-      : delegate_(NULL),
-        top_container_(NULL),
-        tab_strip_(NULL),
-        toolbar_(NULL),
-        infobar_container_(NULL),
-        contents_container_(NULL),
-        contents_web_view_(NULL),
-        devtools_web_view_(NULL) {}
+      : delegate_(nullptr),
+        top_container_(nullptr),
+        tab_strip_(nullptr),
+        toolbar_(nullptr),
+        infobar_container_(nullptr),
+        contents_container_(nullptr),
+        contents_web_view_(nullptr),
+        devtools_web_view_(nullptr) {}
   ~BrowserViewLayoutTest() override {}
 
   BrowserViewLayout* layout() { return layout_.get(); }
@@ -150,13 +150,13 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     immersive_mode_controller_.reset(new MockImmersiveModeController);
 
     top_container_ = new MockView(gfx::Size(800, 60));
-    tab_strip_ = new TabStrip(NULL);
+    tab_strip_ = new TabStrip(nullptr);
     top_container_->AddChildView(tab_strip_);
     toolbar_ = new MockView(gfx::Size(800, 30));
     top_container_->AddChildView(toolbar_);
     root_view_->AddChildView(top_container_);
 
-    infobar_container_ = new InfoBarContainerView(NULL);
+    infobar_container_ = new InfoBarContainerView(nullptr);
     root_view_->AddChildView(infobar_container_);
 
     contents_web_view_ = new MockView(gfx::Size(800, 600));
@@ -177,7 +177,7 @@ class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
     delegate_ = new MockBrowserViewLayoutDelegate(contents_web_view_);
     layout_->Init(delegate_,
                   browser(),
-                  NULL,  // BrowserView.
+                  nullptr,  // BrowserView.
                   top_container_,
                   tab_strip_,
                   toolbar_,

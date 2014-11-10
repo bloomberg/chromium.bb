@@ -52,9 +52,9 @@
 // BrowserFrame, public:
 
 BrowserFrame::BrowserFrame(BrowserView* browser_view)
-    : native_browser_frame_(NULL),
-      root_view_(NULL),
-      browser_frame_view_(NULL),
+    : native_browser_frame_(nullptr),
+      root_view_(nullptr),
+      browser_frame_view_(nullptr),
       browser_view_(browser_view),
       theme_provider_(ThemeServiceFactory::GetForProfile(
                           browser_view_->browser()->profile())) {
@@ -265,7 +265,7 @@ void BrowserFrame::ShowContextMenuForView(views::View* source,
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
     if (menu_runner_->RunMenuAt(source->GetWidget(),
-                                NULL,
+                                nullptr,
                                 gfx::Rect(p, gfx::Size(0, 0)),
                                 views::MENU_ANCHOR_TOPLEFT,
                                 source_type) ==

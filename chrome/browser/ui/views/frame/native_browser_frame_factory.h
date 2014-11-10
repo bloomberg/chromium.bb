@@ -21,7 +21,7 @@ class NativeBrowserFrameFactory {
       BrowserView* browser_view);
 
   // Sets the factory. Takes ownership of |new_factory|, deleting existing
-  // factory. Use NULL to go back to default factory.
+  // factory. Use null to go back to default factory.
   static void Set(NativeBrowserFrameFactory* new_factory);
 
   // Returns HOST_DESKTOP_TYPE_ASH on Windows when configured to allow browser

@@ -56,7 +56,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
   base::string16 command_line_string;
   base::string16 pinned_name;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  ProfileShortcutManager* shortcut_manager = NULL;
+  ProfileShortcutManager* shortcut_manager = nullptr;
 
   // Apps set their relaunch details based on app's details.
   if (browser->is_app()) {
@@ -71,7 +71,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
     }
   }
 
-  // The profile manager may be NULL in testing.
+  // The profile manager may be null in testing.
   if (profile_manager)
     shortcut_manager = profile_manager->profile_shortcut_manager();
 

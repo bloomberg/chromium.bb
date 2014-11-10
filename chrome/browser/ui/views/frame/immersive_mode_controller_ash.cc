@@ -44,8 +44,8 @@ ToImmersiveFullscreenControllerAnimateReveal(
 
 ImmersiveModeControllerAsh::ImmersiveModeControllerAsh()
     : controller_(new ash::ImmersiveFullscreenController),
-      browser_view_(NULL),
-      native_window_(NULL),
+      browser_view_(nullptr),
+      native_window_(nullptr),
       observers_enabled_(false),
       use_tab_indicators_(false),
       visible_fraction_(1) {

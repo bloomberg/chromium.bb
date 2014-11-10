@@ -42,7 +42,7 @@ int ImmersiveModeControllerStub::GetTopContainerVerticalOffset(
 
 ImmersiveRevealedLock* ImmersiveModeControllerStub::GetRevealedLock(
     AnimateReveal animate_reveal) {
-  return NULL;
+  return nullptr;
 }
 
 void ImmersiveModeControllerStub::OnFindBarVisibleBoundsChanged(

@@ -138,7 +138,7 @@ class BrowserFrame
 
   // SetThemeProvider() triggers setting both |owned_theme_provider_| and
   // |theme_provider_|. Initially |theme_provider_| is set to the ThemeService
-  // and |owned_theme_provider_| is NULL (as ThemeServices lifetime is managed
+  // and |owned_theme_provider_| is null (as ThemeServices lifetime is managed
   // externally).
   scoped_ptr<ui::ThemeProvider> owned_theme_provider_;
   ui::ThemeProvider* theme_provider_;

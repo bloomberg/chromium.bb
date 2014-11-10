@@ -66,7 +66,7 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  int corner_radius,
                                  int image_inset_x) {
   SkXfermode::Mode normal_mode;
-  SkXfermode::AsMode(NULL, &normal_mode);
+  SkXfermode::AsMode(nullptr, &normal_mode);
 
   // If |paint| is using an unusual SkXfermode::Mode (this is the case while
   // crossfading), we must create a new canvas to overlay |frame_image| and
@@ -109,13 +109,13 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
 // BrowserHeaderPainterAsh, public:
 
 BrowserHeaderPainterAsh::BrowserHeaderPainterAsh()
-    : frame_(NULL),
+    : frame_(nullptr),
       is_tabbed_(false),
       is_incognito_(false),
-      view_(NULL),
-      window_icon_(NULL),
+      view_(nullptr),
+      window_icon_(nullptr),
       window_icon_x_inset_(ash::HeaderPainterUtil::GetDefaultLeftViewXInset()),
-      caption_button_container_(NULL),
+      caption_button_container_(nullptr),
       painted_height_(0),
       initial_paint_(true),
       mode_(MODE_INACTIVE),
@@ -134,7 +134,7 @@ void BrowserHeaderPainterAsh::Init(
   DCHECK(frame);
   DCHECK(browser_view);
   DCHECK(header_view);
-  // window_icon may be NULL.
+  // window_icon may be null.
   DCHECK(caption_button_container);
   frame_ = frame;
 

@@ -53,7 +53,7 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
     return true;
 
   // If there isn't a URL, see if we can 'paste and go'.
-  return GetPasteAndGoURL(data, NULL);
+  return GetPasteAndGoURL(data, nullptr);
 }
 
 void BrowserRootView::OnDragEntered(const ui::DropTargetEvent& event) {
@@ -203,7 +203,7 @@ bool BrowserRootView::GetPasteAndGoURL(const ui::OSExchangeData& data,
   AutocompleteClassifierFactory::GetForProfile(
       browser_view_->browser()->profile())->Classify(
           text, false, false, metrics::OmniboxEventProto::INVALID_SPEC, &match,
-          NULL);
+          nullptr);
   if (!match.destination_url.is_valid())
     return false;
 
