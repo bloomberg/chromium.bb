@@ -107,6 +107,14 @@ Viewport.prototype = {
     }
     var documentWidth = this.documentDimensions_.width * zoom;
     var documentHeight = this.documentDimensions_.height * zoom;
+
+    // If scrollbars are required for one direction, expand the document in the
+    // other direction to take the width of the scrollbars into account when
+    // deciding whether the other direction needs scrollbars.
+    if (documentWidth > this.window_.innerWidth)
+      documentHeight += this.scrollbarWidth_;
+    else if (documentHeight > this.window_.innerHeight)
+      documentWidth += this.scrollbarWidth_;
     return {
       horizontal: documentWidth > this.window_.innerWidth,
       vertical: documentHeight > this.window_.innerHeight

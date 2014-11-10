@@ -89,8 +89,9 @@ function MockDocumentDimensions(width, height) {
 
 var tests = [
   function testDocumentNeedsScrollbars() {
-    var viewport = new Viewport(new MockWindow(100, 100), new MockSizer(),
-                                function() {}, function() {}, function() {}, 0);
+    var viewport =
+        new Viewport(new MockWindow(100, 100), new MockSizer(), function() {},
+                     function() {}, function() {}, 10);
     var scrollbars;
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
@@ -108,10 +109,25 @@ var tests = [
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
-    viewport.setDocumentDimensions(new MockDocumentDimensions(100, 101));
+    viewport.setDocumentDimensions(new MockDocumentDimensions(90, 101));
     scrollbars = viewport.documentNeedsScrollbars_(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(101, 90));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertFalse(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(91, 101));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(101, 91));
+    scrollbars = viewport.documentNeedsScrollbars_(1);
+    chrome.test.assertTrue(scrollbars.vertical);
+    chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(40, 51));
     scrollbars = viewport.documentNeedsScrollbars_(2);
