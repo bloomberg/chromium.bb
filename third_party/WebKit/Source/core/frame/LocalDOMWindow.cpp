@@ -1889,7 +1889,7 @@ void LocalDOMWindow::showModalDialog(const String& urlString, const String& dial
     if (!canShowModalDialogNow(frame()) || !enteredWindow->allowPopUp())
         return;
 
-    UseCounter::countDeprecation(this, UseCounter::ShowModalDialog);
+    UseCounter::countDeprecation(frame(), UseCounter::ShowModalDialog);
 
     WindowFeatures windowFeatures(dialogFeaturesString, screenAvailableRect(frame()->view()));
     LocalFrame* dialogFrame = createWindow(urlString, emptyAtom, windowFeatures,

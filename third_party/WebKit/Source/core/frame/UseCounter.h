@@ -37,9 +37,10 @@
 namespace blink {
 
 class CSSStyleSheet;
-class LocalDOMWindow;
 class Document;
 class ExecutionContext;
+class Frame;
+class LocalFrame;
 class StyleSheetContents;
 
 // UseCounter is used for counting the number of times features of
@@ -567,6 +568,7 @@ public:
     };
 
     // "count" sets the bit for this feature to 1. Repeated calls are ignored.
+    static void count(const Frame*, Feature);
     static void count(const Document&, Feature);
     // This doesn't count for ExecutionContexts for shared workers and service
     // workers.
@@ -574,6 +576,7 @@ public:
     // Use countIfNotPrivateScript() instead of count() if you don't want
     // to count metrics in private scripts. You should use
     // countIfNotPrivateScript() in a binding layer.
+    static void countIfNotPrivateScript(v8::Isolate*, const Frame*, Feature);
     static void countIfNotPrivateScript(v8::Isolate*, const Document&, Feature);
     static void countIfNotPrivateScript(v8::Isolate*, const ExecutionContext*, Feature);
 
@@ -589,7 +592,7 @@ public:
     //
     // The ExecutionContext* overload doesn't work for shared workers and
     // service workers.
-    static void countDeprecation(const LocalDOMWindow*, Feature);
+    static void countDeprecation(const LocalFrame*, Feature);
     static void countDeprecation(ExecutionContext*, Feature);
     static void countDeprecation(const Document&, Feature);
     // Use countDeprecationIfNotPrivateScript() instead of countDeprecation()

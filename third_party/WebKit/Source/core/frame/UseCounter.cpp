@@ -31,7 +31,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/FrameConsole.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
@@ -577,14 +576,21 @@ void UseCounter::didCommitLoad()
     updateMeasurements();
 }
 
-void UseCounter::count(const Document& document, Feature feature)
+void UseCounter::count(const Frame* frame, Feature feature)
 {
-    FrameHost* host = document.frameHost();
+    if (!frame)
+        return;
+    FrameHost* host = frame->host();
     if (!host)
         return;
 
     ASSERT(host->useCounter().deprecationMessage(feature).isEmpty());
     host->useCounter().recordMeasurement(feature);
+}
+
+void UseCounter::count(const Document& document, Feature feature)
+{
+    count(document.frame(), feature);
 }
 
 void UseCounter::count(const ExecutionContext* context, Feature feature)
@@ -597,6 +603,13 @@ void UseCounter::count(const ExecutionContext* context, Feature feature)
     }
     if (context->isWorkerGlobalScope())
         toWorkerGlobalScope(context)->countFeature(feature);
+}
+
+void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const Frame* frame, Feature feature)
+{
+    if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
+        return;
+    UseCounter::count(frame, feature);
 }
 
 void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const Document& document, Feature feature)
@@ -613,6 +626,20 @@ void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate, const ExecutionCo
     UseCounter::count(context, feature);
 }
 
+void UseCounter::countDeprecation(const LocalFrame* frame, Feature feature)
+{
+    if (!frame)
+        return;
+    FrameHost* host = frame->host();
+    if (!host)
+        return;
+
+    if (host->useCounter().recordMeasurement(feature)) {
+        ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
+        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature)));
+    }
+}
+
 void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
 {
     if (!context)
@@ -625,24 +652,9 @@ void UseCounter::countDeprecation(ExecutionContext* context, Feature feature)
         toWorkerGlobalScope(context)->countDeprecation(feature);
 }
 
-void UseCounter::countDeprecation(const LocalDOMWindow* window, Feature feature)
-{
-    if (!window || !window->document())
-        return;
-    UseCounter::countDeprecation(*window->document(), feature);
-}
-
 void UseCounter::countDeprecation(const Document& document, Feature feature)
 {
-    FrameHost* host = document.frameHost();
-    LocalFrame* frame = document.frame();
-    if (!host || !frame)
-        return;
-
-    if (host->useCounter().recordMeasurement(feature)) {
-        ASSERT(!host->useCounter().deprecationMessage(feature).isEmpty());
-        frame->console().addMessage(ConsoleMessage::create(DeprecationMessageSource, WarningMessageLevel, host->useCounter().deprecationMessage(feature)));
-    }
+    UseCounter::countDeprecation(document.frame(), feature);
 }
 
 void UseCounter::countDeprecationIfNotPrivateScript(v8::Isolate* isolate, ExecutionContext* context, Feature feature)
