@@ -18,6 +18,7 @@ from pylib import android_commands
 android_commands.GetAttachedDevices = lambda: ['0', '1']
 from pylib import constants
 from pylib.base import base_test_result
+from pylib.base import test_collection
 from pylib.base import test_dispatcher
 from pylib.utils import watchdog_timer
 
@@ -83,7 +84,7 @@ class TestFunctions(unittest.TestCase):
   @staticmethod
   def _RunTests(mock_runner, tests):
     results = []
-    tests = test_dispatcher._TestCollection(
+    tests = test_collection.TestCollection(
         [test_dispatcher._Test(t) for t in tests])
     test_dispatcher._RunTestsFromQueue(mock_runner, tests, results,
                                        watchdog_timer.WatchdogTimer(None), 2)
@@ -129,7 +130,7 @@ class TestThreadGroupFunctions(unittest.TestCase):
   """Tests test_dispatcher._RunAllTests and test_dispatcher._CreateRunners."""
   def setUp(self):
     self.tests = ['a', 'b', 'c', 'd', 'e', 'f', 'g']
-    shared_test_collection = test_dispatcher._TestCollection(
+    shared_test_collection = test_collection.TestCollection(
         [test_dispatcher._Test(t) for t in self.tests])
     self.test_collection_factory = lambda: shared_test_collection
 
