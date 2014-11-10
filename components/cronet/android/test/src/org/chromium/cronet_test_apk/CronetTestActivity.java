@@ -151,16 +151,9 @@ public class CronetTestActivity extends Activity {
     private static boolean copyTestFile(AssetManager assetManager,
                                         String testFile,
                                         String testFileCopy) {
-        OutputStream out;
-        try {
-            out = new FileOutputStream(testFileCopy);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
         try {
             InputStream in = assetManager.open(testFile);
-
+            OutputStream out = new FileOutputStream(testFileCopy);
             byte[] buffer = new byte[1024];
             int read;
             while ((read = in.read(buffer)) != -1) {
@@ -171,11 +164,6 @@ public class CronetTestActivity extends Activity {
             out.close();
             return true;
         } catch (Exception e) {
-            try {
-                out.close();
-            } catch (Exception closeException) {
-                closeException.printStackTrace();
-            }
             e.printStackTrace();
             return false;
         }

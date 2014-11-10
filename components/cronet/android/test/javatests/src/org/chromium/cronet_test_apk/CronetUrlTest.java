@@ -90,7 +90,7 @@ public class CronetUrlTest extends CronetTestBase {
         assertTrue(!file.exists());
     }
 
-    static class BadHttpUrlRequestListener extends TestHttpUrlRequestListener {
+    class BadHttpUrlRequestListener extends TestHttpUrlRequestListener {
         static final String THROW_TAG = "BadListener";
 
         public BadHttpUrlRequestListener() {

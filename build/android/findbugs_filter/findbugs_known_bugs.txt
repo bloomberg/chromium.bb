@@ -24,4 +24,3 @@ M V EI2: org.chromium.content_public.browser.LoadUrlParams.setPostData(byte[]) m
 M V EI: org.chromium.content_public.browser.LoadUrlParams.getPostData() may expose internal representation by returning LoadUrlParams.mPostData  At LoadUrlParams.java
 M D NP: Read of unwritten public or protected field data in org.chromium.components.devtools_bridge.SessionDependencyFactory$DataChannelObserverAdapter.onMessage(DataChannel$Buffer)  At SessionDependencyFactory.java
 M D NP: Read of unwritten public or protected field mandatory in org.chromium.components.devtools_bridge.SessionDependencyFactory.createPeerConnection(RTCConfiguration, AbstractPeerConnection$Observer)  At SessionDependencyFactory.java
-M V EI2: org.chromium.net.ChromiumUrlRequest.setUploadData(String, byte[]) may expose internal representation by storing an externally mutable object into ChromiumUrlRequest.mUploadData  At ChromiumUrlRequest.java

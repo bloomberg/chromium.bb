@@ -79,25 +79,6 @@ public class ContextInitTest extends CronetTestBase {
         assertEquals(404, statusCodes[1]);
     }
 
-    class RequestThread extends Thread {
-        public TestHttpUrlRequestListener mListener;
-
-        final CronetTestActivity mActivity;
-        final String mUrl;
-
-        public RequestThread(CronetTestActivity activity, String url) {
-            mActivity = activity;
-            mUrl = url;
-        }
-
-        @Override
-        public void run() {
-            HttpUrlRequestFactory factory = mActivity.initRequestFactory();
-            mListener = makeRequest(factory, mUrl);
-            mListener.blockForComplete();
-        }
-    }
-
     @SmallTest
     @Feature({"Cronet"})
     public void testInitTwoFactoriesSimultaneously() throws Exception {
@@ -107,16 +88,30 @@ public class ContextInitTest extends CronetTestBase {
         // Make sure the factory is not created.
         assertNull(activity.mRequestFactory);
 
-        RequestThread thread1 = new RequestThread(activity, URL);
-        RequestThread thread2 = new RequestThread(activity,
-                "http://127.0.0.1:8000/notfound");
+        Thread thread1 = new Thread() {
+            public void run() {
+                HttpUrlRequestFactory factory = activity.initRequestFactory();
+                TestHttpUrlRequestListener listener = makeRequest(factory,
+                                                                  URL);
+                listener.blockForComplete();
+                assertEquals(200, listener.mHttpStatusCode);
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                HttpUrlRequestFactory factory = activity.initRequestFactory();
+                TestHttpUrlRequestListener listener =
+                        makeRequest(factory, "http://127.0.0.1:8000/notfound");
+                listener.blockForComplete();
+                assertEquals(404, listener.mHttpStatusCode);
+            }
+        };
 
         thread1.start();
         thread2.start();
         thread1.join();
         thread2.join();
-        assertEquals(200, thread1.mListener.mHttpStatusCode);
-        assertEquals(404, thread2.mListener.mHttpStatusCode);
     }
 
     @SmallTest
@@ -128,16 +123,30 @@ public class ContextInitTest extends CronetTestBase {
         // Make sure the factory is not created.
         assertNull(activity.mRequestFactory);
 
-        RequestThread thread1 = new RequestThread(activity, URL);
-        RequestThread thread2 = new RequestThread(activity,
-                "http://127.0.0.1:8000/notfound");
+        Thread thread1 = new Thread() {
+            public void run() {
+                HttpUrlRequestFactory factory = activity.initRequestFactory();
+                TestHttpUrlRequestListener listener = makeRequest(factory,
+                                                                  URL);
+                listener.blockForComplete();
+                assertEquals(200, listener.mHttpStatusCode);
+            }
+        };
+
+        Thread thread2 = new Thread() {
+            public void run() {
+                HttpUrlRequestFactory factory = activity.initRequestFactory();
+                TestHttpUrlRequestListener listener =
+                        makeRequest(factory, "http://127.0.0.1:8000/notfound");
+                listener.blockForComplete();
+                assertEquals(404, listener.mHttpStatusCode);
+            }
+        };
 
         thread1.start();
         thread1.join();
         thread2.start();
         thread2.join();
-        assertEquals(200, thread1.mListener.mHttpStatusCode);
-        assertEquals(404, thread2.mListener.mHttpStatusCode);
     }
 
     // Helper method to tell the activity to skip factory init in onCreate().
