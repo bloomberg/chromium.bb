@@ -403,6 +403,8 @@ void FrameLoader::didBeginDocument(bool dispatch)
 
     if (m_provisionalItem && (m_loadType == FrameLoadTypeBackForward || m_loadType == FrameLoadTypeInitialHistoryLoad))
         m_frame->document()->setStateForNewFormElements(m_provisionalItem->documentState());
+
+    client()->didCreateNewDocument();
 }
 
 void FrameLoader::finishedParsing()

@@ -234,6 +234,7 @@ public:
 
     virtual ObjectContentType objectContentType(const KURL&, const String&, bool) override { return ObjectContentType(); }
 
+    virtual void didCreateNewDocument() override { }
     virtual void dispatchDidClearWindowObjectInMainWorld() override { }
     virtual void documentElementAvailable() override { }
 

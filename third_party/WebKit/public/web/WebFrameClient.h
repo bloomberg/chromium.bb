@@ -267,6 +267,9 @@ public:
     // body is known.
     virtual void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) { }
 
+    // The frame's document has just been initialized.
+    virtual void didCreateNewDocument(WebLocalFrame* frame) { }
+
     // The window object for the frame has been cleared of any extra
     // properties that may have been set by script from the previously
     // loaded document.

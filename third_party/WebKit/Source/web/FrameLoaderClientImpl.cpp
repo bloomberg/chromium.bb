@@ -108,6 +108,12 @@ FrameLoaderClientImpl::~FrameLoaderClientImpl()
 {
 }
 
+void FrameLoaderClientImpl::didCreateNewDocument()
+{
+    if (m_webFrame->client())
+        m_webFrame->client()->didCreateNewDocument(m_webFrame);
+}
+
 void FrameLoaderClientImpl::dispatchDidClearWindowObjectInMainWorld()
 {
     if (m_webFrame->client()) {

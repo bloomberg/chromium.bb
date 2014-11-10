@@ -52,6 +52,7 @@ public:
 
     // FrameLoaderClient ----------------------------------------------
 
+    virtual void didCreateNewDocument() override;
     // Notifies the WebView delegate that the JS window object has been cleared,
     // giving it a chance to bind native objects to the window before script
     // parsing begins.
