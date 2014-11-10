@@ -87,6 +87,7 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
         return Referrer(origin + "/", referrerPolicy);
     }
     case ReferrerPolicyDefault:
+    case ReferrerPolicyNoReferrerWhenDowngrade:
         break;
     }
 

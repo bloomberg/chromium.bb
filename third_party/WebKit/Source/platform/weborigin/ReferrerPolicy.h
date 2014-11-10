@@ -37,6 +37,7 @@ namespace blink {
 enum ReferrerPolicy {
     ReferrerPolicyAlways,
     ReferrerPolicyDefault,
+    ReferrerPolicyNoReferrerWhenDowngrade,
     ReferrerPolicyNever,
     // Same as ReferrerPolicyAlways, except that only the origin of the
     // referring URL is send.

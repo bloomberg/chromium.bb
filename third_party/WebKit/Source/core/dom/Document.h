@@ -1334,7 +1334,6 @@ private:
     ViewportDescription m_legacyViewportDescription;
     Length m_viewportDefaultMinWidth;
 
-    bool m_didSetReferrerPolicy;
     ReferrerPolicy m_referrerPolicy;
 
     bool m_directionSetOnDocumentElement;

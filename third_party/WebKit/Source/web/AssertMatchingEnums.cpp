@@ -577,6 +577,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebSpeechRecognizerClient::LanguageNotSupportedErro
 
 COMPILE_ASSERT_MATCHING_ENUM(WebReferrerPolicyAlways, ReferrerPolicyAlways);
 COMPILE_ASSERT_MATCHING_ENUM(WebReferrerPolicyDefault, ReferrerPolicyDefault);
+COMPILE_ASSERT_MATCHING_ENUM(WebReferrerPolicyNoReferrerWhenDowngrade, ReferrerPolicyNoReferrerWhenDowngrade);
 COMPILE_ASSERT_MATCHING_ENUM(WebReferrerPolicyNever, ReferrerPolicyNever);
 COMPILE_ASSERT_MATCHING_ENUM(WebReferrerPolicyOrigin, ReferrerPolicyOrigin);
 
