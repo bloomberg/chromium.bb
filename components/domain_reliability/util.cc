@@ -136,4 +136,17 @@ scoped_ptr<MockableTime::Timer> ActualTime::CreateTimer() {
   return scoped_ptr<MockableTime::Timer>(new ActualTimer());
 }
 
+MockableTimeBackoffEntry::MockableTimeBackoffEntry(
+    const net::BackoffEntry::Policy* const policy,
+    MockableTime* time)
+    : net::BackoffEntry(policy),
+      time_(time) {
+}
+
+MockableTimeBackoffEntry::~MockableTimeBackoffEntry() {}
+
+base::TimeTicks MockableTimeBackoffEntry::ImplGetTimeNow() const {
+  return time_->NowTicks();
+}
+
 }  // namespace domain_reliability
