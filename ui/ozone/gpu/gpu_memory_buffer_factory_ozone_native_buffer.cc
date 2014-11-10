@@ -89,6 +89,19 @@ SurfaceFactoryOzone::BufferFormat GetOzoneFormatFor(
   return SurfaceFactoryOzone::RGBA_8888;
 }
 
+SurfaceFactoryOzone::BufferUsage GetOzoneUsageFor(
+    gfx::GpuMemoryBuffer::Usage usage) {
+  switch (usage) {
+    case gfx::GpuMemoryBuffer::MAP:
+      return SurfaceFactoryOzone::MAP;
+    case gfx::GpuMemoryBuffer::SCANOUT:
+      return SurfaceFactoryOzone::SCANOUT;
+  }
+
+  NOTREACHED();
+  return SurfaceFactoryOzone::MAP;
+}
+
 std::pair<uint32_t, uint32_t> GetIndex(gfx::GpuMemoryBufferId id,
                                        int client_id) {
   return std::pair<uint32_t, uint32_t>(id, client_id);
@@ -111,7 +124,7 @@ bool GpuMemoryBufferFactoryOzoneNativeBuffer::CreateGpuMemoryBuffer(
     int client_id) {
   scoped_refptr<NativePixmap> pixmap =
       SurfaceFactoryOzone::GetInstance()->CreateNativePixmap(
-          size, GetOzoneFormatFor(format));
+          size, GetOzoneFormatFor(format), GetOzoneUsageFor(usage));
   if (!pixmap.get()) {
     LOG(ERROR) << "Failed to create pixmap " << size.width() << "x"
                << size.height() << " format " << format << ", usage " << usage;

@@ -169,9 +169,13 @@ GbmSurfaceFactory::CreateSurfacelessEGLSurfaceForWidget(
 
 scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::Size size,
-    BufferFormat format) {
-  scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
-      drm_, device_, format, size, true);
+    BufferFormat format,
+    BufferUsage usage) {
+  if (usage == MAP)
+    return NULL;
+
+  scoped_refptr<GbmBuffer> buffer =
+      GbmBuffer::CreateBuffer(drm_, device_, format, size, true);
   if (!buffer.get())
     return NULL;
 
@@ -217,6 +221,17 @@ bool GbmSurfaceFactory::ScheduleOverlayPlane(
 
 bool GbmSurfaceFactory::CanShowPrimaryPlaneAsOverlay() {
   return allow_surfaceless_;
+}
+
+bool GbmSurfaceFactory::CanCreateNativePixmap(BufferUsage usage) {
+  switch (usage) {
+    case MAP:
+      return false;
+    case SCANOUT:
+      return true;
+  }
+  NOTREACHED();
+  return false;
 }
 
 DriWindowDelegate* GbmSurfaceFactory::GetOrCreateWindowDelegate(

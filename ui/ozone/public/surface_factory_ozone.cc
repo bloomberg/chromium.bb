@@ -66,7 +66,8 @@ ui::OverlayCandidatesOzone* SurfaceFactoryOzone::GetOverlayCandidates(
 
 scoped_refptr<ui::NativePixmap> SurfaceFactoryOzone::CreateNativePixmap(
     gfx::Size size,
-    BufferFormat format) {
+    BufferFormat format,
+    BufferUsage usage) {
   return NULL;
 }
 
@@ -83,4 +84,9 @@ bool SurfaceFactoryOzone::ScheduleOverlayPlane(
 bool SurfaceFactoryOzone::CanShowPrimaryPlaneAsOverlay() {
   return false;
 }
+
+bool SurfaceFactoryOzone::CanCreateNativePixmap(BufferUsage usage) {
+  return false;
+}
+
 }  // namespace ui

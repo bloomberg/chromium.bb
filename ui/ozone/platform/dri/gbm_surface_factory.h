@@ -36,7 +36,8 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
       gfx::AcceleratedWidget widget) override;
   scoped_refptr<ui::NativePixmap> CreateNativePixmap(
       gfx::Size size,
-      BufferFormat format) override;
+      BufferFormat format,
+      BufferUsage usage) override;
   OverlayCandidatesOzone* GetOverlayCandidates(
       gfx::AcceleratedWidget w) override;
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
@@ -46,6 +47,7 @@ class GbmSurfaceFactory : public DriSurfaceFactory {
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& crop_rect) override;
   bool CanShowPrimaryPlaneAsOverlay() override;
+  bool CanCreateNativePixmap(BufferUsage usage) override;
 
  private:
   DriWindowDelegate* GetOrCreateWindowDelegate(gfx::AcceleratedWidget widget);
