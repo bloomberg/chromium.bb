@@ -631,7 +631,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 {
     ASSERT(worldID > 0);
 
-    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(worldID, extensionGroup);
+    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(m_isolate, worldID, extensionGroup);
     WindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
     if (!isolatedWorldWindowProxy->isContextInitialized())
         return;

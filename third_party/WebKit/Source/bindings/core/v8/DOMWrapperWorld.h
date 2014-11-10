@@ -57,11 +57,11 @@ enum WorldIdConstants {
 // This class represent a collection of DOM wrappers for a specific world.
 class DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 public:
-    static PassRefPtr<DOMWrapperWorld> create(int worldId = -1, int extensionGroup = -1);
+    static PassRefPtr<DOMWrapperWorld> create(v8::Isolate*, int worldId = -1, int extensionGroup = -1);
 
     static const int mainWorldExtensionGroup = 0;
     static const int privateScriptIsolatedWorldExtensionGroup = 1;
-    static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(int worldId, int extensionGroup);
+    static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(v8::Isolate*, int worldId, int extensionGroup);
     ~DOMWrapperWorld();
     void dispose();
 
@@ -173,7 +173,7 @@ public:
     }
 
 private:
-    DOMWrapperWorld(int worldId, int extensionGroup);
+    DOMWrapperWorld(v8::Isolate*, int worldId, int extensionGroup);
 
     static void weakCallbackForDOMObjectHolder(const v8::WeakCallbackData<v8::Value, DOMObjectHolderBase>&);
     void registerDOMObjectHolderInternal(PassOwnPtr<DOMObjectHolderBase>);

@@ -48,22 +48,22 @@ namespace blink {
 unsigned DOMWrapperWorld::isolatedWorldCount = 0;
 DOMWrapperWorld* DOMWrapperWorld::worldOfInitializingWindow = 0;
 
-PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(int worldId, int extensionGroup)
+PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate, int worldId, int extensionGroup)
 {
-    return adoptRef(new DOMWrapperWorld(worldId, extensionGroup));
+    return adoptRef(new DOMWrapperWorld(isolate, worldId, extensionGroup));
 }
 
-DOMWrapperWorld::DOMWrapperWorld(int worldId, int extensionGroup)
+DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate, int worldId, int extensionGroup)
     : m_worldId(worldId)
     , m_extensionGroup(extensionGroup)
-    , m_domDataStore(adoptPtr(new DOMDataStore(isMainWorld())))
+    , m_domDataStore(adoptPtr(new DOMDataStore(isolate, isMainWorld())))
 {
 }
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_REF(DOMWrapperWorld, cachedMainWorld, (DOMWrapperWorld::create(MainWorldId, mainWorldExtensionGroup)));
+    DEFINE_STATIC_REF(DOMWrapperWorld, cachedMainWorld, (DOMWrapperWorld::create(v8::Isolate::GetCurrent(), MainWorldId, mainWorldExtensionGroup)));
     return *cachedMainWorld;
 }
 
@@ -72,7 +72,7 @@ DOMWrapperWorld& DOMWrapperWorld::privateScriptIsolatedWorld()
     ASSERT(isMainThread());
     DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, cachedPrivateScriptIsolatedWorld, ());
     if (!cachedPrivateScriptIsolatedWorld) {
-        cachedPrivateScriptIsolatedWorld = DOMWrapperWorld::create(PrivateScriptIsolatedWorldId, privateScriptIsolatedWorldExtensionGroup);
+        cachedPrivateScriptIsolatedWorld = DOMWrapperWorld::create(v8::Isolate::GetCurrent(), PrivateScriptIsolatedWorldId, privateScriptIsolatedWorldExtensionGroup);
         isolatedWorldCount++;
     }
     return *cachedPrivateScriptIsolatedWorld;
@@ -129,7 +129,7 @@ static bool isIsolatedWorldId(int worldId)
 }
 #endif
 
-PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, int extensionGroup)
+PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(v8::Isolate* isolate, int worldId, int extensionGroup)
 {
     ASSERT(isIsolatedWorldId(worldId));
 
@@ -142,7 +142,7 @@ PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(int worldId, in
         return world.release();
     }
 
-    world = DOMWrapperWorld::create(worldId, extensionGroup);
+    world = DOMWrapperWorld::create(isolate, worldId, extensionGroup);
     result.storedValue->value = world.get();
     isolatedWorldCount++;
     return world.release();

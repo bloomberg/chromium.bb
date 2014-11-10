@@ -125,7 +125,7 @@ public:
         : m_page(DummyPageHolder::create(IntSize(1, 1)))
     {
         v8::HandleScope handleScope(isolate());
-        m_otherScriptState = ScriptStateForTesting::create(v8::Context::New(isolate()), DOMWrapperWorld::create(1));
+        m_otherScriptState = ScriptStateForTesting::create(v8::Context::New(isolate()), DOMWrapperWorld::create(isolate(), 1));
     }
 
     virtual ~ScriptPromisePropertyTestBase()

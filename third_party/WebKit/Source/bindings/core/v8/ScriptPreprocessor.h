@@ -36,11 +36,12 @@
 namespace blink {
 
 class ScriptSourceCode;
+class ScriptState;
 
 class ScriptPreprocessor {
     WTF_MAKE_NONCOPYABLE(ScriptPreprocessor);
 public:
-    ScriptPreprocessor(const ScriptSourceCode&, LocalFrame*);
+    ScriptPreprocessor(v8::Isolate*, const ScriptSourceCode&, LocalFrame*);
     String preprocessSourceCode(const String& sourceCode, const String& sourceName);
     String preprocessSourceCode(const String& sourceCode, const String& sourceName, const String& functionName);
     bool isPreprocessing() { return m_isPreprocessing; }

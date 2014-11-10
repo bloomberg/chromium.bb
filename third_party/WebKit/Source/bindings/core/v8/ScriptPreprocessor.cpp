@@ -44,10 +44,10 @@
 
 namespace blink {
 
-ScriptPreprocessor::ScriptPreprocessor(const ScriptSourceCode& preprocessorSourceCode, LocalFrame* frame)
+ScriptPreprocessor::ScriptPreprocessor(v8::Isolate* isolate, const ScriptSourceCode& preprocessorSourceCode, LocalFrame* frame)
     : m_isPreprocessing(false)
 {
-    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
+    RefPtr<DOMWrapperWorld> world = DOMWrapperWorld::ensureIsolatedWorld(isolate, ScriptPreprocessorIsolatedWorldId, DOMWrapperWorld::mainWorldExtensionGroup);
     m_scriptState = ScriptState::from(toV8Context(frame, *world));
 
     v8::HandleScope handleScope(m_scriptState->isolate());

@@ -112,7 +112,7 @@ WorkerScriptController::WorkerScriptController(WorkerGlobalScope& workerGlobalSc
 {
     m_isolate = V8PerIsolateData::initialize();
     V8Initializer::initializeWorker(m_isolate);
-    m_world = DOMWrapperWorld::create(WorkerWorldId);
+    m_world = DOMWrapperWorld::create(m_isolate, WorkerWorldId);
     m_interruptor = adoptPtr(new V8IsolateInterruptor(m_isolate));
     ThreadState::current()->addInterruptor(m_interruptor.get());
     ThreadState::current()->registerTraceDOMWrappers(m_isolate, V8GCController::traceDOMWrappers);

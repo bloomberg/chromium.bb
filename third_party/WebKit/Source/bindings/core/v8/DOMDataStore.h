@@ -46,9 +46,9 @@ class Node;
 class DOMDataStore {
     WTF_MAKE_NONCOPYABLE(DOMDataStore);
 public:
-    explicit DOMDataStore(bool isMainWorld)
+    DOMDataStore(v8::Isolate* isolate, bool isMainWorld)
         : m_isMainWorld(isMainWorld)
-        , m_wrapperMap(v8::Isolate::GetCurrent()) { }
+        , m_wrapperMap(isolate) { }
     ~DOMDataStore()
     {
         // We never actually destruct the main world's DOMDataStore.
