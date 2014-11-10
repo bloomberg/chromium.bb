@@ -148,6 +148,9 @@ static void weston_mode_switch_finish(struct weston_output *output,
 
 	pixman_region32_fini(&old_output_region);
 
+	if (!mode_changed && !scale_changed)
+		return;
+
 	/* notify clients of the changes */
 	wl_resource_for_each(resource, &output->resource_list) {
 		if (mode_changed) {
