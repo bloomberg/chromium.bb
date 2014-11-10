@@ -39,7 +39,6 @@
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebSocketHandleClient.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/Deque.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/OwnPtr.h"
@@ -75,7 +74,7 @@ public:
     // WebSocketChannel functions.
     virtual bool connect(const KURL&, const String& protocol) override;
     virtual void send(const String& message) override;
-    virtual void send(const ArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
+    virtual void send(const DOMArrayBuffer&, unsigned byteOffset, unsigned byteLength) override;
     virtual void send(PassRefPtr<BlobDataHandle>) override;
     virtual void send(PassOwnPtr<Vector<char> > data) override;
     // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
@@ -101,7 +100,7 @@ private:
     struct Message {
         explicit Message(const String&);
         explicit Message(PassRefPtr<BlobDataHandle>);
-        explicit Message(PassRefPtr<ArrayBuffer>);
+        explicit Message(PassRefPtr<DOMArrayBuffer>);
         explicit Message(PassOwnPtr<Vector<char> >);
         Message(unsigned short code, const String& reason);
 
@@ -109,7 +108,7 @@ private:
 
         CString text;
         RefPtr<BlobDataHandle> blobDataHandle;
-        RefPtr<ArrayBuffer> arrayBuffer;
+        RefPtr<DOMArrayBuffer> arrayBuffer;
         OwnPtr<Vector<char> > vectorData;
         unsigned short code;
         String reason;
@@ -141,7 +140,7 @@ private:
     virtual void didStartClosingHandshake(WebSocketHandle*) override;
 
     // Methods for BlobLoader.
-    void didFinishLoadingBlob(PassRefPtr<ArrayBuffer>);
+    void didFinishLoadingBlob(PassRefPtr<DOMArrayBuffer>);
     void didFailLoadingBlob(FileError::ErrorCode);
 
     // LifecycleObserver functions.

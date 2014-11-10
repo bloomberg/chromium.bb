@@ -31,6 +31,7 @@
 #include "config.h"
 #include "web/WebSocketImpl.h"
 
+#include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
 #include "core/frame/ConsoleTypes.h"
 #include "modules/websockets/DocumentWebSocketChannel.h"
@@ -40,7 +41,6 @@
 #include "public/platform/WebURL.h"
 #include "public/web/WebDocument.h"
 #include "web/WebSocketChannelClientProxy.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 
@@ -121,7 +121,8 @@ bool WebSocketImpl::sendArrayBuffer(const WebArrayBuffer& webArrayBuffer)
     if (m_isClosingOrClosed)
         return true;
 
-    m_private->send(*PassRefPtr<ArrayBuffer>(webArrayBuffer), 0, webArrayBuffer.byteLength());
+    RefPtr<DOMArrayBuffer> arrayBuffer = DOMArrayBuffer::create(webArrayBuffer);
+    m_private->send(*arrayBuffer, 0, arrayBuffer->byteLength());
     return true;
 }
 
