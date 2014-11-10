@@ -12,21 +12,48 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 
+using base::android::AttachCurrentThread;
+using base::android::ConvertJavaStringToUTF8;
+using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
+
 // static
 NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   return new NotificationUIManagerAndroid();
 }
 
 NotificationUIManagerAndroid::NotificationUIManagerAndroid() {
-  JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(
       Java_NotificationUIManager_create(
-          env,
+          AttachCurrentThread(),
           reinterpret_cast<intptr_t>(this),
           base::android::GetApplicationContext()));
 }
 
-NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {
+NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {}
+
+void NotificationUIManagerAndroid::OnNotificationClicked(
+    JNIEnv* env, jobject java_object, jstring notification_id) {
+  std::string id = ConvertJavaStringToUTF8(env, notification_id);
+
+  auto iter = profile_notifications_.find(id);
+  if (iter == profile_notifications_.end())
+    return;
+
+  const Notification& notification = iter->second->notification();
+  notification.delegate()->Click();
+}
+
+void NotificationUIManagerAndroid::OnNotificationClosed(
+    JNIEnv* env, jobject java_object, jstring notification_id) {
+  std::string id = ConvertJavaStringToUTF8(env, notification_id);
+
+  auto iter = profile_notifications_.find(id);
+  if (iter == profile_notifications_.end())
+    return;
+
+  const Notification& notification = iter->second->notification();
+  notification.delegate()->Close(true /** by_user **/);
 }
 
 void NotificationUIManagerAndroid::Add(const Notification& notification,
@@ -40,21 +67,25 @@ void NotificationUIManagerAndroid::Add(const Notification& notification,
   // Takes ownership of |profile_notification|.
   AddProfileNotification(profile_notification);
 
-  JNIEnv* env = base::android::AttachCurrentThread();
+  JNIEnv* env = AttachCurrentThread();
 
-  ScopedJavaLocalRef<jstring> title = base::android::ConvertUTF16ToJavaString(
+  ScopedJavaLocalRef<jstring> id = ConvertUTF8ToJavaString(
+      env, profile_notification->notification().id());
+  ScopedJavaLocalRef<jstring> title = ConvertUTF16ToJavaString(
       env, notification.title());
-  ScopedJavaLocalRef<jstring> body = base::android::ConvertUTF16ToJavaString(
+  ScopedJavaLocalRef<jstring> body = ConvertUTF16ToJavaString(
       env, notification.message());
 
   SkBitmap icon_bitmap = notification.icon().AsBitmap();
   ScopedJavaLocalRef<jobject> icon = gfx::ConvertToJavaBitmap(&icon_bitmap);
 
   int platform_id = Java_NotificationUIManager_displayNotification(
-      env, java_object_.obj(), title.obj(), body.obj(), icon.obj());
+      env, java_object_.obj(), id.obj(), title.obj(), body.obj(), icon.obj());
 
   std::string notification_id = profile_notification->notification().id();
   platform_notifications_[notification_id] = platform_id;
+
+  notification.delegate()->Display();
 }
 
 bool NotificationUIManagerAndroid::Update(const Notification& notification,
@@ -191,8 +222,7 @@ void NotificationUIManagerAndroid::PlatformCloseNotification(
   int platform_id = iterator->second;
   platform_notifications_.erase(id);
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_NotificationUIManager_closeNotification(env,
+  Java_NotificationUIManager_closeNotification(AttachCurrentThread(),
                                                java_object_.obj(),
                                                platform_id);
 }

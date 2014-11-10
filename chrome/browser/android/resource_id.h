@@ -17,6 +17,9 @@ DEFINE_RESOURCE_ID(0, 0)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOFILL_CC, R.drawable.infobar_autofill_cc)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_AUTOLOGIN,\
                    R.drawable.infobar_savepassword_autologin)
+// TODO(peter): Include the proper resources for the Notification infobar.
+DEFINE_RESOURCE_ID(IDR_INFOBAR_DESKTOP_NOTIFICATIONS,\
+                   R.drawable.infobar_geolocation)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_GEOLOCATION, R.drawable.infobar_geolocation)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_CAMERA, R.drawable.infobar_camera)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_MEDIA_STREAM_MIC, R.drawable.infobar_microphone)
