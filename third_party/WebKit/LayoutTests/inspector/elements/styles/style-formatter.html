@@ -9,7 +9,7 @@
 
 var test = function()
 {
-    var worker = Runtime.startWorker("script_formatter_worker");
+    var worker = new WorkerRuntime.Worker("script_formatter_worker");
 
     InspectorTest.runTestSuite([
         function testScriptFormatterWorker(next)
