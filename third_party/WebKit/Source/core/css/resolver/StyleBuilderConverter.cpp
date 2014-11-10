@@ -466,6 +466,26 @@ bool StyleBuilderConverter::convertGridTrackList(CSSValue* value, Vector<GridTra
     return true;
 }
 
+void StyleBuilderConverter::convertOrderedNamedGridLinesMapToNamedGridLinesMap(const OrderedNamedGridLines& orderedNamedGridLines, NamedGridLinesMap& namedGridLines)
+{
+    ASSERT(namedGridLines.size() == 0);
+
+    if (orderedNamedGridLines.size() == 0)
+        return;
+
+    for (auto& orderedNamedGridLine : orderedNamedGridLines) {
+        for (auto& lineName : orderedNamedGridLine.value) {
+            NamedGridLinesMap::AddResult startResult = namedGridLines.add(lineName, Vector<size_t>());
+            startResult.storedValue->value.append(orderedNamedGridLine.key);
+        }
+    }
+
+    for (auto& namedGridLine : namedGridLines) {
+        Vector<size_t> gridLineIndexes = namedGridLine.value;
+        std::sort(gridLineIndexes.begin(), gridLineIndexes.end());
+    }
+}
+
 void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(const NamedGridAreaMap& namedGridAreas, NamedGridLinesMap& namedGridLines, GridTrackSizingDirection direction)
 {
     for (const auto& namedGridAreaEntry : namedGridAreas) {
