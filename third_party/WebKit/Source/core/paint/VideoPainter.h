@@ -7,10 +7,8 @@
 
 namespace blink {
 
-class GraphicsContext;
 struct PaintInfo;
 class LayoutPoint;
-class LayoutRect;
 class RenderVideo;
 
 class VideoPainter {

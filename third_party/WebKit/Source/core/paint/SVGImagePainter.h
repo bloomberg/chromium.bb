@@ -7,10 +7,6 @@
 
 namespace blink {
 
-class AffineTransform;
-class FloatRect;
-class ImageBuffer;
-class IntSize;
 struct PaintInfo;
 class RenderSVGImage;
 

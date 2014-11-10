@@ -12,7 +12,6 @@
 namespace blink {
 
 class ClipRect;
-struct PaintInfo;
 class LayoutPoint;
 class RenderLayer;
 

@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class RenderLayer;
 class HitTestLocation;
 
 class ClipRect {

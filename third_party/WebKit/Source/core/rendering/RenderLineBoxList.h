@@ -34,6 +34,7 @@
 
 namespace blink {
 
+class InlineFlowBox;
 class RenderLineBoxList {
 public:
     RenderLineBoxList()

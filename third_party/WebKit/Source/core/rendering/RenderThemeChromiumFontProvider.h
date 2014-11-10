@@ -31,8 +31,6 @@
 
 namespace blink {
 
-class FontDescription;
-
 class RenderThemeChromiumFontProvider {
 public:
     static void systemFont(CSSValueID systemFontID, FontStyle&, FontWeight&, float& fontSize, AtomicString& fontFamily);

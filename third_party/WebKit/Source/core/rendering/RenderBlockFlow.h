@@ -45,8 +45,11 @@ namespace blink {
 
 class MarginInfo;
 class LineBreaker;
+class LineInfo;
 class LineWidth;
 class RenderMultiColumnFlowThread;
+class RenderRubyRun;
+template <class Run> class BidiRunList;
 
 class RenderBlockFlow : public RenderBlock {
 public:

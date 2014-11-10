@@ -31,7 +31,6 @@
 
 namespace blink {
 
-struct CompositionUnderline;
 class DocumentMarker;
 class GraphicsContext;
 

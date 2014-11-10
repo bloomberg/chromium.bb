@@ -14,7 +14,6 @@ namespace blink {
 
 class GraphicsContext;
 class RenderObject;
-class RenderLayer;
 
 class DisplayItem {
 public:

@@ -7,7 +7,6 @@
 
 namespace blink {
 
-class FloatingObject;
 class LayoutPoint;
 struct PaintInfo;
 class RenderBlockFlow;

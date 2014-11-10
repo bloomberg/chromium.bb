@@ -37,15 +37,12 @@
 
 namespace blink {
 
-class LineInfo;
 class LineLayoutState;
 struct PaintInfo;
 class RenderInline;
-class RenderRubyRun;
 class RenderText;
 class WordMeasurement;
 
-template <class Run> class BidiRunList;
 typedef WTF::ListHashSet<RenderBox*, 16> TrackedRendererListHashSet;
 typedef WTF::HashMap<const RenderBlock*, OwnPtr<TrackedRendererListHashSet> > TrackedDescendantsMap;
 typedef WTF::HashMap<const RenderBox*, OwnPtr<HashSet<RenderBlock*> > > TrackedContainerMap;

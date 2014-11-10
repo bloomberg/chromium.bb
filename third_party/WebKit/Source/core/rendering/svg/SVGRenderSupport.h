@@ -36,7 +36,6 @@ class GraphicsContextStateSaver;
 class PaintInvalidationState;
 class LayoutRect;
 struct PaintInfo;
-class Path;
 class RenderGeometryMap;
 class RenderLayerModelObject;
 class RenderObject;

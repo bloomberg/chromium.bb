@@ -9,7 +9,6 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutPoint;
-class RenderBox;
 class RenderReplica;
 
 class ReplicaPainter {

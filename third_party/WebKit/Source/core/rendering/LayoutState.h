@@ -36,7 +36,6 @@ namespace blink {
 class ForceHorriblySlowRectMapping;
 class RenderBox;
 class RenderObject;
-class RenderInline;
 class RenderView;
 
 class LayoutState {

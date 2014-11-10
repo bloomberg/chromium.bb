@@ -31,7 +31,6 @@
 namespace blink {
 
 class RenderObject;
-class FloatRect;
 struct PaintInfo;
 class RenderSVGResourceFilter;
 class RenderSVGResourceMasker;

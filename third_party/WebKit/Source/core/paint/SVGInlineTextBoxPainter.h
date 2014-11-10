@@ -16,7 +16,6 @@ class GraphicsContext;
 struct PaintInfo;
 class LayoutPoint;
 class RenderStyle;
-class RenderObject;
 class SVGInlineTextBox;
 struct SVGTextFragment;
 class TextRun;

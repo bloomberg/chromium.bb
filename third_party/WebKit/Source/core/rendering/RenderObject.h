@@ -57,7 +57,6 @@ class Document;
 class HitTestLocation;
 class HitTestResult;
 class InlineBox;
-class InlineFlowBox;
 class Position;
 class PositionWithAffinity;
 class PseudoStyleRequest;

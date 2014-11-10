@@ -10,7 +10,6 @@
 namespace blink {
 
 class GraphicsContext;
-struct PaintInfo;
 class IntRect;
 class LayoutPoint;
 class LayoutRect;

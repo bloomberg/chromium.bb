@@ -38,8 +38,6 @@ public:
     AffineTransform userspaceTransform;
 };
 
-class GraphicsContext;
-
 class RenderSVGResourceGradient : public RenderSVGResourcePaintServer {
 public:
     explicit RenderSVGResourceGradient(SVGGradientElement*);

@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class RenderLayer;
+
 enum ClipRectsCacheSlot {
     // Relative to the ancestor treated as the root (e.g. transformed layer). Used for hit testing.
     RootRelativeClipRects,

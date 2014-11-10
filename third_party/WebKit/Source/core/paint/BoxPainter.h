@@ -10,6 +10,7 @@
 
 namespace blink {
 
+class BackgroundImageGeometry;
 class LayoutPoint;
 struct PaintInfo;
 class RenderBox;
