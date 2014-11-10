@@ -62,6 +62,7 @@ typedef uint32_t SkFontID;
 
 namespace blink {
 
+class Font;
 class GraphicsContext;
 class HarfBuzzFace;
 
@@ -143,7 +144,7 @@ public:
     // The returned styles are all actual styles without FontRenderStyle::NoPreference.
     const FontRenderStyle& fontRenderStyle() const { return m_style; }
 #endif
-    void setupPaint(SkPaint*, GraphicsContext* = 0) const;
+    void setupPaint(SkPaint*, GraphicsContext* = 0, const Font* = 0) const;
 
 #if OS(WIN)
     int paintTextFlags() const { return m_paintTextFlags; }

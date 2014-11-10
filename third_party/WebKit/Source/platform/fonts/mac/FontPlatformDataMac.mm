@@ -30,6 +30,7 @@
 
 #include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/fonts/Font.h"
 #import "platform/fonts/shaping/HarfBuzzFace.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"
 
@@ -44,7 +45,7 @@ unsigned FontPlatformData::hash() const
     return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
 }
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
+void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* font) const
 {
     bool shouldSmoothFonts = true;
     bool shouldAntialias = true;
@@ -61,10 +62,14 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*) const
     paint->setTypeface(typeface());
     paint->setFakeBoldText(m_syntheticBold);
     paint->setTextSkewX(m_syntheticItalic ? -SK_Scalar1 / 4 : 0);
-    paint->setAutohinted(false); // freetype specific
     paint->setLCDRenderText(shouldSmoothFonts);
     paint->setSubpixelText(useSubpixelText);
-    paint->setHinting(SkPaint::kNo_Hinting);
+
+    // When rendering using CoreGraphics, disable hinting when webkit-font-smoothing:antialiased or
+    // text-rendering:geometricPrecision is used.
+    // See crbug.com/152304
+    if (font && (font->fontDescription().fontSmoothing() == Antialiased || font->fontDescription().textRendering() == GeometricPrecision))
+        paint->setHinting(SkPaint::kNo_Hinting);
 }
 
 // These CoreText Text Spacing feature selectors are not defined in CoreText.

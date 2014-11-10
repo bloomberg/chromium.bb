@@ -749,19 +749,19 @@ int Font::emphasisMarkHeight(const AtomicString& mark) const
     return markFontData->fontMetrics().height();
 }
 
-static SkPaint textFillPaint(GraphicsContext* gc, const SimpleFontData* font)
+SkPaint Font::textFillPaint(GraphicsContext* gc, const SimpleFontData* font) const
 {
     SkPaint paint = gc->fillPaint();
-    font->platformData().setupPaint(&paint, gc);
+    font->platformData().setupPaint(&paint, gc, this);
     gc->adjustTextRenderMode(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     return paint;
 }
 
-static SkPaint textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, bool isFilling)
+SkPaint Font::textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, bool isFilling) const
 {
     SkPaint paint = gc->strokePaint();
-    font->platformData().setupPaint(&paint, gc);
+    font->platformData().setupPaint(&paint, gc, this);
     gc->adjustTextRenderMode(&paint);
     paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
     if (isFilling) {
@@ -779,9 +779,9 @@ static SkPaint textStrokePaint(GraphicsContext* gc, const SimpleFontData* font, 
     return paint;
 }
 
-static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
+void Font::paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     const Glyph glyphs[], unsigned numGlyphs,
-    const SkPoint pos[], const FloatRect& textRect)
+    const SkPoint pos[], const FloatRect& textRect) const
 {
     TextDrawingModeFlags textMode = gc->textDrawingMode();
 
@@ -797,9 +797,9 @@ static void paintGlyphs(GraphicsContext* gc, const SimpleFontData* font,
     }
 }
 
-static void paintGlyphsHorizontal(GraphicsContext* gc, const SimpleFontData* font,
+void Font::paintGlyphsHorizontal(GraphicsContext* gc, const SimpleFontData* font,
     const Glyph glyphs[], unsigned numGlyphs,
-    const SkScalar xpos[], SkScalar constY, const FloatRect& textRect)
+    const SkScalar xpos[], SkScalar constY, const FloatRect& textRect) const
 {
     TextDrawingModeFlags textMode = gc->textDrawingMode();
 

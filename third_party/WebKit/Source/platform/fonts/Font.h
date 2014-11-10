@@ -141,6 +141,13 @@ private:
     float buildGlyphBuffer(const TextRunPaintInfo&, GlyphBuffer&, ForTextEmphasisOrNot = NotForTextEmphasis) const;
     PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds,
         bool couldUseLCD) const;
+
+    SkPaint textFillPaint(GraphicsContext*, const SimpleFontData*) const;
+    SkPaint textStrokePaint(GraphicsContext*, const SimpleFontData*, bool isFilling) const;
+    void paintGlyphs(GraphicsContext*, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
+        const SkPoint pos[], const FloatRect& textRect) const;
+    void paintGlyphsHorizontal(GraphicsContext*, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
+        const SkScalar xpos[], SkScalar constY, const FloatRect& textRect) const;
     void drawGlyphs(GraphicsContext*, const SimpleFontData*, const GlyphBuffer&, unsigned from, unsigned numGlyphs, const FloatPoint&, const FloatRect& textRect) const;
     void drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint& origin) const;
     float drawGlyphBuffer(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&) const;

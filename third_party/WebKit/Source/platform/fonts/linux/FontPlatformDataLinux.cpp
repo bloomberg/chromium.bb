@@ -72,8 +72,7 @@ void FontPlatformData::setSubpixelRendering(bool useSubpixelRendering)
     useSkiaSubpixelRendering = useSubpixelRendering;
 }
 
-void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context)
-    const
+void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context, const Font*) const
 {
     paint->setAntiAlias(m_style.useAntiAlias);
     paint->setHinting(static_cast<SkPaint::Hinting>(m_style.hintStyle));
