@@ -143,6 +143,7 @@ class DevToolsDataSource : public content::URLDataSource {
   // content::URLDataSource overrides.
   std::string GetMimeType(const std::string& path) const override;
   bool ShouldAddContentSecurityPolicy() const override;
+  bool ShouldDenyXFrameOptions() const override;
   bool ShouldServeMimeTypeAsContentTypeHeader() const override;
 
   // Serves bundled DevTools frontend from ResourceBundle.
@@ -217,6 +218,10 @@ std::string DevToolsDataSource::GetMimeType(const std::string& path) const {
 }
 
 bool DevToolsDataSource::ShouldAddContentSecurityPolicy() const {
+  return false;
+}
+
+bool DevToolsDataSource::ShouldDenyXFrameOptions() const {
   return false;
 }
 
