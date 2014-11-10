@@ -73,7 +73,6 @@ class NET_EXPORT CertVerifyProc
  private:
   friend class base::RefCountedThreadSafe<CertVerifyProc>;
   FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, DigiNotarCerts);
-  FRIEND_TEST_ALL_PREFIXES(CertVerifyProcTest, TestHasTooLongValidity);
 
   // Performs the actual verification using the desired underlying
   // cryptographic library.
@@ -99,18 +98,6 @@ class NET_EXPORT CertVerifyProc
       const std::string& common_name,
       const std::vector<std::string>& dns_names,
       const std::vector<std::string>& ip_addrs);
-
-  // The CA/Browser Forum's Baseline Requirements specify maximum validity
-  // periods (https://cabforum.org/Baseline_Requirements_V1.pdf):
-  //
-  // For certificates issued after 1 July 2012: 60 months.
-  // For certificates issued after 1 April 2015: 39 months.
-  //
-  // For certificates issued before the BRs took effect, there were no
-  // guidelines, but clamp them at a maximum of 10 year validity, with the
-  // requirement they expire within 7 years after the effective date of the BRs
-  // (i.e. by 1 July 2019).
-  static bool HasTooLongValidity(const X509Certificate& cert);
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifyProc);
 };

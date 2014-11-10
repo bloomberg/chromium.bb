@@ -615,36 +615,16 @@ TEST_F(CertVerifyProcTest, NameConstraintsFailure) {
             verify_result.cert_status & CERT_STATUS_NAME_CONSTRAINT_VIOLATION);
 }
 
-TEST_F(CertVerifyProcTest, TestHasTooLongValidity) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-
-  scoped_refptr<X509Certificate> twitter =
-      ImportCertFromFile(certs_dir, "twitter-chain.pem");
-  EXPECT_FALSE(CertVerifyProc::HasTooLongValidity(*twitter));
-
-  scoped_refptr<X509Certificate> eleven_years =
-      ImportCertFromFile(certs_dir, "11_year_validity.pem");
-  EXPECT_TRUE(CertVerifyProc::HasTooLongValidity(*eleven_years));
-
-  scoped_refptr<X509Certificate> forty_months =
-      ImportCertFromFile(certs_dir, "40_months_after_2015_04.pem");
-  EXPECT_TRUE(CertVerifyProc::HasTooLongValidity(*forty_months));
-
-  scoped_refptr<X509Certificate> sixty_one_months =
-      ImportCertFromFile(certs_dir, "61_months_after_2012_07.pem");
-  EXPECT_TRUE(CertVerifyProc::HasTooLongValidity(*sixty_one_months));
-}
-
 TEST_F(CertVerifyProcTest, TestKnownRoot) {
   if (!SupportsDetectingKnownRoots()) {
-    LOG(INFO) << "Skipping this test on this platform.";
+    LOG(INFO) << "Skipping this test in this platform.";
     return;
   }
 
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
-      certs_dir, "twitter-chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
+      certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(2U, certs.size());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(certs[1]->os_cert_handle());
@@ -655,18 +635,20 @@ TEST_F(CertVerifyProcTest, TestKnownRoot) {
 
   int flags = 0;
   CertVerifyResult verify_result;
-  // This will blow up, May 9th, 2016. Sorry! Please disable and file a bug
+  // This will blow up, May 24th, 2019. Sorry! Please disable and file a bug
   // against agl. See also PublicKeyHashes.
   int error = Verify(cert_chain.get(),
-                     "twitter.com",
+                     "satveda.com",
                      flags,
                      NULL,
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
 }
 
+// The certse.pem certificate has been revoked. crbug.com/259723.
 TEST_F(CertVerifyProcTest, PublicKeyHashes) {
   if (!SupportsReturningVerifiedChain()) {
     LOG(INFO) << "Skipping this test in this platform.";
@@ -675,8 +657,8 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
 
   base::FilePath certs_dir = GetTestCertsDirectory();
   CertificateList certs = CreateCertificateListFromFile(
-      certs_dir, "twitter-chain.pem", X509Certificate::FORMAT_AUTO);
-  ASSERT_EQ(3U, certs.size());
+      certs_dir, "satveda.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(2U, certs.size());
 
   X509Certificate::OSCertHandles intermediates;
   intermediates.push_back(certs[1]->os_cert_handle());
@@ -687,16 +669,17 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
   int flags = 0;
   CertVerifyResult verify_result;
 
-  // This will blow up, May 9th, 2016. Sorry! Please disable and file a bug
+  // This will blow up, May 24th, 2019. Sorry! Please disable and file a bug
   // against agl. See also TestKnownRoot.
   int error = Verify(cert_chain.get(),
-                     "twitter.com",
+                     "satveda.com",
                      flags,
                      NULL,
                      empty_cert_list_,
                      &verify_result);
   EXPECT_EQ(OK, error);
-  ASSERT_LE(3U, verify_result.public_key_hashes.size());
+  EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
+  ASSERT_LE(2U, verify_result.public_key_hashes.size());
 
   HashValueVector sha1_hashes;
   for (size_t i = 0; i < verify_result.public_key_hashes.size(); ++i) {
@@ -704,10 +687,10 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
       continue;
     sha1_hashes.push_back(verify_result.public_key_hashes[i]);
   }
-  ASSERT_LE(3u, sha1_hashes.size());
+  ASSERT_LE(2u, sha1_hashes.size());
 
-  for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(HexEncode(kTwitterSPKIs[i], base::kSHA1Length),
+  for (size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(HexEncode(kSatvedaSPKIs[i], base::kSHA1Length),
               HexEncode(sha1_hashes[i].data(), base::kSHA1Length));
   }
 
@@ -717,10 +700,10 @@ TEST_F(CertVerifyProcTest, PublicKeyHashes) {
       continue;
     sha256_hashes.push_back(verify_result.public_key_hashes[i]);
   }
-  ASSERT_LE(3u, sha256_hashes.size());
+  ASSERT_LE(2u, sha256_hashes.size());
 
-  for (size_t i = 0; i < 3; ++i) {
-    EXPECT_EQ(HexEncode(kTwitterSPKIsSHA256[i], crypto::kSHA256Length),
+  for (size_t i = 0; i < 2; ++i) {
+    EXPECT_EQ(HexEncode(kSatvedaSPKIsSHA256[i], crypto::kSHA256Length),
               HexEncode(sha256_hashes[i].data(), crypto::kSHA256Length));
   }
 }
@@ -827,7 +810,7 @@ TEST_F(CertVerifyProcTest, IntranetHostsRejected) {
   }
 
   CertificateList cert_list = CreateCertificateListFromFile(
-      GetTestCertsDirectory(), "reject_intranet_hosts.pem",
+      GetTestCertsDirectory(), "ok_cert.pem",
       X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1U, cert_list.size());
   scoped_refptr<X509Certificate> cert(cert_list[0]);
