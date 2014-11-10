@@ -7,7 +7,7 @@
 <script>
 // Until themes can clear the cache, force-reload the theme stylesheet.
 document.write('<link id="guestthemecss" rel="stylesheet" ' +
-               'href="chrome://theme/css/guest_new_tab_theme.css?' +
+               'href="chrome://theme/css/incognito_new_tab_theme.css?' +
                Date.now() + '">');
 </script>
 </head>
@@ -25,7 +25,7 @@ document.write('<link id="guestthemecss" rel="stylesheet" ' +
 <script>
 function themeChanged() {
   document.getElementById('guestthemecss').href =
-      'chrome://theme/css/guest_new_tab_theme.css?' + Date.now();
+      'chrome://theme/css/incognito_new_tab_theme.css?' + Date.now();
 }
 </script>
 </html>
