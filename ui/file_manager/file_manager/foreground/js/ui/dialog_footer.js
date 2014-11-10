@@ -168,3 +168,15 @@ DialogFooter.prototype.initFileTypeFilter = function(
     this.fileTypeSelector.hidden = false;
   }
 };
+
+DialogFooter.prototype.selectTargetNameInFilenameInput = function() {
+  var input = this.filenameInput;
+  input.focus();
+  var selectionEnd = input.value.lastIndexOf('.');
+  if (selectionEnd == -1) {
+    input.select();
+  } else {
+    input.selectionStart = 0;
+    input.selectionEnd = selectionEnd;
+  }
+};

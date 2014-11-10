@@ -109,13 +109,6 @@ function FileManager() {
   this.dialogType = DialogType.FULL_PAGE;
 
   /**
-   * List of acceptable file types for open dialog.
-   * @type {!Array.<Object>}
-   * @private
-   */
-  this.fileTypes_ = [];
-
-  /**
    * Startup parameters for this application.
    * @type {LaunchParam}
    * @private
@@ -709,7 +702,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.initDataTransferOperations_();
 
-    this.updateFileTypeFilter_();
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
@@ -1025,7 +1017,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Initialize the member variables that depend this.launchParams_.
     this.dialogType = this.launchParams_.type;
     this.startupPrefName_ = 'file-manager-' + this.dialogType;
-    this.fileTypes_ = this.launchParams_.typeList || [];
 
     callback();
   };
@@ -1244,11 +1235,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.actionMenuItem_.addEventListener('activate',
         this.onActionMenuItemActivated_.bind(this));
 
-    this.ui_.dialogFooter.initFileTypeFilter(
-        this.fileTypes_, this.launchParams_.includeAllFiles);
-    this.ui_.dialogFooter.fileTypeSelector.addEventListener(
-        'change', this.updateFileTypeFilter_.bind(this));
-
     util.addIsFocusedMethod();
 
     // Populate the static localized strings.
@@ -1386,8 +1372,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.ui_.dialogFooter,
         this.directoryModel_,
         this.metadataCache_,
+        this.fileFilter_,
         this.namingController_,
-        this.launchParams_.shouldReturnLocalPath);
+        this.launchParams_);
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
@@ -1559,37 +1546,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // Preload a thumbnail if the new copied entry an image.
       if (FileType.isImage(entries[i]))
         preloadThumbnail(entries[i]);
-    }
-  };
-
-  /**
-   * Filters file according to the selected file type.
-   * @private
-   */
-  FileManager.prototype.updateFileTypeFilter_ = function() {
-    this.fileFilter_.removeFilter('fileType');
-    var selectedIndex = this.ui_.dialogFooter.selectedFilterIndex;
-    if (selectedIndex > 0) { // Specific filter selected.
-      var regexp = new RegExp('\\.(' +
-          this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
-      var filter = function(entry) {
-        return entry.isDirectory || regexp.test(entry.name);
-      };
-      this.fileFilter_.addFilter('fileType', filter);
-
-      // In save dialog, update the destination name extension.
-      if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
-        var current = this.ui_.dialogFooter.filenameInput.value;
-        var newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
-        if (newExt && !regexp.test(current)) {
-          var i = current.lastIndexOf('.');
-          if (i >= 0) {
-            this.ui_.dialogFooter.filenameInput.value =
-                current.substr(0, i) + '.' + newExt;
-            this.selectTargetNameInFilenameInput_();
-          }
-        }
-      }
     }
   };
 
@@ -1856,7 +1812,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
     } else if (this.dialogType === DialogType.SELECT_SAVEAS_FILE) {
       this.ui_.dialogFooter.filenameInput.value = opt_suggestedName || '';
-      this.selectTargetNameInFilenameInput_();
+      this.ui_.dialogFooter.selectTargetNameInFilenameInput();
     }
   };
 
@@ -2160,21 +2116,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     setTimeout(function() {
       listItem.classList.remove('blink');
     }, 100);
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.selectTargetNameInFilenameInput_ = function() {
-    var input = this.ui_.dialogFooter.filenameInput;
-    input.focus();
-    var selectionEnd = input.value.lastIndexOf('.');
-    if (selectionEnd == -1) {
-      input.select();
-    } else {
-      input.selectionStart = 0;
-      input.selectionEnd = selectionEnd;
-    }
   };
 
   /**

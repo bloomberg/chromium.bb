@@ -10,8 +10,9 @@
  * @param {!DialogFooter} dialogFooter Dialog footer.
  * @param {!DirectoryModel} directoryModel Directory model.
  * @param {!MetadataCache} metadataCache Metadata cache.
+ * @param {!FileFilter} fileFilter File filter model.
  * @param {!NamingController} namingController Naming controller.
- * @param {boolean} shouldReturnLocalPath Whether the dialog should return local
+ * @param {!LaunchParam} launchParam Whether the dialog should return local
  *     path or not.
  * @constructor
  * @struct
@@ -21,8 +22,9 @@ function DialogActionController(
     dialogFooter,
     directoryModel,
     metadataCache,
+    fileFilter,
     namingController,
-    shouldReturnLocalPath) {
+    launchParam) {
   /**
    * @type {!DialogType}
    * @const
@@ -52,6 +54,13 @@ function DialogActionController(
   this.metadataCache_ = metadataCache;
 
   /**
+   * @type {!FileFilter}
+   * @const
+   * @private
+   */
+  this.fileFilter_ = fileFilter;
+
+  /**
    * @type {!NamingController}
    * @const
    * @private
@@ -59,11 +68,18 @@ function DialogActionController(
   this.namingController_ = namingController;
 
   /**
+   * List of acceptable file types for open dialog.
+   * @type {!Array.<Object>}
+   * @private
+   */
+  this.fileTypes_ = launchParam.typeList || [];
+
+  /**
    * @type {boolean}
    * @const
    * @private
    */
-  this.shouldReturnLocalPath_ = shouldReturnLocalPath;
+  this.shouldReturnLocalPath_ = launchParam.shouldReturnLocalPath;
 
   /**
    * Bound function for onCancel_.
@@ -76,6 +92,11 @@ function DialogActionController(
       'click', this.processOKAction_.bind(this));
   dialogFooter.cancelButton.addEventListener(
       'click', this.onCancelBound_);
+  dialogFooter.fileTypeSelector.addEventListener(
+      'change', this.onFileTypeFilterChanged_.bind(this));
+  dialogFooter.initFileTypeFilter(
+      this.fileTypes_, launchParam.includeAllFiles);
+  this.onFileTypeFilterChanged_();
 }
 
 /**
@@ -317,4 +338,35 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   util.URLsToEntries(selection.urls, function(entries) {
     this.metadataCache_.get(entries, 'external', onProperties);
   }.bind(this));
+};
+
+/**
+ * Filters file according to the selected file type.
+ * @private
+ */
+DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
+  this.fileFilter_.removeFilter('fileType');
+  var selectedIndex = this.dialogFooter_.selectedFilterIndex;
+  if (selectedIndex > 0) { // Specific filter selected.
+    var regexp = new RegExp('\\.(' +
+        this.fileTypes_[selectedIndex - 1].extensions.join('|') + ')$', 'i');
+    var filter = function(entry) {
+      return entry.isDirectory || regexp.test(entry.name);
+    };
+    this.fileFilter_.addFilter('fileType', filter);
+
+    // In save dialog, update the destination name extension.
+    if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
+      var current = this.dialogFooter_.filenameInput.value;
+      var newExt = this.fileTypes_[selectedIndex - 1].extensions[0];
+      if (newExt && !regexp.test(current)) {
+        var i = current.lastIndexOf('.');
+        if (i >= 0) {
+          this.dialogFooter_.filenameInput.value =
+              current.substr(0, i) + '.' + newExt;
+          this.dialogFooter_.selectTargetNameInFilenameInput();
+        }
+      }
+    }
+  }
 };
