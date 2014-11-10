@@ -171,6 +171,21 @@ FileTableColumnModel.prototype.setWidthAndKeepTotal = function(
 };
 
 /**
+ * Obtains a column by the specified horizontal position.
+ * @param {number} x Horizontal position.
+ * @return {Object} The object that contains column index, column width, and
+ *     hitPosition where the horizontal position is hit in the column.
+ */
+FileTableColumnModel.prototype.getHitColumn = function(x) {
+  for (var i = 0; x >= this.columns_[i].width; i++) {
+    x -= this.columns_[i].width;
+  }
+  if (i >= this.columns_.length)
+    return null;
+  return {index: i, hitPosition: x, width: this.columns_[i].width};
+};
+
+/**
  * Custom splitter that resizes column with retaining the sum of all the column
  * width.
  */
@@ -254,58 +269,8 @@ FileTable.decorate = function(self, metadataCache, volumeManager, fullPage) {
   columns[3].renderFunction = self.renderDate_.bind(self);
   columns[3].defaultOrder = 'desc';
 
-  var columnModel = Object.create(FileTableColumnModel.prototype, {
-    /**
-     * The number of columns.
-     * @type {number}
-     */
-    size: {
-      /**
-       * @this {FileTableColumnModel}
-       * @return {number} Number of columns.
-       */
-      get: function() {
-        return this.totalSize;
-      }
-    },
+  var columnModel = new FileTableColumnModel(columns);
 
-    /**
-     * The number of columns.
-     * @type {number}
-     */
-    totalSize: {
-      /**
-       * @this {FileTableColumnModel}
-       * @return {number} Number of columns.
-       */
-      get: function() {
-        return columns.length;
-      }
-    },
-
-    /**
-     * Obtains a column by the specified horizontal position.
-     */
-    getHitColumn: {
-      /**
-       * @this {FileTableColumnModel}
-       * @param {number} x Horizontal position.
-       * @return {Object} The object that contains column index, column width,
-       *     and hitPosition where the horizontal position is hit in the column.
-       */
-      value: function(x) {
-        for (var i = 0; x >= this.columns_[i].width; i++) {
-          x -= this.columns_[i].width;
-        }
-        if (i >= this.columns_.length)
-          return null;
-        return {index: i, hitPosition: x, width: this.columns_[i].width};
-      }
-    }
-  });
-
-  FileTableColumnModel.call(
-      /** @type {FileTableColumnModel} */ (columnModel), columns);
   self.columnModel = columnModel;
   self.setDateTimeFormat(true);
   self.setRenderFunction(self.renderTableRow_.bind(self,

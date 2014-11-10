@@ -1352,7 +1352,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.viewOptions_.sortDirection || 'desc');
     if (this.viewOptions_.columns) {
       var cm = this.ui_.listContainer.table.columnModel;
-      for (var i = 0; i < cm.totalSize; i++) {
+      for (var i = 0; i < cm.size; i++) {
         if (this.viewOptions_.columns[i] > 0)
           cm.setWidth(i, this.viewOptions_.columns[i]);
       }
@@ -1455,7 +1455,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       listType: this.ui_.listContainer.currentListType
     };
     var cm = this.ui_.listContainer.table.columnModel;
-    for (var i = 0; i < cm.totalSize; i++) {
+    for (var i = 0; i < cm.size; i++) {
       prefs.columns.push(cm.getWidth(i));
     }
     // Save the global default.
