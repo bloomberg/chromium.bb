@@ -29,7 +29,7 @@ class TracedValue;
 namespace cc {
 
 class PictureLayerTiling;
-class PicturePileImpl;
+class RasterSource;
 
 class CC_EXPORT PictureLayerTilingClient {
  public:
@@ -144,8 +144,8 @@ class CC_EXPORT PictureLayerTiling {
       const gfx::Size& layer_bounds,
       PictureLayerTilingClient* client);
   gfx::Size layer_bounds() const { return layer_bounds_; }
-  void UpdateTilesToCurrentPile(const Region& layer_invalidation,
-                                const gfx::Size& new_layer_bounds);
+  void UpdateTilesToCurrentRasterSource(const Region& layer_invalidation,
+                                        const gfx::Size& new_layer_bounds);
   void CreateMissingTilesInLiveTilesRect();
   void RemoveTilesInRegion(const Region& layer_region);
 

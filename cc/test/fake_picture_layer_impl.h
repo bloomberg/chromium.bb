@@ -17,20 +17,23 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id));
   }
 
-  // Create layer from a pile that covers the entire layer.
+  // Create layer from a raster_source that covers the entire layer.
   static scoped_ptr<FakePictureLayerImpl> CreateWithPile(
-      LayerTreeImpl* tree_impl, int id, scoped_refptr<PicturePileImpl> pile) {
-    return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id, pile));
+      LayerTreeImpl* tree_impl,
+      int id,
+      scoped_refptr<RasterSource> raster_source) {
+    return make_scoped_ptr(
+        new FakePictureLayerImpl(tree_impl, id, raster_source));
   }
 
-  // Create layer from a pile that only covers part of the layer.
+  // Create layer from a raster_source that only covers part of the layer.
   static scoped_ptr<FakePictureLayerImpl> CreateWithPartialPile(
       LayerTreeImpl* tree_impl,
       int id,
-      scoped_refptr<PicturePileImpl> pile,
+      scoped_refptr<RasterSource> raster_source,
       const gfx::Size& layer_bounds) {
     return make_scoped_ptr(
-        new FakePictureLayerImpl(tree_impl, id, pile, layer_bounds));
+        new FakePictureLayerImpl(tree_impl, id, raster_source, layer_bounds));
   }
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -58,7 +61,7 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   using PictureLayerImpl::GetViewportForTilePriorityInContentSpace;
   using PictureLayerImpl::SanityCheckTilingState;
   using PictureLayerImpl::GetRecycledTwinLayer;
-  using PictureLayerImpl::UpdatePile;
+  using PictureLayerImpl::UpdateRasterSource;
 
   using PictureLayerImpl::UpdateIdealScales;
   using PictureLayerImpl::MaximumTilingContentsScale;
@@ -82,8 +85,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   size_t num_tilings() const { return tilings_->num_tilings(); }
 
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
-  PicturePileImpl* pile() { return pile_.get(); }
-  void SetPile(scoped_refptr<PicturePileImpl> pile);
+  RasterSource* raster_source() { return raster_source_.get(); }
+  void SetRasterSource(scoped_refptr<RasterSource> raster_source);
   size_t append_quads_count() { return append_quads_count_; }
 
   const Region& invalidation() const { return invalidation_; }
@@ -113,13 +116,12 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   }
 
  protected:
-  FakePictureLayerImpl(
-      LayerTreeImpl* tree_impl,
-      int id,
-      scoped_refptr<PicturePileImpl> pile);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl,
                        int id,
-                       scoped_refptr<PicturePileImpl> pile,
+                       scoped_refptr<RasterSource> raster_source);
+  FakePictureLayerImpl(LayerTreeImpl* tree_impl,
+                       int id,
+                       scoped_refptr<RasterSource> raster_source,
                        const gfx::Size& layer_bounds);
   FakePictureLayerImpl(LayerTreeImpl* tree_impl, int id);
 

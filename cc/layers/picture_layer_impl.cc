@@ -71,7 +71,7 @@ PictureLayerImpl::Pair::~Pair() {
 PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
     : LayerImpl(tree_impl, id),
       twin_layer_(nullptr),
-      pile_(PicturePileImpl::Create()),
+      raster_source_(PicturePileImpl::Create()),
       ideal_page_scale_(0.f),
       ideal_device_scale_(0.f),
       ideal_source_scale_(0.f),
@@ -122,9 +122,9 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   twin_layer_ = layer_impl;
   layer_impl->twin_layer_ = this;
 
-  layer_impl->UpdatePile(pile_);
+  layer_impl->UpdateRasterSource(raster_source_);
 
-  DCHECK(!pile_->is_solid_color() || !tilings_->num_tilings());
+  DCHECK(!raster_source_->IsSolidColor() || !tilings_->num_tilings());
   // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
   layer_impl->tilings_->SetClient(layer_impl);
@@ -132,7 +132,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
     tilings_->SetClient(this);
 
   // Ensure that the recycle tree doesn't have any unshared tiles.
-  if (tilings_ && pile_->is_solid_color())
+  if (tilings_ && raster_source_->IsSolidColor())
     tilings_->RemoveAllTilings();
 
   // Remove invalidated tiles from what will become a recycle tree.
@@ -158,9 +158,10 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   needs_push_properties_ = true;
 }
 
-void PictureLayerImpl::UpdatePile(scoped_refptr<PicturePileImpl> pile) {
+void PictureLayerImpl::UpdateRasterSource(
+    scoped_refptr<RasterSource> raster_source) {
   bool could_have_tilings = CanHaveTilings();
-  pile_.swap(pile);
+  raster_source_.swap(raster_source);
 
   // Need to call UpdateTiles again if CanHaveTilings changed.
   if (could_have_tilings != CanHaveTilings()) {
@@ -174,26 +175,24 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   DCHECK(!needs_post_commit_initialization_);
   // The bounds and the pile size may differ if the pile wasn't updated (ie.
   // PictureLayer::Update didn't happen). In that case the pile will be empty.
-  DCHECK_IMPLIES(!pile_->tiling_size().IsEmpty(),
-                 bounds() == pile_->tiling_size())
+  DCHECK_IMPLIES(!raster_source_->GetSize().IsEmpty(),
+                 bounds() == raster_source_->GetSize())
       << " bounds " << bounds().ToString() << " pile "
-      << pile_->tiling_size().ToString();
+      << raster_source_->GetSize().ToString();
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
 
-  if (pile_->is_solid_color()) {
+  if (raster_source_->IsSolidColor()) {
     PopulateSharedQuadState(shared_quad_state);
 
     AppendDebugBorderQuad(
         render_pass, bounds(), shared_quad_state, append_quads_data);
 
-    SolidColorLayerImpl::AppendSolidQuads(render_pass,
-                                          occlusion_in_content_space,
-                                          shared_quad_state,
-                                          visible_content_rect(),
-                                          pile_->solid_color(),
-                                          append_quads_data);
+    SolidColorLayerImpl::AppendSolidQuads(
+        render_pass, occlusion_in_content_space, shared_quad_state,
+        visible_content_rect(), raster_source_->GetSolidColor(),
+        append_quads_data);
     return;
   }
 
@@ -238,16 +237,9 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
 
     PictureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-    quad->SetNew(shared_quad_state,
-                 geometry_rect,
-                 opaque_rect,
-                 visible_geometry_rect,
-                 texture_rect,
-                 texture_size,
-                 RGBA_8888,
-                 quad_content_rect,
-                 max_contents_scale,
-                 pile_);
+    quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
+                 visible_geometry_rect, texture_rect, texture_size, RGBA_8888,
+                 quad_content_rect, max_contents_scale, raster_source_);
     return;
   }
 
@@ -379,16 +371,10 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
               resource_provider->memory_efficient_texture_format();
           PictureDrawQuad* quad =
               render_pass->CreateAndAppendDrawQuad<PictureDrawQuad>();
-          quad->SetNew(shared_quad_state,
-                       geometry_rect,
-                       opaque_rect,
-                       visible_geometry_rect,
-                       texture_rect,
-                       iter.texture_size(),
-                       format,
-                       iter->content_rect(),
-                       iter->contents_scale(),
-                       pile_);
+          quad->SetNew(shared_quad_state, geometry_rect, opaque_rect,
+                       visible_geometry_rect, texture_rect, iter.texture_size(),
+                       format, iter->content_rect(), iter->contents_scale(),
+                       raster_source_);
           has_draw_quad = true;
           break;
         }
@@ -503,7 +489,7 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
       draw_properties().screen_space_transform_is_animating;
 
   if (draw_transform_is_animating())
-    pile_->set_likely_to_be_used_for_transform_animation();
+    raster_source_->SetShouldAttemptToUseDistanceFieldText();
 
   should_update_tile_priorities_ = true;
 
@@ -512,7 +498,7 @@ void PictureLayerImpl::UpdateTiles(const Occlusion& occlusion_in_content_space,
 
 void PictureLayerImpl::UpdateTilePriorities(
     const Occlusion& occlusion_in_content_space) {
-  DCHECK(!pile_->is_solid_color() || !tilings_->num_tilings());
+  DCHECK(!raster_source_->IsSolidColor() || !tilings_->num_tilings());
   double current_frame_time_in_seconds =
       (layer_tree_impl()->CurrentBeginFrameArgs().frame_time -
        base::TimeTicks()).InSecondsF();
@@ -604,7 +590,7 @@ void PictureLayerImpl::DidBecomeActive() {
 }
 
 void PictureLayerImpl::DidBeginTracing() {
-  pile_->DidBeginTracing();
+  raster_source_->DidBeginTracing();
 }
 
 void PictureLayerImpl::ReleaseResources() {
@@ -620,13 +606,13 @@ void PictureLayerImpl::ReleaseResources() {
 }
 
 skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
-  return pile_->GetFlattenedPicture();
+  return raster_source_->GetFlattenedPicture();
 }
 
 scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
                                                const gfx::Rect& content_rect) {
-  DCHECK(!pile_->is_solid_color());
-  if (!pile_->CoversRect(content_rect, tiling->contents_scale()))
+  DCHECK(!raster_source_->IsSolidColor());
+  if (!raster_source_->CoversRect(content_rect, tiling->contents_scale()))
     return scoped_refptr<Tile>();
 
   int flags = 0;
@@ -637,21 +623,17 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
   // memory savings that we can get. Note that we don't handle solid color
   // masks, so we shouldn't bother analyzing those.
   // Bugs: crbug.com/397198, crbug.com/396908
-  if (!pile_->is_mask())
+  if (!raster_source_->IsMask())
     flags = Tile::USE_PICTURE_ANALYSIS;
 
   return layer_tree_impl()->tile_manager()->CreateTile(
-      pile_.get(),
-      content_rect.size(),
-      content_rect,
-      tiling->contents_scale(),
-      id(),
-      layer_tree_impl()->source_frame_number(),
+      raster_source_.get(), content_rect.size(), content_rect,
+      tiling->contents_scale(), id(), layer_tree_impl()->source_frame_number(),
       flags);
 }
 
 RasterSource* PictureLayerImpl::GetRasterSource() {
-  return pile_.get();
+  return raster_source_.get();
 }
 
 const Region* PictureLayerImpl::GetPendingInvalidation() {
@@ -711,7 +693,7 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   int max_texture_size =
       layer_tree_impl()->resource_provider()->max_texture_size();
 
-  if (pile_->is_mask()) {
+  if (raster_source_->IsMask()) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
     // don't make any tiles at all. Returning an empty size signals this.
     if (content_bounds.width() > max_texture_size ||
@@ -800,10 +782,9 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 
   bool synced_high_res_tiling = false;
   if (CanHaveTilings()) {
-    synced_high_res_tiling = tilings_->SyncTilings(*other->tilings_,
-                                                   pile_->tiling_size(),
-                                                   invalidation_,
-                                                   MinimumContentsScale());
+    synced_high_res_tiling =
+        tilings_->SyncTilings(*other->tilings_, raster_source_->GetSize(),
+                              invalidation_, MinimumContentsScale());
   } else {
     RemoveAllTilings();
   }
@@ -827,7 +808,7 @@ void PictureLayerImpl::SyncTiling(
     return;
   if (!CanHaveTilingWithScale(tiling->contents_scale()))
     return;
-  tilings_->AddTiling(tiling->contents_scale(), pile_->tiling_size());
+  tilings_->AddTiling(tiling->contents_scale(), raster_source_->GetSize());
 
   // If this tree needs update draw properties, then the tiling will
   // get updated prior to drawing or activation.  If this tree does not
@@ -846,7 +827,7 @@ void PictureLayerImpl::SyncTiling(
 void PictureLayerImpl::GetContentsResourceId(
     ResourceProvider::ResourceId* resource_id,
     gfx::Size* resource_size) const {
-  DCHECK_EQ(bounds().ToString(), pile_->tiling_size().ToString());
+  DCHECK_EQ(bounds().ToString(), raster_source_->GetSize().ToString());
   gfx::Rect content_rect(bounds());
   PictureLayerTilingSet::CoverageIterator iter(
       tilings_.get(), 1.f, content_rect, ideal_contents_scale_);
@@ -896,9 +877,9 @@ PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
       "contents_scale: " << contents_scale;
 
   PictureLayerTiling* tiling =
-      tilings_->AddTiling(contents_scale, pile_->tiling_size());
+      tilings_->AddTiling(contents_scale, raster_source_->GetSize());
 
-  DCHECK(pile_->HasRecordings());
+  DCHECK(raster_source_->HasRecordings());
 
   if (PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer())
     twin_layer->SyncTiling(tiling);
@@ -1097,7 +1078,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
     float maximum_scale = draw_properties().maximum_animation_contents_scale;
     if (maximum_scale) {
       gfx::Size bounds_at_maximum_scale = gfx::ToCeiledSize(
-          gfx::ScaleSize(pile_->tiling_size(), maximum_scale));
+          gfx::ScaleSize(raster_source_->GetSize(), maximum_scale));
       if (bounds_at_maximum_scale.GetArea() <=
           layer_tree_impl()->device_viewport_size().GetArea())
         can_raster_at_maximum_scale = true;
@@ -1117,7 +1098,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
   // If this layer would create zero or one tiles at this content scale,
   // don't create a low res tiling.
   gfx::Size raster_bounds = gfx::ToCeiledSize(
-      gfx::ScaleSize(pile_->tiling_size(), raster_contents_scale_));
+      gfx::ScaleSize(raster_source_->GetSize(), raster_contents_scale_));
   gfx::Size tile_size = CalculateTileSize(raster_bounds);
   bool tile_covers_bounds = tile_size.width() >= raster_bounds.width() &&
                             tile_size.height() >= raster_bounds.height();
@@ -1224,8 +1205,8 @@ float PictureLayerImpl::MinimumContentsScale() const {
   // then it will end up having less than one pixel of content in that
   // dimension.  Bump the minimum contents scale up in this case to prevent
   // this from happening.
-  int min_dimension =
-      std::min(pile_->tiling_size().width(), pile_->tiling_size().height());
+  int min_dimension = std::min(raster_source_->GetSize().width(),
+                               raster_source_->GetSize().height());
   if (!min_dimension)
     return setting_min;
 
@@ -1246,11 +1227,11 @@ void PictureLayerImpl::ResetRasterScale() {
 }
 
 bool PictureLayerImpl::CanHaveTilings() const {
-  if (pile_->is_solid_color())
+  if (raster_source_->IsSolidColor())
     return false;
   if (!DrawsContent())
     return false;
-  if (!pile_->HasRecordings())
+  if (!raster_source_->HasRecordings())
     return false;
   return true;
 }
@@ -1350,7 +1331,7 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
   state->EndArray();
 
   state->BeginArray("pictures");
-  pile_->AsValueInto(state);
+  raster_source_->AsValueInto(state);
   state->EndArray();
 
   state->BeginArray("invalidation");
@@ -1359,12 +1340,9 @@ void PictureLayerImpl::AsValueInto(base::debug::TracedValue* state) const {
 
   state->BeginArray("coverage_tiles");
   for (PictureLayerTilingSet::CoverageIterator iter(
-           tilings_.get(),
-           1.f,
-           gfx::Rect(pile_->tiling_size()),
+           tilings_.get(), 1.f, gfx::Rect(raster_source_->GetSize()),
            ideal_contents_scale_);
-       iter;
-       ++iter) {
+       iter; ++iter) {
     state->BeginDictionary();
 
     state->BeginArray("geometry_rect");

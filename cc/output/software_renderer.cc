@@ -350,8 +350,8 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   TRACE_EVENT0("cc",
                "SoftwareRenderer::DrawPictureQuad");
 
-  quad->picture_pile->RasterDirect(current_canvas_, quad->content_rect,
-                                   quad->contents_scale);
+  quad->raster_source->PlaybackToSharedCanvas(
+      current_canvas_, quad->content_rect, quad->contents_scale);
 
   current_canvas_->setDrawFilter(NULL);
 }

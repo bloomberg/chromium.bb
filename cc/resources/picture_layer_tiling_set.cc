@@ -69,8 +69,8 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
     if (PictureLayerTiling* this_tiling = TilingAtScale(contents_scale)) {
       this_tiling->set_resolution(other.tilings_[i]->resolution());
 
-      this_tiling->UpdateTilesToCurrentPile(layer_invalidation,
-                                            new_layer_bounds);
+      this_tiling->UpdateTilesToCurrentRasterSource(layer_invalidation,
+                                                    new_layer_bounds);
       this_tiling->CreateMissingTilesInLiveTilesRect();
       if (this_tiling->resolution() == HIGH_RESOLUTION)
         have_high_res_tiling = true;

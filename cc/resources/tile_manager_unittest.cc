@@ -109,14 +109,14 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     if (old_pending_root) {
       pending_layer.reset(
           static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
-      pending_layer->SetPile(pile);
+      pending_layer->SetRasterSource(pile);
     } else {
       pending_layer =
           FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
       pending_layer->SetDrawsContent(true);
     }
     // The bounds() just mirror the pile size.
-    pending_layer->SetBounds(pending_layer->pile()->tiling_size());
+    pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -193,9 +193,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
-  pending_layer_->HighResTiling()->UpdateTilesToCurrentPile(
+  pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
       invalidation, gfx::Size(1000, 1000));
-  pending_layer_->LowResTiling()->UpdateTilesToCurrentPile(
+  pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
       invalidation, gfx::Size(1000, 1000));
 
   active_layer_->ResetAllTilesPriorities();
@@ -441,9 +441,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
-  pending_layer_->HighResTiling()->UpdateTilesToCurrentPile(
+  pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
       invalidation, gfx::Size(1000, 1000));
-  pending_layer_->LowResTiling()->UpdateTilesToCurrentPile(
+  pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
       invalidation, gfx::Size(1000, 1000));
 
   active_layer_->ResetAllTilesPriorities();

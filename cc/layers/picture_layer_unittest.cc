@@ -66,8 +66,8 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
     layer->PushPropertiesTo(layer_impl.get());
     EXPECT_FALSE(layer_impl->CanHaveTilings());
     EXPECT_TRUE(layer_impl->bounds() == gfx::Size(0, 0));
-    EXPECT_EQ(gfx::Size(), layer_impl->pile()->tiling_size());
-    EXPECT_FALSE(layer_impl->pile()->HasRecordings());
+    EXPECT_EQ(gfx::Size(), layer_impl->raster_source()->GetSize());
+    EXPECT_FALSE(layer_impl->raster_source()->HasRecordings());
   }
 }
 

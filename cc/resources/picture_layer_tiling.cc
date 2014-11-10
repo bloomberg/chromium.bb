@@ -167,7 +167,7 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
   VerifyLiveTilesRect();
 }
 
-void PictureLayerTiling::UpdateTilesToCurrentPile(
+void PictureLayerTiling::UpdateTilesToCurrentRasterSource(
     const Region& layer_invalidation,
     const gfx::Size& new_layer_bounds) {
   DCHECK(!new_layer_bounds.IsEmpty());

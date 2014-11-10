@@ -35,6 +35,9 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   void PlaybackToCanvas(SkCanvas* canvas,
                         const gfx::Rect& canvas_rect,
                         float contents_scale) const override;
+  void PlaybackToSharedCanvas(SkCanvas* canvas,
+                              const gfx::Rect& canvas_rect,
+                              float contents_scale) const override;
   void PerformSolidColorAnalysis(
       const gfx::Rect& content_rect,
       float contents_scale,
@@ -44,28 +47,18 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
                        std::vector<SkPixelRef*>* pixel_refs) const override;
   bool CoversRect(const gfx::Rect& content_rect,
                   float contents_scale) const override;
-  bool SuitableForDistanceFieldText() const override;
-
-  // Raster into the canvas without applying clips.
-  void RasterDirect(SkCanvas* canvas,
-                    const gfx::Rect& canvas_rect,
-                    float contents_scale) const;
+  void SetShouldAttemptToUseDistanceFieldText() override;
+  bool ShouldAttemptToUseDistanceFieldText() const override;
+  gfx::Size GetSize() const override;
+  bool IsSolidColor() const override;
+  SkColor GetSolidColor() const override;
+  bool HasRecordings() const override;
+  bool IsMask() const override;
 
   // Tracing functionality.
-  void DidBeginTracing();
-  skia::RefPtr<SkPicture> GetFlattenedPicture();
-
-  void set_likely_to_be_used_for_transform_animation() {
-    likely_to_be_used_for_transform_animation_ = true;
-  }
-
-  gfx::Size tiling_size() const { return tiling_.tiling_size(); }
-  bool is_solid_color() const { return is_solid_color_; }
-  SkColor solid_color() const { return solid_color_; }
-  // If this pile contains any valid recordings. May have false positives.
-  bool HasRecordings() const { return has_any_recordings_; }
-  void AsValueInto(base::debug::TracedValue* array) const;
-  bool is_mask() const { return is_mask_; }
+  void DidBeginTracing() override;
+  void AsValueInto(base::debug::TracedValue* array) const override;
+  skia::RefPtr<SkPicture> GetFlattenedPicture() override;
 
   // Iterator used to return SkPixelRefs from this picture pile.
   // Public for testing.
@@ -148,7 +141,7 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
 
   gfx::Rect PaddedRect(const PictureMapKey& key) const;
 
-  bool likely_to_be_used_for_transform_animation_;
+  bool should_attempt_to_use_distance_field_text_;
 
   DISALLOW_COPY_AND_ASSIGN(PicturePileImpl);
 };

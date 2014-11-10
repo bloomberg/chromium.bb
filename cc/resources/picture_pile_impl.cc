@@ -36,7 +36,7 @@ PicturePileImpl::PicturePileImpl()
       clear_canvas_with_debug_color_(false),
       min_contents_scale_(0.f),
       slow_down_raster_scale_factor_for_debug_(0),
-      likely_to_be_used_for_transform_animation_(false) {
+      should_attempt_to_use_distance_field_text_(false) {
 }
 
 PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
@@ -54,15 +54,15 @@ PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
       min_contents_scale_(other->min_contents_scale_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      likely_to_be_used_for_transform_animation_(false) {
+      should_attempt_to_use_distance_field_text_(false) {
 }
 
 PicturePileImpl::~PicturePileImpl() {
 }
 
-void PicturePileImpl::RasterDirect(SkCanvas* canvas,
-                                   const gfx::Rect& canvas_rect,
-                                   float contents_scale) const {
+void PicturePileImpl::PlaybackToSharedCanvas(SkCanvas* canvas,
+                                             const gfx::Rect& canvas_rect,
+                                             float contents_scale) const {
   RasterCommon(canvas,
                NULL,
                canvas_rect,
@@ -359,6 +359,23 @@ bool PicturePileImpl::CoversRect(const gfx::Rect& content_rect,
   return CanRasterSlowTileCheck(layer_rect);
 }
 
+gfx::Size PicturePileImpl::GetSize() const {
+  return tiling_.tiling_size();
+}
+
+bool PicturePileImpl::IsSolidColor() const {
+  return is_solid_color_;
+}
+
+SkColor PicturePileImpl::GetSolidColor() const {
+  DCHECK(IsSolidColor());
+  return solid_color_;
+}
+
+bool PicturePileImpl::HasRecordings() const {
+  return has_any_recordings_;
+}
+
 gfx::Rect PicturePileImpl::PaddedRect(const PictureMapKey& key) const {
   gfx::Rect padded_rect = tiling_.TileBounds(key.first, key.second);
   padded_rect.Inset(-buffer_pixels(), -buffer_pixels(), -buffer_pixels(),
@@ -380,8 +397,12 @@ bool PicturePileImpl::CanRasterSlowTileCheck(
   return true;
 }
 
-bool PicturePileImpl::SuitableForDistanceFieldText() const {
-  return likely_to_be_used_for_transform_animation_;
+void PicturePileImpl::SetShouldAttemptToUseDistanceFieldText() {
+  should_attempt_to_use_distance_field_text_ = true;
+}
+
+bool PicturePileImpl::ShouldAttemptToUseDistanceFieldText() const {
+  return should_attempt_to_use_distance_field_text_;
 }
 
 void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
@@ -400,6 +421,10 @@ void PicturePileImpl::AsValueInto(base::debug::TracedValue* pictures) const {
       TracedValue::AppendIDRef(picture, pictures);
     }
   }
+}
+
+bool PicturePileImpl::IsMask() const {
+  return is_mask_;
 }
 
 PicturePileImpl::PixelRefIterator::PixelRefIterator(

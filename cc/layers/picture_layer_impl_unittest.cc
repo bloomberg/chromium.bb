@@ -147,14 +147,14 @@ class PictureLayerImplTest : public testing::Test {
     if (old_pending_root) {
       pending_layer.reset(
           static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
-      pending_layer->SetPile(pile);
+      pending_layer->SetRasterSource(pile);
     } else {
       pending_layer =
           FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
       pending_layer->SetDrawsContent(true);
     }
     // The bounds() just mirror the pile size.
-    pending_layer->SetBounds(pending_layer->pile()->tiling_size());
+    pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
     pending_tree->SetRootLayer(pending_layer.Pass());
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
@@ -268,8 +268,8 @@ class PictureLayerImplTest : public testing::Test {
     std::vector<SkRect>::const_iterator rect_iter = rects.begin();
     for (tile_iter = tiles.begin(); tile_iter < tiles.end(); tile_iter++) {
       MockCanvas mock_canvas(1000, 1000);
-      active_pile->RasterDirect(&mock_canvas, (*tile_iter)->content_rect(),
-                                1.0f);
+      active_pile->PlaybackToSharedCanvas(&mock_canvas,
+                                          (*tile_iter)->content_rect(), 1.0f);
 
       // This test verifies that when drawing the contents of a specific tile
       // at content scale 1.0, the playback canvas never receives content from
@@ -1506,7 +1506,7 @@ TEST_F(PictureLayerImplTest, TileScalesWithSolidColorPile) {
   EXPECT_EQ(0.f, active_layer_->ideal_contents_scale());
 
   // Push non-solid-color pending pile makes active layer can have tilings.
-  active_layer_->UpdatePile(pending_pile);
+  active_layer_->UpdateRasterSource(pending_pile);
   ASSERT_TRUE(active_layer_->CanHaveTilings());
 
   // Update properties with non-solid color pile should allow tilings.

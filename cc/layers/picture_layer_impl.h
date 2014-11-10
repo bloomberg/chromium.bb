@@ -169,7 +169,7 @@ class CC_EXPORT PictureLayerImpl
   void ResetRasterScale();
   gfx::Rect GetViewportForTilePriorityInContentSpace() const;
   PictureLayerImpl* GetRecycledTwinLayer() const;
-  void UpdatePile(scoped_refptr<PicturePileImpl> pile);
+  void UpdateRasterSource(scoped_refptr<RasterSource> raster_source);
 
   void DoPostCommitInitializationIfNeeded() {
     if (needs_post_commit_initialization_)
@@ -193,7 +193,7 @@ class CC_EXPORT PictureLayerImpl
   PictureLayerImpl* twin_layer_;
 
   scoped_ptr<PictureLayerTilingSet> tilings_;
-  scoped_refptr<PicturePileImpl> pile_;
+  scoped_refptr<RasterSource> raster_source_;
   Region invalidation_;
 
   float ideal_page_scale_;

@@ -26,7 +26,7 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
                              ResourceFormat texture_format,
                              const gfx::Rect& content_rect,
                              float contents_scale,
-                             scoped_refptr<PicturePileImpl> picture_pile) {
+                             scoped_refptr<RasterSource> raster_source) {
   ContentDrawQuadBase::SetNew(
       shared_quad_state,
       DrawQuad::PICTURE_CONTENT,
@@ -38,7 +38,7 @@ void PictureDrawQuad::SetNew(const SharedQuadState* shared_quad_state,
       !PlatformColor::SameComponentOrder(texture_format));
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
-  this->picture_pile = picture_pile;
+  this->raster_source = raster_source;
   this->texture_format = texture_format;
 }
 
@@ -52,7 +52,7 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                              ResourceFormat texture_format,
                              const gfx::Rect& content_rect,
                              float contents_scale,
-                             scoped_refptr<PicturePileImpl> picture_pile) {
+                             scoped_refptr<RasterSource> raster_source) {
   ContentDrawQuadBase::SetAll(shared_quad_state,
                               DrawQuad::PICTURE_CONTENT,
                               rect,
@@ -65,7 +65,7 @@ void PictureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                                   texture_format));
   this->content_rect = content_rect;
   this->contents_scale = contents_scale;
-  this->picture_pile = picture_pile;
+  this->raster_source = raster_source;
   this->texture_format = texture_format;
 }
 
@@ -87,7 +87,7 @@ void PictureDrawQuad::ExtendValue(base::debug::TracedValue* value) const {
   value->EndArray();
   value->SetDouble("contents_scale", contents_scale);
   value->SetInteger("texture_format", texture_format);
-  // TODO(piman): picture_pile?
+  // TODO(piman): raster_source?
 }
 
 }  // namespace cc

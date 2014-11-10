@@ -9,9 +9,12 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/traced_value.h"
+#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class SkCanvas;
+class SkPicture;
 
 namespace cc {
 
@@ -30,9 +33,18 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // assumed that contents_scale has already been applied to this canvas.
   // Writes the total number of pixels rasterized and the time spent
   // rasterizing to the stats if the respective pointer is not nullptr.
+  // It is assumed that the canvas passed here will only be rasterized by
+  // this raster source via this call.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
                                 const gfx::Rect& canvas_rect,
                                 float contents_scale) const = 0;
+
+  // Similar to above, except that the canvas passed here can (or was already)
+  // rasterized into by another raster source. That is, it is not safe to clear
+  // the canvas or discard its underlying memory.
+  virtual void PlaybackToSharedCanvas(SkCanvas* canvas,
+                                      const gfx::Rect& canvas_rect,
+                                      float contents_scale) const = 0;
 
   // Analyze to determine if the given rect at given scale is of solid color in
   // this raster source.
@@ -40,6 +52,16 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
       const gfx::Rect& content_rect,
       float contents_scale,
       SolidColorAnalysis* analysis) const = 0;
+
+  // Returns true iff the whole raster source is of solid color.
+  virtual bool IsSolidColor() const = 0;
+
+  // Returns the color of the raster source if it is solid color. The results
+  // are unspecified if IsSolidColor returns false.
+  virtual SkColor GetSolidColor() const = 0;
+
+  // Returns the size of this raster source.
+  virtual gfx::Size GetSize() const = 0;
 
   // Populate the given list with all SkPixelRefs that may overlap the given
   // rect at given scale.
@@ -52,9 +74,24 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   virtual bool CoversRect(const gfx::Rect& content_rect,
                           float contents_scale) const = 0;
 
+  // Returns true if this raster source has anything to rasterize.
+  virtual bool HasRecordings() const = 0;
+
+  // Informs the raster source that it should attempt to use distance field text
+  // during rasterization.
+  virtual void SetShouldAttemptToUseDistanceFieldText() = 0;
+
   // Return true iff this raster source would benefit from using distance
   // field text.
-  virtual bool SuitableForDistanceFieldText() const = 0;
+  virtual bool ShouldAttemptToUseDistanceFieldText() const = 0;
+
+  // Tracing functionality.
+  virtual void DidBeginTracing() = 0;
+  virtual void AsValueInto(base::debug::TracedValue* array) const = 0;
+  virtual skia::RefPtr<SkPicture> GetFlattenedPicture() = 0;
+
+  // TODO(vmpstr): This should be a layer property.
+  virtual bool IsMask() const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;

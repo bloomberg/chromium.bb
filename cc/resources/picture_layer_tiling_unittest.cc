@@ -211,7 +211,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeDeletesTiles) {
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
-  tiling_->UpdateTilesToCurrentPile(invalidation, gfx::Size(200, 200));
+  tiling_->UpdateTilesToCurrentRasterSource(invalidation, gfx::Size(200, 200));
   EXPECT_FALSE(tiling_->TileAt(0, 0));
 }
 
@@ -266,8 +266,8 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
   // Shrink the tiling so that the last tile row/column is entirely in the
   // border pixels of the interior tiles. That row/column is removed.
   Region invalidation;
-  tiling_->UpdateTilesToCurrentPile(invalidation,
-                                    gfx::Size(right + 1, bottom + 1));
+  tiling_->UpdateTilesToCurrentRasterSource(invalidation,
+                                            gfx::Size(right + 1, bottom + 1));
   EXPECT_EQ(2, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -284,8 +284,8 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeTilingOverTileBorders) {
 
   // Growing outside the current right/bottom tiles border pixels should create
   // the tiles again, even though the live rect has not changed size.
-  tiling_->UpdateTilesToCurrentPile(invalidation,
-                                    gfx::Size(right + 2, bottom + 2));
+  tiling_->UpdateTilesToCurrentRasterSource(invalidation,
+                                            gfx::Size(right + 2, bottom + 2));
   EXPECT_EQ(3, tiling_->TilingDataForTesting().num_tiles_x());
   EXPECT_EQ(4, tiling_->TilingDataForTesting().num_tiles_y());
 
@@ -421,7 +421,7 @@ TEST_F(PictureLayerTilingIteratorTest, ResizeOverBorderPixelsDeletesTiles) {
 
   Region invalidation =
       SubtractRegions(gfx::Rect(tile_size), gfx::Rect(original_layer_size));
-  tiling_->UpdateTilesToCurrentPile(invalidation, gfx::Size(200, 200));
+  tiling_->UpdateTilesToCurrentRasterSource(invalidation, gfx::Size(200, 200));
   EXPECT_FALSE(tiling_->TileAt(0, 0));
 
   // The original tile was the same size after resize, but it would include new

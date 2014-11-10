@@ -10,31 +10,33 @@
 
 namespace cc {
 
-FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
-                                           int id,
-                                           scoped_refptr<PicturePileImpl> pile)
+FakePictureLayerImpl::FakePictureLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    scoped_refptr<RasterSource> raster_source)
     : PictureLayerImpl(tree_impl, id),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
-  pile_ = pile;
-  SetBounds(pile_->tiling_size());
-  SetContentBounds(pile_->tiling_size());
+  raster_source_ = raster_source;
+  SetBounds(raster_source_->GetSize());
+  SetContentBounds(raster_source_->GetSize());
 }
 
-FakePictureLayerImpl::FakePictureLayerImpl(LayerTreeImpl* tree_impl,
-                                           int id,
-                                           scoped_refptr<PicturePileImpl> pile,
-                                           const gfx::Size& layer_bounds)
+FakePictureLayerImpl::FakePictureLayerImpl(
+    LayerTreeImpl* tree_impl,
+    int id,
+    scoped_refptr<RasterSource> raster_source,
+    const gfx::Size& layer_bounds)
     : PictureLayerImpl(tree_impl, id),
       append_quads_count_(0),
       did_become_active_call_count_(0),
       has_valid_tile_priorities_(false),
       use_set_valid_tile_priorities_flag_(false),
       release_resources_count_(0) {
-  pile_ = pile;
+  raster_source_ = raster_source;
   SetBounds(layer_bounds);
   SetContentBounds(layer_bounds);
 }
@@ -97,12 +99,13 @@ PictureLayerTiling* FakePictureLayerImpl::LowResTiling() const {
   return result;
 }
 
-void FakePictureLayerImpl::SetPile(scoped_refptr<PicturePileImpl> pile) {
-  pile_.swap(pile);
+void FakePictureLayerImpl::SetRasterSource(
+    scoped_refptr<RasterSource> raster_source) {
+  raster_source_.swap(raster_source);
   if (tilings()) {
     for (size_t i = 0; i < num_tilings(); ++i) {
-      tilings()->tiling_at(i)->UpdateTilesToCurrentPile(Region(),
-                                                        pile_->tiling_size());
+      tilings()->tiling_at(i)->UpdateTilesToCurrentRasterSource(
+          Region(), raster_source_->GetSize());
     }
   }
 }

@@ -57,7 +57,7 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(&pile_invalidation_);
-  layer_impl->UpdatePile(PicturePileImpl::CreateFromOther(&pile_));
+  layer_impl->UpdateRasterSource(PicturePileImpl::CreateFromOther(&pile_));
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
