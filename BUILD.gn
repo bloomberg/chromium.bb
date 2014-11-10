@@ -200,6 +200,12 @@ group("root") {
       ]
     }
 
+    # TODO(GYP): Move the targets in the rest of this block that still
+    # need to be made to work in the GN build to the bottom of the file
+    # so that all the remaining work is located in one place in the file.
+    # This block should contain only the targets that aren't actually
+    # needed on Android.
+
     deps -= [
       "//apps",  # Needs testing.
       "//chrome/browser",
@@ -260,8 +266,36 @@ group("root") {
     ]
   }
 
-  if (is_win) {
-    # TODO(GYP): Make these work.
+  # 
+  # TODO(GYP): Make everything below this work in the GN build.
+  #
+
+  if (is_mac) {
+    # TODO(dpranke): Need to fix the unused function errors in breakpad.
+    deps -= [
+      "//breakpad:symupload"
+    ]
+
+    # TODO(dpranke): These need a webrtc fix in order to build.
+    deps -= [
+      "//jingle:notifier",
+      "//third_party/libjingle",
+      "//third_party/webrtc",
+    ]
+
+    # TODO(dpranke): These depend on Blink and need Blink fixes to build.
+    deps -= [
+      "//cc/blink",
+      "//content",
+      "//content/test:test_support",
+      "//media/blink",
+      "//pdf",
+      "//ppapi:ppapi_c",
+      "//third_party/WebKit/public:all_blink",
+      "//ui/app_list",
+    ]
+
+    # TODO(dpranke): These are as-yet untriaged but need at least the above.
     deps -= [
       "//apps",
       "//ash",
@@ -270,6 +304,34 @@ group("root") {
       "//chrome/common",
       "//chrome/plugin",
       "//chrome/renderer",
+      "//chrome/test",
+      "//chrome/utility",
+      "//components:all_components",
+      "//content/shell:content_shell",
+      "//extensions/browser",
+      "//extensions/common",
+      "//extensions/common/api",
+      "//extensions/renderer",
+      "//remoting/client/plugin",
+      "//third_party/usrsctp",
+      "//ui/aura",
+      "//ui/keyboard",
+      "//ui/views",
+      "//ui/views/controls/webview",
+      "//ui/web_dialogs",
+    ]
+  }
+
+  if (is_win) {
+    deps -= [
+      "//apps",
+      "//ash",
+      "//chrome/browser",
+      "//chrome/browser/devtools",
+      "//chrome/common",
+      "//chrome/plugin",
+      "//chrome/renderer",
+      "//chrome/test",
       "//chrome/utility",
       "//components:all_components",
       "//cc",

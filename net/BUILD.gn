@@ -1065,7 +1065,8 @@ if (is_android || is_linux) {
 
 # TODO(GYP) make this compile on Android, we need some native test deps done.
 # TODO(GYP) Also doesn't work on Windows; dependency on boringssl is wrong.
-if (!is_android && !is_win) {
+# TODO(GYP) Also doesn't work on Mac, need to figure out why not.
+if (!is_android && !is_win && !is_mac) {
 
 source_set("quic_tools") {
   sources = [
@@ -1367,4 +1368,4 @@ executable("quic_server") {
   ]
 }
 
-}  # !is_android
+}  # !is_android && !is_win && !is_mac

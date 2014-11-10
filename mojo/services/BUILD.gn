@@ -22,5 +22,12 @@ group("services") {
       "//mojo/services/html_viewer",
       "//mojo/services/network",
     ]
+  
+    # TODO(GYP): Make this work.
+    if (is_mac) {
+      deps -= [
+        "//mojo/services/html_viewer",
+      ]
+    }
   }
 }

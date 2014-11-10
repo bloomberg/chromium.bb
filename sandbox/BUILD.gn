@@ -7,7 +7,10 @@ group("sandbox") {
   if (is_win) {
     deps = [ "//sandbox/win:sandbox" ]
   } else if (is_mac) {
-    deps = [ "//sandbox/mac:sandbox" ]
+    # TODO(GYP): Make sandbox compile w/ 10.6 SDK.
+    if (false) {
+      deps = [ "//sandbox/mac:sandbox" ]
+    }
   } else if (is_linux || is_android) {
     deps = [ "//sandbox/linux:sandbox" ]
   }

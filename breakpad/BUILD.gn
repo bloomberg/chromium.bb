@@ -222,7 +222,11 @@ if (current_toolchain == host_toolchain && is_mac) {
       "src/tools/mac/symupload/symupload.m",
     ]
 
-    libs = [ "Foundaction.framework" ]
+    include_dirs = [
+      "src/common/mac"
+    ]
+
+    libs = [ "Foundation.framework" ]
   }
 }
 
@@ -250,6 +254,11 @@ if (is_mac) {
     ]
 
     configs += [ ":internal_config" ]
+    
+    # TODO(GYP): TODO(dpranke): Fix the compile for this.
+    sources -= [
+      "src/client/mac/handler/dynamic_images.cc",
+    ]
   }
 
   executable("crash_inspector") {
@@ -275,9 +284,9 @@ if (is_mac) {
     ]
   }
 
-  executable("crash_report_sender") {
-    # TODO(GYP) this target has some mac_bundle_resources stuff.
-  }
+  # TODO(GYP) this target has some mac_bundle_resources stuff.
+  # executable("crash_report_sender") {
+  # }
 
   config("breakpad_config") {
     include_dirs = [ "src/client/apple/Framework" ]
