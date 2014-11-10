@@ -30,10 +30,8 @@ PASS: canGet('targetWindow.window') should be 'true' and is.
 PASS: canGet('targetWindow.Attr') should be 'false' and is.
 PASS: canGet('targetWindow.Audio') should be 'false' and is.
 PASS: canGet('targetWindow.CDATASection') should be 'false' and is.
-PASS: canGet('targetWindow.CSSPrimitiveValue') should be 'false' and is.
 PASS: canGet('targetWindow.CSSRule') should be 'false' and is.
 PASS: canGet('targetWindow.CSSStyleDeclaration') should be 'false' and is.
-PASS: canGet('targetWindow.CSSValue') should be 'false' and is.
 PASS: canGet('targetWindow.CharacterData') should be 'false' and is.
 PASS: canGet('targetWindow.Comment') should be 'false' and is.
 PASS: canGet('targetWindow.DOMException') should be 'false' and is.

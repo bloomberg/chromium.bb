@@ -10,10 +10,8 @@ This test checks cross-frame access security of getOwnPropertyDescriptor (https:
 PASS: canGetDescriptor(targetWindow, 'Attr') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'Audio') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'CDATASection') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'CSSPrimitiveValue') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'CSSRule') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'CSSStyleDeclaration') should be 'false' and is.
-PASS: canGetDescriptor(targetWindow, 'CSSValue') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'CharacterData') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'Comment') should be 'false' and is.
 PASS: canGetDescriptor(targetWindow, 'DOMException') should be 'false' and is.

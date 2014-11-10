@@ -2,10 +2,8 @@ ALERT: PASS: window.Attr should be 'function Attr() { [native code] }' and is.
 ALERT: PASS: window.CDATASection should be 'function CDATASection() { [native code] }' and is.
 ALERT: PASS: window.CharacterData should be 'function CharacterData() { [native code] }' and is.
 ALERT: PASS: window.Comment should be 'function Comment() { [native code] }' and is.
-ALERT: PASS: window.CSSPrimitiveValue should be 'function CSSPrimitiveValue() { [native code] }' and is.
 ALERT: PASS: window.CSSRule should be 'function CSSRule() { [native code] }' and is.
 ALERT: PASS: window.CSSStyleDeclaration should be 'function CSSStyleDeclaration() { [native code] }' and is.
-ALERT: PASS: window.CSSValue should be 'function CSSValue() { [native code] }' and is.
 ALERT: PASS: window.Document should be 'function Document() { [native code] }' and is.
 ALERT: PASS: window.DocumentFragment should be 'function DocumentFragment() { [native code] }' and is.
 ALERT: PASS: window.DocumentType should be 'function DocumentType() { [native code] }' and is.
@@ -194,10 +192,8 @@ PASS: Unable to set property Attr: SecurityError: Blocked a frame with origin "h
 PASS: Unable to set property CDATASection: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property CharacterData: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Comment: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property CSSPrimitiveValue: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property CSSRule: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property CSSStyleDeclaration: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
-PASS: Unable to set property CSSValue: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property Document: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property DocumentFragment: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
 PASS: Unable to set property DocumentType: SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.
