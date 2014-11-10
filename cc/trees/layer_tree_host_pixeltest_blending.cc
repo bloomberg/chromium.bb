@@ -52,15 +52,18 @@ using RenderPassOptions = uint32;
 const uint32 kUseMasks = 1 << 0;
 const uint32 kUseAntialiasing = 1 << 1;
 const uint32 kUseColorMatrix = 1 << 2;
+const uint32 kForceShaders = 1 << 3;
 
 class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
  public:
-  LayerTreeHostBlendingPixelTest() {
+  LayerTreeHostBlendingPixelTest()
+      : force_antialiasing_(false), force_blending_with_shaders_(false) {
     pixel_comparator_.reset(new FuzzyPixelOffByOneComparator(true));
   }
 
   virtual void InitializeSettings(LayerTreeSettings* settings) override {
     settings->force_antialiasing = force_antialiasing_;
+    settings->force_blending_with_shaders = force_blending_with_shaders_;
   }
 
  protected:
@@ -233,6 +236,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
 
     this->impl_side_painting_ = false;
     this->force_antialiasing_ = (flags & kUseAntialiasing);
+    this->force_blending_with_shaders_ = (flags & kForceShaders);
 
     if ((flags & kUseAntialiasing) && (type == PIXEL_TEST_GL)) {
       // Anti aliasing causes differences up to 8 pixels at the edges.
@@ -259,7 +263,8 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
     RunPixelTest(type, root, base::FilePath(expected_path));
   }
 
-  bool force_antialiasing_ = false;
+  bool force_antialiasing_;
+  bool force_blending_with_shaders_;
 };
 
 TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRoot_GL) {
@@ -408,6 +413,61 @@ TEST_F(LayerTreeHostBlendingPixelTest,
   RunBlendingWithRenderPass(PIXEL_TEST_SOFTWARE,
                             FILE_PATH_LITERAL("blending_render_pass_mask.png"),
                             kUseMasks | kUseAntialiasing | kUseColorMatrix);
+}
+
+// Tests for render passes forcing shaders for all the blend modes.
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShaders_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest, BlendingWithRenderPassShadersAA_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            kUseAntialiasing | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersWithMask_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+                            kUseMasks | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersWithMaskAA_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+                            kUseMasks | kUseAntialiasing | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersColorMatrix_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            kUseColorMatrix | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersColorMatrixAA_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass.png"),
+                            kUseAntialiasing | kUseColorMatrix | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersWithMaskColorMatrix_GL) {
+  RunBlendingWithRenderPass(PIXEL_TEST_GL,
+                            FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+                            kUseMasks | kUseColorMatrix | kForceShaders);
+}
+
+TEST_F(LayerTreeHostBlendingPixelTest,
+       BlendingWithRenderPassShadersWithMaskColorMatrixAA_GL) {
+  RunBlendingWithRenderPass(
+      PIXEL_TEST_GL, FILE_PATH_LITERAL("blending_render_pass_mask.png"),
+      kUseMasks | kUseAntialiasing | kUseColorMatrix | kForceShaders);
 }
 
 }  // namespace

@@ -16,6 +16,7 @@ LayerTreeSettings::LayerTreeSettings()
     : impl_side_painting(false),
       allow_antialiasing(true),
       force_antialiasing(false),
+      force_blending_with_shaders(false),
       throttle_frame_production(true),
       single_thread_proxy_scheduler(true),
       begin_frame_scheduling_enabled(false),

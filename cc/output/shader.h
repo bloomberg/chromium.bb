@@ -39,7 +39,9 @@ enum SamplerType {
 };
 
 enum BlendMode {
+  BlendModeNone,
   BlendModeNormal,
+  BlendModeScreen,
   BlendModeOverlay,
   BlendModeDarken,
   BlendModeLighten,
@@ -305,7 +307,7 @@ class FragmentTexBlendMode {
 
   BlendMode blend_mode() const { return blend_mode_; }
   void set_blend_mode(BlendMode blend_mode) { blend_mode_ = blend_mode; }
-  bool is_default_blend_mode() const { return blend_mode_ == BlendModeNormal; }
+  bool has_blend_mode() const { return blend_mode_ != BlendModeNone; }
 
  protected:
   FragmentTexBlendMode();

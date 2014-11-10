@@ -669,9 +669,9 @@ std::string VertexShaderVideoTransform::GetShaderString() const {
 }
 
 #define BLEND_MODE_UNIFORMS "s_backdropTexture", "backdropRect"
-#define UNUSED_BLEND_MODE_UNIFORMS (is_default_blend_mode() ? 2 : 0)
+#define UNUSED_BLEND_MODE_UNIFORMS (!has_blend_mode() ? 2 : 0)
 #define BLEND_MODE_SET_LOCATIONS(X, POS)                   \
-  if (!is_default_blend_mode()) {                          \
+  if (has_blend_mode()) {                                  \
     DCHECK_LT(static_cast<size_t>(POS) + 1, arraysize(X)); \
     backdrop_location_ = locations[POS];                   \
     backdrop_rect_location_ = locations[POS + 1];          \
@@ -680,7 +680,7 @@ std::string VertexShaderVideoTransform::GetShaderString() const {
 FragmentTexBlendMode::FragmentTexBlendMode()
     : backdrop_location_(-1),
       backdrop_rect_location_(-1),
-      blend_mode_(BlendModeNormal) {
+      blend_mode_(BlendModeNone) {
 }
 
 std::string FragmentTexBlendMode::SetBlendModeFunctions(
@@ -688,7 +688,7 @@ std::string FragmentTexBlendMode::SetBlendModeFunctions(
   if (shader_string.find("ApplyBlendMode") == std::string::npos)
     return shader_string;
 
-  if (is_default_blend_mode()) {
+  if (!has_blend_mode()) {
     return "#define ApplyBlendMode(X) (X)\n" + shader_string;
   }
 
@@ -902,6 +902,10 @@ std::string FragmentTexBlendMode::GetBlendFunction() const {
 
 std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
   switch (blend_mode_) {
+    case BlendModeNormal:
+      return "result.rgb = src.rgb + dst.rgb * (1.0 - src.a);";
+    case BlendModeScreen:
+      return "result.rgb = src.rgb + (1.0 - src.rgb) * dst.rgb;";
     case BlendModeLighten:
       return "result.rgb = max((1.0 - src.a) * dst.rgb + src.rgb,"
              "                 (1.0 - dst.a) * src.rgb + dst.rgb);";
@@ -963,11 +967,11 @@ std::string FragmentTexBlendMode::GetBlendFunctionBodyForRGB() const {
              "                           srcDstAlpha.a,"
              "                           srcDstAlpha.rgb);"
              "result.rgb += (1.0 - src.a) * dst.rgb + (1.0 - dst.a) * src.rgb;";
-    default:
+    case BlendModeNone:
+    case NumBlendModes:
       NOTREACHED();
-      // simple alpha compositing
-      return "result.rgb = src.rgb * src.a + dst.rgb * dst.a * (1 - src.a)";
   }
+  return "result = vec4(1.0, 0.0, 0.0, 1.0);";
 }
 
 FragmentTexAlphaBinding::FragmentTexAlphaBinding()

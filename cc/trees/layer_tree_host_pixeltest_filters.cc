@@ -136,8 +136,8 @@ TEST_F(LayerTreeHostFiltersPixelTest, BackgroundFilterBlurOffAxis) {
   blur->SetBackgroundFilters(filters);
 
 #if defined(OS_WIN)
-  // Windows has 153 pixels off by at most 2: crbug.com/225027
-  float percentage_pixels_large_error = 0.3825f;  // 153px / (200*200)
+  // Windows has 116 pixels off by at most 2: crbug.com/225027
+  float percentage_pixels_large_error = 0.3f;  // 116px / (200*200), rounded up
   float percentage_pixels_small_error = 0.0f;
   float average_error_allowed_in_bad_pixels = 1.f;
   int large_error_allowed = 2;

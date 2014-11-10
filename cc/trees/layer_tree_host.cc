@@ -960,7 +960,6 @@ void LayerTreeHost::PrioritizeTextures(
 size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
     const RenderSurfaceLayerList& update_list) {
   size_t readback_bytes = 0;
-  size_t max_background_texture_bytes = 0;
   size_t contents_texture_bytes = 0;
 
   // Start iteration at 1 to skip the root surface as it does not have a texture
@@ -974,17 +973,16 @@ size_t LayerTreeHost::CalculateMemoryForRenderSurfaces(
                                   RGBA_8888);
     contents_texture_bytes += bytes;
 
-    if (render_surface_layer->background_filters().IsEmpty())
+    if (render_surface_layer->background_filters().IsEmpty() &&
+        render_surface_layer->uses_default_blend_mode())
       continue;
 
-    if (bytes > max_background_texture_bytes)
-      max_background_texture_bytes = bytes;
     if (!readback_bytes) {
       readback_bytes = Resource::MemorySizeBytes(device_viewport_size_,
                                                  RGBA_8888);
     }
   }
-  return readback_bytes + max_background_texture_bytes + contents_texture_bytes;
+  return readback_bytes + contents_texture_bytes;
 }
 
 void LayerTreeHost::PaintMasksForRenderSurface(Layer* render_surface_layer,

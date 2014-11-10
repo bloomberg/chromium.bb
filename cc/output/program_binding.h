@@ -59,7 +59,7 @@ class ProgramBinding : public ProgramBindingBase {
   void Initialize(ContextProvider* context_provider,
                   TexCoordPrecision precision,
                   SamplerType sampler,
-                  BlendMode blend_mode = BlendModeNormal) {
+                  BlendMode blend_mode = BlendModeNone) {
     DCHECK(context_provider);
     DCHECK(!initialized_);
 

@@ -21,6 +21,7 @@ class CC_EXPORT LayerTreeSettings {
   bool impl_side_painting;
   bool allow_antialiasing;
   bool force_antialiasing;
+  bool force_blending_with_shaders;
   bool throttle_frame_production;
   bool single_thread_proxy_scheduler;
   bool begin_frame_scheduling_enabled;

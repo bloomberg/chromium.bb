@@ -167,12 +167,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       ScopedResource* background_texture);
-  scoped_ptr<ScopedResource> ApplyInverseTransformForBackgroundFilters(
-      DrawingFrame* frame,
-      const RenderPassDrawQuad* quad,
-      const gfx::Transform& contents_device_transform,
-      skia::RefPtr<SkImage> backdrop_bitmap,
-      const gfx::Rect& backdrop_bounding_rect);
 
   void DrawRenderPassQuad(DrawingFrame* frame, const RenderPassDrawQuad* quad);
   void DrawSolidColorQuad(const DrawingFrame* frame,
@@ -207,12 +201,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                         const gfx::RectF& quad_rect,
                         int matrix_location);
   void SetUseProgram(unsigned program);
-
-  void CopyTextureToFramebuffer(const DrawingFrame* frame,
-                                int texture_id,
-                                const gfx::Rect& rect,
-                                const gfx::Transform& draw_matrix,
-                                bool flip_vertically);
 
   bool UseScopedTexture(DrawingFrame* frame,
                         const ScopedResource* resource,
