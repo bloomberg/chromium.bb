@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "chrome/browser/media/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/media_stream_capture_indicator.h"
 #include "chrome/browser/media/media_stream_device_permissions.h"
 #include "chrome/browser/media/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc_browsertest_base.h"
@@ -395,4 +397,76 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
             GetContentSettings()->media_stream_requested_audio_device());
   EXPECT_EQ(example_audio_id(),
             GetContentSettings()->media_stream_selected_audio_device());
+}
+
+// Denying mic access after camera access should still show the camera as state.
+IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
+                       DenyMicDoesNotChangeCam) {
+  // Request cam and allow
+  SetDevicePolicy(DEVICE_TYPE_VIDEO, ACCESS_ALLOWED);
+  MediaStreamDevicesController cam_controller(
+      GetWebContents(),
+      CreateRequest(std::string(), example_video_id()),
+      base::Bind(&OnMediaStreamResponse));
+  NotifyTabSpecificContentSettings(&cam_controller);
+  EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  EXPECT_EQ(example_video_id(),
+            GetContentSettings()->media_stream_requested_video_device());
+  EXPECT_EQ(example_video_id(),
+            GetContentSettings()->media_stream_selected_video_device());
+  EXPECT_EQ(TabSpecificContentSettings::CAMERA_ACCESSED,
+            GetContentSettings()->GetMicrophoneCameraState());
+
+  // Simulate that an a video stream is now being captured.
+  content::MediaStreamDevice fake_video_device(
+      content::MEDIA_DEVICE_VIDEO_CAPTURE, example_video_id(),
+      example_video_id());
+  content::MediaStreamDevices video_devices(1, fake_video_device);
+  MediaCaptureDevicesDispatcher* dispatcher =
+      MediaCaptureDevicesDispatcher::GetInstance();
+  dispatcher->SetTestVideoCaptureDevices(video_devices);
+  scoped_ptr<content::MediaStreamUI> video_stream_ui =
+      dispatcher->GetMediaStreamCaptureIndicator()->
+          RegisterMediaStream(GetWebContents(), video_devices);
+  video_stream_ui->OnStarted(base::Closure());
+
+  // Request mic and deny.
+  SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_DENIED);
+  MediaStreamDevicesController mic_controller(
+      GetWebContents(),
+      CreateRequest(example_audio_id(), std::string()),
+      base::Bind(&OnMediaStreamResponse));
+  NotifyTabSpecificContentSettings(&mic_controller);
+  EXPECT_FALSE(GetContentSettings()->IsContentAllowed(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+  EXPECT_TRUE(GetContentSettings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC));
+  EXPECT_EQ(example_audio_id(),
+            GetContentSettings()->media_stream_requested_audio_device());
+  EXPECT_EQ(example_audio_id(),
+            GetContentSettings()->media_stream_selected_audio_device());
+
+  // Cam should still be included in the state.
+  EXPECT_TRUE(GetContentSettings()->IsContentAllowed(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  EXPECT_FALSE(GetContentSettings()->IsContentBlocked(
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA));
+  EXPECT_EQ(example_video_id(),
+            GetContentSettings()->media_stream_requested_video_device());
+  EXPECT_EQ(example_video_id(),
+            GetContentSettings()->media_stream_selected_video_device());
+  EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
+                TabSpecificContentSettings::MICROPHONE_BLOCKED |
+                TabSpecificContentSettings::CAMERA_ACCESSED,
+            GetContentSettings()->GetMicrophoneCameraState());
+
+  // After ending the camera capture, the camera permission is no longer
+  // relevant, so it should no be included in the mic/cam state.
+  video_stream_ui.reset();
+  EXPECT_EQ(TabSpecificContentSettings::MICROPHONE_ACCESSED |
+                TabSpecificContentSettings::MICROPHONE_BLOCKED,
+            GetContentSettings()->GetMicrophoneCameraState());
 }

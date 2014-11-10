@@ -228,10 +228,12 @@ class TabSpecificContentSettings
   }
 
   // Returns the state of the camera and microphone usage.
+  // The return value always includes all active media capture devices, on top
+  // of the devices from the last request.
   MicrophoneCameraState GetMicrophoneCameraState() const;
 
-  // Returns whether the state of the camera and microphone usage or device has
-  // changed.
+  // Returns whether the camera or microphone permission or media device setting
+  // has changed since the last permission request.
   bool IsMicrophoneCameraStateChanged() const;
 
   // Returns the ContentSettingsUsagesState that controls the

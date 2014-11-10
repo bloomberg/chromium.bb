@@ -511,7 +511,19 @@ void TabSpecificContentSettings::OnProtectedMediaIdentifierPermissionSet(
 
 TabSpecificContentSettings::MicrophoneCameraState
 TabSpecificContentSettings::GetMicrophoneCameraState() const {
-  return microphone_camera_state_;
+  MicrophoneCameraState state = microphone_camera_state_;
+
+  // Include capture devices in the state if there are still consumers of the
+  // approved media stream.
+  scoped_refptr<MediaStreamCaptureIndicator> media_indicator =
+      MediaCaptureDevicesDispatcher::GetInstance()->
+        GetMediaStreamCaptureIndicator();
+  if (media_indicator->IsCapturingAudio(web_contents()))
+    state |= MICROPHONE_ACCESSED;
+  if (media_indicator->IsCapturingVideo(web_contents()))
+    state |= CAMERA_ACCESSED;
+
+  return state;
 }
 
 bool TabSpecificContentSettings::IsMicrophoneCameraStateChanged() const {
