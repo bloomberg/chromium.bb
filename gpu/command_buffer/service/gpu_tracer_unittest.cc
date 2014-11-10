@@ -13,18 +13,9 @@
 namespace gpu {
 namespace gles2 {
 
-using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
-using ::testing::ReturnRef;
-using ::testing::ReturnPointee;
 using ::testing::NotNull;
-using ::testing::ElementsAreArray;
-using ::testing::ElementsAre;
-using ::testing::SetArrayArgument;
 using ::testing::AtLeast;
-using ::testing::SetArgPointee;
-using ::testing::Pointee;
-using ::testing::Unused;
 using ::testing::Invoke;
 using ::testing::_;
 

@@ -42,8 +42,6 @@ using base::WaitableEvent;
 using testing::_;
 using testing::DoDefault;
 using testing::ElementsAreArray;
-using testing::Pointee;
-using testing::Property;
 
 namespace {
 

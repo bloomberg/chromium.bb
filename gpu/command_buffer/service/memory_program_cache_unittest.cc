@@ -16,10 +16,8 @@
 #include "ui/gl/gl_mock.h"
 
 using ::testing::_;
-using ::testing::ElementsAreArray;
 using ::testing::Invoke;
 using ::testing::SetArgPointee;
-using ::testing::SetArrayArgument;
 
 namespace gpu {
 namespace gles2 {

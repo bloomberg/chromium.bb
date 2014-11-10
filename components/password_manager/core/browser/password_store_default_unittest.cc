@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_form_data.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -20,12 +19,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using base::WaitableEvent;
 using testing::_;
-using testing::DoAll;
 using testing::ElementsAreArray;
-using testing::Pointee;
-using testing::Property;
 using testing::WithArg;
 
 namespace password_manager {

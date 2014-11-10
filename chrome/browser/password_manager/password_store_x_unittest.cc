@@ -26,15 +26,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using autofill::PasswordForm;
-using content::BrowserThread;
 using password_manager::ContainsAllPasswordForms;
 using password_manager::PasswordStoreChange;
 using password_manager::PasswordStoreChangeList;
 using testing::_;
-using testing::DoAll;
 using testing::ElementsAreArray;
-using testing::Pointee;
-using testing::Property;
 using testing::WithArg;
 
 typedef std::vector<PasswordForm*> VectorOfForms;

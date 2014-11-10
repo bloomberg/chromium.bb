@@ -17,8 +17,6 @@ namespace net {
 using base::IntToString;
 using base::StringPiece;
 using std::string;
-using testing::ElementsAre;
-using testing::ElementsAreArray;
 
 // A mock the handler class to check that we parse out the correct headers
 // and call the callback methods when we should.
