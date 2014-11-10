@@ -367,7 +367,7 @@ def _DetectVisualStudioVersions(versions_to_check, force_express):
   return versions
 
 
-def SelectVisualStudioVersion(version='auto'):
+def SelectVisualStudioVersion(version='auto', allow_fallback=True):
   """Select which version of Visual Studio projects to generate.
 
   Arguments:
@@ -401,6 +401,8 @@ def SelectVisualStudioVersion(version='auto'):
   version = str(version)
   versions = _DetectVisualStudioVersions(version_map[version], 'e' in version)
   if not versions:
+    if not allow_fallback:
+      raise ValueError('Could not locate Visual Studio installation.')
     if version == 'auto':
       # Default to 2005 if we couldn't find anything
       return _CreateVersion('2005', None)
