@@ -37,12 +37,6 @@
   },
   {
     "prefix": "deferred",
-    "base": "inspector/timeline",
-    "args": ["--enable-deferred-image-decoding",
-             "--enable-per-tile-painting"]
-  },
-  {
-    "prefix": "deferred",
     "base": "inspector/tracing",
     "args": ["--enable-deferred-image-decoding",
              "--enable-per-tile-painting"]
@@ -91,11 +85,6 @@
              "--enable-overlay-fullscreen-video", "--enable-overlay-scrollbars", "--enable-overscroll-notifications",
              "--enable-fixed-layout", "--enable-viewport", "--disable-canvas-aa",
              "--disable-composited-antialiasing"]
-  },
-  {
-    "prefix": "implsidepainting",
-    "base": "inspector/timeline",
-    "args": ["--enable-threaded-compositing", "--enable-impl-side-painting"]
   },
   {
     "prefix": "implsidepainting",

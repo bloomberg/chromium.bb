@@ -100,9 +100,6 @@ crbug.com/394210 [ Release ] inspector/profiler/webgl/webgl-profiler-api-changes
 crbug.com/420008 [ Release ] inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] virtual/implsidepainting/inspector/tracing [ Slow ]
 crbug.com/420008 [ Release ] virtual/deferred/inspector/tracing [ Slow ]
-crbug.com/420008 [ Release ] inspector/timeline [ Slow ]
-crbug.com/420008 [ Release ] virtual/implsidepainting/inspector/timeline [ Slow ]
-crbug.com/420008 [ Release ] virtual/deferred/inspector/timeline [ Slow ]
 crbug.com/420008 [ Release ] inspector/editor/text-editor-word-jumps.html [ Slow ]
 crbug.com/420008 [ Release ] http/tests/inspector/console-xhr-logging.html [ Slow ]
 # inspector tests below are slow on LinuxASAN
@@ -165,10 +162,6 @@ crbug.com/336481 inspector/jump-to-previous-editing-location.html [ Slow ]
 crbug.com/346259 http/tests/websocket/no-crash-on-cookie-flood.html [ Slow ]
 
 crbug.com/358313 virtual/gpu/fast/canvas/webgl/webgl-large-texture.html [ Slow ]
-
-crbug.com/298188 virtual/implsidepainting/inspector/timeline/timeline-paint.html [ Slow ]
-
-crbug.com/24182 crbug.com/318490 [ Win Linux Android ] virtual/implsidepainting/inspector/timeline/timeline-decode-resize.html [ Slow ]
 
 crbug.com/313338 inspector/sources/debugger/debugger-proto-property.html [ Slow ]
 

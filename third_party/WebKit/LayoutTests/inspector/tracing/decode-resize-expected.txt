@@ -2,24 +2,24 @@ Tests the instrumentation of a DecodeImage and ResizeImage events
 
 
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.bmp
+imageURL: .../inspector/tracing/resources/test.bmp
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.gif
+imageURL: .../inspector/tracing/resources/test.gif
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.ico
+imageURL: .../inspector/tracing/resources/test.ico
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.jpg
+imageURL: .../inspector/tracing/resources/test.jpg
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.png
+imageURL: .../inspector/tracing/resources/test.png
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/test.webp
+imageURL: .../inspector/tracing/resources/test.webp
 backendNodeId: present
 event: Decode Image
-imageURL: .../inspector/timeline/resources/big.png
+imageURL: .../inspector/tracing/resources/big.png
 backendNodeId: present
 

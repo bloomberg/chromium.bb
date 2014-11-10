@@ -695,11 +695,6 @@ function runTest(enableWatchDogWhileDebugging)
 
         var testPath = WebInspector.settings.testPath.get();
 
-        // FIXME(399531): enable timelineOnTraceEvents experiment when running layout tests under inspector/tracing/. This code
-        // should be removed along with the old Timeline implementation once we move tracing based Timeline out of experimental.
-        if (testPath.indexOf("tracing/") !== -1)
-            Runtime.experiments.setEnabled("timelineOnTraceEvents", true);
-
         if (testPath.indexOf("layers/") !== -1)
             Runtime.experiments.setEnabled("layersPanel", true);
 
