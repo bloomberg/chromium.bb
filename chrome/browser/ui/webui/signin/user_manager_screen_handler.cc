@@ -562,6 +562,8 @@ void UserManagerScreenHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   localized_strings->SetString("passwordHint",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_EMPTY_PASSWORD_TEXT));
+  localized_strings->SetString("signingIn",
+      l10n_util::GetStringUTF16(IDS_LOGIN_POD_SIGNING_IN));
   localized_strings->SetString("podMenuButtonAccessibleName",
       l10n_util::GetStringUTF16(IDS_LOGIN_POD_MENU_BUTTON_ACCESSIBLE_NAME));
   localized_strings->SetString("podMenuRemoveItemAccessibleName",

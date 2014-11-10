@@ -206,11 +206,14 @@ html[dir=rtl] .main-pane {
   top: 11px;
 }
 
-.password-label {
+.password-label,
+.signin-transition-container {
   display: none;
 }
 
-.pod[auth-type='userClick'] .password-label {
+.pod[auth-type='userClick']:not(.signing-in) .password-label,
+.pod[auth-type='userClick'].signing-in .signin-transition-container {
+  color: grey;
   display: block;
   flex: auto;
   margin-top: 11px;
@@ -700,4 +703,41 @@ html[dir=rtl] .expanded-pane-contents {
 
 .enter-button {
   font-size: 14px;
+}
+
+/* Animations for the animated ellipsis: */
+.animated-ellipsis-component0 {
+  -webkit-animation: ellipsis-component0 1.5s infinite;
+}
+
+@-webkit-keyframes ellipsis-component0 {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  50% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animated-ellipsis-component1 {
+  -webkit-animation: ellipsis-component1 1.5s infinite;
+}
+
+@-webkit-keyframes ellipsis-component1 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  50% { opacity: 1; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animated-ellipsis-component2 {
+  -webkit-animation: ellipsis-component2 1.5s infinite;
+}
+
+@-webkit-keyframes ellipsis-component2 {
+  0% { opacity: 0; }
+  25% { opacity: 0; }
+  50% { opacity: 0; }
+  75% { opacity: 1; }
+  100% { opacity: 0; }
 }

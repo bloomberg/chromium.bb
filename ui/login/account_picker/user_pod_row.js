@@ -1091,6 +1091,7 @@ cr.define('login', function() {
         this.showSigninUI();
       } else if (this.isAuthTypeUserClick) {
         Oobe.disableSigninUI();
+        this.classList.toggle('signing-in', true);
         chrome.send('attemptUnlock', [this.user.username]);
       } else if (this.isAuthTypePassword) {
         if (!this.passwordElement.value)
@@ -1159,6 +1160,7 @@ cr.define('login', function() {
      */
     reset: function(takeFocus) {
       this.passwordElement.value = '';
+      this.classList.toggle('signing-in', false);
       if (takeFocus) {
         if (!this.multiProfilesPolicyApplied)
           this.focusInput();  // This will set a custom tab order.
