@@ -713,6 +713,11 @@ bool AXNodeObject::isEnabled() const
 
 AccessibilityExpanded AXNodeObject::isExpanded() const
 {
+    if (node() && isHTMLSummaryElement(*node())) {
+        if (node()->parentNode() && isHTMLDetailsElement(node()->parentNode()))
+            return toElement(node()->parentNode())->hasAttribute(openAttr) ? ExpandedExpanded : ExpandedCollapsed;
+    }
+
     const AtomicString& expanded = getAttribute(aria_expandedAttr);
     if (equalIgnoringCase(expanded, "true"))
         return ExpandedExpanded;
