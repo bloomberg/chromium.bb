@@ -59,8 +59,14 @@ FetchResponseData* createFetchResponseDataFromWebResponse(const WebServiceWorker
 
 }
 
+Response* Response::create(ExecutionContext* context, ExceptionState& exceptionState)
+{
+    return create(context, nullptr, ResponseInit(), exceptionState);
+}
+
 Response* Response::create(ExecutionContext* context, Blob* body, const Dictionary& responseInit, ExceptionState& exceptionState)
 {
+    ASSERT(body);
     return create(context, body, ResponseInit(responseInit, exceptionState), exceptionState);
 }
 

@@ -26,10 +26,13 @@ class Response final : public Body {
     DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~Response() { }
+    // Constructors from Response.idl:
+    static Response* create(ExecutionContext*, ExceptionState&);
     static Response* create(ExecutionContext*, Blob*, const Dictionary&, ExceptionState&);
     static Response* create(ExecutionContext*, const String&, const Dictionary&, ExceptionState&);
     static Response* create(ExecutionContext*, const DOMArrayBuffer*, const Dictionary&, ExceptionState&);
     static Response* create(ExecutionContext*, const DOMArrayBufferView*, const Dictionary&, ExceptionState&);
+
     static Response* create(ExecutionContext*, Blob*, const ResponseInit&, ExceptionState&);
     static Response* create(ExecutionContext*, FetchResponseData*);
     static Response* create(ExecutionContext*, const WebServiceWorkerResponse&);
@@ -39,12 +42,14 @@ public:
 
     const FetchResponseData* response() const { return m_response; }
 
+    // From Response.idl:
     String type() const;
     String url() const;
     unsigned short status() const;
     String statusText() const;
     Headers* headers() const;
 
+    // From Response.idl:
     Response* clone() const;
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);

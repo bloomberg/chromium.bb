@@ -12,7 +12,7 @@ function handleReferrer(event) {
 }
 
 function handleNullBody(event) {
-  event.respondWith(new Response(null));
+  event.respondWith(new Response());
 }
 
 function handleFetch(event) {

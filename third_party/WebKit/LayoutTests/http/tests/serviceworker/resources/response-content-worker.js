@@ -101,3 +101,32 @@ promise_test(function() {
                         'Response clone response body text should match.');
         });
   }, 'Behavior of bodyUsed in Response and clone behavior.');
+
+promise_test(function() {
+    var response = new Response(null);
+    assert_equals(
+      response.headers.get('Content-Type'),
+      'text/plain;charset=UTF-8',
+      'A Response constructed with a value coerced to string should have a ' +
+      'text Content-Type.');
+    return response.text()
+      .then(function(text) {
+          assert_equals(text, 'null',
+                        'A null value passed to Response constructor should ' +
+                        'be coerced to the string "null".');
+        });
+  }, 'Behavior of Response passed null for body.');
+
+promise_test(function() {
+    var response = new Response();
+    assert_equals(
+      response.headers.get('Content-Type'),
+      null,
+      'A Response constructed with no body should have no Content-Type.');
+    return response.text()
+      .then(function(text) {
+          assert_equals(text, '',
+                        'Response with no body accessed as text should ' +
+                        'resolve to the empty string.');
+        });
+  }, 'Behavior of Response with no body.');
