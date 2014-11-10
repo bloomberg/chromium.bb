@@ -92,6 +92,8 @@ class DeviceSettingsTestHelper : public SessionManagerClient {
   virtual void RestartJob(int pid, const std::string& command_line) override;
   virtual void StartSession(const std::string& user_email) override;
   virtual void StopSession() override;
+  virtual void NotifySupervisedUserCreationStarted() override;
+  virtual void NotifySupervisedUserCreationFinished() override;
   virtual void StartDeviceWipe() override;
   virtual void RequestLockScreen() override;
   virtual void NotifyLockScreenShown() override;

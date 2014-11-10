@@ -113,6 +113,10 @@ void DeviceSettingsTestHelper::StartSession(const std::string& user_email) {}
 
 void DeviceSettingsTestHelper::StopSession() {}
 
+void DeviceSettingsTestHelper::NotifySupervisedUserCreationStarted() {}
+
+void DeviceSettingsTestHelper::NotifySupervisedUserCreationFinished() {}
+
 void DeviceSettingsTestHelper::StartDeviceWipe() {}
 
 void DeviceSettingsTestHelper::RequestLockScreen() {}

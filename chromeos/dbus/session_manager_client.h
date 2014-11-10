@@ -89,6 +89,12 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // Notifies that the lock screen is dismissed.
   virtual void NotifyLockScreenDismissed() = 0;
 
+  // Notifies that supervised user creation have started.
+  virtual void NotifySupervisedUserCreationStarted() = 0;
+
+  // Notifies that supervised user creation have finished.
+  virtual void NotifySupervisedUserCreationFinished() = 0;
+
   // Map that is used to describe the set of active user sessions where |key|
   // is user_id and |value| is user_id_hash.
   typedef std::map<std::string, std::string> ActiveSessionsMap;

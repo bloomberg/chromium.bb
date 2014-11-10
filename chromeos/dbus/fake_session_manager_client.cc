@@ -56,6 +56,12 @@ void FakeSessionManagerClient::StartSession(const std::string& user_email) {
 void FakeSessionManagerClient::StopSession() {
 }
 
+void FakeSessionManagerClient::NotifySupervisedUserCreationStarted() {
+}
+
+void FakeSessionManagerClient::NotifySupervisedUserCreationFinished() {
+}
+
 void FakeSessionManagerClient::StartDeviceWipe() {
   start_device_wipe_call_count_++;
 }

@@ -27,6 +27,8 @@
 #include "chrome/browser/supervised_user/supervised_user_sync_service.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_service_factory.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
@@ -202,10 +204,16 @@ std::string SupervisedUserCreationScreen::GetName() const {
 }
 
 void SupervisedUserCreationScreen::AbortFlow() {
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifySupervisedUserCreationFinished();
   controller_->CancelCreation();
 }
 
 void SupervisedUserCreationScreen::FinishFlow() {
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifySupervisedUserCreationFinished();
   controller_->FinishCreation();
 }
 
@@ -358,6 +366,9 @@ void SupervisedUserCreationScreen::OnManagerLoginFailure() {
 
 void SupervisedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
+  DBusThreadManager::Get()
+      ->GetSessionManagerClient()
+      ->NotifySupervisedUserCreationStarted();
   manager_signin_in_progress_ = false;
   DCHECK(controller_.get());
   // For manager user, move desktop to locked container so that windows created
