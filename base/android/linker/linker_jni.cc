@@ -664,7 +664,7 @@ jboolean CheckLibraryIsMappableInApk(JNIEnv* env, jclass clazz,
            __FUNCTION__, library_name_c_str, apkfile_name_c_str);
   jboolean mappable = crazy_linker_check_library_is_mappable_in_zip_file(
       apkfile_name_c_str, library_name_c_str) == CRAZY_STATUS_SUCCESS;
-  LOG_INFO("%s: %s\n", __FUNCTION__, aligned ? "Aligned" : "NOT aligned");
+  LOG_INFO("%s: %s\n", __FUNCTION__, mappable ? "Mappable" : "NOT mappable");
 
   return mappable;
 }
