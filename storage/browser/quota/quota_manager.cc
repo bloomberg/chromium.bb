@@ -23,6 +23,7 @@
 #include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "net/base/net_util.h"
+#include "storage/browser/quota/client_usage_tracker.h"
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_temporary_storage_evictor.h"

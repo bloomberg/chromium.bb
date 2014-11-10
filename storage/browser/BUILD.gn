@@ -131,6 +131,8 @@ component("browser") {
     "fileapi/timed_task_helper.h",
     "fileapi/transient_file_util.cc",
     "fileapi/transient_file_util.h",
+    "quota/client_usage_tracker.cc",
+    "quota/client_usage_tracker.h",
     "quota/quota_callbacks.h",
     "quota/quota_client.h",
     "quota/quota_database.cc",

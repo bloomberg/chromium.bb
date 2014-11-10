@@ -149,6 +149,8 @@
         'browser/fileapi/timed_task_helper.h',
         'browser/fileapi/transient_file_util.cc',
         'browser/fileapi/transient_file_util.h',
+        'browser/quota/client_usage_tracker.cc',
+        'browser/quota/client_usage_tracker.h',
         'browser/quota/quota_callbacks.h',
         'browser/quota/quota_client.h',
         'browser/quota/quota_database.cc',
