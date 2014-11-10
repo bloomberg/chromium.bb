@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
-#include "content/common/dwrite_font_platform_win.h"
+#include "content/renderer/renderer_font_platform_win.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"

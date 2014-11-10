@@ -970,11 +970,6 @@ const char kDisableLegacyIntermediateWindow[] = "disable-legacy-window";
 // the kernel. This is only supported on Windows 8 and beyond.
 const char kEnableWin32kRendererLockDown[]
     = "enable_win32k_renderer_lockdown";
-
-// DirectWrite FontCache is shared by browser to renderers using shared memory.
-// This switch allows specifying suffix to shared memory section name to avoid
-// clashes between different instances of Chrome.
-const char kFontCacheSharedMemSuffix[] = "font-cache-shared-mem-suffix";
 #endif
 
 #if defined(ENABLE_PLUGINS)

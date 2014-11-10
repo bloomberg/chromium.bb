@@ -290,9 +290,6 @@ CONTENT_EXPORT extern const char kDisableLegacyIntermediateWindow[];
 // This switch will be removed when we enable the win32K lockdown process
 // mitigation.
 CONTENT_EXPORT extern const char kEnableWin32kRendererLockDown[];
-// Switch to uniquely identify names shared memory section for font cache
-// across chromium flavors.
-CONTENT_EXPORT extern const char kFontCacheSharedMemSuffix[];
 #endif
 
 #if defined(ENABLE_PLUGINS)
