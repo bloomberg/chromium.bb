@@ -29,9 +29,9 @@
 #ifndef HRTFDatabaseLoader_h
 #define HRTFDatabaseLoader_h
 
+#include "platform/WebThreadSupportingGC.h"
 #include "platform/audio/HRTFDatabase.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadingPrimitives.h"
 
@@ -77,7 +77,7 @@ private:
     Mutex m_lock;
     OwnPtr<HRTFDatabase> m_hrtfDatabase;
 
-    OwnPtr<WebThread> m_databaseLoaderThread;
+    OwnPtr<WebThreadSupportingGC> m_thread;
 
     float m_databaseSampleRate;
 };
