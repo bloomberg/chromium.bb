@@ -191,6 +191,7 @@ class TestFaviconDriver : public FaviconDriver {
  public:
   TestFaviconDriver()
       : favicon_validity_(false),
+        num_active_favicon_(0),
         num_favicon_available_(0),
         update_active_favicon_(false) {}
 
@@ -224,20 +225,22 @@ class TestFaviconDriver : public FaviconDriver {
   void OnFaviconAvailable(const gfx::Image& image,
                           const GURL& icon_url,
                           bool update_active_favicon) override {
+    ++num_favicon_available_;
     available_image_ = image;
     available_icon_url_ = icon_url;
     update_active_favicon_ = update_active_favicon;
     if (!update_active_favicon)
       return;
 
-    ++num_favicon_available_;
+    ++num_active_favicon_;
     SetActiveFaviconURL(icon_url);
     SetActiveFaviconValidity(true);
     SetActiveFaviconImage(image);
   }
 
+  size_t num_active_favicon() const { return num_active_favicon_; }
   size_t num_favicon_available() const { return num_favicon_available_; }
-
+  void ResetNumActiveFavicon() { num_active_favicon_ = 0; }
   void ResetNumFaviconAvailable() { num_favicon_available_ = 0; }
 
   void SetActiveURL(GURL url) { url_ = url; }
@@ -254,6 +257,9 @@ class TestFaviconDriver : public FaviconDriver {
   gfx::Image image_;
   bool favicon_validity_;
 
+  // The number of times that NotifyFaviconAvailable() has been called with
+  // |is_active_favicon| is true.
+  size_t num_active_favicon_;
   // The number of times that NotifyFaviconAvailable() has been called.
   size_t num_favicon_available_;
   gfx::Image available_image_;
@@ -443,7 +449,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
       download_handler->SetImageSizes(sizes);
       download_handler->InvokeCallback();
 
-      if (favicon_driver->num_favicon_available())
+      if (favicon_driver->num_active_favicon())
         return;
     }
   }
@@ -452,7 +458,7 @@ class FaviconHandlerTest : public ChromeRenderViewHostTestHarness {
                         TestFaviconHandler* favicon_handler,
                         const GURL& page_url,
                         const std::vector<FaviconURL>& candidate_icons) {
-    favicon_driver->ResetNumFaviconAvailable();
+    favicon_driver->ResetNumActiveFavicon();
 
     favicon_handler->FetchFavicon(page_url);
     favicon_handler->history_handler()->InvokeCallback();
@@ -1569,5 +1575,87 @@ TEST_F(FaviconHandlerTest, UnableToDownloadFavicon) {
   // Icon is not marked as UnableToDownload as HTTP status is not 404.
   EXPECT_FALSE(favicon_service->WasUnableToDownloadFavicon(missing_icon_url));
 }
+
+class FaviconHandlerActiveFaviconValidityParamTest :
+      public FaviconHandlerTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  FaviconHandlerActiveFaviconValidityParamTest() {}
+
+  ~FaviconHandlerActiveFaviconValidityParamTest() override {}
+
+  bool GetActiveFaviconValiditySetting() {
+    return GetParam();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FaviconHandlerActiveFaviconValidityParamTest);
+};
+
+TEST_P(FaviconHandlerActiveFaviconValidityParamTest,
+       TestDownloadLargestIconDoesNotImpactActiveFaviconValidity) {
+  const GURL page_url("http://www.google.com");
+
+  std::vector<gfx::Size> one_icon;
+  one_icon.push_back(gfx::Size(15, 15));
+
+  const GURL old_favicon_url("http://www.google.com/old");
+  const GURL new_favicon_url("http://www.google.com/b");
+  const FaviconURL source_icon_urls[] = {
+      FaviconURL(new_favicon_url, favicon_base::FAVICON, one_icon)};
+  TestFaviconClient client;
+  TestFaviconDriver driver1;
+  TestFaviconHandler handler1(
+      page_url, &client, &driver1, FaviconHandler::FAVICON, true);
+  std::vector<FaviconURL> urls1(source_icon_urls,
+                                source_icon_urls + arraysize(source_icon_urls));
+  UpdateFaviconURL(&driver1, &handler1, page_url, urls1);
+
+  HistoryRequestHandler* history_handler = handler1.history_handler();
+
+  // Simulate the active favicon is updated, this shouldn't happen in real
+  // use case, but we want to verify the behavior below is not impacted by
+  // accident.
+  driver1.SetActiveFaviconValidity(GetActiveFaviconValiditySetting());
+  // Simulate the get favicon from history, but favicon URL didn't match.
+  SetFaviconRawBitmapResult(old_favicon_url,
+                            &history_handler->history_results_);
+  history_handler->InvokeCallback();
+  // Since we downloaded largest icon, and don't want to set active favicon
+  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
+  EXPECT_EQ(old_favicon_url, driver1.available_icon_url());
+  EXPECT_FALSE(driver1.update_active_favicon());
+  EXPECT_EQ(1u, driver1.num_favicon_available());
+
+  // We are trying to get favicon from history again.
+  history_handler = handler1.history_handler();
+  EXPECT_EQ(new_favicon_url, history_handler->icon_url_);
+  // Simulate the get expired favicon from history.
+  history_handler->history_results_.clear();
+  SetFaviconRawBitmapResult(new_favicon_url, favicon_base::FAVICON, true,
+                            &history_handler->history_results_);
+  history_handler->InvokeCallback();
+  // Since we downloaded largest icon, and don't want to set active favicon
+  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
+  EXPECT_EQ(new_favicon_url, driver1.available_icon_url());
+  EXPECT_FALSE(driver1.update_active_favicon());
+  EXPECT_EQ(2u, driver1.num_favicon_available());
+
+  // We are trying to download favicon.
+  DownloadHandler* download_handler = handler1.download_handler();
+  EXPECT_TRUE(download_handler->HasDownload());
+  EXPECT_EQ(new_favicon_url, download_handler->GetImageUrl());
+  // Simulate the download succeed.
+  download_handler->InvokeCallback();
+  // Since we downloaded largest icon, and don't want to set active favicon
+  // NotifyFaviconAvaliable() should be called with is_active_favicon as false.
+  EXPECT_EQ(new_favicon_url, driver1.available_icon_url());
+  EXPECT_FALSE(driver1.update_active_favicon());
+  EXPECT_EQ(3u, driver1.num_favicon_available());
+}
+
+INSTANTIATE_TEST_CASE_P(FaviconHandlerTestActiveFaviconValidityTrueOrFalse,
+                        FaviconHandlerActiveFaviconValidityParamTest,
+                        ::testing::Bool());
 
 }  // namespace.
