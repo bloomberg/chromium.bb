@@ -1446,14 +1446,6 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 crbug.com/429843 [ Win7 Debug ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
 
-# crbug.com/429874: Win => Fail
-# crbug.com/431163: Debug => Crash
-crbug.com/429874 [ Win ] http/tests/serviceworker/cache-match.html [ Pass Crash Failure ]
-crbug.com/431163 [ Mac Debug ] http/tests/serviceworker/cache-match.html [ Crash ]
-crbug.com/431163 [ Linux Debug ] http/tests/serviceworker/cache-match.html [ Crash ]
-
-crbug.com/431191 [ Linux Debug ] http/tests/serviceworker/cache-delete.html [ Pass Crash ]
-
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
 crbug.com/431625 fast/parser/adoption-agency-crash-01.html [ Pass Failure ]
 crbug.com/431688 [ Win Release ] webaudio/oscillator-sine.html [ Failure ]
