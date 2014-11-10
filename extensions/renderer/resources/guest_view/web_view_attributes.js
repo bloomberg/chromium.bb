@@ -189,6 +189,17 @@ function SrcAttribute(webViewImpl) {
 
 SrcAttribute.prototype.__proto__ = WebViewAttribute.prototype;
 
+SrcAttribute.prototype.setValueIgnoreMutation = function(value) {
+  // takeRecords() is needed to clear queued up src mutations. Without it, it is
+  // possible for this change to get picked up asyncronously by src's mutation
+  // observer |observer|, and then get handled even though we do not want to
+  // handle this mutation.
+  this.observer.takeRecords();
+  this.ignoreMutation = true;
+  this.webViewImpl.webviewNode.setAttribute(this.name, value || '');
+  this.ignoreMutation = false;
+}
+
 SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
   // Once we have navigated, we don't allow clearing the src attribute.
   // Once <webview> enters a navigated state, it cannot return to a
