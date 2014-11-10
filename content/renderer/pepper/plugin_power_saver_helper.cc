@@ -28,7 +28,7 @@ enum PeripheralHeuristicDecision {
 };
 
 const char kPeripheralHeuristicHistogram[] =
-    "Plugin.PowerSaverPeripheralHeuristic";
+    "Plugin.PowerSaver.PeripheralHeuristic";
 
 // Maximum dimensions plug-in content may have while still being considered
 // peripheral content. These match the sizes used by Safari.

@@ -12,6 +12,7 @@
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -185,6 +186,13 @@ using blink::WebView;
 namespace content {
 
 namespace {
+
+static const int kInfiniteRatio = 99999;
+
+#define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
+    UMA_HISTOGRAM_SPARSE_SLOWLY( \
+        name, \
+        (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
 // Check PP_TextInput_Type and ui::TextInputType are kept in sync.
 COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == int(PP_TEXTINPUT_TYPE_NONE),
@@ -391,6 +399,15 @@ void InitLatencyInfo(ui::LatencyInfo* new_latency,
   }
 }
 
+// Histogram tracking prevalence of tiny Flash instances. Units in pixels.
+enum PluginFlashTinyContentSize {
+  TINY_CONTENT_SIZE_1_1 = 0,
+  TINY_CONTENT_SIZE_5_5 = 1,
+  TINY_CONTENT_SIZE_10_10 = 2,
+  TINY_CONTENT_SIZE_LARGE = 3,
+  TINY_CONTENT_SIZE_NUM_ITEMS
+};
+
 // How the throttled power saver is unthrottled, if ever.
 // These numeric values are used in UMA logs; do not change them.
 enum PowerSaverUnthrottleMethod {
@@ -400,7 +417,49 @@ enum PowerSaverUnthrottleMethod {
   UNTHROTTLE_METHOD_NUM_ITEMS
 };
 
-const char kPowerSaverUnthrottleHistogram[] = "Plugin.PowerSaverUnthrottle";
+const char kFlashClickSizeAspectRatioHistogram[] =
+    "Plugin.Flash.ClickSize.AspectRatio";
+const char kFlashClickSizeHeightHistogram[] = "Plugin.Flash.ClickSize.Height";
+const char kFlashClickSizeWidthHistogram[] = "Plugin.Flash.ClickSize.Width";
+const char kFlashTinyContentSizeHistogram[] = "Plugin.Flash.TinyContentSize";
+const char kPowerSaverUnthrottleHistogram[] = "Plugin.PowerSaver.Unthrottle";
+
+// Record size metrics for all Flash instances.
+void RecordFlashSizeMetric(int width, int height) {
+  PluginFlashTinyContentSize size = TINY_CONTENT_SIZE_LARGE;
+
+  if (width <= 1 && height <= 1)
+    size = TINY_CONTENT_SIZE_1_1;
+  else if (width <= 5 && height <= 5)
+    size = TINY_CONTENT_SIZE_5_5;
+  else if (width <= 10 && height <= 10)
+    size = TINY_CONTENT_SIZE_10_10;
+
+  UMA_HISTOGRAM_ENUMERATION(kFlashTinyContentSizeHistogram, size,
+                            TINY_CONTENT_SIZE_NUM_ITEMS);
+}
+
+// Records size metrics for Flash instances that are clicked.
+void RecordFlashClickSizeMetric(int width, int height) {
+  base::HistogramBase* width_histogram = base::LinearHistogram::FactoryGet(
+      kFlashClickSizeWidthHistogram,
+      0,    // minimum width
+      500,  // maximum width
+      100,  // number of buckets.
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  width_histogram->Add(width);
+
+  base::HistogramBase* height_histogram = base::LinearHistogram::FactoryGet(
+      kFlashClickSizeHeightHistogram,
+      0,    // minimum height
+      400,  // maximum height
+      100,  // number of buckets.
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  height_histogram->Add(height);
+
+  UMA_HISTOGRAM_ASPECT_RATIO(kFlashClickSizeAspectRatioHistogram, width,
+                             height);
+}
 
 void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method) {
   UMA_HISTOGRAM_ENUMERATION(kPowerSaverUnthrottleHistogram, method,
@@ -511,6 +570,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
+      has_been_clicked_(false),
       power_saver_enabled_(false),
       is_peripheral_content_(false),
       plugin_throttled_(false),
@@ -606,11 +666,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
   if (GetContentClient()->renderer() &&  // NULL in unit tests.
       GetContentClient()->renderer()->IsExternalPepperPlugin(module->name()))
     external_document_load_ = true;
-
-  if (IsFlashPlugin(module_.get())) {
-    RenderThread::Get()->RecordAction(
-        base::UserMetricsAction("Flash.PluginInstanceCreated"));
-  }
 }
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
@@ -871,10 +926,16 @@ bool PepperPluginInstanceImpl::Initialize(
   if (!render_frame_)
     return false;
 
+  blink::WebRect bounds = container_->element().boundsInViewportSpace();
+  if (IsFlashPlugin(module_.get())) {
+    RenderThread::Get()->RecordAction(
+        base::UserMetricsAction("Flash.PluginInstanceCreated"));
+    RecordFlashSizeMetric(bounds.width, bounds.height);
+  }
+
   PluginPowerSaverHelper* power_saver_helper =
       render_frame_->plugin_power_saver_helper();
   GURL content_origin = plugin_url_.GetOrigin();
-  blink::WebRect bounds = container_->element().boundsInViewportSpace();
 
   bool cross_origin = false;
   is_peripheral_content_ =
@@ -1157,6 +1218,13 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     const blink::WebInputEvent& event,
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
+
+  if (event.type == blink::WebInputEvent::MouseDown && !has_been_clicked_ &&
+      IsFlashPlugin(module_.get())) {
+    has_been_clicked_ = true;
+    blink::WebRect bounds = container_->element().boundsInViewportSpace();
+    RecordFlashClickSizeMetric(bounds.width, bounds.height);
+  }
 
   if (event.type == blink::WebInputEvent::MouseUp && is_peripheral_content_) {
     is_peripheral_content_ = false;

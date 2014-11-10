@@ -25112,6 +25112,32 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Plugin.Flash.ClickSize.AspectRatio">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Aspect ratio of Flash plugins users click at least once. The aspect ratio is
+    multiplied by 100 and stored as a rounded integer.
+  </summary>
+</histogram>
+
+<histogram name="Plugin.Flash.ClickSize.Height" units="pixels">
+  <owner>tommycli@chromium.org</owner>
+  <summary>Height of Flash plugins users click at least once.</summary>
+</histogram>
+
+<histogram name="Plugin.Flash.ClickSize.Width" units="pixels">
+  <owner>tommycli@chromium.org</owner>
+  <summary>Width of Flash plugins users click at least once.</summary>
+</histogram>
+
+<histogram name="Plugin.Flash.TinyContentSize" enum="FlashTinyContentSize">
+  <owner>tommycli@chromium.org</owner>
+  <summary>
+    Collects the sizes of all loaded Flash plugin instances. This is for
+    determining the prevalence of tiny flash plugin instances.
+  </summary>
+</histogram>
+
 <histogram name="Plugin.FlashNavigateUsage" enum="FlashNavigateUsageType">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Record usage of PPB_Flash.Navigate() Pepper API.</summary>
@@ -25123,7 +25149,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Collects Flash usage data.</summary>
 </histogram>
 
-<histogram name="Plugin.PowerSaverPeripheralHeuristic"
+<histogram name="Plugin.PowerSaver.PeripheralHeuristic"
     enum="PluginPowerSaverPeripheralHeuristicDecision">
   <owner>tommycli@chromium.org</owner>
   <summary>
@@ -25135,7 +25161,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="Plugin.PowerSaverUnthrottle"
+<histogram name="Plugin.PowerSaver.Unthrottle"
     enum="PluginPowerSaverUnthrottleMethod">
   <owner>tommycli@chromium.org</owner>
   <summary>
@@ -45933,6 +45959,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
       label="Rejected because of other headers (e.g., custom headers)."/>
   <int value="14" label="The total number of rejected navigate requests."/>
   <int value="15" label="The total number of navigate requests."/>
+</enum>
+
+<enum name="FlashTinyContentSize" type="int">
+  <int value="0" label="1x1 or smaller"/>
+  <int value="1" label="5x5 or smaller"/>
+  <int value="2" label="10x10 or smaller"/>
+  <int value="3" label="Large"/>
 </enum>
 
 <enum name="FlashUsage" type="int">

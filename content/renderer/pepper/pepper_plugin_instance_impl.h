@@ -713,6 +713,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // Plugin URL.
   GURL plugin_url_;
 
+  // Set to true first time plugin is clicked. Used to collect metrics.
+  bool has_been_clicked_;
+
   // Indicates whether this plugin may be throttled to reduce power consumption.
   // |power_saver_enabled_| implies |is_peripheral_content_|.
   bool power_saver_enabled_;
