@@ -16,6 +16,7 @@ import org.chromium.net.UrlRequestContextConfig;
 import org.chromium.net.UrlRequestException;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 /**
  * Test CronetUrlRequestContext.
@@ -49,7 +50,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             assertTrue(byteBuffer.capacity() != 0);
             byte[] receivedDataAfter = new byte[byteBuffer.capacity()];
             byteBuffer.get(receivedDataAfter);
-            assertEquals(receivedDataBefore, receivedDataAfter);
+            assertTrue(Arrays.equals(receivedDataBefore, receivedDataAfter));
         }
 
         @Override

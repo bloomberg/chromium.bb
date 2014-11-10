@@ -721,6 +721,7 @@ public class ChromiumUrlRequest implements HttpUrlRequest {
     private native String nativeGetNegotiatedProtocol(long urlRequestAdapter);
 
     // Explicit class to work around JNI-generator generics confusion.
-    private class ResponseHeadersMap extends HashMap<String, List<String>> {
+    private static class ResponseHeadersMap extends
+            HashMap<String, List<String>> {
     }
 }

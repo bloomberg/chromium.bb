@@ -20,7 +20,7 @@ namespace net {
 class GrowableIOBuffer;
 class HttpResponseHeaders;
 class UploadDataStream;
-class RedirectInfo;
+struct RedirectInfo;
 }  // namespace net
 
 namespace cronet {

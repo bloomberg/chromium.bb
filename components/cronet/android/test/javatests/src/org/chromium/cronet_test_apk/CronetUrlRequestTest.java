@@ -98,6 +98,8 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(listener.mResponseStep, ResponseStep.ON_SUCCEEDED);
         checkResponseInfo(listener.mResponseInfo,
                 UploadTestServer.getEchoMethodURL(), 200, "OK");
+        checkResponseInfo(listener.mExtendedResponseInfo.getResponseInfo(),
+                UploadTestServer.getEchoMethodURL(), 200, "OK");
     }
 
     @SmallTest
