@@ -27,6 +27,10 @@
       '--config-name', '<(CONFIGURATION_NAME)',
       '-t', '<(SHARED_INTERMEDIATE_DIR)/sdk/',
     ],
+    'common_inputs': [
+      '<(DEPTH)/native_client/build/build_nexe.py',
+      '<(DEPTH)/native_client/build/build_nexe_tools.py',
+    ],
     # Default C compiler defines.
     'nacl_default_defines': [
       '__STDC_LIMIT_MACROS=1',
@@ -228,7 +232,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
@@ -269,7 +273,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
@@ -310,7 +314,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
+                    '<(DEPTH)/native_client/build/link_irt.py',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
@@ -333,7 +338,7 @@
                    '--link_flags=--target=x86_64-unknown-nacl -stdlib=libstdc++ -arch x86-64 --pnacl-allow-translate --pnacl-allow-native -B>(tc_lib_dir_irt64) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib64)',
                    '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
-                   '--irt-layout',
+                   '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
                  ],
                },
              ],
@@ -354,7 +359,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib64)',
@@ -395,7 +400,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
@@ -436,7 +441,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
@@ -477,7 +482,8 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
+                    '<(DEPTH)/native_client/build/link_irt.py',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
@@ -501,7 +507,7 @@
                    '--link_flags=--target=i686-unknown-nacl -stdlib=libstdc++ -arch x86-32 --pnacl-allow-translate --pnacl-allow-native >(irt_flags_x86_32) -B>(tc_lib_dir_irt32) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                    '--source-list=^(source_list_newlib32)',
                    '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
-                   '--irt-layout',
+                   '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
                  ],
                },
              ],
@@ -522,7 +528,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_newlib32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_newlib32)',
@@ -570,7 +576,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib32_nonsfi)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<@(common_inputs)',
                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
@@ -621,7 +627,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib32_nonsfi)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<@(common_inputs)',
                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib32_nonsfi)',
@@ -668,7 +674,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
@@ -709,7 +715,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
@@ -749,7 +755,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_bionic_arm)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_bionic_arm)',
@@ -790,7 +796,8 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
+                   '<(DEPTH)/native_client/build/link_irt.py',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
@@ -813,7 +820,7 @@
                   '--link_flags=-B>(tc_lib_dir_irt_arm) ^(gcc_irt_link_flags) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_arm)',
                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
-                   '--irt-layout',
+                  '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
                 ],
               },
             ],
@@ -834,7 +841,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_arm)',
@@ -875,7 +882,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_arm_nonsfi)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<@(common_inputs)',
                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_newlib_arm_nonsfi)',
@@ -922,7 +929,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources) >(native_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
@@ -963,7 +970,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
@@ -1004,7 +1011,8 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
+                   '<(DEPTH)/native_client/build/link_irt.py',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
@@ -1027,7 +1035,7 @@
                   '--link_flags=-arch mips -stdlib=libstdc++ --pnacl-allow-translate --pnacl-allow-native -Wt,-mtls-use-call --pnacl-disable-abi-check -B>(tc_lib_dir_irt_mips) ^(pnacl_irt_link_flags) ^(link_flags) >(_link_flags)',
                   '--source-list=^(source_list_newlib_mips)',
                   '--tls-edit=<(PRODUCT_DIR)/tls_edit<(EXECUTABLE_SUFFIX)',
-                   '--irt-layout',
+                  '--irt-linker=<(DEPTH)/native_client/build/link_irt.py',
                 ],
               },
             ],
@@ -1048,7 +1056,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_newlib_mips)',
                 'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_newlib_mips)',
@@ -1095,7 +1103,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
@@ -1136,7 +1144,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
@@ -1177,7 +1185,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
@@ -1218,7 +1226,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
@@ -1259,7 +1267,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc64)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc64)',
@@ -1300,7 +1308,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_glibc32)',
                  'inputs': [
-                    '<(DEPTH)/native_client/build/build_nexe.py',
+                    '<@(common_inputs)',
                     '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                     '>@(extra_deps)',
                     '>@(extra_deps_glibc32)',
@@ -1410,7 +1418,7 @@
              'msvs_cygwin_shell': 0,
              'description': 'building >(out_pnacl_newlib)',
              'inputs': [
-               '<(DEPTH)/native_client/build/build_nexe.py',
+               '<@(common_inputs)',
                '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
@@ -1442,9 +1450,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_x86_32_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_x86_32_nexe)' ],
@@ -1464,9 +1470,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_x86_32_nonsfi_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_x86_32_nonsfi_nexe)' ],
@@ -1486,9 +1490,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_x86_64_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_x86_64_nexe)' ],
@@ -1508,9 +1510,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_arm_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_arm_nexe)' ],
@@ -1530,9 +1530,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_arm_nonsfi_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_arm_nonsfi_nexe)' ],
@@ -1552,9 +1550,7 @@
                'msvs_cygwin_shell': 0,
                'description': 'translating >(out_pnacl_newlib_mips_nexe)',
                'inputs': [
-                 # Having this in the input somehow causes devenv warnings
-                 # when building pnacl browser tests.
-                 # '<(DEPTH)/native_client/build/build_nexe.py',
+                 # Depending on out_pnacl_newlib helps depend on common_inputs.
                  '>(out_pnacl_newlib)',
                ],
                'outputs': [ '>(out_pnacl_newlib_mips_nexe)' ],
@@ -1587,7 +1583,7 @@
              'msvs_cygwin_shell': 0,
              'description': 'building >(out_pnacl_newlib)',
              'inputs': [
-               '<(DEPTH)/native_client/build/build_nexe.py',
+               '<@(common_inputs)',
                '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                '>@(extra_deps)',
                '>@(extra_deps_pnacl_newlib)',
@@ -1635,7 +1631,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_pnacl_newlib_arm)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<@(common_inputs)',
                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
@@ -1682,7 +1678,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_pnacl_newlib_x86_64)',
                  'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
@@ -1724,7 +1720,7 @@
                  'msvs_cygwin_shell': 0,
                  'description': 'building >(out_pnacl_newlib_x86_32)',
                  'inputs': [
-                   '<(DEPTH)/native_client/build/build_nexe.py',
+                   '<@(common_inputs)',
                    '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                    '>@(extra_deps)',
                    '>@(extra_deps_pnacl_newlib)',
@@ -1770,7 +1766,7 @@
                 'msvs_cygwin_shell': 0,
                 'description': 'building >(out_pnacl_newlib_mips)',
                 'inputs': [
-                  '<(DEPTH)/native_client/build/build_nexe.py',
+                  '<@(common_inputs)',
                   '>!@pymod_do_main(scan_sources -I . >(include_dirs) >(_include_dirs) -S >(sources) >(_sources))',
                   '>@(extra_deps)',
                   '>@(extra_deps_pnacl_newlib)',
