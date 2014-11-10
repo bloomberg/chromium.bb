@@ -717,13 +717,19 @@ chrome.bluetoothLowEnergy.getCharacteristics(heartRateService.instanceId,
 
 <p>
   Chrome discovers all characteristics and descriptors of a service
-  asynchronously. This means that, at the time a
-  $(ref:bluetoothLowEnergy.onServiceAdded) event is sent to the app, not all
-  characteristics of a service may have been discovered yet. Each time a
-  characteristic or a descriptor is added through discovery, the app will
-  receive the $(ref:bluetoothLowEnergy.onServiceChanged) event. This event will
-  also be sent if a notification is received from the remote device telling
-  Chrome that the service definition itself has changed:
+  asynchronously and sends the $(ref:bluetoothLowEnergy.onServiceAdded) event
+  once discovery has completed. If the connection to a peripheral terminates,
+  Chrome removes all related services and sends the
+  $(ref:bluetoothLowEnergy.onServiceRemoved) event.
+</p>
+
+<p>
+  Some peripherals may modify their services, e.g. the characteristics of a
+  service may change or services may get added and removed entirely. Chrome
+  notifies apps of these changes using the
+  $(ref:bluetoothLowEnergy.onServiceChanged),
+  $(ref:bluetoothLowEnergy.onServiceAdded), and
+  $(ref:bluetoothLowEnergy.onServiceRemoved) events.
 </p>
 
 <pre>
@@ -731,28 +737,7 @@ chrome.bluetoothLowEnergy.getCharacteristics(heartRateService.instanceId,
     if (service.instanceId != myService.instanceId)
       return;
 
-    // Get characteristics
-    chrome.bluetoothLowEnergy.getCharacteristics(service.instanceId,
-                                                 function(result) {
-      ...
-      if (result.length == 0) {
-        console.log('Characteristics not discovered yet');
-        return;
-      }
-
-      for (var i = 0; i < result.length; i++) {
-        if (result[i].uuid == MY_CHARACTERISTIC_UUID) {
-          myChar = result[i];
-          break;
-        }
-
-        if (!myChar) {
-          console.log('The relevant characteristic not discovered yet.');
-          return;
-        }
-        ...
-      }
-    });
+    updateMyService(service);
   });
 </pre>
 
