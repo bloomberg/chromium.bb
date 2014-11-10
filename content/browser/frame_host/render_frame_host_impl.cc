@@ -1035,10 +1035,9 @@ void RenderFrameHostImpl::OnShowDesktopNotification(
 }
 
 void RenderFrameHostImpl::OnCancelDesktopNotification(int notification_id) {
-  if (!cancel_notification_callbacks_.count(notification_id)) {
-    NOTREACHED();
+  if (!cancel_notification_callbacks_.count(notification_id))
     return;
-  }
+
   cancel_notification_callbacks_[notification_id].Run();
   cancel_notification_callbacks_.erase(notification_id);
 }

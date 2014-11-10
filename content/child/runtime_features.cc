@@ -114,6 +114,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (!command_line.HasSwitch(switches::kEnableSpeechRecognition))
     WebRuntimeFeatures::enableScriptedSpeech(false);
 
+  if (command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures))
+    WebRuntimeFeatures::enableNotifications(true);
+
   // WebAudio is enabled by default on ARM and X86, if the MediaCodec
   // API is available.
   WebRuntimeFeatures::enableWebAudio(
