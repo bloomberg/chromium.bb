@@ -1309,6 +1309,12 @@ void RenderStyle::clearAppliedTextDecorations()
         rareInheritedData.access()->appliedTextDecorations = nullptr;
 }
 
+void RenderStyle::clearMultiCol()
+{
+    rareNonInheritedData.access()->m_multiCol = nullptr;
+    rareNonInheritedData.access()->m_multiCol.init();
+}
+
 void RenderStyle::setFontStretch(FontStretch stretch)
 {
     FontSelector* currentFontSelector = font().fontSelector();

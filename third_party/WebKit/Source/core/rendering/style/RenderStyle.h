@@ -1136,6 +1136,7 @@ public:
     void setLineHeight(const Length& specifiedLineHeight);
     bool setZoom(float);
     bool setEffectiveZoom(float);
+    void clearMultiCol();
 
     void setImageRendering(EImageRendering v) { SET_VAR(rareInheritedData, m_imageRendering, v); }
 

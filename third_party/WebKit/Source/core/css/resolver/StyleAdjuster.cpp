@@ -233,6 +233,10 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         // SVG text layout code expects us to be a block-level style element.
         if ((isSVGForeignObjectElement(*e) || isSVGTextElement(*e)) && style->isDisplayInlineType())
             style->setDisplay(BLOCK);
+
+        // Columns don't apply to svg text elements.
+        if (isSVGTextElement(*e))
+            style->clearMultiCol();
     }
 
     if (e && e->renderStyle() && e->renderStyle()->textAutosizingMultiplier() != 1) {

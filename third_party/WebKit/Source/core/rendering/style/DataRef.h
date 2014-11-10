@@ -62,6 +62,7 @@ public:
         return m_data != o.m_data && *m_data != *o.m_data;
     }
 
+    void operator=(std::nullptr_t) { m_data = nullptr; }
 private:
     RefPtr<T> m_data;
 };
