@@ -99,6 +99,13 @@ bool IsRunningOnValgrind();
   ((expr) ? static_cast<void>(0) : sandbox::UnitTests::AssertionFailure( \
                                        SANDBOX_STR(expr), __FILE__, __LINE__))
 
+#define SANDBOX_ASSERT_EQ(x, y) SANDBOX_ASSERT((x) == (y))
+#define SANDBOX_ASSERT_NE(x, y) SANDBOX_ASSERT((x) != (y))
+#define SANDBOX_ASSERT_LT(x, y) SANDBOX_ASSERT((x) < (y))
+#define SANDBOX_ASSERT_GT(x, y) SANDBOX_ASSERT((x) > (y))
+#define SANDBOX_ASSERT_LE(x, y) SANDBOX_ASSERT((x) <= (y))
+#define SANDBOX_ASSERT_GE(x, y) SANDBOX_ASSERT((x) >= (y))
+
 // This class allows to run unittests in their own process. The main method is
 // RunTestInProcess().
 class UnitTests {

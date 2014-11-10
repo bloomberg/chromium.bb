@@ -28,6 +28,8 @@
 
 namespace sandbox {
 
+namespace syscall_broker {
+
 BrokerProcess::BrokerProcess(int denied_errno,
                              const std::vector<std::string>& allowed_r_files,
                              const std::vector<std::string>& allowed_w_files,
@@ -43,10 +45,12 @@ BrokerProcess::BrokerProcess(int denied_errno,
 }
 
 BrokerProcess::~BrokerProcess() {
-  if (initialized_ && ipc_socketpair_ != -1) {
-    // Closing the socket should be enough to notify the child to die,
-    // unless it has been duplicated.
-    PCHECK(0 == IGNORE_EINTR(close(ipc_socketpair_)));
+  if (initialized_) {
+    if (ipc_socketpair_ != -1) {
+      // Closing the socket should be enough to notify the child to die,
+      // unless it has been duplicated.
+      CloseChannel();
+    }
     PCHECK(0 == kill(broker_pid_, SIGKILL));
     siginfo_t process_info;
     // Reap the child.
@@ -85,11 +89,9 @@ bool BrokerProcess::Init(
     ipc_socketpair_ = socket_pair[1];
     is_child_ = false;
     broker_pid_ = child_pid;
-    broker_client_.reset(
-        new syscall_broker::BrokerClient(policy_,
-                                         ipc_socketpair_,
-                                         fast_check_in_client_,
-                                         quiet_failures_for_tests_));
+    broker_client_.reset(new BrokerClient(policy_, ipc_socketpair_,
+                                          fast_check_in_client_,
+                                          quiet_failures_for_tests_));
     initialized_ = true;
     return true;
   } else {
@@ -101,14 +103,26 @@ bool BrokerProcess::Init(
     ipc_socketpair_ = socket_pair[0];
     is_child_ = true;
     CHECK(broker_process_init_callback.Run());
-    syscall_broker::BrokerHost broker_host(policy_, ipc_socketpair_);
+    BrokerHost broker_host(policy_, ipc_socketpair_);
     initialized_ = true;
     for (;;) {
-      broker_host.HandleRequest();
+      switch (broker_host.HandleRequest()) {
+        case BrokerHost::RequestStatus::LOST_CLIENT:
+          _exit(1);
+        case BrokerHost::RequestStatus::SUCCESS:
+        case BrokerHost::RequestStatus::FAILURE:
+          continue;
+      }
     }
     _exit(1);
   }
   NOTREACHED();
+}
+
+void BrokerProcess::CloseChannel() {
+  CHECK_NE(-1, ipc_socketpair_);
+  PCHECK(0 == IGNORE_EINTR(close(ipc_socketpair_)));
+  ipc_socketpair_ = -1;
 }
 
 int BrokerProcess::Access(const char* pathname, int mode) const {
@@ -120,5 +134,7 @@ int BrokerProcess::Open(const char* pathname, int flags) const {
   RAW_CHECK(initialized_);
   return broker_client_->Open(pathname, flags);
 }
+
+}  // namespace syscall_broker
 
 }  // namespace sandbox.

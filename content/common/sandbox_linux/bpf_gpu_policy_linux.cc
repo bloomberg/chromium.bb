@@ -31,7 +31,7 @@
 #include "sandbox/linux/services/linux_syscalls.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 
-using sandbox::BrokerProcess;
+using sandbox::syscall_broker::BrokerProcess;
 using sandbox::SyscallSets;
 using sandbox::arch_seccomp_data;
 using sandbox::bpf_dsl::Allow;

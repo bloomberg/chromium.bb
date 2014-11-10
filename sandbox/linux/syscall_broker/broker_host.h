@@ -18,10 +18,12 @@ class BrokerPolicy;
 // |ipc_channel| according to |broker_policy|.
 class BrokerHost {
  public:
+  enum class RequestStatus { LOST_CLIENT = 0, SUCCESS, FAILURE };
+
   BrokerHost(const BrokerPolicy& broker_policy, int ipc_channel);
   ~BrokerHost();
 
-  bool HandleRequest() const;
+  RequestStatus HandleRequest() const;
 
  private:
   const BrokerPolicy& broker_policy_;

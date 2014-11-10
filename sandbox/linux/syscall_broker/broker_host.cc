@@ -165,7 +165,7 @@ BrokerHost::~BrokerHost() {
 // A request should have a file descriptor attached on which we will reply and
 // that we will then close.
 // A request should start with an int that will be used as the command type.
-bool BrokerHost::HandleRequest() const {
+BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   ScopedVector<base::ScopedFD> fds;
   char buf[kMaxMessageLength];
   errno = 0;
@@ -174,8 +174,7 @@ bool BrokerHost::HandleRequest() const {
 
   if (msg_len == 0 || (msg_len == -1 && errno == ECONNRESET)) {
     // EOF from the client, or the client died, we should die.
-    // TODO(jln): change this.
-    _exit(0);
+    return RequestStatus::LOST_CLIENT;
   }
 
   // The client should send exactly one file descriptor, on which we
@@ -183,7 +182,7 @@ bool BrokerHost::HandleRequest() const {
   // TODO(mdempsky): ScopedVector doesn't have 'at()', only 'operator[]'.
   if (msg_len < 0 || fds.size() != 1 || fds[0]->get() < 0) {
     PLOG(ERROR) << "Error reading message from the client";
-    return false;
+    return RequestStatus::FAILURE;
   }
 
   base::ScopedFD temporary_ipc(fds[0]->Pass());
@@ -192,28 +191,32 @@ bool BrokerHost::HandleRequest() const {
   PickleIterator iter(pickle);
   int command_type;
   if (pickle.ReadInt(&iter, &command_type)) {
-    bool r = false;
+    bool command_handled = false;
     // Go through all the possible IPC messages.
     switch (command_type) {
       case COMMAND_ACCESS:
       case COMMAND_OPEN:
         // We reply on the file descriptor sent to us via the IPC channel.
-        r = HandleRemoteCommand(broker_policy_,
-                                static_cast<IPCCommand>(command_type),
-                                temporary_ipc.get(),
-                                pickle,
-                                iter);
+        command_handled = HandleRemoteCommand(
+            broker_policy_, static_cast<IPCCommand>(command_type),
+            temporary_ipc.get(), pickle, iter);
         break;
       default:
         NOTREACHED();
-        r = false;
         break;
     }
-    return r;
+
+    if (command_handled) {
+      return RequestStatus::SUCCESS;
+    } else {
+      return RequestStatus::FAILURE;
+    }
+
+    NOTREACHED();
   }
 
   LOG(ERROR) << "Error parsing IPC request";
-  return false;
+  return RequestStatus::FAILURE;
 }
 
 }  // namespace syscall_broker

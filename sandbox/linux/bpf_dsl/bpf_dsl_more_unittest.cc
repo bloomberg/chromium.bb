@@ -759,26 +759,29 @@ class InitializedOpenBroker {
     allowed_files.push_back("/proc/allowed");
     allowed_files.push_back("/proc/cpuinfo");
 
-    broker_process_.reset(
-        new BrokerProcess(EPERM, allowed_files, std::vector<std::string>()));
+    broker_process_.reset(new syscall_broker::BrokerProcess(
+        EPERM, allowed_files, std::vector<std::string>()));
     BPF_ASSERT(broker_process() != NULL);
     BPF_ASSERT(broker_process_->Init(base::Bind(&NoOpCallback)));
 
     initialized_ = true;
   }
   bool initialized() { return initialized_; }
-  class BrokerProcess* broker_process() { return broker_process_.get(); }
+  class syscall_broker::BrokerProcess* broker_process() {
+    return broker_process_.get();
+  }
 
  private:
   bool initialized_;
-  scoped_ptr<class BrokerProcess> broker_process_;
+  scoped_ptr<class syscall_broker::BrokerProcess> broker_process_;
   DISALLOW_COPY_AND_ASSIGN(InitializedOpenBroker);
 };
 
 intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
                                void* aux) {
   BPF_ASSERT(aux);
-  BrokerProcess* broker_process = static_cast<BrokerProcess*>(aux);
+  syscall_broker::BrokerProcess* broker_process =
+      static_cast<syscall_broker::BrokerProcess*>(aux);
   switch (args.nr) {
     case __NR_faccessat:  // access is a wrapper of faccessat in android
       BPF_ASSERT(static_cast<int>(args.args[0]) == AT_FDCWD);
@@ -824,7 +827,7 @@ class DenyOpenPolicy : public Policy {
 #endif
       case __NR_openat:
         // We get a InitializedOpenBroker class, but our trap handler wants
-        // the BrokerProcess object.
+        // the syscall_broker::BrokerProcess object.
         return Trap(BrokerOpenTrapHandler, iob_->broker_process());
       default:
         return Allow();
@@ -844,7 +847,7 @@ BPF_TEST(SandboxBPF,
          DenyOpenPolicy,
          InitializedOpenBroker /* (*BPF_AUX) */) {
   BPF_ASSERT(BPF_AUX->initialized());
-  BrokerProcess* broker_process = BPF_AUX->broker_process();
+  syscall_broker::BrokerProcess* broker_process = BPF_AUX->broker_process();
   BPF_ASSERT(broker_process != NULL);
 
   // First, use the broker "manually"

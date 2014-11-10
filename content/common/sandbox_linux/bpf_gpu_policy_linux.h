@@ -12,7 +12,9 @@
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 
 namespace sandbox {
+namespace syscall_broker {
 class BrokerProcess;
+}
 }
 
 namespace content {
@@ -40,7 +42,9 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
       const std::vector<std::string>& read_whitelist_extra,
       const std::vector<std::string>& write_whitelist_extra);
 
-  sandbox::BrokerProcess* broker_process() { return broker_process_; }
+  sandbox::syscall_broker::BrokerProcess* broker_process() {
+    return broker_process_;
+  }
 
  private:
   // A BrokerProcess is a helper that is started before the sandbox is engaged
@@ -50,7 +54,7 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   // vital to the process.
   // This is allocated by InitGpuBrokerProcess, called from PreSandboxHook(),
   // which executes iff the sandbox is going to be enabled afterwards.
-  sandbox::BrokerProcess* broker_process_;
+  sandbox::syscall_broker::BrokerProcess* broker_process_;
 
   // eglCreateWindowSurface() needs mincore().
   bool allow_mincore_;

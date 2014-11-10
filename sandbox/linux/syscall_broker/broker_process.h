@@ -19,8 +19,8 @@
 namespace sandbox {
 
 namespace syscall_broker {
+
 class BrokerClient;
-}
 
 // Create a new "broker" process to which we can send requests via an IPC
 // channel by forking the current process.
@@ -68,6 +68,12 @@ class SANDBOX_EXPORT BrokerProcess {
   int broker_pid() const { return broker_pid_; }
 
  private:
+  friend class BrokerProcessTestHelper;
+
+  // Close the IPC channel with the other party. This should only be used
+  // by tests.
+  void CloseChannel();
+
   bool initialized_;  // Whether we've been through Init() yet.
   bool is_child_;     // Whether we're the child (broker process).
   bool fast_check_in_client_;
@@ -78,10 +84,11 @@ class SANDBOX_EXPORT BrokerProcess {
       broker_client_;  // Can only exist if is_child_ is true.
 
   int ipc_socketpair_;  // Our communication channel to parent or child.
-  DISALLOW_COPY_AND_ASSIGN(BrokerProcess);
 
-  friend class BrokerProcessTestHelper;
+  DISALLOW_COPY_AND_ASSIGN(BrokerProcess);
 };
+
+}  // namespace syscall_broker
 
 }  // namespace sandbox
 
