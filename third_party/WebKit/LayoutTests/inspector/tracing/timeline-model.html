@@ -50,18 +50,12 @@ function test()
         {"name": "Program", "ts": 2009999, "ph": "E", args: {},  "tid": mainThread, "pid": 100, "cat":"disabled-by-default.devtools.timeline"}
     ];
 
-    var recordsFromEvent = [];
-    function onRecordAdded(event)
-    {
-        recordsFromEvent.push(event.data);
-    }
     var tracingTimelineModel = InspectorTest.tracingTimelineModel();
-    tracingTimelineModel.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, onRecordAdded);
     tracingTimelineModel.setEventsForTest(commonMetadata.concat(traceEvents));
     var records = tracingTimelineModel.records();
-    InspectorTest.assertEquals(records.length, recordsFromEvent.length);
+    var topLevelRecordsCount = 2;
+    InspectorTest.assertEquals(topLevelRecordsCount, records.length);
     for (var i = 0; i < records.length; ++i) {
-        InspectorTest.assertEquals(records[i], recordsFromEvent[i]);
         InspectorTest.dumpTimelineModelRecord(records[i]);
     }
     InspectorTest.completeTest();
