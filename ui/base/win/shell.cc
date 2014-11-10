@@ -10,6 +10,7 @@
 #include <shellapi.h>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
@@ -146,7 +147,9 @@ bool IsAeroGlassEnabled() {
       switches::kDisableDwmComposition))
     return false;
 
-  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+  base::win::Version version = base::win::GetVersion();
+  base::debug::Alias(&version);  // TODO(scottmg): http://crbug.com/431549.
+  if (version < base::win::VERSION_VISTA)
     return false;
   // If composition is not enabled, we behave like on XP.
   BOOL enabled = FALSE;
