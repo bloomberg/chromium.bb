@@ -333,12 +333,9 @@ class CastStreamingApiTestWithPixelOutput : public CastStreamingApiTest {
 // in-process Cast receiver, listening on a localhost UDP socket, to receive the
 // content and check whether it matches expectations.
 //
-// TODO(miu): In order to get this test up-and-running again, we will first
-// confirm it is stable on Release build bots, then later we will enable it for
-// the Debug build bots.  http://crbug.com/396413
-// Also, it seems that the test fails to generate any video (audio is fine) on
-// the ChromeOS bot.  Need to root-cause and resolve that issue.
-#if defined(NDEBUG) && !defined(OS_CHROMEOS)
+// TODO(miu): Now that this test has been long-stable on Release build bots, it
+// should be enabled for the Debug build bots.  http://crbug.com/396413
+#if defined(NDEBUG)
 #define MAYBE_EndToEnd EndToEnd
 #else
 #define MAYBE_EndToEnd DISABLED_EndToEnd
