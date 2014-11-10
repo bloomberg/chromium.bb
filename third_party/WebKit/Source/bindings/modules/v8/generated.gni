@@ -42,8 +42,6 @@ bindings_modules_generated_init_partial_interfaces_file =
   "$bindings_modules_v8_output_dir/initPartialInterfacesInModules.cpp"
 
 bindings_modules_generated_union_type_files = [
-  # FIXME: Uncomment following entries when we start using union types in
-  # modules.
-  #"$bindings_core_v8_output_dir/UnionTypesModules.cpp",
-  #"$bindings_core_v8_output_dir/UnionTypesModules.h",
+  "$bindings_modules_v8_output_dir/UnionTypesModules.cpp",
+  "$bindings_modules_v8_output_dir/UnionTypesModules.h",
 ]

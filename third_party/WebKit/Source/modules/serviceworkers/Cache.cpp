@@ -161,43 +161,37 @@ Cache* Cache::create(WebServiceWorkerCache* webCache)
     return new Cache(webCache);
 }
 
-ScriptPromise Cache::match(ScriptState* scriptState, Request* request, const CacheQueryOptions& options)
+ScriptPromise Cache::match(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    return matchImpl(scriptState, request, options);
-}
-
-ScriptPromise Cache::match(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return matchImpl(scriptState, request.getAsRequest(), options);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return matchImpl(scriptState, request, options);
+    return matchImpl(scriptState, newRequest, options);
 }
 
-ScriptPromise Cache::matchAll(ScriptState* scriptState, Request* request, const CacheQueryOptions& options)
+ScriptPromise Cache::matchAll(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    return matchAllImpl(scriptState, request, options);
-}
-
-ScriptPromise Cache::matchAll(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return matchAllImpl(scriptState, request.getAsRequest(), options);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return matchAllImpl(scriptState, request, options);
+    return matchAllImpl(scriptState, newRequest, options);
 }
 
-ScriptPromise Cache::add(ScriptState* scriptState, Request* request)
+ScriptPromise Cache::add(ScriptState* scriptState, const RequestInfo& request, ExceptionState& exceptionState)
 {
-    return addImpl(scriptState, request);
-}
-
-ScriptPromise Cache::add(ScriptState* scriptState, const String& requestString, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return addImpl(scriptState, request.getAsRequest());
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return addImpl(scriptState, request);
+    return addImpl(scriptState, newRequest);
 }
 
 ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>& rawRequests)
@@ -206,48 +200,42 @@ ScriptPromise Cache::addAll(ScriptState* scriptState, const Vector<ScriptValue>&
     return rejectAsNotImplemented(scriptState);
 }
 
-ScriptPromise Cache::deleteFunction(ScriptState* scriptState, Request* request, const CacheQueryOptions& options)
+ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    return deleteImpl(scriptState, request, options);
-}
-
-ScriptPromise Cache::deleteFunction(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return deleteImpl(scriptState, request.getAsRequest(), options);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return deleteImpl(scriptState, request, options);
+    return deleteImpl(scriptState, newRequest, options);
 }
 
-ScriptPromise Cache::put(ScriptState* scriptState, Request* request, Response* response)
+ScriptPromise Cache::put(ScriptState* scriptState, const RequestInfo& request, Response* response, ExceptionState& exceptionState)
 {
-    return putImpl(scriptState, request, response);
-}
-
-ScriptPromise Cache::put(ScriptState* scriptState, const String& requestString, Response* response, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return putImpl(scriptState, request.getAsRequest(), response);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return putImpl(scriptState, request, response);
+    return putImpl(scriptState, newRequest, response);
 }
 
-ScriptPromise Cache::keys(ScriptState* scriptState)
+ScriptPromise Cache::keys(ScriptState* scriptState, ExceptionState&)
 {
     return keysImpl(scriptState);
 }
 
-ScriptPromise Cache::keys(ScriptState* scriptState, Request* request, const CacheQueryOptions& options)
+ScriptPromise Cache::keys(ScriptState* scriptState, const RequestInfo& request, const CacheQueryOptions& options, ExceptionState& exceptionState)
 {
-    return keysImpl(scriptState, request, options);
-}
-
-ScriptPromise Cache::keys(ScriptState* scriptState, const String& requestString, const CacheQueryOptions& options, ExceptionState& exceptionState)
-{
-    Request* request = Request::create(scriptState->executionContext(), requestString, exceptionState);
+    ASSERT(!request.isNull());
+    if (request.isRequest())
+        return keysImpl(scriptState, request.getAsRequest(), options);
+    Request* newRequest = Request::create(scriptState->executionContext(), request.getAsUSVString(), exceptionState);
     if (exceptionState.hadException())
         return ScriptPromise();
-    return keysImpl(scriptState, request, options);
+    return keysImpl(scriptState, newRequest, options);
 }
 
 Cache::Cache(WebServiceWorkerCache* webCache)

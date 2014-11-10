@@ -93,7 +93,6 @@ void V8BooleanOrStringOrUnrestrictedDouble::toImpl(v8::Isolate* isolate, v8::Han
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -161,7 +160,6 @@ void V8DoubleOrString::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(DoubleOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -318,7 +316,6 @@ void V8StringOrArrayBufferOrArrayBufferView::toImpl(v8::Isolate* isolate, v8::Ha
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -386,7 +383,6 @@ void V8StringOrDouble::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(StringOrDouble& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -457,7 +453,6 @@ void V8TestInterfaceGarbageCollectedOrString::toImpl(v8::Isolate* isolate, v8::H
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -529,7 +524,6 @@ void V8TestInterfaceOrLong::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
 }
 
 v8::Handle<v8::Value> toV8(TestInterfaceOrLong& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

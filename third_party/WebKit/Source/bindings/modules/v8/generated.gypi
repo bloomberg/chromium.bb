@@ -6,9 +6,8 @@
   'variables': {
     'bindings_modules_v8_output_dir': '<(SHARED_INTERMEDIATE_DIR)/blink/bindings/modules/v8',
     'bindings_modules_v8_generated_union_type_files': [
-      # FIXME: Uncomment following entries when we start using union types in modules.
-      #'<(bindings_modules_v8_output_dir)/UnionTypesModules.cpp',
-      #'<(bindings_modules_v8_output_dir)/UnionTypesModules.h',
+        '<(bindings_modules_v8_output_dir)/UnionTypesModules.cpp',
+        '<(bindings_modules_v8_output_dir)/UnionTypesModules.h',
     ],
 
     'conditions': [
