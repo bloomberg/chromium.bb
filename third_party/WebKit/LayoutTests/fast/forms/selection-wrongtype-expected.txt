@@ -80,6 +80,48 @@ PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 
 PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('number') does not support selection..
 PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('number') does not support selection..
 PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('date') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('time') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('month') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('week') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('datetime-local') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
+PASS test.selectionStart threw exception InvalidStateError: Failed to read the 'selectionStart' property from 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionStart = 0 threw exception InvalidStateError: Failed to set the 'selectionStart' property on 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionEnd threw exception InvalidStateError: Failed to read the 'selectionEnd' property from 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionEnd = 0 threw exception InvalidStateError: Failed to set the 'selectionEnd' property on 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionDirection threw exception InvalidStateError: Failed to read the 'selectionDirection' property from 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionDirection = 0 threw exception InvalidStateError: Failed to set the 'selectionDirection' property on 'HTMLInputElement': The input element's type ('color') does not support selection..
+PASS test.selectionRange() threw exception TypeError: undefined is not a function.
 PASS successfullyParsed is true
 
 TEST COMPLETE
