@@ -348,6 +348,10 @@ if ragel_involved:
      '20141104.avx1_3op_fp_ps', '20141105.avx1_3op_pi'),
     ('avx1_xmm_memory_3op_pi_proof.py', '64',
      '20141104.avx1_3op_fp_ps', '20141105.avx1_3op_pi'),
+    ('avx1_xmm_memory_3op_pb_proof.py', '32',
+     '20141105.avx1_3op_pi', '20141106.avx1_3op_pb'),
+    ('avx1_xmm_memory_3op_pb_proof.py', '64',
+     '20141105.avx1_3op_pi', '20141106.avx1_3op_pb'),
   ]
   for proof_file, bitness, old, new in trie_proofs:
     trie_subdirs = {'32': 'ragel_trie_x86_32', '64': 'ragel_trie_x86_64'}
