@@ -2601,6 +2601,24 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
             hitType |= HitTestRequest::ReadOnly;
     }
 
+    GestureEventWithHitTestResults eventWithHitTestResults = hitTestResultForGestureEvent(gestureEvent, hitType);
+    // Now apply hover/active state to the final target.
+    // FIXME: This is supposed to send mouseenter/mouseleave events, but doesn't because we
+    // aren't passing a PlatformMouseEvent.
+    HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
+    if (!request.readOnly())
+        m_frame->document()->updateHoverActiveState(request, eventWithHitTestResults.hitTestResult().innerElement());
+
+    if (shouldKeepActiveForMinInterval) {
+        m_lastDeferredTapElement = eventWithHitTestResults.hitTestResult().innerElement();
+        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval, FROM_HERE);
+    }
+
+    return eventWithHitTestResults;
+}
+
+GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(const PlatformGestureEvent& gestureEvent, HitTestRequest::HitTestRequestType hitType)
+{
     // Perform the rect-based hit-test (or point-based if adjustment is disabled). Note that
     // we don't yet apply hover/active state here because we need to resolve touch adjustment
     // first so that we apply hover/active it to the final adjusted node.
@@ -2631,18 +2649,6 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(const PlatformGe
     // If we did a rect-based hit test it must be resolved to the best single node by now to
     // ensure consumers don't accidentally use one of the other candidates.
     ASSERT(!hitTestResult.isRectBasedTest());
-
-    // Now apply hover/active state to the final target.
-    // FIXME: This is supposed to send mouseenter/mouseleave events, but doesn't because we
-    // aren't passing a PlatformMouseEvent.
-    HitTestRequest request(hitType | HitTestRequest::AllowChildFrameContent);
-    if (!request.readOnly())
-        m_frame->document()->updateHoverActiveState(request, hitTestResult.innerElement());
-
-    if (shouldKeepActiveForMinInterval) {
-        m_lastDeferredTapElement = hitTestResult.innerElement();
-        m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval, FROM_HERE);
-    }
 
     return GestureEventWithHitTestResults(adjustedEvent, hitTestResult);
 }

@@ -4067,6 +4067,27 @@ HitTestResult WebViewImpl::hitTestResultForWindowPos(const IntPoint& pos)
     return result;
 }
 
+WebHitTestResult WebViewImpl::hitTestResultForTap(const WebPoint& tapPointWindowPos, const WebSize& tapArea)
+{
+    if (!m_page->mainFrame()->isLocalFrame())
+        return HitTestResult();
+
+    WebGestureEvent tapEvent;
+    tapEvent.x = tapPointWindowPos.x;
+    tapEvent.y = tapPointWindowPos.y;
+    tapEvent.type = WebInputEvent::GestureTap;
+    tapEvent.data.tap.tapCount = 1;
+    tapEvent.data.tap.width = tapArea.width;
+    tapEvent.data.tap.height = tapArea.height;
+
+    PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(), tapEvent);
+
+    HitTestResult result = m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultForGestureEvent(platformEvent, HitTestRequest::ReadOnly | HitTestRequest::Active).hitTestResult();
+
+    result.setToShadowHostIfInUserAgentShadowRoot();
+    return result;
+}
+
 void WebViewImpl::setTabsToLinks(bool enable)
 {
     m_tabsToLinks = enable;

@@ -221,6 +221,7 @@ public:
         const WebPluginAction&,
         const WebPoint&) override;
     virtual WebHitTestResult hitTestResultAt(const WebPoint&) override;
+    virtual WebHitTestResult hitTestResultForTap(const WebPoint&, const WebSize&) override;
     virtual void copyImageAt(const WebPoint&) override;
     virtual void saveImageAt(const WebPoint&) override;
     virtual void dragSourceEndedAt(

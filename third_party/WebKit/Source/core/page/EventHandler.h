@@ -152,7 +152,7 @@ public:
     // Note: This is similar to (the less clearly named) prepareMouseEvent.
     // FIXME: Remove readOnly param when there is only ever a single call to this.
     GestureEventWithHitTestResults targetGestureEvent(const PlatformGestureEvent&, bool readOnly = false);
-
+    GestureEventWithHitTestResults hitTestResultForGestureEvent(const PlatformGestureEvent&, HitTestRequest::HitTestRequestType);
     // Handle the provided non-scroll gesture event. Should be called only on the inner frame.
     bool handleGestureEventInFrame(const GestureEventWithHitTestResults&);
 

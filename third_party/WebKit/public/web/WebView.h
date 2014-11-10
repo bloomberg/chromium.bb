@@ -319,6 +319,11 @@ public:
     // Do a hit test at given point and return the HitTestResult.
     virtual WebHitTestResult hitTestResultAt(const WebPoint&) = 0;
 
+    // Do a hit test equivalent to what would be done for a GestureTap event
+    // that has width/height corresponding to the supplied |tapArea|.
+    virtual WebHitTestResult hitTestResultForTap(const WebPoint& tapPoint,
+        const WebSize& tapArea) = 0;
+
     // Copy to the clipboard the image located at a particular point in the
     // WebView (if there is such an image)
     virtual void copyImageAt(const WebPoint&) = 0;

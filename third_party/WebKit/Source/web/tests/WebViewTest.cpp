@@ -427,6 +427,35 @@ TEST_F(WebViewTest, HitTestResultAtWithPageScale)
     positiveResult.reset();
 }
 
+TEST_F(WebViewTest, HitTestResultForTapWithTapArea)
+{
+    std::string url = m_baseURL + "hit_test.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(url), "hit_test.html");
+    WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+    webView->resize(WebSize(100, 100));
+    WebPoint hitPoint(55, 55);
+
+    // Image is at top left quandrant, so should not hit it.
+    WebHitTestResult negativeResult = webView->hitTestResultAt(hitPoint);
+    ASSERT_EQ(WebNode::ElementNode, negativeResult.node().nodeType());
+    EXPECT_FALSE(negativeResult.node().to<WebElement>().hasHTMLTagName("img"));
+    negativeResult.reset();
+
+    // The tap area is 20 by 20 square, centered at 55, 55.
+    WebSize tapArea(20, 20);
+    WebHitTestResult positiveResult = webView->hitTestResultForTap(hitPoint, tapArea);
+    ASSERT_EQ(WebNode::ElementNode, positiveResult.node().nodeType());
+    EXPECT_TRUE(positiveResult.node().to<WebElement>().hasHTMLTagName("img"));
+    positiveResult.reset();
+
+    // Scale down page by half so the image is outside the tapped area now.
+    webView->setPageScaleFactor(0.5f);
+    WebHitTestResult negativeResult2 = webView->hitTestResultForTap(hitPoint, tapArea);
+    ASSERT_EQ(WebNode::ElementNode, negativeResult2.node().nodeType());
+    EXPECT_FALSE(negativeResult2.node().to<WebElement>().hasHTMLTagName("img"));
+    negativeResult2.reset();
+}
+
 void WebViewTest::testAutoResize(const WebSize& minAutoResize, const WebSize& maxAutoResize,
                                  const std::string& pageWidth, const std::string& pageHeight,
                                  int expectedWidth, int expectedHeight,
