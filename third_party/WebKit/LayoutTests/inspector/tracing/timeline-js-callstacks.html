@@ -372,7 +372,7 @@ function test()
     var tracingTimelineModel = InspectorTest.tracingTimelineModel();
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
     var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel, null);
-    var events = dataProvider._generateJSFrameEvents(tracingTimelineModel.inspectedTargetEvents());
+    var events = WebInspector.TimelineJSProfileProcessor.generateJSFrameEvents(tracingTimelineModel.inspectedTargetEvents());
     events.map(function(e) {
         return e.name + ": " + e.startTime + "(" + (e.duration || 0) + ") " + e.args.data.functionName;
     }).forEach(InspectorTest.addResult);
