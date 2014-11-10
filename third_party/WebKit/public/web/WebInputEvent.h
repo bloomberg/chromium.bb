@@ -456,6 +456,14 @@ public:
             float deltaY;
             float velocityX;
             float velocityY;
+
+            // Whether any previous GestureScrollUpdate in the current scroll
+            // sequence was suppressed (e.g., the causal touchmove was
+            // preventDefault'ed). This bit is particularly useful for
+            // determining whether the observed scroll update sequence captures
+            // the entirety of the generative motion.
+            // See comment at the top for why an int is used here instead of a bool.
+            int previousUpdateInSequencePrevented;
         } scrollUpdate;
 
         struct {
