@@ -1469,3 +1469,5 @@ crbug.com/431163 [ Linux Debug ] http/tests/serviceworker/cache-match.html [ Cra
 crbug.com/431191 [ Linux Debug ] http/tests/serviceworker/cache-delete.html [ Pass Crash ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
+
+crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
