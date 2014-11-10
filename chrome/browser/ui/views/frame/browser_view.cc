@@ -68,6 +68,7 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/frame/web_contents_close_handler.h"
 #include "chrome/browser/ui/views/fullscreen_exit_bubble_views.h"
@@ -107,12 +108,14 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
+#include "ui/aura/client/window_tree_client.h"
+#include "ui/aura/window.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -134,12 +137,6 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/client/window_tree_client.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_tree_host.h"
-#endif
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -1419,7 +1416,6 @@ ToolbarView* BrowserView::GetToolbarView() const {
 void BrowserView::TabInsertedAt(WebContents* contents,
                                 int index,
                                 bool foreground) {
-#if defined(USE_AURA)
   // WebContents inserted in tabs might not have been added to the root
   // window yet. Per http://crbug/342672 add them now since drawing the
   // WebContents requires root window specific data - information about
@@ -1431,7 +1427,6 @@ void BrowserView::TabInsertedAt(WebContents* contents,
         window, root_window, root_window->GetBoundsInScreen());
     DCHECK(contents->GetNativeView()->GetRootWindow());
   }
-#endif
   web_contents_close_handler_->TabInserted();
 
   if (foreground)
@@ -2371,6 +2366,24 @@ void BrowserView::UpdateAcceleratorMetrics(const ui::Accelerator& accelerator,
 #endif
 }
 
+// static
+BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
+  // Create the view and the frame. The frame will attach itself via the view
+  // so we don't need to do anything with the pointer.
+  BrowserView* view = new BrowserView();
+  view->Init(browser);
+  (new BrowserFrame(view))->InitBrowserFrame();
+  view->GetWidget()->non_client_view()->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
+  return view;
+}
+
+// static
+chrome::HostDesktopType BrowserWindow::AdjustHostDesktopType(
+    chrome::HostDesktopType desktop_type) {
+  return NativeBrowserFrameFactory::AdjustHostDesktopType(desktop_type);
+}
+
 void BrowserView::ShowAvatarBubble(WebContents* web_contents,
                                    const gfx::Rect& rect) {
   gfx::Point origin(rect.origin());
@@ -2464,7 +2477,10 @@ void BrowserView::DoCutCopyPaste(void (WebContents::*method)(),
 bool BrowserView::DoCutCopyPasteForWebContents(
     WebContents* contents,
     void (WebContents::*method)()) {
-  if (contents->GetRenderWidgetHostView()->HasFocus()) {
+  gfx::NativeView native_view = contents->GetContentNativeView();
+  if (!native_view)
+    return false;
+  if (native_view->HasFocus()) {
     (contents->*method)();
     return true;
   }

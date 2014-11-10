@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/frame/immersive_mode_controller_ash.h"
 
 #include "ash/shell.h"
-#include "ash/wm/immersive_revealed_lock.h"
 #include "ash/wm/window_state.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
@@ -40,17 +39,6 @@ ToImmersiveFullscreenControllerAnimateReveal(
   NOTREACHED();
   return ash::ImmersiveFullscreenController::ANIMATE_REVEAL_NO;
 }
-
-class ImmersiveRevealedLockAsh : public ImmersiveRevealedLock {
- public:
-  explicit ImmersiveRevealedLockAsh(ash::ImmersiveRevealedLock* lock)
-      : lock_(lock) {}
-
- private:
-  scoped_ptr<ash::ImmersiveRevealedLock> lock_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImmersiveRevealedLockAsh);
-};
 
 }  // namespace
 
@@ -120,8 +108,8 @@ int ImmersiveModeControllerAsh::GetTopContainerVerticalOffset(
 
 ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
     AnimateReveal animate_reveal) {
-  return new ImmersiveRevealedLockAsh(controller_->GetRevealedLock(
-      ToImmersiveFullscreenControllerAnimateReveal(animate_reveal)));
+  return controller_->GetRevealedLock(
+      ToImmersiveFullscreenControllerAnimateReveal(animate_reveal));
 }
 
 void ImmersiveModeControllerAsh::OnFindBarVisibleBoundsChanged(

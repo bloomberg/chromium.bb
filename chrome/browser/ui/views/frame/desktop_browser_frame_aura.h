@@ -41,7 +41,8 @@ class DesktopBrowserFrameAura : public views::DesktopNativeWidgetAura,
   void InitNativeWidget(const views::Widget::InitParams& params) override;
 
   // Overridden from NativeBrowserFrame:
-  views::Widget::InitParams GetWidgetParams() override;
+  views::NativeWidget* AsNativeWidget() override;
+  const views::NativeWidget* AsNativeWidget() const override;
   bool UsesNativeSystemMenu() const override;
   int GetMinimizeButtonOffset() const override;
   bool ShouldSaveWindowPlacement() const override;

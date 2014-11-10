@@ -224,13 +224,7 @@ static_library("ui") {
           gypi_values.chrome_browser_ui_views_non_chromeos_sources,
           ".", "//chrome")
     }
-    if (is_mac) {
-      if (mac_views_browser) {
-        sources -= [ "cocoa/browser_window_factory_cocoa.mm" ]
-      } else {
-        sources -= [ "views/frame/browser_window_factory.cc" ]
-      }
-    } else {
+    if (!is_mac) {
       sources += rebase_path(
           gypi_values.chrome_browser_ui_views_non_mac_sources,
           ".", "//chrome")

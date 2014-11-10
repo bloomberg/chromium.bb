@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_IMMERSIVE_MODE_CONTROLLER_H_
 
+#include "ash/wm/immersive_revealed_lock.h"
 #include "base/compiler_specific.h"
 #include "base/observer_list.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -16,16 +17,7 @@ class Rect;
 class Size;
 }
 
-// A lock which will keep the top-of-window views revealed for its
-// lifetime.
-// See ImmersiveModeController::GetRevealedLock for details.
-class ImmersiveRevealedLock {
- public:
-  virtual ~ImmersiveRevealedLock() {}
-
- protected:
-  ImmersiveRevealedLock() {}
-};
+typedef ash::ImmersiveRevealedLock ImmersiveRevealedLock;
 
 // Controller for an "immersive mode" similar to MacOS presentation mode where
 // the top-of-window views are hidden until the mouse hits the top of the
@@ -90,7 +82,6 @@ class ImmersiveModeController {
   // If acquiring the lock causes a reveal, the top-of-window views will animate
   // according to |animate_reveal|.
   // The caller takes ownership of the returned lock.
-  // This is currently only supported on Ash.
   virtual ImmersiveRevealedLock* GetRevealedLock(
       AnimateReveal animate_reveal) WARN_UNUSED_RESULT = 0;
 

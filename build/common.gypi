@@ -1510,9 +1510,6 @@
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
 
-    # Whether the browser is non-native (using Views Toolkit) on Mac.
-    'mac_views_browser%': 0,
-
     'conditions': [
       ['buildtype=="Official"', {
         # Continue to embed build meta data in Official builds, basically the
