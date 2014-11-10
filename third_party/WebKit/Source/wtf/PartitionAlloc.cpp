@@ -320,22 +320,25 @@ static ALWAYS_INLINE void* partitionAllocPartitionPages(PartitionRootBase* root,
     ASSERT(!(reinterpret_cast<uintptr_t>(root->nextPartitionPageEnd) % kPartitionPageSize));
     RELEASE_ASSERT(numPartitionPages <= kNumPartitionPagesPerSuperPage);
     size_t totalSize = kPartitionPageSize * numPartitionPages;
-    root->totalSizeOfCommittedPages += totalSize;
     size_t numPartitionPagesLeft = (root->nextPartitionPageEnd - root->nextPartitionPage) >> kPartitionPageShift;
     if (LIKELY(numPartitionPagesLeft >= numPartitionPages)) {
         // In this case, we can still hand out pages from the current super page
         // allocation.
         char* ret = root->nextPartitionPage;
         root->nextPartitionPage += totalSize;
+        root->totalSizeOfCommittedPages += totalSize;
         return ret;
     }
 
     // Need a new super page.
-    root->totalSizeOfSuperPages += kSuperPageSize;
     char* requestedAddress = root->nextSuperPage;
     char* superPage = reinterpret_cast<char*>(allocPages(requestedAddress, kSuperPageSize, kSuperPageSize));
     if (UNLIKELY(!superPage))
         return 0;
+
+    root->totalSizeOfSuperPages += kSuperPageSize;
+    root->totalSizeOfCommittedPages += totalSize;
+
     root->nextSuperPage = superPage + kSuperPageSize;
     char* ret = superPage + kPartitionPageSize;
     root->nextPartitionPage = ret + totalSize;
