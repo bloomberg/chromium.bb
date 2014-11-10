@@ -31,11 +31,6 @@
 #t7 .scroller::-webkit-scrollbar-button:end { background-color: red; }
 #t7.t7 .scroller::-webkit-scrollbar-button:end { background-color: green; }
 
-#t8 .scroller::-webkit-scrollbar-button:single-button { background-color: red; }
-#t8.t8 .scroller::-webkit-scrollbar-button:single-button { background-color: green; }
-#t8 .scroller::-webkit-scrollbar-button:double-button { background-color: red; }
-#t8.t8 .scroller::-webkit-scrollbar-button:double-button { background-color: green; }
-
 </style>
 <div id="t1">
     <div>
@@ -79,12 +74,6 @@
     </div>
     <div></div><div></div><div></div><div></div><div></div><div></div><div></div>
 </div>
-<div id="t8">
-    <div>
-        <div class="scroller">FAIL</div>
-    </div>
-    <div></div><div></div><div></div><div></div><div></div><div></div><div></div>
-</div>
 <script>
 function invalidateScroller(testId, expectedCount) {
     var testElement = document.getElementById(testId);
@@ -109,5 +98,4 @@ invalidateScroller("t4", 4); // pseudo count 6: 2 bars + 4 buttons
 invalidateScroller("t5", 4); // pseudo count 2: 2 bars
 invalidateScroller("t6", 8); // pseudo count 6: 2 bars + 4 buttons
 invalidateScroller("t7", 8); // pseudo count 6: 2 bars + 4 buttons
-invalidateScroller("t8", 8); // pseudo count 6: 2 bars + 4 buttons
 </script>
