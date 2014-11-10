@@ -61,6 +61,8 @@
         'home/home_card_gesture_manager.cc',
         'home/home_card_gesture_manager.h',
         'home/home_card_impl.cc',
+        'home/home_card_view.cc',
+        'home/home_card_view.h',
         'home/public/app_model_builder.h',
         'home/public/home_card.h',
         'home/public/search_controller_factory.h',
