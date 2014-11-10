@@ -170,38 +170,37 @@ void StyleResolver::removePendingAuthorStyleSheets(const WillBeHeapVector<RefPtr
         m_pendingStyleSheets.remove(styleSheets[i].get());
 }
 
-void StyleResolver::appendCSSStyleSheet(CSSStyleSheet* cssSheet)
+void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
 {
-    ASSERT(cssSheet);
-    ASSERT(!cssSheet->disabled());
-    if (cssSheet->mediaQueries() && !m_medium->eval(cssSheet->mediaQueries(), &m_viewportDependentMediaQueryResults))
+    ASSERT(!cssSheet.disabled());
+    if (cssSheet.mediaQueries() && !m_medium->eval(cssSheet.mediaQueries(), &m_viewportDependentMediaQueryResults))
         return;
 
-    TreeScope* treeScope = ScopedStyleResolver::treeScopeFor(document(), cssSheet);
+    TreeScope* treeScope = ScopedStyleResolver::treeScopeFor(document(), &cssSheet);
     if (!treeScope)
         return;
 
     ScopedStyleResolver& resolver = treeScope->ensureScopedStyleResolver();
     document().styleEngine()->addScopedStyleResolver(&resolver);
-    unsigned index = resolver.appendCSSStyleSheet(cssSheet);
+    unsigned index = resolver.appendCSSStyleSheet(&cssSheet);
 
     addRulesFromSheet(cssSheet, treeScope, index);
 }
 
-void StyleResolver::addRulesFromSheet(CSSStyleSheet* cssSheet, TreeScope* treeScope, unsigned index)
+void StyleResolver::addRulesFromSheet(CSSStyleSheet& cssSheet, TreeScope* treeScope, unsigned index)
 {
-    StyleSheetContents* sheet = cssSheet->contents();
+    StyleSheetContents* sheet = cssSheet.contents();
     AddRuleFlags addRuleFlags = document().securityOrigin()->canRequest(sheet->baseURL()) ? RuleHasDocumentSecurityOrigin : RuleHasNoSpecialState;
     const RuleSet& ruleSet = sheet->ensureRuleSet(*m_medium, addRuleFlags);
 
     addMediaQueryResults(ruleSet.viewportDependentMediaQueryResults());
-    processScopedRules(ruleSet, cssSheet, index, treeScope->rootNode());
+    processScopedRules(ruleSet, &cssSheet, index, treeScope->rootNode());
 }
 
 void StyleResolver::appendPendingAuthorStyleSheets()
 {
     for (const auto& styleSheet : m_pendingStyleSheets)
-        appendCSSStyleSheet(styleSheet);
+        appendCSSStyleSheet(*styleSheet);
 
     m_pendingStyleSheets.clear();
     finishAppendAuthorStyleSheets();
@@ -211,9 +210,8 @@ void StyleResolver::appendAuthorStyleSheets(const WillBeHeapVector<RefPtrWillBeM
 {
     // This handles sheets added to the end of the stylesheet list only. In other cases the style resolver
     // needs to be reconstructed. To handle insertions too the rule order numbers would need to be updated.
-    unsigned size = styleSheets.size();
-    for (unsigned i = 0; i < size; ++i)
-        appendCSSStyleSheet(styleSheets[i].get());
+    for (const auto& styleSheet : styleSheets)
+        appendCSSStyleSheet(*styleSheet);
 }
 
 void StyleResolver::finishAppendAuthorStyleSheets()

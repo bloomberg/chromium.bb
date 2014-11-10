@@ -211,8 +211,8 @@ private:
     void loadPendingResources(StyleResolverState&);
     void adjustRenderStyle(StyleResolverState&, Element*);
 
-    void appendCSSStyleSheet(CSSStyleSheet*);
-    void addRulesFromSheet(CSSStyleSheet*, TreeScope*, unsigned);
+    void appendCSSStyleSheet(CSSStyleSheet&);
+    void addRulesFromSheet(CSSStyleSheet&, TreeScope*, unsigned);
 
     void collectPseudoRulesForElement(Element*, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
