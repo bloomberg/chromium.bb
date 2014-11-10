@@ -1,3 +1,6 @@
+# Please keep the dependencies here to a minimum. This is intended to be a
+# low level Chrome OS system library that may be used by targets that need to 
+# be kept as small as possible.
 include_rules = [
   "+crypto",
   "+net",
@@ -5,6 +8,10 @@ include_rules = [
   "+third_party/cros_system_api",
   "+third_party/libxml",
   "+third_party/protobuf",
+
+  # Some targets may not have any UI, so explictly exclude src/ui.
+  "-ui",
+  # TODO(stevenjb/flackr/shuchen): Remove these dependencies.
   "+ui/accelerometer",
   "+ui/gfx/x"
 ]
