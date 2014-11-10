@@ -35,7 +35,6 @@ class DomainReliabilitySchedulerTest : public testing::Test {
         params_,
         base::Bind(&DomainReliabilitySchedulerTest::ScheduleUploadCallback,
                    base::Unretained(this))));
-    scheduler_->MakeDeterministicForTesting();
   }
 
   ::testing::AssertionResult CheckNoPendingUpload() {

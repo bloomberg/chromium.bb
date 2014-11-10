@@ -8,10 +8,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
-#include "net/base/backoff_entry.h"
 
 namespace base {
 class Value;
@@ -73,22 +71,28 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
 
   base::Value* GetWebUIData() const;
 
-  // Disables jitter in BackoffEntries to make scheduling deterministic for
-  // unit tests.
-  void MakeDeterministicForTesting();
-
  private:
+  struct CollectorState {
+    CollectorState();
+
+    // The number of consecutive failures to upload to this collector, or 0 if
+    // the most recent upload succeeded.
+    unsigned failures;
+    base::TimeTicks next_upload;
+  };
+
   void MaybeScheduleUpload();
 
   void GetNextUploadTimeAndCollector(base::TimeTicks now,
                                      base::TimeTicks* upload_time_out,
                                      size_t* collector_index_out);
 
+  base::TimeDelta GetUploadRetryInterval(unsigned failures);
+
   MockableTime* time_;
+  std::vector<CollectorState> collectors_;
   Params params_;
   ScheduleUploadCallback callback_;
-  net::BackoffEntry::Policy backoff_policy_;
-  ScopedVector<net::BackoffEntry> collectors_;
 
   // Whether there are beacons that have not yet been uploaded. Set when a
   // beacon arrives or an upload fails, and cleared when an upload starts.
