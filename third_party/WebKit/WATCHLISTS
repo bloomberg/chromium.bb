@@ -85,6 +85,9 @@
     'owners': {
       'filepath': 'OWNERS',
     },
+    'paint': {
+      'filepath' : 'Source/core/paint/'
+    },
     'preloadScanner': {
       'filepath': 'Source/core/html/parser/HTMLPreloadScanner',
     },
@@ -374,6 +377,8 @@
                    'leviw+renderwatch@chromium.org',
                    'zoltan@webkit.org',
                    'blink-reviews-rendering@chromium.org' ],
+    'paint' : [ 'blink-reviews-paint@chromium.org',
+                'slimming-paint-reviews@chromium.org' ],
     'compositing': [ ],
     'content_security_policy': [ 'mkwst+watchlist-csp@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org',
