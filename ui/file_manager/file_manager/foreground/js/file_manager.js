@@ -117,12 +117,10 @@ function FileManager() {
 
   /**
    * Startup parameters for this application.
-   * @type {?{includeAllFiles:boolean,
-   *          action:string,
-   *          shouldReturnLocalPath:boolean}}
+   * @type {LaunchParam}
    * @private
    */
-  this.params_ = null;
+  this.launchParams_ = null;
 
   /**
    * Startup preference about the view.
@@ -409,28 +407,6 @@ function FileManager() {
    * @private
    */
   this.startupPrefName_ = '';
-
-  /**
-   * URL of directory which should be initial current directory.
-   * @type {string}
-   * @private
-   */
-  this.initCurrentDirectoryURL_ = '';
-
-  /**
-   * URL of entry which should be initially selected.
-   * @type {string}
-   * @private
-   */
-  this.initSelectionURL_ = '';
-
-  /**
-   * The name of target entry (not URL).
-   * @type {string}
-   * @private
-   */
-  this.initTargetName_ = '';
-
 
   // Object.seal() has big performance/memory overhead for now, so we use
   // Object.preventExtensions() here. crbug.com/412239.
@@ -1031,24 +1007,25 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Initialize the application state.
     // TODO(mtomasz): Unify window.appState with location.search format.
     if (window.appState) {
-      this.params_ = window.appState.params || {};
-      this.initCurrentDirectoryURL_ = window.appState.currentDirectoryURL;
-      this.initSelectionURL_ = window.appState.selectionURL;
-      this.initTargetName_ = window.appState.targetName;
+      var params = {};
+      for (var name in window.appState) {
+        params[name] = window.appState[name];
+      }
+      for (var name in window.appState.params) {
+        params[name] = window.appState.params[name];
+      }
+      this.launchParams_ = new LaunchParam(params);
     } else {
       // Used by the select dialog only.
-      this.params_ = location.search ?
-                     JSON.parse(decodeURIComponent(location.search.substr(1))) :
-                     {};
-      this.initCurrentDirectoryURL_ = this.params_.currentDirectoryURL;
-      this.initSelectionURL_ = this.params_.selectionURL;
-      this.initTargetName_ = this.params_.targetName;
+      var json = location.search ?
+          JSON.parse(decodeURIComponent(location.search.substr(1))) : {};
+      this.launchParams_ = new LaunchParam(json instanceof Object ? json : {});
     }
 
-    // Initialize the member variables that depend this.params_.
-    this.dialogType = this.params_.type || DialogType.FULL_PAGE;
+    // Initialize the member variables that depend this.launchParams_.
+    this.dialogType = this.launchParams_.type;
     this.startupPrefName_ = 'file-manager-' + this.dialogType;
-    this.fileTypes_ = this.params_.typeList || [];
+    this.fileTypes_ = this.launchParams_.typeList || [];
 
     callback();
   };
@@ -1081,7 +1058,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.initVolumeManager_ = function(callback) {
     // Auto resolving to local path does not work for folders (e.g., dialog for
     // loading unpacked extensions).
-    var noLocalPathResolution = DialogType.isFolderDialog(this.params_.type);
+    var noLocalPathResolution =
+        DialogType.isFolderDialog(this.launchParams_.type);
 
     // If this condition is false, VolumeManagerWrapper hides all drive
     // related event and data, even if Drive is enabled on preference.
@@ -1091,7 +1069,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Note that the Drive enabling preference change is listened by
     // DriveIntegrationService, so here we don't need to take care about it.
     var driveEnabled =
-        !noLocalPathResolution || !this.params_.shouldReturnLocalPath;
+        !noLocalPathResolution || !this.launchParams_.shouldReturnLocalPath;
     this.volumeManager_ = new VolumeManagerWrapper(
         /** @type {VolumeManagerWrapper.DriveEnabledStatus} */ (driveEnabled),
         this.backgroundPage_);
@@ -1267,7 +1245,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.onActionMenuItemActivated_.bind(this));
 
     this.ui_.dialogFooter.initFileTypeFilter(
-        this.fileTypes_, this.params_.includeAllFiles);
+        this.fileTypes_, this.launchParams_.includeAllFiles);
     this.ui_.dialogFooter.fileTypeSelector.addEventListener(
         'change', this.updateFileTypeFilter_.bind(this));
 
@@ -1368,7 +1346,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.setListType(
         this.viewOptions_.listType || ListContainer.ListType.DETAIL);
 
-    this.closeOnUnmount_ = (this.params_.action == 'auto-open');
+    this.closeOnUnmount_ = (this.launchParams_.action == 'auto-open');
 
     if (this.closeOnUnmount_) {
       this.volumeManager_.addEventListener('externally-unmounted',
@@ -1409,7 +1387,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.directoryModel_,
         this.metadataCache_,
         this.namingController_,
-        this.params_.shouldReturnLocalPath);
+        this.launchParams_.shouldReturnLocalPath);
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
     var today = new Date();
@@ -1658,12 +1636,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Resolve the selectionURL to selectionEntry or to currentDirectoryEntry
     // in case of being a display root or a default directory to open files.
     queue.run(function(callback) {
-      if (!this.initSelectionURL_) {
+      if (!this.launchParams_.selectionURL) {
         callback();
         return;
       }
+
       window.webkitResolveLocalFileSystemURL(
-          this.initSelectionURL_,
+          this.launchParams_.selectionURL,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
             // If location information is not available, then the volume is
@@ -1696,12 +1675,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // Resolve the currentDirectoryURL to currentDirectoryEntry (if not done
     // by the previous step).
     queue.run(function(callback) {
-      if (nextCurrentDirEntry || !this.initCurrentDirectoryURL_) {
+      if (nextCurrentDirEntry || !this.launchParams_.currentDirectoryURL) {
         callback();
         return;
       }
+
       window.webkitResolveLocalFileSystemURL(
-          this.initCurrentDirectoryURL_,
+          this.launchParams_.currentDirectoryURL,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
             if (!locationInfo) {
@@ -1784,13 +1764,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // a file, or in case of a fallback of the current directory, then try to
     // resolve again using the target name.
     queue.run(function(callback) {
-      if (selectionEntry || !nextCurrentDirEntry || !this.initTargetName_) {
+      if (selectionEntry ||
+          !nextCurrentDirEntry ||
+          !this.launchParams_.targetName) {
         callback();
         return;
       }
       // Try to resolve as a file first. If it fails, then as a directory.
       nextCurrentDirEntry.getFile(
-          this.initTargetName_,
+          this.launchParams_.targetName,
           {},
           function(targetEntry) {
             selectionEntry = targetEntry;
@@ -1798,7 +1780,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           }, function() {
             // Failed to resolve as a file
             nextCurrentDirEntry.getDirectory(
-                this.initTargetName_,
+                this.launchParams_.targetName,
                 {},
                 function(targetEntry) {
                   selectionEntry = targetEntry;
@@ -1822,7 +1804,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.finishSetupCurrentDirectory_(
           nextCurrentDirEntry,
           selectionEntry,
-          this.initTargetName_);
+          this.launchParams_.targetName);
       callback();
     }.bind(this));
   };
@@ -1849,7 +1831,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType === DialogType.FULL_PAGE) {
       // In the FULL_PAGE mode if the restored URL points to a file we might
       // have to invoke a task after selecting it.
-      if (this.params_.action === 'select')
+      if (this.launchParams_.action === 'select')
         return;
 
       var task = null;

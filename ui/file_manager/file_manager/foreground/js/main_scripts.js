@@ -92,6 +92,7 @@
 //<include src="file_type.js">
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
+//<include src="launch_param.js">
 //<include src="metadata/metadata_cache.js">
 //<include src="naming_controller.js">
 //<include src="navigation_list_model.js">

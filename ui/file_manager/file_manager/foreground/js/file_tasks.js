@@ -7,12 +7,10 @@
  *
  * TODO(hirono): Pass each component instead of the entire FileManager.
  * @param {FileManager} fileManager FileManager instance.
- * @param {Object=} opt_params File manager load parameters.
  * @constructor
  */
-function FileTasks(fileManager, opt_params) {
+function FileTasks(fileManager) {
   this.fileManager_ = fileManager;
-  this.params_ = opt_params;
   this.tasks_ = null;
   this.defaultTask_ = null;
   this.entries_ = null;

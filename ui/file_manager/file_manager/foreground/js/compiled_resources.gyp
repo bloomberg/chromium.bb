@@ -72,6 +72,7 @@
           './file_type.js',
           './file_watcher.js',
           './folder_shortcuts_data_model.js',
+          './launch_param.js',
           './metadata/metadata_cache.js',
           './naming_controller.js',
           './navigation_list_model.js',
