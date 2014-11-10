@@ -52,7 +52,7 @@ class MojoRendererApplication
   // mojo::InterfaceFactory<mojo::MediaRenderer> implementation.
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mojo::MediaRenderer> request) override {
-    mojo::BindToRequest(new MojoRendererService(connection), &request);
+    mojo::BindToRequest(new MojoRendererService(), &request);
   }
 };
 
@@ -60,8 +60,7 @@ static void MojoTrampoline(const mojo::Closure& closure) {
   closure.Run();
 }
 
-MojoRendererService::MojoRendererService(
-    mojo::ApplicationConnection* connection)
+MojoRendererService::MojoRendererService()
     : state_(STATE_UNINITIALIZED),
       last_media_time_usec_(0),
       weak_factory_(this),

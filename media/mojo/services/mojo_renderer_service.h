@@ -31,11 +31,7 @@ class Renderer;
 // decode and render audio to a sink obtained from the ApplicationConnection.
 class MojoRendererService : public mojo::InterfaceImpl<mojo::MediaRenderer> {
  public:
-  // |connection| is a pointer to the connection back to our embedder. The
-  // embedder should have configured it (via ConfigureOutgoingConnection) to
-  // allow |this| to connect to a sink that will receive decoded data ready
-  // for playback.
-  explicit MojoRendererService(mojo::ApplicationConnection* connection);
+  MojoRendererService();
   ~MojoRendererService() override;
 
   // mojo::MediaRenderer implementation.
