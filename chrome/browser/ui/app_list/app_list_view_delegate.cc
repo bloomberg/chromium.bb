@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/launcher_page_event_dispatcher.h"
 #include "chrome/browser/ui/app_list/search/search_controller_factory.h"
 #include "chrome/browser/ui/app_list/search/search_resource_manager.h"
 #include "chrome/browser/ui/app_list/start_page_service.h"
@@ -211,6 +212,7 @@ void AppListViewDelegate::SetProfile(Profile* new_profile) {
     // be destroyed first.
     search_resource_manager_.reset();
     search_controller_.reset();
+    launcher_page_event_dispatcher_.reset();
     custom_page_contents_.clear();
     app_list::StartPageService* start_page_service =
         app_list::StartPageService::Get(profile_);
@@ -286,6 +288,9 @@ void AppListViewDelegate::SetUpProfileSwitcher() {
 void AppListViewDelegate::SetUpCustomLauncherPages() {
   std::vector<GURL> custom_launcher_page_urls;
   GetCustomLauncherPageUrls(profile_, &custom_launcher_page_urls);
+  if (custom_launcher_page_urls.empty())
+    return;
+
   for (std::vector<GURL>::const_iterator it = custom_launcher_page_urls.begin();
        it != custom_launcher_page_urls.end();
        ++it) {
@@ -298,6 +303,11 @@ void AppListViewDelegate::SetUpCustomLauncherPages() {
     page_contents->Initialize(profile_, *it);
     custom_page_contents_.push_back(page_contents);
   }
+
+  // Only the first custom launcher page gets events dispatched to it.
+  launcher_page_event_dispatcher_.reset(
+      new app_list::LauncherPageEventDispatcher(
+          profile_, custom_launcher_page_urls[0].host()));
 }
 
 void AppListViewDelegate::OnHotwordStateChanged(bool started) {
@@ -631,6 +641,11 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
   }
 
   return web_views;
+}
+
+void AppListViewDelegate::CustomLauncherPageAnimationChanged(double progress) {
+  if (launcher_page_event_dispatcher_)
+    launcher_page_event_dispatcher_->ProgressChanged(progress);
 }
 #endif
 

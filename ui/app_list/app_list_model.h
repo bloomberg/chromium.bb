@@ -43,6 +43,7 @@ class APP_LIST_EXPORT AppListModel : public AppListItemListObserver {
     STATE_APPS,
     STATE_SEARCH_RESULTS,
     STATE_START,
+    STATE_CUSTOM_LAUNCHER_PAGE,
 
     INVALID_STATE,
   };

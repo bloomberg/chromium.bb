@@ -48,9 +48,10 @@ ContentsView::~ContentsView() {
     pagination_model_.RemoveObserver(contents_switcher_view_);
 }
 
-void ContentsView::Init(AppListModel* model,
-                        AppListViewDelegate* view_delegate) {
+void ContentsView::Init(AppListModel* model) {
   DCHECK(model);
+
+  AppListViewDelegate* view_delegate = app_list_main_view_->view_delegate();
 
   if (app_list::switches::IsExperimentalAppListEnabled()) {
     std::vector<views::View*> custom_page_views =
@@ -59,7 +60,14 @@ void ContentsView::Init(AppListModel* model,
              custom_page_views.begin();
          it != custom_page_views.end();
          ++it) {
-      AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON);
+      // Only the first launcher page is considered to represent
+      // STATE_CUSTOM_LAUNCHER_PAGE.
+      if (it == custom_page_views.begin()) {
+        AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON,
+                        AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+      } else {
+        AddLauncherPage(*it, IDR_APP_LIST_NOTIFICATIONS_ICON);
+      }
     }
 
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
@@ -207,6 +215,20 @@ gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
   return bounds;
 }
 
+void ContentsView::NotifyCustomLauncherPageAnimationChanged(double progress,
+                                                            int current_page,
+                                                            int target_page) {
+  int custom_launcher_page_index =
+      GetPageIndexForState(AppListModel::STATE_CUSTOM_LAUNCHER_PAGE);
+  if (custom_launcher_page_index == target_page) {
+    app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
+        progress);
+  } else if (custom_launcher_page_index == current_page) {
+    app_list_main_view_->view_delegate()->CustomLauncherPageAnimationChanged(
+        1 - progress);
+  }
+}
+
 void ContentsView::UpdatePageBounds() {
   // The bounds calculations will potentially be mid-transition (depending on
   // the state of the PaginationModel).
@@ -221,6 +243,8 @@ void ContentsView::UpdatePageBounds() {
       progress = transition.progress;
     }
   }
+
+  NotifyCustomLauncherPageAnimationChanged(progress, current_page, target_page);
 
   // Move |current_page| from 0 to its origin. Move |target_page| from its
   // origin to 0.

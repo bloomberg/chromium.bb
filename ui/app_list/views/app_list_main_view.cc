@@ -112,7 +112,7 @@ void AppListMainView::AddContentsViews() {
     contents_switcher_view_ = new ContentsSwitcherView(contents_view_);
     contents_view_->SetContentsSwitcherView(contents_switcher_view_);
   }
-  contents_view_->Init(model_, delegate_);
+  contents_view_->Init(model_);
   AddChildView(contents_view_);
   if (contents_switcher_view_)
     AddChildView(contents_switcher_view_);

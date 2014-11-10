@@ -50,7 +50,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Initialize the pages of the launcher. In the experimental launcher, should
   // be called after set_contents_switcher_view(), or switcher buttons will not
   // be created.
-  void Init(AppListModel* model, AppListViewDelegate* view_delegate);
+  void Init(AppListModel* model);
 
   // The app list gets closed and drag and drop operations need to be cancelled.
   void CancelDrag();
@@ -136,6 +136,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // Gets the origin (the off-screen resting place) for a given launcher page
   // with index |page_index|.
   gfx::Rect GetOffscreenPageBounds(int page_index) const;
+
+  // Notifies the view delegate that the custom launcher page's animation has
+  // changed.
+  void NotifyCustomLauncherPageAnimationChanged(double progress,
+                                                int current_page,
+                                                int target_page);
 
   // Calculates and sets the bounds for the subviews. If there is currently an
   // animation, this positions the views as appropriate for the current frame.

@@ -57,7 +57,6 @@ class APP_LIST_EXPORT AppListViewDelegate {
   };
   typedef std::vector<User> Users;
 
-  // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
 
   // Whether to force the use of a native desktop widget when the app list
@@ -144,6 +143,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // ownership of the returned views.
   virtual std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) = 0;
+
+  // Invoked when the custom launcher's animation changes.
+  virtual void CustomLauncherPageAnimationChanged(double progress) = 0;
 #endif
 
   // Returns true if the delegate supports speech recognition.

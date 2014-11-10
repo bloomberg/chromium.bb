@@ -468,6 +468,10 @@
     "dependencies": ["permission:inputMethodPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "launcherPage": {
+    "dependencies": ["manifest:launcher_page"],
+    "contexts": ["blessed_extension"]
+  },
   "location": {
     "dependencies": ["permission:location"],
     "contexts": ["blessed_extension"]

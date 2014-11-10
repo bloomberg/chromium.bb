@@ -38,7 +38,6 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
                                         public SearchBoxViewDelegate,
                                         public SearchResultListViewDelegate {
  public:
-  // Takes ownership of |delegate|.
   explicit AppListMainView(AppListViewDelegate* delegate);
   ~AppListMainView() override;
 
@@ -72,6 +71,7 @@ class APP_LIST_EXPORT AppListMainView : public views::View,
     return contents_switcher_view_;
   }
   AppListModel* model() { return model_; }
+  AppListViewDelegate* view_delegate() { return delegate_; }
 
   // Returns true if the app list should be centered and in landscape mode.
   bool ShouldCenterWindow() const;

@@ -148,6 +148,9 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
   return std::vector<views::View*>();
 }
 
+void AppListViewDelegate::CustomLauncherPageAnimationChanged(double progress) {
+}
+
 bool AppListViewDelegate::IsSpeechRecognitionEnabled() {
   return false;
 }

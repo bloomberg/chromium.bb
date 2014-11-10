@@ -4,12 +4,19 @@
 
 #include <string>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_views.h"
+#include "chrome/browser/ui/app_list/app_list_shower_views.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/app_list_view.h"
+#include "ui/app_list/views/contents_view.h"
 
 namespace {
 
@@ -36,6 +43,10 @@ class CustomLauncherPageBrowserTest
     // Custom launcher pages only work in the experimental app list.
     command_line->AppendSwitch(app_list::switches::kEnableExperimentalAppList);
 
+    // Ensure the app list does not close during the test.
+    command_line->AppendSwitch(
+        app_list::switches::kDisableAppListDismissOnBlur);
+
     // The test app must be whitelisted to use launcher_page.
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kCustomLauncherPageID);
@@ -54,6 +65,43 @@ class CustomLauncherPageBrowserTest
   DISALLOW_COPY_AND_ASSIGN(CustomLauncherPageBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest, LoadPageAndOpenLauncher) {
+IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
+                       OpenLauncherAndSwitchToCustomPage) {
   LoadAndLaunchPlatformApp(kCustomLauncherPagePath, "Launched");
+
+  app_list::AppListView* app_list_view = nullptr;
+#if defined(OS_CHROMEOS)
+  ash::Shell* shell = ash::Shell::GetInstance();
+  app_list_view = shell->GetAppListView();
+  EXPECT_TRUE(shell->GetAppListTargetVisibility());
+#else
+  AppListServiceViews* service = static_cast<AppListServiceViews*>(
+      AppListService::Get(chrome::HOST_DESKTOP_TYPE_NATIVE));
+  // The app list should have loaded instantly since the profile is already
+  // loaded.
+  EXPECT_TRUE(service->IsAppListVisible());
+  app_list_view = service->shower().app_list();
+#endif
+
+  ASSERT_NE(nullptr, app_list_view);
+  app_list::ContentsView* contents_view =
+      app_list_view->app_list_main_view()->contents_view();
+
+  ASSERT_TRUE(
+      contents_view->IsStateActive(app_list::AppListModel::STATE_START));
+
+  {
+    ExtensionTestMessageListener listener("onPageProgressAt1", false);
+    contents_view->SetActivePage(contents_view->GetPageIndexForState(
+        app_list::AppListModel::STATE_CUSTOM_LAUNCHER_PAGE));
+
+    listener.WaitUntilSatisfied();
+  }
+  {
+    ExtensionTestMessageListener listener("onPageProgressAt0", false);
+    contents_view->SetActivePage(contents_view->GetPageIndexForState(
+        app_list::AppListModel::STATE_START));
+
+    listener.WaitUntilSatisfied();
+  }
 }

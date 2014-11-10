@@ -31,6 +31,7 @@ class CustomLauncherPageContents;
 }
 
 namespace app_list {
+class LauncherPageEventDispatcher;
 class SearchController;
 class SearchResourceManager;
 class SpeechUIModel;
@@ -96,6 +97,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   views::View* CreateStartPageWebView(const gfx::Size& size) override;
   std::vector<views::View*> CreateCustomPageWebViews(
       const gfx::Size& size) override;
+  void CustomLauncherPageAnimationChanged(double progress) override;
 #endif
   bool IsSpeechRecognitionEnabled() override;
   const Users& GetUsers() const override;
@@ -161,6 +163,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   scoped_ptr<app_list::SpeechUIModel> speech_ui_;
   scoped_ptr<app_list::SearchResourceManager> search_resource_manager_;
   scoped_ptr<app_list::SearchController> search_controller_;
+
+  scoped_ptr<app_list::LauncherPageEventDispatcher>
+      launcher_page_event_dispatcher_;
 
   base::TimeDelta auto_launch_timeout_;
 

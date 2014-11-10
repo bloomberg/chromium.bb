@@ -57,6 +57,7 @@
       'idle.json',
       'image_writer_private.idl',
       'input_ime.json',
+      'launcher_page.idl',
       'location.idl',
       'manifest_types.json',
       'mdns.idl',

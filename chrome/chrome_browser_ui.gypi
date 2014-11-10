@@ -1148,6 +1148,8 @@
       'browser/ui/app_list/extension_uninstaller.h',
       'browser/ui/app_list/fast_show_pickler.cc',
       'browser/ui/app_list/fast_show_pickler.h',
+      'browser/ui/app_list/launcher_page_event_dispatcher.cc',
+      'browser/ui/app_list/launcher_page_event_dispatcher.h',
       'browser/ui/app_list/model_pref_updater.cc',
       'browser/ui/app_list/model_pref_updater.h',
       'browser/ui/app_list/profile_loader.cc',
@@ -2486,7 +2488,7 @@
       'browser/ui/app_list/app_list_service_disabled.cc',
 
       'browser/ui/athena/extensions/application_launch_web_app_athena.cc',
-      'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc', 
+      'browser/ui/athena/extensions/extension_install_ui_factory_athena.cc',
       'browser/ui/views/athena/athena_util.cc',
       'browser/ui/views/athena/athena_util.h',
       'browser/ui/views/athena/chrome_browser_main_extra_parts_athena.cc',
