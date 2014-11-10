@@ -254,18 +254,24 @@ private:
 
 #if OS(POSIX)
         Address base = static_cast<Address>(mmap(alignedRandomAddress, size, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
-        RELEASE_ASSERT(base != MAP_FAILED);
         if (base == roundToBlinkPageBoundary(base))
             return new PageMemoryRegion(base, size, numPages);
 
-        // We failed to get a blink page aligned chunk of
-        // memory. Unmap the chunk that we got and fall back to
-        // overallocating and selecting an aligned sub part of what
-        // we allocate.
-        int error = munmap(base, size);
-        RELEASE_ASSERT(!error);
+        // We failed to get a blink page aligned chunk of memory.
+        // Unmap the chunk that we got and fall back to overallocating
+        // and selecting an aligned sub part of what we allocate.
+        if (base != MAP_FAILED) {
+            int error = munmap(base, size);
+            RELEASE_ASSERT(!error);
+        }
         size_t allocationSize = size + blinkPageSize;
-        base = static_cast<Address>(mmap(alignedRandomAddress, allocationSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
+        for (int attempt = 0; attempt < 10; attempt++) {
+            base = static_cast<Address>(mmap(alignedRandomAddress, allocationSize, PROT_NONE, MAP_ANON | MAP_PRIVATE, -1, 0));
+            if (base != MAP_FAILED)
+                break;
+            randomAddress = reinterpret_cast<Address>(WTF::getRandomPageBase());
+            alignedRandomAddress = roundToBlinkPageBoundary(randomAddress);
+        }
         RELEASE_ASSERT(base != MAP_FAILED);
 
         Address end = base + allocationSize;
