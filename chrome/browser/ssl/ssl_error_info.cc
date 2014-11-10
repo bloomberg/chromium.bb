@@ -145,6 +145,13 @@ SSLErrorInfo SSLErrorInfo::CreateError(ErrorType error_type,
       short_description = l10n_util::GetStringUTF16(
           IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION);
       break;
+    case CERT_VALIDITY_TOO_LONG:
+      details =
+          l10n_util::GetStringFUTF16(IDS_CERT_ERROR_VALIDITY_TOO_LONG_DETAILS,
+                                     UTF8ToUTF16(request_url.host()));
+      short_description = l10n_util::GetStringUTF16(
+          IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION);
+      break;
     case CERT_PINNED_KEY_MISSING:
       details = l10n_util::GetStringUTF16(
           IDS_ERRORPAGES_SUMMARY_PINNING_FAILURE);
@@ -191,6 +198,8 @@ SSLErrorInfo::ErrorType SSLErrorInfo::NetErrorToErrorType(int net_error) {
       return CERT_WEAK_KEY;
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
       return CERT_NAME_CONSTRAINT_VIOLATION;
+    case net::ERR_CERT_VALIDITY_TOO_LONG:
+      return CERT_VALIDITY_TOO_LONG;
     case net::ERR_SSL_WEAK_SERVER_EPHEMERAL_DH_KEY:
       return CERT_WEAK_KEY_DH;
     case net::ERR_SSL_PINNED_KEY_NOT_IN_CERT_CHAIN:
@@ -207,29 +216,31 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
                                          const GURL& url,
                                          std::vector<SSLErrorInfo>* errors) {
   const net::CertStatus kErrorFlags[] = {
-    net::CERT_STATUS_COMMON_NAME_INVALID,
-    net::CERT_STATUS_DATE_INVALID,
-    net::CERT_STATUS_AUTHORITY_INVALID,
-    net::CERT_STATUS_NO_REVOCATION_MECHANISM,
-    net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
-    net::CERT_STATUS_REVOKED,
-    net::CERT_STATUS_INVALID,
-    net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
-    net::CERT_STATUS_WEAK_KEY,
-    net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
+      net::CERT_STATUS_COMMON_NAME_INVALID,
+      net::CERT_STATUS_DATE_INVALID,
+      net::CERT_STATUS_AUTHORITY_INVALID,
+      net::CERT_STATUS_NO_REVOCATION_MECHANISM,
+      net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+      net::CERT_STATUS_REVOKED,
+      net::CERT_STATUS_INVALID,
+      net::CERT_STATUS_WEAK_SIGNATURE_ALGORITHM,
+      net::CERT_STATUS_WEAK_KEY,
+      net::CERT_STATUS_NAME_CONSTRAINT_VIOLATION,
+      net::CERT_STATUS_VALIDITY_TOO_LONG,
   };
 
   const ErrorType kErrorTypes[] = {
-    CERT_COMMON_NAME_INVALID,
-    CERT_DATE_INVALID,
-    CERT_AUTHORITY_INVALID,
-    CERT_NO_REVOCATION_MECHANISM,
-    CERT_UNABLE_TO_CHECK_REVOCATION,
-    CERT_REVOKED,
-    CERT_INVALID,
-    CERT_WEAK_SIGNATURE_ALGORITHM,
-    CERT_WEAK_KEY,
-    CERT_NAME_CONSTRAINT_VIOLATION,
+      CERT_COMMON_NAME_INVALID,
+      CERT_DATE_INVALID,
+      CERT_AUTHORITY_INVALID,
+      CERT_NO_REVOCATION_MECHANISM,
+      CERT_UNABLE_TO_CHECK_REVOCATION,
+      CERT_REVOKED,
+      CERT_INVALID,
+      CERT_WEAK_SIGNATURE_ALGORITHM,
+      CERT_WEAK_KEY,
+      CERT_NAME_CONSTRAINT_VIOLATION,
+      CERT_VALIDITY_TOO_LONG,
   };
   DCHECK(arraysize(kErrorFlags) == arraysize(kErrorTypes));
 
@@ -243,9 +254,10 @@ int SSLErrorInfo::GetErrorsForCertStatus(int cert_id,
             cert_id, &cert);
         DCHECK(r);
       }
-      if (errors)
+      if (errors) {
         errors->push_back(
             SSLErrorInfo::CreateError(kErrorTypes[i], cert.get(), url));
+      }
     }
   }
   return count;

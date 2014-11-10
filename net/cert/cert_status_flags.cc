@@ -49,6 +49,8 @@ CertStatus MapNetErrorToCertStatus(int error) {
       return CERT_STATUS_PINNED_KEY_MISSING;
     case ERR_CERT_NAME_CONSTRAINT_VIOLATION:
       return CERT_STATUS_NAME_CONSTRAINT_VIOLATION;
+    case ERR_CERT_VALIDITY_TOO_LONG:
+      return CERT_STATUS_VALIDITY_TOO_LONG;
     default:
       return 0;
   }
@@ -81,6 +83,8 @@ int MapCertStatusToNetError(CertStatus cert_status) {
     return ERR_CERT_WEAK_KEY;
   if (cert_status & CERT_STATUS_DATE_INVALID)
     return ERR_CERT_DATE_INVALID;
+  if (cert_status & CERT_STATUS_VALIDITY_TOO_LONG)
+    return ERR_CERT_VALIDITY_TOO_LONG;
 
   // Unknown status.  Give it the benefit of the doubt.
   if (cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION)
