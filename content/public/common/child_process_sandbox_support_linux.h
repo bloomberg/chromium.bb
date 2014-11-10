@@ -50,10 +50,6 @@ CONTENT_EXPORT int MatchFontWithFallback(
 CONTENT_EXPORT bool GetFontTable(int fd, uint32_t table_tag, off_t offset,
                                  uint8_t* output, size_t* output_length);
 
-// Sends a zygote child "ping" message to browser process via socket |fd|.
-// Returns true on success.
-CONTENT_EXPORT bool SendZygoteChildPing(int fd);
-
 };  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CHILD_PROCESS_SANDBOX_SUPPORT_LINUX_H_

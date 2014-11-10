@@ -29,6 +29,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/sandbox_linux.h"
+#include "content/public/common/send_zygote_child_ping_linux.h"
 #include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"

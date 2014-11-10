@@ -17,7 +17,6 @@
 #include "base/posix/unix_domain_socket_linux.h"
 #include "base/sys_byteorder.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
-#include "content/common/zygote_commands_linux.h"
 #include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"
 #include "third_party/WebKit/public/platform/linux/WebFontRenderStyle.h"
 
@@ -203,13 +202,6 @@ bool GetFontTable(int fd, uint32_t table_tag, off_t offset,
   *output_length = data_length;
 
   return true;
-}
-
-bool SendZygoteChildPing(int fd) {
-  return UnixDomainSocket::SendMsg(fd,
-                                   kZygoteChildPingMessage,
-                                   sizeof(kZygoteChildPingMessage),
-                                   std::vector<int>());
 }
 
 }  // namespace content

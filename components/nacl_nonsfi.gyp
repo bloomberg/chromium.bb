@@ -57,6 +57,7 @@
                   '>(tc_lib_dir_nonsfi_helper32)/libbase_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libcommand_buffer_client_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libcommand_buffer_common_nacl.a',
+                  '>(tc_lib_dir_nonsfi_helper32)/libcontent_common_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libevent_nacl_nonsfi.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libgles2_cmd_helper_nacl.a',
                   '>(tc_lib_dir_nonsfi_helper32)/libgles2_implementation_nacl.a',
@@ -75,6 +76,7 @@
           },
           'dependencies': [
             '../base/base_nacl.gyp:base_nacl_nonsfi',
+            '../content/content_nacl_nonsfi.gyp:content_common_nacl_nonsfi',
             '../ipc/ipc_nacl.gyp:ipc_nacl_nonsfi',
             '../native_client/src/nonsfi/irt/irt.gyp:nacl_sys_private',
             '../native_client/src/untrusted/nacl/nacl.gyp:nacl_lib_newlib',
