@@ -108,7 +108,7 @@ void RapporService::Start(net::URLRequestContextGetter* request_context,
     return;
   DVLOG(1) << "RapporService started. Reporting to " << server_url.spec();
   DCHECK(!uploader_);
-  Initialize(LoadCohort(), LoadSecret(), reporting_level_);
+  Initialize(LoadCohort(), LoadSecret(), reporting_level);
   uploader_.reset(new LogUploader(server_url, kMimeType, request_context));
   log_rotation_timer_.Start(
       FROM_HERE,
@@ -192,8 +192,10 @@ std::string RapporService::LoadSecret() {
 }
 
 bool RapporService::ExportMetrics(RapporReports* reports) {
-  if (metrics_map_.empty())
+  if (metrics_map_.empty()) {
+    DVLOG(2) << "metrics_map_ is empty.";
     return false;
+  }
 
   DCHECK_GE(cohort_, 0);
   reports->set_cohort(cohort_);
@@ -236,8 +238,11 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
   DCHECK(IsInitialized());
   // Skip this metric if it's reporting level is less than the enabled
   // reporting level.
-  if (reporting_level_ < parameters.reporting_level)
+  if (reporting_level_ < parameters.reporting_level) {
+    DVLOG(2) << "Metric not logged due to reporting_level "
+             << reporting_level_ << " < " << parameters.reporting_level;
     return;
+  }
   RapporMetric* metric = LookUpMetric(metric_name, parameters);
   metric->AddSample(sample);
 }
