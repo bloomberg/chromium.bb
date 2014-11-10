@@ -157,7 +157,6 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
       profile_(profile),
       waiting_for_profile_creation_(true),
       waiting_for_tpm_token_(true),
-      has_pending_changes_(false),
       weak_factory_(this),
       store_settings_factory_(this) {
   if (TPMTokenLoader::IsInitialized()) {
@@ -180,8 +179,6 @@ OwnerSettingsServiceChromeOS::OwnerSettingsServiceChromeOS(
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
                  content::Source<Profile>(profile_));
-
-  UpdateFromService();
 }
 
 OwnerSettingsServiceChromeOS::~OwnerSettingsServiceChromeOS() {
@@ -215,15 +212,23 @@ bool OwnerSettingsServiceChromeOS::Set(const std::string& setting,
   if (!IsOwner() && !IsOwnerInTests(user_id_))
     return false;
 
-  UpdateDeviceSettings(setting, value, device_settings_);
+  pending_changes_.add(setting, make_scoped_ptr(value.DeepCopy()));
+
+  em::ChromeDeviceSettingsProto settings;
+  if (tentative_settings_.get()) {
+    settings = *tentative_settings_;
+  } else if (device_settings_service_->status() ==
+                 DeviceSettingsService::STORE_SUCCESS &&
+             device_settings_service_->device_settings()) {
+    settings = *device_settings_service_->device_settings();
+  }
+  UpdateDeviceSettings(setting, value, settings);
   em::PolicyData policy_data;
   policy_data.set_username(user_id_);
-  CHECK(device_settings_.SerializeToString(policy_data.mutable_policy_value()));
-  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
-                    observers_,
+  CHECK(settings.SerializeToString(policy_data.mutable_policy_value()));
+  FOR_EACH_OBSERVER(OwnerSettingsService::Observer, observers_,
                     OnTentativeChangesInPolicy(policy_data));
-  has_pending_changes_ = true;
-  StoreDeviceSettings();
+  StorePendingChanges();
   return true;
 }
 
@@ -236,12 +241,9 @@ bool OwnerSettingsServiceChromeOS::CommitTentativeDeviceSettings(
                << user_id_;
     return false;
   }
-  CHECK(device_settings_.ParseFromString(policy->policy_value()));
-  FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
-                    observers_,
-                    OnTentativeChangesInPolicy(*policy));
-  has_pending_changes_ = true;
-  StoreDeviceSettings();
+  tentative_settings_.reset(new em::ChromeDeviceSettingsProto);
+  CHECK(tentative_settings_->ParseFromString(policy->policy_value()));
+  StorePendingChanges();
   return true;
 }
 
@@ -273,12 +275,12 @@ void OwnerSettingsServiceChromeOS::OwnerKeySet(bool success) {
 
 void OwnerSettingsServiceChromeOS::OwnershipStatusChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  StoreDeviceSettings();
+  StorePendingChanges();
 }
 
 void OwnerSettingsServiceChromeOS::DeviceSettingsUpdated() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  StoreDeviceSettings();
+  StorePendingChanges();
 }
 
 void OwnerSettingsServiceChromeOS::OnDeviceSettingsServiceShutdown() {
@@ -586,17 +588,32 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
                  callback));
 }
 
-void OwnerSettingsServiceChromeOS::StoreDeviceSettings() {
-  if (!has_pending_changes_ || store_settings_factory_.HasWeakPtrs())
+void OwnerSettingsServiceChromeOS::StorePendingChanges() {
+  if (!has_pending_changes() || store_settings_factory_.HasWeakPtrs() ||
+      !device_settings_service_) {
     return;
-  if (!UpdateFromService())
+  }
+
+  em::ChromeDeviceSettingsProto settings;
+  if (tentative_settings_.get()) {
+    settings.Swap(tentative_settings_.get());
+    tentative_settings_.reset();
+  } else if (device_settings_service_->status() ==
+                 DeviceSettingsService::STORE_SUCCESS &&
+             device_settings_service_->device_settings()) {
+    settings = *device_settings_service_->device_settings();
+  } else {
     return;
+  }
+
+  for (const auto& change : pending_changes_)
+    UpdateDeviceSettings(change.first, *change.second, settings);
+  pending_changes_.clear();
+
   scoped_ptr<em::PolicyData> policy = AssemblePolicy(
-      user_id_, device_settings_service_->policy_data(), &device_settings_);
-  has_pending_changes_ = false;
+      user_id_, device_settings_service_->policy_data(), &settings);
   bool rv = AssembleAndSignPolicyAsync(
-      content::BrowserThread::GetBlockingPool(),
-      policy.Pass(),
+      content::BrowserThread::GetBlockingPool(), policy.Pass(),
       base::Bind(&OwnerSettingsServiceChromeOS::OnPolicyAssembledAndSigned,
                  store_settings_factory_.GetWeakPtr()));
   if (!rv)
@@ -621,23 +638,7 @@ void OwnerSettingsServiceChromeOS::OnSignedPolicyStored(bool success) {
   FOR_EACH_OBSERVER(OwnerSettingsService::Observer,
                     observers_,
                     OnSignedPolicyStored(success));
-  StoreDeviceSettings();
-  if (!success)
-    has_pending_changes_ = true;
-}
-
-bool OwnerSettingsServiceChromeOS::UpdateFromService() {
-  if (!device_settings_service_ ||
-      device_settings_service_->status() !=
-          DeviceSettingsService::STORE_SUCCESS ||
-      !device_settings_service_->device_settings()) {
-    return false;
-  }
-  enterprise_management::ChromeDeviceSettingsProto settings =
-      *device_settings_service_->device_settings();
-  settings.MergeFrom(device_settings_);
-  device_settings_.Swap(&settings);
-  return true;
+  StorePendingChanges();
 }
 
 }  // namespace chromeos

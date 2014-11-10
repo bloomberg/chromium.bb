@@ -41,8 +41,8 @@ class OWNERSHIP_EXPORT OwnerSettingsService : public KeyedService {
     // policy storage..
     virtual void OnSignedPolicyStored(bool success) {}
 
-    // Called when tentative changes were made to policy, but the policy still
-    // not signed and stored.
+    // Called when tentative changes were made to policy, but the
+    // policy is not signed and stored yet.
     //
     // TODO (ygorshenin@, crbug.com/230018): get rid of the method
     // since it creates DeviceSettingsService's dependency on

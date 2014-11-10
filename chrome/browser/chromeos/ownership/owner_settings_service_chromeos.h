@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
+#include "base/values.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -83,7 +85,9 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
       const base::Value& value,
       enterprise_management::ChromeDeviceSettingsProto& settings);
 
-  bool has_pending_changes() const { return has_pending_changes_; }
+  bool has_pending_changes() const {
+    return !pending_changes_.empty() || tentative_settings_.get();
+  }
 
  private:
   friend class OwnerSettingsServiceChromeOSFactory;
@@ -104,10 +108,8 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // Possibly notifies DeviceSettingsService that owner's keypair is loaded.
   virtual void OnPostKeypairLoadedActions() override;
 
-  // Tries to sign store current device settings if there're pending
-  // changes in device settings and no active previous call to
-  // DeviceSettingsService::Store().
-  void StoreDeviceSettings();
+  // Tries to apply recent changes to device settings proto, sign it and store.
+  void StorePendingChanges();
 
   // Called when current device settings are successfully signed.
   // Sends signed settings for storage.
@@ -118,10 +120,6 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // settings are stored. Notifies observers and tries to store device
   // settings again.
   void OnSignedPolicyStored(bool success);
-
-  // Fetches device settings from DeviceSettingsService and merges
-  // them with local device settings.
-  bool UpdateFromService();
 
   DeviceSettingsService* device_settings_service_;
 
@@ -137,15 +135,12 @@ class OwnerSettingsServiceChromeOS : public ownership::OwnerSettingsService,
   // Whether TPM token still needs to be initialized.
   bool waiting_for_tpm_token_;
 
-  // The device settings.  This may be different from the actual
-  // current device settings (which can be obtained from
-  // DeviceSettingsService) in case the device does not have an owner
-  // yet or there are pending changes that have not yet been written
-  // to session_manager.
-  enterprise_management::ChromeDeviceSettingsProto device_settings_;
+  // A set of pending changes to device settings.
+  base::ScopedPtrHashMap<std::string, base::Value> pending_changes_;
 
-  // True if some settings were changed but not stored.
-  bool has_pending_changes_;
+  // A protobuf containing pending changes to device settings.
+  scoped_ptr<enterprise_management::ChromeDeviceSettingsProto>
+      tentative_settings_;
 
   content::NotificationRegistrar registrar_;
 
