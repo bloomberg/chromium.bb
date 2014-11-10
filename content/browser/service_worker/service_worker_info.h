@@ -48,7 +48,6 @@ class CONTENT_EXPORT ServiceWorkerRegistrationInfo {
 
   GURL pattern;
   int64 registration_id;
-  ServiceWorkerVersionInfo controlling_version;
   ServiceWorkerVersionInfo active_version;
   ServiceWorkerVersionInfo waiting_version;
   ServiceWorkerVersionInfo installing_version;

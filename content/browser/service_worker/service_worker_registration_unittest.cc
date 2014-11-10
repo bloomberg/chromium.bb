@@ -124,8 +124,6 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
             kInvalidServiceWorkerVersionId);
   EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
             kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.controlling_version.version_id,
-            kInvalidServiceWorkerVersionId);
   listener.Reset();
 
   registration->SetInstallingVersion(version_2.get());
@@ -137,8 +135,6 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(version_2_id,
             listener.observed_info_.installing_version.version_id);
   EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
-            kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.controlling_version.version_id,
             kInvalidServiceWorkerVersionId);
   listener.Reset();
 
@@ -152,8 +148,6 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(version_2_id, listener.observed_info_.waiting_version.version_id);
   EXPECT_EQ(listener.observed_info_.installing_version.version_id,
             kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.controlling_version.version_id,
-            kInvalidServiceWorkerVersionId);
   listener.Reset();
 
   registration->UnsetVersion(version_2.get());
@@ -165,8 +159,6 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   EXPECT_EQ(listener.observed_info_.waiting_version.version_id,
             kInvalidServiceWorkerVersionId);
   EXPECT_EQ(listener.observed_info_.installing_version.version_id,
-            kInvalidServiceWorkerVersionId);
-  EXPECT_EQ(listener.observed_info_.controlling_version.version_id,
             kInvalidServiceWorkerVersionId);
 }
 
