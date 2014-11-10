@@ -72,7 +72,8 @@ MultiProfileShareDialog.prototype = {
  * @return {Promise} Promise fulfilled with the result of dialog. If the dialog
  *     is already opened, it returns null.
  */
-MultiProfileShareDialog.prototype.show = function(plural) {
+MultiProfileShareDialog.prototype.showMultiProfileShareDialog =
+    function(plural) {
   return this.currentProfileId_.then(function(currentProfileId) {
     return new Promise(function(fulfill, reject) {
       this.shareTypeSelect_.selectedIndex = 0;

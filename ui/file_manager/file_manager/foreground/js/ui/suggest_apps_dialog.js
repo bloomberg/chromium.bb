@@ -38,7 +38,10 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
  * Creates dialog in DOM tree.
  *
  * @param {HTMLElement} parentNode Node to be parent for this dialog.
- * @param {Object} state Static state of suggest app dialog.
+ * @param {{
+ *   overrideCwsContainerUrlForTest: string,
+ *   overrideCwsContainerOriginForTest: string
+ * }} state Static state of suggest app dialog.
  * @constructor
  * @extends {FileManagerDialogBase}
  */
@@ -123,13 +126,6 @@ SuggestAppsDialog.Result = {
   FAILED: 'SuggestAppsDialog.Result.FAILED'
 };
 Object.freeze(SuggestAppsDialog.Result);
-
-/**
- * @override
- */
-SuggestAppsDialog.prototype.onInputFocus = function() {
-  this.webviewContainer_.select();
-};
 
 /**
  * Injects headers into the passed request.
@@ -269,6 +265,7 @@ SuggestAppsDialog.prototype.showInternal_ =
         {urls: [this.widgetOrigin_ + '/*']},
         ['blocking', 'requestHeaders']);
     this.webview_.addEventListener('newwindow', function(event) {
+      event = /** @type {NewWindowEvent} */ (event);
       // Discard the window object and reopen in an external window.
       event.window.discard();
       util.visitURL(event.targetUrl);
@@ -397,7 +394,8 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
     case AppInstaller.Result.ERROR:
       SuggestAppsDialog.Metrics.recordInstall(
           SuggestAppsDialog.Metrics.INSTALL.FAILED);
-      fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'));
+      fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
+                             null, null, null);
       break;
   }
 };

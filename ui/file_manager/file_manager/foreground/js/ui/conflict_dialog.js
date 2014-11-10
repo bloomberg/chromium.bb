@@ -94,7 +94,7 @@ ConflictDialog.prototype = {
  * @return {boolean} True if the dialog can show successfully. False if the
  *     dialog failed to show due to an existing dialog.
  */
-ConflictDialog.prototype.show = function(fileName, callback) {
+ConflictDialog.prototype.showWithFileName = function(fileName, callback) {
   if (this.callback_)
     return false;
 
@@ -102,7 +102,7 @@ ConflictDialog.prototype.show = function(fileName, callback) {
   FileManagerDialogBase.prototype.showOkCancelDialog.call(
       this,
       '', // We dont't show the title for the dialog.
-      strf('CONFLICT_DIALOG_MESSAGE', fileName));
+      strf('CONFLICT_DIALOG_MESSAGE', fileName), null, null);
   return true;
 };
 

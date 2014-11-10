@@ -247,6 +247,7 @@ ShareDialog.prototype.show = function(entry, callback) {
       !window.IN_TEST ? (ShareClient.SHARE_TARGET + '/*') : '<all_urls>',
       this.webView_);
   this.webView_.addEventListener('newwindow', function(e) {
+    e = /** @type {NewWindowEvent} */ (e);
     // Discard the window object and reopen in an external window.
     e.window.discard();
     util.visitURL(e.targetUrl);

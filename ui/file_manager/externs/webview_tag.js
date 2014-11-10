@@ -340,6 +340,28 @@ WebView.prototype.loadDataWithBaseUrl =
  */
 WebView.prototype.terminate = function() {};
 
+/**
+ * @constructor
+ * @extends {Event}
+ */
+function NewWindowEvent() {}
+
+/** @type {NewWindow} */
+NewWindowEvent.prototype.window;
+
+/** @type {string} */
+NewWindowEvent.prototype.targetUrl;
+
+/** @type {number} */
+NewWindowEvent.prototype.initialWidth;
+
+/** @type {number} */
+NewWindowEvent.prototype.initialHeight;
+
+/** @type {string} */
+NewWindowEvent.prototype.name;
+
+
 /** @type {!ChromeEvent} */
 WebView.prototype.close;
 

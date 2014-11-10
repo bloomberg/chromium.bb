@@ -8,8 +8,8 @@
  * @extends {cr.EventTarget}
  * @param {!Element} breadcrumbs Container element for breadcrumbs.
  * @param {!Element} volumeIcon Volume icon.
- * @param {MetadataCache} metadataCache To retrieve metadata.
- * @param {VolumeManagerWrapper} volumeManager Volume manager.
+ * @param {!MetadataCache} metadataCache To retrieve metadata.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @constructor
  */
 function LocationLine(breadcrumbs, volumeIcon, metadataCache, volumeManager) {
@@ -165,7 +165,8 @@ LocationLine.prototype.updateInternal_ = function(entries) {
     var entry = entries[i];
     var div = doc.createElement('div');
     div.className = 'breadcrumb-path entry-name';
-    div.textContent = util.getEntryLabel(this.volumeManager_, entry);
+    div.textContent = util.getEntryLabel(
+        this.volumeManager_.getLocationInfo(entry), entry);
     div.entry = entry;
     this.breadcrumbs_.appendChild(div);
 

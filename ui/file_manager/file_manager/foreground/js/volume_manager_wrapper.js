@@ -38,10 +38,11 @@ function VolumeManagerWrapper(driveEnabled, opt_backgroundPage) {
     this.backgroundPage_ = opt_backgroundPage;
   } else {
     queue.run(function(callNextStep) {
-      chrome.runtime.getBackgroundPage(function(backgroundPage) {
-        this.backgroundPage_ = backgroundPage;
-        callNextStep();
-      }.bind(this));
+      chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */(
+          function(opt_backgroundPage) {
+            this.backgroundPage_ = opt_backgroundPage;
+            callNextStep();
+          }.bind(this)));
     }.bind(this));
   }
 

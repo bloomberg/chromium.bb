@@ -146,7 +146,7 @@ FolderShortcutsDataModel.prototype = {
           var url =
               this.lastDriveRootURL_ && this.convertStoredPathToUrl_(path);
           if (url && volumeInfo) {
-            webkitResolveLocalFileSystemURL(
+            window.webkitResolveLocalFileSystemURL(
                 url,
                 function(entry) {
                   onResolveSuccess(path, entry);

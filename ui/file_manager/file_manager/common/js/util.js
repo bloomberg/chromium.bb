@@ -926,14 +926,11 @@ util.splitExtension = function(path) {
 /**
  * Returns the localized name of the entry.
  *
- * @param {{getLocationInfo: (function(!Entry): EntryLocation)}}
- *     volumeManager The volume manager.
+ * @param {EntryLocation} locationInfo
  * @param {!Entry} entry The entry to be retrieve the name of.
  * @return {?string} The localized name.
  */
-util.getEntryLabel = function(volumeManager, entry) {
-  var locationInfo = volumeManager.getLocationInfo(entry);
-
+util.getEntryLabel = function(locationInfo, entry) {
   if (locationInfo && locationInfo.isRootEntry) {
     switch (locationInfo.rootType) {
       case VolumeManagerCommon.RootType.DOWNLOADS:

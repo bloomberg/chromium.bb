@@ -348,7 +348,7 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
       return;
     }
     var errorCallback = function() {
-      fileManager.alert.showHtml('', str('UNMOUNT_FAILED'));
+      fileManager.alert.showHtml('', str('UNMOUNT_FAILED'), null, null, null);
     };
     var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
     if (!volumeInfo) {
@@ -412,7 +412,8 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
           chrome.fileManagerPrivate.formatVolume.bind(null,
-                                                      volumeInfo.volumeId));
+                                                      volumeInfo.volumeId),
+          null, null);
     }
   },
   /**
@@ -551,7 +552,7 @@ CommandHandler.COMMANDS_['delete'] = /** @type {Command} */ ({
         strf('GALLERY_CONFIRM_DELETE_SOME', entries.length);
     fileManager.ui.deleteConfirmDialog.show(message, function() {
       fileManager.fileOperationManager.deleteEntries(entries);
-    });
+    }, null, null);
   },
   /**
    * @param {!Event} event Command event.
@@ -851,7 +852,8 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
         fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
                                    strf('DRIVE_OUT_OF_SPACE_MESSAGE',
                                         unescape(currentEntry.name),
-                                        util.bytesToString(filesystem.size)));
+                                        util.bytesToString(filesystem.size)),
+                                   null, null, null);
       }
     };
     steps.start();

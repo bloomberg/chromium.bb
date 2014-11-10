@@ -261,7 +261,8 @@ PreviewPanel.prototype.updatePreviewArea_ = function() {
     this.thumbnails.selection = selection;
     this.calculatingSizeLabel_.hidden = true;
     this.previewText_.textContent = util.getEntryLabel(
-        this.volumeManager_, selection.entries[0]);
+        this.volumeManager_.getLocationInfo(selection.entries[0]),
+        selection.entries[0]);
     return;
   }
 
@@ -470,7 +471,8 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
  * zoomed image.
  *
  * @param {HTMLImageElement} image Image to be source of the zoomed image.
- * @param {Object=} opt_transform Transformation to be applied to the image.
+ * @param {util.Transform=} opt_transform Transformation to be applied to the
+ *     image.
  * @private
  */
 PreviewPanel.Thumbnails.prototype.setZoomedImage_ = function(image,

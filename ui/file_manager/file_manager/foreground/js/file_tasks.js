@@ -500,7 +500,8 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
                   entries.length === 1 ?
                       'OFFLINE_MESSAGE' :
                       'OFFLINE_MESSAGE_PLURAL',
-                  loadTimeData.getString('OFFLINE_COLUMN_LABEL')));
+                  loadTimeData.getString('OFFLINE_COLUMN_LABEL')),
+          null, null, null);
     });
     return;
   }
@@ -527,7 +528,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
                     'CONFIRM_MOBILE_DATA_USE' :
                     'CONFIRM_MOBILE_DATA_USE_PLURAL',
                 util.bytesToString(sizeToDownload)),
-            callback);
+            callback, null, null);
       });
     });
     return;
@@ -603,7 +604,7 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
           var path = util.extractFilePath(url);
           var namePos = path.lastIndexOf('/');
           fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
-                             path.substr(namePos + 1), error));
+                             path.substr(namePos + 1), error), null, null);
         }.bind(null, urls[index]));
   }
 };
@@ -705,7 +706,6 @@ FileTasks.prototype.createItems_ = function() {
  * Updates context menu with default item.
  * @private
  */
-
 FileTasks.prototype.updateMenuItem_ = function() {
   this.fileManager_.updateContextMenuActionItems(this.tasks_);
 };
@@ -760,7 +760,7 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
       defaultIdx = j;
   }
 
-  actionDialog.show(
+  actionDialog.showDefaultActionDialog(
       title,
       message,
       items, defaultIdx,
@@ -770,25 +770,48 @@ FileTasks.prototype.showTaskPicker = function(actionDialog, title, message,
 };
 
 /**
- * Decorates a FileTasks method, so it will be actually executed after the tasks
- * are available.
- * This decorator expects an implementation called |method + '_'|.
- *
- * @param {string} method The method name.
+ * @param {cr.ui.ComboButton} combobutton The task picker element.
  */
-FileTasks.decorate = function(method) {
-  var privateMethod = method + '_';
-  FileTasks.prototype[method] = function() {
-    if (this.tasks_) {
-      this[privateMethod].apply(this, arguments);
-    } else {
-      this.pendingInvocations_.push([privateMethod, arguments]);
-    }
-    return this;
-  };
+FileTasks.prototype.display = function(combobutton) {
+  if (this.tasks_)
+    this.display_(combobutton);
+  else
+    this.pendingInvocations_.push(['display_', [combobutton]]);
 };
 
-FileTasks.decorate('display');
-FileTasks.decorate('updateMenuItem');
-FileTasks.decorate('execute');
-FileTasks.decorate('executeDefault');
+/**
+ * Updates context menu with default item.
+ */
+FileTasks.prototype.updateMenuItem = function() {
+  if (this.tasks_)
+    this.updateMenuItem_();
+  else
+    this.pendingInvocations_.push(['updateMenuItem_', []]);
+};
+
+/**
+ * Executes a single task.
+ *
+ * @param {string} taskId Task identifier.
+ * @param {Array.<Entry>=} opt_entries Entries to xecute on instead of
+ *     this.entries_|.
+ */
+FileTasks.prototype.execute = function(taskId, opt_entries) {
+  if (this.tasks_)
+    this.execute_(taskId, opt_entries);
+  else
+    this.pendingInvocations_.push(['execute_', [taskId, opt_entries]]);
+};
+
+/**
+ * Executes default task.
+ *
+ * @param {function(boolean, Array.<Entry>)=} opt_callback Called when the
+ *     default task is executed, or the error is occurred.
+ */
+FileTasks.prototype.executeDefault = function(opt_callback) {
+  if (this.tasks_)
+    this.executeDefault_(opt_callback);
+  else
+    this.pendingInvocations_.push(['executeDefault_', [opt_callback]]);
+};

@@ -305,7 +305,7 @@ function FileManager() {
 
   /**
    * The combo button to specify the task.
-   * @type {HTMLButtonElement}
+   * @type {cr.ui.ComboButton}
    * @private
    */
   this.taskItems_ = null;
@@ -346,7 +346,7 @@ function FileManager() {
 
   /**
    * Queue for ordering FileManager's initialization process.
-   * @type {AsyncUtil.Group}
+   * @type {!AsyncUtil.Group}
    * @private
    */
   this.initializeQueue_ = new AsyncUtil.Group();
@@ -1054,20 +1054,23 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Initialize the background page.
+   * Initializes the background page.
    * @param {function()} callback Completion callback.
    * @private
    */
   FileManager.prototype.initBackgroundPage_ = function(callback) {
-    chrome.runtime.getBackgroundPage(function(backgroundPage) {
-      this.backgroundPage_ = backgroundPage;
-      this.backgroundPage_.background.ready(function() {
-        loadTimeData.data = this.backgroundPage_.background.stringData;
-        if (util.runningInBrowser())
-          this.backgroundPage_.registerDialog(window);
-        callback();
-      }.bind(this));
-    }.bind(this));
+    chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
+        function(opt_backgroundPage) {
+          assert(opt_backgroundPage);
+          this.backgroundPage_ =
+              /** @type {!BackgroundWindow} */ (opt_backgroundPage);
+          this.backgroundPage_.background.ready(function() {
+            loadTimeData.data = this.backgroundPage_.background.stringData;
+            if (util.runningInBrowser())
+              this.backgroundPage_.registerDialog(window);
+            callback();
+          }.bind(this));
+        }.bind(this)));
   };
 
   /**
@@ -1161,6 +1164,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initAdditionalUI_ = function(callback) {
+    assert(this.metadataCache_);
+    assert(this.volumeManager_);
+
     // Cache nodes we'll be manipulating.
     var dom = this.dialogDom_;
     assert(dom);
@@ -1189,10 +1195,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
-
-
-    var taskItems = queryRequiredElement(dom, '#tasks');
-    this.taskItems_ = /** @type {HTMLButtonElement} */ (taskItems);
 
     this.ui_.locationLine = new LocationLine(
         queryRequiredElement(dom, '#location-breadcrumbs'),
@@ -1240,7 +1242,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ui_.toggleViewButton.addEventListener('click',
         this.onToggleViewButtonClick_.bind(this));
 
-    cr.ui.ComboButton.decorate(this.taskItems_);
+    var taskItems = queryRequiredElement(dom, '#tasks');
+    cr.ui.ComboButton.decorate(taskItems);
+    this.taskItems_ = assertInstanceof(taskItems, cr.ui.ComboButton);
     this.taskItems_.showMenu = function(shouldSetFocus) {
       // Prevent the empty menu from opening.
       if (!this.menu.length)
@@ -1529,7 +1533,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
               decodeURIComponent(
                   event.error.data.sourceFileUrl.split('/').pop()),
-              str('GOOGLE_DRIVE_BUY_STORAGE_URL')));
+              str('GOOGLE_DRIVE_BUY_STORAGE_URL')),
+          null, null, null);
     }
   };
 
@@ -1657,7 +1662,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         callback();
         return;
       }
-      webkitResolveLocalFileSystemURL(
+      window.webkitResolveLocalFileSystemURL(
           this.initSelectionURL_,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
@@ -1695,7 +1700,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         callback();
         return;
       }
-      webkitResolveLocalFileSystemURL(
+      window.webkitResolveLocalFileSystemURL(
           this.initCurrentDirectoryURL_,
           function(inEntry) {
             var locationInfo = this.volumeManager_.getLocationInfo(inEntry);
@@ -2232,7 +2237,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (this.dialogType == DialogType.FULL_PAGE) {
       var selection = this.getSelection();
       var tasks = selection.tasks;
-      var urls = selection.urls;
       var mimeTypes = selection.mimeTypes;
       if (tasks)
         tasks.executeDefault();
@@ -2608,7 +2612,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       self.ui_.listContainer.endBatchUpdates();
 
       self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
-                           util.getFileErrorString(error.name)));
+                           util.getFileErrorString(error.name)),
+                      null, null);
     };
 
     var onAbort = function() {

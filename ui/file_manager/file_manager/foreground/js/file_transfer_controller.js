@@ -390,7 +390,8 @@ FileTransferController.prototype = {
     }.bind(this)).then(function(shareEntries) {
       if (shareEntries.length === 0)
         return;
-      return this.multiProfileShareDialog_.show(shareEntries.length > 1).
+      return this.multiProfileShareDialog_.
+          showMultiProfileShareDialog(shareEntries.length > 1).
           then(function(dialogResult) {
             if (dialogResult === 'cancel')
               return Promise.reject('ABORT');

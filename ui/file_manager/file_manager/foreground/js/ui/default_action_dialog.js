@@ -52,13 +52,6 @@ cr.define('cr.filebrowser', function() {
   };
 
   /**
-   * @override
-   */
-  DefaultActionDialog.prototype.onInputFocus = function() {
-    this.list_.select();
-  };
-
-  /**
    * Renders item for list.
    * @param {Object} item Item to render.
    */
@@ -95,8 +88,8 @@ cr.define('cr.filebrowser', function() {
    * @param {function(Object)} onSelectedItem Callback which is called when an
    *     item is selected.
    */
-  DefaultActionDialog.prototype.show = function(title, message, items,
-      defaultIndex, onSelectedItem) {
+  DefaultActionDialog.prototype.showDefaultActionDialog =
+      function(title, message, items, defaultIndex, onSelectedItem) {
 
     this.onSelectedItemCallback_ = onSelectedItem;
 

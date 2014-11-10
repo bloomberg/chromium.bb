@@ -253,10 +253,10 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
     // Show disabled items for position calculation of the menu. They will be
     // overridden in this.updateFileSelectionAsync().
     this.fileManager_.updateContextMenuActionItems(
-        FileSelectionHandler.createTemporaryDisabledActionMenuItem_(), true);
+        FileSelectionHandler.createTemporaryDisabledActionMenuItem_());
   } else {
     // Update context menu.
-    this.fileManager_.updateContextMenuActionItems(null, false);
+    this.fileManager_.updateContextMenuActionItems(null);
   }
 
   this.selectionUpdateTimer_ = setTimeout(function() {

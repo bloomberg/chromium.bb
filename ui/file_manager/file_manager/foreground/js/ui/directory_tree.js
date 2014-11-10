@@ -28,7 +28,9 @@ DirectoryItemTreeBaseMethods.updateSubElementsFromList = function(recursive) {
   while (this.entries_[index]) {
     var currentEntry = this.entries_[index];
     var currentElement = this.items[index];
-    var label = util.getEntryLabel(tree.volumeManager_, currentEntry) || '';
+    var label = util.getEntryLabel(
+        tree.volumeManager_.getLocationInfo(currentEntry),
+        currentEntry) || '';
 
     if (index >= this.items.length) {
       var item = new DirectoryItem(label, currentEntry, this, tree);
@@ -126,7 +128,7 @@ function DirectoryItem(label, dirEntry, parentDirItem, tree) {
 DirectoryItem.decorate =
     function(el, label, dirEntry, parentDirItem, tree) {
   el.__proto__ = DirectoryItem.prototype;
-  /** @type {DirectoryItem} */ (el).decorate(
+  /** @type {DirectoryItem} */ (el).decorateDirectoryItem(
       label, dirEntry, parentDirItem, tree);
 };
 
@@ -181,7 +183,7 @@ DirectoryItem.prototype.searchAndSelectByEntry = function(entry) {
  *     Parent of this item.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
-DirectoryItem.prototype.decorate = function(
+DirectoryItem.prototype.decorateDirectoryItem = function(
     label, dirEntry, parentDirItem, tree) {
   this.innerHTML = TREE_ITEM_INNTER_HTML;
   this.parentTree_ = tree;
@@ -221,10 +223,10 @@ DirectoryItem.prototype.decorate = function(
  * Overrides WebKit's scrollIntoViewIfNeeded, which doesn't work well with
  * a complex layout. This call is not necessary, so we are ignoring it.
  *
- * @param {boolean} unused Unused.
+ * @param {boolean=} opt_unused Unused.
  * @override
  */
-DirectoryItem.prototype.scrollIntoViewIfNeeded = function(unused) {
+DirectoryItem.prototype.scrollIntoViewIfNeeded = function(opt_unused) {
 };
 
 /**
@@ -423,7 +425,7 @@ DirectoryItem.prototype.activate = function() {
 function VolumeItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
   item.__proto__ = VolumeItem.prototype;
-  item.decorate(modelItem, tree);
+  item.decorateVolumeItem(modelItem, tree);
   return item;
 }
 
@@ -470,7 +472,7 @@ VolumeItem.prototype.searchAndSelectByEntry = function(entry) {
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
-VolumeItem.prototype.decorate = function(modelItem, tree) {
+VolumeItem.prototype.decorateVolumeItem = function(modelItem, tree) {
   this.innerHTML = TREE_ITEM_INNTER_HTML;
   this.parentTree_ = tree;
   this.modelItem_ = modelItem;
@@ -535,7 +537,9 @@ VolumeItem.prototype.updateSubDirectories = function(recursive) {
 
     for (var i = 0; i < entries.length; i++) {
       var item = new DirectoryItem(
-          util.getEntryLabel(this.parentTree_.volumeManager_, entries[i]) || '',
+          util.getEntryLabel(
+              this.parentTree_.volumeManager_.getLocationInfo(entries[i]),
+              entries[i]) || '',
           entries[i], this, this.parentTree_);
       this.add(item);
       item.updateSubDirectories(false);
@@ -687,7 +691,7 @@ VolumeItem.prototype.setupEjectButton_ = function(rowElement) {
 function ShortcutItem(modelItem, tree) {
   var item = new cr.ui.TreeItem();
   item.__proto__ = ShortcutItem.prototype;
-  item.decorate(modelItem, tree);
+  item.decorateShortcutItem(modelItem, tree);
   return item;
 }
 
@@ -722,7 +726,7 @@ ShortcutItem.prototype.searchAndSelectByEntry = function(entry) {
  * @param {NavigationModelItem} modelItem NavigationModelItem of this volume.
  * @param {DirectoryTree} tree Current tree, which contains this item.
  */
-ShortcutItem.prototype.decorate = function(modelItem, tree) {
+ShortcutItem.prototype.decorateShortcutItem = function(modelItem, tree) {
   this.innerHTML = TREE_ITEM_INNTER_HTML;
   this.parentTree_ = tree;
   this.label = modelItem.entry.name;
@@ -780,7 +784,7 @@ ShortcutItem.prototype.activate = function() {
 
   // For shortcuts we already have an Entry, but it has to be resolved again
   // in case, it points to a non-existing directory.
-  webkitResolveLocalFileSystemURL(
+  window.webkitResolveLocalFileSystemURL(
       this.entry.toURL(),
       onEntryResolved,
       function() {
@@ -814,7 +818,7 @@ function DirectoryTree() {}
 DirectoryTree.decorate = function(
     el, directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
   el.__proto__ = DirectoryTree.prototype;
-  /** @type {DirectoryTree} */ (el).decorate(
+  /** @type {DirectoryTree} */ (el).decorateDirectoryTree(
       directoryModel, volumeManager, metadataCache, fakeEntriesVisible);
 };
 
@@ -976,7 +980,7 @@ DirectoryTree.prototype.searchAndSelectByEntry = function(entry) {
  * @param {MetadataCache} metadataCache Shared MetadataCache instance.
  * @param {boolean} fakeEntriesVisible True if it should show the fakeEntries.
  */
-DirectoryTree.prototype.decorate = function(
+DirectoryTree.prototype.decorateDirectoryTree = function(
     directoryModel, volumeManager, metadataCache, fakeEntriesVisible) {
   cr.ui.Tree.prototype.decorate.call(this);
 
