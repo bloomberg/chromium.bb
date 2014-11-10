@@ -200,7 +200,10 @@ FileTransferController.prototype = {
     var externalFileUrl;
     for (var i = 0; i < this.selectedEntries_.length; i++) {
       var url = this.selectedEntries_[i].toURL();
-      dataTransfer.items.add(this.selectedAsyncData_[url].file);
+      if (!this.selectedAsyncData_[url])
+        continue;
+      if (this.selectedAsyncData_[url].file)
+        dataTransfer.items.add(this.selectedAsyncData_[url].file);
       if (!externalFileUrl)
         externalFileUrl = this.selectedAsyncData_[url].externalFileUrl;
     }
