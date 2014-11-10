@@ -122,12 +122,6 @@ a:focus {
   position: relative;
 }
 
-/* The style applied when a modal dialog box overlap the dialog container. */
-.dialog-container.disable-header-drag .dialog-navigation-list-header,
-.dialog-container.disable-header-drag .dialog-header {
-  -webkit-app-region: no-drag;
-}
-
 /* List/grid and preview are inside this container. */
 .dialog-main {
   align-items: stretch;
@@ -151,7 +145,6 @@ a:focus {
 }
 
 .dialog-navigation-list-header {
-  -webkit-app-region: drag;
   flex: none;
   height: 48px;  /* Keep in sync with #dialog-header. */
   line-height: 45px;
@@ -318,7 +311,6 @@ div.splitter {
 
 /* Breadcrumbs and things under the title but above the list view. */
 .dialog-header {
-  -webkit-app-region: drag;
   align-items: center;
   display: flex;
   flex: none;
@@ -349,7 +341,6 @@ div.splitter {
 }
 
 #search-box input {
-  -webkit-app-region: no-drag;
   background-color: #fff;
   border-style: none;
   color: #333;
@@ -375,7 +366,6 @@ div.splitter {
 }
 
 #search-box .clear {
-  -webkit-app-region: no-drag;
   -webkit-margin-end: 30px;
   align-self: center;
   background: -webkit-image-set(

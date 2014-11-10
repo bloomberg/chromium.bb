@@ -2028,13 +2028,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * @return {Array.<Entry>} List of all entries in the current directory.
-   */
-  FileManager.prototype.getAllEntriesInCurrentDirectory = function() {
-    return this.directoryModel_.getFileList().slice();
-  };
-
-  /**
    * Return DirectoryEntry of the current directory or null.
    * @return {DirectoryEntry} DirectoryEntry of the current directory. Returns
    *     null if the directory model is not ready or the current directory is
@@ -2240,19 +2233,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Called when a dialog is shown or hidden.
-   * @param {boolean} show True if a dialog is shown, false if hidden.
+   * Called when a dialog is shown.
    */
-  FileManager.prototype.onDialogShownOrHidden = function(show) {
-    if (show) {
-      // If a dialog is shown, activate the window.
-      var appWindow = chrome.app.window.current();
-      if (appWindow)
-        appWindow.focus();
-    }
-
-    // Set/unset a flag to disable dragging on the title area.
-    this.dialogContainer_.classList.toggle('disable-header-drag', show);
+  FileManager.prototype.onDialogShown = function() {
+    // If a dialog is shown, activate the window.
+    var appWindow = chrome.app.window.current();
+    if (appWindow)
+      appWindow.focus();
   };
 
   /**
@@ -2673,30 +2660,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.ui_.listContainer.textSearchState.text = '';
-  };
-
-  /**
-   * Verifies the user entered name for file or folder to be created or
-   * renamed to. See also util.validateFileName.
-   *
-   * @param {DirectoryEntry} parentEntry The URL of the parent directory entry.
-   * @param {string} name New file or folder name.
-   * @param {function(boolean)} onDone Function to invoke when user closes the
-   *    warning box or immediatelly if file name is correct. If the name was
-   *    valid it is passed true, and false otherwise.
-   * @private
-   */
-  FileManager.prototype.validateFileName_ = function(
-      parentEntry, name, onDone) {
-    var fileNameErrorPromise = util.validateFileName(
-        parentEntry,
-        name,
-        this.fileFilter_.isFilterHiddenOn());
-    fileNameErrorPromise.then(onDone.bind(null, true), function(message) {
-      this.alert.show(message, onDone.bind(null, false));
-    }.bind(this)).catch(function(error) {
-      console.error(error.stack || error);
-    });
   };
 
   /**

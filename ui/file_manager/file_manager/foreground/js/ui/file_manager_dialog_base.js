@@ -70,7 +70,7 @@ FileManagerDialogBase.prototype.showImpl_ = function(
 
   FileManagerDialogBase.shown = true;
   if (FileManagerDialogBase.fileManager_)
-    FileManagerDialogBase.fileManager_.onDialogShownOrHidden(true);
+    FileManagerDialogBase.fileManager_.onDialogShown();
   cr.ui.dialogs.BaseDialog.prototype.showWithTitle.call(
       this, title, message, onOk, onCancel, null);
 
@@ -114,8 +114,6 @@ FileManagerDialogBase.prototype.hide = function(opt_onHide) {
       function() {
         if (opt_onHide)
           opt_onHide();
-        if (FileManagerDialogBase.fileManager_)
-          FileManagerDialogBase.fileManager_.onDialogShownOrHidden(false);
         FileManagerDialogBase.shown = false;
       });
 };
