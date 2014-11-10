@@ -53,9 +53,26 @@ function onload()
     var p = Promise.reject(-0);
     p.catch(function() {});
 
+    var map2 = new Map();
+    map2.set(41, 42);
+    map2.set({foo: 1}, {foo: 2});
+
+    var iter1 = map2.values();
+    iter1.next();
+
+    var set2 = new Set();
+    set2.add(41);
+    set2.add({foo: 1});
+
+    var iter2 = set2.keys();
+    iter2.next();
+
     globals = [
         p, smb1, smb2, obj, map, weakMap, set, weakSet,
-        mapMap0, mapMap, setSet0, setSet, bigmap
+        mapMap0, mapMap, setSet0, setSet, bigmap,
+        map2.keys(), map2.values(), map2.entries(),
+        set2.keys(), set2.values(), set2.entries(),
+        iter1, iter2,
     ];
 
     runTest();

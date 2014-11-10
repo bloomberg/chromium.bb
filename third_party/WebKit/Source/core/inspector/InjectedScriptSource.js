@@ -1214,7 +1214,7 @@ InjectedScript.RemoteObject.prototype = {
             }
             this._appendPropertyDescriptors(preview, internalProperties, propertiesThreshold, secondLevelKeys, isTable);
 
-            if (this.subtype === "map" || this.subtype === "set")
+            if (this.subtype === "map" || this.subtype === "set" || this.subtype === "iterator")
                 this._appendEntriesPreview(object, preview, skipEntriesPreview);
 
         } catch (e) {

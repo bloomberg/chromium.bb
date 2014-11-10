@@ -24,6 +24,22 @@ CONSOLE MESSAGE: line 11: [object Set]
 CONSOLE MESSAGE: line 12: [object Set]
 CONSOLE MESSAGE: line 11: [object Map]
 CONSOLE MESSAGE: line 12: [object Map]
+CONSOLE MESSAGE: line 11: [object Map Iterator]
+CONSOLE MESSAGE: line 12: [object Map Iterator]
+CONSOLE MESSAGE: line 11: [object Map Iterator]
+CONSOLE MESSAGE: line 12: [object Map Iterator]
+CONSOLE MESSAGE: line 11: [object Map Iterator]
+CONSOLE MESSAGE: line 12: [object Map Iterator]
+CONSOLE MESSAGE: line 11: [object Set Iterator]
+CONSOLE MESSAGE: line 12: [object Set Iterator]
+CONSOLE MESSAGE: line 11: [object Set Iterator]
+CONSOLE MESSAGE: line 12: [object Set Iterator]
+CONSOLE MESSAGE: line 11: [object Set Iterator]
+CONSOLE MESSAGE: line 12: [object Set Iterator]
+CONSOLE MESSAGE: line 11: [object Map Iterator]
+CONSOLE MESSAGE: line 12: [object Map Iterator]
+CONSOLE MESSAGE: line 11: [object Set Iterator]
+CONSOLE MESSAGE: line 12: [object Set Iterator]
 Tests that console properly displays information about ES6 features.
 
 console-format-es6.html:11 Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: -0}
@@ -161,4 +177,68 @@ console-format-es6.html:12 [Map]
     __proto__: Array[0]
 globals[12]
 Map {" from str " => " to str ", undefined => undefined, null => null, 42 => 42, Object {foo: "from"} => Object {foo: "to"}}
+console-format-es6.html:11 MapIterator {41, Object {foo: 1}}
+console-format-es6.html:12 [MapIterator]
+    0: MapIterator
+    length: 1
+    __proto__: Array[0]
+globals[13]
+MapIterator {41, Object {foo: 1}}
+console-format-es6.html:11 MapIterator {42, Object {foo: 2}}
+console-format-es6.html:12 [MapIterator]
+    0: MapIterator
+    length: 1
+    __proto__: Array[0]
+globals[14]
+MapIterator {42, Object {foo: 2}}
+console-format-es6.html:11 MapIterator {[41, 42], [Object, Object]}
+    __proto__: Object
+    <entries>
+console-format-es6.html:12 [MapIterator]
+    0: MapIterator
+    length: 1
+    __proto__: Array[0]
+globals[15]
+MapIterator {[41, 42], [Object, Object]}
+    __proto__: Object
+    <entries>
+console-format-es6.html:11 SetIterator {41, Object {foo: 1}}
+console-format-es6.html:12 [SetIterator]
+    0: SetIterator
+    length: 1
+    __proto__: Array[0]
+globals[16]
+SetIterator {41, Object {foo: 1}}
+console-format-es6.html:11 SetIterator {41, Object {foo: 1}}
+console-format-es6.html:12 [SetIterator]
+    0: SetIterator
+    length: 1
+    __proto__: Array[0]
+globals[17]
+SetIterator {41, Object {foo: 1}}
+console-format-es6.html:11 SetIterator {[41, 41], [Object, Object]}
+    __proto__: Object
+    <entries>
+console-format-es6.html:12 [SetIterator]
+    0: SetIterator
+    length: 1
+    __proto__: Array[0]
+globals[18]
+SetIterator {[41, 41], [Object, Object]}
+    __proto__: Object
+    <entries>
+console-format-es6.html:11 MapIterator {Object {foo: 2}}
+console-format-es6.html:12 [MapIterator]
+    0: MapIterator
+    length: 1
+    __proto__: Array[0]
+globals[19]
+MapIterator {Object {foo: 2}}
+console-format-es6.html:11 SetIterator {Object {foo: 1}}
+console-format-es6.html:12 [SetIterator]
+    0: SetIterator
+    length: 1
+    __proto__: Array[0]
+globals[20]
+SetIterator {Object {foo: 1}}
 

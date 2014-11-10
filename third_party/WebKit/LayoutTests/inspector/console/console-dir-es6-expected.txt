@@ -6,6 +6,12 @@ CONSOLE MESSAGE: line 26: [object Set]
 CONSOLE MESSAGE: line 26: [object WeakSet]
 CONSOLE MESSAGE: line 34: [object Set]
 CONSOLE MESSAGE: line 37: [object WeakMap]
+CONSOLE MESSAGE: line 45: [object Map Iterator]
+CONSOLE MESSAGE: line 46: [object Map Iterator]
+CONSOLE MESSAGE: line 47: [object Map Iterator]
+CONSOLE MESSAGE: line 45: [object Set Iterator]
+CONSOLE MESSAGE: line 46: [object Set Iterator]
+CONSOLE MESSAGE: line 47: [object Set Iterator]
 Tests that console logging dumps proper messages.
 
 console-dir-es6.html:15 Object
@@ -43,4 +49,28 @@ console-dir-es6.html:37 WeakMap
     __proto__: WeakMap
     <entries>[0]
         No Entries
+console-dir-es6.html:45 MapIterator
+    __proto__: Object
+    <entries>[1]
+        0: Object
+console-dir-es6.html:46 MapIterator
+    __proto__: Object
+    <entries>[1]
+        0: Object
+console-dir-es6.html:47 MapIterator
+    __proto__: Object
+    <entries>[1]
+        0: Array[2]
+console-dir-es6.html:45 SetIterator
+    __proto__: Object
+    <entries>[1]
+        0: Object
+console-dir-es6.html:46 SetIterator
+    __proto__: Object
+    <entries>[1]
+        0: Object
+console-dir-es6.html:47 SetIterator
+    __proto__: Object
+    <entries>[1]
+        0: Array[2]
 

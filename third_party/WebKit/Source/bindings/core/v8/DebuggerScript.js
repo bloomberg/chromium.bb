@@ -90,9 +90,9 @@ DebuggerScript.getCollectionEntries = function(object)
     var mirror = MakeMirror(object, true /* transient */);
     if (mirror.isMap())
         return mirror.entries();
-    if (mirror.isSet()) {
+    if (mirror.isSet() || mirror.isIterator()) {
         var result = [];
-        var values = mirror.values();
+        var values = mirror.isSet() ? mirror.values() : mirror.preview();
         for (var i = 0; i < values.length; ++i)
             result.push({ value: values[i] });
         return result;

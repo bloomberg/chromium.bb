@@ -36,6 +36,17 @@ function onload()
     // Test "No Entries" placeholder.
     console.dir(new WeakMap());
 
+    // Test Map/Set iterators.
+    var m = new Map();
+    m.set(obj, {foo: 1});
+    var s = new Set();
+    s.add(obj);
+    [m, s].forEach(function(c) {
+        console.dir(c.keys());
+        console.dir(c.values());
+        console.dir(c.entries());
+    });
+
     runTest();
 }
 

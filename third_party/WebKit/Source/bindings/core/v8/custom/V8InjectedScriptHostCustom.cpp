@@ -172,6 +172,10 @@ void V8InjectedScriptHost::subtypeMethodCustom(const v8::FunctionCallbackInfo<v8
         v8SetReturnValue(info, v8AtomicString(isolate, "set"));
         return;
     }
+    if (value->IsMapIterator() || value->IsSetIterator()) {
+        v8SetReturnValue(info, v8AtomicString(isolate, "iterator"));
+        return;
+    }
     if (V8Node::hasInstance(value, isolate)) {
         v8SetReturnValue(info, v8AtomicString(isolate, "node"));
         return;
