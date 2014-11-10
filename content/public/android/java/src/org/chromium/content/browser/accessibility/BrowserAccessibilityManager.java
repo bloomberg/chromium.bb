@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.view.MotionEvent;
@@ -821,9 +822,9 @@ public class BrowserAccessibilityManager {
 
     @CalledByNative
     private void setAccessibilityEventSelectionAttrs(AccessibilityEvent event,
-            int fromIndex, int addedCount, int itemCount, String text) {
+            int fromIndex, int toIndex, int itemCount, String text) {
         event.setFromIndex(fromIndex);
-        event.setAddedCount(addedCount);
+        event.setToIndex(toIndex);
         event.setItemCount(itemCount);
         event.getText().add(text);
     }
@@ -884,6 +885,13 @@ public class BrowserAccessibilityManager {
         bundle.putFloat("AccessibilityNodeInfo.RangeInfo.min", min);
         bundle.putFloat("AccessibilityNodeInfo.RangeInfo.max", max);
         bundle.putFloat("AccessibilityNodeInfo.RangeInfo.current", current);
+    }
+
+    @CalledByNative
+    boolean shouldExposePasswordText() {
+        return (Settings.Secure.getInt(
+                        mContentViewCore.getContext().getContentResolver(),
+                        Settings.Secure.ACCESSIBILITY_SPEAK_PASSWORD, 0) == 1);
     }
 
     private native int nativeGetRootId(long nativeBrowserAccessibilityManagerAndroid);

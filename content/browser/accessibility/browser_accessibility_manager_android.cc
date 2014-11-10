@@ -261,10 +261,13 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityNodeInfo(
   Java_BrowserAccessibilityManager_setAccessibilityNodeInfoClassName(
       env, obj, info,
       base::android::ConvertUTF8ToJavaString(env, node->GetClassName()).obj());
-  Java_BrowserAccessibilityManager_setAccessibilityNodeInfoContentDescription(
-      env, obj, info,
-      base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj(),
-      node->IsLink());
+  if (!node->IsPassword() ||
+      Java_BrowserAccessibilityManager_shouldExposePasswordText(env, obj)) {
+    Java_BrowserAccessibilityManager_setAccessibilityNodeInfoContentDescription(
+        env, obj, info,
+        base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj(),
+        node->IsLink());
+  }
 
   gfx::Rect absolute_rect = node->GetLocalBoundsRect();
   gfx::Rect parent_relative_rect = absolute_rect;
@@ -346,24 +349,37 @@ jboolean BrowserAccessibilityManagerAndroid::PopulateAccessibilityEvent(
       node->GetMaxScrollY());
 
   switch (event_type) {
-    case ANDROID_ACCESSIBILITY_EVENT_TEXT_CHANGED:
+    case ANDROID_ACCESSIBILITY_EVENT_TEXT_CHANGED: {
+      base::string16 before_text, text;
+      if (!node->IsPassword() ||
+          Java_BrowserAccessibilityManager_shouldExposePasswordText(env, obj)) {
+        before_text = node->GetTextChangeBeforeText();
+        text = node->GetText();
+      }
       Java_BrowserAccessibilityManager_setAccessibilityEventTextChangedAttrs(
           env, obj, event,
           node->GetTextChangeFromIndex(),
           node->GetTextChangeAddedCount(),
           node->GetTextChangeRemovedCount(),
           base::android::ConvertUTF16ToJavaString(
-              env, node->GetTextChangeBeforeText()).obj(),
-          base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+              env, before_text).obj(),
+          base::android::ConvertUTF16ToJavaString(env, text).obj());
       break;
-    case ANDROID_ACCESSIBILITY_EVENT_TEXT_SELECTION_CHANGED:
+    }
+    case ANDROID_ACCESSIBILITY_EVENT_TEXT_SELECTION_CHANGED: {
+      base::string16 text;
+      if (!node->IsPassword() ||
+          Java_BrowserAccessibilityManager_shouldExposePasswordText(env, obj)) {
+        text = node->GetText();
+      }
       Java_BrowserAccessibilityManager_setAccessibilityEventSelectionAttrs(
           env, obj, event,
           node->GetSelectionStart(),
           node->GetSelectionEnd(),
           node->GetEditableTextLength(),
-          base::android::ConvertUTF16ToJavaString(env, node->GetText()).obj());
+          base::android::ConvertUTF16ToJavaString(env, text).obj());
       break;
+    }
     default:
       break;
   }
@@ -541,9 +557,14 @@ jboolean BrowserAccessibilityManagerAndroid::NextAtGranularity(
   int end_index = -1;
   if (NextAtGranularity(granularity, cursor_index, node,
                         &start_index, &end_index)) {
+    base::string16 text;
+    if (!node->IsPassword() ||
+        Java_BrowserAccessibilityManager_shouldExposePasswordText(env, obj)) {
+      text = node->GetText();
+    }
     Java_BrowserAccessibilityManager_finishGranularityMove(
         env, obj, base::android::ConvertUTF16ToJavaString(
-            env, node->GetText()).obj(),
+            env, text).obj(),
         extend_selection, start_index, end_index, true);
     return true;
   }

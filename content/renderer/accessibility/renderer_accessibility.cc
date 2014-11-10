@@ -47,6 +47,10 @@ RendererAccessibility::RendererAccessibility(RenderFrameImpl* render_frame)
   // moving by granularities.
   settings->setInlineTextBoxAccessibilityEnabled(true);
 
+#if defined(OS_ANDROID)
+  settings->setAccessibilityPasswordValuesEnabled(true);
+#endif
+
   const WebDocument& document = GetMainDocument();
   if (!document.isNull()) {
     // It's possible that the webview has already loaded a webpage without
