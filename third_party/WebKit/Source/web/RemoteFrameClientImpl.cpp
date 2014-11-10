@@ -14,6 +14,7 @@
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"
+#include "public/web/WebRemoteFrameClient.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebRemoteFrameImpl.h"
@@ -27,7 +28,17 @@ RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* webFrame)
 
 void RemoteFrameClientImpl::detached()
 {
-    // FIXME: Implement.
+    // Alert the client that the frame is being detached.
+    RefPtrWillBeRawPtr<WebRemoteFrameImpl> protector(m_webFrame);
+
+    WebRemoteFrameClient* client = m_webFrame->client();
+    if (!client)
+        return;
+
+    client->frameDetached();
+    // Clear our reference to RemoteFrame at the very end, in case the client
+    // refers to it.
+    m_webFrame->setCoreFrame(nullptr);
 }
 
 Frame* RemoteFrameClientImpl::opener() const
