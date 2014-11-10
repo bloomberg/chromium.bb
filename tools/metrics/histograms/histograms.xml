@@ -58489,12 +58489,14 @@ To add a new entry, add it with any value and run test to compute valid value.
 <histogram_suffixes name="NewTabPageProviders" separator=".">
   <suffix name="client" label="Suggestions coming from the client."/>
   <suffix name="client0" label="Suggestions coming from the client source 0."/>
+<!-- Server providers 1 through 8 have never been logged. -->
+
   <suffix name="server" label="Suggestions coming from the server."/>
   <suffix name="server0" label="Suggestions coming from server source 0."/>
-  <suffix name="server1" label="Suggestions coming from server source 1."/>
-  <suffix name="server2" label="Suggestions coming from server source 2."/>
-  <suffix name="server3" label="Suggestions coming from server source 3."/>
-  <suffix name="server4" label="Suggestions coming from server source 4."/>
+  <suffix name="server8" label="Suggestions coming from server source 8."/>
+  <suffix name="server9" label="Suggestions coming from server source 9."/>
+  <suffix name="server10" label="Suggestions coming from server source 10."/>
+  <suffix name="server11" label="Suggestions coming from server source 11."/>
   <affected-histogram name="NewTabPage.MostVisited"/>
   <affected-histogram name="NewTabPage.SuggestionsImpression"/>
 </histogram_suffixes>

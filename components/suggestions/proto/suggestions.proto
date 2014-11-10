@@ -11,9 +11,11 @@ package suggestions;
 // Providers are identified with an ID.
 enum ProviderId {
   SERVER0 = 0;
-  SERVER1 = 1;
-  SERVER2 = 2;
-  SERVER3 = 3;
+  // SERVER1 through 8 were never used.
+  SERVER8 = 8;
+  SERVER9 = 9;
+  SERVER10 = 10;
+  SERVER11 = 11;
 }
 
 // The SuggestionsProfile is a protobuf response from the server that contains
