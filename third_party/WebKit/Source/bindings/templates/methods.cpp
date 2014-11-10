@@ -64,11 +64,11 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 {% endfor %}
 {
     {% for argument in method.arguments %}
-    {% if argument.default_value %}
+    {% if argument.set_default_value %}
     if (!info[{{argument.index}}]->IsUndefined()) {
         {{generate_argument(method, argument, world_suffix) | indent(8)}}
     } else {
-        {{argument.name}} = {{argument.default_value}};
+        {{argument.set_default_value}};
     }
     {% else %}
     {{generate_argument(method, argument, world_suffix) | indent}}

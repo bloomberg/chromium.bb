@@ -21,6 +21,19 @@ PASS unionTypesTest.doubleOrStringArg({}) is "string is passed: [object Object]"
 PASS unionTypesTest.doubleOrStringArg([]) is "string is passed: "
 PASS typeof unionTypesTest.doubleOrStringArg(new Date) is "string"
 PASS unionTypesTest.doubleOrStringArg() threw exception TypeError: Failed to execute 'doubleOrStringArg' on 'UnionTypesTest': 1 argument required, but only 0 present..
+
+Tests for method arguments with defaults
+PASS unionTypesTest.doubleOrStringDefaultDoubleArg() is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrStringDefaultDoubleArg(undefined) is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrStringDefaultDoubleArg("foo") is "string is passed: foo"
+PASS unionTypesTest.doubleOrStringDefaultStringArg() is "string is passed: foo"
+PASS unionTypesTest.doubleOrStringDefaultStringArg(undefined) is "string is passed: foo"
+PASS unionTypesTest.doubleOrStringDefaultStringArg(3.14) is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrStringDefaultNullArg() is "null is passed"
+PASS unionTypesTest.doubleOrStringDefaultNullArg(undefined) is "null is passed"
+PASS unionTypesTest.doubleOrStringDefaultNullArg(null) is "null is passed"
+PASS unionTypesTest.doubleOrStringDefaultNullArg(3.14) is "double is passed: 3.14"
+PASS unionTypesTest.doubleOrStringDefaultNullArg("foo") is "string is passed: foo"
 PASS successfullyParsed is true
 
 TEST COMPLETE

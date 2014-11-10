@@ -40,7 +40,8 @@ void UnionTypesTest::setDoubleOrStringAttribute(const DoubleOrString& doubleOrSt
 
 String UnionTypesTest::doubleOrStringArg(DoubleOrString& doubleOrString)
 {
-    ASSERT(!doubleOrString.isNull());
+    if (doubleOrString.isNull())
+        return "null is passed";
     if (doubleOrString.isDouble())
         return "double is passed: " + String::numberToStringECMAScript(doubleOrString.getAsDouble());
     if (doubleOrString.isString())

@@ -414,6 +414,9 @@ interface TestObject {
     void voidMethodDefaultNullableByteStringArg(optional ByteString? defaultStringArg = null);
     void voidMethodDefaultNullableStringArg(optional DOMString? defaultStringArg = null);
     void voidMethodDefaultNullableTestInterfaceArg(optional TestInterface? defaultTestInterfaceArg = null);
+    void voidMethodDefaultDoubleOrStringArgs(optional (double or DOMString) defaultLongArg = 10.0,
+                                             optional (double or DOMString?) defaultStringArg = "foo",
+                                             optional (double or DOMString)? defaultNullArg = null);
 
     // Variadic operations
     void voidMethodVariadicStringArg(DOMString... variadicStringArgs);

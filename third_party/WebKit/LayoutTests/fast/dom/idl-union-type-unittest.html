@@ -36,5 +36,20 @@ if (window.internals) {
     // Just check that doubleOrStringArg() doesn't throw an exception.
     shouldBeEqualToString('typeof unionTypesTest.doubleOrStringArg(new Date)', 'string');
     shouldThrow('unionTypesTest.doubleOrStringArg()');
+    debug('');
+
+    debug('Tests for method arguments with defaults');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultDoubleArg()', 'double is passed: 3.14');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultDoubleArg(undefined)', 'double is passed: 3.14');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultDoubleArg("foo")', 'string is passed: foo');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultStringArg()', 'string is passed: foo');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultStringArg(undefined)', 'string is passed: foo');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultStringArg(3.14)', 'double is passed: 3.14');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg()', 'null is passed');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg(undefined)', 'null is passed');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg(null)', 'null is passed');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg(3.14)', 'double is passed: 3.14');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg("foo")', 'string is passed: foo');
+
 }
 </script>

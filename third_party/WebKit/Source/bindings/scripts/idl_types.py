@@ -273,6 +273,28 @@ class IdlUnionType(IdlTypeBase):
     def is_union_type(self):
         return True
 
+    def single_matching_member_type(self, predicate):
+        matching_types = filter(predicate, self.member_types)
+        if len(matching_types) > 1:
+            raise "%s is ambigious." % self.name
+        return matching_types[0] if matching_types else None
+
+    @property
+    def string_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: (member_type.is_string_type or
+                                 member_type.is_enum))
+
+    @property
+    def numeric_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: member_type.is_numeric_type)
+
+    @property
+    def boolean_member_type(self):
+        return self.single_matching_member_type(
+            lambda member_type: member_type.base_type == 'boolean')
+
     @property
     def as_union_type(self):
         # Note: Use this to "look through" a possible IdlNullableType wrapper.

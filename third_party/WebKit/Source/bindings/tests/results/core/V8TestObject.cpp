@@ -7485,6 +7485,40 @@ static void voidMethodDefaultNullableTestInterfaceArgMethodCallback(const v8::Fu
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
+static void voidMethodDefaultDoubleOrStringArgsMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDefaultDoubleOrStringArgs", "TestObject", info.Holder(), info.GetIsolate());
+    TestObject* impl = V8TestObject::toImpl(info.Holder());
+    DoubleOrString defaultLongArg;
+    DoubleOrString defaultStringArg;
+    DoubleOrString defaultNullArg;
+    {
+        if (!info[0]->IsUndefined()) {
+            TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrString::toImpl(info.GetIsolate(), info[0], defaultLongArg, exceptionState), exceptionState);
+        } else {
+            defaultLongArg.setDouble(10);
+        }
+        if (!info[1]->IsUndefined()) {
+            TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[1], defaultStringArg, exceptionState), exceptionState);
+        } else {
+            defaultStringArg.setString(String("foo"));
+        }
+        if (!info[2]->IsUndefined()) {
+            TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8DoubleOrStringOrNull::toImpl(info.GetIsolate(), info[2], defaultNullArg, exceptionState), exceptionState);
+        } else {
+            /* null default value */;
+        }
+    }
+    impl->voidMethodDefaultDoubleOrStringArgs(defaultLongArg, defaultStringArg, defaultNullArg);
+}
+
+static void voidMethodDefaultDoubleOrStringArgsMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
+    TestObjectV8Internal::voidMethodDefaultDoubleOrStringArgsMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
+}
+
 static void voidMethodVariadicStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodVariadicStringArg", "TestObject", info.Holder(), info.GetIsolate());
@@ -10606,6 +10640,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDefaultNullableByteStringArg", TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDefaultNullableStringArg", TestObjectV8Internal::voidMethodDefaultNullableStringArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodDefaultNullableTestInterfaceArg", TestObjectV8Internal::voidMethodDefaultNullableTestInterfaceArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
+    {"voidMethodDefaultDoubleOrStringArgs", TestObjectV8Internal::voidMethodDefaultDoubleOrStringArgsMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodVariadicStringArg", TestObjectV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodStringArgVariadicStringArg", TestObjectV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 1, V8DOMConfiguration::ExposedToAllScripts},
     {"voidMethodVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, 0, 0, V8DOMConfiguration::ExposedToAllScripts},

@@ -74,17 +74,11 @@ def container_context(union_type, interfaces_info):
             if dictionary_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             dictionary_type = context
-        elif member.base_type == 'boolean':
-            if boolean_type:
-                raise Exception('%s is ambiguous.' % union_type.name)
+        elif member is union_type.boolean_member_type:
             boolean_type = context
-        elif member.is_numeric_type:
-            if numeric_type:
-                raise Exception('%s is ambiguous.' % union_type.name)
+        elif member is union_type.numeric_member_type:
             numeric_type = context
-        elif member.is_string_type:
-            if string_type:
-                raise Exception('%s is ambiguous.' % union_type.name)
+        elif member is union_type.string_member_type:
             string_type = context
         else:
             raise Exception('%s is not supported as an union member.' % member.name)
