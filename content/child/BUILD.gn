@@ -26,6 +26,7 @@ source_set("child") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/native_theme",
     "//url",
   ]
 
@@ -42,7 +43,9 @@ source_set("child") {
     ]
   }
 
-  if (!enable_plugins) {
+  if (enable_plugins) {
+    deps += [ "//ppapi:ppapi_proxy" ]
+  } else {
     sources -= [
       "browser_font_resource_trusted.cc",
       "npapi/plugin_host.cc",

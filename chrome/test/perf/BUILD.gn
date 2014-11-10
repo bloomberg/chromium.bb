@@ -1,0 +1,25 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This test appears to be a legacy target consisting of files not yet moved
+# elsewhere.
+test("perf") {
+  output_name = "perf_tests"
+
+  sources = [
+    "perftests.cc",
+    "url_parse_perftest.cc",
+    "//content/browser/net/sqlite_persistent_cookie_store_perftest.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/allocator",
+    "//base/test:test_support",
+    "//content",
+    "//net",
+    "//testing/gtest",
+    "//url",
+  ]
+}

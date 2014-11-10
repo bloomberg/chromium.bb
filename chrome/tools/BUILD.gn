@@ -1,0 +1,13 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# This target just provides references to the Chrome tools to bring them into
+# the build.
+group("tools") {
+  testonly = true
+  deps = [
+    # TODO(GYP) re-enable this. Currently it's giving linker errors about Mojo.
+    #"//chrome/tools/service_discovery_sniffer",
+  ]
+}

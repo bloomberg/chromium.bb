@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/linux/pkg_config.gni")
+
 # The GYP build supports system harfbuzz for non-official builds when using
 # pangoft2 1.31.0 or greater (which pulls it in).
 # TODO(brettw) we can consider doing this as well, although the benefit is
@@ -11,7 +13,26 @@
 # don't want to bloat the binary more by including another copy.
 
 declare_args() {
-  use_system_harfbuzz = is_chromeos
+  if (is_chromeos) {
+    # ChromeOS includes an up-to-date system harfbuzz that we have control
+    # over, so it use the system one by default.
+    use_system_harfbuzz = true
+  } else if (is_official_build) {
+    # For official builds, we want to control the Harbuzz version so always
+    # use our included one. Currently the sysroot includes a version of pangoft
+    # that doesn't link to harfbuzz, so there are no linker problems. If we
+    # update that version, we'll need to work around the duplicate symbols some
+    # other way.
+    use_system_harfbuzz = false
+  } else {
+    # Use the system harfbuzz for newer versions of pangoft, and not for older
+    # ones. pangoft links to the system harfbuzz starting with 1.31.0, which
+    # causes duplicate symbols when we link our own version.
+    use_system_harfbuzz = exec_script(
+        pkg_config_script,
+        pkg_config_args + [ "--atleast-version=1.31.0", "pangoft2" ],
+        "value")
+  }
 }
 
 if (use_system_harfbuzz) {
@@ -28,7 +49,7 @@ if (use_system_harfbuzz) {
     include_dirs = [ "src" ]
   }
 
-  source_set("harfbuzz-ng") {
+  static_library("harfbuzz-ng") {
     sources = [
       "src/hb-atomic-private.hh",
       "src/hb-blob.cc",

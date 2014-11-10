@@ -162,8 +162,16 @@ grit("strings") {
   outputs += process_file_template(
       remoting_locales,
       [ "remoting/resources/{{source_name_part}}.pak" ])
+
+  messages_locales = remoting_locales_with_underscores
+  if (!is_chromeos) {
+    # The messages output includes a separate one for en-US that the pak ones
+    # don't have. We don't need to do this on ChromeOS since en_US is in the
+    # locales list be default there.
+    messages_locales += [ "en_US" ]
+  }
   outputs += process_file_template(
-      remoting_locales_with_underscores,
+      messages_locales,
       [ "remoting/webapp/_locales/{{source_name_part}}/messages.json" ])
 }
 

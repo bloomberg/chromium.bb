@@ -5,6 +5,15 @@
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
+# This target exists to reference other test executables to bring these files
+# into the build.
+group("test") {
+  testonly = true
+  deps = [
+    "//chrome/test/perf",
+  ]
+}
+
 # GYP version: chrome/chrome_tests_unit.gypi:test_support_common
 source_set("test_support") {
   defines = []

@@ -2874,6 +2874,10 @@
     ['OS!="mac"', {
       'targets': [
         {
+          # This test appears to be a legacy target consisting of files not yet
+          # moved elsewhere.
+          #
+          # GN version: //chrome/test/perf
           'target_name': 'perf_tests',
           'type': 'executable',
           'dependencies': [
@@ -2891,6 +2895,7 @@
             '../testing/gtest.gyp:gtest',
           ],
           'sources': [
+            # Note: Sources list duplicated in GN build.
             'test/perf/perftests.cc',
             'test/perf/url_parse_perftest.cc',
             '../content/browser/net/sqlite_persistent_cookie_store_perftest.cc',
@@ -3196,6 +3201,7 @@
     }],
     [ 'enable_mdns == 1', {
       'targets': [{
+          # GN version: //chrome/tools/service_discovery_sniffer
           'target_name': 'service_discovery_sniffer',
           'type': 'executable',
           'dependencies': [

@@ -25,6 +25,10 @@ from optparse import OptionParser
 #
 # When using a sysroot, you must also specify the architecture via
 # "-a <arch>" where arch is either "x86" or "x64".
+#
+# Additionally, you can specify the option --atleast-version. This will skip
+# the normal outputting of a dictionary and instead print true or false,
+# depending on the return value of pkg-config for the given package.
 
 # If this is run on non-Linux platforms, just return nothing and indicate
 # success. This allows us to "kind of emulate" a Linux build from other
@@ -106,6 +110,8 @@ parser.add_option('-p', action='store', dest='pkg_config', type='string',
 parser.add_option('-v', action='append', dest='strip_out', type='string')
 parser.add_option('-s', action='store', dest='sysroot', type='string')
 parser.add_option('-a', action='store', dest='arch', type='string')
+parser.add_option('--atleast-version', action='store',
+                  dest='atleast_version', type='string')
 (options, args) = parser.parse_args()
 
 # Make a list of regular expressions to strip out.
@@ -119,6 +125,18 @@ if options.sysroot:
   prefix = GetPkgConfigPrefixToStrip(args)
 else:
   prefix = ''
+
+if options.atleast_version:
+  # When asking for the return value, just run pkg-config and print the return
+  # value, no need to do other work.
+  if not subprocess.call([options.pkg_config,
+                          "--atleast-version=" + options.atleast_version] +
+                          args,
+                         env=os.environ):
+    print "true"
+  else:
+    print "false"
+  sys.exit(0)
 
 try:
   flag_string = subprocess.check_output(

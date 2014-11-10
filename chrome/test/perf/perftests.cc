@@ -8,7 +8,6 @@
 
 int main(int argc, char **argv) {
   base::PerfTestSuite suite(argc, argv);
-  chrome::RegisterPathProvider();
   base::MessageLoop main_message_loop;
 
   return suite.Run();
