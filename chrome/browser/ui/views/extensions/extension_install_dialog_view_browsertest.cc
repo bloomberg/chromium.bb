@@ -168,9 +168,8 @@ bool ScrollbarTest::IsScrollbarVisible() {
       prompt());
 
   // Create the modal view around the install dialog view.
-  views::Widget* modal =
-      CreateBrowserModalDialogViews(dialog,
-                                    web_contents()->GetTopLevelNativeWindow());
+  views::Widget* modal = constrained_window::CreateBrowserModalDialogViews(
+      dialog, web_contents()->GetTopLevelNativeWindow());
   modal->Show();
   content::RunAllBlockingPoolTasksUntilIdle();
 

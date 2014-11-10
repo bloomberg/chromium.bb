@@ -91,7 +91,7 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
 
 void ProfileSigninConfirmationDialogViews::Show(bool prompt_for_new_profile) {
   prompt_for_new_profile_ = prompt_for_new_profile;
-  CreateBrowserModalDialogViews(
+  constrained_window::CreateBrowserModalDialogViews(
       this, browser_->window()->GetNativeWindow())->Show();
 }
 

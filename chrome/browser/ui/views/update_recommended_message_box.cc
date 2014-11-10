@@ -23,8 +23,8 @@
 // static
 void UpdateRecommendedMessageBox::Show(gfx::NativeWindow parent_window) {
   // When the window closes, it will delete itself.
-  CreateBrowserModalDialogViews(new UpdateRecommendedMessageBox(),
-                                parent_window)->Show();
+  constrained_window::CreateBrowserModalDialogViews(
+      new UpdateRecommendedMessageBox(), parent_window)->Show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

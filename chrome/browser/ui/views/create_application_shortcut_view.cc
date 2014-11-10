@@ -229,7 +229,7 @@ namespace chrome {
 
 void ShowCreateWebAppShortcutsDialog(gfx::NativeWindow parent_window,
                                      content::WebContents* web_contents) {
-  CreateBrowserModalDialogViews(
+  constrained_window::CreateBrowserModalDialogViews(
       new CreateUrlApplicationShortcutView(web_contents),
       parent_window)->Show();
 }
@@ -239,7 +239,7 @@ void ShowCreateChromeAppShortcutsDialog(
     Profile* profile,
     const extensions::Extension* app,
     const base::Callback<void(bool)>& close_callback) {
-  CreateBrowserModalDialogViews(
+  constrained_window::CreateBrowserModalDialogViews(
       new CreateChromeApplicationShortcutView(profile, app, close_callback),
       parent_window)->Show();
 }

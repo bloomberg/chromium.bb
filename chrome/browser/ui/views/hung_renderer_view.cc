@@ -232,7 +232,7 @@ void HungRendererDialogView::ShowForWebContents(WebContents* contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(contents);
     if (browser) {
       ChromeWebModalDialogManagerDelegate* manager = browser;
-      UpdateWidgetModalDialogPosition(
+      constrained_window::UpdateWidgetModalDialogPosition(
           GetWidget(), manager->GetWebContentsModalDialogHost());
     }
 

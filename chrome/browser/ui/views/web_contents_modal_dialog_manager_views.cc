@@ -103,7 +103,7 @@ class NativeWebContentsModalDialogManagerViews
 #endif
     // Host may be NULL during tab drag on Views/Win32.
     if (host_)
-      UpdateWebContentsModalDialogPosition(widget, host_);
+      constrained_window::UpdateWebContentsModalDialogPosition(widget, host_);
     widget->Show();
     Focus();
 
@@ -148,7 +148,7 @@ class NativeWebContentsModalDialogManagerViews
     for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
          it != observed_widgets_.end();
          ++it) {
-      UpdateWebContentsModalDialogPosition(*it, host_);
+      constrained_window::UpdateWebContentsModalDialogPosition(*it, host_);
     }
   }
 

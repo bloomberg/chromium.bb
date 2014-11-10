@@ -60,7 +60,8 @@ void DownloadFeedbackDialogView::Show(
     data->set_currently_shown(true);
     DownloadFeedbackDialogView* window =
         new DownloadFeedbackDialogView(profile, navigator, callback);
-    CreateBrowserModalDialogViews(window, parent_window)->Show();
+    constrained_window::CreateBrowserModalDialogViews(
+        window, parent_window)->Show();
   } else {
     callback.Run(false);
   }

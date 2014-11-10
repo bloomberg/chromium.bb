@@ -96,7 +96,7 @@ SignedCertificateTimestampsViews::SignedCertificateTimestampsViews(
     const net::SignedCertificateTimestampAndStatusList& sct_list)
     : sct_info_view_(NULL),
       sct_list_(sct_list) {
-  ShowWebModalDialogViews(this, web_contents);
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
 }
 
 SignedCertificateTimestampsViews::~SignedCertificateTimestampsViews() {}

@@ -133,7 +133,7 @@ void SSLClientCertificateSelector::Init() {
 
   StartObserving();
 
-  ShowWebModalDialogViews(this, web_contents_);
+  constrained_window::ShowWebModalDialogViews(this, web_contents_);
 
   // Select the first row automatically.  This must be done after the dialog has
   // been created.

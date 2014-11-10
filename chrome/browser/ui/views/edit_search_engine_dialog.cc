@@ -62,7 +62,7 @@ void EditSearchEngineDialog::Show(gfx::NativeWindow parent,
       new EditSearchEngineDialog(template_url, delegate, profile);
   // Window interprets an empty rectangle as needing to query the content for
   // the size as well as centering relative to the parent.
-  CreateBrowserModalDialogViews(contents, parent);
+  constrained_window::CreateBrowserModalDialogViews(contents, parent);
   contents->GetWidget()->Show();
   contents->GetDialogClientView()->UpdateDialogButtons();
   contents->title_tf_->SelectAll(true);

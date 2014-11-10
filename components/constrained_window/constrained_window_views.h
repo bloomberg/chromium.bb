@@ -23,6 +23,8 @@ class ModalDialogHost;
 class WebContentsModalDialogHost;
 }
 
+namespace constrained_window {
+
 class ConstrainedWindowViewsClient;
 
 // Sets the ConstrainedWindowClient impl.
@@ -55,5 +57,7 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 // dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
                                              gfx::NativeView parent);
+
+}  // namespace constrained window
 
 #endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_H_

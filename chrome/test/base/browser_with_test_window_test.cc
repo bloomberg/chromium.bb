@@ -122,7 +122,7 @@ void BrowserWithTestWindowTest::TearDown() {
   base::MessageLoop::current()->Run();
 
 #if defined(TOOLKIT_VIEWS)
-  SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
+  constrained_window::SetConstrainedWindowViewsClient(nullptr);
   views_delegate_.reset(NULL);
 #endif
 }

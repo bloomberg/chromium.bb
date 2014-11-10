@@ -11,7 +11,7 @@
 namespace {
 
 class ChromeConstrainedWindowViewsClient
-    : public ConstrainedWindowViewsClient {
+    : public constrained_window::ConstrainedWindowViewsClient {
  public:
   ChromeConstrainedWindowViewsClient() {}
   ~ChromeConstrainedWindowViewsClient() override {}
@@ -41,7 +41,7 @@ class ChromeConstrainedWindowViewsClient
 
 }  // namespace
 
-scoped_ptr<ConstrainedWindowViewsClient>
+scoped_ptr<constrained_window::ConstrainedWindowViewsClient>
 CreateChromeConstrainedWindowViewsClient() {
   return make_scoped_ptr(new ChromeConstrainedWindowViewsClient);
 }

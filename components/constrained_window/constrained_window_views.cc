@@ -17,6 +17,7 @@
 using web_modal::ModalDialogHost;
 using web_modal::ModalDialogHostObserver;
 
+namespace constrained_window {
 namespace {
 
 ConstrainedWindowViewsClient* constrained_window_views_client = NULL;
@@ -173,3 +174,5 @@ views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
   }
   return widget;
 }
+
+}  // namespace constrained window

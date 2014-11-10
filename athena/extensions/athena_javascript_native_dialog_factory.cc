@@ -29,7 +29,7 @@ class AthenaJavaScriptNativeDialogFactory
       gfx::NativeWindow parent_window) override{
     JavaScriptAppModalDialogViews* d =
         new JavaScriptAppModalDialogViews(dialog);
-    CreateBrowserModalDialogViews(d, parent_window);
+    constrained_window::CreateBrowserModalDialogViews(d, parent_window);
     return d;
   }
 

@@ -97,7 +97,8 @@ ExtensionDialog* ExtensionDialog::Show(
 void ExtensionDialog::InitWindow(aura::Window* parent,
                                  int width,
                                  int height) {
-  views::Widget* window = CreateBrowserModalDialogViews(this, parent);
+  views::Widget* window =
+      constrained_window::CreateBrowserModalDialogViews(this, parent);
 
   // Center the window over the browser.
   gfx::Point center = parent->GetBoundsInScreen().CenterPoint();

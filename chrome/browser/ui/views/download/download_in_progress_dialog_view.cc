@@ -26,7 +26,7 @@ void DownloadInProgressDialogView::Show(
     const base::Callback<void(bool)>& callback) {
   DownloadInProgressDialogView* window = new DownloadInProgressDialogView(
       download_count, dialog_type, app_modal, callback);
-  CreateBrowserModalDialogViews(window, parent)->Show();
+  constrained_window::CreateBrowserModalDialogViews(window, parent)->Show();
 }
 
 DownloadInProgressDialogView::DownloadInProgressDialogView(

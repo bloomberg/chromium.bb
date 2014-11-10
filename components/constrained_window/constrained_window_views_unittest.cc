@@ -14,9 +14,12 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-namespace views {
+using views::Widget;
 
-class DialogContents : public DialogDelegateView {
+namespace constrained_window {
+namespace {
+
+class DialogContents : public views::DialogDelegateView {
  public:
   DialogContents() {}
   ~DialogContents() override {}
@@ -26,7 +29,7 @@ class DialogContents : public DialogDelegateView {
   }
 
   // Overriden from DialogDelegateView:
-  View* GetContentsView() override { return this; }
+  views::View* GetContentsView() override { return this; }
   gfx::Size GetPreferredSize() const override { return preferred_size_; }
   gfx::Size GetMinimumSize() const override { return gfx::Size(); }
 
@@ -36,13 +39,13 @@ class DialogContents : public DialogDelegateView {
   DISALLOW_COPY_AND_ASSIGN(DialogContents);
 };
 
-class ConstrainedWindowViewsTest : public ViewsTestBase {
+class ConstrainedWindowViewsTest : public views::ViewsTestBase {
  public:
   ConstrainedWindowViewsTest() : contents_(NULL) {}
   ~ConstrainedWindowViewsTest() override {}
 
   void SetUp() override {
-    ViewsTestBase::SetUp();
+    views::ViewsTestBase::SetUp();
     contents_ = new DialogContents;
     Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -84,6 +87,8 @@ class ConstrainedWindowViewsTest : public ViewsTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowViewsTest);
 };
+
+}  // namespace
 
 // Make sure a dialog that increases its preferred size grows on the next
 // position update.
@@ -136,7 +141,7 @@ TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
   // specified by the dialog host, so add it to the size the dialog is expected
   // to occupy.
   gfx::Size expected_size = max_dialog_size;
-  Border* border = dialog()->non_client_view()->frame_view()->border();
+  views::Border* border = dialog()->non_client_view()->frame_view()->border();
   if (border)
     expected_size.Enlarge(0, border->GetInsets().top());
   EXPECT_EQ(expected_size.ToString(), GetDialogSize().ToString());
@@ -149,4 +154,4 @@ TEST_F(ConstrainedWindowViewsTest, MaximumWebContentsDialogSize) {
   EXPECT_EQ(full_dialog_size.ToString(), GetDialogSize().ToString());
 }
 
-}  // namespace views
+}  // namespace constrained_window

@@ -15,6 +15,8 @@ namespace web_modal {
 class ModalDialogHost;
 }
 
+namespace constrained_window {
+
 class ConstrainedWindowViewsClient {
  public:
   virtual ~ConstrainedWindowViewsClient() {}
@@ -28,5 +30,7 @@ class ConstrainedWindowViewsClient {
   virtual web_modal::ModalDialogHost* GetModalDialogHost(
       gfx::NativeView parent) = 0;
 };
+
+}  // namespace constrained window
 
 #endif  // COMPONENTS_CONSTRAINED_WINDOW_CONSTRAINED_WINDOW_VIEWS_CLIENT_H_

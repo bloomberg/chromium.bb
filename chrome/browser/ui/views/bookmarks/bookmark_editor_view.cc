@@ -229,7 +229,7 @@ void BookmarkEditorView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void BookmarkEditorView::Show(gfx::NativeWindow parent) {
-  CreateBrowserModalDialogViews(this, parent);
+  constrained_window::CreateBrowserModalDialogViews(this, parent);
   UserInputChanged();
   if (show_tree_ && bb_model_->loaded())
     ExpandAndSelect();

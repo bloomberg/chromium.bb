@@ -191,6 +191,6 @@ ConstrainedWebDialogDelegate* CreateConstrainedWebDialog(
   ConstrainedWebDialogDelegateViewViews* dialog =
       new ConstrainedWebDialogDelegateViewViews(
           browser_context, delegate, web_contents);
-  ShowWebModalDialogViews(dialog, web_contents);
+  constrained_window::ShowWebModalDialogViews(dialog, web_contents);
   return dialog;
 }

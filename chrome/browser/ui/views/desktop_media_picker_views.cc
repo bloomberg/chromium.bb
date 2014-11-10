@@ -415,7 +415,8 @@ DesktopMediaPickerDialogView::DesktopMediaPickerDialogView(
       parent_web_contents &&
       !parent_web_contents->GetDelegate()->IsNeverVisible(parent_web_contents);
   if (modal_dialog) {
-    widget = CreateWebModalDialogViews(this, parent_web_contents);
+    widget = constrained_window::CreateWebModalDialogViews(this,
+                                                           parent_web_contents);
   } else {
     widget = DialogDelegate::CreateDialogWidget(this, context, NULL);
   }

@@ -57,7 +57,7 @@ PDFPasswordDialogViews::PDFPasswordDialogViews(
       views::kUnrelatedControlVerticalSpacing;
   message_box_view_ = new views::MessageBoxView(init_params);
   message_box_view_->text_box()->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-  ShowWebModalDialogViews(this, web_contents);
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
 }
 
 PDFPasswordDialogViews::~PDFPasswordDialogViews() {

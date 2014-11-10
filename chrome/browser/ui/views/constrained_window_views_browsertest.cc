@@ -53,7 +53,7 @@ class TestDialog : public views::DialogDelegateView {
 // A helper function to create and show a web contents modal dialog.
 scoped_ptr<TestDialog> ShowModalDialog(content::WebContents* web_contents) {
   scoped_ptr<TestDialog> dialog(new TestDialog());
-  ShowWebModalDialogViews(dialog.get(), web_contents);
+  constrained_window::ShowWebModalDialogViews(dialog.get(), web_contents);
   return dialog.Pass();
 }
 

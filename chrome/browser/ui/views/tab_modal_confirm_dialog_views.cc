@@ -40,7 +40,7 @@ TabModalConfirmDialogViews::TabModalConfirmDialogViews(
   if (!link_text.empty())
     message_box_view_->SetLink(link_text, this);
 
-  ShowWebModalDialogViews(this, web_contents);
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
   delegate_->set_close_delegate(this);
 }
 

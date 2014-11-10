@@ -32,7 +32,7 @@ class ChromeJavaScriptNativeDialogViewsFactory
 #else
     d = new JavaScriptAppModalDialogViews(dialog);
 #endif
-    CreateBrowserModalDialogViews(d, parent_window);
+    constrained_window::CreateBrowserModalDialogViews(d, parent_window);
     return d;
   }
 

@@ -196,7 +196,7 @@ CollectedCookiesViews::CollectedCookiesViews(content::WebContents* web_contents)
       TabSpecificContentSettings::FromWebContents(web_contents);
   registrar_.Add(this, chrome::NOTIFICATION_COLLECTED_COOKIES_SHOWN,
                  content::Source<TabSpecificContentSettings>(content_settings));
-  ShowWebModalDialogViews(this, web_contents);
+  constrained_window::ShowWebModalDialogViews(this, web_contents);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

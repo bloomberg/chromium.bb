@@ -235,7 +235,7 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                 no_text,
                                 parent == NULL  // is_system_modal
                                 );
-  CreateBrowserModalDialogViews(dialog, parent)->Show();
+  constrained_window::CreateBrowserModalDialogViews(dialog, parent)->Show();
 
   // NOTE: |dialog| may have been deleted by the time |RunDialogAndGetResult()|
   // returns.

@@ -113,7 +113,8 @@ class LoginHandlerViews : public LoginHandler, public views::DialogDelegate {
     // control).  However, that's OK since any UI interaction in those functions
     // will occur via an InvokeLater on the UI thread, which is guaranteed
     // to happen after this is called (since this was InvokeLater'd first).
-    dialog_ = ShowWebModalDialogViews(this, GetWebContentsForLogin());
+    dialog_ = constrained_window::ShowWebModalDialogViews(
+        this, GetWebContentsForLogin());
     NotifyAuthNeeded();
   }
 

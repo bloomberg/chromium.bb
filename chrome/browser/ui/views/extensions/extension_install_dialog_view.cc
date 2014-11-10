@@ -178,7 +178,8 @@ void ShowExtensionInstallDialogImpl(
                                      show_params->GetParentWebContents(),
                                      delegate,
                                      prompt);
-  CreateBrowserModalDialogViews(dialog, show_params->GetParentWindow())->Show();
+  constrained_window::CreateBrowserModalDialogViews(
+      dialog, show_params->GetParentWindow())->Show();
 }
 
 CustomScrollableView::CustomScrollableView() {}

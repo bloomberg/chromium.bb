@@ -100,7 +100,7 @@ web_modal::ModalDialogHost* ModalDialogHostImpl::Get(
 }
 
 class AthenaConstrainedWindowViewsClient
-    : public ConstrainedWindowViewsClient {
+    : public constrained_window::ConstrainedWindowViewsClient {
  public:
   AthenaConstrainedWindowViewsClient() {}
   ~AthenaConstrainedWindowViewsClient() override {}
@@ -128,12 +128,12 @@ class AthenaConstrainedWindowViewsClient
 }  // namespace
 
 void InstallConstrainedWindowViewsClient() {
-  SetConstrainedWindowViewsClient(
+  constrained_window::SetConstrainedWindowViewsClient(
       make_scoped_ptr(new AthenaConstrainedWindowViewsClient));
 }
 
 void UninstallConstrainedWindowViewsClient() {
-  SetConstrainedWindowViewsClient(nullptr);
+  constrained_window::SetConstrainedWindowViewsClient(nullptr);
 }
 
 }  // namespace athena

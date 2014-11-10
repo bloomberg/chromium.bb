@@ -67,8 +67,10 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       confirm_available_(false),
       accepted_(false) {
   InitChildViews();
-  if (ControllerHasWebContents())
-    ShowWebModalDialogViews(this, controller->WebContents());
+  if (ControllerHasWebContents()) {
+    constrained_window::ShowWebModalDialogViews(this,
+                                                controller->WebContents());
+  }
 }
 
 MediaGalleriesDialogViews::~MediaGalleriesDialogViews() {

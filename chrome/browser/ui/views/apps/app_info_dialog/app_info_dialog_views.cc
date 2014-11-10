@@ -44,7 +44,8 @@ void ShowAppInfoInAppList(gfx::NativeWindow parent,
   views::View* app_info_view = new AppInfoDialog(parent, profile, app);
   views::DialogDelegate* dialog =
       CreateAppListContainerForView(app_info_view, close_callback);
-  views::Widget* dialog_widget = CreateBrowserModalDialogViews(dialog, parent);
+  views::Widget* dialog_widget =
+      constrained_window::CreateBrowserModalDialogViews(dialog, parent);
   dialog_widget->SetBounds(app_list_bounds);
   dialog_widget->Show();
 }
@@ -57,7 +58,8 @@ void ShowAppInfoInNativeDialog(gfx::NativeWindow parent,
   views::View* app_info_view = new AppInfoDialog(parent, profile, app);
   views::DialogDelegate* dialog =
       CreateDialogContainerForView(app_info_view, size, close_callback);
-  views::Widget* dialog_widget = CreateBrowserModalDialogViews(dialog, parent);
+  views::Widget* dialog_widget =
+      constrained_window::CreateBrowserModalDialogViews(dialog, parent);
   dialog_widget->Show();
 }
 

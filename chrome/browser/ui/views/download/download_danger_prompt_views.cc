@@ -349,6 +349,7 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     const OnDone& done) {
   DownloadDangerPromptViews* download_danger_prompt =
       new DownloadDangerPromptViews(item, show_context, done);
-  ShowWebModalDialogViews(download_danger_prompt, web_contents);
+  constrained_window::ShowWebModalDialogViews(download_danger_prompt,
+                                              web_contents);
   return download_danger_prompt;
 }

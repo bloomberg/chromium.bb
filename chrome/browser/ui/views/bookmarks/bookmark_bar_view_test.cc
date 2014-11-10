@@ -318,7 +318,7 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
 
     ViewEventTestBase::TearDown();
     BookmarkBarView::DisableAnimationsForTesting(false);
-    SetConstrainedWindowViewsClient(scoped_ptr<ConstrainedWindowViewsClient>());
+    constrained_window::SetConstrainedWindowViewsClient(nullptr);
 
     browser_content_client_.reset();
     content_client_.reset();

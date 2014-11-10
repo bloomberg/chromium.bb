@@ -135,5 +135,6 @@ ExternalProtocolDialog::ExternalProtocolDialog(
   gfx::NativeWindow parent_window = NULL;
   if (web_contents)
     parent_window = web_contents->GetTopLevelNativeWindow();
-  CreateBrowserModalDialogViews(this, parent_window)->Show();
+  constrained_window::CreateBrowserModalDialogViews(this,
+                                                    parent_window)->Show();
 }

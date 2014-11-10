@@ -132,7 +132,7 @@ void ExtensionUninstallDialogViews::Show() {
 
   view_ = new ExtensionUninstallDialogDelegateView(
       this, extension_, triggering_extension_, &icon_);
-  CreateBrowserModalDialogViews(view_, parent_)->Show();
+  constrained_window::CreateBrowserModalDialogViews(view_, parent_)->Show();
 }
 
 void ExtensionUninstallDialogViews::ExtensionUninstallAccepted() {
