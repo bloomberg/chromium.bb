@@ -1615,7 +1615,6 @@ crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 crbug.com/429843 [ Win7 Debug ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
-crbug.com/431625 fast/parser/adoption-agency-crash-01.html [ Pass Failure ]
 crbug.com/431688 [ Win Release ] webaudio/oscillator-sine.html [ Failure ]
 crbug.com/431778 [ Win7 Linux Debug ] http/tests/security/shape-image-cors.html [ Pass Crash ]
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
