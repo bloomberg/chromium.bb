@@ -106,6 +106,7 @@ Presentation status=test
 PseudoClassesInMatchingCriteriaInAuthorShadowTrees status=test
 PushMessaging status=experimental
 QuotaPromise status=experimental
+ReducedReferrerGranularity
 RegionBasedColumns status=experimental
 RequestAutocomplete status=test
 ScreenOrientation status=stable

@@ -319,4 +319,9 @@ void WebRuntimeFeatures::enableSVG1DOM(bool enable)
     RuntimeEnabledFeatures::setSVG1DOMEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableReducedReferrerGranularity(bool enable)
+{
+    RuntimeEnabledFeatures::setReducedReferrerGranularityEnabled(enable);
+}
+
 } // namespace blink

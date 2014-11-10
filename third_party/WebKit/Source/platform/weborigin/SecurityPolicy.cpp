@@ -29,6 +29,7 @@
 #include "config.h"
 #include "platform/weborigin/SecurityPolicy.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -86,7 +87,18 @@ Referrer SecurityPolicy::generateReferrer(ReferrerPolicy referrerPolicy, const K
         // to turn it into a canonical URL we can use as referrer.
         return Referrer(origin + "/", referrerPolicy);
     }
-    case ReferrerPolicyDefault:
+    case ReferrerPolicyDefault: {
+        // If the flag is enabled, and we're dealing with a cross-origin request, strip it.
+        // Otherwise fallthrough to NoReferrerWhenDowngrade behavior.
+        RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
+        RefPtr<SecurityOrigin> urlOrigin = SecurityOrigin::create(url);
+        if (RuntimeEnabledFeatures::reducedReferrerGranularityEnabled() && !urlOrigin->isSameSchemeHostPort(referrerOrigin.get())) {
+            String origin = referrerOrigin->toString();
+            if (origin == "null")
+                return Referrer(String(), referrerPolicy);
+            return Referrer(shouldHideReferrer(url, referrer) ? String() : origin + "/", referrerPolicy);
+        }
+    }
     case ReferrerPolicyNoReferrerWhenDowngrade:
         break;
     }
