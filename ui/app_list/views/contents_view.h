@@ -33,6 +33,7 @@ class AppsContainerView;
 class ContentsSwitcherView;
 class PaginationModel;
 class SearchResultListView;
+class SearchResultPageView;
 class StartPageView;
 
 // A view to manage launcher pages within the Launcher (eg. start page, apps
@@ -88,7 +89,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
   StartPageView* start_page_view() { return start_page_view_; }
-  SearchResultListView* search_results_view() { return search_results_view_; }
+  SearchResultListView* search_results_list_view() {
+    return search_results_list_view_;
+  }
+  SearchResultPageView* search_results_page_view() {
+    return search_results_page_view_;
+  }
   views::View* GetPageView(int index);
 
   // Adds a blank launcher page. For use in tests only.
@@ -122,7 +128,7 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   void SetActivePageInternal(int page_index, bool show_search_results);
 
   // Invoked when active view is changed.
-  void ActivePageChanged(bool show_search_results);
+  void ActivePageChanged();
 
   // Returns the size of the default content area.
   gfx::Size GetDefaultContentsSize() const;
@@ -156,7 +162,12 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Special sub views of the ContentsView. All owned by the views hierarchy.
   AppsContainerView* apps_container_view_;
-  SearchResultListView* search_results_view_;
+
+  // Only used in the normal app list.
+  SearchResultListView* search_results_list_view_;
+
+  // Only used in the experimental app list.
+  SearchResultPageView* search_results_page_view_;
   StartPageView* start_page_view_;
 
   AppListMainView* app_list_main_view_;     // Parent view, owns this.

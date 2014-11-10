@@ -18,6 +18,7 @@
 #include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
+#include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/tween.h"
@@ -28,10 +29,12 @@
 namespace app_list {
 
 ContentsView::ContentsView(AppListMainView* app_list_main_view)
-    : search_results_view_(NULL),
-      start_page_view_(NULL),
+    : apps_container_view_(nullptr),
+      search_results_list_view_(nullptr),
+      search_results_page_view_(nullptr),
+      start_page_view_(nullptr),
       app_list_main_view_(app_list_main_view),
-      contents_switcher_view_(NULL),
+      contents_switcher_view_(nullptr),
       view_model_(new views::ViewModel),
       page_before_search_(0) {
   pagination_model_.SetTransitionDurations(kPageTransitionDurationInMs,
@@ -62,12 +65,17 @@ void ContentsView::Init(AppListModel* model,
     start_page_view_ = new StartPageView(app_list_main_view_, view_delegate);
     AddLauncherPage(
         start_page_view_, IDR_APP_LIST_SEARCH_ICON, AppListModel::STATE_START);
+
+    search_results_page_view_ =
+        new SearchResultPageView(app_list_main_view_, view_delegate);
+    AddLauncherPage(search_results_page_view_, 0,
+                    AppListModel::STATE_SEARCH_RESULTS);
   } else {
-    search_results_view_ =
+    search_results_list_view_ =
         new SearchResultListView(app_list_main_view_, view_delegate);
-    AddLauncherPage(
-        search_results_view_, 0, AppListModel::STATE_SEARCH_RESULTS);
-    search_results_view_->SetResults(model->results());
+    AddLauncherPage(search_results_list_view_, 0,
+                    AppListModel::STATE_SEARCH_RESULTS);
+    search_results_list_view_->SetResults(model->results());
   }
 
   apps_container_view_ = new AppsContainerView(app_list_main_view_, model);
@@ -82,7 +90,7 @@ void ContentsView::Init(AppListModel* model,
 
   page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
-  ActivePageChanged(false);
+  ActivePageChanged();
 }
 
 void ContentsView::CancelDrag() {
@@ -147,10 +155,10 @@ void ContentsView::SetActivePageInternal(int page_index,
     page_before_search_ = page_index;
   // Start animating to the new page.
   pagination_model_.SelectPage(page_index, true);
-  ActivePageChanged(show_search_results);
+  ActivePageChanged();
 }
 
-void ContentsView::ActivePageChanged(bool show_search_results) {
+void ContentsView::ActivePageChanged() {
   AppListModel::State state = AppListModel::INVALID_STATE;
 
   // TODO(calamity): This does not report search results being shown in the
@@ -165,38 +173,26 @@ void ContentsView::ActivePageChanged(bool show_search_results) {
 
   // TODO(xiyuan): Highlight default match instead of the first.
   if (IsStateActive(AppListModel::STATE_SEARCH_RESULTS) &&
-      search_results_view_->visible()) {
-    search_results_view_->SetSelectedIndex(0);
+      search_results_list_view_ && search_results_list_view_->visible()) {
+    search_results_list_view_->SetSelectedIndex(0);
   }
-  if (search_results_view_)
-    search_results_view_->UpdateAutoLaunchState();
 
-  if (IsStateActive(AppListModel::STATE_START)) {
-    if (show_search_results)
-      start_page_view_->ShowSearchResults();
-    else
-      start_page_view_->Reset();
-  }
+  if (search_results_list_view_)
+    search_results_list_view_->UpdateAutoLaunchState();
 
   // Notify parent AppListMainView of the page change.
   app_list_main_view_->UpdateSearchBoxVisibility();
 }
 
 void ContentsView::ShowSearchResults(bool show) {
-  int search_page =
-      GetPageIndexForState(app_list::switches::IsExperimentalAppListEnabled()
-                               ? AppListModel::STATE_START
-                               : AppListModel::STATE_SEARCH_RESULTS);
+  int search_page = GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS);
   DCHECK_GE(search_page, 0);
 
   SetActivePageInternal(show ? search_page : page_before_search_, show);
 }
 
 bool ContentsView::IsShowingSearchResults() const {
-  return app_list::switches::IsExperimentalAppListEnabled()
-             ? IsStateActive(AppListModel::STATE_START) &&
-                   start_page_view_->IsShowingSearchResults()
-             : IsStateActive(AppListModel::STATE_SEARCH_RESULTS);
+  return IsStateActive(AppListModel::STATE_SEARCH_RESULTS);
 }
 
 gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
@@ -306,9 +302,9 @@ gfx::Rect ContentsView::GetDefaultContentsBounds() const {
 gfx::Size ContentsView::GetDefaultContentsSize() const {
   const gfx::Size container_size =
       apps_container_view_->apps_grid_view()->GetPreferredSize();
-  const gfx::Size results_size = search_results_view_
-                                     ? search_results_view_->GetPreferredSize()
-                                     : gfx::Size();
+  const gfx::Size results_size =
+      search_results_list_view_ ? search_results_list_view_->GetPreferredSize()
+                                : gfx::Size();
 
   int width = std::max(container_size.width(), results_size.width());
   int height = std::max(container_size.height(), results_size.height());

@@ -160,6 +160,8 @@
         'views/search_result_container_view.h',
         'views/search_result_list_view.cc',
         'views/search_result_list_view.h',
+        'views/search_result_page_view.cc',
+        'views/search_result_page_view.h',
         'views/search_result_list_view_delegate.h',
         'views/search_result_tile_item_view.cc',
         'views/search_result_tile_item_view.h',

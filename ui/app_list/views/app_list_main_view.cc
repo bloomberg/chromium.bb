@@ -178,8 +178,7 @@ void AppListMainView::ModelChanged() {
 }
 
 void AppListMainView::UpdateSearchBoxVisibility() {
-  bool visible = !contents_view_->IsStateActive(AppListModel::STATE_START) ||
-                 contents_view_->IsShowingSearchResults();
+  bool visible = !contents_view_->IsStateActive(AppListModel::STATE_START);
   search_box_view_->SetVisible(visible);
   if (visible && GetWidget() && GetWidget()->IsVisible())
     search_box_view_->search_box()->RequestFocus();
