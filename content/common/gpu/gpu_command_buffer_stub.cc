@@ -227,10 +227,15 @@ bool GpuCommandBufferStub::OnMessageReceived(const IPC::Message& message) {
   // handler can assume that the context is current (not necessary for
   // RetireSyncPoint or WaitSyncPoint).
   if (decoder_.get() &&
+      message.type() != GpuCommandBufferMsg_SetGetBuffer::ID &&
       message.type() != GpuCommandBufferMsg_WaitForTokenInRange::ID &&
       message.type() != GpuCommandBufferMsg_WaitForGetOffsetInRange::ID &&
+      message.type() != GpuCommandBufferMsg_RegisterTransferBuffer::ID &&
+      message.type() != GpuCommandBufferMsg_DestroyTransferBuffer::ID &&
       message.type() != GpuCommandBufferMsg_RetireSyncPoint::ID &&
-      message.type() != GpuCommandBufferMsg_SignalSyncPoint::ID) {
+      message.type() != GpuCommandBufferMsg_SignalSyncPoint::ID &&
+      message.type() !=
+          GpuCommandBufferMsg_SetClientHasMemoryAllocationChangedCallback::ID) {
     if (!MakeCurrent())
       return false;
     have_context = true;
