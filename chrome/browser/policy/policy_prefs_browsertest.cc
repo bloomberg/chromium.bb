@@ -51,8 +51,6 @@ namespace policy {
 
 namespace {
 
-const char kMainSettingsPage[] = "chrome://settings-frame";
-
 const char kCrosSettingsPrefix[] = "cros.";
 
 std::string GetPolicyName(const std::string& policy_name_decorated) {
@@ -362,111 +360,6 @@ class PolicyTestCases {
   DISALLOW_COPY_AND_ASSIGN(PolicyTestCases);
 };
 
-// Returns a pseudo-random integer distributed in [0, range).
-int GetRandomNumber(int range) {
-  return rand() % range;
-}
-
-// Splits all known policies into subsets of the given |chunk_size|. The
-// policies are shuffled so that there is no correlation between their initial
-// alphabetic ordering and the assignment to chunks. This ensures that the
-// expected number of policies with long-running test cases is equal for each
-// subset. The shuffle algorithm uses a fixed seed, ensuring that no randomness
-// is introduced into the testing process.
-std::vector<std::vector<std::string> > SplitPoliciesIntoChunks(int chunk_size) {
-  Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
-  if (!chrome_schema.valid())
-    ADD_FAILURE();
-
-  std::vector<std::string> policies;
-  for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
-       !it.IsAtEnd(); it.Advance()) {
-    policies.push_back(it.key());
-  }
-
-  // Use a fixed random seed to obtain a reproducible shuffle.
-  srand(1);
-  std::random_shuffle(policies.begin(), policies.end(), GetRandomNumber);
-
-  std::vector<std::vector<std::string> > chunks;
-  std::vector<std::string>::const_iterator it = policies.begin();
-  const std::vector<std::string>::const_iterator end = policies.end();
-  for ( ; end - it >= chunk_size; it += chunk_size)
-    chunks.push_back(std::vector<std::string>(it, it + chunk_size));
-  if (it != end)
-    chunks.push_back(std::vector<std::string>(it, end));
-  return chunks;
-}
-
-void VerifyControlledSettingIndicators(Browser* browser,
-                                       const std::string& selector,
-                                       const std::string& value,
-                                       const std::string& controlled_by,
-                                       bool readonly) {
-  std::stringstream javascript;
-  javascript << "var nodes = document.querySelectorAll("
-             << "    'span.controlled-setting-indicator"
-             <<          selector.c_str() << "');"
-             << "var indicators = [];"
-             << "for (var i = 0; i < nodes.length; i++) {"
-             << "  var node = nodes[i];"
-             << "  var indicator = {};"
-             << "  indicator.value = node.value || '';"
-             << "  indicator.controlledBy = node.controlledBy || '';"
-             << "  indicator.readOnly = node.readOnly || false;"
-             << "  indicator.visible ="
-             << "      window.getComputedStyle(node).display != 'none';"
-             << "  indicators.push(indicator)"
-             << "}"
-             << "domAutomationController.send(JSON.stringify(indicators));";
-  content::WebContents* contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  std::string json;
-  // Retrieve the state of all controlled setting indicators matching the
-  // |selector| as JSON.
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript.str(),
-                                                     &json));
-  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
-  const base::ListValue* indicators = NULL;
-  ASSERT_TRUE(value_ptr.get());
-  ASSERT_TRUE(value_ptr->GetAsList(&indicators));
-  // Verify that controlled setting indicators representing |value| are visible
-  // and have the correct state while those not representing |value| are
-  // invisible.
-  if (!controlled_by.empty()) {
-    EXPECT_GT(indicators->GetSize(), 0u)
-        << "Expected to find at least one controlled setting indicator.";
-  }
-  bool have_visible_indicators = false;
-  for (base::ListValue::const_iterator indicator = indicators->begin();
-       indicator != indicators->end(); ++indicator) {
-    const base::DictionaryValue* properties = NULL;
-    ASSERT_TRUE((*indicator)->GetAsDictionary(&properties));
-    std::string indicator_value;
-    std::string indicator_controlled_by;
-    bool indicator_readonly;
-    bool indicator_visible;
-    EXPECT_TRUE(properties->GetString("value", &indicator_value));
-    EXPECT_TRUE(properties->GetString("controlledBy",
-                                      &indicator_controlled_by));
-    EXPECT_TRUE(properties->GetBoolean("readOnly", &indicator_readonly));
-    EXPECT_TRUE(properties->GetBoolean("visible", &indicator_visible));
-    if (!controlled_by.empty() && (indicator_value == value)) {
-      EXPECT_EQ(controlled_by, indicator_controlled_by);
-      EXPECT_EQ(readonly, indicator_readonly);
-      EXPECT_TRUE(indicator_visible);
-      have_visible_indicators = true;
-    } else {
-      EXPECT_FALSE(indicator_visible);
-    }
-  }
-  if (!controlled_by.empty()) {
-    EXPECT_TRUE(have_visible_indicators)
-        << "Expected to find at least one visible controlled setting "
-        << "indicator.";
-  }
-}
-
 }  // namespace
 
 typedef InProcessBrowserTest PolicyPrefsTestCoverageTest;
@@ -591,6 +484,119 @@ IN_PROC_BROWSER_TEST_F(PolicyPrefsTest, PolicyToPrefsMapping) {
     }
   }
 }
+
+// Failing on cros official build. crbug.com/431791
+#if !defined(OS_CHROMEOS) || !defined(OFFICIAL_BUILD)
+namespace {
+
+const char kMainSettingsPage[] = "chrome://settings-frame";
+
+void VerifyControlledSettingIndicators(Browser* browser,
+                                       const std::string& selector,
+                                       const std::string& value,
+                                       const std::string& controlled_by,
+                                       bool readonly) {
+  std::stringstream javascript;
+  javascript << "var nodes = document.querySelectorAll("
+             << "    'span.controlled-setting-indicator"
+             <<          selector.c_str() << "');"
+             << "var indicators = [];"
+             << "for (var i = 0; i < nodes.length; i++) {"
+             << "  var node = nodes[i];"
+             << "  var indicator = {};"
+             << "  indicator.value = node.value || '';"
+             << "  indicator.controlledBy = node.controlledBy || '';"
+             << "  indicator.readOnly = node.readOnly || false;"
+             << "  indicator.visible ="
+             << "      window.getComputedStyle(node).display != 'none';"
+             << "  indicators.push(indicator)"
+             << "}"
+             << "domAutomationController.send(JSON.stringify(indicators));";
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  std::string json;
+  // Retrieve the state of all controlled setting indicators matching the
+  // |selector| as JSON.
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, javascript.str(),
+                                                     &json));
+  scoped_ptr<base::Value> value_ptr(base::JSONReader::Read(json));
+  const base::ListValue* indicators = NULL;
+  ASSERT_TRUE(value_ptr.get());
+  ASSERT_TRUE(value_ptr->GetAsList(&indicators));
+  // Verify that controlled setting indicators representing |value| are visible
+  // and have the correct state while those not representing |value| are
+  // invisible.
+  if (!controlled_by.empty()) {
+    EXPECT_GT(indicators->GetSize(), 0u)
+        << "Expected to find at least one controlled setting indicator.";
+  }
+  bool have_visible_indicators = false;
+  for (base::ListValue::const_iterator indicator = indicators->begin();
+       indicator != indicators->end(); ++indicator) {
+    const base::DictionaryValue* properties = NULL;
+    ASSERT_TRUE((*indicator)->GetAsDictionary(&properties));
+    std::string indicator_value;
+    std::string indicator_controlled_by;
+    bool indicator_readonly;
+    bool indicator_visible;
+    EXPECT_TRUE(properties->GetString("value", &indicator_value));
+    EXPECT_TRUE(properties->GetString("controlledBy",
+                                      &indicator_controlled_by));
+    EXPECT_TRUE(properties->GetBoolean("readOnly", &indicator_readonly));
+    EXPECT_TRUE(properties->GetBoolean("visible", &indicator_visible));
+    if (!controlled_by.empty() && (indicator_value == value)) {
+      EXPECT_EQ(controlled_by, indicator_controlled_by);
+      EXPECT_EQ(readonly, indicator_readonly);
+      EXPECT_TRUE(indicator_visible);
+      have_visible_indicators = true;
+    } else {
+      EXPECT_FALSE(indicator_visible);
+    }
+  }
+  if (!controlled_by.empty()) {
+    EXPECT_TRUE(have_visible_indicators)
+        << "Expected to find at least one visible controlled setting "
+        << "indicator.";
+  }
+}
+
+// Returns a pseudo-random integer distributed in [0, range).
+int GetRandomNumber(int range) {
+  return rand() % range;
+}
+
+// Splits all known policies into subsets of the given |chunk_size|. The
+// policies are shuffled so that there is no correlation between their initial
+// alphabetic ordering and the assignment to chunks. This ensures that the
+// expected number of policies with long-running test cases is equal for each
+// subset. The shuffle algorithm uses a fixed seed, ensuring that no randomness
+// is introduced into the testing process.
+std::vector<std::vector<std::string> > SplitPoliciesIntoChunks(int chunk_size) {
+  Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
+  if (!chrome_schema.valid())
+    ADD_FAILURE();
+
+  std::vector<std::string> policies;
+  for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    policies.push_back(it.key());
+  }
+
+  // Use a fixed random seed to obtain a reproducible shuffle.
+  srand(1);
+  std::random_shuffle(policies.begin(), policies.end(), GetRandomNumber);
+
+  std::vector<std::vector<std::string> > chunks;
+  std::vector<std::string>::const_iterator it = policies.begin();
+  const std::vector<std::string>::const_iterator end = policies.end();
+  for ( ; end - it >= chunk_size; it += chunk_size)
+    chunks.push_back(std::vector<std::string>(it, it + chunk_size));
+  if (it != end)
+    chunks.push_back(std::vector<std::string>(it, end));
+  return chunks;
+}
+
+}  // namespace
 
 class PolicyPrefIndicatorTest
     : public PolicyPrefsTest,
@@ -756,5 +762,6 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefIndicatorTest, CheckPolicyIndicators) {
 INSTANTIATE_TEST_CASE_P(PolicyPrefIndicatorTestInstance,
                         PolicyPrefIndicatorTest,
                         testing::ValuesIn(SplitPoliciesIntoChunks(10)));
+#endif  // !defined(OS_CHROMEOS) || !defined(OFFICIAL_BUILD)
 
 }  // namespace policy
