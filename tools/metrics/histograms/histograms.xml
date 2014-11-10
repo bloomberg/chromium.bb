@@ -53851,7 +53851,8 @@ To add a new entry, add it with any value and run test to compute valid value.
 
 <enum name="SpdyProtocolVersion" type="int">
   <summary>
-    |enum NextProto| values, with |kProtoSPDYMinimumVersion| subtracted.
+    SPDY protocol version identifier, including major and minor protocol
+    numbers, and draft versions where appropriate.
   </summary>
   <int value="0" label="SPDY 2.0"/>
   <int value="1" label="SPDY 3.0"/>

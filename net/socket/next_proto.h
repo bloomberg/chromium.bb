@@ -25,6 +25,7 @@ enum NextProto {
 
   kProtoDeprecatedSPDY2 = 100,
   kProtoSPDYMinimumVersion = kProtoDeprecatedSPDY2,
+  kProtoSPDYHistogramOffset = kProtoDeprecatedSPDY2,
   kProtoSPDY3 = 101,
   kProtoSPDY31 = 102,
   // HTTP/2 draft-14 was 103,
