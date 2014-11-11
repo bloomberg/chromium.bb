@@ -572,6 +572,10 @@
     'safe_browsing': {
       'filepath': 'chrome/(browser|common|renderer)/safe_browsing/',
     },
+    'scheduler': {
+      'filepath': 'cc/scheduler|'\
+                  'content/renderer/scheduler'
+    },
     'search': {
       'filepath': 'chrome/browser/ui/search/',
     },
@@ -956,6 +960,7 @@
                'dennisjeffrey@chromium.org'],
     'remoting': ['chromoting-reviews@chromium.org'],
     'safe_browsing': ['grt+watch@chromium.org'],
+    'scheduler': ['scheduler-bugs@chromium.org'],
     'sessions': ['marja+watch@chromium.org'],
     'service_worker': ['tzik@chromium.org',
                        'kinuko+serviceworker@chromium.org',
