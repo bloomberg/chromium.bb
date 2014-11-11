@@ -286,7 +286,7 @@ class Lock;
             base::HistogramBase::kUmaTargetedHistogramFlag))
 
 // The samples should always be strictly less than |boundary_value|.  For more
-// details, see the comment for the |HISTOGRAM_ENUMERATION| macro, above.
+// details, see the comment for the |LOCAL_HISTOGRAM_ENUMERATION| macro, above.
 #define UMA_HISTOGRAM_ENUMERATION(name, sample, boundary_value) \
     HISTOGRAM_ENUMERATION_WITH_FLAG(name, sample, boundary_value, \
         base::HistogramBase::kUmaTargetedHistogramFlag)
