@@ -33136,6 +33136,36 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
+    "storm-pre-cq": {
+        "archive": false,
+        "boards": [
+            "storm"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "storm-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "sync_chrome": false,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
+        "vm_tests": []
+    },
     "storm-release": {
         "archive_build_debug": true,
         "binhost_base_url": "https://commondatastorage.googleapis.com/chromeos-dev-installer",
@@ -36670,6 +36700,36 @@
         "overlays": "both",
         "paygen": true,
         "upload_hw_test_artifacts": false,
+        "vm_tests": []
+    },
+    "whirlwind-pre-cq": {
+        "archive": false,
+        "boards": [
+            "whirlwind"
+        ],
+        "build_packages_in_background": true,
+        "build_type": "binary",
+        "chrome_sdk_build_chrome": false,
+        "chroot_replace": true,
+        "cpe_export": false,
+        "debug_symbols": false,
+        "description": "Verifies compilation and building an image.",
+        "important": true,
+        "internal": true,
+        "manifest": "official.xml",
+        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
+        "manifest_version": true,
+        "name": "whirlwind-pre-cq",
+        "overlays": "both",
+        "pre_cq": true,
+        "sync_chrome": false,
+        "tests_supported": false,
+        "trybot_list": true,
+        "unittests": false,
+        "upload_standalone_images": false,
+        "useflags": [
+            "chrome_internal"
+        ],
         "vm_tests": []
     },
     "whirlwind-release": {

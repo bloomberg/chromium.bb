@@ -1673,6 +1673,12 @@ compile_only_pre_cq = unittest_only_pre_cq.derive(
 unittest_only_pre_cq.add_config('duck-pre-cq', brillo,
                                  boards=['duck'])
 
+non_testable_pre_cq.add_config('storm-pre-cq', brillo,
+                               boards=['storm'])
+
+non_testable_pre_cq.add_config('whirlwind-pre-cq', brillo,
+                               boards=['whirlwind'])
+
 def _AddPreCQConfigs():
   for board in _all_release_boards:
     if board in _x86_release_boards:
