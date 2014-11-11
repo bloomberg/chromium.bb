@@ -1379,9 +1379,9 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-
 crbug.com/384723 accessibility/chromium-only-roles.html [ Failure ]
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
-crbug.com/429843 [ Win Linux ] media/video-controls-with-cast-rendering.html [ Pass ImageOnlyFailure ]
-crbug.com/432079 [ Win Linux ] media/video-overlay-cast-dark-rendering.html [ Pass ImageOnlyFailure ]
-crbug.com/432080 [ Win Linux ] media/video-overlay-cast-light-rendering.html [ Pass ImageOnlyFailure ]
+crbug.com/429843 media/video-controls-with-cast-rendering.html [ NeedsRebaseline ]
+crbug.com/432079 media/video-overlay-cast-dark-rendering.html [ NeedsRebaseline ]
+crbug.com/432080 media/video-overlay-cast-light-rendering.html [ NeedsRebaseline ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
 crbug.com/431688 [ Win Release ] webaudio/oscillator-sine.html [ Failure ]

@@ -570,6 +570,7 @@ void MediaControlFullscreenButtonElement::setIsFullscreen(bool isFullscreen)
 MediaControlCastButtonElement::MediaControlCastButtonElement(MediaControls& mediaControls, bool isOverlayButton)
     : MediaControlInputElement(mediaControls, MediaCastOnButton), m_isOverlayButton(isOverlayButton)
 {
+    setIsPlayingRemotely(false);
 }
 
 PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> MediaControlCastButtonElement::create(MediaControls& mediaControls, bool isOverlayButton)
@@ -601,7 +602,19 @@ const AtomicString& MediaControlCastButtonElement::shadowPseudoId() const
 
 void MediaControlCastButtonElement::setIsPlayingRemotely(bool isPlayingRemotely)
 {
-    setDisplayType(isPlayingRemotely ? MediaCastOnButton : MediaCastOffButton);
+    if (isPlayingRemotely) {
+        if (m_isOverlayButton) {
+            setDisplayType(MediaOverlayCastOnButton);
+        } else {
+            setDisplayType(MediaCastOnButton);
+        }
+    } else {
+        if (m_isOverlayButton) {
+            setDisplayType(MediaOverlayCastOffButton);
+        } else {
+            setDisplayType(MediaCastOffButton);
+        }
+    }
 }
 
 bool MediaControlCastButtonElement::keepEventInNode(Event* event)
