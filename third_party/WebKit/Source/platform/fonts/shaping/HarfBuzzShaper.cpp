@@ -949,41 +949,45 @@ void HarfBuzzShaper::setGlyphPositionsForHarfBuzzRun(HarfBuzzRun* currentRun, hb
     m_totalWidth += currentRun->width();
 }
 
-void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer,
-    HarfBuzzRun* currentRun, float& carryAdvance)
+float HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer,
+    HarfBuzzRun* currentRun, float initialAdvance)
 {
     FloatSize* offsets = currentRun->offsets();
     uint16_t* glyphs = currentRun->glyphs();
     float* advances = currentRun->advances();
     unsigned numGlyphs = currentRun->numGlyphs();
     uint16_t* glyphToCharacterIndexes = currentRun->glyphToCharacterIndexes();
-    FloatSize runStartOffset = FloatSize();
+    float advanceSoFar = initialAdvance;
     if (m_run.rtl()) {
         for (unsigned i = 0; i < numGlyphs; ++i) {
             uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
             if (currentCharacterIndex >= m_toIndex) {
-                carryAdvance += advances[i];
+                advanceSoFar += advances[i];
             } else if (currentCharacterIndex >= m_fromIndex) {
-                runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ? FloatSize(carryAdvance, 0) : FloatSize(0, carryAdvance);
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i], carryAdvance + advances[i]);
-                carryAdvance = 0;
+                FloatPoint runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ?
+                    FloatPoint(advanceSoFar, 0) : FloatPoint(0, advanceSoFar);
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i]);
+                advanceSoFar += advances[i];
             }
         }
     } else {
         for (unsigned i = 0; i < numGlyphs; ++i) {
             uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
             if (currentCharacterIndex < m_fromIndex) {
-                carryAdvance += advances[i];
+                advanceSoFar += advances[i];
             } else if (currentCharacterIndex < m_toIndex) {
-                runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ? FloatSize(carryAdvance, 0) : FloatSize(0, carryAdvance);
-                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i], carryAdvance + advances[i]);
-                carryAdvance = 0;
+                FloatPoint runStartOffset = HB_DIRECTION_IS_HORIZONTAL(currentRun->direction()) ?
+                    FloatPoint(advanceSoFar, 0) : FloatPoint(0, advanceSoFar);
+                glyphBuffer->add(glyphs[i], currentRun->fontData(), runStartOffset + offsets[i]);
+                advanceSoFar += advances[i];
             }
         }
     }
+
+    return advanceSoFar - initialAdvance;
 }
 
-void HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, HarfBuzzRun* currentRun)
+float HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, HarfBuzzRun* currentRun, float initialAdvance)
 {
     // FIXME: Instead of generating a synthetic GlyphBuffer here which is then used by the
     // drawEmphasisMarks method of FontFastPath, we should roll our own emphasis mark drawing function.
@@ -1008,6 +1012,7 @@ void HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, Ha
     else
         clusterStart = currentRun->startIndex() + glyphToCharacterIndexes[0];
 
+    float advanceSoFar = initialAdvance;
     for (unsigned i = 0; i < numGlyphs; ++i) {
         uint16_t currentCharacterIndex = currentRun->startIndex() + glyphToCharacterIndexes[i];
         bool isRunEnd = (i + 1 == numGlyphs);
@@ -1029,44 +1034,33 @@ void HarfBuzzShaper::fillGlyphBufferForTextEmphasis(GlyphBuffer* glyphBuffer, Ha
             for (unsigned j = 0; j < graphemesInCluster; ++j) {
                 // Do not put emphasis marks on space, separator, and control characters.
                 Glyph glyphToAdd = Character::canReceiveTextEmphasis(m_run[currentCharacterIndex]) ? 1 : 0;
-                glyphBuffer->add(glyphToAdd, currentRun->fontData(), glyphAdvanceX);
+                // The emphasis code expects mid-glyph offsets.
+                glyphBuffer->add(glyphToAdd, currentRun->fontData(), advanceSoFar + glyphAdvanceX / 2);
+                advanceSoFar += glyphAdvanceX;
             }
             clusterStart = clusterEnd;
             clusterAdvance = 0;
         }
     }
+
+    return advanceSoFar - initialAdvance;
 }
 
 bool HarfBuzzShaper::fillGlyphBuffer(GlyphBuffer* glyphBuffer)
 {
+    ASSERT(glyphBuffer);
+
     unsigned numRuns = m_harfBuzzRuns.size();
-    float carryAdvance = 0;
-    if (m_run.rtl()) {
-        for (int runIndex = numRuns - 1; runIndex >= 0; --runIndex) {
-            HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
-            if (!currentRun->hasGlyphToCharacterIndexes()) {
-                // FIXME: bug 337886, 359664
-                continue;
-            }
-            if (m_forTextEmphasis == ForTextEmphasis) {
-                fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
-            } else {
-                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, carryAdvance);
-            }
+    float advanceSoFar = 0;
+    for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
+        HarfBuzzRun* currentRun = m_harfBuzzRuns[m_run.ltr() ? runIndex : numRuns - runIndex - 1].get();
+        if (!currentRun->hasGlyphToCharacterIndexes()) {
+            // FIXME: bug 337886, 359664
+            continue;
         }
-    } else {
-        for (unsigned runIndex = 0; runIndex < numRuns; ++runIndex) {
-            HarfBuzzRun* currentRun = m_harfBuzzRuns[runIndex].get();
-            if (!currentRun->hasGlyphToCharacterIndexes()) {
-                // FIXME: bug 337886, 359664
-                continue;
-            }
-            if (m_forTextEmphasis == ForTextEmphasis) {
-                fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun);
-            } else {
-                fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, carryAdvance);
-            }
-        }
+        advanceSoFar += (m_forTextEmphasis == ForTextEmphasis)
+            ? fillGlyphBufferForTextEmphasis(glyphBuffer, currentRun, advanceSoFar)
+            : fillGlyphBufferFromHarfBuzzRun(glyphBuffer, currentRun, advanceSoFar);
     }
     return glyphBuffer->size();
 }

@@ -47,10 +47,10 @@ TEST(GlyphBufferTest, StoresGlyphs)
     GlyphBuffer glyphBuffer;
     glyphBuffer.add(42, font1.get(), 10);
     glyphBuffer.add(43, font1.get(), 15);
-    glyphBuffer.add(44, font2.get(), 12);
+    glyphBuffer.add(44, font2.get(), 22);
 
     EXPECT_FALSE(glyphBuffer.isEmpty());
-    EXPECT_FALSE(glyphBuffer.hasOffsets());
+    EXPECT_FALSE(glyphBuffer.hasVerticalOffsets());
     EXPECT_EQ(3u, glyphBuffer.size());
 
     EXPECT_EQ(42, glyphBuffer.glyphAt(0));
@@ -63,27 +63,39 @@ TEST(GlyphBufferTest, StoresGlyphs)
     EXPECT_EQ(44, glyphs[2]);
 }
 
-TEST(GlyphBufferTest, StoresOffsets)
+TEST(GlyphBufferTest, StoresVerticalOffsets)
 {
     RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
     RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
 
     GlyphBuffer glyphBuffer;
-    glyphBuffer.add(42, font1.get(), FloatSize(10, 0), 0);
-    glyphBuffer.add(43, font1.get(), FloatSize(15, 0), 0);
-    glyphBuffer.add(44, font2.get(), FloatSize(12, 2), 0);
+    EXPECT_FALSE(glyphBuffer.hasVerticalOffsets());
+
+    glyphBuffer.add(42, font1.get(), FloatPoint(10, 0));
+    glyphBuffer.add(43, font1.get(), FloatPoint(15, 0));
+    glyphBuffer.add(44, font2.get(), FloatPoint(12, 2));
 
     EXPECT_FALSE(glyphBuffer.isEmpty());
-    EXPECT_TRUE(glyphBuffer.hasOffsets());
+    EXPECT_TRUE(glyphBuffer.hasVerticalOffsets());
     EXPECT_EQ(3u, glyphBuffer.size());
 
-    const FloatSize* offsets = glyphBuffer.offsets(0);
-    EXPECT_EQ(FloatSize(10, 0), offsets[0]);
-    EXPECT_EQ(FloatSize(15, 0), offsets[1]);
-    EXPECT_EQ(FloatSize(12, 2), offsets[2]);
+    const float* offsets = glyphBuffer.offsets(0);
+    EXPECT_EQ(10, glyphBuffer.xOffsetAt(0));
+    EXPECT_EQ(0, glyphBuffer.yOffsetAt(0));
+    EXPECT_EQ(15, glyphBuffer.xOffsetAt(1));
+    EXPECT_EQ(0, glyphBuffer.yOffsetAt(1));
+    EXPECT_EQ(12, glyphBuffer.xOffsetAt(2));
+    EXPECT_EQ(2, glyphBuffer.yOffsetAt(2));
+
+    EXPECT_EQ(10, offsets[0]);
+    EXPECT_EQ(0, offsets[1]);
+    EXPECT_EQ(15, offsets[2]);
+    EXPECT_EQ(0, offsets[3]);
+    EXPECT_EQ(12, offsets[4]);
+    EXPECT_EQ(2, offsets[5]);
 }
 
-TEST(GlyphBufferTest, StoresAdvances)
+TEST(GlyphBufferTest, StoresOffsets)
 {
     RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
     RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
@@ -94,16 +106,17 @@ TEST(GlyphBufferTest, StoresAdvances)
     glyphBuffer.add(44, font2.get(), 20);
 
     EXPECT_FALSE(glyphBuffer.isEmpty());
+    EXPECT_FALSE(glyphBuffer.hasVerticalOffsets());
     EXPECT_EQ(3u, glyphBuffer.size());
 
-    EXPECT_EQ(10, glyphBuffer.advanceAt(0));
-    EXPECT_EQ(15, glyphBuffer.advanceAt(1));
-    EXPECT_EQ(20, glyphBuffer.advanceAt(2));
+    EXPECT_EQ(10, glyphBuffer.xOffsetAt(0));
+    EXPECT_EQ(15, glyphBuffer.xOffsetAt(1));
+    EXPECT_EQ(20, glyphBuffer.xOffsetAt(2));
 
-    const float* advances = glyphBuffer.advances(0);
-    EXPECT_EQ(10, advances[0]);
-    EXPECT_EQ(15, advances[1]);
-    EXPECT_EQ(20, advances[2]);
+    const float* offsets = glyphBuffer.offsets(0);
+    EXPECT_EQ(10, offsets[0]);
+    EXPECT_EQ(15, offsets[1]);
+    EXPECT_EQ(20, offsets[2]);
 }
 
 TEST(GlyphBufferTest, StoresSimpleFontData)
@@ -142,25 +155,45 @@ TEST(GlyphBufferTest, GlyphArrayWithOffset)
     EXPECT_EQ(44, glyphs[1]);
 }
 
-TEST(GlyphBufferTest, AdvanceArrayWithOffset)
+TEST(GlyphBufferTest, OffsetArrayWithNonZeroIndex)
 {
     RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
     RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
 
-    GlyphBuffer glyphBuffer;
-    glyphBuffer.add(42, font1.get(), 10);
-    glyphBuffer.add(43, font1.get(), 15);
-    glyphBuffer.add(43, font1.get(), 12);
+    {
+        GlyphBuffer glyphBuffer;
+        glyphBuffer.add(42, font1.get(), 10);
+        glyphBuffer.add(43, font1.get(), 15);
+        glyphBuffer.add(43, font2.get(), 12);
 
-    EXPECT_FALSE(glyphBuffer.isEmpty());
-    EXPECT_EQ(3u, glyphBuffer.size());
+        EXPECT_FALSE(glyphBuffer.isEmpty());
+        EXPECT_FALSE(glyphBuffer.hasVerticalOffsets());
+        EXPECT_EQ(3u, glyphBuffer.size());
 
-    const float* advances = glyphBuffer.advances(1);
-    EXPECT_EQ(15, advances[0]);
-    EXPECT_EQ(12, advances[1]);
+        const float* offsets = glyphBuffer.offsets(1);
+        EXPECT_EQ(15, offsets[0]);
+        EXPECT_EQ(12, offsets[1]);
+    }
+
+    {
+        GlyphBuffer glyphBuffer;
+        glyphBuffer.add(42, font1.get(), FloatPoint(10, 0));
+        glyphBuffer.add(43, font1.get(), FloatPoint(15, 0));
+        glyphBuffer.add(43, font2.get(), FloatPoint(12, 2));
+
+        EXPECT_FALSE(glyphBuffer.isEmpty());
+        EXPECT_TRUE(glyphBuffer.hasVerticalOffsets());
+        EXPECT_EQ(3u, glyphBuffer.size());
+
+        const float* offsets = glyphBuffer.offsets(1);
+        EXPECT_EQ(15, offsets[0]);
+        EXPECT_EQ(0, offsets[1]);
+        EXPECT_EQ(12, offsets[2]);
+        EXPECT_EQ(2, offsets[3]);
+    }
 }
 
-TEST(GlyphBufferTest, Reverse)
+TEST(GlyphBufferTest, ReverseForSimpleRTL)
 {
     RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
     RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
@@ -168,38 +201,24 @@ TEST(GlyphBufferTest, Reverse)
     GlyphBuffer glyphBuffer;
     glyphBuffer.add(42, font1.get(), 10);
     glyphBuffer.add(43, font1.get(), 15);
-    glyphBuffer.add(44, font2.get(), 20);
+    glyphBuffer.add(44, font2.get(), 25);
 
     EXPECT_FALSE(glyphBuffer.isEmpty());
     EXPECT_EQ(3u, glyphBuffer.size());
 
-    glyphBuffer.reverse();
+    glyphBuffer.reverseForSimpleRTL(30, 100);
 
     EXPECT_FALSE(glyphBuffer.isEmpty());
     EXPECT_EQ(3u, glyphBuffer.size());
     EXPECT_EQ(44, glyphBuffer.glyphAt(0));
     EXPECT_EQ(43, glyphBuffer.glyphAt(1));
     EXPECT_EQ(42, glyphBuffer.glyphAt(2));
-    EXPECT_EQ(20, glyphBuffer.advanceAt(0));
-    EXPECT_EQ(15, glyphBuffer.advanceAt(1));
-    EXPECT_EQ(10, glyphBuffer.advanceAt(2));
     EXPECT_EQ(font2.get(), glyphBuffer.fontDataAt(0));
     EXPECT_EQ(font1.get(), glyphBuffer.fontDataAt(1));
     EXPECT_EQ(font1.get(), glyphBuffer.fontDataAt(2));
-}
-
-TEST(GlyphBufferTest, ExpandLastAdvance)
-{
-    RefPtr<SimpleFontData> font1 = TestSimpleFontData::create();
-    RefPtr<SimpleFontData> font2 = TestSimpleFontData::create();
-
-    GlyphBuffer glyphBuffer;
-    glyphBuffer.add(42, font1.get(), 10);
-    glyphBuffer.add(43, font1.get(), 15);
-    glyphBuffer.add(44, font2.get(), 12);
-
-    glyphBuffer.expandLastAdvance(20);
-    EXPECT_EQ(32, glyphBuffer.advanceAt(2));
+    EXPECT_EQ(70, glyphBuffer.xOffsetAt(0));
+    EXPECT_EQ(75, glyphBuffer.xOffsetAt(1));
+    EXPECT_EQ(85, glyphBuffer.xOffsetAt(2));
 }
 
 } // namespace

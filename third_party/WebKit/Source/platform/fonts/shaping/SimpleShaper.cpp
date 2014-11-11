@@ -98,8 +98,7 @@ void SimpleShaper::cacheFallbackFont(const SimpleFontData* fontData,
     m_fallbackFonts->add(fontData);
 }
 
-float SimpleShaper::adjustSpacing(float width, const CharacterData& charData,
-    const SimpleFontData& fontData, GlyphBuffer* glyphBuffer)
+float SimpleShaper::adjustSpacing(float width, const CharacterData& charData)
 {
     // Account for letter-spacing.
     if (width)
@@ -112,18 +111,7 @@ float SimpleShaper::adjustSpacing(float width, const CharacterData& charData,
             if (!treatAsSpace && !m_isAfterExpansion) {
                 // Take the expansion opportunity before this ideograph.
                 m_expansion -= m_expansionPerOpportunity;
-                float expansionAtThisOpportunity = m_expansionPerOpportunity;
-                m_runWidthSoFar += expansionAtThisOpportunity;
-                if (glyphBuffer) {
-                    if (glyphBuffer->isEmpty()) {
-                        if (m_forTextEmphasis)
-                            glyphBuffer->add(fontData.zeroWidthSpaceGlyph(), &fontData, m_expansionPerOpportunity);
-                        else
-                            glyphBuffer->add(fontData.spaceGlyph(), &fontData, expansionAtThisOpportunity);
-                    } else {
-                        glyphBuffer->expandLastAdvance(expansionAtThisOpportunity);
-                    }
-                }
+                m_runWidthSoFar += m_expansionPerOpportunity;
             }
             if (m_run.allowsTrailingExpansion()
                 || (m_run.ltr() && charData.characterOffset + charData.clusterLength < static_cast<size_t>(m_run.length()))
@@ -202,20 +190,26 @@ unsigned SimpleShaper::advanceInternal(TextIterator& textIterator, GlyphBuffer* 
         }
 
         if (hasExtraSpacing && !spaceUsedAsZeroWidthSpace)
-            width = adjustSpacing(width, charData, *fontData, glyphBuffer);
+            width = adjustSpacing(width, charData);
 
         if (m_bounds)
             updateGlyphBounds(glyphData, width, !charData.characterOffset);
 
-        if (m_forTextEmphasis && !Character::canReceiveTextEmphasis(charData.character))
-            glyph = 0;
+        if (m_forTextEmphasis) {
+            if (!Character::canReceiveTextEmphasis(charData.character))
+                glyph = 0;
+
+            // The emphasis code expects mid-glyph offsets.
+            width /= 2;
+            m_runWidthSoFar += width;
+        }
+
+        if (glyphBuffer)
+            glyphBuffer->add(glyph, fontData, m_runWidthSoFar);
 
         // Advance past the character we just dealt with.
         textIterator.advance(charData.clusterLength);
         m_runWidthSoFar += width;
-
-        if (glyphBuffer)
-            glyphBuffer->add(glyph, fontData, width);
     }
 
     unsigned consumedCharacters = textIterator.currentCharacter() - m_currentCharacter;

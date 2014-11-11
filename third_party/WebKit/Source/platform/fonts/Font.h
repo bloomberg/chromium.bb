@@ -137,20 +137,20 @@ public:
 private:
     enum ForTextEmphasisOrNot { NotForTextEmphasis, ForTextEmphasis };
 
-    // Returns the initial in-stream advance.
+    // Returns the total advance.
     float buildGlyphBuffer(const TextRunPaintInfo&, GlyphBuffer&, ForTextEmphasisOrNot = NotForTextEmphasis) const;
-    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, float initialAdvance, const FloatRect& bounds,
-        bool couldUseLCD) const;
-
+    PassTextBlobPtr buildTextBlob(const GlyphBuffer&, const FloatRect& bounds, bool couldUseLCD) const;
     SkPaint textFillPaint(GraphicsContext*, const SimpleFontData*) const;
     SkPaint textStrokePaint(GraphicsContext*, const SimpleFontData*, bool isFilling) const;
     void paintGlyphs(GraphicsContext*, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
         const SkPoint pos[], const FloatRect& textRect) const;
     void paintGlyphsHorizontal(GraphicsContext*, const SimpleFontData*, const Glyph glyphs[], unsigned numGlyphs,
         const SkScalar xpos[], SkScalar constY, const FloatRect& textRect) const;
+    void paintGlyphsVertical(GraphicsContext*, const SimpleFontData*, const GlyphBuffer&,
+        unsigned from, unsigned numGlyphs, const FloatPoint&, const FloatRect&) const;
     void drawGlyphs(GraphicsContext*, const SimpleFontData*, const GlyphBuffer&, unsigned from, unsigned numGlyphs, const FloatPoint&, const FloatRect& textRect) const;
     void drawTextBlob(GraphicsContext*, const SkTextBlob*, const SkPoint& origin) const;
-    float drawGlyphBuffer(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&) const;
+    void drawGlyphBuffer(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const FloatPoint&) const;
     void drawEmphasisMarks(GraphicsContext*, const TextRunPaintInfo&, const GlyphBuffer&, const AtomicString&, const FloatPoint&) const;
     float floatWidthForSimpleText(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, IntRectExtent* glyphBounds = 0) const;
     int offsetForPositionForSimpleText(const TextRun&, float position, bool includePartialGlyphs) const;

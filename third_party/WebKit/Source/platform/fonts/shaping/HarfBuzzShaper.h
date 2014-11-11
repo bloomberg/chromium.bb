@@ -129,8 +129,8 @@ private:
     bool createHarfBuzzRuns();
     bool shapeHarfBuzzRuns();
     bool fillGlyphBuffer(GlyphBuffer*);
-    void fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float& carryAdvance);
-    void fillGlyphBufferForTextEmphasis(GlyphBuffer*, HarfBuzzRun* currentRun);
+    float fillGlyphBufferFromHarfBuzzRun(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
+    float fillGlyphBufferForTextEmphasis(GlyphBuffer*, HarfBuzzRun*, float initialAdvance);
     void setGlyphPositionsForHarfBuzzRun(HarfBuzzRun*, hb_buffer_t*);
     void addHarfBuzzRun(unsigned startCharacter, unsigned endCharacter, const SimpleFontData*, UScriptCode);
 
