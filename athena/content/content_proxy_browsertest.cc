@@ -54,6 +54,10 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
                 .size().ToString(),
             gfx::Size().ToString());
 
+  // Allow the activity time to start the renderer. Locally this was not a
+  // problem in over 150 runs, but the try server shows flakiness.
+  test_util::WaitUntilIdle();
+
   // Create another activity. The size of all overview images should be empty
   // since they have the visible state.
   Activity* activity2 =
@@ -66,6 +70,9 @@ IN_PROC_BROWSER_TEST_F(ContentProxyBrowserTest, CreateContent) {
   DCHECK_EQ(activity2->GetActivityViewModel()->GetOverviewModeImage()
                 .size().ToString(),
             gfx::Size().ToString());
+
+  // As above.
+  test_util::WaitUntilIdle();
 
   // Turn the activity invisible which should create the ContentProxy.
   activity1->SetCurrentState(Activity::ACTIVITY_INVISIBLE);
