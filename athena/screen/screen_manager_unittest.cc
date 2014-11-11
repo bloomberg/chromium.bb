@@ -249,6 +249,38 @@ TEST_F(AthenaFocusRuleTest, FocusTravarsalFromEventBlockedContainer) {
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
 }
 
+TEST_F(AthenaFocusRuleTest, FocusTravarsalFromModalWindow) {
+  ScreenManagerImpl* screen_manager =
+      static_cast<ScreenManagerImpl*>(ScreenManager::Get());
+
+  ScreenManager::ContainerParams params1("contaier1", kTestZOrderPriority + 1);
+  params1.can_activate_children = true;
+  scoped_ptr<aura::Window>
+      container1(ScreenManager::Get()->CreateContainer(params1));
+
+  scoped_ptr<aura::Window> normal(CreateWindow(
+      container1.get(), nullptr, gfx::Rect(0, 0, 100, 100)));
+  wm::ActivateWindow(normal.get());
+  EXPECT_TRUE(wm::IsActiveWindow(normal.get()));
+
+  aura::test::EventCountDelegate delegate;
+  scoped_ptr<aura::Window> modal(test::CreateTransientWindow(
+      &delegate, nullptr, ui::MODAL_TYPE_SYSTEM, false));
+
+  aura::Window* modal_container =
+      screen_manager->FindContainerByPriority(CP_SYSTEM_MODAL);
+  EXPECT_TRUE(modal_container);
+
+  modal->Show();
+  wm::ActivateWindow(modal.get());
+  EXPECT_TRUE(wm::IsActiveWindow(modal.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(normal.get()));
+
+  // Closes the modal window and confirms the normal window gets the focus.
+  modal.reset();
+  EXPECT_TRUE(wm::IsActiveWindow(normal.get()));
+}
+
 namespace {
 
 class ScreenManagerTargeterTest
