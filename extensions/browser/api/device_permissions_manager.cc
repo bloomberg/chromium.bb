@@ -154,12 +154,17 @@ base::Value* DevicePermissionEntry::ToValue() const {
   device_entry_dict->SetIntegerWithoutPathExpansion(kDeviceVendorId, vendor_id);
   device_entry_dict->SetIntegerWithoutPathExpansion(kDeviceProductId,
                                                     product_id);
+  DCHECK(!serial_number.empty());
   device_entry_dict->SetStringWithoutPathExpansion(kDeviceSerialNumber,
                                                    serial_number);
-  device_entry_dict->SetStringWithoutPathExpansion(kDeviceManufacturerString,
-                                                   manufacturer_string);
-  device_entry_dict->SetStringWithoutPathExpansion(kDeviceProductString,
-                                                   product_string);
+  if (!manufacturer_string.empty()) {
+    device_entry_dict->SetStringWithoutPathExpansion(kDeviceManufacturerString,
+                                                     manufacturer_string);
+  }
+  if (!product_string.empty()) {
+    device_entry_dict->SetStringWithoutPathExpansion(kDeviceProductString,
+                                                     product_string);
+  }
   return device_entry_dict;
 }
 

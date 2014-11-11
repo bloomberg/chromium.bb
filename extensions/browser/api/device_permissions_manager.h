@@ -9,6 +9,7 @@
 #include <set>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -118,6 +119,7 @@ class DevicePermissionsManager : public KeyedService,
 
  private:
   friend class DevicePermissionsManagerFactory;
+  FRIEND_TEST_ALL_PREFIXES(DevicePermissionsManagerTest, SuspendExtension);
 
   DevicePermissionsManager(content::BrowserContext* context);
   ~DevicePermissionsManager() override;

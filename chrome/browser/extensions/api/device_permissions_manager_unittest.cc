@@ -47,6 +47,8 @@ class MockUsbDevice : public UsbDevice {
 
   virtual bool GetSerialNumber(base::string16* serial_number) override {
     if (serial_number_.empty()) {
+      // Return false as if the device does not have or failed to return its
+      // serial number.
       return false;
     }
 
@@ -65,12 +67,15 @@ class MockUsbDevice : public UsbDevice {
 void AllowUsbDevice(DevicePermissionsManager* manager,
                     const Extension* extension,
                     scoped_refptr<UsbDevice> device) {
+  // If the device cannot provide any of these strings they will simply by
+  // empty.
   base::string16 product;
   device->GetProduct(&product);
   base::string16 manufacturer;
   device->GetManufacturer(&manufacturer);
   base::string16 serial_number;
   device->GetSerialNumber(&serial_number);
+
   manager->AllowUsbDevice(
       extension->id(), device, product, manufacturer, serial_number);
 }
@@ -107,7 +112,7 @@ class DevicePermissionsManagerTest : public testing::Test {
   scoped_refptr<MockUsbDevice> device3;
 };
 
-TEST_F(DevicePermissionsManagerTest, RegisterDevices) {
+TEST_F(DevicePermissionsManagerTest, AllowAndClearDevices) {
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_.profile());
   AllowUsbDevice(manager, extension_, device0);
@@ -126,20 +131,70 @@ TEST_F(DevicePermissionsManagerTest, RegisterDevices) {
   ASSERT_NE(device_messages[0].find(base::ASCIIToUTF16("ABCDE")),
             base::string16::npos);
 
-  device1->NotifyDisconnect();
-
-  device_permissions = manager->GetForExtension(extension_->id());
-  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
-  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
-  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
-  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
-
   manager->Clear(extension_->id());
 
   device_permissions = manager->GetForExtension(extension_->id());
   ASSERT_FALSE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
   device_messages = manager->GetPermissionMessageStrings(extension_->id());
   ASSERT_EQ(0U, device_messages.size());
+}
+
+TEST_F(DevicePermissionsManagerTest, SuspendExtension) {
+  DevicePermissionsManager* manager =
+      DevicePermissionsManager::Get(env_.profile());
+  AllowUsbDevice(manager, extension_, device0);
+  AllowUsbDevice(manager, extension_, device1);
+
+  scoped_ptr<DevicePermissions> device_permissions =
+      manager->GetForExtension(extension_->id());
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
+
+  manager->OnBackgroundHostClose(extension_->id());
+
+  device_permissions = manager->GetForExtension(extension_->id());
+  // Device 0 is still registered because its serial number has been stored in
+  // ExtensionPrefs, it is "persistent".
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  // Device 1 does not have uniquely identifying traits and so permission to
+  // open it has been dropped when the app's windows have closed and the
+  // background page has been suspended.
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
+}
+
+TEST_F(DevicePermissionsManagerTest, DisconnectDevice) {
+  DevicePermissionsManager* manager =
+      DevicePermissionsManager::Get(env_.profile());
+  AllowUsbDevice(manager, extension_, device0);
+  AllowUsbDevice(manager, extension_, device1);
+
+  scoped_ptr<DevicePermissions> device_permissions =
+      manager->GetForExtension(extension_->id());
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
+
+  device0->NotifyDisconnect();
+  device1->NotifyDisconnect();
+
+  device_permissions = manager->GetForExtension(extension_->id());
+  // Device 0 will be accessible when it is reconnected because it can be
+  // recognized by its serial number.
+  ASSERT_TRUE(device_permissions->CheckUsbDevice(device0));
+  // Device 1 does not have a serial number and cannot be distinguished from
+  // any other device of the same model so the app must request permission again
+  // when it is reconnected.
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device1));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device2));
+  ASSERT_FALSE(device_permissions->CheckUsbDevice(device3));
 }
 
 TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
