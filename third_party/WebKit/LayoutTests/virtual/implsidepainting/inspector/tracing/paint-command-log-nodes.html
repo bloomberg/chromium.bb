@@ -28,7 +28,7 @@ function test()
         var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (event.name !== WebInspector.TracingTimelineModel.RecordType.Paint)
+            if (event.name !== WebInspector.TimelineModel.RecordType.Paint)
                 continue;
             if (!event.picture)
                 continue;

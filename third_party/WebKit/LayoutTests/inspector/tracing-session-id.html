@@ -21,8 +21,8 @@ function test()
     function processEvent(event)
     {
         var metadataEvents = [
-            WebInspector.TracingTimelineModel.RecordType.SetLayerTreeId,
-            WebInspector.TracingTimelineModel.RecordType.TracingStartedInPage
+            WebInspector.TimelineModel.RecordType.SetLayerTreeId,
+            WebInspector.TimelineModel.RecordType.TracingStartedInPage
         ];
 
         if (event.category !== WebInspector.TracingModel.DevToolsMetadataEventCategory || metadataEvents.indexOf(event.name) < 0)

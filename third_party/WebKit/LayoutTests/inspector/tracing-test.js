@@ -22,7 +22,7 @@ InspectorTest.tracingModel = function()
 InspectorTest.tracingTimelineModel = function()
 {
     if (!InspectorTest._tracingTimelineModel)
-        InspectorTest._tracingTimelineModel = new WebInspector.TracingTimelineModel(InspectorTest.tracingManager(), InspectorTest.tracingModel(), new WebInspector.TimelineRecordHiddenTypeFilter([]));
+        InspectorTest._tracingTimelineModel = new WebInspector.TimelineModel(InspectorTest.tracingManager(), InspectorTest.tracingModel(), new WebInspector.TimelineRecordHiddenTypeFilter([]));
     return InspectorTest._tracingTimelineModel;
 }
 

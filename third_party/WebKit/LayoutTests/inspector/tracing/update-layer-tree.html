@@ -30,7 +30,7 @@ function test()
         var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (events[i].name === WebInspector.TracingTimelineModel.RecordType.UpdateLayerTree) {
+            if (events[i].name === WebInspector.TimelineModel.RecordType.UpdateLayerTree) {
                 InspectorTest.addResult("Got UpdateLayerTree event");
                 break;
             }

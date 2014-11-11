@@ -39,11 +39,11 @@ function test()
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles);
                 var invalidations = record._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(invalidations.length, 2);
-                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
                 InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
                 InspectorTest.assertGreaterOrEqual(invalidations[0].stackTrace.length, 1);
-                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
                 InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
                 InspectorTest.assertGreaterOrEqual(invalidations[1].stackTrace.length, 1);
@@ -57,11 +57,11 @@ function test()
 
             var invalidations = record._event.invalidationTrackingEvents;
             InspectorTest.assertEquals(invalidations.length, 2);
-            InspectorTest.assertEquals(invalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+            InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
             InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
             InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
             InspectorTest.assertGreaterOrEqual(invalidations[0].stackTrace.length, 1);
-            InspectorTest.assertEquals(invalidations[1].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+            InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
             InspectorTest.assertEquals(invalidations[1].nodeName, "DIV");
             InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
             InspectorTest.assertGreaterOrEqual(invalidations[1].stackTrace.length, 1);

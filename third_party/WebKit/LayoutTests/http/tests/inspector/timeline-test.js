@@ -266,7 +266,7 @@ InspectorTest.printTimelineRecordProperties = function(record)
     }
     if (record.children().length)
         object["children"] = [];
-    if (!record.data() && record instanceof WebInspector.TracingTimelineModel.TraceEventRecord)
+    if (!record.data())
         object["data"] = record.traceEvent().args;
     InspectorTest.addObject(object, InspectorTest.timelinePropertyFormatters);
 };

@@ -41,14 +41,14 @@ function test()
                 var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
                 var firstInvalidations = firstLayoutRecord._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(firstInvalidations.length, 1);
-                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV id='testElement'");
                 InspectorTest.assertGreaterOrEqual(firstInvalidations[0].stackTrace.length, 1);
 
                 var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
                 var secondInvalidations = secondLayoutRecord._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(secondInvalidations.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV id='testElement'");
                 InspectorTest.assertGreaterOrEqual(secondInvalidations[0].stackTrace.length, 1);
 
@@ -62,14 +62,14 @@ function test()
                 var firstLayoutRecord = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Layout);
                 var firstInvalidations = firstLayoutRecord._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(firstInvalidations.length, 1);
-                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV");
                 InspectorTest.assertGreaterOrEqual(firstInvalidations[0].stackTrace.length, 1);
 
                 var secondLayoutRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Layout, 1);
                 var secondInvalidations = secondLayoutRecord._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(secondInvalidations.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.LayoutInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.LayoutInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
                 InspectorTest.assertGreaterOrEqual(secondInvalidations[0].stackTrace.length, 1);
 

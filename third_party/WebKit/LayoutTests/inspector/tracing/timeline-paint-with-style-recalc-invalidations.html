@@ -36,10 +36,10 @@ function test()
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.Paint);
                 var invalidations = record._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(invalidations.length, 2);
-                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
                 InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
-                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
                 InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
 
@@ -59,7 +59,7 @@ function test()
                 var secondPaintRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.Paint, 1);
                 var secondInvalidations = secondPaintRecord._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(secondInvalidations.length, 1);
-                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TracingTimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
                 InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV");
                 InspectorTest.assertEquals(secondInvalidations[0].reason, "StyleSheetChange");
 

@@ -63,7 +63,7 @@ function test()
         var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
         for (var i = 0; i < events.length; ++i) {
             var event = events[i];
-            if (events[i].name !== WebInspector.TracingTimelineModel.RecordType.DecodeImage)
+            if (events[i].name !== WebInspector.TimelineModel.RecordType.DecodeImage)
                 continue;
             InspectorTest.addResult("event: " + event.name);
             InspectorTest.addResult("imageURL: " + InspectorTest.formatters.formatAsURL(event.imageURL));
