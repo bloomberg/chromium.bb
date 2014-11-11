@@ -1081,7 +1081,7 @@ static void windowAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     TestObject* impl = V8TestObject::toImpl(holder);
-    LocalDOMWindow* cppValue = toDOMWindow(v8Value, info.GetIsolate());
+    DOMWindow* cppValue = toDOMWindow(v8Value, info.GetIsolate());
     impl->setWindowAttribute(WTF::getPtr(cppValue));
 }
 
@@ -8260,7 +8260,7 @@ static void promiseOverloadMethod2Method(const v8::FunctionCallbackInfo<v8::Valu
 {
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "promiseOverloadMethod", "TestObject", info.Holder(), info.GetIsolate());
     TestObject* impl = V8TestObject::toImpl(info.Holder());
-    LocalDOMWindow* arg1;
+    DOMWindow* arg1;
     double arg2;
     {
         arg1 = toDOMWindow(info[0], info.GetIsolate());
