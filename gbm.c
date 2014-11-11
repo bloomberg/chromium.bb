@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <fcntl.h>
 #include <xf86drm.h>
 
 #include "gbm_priv.h"
@@ -265,13 +266,13 @@ gbm_bo_get_fd(struct gbm_bo *bo)
 {
 	int fd;
 
-	if (drmPrimeHandleToFD(dri->get_fd(),
-				bo->handle,
+	if (drmPrimeHandleToFD(gbm_device_get_fd(bo->gbm),
+				gbm_bo_get_handle(bo).u32,
 				DRM_CLOEXEC,
 				&fd))
 		return fd;
 	else
-		return -1
+		return -1;
 }
 
 PUBLIC void
