@@ -809,7 +809,9 @@ void RenderText::trimmedPrefWidths(float leadWidth,
         const Font& font = style()->font(); // FIXME: This ignores first-line.
         if (stripFrontSpaces) {
             const UChar spaceChar = space;
-            float spaceWidth = font.width(constructTextRun(this, font, &spaceChar, 1, style(), direction));
+            TextRun run = constructTextRun(this, font, &spaceChar, 1, style(), direction);
+            run.setUseComplexCodePath(!canUseSimpleFontCodePath());
+            float spaceWidth = font.width(run);
             maxWidth -= spaceWidth;
         } else {
             maxWidth += font.fontDescription().wordSpacing();
