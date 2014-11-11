@@ -29,7 +29,7 @@
     [RaisesException, TypeChecking=Interface] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
 
     // FIXME: The spec and firefox return an Element (the first matching Element).
-    [ImplementedAs=namedGetter] getter (NodeList or Element) namedItem(DOMString name);
+    [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
 
     [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, optional unsigned long index);
     void remove(unsigned long index);

@@ -50,6 +50,20 @@ PASS unionTypesTest.doubleOrStringDefaultNullArg(undefined) is "null is passed"
 PASS unionTypesTest.doubleOrStringDefaultNullArg(null) is "null is passed"
 PASS unionTypesTest.doubleOrStringDefaultNullArg(3.14) is "double is passed: 3.14"
 PASS unionTypesTest.doubleOrStringDefaultNullArg("foo") is "string is passed: foo"
+
+Tests for nullable method arguments
+PASS unionTypesTest.nodeListOrElementOrNullArg(undefined) is "null or undefined is passed"
+PASS unionTypesTest.nodeListOrElementOrNullArg(null) is "null or undefined is passed"
+PASS unionTypesTest.nodeListOrElementOrNullArg(nodeList) is "nodelist is passed"
+PASS unionTypesTest.nodeListOrElementOrNullArg(element) is "element is passed"
+PASS unionTypesTest.nodeListOrElementOrNullArg(3.14) threw exception TypeError: Failed to execute 'nodeListOrElementOrNullArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementOrNullArg("foo") threw exception TypeError: Failed to execute 'nodeListOrElementOrNullArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementOrNullArg({}) threw exception TypeError: Failed to execute 'nodeListOrElementOrNullArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementOrNullArg([]) threw exception TypeError: Failed to execute 'nodeListOrElementOrNullArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementArg(undefined) threw exception TypeError: Failed to execute 'nodeListOrElementArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementArg(null) threw exception TypeError: Failed to execute 'nodeListOrElementArg' on 'UnionTypesTest': Not a valid union member..
+PASS unionTypesTest.nodeListOrElementArg(nodeList) is "nodelist is passed"
+PASS unionTypesTest.nodeListOrElementArg(element) is "element is passed"
 PASS successfullyParsed is true
 
 TEST COMPLETE

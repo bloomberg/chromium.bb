@@ -76,4 +76,22 @@ String UnionTypesTest::doubleOrStringSequenceArg(Vector<DoubleOrString>& sequenc
     return doubleOrStringArrayArg(sequence);
 }
 
+String UnionTypesTest::nodeListOrElementArg(NodeListOrElement& nodeListOrElement)
+{
+    ASSERT(!nodeListOrElement.isNull());
+    return nodeListOrElementOrNullArg(nodeListOrElement);
+}
+
+String UnionTypesTest::nodeListOrElementOrNullArg(NodeListOrElement& nodeListOrElementOrNull)
+{
+    if (nodeListOrElementOrNull.isNull())
+        return "null or undefined is passed";
+    if (nodeListOrElementOrNull.isNodeList())
+        return "nodelist is passed";
+    if (nodeListOrElementOrNull.isElement())
+        return "element is passed";
+    ASSERT_NOT_REACHED();
+    return String();
+}
+
 }

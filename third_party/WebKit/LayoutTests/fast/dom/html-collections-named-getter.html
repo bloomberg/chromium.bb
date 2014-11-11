@@ -37,6 +37,7 @@ shouldBe("document.all['foo'].length", "2");
 shouldBe("document.all['foo'][0]", "elements[0]");
 shouldBe("document.all['foo'][1]", "elements[1]");
 shouldBe("elements[0].parentNode.removeChild(elements[0]); document.all['foo']", 'elements[1]');
+shouldBeUndefined("document.all['no-such-element']");
 debug("");
 
 var form = document.querySelector('form');
@@ -54,6 +55,7 @@ shouldBe("form.elements['foo'][0]", "elements[0]");
 shouldBe("form.elements['foo'][1]", "elements[1]");
 shouldBe("form.removeChild(elements[0]); form.elements['foo']", "elements[1]");
 shouldBe("removeTestElements(); form.elements.length", "0");
+shouldBeUndefined("form.elements['no-such-element']");
 debug("");
 
 debug("select.options");
@@ -72,6 +74,7 @@ shouldBe("select.options['foo'][1]", "elements[1]");
 shouldBe("select.removeChild(elements[0]); select.options['foo']", "elements[1]");
 shouldBe("select.innerHTML = ''; select.options.length", "0");
 shouldBe("removeTestElements(); form.elements.length", "0");
+shouldBeUndefined("select.options['no-such-element']");
 debug("");
 
 function testFirstItemReturnsFirstMatch(collection, initialLength, elementNames, attributes) {

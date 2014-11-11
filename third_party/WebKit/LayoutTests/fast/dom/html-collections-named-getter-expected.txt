@@ -12,6 +12,7 @@ PASS document.all['foo'].length is 2
 PASS document.all['foo'][0] is elements[0]
 PASS document.all['foo'][1] is elements[1]
 PASS elements[0].parentNode.removeChild(elements[0]); document.all['foo'] is elements[1]
+PASS document.all['no-such-element'] is undefined.
 
 form.elements
 PASS form.elements instanceof HTMLFormControlsCollection is true
@@ -27,6 +28,7 @@ PASS form.elements['foo'][0] is elements[0]
 PASS form.elements['foo'][1] is elements[1]
 PASS form.removeChild(elements[0]); form.elements['foo'] is elements[1]
 PASS removeTestElements(); form.elements.length is 0
+PASS form.elements['no-such-element'] is undefined.
 
 select.options
 PASS form.appendChild(createElementWithId('select', 'bar')); form.elements.length is 1
@@ -44,6 +46,7 @@ PASS select.options['foo'][1] is elements[1]
 PASS select.removeChild(elements[0]); select.options['foo'] is elements[1]
 PASS select.innerHTML = ''; select.options.length is 0
 PASS removeTestElements(); form.elements.length is 0
+PASS select.options['no-such-element'] is undefined.
 
 document.images
 PASS document.images.length is 0

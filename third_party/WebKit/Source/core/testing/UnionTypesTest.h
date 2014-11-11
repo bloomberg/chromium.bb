@@ -26,6 +26,9 @@ public:
     String doubleOrStringArrayArg(Vector<DoubleOrString>&);
     String doubleOrStringSequenceArg(Vector<DoubleOrString>&);
 
+    String nodeListOrElementArg(NodeListOrElement&);
+    String nodeListOrElementOrNullArg(NodeListOrElement&);
+
     void trace(Visitor*) { }
 
 private:

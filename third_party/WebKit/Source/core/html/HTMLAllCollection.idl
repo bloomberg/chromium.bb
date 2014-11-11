@@ -34,6 +34,6 @@
     readonly attribute unsigned long length;
     [ImplementedAs=item] getter Element (unsigned long index);
     [Custom] Element item([Default=Undefined] optional unsigned long index);
-    // FIXME: This should return an (HTMLCollection or Element) union.
-    [ImplementedAs=namedGetter] getter (NodeList or Element) namedItem(DOMString name);
+    // FIXME: This should return an (HTMLCollection or Element)? union.
+    [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
 };

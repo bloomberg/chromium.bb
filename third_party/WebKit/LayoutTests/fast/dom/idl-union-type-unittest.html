@@ -3,6 +3,9 @@
 <script>
 description('IDL union types unittests');
 
+var element = document.createElement('div');
+var nodeList = document.querySelectorAll('script');
+
 if (window.internals) {
     // The conversion rule prefers string over double, hence a value which
     // is neither double nor string will be converted using ToString().
@@ -68,6 +71,21 @@ if (window.internals) {
     shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg(null)', 'null is passed');
     shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg(3.14)', 'double is passed: 3.14');
     shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultNullArg("foo")', 'string is passed: foo');
+    debug('');
 
+    debug('Tests for nullable method arguments');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementOrNullArg(undefined)', 'null or undefined is passed');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementOrNullArg(null)', 'null or undefined is passed');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementOrNullArg(nodeList)', 'nodelist is passed');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementOrNullArg(element)', 'element is passed');
+    shouldThrow('unionTypesTest.nodeListOrElementOrNullArg(3.14)');
+    shouldThrow('unionTypesTest.nodeListOrElementOrNullArg("foo")');
+    shouldThrow('unionTypesTest.nodeListOrElementOrNullArg({})');
+    shouldThrow('unionTypesTest.nodeListOrElementOrNullArg([])');
+
+    shouldThrow('unionTypesTest.nodeListOrElementArg(undefined)');
+    shouldThrow('unionTypesTest.nodeListOrElementArg(null)');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementArg(nodeList)', 'nodelist is passed');
+    shouldBeEqualToString('unionTypesTest.nodeListOrElementArg(element)', 'element is passed');
 }
 </script>

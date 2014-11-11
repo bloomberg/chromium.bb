@@ -24,5 +24,5 @@
     SetWrapperReferenceFrom=ownerNode,
 ] interface HTMLFormControlsCollection : HTMLCollection {
     [ImplementedAs=item] getter Node (unsigned long index);
-    [ImplementedAs=namedGetter] getter (RadioNodeList or Element) namedItem(DOMString name); // shadows inherited namedItem()
+    [ImplementedAs=namedGetter] getter (RadioNodeList or Element)? namedItem(DOMString name); // shadows inherited namedItem()
 };
