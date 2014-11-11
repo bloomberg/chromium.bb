@@ -32,7 +32,6 @@
 #define AsyncCallStackTracker_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
@@ -50,8 +49,9 @@ class ExecutionContextTask;
 class MutationObserver;
 class XMLHttpRequest;
 
-class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollectedFinalized<AsyncCallStackTracker> {
+class AsyncCallStackTracker final : public NoBaseWillBeGarbageCollected<AsyncCallStackTracker> {
     WTF_MAKE_NONCOPYABLE(AsyncCallStackTracker);
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
 public:
     class AsyncCallStack final : public RefCountedWillBeGarbageCollectedFinalized<AsyncCallStack> {
     public:
@@ -76,38 +76,6 @@ public:
     private:
         friend class AsyncCallStackTracker;
         AsyncCallStackVector m_callStacks;
-    };
-
-    class ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
-        WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
-    public:
-        ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
-            : ContextLifecycleObserver(executionContext)
-            , m_circularSequentialID(0)
-            , m_tracker(tracker)
-        {
-        }
-
-        virtual void contextDestroyed() override;
-
-        int circularSequentialID();
-
-        void trace(Visitor*);
-
-    private:
-        int m_circularSequentialID;
-
-    public:
-        RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
-        HashSet<int> m_intervalTimerIds;
-        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_timerCallChains;
-        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_animationFrameCallChains;
-        WillBeHeapHashMap<RawPtrWillBeMember<Event>, RefPtrWillBeMember<AsyncCallChain> > m_eventCallChains;
-        WillBeHeapHashMap<RawPtrWillBeMember<EventTarget>, RefPtrWillBeMember<AsyncCallChain> > m_xhrCallChains;
-        WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, RefPtrWillBeMember<AsyncCallChain> > m_mutationObserverCallChains;
-        WillBeHeapHashMap<ExecutionContextTask*, RefPtrWillBeMember<AsyncCallChain> > m_executionContextTaskCallChains;
-        WillBeHeapHashMap<String, RefPtrWillBeMember<AsyncCallChain> > m_v8AsyncTaskCallChains;
-        WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationCallChains;
     };
 
     AsyncCallStackTracker();
@@ -151,6 +119,8 @@ public:
     void clear();
 
     void trace(Visitor*);
+
+    class ExecutionContextData;
 
 private:
     void willHandleXHREvent(XMLHttpRequest*, Event*);

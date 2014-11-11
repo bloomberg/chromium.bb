@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8RecursionScope.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/Microtask.h"
@@ -56,36 +57,61 @@ static const char enqueueMutationRecordName[] = "Mutation";
 
 namespace blink {
 
-void AsyncCallStackTracker::ExecutionContextData::contextDestroyed()
-{
-    ASSERT(executionContext());
-    OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
-    ASSERT_UNUSED(self, self == this);
-    ContextLifecycleObserver::contextDestroyed();
-}
+class AsyncCallStackTracker::ExecutionContextData final : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContextData>, public ContextLifecycleObserver {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
+public:
+    ExecutionContextData(AsyncCallStackTracker* tracker, ExecutionContext* executionContext)
+        : ContextLifecycleObserver(executionContext)
+        , m_tracker(tracker)
+        , m_circularSequentialID(0)
+    {
+    }
 
-int AsyncCallStackTracker::ExecutionContextData::circularSequentialID()
-{
-    ++m_circularSequentialID;
-    if (m_circularSequentialID <= 0)
-        m_circularSequentialID = 1;
-    return m_circularSequentialID;
-}
+    virtual void contextDestroyed() override
+    {
+        ASSERT(executionContext());
+        OwnPtrWillBeRawPtr<ExecutionContextData> self = m_tracker->m_executionContextDataMap.take(executionContext());
+        ASSERT_UNUSED(self, self == this);
+        ContextLifecycleObserver::contextDestroyed();
+    }
 
-void AsyncCallStackTracker::ExecutionContextData::trace(Visitor* visitor)
-{
-    visitor->trace(m_tracker);
+    int circularSequentialID()
+    {
+        ++m_circularSequentialID;
+        if (m_circularSequentialID <= 0)
+            m_circularSequentialID = 1;
+        return m_circularSequentialID;
+    }
+
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_tracker);
 #if ENABLE(OILPAN)
-    visitor->trace(m_timerCallChains);
-    visitor->trace(m_animationFrameCallChains);
-    visitor->trace(m_eventCallChains);
-    visitor->trace(m_xhrCallChains);
-    visitor->trace(m_mutationObserverCallChains);
-    visitor->trace(m_executionContextTaskCallChains);
-    visitor->trace(m_v8AsyncTaskCallChains);
-    visitor->trace(m_asyncOperationCallChains);
+        visitor->trace(m_timerCallChains);
+        visitor->trace(m_animationFrameCallChains);
+        visitor->trace(m_eventCallChains);
+        visitor->trace(m_xhrCallChains);
+        visitor->trace(m_mutationObserverCallChains);
+        visitor->trace(m_executionContextTaskCallChains);
+        visitor->trace(m_v8AsyncTaskCallChains);
+        visitor->trace(m_asyncOperationCallChains);
 #endif
-}
+    }
+
+    RawPtrWillBeMember<AsyncCallStackTracker> m_tracker;
+    HashSet<int> m_intervalTimerIds;
+    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_timerCallChains;
+    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_animationFrameCallChains;
+    WillBeHeapHashMap<RawPtrWillBeMember<Event>, RefPtrWillBeMember<AsyncCallChain> > m_eventCallChains;
+    WillBeHeapHashMap<RawPtrWillBeMember<EventTarget>, RefPtrWillBeMember<AsyncCallChain> > m_xhrCallChains;
+    WillBeHeapHashMap<RawPtrWillBeMember<MutationObserver>, RefPtrWillBeMember<AsyncCallChain> > m_mutationObserverCallChains;
+    WillBeHeapHashMap<ExecutionContextTask*, RefPtrWillBeMember<AsyncCallChain> > m_executionContextTaskCallChains;
+    WillBeHeapHashMap<String, RefPtrWillBeMember<AsyncCallChain> > m_v8AsyncTaskCallChains;
+    WillBeHeapHashMap<int, RefPtrWillBeMember<AsyncCallChain> > m_asyncOperationCallChains;
+
+private:
+    int m_circularSequentialID;
+};
 
 static XMLHttpRequest* toXmlHttpRequest(EventTarget* eventTarget)
 {
@@ -117,6 +143,8 @@ AsyncCallStackTracker::AsyncCallStackTracker()
     , m_nestedAsyncCallCount(0)
 {
 }
+
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(AsyncCallStackTracker);
 
 void AsyncCallStackTracker::setAsyncCallStackDepth(int depth)
 {
