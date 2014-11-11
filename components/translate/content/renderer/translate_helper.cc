@@ -13,6 +13,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/translate/content/common/translate_messages.h"
+#include "components/translate/content/renderer/renderer_cld_data_provider.h"
+#include "components/translate/content/renderer/renderer_cld_utils.h"
 #include "components/translate/core/common/translate_constants.h"
 #include "components/translate/core/common/translate_metrics.h"
 #include "components/translate/core/common/translate_util.h"
@@ -82,7 +84,8 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
     : content::RenderViewObserver(render_view),
       page_seq_no_(0),
       translation_pending_(false),
-      cld_data_provider_(translate::CreateRendererCldDataProviderFor(this)),
+      cld_data_provider_(
+          static_cast<translate::RendererCldDataProvider*>(NULL)),
       cld_data_polling_started_(false),
       cld_data_polling_canceled_(false),
       deferred_page_capture_(false),
@@ -91,6 +94,8 @@ TranslateHelper::TranslateHelper(content::RenderView* render_view,
       extension_group_(extension_group),
       extension_scheme_(extension_scheme),
       weak_method_factory_(this) {
+  translate::RendererCldUtils::ConfigureDefaultDataProvider();
+  cld_data_provider_ = translate::RendererCldDataProvider::Get();
 }
 
 TranslateHelper::~TranslateHelper() {

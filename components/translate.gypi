@@ -108,7 +108,7 @@
         'translate/core/language_detection/language_detection_util.h',
       ],
       'conditions': [
-        ['cld_version==0 or cld_version==1', {
+        ['cld_version==1', {
           'dependencies': [
             '<(DEPTH)/third_party/cld/cld.gyp:cld',
           ],
@@ -138,23 +138,16 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'translate/content/browser/browser_cld_data_provider_factory.cc',
+            'translate/content/browser/browser_cld_data_provider_factory.h',
+            'translate/content/browser/browser_cld_data_provider.cc',
             'translate/content/browser/browser_cld_data_provider.h',
+            'translate/content/browser/browser_cld_utils.cc',
+            'translate/content/browser/browser_cld_utils.h',
             'translate/content/browser/content_translate_driver.cc',
             'translate/content/browser/content_translate_driver.h',
-           ],
-          'conditions': [
-             ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
-              'sources': [
-                'translate/content/browser/data_file_browser_cld_data_provider.cc',
-                'translate/content/browser/data_file_browser_cld_data_provider.h',
-              ]},
-            ],
-            ['cld2_data_source=="static"', {
-              'sources': [
-                'translate/content/browser/static_browser_cld_data_provider.cc',
-                'translate/content/browser/static_browser_cld_data_provider.h',
-              ]},
-            ],
+            'translate/content/browser/data_file_browser_cld_data_provider.cc',
+            'translate/content/browser/data_file_browser_cld_data_provider.h',
           ],
         },
         {
@@ -175,30 +168,10 @@
             # Note: sources list duplicated in GN build.
             'translate/content/common/translate_messages.cc',
             'translate/content/common/translate_messages.h',
+            'translate/content/common/cld_data_source.cc',
             'translate/content/common/cld_data_source.h',
-           ],
-           'conditions': [
-             ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
-               'sources': [
-                 'translate/content/common/data_file_cld_data_provider_messages.cc',
-                 'translate/content/common/data_file_cld_data_provider_messages.h',
-               ]},
-             ],
-             ['cld2_data_source=="standalone"', {
-               'sources': [
-                 'translate/content/common/standalone_cld_data_source.cc',
-               ]},
-             ],
-             ['cld2_data_source=="component"', {
-               'sources': [
-                 'translate/content/common/component_cld_data_source.cc',
-               ]},
-             ],
-             ['cld2_data_source=="static"', {
-               'sources': [
-                 'translate/content/common/static_cld_data_source.cc',
-               ]},
-             ],
+            'translate/content/common/data_file_cld_data_provider_messages.cc',
+            'translate/content/common/data_file_cld_data_provider_messages.h',
            ],
         },
         {
@@ -222,9 +195,14 @@
           ],
           'sources': [
             # Note: sources list duplicated in GN build.
+            'translate/content/renderer/renderer_cld_data_provider.cc',
             'translate/content/renderer/renderer_cld_data_provider.h',
+            'translate/content/renderer/renderer_cld_utils.cc',
+            'translate/content/renderer/renderer_cld_utils.h',
             'translate/content/renderer/translate_helper.cc',
             'translate/content/renderer/translate_helper.h',
+            'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
+            'translate/content/renderer/data_file_renderer_cld_data_provider.h',
            ],
           'conditions': [
             ['cld_version==0 or cld_version==2', {
@@ -232,18 +210,6 @@
                 '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
               ],
             }],
-            ['cld2_data_source=="standalone" or cld2_data_source=="component"', {
-              'sources': [
-                'translate/content/renderer/data_file_renderer_cld_data_provider.cc',
-                'translate/content/renderer/data_file_renderer_cld_data_provider.h',
-              ]},
-            ],
-            ['cld2_data_source=="static"', {
-              'sources': [
-                'translate/content/renderer/static_renderer_cld_data_provider.cc',
-                'translate/content/renderer/static_renderer_cld_data_provider.h',
-              ]},
-            ],
           ],
         },
       ],

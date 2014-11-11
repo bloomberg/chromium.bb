@@ -4,8 +4,12 @@
 
 #include "chrome/browser/translate/cld_data_harness.h"
 
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "chrome/browser/translate/component_cld_data_harness.h"
+#include "chrome/browser/translate/standalone_cld_data_harness.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -15,6 +19,19 @@ namespace {
 // chrome/test/data/cld2_component/README.chromium; don't update one without
 // updating the other.
 const base::FilePath::CharType kCrxVersion[] = FILE_PATH_LITERAL("160");
+
+class StaticCldDataHarness : public test::CldDataHarness {
+ public:
+  StaticCldDataHarness() {}
+  ~StaticCldDataHarness() override {};
+  void Init() override {
+    translate::CldDataSource::Set(
+        translate::CldDataSource::GetStaticDataSource());
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StaticCldDataHarness);
+};
+
 }  // namespace
 
 namespace test {
@@ -27,6 +44,24 @@ void CldDataHarness::GetTestDataSourceDirectory(base::FilePath* out_path) {
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, out_path));
   *out_path =
       out_path->Append(FILE_PATH_LITERAL("cld2_component")).Append(kCrxVersion);
+}
+
+// static
+scoped_ptr<CldDataHarness>
+CldDataHarness::CreateStaticDataHarness() {
+  return scoped_ptr<CldDataHarness>(new StaticCldDataHarness());
+}
+
+// static
+scoped_ptr<CldDataHarness>
+CldDataHarness::CreateStandaloneDataHarness() {
+  return scoped_ptr<CldDataHarness>(new StandaloneCldDataHarness());
+}
+
+// static
+scoped_ptr<CldDataHarness>
+CldDataHarness::CreateComponentDataHarness() {
+  return scoped_ptr<CldDataHarness>(new ComponentCldDataHarness());
 }
 
 }  // namespace test

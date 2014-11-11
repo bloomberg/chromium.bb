@@ -7,15 +7,12 @@
 
 #include <string>
 
-#include "base/files/file_path.h"
+#include "base/compiler_specific.h"
+#include "base/macros.h"
 #include "ipc/ipc_listener.h"
 
 namespace IPC {
 class Message;
-}
-
-namespace content {
-class WebContents;
 }
 
 namespace translate {
@@ -23,14 +20,18 @@ namespace translate {
 // Browser-side interface responsible for providing CLD data.
 // The implementation must be paired with a renderer-side implementation of
 // the RendererCldDataProvider class:
+//   ../renderer/renderer_cld_data_provider.h
 //
-//   components/translate/content/renderer/renderer_cld_data_provider.h
+// The glue between them is typically a pair of request/response IPC messages
+// using the "CldDataProviderMsgStart" IPCMessageStart enumerated constant from
+// ipc_message_start.h
 //
-// ... and the glue between them is typically a pair of request/response IPC
-// messages using the CldDataProviderMsgStart IPCMessageStart enumerated
-// constant from ipc_message_start.h
+// In general, instances of this class should be obtained by using the
+// BrowserCldDataProviderFactory::CreateBrowserCldProvider(...). For more
+// information, see browser_cld_data_provider_factory.h.
 class BrowserCldDataProvider : public IPC::Listener {
  public:
+  BrowserCldDataProvider() {}
   ~BrowserCldDataProvider() override {}
 
   // IPC::Listener implementation:
@@ -38,44 +39,29 @@ class BrowserCldDataProvider : public IPC::Listener {
   // OnCldDataRequest() and returns true. In all other cases, this method does
   // nothing. This method is defined as virtual in order to force the
   // implementation to define the specific IPC message(s) that it handles.
-  virtual bool OnMessageReceived(const IPC::Message&) override = 0;
+  // The default implementation does nothing and returns false.
+  bool OnMessageReceived(const IPC::Message&) override;
 
   // Called when the browser process receives an appropriate message in
   // OnMessageReceived, above. The implementation should attempt to locate
   // the CLD data, cache any metadata required for accessing that data, and
   // ultimately trigger a response by invoking SendCldDataResponse.
-  //
   // The renderer process may poll for data, in which case this method may be
   // repeatedly invoked. The implementation must be safe to call any number
   // of times.
-  virtual void OnCldDataRequest() = 0;
+  // The default implementation does nothing.
+  virtual void OnCldDataRequest() {}
 
   // Invoked when OnCldDataRequest, above, results in a successful lookup or
   // the data is already cached and ready to respond to. The implementation
   // should take whatever action is appropriate for responding to the paired
   // RendererCldDataProvider, typically by sending an IPC response.
-  virtual void SendCldDataResponse() = 0;
+  // The default implementation does nothing.
+  virtual void SendCldDataResponse() {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(BrowserCldDataProvider);
 };
-
-// Static factory function defined by the implementation that produces a new
-// provider for the specified WebContents.
-BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
-    content::WebContents*);
-
-// For data sources that support a separate CLD data file, configures the path
-// of that data file.
-//
-// The 'component' and 'standalone' data sources need this method to be called
-// in order to locate the CLD data on disk.
-// If the data source doesn't need or doesn't support such configuration, this
-// function should do nothing. This is the case for, e.g., the static data
-// source.
-void SetCldDataFilePath(const base::FilePath& path);
-
-// Returns the path most recently set by SetCldDataFilePath. The initial value
-// prior to any such call is the empty path. If the data source doesn't support
-// a data file, returns the empty path.
-base::FilePath GetCldDataFilePath();
 
 }  // namespace translate
 

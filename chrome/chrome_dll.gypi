@@ -256,14 +256,14 @@
                 '../content/content.gyp:content_app_browser',
               ],
             }],
-            ['cld_version==0 or cld_version==1', {
+            ['cld_version==1', {
               'dependencies': [
-                '../third_party/cld/cld.gyp:cld',
+                '<(DEPTH)/third_party/cld/cld.gyp:cld',
               ],
             }],
             ['cld_version==0 or cld_version==2', {
               'dependencies': [
-                '../third_party/cld_2/cld_2.gyp:cld_2',
+                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld_2',
               ],
             }],
             ['OS=="mac" and component!="shared_library"', {

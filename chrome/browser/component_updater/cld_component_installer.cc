@@ -15,6 +15,7 @@
 #include "base/path_service.h"
 #include "components/component_updater/component_updater_paths.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
+#include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/ssl/ssl_config_service.h"
@@ -106,13 +107,11 @@ std::string CldComponentInstallerTraits::GetName() const {
   return kCldManifestName;
 }
 
+// static
 void RegisterCldComponent(ComponentUpdateService* cus) {
-  // Make sure we don't start up if the CLD data source isn't compatible.
-  if (!translate::CldDataSource::ShouldRegisterForComponentUpdates()) {
-    // This is a serious build-time configuration error.
-    LOG(ERROR) << "Wrong CLD data source: " <<
-        translate::CldDataSource::GetName();
-    NOTREACHED();
+  if (!translate::CldDataSource::IsUsingComponentDataSource()) {
+    // The configured CLD data source isn't the "Component" data source, so
+    // there is nothing to do.
     return;
   }
 
@@ -132,7 +131,7 @@ void CldComponentInstallerTraits::SetLatestCldDataFile(
     const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file location: " << path.value();
   g_latest_cld_data_file.Get() = path;
-  translate::SetCldDataFilePath(path);
+  translate::CldDataSource::Get()->SetCldDataFilePath(path);
 }
 
 base::FilePath CldComponentInstallerTraits::GetLatestCldDataFile() {

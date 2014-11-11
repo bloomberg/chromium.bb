@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "data_file_browser_cld_data_provider.h"
+#include "components/translate/content/browser/data_file_browser_cld_data_provider.h"
 
 #include "base/basictypes.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/content/common/data_file_cld_data_provider_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -26,22 +28,14 @@ namespace {
 // We also track the offset at which the data starts, and its length.
 base::FilePath g_cached_filepath;  // guarded by g_file_lock_
 base::File* g_cached_file = NULL;  // guarded by g_file_lock_
-uint64 g_cached_data_offset = -1;  // guarded by g_file_lock_
-uint64 g_cached_data_length = -1;  // guarded by g_file_lock_
+uint64 g_cached_data_offset = 0;  // guarded by g_file_lock_
+uint64 g_cached_data_length = 0;  // guarded by g_file_lock_
 
 // Guards g_cached_filepath
 base::LazyInstance<base::Lock> g_file_lock_;
 }  // namespace
 
 namespace translate {
-
-// Implementation of the static factory method from BrowserCldDataProvider,
-// hooking up this specific implementation for all of Chromium.
-BrowserCldDataProvider* CreateBrowserCldDataProviderFor(
-    content::WebContents* web_contents) {
-  VLOG(1) << "Creating DataFileBrowserCldDataProvider";
-  return new DataFileBrowserCldDataProvider(web_contents);
-}
 
 void SetCldDataFilePath(const base::FilePath& path) {
   VLOG(1) << "Setting CLD data file path to: " << path.value();
@@ -51,12 +45,15 @@ void SetCldDataFilePath(const base::FilePath& path) {
   g_cached_filepath = path;
   // For sanity, clean these other values up just in case.
   g_cached_file = NULL;
-  g_cached_data_length = -1;
-  g_cached_data_offset = -1;
+  g_cached_data_length = 0;
+  g_cached_data_offset = 0;
 }
 
 base::FilePath GetCldDataFilePath() {
   base::AutoLock lock(g_file_lock_.Get());
+  if (g_cached_filepath.empty()) {
+    g_cached_filepath = translate::CldDataSource::Get()->GetCldDataFilePath();
+  }
   return g_cached_filepath;
 }
 
@@ -66,6 +63,7 @@ DataFileBrowserCldDataProvider::DataFileBrowserCldDataProvider(
 }
 
 DataFileBrowserCldDataProvider::~DataFileBrowserCldDataProvider() {
+  // web_contents_ outlives this object
 }
 
 bool DataFileBrowserCldDataProvider::OnMessageReceived(
@@ -158,7 +156,7 @@ void DataFileBrowserCldDataProvider::SendCldDataResponseInternal(
   }
 
   // Data available, respond to the request.
-  const int render_process_handle = render_process_host->GetHandle();
+  base::ProcessHandle render_process_handle = render_process_host->GetHandle();
   IPC::PlatformFileForTransit ipc_platform_file =
       IPC::GetFileHandleForProcess(handle->GetPlatformFile(),
                                    render_process_handle, false);

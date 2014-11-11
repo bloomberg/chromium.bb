@@ -285,7 +285,6 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
-        '../ui/surface/surface.gyp:surface',
       ],
       'include_dirs': [
         '..',

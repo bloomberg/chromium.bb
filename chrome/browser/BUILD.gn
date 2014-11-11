@@ -253,12 +253,6 @@ static_library("browser") {
     sources += rebase_path(gypi_values.chrome_browser_mac_ios_sources,
                            ".", "//chrome")
   }
-  if (cld2_data_source == "component") {
-    sources += [
-      "component_updater/cld_component_installer.cc",
-      "component_updater/cld_component_installer.h",
-    ]
-  }
   if (enable_extensions) {
     public_deps += [ "//chrome/browser/extensions" ]
     deps += [

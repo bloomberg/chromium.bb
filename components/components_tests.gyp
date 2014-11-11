@@ -483,6 +483,11 @@
                 '<(DEPTH)/base/allocator/allocator.gyp:allocator',
               ],
             }],
+            [ 'cld_version==0 or cld_version==2', {
+              'dependencies': [
+                # Unit tests should always use statically-linked CLD data.
+                '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_static', ],
+            }],
             ['OS != "ios"', {
               'sources': [
                 'autofill/content/renderer/renderer_save_password_progress_logger_unittest.cc',

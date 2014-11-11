@@ -550,9 +550,15 @@
       'browser/task_manager/task_manager_browsertest_util.cc',
       'browser/task_manager/task_manager_browsertest_util.h',
       'browser/themes/theme_service_browsertest.cc',
-      'browser/translate/translate_browsertest.cc',
       'browser/translate/cld_data_harness.cc',
       'browser/translate/cld_data_harness.h',
+      'browser/translate/cld_data_harness_factory.cc',
+      'browser/translate/cld_data_harness_factory.h',
+      'browser/translate/component_cld_data_harness.cc',
+      'browser/translate/component_cld_data_harness.h',
+      'browser/translate/standalone_cld_data_harness.cc',
+      'browser/translate/standalone_cld_data_harness.h',
+      'browser/translate/translate_browsertest.cc',
       'browser/translate/translate_manager_browsertest.cc',
       'browser/ui/app_list/app_list_controller_browsertest.cc',
       'browser/ui/app_list/app_list_service_impl_browsertest.cc',
@@ -1374,6 +1380,12 @@
         '<@(chrome_interactive_ui_test_sources)',
       ],
       'conditions': [
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Interactive tests should use whatever CLD2 data access mode that
+            # the application embedder is using.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
+        }],
         ['use_x11==1', {
           'dependencies': [
             '../build/linux/system.gyp:xtst',
@@ -1945,24 +1957,11 @@
         },
       },
       'conditions': [
-        ['cld2_data_source=="component"', {
-          'sources': [
-            'browser/translate/component_cld_data_harness.cc',
-            'browser/translate/component_cld_data_harness.h',
-          ]},
-        ],
-        ['cld2_data_source=="standalone"', {
-          'sources': [
-            'browser/translate/standalone_cld_data_harness.cc',
-            'browser/translate/standalone_cld_data_harness.h',
-          ]},
-        ],
-        ['cld2_data_source=="static"', {
-          'sources': [
-            'browser/translate/static_cld_data_harness.cc',
-            'browser/translate/static_cld_data_harness.h',
-          ]},
-        ],
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Because the browser_tests use translate, they need CLD data.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
+        }],
         ['enable_one_click_signin==0', {
           'sources!': [
             'browser/ui/sync/one_click_signin_bubble_links_delegate_browsertest.cc',
@@ -2513,6 +2512,12 @@
         },
       ],
       'conditions': [
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Interactive tests should use whatever CLD2 data access mode that
+            # the application embedder is using.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
+        }],
         ['OS=="win"', {
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome_version/other_version.rc',
@@ -2682,6 +2687,13 @@
         '<@(sync_integration_tests_sources)',
       ],
       'conditions': [
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Language detection is irrelevant to sync, so it can depend on
+            # any implementation for CLD2. Dynamic is smaller, so go with
+            # dynamic.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_dynamic', ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2777,6 +2789,13 @@
         '<@(sync_performance_tests_sources)',
       ],
       'conditions': [
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Language detection is irrelevant to sync, so it can depend on
+            # any implementation for CLD2. Dynamic is smaller, so go with
+            # dynamic.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_dynamic', ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',

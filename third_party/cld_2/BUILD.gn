@@ -9,46 +9,49 @@ cld2_table_size = 2
 
 core_files = [
   "src/internal/cld2tablesummary.h",
-  "src/internal/cldutil.cc",
   "src/internal/cldutil.h",
-  "src/internal/cldutil_shared.cc",
   "src/internal/cldutil_shared.h",
-  "src/internal/compact_lang_det.cc",
-  "src/internal/compact_lang_det_hint_code.cc",
   "src/internal/compact_lang_det_hint_code.h",
-  "src/internal/compact_lang_det_impl.cc",
   "src/internal/compact_lang_det_impl.h",
   "src/internal/debug.h",
-  "src/internal/debug_empty.cc",
-  "src/internal/fixunicodevalue.cc",
   "src/internal/fixunicodevalue.h",
-  "src/internal/generated_distinct_bi_0.cc",
-  "src/internal/generated_entities.cc",
-  "src/internal/generated_language.cc",
   "src/internal/generated_language.h",
-  "src/internal/generated_ulscript.cc",
   "src/internal/generated_ulscript.h",
-  "src/internal/getonescriptspan.cc",
   "src/internal/getonescriptspan.h",
   "src/internal/integral_types.h",
-  "src/internal/lang_script.cc",
   "src/internal/lang_script.h",
   "src/internal/langspan.h",
-  "src/internal/offsetmap.cc",
   "src/internal/offsetmap.h",
   "src/internal/port.h",
-  "src/internal/scoreonescriptspan.cc",
   "src/internal/scoreonescriptspan.h",
   "src/internal/stringpiece.h",
-  "src/internal/tote.cc",
   "src/internal/tote.h",
   "src/internal/utf8prop_lettermarkscriptnum.h",
   "src/internal/utf8repl_lettermarklower.h",
   "src/internal/utf8scannot_lettermarkspecial.h",
-  "src/internal/utf8statetable.cc",
   "src/internal/utf8statetable.h",
   "src/public/compact_lang_det.h",
   "src/public/encodings.h",
+]
+
+core_impl_files = [
+  "src/internal/cldutil.cc",
+  "src/internal/cldutil_shared.cc",
+  "src/internal/compact_lang_det.cc",
+  "src/internal/compact_lang_det_hint_code.cc",
+  "src/internal/compact_lang_det_impl.cc",
+  "src/internal/debug_empty.cc",
+  "src/internal/fixunicodevalue.cc",
+  "src/internal/generated_distinct_bi_0.cc",
+  "src/internal/generated_entities.cc",
+  "src/internal/generated_language.cc",
+  "src/internal/generated_ulscript.cc",
+  "src/internal/getonescriptspan.cc",
+  "src/internal/lang_script.cc",
+  "src/internal/offsetmap.cc",
+  "src/internal/scoreonescriptspan.cc",
+  "src/internal/tote.cc",
+  "src/internal/utf8statetable.cc",
 ]
 
 data_loader_files = [
@@ -86,8 +89,32 @@ source_set("cld2_data") {
   }
 }
 
-static_library("cld2_static") {
+# As in the corresponding gyp file, this just builds the core interfaces for
+# CLD2. You must still declare a dependency on a specific data set, either
+# cld2_dynamic or cld2_static. 
+static_library("cld_2") {
   sources = core_files
+  include_dirs = [
+    "src/internal",
+    "src/public",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  if (is_win) {
+    cflags = [ "/wd4267" ]  # size_t -> int conversion.
+  }
+}
+
+
+static_library("cld2_platform_impl") {
+  # TODO: Make this something that can be overridden
+  deps = [ ":cld2_static" ]
+}
+
+static_library("cld2_static") {
+  sources = core_files + core_impl_files
   include_dirs = [
     "src/internal",
     "src/public",
@@ -102,30 +129,19 @@ static_library("cld2_static") {
   }
 }
 
-# Meta-target for convenience; dependents don't need to know if this if CLD2
-# is in dynamic or static configuration.
-group("cld_2") {
-  if (cld2_data_source == "static") {
-    deps = [ ":cld2_static" ]
-  } else {
-    deps = [ ":cld2_dynamic" ]
-  }
-}
-
 config("cld2_dynamic_mode_config") {
   defines = [ "CLD2_DYNAMIC_MODE" ]
 }
 
 static_library("cld2_dynamic") {
-  sources = core_files + data_loader_files
-  all_dependent_configs = [ ":cld2_dynamic_mode_config" ]
+  sources = core_files + core_impl_files + data_loader_files
   include_dirs = [
     "src/internal",
     "src/public",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code", ":cld2_dynamic_mode_config" ]
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # size_t -> int conversion.
@@ -149,7 +165,7 @@ if (!is_win) {
     deps = [ ":cld2_data", ":cld2_dynamic" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code", ":cld2_dynamic_mode_config" ]
 
     if (is_win) {
       cflags = [ "/wd4267" ]  # size_t -> int conversion.

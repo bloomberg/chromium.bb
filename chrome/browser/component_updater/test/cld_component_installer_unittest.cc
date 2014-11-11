@@ -16,6 +16,7 @@
 #include "base/version.h"
 #include "chrome/browser/component_updater/cld_component_installer.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -35,6 +36,7 @@ class CldComponentInstallerTest : public PlatformTest {
   CldComponentInstallerTest() {}
   void SetUp() override {
     PlatformTest::SetUp();
+    translate::CldDataSource::DisableSanityChecksForTest();
 
     // ScopedTempDir automatically does a recursive delete on the entire
     // directory in its destructor, so no cleanup is required in TearDown.
@@ -51,6 +53,10 @@ class CldComponentInstallerTest : public PlatformTest {
     ASSERT_TRUE(path_now.empty());
   }
 
+  void TearDown() override {
+    // Restore sanity checks.
+    translate::CldDataSource::EnableSanityChecksForTest();
+  }
  protected:
   base::ScopedTempDir temp_dir_;
   CldComponentInstallerTraits traits_;

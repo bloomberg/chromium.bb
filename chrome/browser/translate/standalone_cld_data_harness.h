@@ -5,15 +5,18 @@
 #ifndef CHROME_BROWSER_TRANSLATE_STANDALONE_CLD_DATA_HARNESS_H_
 #define CHROME_BROWSER_TRANSLATE_STANDALONE_CLD_DATA_HARNESS_H_
 
+#include "base/macros.h"
 #include "chrome/browser/translate/cld_data_harness.h"
 
 namespace test {
 
+// Utility class that sets up a test harness suitable for injecting a standalone
+// CLD data file into the runtime. See CldDataHarness class for more details.
 class StandaloneCldDataHarness : public CldDataHarness {
  public:
-  StandaloneCldDataHarness();
-  virtual ~StandaloneCldDataHarness();
-  virtual void Init() override;
+  StandaloneCldDataHarness() {}
+  ~StandaloneCldDataHarness() override;
+  void Init() override;
 
  private:
   void GetStandaloneDataFileSource(base::FilePath*);

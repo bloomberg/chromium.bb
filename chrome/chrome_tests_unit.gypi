@@ -2351,6 +2351,12 @@
             '../ui/events/devices/events_devices.gyp:events_devices',
           ],
         }],
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Unit tests should be independent of the CLD2 access mechanism,
+            # just use static for simplicity.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_static', ],
+        }],
         ['OS=="linux"', {
           'dependencies': [
             '../build/linux/system.gyp:ssl',
@@ -2746,7 +2752,7 @@
             'browser/extensions/blacklist_unittest.cc',
           ],
         }],
-        ['cld_version==0 or cld_version==1', {
+        ['cld_version==1', {
           'defines': [
             'CLD_WINDOWS',
           ],

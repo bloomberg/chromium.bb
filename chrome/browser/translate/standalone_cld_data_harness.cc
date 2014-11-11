@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "chrome/common/chrome_paths.h"
+#include "components/translate/content/common/cld_data_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -21,10 +22,6 @@ const base::FilePath::CharType kStandaloneDataFileName[] =
 
 namespace test {
 
-StandaloneCldDataHarness::StandaloneCldDataHarness() {
-  // Constructor does nothing in all cases. See Init() for initialization.
-}
-
 StandaloneCldDataHarness::~StandaloneCldDataHarness() {
   DVLOG(1) << "Tearing down CLD data harness";
   DeleteStandaloneDataFile();
@@ -33,6 +30,8 @@ StandaloneCldDataHarness::~StandaloneCldDataHarness() {
 void StandaloneCldDataHarness::Init() {
   DVLOG(1) << "Initializing CLD data harness";
   // Dynamic data mode is enabled and we are using a standalone file.
+  translate::CldDataSource::Set(
+      translate::CldDataSource::GetStandaloneDataSource());
   ASSERT_NO_FATAL_FAILURE(CopyStandaloneDataFile());
 }
 
@@ -72,11 +71,6 @@ void StandaloneCldDataHarness::CopyStandaloneDataFile() {
            << " to " << target_file.value();
   ASSERT_TRUE(base::CopyFile(source_file, target_file));
   ASSERT_TRUE(base::PathExists(target_file));
-}
-
-scoped_ptr<CldDataHarness> CreateCldDataHarness() {
-  scoped_ptr<CldDataHarness> result(new StandaloneCldDataHarness());
-  return result.Pass();
 }
 
 }  // namespace test

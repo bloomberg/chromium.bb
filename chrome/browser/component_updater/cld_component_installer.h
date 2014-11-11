@@ -68,7 +68,8 @@ class CldComponentInstallerTraits : public ComponentInstallerTraits {
 };
 
 // Call once during startup to make the component update service aware of
-// the CLD component.
+// the CLD component. This method does nothing if the configured CLD data source
+// is not the "Component" data source.
 void RegisterCldComponent(ComponentUpdateService* cus);
 
 }  // namespace component_updater

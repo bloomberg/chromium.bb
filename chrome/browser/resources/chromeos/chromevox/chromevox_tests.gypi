@@ -30,6 +30,14 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         'chromevox_test_deps_js',
       ],
+      'conditions': [
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Interactive tests should use whatever CLD2 data access mode that
+            # the application embedder is using.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_platform_impl', ],
+        }],
+      ],
       'defines': [
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],

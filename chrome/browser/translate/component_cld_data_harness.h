@@ -10,11 +10,14 @@
 
 namespace test {
 
+// Utility class that sets up a test harness suitable for injecting a
+// component-updater-based CLD data file into the runtime. See CldDataHarness
+// class for more details.
 class ComponentCldDataHarness : public CldDataHarness {
  public:
-  ComponentCldDataHarness();
-  virtual ~ComponentCldDataHarness();
-  virtual void Init() override;
+  ComponentCldDataHarness() {}
+  ~ComponentCldDataHarness() override;
+  void Init() override;
 
  private:
   void ClearComponentDataFileState();

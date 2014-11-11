@@ -10,17 +10,22 @@
 #include "components/translate/content/renderer/renderer_cld_data_provider.h"
 #include "ipc/ipc_platform_file.h"
 
+namespace content {
+class RenderViewObserver;
+}
+
 namespace translate {
 
 class DataFileRendererCldDataProvider : public RendererCldDataProvider {
  public:
   explicit DataFileRendererCldDataProvider(content::RenderViewObserver*);
-  virtual ~DataFileRendererCldDataProvider();
+  ~DataFileRendererCldDataProvider() override;
+
   // RendererCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) override;
-  virtual void SendCldDataRequest() override;
-  virtual void SetCldAvailableCallback(base::Callback<void(void)>) override;
-  virtual bool IsCldDataAvailable() override;
+  bool OnMessageReceived(const IPC::Message&) override;
+  void SendCldDataRequest() override;
+  void SetCldAvailableCallback(base::Callback<void(void)>) override;
+  bool IsCldDataAvailable() override;
 
  private:
   void OnCldDataAvailable(const IPC::PlatformFileForTransit ipc_file_handle,

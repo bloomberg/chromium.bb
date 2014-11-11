@@ -12,16 +12,21 @@
 #include "base/memory/weak_ptr.h"
 #include "components/translate/content/browser/browser_cld_data_provider.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace translate {
 
 class DataFileBrowserCldDataProvider : public BrowserCldDataProvider {
  public:
   explicit DataFileBrowserCldDataProvider(content::WebContents*);
-  virtual ~DataFileBrowserCldDataProvider();
+  ~DataFileBrowserCldDataProvider() override;
+
   // BrowserCldDataProvider implementations:
-  virtual bool OnMessageReceived(const IPC::Message&) override;
-  virtual void OnCldDataRequest() override;
-  virtual void SendCldDataResponse() override;
+  bool OnMessageReceived(const IPC::Message&) override;
+  void OnCldDataRequest() override;
+  void SendCldDataResponse() override;
 
  private:
   void SendCldDataResponseInternal(const base::File*,

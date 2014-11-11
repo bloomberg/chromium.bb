@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/translate/cld_data_harness.h"
+#include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -20,8 +21,9 @@
 
 class TranslateBubbleViewBrowserTest : public InProcessBrowserTest {
  public:
-  TranslateBubbleViewBrowserTest()
-      : cld_data_harness(test::CreateCldDataHarness()) {}
+  TranslateBubbleViewBrowserTest():
+    cld_data_harness(
+      test::CldDataHarnessFactory::Get()->CreateCldDataHarness()) {}
   ~TranslateBubbleViewBrowserTest() override {}
   void SetUpOnMainThread() override {
     // We can't Init() until PathService has been initialized. This happens

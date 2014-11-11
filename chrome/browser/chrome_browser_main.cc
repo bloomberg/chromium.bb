@@ -110,6 +110,7 @@
 #include "components/rappor/rappor_service.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/startup_metric_utils/startup_metric_utils.h"
+#include "components/translate/content/browser/browser_cld_utils.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/variations/net/variations_http_header_provider.h"
@@ -421,9 +422,9 @@ void RegisterComponentsForUpdate() {
     g_browser_process->pnacl_component_installer()->RegisterPnaclComponent(cus);
 #endif
 
-  if (translate::CldDataSource::ShouldRegisterForComponentUpdates()) {
-    RegisterCldComponent(cus);
-  }
+  // Registration of the CLD Component is a no-op unless the CLD data source has
+  // been configured to be the "Component" data source.
+  RegisterCldComponent(cus);
 
   base::FilePath path;
   if (PathService::Get(chrome::DIR_USER_DATA, &path)) {
@@ -1501,6 +1502,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // triggering the timer and call that explicitly in the approprate place.
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
+
+  // This must be called prior to RegisterComponentsForUpdate, in case the CLD
+  // data source is based on the Component Updater.
+  translate::BrowserCldUtils::ConfigureDefaultDataProvider();
 
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate))
     RegisterComponentsForUpdate();

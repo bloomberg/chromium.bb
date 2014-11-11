@@ -40,6 +40,11 @@
           'dependencies': [
             '../base/allocator/allocator.gyp:allocator', ],
         }],
+        [ 'cld_version==0 or cld_version==2', {
+          'dependencies': [
+            # Chrome shell should always use the statically-linked CLD data.
+            '<(DEPTH)/third_party/cld_2/cld_2.gyp:cld2_static', ],
+        }],
         ['OS=="android"', {
           'direct_dependent_settings': {
             'ldflags': [

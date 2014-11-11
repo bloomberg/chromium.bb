@@ -509,21 +509,6 @@
       #   2: Large tables, high accuracy
       'cld2_table_size%': 2,
 
-      # The data acquisition mode for CLD2. Possible values are:
-      #   static:     CLD2 data is statically linked to the executable.
-      #   standalone: CLD2 data is provided in a standalone file that is
-      #               bundled with the executable.
-      #   component:  CLD2 data is provided as a Chrome "component" and is
-      #               downloaded via the component updater.
-      #
-      # For more information on switching the CLD2 data source, see:
-      #   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
-      #
-      # This string will be exposed in chrome://translate-internals under the
-      # heading "CLD Data Source". This allows easy determination of which
-      # data source the browser was built with.
-      'cld2_data_source%': 'static',
-
       # Enable spell checker.
       'enable_spellcheck%': 1,
 
@@ -762,7 +747,7 @@
         ['OS=="android"', {
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'cld_version%': 1,
+          'cld_version%': 2,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
@@ -1187,7 +1172,6 @@
     'enable_google_now%': '<(enable_google_now)',
     'cld_version%': '<(cld_version)',
     'cld2_table_size%': '<(cld2_table_size)',
-    'cld2_data_source%': '<(cld2_data_source)',
     'enable_captive_portal_detection%': '<(enable_captive_portal_detection)',
     'disable_file_support%': '<(disable_file_support)',
     'disable_ftp_support%': '<(disable_ftp_support)',
@@ -2929,11 +2913,6 @@
       }],
       ['cld_version!=0', {
         'defines': ['CLD_VERSION=<(cld_version)'],
-      }],
-      ['cld_version==2', {
-        # This is used to populate the "CLD Data Source" field in:
-        # chrome://translate-internals
-        'defines': ['CLD2_DATA_SOURCE=<(cld2_data_source)'],
       }],
       ['enable_basic_printing==1 or enable_print_preview==1', {
         # Convenience define for ENABLE_BASIC_PRINTING || ENABLE_PRINT_PREVIEW.

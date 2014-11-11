@@ -104,17 +104,6 @@ if (is_android) {
 
 enable_configuration_policy = true
 
-# The data acquisition mode for CLD2. Possible values are:
-#   static:     CLD2 data is statically linked to the executable.
-#   standalone: CLD2 data is provided in a standalone file that is
-#               bundled with the executable.
-#   component:  CLD2 data is provided as a Chrome "component" and is
-#               downloaded via the component updater.
-#
-# For more information on switching the CLD2 data source, see:
-#   https://sites.google.com/a/chromium.org/dev/developers/how-tos/compact-language-detector-cld-data-source-configuration
-cld2_data_source = "static"
-
 # Enables support for background apps.
 enable_background = !is_ios && !is_android
 

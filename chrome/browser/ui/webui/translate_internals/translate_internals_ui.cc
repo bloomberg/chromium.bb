@@ -69,7 +69,7 @@ content::WebUIDataSource* CreateTranslateInternalsHTMLSource() {
   cld_data_source = "static"; // CLD1.x does not support dynamic data loading
 #elif CLD_VERSION==2
   cld_version = "2";
-  cld_data_source = translate::CldDataSource::GetName();
+  cld_data_source = translate::CldDataSource::Get()->GetName();
 #else
   NOTREACHED();
 #endif

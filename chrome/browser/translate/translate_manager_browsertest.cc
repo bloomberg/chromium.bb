@@ -9,6 +9,7 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
+#include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -29,7 +30,7 @@ class TranslateManagerBrowserTest : public InProcessBrowserTest {};
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        MAYBE_PRE_TranslateSessionRestore) {
   scoped_ptr<test::CldDataHarness> cld_data_harness =
-      test::CreateCldDataHarness();
+      test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
   ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   SessionStartupPref pref(SessionStartupPref::LAST);
   SessionStartupPref::SetStartupPref(browser()->profile(), pref);
@@ -65,7 +66,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        MAYBE_TranslateSessionRestore) {
   scoped_ptr<test::CldDataHarness> cld_data_harness =
-      test::CreateCldDataHarness();
+      test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
   ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   content::WebContents* current_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

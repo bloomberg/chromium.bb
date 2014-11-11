@@ -242,6 +242,11 @@ group("child_dependencies") {
       "//third_party/WebKit/public:blink_devtools_frontend_resources",
     ]
   }
+  if (cld_version == 0 || cld_version == 2) {
+    deps += [
+      "//third_party/cld_2:cld2_platform_impl",
+    ]
+  }
 }
 
 if (is_win) {

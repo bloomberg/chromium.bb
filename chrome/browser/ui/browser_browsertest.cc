@@ -31,6 +31,7 @@
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
+#include "chrome/browser/translate/cld_data_harness_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1381,7 +1382,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   scoped_ptr<test::CldDataHarness> cld_data_harness =
-      test::CreateCldDataHarness();
+      test::CldDataHarnessFactory::Get()->CreateCldDataHarness();
   ASSERT_NO_FATAL_FAILURE(cld_data_harness->Init());
   ASSERT_TRUE(test_server()->Start());
 

@@ -31,16 +31,6 @@ base::LazyInstance<CLDMmapWrapper>::Leaky g_cld_mmap =
 
 namespace translate {
 
-// Implementation of the static factory method from RendererCldDataProvider,
-// hooking up this specific implementation for all of Chromium.
-RendererCldDataProvider* CreateRendererCldDataProviderFor(
-    content::RenderViewObserver* render_view_observer) {
-  // This log line is to help with determining which kind of provider has been
-  // configured. See also: chrome://translate-internals
-  VLOG(1) << "Creating DataFileRendererCldDataProvider";
-  return new DataFileRendererCldDataProvider(render_view_observer);
-}
-
 DataFileRendererCldDataProvider::DataFileRendererCldDataProvider(
     content::RenderViewObserver* render_view_observer)
     : render_view_observer_(render_view_observer) {
