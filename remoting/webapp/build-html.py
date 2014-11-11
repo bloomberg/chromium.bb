@@ -46,8 +46,7 @@ class GenerateWebappHtml:
     self.templates_found = set()
 
   def includeJavascript(self, output):
-    for js_path in sorted(self.js_files):
-      js_file = os.path.basename(js_path)
+    for js_file in sorted([os.path.basename(x) for x in self.js_files]):
       output.write('    <script src="' + js_file + '"></script>\n')
 
     for js_path in sorted(self.instrumented_js_files):
