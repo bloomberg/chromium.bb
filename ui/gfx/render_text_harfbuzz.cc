@@ -883,6 +883,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
 
       paint.setTypeface(run.skia_face.get());
       paint.setTextSize(SkIntToScalar(run.font_size));
+      paint.setAntiAlias(run.render_params.antialiasing);
       SkPaint::FontMetrics metrics;
       paint.getFontMetrics(&metrics);
 

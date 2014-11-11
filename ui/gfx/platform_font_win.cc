@@ -340,6 +340,7 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   SkPaint paint;
   paint.setAntiAlias(!!antialiasing);
   paint.setTypeface(skia_face.get());
+  paint.setTextSize(abs(font_info.lfHeight));
   SkPaint::FontMetrics skia_metrics;
   paint.getFontMetrics(&skia_metrics);
 
@@ -351,7 +352,14 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   const int baseline = std::max<int>(1, std::ceil(fabs(skia_metrics.fAscent)));
   const int cap_height = std::max<int>(1,
       std::ceil(fabs(skia_metrics.fAscent)) - skia_metrics.fLeading);
-  const int ave_char_width = std::max<int>(1, skia_metrics.fAvgCharWidth);
+  // The metrics retrieved from skia don't have the average character width. In
+  // any case if we get the average character width from skia then use that or
+  // use the text extent technique as documented by microsoft. See
+  // GetAverageCharWidthInDialogUnits for details.
+  const int ave_char_width =
+      skia_metrics.fAvgCharWidth == 0 ?
+          HFontRef::GetAverageCharWidthInDialogUnits(gdi_font)
+              : skia_metrics.fAvgCharWidth;
   const int font_size = std::max<int>(1, height - skia_metrics.fLeading);
 
   int style = 0;
@@ -400,8 +408,15 @@ int PlatformFontWin::HFontRef::GetDluBaseX() {
   if (dlu_base_x_ != -1)
     return dlu_base_x_;
 
+  dlu_base_x_ = GetAverageCharWidthInDialogUnits(hfont_);
+  return dlu_base_x_;
+}
+
+// static
+int PlatformFontWin::HFontRef::GetAverageCharWidthInDialogUnits(
+    HFONT gdi_font) {
   base::win::ScopedGetDC screen_dc(NULL);
-  base::win::ScopedSelectObject font(screen_dc, hfont_);
+  base::win::ScopedSelectObject font(screen_dc, gdi_font);
   gfx::ScopedSetMapMode mode(screen_dc, MM_TEXT);
 
   // Yes, this is how Microsoft recommends calculating the dialog unit
@@ -410,10 +425,10 @@ int PlatformFontWin::HFontRef::GetDluBaseX() {
   GetTextExtentPoint32(screen_dc,
                        L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
                        52, &ave_text_size);
-  dlu_base_x_ = (ave_text_size.cx / 26 + 1) / 2;
+  int dlu_base_x = (ave_text_size.cx / 26 + 1) / 2;
 
-  DCHECK_NE(dlu_base_x_, -1);
-  return dlu_base_x_;
+  DCHECK_NE(dlu_base_x, -1);
+  return dlu_base_x;
 }
 
 PlatformFontWin::HFontRef::~HFontRef() {

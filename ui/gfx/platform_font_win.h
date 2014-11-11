@@ -112,6 +112,10 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
     // Returns the average character width in dialog units.
     int GetDluBaseX();
 
+    // Helper to return the average character width using the text extent
+    // technique mentioned here. http://support.microsoft.com/kb/125681.
+    static int GetAverageCharWidthInDialogUnits(HFONT gdi_font);
+
    private:
     friend class base::RefCounted<HFontRef>;
     FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
