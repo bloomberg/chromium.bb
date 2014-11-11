@@ -35,6 +35,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/WebKit/public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "third_party/WebKit/public/platform/WebSelectionBound.h"
@@ -783,6 +784,9 @@ void RenderWidgetCompositor::BeginMainFrame(const cc::BeginFrameArgs& args) {
   double interval_sec = args.interval.InSecondsF();
   WebBeginFrameArgs web_begin_frame_args =
       WebBeginFrameArgs(frame_time_sec, deadline_sec, interval_sec);
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread)  // Can be null in tests.
+    render_thread->renderer_scheduler()->WillBeginFrame(args);
   widget_->webwidget()->beginFrame(web_begin_frame_args);
 }
 
@@ -846,7 +850,9 @@ void RenderWidgetCompositor::DidCommit() {
 
   widget_->DidCommitCompositorFrame();
   widget_->didBecomeReadyForAdditionalInput();
-  widget_->webwidget()->didCommitFrameToCompositor();
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  if (render_thread)  // Can be null in tests.
+    render_thread->renderer_scheduler()->DidCommitFrameToCompositor();
 }
 
 void RenderWidgetCompositor::DidCommitAndDrawFrame() {
