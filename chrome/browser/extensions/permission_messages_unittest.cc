@@ -129,20 +129,6 @@ class PermissionMessagesUnittest : public ExtensionServiceTestBase {
   DISALLOW_COPY_AND_ASSIGN(PermissionMessagesUnittest);
 };
 
-// If an app has both the 'serial' and 'USB' permission, they should coalesce
-// into a single permission message.
-TEST_F(PermissionMessagesUnittest, RequiredPermissionMessagesCoalesce) {
-  CreateAndInstallAppWithPermissions(
-      ListBuilder().Append("serial").Append("usb").Pass(),
-      ListBuilder().Pass());
-
-  ASSERT_EQ(1U, required_permissions().size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL),
-            required_permissions()[0]);
-
-  ASSERT_EQ(0U, optional_permissions().size());
-}
-
 // If an app has both the 'history' and 'tabs' permission, one should hide the
 // other (the 'history' permission has superset permissions).
 TEST_F(PermissionMessagesUnittest, HistoryHidesTabsMessage) {

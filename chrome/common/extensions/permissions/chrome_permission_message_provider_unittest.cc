@@ -38,35 +38,6 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageProviderUnittest);
 };
 
-// Checks that two related permissions display individual messages when they are
-// the only permission, but combine into one message when they are both present.
-TEST_F(ChromePermissionMessageProviderUnittest, RelatedPermissionsCoalesce) {
-  APIPermissionSet permissions;
-  std::vector<base::string16> messages;
-
-  permissions.clear();
-  permissions.insert(APIPermission::kUsb);
-  messages = GetMessages(permissions, Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1U, messages.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB),
-            messages[0]);
-
-  permissions.clear();
-  permissions.insert(APIPermission::kSerial);
-  messages = GetMessages(permissions, Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1U, messages.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_SERIAL),
-            messages[0]);
-
-  permissions.clear();
-  permissions.insert(APIPermission::kSerial);
-  permissions.insert(APIPermission::kUsb);
-  messages = GetMessages(permissions, Manifest::TYPE_PLATFORM_APP);
-  ASSERT_EQ(1U, messages.size());
-  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL),
-            messages[0]);
-}
-
 // Checks that if an app has a superset and a subset permission, only the
 // superset permission message is displayed if thye are both present.
 TEST_F(ChromePermissionMessageProviderUnittest,

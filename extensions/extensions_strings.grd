@@ -346,20 +346,29 @@
       <message name="IDS_EXTENSION_PROMPT_WARNING_SERIAL" desc="Permission string for access to serial devices.">
         Access your serial devices
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB" desc="Permission string for access to USB devices.">
-        Access your USB devices
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_VPN" desc="Permission string for access to VPN API.">
         Access your network traffic
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE" desc="Permission string for access to a specific USB device.">
-        Access the USB device <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
+        Access any <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph> via USB
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT" desc="Permission string for access to a specific USB device when a product name cannot be established for a USB device.">
-        Access the USB device from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT" desc="Permission string for access to a specific USB device with an unknown product ID.">
+        Access USB devices from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR" desc="Permission string for access to a specific USB device when a vendor name cannot be established for a USB device.">
-        Access the USB device
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR" desc="Permission string for acceess to a specific USB device with an unknown vendor ID.">
+        Access USB devices from an unknown vendor
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST" desc="Permission string for access to a list of USB devices.">
+        Access any of these USB devices
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST.">
+        <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_PRODUCT" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST that has an unknown product ID.">
+        unknown devices from <ph name="VENDOR_NAME">$1<ex>Griffin Technology</ex></ph>
+      </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR" desc="Line item for a USB device listed under IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST that has an unknown vendor ID.">
+        devices from an unknown vendor
       </message>
       <message name="IDS_EXTENSION_TASK_MANAGER_APPVIEW_TAG_PREFIX" desc="The prefix for a guest page loaded in an appview tag in the Task Manager">
         Appview: <ph name="APPVIEW_TAG_NAME">$1<ex>Google Hangouts</ex></ph>

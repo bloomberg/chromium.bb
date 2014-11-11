@@ -9,6 +9,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/usb/usb_ids.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -30,35 +32,73 @@ PermissionMessages UsbDevicePermission::GetMessages() const {
   DCHECK(HasMessages());
   PermissionMessages result;
 
-  // //device/usb/usb.gyp:device_usb is not available when extensions are
-  // disabled.
-  for (std::set<UsbDevicePermissionData>::const_iterator i =
-      data_set_.begin(); i != data_set_.end(); ++i) {
-    const char* vendor = device::UsbIds::GetVendorName(i->vendor_id());
+  if (data_set_.size() == 1) {
+    const UsbDevicePermissionData& data = *data_set_.begin();
 
+    const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
     if (vendor) {
       const char* product =
-          device::UsbIds::GetProductName(i->vendor_id(), i->product_id());
+          device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
       if (product) {
         result.push_back(PermissionMessage(
             PermissionMessage::kUsbDevice,
-            l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
-                base::ASCIIToUTF16(product),
-                base::ASCIIToUTF16(vendor))));
+            l10n_util::GetStringFUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE,
+                                       base::UTF8ToUTF16(product),
+                                       base::UTF8ToUTF16(vendor))));
       } else {
         result.push_back(PermissionMessage(
             PermissionMessage::kUsbDevice,
             l10n_util::GetStringFUTF16(
-                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_PRODUCT,
-                base::ASCIIToUTF16(vendor))));
+                IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_PRODUCT,
+                base::UTF8ToUTF16(vendor))));
       }
     } else {
       result.push_back(PermissionMessage(
           PermissionMessage::kUsbDevice,
           l10n_util::GetStringUTF16(
-              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_MISSING_VENDOR)));
+              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_UNKNOWN_VENDOR)));
     }
+  } else if (data_set_.size() > 1) {
+    std::vector<base::string16> details;
+    std::set<uint16> unknown_product_vendors;
+    bool found_unknown_vendor = false;
+
+    for (const UsbDevicePermissionData& data : data_set_) {
+      const char* vendor = device::UsbIds::GetVendorName(data.vendor_id());
+      if (vendor) {
+        const char* product =
+            device::UsbIds::GetProductName(data.vendor_id(), data.product_id());
+        if (product) {
+          details.push_back(l10n_util::GetStringFUTF16(
+              IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM,
+              base::UTF8ToUTF16(product), base::UTF8ToUTF16(vendor)));
+        } else {
+          unknown_product_vendors.insert(data.vendor_id());
+        }
+      } else {
+        found_unknown_vendor = true;
+      }
+    }
+
+    // List generic "devices from this vendor" entries after specific devices.
+    for (const uint16& vendor_id : unknown_product_vendors) {
+      const char* vendor = device::UsbIds::GetVendorName(vendor_id);
+      DCHECK(vendor);
+      details.push_back(l10n_util::GetStringFUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_PRODUCT,
+          base::UTF8ToUTF16(vendor)));
+    }
+
+    // Display the catch all "device from an unknown vendor" last.
+    if (found_unknown_vendor) {
+      details.push_back(l10n_util::GetStringUTF16(
+          IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST_ITEM_UNKNOWN_VENDOR));
+    }
+
+    result.push_back(PermissionMessage(
+        PermissionMessage::kUsbDevice,
+        l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_USB_DEVICE_LIST),
+        JoinString(details, base::char16('\n'))));
   }
 
   return result;

@@ -4510,17 +4510,8 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_SIGNED_IN_DEVICES" desc="Permission string for access to privacy settings.">
         Read the list of your signed-in devices
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_BLUETOOTH" desc="Permission string for access to USB and Bluetooth devices.">
-        Access your USB and Bluetooth devices
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_USB_SERIAL" desc="Permission string for access to USB and serial connected devices.">
-        Access your USB and Serial devices
-      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_BLUETOOTH_SERIAL" desc="Permission string for access to Bluetooth and serial connected devices.">
         Access your Bluetooth and Serial devices
-      </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_ALL_DEVICES" desc="Permission string for access all user's connected devices.">
-        Access all your hardware devices
       </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_DOWNLOADS" desc="Permission string for access to downloads.">
         Manage your downloads
