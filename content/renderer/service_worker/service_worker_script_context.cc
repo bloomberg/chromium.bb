@@ -131,8 +131,15 @@ void ServiceWorkerScriptContext::DidHandleFetchEvent(
 
 void ServiceWorkerScriptContext::DidHandlePushEvent(
     int request_id,
-    blink::WebServiceWorkerEventResult unused) {
+    blink::WebServiceWorkerEventResult result) {
   // TODO(johnme): Plumb through the result.
+  if (result == blink::WebServiceWorkerEventResultCompleted) {
+    UMA_HISTOGRAM_TIMES(
+        "ServiceWorker.PushEventExecutionTime",
+        base::TimeTicks::Now() - push_start_timings_[request_id]);
+  }
+  push_start_timings_.erase(request_id);
+
   Send(new ServiceWorkerHostMsg_PushEventFinished(
       GetRoutingID(), request_id));
 }
@@ -229,6 +236,7 @@ void ServiceWorkerScriptContext::OnPushEvent(int request_id,
                                              const std::string& data) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerScriptContext::OnPushEvent");
+  push_start_timings_[request_id] = base::TimeTicks::Now();
   proxy_->dispatchPushEvent(request_id, blink::WebString::fromUTF8(data));
 }
 

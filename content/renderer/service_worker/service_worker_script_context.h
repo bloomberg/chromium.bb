@@ -116,6 +116,7 @@ class ServiceWorkerScriptContext {
   std::map<int, base::TimeTicks> activate_start_timings_;
   std::map<int, base::TimeTicks> fetch_start_timings_;
   std::map<int, base::TimeTicks> install_start_timings_;
+  std::map<int, base::TimeTicks> push_start_timings_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptContext);
 };
