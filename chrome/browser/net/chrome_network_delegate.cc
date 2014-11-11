@@ -9,7 +9,9 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/debug/stack_trace.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -227,7 +229,21 @@ void RecordIOThreadToRequestStartOnUIThread(
 #endif  // defined(OS_ANDROID)
 
 void ReportInvalidReferrerSend(const GURL& target_url,
-                               const GURL& referrer_url) {
+                               const GURL& referrer_url,
+                               const base::debug::StackTrace& callstack) {
+  // Record information to help debug http://crbug.com/422871
+  base::debug::StackTrace trace = callstack;
+  base::debug::Alias(&trace);
+  enum { INVALID_URL, FILE_URL, DATA_URL, HTTP_URL, OTHER } reason = OTHER;
+  if (!target_url.is_valid())
+    reason = INVALID_URL;
+  else if (target_url.SchemeIsFile())
+    reason = FILE_URL;
+  else if (target_url.SchemeIs(url::kDataScheme))
+    reason = DATA_URL;
+  else if (target_url.SchemeIs(url::kHttpScheme))
+    reason = HTTP_URL;
+  base::debug::Alias(&reason);
   base::RecordAction(
       base::UserMetricsAction("Net.URLRequest_StartJob_InvalidReferrer"));
   base::debug::DumpWithoutCrashing();
@@ -792,8 +808,10 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
     const net::URLRequest& request,
     const GURL& target_url,
     const GURL& referrer_url) const {
+  base::debug::StackTrace callstack;
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ReportInvalidReferrerSend, target_url, referrer_url));
+                          base::Bind(&ReportInvalidReferrerSend, target_url,
+                                     referrer_url, callstack));
   return true;
 }
 
