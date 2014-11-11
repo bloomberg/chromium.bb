@@ -35,9 +35,8 @@ std::string KioskAutolaunchScreen::GetName() const {
 }
 
 void KioskAutolaunchScreen::OnExit(bool confirmed) {
-  get_base_screen_delegate()->OnExit(
-      confirmed ? BaseScreenDelegate::KIOSK_AUTOLAUNCH_CONFIRMED
-                : BaseScreenDelegate::KIOSK_AUTOLAUNCH_CANCELED);
+  Finish(confirmed ? BaseScreenDelegate::KIOSK_AUTOLAUNCH_CONFIRMED
+                   : BaseScreenDelegate::KIOSK_AUTOLAUNCH_CANCELED);
 }
 
 void KioskAutolaunchScreen::OnActorDestroyed(

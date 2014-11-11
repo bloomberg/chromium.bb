@@ -164,6 +164,8 @@
       'browser/chromeos/login/screens/mock_network_screen.h',
       'browser/chromeos/login/screens/mock_update_screen.cc',
       'browser/chromeos/login/screens/mock_update_screen.h',
+      'browser/chromeos/login/screens/mock_wrong_hwid_screen.cc',
+      'browser/chromeos/login/screens/mock_wrong_hwid_screen.h',
       'browser/chromeos/login/screens/network_screen_browsertest.cc',
       'browser/chromeos/login/screens/update_screen_browsertest.cc',
       'browser/chromeos/login/supervised/supervised_user_creation_browsertest.cc',

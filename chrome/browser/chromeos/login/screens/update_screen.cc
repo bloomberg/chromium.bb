@@ -335,11 +335,10 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
 
   switch (reason) {
     case REASON_UPDATE_CANCELED:
-      get_base_screen_delegate()->OnExit(BaseScreenDelegate::UPDATE_NOUPDATE);
+      Finish(BaseScreenDelegate::UPDATE_NOUPDATE);
       break;
     case REASON_UPDATE_INIT_FAILED:
-      get_base_screen_delegate()->OnExit(
-          BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE);
+      Finish(BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE);
       break;
     case REASON_UPDATE_NON_CRITICAL:
     case REASON_UPDATE_ENDED:
@@ -358,15 +357,13 @@ void UpdateScreen::ExitUpdate(UpdateScreen::ExitReason reason) {
             // Noncritical update, just exit screen as if there is no update.
             // no break
           case UpdateEngineClient::UPDATE_STATUS_IDLE:
-            get_base_screen_delegate()->OnExit(
-                BaseScreenDelegate::UPDATE_NOUPDATE);
+            Finish(BaseScreenDelegate::UPDATE_NOUPDATE);
             break;
           case UpdateEngineClient::UPDATE_STATUS_ERROR:
           case UpdateEngineClient::UPDATE_STATUS_REPORTING_ERROR_EVENT:
-            get_base_screen_delegate()->OnExit(
-                is_checking_for_update_
-                    ? BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE
-                    : BaseScreenDelegate::UPDATE_ERROR_UPDATING);
+            Finish(is_checking_for_update_
+                       ? BaseScreenDelegate::UPDATE_ERROR_CHECKING_FOR_UPDATE
+                       : BaseScreenDelegate::UPDATE_ERROR_UPDATING);
             break;
           default:
             NOTREACHED();

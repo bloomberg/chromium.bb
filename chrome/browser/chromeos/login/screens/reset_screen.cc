@@ -43,7 +43,7 @@ std::string ResetScreen::GetName() const {
 }
 
 void ResetScreen::OnExit() {
-  get_base_screen_delegate()->OnExit(BaseScreenDelegate::RESET_CANCELED);
+  Finish(BaseScreenDelegate::RESET_CANCELED);
 }
 
 void ResetScreen::OnActorDestroyed(ResetScreenActor* actor) {

@@ -42,9 +42,8 @@ class MockNetworkScreenActor : public NetworkScreenActor {
   MOCK_METHOD1(SetInputMethod, void(const std::string& input_method));
   MOCK_METHOD1(SetTimezone, void(const std::string& timezone));
 
-  private:
-   Delegate* delegate_;
-
+ private:
+  Delegate* delegate_;
 };
 
 }  // namespace chromeos

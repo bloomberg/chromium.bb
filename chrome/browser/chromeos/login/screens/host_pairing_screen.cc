@@ -98,7 +98,7 @@ void HostPairingScreen::ConfigureHost(bool accepted_eula,
     delegate_->ConfigureHost(
         accepted_eula, lang, timezone, send_reports, keyboard_layout);
   }
-  get_base_screen_delegate()->OnExit(WizardController::HOST_PAIRING_FINISHED);
+  Finish(WizardController::HOST_PAIRING_FINISHED);
 }
 
 void HostPairingScreen::EnrollHost(const std::string& auth_token) {

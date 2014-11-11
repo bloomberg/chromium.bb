@@ -42,8 +42,7 @@ std::string WrongHWIDScreen::GetName() const {
 }
 
 void WrongHWIDScreen::OnExit() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
+  Finish(BaseScreenDelegate::WRONG_HWID_WARNING_SKIPPED);
 }
 
 void WrongHWIDScreen::OnActorDestroyed(WrongHWIDScreenActor* actor) {

@@ -103,8 +103,7 @@ std::string AutoEnrollmentCheckScreen::GetName() const {
 }
 
 void AutoEnrollmentCheckScreen::OnExit() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+  Finish(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 }
 
 void AutoEnrollmentCheckScreen::OnActorDestroyed(
@@ -234,8 +233,7 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
 void AutoEnrollmentCheckScreen::SignalCompletion() {
   NetworkPortalDetector::Get()->RemoveObserver(this);
   auto_enrollment_progress_subscription_.reset();
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+  Finish(BaseScreenDelegate::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
 }
 
 }  // namespace chromeos

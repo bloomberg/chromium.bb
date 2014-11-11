@@ -40,8 +40,7 @@ std::string HIDDetectionScreen::GetName() const {
 }
 
 void HIDDetectionScreen::OnExit() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::HID_DETECTION_COMPLETED);
+  Finish(BaseScreenDelegate::HID_DETECTION_COMPLETED);
 }
 
 void HIDDetectionScreen::OnActorDestroyed(HIDDetectionScreenActor* actor) {

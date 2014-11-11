@@ -85,6 +85,7 @@ class ErrorScreenActor {
   ErrorScreen::UIState ui_state_;
   ErrorScreen::ErrorState error_state_;
   std::string network_;
+
   bool guest_signin_allowed_;
   bool offline_login_allowed_;
   bool show_connecting_indicator_;

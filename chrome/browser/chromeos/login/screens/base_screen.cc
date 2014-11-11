@@ -40,8 +40,8 @@ std::string BaseScreen::GetID() const {
   return GetName();
 }
 
-void BaseScreen::Finish(const std::string& outcome) {
-
+void BaseScreen::Finish(BaseScreenDelegate::ExitCodes exit_code) {
+  base_screen_delegate_->OnExit(*this, exit_code, &context_);
 }
 
 void BaseScreen::SetContext(::login::ScreenContext* context) {

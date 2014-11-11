@@ -68,13 +68,11 @@ std::string TermsOfServiceScreen::GetName() const {
 }
 
 void TermsOfServiceScreen::OnDecline() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::TERMS_OF_SERVICE_DECLINED);
+  Finish(BaseScreenDelegate::TERMS_OF_SERVICE_DECLINED);
 }
 
 void TermsOfServiceScreen::OnAccept() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::TERMS_OF_SERVICE_ACCEPTED);
+  Finish(BaseScreenDelegate::TERMS_OF_SERVICE_ACCEPTED);
 }
 
 void TermsOfServiceScreen::OnActorDestroyed(TermsOfServiceScreenActor* actor) {

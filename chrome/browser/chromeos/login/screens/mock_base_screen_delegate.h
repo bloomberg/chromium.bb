@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -19,7 +20,8 @@ class MockBaseScreenDelegate : public BaseScreenDelegate {
   MockBaseScreenDelegate();
   virtual ~MockBaseScreenDelegate();
 
-  MOCK_METHOD1(OnExit, void(ExitCodes));
+  MOCK_METHOD3(OnExit,
+               void(BaseScreen&, ExitCodes, const ::login::ScreenContext*));
   MOCK_METHOD0(ShowCurrentScreen, void());
   MOCK_METHOD0(GetErrorScreen, ErrorScreen*());
   MOCK_METHOD0(ShowErrorScreen, void());

@@ -358,7 +358,7 @@ void UserImageScreen::ExitScreen() {
   sync_timer_.reset();
   if (UserImageSyncObserver* sync_observer = GetSyncObserver())
     sync_observer->RemoveObserver(this);
-  get_base_screen_delegate()->OnExit(BaseScreenDelegate::USER_IMAGE_SELECTED);
+  Finish(BaseScreenDelegate::USER_IMAGE_SELECTED);
 }
 
 }  // namespace chromeos

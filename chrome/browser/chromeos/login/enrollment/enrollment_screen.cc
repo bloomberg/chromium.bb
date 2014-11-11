@@ -226,8 +226,7 @@ void EnrollmentScreen::OnCancel() {
   if (enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_FORCED ||
       enrollment_mode_ == EnrollmentScreenActor::ENROLLMENT_MODE_RECOVERY) {
     actor_->ResetAuth(
-        base::Bind(&BaseScreenDelegate::OnExit,
-                   base::Unretained(get_base_screen_delegate()),
+        base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                    BaseScreenDelegate::ENTERPRISE_ENROLLMENT_BACK));
     return;
   }
@@ -235,8 +234,7 @@ void EnrollmentScreen::OnCancel() {
   if (is_auto_enrollment())
     policy::AutoEnrollmentClient::CancelAutoEnrollment();
   actor_->ResetAuth(
-      base::Bind(&BaseScreenDelegate::OnExit,
-                 base::Unretained(get_base_screen_delegate()),
+      base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                  BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
 }
 
@@ -255,12 +253,10 @@ void EnrollmentScreen::OnConfirmationClosed() {
       !user_.empty() &&
       LoginUtils::IsWhitelisted(user_, NULL)) {
     actor_->ShowLoginSpinnerScreen();
-    get_base_screen_delegate()->OnExit(
-        BaseScreenDelegate::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
+    Finish(BaseScreenDelegate::ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED);
   } else {
     actor_->ResetAuth(
-        base::Bind(&BaseScreenDelegate::OnExit,
-                   base::Unretained(get_base_screen_delegate()),
+        base::Bind(&EnrollmentScreen::Finish, base::Unretained(this),
                    BaseScreenDelegate::ENTERPRISE_ENROLLMENT_COMPLETED));
   }
 }

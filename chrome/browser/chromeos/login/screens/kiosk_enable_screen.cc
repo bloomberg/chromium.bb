@@ -34,8 +34,7 @@ std::string KioskEnableScreen::GetName() const {
 }
 
 void KioskEnableScreen::OnExit() {
-  get_base_screen_delegate()->OnExit(
-      BaseScreenDelegate::KIOSK_ENABLE_COMPLETED);
+  Finish(BaseScreenDelegate::KIOSK_ENABLE_COMPLETED);
 }
 
 void KioskEnableScreen::OnActorDestroyed(KioskEnableScreenActor* actor) {

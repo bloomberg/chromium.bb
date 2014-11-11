@@ -76,9 +76,8 @@ GURL EulaScreen::GetOemEulaUrl() const {
 void EulaScreen::OnExit(bool accepted, bool usage_stats_enabled) {
   if (delegate_)
     delegate_->SetUsageStatisticsReporting(usage_stats_enabled);
-  get_base_screen_delegate()->OnExit(accepted
-                                         ? BaseScreenDelegate::EULA_ACCEPTED
-                                         : BaseScreenDelegate::EULA_BACK);
+  Finish(accepted ? BaseScreenDelegate::EULA_ACCEPTED
+                  : BaseScreenDelegate::EULA_BACK);
 }
 
 void EulaScreen::InitiatePasswordFetch() {

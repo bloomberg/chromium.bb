@@ -9,18 +9,14 @@
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
+#include "components/login/screens/screen_context.h"
 
 namespace base {
 class DictionaryValue;
 }
 
-namespace login {
-class ScreenContext;
-}
-
 namespace chromeos {
-
-class BaseScreenDelegate;
 
 // Base class for the all OOBE/login/before-session screens.
 // Screens are identified by ID, screen and it's JS counterpart must have same
@@ -80,7 +76,7 @@ class BaseScreen {
  protected:
   // Screen can call this method to notify framework that it have finished
   // it's work with |outcome|.
-  void Finish(const std::string& outcome);
+  void Finish(BaseScreenDelegate::ExitCodes exit_code);
 
   // Called when button with |button_id| was pressed. Notification
   // about this event comes from the JS counterpart.
@@ -94,6 +90,8 @@ class BaseScreen {
   BaseScreenDelegate* get_base_screen_delegate() const {
     return base_screen_delegate_;
   }
+
+  ::login::ScreenContext context_;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);

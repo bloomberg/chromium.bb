@@ -80,7 +80,7 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
     EXPECT_CALL(*mock_base_screen_delegate_,
-                OnExit(BaseScreenDelegate::NETWORK_CONNECTED)).Times(1);
+                OnExit(_, BaseScreenDelegate::NETWORK_CONNECTED, _)).Times(1);
     EXPECT_CALL(*mock_network_state_helper_, IsConnected())
         .WillOnce(Return(true));
     network_screen->OnContinuePressed();
