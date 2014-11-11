@@ -11,3 +11,6 @@ aclocal
 autoheader
 autoconf
 automake --foreign --copy --add-missing
+
+# Do not warn about undefined sanitizer symbols in object files.
+sed -i "s/\(-Wl,--no-undefined\|-Wl,-z,defs\)//g" ./configure
