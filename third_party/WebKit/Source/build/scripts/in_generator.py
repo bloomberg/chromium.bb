@@ -55,28 +55,25 @@ class Writer(object):
             return string
         return "#if ENABLE(%(condition)s)\n%(string)s\n#endif" % { 'condition' : condition, 'string' : string }
 
-    def _forcibly_create_text_file_at_path_with_contents(self, file_path, contents):
-        # FIXME: This method can be made less force-full anytime after 6/1/2013.
-        # A gyp error was briefly checked into the tree, causing
-        # a directory to have been generated in place of one of
-        # our output files.  Clean up after that error so that
-        # all users don't need to clobber their output directories.
-        shutil.rmtree(file_path, ignore_errors=True)
+    def _write_file_if_changed(self, output_dir, contents, file_name):
+        path = os.path.join(output_dir, file_name)
+
         # The build system should ensure our output directory exists, but just in case.
-        directory = os.path.dirname(file_path)
+        directory = os.path.dirname(path)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        with open(file_path, "w") as file_to_write:
-            file_to_write.write(contents)
-
-    def _write_file(self, output_dir, contents, file_name):
-        path = os.path.join(output_dir, file_name)
-        self._forcibly_create_text_file_at_path_with_contents(path, contents)
+        # Only write the file if the contents have changed. This allows ninja to
+        # skip rebuilding targets which depend on the output.
+        with open(path, "a+") as output_file:
+            output_file.seek(0)
+            if output_file.read() != contents:
+                output_file.truncate(0)
+                output_file.write(contents)
 
     def write_files(self, output_dir):
         for file_name, generator in self._outputs.items():
-            self._write_file(output_dir, generator(), file_name)
+            self._write_file_if_changed(output_dir, generator(), file_name)
 
     def set_gperf_path(self, gperf_path):
         self.gperf_path = gperf_path
