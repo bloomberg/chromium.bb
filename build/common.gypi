@@ -747,7 +747,7 @@
         ['OS=="android"', {
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'cld_version%': 2,
+          'cld_version%': 1,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
