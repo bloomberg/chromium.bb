@@ -368,6 +368,9 @@ below:
       <message name="IDS_AX_ROLE_HEADING" desc="accessibility role description for headings">
         heading
       </message>
+      <message name="IDS_AX_ROLE_FIGURE" desc="accessibility role description for figure">
+        figure
+      </message>
       <message name="IDS_AX_ROLE_REGION" desc="accessibility role description for region">
         region
       </message>
