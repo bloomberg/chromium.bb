@@ -22,8 +22,8 @@
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_system_info_handler.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
-#include "content/browser/devtools/tethering_handler.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -156,15 +156,19 @@ class DevToolsHttpHandlerImpl::BrowserTarget {
  public:
   BrowserTarget(base::MessageLoop* message_loop,
                 net::HttpServer* server,
+                DevToolsHttpHandlerDelegate* delegate,
                 int connection_id)
       : message_loop_(message_loop),
         server_(server),
         connection_id_(connection_id),
+        tethering_handler_(new devtools::tethering::TetheringHandler(
+            delegate, message_loop->message_loop_proxy())),
         tracing_handler_(new devtools::tracing::TracingHandler(
             devtools::tracing::TracingHandler::Browser)),
         protocol_handler_(new DevToolsProtocolHandlerImpl()) {
     protocol_handler_->SetNotifier(
         base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
+    protocol_handler_->SetTetheringHandler(tethering_handler_.get());
     protocol_handler_->SetTracingHandler(tracing_handler_.get());
   }
 
@@ -220,6 +224,7 @@ class DevToolsHttpHandlerImpl::BrowserTarget {
   base::MessageLoop* const message_loop_;
   net::HttpServer* const server_;
   const int connection_id_;
+  scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> protocol_handler_;
   std::vector<DevToolsProtocol::Handler*> handlers_;
@@ -701,9 +706,7 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   size_t browser_pos = request.path.find(browser_prefix);
   if (browser_pos == 0) {
     BrowserTarget* browser_target = new BrowserTarget(
-        thread_->message_loop(), server_.get(), connection_id);
-    browser_target->RegisterHandler(
-        new TetheringHandler(delegate_.get(), thread_->message_loop_proxy()));
+        thread_->message_loop(), server_.get(), delegate_.get(), connection_id);
     browser_target->RegisterHandler(
         new DevToolsSystemInfoHandler());
     browser_targets_[connection_id] = browser_target;

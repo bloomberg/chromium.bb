@@ -64,16 +64,16 @@ action("gen_devtools_protocol_handler") {
       "devtools_protocol_handler_generator.py"
 
   blink_protocol = "//third_party/WebKit/Source/devtools/protocol.json"
-  inputs = [ blink_protocol ]
+  browser_protocol = "browser_protocol.json"
+  inputs = [ blink_protocol, browser_protocol ]
 
   outputs = [
     "$target_gen_dir/protocol/devtools_protocol_handler_impl.cc",
     "$target_gen_dir/protocol/devtools_protocol_handler_impl.h",
   ]
 
-  args = [
-    rebase_path(blink_protocol, root_build_dir),
-  ] + rebase_path(outputs, root_build_dir)
+  args = rebase_path(inputs, root_build_dir) +
+      rebase_path(outputs, root_build_dir)
 }
 
 source_set("devtools_protocol_constants") {

@@ -1,26 +1,20 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/tethering_handler.h"
+#include "content/browser/devtools/protocol/tethering_handler.h"
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/stl_util.h"
-#include "base/values.h"
-#include "content/browser/devtools/devtools_http_handler_impl.h"
-#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "net/base/io_buffer.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_log.h"
 #include "net/socket/server_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/socket/tcp_server_socket.h"
 
 namespace content {
+namespace devtools {
+namespace tethering {
 
 namespace {
 
@@ -158,17 +152,6 @@ class SocketPump {
   int pending_writes_;
   bool pending_destruction_;
 };
-
-static int GetPort(scoped_refptr<DevToolsProtocol::Command> command,
-                   const std::string& paramName) {
-  base::DictionaryValue* params = command->params();
-  int port = 0;
-  if (!params ||
-      !params->GetInteger(paramName, &port) ||
-      port < kMinTetheringPort || port > kMaxTetheringPort)
-    return 0;
-  return port;
-}
 
 class BoundSocket {
  public:
@@ -351,12 +334,6 @@ TetheringHandler::TetheringHandler(
       message_loop_proxy_(message_loop_proxy),
       is_active_(false),
       weak_factory_(this) {
-  RegisterCommandHandler(devtools::Tethering::bind::kName,
-                         base::Bind(&TetheringHandler::OnBind,
-                                    base::Unretained(this)));
-  RegisterCommandHandler(devtools::Tethering::unbind::kName,
-                         base::Bind(&TetheringHandler::OnUnbind,
-                                    base::Unretained(this)));
 }
 
 TetheringHandler::~TetheringHandler() {
@@ -366,11 +343,13 @@ TetheringHandler::~TetheringHandler() {
   }
 }
 
+void TetheringHandler::SetClient(scoped_ptr<Client> client) {
+  client_.swap(client);
+}
+
 void TetheringHandler::Accepted(int port, const std::string& name) {
-  base::DictionaryValue* params = new base::DictionaryValue();
-  params->SetInteger(devtools::Tethering::accepted::kParamPort, port);
-  params->SetString(devtools::Tethering::accepted::kParamConnectionId, name);
-  SendNotification(devtools::Tethering::accepted::kName, params);
+  client_->Accepted(AcceptedParams::Create()->set_port(port)
+                                            ->set_connection_id(name));
 }
 
 bool TetheringHandler::Activate() {
@@ -383,12 +362,10 @@ bool TetheringHandler::Activate() {
   return true;
 }
 
-scoped_refptr<DevToolsProtocol::Response>
-TetheringHandler::OnBind(scoped_refptr<DevToolsProtocol::Command> command) {
-  const std::string& portParamName = devtools::Tethering::bind::kParamPort;
-  int port = GetPort(command, portParamName);
-  if (port == 0)
-    return command->InvalidParamResponse(portParamName);
+scoped_refptr<DevToolsProtocol::Response> TetheringHandler::Bind(
+    int port, scoped_refptr<DevToolsProtocol::Command> command) {
+  if (port < kMinTetheringPort || port > kMaxTetheringPort)
+    return command->InvalidParamResponse("port");
 
   if (!Activate()) {
     return command->ServerErrorResponse(
@@ -402,13 +379,8 @@ TetheringHandler::OnBind(scoped_refptr<DevToolsProtocol::Command> command) {
   return command->AsyncResponsePromise();
 }
 
-scoped_refptr<DevToolsProtocol::Response>
-TetheringHandler::OnUnbind(scoped_refptr<DevToolsProtocol::Command> command) {
-  const std::string& portParamName = devtools::Tethering::unbind::kParamPort;
-  int port = GetPort(command, portParamName);
-  if (port == 0)
-    return command->InvalidParamResponse(portParamName);
-
+scoped_refptr<DevToolsProtocol::Response> TetheringHandler::Unbind(
+    int port, scoped_refptr<DevToolsProtocol::Command> command) {
   if (!Activate()) {
     return command->ServerErrorResponse(
         "Tethering is used by another connection");
@@ -423,18 +395,20 @@ TetheringHandler::OnUnbind(scoped_refptr<DevToolsProtocol::Command> command) {
 
 void TetheringHandler::SendBindSuccess(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  SendAsyncResponse(command->SuccessResponse(nullptr));
+  client_->SendBindResponse(command, BindResponse::Create());
 }
 
 void TetheringHandler::SendUnbindSuccess(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  SendAsyncResponse(command->SuccessResponse(nullptr));
+  client_->SendUnbindResponse(command, UnbindResponse::Create());
 }
 
 void TetheringHandler::SendInternalError(
     scoped_refptr<DevToolsProtocol::Command> command,
     const std::string& message) {
-  SendAsyncResponse(command->InternalErrorResponse(message));
+  client_->SendInternalErrorResponse(command, message);
 }
 
+}  // namespace tethering
+}  // namespace devtools
 }  // namespace content

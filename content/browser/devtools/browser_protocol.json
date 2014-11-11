@@ -55,17 +55,19 @@
         "commands": [
             {
                 "name": "bind",
+                "async": true,
                 "description": "Request browser port binding.",
                 "parameters": [
-                    { "name": "port", "type": "number", "description": "Port number to bind." }
+                    { "name": "port", "type": "integer", "description": "Port number to bind." }
                 ],
                 "handlers": ["browser"]
             },
             {
                 "name": "unbind",
+                "async": true,
                 "description": "Request browser port unbinding.",
                 "parameters": [
-                    { "name": "port", "type": "number", "description": "Port number to unbind." }
+                    { "name": "port", "type": "integer", "description": "Port number to unbind." }
                 ],
                 "handlers": ["browser"]
             }
@@ -75,7 +77,7 @@
                 "name": "accepted",
                 "description": "Informs that port was successfully bound and got a specified connection id.",
                 "parameters": [
-                    {"name": "port", "type": "number", "description": "Port number that was successfully bound." },
+                    {"name": "port", "type": "integer", "description": "Port number that was successfully bound." },
                     {"name": "connectionId", "type": "string", "description": "Connection id to be used." }
                 ],
                 "handlers": ["browser"]
