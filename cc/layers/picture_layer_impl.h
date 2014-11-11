@@ -149,9 +149,11 @@ class CC_EXPORT PictureLayerImpl
   // Virtual for testing.
   virtual bool HasValidTilePriorities() const;
   bool AllTilesRequiredForActivationAreReadyToDraw() const;
+  bool AllTilesRequiredForDrawAreReadyToDraw() const;
 
  protected:
   friend class LayerRasterTileIterator;
+  using TileRequirementCheck = bool (PictureLayerTiling::*)(const Tile*) const;
 
   PictureLayerImpl(LayerTreeImpl* tree_impl, int id);
   PictureLayerTiling* AddTiling(float contents_scale);
@@ -180,6 +182,11 @@ class CC_EXPORT PictureLayerImpl
   bool CanHaveTilings() const;
   bool CanHaveTilingWithScale(float contents_scale) const;
   void SanityCheckTilingState() const;
+  // Checks if all tiles required for a certain action (e.g. activation) are
+  // ready to draw.  is_tile_required_callback gets called on all candidate
+  // tiles and returns true if the tile is required for the action.
+  bool AllTilesRequiredAreReadyToDraw(
+      TileRequirementCheck is_tile_required_callback) const;
 
   bool ShouldAdjustRasterScaleDuringScaleAnimations() const;
 

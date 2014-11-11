@@ -1234,6 +1234,10 @@ void LayerTreeHostImpl::NotifyReadyToActivate() {
   client_->NotifyReadyToActivate();
 }
 
+void LayerTreeHostImpl::NotifyReadyToDraw() {
+  client_->NotifyReadyToDraw();
+}
+
 void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::NotifyTileStateChanged");
 

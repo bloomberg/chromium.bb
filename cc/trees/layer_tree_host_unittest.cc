@@ -69,6 +69,151 @@ namespace {
 
 class LayerTreeHostTest : public LayerTreeTest {};
 
+// Test if the LTHI receives ReadyToActivate notifications from the TileManager
+// when no raster tasks get scheduled.
+class LayerTreeHostTestReadyToActivateEmpty : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestReadyToActivateEmpty()
+      : did_notify_ready_to_activate_(false),
+        all_tiles_required_for_activation_are_ready_to_draw_(false),
+        required_for_activation_count_(0) {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
+    const std::vector<PictureLayerImpl*>& layers = impl->GetPictureLayers();
+    required_for_activation_count_ = 0;
+    for (const auto& layer : layers) {
+      FakePictureLayerImpl* fake_layer =
+          static_cast<FakePictureLayerImpl*>(layer);
+      required_for_activation_count_ +=
+          fake_layer->CountTilesRequiredForActivation();
+    }
+  }
+
+  void NotifyReadyToActivateOnThread(LayerTreeHostImpl* impl) override {
+    did_notify_ready_to_activate_ = true;
+    const std::vector<PictureLayerImpl*>& layers = impl->GetPictureLayers();
+    all_tiles_required_for_activation_are_ready_to_draw_ = true;
+    for (const auto& layer : layers) {
+      if (!layer->AllTilesRequiredForActivationAreReadyToDraw())
+        all_tiles_required_for_activation_are_ready_to_draw_ = false;
+    }
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(did_notify_ready_to_activate_);
+    EXPECT_TRUE(all_tiles_required_for_activation_are_ready_to_draw_);
+    EXPECT_EQ(size_t(0), required_for_activation_count_);
+  }
+
+ protected:
+  bool did_notify_ready_to_activate_;
+  bool all_tiles_required_for_activation_are_ready_to_draw_;
+  size_t required_for_activation_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestReadyToActivateEmpty);
+
+// Test if the LTHI receives ReadyToActivate notifications from the TileManager
+// when some raster tasks flagged as REQUIRED_FOR_ACTIVATION got scheduled.
+class LayerTreeHostTestReadyToActivateNonEmpty
+    : public LayerTreeHostTestReadyToActivateEmpty {
+ public:
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(&client_);
+    root_layer->SetBounds(gfx::Size(1024, 1024));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(did_notify_ready_to_activate_);
+    EXPECT_TRUE(all_tiles_required_for_activation_are_ready_to_draw_);
+    EXPECT_LE(size_t(1), required_for_activation_count_);
+  }
+
+ private:
+  FakeContentLayerClient client_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestReadyToActivateNonEmpty);
+
+// Test if the LTHI receives ReadyToDraw notifications from the TileManager when
+// no raster tasks get scheduled.
+class LayerTreeHostTestReadyToDrawEmpty : public LayerTreeHostTest {
+ public:
+  LayerTreeHostTestReadyToDrawEmpty()
+      : did_notify_ready_to_draw_(false),
+        all_tiles_required_for_draw_are_ready_to_draw_(false),
+        required_for_draw_count_(0) {}
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void NotifyReadyToDrawOnThread(LayerTreeHostImpl* impl) override {
+    did_notify_ready_to_draw_ = true;
+    const std::vector<PictureLayerImpl*>& layers = impl->GetPictureLayers();
+    all_tiles_required_for_draw_are_ready_to_draw_ = true;
+    for (const auto& layer : layers) {
+      if (!layer->AllTilesRequiredForDrawAreReadyToDraw())
+        all_tiles_required_for_draw_are_ready_to_draw_ = false;
+      FakePictureLayerImpl* fake_layer =
+          static_cast<FakePictureLayerImpl*>(layer);
+      required_for_draw_count_ += fake_layer->CountTilesRequiredForDraw();
+    }
+
+    EndTest();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(did_notify_ready_to_draw_);
+    EXPECT_TRUE(all_tiles_required_for_draw_are_ready_to_draw_);
+    EXPECT_EQ(size_t(0), required_for_draw_count_);
+  }
+
+ protected:
+  bool did_notify_ready_to_draw_;
+  bool all_tiles_required_for_draw_are_ready_to_draw_;
+  size_t required_for_draw_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestReadyToDrawEmpty);
+
+// Test if the LTHI receives ReadyToDraw notifications from the TileManager when
+// some raster tasks flagged as REQUIRED_FOR_DRAW got scheduled.
+class LayerTreeHostTestReadyToDrawNonEmpty
+    : public LayerTreeHostTestReadyToDrawEmpty {
+ public:
+  void SetupTree() override {
+    client_.set_fill_with_nonsolid_color(true);
+    scoped_refptr<FakePictureLayer> root_layer =
+        FakePictureLayer::Create(&client_);
+    root_layer->SetBounds(gfx::Size(1024, 1024));
+    root_layer->SetIsDrawable(true);
+
+    layer_tree_host()->SetRootLayer(root_layer);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(did_notify_ready_to_draw_);
+    EXPECT_TRUE(all_tiles_required_for_draw_are_ready_to_draw_);
+    EXPECT_LE(size_t(1), required_for_draw_count_);
+  }
+
+ private:
+  FakeContentLayerClient client_;
+};
+
+// Note: With this test setup, we only get tiles flagged as REQUIRED_FOR_DRAW in
+// single threaded mode.
+SINGLE_THREAD_IMPL_TEST_F(LayerTreeHostTestReadyToDrawNonEmpty);
+
 // Two setNeedsCommits in a row should lead to at least 1 commit and at least 1
 // draw with frame 0.
 class LayerTreeHostTestSetNeedsCommit1 : public LayerTreeHostTest {

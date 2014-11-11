@@ -36,6 +36,7 @@ Tile::Tile(TileManager* tile_manager,
       tiling_i_index_(-1),
       tiling_j_index_(-1),
       required_for_activation_(false),
+      required_for_draw_(false),
       id_(s_next_id_++) {
   set_raster_source(raster_source);
   for (int i = 0; i < NUM_TREES; i++)

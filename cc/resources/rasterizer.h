@@ -87,7 +87,11 @@ class CC_EXPORT RasterTask : public RasterizerTask {
   ImageDecodeTask::Vector dependencies_;
 };
 
-static const size_t kNumberOfTaskSets = 2;
+// kNumberOfTaskSets must be greater or equal to the number of values in
+// TileManager::NamedTaskSet.
+// TODO(reveman): Use template specialization to make it easy for client code to
+// check at compile time that the number of supported task sets is correct.
+static const size_t kNumberOfTaskSets = 3;
 typedef size_t TaskSet;
 typedef std::bitset<kNumberOfTaskSets> TaskSetCollection;
 

@@ -1378,10 +1378,8 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
   return IsOnActiveOrPendingTree() && IsDrawnRenderSurfaceLayerListMember();
 }
 
-bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
-  if (!layer_tree_impl()->IsPendingTree())
-    return true;
-
+bool PictureLayerImpl::AllTilesRequiredAreReadyToDraw(
+    TileRequirementCheck is_tile_required_callback) const {
   if (!HasValidTilePriorities())
     return true;
 
@@ -1413,11 +1411,9 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
       // be out of date. It is updated in the raster/eviction iterators.
       // TODO(vmpstr): Remove the comment once you can't access this information
       // from the tile.
-      if (tiling->IsTileRequiredForActivation(tile) && !tile->IsReadyToDraw()) {
-        TRACE_EVENT_INSTANT0("cc",
-                             "PictureLayerImpl::"
-                             "AllTilesRequiredForActivationAreReadyToDraw not "
-                             "ready to activate",
+      if ((tiling->*is_tile_required_callback)(tile) &&
+          !tile->IsReadyToDraw()) {
+        TRACE_EVENT_INSTANT0("cc", "Tile required, but not ready to draw.",
                              TRACE_EVENT_SCOPE_THREAD);
         return false;
       }
@@ -1425,6 +1421,22 @@ bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
   }
 
   return true;
+}
+
+bool PictureLayerImpl::AllTilesRequiredForActivationAreReadyToDraw() const {
+  if (!layer_tree_impl()->IsPendingTree())
+    return true;
+
+  return AllTilesRequiredAreReadyToDraw(
+      &PictureLayerTiling::IsTileRequiredForActivationIfVisible);
+}
+
+bool PictureLayerImpl::AllTilesRequiredForDrawAreReadyToDraw() const {
+  if (!layer_tree_impl()->IsActiveTree())
+    return true;
+
+  return AllTilesRequiredAreReadyToDraw(
+      &PictureLayerTiling::IsTileRequiredForDrawIfVisible);
 }
 
 PictureLayerImpl::LayerRasterTileIterator::LayerRasterTileIterator()

@@ -167,7 +167,7 @@ class RasterWorkerPoolPerfTestBase {
  public:
   typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
 
-  enum NamedTaskSet { REQUIRED_FOR_ACTIVATION = 0, ALL = 1 };
+  enum NamedTaskSet { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
 
   RasterWorkerPoolPerfTestBase()
       : context_provider_(make_scoped_refptr(new PerfContextProvider)),

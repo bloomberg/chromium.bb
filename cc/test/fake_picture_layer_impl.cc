@@ -193,6 +193,65 @@ bool FakePictureLayerImpl::HasValidTilePriorities() const {
              : PictureLayerImpl::HasValidTilePriorities();
 }
 
+size_t FakePictureLayerImpl::CountTilesRequired(
+    TileRequirementCheck is_tile_required_callback) const {
+  if (!HasValidTilePriorities())
+    return 0;
+
+  if (!tilings_)
+    return 0;
+
+  if (visible_rect_for_tile_priority_.IsEmpty())
+    return 0;
+
+  gfx::Rect rect = GetViewportForTilePriorityInContentSpace();
+  rect.Intersect(visible_rect_for_tile_priority_);
+
+  size_t count = 0;
+
+  for (size_t i = 0; i < tilings_->num_tilings(); ++i) {
+    PictureLayerTiling* tiling = tilings_->tiling_at(i);
+    if (tiling->resolution() != HIGH_RESOLUTION &&
+        tiling->resolution() != LOW_RESOLUTION)
+      continue;
+
+    for (PictureLayerTiling::CoverageIterator iter(tiling, 1.f, rect); iter;
+         ++iter) {
+      const Tile* tile = *iter;
+      // A null tile (i.e. missing recording) can just be skipped.
+      // TODO(vmpstr): Verify this is true if we create tiles in raster
+      // iterators.
+      if (!tile)
+        continue;
+
+      // We can't check tile->required_for_activation, because that value might
+      // be out of date. It is updated in the raster/eviction iterators.
+      // TODO(vmpstr): Remove the comment once you can't access this information
+      // from the tile.
+      if ((tiling->*is_tile_required_callback)(tile))
+        ++count;
+    }
+  }
+
+  return count;
+}
+
+size_t FakePictureLayerImpl::CountTilesRequiredForActivation() const {
+  if (!layer_tree_impl()->IsPendingTree())
+    return 0;
+
+  return CountTilesRequired(
+      &PictureLayerTiling::IsTileRequiredForActivationIfVisible);
+}
+
+size_t FakePictureLayerImpl::CountTilesRequiredForDraw() const {
+  if (!layer_tree_impl()->IsActiveTree())
+    return 0;
+
+  return CountTilesRequired(
+      &PictureLayerTiling::IsTileRequiredForDrawIfVisible);
+}
+
 void FakePictureLayerImpl::ReleaseResources() {
   PictureLayerImpl::ReleaseResources();
   ++release_resources_count_;

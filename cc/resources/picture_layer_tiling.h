@@ -205,7 +205,8 @@ class CC_EXPORT PictureLayerTiling {
   }
 
   bool IsTileOccluded(const Tile* tile) const;
-  bool IsTileRequiredForActivation(const Tile* tile) const;
+  bool IsTileRequiredForActivationIfVisible(const Tile* tile) const;
+  bool IsTileRequiredForDrawIfVisible(const Tile* tile) const;
 
   // Iterate over all tiles to fill content_rect.  Even if tiles are invalid
   // (i.e. no valid resource) this tiling should still iterate over them.

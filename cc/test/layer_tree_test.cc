@@ -210,10 +210,17 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   }
 
   void NotifyReadyToActivate() override {
-    if (block_notify_ready_to_activate_for_testing_)
+    if (block_notify_ready_to_activate_for_testing_) {
       notify_ready_to_activate_was_blocked_ = true;
-    else
+    } else {
       client_->NotifyReadyToActivate();
+      test_hooks_->NotifyReadyToActivateOnThread(this);
+    }
+  }
+
+  void NotifyReadyToDraw() override {
+    client_->NotifyReadyToDraw();
+    test_hooks_->NotifyReadyToDrawOnThread(this);
   }
 
   void BlockNotifyReadyToActivateForTesting(bool block) override {

@@ -182,6 +182,7 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DidSwapBuffersCompleteOnImplThread() override;
   void OnCanDrawStateChanged(bool can_draw) override;
   void NotifyReadyToActivate() override;
+  void NotifyReadyToDraw() override;
   // Please call these 3 functions through
   // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
   // SetNeedsAnimate().

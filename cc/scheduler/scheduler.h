@@ -107,6 +107,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
   void SetVisible(bool visible);
   void SetCanDraw(bool can_draw);
   void NotifyReadyToActivate();
+  void NotifyReadyToDraw();
 
   void SetNeedsCommit();
 

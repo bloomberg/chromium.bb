@@ -53,6 +53,11 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     use_set_valid_tile_priorities_flag_ = true;
   }
 
+  size_t CountTilesRequired(
+      TileRequirementCheck is_tile_required_callback) const;
+  size_t CountTilesRequiredForActivation() const;
+  size_t CountTilesRequiredForDraw() const;
+
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
   using PictureLayerImpl::CanHaveTilings;

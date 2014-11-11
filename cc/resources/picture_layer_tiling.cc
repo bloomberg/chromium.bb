@@ -699,15 +699,13 @@ bool PictureLayerTiling::IsTileOccluded(const Tile* tile) const {
   return current_occlusion_in_layer_space_.IsOccluded(tile_query_rect);
 }
 
-bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
+bool PictureLayerTiling::IsTileRequiredForActivationIfVisible(
+    const Tile* tile) const {
   DCHECK_EQ(PENDING_TREE, client_->GetTree());
 
-  // Note that although this function will determine whether tile is required
-  // for activation assuming that it is in visible (ie in the viewport). That is
-  // to say, even if the tile is outside of the viewport, it will be treated as
-  // if it was inside (there are no explicit checks for this). Hence, this
-  // function is only called for visible tiles to ensure we don't block
-  // activation on tiles outside of the viewport.
+  // This function assumes that the tile is visible (i.e. in the viewport).  The
+  // caller needs to make sure that this condition is met to ensure we don't
+  // block activation on tiles outside of the viewport.
 
   // If we are not allowed to mark tiles as required for activation, then don't
   // do it.
@@ -744,6 +742,21 @@ bool PictureLayerTiling::IsTileRequiredForActivation(const Tile* tile) const {
   return true;
 }
 
+bool PictureLayerTiling::IsTileRequiredForDrawIfVisible(
+    const Tile* tile) const {
+  DCHECK_EQ(ACTIVE_TREE, client_->GetTree());
+
+  // This function assumes that the tile is visible (i.e. in the viewport).
+
+  if (resolution_ != HIGH_RESOLUTION)
+    return false;
+
+  if (IsTileOccluded(tile))
+    return false;
+
+  return true;
+}
+
 void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
   UpdateTilePriority(tile);
 
@@ -756,6 +769,8 @@ void PictureLayerTiling::UpdateTileAndTwinPriority(Tile* tile) const {
     tile->set_is_occluded(twin_tree, false);
     if (twin_tree == PENDING_TREE)
       tile->set_required_for_activation(false);
+    else
+      tile->set_required_for_draw(false);
     return;
   }
 
@@ -774,14 +789,20 @@ void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
 
   if (current_visible_rect_.Intersects(tile_bounds)) {
     tile->SetPriority(tree, TilePriority(resolution_, TilePriority::NOW, 0));
-    if (tree == PENDING_TREE)
-      tile->set_required_for_activation(IsTileRequiredForActivation(tile));
+    if (tree == PENDING_TREE) {
+      tile->set_required_for_activation(
+          IsTileRequiredForActivationIfVisible(tile));
+    } else {
+      tile->set_required_for_draw(IsTileRequiredForDrawIfVisible(tile));
+    }
     tile->set_is_occluded(tree, IsTileOccluded(tile));
     return;
   }
 
   if (tree == PENDING_TREE)
     tile->set_required_for_activation(false);
+  else
+    tile->set_required_for_draw(false);
   tile->set_is_occluded(tree, false);
 
   DCHECK_GT(content_to_screen_scale_, 0.f);

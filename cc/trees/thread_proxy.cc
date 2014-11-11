@@ -356,6 +356,11 @@ void ThreadProxy::NotifyReadyToActivate() {
   impl().scheduler->NotifyReadyToActivate();
 }
 
+void ThreadProxy::NotifyReadyToDraw() {
+  TRACE_EVENT0("cc", "ThreadProxy::NotifyReadyToDraw");
+  impl().scheduler->NotifyReadyToDraw();
+}
+
 void ThreadProxy::SetNeedsCommitOnImplThread() {
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsCommitOnImplThread");
   DCHECK(IsImplThread());

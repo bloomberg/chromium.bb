@@ -121,7 +121,7 @@ class RasterWorkerPoolTest
 
   typedef std::vector<scoped_refptr<RasterTask>> RasterTaskVector;
 
-  enum NamedTaskSet { REQUIRED_FOR_ACTIVATION = 0, ALL = 1 };
+  enum NamedTaskSet { ALL, REQUIRED_FOR_ACTIVATION, REQUIRED_FOR_DRAW };
 
   RasterWorkerPoolTest()
       : context_provider_(TestContextProvider::Create()),

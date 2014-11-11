@@ -197,6 +197,11 @@ void Scheduler::NotifyReadyToActivate() {
   ProcessScheduledActions();
 }
 
+void Scheduler::NotifyReadyToDraw() {
+  // Empty for now, until we take action based on the notification as part of
+  // crbugs 352894, 383157, 421923.
+}
+
 void Scheduler::SetNeedsCommit() {
   state_machine_.SetNeedsCommit();
   ProcessScheduledActions();

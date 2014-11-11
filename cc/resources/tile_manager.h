@@ -47,6 +47,9 @@ class CC_EXPORT TileManagerClient {
   // Called when all tiles marked as required for activation are ready to draw.
   virtual void NotifyReadyToActivate() = 0;
 
+  // Called when all tiles marked as required for draw are ready to draw.
+  virtual void NotifyReadyToDraw() = 0;
+
   // Called when the visible representation of a tile might have changed. Some
   // examples are:
   // - Tile version initialized.
@@ -87,8 +90,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
                               public RefCountedManager<Tile> {
  public:
   enum NamedTaskSet {
-    REQUIRED_FOR_ACTIVATION = 0,
-    ALL = 1,
+    ALL,
+    REQUIRED_FOR_ACTIVATION,
+    REQUIRED_FOR_DRAW
     // Adding additional values requires increasing kNumberOfTaskSets in
     // rasterizer.h
   };
@@ -231,7 +235,9 @@ class CC_EXPORT TileManager : public RasterizerClient,
       MemoryUsage* usage);
   bool TilePriorityViolatesMemoryPolicy(const TilePriority& priority);
   bool IsReadyToActivate() const;
+  bool IsReadyToDraw() const;
   void CheckIfReadyToActivate();
+  void CheckIfReadyToDraw();
 
   TileManagerClient* client_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -272,6 +278,7 @@ class CC_EXPORT TileManager : public RasterizerClient,
   std::vector<scoped_refptr<RasterTask>> orphan_raster_tasks_;
 
   UniqueNotifier ready_to_activate_check_notifier_;
+  UniqueNotifier ready_to_draw_check_notifier_;
 
   RasterTilePriorityQueue raster_priority_queue_;
   EvictionTilePriorityQueue eviction_priority_queue_;

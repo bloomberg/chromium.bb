@@ -23,6 +23,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidSwapBuffersCompleteOnImplThread() override {}
   void OnCanDrawStateChanged(bool can_draw) override {}
   void NotifyReadyToActivate() override {}
+  void NotifyReadyToDraw() override {}
   void SetNeedsRedrawOnImplThread() override {}
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) override {}
   void SetNeedsAnimateOnImplThread() override {}

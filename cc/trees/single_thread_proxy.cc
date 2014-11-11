@@ -348,6 +348,9 @@ void SingleThreadProxy::NotifyReadyToActivate() {
     scheduler_on_impl_thread_->NotifyReadyToActivate();
 }
 
+void SingleThreadProxy::NotifyReadyToDraw() {
+}
+
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
   client_->ScheduleComposite();
   if (scheduler_on_impl_thread_)

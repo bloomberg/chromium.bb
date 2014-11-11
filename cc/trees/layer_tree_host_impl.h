@@ -75,6 +75,7 @@ class LayerTreeHostImplClient {
   virtual void DidSwapBuffersCompleteOnImplThread() = 0;
   virtual void OnCanDrawStateChanged(bool can_draw) = 0;
   virtual void NotifyReadyToActivate() = 0;
+  virtual void NotifyReadyToDraw() = 0;
   // Please call these 3 functions through
   // LayerTreeHostImpl's SetNeedsRedraw(), SetNeedsRedrawRect() and
   // SetNeedsAnimate().
@@ -233,6 +234,7 @@ class CC_EXPORT LayerTreeHostImpl
   // TileManagerClient implementation.
   const std::vector<PictureLayerImpl*>& GetPictureLayers() const override;
   void NotifyReadyToActivate() override;
+  void NotifyReadyToDraw() override;
   void NotifyTileStateChanged(const Tile* tile) override;
   void BuildRasterQueue(RasterTilePriorityQueue* queue,
                         TreePriority tree_priority) override;

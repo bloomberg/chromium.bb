@@ -129,6 +129,7 @@ class LayerTreeHostImplTest : public testing::Test,
     did_notify_ready_to_activate_ = true;
     host_impl_->ActivateSyncTree();
   }
+  void NotifyReadyToDraw() override {}
   void SetNeedsRedrawOnImplThread() override { did_request_redraw_ = true; }
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) override {
     did_request_redraw_ = true;
