@@ -924,7 +924,7 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   // Client tries to request twice the server's max initial window, and the
   // server limits it to the max.
   client_config_.SetInitialCongestionWindowToSend(2 * kMaxInitialWindow);
-  client_config_.SetInitialRoundTripTimeUsToSend(1000);
+  client_config_.SetInitialRoundTripTimeUsToSend(20000);
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
@@ -949,9 +949,9 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   EXPECT_EQ(GetParam().use_pacing, server_sent_packet_manager.using_pacing());
   EXPECT_EQ(GetParam().use_pacing, client_sent_packet_manager.using_pacing());
 
-  // The client *should* set the intitial RTT.
-  EXPECT_EQ(1000u, client_sent_packet_manager.GetRttStats()->initial_rtt_us());
-  EXPECT_EQ(1000u, server_sent_packet_manager.GetRttStats()->initial_rtt_us());
+  // The client *should* set the intitial RTT, but it's increased to 10ms.
+  EXPECT_EQ(20000u, client_sent_packet_manager.GetRttStats()->initial_rtt_us());
+  EXPECT_EQ(20000u, server_sent_packet_manager.GetRttStats()->initial_rtt_us());
 
   // Now use the negotiated limits with packet loss.
   SetPacketLossPercentage(30);

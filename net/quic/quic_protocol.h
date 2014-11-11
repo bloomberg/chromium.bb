@@ -76,6 +76,9 @@ const QuicByteCount kDefaultSocketReceiveBuffer = 256 * 1024;
 // Smaller values are ignored.
 const QuicByteCount kMinSocketReceiveBuffer = 16 * 1024;
 
+// Don't allow a client to suggest an RTT shorter than 10ms.
+const uint32 kMinInitialRoundTripTimeUs = 10 * kNumMicrosPerMilli;
+
 // Don't allow a client to suggest an RTT longer than 15 seconds.
 const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 

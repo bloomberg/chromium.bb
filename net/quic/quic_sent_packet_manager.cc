@@ -97,12 +97,16 @@ QuicSentPacketManager::~QuicSentPacketManager() {
 void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
-    rtt_stats_.set_initial_rtt_us(min(kMaxInitialRoundTripTimeUs,
-                                      config.ReceivedInitialRoundTripTimeUs()));
-  } else if (config.HasInitialRoundTripTimeUsToSend()) {
     rtt_stats_.set_initial_rtt_us(
-        min(kMaxInitialRoundTripTimeUs,
-            config.GetInitialRoundTripTimeUsToSend()));
+        max(kMinInitialRoundTripTimeUs,
+            min(kMaxInitialRoundTripTimeUs,
+                config.ReceivedInitialRoundTripTimeUs())));
+  } else if (config.HasInitialRoundTripTimeUsToSend() &&
+             config.GetInitialRoundTripTimeUsToSend() > 0) {
+    rtt_stats_.set_initial_rtt_us(
+        max(kMinInitialRoundTripTimeUs,
+            min(kMaxInitialRoundTripTimeUs,
+                config.GetInitialRoundTripTimeUsToSend())));
   }
   // TODO(ianswett): BBR is currently a server only feature.
   if (FLAGS_quic_allow_bbr &&
