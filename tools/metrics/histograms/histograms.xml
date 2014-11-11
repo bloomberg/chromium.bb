@@ -40329,6 +40329,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="WebsiteSettings.PermissionChanged" enum="ContentType">
+  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <summary>
+    Count of how often a specific content type (permission) is changed using the
+    Website Settings UI.
+  </summary>
+</histogram>
+
 <histogram name="Webstore.ExtensionInstallResult" enum="BooleanSuccess">
   <owner>jackhou@chromium.org</owner>
   <summary>
@@ -41879,6 +41887,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Displayed bubble"/>
   <int value="2" label="Clicked 'Load unsafe scripts'"/>
   <int value="3" label="Clicked 'Learn more'"/>
+</enum>
+
+<enum name="ContentType" type="int">
+  <int value="0" label="Cookies setting"/>
+  <int value="1" label="Images setting"/>
+  <int value="2" label="JavaScript setting"/>
+  <int value="3" label="Plugins setting"/>
+  <int value="4" label="Popups setting"/>
+  <int value="5" label="Location setting"/>
+  <int value="6" label="Notifications setting"/>
+  <int value="7" label="Web Intents setting"/>
+  <int value="8" label="Auto Select Cert setting"/>
+  <int value="9" label="Fullscreen setting"/>
+  <int value="10" label="Mouselock setting"/>
+  <int value="11" label="Mixed Script setting"/>
+  <int value="12" label="Media setting"/>
+  <int value="13" label="Protocol Handler setting"/>
+  <int value="14" label="PPAPI Broker setting"/>
 </enum>
 
 <enum name="CookieDeletionCause" type="int">
