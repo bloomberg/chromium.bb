@@ -965,19 +965,13 @@
       ],
       'conditions': [
         ['chromeos==1', {
-          'conditions': [
-            ['use_x11==1', {
-              'dependencies': [
-                '../remoting/remoting.gyp:remoting_it2me_host_static',
-              ],
-              'include_dirs': [
-                '../third_party/libjingle/source',
-              ],
-            }]
+          'include_dirs': [
+            '../third_party/libjingle/source',
           ],
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',
+            '../remoting/remoting.gyp:remoting_it2me_host_static',
             '../third_party/libevent/libevent.gyp:libevent',
           ],
           'sources': [

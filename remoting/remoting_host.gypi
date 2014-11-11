@@ -21,7 +21,8 @@
         'enable_it2me_host': 0,
         'enable_remoting_host': 0,
       }],
-      ['chromeos==1 and use_x11==1', {
+      ['chromeos==1', {
+        'enable_remoting_host': 1,
         'enable_me2me_host': 0,
         'enable_it2me_host': 1,
       }],
@@ -74,8 +75,12 @@
             'host/capture_scheduler.h',
             'host/chromeos/aura_desktop_capturer.cc',
             'host/chromeos/aura_desktop_capturer.h',
+            'host/chromeos/clipboard_aura.cc',
+            'host/chromeos/clipboard_aura.h',
             'host/chromeos/message_box.cc',
             'host/chromeos/message_box.h',
+            'host/chromeos/mouse_cursor_monitor_aura.cc',
+            'host/chromeos/mouse_cursor_monitor_aura.h',
             'host/chromium_port_allocator_factory.cc',
             'host/chromium_port_allocator_factory.h',
             'host/chromoting_host.cc',
@@ -90,8 +95,6 @@
             'host/client_session.h',
             'host/client_session_control.h',
             'host/clipboard.h',
-            'host/clipboard_aura.cc',
-            'host/clipboard_aura.h',
             'host/clipboard_mac.mm',
             'host/clipboard_win.cc',
             'host/clipboard_x11.cc',
@@ -128,7 +131,7 @@
             'host/desktop_shape_tracker.h',
             'host/desktop_shape_tracker_mac.cc',
             'host/desktop_shape_tracker_win.cc',
-            'host/desktop_shape_tracker_x11.cc',
+            'host/desktop_shape_tracker_linux.cc',
             'host/disconnect_window_chromeos.cc',
             'host/disconnect_window_linux.cc',
             'host/disconnect_window_mac.h',
@@ -173,9 +176,11 @@
             'host/in_memory_host_config.cc',
             'host/in_memory_host_config.h',
             'host/input_injector.h',
-            'host/input_injector_linux.cc',
+            'host/input_injector_chromeos.cc',
+            'host/input_injector_chromeos.h',
             'host/input_injector_mac.cc',
             'host/input_injector_win.cc',
+            'host/input_injector_x11.cc',
             'host/ipc_audio_capturer.cc',
             'host/ipc_audio_capturer.h',
             'host/ipc_constants.cc',
@@ -208,9 +213,11 @@
             'host/linux/x_server_clipboard.cc',
             'host/linux/x_server_clipboard.h',
             'host/local_input_monitor.h',
-            'host/local_input_monitor_linux.cc',
+            'host/local_input_monitor_chromeos.cc',
+            'host/local_input_monitor_chromeos.h',
             'host/local_input_monitor_mac.mm',
             'host/local_input_monitor_win.cc',
+            'host/local_input_monitor_x11.cc',
             'host/logging.h',
             'host/logging_posix.cc',
             'host/logging_win.cc',
@@ -303,25 +310,29 @@
           ],
           'conditions': [
             ['OS=="linux"', {
-              'dependencies': [
-                '../build/linux/system.gyp:x11',
-                '../build/linux/system.gyp:xext',
-                '../build/linux/system.gyp:xfixes',
-                '../build/linux/system.gyp:xi',
-                '../build/linux/system.gyp:xrandr',
-                '../build/linux/system.gyp:xtst',
+              'conditions': [
+                ['use_x11==1', {
+                  'dependencies': [
+                    '../build/linux/system.gyp:x11',
+                    '../build/linux/system.gyp:xext',
+                    '../build/linux/system.gyp:xfixes',
+                    '../build/linux/system.gyp:xi',
+                    '../build/linux/system.gyp:xrandr',
+                    '../build/linux/system.gyp:xtst',
+                  ],
+                }],
+                ['chromeos==0 and use_ozone==0', {
+                  'dependencies': [
+                    # use GTK on Linux, even for Aura builds.
+                    '../build/linux/system.gyp:gtk',
+                  ],
+                }]
               ],
               'link_settings': {
                 'libraries': [
                   '-lpam',
                 ],
               },
-            }],
-            ['OS=="linux" and chromeos==0 and use_ozone==0', {
-              'dependencies' : [
-                # Always use GTK on Linux, even for Aura builds.
-                '../build/linux/system.gyp:gtk',
-              ],
             }],
             ['chromeos==1', {
               'dependencies' : [
@@ -333,6 +344,7 @@
                 '../ui/aura/aura.gyp:aura',
                 '../ui/compositor/compositor.gyp:compositor',
                 '../ui/events/events.gyp:events',
+                '../ui/events/platform/events_platform.gyp:events_platform',
                 '../ui/views/views.gyp:views',
               ],
               'include_dirs': [
@@ -343,21 +355,22 @@
                 'host/continue_window_linux.cc',
                 'host/disconnect_window.cc',
                 'host/disconnect_window_linux.cc',
+                'host/linux/x_server_clipboard.cc',
+                'host/linux/x_server_clipboard.h',
                 'host/policy_hack/policy_watcher_linux.cc',
                 'host/remoting_me2me_host.cc',
-              ]
-            }, {  # chromeos==0
-               'sources!' : [
-                 'host/chromeos/aura_desktop_capturer.cc',
-                 'host/chromeos/aura_desktop_capturer.h',
-                 'host/chromeos/message_box.cc',
-                 'host/chromeos/message_box.h',
-                 'host/clipboard_aura.cc',
-                 'host/clipboard_aura.h',
-                 'host/continue_window_chromeos.cc',
-                 'host/disconnect_window_chromeos.cc',
-                 'host/policy_hack/policy_watcher_chromeos.cc',
-               ],
+              ],
+              'conditions': [
+                ['use_ozone==0', {
+                  'sources!': [
+                    'host/input_injector_chromeos.cc',
+                    'host/input_injector_chromeos.h',
+                    'host/local_input_monitor_chromeos.cc',
+                    'host/chromeos/mouse_cursor_monitor_aura.cc',
+                    'host/chromeos/mouse_cursor_monitor_aura.h',
+                  ],
+                }],
+              ],
             }],
             ['OS=="mac"', {
               'dependencies': [
