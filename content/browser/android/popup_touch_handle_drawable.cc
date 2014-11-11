@@ -16,6 +16,9 @@ PopupTouchHandleDrawable::PopupTouchHandleDrawable(
 }
 
 PopupTouchHandleDrawable::~PopupTouchHandleDrawable() {
+  // Explicitly disabling ensures that any external references to the Java
+  // object are cleared, allowing it to be GC'ed in a timely fashion.
+  SetEnabled(false);
 }
 
 void PopupTouchHandleDrawable::SetEnabled(bool enabled) {

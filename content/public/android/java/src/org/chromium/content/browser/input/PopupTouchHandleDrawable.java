@@ -224,6 +224,7 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private void doInvalidate() {
+        if (!mContainer.isShowing()) return;
         updatePosition();
         updateVisibility();
         invalidate();

@@ -477,8 +477,6 @@ void RenderWidgetHostViewAndroid::Focus() {
   host_->SetInputMethodActive(true);
   if (overscroll_effect_)
     overscroll_effect_->Enable();
-  if (selection_controller_)
-    selection_controller_->SetTemporarilyHidden(false);
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
@@ -486,8 +484,6 @@ void RenderWidgetHostViewAndroid::Blur() {
   host_->Blur();
   if (overscroll_effect_)
     overscroll_effect_->Disable();
-  if (selection_controller_)
-    selection_controller_->SetTemporarilyHidden(true);
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {

@@ -70,9 +70,6 @@ class CONTENT_EXPORT TouchSelectionController : public TouchHandleClient {
   // showing allowance.
   void HideAndDisallowShowingAutomatically();
 
-  // Override the handle visibility according to |hidden|.
-  void SetTemporarilyHidden(bool hidden);
-
   // To be called when the editability of the focused region changes.
   void OnSelectionEditable(bool editable);
 

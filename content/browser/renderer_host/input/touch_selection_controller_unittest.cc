@@ -763,31 +763,6 @@ TEST_F(TouchSelectionControllerTest, Animation) {
   EXPECT_FALSE(GetAndResetNeedsAnimate());
 }
 
-TEST_F(TouchSelectionControllerTest, TemporarilyHidden) {
-  controller().OnTapEvent();
-  controller().OnSelectionEditable(true);
-
-  gfx::RectF insertion_rect(5, 5, 0, 10);
-
-  bool visible = true;
-  ChangeInsertion(insertion_rect, visible);
-  EXPECT_FALSE(GetAndResetNeedsAnimate());
-
-  controller().SetTemporarilyHidden(true);
-  EXPECT_TRUE(GetAndResetNeedsAnimate());
-
-  visible = false;
-  ChangeInsertion(insertion_rect, visible);
-  EXPECT_FALSE(GetAndResetNeedsAnimate());
-
-  visible = true;
-  ChangeInsertion(insertion_rect, visible);
-  EXPECT_FALSE(GetAndResetNeedsAnimate());
-
-  controller().SetTemporarilyHidden(false);
-  EXPECT_TRUE(GetAndResetNeedsAnimate());
-}
-
 TEST_F(TouchSelectionControllerTest, SelectionClearOnTap) {
   gfx::RectF start_rect(5, 5, 0, 10);
   gfx::RectF end_rect(50, 5, 0, 10);
