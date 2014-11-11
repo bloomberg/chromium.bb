@@ -59,14 +59,14 @@ Status AesGcmEncrypt(const blink::WebCryptoKey& key,
     return status;
 
   if ((tag_length_bits % 8) != 0) {
-    EXPECT_TRUE(false) << "Encrypt should have failed.";
+    ADD_FAILURE() << "Encrypt should have failed.";
     return Status::OperationError();
   }
 
   size_t tag_length_bytes = tag_length_bits / 8;
 
   if (tag_length_bytes > output.size()) {
-    EXPECT_TRUE(false) << "tag length is larger than output";
+    ADD_FAILURE() << "tag length is larger than output";
     return Status::OperationError();
   }
 

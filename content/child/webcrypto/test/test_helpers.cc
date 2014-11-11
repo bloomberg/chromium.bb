@@ -257,7 +257,7 @@ std::vector<uint8_t> GetBytesFromHexString(const base::DictionaryValue* dict,
                                            const std::string& property_name) {
   std::string hex_string;
   if (!dict->GetString(property_name, &hex_string)) {
-    EXPECT_TRUE(false) << "Couldn't get string property: " << property_name;
+    ADD_FAILURE() << "Couldn't get string property: " << property_name;
     return std::vector<uint8_t>();
   }
 
@@ -268,7 +268,7 @@ blink::WebCryptoAlgorithm GetDigestAlgorithm(const base::DictionaryValue* dict,
                                              const char* property_name) {
   std::string algorithm_name;
   if (!dict->GetString(property_name, &algorithm_name)) {
-    EXPECT_TRUE(false) << "Couldn't get string property: " << property_name;
+    ADD_FAILURE() << "Couldn't get string property: " << property_name;
     return blink::WebCryptoAlgorithm::createNull();
   }
 
@@ -675,7 +675,7 @@ blink::WebCryptoKeyFormat GetKeyFormatFromJsonTestCase(
   else if (format == "spki")
     return blink::WebCryptoKeyFormatSpki;
 
-  EXPECT_TRUE(false) << "Unrecognized key format: " << format;
+  ADD_FAILURE() << "Unrecognized key format: " << format;
   return blink::WebCryptoKeyFormatRaw;
 }
 
