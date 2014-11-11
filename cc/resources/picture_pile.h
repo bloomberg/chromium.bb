@@ -7,49 +7,40 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/resources/picture_pile_base.h"
-#include "ui/gfx/geometry/rect.h"
+#include "cc/resources/recording_source.h"
 
 namespace cc {
+class ContentLayerClient;
 class PicturePileImpl;
 class Region;
 class RenderingStatsInstrumentation;
 
-class CC_EXPORT PicturePile : public PicturePileBase {
+class CC_EXPORT PicturePile : public PicturePileBase, public RecordingSource {
  public:
   PicturePile();
   ~PicturePile() override;
 
-  // Re-record parts of the picture that are invalid.
-  // Invalidations are in layer space, and will be expanded to cover everything
-  // that was either recorded/changed or that has no recording, leaving out only
-  // pieces that we had a recording for and it was not changed.
-  // Return true iff the pile was modified.
-  bool UpdateAndExpandInvalidation(ContentLayerClient* painter,
-                                   Region* invalidation,
-                                   SkColor background_color,
-                                   bool contents_opaque,
-                                   bool contents_fill_bounds_completely,
-                                   const gfx::Size& layer_size,
-                                   const gfx::Rect& visible_layer_rect,
-                                   int frame_number,
-                                   Picture::RecordingMode recording_mode);
-
-  void SetEmptyBounds();
-
-  void set_slow_down_raster_scale_factor(int factor) {
-    slow_down_raster_scale_factor_for_debug_ = factor;
-  }
-
-  void set_show_debug_picture_borders(bool show) {
-    show_debug_picture_borders_ = show;
-  }
-
-  bool is_suitable_for_gpu_rasterization() const {
-    return is_suitable_for_gpu_rasterization_;
-  }
-  void SetUnsuitableForGpuRasterizationForTesting() {
-    is_suitable_for_gpu_rasterization_ = false;
-  }
+  bool UpdateAndExpandInvalidation(
+      ContentLayerClient* painter,
+      Region* invalidation,
+      SkColor background_color,
+      bool contents_opaque,
+      bool contents_fill_bounds_completely,
+      const gfx::Size& layer_size,
+      const gfx::Rect& visible_layer_rect,
+      int frame_number,
+      Picture::RecordingMode recording_mode) override;
+  gfx::Size GetSize() const override;
+  void SetEmptyBounds() override;
+  void SetMinContentsScale(float min_contents_scale) override;
+  void SetTileGridSize(const gfx::Size& tile_grid_size) override;
+  void SetSlowdownRasterScaleFactor(int factor) override;
+  void SetShowDebugPictureBorders(bool show) override;
+  void SetIsMask(bool is_mask) override;
+  bool IsSuitableForGpuRasterization() const override;
+  scoped_refptr<RasterSource> CreateRasterSource() const override;
+  void SetUnsuitableForGpuRasterizationForTesting() override;
+  SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const override;
 
   void SetPixelRecordDistanceForTesting(int d) { pixel_record_distance_ = d; }
 

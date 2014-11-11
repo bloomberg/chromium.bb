@@ -404,6 +404,7 @@
         'resources/raster_worker_pool.h',
         'resources/rasterizer.cc',
         'resources/rasterizer.h',
+        'resources/recording_source.h',
         'resources/release_callback.h',
         'resources/resource.cc',
         'resources/resource.h',

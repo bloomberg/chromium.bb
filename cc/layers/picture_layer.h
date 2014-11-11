@@ -39,7 +39,9 @@ class CC_EXPORT PictureLayer : public Layer {
 
   ContentLayerClient* client() { return client_; }
 
-  PicturePile* GetPicturePileForTesting() { return &pile_; }
+  RecordingSource* GetRecordingSourceForTesting() {
+    return recording_source_.get();
+  }
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
@@ -50,13 +52,13 @@ class CC_EXPORT PictureLayer : public Layer {
 
  private:
   ContentLayerClient* client_;
-  PicturePile pile_;
+  scoped_ptr<RecordingSource> recording_source_;
   devtools_instrumentation::
       ScopedLayerObjectTracker instrumentation_object_tracker_;
   // Invalidation to use the next time update is called.
   InvalidationRegion pending_invalidation_;
   // Invalidation from the last time update was called.
-  Region pile_invalidation_;
+  Region recording_invalidation_;
   gfx::Rect last_updated_visible_content_rect_;
 
   int update_source_frame_number_;

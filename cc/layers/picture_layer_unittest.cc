@@ -74,15 +74,15 @@ TEST(PictureLayerTest, NoTilesIfEmptyBounds) {
 TEST(PictureLayerTest, SuitableForGpuRasterization) {
   MockContentLayerClient client;
   scoped_refptr<PictureLayer> layer = PictureLayer::Create(&client);
-  PicturePile* pile = layer->GetPicturePileForTesting();
+  RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
   // Layer is suitable for gpu rasterization by default.
-  EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+  EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
 
   // Veto gpu rasterization.
-  pile->SetUnsuitableForGpuRasterizationForTesting();
-  EXPECT_FALSE(pile->is_suitable_for_gpu_rasterization());
+  recording_source->SetUnsuitableForGpuRasterizationForTesting();
+  EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
   EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
 }
 
@@ -99,7 +99,7 @@ TEST(PictureLayerTest, UseTileGridSize) {
 
   // Tile-grid is set according to its setting.
   SkTileGridFactory::TileGridInfo info =
-      layer->GetPicturePileForTesting()->GetTileGridInfoForTesting();
+      layer->GetRecordingSourceForTesting()->GetTileGridInfoForTesting();
   EXPECT_EQ(info.fTileInterval.width(), 123 - 2 * info.fMargin.width());
   EXPECT_EQ(info.fTileInterval.height(), 123 - 2 * info.fMargin.height());
 }

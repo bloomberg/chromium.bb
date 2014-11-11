@@ -58,7 +58,7 @@ class PictureLayerImplPerfTest : public testing::Test {
     pending_tree->DetachLayerTree();
 
     scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithPile(pending_tree, 7, pile);
+        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7, pile);
     pending_layer->SetDrawsContent(true);
     pending_tree->SetRootLayer(pending_layer.Pass());
 

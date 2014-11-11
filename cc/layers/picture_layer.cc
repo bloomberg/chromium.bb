@@ -19,6 +19,7 @@ scoped_refptr<PictureLayer> PictureLayer::Create(ContentLayerClient* client) {
 
 PictureLayer::PictureLayer(ContentLayerClient* client)
     : client_(client),
+      recording_source_(new PicturePile),
       instrumentation_object_tracker_(id()),
       update_source_frame_number_(-1),
       can_use_lcd_text_last_frame_(can_use_lcd_text()) {
@@ -37,38 +38,38 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
 
   int source_frame_number = layer_tree_host()->source_frame_number();
   gfx::Size impl_bounds = layer_impl->bounds();
-  gfx::Size pile_bounds = pile_.tiling_size();
+  gfx::Size recording_source_bounds = recording_source_->GetSize();
 
   // If update called, then pile size must match bounds pushed to impl layer.
   DCHECK_IMPLIES(update_source_frame_number_ == source_frame_number,
-                 impl_bounds == pile_bounds)
+                 impl_bounds == recording_source_bounds)
       << " bounds " << impl_bounds.ToString() << " pile "
-      << pile_bounds.ToString();
+      << recording_source_bounds.ToString();
 
   if (update_source_frame_number_ != source_frame_number &&
-      pile_bounds != impl_bounds) {
+      recording_source_bounds != impl_bounds) {
     // Update may not get called for the layer (if it's not in the viewport
     // for example, even though it has resized making the pile no longer
     // valid. In this case just destroy the pile.
-    pile_.SetEmptyBounds();
+    recording_source_->SetEmptyBounds();
   }
 
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
-  layer_impl->invalidation_.Swap(&pile_invalidation_);
-  layer_impl->UpdateRasterSource(PicturePileImpl::CreateFromOther(&pile_));
+  layer_impl->invalidation_.Swap(&recording_invalidation_);
+  layer_impl->UpdateRasterSource(recording_source_->CreateRasterSource());
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
   Layer::SetLayerTreeHost(host);
   if (host) {
-    pile_.SetMinContentsScale(host->settings().minimum_contents_scale);
-    pile_.SetTileGridSize(host->settings().default_tile_grid_size);
-    pile_.set_slow_down_raster_scale_factor(
+    // TODO(hendrikw): Perhaps use and initialization function to do this work.
+    recording_source_->SetMinContentsScale(
+        host->settings().minimum_contents_scale);
+    recording_source_->SetTileGridSize(host->settings().default_tile_grid_size);
+    recording_source_->SetSlowdownRasterScaleFactor(
         host->debug_state().slow_down_raster_scale_factor);
-    pile_.set_show_debug_picture_borders(
-        host->debug_state().show_picture_borders);
   }
 }
 
@@ -97,7 +98,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   gfx::Size layer_size = paint_properties().bounds;
 
   if (last_updated_visible_content_rect_ == visible_content_rect() &&
-      pile_.tiling_size() == layer_size && pending_invalidation_.IsEmpty()) {
+      recording_source_->GetSize() == layer_size &&
+      pending_invalidation_.IsEmpty()) {
     // Only early out if the visible content rect of this layer hasn't changed.
     return updated;
   }
@@ -110,7 +112,7 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
 
   // Calling paint in WebKit can sometimes cause invalidations, so save
   // off the invalidation prior to calling update.
-  pending_invalidation_.Swap(&pile_invalidation_);
+  pending_invalidation_.Swap(&recording_invalidation_);
   pending_invalidation_.Clear();
 
   if (layer_tree_host()->settings().record_full_layer) {
@@ -124,8 +126,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   // to the impl side so that it drops tiles that may not have a recording
   // for them.
   DCHECK(client_);
-  updated |= pile_.UpdateAndExpandInvalidation(
-      client_, &pile_invalidation_, SafeOpaqueBackgroundColor(),
+  updated |= recording_source_->UpdateAndExpandInvalidation(
+      client_, &recording_invalidation_, SafeOpaqueBackgroundColor(),
       contents_opaque(), client_->FillsBoundsCompletely(), layer_size,
       visible_layer_rect, update_source_frame_number_,
       Picture::RECORD_NORMALLY);
@@ -136,14 +138,14 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   } else {
     // If this invalidation did not affect the pile, then it can be cleared as
     // an optimization.
-    pile_invalidation_.Clear();
+    recording_invalidation_.Clear();
   }
 
   return updated;
 }
 
 void PictureLayer::SetIsMask(bool is_mask) {
-  pile_.set_is_mask(is_mask);
+  recording_source_->SetIsMask(is_mask);
 }
 
 bool PictureLayer::SupportsLCDText() const {
@@ -179,7 +181,7 @@ skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
 }
 
 bool PictureLayer::IsSuitableForGpuRasterization() const {
-  return pile_.is_suitable_for_gpu_rasterization();
+  return recording_source_->IsSuitableForGpuRasterization();
 }
 
 void PictureLayer::ClearClient() {

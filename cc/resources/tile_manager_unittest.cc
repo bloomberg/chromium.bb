@@ -112,7 +112,7 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
       pending_layer->SetRasterSource(pile);
     } else {
       pending_layer =
-          FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
+          FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
       pending_layer->SetDrawsContent(true);
     }
     // The bounds() just mirror the pile size.
@@ -344,8 +344,8 @@ TEST_F(TileManagerTilePriorityQueueTest, ActivationComesBeforeEventually) {
   scoped_refptr<FakePicturePileImpl> pending_pile =
       FakePicturePileImpl::CreateFilledPile(tile_size, gfx::Size(1000, 1000));
   scoped_ptr<FakePictureLayerImpl> pending_child =
-      FakePictureLayerImpl::CreateWithPile(
-          host_impl_.pending_tree(), id_ + 1, pending_pile);
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(),
+                                                   id_ + 1, pending_pile);
   pending_layer_->AddChild(pending_child.Pass());
   FakePictureLayerImpl* pending_child_raw = static_cast<FakePictureLayerImpl*>(
       host_impl_.pending_tree()->LayerById(id_ + 1));
@@ -566,8 +566,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
   pending_layer_->CreateDefaultTilingsAndTiles();
 
   scoped_ptr<FakePictureLayerImpl> pending_child =
-      FakePictureLayerImpl::CreateWithPile(
-          host_impl_.pending_tree(), 2, pending_pile);
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_.pending_tree(), 2,
+                                                   pending_pile);
   pending_layer_->AddChild(pending_child.Pass());
 
   FakePictureLayerImpl* pending_child_layer =

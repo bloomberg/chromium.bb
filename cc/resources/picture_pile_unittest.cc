@@ -60,8 +60,8 @@ class PicturePileTestBase {
     UpdateAndExpandInvalidation(&invalidation, tiling_size, viewport_rect);
   }
 
-  gfx::Size tiling_size() const { return pile_.tiling_size(); }
-  gfx::Rect tiling_rect() const { return gfx::Rect(pile_.tiling_size()); }
+  gfx::Size tiling_size() const { return pile_.GetSize(); }
+  gfx::Rect tiling_rect() const { return gfx::Rect(pile_.GetSize()); }
 
   bool UpdateAndExpandInvalidation(Region* invalidation,
                                    const gfx::Size& layer_size,
@@ -75,8 +75,8 @@ class PicturePileTestBase {
 
   bool UpdateWholePile() {
     Region invalidation = tiling_rect();
-    bool result = UpdateAndExpandInvalidation(
-        &invalidation, tiling_size(), tiling_rect());
+    bool result = UpdateAndExpandInvalidation(&invalidation, tiling_size(),
+                                              tiling_rect());
     EXPECT_EQ(tiling_rect().ToString(), invalidation.ToString());
     return result;
   }
@@ -208,7 +208,7 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
   int expected_inflation = pile_.buffer_pixels();
 
   const Picture* base_picture = picture_info.GetPicture();
-  gfx::Rect base_picture_rect(pile_.tiling_size());
+  gfx::Rect base_picture_rect(tiling_size());
   base_picture_rect.Inset(-expected_inflation, -expected_inflation);
   EXPECT_EQ(base_picture_rect.ToString(),
             base_picture->LayerRect().ToString());
@@ -216,7 +216,7 @@ TEST_F(PicturePileTest, LargeInvalidateInflated) {
 
 TEST_F(PicturePileTest, InvalidateOnTileBoundaryInflated) {
   gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(pile_.tiling_size(), 2.f));
+      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 2.f));
   // This creates initial pictures.
   SetTilingSize(new_tiling_size);
 
@@ -288,7 +288,7 @@ TEST_F(PicturePileTest, InvalidateOnFullLayer) {
 
 TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
   gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(pile_.tiling_size(), 4.f));
+      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 4.f));
   SetTilingSize(new_tiling_size);
 
   gfx::Rect viewport(tiling_size().width(), 1);
@@ -346,8 +346,8 @@ TEST_F(PicturePileTest, StopRecordingOffscreenInvalidations) {
 
   // Now update with no invalidation and full viewport
   Region empty_invalidation;
-  UpdateAndExpandInvalidation(
-      &empty_invalidation, tiling_size(), tiling_rect());
+  UpdateAndExpandInvalidation(&empty_invalidation, tiling_size(),
+                              tiling_rect());
   EXPECT_EQ(Region().ToString(), empty_invalidation.ToString());
 
   for (int i = 0; i < pile_.tiling().num_tiles_x(); ++i) {
@@ -385,7 +385,7 @@ TEST_F(PicturePileTest, FrequentInvalidationCanRaster) {
   // tiles touching it, but is true for adjacent tiles, even if it
   // overlaps on borders (edge case).
   gfx::Size new_tiling_size =
-      gfx::ToCeiledSize(gfx::ScaleSize(pile_.tiling_size(), 4.f));
+      gfx::ToCeiledSize(gfx::ScaleSize(tiling_size(), 4.f));
   SetTilingSize(new_tiling_size);
 
   gfx::Rect tile01_borders = pile_.tiling().TileBoundsWithBorder(0, 1);
@@ -451,8 +451,8 @@ TEST_F(PicturePileTest, NoInvalidationValidViewport) {
 
   // No invalidation, changing viewport.
   invalidation = Region();
-  UpdateAndExpandInvalidation(
-      &invalidation, tiling_size(), gfx::Rect(5, 5, 5, 5));
+  UpdateAndExpandInvalidation(&invalidation, tiling_size(),
+                              gfx::Rect(5, 5, 5, 5));
   EXPECT_TRUE(!pile_.recorded_viewport().IsEmpty());
   EXPECT_EQ(Region().ToString(), invalidation.ToString());
 }
@@ -1561,12 +1561,12 @@ TEST_F(PicturePileTest, NonSolidRectangleOnOffsettedLayerIsNonSolid) {
 
 TEST_F(PicturePileTest, SetEmptyBounds) {
   EXPECT_TRUE(pile_.is_solid_color());
-  EXPECT_FALSE(pile_.tiling_size().IsEmpty());
+  EXPECT_FALSE(pile_.GetSize().IsEmpty());
   EXPECT_FALSE(pile_.picture_map().empty());
   EXPECT_TRUE(pile_.HasRecordings());
   pile_.SetEmptyBounds();
   EXPECT_FALSE(pile_.is_solid_color());
-  EXPECT_TRUE(pile_.tiling_size().IsEmpty());
+  EXPECT_TRUE(pile_.GetSize().IsEmpty());
   EXPECT_TRUE(pile_.picture_map().empty());
   EXPECT_FALSE(pile_.HasRecordings());
 }

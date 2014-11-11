@@ -17,8 +17,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
     return make_scoped_ptr(new FakePictureLayerImpl(tree_impl, id));
   }
 
-  // Create layer from a raster_source that covers the entire layer.
-  static scoped_ptr<FakePictureLayerImpl> CreateWithPile(
+  // Create layer from a raster source that covers the entire layer.
+  static scoped_ptr<FakePictureLayerImpl> CreateWithRasterSource(
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source) {
@@ -26,8 +26,8 @@ class FakePictureLayerImpl : public PictureLayerImpl {
         new FakePictureLayerImpl(tree_impl, id, raster_source));
   }
 
-  // Create layer from a raster_source that only covers part of the layer.
-  static scoped_ptr<FakePictureLayerImpl> CreateWithPartialPile(
+  // Create layer from a raster source that only covers part of the layer.
+  static scoped_ptr<FakePictureLayerImpl> CreateWithPartialRasterSource(
       LayerTreeImpl* tree_impl,
       int id,
       scoped_refptr<RasterSource> raster_source,

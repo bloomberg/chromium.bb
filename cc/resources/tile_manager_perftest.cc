@@ -159,7 +159,7 @@ class TileManagerPerfTest : public testing::Test {
     pending_tree->DetachLayerTree();
 
     scoped_ptr<FakePictureLayerImpl> pending_layer =
-        FakePictureLayerImpl::CreateWithPile(pending_tree, id_, pile);
+        FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_, pile);
     pending_layer->SetDrawsContent(true);
     pending_tree->SetRootLayer(pending_layer.Pass());
 
@@ -361,8 +361,8 @@ class TileManagerPerfTest : public testing::Test {
         FakePicturePileImpl::CreateFilledPile(kDefaultTileSize, layer_bounds);
     while (static_cast<int>(layers.size()) < layer_count) {
       scoped_ptr<FakePictureLayerImpl> layer =
-          FakePictureLayerImpl::CreateWithPile(host_impl_.pending_tree(),
-                                               next_id, pile);
+          FakePictureLayerImpl::CreateWithRasterSource(
+              host_impl_.pending_tree(), next_id, pile);
       layer->SetBounds(layer_bounds);
       layers.push_back(layer.get());
       pending_root_layer_->AddChild(layer.Pass());

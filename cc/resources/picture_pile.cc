@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "cc/base/region.h"
+#include "cc/resources/picture_pile_impl.h"
 #include "cc/resources/raster_worker_pool.h"
 #include "skia/ext/analysis_canvas.h"
 
@@ -537,9 +538,49 @@ bool PicturePile::UpdateAndExpandInvalidation(
   return true;
 }
 
+gfx::Size PicturePile::GetSize() const {
+  return tiling_size();
+}
+
 void PicturePile::SetEmptyBounds() {
   tiling_.SetTilingSize(gfx::Size());
   Clear();
+}
+
+void PicturePile::SetMinContentsScale(float min_contents_scale) {
+  PicturePileBase::SetMinContentsScale(min_contents_scale);
+}
+
+void PicturePile::SetTileGridSize(const gfx::Size& tile_grid_size) {
+  PicturePileBase::SetTileGridSize(tile_grid_size);
+}
+
+void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
+  slow_down_raster_scale_factor_for_debug_ = factor;
+}
+
+void PicturePile::SetShowDebugPictureBorders(bool show) {
+  show_debug_picture_borders_ = show;
+}
+
+void PicturePile::SetIsMask(bool is_mask) {
+  set_is_mask(is_mask);
+}
+
+void PicturePile::SetUnsuitableForGpuRasterizationForTesting() {
+  is_suitable_for_gpu_rasterization_ = false;
+}
+
+bool PicturePile::IsSuitableForGpuRasterization() const {
+  return is_suitable_for_gpu_rasterization_;
+}
+
+scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
+  return PicturePileImpl::CreateFromOther(this);
+}
+
+SkTileGridFactory::TileGridInfo PicturePile::GetTileGridInfoForTesting() const {
+  return PicturePileBase::GetTileGridInfoForTesting();
 }
 
 bool PicturePile::CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const {

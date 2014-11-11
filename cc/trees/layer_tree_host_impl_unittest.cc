@@ -6088,7 +6088,8 @@ TEST_F(LayerTreeHostImplTest, FarAwayQuadsDontNeedAA) {
       pile_tile_size, content_layer_bounds));
 
   scoped_ptr<FakePictureLayerImpl> scoped_content_layer =
-      FakePictureLayerImpl::CreateWithPile(host_impl_->pending_tree(), 3, pile);
+      FakePictureLayerImpl::CreateWithRasterSource(host_impl_->pending_tree(),
+                                                   3, pile);
   LayerImpl* content_layer = scoped_content_layer.get();
   scrolling_layer->AddChild(scoped_content_layer.Pass());
   content_layer->SetBounds(content_layer_bounds);

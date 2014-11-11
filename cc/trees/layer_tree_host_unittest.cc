@@ -4908,12 +4908,12 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
-    PicturePile* pile = layer->GetPicturePileForTesting();
+    RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
     // Verify default values.
     EXPECT_TRUE(root->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
-    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
     EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
 
@@ -4964,12 +4964,12 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
-    PicturePile* pile = layer->GetPicturePileForTesting();
+    RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
     // Verify default values.
     EXPECT_TRUE(root->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
-    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
     EXPECT_FALSE(layer_tree_host()->UseGpuRasterization());
 
@@ -4979,8 +4979,8 @@ class LayerTreeHostTestGpuRasterizationEnabled : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
 
     // Content-based veto is relevant as well.
-    pile->SetUnsuitableForGpuRasterizationForTesting();
-    EXPECT_FALSE(pile->is_suitable_for_gpu_rasterization());
+    recording_source->SetUnsuitableForGpuRasterizationForTesting();
+    EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
@@ -5029,12 +5029,12 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   void BeginTest() override {
     Layer* root = layer_tree_host()->root_layer();
     PictureLayer* layer = static_cast<PictureLayer*>(root->child_at(0));
-    PicturePile* pile = layer->GetPicturePileForTesting();
+    RecordingSource* recording_source = layer->GetRecordingSourceForTesting();
 
     // Verify default values.
     EXPECT_TRUE(root->IsSuitableForGpuRasterization());
     EXPECT_TRUE(layer->IsSuitableForGpuRasterization());
-    EXPECT_TRUE(pile->is_suitable_for_gpu_rasterization());
+    EXPECT_TRUE(recording_source->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
 
     // With gpu rasterization forced, gpu rasterization trigger is irrelevant.
@@ -5044,8 +5044,8 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
     EXPECT_TRUE(layer_tree_host()->UseGpuRasterization());
 
     // Content-based veto is irrelevant as well.
-    pile->SetUnsuitableForGpuRasterizationForTesting();
-    EXPECT_FALSE(pile->is_suitable_for_gpu_rasterization());
+    recording_source->SetUnsuitableForGpuRasterizationForTesting();
+    EXPECT_FALSE(recording_source->IsSuitableForGpuRasterization());
     EXPECT_FALSE(layer->IsSuitableForGpuRasterization());
     // Veto will take effect when layers are updated.
     // The results will be verified after commit is completed below.
