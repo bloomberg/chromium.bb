@@ -422,6 +422,7 @@
       'conditions': [
         ['"<(_ubuntu_release)"=="precise"', {
           'patch': 'patches/pulseaudio.precise.diff',
+          'jobs': 1,
         }],
       ],
       'extra_configure_flags': [
@@ -433,7 +434,6 @@
           '--disable-neon-opt'
       ],
       'run_before_build': 'scripts/pulseaudio.sh',
-      'jobs': 1,
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
