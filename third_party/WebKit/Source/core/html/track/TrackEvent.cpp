@@ -24,8 +24,12 @@
  */
 
 #include "config.h"
-
 #include "core/html/track/TrackEvent.h"
+
+#include "bindings/core/v8/UnionTypesCore.h"
+#include "core/html/track/AudioTrack.h"
+#include "core/html/track/TextTrack.h"
+#include "core/html/track/VideoTrack.h"
 
 namespace blink {
 
@@ -51,6 +55,26 @@ TrackEvent::~TrackEvent()
 const AtomicString& TrackEvent::interfaceName() const
 {
     return EventNames::TrackEvent;
+}
+
+void TrackEvent::track(VideoTrackOrAudioTrackOrTextTrack& returnValue)
+{
+    if (!m_track)
+        return;
+
+    switch (m_track->type()) {
+    case TrackBase::TextTrack:
+        returnValue.setTextTrack(toTextTrack(m_track.get()));
+        break;
+    case TrackBase::AudioTrack:
+        returnValue.setAudioTrack(toAudioTrack(m_track.get()));
+        break;
+    case TrackBase::VideoTrack:
+        returnValue.setVideoTrack(toVideoTrack(m_track.get()));
+        break;
+    default:
+        ASSERT_NOT_REACHED();
+    }
 }
 
 void TrackEvent::trace(Visitor* visitor)

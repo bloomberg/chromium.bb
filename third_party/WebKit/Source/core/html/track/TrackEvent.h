@@ -31,6 +31,8 @@
 
 namespace blink {
 
+class VideoTrackOrAudioTrackOrTextTrack;
+
 struct TrackEventInit : public EventInit {
     TrackEventInit();
 
@@ -54,7 +56,7 @@ public:
 
     virtual const AtomicString& interfaceName() const override;
 
-    TrackBase* track() const { return m_track.get(); }
+    void track(VideoTrackOrAudioTrackOrTextTrack&);
 
     virtual void trace(Visitor*) override;
 
