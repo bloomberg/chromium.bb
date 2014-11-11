@@ -230,7 +230,7 @@ void PageSerializer::serializeFrame(LocalFrame* frame)
             addImageToResources(cachedImage, imageElement.renderer(), url);
         } else if (isHTMLInputElement(element)) {
             HTMLInputElement& inputElement = toHTMLInputElement(element);
-            if (inputElement.type() == InputTypeNames::image && inputElement.hasImageLoader()) {
+            if (inputElement.type() == InputTypeNames::image && inputElement.imageLoader()) {
                 KURL url = inputElement.src();
                 ImageResource* cachedImage = inputElement.imageLoader()->image();
                 addImageToResources(cachedImage, inputElement.renderer(), url);

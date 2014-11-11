@@ -240,8 +240,8 @@ public:
     virtual void setRangeText(const String& replacement, ExceptionState&) override final;
     virtual void setRangeText(const String& replacement, unsigned start, unsigned end, const String& selectionMode, ExceptionState&) override final;
 
-    bool hasImageLoader() const { return m_imageLoader; }
-    HTMLImageLoader* imageLoader();
+    HTMLImageLoader* imageLoader() const { return m_imageLoader.get(); }
+    HTMLImageLoader& ensureImageLoader();
 
     bool setupDateTimeChooserParameters(DateTimeChooserParameters&);
 

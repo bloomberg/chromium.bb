@@ -149,11 +149,11 @@ void HTMLInputElement::trace(Visitor* visitor)
     HTMLTextFormControlElement::trace(visitor);
 }
 
-HTMLImageLoader* HTMLInputElement::imageLoader()
+HTMLImageLoader& HTMLInputElement::ensureImageLoader()
 {
     if (!m_imageLoader)
         m_imageLoader = HTMLImageLoader::create(this);
-    return m_imageLoader.get();
+    return *m_imageLoader;
 }
 
 void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
@@ -1482,7 +1482,7 @@ void HTMLInputElement::removedFrom(ContainerNode* insertionPoint)
 
 void HTMLInputElement::didMoveToNewDocument(Document& oldDocument)
 {
-    if (hasImageLoader())
+    if (imageLoader())
         imageLoader()->elementDidMoveToNewDocument();
 
     // FIXME: Remove type check.
