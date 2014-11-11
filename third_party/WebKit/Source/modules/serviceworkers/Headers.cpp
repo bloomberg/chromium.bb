@@ -306,7 +306,7 @@ void Headers::fillWith(const Dictionary& object, ExceptionState& exceptionState)
 {
     ASSERT(!m_headerList->size());
     Vector<String> keys;
-    object.getOwnPropertyNames(keys);
+    object.getPropertyNames(keys);
     if (!keys.size())
         return;
 

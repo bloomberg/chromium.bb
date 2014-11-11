@@ -50,7 +50,7 @@ static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaCon
         return true;
 
     Vector<String> names;
-    constraintsDictionary.getOwnPropertyNames(names);
+    constraintsDictionary.getPropertyNames(names);
 
     String mandatoryName("mandatory");
     String optionalName("optional");
@@ -95,7 +95,7 @@ static bool parse(const Dictionary& constraintsDictionary, WebVector<WebMediaCon
             if (!ok || constraint.isUndefinedOrNull())
                 return false;
             Vector<String> localNames;
-            constraint.getOwnPropertyNames(localNames);
+            constraint.getPropertyNames(localNames);
             if (localNames.size() != 1)
                 return false;
             String key = localNames[0];

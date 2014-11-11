@@ -124,7 +124,6 @@ public:
     bool convert(ConversionContext&, const String&, Dictionary&) const;
 
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
-    bool getOwnPropertyNames(Vector<String>&) const;
     bool getPropertyNames(Vector<String>&) const;
 
     bool getWithUndefinedOrNullCheck(const String&, String&) const;

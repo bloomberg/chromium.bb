@@ -241,29 +241,6 @@ bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMa
     return true;
 }
 
-bool Dictionary::getOwnPropertyNames(Vector<String>& names) const
-{
-    if (!isObject())
-        return false;
-
-    v8::Handle<v8::Object> options = m_options->ToObject();
-    if (options.IsEmpty())
-        return false;
-
-    v8::Local<v8::Array> properties = options->GetOwnPropertyNames();
-    if (properties.IsEmpty())
-        return true;
-    for (uint32_t i = 0; i < properties->Length(); ++i) {
-        v8::Local<v8::String> key = properties->Get(i)->ToString();
-        if (!options->Has(key))
-            continue;
-        TOSTRING_DEFAULT(V8StringResource<>, stringKey, key, false);
-        names.append(stringKey);
-    }
-
-    return true;
-}
-
 bool Dictionary::getPropertyNames(Vector<String>& names) const
 {
     if (!isObject())

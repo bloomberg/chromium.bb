@@ -128,7 +128,7 @@ RTCConfiguration* RTCPeerConnection::parseConfiguration(const Dictionary& config
         }
 
         Vector<String> names;
-        iceServer.getOwnPropertyNames(names);
+        iceServer.getPropertyNames(names);
 
         Vector<String> urlStrings;
         if (names.contains("urls")) {
@@ -178,7 +178,7 @@ RTCOfferOptions* RTCPeerConnection::parseOfferOptions(const Dictionary& options,
         return 0;
 
     Vector<String> propertyNames;
-    options.getOwnPropertyNames(propertyNames);
+    options.getPropertyNames(propertyNames);
 
     // Treat |options| as MediaConstraints if it is empty or has "optional" or "mandatory" properties for compatibility.
     // TODO(jiayl): remove constraints when RTCOfferOptions reaches Stable and client code is ready.
