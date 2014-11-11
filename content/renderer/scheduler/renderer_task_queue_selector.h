@@ -55,6 +55,7 @@ class CONTENT_EXPORT RendererTaskQueueSelector
   void RegisterWorkQueues(
       const std::vector<const base::TaskQueue*>& work_queues) override;
   bool SelectWorkQueueToService(size_t* out_queue_index) override;
+  void AsValueInto(base::debug::TracedValue* state) const override;
 
  private:
   // Returns true if queueA contains an older task than queueB.
@@ -63,6 +64,8 @@ class CONTENT_EXPORT RendererTaskQueueSelector
 
   // Returns the priority which is next after |priority|.
   static QueuePriority NextPriority(QueuePriority priority);
+
+  static const char* PriorityToString(QueuePriority priority);
 
   // Return true if |out_queue_index| indicates the index of the queue with
   // the oldest pending task from the set of queues of |priority|, or
@@ -73,6 +76,10 @@ class CONTENT_EXPORT RendererTaskQueueSelector
   // Returns true if |queue_index| is enabled with the given |priority|.
   bool QueueEnabledWithPriority(size_t queue_index,
                                 QueuePriority priority) const;
+
+  // Called whenever the selector chooses a task queue for execution with the
+  // priority |priority|.
+  void DidSelectQueueWithPriority(QueuePriority priority);
 
   // Number of high priority tasks which can be run before a normal priority
   // task should be selected to prevent starvation.

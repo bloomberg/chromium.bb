@@ -4,6 +4,7 @@
 
 #include "content/renderer/scheduler/renderer_task_queue_selector.h"
 
+#include "base/debug/trace_event_argument.h"
 #include "base/logging.h"
 #include "base/pending_task.h"
 
@@ -96,27 +97,74 @@ bool RendererTaskQueueSelector::SelectWorkQueueToService(
   DCHECK(work_queues_.size());
   // Always service the control queue if it has any work.
   if (ChooseOldestWithPriority(CONTROL_PRIORITY, out_queue_index)) {
+    DidSelectQueueWithPriority(CONTROL_PRIORITY);
     return true;
   }
   // Select from the normal priority queue if we are starving it.
   if (starvation_count_ >= kMaxStarvationTasks &&
       ChooseOldestWithPriority(NORMAL_PRIORITY, out_queue_index)) {
-    starvation_count_ = 0;
+    DidSelectQueueWithPriority(NORMAL_PRIORITY);
     return true;
   }
   // Otherwise choose in priority order.
   for (QueuePriority priority = HIGH_PRIORITY; priority < QUEUE_PRIORITY_COUNT;
        priority = NextPriority(priority)) {
     if (ChooseOldestWithPriority(priority, out_queue_index)) {
-      if (priority == HIGH_PRIORITY) {
-        starvation_count_++;
-      } else {
-        starvation_count_ = 0;
-      }
+      DidSelectQueueWithPriority(priority);
       return true;
     }
   }
   return false;
+}
+
+void RendererTaskQueueSelector::DidSelectQueueWithPriority(
+    QueuePriority priority) {
+  switch (priority) {
+    case CONTROL_PRIORITY:
+      break;
+    case HIGH_PRIORITY:
+      starvation_count_++;
+      break;
+    case NORMAL_PRIORITY:
+    case BEST_EFFORT_PRIORITY:
+      starvation_count_ = 0;
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+// static
+const char* RendererTaskQueueSelector::PriorityToString(
+    QueuePriority priority) {
+  switch (priority) {
+    case CONTROL_PRIORITY:
+      return "control";
+    case HIGH_PRIORITY:
+      return "high";
+    case NORMAL_PRIORITY:
+      return "normal";
+    case BEST_EFFORT_PRIORITY:
+      return "best_effort";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+void RendererTaskQueueSelector::AsValueInto(
+    base::debug::TracedValue* state) const {
+  main_thread_checker_.CalledOnValidThread();
+  state->BeginDictionary("priorities");
+  for (QueuePriority priority = FIRST_QUEUE_PRIORITY;
+       priority < QUEUE_PRIORITY_COUNT; priority = NextPriority(priority)) {
+    state->BeginArray(PriorityToString(priority));
+    for (size_t queue_index : queue_priorities_[priority])
+      state->AppendInteger(queue_index);
+    state->EndArray();
+  }
+  state->EndDictionary();
+  state->SetInteger("starvation_count", starvation_count_);
 }
 
 }  // namespace content

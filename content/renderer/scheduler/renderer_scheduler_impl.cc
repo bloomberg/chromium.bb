@@ -5,6 +5,9 @@
 #include "content/renderer/scheduler/renderer_scheduler_impl.h"
 
 #include "base/bind.h"
+#include "base/debug/trace_event.h"
+#include "base/debug/trace_event_argument.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "cc/output/begin_frame_args.h"
 #include "content/renderer/scheduler/renderer_task_queue_selector.h"
 #include "ui/gfx/frame_time.h"
@@ -40,9 +43,20 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       CONTROL_TASK_QUEUE, RendererTaskQueueSelector::CONTROL_PRIORITY);
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
   task_queue_manager_->SetAutoPump(IDLE_TASK_QUEUE, false);
+
+  for (size_t i = 0; i < TASK_QUEUE_COUNT; i++) {
+    task_queue_manager_->SetQueueName(
+        i, TaskQueueIdToString(static_cast<QueueId>(i)));
+  }
+  TRACE_EVENT_OBJECT_CREATED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
+      this);
 }
 
 RendererSchedulerImpl::~RendererSchedulerImpl() {
+  TRACE_EVENT_OBJECT_DELETED_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
+      this);
 }
 
 void RendererSchedulerImpl::Shutdown() {
@@ -69,6 +83,8 @@ RendererSchedulerImpl::IdleTaskRunner() {
 }
 
 void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::WillBeginFrame", "args", args.AsValue());
   main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return;
@@ -78,6 +94,8 @@ void RendererSchedulerImpl::WillBeginFrame(const cc::BeginFrameArgs& args) {
 }
 
 void RendererSchedulerImpl::DidCommitFrameToCompositor() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::DidCommitFrameToCompositor");
   main_thread_checker_.CalledOnValidThread();
   if (!task_queue_manager_)
     return;
@@ -92,6 +110,8 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
 
 void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
     blink::WebInputEvent::Type type) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread");
   // Ignore mouse events because on windows these can very frequent.
   // Ignore keyboard events because it doesn't really make sense to enter
   // compositor priority for them.
@@ -160,6 +180,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
     return;
 
   base::AutoLock lock(incoming_signals_lock_);
+  base::TimeTicks now;
   policy_may_need_update_.SetLocked(false);
 
   Policy new_policy = NORMAL_PRIORITY_POLICY;
@@ -168,7 +189,7 @@ void RendererSchedulerImpl::UpdatePolicy() {
         base::TimeDelta::FromMilliseconds(kCompositorPriorityAfterTouchMillis);
     base::TimeTicks compositor_priority_end(last_input_time_ +
                                             compositor_priority_duration);
-    base::TimeTicks now(Now());
+    now = Now();
     if (compositor_priority_end > now) {
       PostUpdatePolicyOnControlRunner(compositor_priority_end - now);
       new_policy = COMPOSITOR_PRIORITY_POLICY;
@@ -194,9 +215,17 @@ void RendererSchedulerImpl::UpdatePolicy() {
       break;
   }
   current_policy_ = new_policy;
+
+  TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
+      TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
+      this, AsValueLocked(now));
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererScheduler.policy", current_policy_);
 }
 
 void RendererSchedulerImpl::StartIdlePeriod() {
+  TRACE_EVENT_ASYNC_BEGIN0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                           "RendererSchedulerIdlePeriod", this);
   main_thread_checker_.CalledOnValidThread();
   renderer_task_queue_selector_->EnableQueue(
       IDLE_TASK_QUEUE, RendererTaskQueueSelector::BEST_EFFORT_PRIORITY);
@@ -204,6 +233,8 @@ void RendererSchedulerImpl::StartIdlePeriod() {
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
+  TRACE_EVENT_ASYNC_END0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                         "RendererSchedulerIdlePeriod", this);
   main_thread_checker_.CalledOnValidThread();
   renderer_task_queue_selector_->DisableQueue(IDLE_TASK_QUEUE);
 }
@@ -229,4 +260,56 @@ bool RendererSchedulerImpl::PollableNeedsUpdateFlag::IsSet() const {
   thread_checker_.CalledOnValidThread();
   return base::subtle::Acquire_Load(&flag_) != 0;
 }
+
+// static
+const char* RendererSchedulerImpl::TaskQueueIdToString(QueueId queue_id) {
+  switch (queue_id) {
+    case DEFAULT_TASK_QUEUE:
+      return "default_tq";
+    case COMPOSITOR_TASK_QUEUE:
+      return "compositor_tq";
+    case IDLE_TASK_QUEUE:
+      return "idle_tq";
+    case CONTROL_TASK_QUEUE:
+      return "control_tq";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+// static
+const char* RendererSchedulerImpl::PolicyToString(Policy policy) {
+  switch (policy) {
+    case NORMAL_PRIORITY_POLICY:
+      return "normal";
+    case COMPOSITOR_PRIORITY_POLICY:
+      return "compositor";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
+scoped_refptr<base::debug::ConvertableToTraceFormat>
+RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
+  main_thread_checker_.CalledOnValidThread();
+  incoming_signals_lock_.AssertAcquired();
+
+  if (optional_now.is_null())
+    optional_now = Now();
+  scoped_refptr<base::debug::TracedValue> state =
+      new base::debug::TracedValue();
+
+  state->SetString("current_policy", PolicyToString(current_policy_));
+  state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble("last_input_time",
+                   (last_input_time_ - base::TimeTicks()).InMillisecondsF());
+  state->SetDouble(
+      "estimated_next_frame_begin",
+      (estimated_next_frame_begin_ - base::TimeTicks()).InMillisecondsF());
+
+  return state;
+}
+
 }  // namespace content

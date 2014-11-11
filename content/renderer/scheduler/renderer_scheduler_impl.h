@@ -12,6 +12,12 @@
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
 #include "content/renderer/scheduler/task_queue_manager.h"
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+}
+}
+
 namespace content {
 
 class RendererTaskQueueSelector;
@@ -73,6 +79,12 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
     DISALLOW_COPY_AND_ASSIGN(PollableNeedsUpdateFlag);
   };
+
+  // Returns the serialized scheduler state for tracing.
+  scoped_refptr<base::debug::ConvertableToTraceFormat> AsValueLocked(
+      base::TimeTicks optional_now) const;
+  static const char* TaskQueueIdToString(QueueId queue_id);
+  static const char* PolicyToString(Policy policy);
 
   // The time we should stay in CompositorPriority mode for after a touch event.
   static const int kCompositorPriorityAfterTouchMillis = 100;

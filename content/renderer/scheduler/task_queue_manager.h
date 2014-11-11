@@ -15,6 +15,13 @@
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
 
+namespace base {
+namespace debug {
+class ConvertableToTraceFormat;
+class TracedValue;
+}
+}
+
 namespace content {
 namespace internal {
 class TaskQueue;
@@ -69,6 +76,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // lock, so calling it has some overhead.
   bool IsQueueEmpty(size_t queue_index) const;
 
+  // Set the name |queue_index| for tracing purposes. |name| must be a pointer
+  // to a static string.
+  void SetQueueName(size_t queue_index, const char* name);
+
  private:
   friend class internal::TaskQueue;
 
@@ -86,6 +97,11 @@ class CONTENT_EXPORT TaskQueueManager {
   // Returns true if any work queue has tasks after doing this.
   bool UpdateWorkQueues();
 
+  // Chooses the next work queue to service. Returns true if |out_queue_index|
+  // indicates the queue from which the next task should be run, false to
+  // avoid running any tasks.
+  bool SelectWorkQueueToService(size_t* out_queue_index);
+
   // Runs a single task from the work queue designated by |queue_index|. The
   // queue must not be empty.
   void RunTaskFromWorkQueue(size_t queue_index);
@@ -98,6 +114,9 @@ class CONTENT_EXPORT TaskQueueManager {
                                   const base::Closure& task,
                                   base::TimeDelta delay);
   internal::TaskQueue* Queue(size_t queue_index) const;
+
+  scoped_refptr<base::debug::ConvertableToTraceFormat>
+  AsValueWithSelectorResult(bool should_run, size_t selected_queue) const;
 
   std::vector<scoped_refptr<internal::TaskQueue>> queues_;
   base::AtomicSequenceNumber task_sequence_num_;

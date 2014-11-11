@@ -37,6 +37,9 @@ class SelectorForTest : public TaskQueueSelector {
     return work_queues_;
   }
 
+  void AsValueInto(base::debug::TracedValue* state) const override {
+  }
+
  private:
   std::deque<size_t> queues_to_service_;
   std::vector<const base::TaskQueue*> work_queues_;
