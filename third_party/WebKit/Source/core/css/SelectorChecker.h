@@ -46,7 +46,7 @@ public:
     enum Match { SelectorMatches, SelectorFailsLocally, SelectorFailsAllSiblings, SelectorFailsCompletely };
     enum VisitedMatchType { VisitedMatchDisabled, VisitedMatchEnabled };
     enum Mode { ResolvingStyle = 0, CollectingStyleRules, CollectingCSSRules, QueryingRules, SharingRules };
-    explicit SelectorChecker(Document&, Mode);
+    SelectorChecker(Document&, Mode);
 
     struct SelectorCheckingContext {
         STACK_ALLOCATED();

@@ -32,7 +32,7 @@ public:
     void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
 
 private:
-    explicit CSSContentDistributionValue(CSSValueID distribution, CSSValueID position, CSSValueID overflow);
+    CSSContentDistributionValue(CSSValueID distribution, CSSValueID position, CSSValueID overflow);
 
     CSSValueID m_distribution;
     CSSValueID m_position;
