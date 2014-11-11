@@ -215,9 +215,6 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    return self._GetExternalStoragePathImpl()
-
-  def _GetExternalStoragePathImpl(self):
     if 'external_storage' in self._cache:
       return self._cache['external_storage']
 
@@ -285,7 +282,8 @@ class DeviceUtils(object):
       return self.GetProp('sys.boot_completed') == '1'
 
     def wifi_enabled():
-      return 'Wi-Fi is enabled' in self.RunShellCommand(['dumpsys', 'wifi'])
+      return 'Wi-Fi is enabled' in self.RunShellCommand(['dumpsys', 'wifi'],
+                                                        check_return=False)
 
     self.adb.WaitForDevice()
     timeout_retry.WaitFor(sd_card_ready)
@@ -442,7 +440,7 @@ class DeviceUtils(object):
       timeout = self._default_timeout
 
     try:
-      output = self.adb.Shell(cmd, expect_rc=0)
+      output = self.adb.Shell(cmd)
     except device_errors.AdbShellCommandFailedError as e:
       if check_return:
         raise
@@ -768,7 +766,7 @@ class DeviceUtils(object):
       zip_proc.start()
       zip_proc.join()
 
-      zip_on_device = '%s/tmp.zip' % self._GetExternalStoragePathImpl()
+      zip_on_device = '%s/tmp.zip' % self.GetExternalStoragePath()
       try:
         self.adb.Push(zip_file.name, zip_on_device)
         self.RunShellCommand(

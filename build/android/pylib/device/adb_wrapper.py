@@ -152,14 +152,14 @@ class AdbWrapper(object):
     self._DeviceAdbCmd(['pull', remote, local], timeout, retries)
     _VerifyLocalFileExists(local)
 
-  def Shell(self, command, expect_rc=None, timeout=_DEFAULT_TIMEOUT,
+  def Shell(self, command, expect_rc=0, timeout=_DEFAULT_TIMEOUT,
             retries=_DEFAULT_RETRIES):
     """Runs a shell command on the device.
 
     Args:
       command: The shell command to run.
-      expect_rc: (optional) If set checks that the command's return code matches
-        this value.
+      expect_rc: (optional) Check that the command's return code matches this
+        value. Default is 0. If set to None the test is skipped.
       timeout: (optional) Timeout per try in seconds.
       retries: (optional) Number of retries to attempt.
 
