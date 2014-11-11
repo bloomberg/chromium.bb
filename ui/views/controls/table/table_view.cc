@@ -8,6 +8,9 @@
 
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_view_state.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
@@ -414,6 +417,33 @@ bool TableView::GetTooltipTextOrigin(const gfx::Point& p,
   return GetTooltipImpl(p, NULL, loc);
 }
 
+void TableView::GetAccessibleState(ui::AXViewState* state) {
+  state->role = ui::AX_ROLE_TABLE;
+  state->AddStateFlag(ui::AX_STATE_READ_ONLY);
+  state->count = RowCount();
+
+  if (selection_model_.active() != ui::ListSelectionModel::kUnselectedIndex) {
+    // Get information about the active item, this is not the same as the set
+    // of selected items (of which there could be more than one).
+    state->role = ui::AX_ROLE_ROW;
+    state->index = selection_model_.active();
+    if (selection_model_.IsSelected(selection_model_.active())) {
+      state->AddStateFlag(ui::AX_STATE_SELECTED);
+    }
+
+    std::vector<base::string16> name_parts;
+    for (const VisibleColumn& visible_column : visible_columns_) {
+      base::string16 value = model_->GetText(
+          selection_model_.active(), visible_column.column.id);
+      if (!value.empty()) {
+        name_parts.push_back(visible_column.column.title);
+        name_parts.push_back(value);
+      }
+    }
+    state->name = JoinString(name_parts, base::ASCIIToUTF16(", "));
+  }
+}
+
 void TableView::OnModelChanged() {
   selection_model_.Clear();
   NumRowsChanged();
@@ -579,6 +609,7 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 
 void TableView::OnFocus() {
   SchedulePaintForSelection();
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void TableView::OnBlur() {
@@ -791,6 +822,8 @@ void TableView::SetSelectionModel(const ui::ListSelectionModel& new_selection) {
 
   if (table_view_observer_)
     table_view_observer_->OnSelectionChanged();
+
+  NotifyAccessibilityEvent(ui::AX_EVENT_FOCUS, true);
 }
 
 void TableView::AdvanceSelection(AdvanceDirection direction) {

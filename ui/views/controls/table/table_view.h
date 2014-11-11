@@ -174,6 +174,7 @@ class VIEWS_EXPORT TableView
                       base::string16* tooltip) const override;
   bool GetTooltipTextOrigin(const gfx::Point& p,
                             gfx::Point* loc) const override;
+  void GetAccessibleState(ui::AXViewState* state) override;
 
   // ui::TableModelObserver overrides:
   void OnModelChanged() override;

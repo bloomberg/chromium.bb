@@ -66,6 +66,15 @@
         }
       },
       {
+        "id": "RowDetails",
+        "type": "object",
+        "description": "Additional accessibility information about a table row.",
+        "properties": {
+          "itemCount": {"type": "integer", "description": "The number of rows in this table."},
+          "itemIndex": {"type": "integer", "description": "The 0-based index of the active row."}
+        }
+      },
+      {
         "id": "SliderDetails",
         "type": "object",
         "description": "Information about the state of a slider.",
@@ -80,6 +89,13 @@
         "properties": {
           "itemCount": {"type": "integer", "description": "The number of tabs in this group."},
           "itemIndex": {"type": "integer", "description": "The 0-based index of this tab in this group."}
+        }
+      },
+      {
+        "id": "TableDetails",
+        "type": "object",
+        "description": "Additional accessibility information about a table.",
+        "properties": {
         }
       },
       {
@@ -142,7 +158,7 @@
           "type": {
             "type": "string",
             "description": "The type of this object, which determines the contents of 'details'.",
-            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "slider", "tab", "textbox", "tree", "treeitem", "window"]
+            "enum": ["alert", "button", "checkbox", "combobox", "link", "menu", "menuitem", "radiobutton", "row", "slider", "tab", "table", "textbox", "tree", "treeitem", "window"]
           },
           "name": {
             "type": "string",
@@ -162,11 +178,13 @@
               { "$ref": "MenuDetails" },
               { "$ref": "MenuItemDetails" },
               { "$ref": "RadioButtonDetails" },
+              { "$ref": "RowDetails"},
               { "$ref": "SliderDetails" },
               { "$ref": "TabDetails" },
               { "$ref": "TextBoxDetails" },
               { "$ref": "TreeDetails" },
-              { "$ref": "TreeItemDetails" }
+              { "$ref": "TreeItemDetails" },
+              { "$ref": "TableDetails" }
             ]
           },
           "bounds": {

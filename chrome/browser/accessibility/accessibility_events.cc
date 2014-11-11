@@ -356,3 +356,27 @@ AccessibilityAlertInfo::AccessibilityAlertInfo(Profile* profile,
 const char* AccessibilityAlertInfo::type() const {
   return keys::kTypeAlert;
 }
+
+AccessibilityTableInfo::AccessibilityTableInfo(Profile* profile,
+                                               const std::string& name)
+    : AccessibilityControlInfo(profile, name) {
+}
+
+const char* AccessibilityTableInfo::type() const {
+  return keys::kTypeTable;
+}
+
+AccessibilityRowInfo::AccessibilityRowInfo(Profile* profile,
+                                           const std::string& name,
+                                           const std::string& context,
+                                           int item_index,
+                                           int item_count)
+    : AccessibilityControlInfo(profile, name),
+      item_index_(item_index),
+      item_count_(item_count) {
+  set_context(context);
+}
+
+const char* AccessibilityRowInfo::type() const {
+  return keys::kTypeRow;
+}

@@ -238,6 +238,12 @@ void AccessibilityEventRouterViews::DispatchAccessibilityEvent(
   case ui::AX_ROLE_TREE_ITEM:
     SendTreeItemNotification(view, type, profile);
     break;
+  case ui::AX_ROLE_TABLE:
+    SendTableNotification(view, type, profile);
+    break;
+  case ui::AX_ROLE_ROW:
+    SendRowNotification(view, type, profile);
+    break;
   default:
     // Hover events can fire on literally any view, so it's safe to
     // ignore ones we don't care about.
@@ -501,6 +507,31 @@ void AccessibilityEventRouterViews::SendAlertControlNotification(
   AccessibilityAlertInfo info(
       profile,
       name);
+  info.set_bounds(view->GetBoundsInScreen());
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendTableNotification(
+    views::View* view,
+    ui::AXEvent event,
+    Profile* profile) {
+  AccessibilityTableInfo info(profile, GetViewName(view));
+  info.set_bounds(view->GetBoundsInScreen());
+  SendControlAccessibilityNotification(event, &info);
+}
+
+// static
+void AccessibilityEventRouterViews::SendRowNotification(
+    views::View* view,
+    ui::AXEvent event,
+    Profile* profile) {
+  ui::AXViewState state;
+  view->GetAccessibleState(&state);
+
+  std::string name = base::UTF16ToUTF8(state.name);
+  std::string context = GetViewContext(view);
+  AccessibilityRowInfo info(profile, name, context, state.index, state.count);
   info.set_bounds(view->GetBoundsInScreen());
   SendControlAccessibilityNotification(event, &info);
 }

@@ -417,4 +417,35 @@ class AccessibilityAlertInfo : public AccessibilityControlInfo {
   const char* type() const override;
 };
 
+// Accessibility information about a table; this class is used by
+// onControlFocused event listeners.
+class AccessibilityTableInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityTableInfo(Profile* profile, const std::string& menu_name);
+
+  const char* type() const override;
+};
+
+// Accessibility information about a table row; this class is used by
+// onControlFocused event listeners.
+class AccessibilityRowInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityRowInfo(Profile* profile,
+                       const std::string& name,
+                       const std::string& context,
+                       int item_index,
+                       int item_count);
+
+  const char* type() const override;
+
+  int item_index() const { return item_index_; }
+  int item_count() const { return item_count_; }
+
+ private:
+  // The 0-based index of the currently selected row.
+  int item_index_;
+  // Count of rows in the table.
+  int item_count_;
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_
