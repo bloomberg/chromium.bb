@@ -107,7 +107,7 @@ scoped_ptr<GpuMemoryBufferImpl> GpuMemoryBufferImplIOSurface::CreateFromHandle(
     return scoped_ptr<GpuMemoryBufferImpl>();
 
   return make_scoped_ptr<GpuMemoryBufferImpl>(new GpuMemoryBufferImplIOSurface(
-      handle.id, size, format, callback, io_surface.get()));
+      handle.id, size, format, callback, io_surface.release()));
 }
 
 // static
