@@ -16,21 +16,16 @@
 <div id="sandbox2"></div>
 <pre id="console"></pre>
 <script>
-description("Tests to ensure that a '-webkit-user-modify' CSS porperty is not inherited across shadow boundaries.");
+description("Tests to ensure that a '-webkit-user-modify' CSS property is not inherited across shadow boundaries.");
 if (window.testRunner)
     testRunner.dumpAsText();
 
-function computedStyle(element, style) {
-    var cs = window.getComputedStyle(element);
-    if (!cs)
-        return '(NA)';
-    if (cs.getPropertyCSSValue(style))
-        return cs.getPropertyCSSValue(style).cssText;
-    return undefined;
+function computedStyle(element) {
+    return window.getComputedStyle(element).webkitUserModify;
 }
 
 function getUserModifyProperty(id) {
-    return computedStyle(document.getElementById(id), userModifyPropertyName);
+    return computedStyle(document.getElementById(id));
 }
 
 function prepareNodeInShadowRoot(host, contentEditableAttributeValueForNode) {
@@ -43,14 +38,12 @@ function prepareNodeInShadowRoot(host, contentEditableAttributeValueForNode) {
     return nodeInShadow;
 }
 
-var userModifyPropertyName = '-webkit-user-modify';
-
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host1"), null), userModifyPropertyName)', 'read-only');
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host2"), "false"), userModifyPropertyName)', 'read-only');
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host3"), "true"), userModifyPropertyName)', 'read-write');
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host1"), null), userModifyPropertyName)', 'read-only');
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host2"), "false"), userModifyPropertyName)', 'read-only');
-shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host3"), "true"), userModifyPropertyName)', 'read-write');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host1"), null))', 'read-only');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host2"), "false"))', 'read-only');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("contenteditable-host3"), "true"))', 'read-write');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host1"), null))', 'read-only');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host2"), "false"))', 'read-only');
+shouldBeEqualToString('computedStyle(prepareNodeInShadowRoot(document.getElementById("non-contenteditable-host3"), "true"))', 'read-write');
 
 document.getElementById('sandbox').appendChild(
     createDOM('div', {'id': 'host', 'contenteditable': 'true'},

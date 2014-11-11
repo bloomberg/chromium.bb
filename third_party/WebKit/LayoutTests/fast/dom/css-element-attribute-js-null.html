@@ -60,7 +60,6 @@
             var pageRule = rules[3];
             var charsetRule = document.styleSheets[2].cssRules[0];
             var style = rule.style;
-            var value = style.getPropertyCSSValue('color');
             var mediaList = mediaRule.media;
 
             var listing = [
@@ -106,15 +105,6 @@
                     attributes: [
                         // cssText detects syntax errors, such as JS null, and sets the value to the empty string.
                         {name: 'cssText', expectedNull: ''}
-                    ]
-                },
-                {
-                    type: 'CSSValue',
-                    elementToUse: value,
-                    attributes: [
-                        // for now, setting cssText does not doing anything. When it gets implemented, the expectedNull
-                        // should become the empty string.
-                        {name: 'cssText', expectedNull: 'black'}
                     ]
                 },
                 {

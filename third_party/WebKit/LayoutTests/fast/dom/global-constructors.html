@@ -58,10 +58,6 @@ function test()
     
     cssRule = document.styleSheets[0].cssRules[0];
     shouldBe("window.CSSRule.prototype.isPrototypeOf(cssRule)", true);
-    
-    cssPrimitiveValue = cssRule.style.getPropertyCSSValue("color");
-    shouldBe("window.CSSValue.prototype.isPrototypeOf(cssPrimitiveValue)", true);
-    shouldBe("window.CSSPrimitiveValue.prototype.isPrototypeOf(cssPrimitiveValue)", true);
 
     cssStyleDeclaration = cssRule.style;
     shouldBe("window.CSSStyleDeclaration.prototype.isPrototypeOf(cssStyleDeclaration)", true);
