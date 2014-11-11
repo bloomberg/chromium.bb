@@ -46,7 +46,6 @@ public:
 
     const String& charset() const { return m_charset; }
     double discoveryTime() const { return m_discoveryTime; }
-    FetchRequest::DeferOption defer() const { return m_defer; }
     void setDefer(FetchRequest::DeferOption defer) { m_defer = defer; }
     void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }
     void setCrossOriginEnabled(StoredCredentials allowCredentials)
@@ -94,10 +93,11 @@ public:
     void trace(Visitor*);
 
     void takeAndPreload(PreloadRequestStream&);
-    void preload(PassOwnPtr<PreloadRequest>);
 
 private:
     explicit HTMLResourcePreloader(Document&);
+
+    void preload(PassOwnPtr<PreloadRequest>);
 
     RawPtrWillBeMember<Document> m_document;
 };

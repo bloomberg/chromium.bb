@@ -1233,11 +1233,6 @@ void ResourceFetcher::decrementRequestCount(const Resource* res)
 
 void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const String& charset)
 {
-    requestPreload(type, request, charset);
-}
-
-void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request, const String& charset)
-{
     // Ensure main resources aren't preloaded, since the cache can't actually reuse the preload.
     if (type == Resource::MainResource)
         return;
