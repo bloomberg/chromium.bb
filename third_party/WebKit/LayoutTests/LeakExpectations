@@ -78,4 +78,11 @@ crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Cra
 crbug.com/417752 storage/websql/sql-error-codes.html [ Pass Leak ]
 crbug.com/427628 inspector/sources/debugger/debugger-save-to-temp-var.html [ Leak ]
 
+crbug.com/431996 webaudio/distance-exponential.html [ Crash ]
 crbug.com/431996 webaudio/distance-inverse.html [ Crash ]
+crbug.com/431996 webaudio/distance-linear.html [ Crash ]
+crbug.com/431996 webaudio/dom-exceptions.html [ Crash ]
+crbug.com/431996 webaudio/panner-equalpower.html [ Crash ]
+crbug.com/431996 webaudio/panner-equalpower-stereo.html [ Crash ]
+crbug.com/431996 webaudio/panner-loop.html [ Crash ]
+crbug.com/431996 webaudio/pannernode-basic.html [ Crash ]
