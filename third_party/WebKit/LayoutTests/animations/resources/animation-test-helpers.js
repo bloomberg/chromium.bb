@@ -20,8 +20,7 @@ Function parameters:
 
     [1] If a single string is passed, it is the id of the element to test. If an array with 2 elements is passed they
     are the ids of 2 elements, whose values are compared for equality. In this case the expected value is ignored
-    but the tolerance is used in the comparison. If the second element is prefixed with "static:", no animation on that
-    element is required, allowing comparison with an unanimated "expected value" element.
+    but the tolerance is used in the comparison.
 
     If a string with a '.' is passed, this is an element in an iframe. The string before the dot is the iframe id
     and the string after the dot is the element name in that iframe.
@@ -152,19 +151,13 @@ function checkExpectedValue(expected, index)
 
     // Check for a pair of element Ids
     var compareElements = false;
-    var element2Static = false;
     var elementId2;
     if (typeof elementId != "string") {
         if (elementId.length != 2)
             return;
-            
+
         elementId2 = elementId[1];
         elementId = elementId[0];
-
-        if (elementId2.indexOf("static:") == 0) {
-            elementId2 = elementId2.replace("static:", "");
-            element2Static = true;
-        }
 
         compareElements = true;
     }

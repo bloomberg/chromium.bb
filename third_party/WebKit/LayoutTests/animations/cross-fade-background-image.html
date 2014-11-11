@@ -42,8 +42,8 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       [2.5, "box", "backgroundImage", 0.5, 0.05],
-      [2.5, ["box", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
-      [2.5, ["boxShorthand", "static:boxStatic"], "backgroundImage", 0.5, 0.05],
+      [2.5, ["box", "boxStatic"], "backgroundImage", 0.5, 0.05],
+      [2.5, ["boxShorthand", "boxStatic"], "backgroundImage", 0.5, 0.05],
     ];
 
     var doPixelTest = true;

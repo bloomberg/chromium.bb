@@ -49,8 +49,8 @@
         // [time, element-id, property, expected-value, tolerance]
         // FIXME: We can't test reading the borderImage shorthand because of bug #13658.
         [2.5, "box", "borderImageSource", 0.5, 0.05],
-        [2.5, ["box", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
-        [2.5, ["boxShorthand", "static:boxStatic"], "borderImageSource", 0.5, 0.05],
+        [2.5, ["box", "boxStatic"], "borderImageSource", 0.5, 0.05],
+        [2.5, ["boxShorthand", "boxStatic"], "borderImageSource", 0.5, 0.05],
       ];
 
       var doPixelTest = true;
