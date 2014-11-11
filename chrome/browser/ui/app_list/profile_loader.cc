@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/profiler/scoped_tracker.h"
 #include "chrome/browser/apps/scoped_keep_alive.h"
 #include "chrome/browser/ui/app_list/profile_store.h"
 
@@ -32,13 +33,29 @@ void ProfileLoader::LoadProfileInvalidatingOtherLoads(
     base::Callback<void(Profile*)> callback) {
   InvalidatePendingProfileLoads();
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracking_profile1(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "426272 ProfileLoader::LoadProfileInvalidatingOtherLoads 1"));
+
   Profile* profile = profile_store_->GetProfileByPath(profile_file_path);
   if (profile) {
+    // TODO(vadimt): Remove ScopedTracker below once crbug.com/426272 is fixed.
+    tracked_objects::ScopedTracker tracking_profile2(
+        FROM_HERE_WITH_EXPLICIT_FUNCTION(
+            "426272 ProfileLoader::LoadProfileInvalidatingOtherLoads 2"));
+
     callback.Run(profile);
     return;
   }
 
   IncrementPendingProfileLoads();
+
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracking_profile3(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "426272 ProfileLoader::LoadProfileInvalidatingOtherLoads 3"));
+
   profile_store_->LoadProfileAsync(
       profile_file_path,
       base::Bind(&ProfileLoader::OnProfileLoaded,

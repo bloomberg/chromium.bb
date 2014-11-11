@@ -14,6 +14,7 @@
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
@@ -282,6 +283,11 @@ void AppListServiceWin::OnLoadProfileForWarmup(Profile* initial_profile) {
   if (!IsWarmupNeeded())
     return;
 
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/426272 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "426272 AppListServiceWin::OnLoadProfileForWarmup"));
+
   base::Time before_warmup(base::Time::Now());
   shower().WarmupForProfile(initial_profile);
   UMA_HISTOGRAM_TIMES("Apps.AppListWarmupDuration",
@@ -342,7 +348,28 @@ void AppListServiceWin::CreateShortcut() {
 void AppListServiceWin::ScheduleWarmup() {
   // Post a task to create the app list. This is posted to not impact startup
   // time.
-  const int kInitWindowDelay = 30;
+  /* const */ int kInitWindowDelay = 30;
+
+  // TODO(vadimt): Make kInitWindowDelay const and remove the below switch once
+  // crbug.com/431326 is fixed.
+
+  // Profiler UMA data is reported only for first 30 sec after browser startup.
+  // To make all invocations of AppListServiceWin::LoadProfileForWarmup visible
+  // to the server-side analysis tool, reducing this period to 10 sec in Dev
+  // builds and Canary, where profiler instrumentations are enabled.
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_UNKNOWN:
+    case chrome::VersionInfo::CHANNEL_CANARY:
+      kInitWindowDelay = 10;
+      break;
+
+    case chrome::VersionInfo::CHANNEL_DEV:
+    case chrome::VersionInfo::CHANNEL_BETA:
+    case chrome::VersionInfo::CHANNEL_STABLE:
+      // Profiler instrumentations are not enabled.
+      break;
+  }
+
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&AppListServiceWin::LoadProfileForWarmup,
