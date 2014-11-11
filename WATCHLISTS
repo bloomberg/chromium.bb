@@ -734,9 +734,8 @@
                   'content/browser/renderer_host/media/|'\
                   'content/common/gpu/media/|'\
                   'content/renderer/media/|'\
-                  'media/base/android/'\
                   'media/video/|'\
-                  'video.*_accelerat|',
+                  'video.*_accelerat',
     },
     'website_settings': {
       'filepath': 'chrome/browser/content_settings/'\
