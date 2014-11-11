@@ -142,6 +142,7 @@ GaiaScreenHandler::GaiaScreenHandler(
       dns_cleared_(false),
       dns_clear_task_running_(false),
       cookies_cleared_(false),
+      show_when_dns_and_cookies_cleared_(false),
       focus_stolen_(false),
       gaia_silent_load_(false),
       using_saml_api_(false),
@@ -353,7 +354,7 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
     // Show Gaia sign-in screen again, since we only allow the owner to sign
     // in.
     populated_email_ = owner_email;
-    ShowGaia(is_enrolling_consumer_management_);
+    ShowGaiaAsync(is_enrolling_consumer_management_);
     return;
   }
 
@@ -568,8 +569,9 @@ void GaiaScreenHandler::SetSAMLPrincipalsAPIUsed(bool api_used) {
   UMA_HISTOGRAM_BOOLEAN("ChromeOS.SAML.APIUsed", api_used);
 }
 
-void GaiaScreenHandler::ShowGaia(bool is_enrolling_consumer_management) {
+void GaiaScreenHandler::ShowGaiaAsync(bool is_enrolling_consumer_management) {
   is_enrolling_consumer_management_ = is_enrolling_consumer_management;
+  show_when_dns_and_cookies_cleared_ = true;
   if (gaia_silent_load_ && populated_email_.empty()) {
     dns_cleared_ = true;
     cookies_cleared_ = true;
@@ -581,9 +583,17 @@ void GaiaScreenHandler::ShowGaia(bool is_enrolling_consumer_management) {
   }
 }
 
+void GaiaScreenHandler::CancelShowGaiaAsync() {
+  show_when_dns_and_cookies_cleared_ = false;
+}
+
 void GaiaScreenHandler::ShowGaiaScreenIfReady() {
-  if (!dns_cleared_ || !cookies_cleared_ || !Delegate())
+  if (!dns_cleared_ ||
+      !cookies_cleared_ ||
+      !show_when_dns_and_cookies_cleared_ ||
+      !Delegate()) {
     return;
+  }
 
   std::string active_network_path = network_state_informer_->network_path();
   if (gaia_silent_load_ &&

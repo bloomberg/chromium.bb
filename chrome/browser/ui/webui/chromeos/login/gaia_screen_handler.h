@@ -152,7 +152,16 @@ class GaiaScreenHandler : public BaseScreenHandler {
   // principals API was used during SAML login.
   void SetSAMLPrincipalsAPIUsed(bool api_used);
 
-  void ShowGaia(bool is_enrolling_consumer_management);
+  // Show the sign-in screen. Depending on internal state, the screen will
+  // either be shown immediately or after an asynchronous clean-up process that
+  // cleans DNS cache and cookies. In the latter case, the request to show the
+  // screen can be canceled by calling CancelShowGaiaAsync() while the clean-up
+  // is in progress.
+  void ShowGaiaAsync(bool is_enrolling_consumer_management);
+
+  // Cancels the request to show the sign-in screen while the asynchronous
+  // clean-up process that precedes the screen showing is in progress.
+  void CancelShowGaiaAsync();
 
   // Shows signin screen after dns cache and cookie cleanup operations finish.
   void ShowGaiaScreenIfReady();
@@ -205,6 +214,10 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   // True if cookie jar cleanup is done.
   bool cookies_cleared_;
+
+  // If true, the sign-in screen will be shown when DNS cache and cookie
+  // clean-up finish.
+  bool show_when_dns_and_cookies_cleared_;
 
   // Is focus still stolen from Gaia page?
   bool focus_stolen_;

@@ -510,6 +510,8 @@ void SigninScreenHandler::UpdateUIState(UIState ui_state,
       break;
     case UI_STATE_ACCOUNT_PICKER:
       ui_state_ = UI_STATE_ACCOUNT_PICKER;
+      DCHECK(gaia_screen_handler_);
+      gaia_screen_handler_->CancelShowGaiaAsync();
       ShowScreen(OobeUI::kScreenAccountPicker, params);
       break;
     default:
@@ -1574,7 +1576,7 @@ void SigninScreenHandler::ContinueKioskEnableFlow(
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
   DCHECK(gaia_screen_handler_);
-  gaia_screen_handler_->ShowGaia(is_enrolling_consumer_management_);
+  gaia_screen_handler_->ShowGaiaAsync(is_enrolling_consumer_management_);
 }
 
 GaiaScreenHandler::FrameState SigninScreenHandler::FrameState() const {
