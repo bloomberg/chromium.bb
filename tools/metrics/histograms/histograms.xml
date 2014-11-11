@@ -20082,6 +20082,23 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.DarkResumeActionResult"
+    enum="ShillSuspendTerminationDarkResumeActionResult">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of dark resume
+    actions that successfully complete or fail when shill suspends.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.DarkResumeActionTime" units="milliseconds">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the time in milliseconds it
+    takes dark resume actions to complete when shill suspends.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.DeviceConnectionStatus" enum="ConnectionStatus">
   <owner>zqiu@chromium.org</owner>
   <summary>
@@ -20286,21 +20303,39 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.SuspendActionResult"
+    enum="ShillSuspendTerminationDarkResumeActionResult">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the number of suspend actions
+    that successfully complete or fail when shill suspends.
+  </summary>
+</histogram>
+
+<histogram name="Network.Shill.SuspendActionTime" units="milliseconds">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the time in milliseconds it
+    takes suspend actions to complete when shill suspends.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.TerminationActionResult"
-    enum="ShillTerminationActionResult">
-  <obsolete>
-    Deprecated 10/2012. No longer tracked.
-  </obsolete>
+    enum="ShillSuspendTerminationDarkResumeActionResult">
   <owner>quiche@chromium.org</owner>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
-    actions that successfully complete or fail when shill terminates.
+    actions that successfully complete or fail when shill terminates. Previously
+    deprecated in 10/2012 and brought back in 10/2014.
   </summary>
 </histogram>
 
 <histogram name="Network.Shill.TerminationActionResult.OnSuspend"
-    enum="ShillTerminationActionResult">
+    enum="ShillSuspendTerminationDarkResumeActionResult">
   <owner>quiche@chromium.org</owner>
+  <obsolete>
+    Deprecated 10/2014. Migrated to Network.Shill.SuspendActionResult.
+  </obsolete>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
     actions that successfully complete or fail when shill suspends.
@@ -20308,17 +20343,31 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Network.Shill.TerminationActionResult.OnTerminate"
-    enum="ShillTerminationActionResult">
+    enum="ShillSuspendTerminationDarkResumeActionResult">
   <owner>quiche@chromium.org</owner>
+  <obsolete>
+    Deprecated 10/2014. Migrated to Network.Shill.TerminationActionResult.
+  </obsolete>
   <summary>
     Chrome OS network diagnostic metric sampling the number of termination
     actions that successfully complete or fail when shill terminates.
   </summary>
 </histogram>
 
+<histogram name="Network.Shill.TerminationActionTime" units="milliseconds">
+  <owner>samueltan@chromium.org</owner>
+  <summary>
+    Chrome OS network diagnostic metric sampling the time in milliseconds it
+    takes termination actions to complete when shill terminates.
+  </summary>
+</histogram>
+
 <histogram name="Network.Shill.TerminationActionTime.OnSuspend"
     units="milliseconds">
   <owner>quiche@chromium.org</owner>
+  <obsolete>
+    Deprecated 10/2014. Migrated to Network.Shill.SuspendActionTime.
+  </obsolete>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill suspends.
@@ -20328,6 +20377,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="Network.Shill.TerminationActionTime.OnTerminate"
     units="milliseconds">
   <owner>quiche@chromium.org</owner>
+  <obsolete>
+    Deprecated 10/2014. Migrated to Network.Shill.TerminationActionTime.
+  </obsolete>
   <summary>
     Chrome OS network diagnostic metric sampling the time in milliseconds it
     takes termination actions to complete when shill terminates.
@@ -53519,10 +53571,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Right"/>
 </enum>
 
-<enum name="ShillTerminationActionResult" type="int">
+<enum name="ShillSuspendTerminationDarkResumeActionResult" type="int">
   <summary>
-    The termination action result types come from TerminationActionResult in
-    shill/metrics.h
+    The termination/suspend/dark resume action result types come from
+    SuspendActionResult in shill/metrics.h
   </summary>
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
