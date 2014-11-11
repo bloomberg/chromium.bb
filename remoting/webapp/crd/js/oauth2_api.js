@@ -183,3 +183,36 @@ remoting.OAuth2Api.getEmail = function(onDone, onError, token) {
   remoting.xhr.get(remoting.OAuth2Api.getOAuth2ApiUserInfoEndpoint_(),
                    onResponse, '', headers);
 };
+
+/**
+ * Get the user's email address and full name.
+ *
+ * @param {function(string, string):void} onDone Callback invoked when the email
+ *     address and full name are available.
+ * @param {function(remoting.Error):void} onError Callback invoked if an
+ *     error occurs.
+ * @param {string} token Access token.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2Api.getUserInfo = function(onDone, onError, token) {
+  /** @param {XMLHttpRequest} xhr */
+  var onResponse = function(xhr) {
+    if (xhr.status == 200) {
+      try {
+        var result = JSON.parse(xhr.responseText);
+        onDone(result['email'], result['name']);
+      } catch (err) {
+        console.error('Invalid "userinfo" response from server:',
+                      /** @type {*} */ (err));
+        onError(remoting.Error.UNEXPECTED);
+      }
+    } else {
+      console.error('Failed to get user info. Status: ' + xhr.status +
+                    ' response: ' + xhr.responseText);
+      onError(remoting.OAuth2Api.interpretXhrStatus_(xhr.status));
+    }
+  };
+  var headers = { 'Authorization': 'OAuth ' + token };
+  remoting.xhr.get(remoting.OAuth2Api.getOAuth2ApiUserInfoEndpoint_(),
+                   onResponse, '', headers);
+};

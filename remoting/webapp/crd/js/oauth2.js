@@ -36,6 +36,8 @@ remoting.OAuth2.prototype.KEY_ACCESS_TOKEN_ = 'oauth2-access-token';
 remoting.OAuth2.prototype.KEY_XSRF_TOKEN_ = 'oauth2-xsrf-token';
 /** @private */
 remoting.OAuth2.prototype.KEY_EMAIL_ = 'remoting-email';
+/** @private */
+remoting.OAuth2.prototype.KEY_FULLNAME_ = 'remoting-fullname';
 
 // Constants for parameters used in retrieving the OAuth2 credentials.
 /** @private */
@@ -88,6 +90,7 @@ remoting.OAuth2.prototype.isAuthenticated = function() {
  */
 remoting.OAuth2.prototype.clear = function() {
   window.localStorage.removeItem(this.KEY_EMAIL_);
+  window.localStorage.removeItem(this.KEY_FULLNAME_);
   this.clearAccessToken_();
   this.clearRefreshToken_();
 };
@@ -102,6 +105,7 @@ remoting.OAuth2.prototype.clear = function() {
 remoting.OAuth2.prototype.setRefreshToken_ = function(token) {
   window.localStorage.setItem(this.KEY_REFRESH_TOKEN_, escape(token));
   window.localStorage.removeItem(this.KEY_EMAIL_);
+  window.localStorage.removeItem(this.KEY_FULLNAME_);
   this.clearAccessToken_();
 };
 
@@ -354,6 +358,7 @@ remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
   /** @param {string} email */
   var onResponse = function(email) {
     window.localStorage.setItem(that.KEY_EMAIL_, email);
+    window.localStorage.setItem(that.KEY_FULLNAME_, '');
     onOk(email);
   };
 
@@ -362,13 +367,59 @@ remoting.OAuth2.prototype.getEmail = function(onOk, onError) {
 };
 
 /**
+ * Get the user's email address and full name.
+ *
+ * @param {function(string,string):void} onOk Callback invoked when the user's
+ *     email address and full name are available.
+ * @param {function(remoting.Error):void} onError Callback invoked if an
+ *     error occurs.
+ * @return {void} Nothing.
+ */
+remoting.OAuth2.prototype.getUserInfo = function(onOk, onError) {
+  var cachedEmail = window.localStorage.getItem(this.KEY_EMAIL_);
+  var cachedName = window.localStorage.getItem(this.KEY_FULLNAME_);
+  if (typeof cachedEmail == 'string' && typeof cachedName == 'string') {
+    onOk(cachedEmail, cachedName);
+    return;
+  }
+  /** @type {remoting.OAuth2} */
+  var that = this;
+  /**
+   * @param {string} email
+   * @param {string} name
+   */
+  var onResponse = function(email, name) {
+    window.localStorage.setItem(that.KEY_EMAIL_, email);
+    window.localStorage.setItem(that.KEY_FULLNAME_, name);
+    onOk(email, name);
+  };
+
+  this.callWithToken(
+      remoting.OAuth2Api.getUserInfo.bind(null, onResponse, onError), onError);
+};
+
+/**
  * If the user's email address is cached, return it, otherwise return null.
  *
  * @return {?string} The email address, if it has been cached by a previous call
- *     to getEmail, otherwise null.
+ *     to getEmail or getUserInfo, otherwise null.
  */
 remoting.OAuth2.prototype.getCachedEmail = function() {
   var value = window.localStorage.getItem(this.KEY_EMAIL_);
+  if (typeof value == 'string') {
+    return value;
+  }
+  return null;
+};
+
+/**
+ * If the user's full name is cached, return it, otherwise return null.
+ *
+ * @return {?string} The user's full name, if it has been cached by a previous
+ * call to getUserInfo, otherwise null.
+ */
+remoting.OAuth2.prototype.getCachedUserFullName = function() {
+  var value = window.localStorage.getItem(this.KEY_FULLNAME_);
   if (typeof value == 'string') {
     return value;
   }
