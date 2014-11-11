@@ -163,6 +163,8 @@ std::string DeriveCommandLine(const GURL& start_url,
 #endif
     ::switches::kDisableVaapiAcceleratedVideoEncode,
 #if defined(USE_OZONE)
+    ::switches::kOzoneInitialDisplayBounds,
+    ::switches::kOzoneInitialDisplayPhysicalSizeMm,
     ::switches::kOzonePlatform,
     ::switches::kOzoneUseSurfaceless,
 #endif

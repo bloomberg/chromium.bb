@@ -18,6 +18,10 @@ OZONE_EXPORT extern const char kOzoneUseSurfaceless[];
 
 OZONE_EXPORT extern const char kOzoneTestSingleOverlaySupport[];
 
+OZONE_EXPORT extern const char kOzoneInitialDisplayBounds[];
+
+OZONE_EXPORT extern const char kOzoneInitialDisplayPhysicalSizeMm[];
+
 }  // namespace switches
 
 #endif  // UI_OZONE_PUBLIC_OZONE_SWITCHES_H_

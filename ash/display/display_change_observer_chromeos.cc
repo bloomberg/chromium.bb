@@ -203,9 +203,19 @@ void DisplayChangeObserver::OnDisplayModeChanged(
   for (size_t i = 0; i < display_states.size(); ++i) {
     const DisplayConfigurator::DisplayState& state = display_states[i];
 
-    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL &&
-        gfx::Display::InternalDisplayId() == gfx::Display::kInvalidDisplayID) {
-      gfx::Display::SetInternalDisplayId(state.display->display_id());
+    if (state.display->type() == ui::DISPLAY_CONNECTION_TYPE_INTERNAL) {
+      if (gfx::Display::InternalDisplayId() ==
+          gfx::Display::kInvalidDisplayID) {
+        gfx::Display::SetInternalDisplayId(state.display->display_id());
+      } else {
+#if defined(USE_OZONE)
+        // TODO(dnicoara) Remove when Ozone can properly perform the initial
+        // display configuration.
+        gfx::Display::SetInternalDisplayId(state.display->display_id());
+#endif
+        DCHECK_EQ(gfx::Display::InternalDisplayId(),
+                  state.display->display_id());
+      }
     }
 
     const ui::DisplayMode* mode_info = state.display->current_mode();
