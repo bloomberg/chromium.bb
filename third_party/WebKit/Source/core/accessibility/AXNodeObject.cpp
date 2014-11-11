@@ -1248,6 +1248,7 @@ String AXNodeObject::title() const
     case ToggleButtonRole:
     case CheckBoxRole:
     case ListBoxOptionRole:
+    case ListItemRole:
     case MenuButtonRole:
     case MenuItemRole:
     case MenuItemCheckBoxRole:
