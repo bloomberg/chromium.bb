@@ -6,8 +6,7 @@ partial interface Element {
     [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen();
 
     // Mozilla version
-    const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen] void webkitRequestFullScreen([Default=Undefined] optional unsigned short flags);
+    [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen, ImplementedAs=webkitRequestFullscreen] void webkitRequestFullScreen();
 
     // W3C version
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullscreen] void webkitRequestFullscreen();

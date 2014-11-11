@@ -161,7 +161,6 @@ bool Fullscreen::isFullScreen(Document& document)
 
 Fullscreen::Fullscreen(Document& document)
     : DocumentLifecycleObserver(&document)
-    , m_areKeysEnabledInFullScreen(false)
     , m_fullScreenRenderer(nullptr)
     , m_eventQueueTimer(this, &Fullscreen::eventQueueTimerFired)
 {
@@ -284,7 +283,6 @@ void Fullscreen::requestFullscreen(Element& element, RequestType requestType)
 
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
-        m_areKeysEnabledInFullScreen = requestType != PrefixedMozillaRequest && requestType != PrefixedVideoRequest;
         document()->frameHost()->chrome().client().enterFullScreenForElement(&element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
@@ -458,8 +456,6 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     m_fullScreenElement->willStopBeingFullscreenElement();
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
-
-    m_areKeysEnabledInFullScreen = false;
 
     if (m_fullScreenRenderer)
         m_fullScreenRenderer->unwrapRenderer();

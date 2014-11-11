@@ -141,7 +141,7 @@ WebString WebElement::computeInheritedLanguage() const
 void WebElement::requestFullScreen()
 {
     Element* element = unwrap<Element>();
-    Fullscreen::from(element->document()).requestFullscreen(*element, Fullscreen::PrefixedMozillaAllowKeyboardInputRequest);
+    Fullscreen::from(element->document()).requestFullscreen(*element, Fullscreen::PrefixedRequest);
 }
 
 WebRect WebElement::boundsInViewportSpace()

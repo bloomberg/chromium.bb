@@ -15,11 +15,6 @@ class ElementFullscreen {
 public:
     static void requestFullscreen(Element&);
 
-    // Mozilla version
-    static const unsigned short ALLOW_KEYBOARD_INPUT = 1;
-    static void webkitRequestFullScreen(Element&, unsigned short flags);
-
-    // W3C version
     static void webkitRequestFullscreen(Element&);
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);

@@ -43,7 +43,6 @@ public:
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
 
     // Mozilla version
-    static bool webkitFullScreenKeyboardInputAllowed(Document&);
     static Element* webkitCurrentFullScreenElement(Document&);
 
     DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);

@@ -60,9 +60,7 @@ public:
 
     enum RequestType {
         UnprefixedRequest, // Element.requestFullscreen()
-        PrefixedRequest, // Element.webkitRequestFullscreen()
-        PrefixedMozillaRequest, // Element.webkitRequestFullScreen()
-        PrefixedMozillaAllowKeyboardInputRequest, // Element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT)
+        PrefixedRequest, // Element.webkitRequestFullscreen() and webkitRequestFullScreen()
         PrefixedVideoRequest, // HTMLVideoElement.webkitEnterFullscreen() and webkitEnterFullScreen()
     };
 
@@ -83,7 +81,6 @@ public:
     void elementRemoved(Element&);
 
     // Mozilla API
-    bool webkitFullScreenKeyboardInputAllowed() const { return m_fullScreenElement.get() && m_areKeysEnabledInFullScreen; }
     Element* webkitCurrentFullScreenElement() const { return m_fullScreenElement.get(); }
 
     virtual void documentWasDetached() override;
@@ -108,7 +105,6 @@ private:
     void enqueueErrorEvent(Element&, RequestType);
     void eventQueueTimerFired(Timer<Fullscreen>*);
 
-    bool m_areKeysEnabledInFullScreen;
     RefPtrWillBeMember<Element> m_fullScreenElement;
     WillBeHeapVector<std::pair<RefPtrWillBeMember<Element>, RequestType> > m_fullScreenElementStack;
     RawPtrWillBeMember<RenderFullScreen> m_fullScreenRenderer;

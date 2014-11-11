@@ -30,7 +30,6 @@ partial interface Document {
 
     // Mozilla version
     [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=webkitCurrentFullScreenElement] readonly attribute boolean webkitIsFullScreen;
-    [MeasureAs=PrefixedDocumentFullScreenKeyboardInputAllowed] readonly attribute boolean webkitFullScreenKeyboardInputAllowed;
     [MeasureAs=PrefixedDocumentCurrentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
     [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=exitFullscreen] void webkitCancelFullScreen();
 

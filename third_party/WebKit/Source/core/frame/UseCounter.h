@@ -303,7 +303,6 @@ public:
         XHRProgressEventPosition = 316,
         XHRProgressEventTotalSize = 317,
         PrefixedDocumentIsFullscreen = 318,
-        PrefixedDocumentFullScreenKeyboardInputAllowed = 319,
         PrefixedDocumentCurrentFullScreenElement = 320,
         PrefixedDocumentCancelFullScreen = 321,
         PrefixedDocumentFullscreenEnabled = 322,
@@ -447,7 +446,6 @@ public:
         // The above items are available in M37 branch.
 
         UseAsm = 473,
-        KeyEventNotAllowedInFullScreen = 474,
         DOMWindowOpen = 475,
         DOMWindowOpenFeatures = 476,
         MediaStreamTrackGetSources = 478,

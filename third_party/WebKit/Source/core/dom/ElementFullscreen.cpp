@@ -19,14 +19,4 @@ void ElementFullscreen::webkitRequestFullscreen(Element& element)
     Fullscreen::from(element.document()).requestFullscreen(element, Fullscreen::PrefixedRequest);
 }
 
-void ElementFullscreen::webkitRequestFullScreen(Element& element, unsigned short flags)
-{
-    Fullscreen::RequestType requestType;
-    if (flags & ALLOW_KEYBOARD_INPUT)
-        requestType = Fullscreen::PrefixedMozillaAllowKeyboardInputRequest;
-    else
-        requestType = Fullscreen::PrefixedMozillaRequest;
-    Fullscreen::from(element.document()).requestFullscreen(element, requestType);
-}
-
 } // namespace blink

@@ -47,13 +47,6 @@ void DocumentFullscreen::exitFullscreen(Document& document)
     Fullscreen::from(document).exitFullscreen();
 }
 
-bool DocumentFullscreen::webkitFullScreenKeyboardInputAllowed(Document& document)
-{
-    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))
-        return fullscreen->webkitFullScreenKeyboardInputAllowed();
-    return false;
-}
-
 Element* DocumentFullscreen::webkitCurrentFullScreenElement(Document& document)
 {
     if (Fullscreen* fullscreen = Fullscreen::fromIfExists(document))

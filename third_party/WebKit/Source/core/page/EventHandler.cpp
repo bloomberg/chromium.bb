@@ -36,7 +36,6 @@
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
-#include "core/dom/Fullscreen.h"
 #include "core/dom/NodeRenderingTraversal.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -2997,36 +2996,9 @@ bool EventHandler::handleAccessKey(const PlatformKeyboardEvent& evt)
     return true;
 }
 
-bool EventHandler::isKeyEventAllowedInFullScreen(Fullscreen* fullscreen, const PlatformKeyboardEvent& keyEvent) const
-{
-    if (fullscreen->webkitFullScreenKeyboardInputAllowed())
-        return true;
-
-    if (keyEvent.type() == PlatformKeyboardEvent::Char) {
-        if (keyEvent.text().length() != 1)
-            return false;
-        UChar character = keyEvent.text()[0];
-        return character == ' ';
-    }
-
-    int keyCode = keyEvent.windowsVirtualKeyCode();
-    return (keyCode >= VK_BACK && keyCode <= VK_CAPITAL)
-        || (keyCode >= VK_SPACE && keyCode <= VK_DELETE)
-        || (keyCode >= VK_OEM_1 && keyCode <= VK_OEM_PLUS)
-        || (keyCode >= VK_MULTIPLY && keyCode <= VK_OEM_8);
-}
-
 bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
 {
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
-
-    ASSERT(m_frame->document());
-    if (Fullscreen* fullscreen = Fullscreen::fromIfExists(*m_frame->document())) {
-        if (fullscreen->webkitCurrentFullScreenElement() && !isKeyEventAllowedInFullScreen(fullscreen, initialKeyEvent)) {
-            UseCounter::count(*m_frame->document(), UseCounter::KeyEventNotAllowedInFullScreen);
-            return false;
-        }
-    }
 
     if (initialKeyEvent.windowsVirtualKeyCode() == VK_CAPITAL)
         capsLockStateMayHaveChanged();
