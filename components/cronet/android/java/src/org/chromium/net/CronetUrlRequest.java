@@ -382,15 +382,17 @@ final class CronetUrlRequest implements UrlRequest {
         Log.e(CronetUrlRequestContext.LOG_TAG,
                 "Exception in CalledByNative method", e);
         // Do not call into listener if request is canceled.
-        if (isCanceled()) {
-            return;
+        synchronized (mUrlRequestAdapterLock) {
+            if (isCanceled()) {
+                return;
+            }
+            cancel();
         }
         try {
-            cancel();
             mListener.onFailed(this, mResponseInfo, requestError);
-        } catch (Exception cancelException) {
+        } catch (Exception failException) {
             Log.e(CronetUrlRequestContext.LOG_TAG,
-                    "Exception trying to cancel request", cancelException);
+                    "Exception notifying of failed request", failException);
         }
     }
 
