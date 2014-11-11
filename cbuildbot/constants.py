@@ -475,9 +475,10 @@ THROTTLED_CQ_READY_QUERY = (
     { 'CRVW': '2', 'VRIF': '1', 'COMR': '2' })
 
 # The PreCQ does not require the CQ flag to be set if it's a recent CL.
-PRECQ_READY_QUERY = (
-    _BASIC_QUERY + ' AND (label:Commit-Queue>=1 OR NOT age:1day)',
-    { 'CRVW': '2', 'VRIF': '1' })
+PRECQ_READY_QUERY = CQ_READY_QUERY
+# Change to this query, to enable speculative PreCQ runs.
+#    (_BASIC_QUERY + ' AND (label:Commit-Queue>=1 OR NOT age:1day)',
+#     { 'CRVW': '2', 'VRIF': '1' })
 
 
 GERRIT_ON_BORG_LABELS = {
