@@ -49,6 +49,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/android/synchronous_compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/favicon_status.h"
@@ -161,7 +162,6 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
     : web_contents_(web_contents.Pass()),
       browser_view_renderer_(
           this,
-          web_contents_.get(),
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI)),
       renderer_manager_key_(GLViewRendererManager::GetInstance()->NullKey()) {
   base::subtle::NoBarrier_AtomicIncrement(&g_instance_count, 1);
@@ -180,6 +180,8 @@ AwContents::AwContents(scoped_ptr<WebContents> web_contents)
   InitDataReductionProxyIfNecessary();
   if (autofill_manager_delegate)
     InitAutofillIfNecessary(autofill_manager_delegate->GetSaveFormData());
+  content::SynchronousCompositor::SetClientForWebContents(
+      web_contents_.get(), &browser_view_renderer_);
 }
 
 void AwContents::SetJavaPeers(JNIEnv* env,
@@ -262,6 +264,8 @@ void AwContents::SetAwAutofillClient(jobject client) {
 
 AwContents::~AwContents() {
   DCHECK_EQ(this, AwContents::FromWebContents(web_contents_.get()));
+  content::SynchronousCompositor::SetClientForWebContents(web_contents_.get(),
+                                                          NULL);
   web_contents_->RemoveUserData(kAwContentsUserDataKey);
   if (find_helper_.get())
     find_helper_->SetListener(NULL);
@@ -684,16 +688,6 @@ void AwContents::PostInvalidate() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_AwContents_postInvalidateOnAnimation(env, obj.obj());
-}
-
-void AwContents::UpdateParentDrawConstraints() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  browser_view_renderer_.UpdateParentDrawConstraints();
-}
-
-void AwContents::DidSkipCommitFrame() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  browser_view_renderer_.DidSkipCommitFrame();
 }
 
 void AwContents::OnNewPicture() {

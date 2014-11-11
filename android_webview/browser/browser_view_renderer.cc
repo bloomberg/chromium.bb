@@ -5,7 +5,6 @@
 #include "android_webview/browser/browser_view_renderer.h"
 
 #include "android_webview/browser/browser_view_renderer_client.h"
-#include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/auto_reset.h"
 #include "base/command_line.h"
@@ -14,7 +13,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cc/output/compositor_frame.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -55,11 +53,9 @@ void BrowserViewRenderer::CalculateTileMemoryPolicy() {
 
 BrowserViewRenderer::BrowserViewRenderer(
     BrowserViewRendererClient* client,
-    content::WebContents* web_contents,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner)
     : client_(client),
       shared_renderer_state_(ui_task_runner, this),
-      web_contents_(web_contents),
       ui_task_runner_(ui_task_runner),
       compositor_(NULL),
       is_paused_(false),
@@ -77,17 +73,9 @@ BrowserViewRenderer::BrowserViewRenderer(
       fallback_tick_pending_(false),
       width_(0),
       height_(0) {
-  CHECK(web_contents_);
-  content::SynchronousCompositor::SetClientForWebContents(web_contents_, this);
-
-  // Currently the logic in this class relies on |compositor_| remaining
-  // NULL until the DidInitializeCompositor() call, hence it is not set here.
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
-  content::SynchronousCompositor::SetClientForWebContents(web_contents_, NULL);
-  // OnDetachedFromWindow should be called before the destructor, so the memory
-  // policy should have already been updated.
 }
 
 intptr_t BrowserViewRenderer::GetAwDrawGLViewContext() {

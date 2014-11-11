@@ -20,10 +20,6 @@
 class SkCanvas;
 class SkPicture;
 
-namespace content {
-class WebContents;
-}
-
 namespace android_webview {
 
 class BrowserViewRendererClient;
@@ -57,7 +53,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   BrowserViewRenderer(
       BrowserViewRendererClient* client,
-      content::WebContents* web_contents,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner);
 
   virtual ~BrowserViewRenderer();
@@ -173,7 +168,6 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient {
 
   BrowserViewRendererClient* client_;
   SharedRendererState shared_renderer_state_;
-  content::WebContents* web_contents_;
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
   content::SynchronousCompositor* compositor_;

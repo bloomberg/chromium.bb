@@ -124,8 +124,11 @@
       'sources': [
         'browser/aw_static_cookie_policy_unittest.cc',
         'browser/aw_form_database_service_unittest.cc',
+        'browser/browser_view_renderer_unittest.cc',
         'browser/net/android_stream_reader_url_request_job_unittest.cc',
         'browser/net/input_stream_reader_unittest.cc',
+        'browser/test/rendering_test.cc',
+        'browser/test/rendering_test.h',
         'lib/main/webview_tests.cc',
         'native/aw_contents_client_bridge_unittest.cc',
         'native/aw_media_url_interceptor_unittest.cc',

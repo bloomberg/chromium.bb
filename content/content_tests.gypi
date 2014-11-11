@@ -80,6 +80,8 @@
       'public/test/test_notification_tracker.h',
       'public/test/test_renderer_host.cc',
       'public/test/test_renderer_host.h',
+      'public/test/test_synchronous_compositor_android.cc',
+      'public/test/test_synchronous_compositor_android.h',
       'public/test/test_utils.cc',
       'public/test/test_utils.h',
       'public/test/unittest_test_suite.cc',
