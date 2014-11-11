@@ -17,14 +17,31 @@ var remoting = remoting || {};
  * @param {Element} statsElement The HTML div to which to update stats.
  */
 remoting.ConnectionStats = function(statsElement) {
-  this.statsElement = statsElement;
+  /**
+   * @private
+   */
+  this.statsElement_ = statsElement;
+
+  /**
+   * @type {remoting.ClientSession.PerfStats}
+   * @private
+   */
+  this.mostRecent_ = null
+};
+
+/**
+ * @return {remoting.ClientSession.PerfStats} The most recently-set PerfStats,
+ *     or null if update() has not yet been called.
+ */
+remoting.ConnectionStats.prototype.mostRecent = function() {
+  return this.mostRecent_;
 };
 
 /**
  * Show or hide the connection stats div.
  */
 remoting.ConnectionStats.prototype.toggle = function() {
-  this.statsElement.hidden = !this.statsElement.hidden;
+  this.statsElement_.hidden = !this.statsElement_.hidden;
 };
 
 /**
@@ -32,6 +49,7 @@ remoting.ConnectionStats.prototype.toggle = function() {
  * @param {remoting.ClientSession.PerfStats} stats The connection statistics.
  */
 remoting.ConnectionStats.prototype.update = function(stats) {
+  this.mostRecent_ = stats;
   var units = '';
   var videoBandwidth = stats.videoBandwidth;
   if (videoBandwidth != undefined) {
@@ -63,7 +81,7 @@ remoting.ConnectionStats.prototype.update = function(stats) {
   }
 
   var statistics = document.getElementById('statistics');
-  this.statsElement.innerText = (
+  this.statsElement_.innerText = (
       'Bandwidth: ' + formatStatNumber(videoBandwidth, units) +
       ', Frame Rate: ' + formatStatNumber(stats.videoFrameRate, 'fps') +
       ', Capture: ' + formatStatNumber(stats.captureLatency, 'ms') +
