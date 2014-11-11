@@ -40,7 +40,7 @@ function sample3() {
 }
 
 function sample4() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.8");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.8");
     // change the animation to a non-CSS animatable value.
     set.setAttribute("attributeName", "x");
     set.setAttribute("to", "200");
@@ -49,7 +49,7 @@ function sample4() {
 function sample5() {
     // verify that the animation does not run.
     shouldBeCloseEnough("rect.x.animVal.value", "100");
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "1.0");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "1.0");
     // change the animationType to XML which is valid.
     set.setAttribute("attributeType", "XML");
 }

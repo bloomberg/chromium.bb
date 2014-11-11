@@ -21,19 +21,12 @@ animate.setAttribute("calcMode", "discrete");
 rect.appendChild(animate);
 rootSVGElement.appendChild(rect);
 
-function parseAlphaFromColor() {
-    // As alpha is not exposed via CSS OM, we have to parse it from the color string, to be able
-    // to use shouldBeCloseEnough() - otherwise we can't allow tolerances, and this test is flaky.
-    colorString = getComputedStyle(rect).getPropertyValue('color');
-    return colorString.replace(/rgba.*\,/, "").replace(/\)$/, "");
-}
-
 function expectRGBAColor(red, green, blue, alpha) {
-    rgbColor = getComputedStyle(rect).getPropertyCSSValue('color').getRGBColorValue();
-    shouldBeCloseEnough("rgbColor.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "" + red, 1);
-    shouldBeCloseEnough("rgbColor.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "" + green, 1);
-    shouldBeCloseEnough("rgbColor.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "" + blue, 1);
-    shouldBeCloseEnough("parseAlphaFromColor()", "" + alpha, 0.1);
+    colors = getComputedStyle(rect).color.replace("rgba(", "").replace(")", "").split(",");
+    shouldBeCloseEnough("colors[0]", "" + red, 1);
+    shouldBeCloseEnough("colors[1]", "" + green, 1);
+    shouldBeCloseEnough("colors[2]", "" + blue, 1);
+    shouldBeCloseEnough("colors[3]", "" + alpha, 0.1);
 }
 
 // Setup animation test

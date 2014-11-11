@@ -8,37 +8,17 @@
 <div id="console"/>
 <script><![CDATA[
 SVG_NS = 'http://www.w3.org/2000/svg';
-var color1, color2;
-var systemColorRed, systemColorGreen, systemColorBlue;
+var computedStyleText, computedStyleDiv;
 function checkSystemColor(id1, id2, systemColor)
 {
     var textElement = document.getElementById(id1);
-    var computedStyleText = textElement.ownerDocument.defaultView.getComputedStyle(textElement);
+    computedStyleText = textElement.ownerDocument.defaultView.getComputedStyle(textElement);
     var divElement = document.getElementById(id2);
-    var computedStyleDiv = divElement.ownerDocument.defaultView.getComputedStyle(divElement);
-
-    color1 = computedStyleText.getPropertyValue('fill');
-    var re = new RegExp("rgba?\\(([^, ]*), ([^, ]*), ([^, ]*)(?:, )?([^, ]*)\\)");
-    color1Components = re.exec(color1);
-
-    color2 = computedStyleDiv.getPropertyCSSValue('color').getRGBColorValue();
-
-    systemColorRed = color2.red.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-    systemColorGreen = color2.green.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
-    systemColorBlue = color2.blue.getFloatValue(CSSPrimitiveValue.CSS_NUMBER);
+    computedStyleDiv = divElement.ownerDocument.defaultView.getComputedStyle(divElement);
 
     debug('Testing system color' + systemColor);
-
-    shouldBe("parseInt(color1Components[1])", "systemColorRed");
-    shouldBe("parseInt(color1Components[2])", "systemColorGreen");
-    shouldBe("parseInt(color1Components[3])", "systemColorBlue");
-
-    color1 = computedStyleText.getPropertyValue('stroke');
-    color1Components = re.exec(color1);
-
-    shouldBe("parseInt(color1Components[1])", "systemColorRed");
-    shouldBe("parseInt(color1Components[2])", "systemColorGreen");
-    shouldBe("parseInt(color1Components[3])", "systemColorBlue");
+    shouldBe("computedStyleText.fill", "computedStyleDiv.color");
+    shouldBe("computedStyleText.stroke", "computedStyleDiv.color");
 }
 
 description('Test that fill and stroke properties accept system colors');

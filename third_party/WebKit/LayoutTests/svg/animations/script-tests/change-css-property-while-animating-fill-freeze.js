@@ -3,24 +3,24 @@ embedSVGTestCase("resources/change-css-property-while-animating-fill-freeze.svg"
 
 // Setup animation test
 function sample1() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0");
 }
 
 function sample2() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.25");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.25");
     rect.setAttribute("opacity", "1");
 }
 
 function sample3() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.25");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.25");
 }
 
 function sample4() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.5");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.5");
 }
 
 function sample5() {
-    shouldBeCloseEnough("getComputedStyle(rect).getPropertyCSSValue('opacity').getFloatValue(CSSPrimitiveValue.CSS_NUMBER)", "0.5");
+    shouldBeCloseEnough("parseFloat(getComputedStyle(rect).opacity)", "0.5");
 }
 
 function executeTest() {
