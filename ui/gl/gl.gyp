@@ -312,14 +312,6 @@
             '../android/ui_android.gyp:ui_java',
           ],
         }],
-        ['ubsan==1', {
-          # Due to a bug in LLVM (http://llvm.org/bugs/show_bug.cgi?id=21349),
-          # compilation hangs for some GL source files. Disable -O2 temporarily
-          # until http://crbug.com/426271 is fixed.
-          'cflags!': [
-            '-O2',
-          ],
-        }],
       ],
     },
     {
