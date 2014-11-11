@@ -47,16 +47,17 @@ class ChromeTracingController(controllers.BaseController):
       raise RuntimeError('Performance trace category list marker not found. '
                          'Is the correct version of the browser running?')
 
-    record_categories = []
-    disabled_by_default_categories = []
+    record_categories = set()
+    disabled_by_default_categories = set()
     json_data = json.loads(json_category_list)['traceCategoriesList']
     for item in json_data:
-      if item.startswith('disabled-by-default'):
-        disabled_by_default_categories.append(item)
-      else:
-        record_categories.append(item)
+      for category in item.split(','):
+        if category.startswith('disabled-by-default'):
+          disabled_by_default_categories.add(category)
+        else:
+          record_categories.add(category)
 
-    return record_categories, disabled_by_default_categories
+    return list(record_categories), list(disabled_by_default_categories)
 
   def StartTracing(self, interval):
     self._trace_interval = interval
