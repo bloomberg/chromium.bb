@@ -1325,7 +1325,7 @@ TEST_F(PasswordAutofillAgentTest, SendsLoggingStateUpdatePingOnConstruction) {
   EXPECT_TRUE(message);
 }
 
-// TODO(gcasto): Re-enabled these tests after crbug.com/423464 has been fixed.
+// TODO(gcasto): Re-enabled these tests after crbug.com/430318 has been fixed.
 #if !defined(OS_ANDROID)
 
 // Tests that one user click on a username field is sufficient to bring up a
