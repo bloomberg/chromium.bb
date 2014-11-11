@@ -32,7 +32,6 @@
 #include "InstallEvent.h"
 
 #include "modules/serviceworkers/WaitUntilObserver.h"
-#include "platform/NotImplemented.h"
 #include "wtf/RefPtr.h"
 #include <v8.h>
 
@@ -46,12 +45,6 @@ PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
 PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
 {
     return adoptRefWillBeNoop(new InstallEvent(type, initializer, observer));
-}
-
-void InstallEvent::replace()
-{
-    // FIXME: implement.
-    notImplemented();
 }
 
 const AtomicString& InstallEvent::interfaceName() const

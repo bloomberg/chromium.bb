@@ -43,8 +43,6 @@ public:
     static PassRefPtrWillBeRawPtr<InstallEvent> create();
     static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
 
-    void replace();
-
     virtual const AtomicString& interfaceName() const override;
 
     virtual void trace(Visitor*) override;

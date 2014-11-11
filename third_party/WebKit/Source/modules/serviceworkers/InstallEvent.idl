@@ -34,5 +34,4 @@
     Exposed=ServiceWorker,
     TypeChecking=Interface,
 ] interface InstallEvent : ExtendableEvent {
-    void replace();
 };
