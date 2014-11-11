@@ -70,6 +70,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, BooleanOrStringOr
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct NativeValueTraits<BooleanOrStringOrUnrestrictedDouble> {
+    static BooleanOrStringOrUnrestrictedDouble nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class DoubleOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -110,6 +115,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DoubleOrString& i
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<DoubleOrString> {
+    static DoubleOrString nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class NodeOrNodeList final {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -153,6 +163,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, NodeOrNodeList& i
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<NodeOrNodeList> {
+    static NodeOrNodeList nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class StringOrArrayBufferOrArrayBufferView final {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -201,6 +216,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrArrayBuff
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct NativeValueTraits<StringOrArrayBufferOrArrayBufferView> {
+    static StringOrArrayBufferOrArrayBufferView nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class StringOrDouble final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -241,6 +261,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, StringOrDouble& i
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<StringOrDouble> {
+    static StringOrDouble nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class TestInterfaceGarbageCollectedOrString final {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -285,6 +310,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceGarb
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct NativeValueTraits<TestInterfaceGarbageCollectedOrString> {
+    static TestInterfaceGarbageCollectedOrString nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class TestInterfaceOrLong final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -326,6 +356,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrLo
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct NativeValueTraits<TestInterfaceOrLong> {
+    static TestInterfaceOrLong nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 class TestInterfaceOrTestInterfaceEmpty final {
     ALLOW_ONLY_INLINE_ALLOCATION();
 public:
@@ -366,6 +401,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceOrTe
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<TestInterfaceOrTestInterfaceEmpty> {
+    static TestInterfaceOrTestInterfaceEmpty nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class TestInterfaceWillBeGarbageCollectedOrTestDictionary final {
     ALLOW_ONLY_INLINE_ALLOCATION();
@@ -409,6 +449,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, TestInterfaceWill
 {
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
+
+template <>
+struct NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary> {
+    static TestInterfaceWillBeGarbageCollectedOrTestDictionary nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class V8DoubleOrStringOrNull final {
 public:

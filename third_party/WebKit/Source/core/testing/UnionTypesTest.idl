@@ -12,4 +12,6 @@
     [ImplementedAs=doubleOrStringArg] DOMString doubleOrStringDefaultDoubleArg(optional (double or DOMString) arg = 3.14);
     [ImplementedAs=doubleOrStringArg] DOMString doubleOrStringDefaultStringArg(optional (double or DOMString) arg = "foo");
     [ImplementedAs=doubleOrStringArg] DOMString doubleOrStringDefaultNullArg(optional (double or DOMString)? arg = null);
+    DOMString doubleOrStringArrayArg((double or DOMString)[] arg);
+    DOMString doubleOrStringSequenceArg(sequence<(double or DOMString)> arg);
 };

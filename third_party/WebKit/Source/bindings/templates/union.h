@@ -63,6 +63,11 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{container.cpp_c
     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
+template <>
+struct NativeValueTraits<{{container.cpp_class}}> {
+    static {{container.cpp_class}} nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
+
 {% endfor %}
 {% for cpp_type in nullable_cpp_types %}
 class V8{{cpp_type}}OrNull final {

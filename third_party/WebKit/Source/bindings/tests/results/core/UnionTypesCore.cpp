@@ -112,6 +112,13 @@ v8::Handle<v8::Value> toV8(BooleanOrStringOrUnrestrictedDouble& impl, v8::Handle
     return v8::Handle<v8::Value>();
 }
 
+BooleanOrStringOrUnrestrictedDouble NativeValueTraits<BooleanOrStringOrUnrestrictedDouble>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    BooleanOrStringOrUnrestrictedDouble impl;
+    V8BooleanOrStringOrUnrestrictedDouble::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
 DoubleOrString::DoubleOrString()
     : m_type(SpecificTypeNone)
 {
@@ -175,6 +182,13 @@ v8::Handle<v8::Value> toV8(DoubleOrString& impl, v8::Handle<v8::Object> creation
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+DoubleOrString NativeValueTraits<DoubleOrString>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    DoubleOrString impl;
+    V8DoubleOrString::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 NodeOrNodeList::NodeOrNodeList()
@@ -247,6 +261,13 @@ v8::Handle<v8::Value> toV8(NodeOrNodeList& impl, v8::Handle<v8::Object> creation
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+NodeOrNodeList NativeValueTraits<NodeOrNodeList>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    NodeOrNodeList impl;
+    V8NodeOrNodeList::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView()
@@ -335,6 +356,13 @@ v8::Handle<v8::Value> toV8(StringOrArrayBufferOrArrayBufferView& impl, v8::Handl
     return v8::Handle<v8::Value>();
 }
 
+StringOrArrayBufferOrArrayBufferView NativeValueTraits<StringOrArrayBufferOrArrayBufferView>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    StringOrArrayBufferOrArrayBufferView impl;
+    V8StringOrArrayBufferOrArrayBufferView::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
 StringOrDouble::StringOrDouble()
     : m_type(SpecificTypeNone)
 {
@@ -398,6 +426,13 @@ v8::Handle<v8::Value> toV8(StringOrDouble& impl, v8::Handle<v8::Object> creation
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+StringOrDouble NativeValueTraits<StringOrDouble>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    StringOrDouble impl;
+    V8StringOrDouble::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString()
@@ -468,6 +503,13 @@ v8::Handle<v8::Value> toV8(TestInterfaceGarbageCollectedOrString& impl, v8::Hand
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+TestInterfaceGarbageCollectedOrString NativeValueTraits<TestInterfaceGarbageCollectedOrString>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterfaceGarbageCollectedOrString impl;
+    V8TestInterfaceGarbageCollectedOrString::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 TestInterfaceOrLong::TestInterfaceOrLong()
@@ -541,6 +583,13 @@ v8::Handle<v8::Value> toV8(TestInterfaceOrLong& impl, v8::Handle<v8::Object> cre
     return v8::Handle<v8::Value>();
 }
 
+TestInterfaceOrLong NativeValueTraits<TestInterfaceOrLong>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterfaceOrLong impl;
+    V8TestInterfaceOrLong::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
+
 TestInterfaceOrTestInterfaceEmpty::TestInterfaceOrTestInterfaceEmpty()
     : m_type(SpecificTypeNone)
 {
@@ -605,6 +654,13 @@ v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty& impl, v8::Handle<v
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+TestInterfaceOrTestInterfaceEmpty NativeValueTraits<TestInterfaceOrTestInterfaceEmpty>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterfaceOrTestInterfaceEmpty impl;
+    V8TestInterfaceOrTestInterfaceEmpty::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 TestInterfaceWillBeGarbageCollectedOrTestDictionary::TestInterfaceWillBeGarbageCollectedOrTestDictionary()
@@ -677,6 +733,13 @@ v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary& 
         ASSERT_NOT_REACHED();
     }
     return v8::Handle<v8::Value>();
+}
+
+TestInterfaceWillBeGarbageCollectedOrTestDictionary NativeValueTraits<TestInterfaceWillBeGarbageCollectedOrTestDictionary>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    TestInterfaceWillBeGarbageCollectedOrTestDictionary impl;
+    V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(isolate, value, impl, exceptionState);
+    return impl;
 }
 
 } // namespace blink

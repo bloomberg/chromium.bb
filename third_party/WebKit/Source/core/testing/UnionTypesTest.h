@@ -23,6 +23,8 @@ public:
     void setDoubleOrStringAttribute(const DoubleOrString&);
 
     String doubleOrStringArg(DoubleOrString&);
+    String doubleOrStringArrayArg(Vector<DoubleOrString>&);
+    String doubleOrStringSequenceArg(Vector<DoubleOrString>&);
 
     void trace(Visitor*) { }
 

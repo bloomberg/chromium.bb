@@ -38,6 +38,24 @@ if (window.internals) {
     shouldThrow('unionTypesTest.doubleOrStringArg()');
     debug('');
 
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([])', '');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([3.14, "foo"])', 'double: 3.14, string: foo');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([1, "foo", "bar", 2])', 'double: 1, string: foo, string: bar, double: 2');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringArrayArg([null, undefined, {}, []])', 'string: null, string: undefined, string: [object Object], string: ');
+    shouldThrow('unionTypesTest.doubleOrStringArrayArg(null)');
+    shouldThrow('unionTypesTest.doubleOrStringArrayArg(undefined)');
+    shouldThrow('unionTypesTest.doubleOrStringArrayArg({})');
+    debug('');
+
+    shouldBeEqualToString('unionTypesTest.doubleOrStringSequenceArg([])', '');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringSequenceArg([3.14, "foo"])', 'double: 3.14, string: foo');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringSequenceArg([1, "foo", "bar", 2])', 'double: 1, string: foo, string: bar, double: 2');
+    shouldBeEqualToString('unionTypesTest.doubleOrStringSequenceArg([null, undefined, {}, []])', 'string: null, string: undefined, string: [object Object], string: ');
+    shouldThrow('unionTypesTest.doubleOrStringSequenceArg(null)');
+    shouldThrow('unionTypesTest.doubleOrStringSequenceArg(undefined)');
+    shouldThrow('unionTypesTest.doubleOrStringSequenceArg({})');
+    debug('');
+
     debug('Tests for method arguments with defaults');
     shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultDoubleArg()', 'double is passed: 3.14');
     shouldBeEqualToString('unionTypesTest.doubleOrStringDefaultDoubleArg(undefined)', 'double is passed: 3.14');
