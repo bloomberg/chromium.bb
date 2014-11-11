@@ -8524,13 +8524,23 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Options_EasyUnlockRequireProximity_Disable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>isherman@chromium.org</owner>
+  <owner>tengs@chromium.org</owner>
+  <description>
+    The user disabled the option to require their phone to be in very close
+    proximity to their Chromebook (roughly, within 1 foot), in order for Smart
+    Lock to unlock the Chromebook.
+  </description>
 </action>
 
 <action name="Options_EasyUnlockRequireProximity_Enable">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of the metric.</description>
+  <owner>isherman@chromium.org</owner>
+  <owner>tengs@chromium.org</owner>
+  <description>
+    The user enabled the option to require their phone to be in very close
+    proximity to their Chromebook (roughly, within 1 foot), in order for Smart
+    Lock to unlock the Chromebook.
+  </description>
 </action>
 
 <action name="Options_EnableCloudPrintProxy">
