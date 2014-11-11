@@ -6,12 +6,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
-#include "device/serial/async_waiter.h"
 #include "device/serial/buffer.h"
 #include "device/serial/data_receiver.h"
 #include "device/serial/data_source_sender.h"
 #include "device/serial/data_stream.mojom.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/environment/async_waiter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

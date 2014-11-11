@@ -58,8 +58,6 @@
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial.mojom.h',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial_serialization.mojom.cc',
         '<(SHARED_INTERMEDIATE_DIR)/device/serial/serial_serialization.mojom.h',
-        'async_waiter.cc',
-        'async_waiter.h',
         'buffer.cc',
         'buffer.h',
         'data_receiver.cc',

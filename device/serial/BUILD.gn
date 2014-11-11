@@ -9,8 +9,6 @@ static_library("serial") {
   output_name = "device_serial"
 
   sources = [
-    "async_waiter.cc",
-    "async_waiter.h",
     "buffer.cc",
     "buffer.h",
     "data_receiver.cc",
