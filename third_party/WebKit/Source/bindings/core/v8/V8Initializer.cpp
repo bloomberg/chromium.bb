@@ -112,7 +112,7 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     int scriptId = message->GetScriptOrigin().ScriptID()->Value();
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
-        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+        callStack = createScriptCallStack(isolate, stackTrace, ScriptCallStack::maxCallStackSizeToCapture);
         bool success = false;
         int topScriptId = callStack->at(0).scriptId().toInt(&success);
         if (success && topScriptId == scriptId)
@@ -256,7 +256,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
     v8::Handle<v8::StackTrace> stackTrace = message.GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+        callStack = createScriptCallStack(isolate, stackTrace, ScriptCallStack::maxCallStackSizeToCapture);
 
     if (!callStack && V8DOMWrapper::isDOMWrapper(message.GetValue())) {
         // Try to get the stack from a wrapped exception object (e.g. DOMException).
@@ -265,7 +265,7 @@ static void promiseRejectHandlerInMainThread(v8::PromiseRejectMessage message)
         if (!error.IsEmpty()) {
             stackTrace = v8::Exception::GetStackTrace(error);
             if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-                callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+                callStack = createScriptCallStack(isolate, stackTrace, ScriptCallStack::maxCallStackSizeToCapture);
         }
     }
 
@@ -289,7 +289,7 @@ static void promiseRejectHandlerInWorker(v8::PromiseRejectMessage message)
     RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
     v8::Handle<v8::StackTrace> stackTrace = message.GetStackTrace();
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0)
-        callStack = createScriptCallStack(stackTrace, ScriptCallStack::maxCallStackSizeToCapture, isolate);
+        callStack = createScriptCallStack(isolate, stackTrace, ScriptCallStack::maxCallStackSizeToCapture);
 
     ScriptState* scriptState = ScriptState::from(context);
     promiseRejectMessageQueue().append(PromiseRejectMessage(ScriptValue(scriptState, promise), callStack));

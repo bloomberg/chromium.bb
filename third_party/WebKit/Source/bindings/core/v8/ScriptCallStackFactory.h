@@ -48,7 +48,7 @@ const v8::StackTrace::StackTraceOptions stackTraceOptions = static_cast<v8::Stac
     | v8::StackTrace::kScriptNameOrSourceURL
     | v8::StackTrace::kFunctionName);
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Handle<v8::StackTrace>, size_t maxStackSize, v8::Isolate*);
+PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Isolate*, v8::Handle<v8::StackTrace>, size_t maxStackSize);
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(size_t maxStackSize, bool emptyStackIsAllowed = false);
 PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStackForConsole(size_t maxStackSize = ScriptCallStack::maxCallStackSizeToCapture, bool emptyStackIsAllowed = false);
 PassRefPtrWillBeRawPtr<ScriptArguments> createScriptArguments(ScriptState*, const v8::FunctionCallbackInfo<v8::Value>& v8arguments, unsigned skipArgumentCount);

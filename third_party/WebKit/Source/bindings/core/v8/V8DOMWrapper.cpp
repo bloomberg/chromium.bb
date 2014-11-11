@@ -68,7 +68,7 @@ static v8::Local<v8::Object> wrapInShadowTemplate(v8::Local<v8::Object> wrapper,
     return shadow;
 }
 
-v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo* type, ScriptWrappableBase* scriptWrappableBase, v8::Isolate* isolate)
+v8::Local<v8::Object> V8DOMWrapper::createWrapper(v8::Isolate* isolate, v8::Handle<v8::Object> creationContext, const WrapperTypeInfo* type, ScriptWrappableBase* scriptWrappableBase)
 {
     V8WrapperInstantiationScope scope(creationContext, isolate);
 

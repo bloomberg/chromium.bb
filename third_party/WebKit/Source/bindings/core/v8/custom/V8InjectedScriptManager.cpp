@@ -65,7 +65,7 @@ static v8::Local<v8::Object> createInjectedScriptHostV8Wrapper(PassRefPtrWillBeR
 {
     ASSERT(host);
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, &V8InjectedScriptHost::wrapperTypeInfo, host->toScriptWrappableBase(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, &V8InjectedScriptHost::wrapperTypeInfo, host->toScriptWrappableBase());
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 

@@ -666,7 +666,7 @@ void ScriptDebugServer::compileScript(ScriptState* scriptState, const String& ex
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            *stackTrace = createScriptCallStack(message->GetStackTrace(), message->GetStackTrace()->GetFrameCount(), m_isolate);
+            *stackTrace = createScriptCallStack(m_isolate, message->GetStackTrace(), message->GetStackTrace()->GetFrameCount());
         }
         return;
     }
@@ -707,7 +707,7 @@ void ScriptDebugServer::runScript(ScriptState* scriptState, const String& script
             *exceptionDetailsText = toCoreStringWithUndefinedOrNullCheck(message->Get());
             *lineNumber = message->GetLineNumber();
             *columnNumber = message->GetStartColumn();
-            *stackTrace = createScriptCallStack(message->GetStackTrace(), message->GetStackTrace()->GetFrameCount(), m_isolate);
+            *stackTrace = createScriptCallStack(m_isolate, message->GetStackTrace(), message->GetStackTrace()->GetFrameCount());
         }
     } else {
         *result = ScriptValue(scriptState, value);

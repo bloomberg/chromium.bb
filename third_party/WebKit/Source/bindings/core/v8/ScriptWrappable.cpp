@@ -57,7 +57,7 @@ v8::Handle<v8::Object> ScriptWrappableBase::wrap(v8::Handle<v8::Object> creation
 
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperTypeInfo, this, isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 
@@ -78,7 +78,7 @@ v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationCont
 
     ASSERT(!DOMDataStore::containsWrapper(this, isolate));
 
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(creationContext, wrapperTypeInfo, toScriptWrappableBase(), isolate);
+    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, toScriptWrappableBase());
     if (UNLIKELY(wrapper.IsEmpty()))
         return wrapper;
 

@@ -45,7 +45,7 @@ struct WrapperTypeInfo;
 
 class V8DOMWrapper {
 public:
-    static v8::Local<v8::Object> createWrapper(v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase*, v8::Isolate*);
+    static v8::Local<v8::Object> createWrapper(v8::Isolate*, v8::Handle<v8::Object> creationContext, const WrapperTypeInfo*, ScriptWrappableBase*);
 
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappableBase*, const WrapperTypeInfo*, v8::Handle<v8::Object> wrapper);
     static v8::Handle<v8::Object> associateObjectWithWrapper(v8::Isolate*, ScriptWrappable*, const WrapperTypeInfo*, v8::Handle<v8::Object>);
