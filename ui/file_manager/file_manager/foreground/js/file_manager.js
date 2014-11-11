@@ -319,13 +319,6 @@ function FileManager() {
   // Bound functions.
 
   /**
-   * Bound function for onCopyProgress_.
-   * @type {?function(this:FileManager, Event)}
-   * @private
-   */
-  this.onCopyProgressBound_ = null;
-
-  /**
    * Bound function for onEntriesChanged_.
    * @type {?function(this:FileManager, Event)}
    * @private
@@ -763,12 +756,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     // CopyManager are required for 'Delete' operation in
     // Open and Save dialogs. But drag-n-drop and copy-paste are not needed.
     if (this.dialogType != DialogType.FULL_PAGE) return;
-
-    // TODO(hidehiko): Extract FileOperationManager related code from
-    // FileManager to simplify it.
-    this.onCopyProgressBound_ = this.onCopyProgress_.bind(this);
-    this.fileOperationManager_.addEventListener(
-        'copy-progress', this.onCopyProgressBound_);
 
     this.onEntriesChangedBound_ = this.onEntriesChanged_.bind(this);
     this.fileOperationManager_.addEventListener(
@@ -1483,24 +1470,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.ui_.setCurrentListType(type);
     this.updateStartupPrefs_();
     this.onResize_();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onCopyProgress_ = function(event) {
-    if (event.reason == 'ERROR' &&
-        event.error.code == util.FileOperationErrorType.FILESYSTEM_ERROR &&
-        event.error.data.toDrive &&
-        event.error.data.name == util.FileError.QUOTA_EXCEEDED_ERR) {
-      this.alert.showHtml(
-          strf('DRIVE_SERVER_OUT_OF_SPACE_HEADER'),
-          strf('DRIVE_SERVER_OUT_OF_SPACE_MESSAGE',
-              decodeURIComponent(
-                  event.error.data.sourceFileUrl.split('/').pop()),
-              str('GOOGLE_DRIVE_BUY_STORAGE_URL')),
-          null, null, null);
-    }
   };
 
   /**
@@ -2421,10 +2390,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           this.progressCenterPanel_);
     }
     if (this.fileOperationManager_) {
-      if (this.onCopyProgressBound_) {
-        this.fileOperationManager_.removeEventListener(
-            'copy-progress', this.onCopyProgressBound_);
-      }
       if (this.onEntriesChangedBound_) {
         this.fileOperationManager_.removeEventListener(
             'entries-changed', this.onEntriesChangedBound_);
