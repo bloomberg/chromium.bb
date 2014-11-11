@@ -15,7 +15,7 @@ class RasterizeAndRecordMicroTop25(benchmark.Benchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = rasterize_and_record_micro.RasterizeAndRecordMicro
-  page_set = page_sets.Top25PageSet
+  page_set = page_sets.Top25SmoothPageSet
 
 
 @benchmark.Disabled('mac', 'win')

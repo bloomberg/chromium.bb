@@ -13,7 +13,7 @@ class SmoothnessTop25(benchmark.Benchmark):
 
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   test = smoothness.Smoothness
-  page_set = page_sets.Top25PageSet
+  page_set = page_sets.Top25SmoothPageSet
 
 
 class SmoothnessToughFiltersCases(benchmark.Benchmark):
@@ -68,7 +68,7 @@ class SmoothnessGpuRasterizationTop25(benchmark.Benchmark):
   """
   tag = 'gpu_rasterization'
   test = smoothness.Smoothness
-  page_set = page_sets.Top25PageSet
+  page_set = page_sets.Top25SmoothPageSet
   def CustomizeBrowserOptions(self, options):
     silk_flags.CustomizeBrowserOptionsForGpuRasterization(options)
 
