@@ -181,10 +181,10 @@ bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
       CreateEULASentinel();
 
       if (retcode == installer::EULA_ACCEPTED) {
-        VLOG(1) << "EULA : no collection";
+        DVLOG(1) << "EULA : no collection";
         GoogleUpdateSettings::SetCollectStatsConsent(false);
       } else if (retcode == installer::EULA_ACCEPTED_OPT_IN) {
-        VLOG(1) << "EULA : collection consent";
+        DVLOG(1) << "EULA : collection consent";
         GoogleUpdateSettings::SetCollectStatsConsent(true);
       }
     }
