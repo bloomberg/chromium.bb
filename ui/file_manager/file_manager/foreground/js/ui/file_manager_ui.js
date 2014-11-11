@@ -209,7 +209,10 @@ FileManagerUI.prototype.initAdditionalUI = function(table, grid, previewPanel) {
  */
 FileManagerUI.prototype.relayout = function() {
   this.locationLine.truncate();
-  this.listContainer.currentView.relayout();
+  if (this.listContainer.currentListType !==
+      ListContainer.ListType.UNINITIALIZED) {
+    this.listContainer.currentView.relayout();
+  }
 };
 
 /**
