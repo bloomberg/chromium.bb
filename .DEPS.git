@@ -29,7 +29,7 @@ vars = {
     'buildtools_revision':
          'c27f95bd1d9baaef70c879dea375090dd1496147',
     'validator_snapshots_rev':
-         '14063',
+         '14078',
     'chrome_rev':
          '275800',
     'git_url':
@@ -58,7 +58,7 @@ deps = {
     'tools/valgrind':
         Var('git_url') + '/chromium/src/tools/valgrind.git@4989a1b19c3a33c828e385d3a07e83e202e1e651',
     'validator_snapshots':
-        Var('git_url') + '/native_client/src/validator_snapshots.git@b83d2917f4f552efd84ad05749ecc03ddd11ae16',
+        Var('git_url') + '/native_client/src/validator_snapshots.git@17f17f438e7a69ad6111e3ce22c4bb259c66c689',
 }
 
 deps_os = {
