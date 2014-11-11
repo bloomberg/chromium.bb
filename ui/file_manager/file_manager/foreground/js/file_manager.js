@@ -38,13 +38,6 @@ function FileManager() {
   this.fileOperationManager_ = null;
 
   /**
-   * File transfer controller.
-   * @type {FileTransferController}
-   * @private
-   */
-  this.fileTransferController_ = null;
-
-  /**
    * File filter.
    * @type {FileFilter}
    * @private
@@ -99,6 +92,13 @@ function FileManager() {
    */
   this.dialogActionController_ = null;
 
+  /**
+   * UI management class of file manager.
+   * @type {FileManagerUI}
+   * @private
+   */
+  this.ui_ = null;
+
   // --------------------------------------------------------------------------
   // Parameters determining the type of file manager.
 
@@ -130,28 +130,14 @@ function FileManager() {
   this.preferences_ = null;
 
   // --------------------------------------------------------------------------
-  // UI components.
+  // Controllers.
 
   /**
-   * UI management class of file manager.
-   * @type {FileManagerUI}
+   * File transfer controller.
+   * @type {FileTransferController}
    * @private
    */
-  this.ui_ = null;
-
-  /**
-   * Progress center panel.
-   * @type {ProgressCenterPanel}
-   * @private
-   */
-  this.progressCenterPanel_ = null;
-
-  /**
-   * Directory tree.
-   * @type {DirectoryTree}
-   * @private
-   */
-  this.directoryTree_ = null;
+  this.fileTransferController_ = null;
 
   /**
    * Naming controller.
@@ -288,20 +274,6 @@ function FileManager() {
   this.actionMenuItem_ = null;
 
   /**
-   * The button to open gear menu.
-   * @type {cr.ui.MenuButton}
-   * @private
-   */
-  this.gearButton_ = null;
-
-  /**
-   * The combo button to specify the task.
-   * @type {cr.ui.ComboButton}
-   * @private
-   */
-  this.taskItems_ = null;
-
-  /**
    * The container element of the dialog.
    * @type {HTMLDivElement}
    * @private
@@ -411,7 +383,7 @@ FileManager.prototype = /** @struct */ {
    * @return {DirectoryTree}
    */
   get directoryTree() {
-    return this.directoryTree_;
+    return this.ui_.directoryTree;
   },
   /**
    * @return {HTMLDocument}
@@ -632,8 +604,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       self.bannersController_ = new FileListBannerController(
           self.directoryModel_, self.volumeManager_, self.document_,
           showOffers);
-      self.bannersController_.addEventListener('relayout',
-                                               self.onResize_.bind(self));
+      self.bannersController_.addEventListener(
+          'relayout', self.ui_.relayout.bind(self.ui_));
     });
 
     var dm = this.directoryModel_;
@@ -666,7 +638,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.commandHandler,
         this.selectionHandler_);
 
-    this.directoryTree_.addEventListener('change', function() {
+    this.ui_.directoryTree.addEventListener('change', function() {
       this.ensureDirectoryTreeItemNotBehindPreviewPanel_();
     }.bind(this));
 
@@ -711,11 +683,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.ensureDirectoryTreeItemNotBehindPreviewPanel_ =
       function() {
-    var selectedSubTree = this.directoryTree_.selectedItem;
+    var selectedSubTree = this.ui_.directoryTree.selectedItem;
     if (!selectedSubTree)
       return;
     var item = selectedSubTree.rowElement;
-    var parentView = this.directoryTree_;
+    var parentView = this.ui_.directoryTree;
 
     var itemRect = item.getBoundingClientRect();
     if (!itemRect)
@@ -774,7 +746,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     controller.attachFileListDropTarget(this.ui_.listContainer.table.list);
     controller.attachDragSource(this.ui_.listContainer.grid);
     controller.attachFileListDropTarget(this.ui_.listContainer.grid);
-    controller.attachTreeDropTarget(this.directoryTree_);
+    controller.attachTreeDropTarget(this.ui_.directoryTree);
     controller.attachCopyPasteHandlers();
     controller.addEventListener('selection-copied',
         this.blinkSelection.bind(this));
@@ -830,7 +802,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     cr.ui.Menu.decorate(rootsContextMenu);
     rootsContextMenu = /** @type {!cr.ui.Menu} */ (rootsContextMenu);
 
-    this.directoryTree_.contextMenuForRootItems = rootsContextMenu;
+    this.ui_.directoryTree.contextMenuForRootItems = rootsContextMenu;
 
     // Set up the context menu for the folder items in directory tree.
     var directoryTreeContextMenu = queryRequiredElement(
@@ -839,7 +811,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     directoryTreeContextMenu =
         /** @type {!cr.ui.Menu} */ (directoryTreeContextMenu);
 
-    this.directoryTree_.contextMenuForSubitems = directoryTreeContextMenu;
+    this.ui_.directoryTree.contextMenuForSubitems = directoryTreeContextMenu;
 
     // Set up the context menu for the text editing.
     var textContextMenu = queryRequiredElement(
@@ -847,12 +819,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     cr.ui.Menu.decorate(textContextMenu);
     this.textContextMenu_ = /** @type {!cr.ui.Menu} */ (textContextMenu);
 
-    var gearButton = queryRequiredElement(this.dialogDom_, '#gear-button');
-    gearButton.addEventListener('menushow', this.onShowGearMenu_.bind(this));
+    this.ui_.gearButton.addEventListener(
+        'menushow', this.onShowGearMenu_.bind(this));
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
         'menuitem, hr';
-    cr.ui.decorate(gearButton, cr.ui.MenuButton);
-    this.gearButton_ = /** @type {!cr.ui.MenuButton} */ (gearButton);
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
@@ -1147,43 +1117,36 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                 PreviewPanel.VisibilityType.ALWAYS_VISIBLE :
                 PreviewPanel.VisibilityType.AUTO,
             this.metadataCache_,
+            this.volumeManager_),
+        new LocationLine(
+            queryRequiredElement(dom, '#location-breadcrumbs'),
+            queryRequiredElement(dom, '#location-volume-icon'),
+            this.metadataCache_,
             this.volumeManager_));
 
+    // Handle document event.
     this.dialogDom_.addEventListener('click',
                                      this.onExternalLinkClick_.bind(this));
-
-    this.ui_.locationLine = new LocationLine(
-        queryRequiredElement(dom, '#location-breadcrumbs'),
-        queryRequiredElement(dom, '#location-volume-icon'),
-        this.metadataCache_,
-        this.volumeManager_);
-    this.ui_.locationLine.addEventListener(
-        'pathclick', this.onBreadcrumbClick_.bind(this));
-
-    // Initialize progress center panel.
-    this.progressCenterPanel_ = new ProgressCenterPanel(
-        queryRequiredElement(dom, '#progress-center'));
-    this.backgroundPage_.background.progressCenter.addPanel(
-        this.progressCenterPanel_);
-
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
+    // Handle UI events.
     this.ui_.listContainer.element.addEventListener(
         'keydown', this.onListKeyDown_.bind(this));
     this.ui_.listContainer.element.addEventListener(
         ListContainer.EventType.TEXT_SEARCH, this.onTextSearch_.bind(this));
-
-    // TODO(hirono): Rename the handler after creating the DialogFooter class.
+    this.ui_.locationLine.addEventListener(
+        'pathclick', this.onBreadcrumbClick_.bind(this));
+    this.backgroundPage_.background.progressCenter.addPanel(
+        this.ui_.progressCenterPanel);
     this.ui_.dialogFooter.filenameInput.addEventListener(
         'input', this.onFilenameInputInput_.bind(this));
     this.ui_.dialogFooter.filenameInput.addEventListener(
         'keydown', this.onFilenameInputKeyDown_.bind(this));
     this.ui_.dialogFooter.filenameInput.addEventListener(
         'focus', this.onFilenameInputFocus_.bind(this));
-
-    this.decorateSplitter(
-        this.dialogDom_.querySelector('#navigation-list-splitter'));
+    this.ui_.toggleViewButton.addEventListener('click',
+        this.onToggleViewButtonClick_.bind(this));
 
     this.dialogContainer_ = /** @type {!HTMLDivElement} */
         (this.dialogDom_.querySelector('.dialog-container'));
@@ -1195,23 +1158,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         (queryRequiredElement(this.dialogDom_,
                              '#gear-menu-drive-hosted-settings'));
 
-    this.ui_.toggleViewButton.addEventListener('click',
-        this.onToggleViewButtonClick_.bind(this));
 
-    var taskItems = queryRequiredElement(dom, '#tasks');
-    cr.ui.ComboButton.decorate(taskItems);
-    this.taskItems_ = assertInstanceof(taskItems, cr.ui.ComboButton);
-    this.taskItems_.showMenu = function(shouldSetFocus) {
+    this.ui_.taskMenuButton.showMenu = function(shouldSetFocus) {
       // Prevent the empty menu from opening.
       if (!this.menu.length)
         return;
       cr.ui.ComboButton.prototype.showMenu.call(this, shouldSetFocus);
     };
-    this.taskItems_.addEventListener('select',
+    this.ui_.taskMenuButton.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
-
-    this.dialogDom_.ownerDocument.defaultView.addEventListener(
-        'resize', this.onResize_.bind(this));
 
     this.actionMenuItem_ = /** @type {!HTMLMenuItemElement} */
         (queryRequiredElement(this.dialogDom_, '#default-action'));
@@ -1377,26 +1332,19 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initDirectoryTree_ = function() {
+    var directoryTree = /** @type {DirectoryTree} */
+        (this.dialogDom_.querySelector('#directory-tree'));
     var fakeEntriesVisible =
         this.dialogType !== DialogType.SELECT_SAVEAS_FILE;
-    this.directoryTree_ = /** @type {DirectoryTree} */
-        (this.dialogDom_.querySelector('#directory-tree'));
-    DirectoryTree.decorate(this.directoryTree_,
+    DirectoryTree.decorate(directoryTree,
                            this.directoryModel_,
                            this.volumeManager_,
                            this.metadataCache_,
                            fakeEntriesVisible);
-    this.directoryTree_.dataModel = new NavigationListModel(
+    directoryTree.dataModel = new NavigationListModel(
         this.volumeManager_, this.folderShortcutsModel_);
 
-    // Visible height of the directory tree depends on the size of progress
-    // center panel. When the size of progress center panel changes, directory
-    // tree has to be notified to adjust its components (e.g. progress bar).
-    var observer = new MutationObserver(
-        this.directoryTree_.relayout.bind(this.directoryTree_));
-    observer.observe(this.progressCenterPanel_.element,
-                     /** @type {MutationObserverInit} */
-                     ({subtree: true, attributes: true, childList: true}));
+    this.ui_.initDirectoryTree(directoryTree);
   };
 
   /**
@@ -1469,7 +1417,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.ui_.setCurrentListType(type);
     this.updateStartupPrefs_();
-    this.onResize_();
   };
 
   /**
@@ -1516,18 +1463,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       if (FileType.isImage(entries[i]))
         preloadThumbnail(entries[i]);
     }
-  };
-
-  /**
-   * Resize details and thumb views to fit the new window size.
-   * @private
-   */
-  FileManager.prototype.onResize_ = function() {
-    // May not be available during initialization.
-    if (this.directoryTree_)
-      this.directoryTree_.relayout();
-
-    this.ui_.relayout();
   };
 
   /**
@@ -1930,7 +1865,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         selection.mimeTypes);
     selection.tasks = new FileTasks(this);
     selection.tasks.init(selection.entries, selection.mimeTypes);
-    selection.tasks.display(this.taskItems_);
+    selection.tasks.display(this.ui_.taskMenuButton);
     this.refreshCurrentDirectoryMetadata_();
     this.selectionHandler_.onFileSelectionChanged();
   };
@@ -2385,10 +2320,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.backgroundPage_.background.progressCenter.updateItem(item);
       }
     }
-    if (this.progressCenterPanel_) {
-      this.backgroundPage_.background.progressCenter.removePanel(
-          this.progressCenterPanel_);
-    }
+    this.backgroundPage_.background.progressCenter.removePanel(
+        this.ui_.progressCenterPanel);
     if (this.fileOperationManager_) {
       if (this.onEntriesChangedBound_) {
         this.fileOperationManager_.removeEventListener(
@@ -2650,35 +2583,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var changeInfo = {};
     changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
     chrome.fileManagerPrivate.setPreferences(changeInfo);
-  };
-
-  FileManager.prototype.decorateSplitter = function(splitterElement) {
-    var self = this;
-
-    var Splitter = cr.ui.Splitter;
-
-    var customSplitter = cr.ui.define('div');
-
-    customSplitter.prototype = {
-      __proto__: Splitter.prototype,
-
-      handleSplitterDragStart: function(e) {
-        Splitter.prototype.handleSplitterDragStart.apply(this, arguments);
-        this.ownerDocument.documentElement.classList.add('col-resize');
-      },
-
-      handleSplitterDragMove: function(deltaX) {
-        Splitter.prototype.handleSplitterDragMove.apply(this, arguments);
-        self.onResize_();
-      },
-
-      handleSplitterDragEnd: function(e) {
-        Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
-        this.ownerDocument.documentElement.classList.remove('col-resize');
-      }
-    };
-
-    customSplitter.decorate(splitterElement);
   };
 
   /**

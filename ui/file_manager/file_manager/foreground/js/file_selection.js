@@ -160,7 +160,7 @@ function FileSelectionHandler(fileManager) {
   this.okButton_ = fileManager.ui.dialogFooter.okButton;
   this.filenameInput_ = fileManager.ui.dialogFooter.filenameInput;
   this.previewPanel_ = fileManager.ui.previewPanel;
-  this.taskItems_ = fileManager.taskItems_;
+  this.taskMenuButton_ = fileManager.ui.taskMenuButton;
   this.selection = new FileSelection(this.fileManager_, []);
 }
 
@@ -335,11 +335,11 @@ FileSelectionHandler.prototype.updateFileSelectionAsync = function(selection) {
     selection.createTasks(function() {
       if (this.selection != selection)
         return;
-      selection.tasks.display(this.taskItems_);
+      selection.tasks.display(this.taskMenuButton_);
       selection.tasks.updateMenuItem();
     }.bind(this));
   } else {
-    this.taskItems_.hidden = true;
+    this.taskMenuButton_.hidden = true;
   }
 
   // Update preview panels.

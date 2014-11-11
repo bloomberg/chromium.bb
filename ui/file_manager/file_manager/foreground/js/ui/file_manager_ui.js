@@ -107,6 +107,27 @@ function FileManagerUI(element, dialogType) {
   this.toggleViewButton = queryRequiredElement(this.element_, '#view-button');
 
   /**
+   * The button to open gear menu.
+   * @type {!cr.ui.MenuButton}
+   */
+  this.gearButton = FileManagerUI.queryDecoratedElement_(
+      '#gear-button', cr.ui.MenuButton);
+
+  /**
+   * Directory tree.
+   * @type {DirectoryTree}
+   */
+  this.directoryTree = null;
+
+  /**
+   * Progress center panel.
+   * @type {!ProgressCenterPanel}
+   * @const
+   */
+  this.progressCenterPanel = new ProgressCenterPanel(
+      queryRequiredElement(this.element_, '#progress-center'));
+
+  /**
    * List container.
    * @type {ListContainer}
    */
@@ -116,6 +137,14 @@ function FileManagerUI(element, dialogType) {
    * @type {PreviewPanel}
    */
   this.previewPanel = null;
+
+  /**
+   * The combo button to specify the task.
+   * @type {!cr.ui.ComboButton}
+   * @const
+   */
+  this.taskMenuButton = FileManagerUI.queryDecoratedElement_(
+      '#tasks', cr.ui.ComboButton);
 
   /**
    * Dialog footer.
@@ -139,6 +168,21 @@ function FileManagerUI(element, dialogType) {
   // Pre-populate the static localized strings.
   i18nTemplate.process(this.element_.ownerDocument, loadTimeData);
 }
+
+/**
+ * Obtains the element that should exist, decorates it with given type, and
+ * returns it.
+ * @param {string} query Query for the element.
+ * @param {function(new: T, ...)} type Type used to decorate.
+ * @private
+ * @template T
+ * @return {!T} Decorated element.
+ */
+FileManagerUI.queryDecoratedElement_ = function(query, type) {
+  var element = queryRequiredElement(document, query);
+  type.decorate(element);
+  return element;
+};
 
 /**
  * Initialize the dialogs.
@@ -171,10 +215,11 @@ FileManagerUI.prototype.initDialogs = function() {
  *
  * @param {!FileTable} table
  * @param {!FileGrid} grid
- * @param {PreviewPanel} previewPanel
- *
+ * @param {!PreviewPanel} previewPanel
+ * @param {!LocationLine} locationLine
  */
-FileManagerUI.prototype.initAdditionalUI = function(table, grid, previewPanel) {
+FileManagerUI.prototype.initAdditionalUI = function(
+    table, grid, previewPanel, locationLine) {
   // Listen to drag events to hide preview panel while user is dragging files.
   // Files.app prevents default actions in 'dragstart' in some situations,
   // so we listen to 'drag' to know the list is actually being dragged.
@@ -196,23 +241,52 @@ FileManagerUI.prototype.initAdditionalUI = function(table, grid, previewPanel) {
   this.listContainer = new ListContainer(
       queryRequiredElement(this.element_, '#list-container'), table, grid);
 
+  // Splitter.
+  this.decorateSplitter_(
+      queryRequiredElement(this.element_, '#navigation-list-splitter'));
+
   // Preview panel.
   this.previewPanel = previewPanel;
   this.previewPanel.addEventListener(
       PreviewPanel.Event.VISIBILITY_CHANGE,
       this.onPreviewPanelVisibilityChange_.bind(this));
   this.previewPanel.initialize();
+
+  // Location line.
+  this.locationLine = locationLine;
+
+  // Add handlers.
+  document.defaultView.addEventListener('resize', this.relayout.bind(this));
 };
 
 /**
- * Relayout the UI.
+ * TODO(hirono): Merge the method into initAdditionalUI.
+ * @param {!DirectoryTree} directoryTree
+ */
+FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
+  this.directoryTree = directoryTree;
+  // Visible height of the directory tree depends on the size of progress
+  // center panel. When the size of progress center panel changes, directory
+  // tree has to be notified to adjust its components (e.g. progress bar).
+  var observer =
+      new MutationObserver(directoryTree.relayout.bind(directoryTree));
+  observer.observe(this.progressCenterPanel.element,
+                   /** @type {MutationObserverInit} */
+                   ({subtree: true, attributes: true, childList: true}));
+};
+
+/**
+ * Relayouts the UI.
  */
 FileManagerUI.prototype.relayout = function() {
   this.locationLine.truncate();
+  // May not be available during initialization.
   if (this.listContainer.currentListType !==
       ListContainer.ListType.UNINITIALIZED) {
     this.listContainer.currentView.relayout();
   }
+  if (this.directoryTree)
+    this.directoryTree.relayout();
 };
 
 /**
@@ -237,6 +311,8 @@ FileManagerUI.prototype.setCurrentListType = function(listType) {
       assertNotReached();
       break;
   }
+
+  this.relayout();
 };
 
 /**
@@ -273,4 +349,36 @@ FileManagerUI.prototype.onPreviewPanelVisibilityChange_ = function() {
       this.previewPanel.height : 0;
   this.listContainer.table.setBottomMarginForPanel(panelHeight);
   this.listContainer.grid.setBottomMarginForPanel(panelHeight);
+};
+
+/**
+ * Decorates the given splitter element.
+ * @param {!HTMLElement} splitterElement
+ * @private
+ */
+FileManagerUI.prototype.decorateSplitter_ = function(splitterElement) {
+  var self = this;
+  var Splitter = cr.ui.Splitter;
+  var customSplitter = cr.ui.define('div');
+
+  customSplitter.prototype = {
+    __proto__: Splitter.prototype,
+
+    handleSplitterDragStart: function(e) {
+      Splitter.prototype.handleSplitterDragStart.apply(this, arguments);
+      this.ownerDocument.documentElement.classList.add('col-resize');
+    },
+
+    handleSplitterDragMove: function(deltaX) {
+      Splitter.prototype.handleSplitterDragMove.apply(this, arguments);
+      self.relayout();
+    },
+
+    handleSplitterDragEnd: function(e) {
+      Splitter.prototype.handleSplitterDragEnd.apply(this, arguments);
+      this.ownerDocument.documentElement.classList.remove('col-resize');
+    }
+  };
+
+  customSplitter.decorate(splitterElement);
 };
