@@ -188,6 +188,8 @@ void AudioContext::uninitialize()
     if (!isInitialized())
         return;
 
+    m_isInitialized = false;
+
     // This stops the audio thread and all audio rendering.
     m_destinationNode->uninitialize();
 
@@ -199,7 +201,6 @@ void AudioContext::uninitialize()
     // Get rid of the sources which may still be playing.
     derefUnfinishedSourceNodes();
 
-    m_isInitialized = false;
     clear();
 }
 
