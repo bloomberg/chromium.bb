@@ -54,7 +54,7 @@ TEST(ChannelMixerTest, ConstructAllPossibleLayouts) {
 
 struct ChannelMixerTestData {
   ChannelMixerTestData(ChannelLayout input_layout, ChannelLayout output_layout,
-                       float* channel_values, int num_channel_values,
+                       const float* channel_values, int num_channel_values,
                        float scale)
       : input_layout(input_layout),
         output_layout(output_layout),
@@ -67,7 +67,7 @@ struct ChannelMixerTestData {
 
   ChannelMixerTestData(ChannelLayout input_layout, int input_channels,
                        ChannelLayout output_layout, int output_channels,
-                       float* channel_values, int num_channel_values)
+                       const float* channel_values, int num_channel_values)
       : input_layout(input_layout),
         input_channels(input_channels),
         output_layout(output_layout),
@@ -87,7 +87,7 @@ struct ChannelMixerTestData {
   int input_channels;
   ChannelLayout output_layout;
   int output_channels;
-  float* channel_values;
+  const float* channel_values;
   int num_channel_values;
   float scale;
 };
