@@ -327,8 +327,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
       return;
 
     case Decoder::kAborted:
-      // Decoder can return kAborted only when Reset is pending.
-      NOTREACHED();
+      // Decoder can return kAborted during Reset() or during destruction.
       return;
 
     case Decoder::kOk:

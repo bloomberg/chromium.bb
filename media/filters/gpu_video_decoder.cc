@@ -562,14 +562,12 @@ void GpuVideoDecoder::NotifyEndOfBitstreamBuffer(int32 id) {
 }
 
 GpuVideoDecoder::~GpuVideoDecoder() {
+  DVLOG(3) << __FUNCTION__;
   DCheckGpuVideoAcceleratorFactoriesTaskRunnerIsCurrent();
+
   if (vda_)
     DestroyVDA();
-  DCHECK(bitstream_buffers_in_decoder_.empty());
   DCHECK(assigned_picture_buffers_.empty());
-
-  if (!pending_reset_cb_.is_null())
-    base::ResetAndReturn(&pending_reset_cb_).Run();
 
   for (size_t i = 0; i < available_shm_segments_.size(); ++i) {
     available_shm_segments_[i]->shm->Close();
@@ -581,8 +579,12 @@ GpuVideoDecoder::~GpuVideoDecoder() {
            bitstream_buffers_in_decoder_.begin();
        it != bitstream_buffers_in_decoder_.end(); ++it) {
     it->second.shm_buffer->shm->Close();
+    it->second.done_cb.Run(kAborted);
   }
   bitstream_buffers_in_decoder_.clear();
+
+  if (!pending_reset_cb_.is_null())
+    base::ResetAndReturn(&pending_reset_cb_).Run();
 }
 
 void GpuVideoDecoder::NotifyFlushDone() {
