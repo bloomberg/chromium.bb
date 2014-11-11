@@ -14,21 +14,24 @@
   },
 
   "permissions": [
-    "bluetoothPrivate",
-    "screenlockPrivate",
-    "feedbackPrivate",
-    "metricsPrivate",
-    "storage",
+    // Public APIs:
+    "alarms",
+    "browser",
+    "gcm",
     "identity",
     "notifications",
-    "easyUnlockPrivate",
-    "systemPrivate",
-    "alarms",
-    "gcm",
+    "storage",
     "system.display",
+
+    // Private APIs:
+    "bluetoothPrivate",
     "chromeosInfoPrivate",
-    "browser",
-    "preferencesPrivate"
+    "easyUnlockPrivate",
+    "feedbackPrivate",
+    "metricsPrivate",
+    "preferencesPrivate",
+    "screenlockPrivate",
+    "systemPrivate"
   ],
 
   "app": {
