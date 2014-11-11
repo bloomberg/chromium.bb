@@ -13,6 +13,10 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_version_info.h"
 
+#if defined(OS_MACOSX)
+#include "ui/gl/gl_fence_apple.h"
+#endif
+
 namespace gfx {
 
 namespace {
@@ -27,7 +31,10 @@ GLFence* CreateFence(bool flush) {
   if (g_driver_gl.ext.b_GL_ARB_sync ||
       GetGLVersionInfo()->is_es3) {
     fence.reset(new GLFenceARB(flush));
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+  } else if (g_driver_gl.ext.b_GL_APPLE_fence) {
+    fence.reset(new GLFenceAPPLE(flush));
+#else
   } else if (g_driver_egl.ext.b_EGL_KHR_fence_sync) {
     fence.reset(new GLFenceEGL(flush));
 #endif
@@ -50,7 +57,9 @@ GLFence::~GLFence() {
 bool GLFence::IsSupported() {
   DCHECK(GetGLVersionInfo());
   return g_driver_gl.ext.b_GL_ARB_sync || GetGLVersionInfo()->is_es3 ||
-#if !defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+         g_driver_gl.ext.b_GL_APPLE_fence ||
+#else
          g_driver_egl.ext.b_EGL_KHR_fence_sync ||
 #endif
          g_driver_gl.ext.b_GL_NV_fence;

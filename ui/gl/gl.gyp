@@ -263,6 +263,8 @@
           'sources': [
             'gl_context_cgl.cc',
             'gl_context_cgl.h',
+            'gl_fence_apple.cc',
+            'gl_fence_apple.h',
             'gl_image_io_surface.cc',
             'gl_image_io_surface.h',
             'scoped_cgl.cc',

@@ -7748,7 +7748,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
     }
   } else {
     if (async && features().use_async_readpixels) {
-      GLuint buffer;
+      GLuint buffer = 0;
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
       glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, GL_STREAM_READ);
@@ -7767,6 +7767,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       } else {
         // On error, unbind pack buffer and fall through to sync readpixels
         glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, 0);
+        glDeleteBuffersARB(1, &buffer);
       }
     }
     glReadPixels(x, y, width, height, format, type, pixels);

@@ -14,9 +14,10 @@
           '--test-launcher-bot-mode',
           '--enable-gpu',
           '--test-launcher-jobs=1',
-          '--gtest_filter=TabCaptureApiPixelTest.EndToEnd*',
+          '--gtest_filter=CastStreamingApiTestWithPixelOutput.EndToEnd*:TabCaptureApiPixelTest.EndToEnd*',
         ],
         'files': [
+          'test/data/extensions/api_test/cast_streaming/',
           'test/data/extensions/api_test/tab_capture/',
         ],
       },

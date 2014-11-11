@@ -772,6 +772,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
               ReadPixels(0, 0, kWidth, kHeight, GL_RGB, GL_UNSIGNED_BYTE, _))
       .Times(1);
   EXPECT_CALL(*gl_, GenBuffersARB(1, _)).Times(1);
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1);
   EXPECT_CALL(*gl_, BindBuffer(GL_PIXEL_PACK_BUFFER_ARB, _)).Times(2);
   EXPECT_CALL(*gl_,
               BufferData(GL_PIXEL_PACK_BUFFER_ARB, _, NULL, GL_STREAM_READ))
