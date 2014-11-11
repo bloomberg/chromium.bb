@@ -300,6 +300,9 @@ def parse_args(args):
 
 def _set_up_derived_options(port, options, args):
     """Sets the options values that depend on other options values."""
+    if options.batch_size is None:
+        options.batch_size = port.default_batch_size()
+
     if not options.child_processes:
         options.child_processes = os.environ.get("WEBKIT_TEST_CHILD_PROCESSES",
                                                  str(port.default_child_processes()))
