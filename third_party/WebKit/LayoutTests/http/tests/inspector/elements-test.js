@@ -507,6 +507,45 @@ InspectorTest.dumpElementsTree = function(rootNode, depth, resultsArray)
     print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
 };
 
+InspectorTest.dumpDOMUpdateHighlights = function(rootNode, depth)
+{
+    var treeOutline = InspectorTest.firstElementsTreeOutline();
+    treeOutline._updateModifiedNodes();
+    print(rootNode ? treeOutline.findTreeElement(rootNode) : treeOutline, "", depth || 10000);
+
+    function print(treeItem, prefix, depth)
+    {
+        if (treeItem.listItemElement) {
+            var elementXPath = WebInspector.DOMPresentationUtils.xPath(treeItem._node, true);
+            var highlightedElements = treeItem.listItemElement.querySelectorAll(".dom-update-highlight");
+            for (var i = 0; i < highlightedElements.length; ++i) {
+                var element = highlightedElements[i];
+                var classList = element.classList;
+                var xpath = elementXPath;
+                if (classList.contains("webkit-html-attribute-name")) {
+                    xpath += "/@" + element.textContent + " (empty)";
+                } else if (classList.contains("webkit-html-attribute-value")) {
+                    name = element.parentElement.querySelector(".webkit-html-attribute-name").textContent;
+                    xpath += "/@" + name + " " + element.textContent;
+                } else if (classList.contains("webkit-html-text-node")) {
+                    xpath += "/text() \"" + element.textContent + "\"";
+                }
+                InspectorTest.addResult(prefix + xpath);
+            }
+        }
+
+        if (!treeItem.expanded)
+            return;
+
+        var children = treeItem.children;
+        var newPrefix = treeItem === treeItem.treeOutline ? "" : prefix + "    ";
+        for (var i = 0; depth && children && i < children.length; ++i) {
+            if (!children[i]._elementCloseTag)
+                print(children[i], newPrefix, depth - 1);
+        }
+    }
+}
+
 InspectorTest.expandElementsTree = function(callback)
 {
     var expandedSomething = false;
