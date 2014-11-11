@@ -68,6 +68,7 @@ public:
 
     void useLenientXMLDecoding() { m_useLenientXMLDecoding = true; }
     bool sawError() const { return m_sawError; }
+    size_t checkForBOM(const char*, size_t);
 
 private:
     TextResourceDecoder(const String& mimeType, const WTF::TextEncoding& defaultEncoding, bool usesEncodingDetector);
@@ -76,7 +77,6 @@ private:
     static ContentType determineContentType(const String& mimeType);
     static const WTF::TextEncoding& defaultEncoding(ContentType, const WTF::TextEncoding& defaultEncoding);
 
-    size_t checkForBOM(const char*, size_t);
     bool checkForCSSCharset(const char*, size_t, bool& movedDataToBuffer);
     bool checkForXMLCharset(const char*, size_t, bool& movedDataToBuffer);
     void checkForMetaCharset(const char*, size_t);

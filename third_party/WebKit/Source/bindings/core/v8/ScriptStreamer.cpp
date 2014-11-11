@@ -12,6 +12,7 @@
 #include "core/dom/PendingScript.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/Settings.h"
+#include "core/html/parser/TextResourceDecoder.h"
 #include "platform/SharedBuffer.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
@@ -123,10 +124,10 @@ public:
         m_dataQueue.finish();
     }
 
-    void didReceiveData()
+    void didReceiveData(size_t lengthOfBOM)
     {
         ASSERT(isMainThread());
-        prepareDataOnMainThread();
+        prepareDataOnMainThread(lengthOfBOM);
     }
 
     void cancel()
@@ -145,13 +146,16 @@ public:
     }
 
 private:
-    void prepareDataOnMainThread()
+    void prepareDataOnMainThread(size_t lengthOfBOM)
     {
         ASSERT(isMainThread());
         // The Resource must still be alive; otherwise we should've cancelled
         // the streaming (if we have cancelled, the background thread is not
         // waiting).
         ASSERT(m_streamer->resource());
+
+        // BOM can only occur at the beginning of the data.
+        ASSERT(lengthOfBOM == 0 || m_dataPosition == 0);
 
         if (m_streamer->resource()->cachedMetadata(V8ScriptRunner::tagForCodeCache())) {
             // The resource has a code cache, so it's unnecessary to stream and
@@ -169,8 +173,6 @@ private:
         if (!m_resourceBuffer) {
             // We don't have a buffer yet. Try to get it from the resource.
             SharedBuffer* buffer = m_streamer->resource()->resourceBuffer();
-            if (!buffer)
-                return;
             m_resourceBuffer = RefPtr<SharedBuffer>(buffer);
         }
 
@@ -190,12 +192,15 @@ private:
         }
         // Copy the data chunks into a new buffer, since we're going to give the
         // data to a background thread.
-        if (dataLength > 0) {
+        if (dataLength > lengthOfBOM) {
+            dataLength -= lengthOfBOM;
             uint8_t* copiedData = new uint8_t[dataLength];
             unsigned offset = 0;
             for (size_t i = 0; i < chunks.size(); ++i) {
-                memcpy(copiedData + offset, chunks[i], chunkLengths[i]);
-                offset += chunkLengths[i];
+                memcpy(copiedData + offset, chunks[i] + lengthOfBOM, chunkLengths[i] - lengthOfBOM);
+                offset += chunkLengths[i] - lengthOfBOM;
+                // BOM is only in the first chunk
+                lengthOfBOM = 0;
             }
             m_dataQueue.produce(copiedData, dataLength);
         }
@@ -286,21 +291,34 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         if (m_streamingSuppressed)
             return;
     }
+    size_t lengthOfBOM = 0;
     if (!m_haveEnoughDataForStreaming) {
         // Even if the first data chunk is small, the script can still be big
         // enough - wait until the next data chunk comes before deciding whether
         // to start the streaming.
-        if (resource->resourceBuffer()->size() < kSmallScriptThreshold) {
+        ASSERT(resource->resourceBuffer());
+        if (resource->resourceBuffer()->size() < kSmallScriptThreshold)
             return;
-        }
         m_haveEnoughDataForStreaming = true;
         const char* histogramName = startedStreamingHistogramName(m_scriptType);
 
         // Encoding should be detected only when we have some data. It's
         // possible that resource->encoding() returns a different encoding
-        // before the loading has started and after we got some data.
-        WTF::TextEncoding textEncoding(resource->encoding());
-        const char* encodingName = textEncoding.name();
+        // before the loading has started and after we got some data.  In
+        // addition, check for byte order marks. Note that checking the byte
+        // order mark might change the encoding. We cannot decode the full text
+        // here, because it might contain incomplete UTF-8 characters. Also note
+        // that have at least kSmallScriptThreshold worth of data, which is more
+        // than enough for detecting a BOM.
+        const char* data = 0;
+        unsigned length = resource->resourceBuffer()->getSomeData(data, 0);
+
+        OwnPtr<TextResourceDecoder> decoder(TextResourceDecoder::create("application/javascript", resource->encoding()));
+        lengthOfBOM = decoder->checkForBOM(data, length);
+
+        // Maybe the encoding changed because we saw the BOM; get the encoding
+        // from the decoder.
+        const char* encodingName = decoder->encoding().name();
 
         // Here's a list of encodings we can use for streaming. These are
         // the canonical names.
@@ -313,9 +331,9 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
             encoding = v8::ScriptCompiler::StreamedSource::UTF8;
         } else {
             // We don't stream other encodings; especially we don't stream two
-            // byte scripts to avoid the handling of byte order marks. Most
-            // scripts are Latin1 or UTF-8 anyway, so this should be enough for
-            // most real world purposes.
+            // byte scripts to avoid the handling of endianness. Most scripts
+            // are Latin1 or UTF-8 anyway, so this should be enough for most
+            // real world purposes.
             suppressStreaming();
             blink::Platform::current()->histogramEnumeration(histogramName, 0, 2);
             return;
@@ -363,7 +381,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         blink::Platform::current()->histogramEnumeration(histogramName, 1, 2);
     }
     if (m_stream)
-        m_stream->didReceiveData();
+        m_stream->didReceiveData(lengthOfBOM);
 }
 
 void ScriptStreamer::notifyFinished(Resource* resource)
