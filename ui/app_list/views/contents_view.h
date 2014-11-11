@@ -6,9 +6,11 @@
 #define UI_APP_LIST_VIEWS_CONTENTS_VIEW_H_
 
 #include <map>
+#include <utility>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
@@ -27,9 +29,9 @@ class AppsGridView;
 class ApplicationDragAndDropHost;
 class AppListFolderItem;
 class AppListMainView;
-class AppListModel;
 class AppListViewDelegate;
 class AppsContainerView;
+class ContentsAnimator;
 class ContentsSwitcherView;
 class PaginationModel;
 class SearchResultListView;
@@ -111,6 +113,13 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // specify their own custom layout.
   gfx::Rect GetDefaultContentsBounds() const;
 
+  // Exposes GetAnimatorForTransition for tests.
+  ContentsAnimator* GetAnimatorForTransitionForTests(int from_page,
+                                                     int to_page,
+                                                     bool* reverse) const {
+    return GetAnimatorForTransition(from_page, to_page, reverse);
+  }
+
   // Overridden from views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
@@ -132,10 +141,6 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Returns the size of the default content area.
   gfx::Size GetDefaultContentsSize() const;
-
-  // Gets the origin (the off-screen resting place) for a given launcher page
-  // with index |page_index|.
-  gfx::Rect GetOffscreenPageBounds(int page_index) const;
 
   // Notifies the view delegate that the custom launcher page's animation has
   // changed.
@@ -166,6 +171,19 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // launcher-page pagination.
   PaginationModel* GetAppsPaginationModel();
 
+  // Adds a ContentsAnimator for a transition from |from_state| to |to_state|.
+  void AddAnimator(AppListModel::State from_state,
+                   AppListModel::State to_state,
+                   scoped_ptr<ContentsAnimator> animator);
+
+  // Gets a ContentsAnimator for a transition from |from_page| to |to_page|. If
+  // the animator should be run in reverse (because it is a |to_page| to
+  // |from_page| animator), |reverse| is set to true; otherwise it is set to
+  // false.
+  ContentsAnimator* GetAnimatorForTransition(int from_page,
+                                             int to_page,
+                                             bool* reverse) const;
+
   // Special sub views of the ContentsView. All owned by the views hierarchy.
   AppsContainerView* apps_container_view_;
 
@@ -193,6 +211,14 @@ class APP_LIST_EXPORT ContentsView : public views::View,
 
   // Manages the pagination for the launcher pages.
   PaginationModel pagination_model_;
+
+  // Maps from {A, B} pair to ContentsAnimator, where A and B are page
+  // |view_model_| indices for an animation from A to B.
+  std::map<std::pair<int, int>, linked_ptr<ContentsAnimator>>
+      contents_animators_;
+
+  // The animator for transitions not found in |contents_animators_|.
+  scoped_ptr<ContentsAnimator> default_animator_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };

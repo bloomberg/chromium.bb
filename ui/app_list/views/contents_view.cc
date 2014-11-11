@@ -15,13 +15,13 @@
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/app_list/views/contents_animator.h"
 #include "ui/app_list/views/contents_switcher_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/app_list/views/search_result_list_view.h"
 #include "ui/app_list/views/search_result_page_view.h"
 #include "ui/app_list/views/start_page_view.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/tween.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
@@ -98,7 +98,13 @@ void ContentsView::Init(AppListModel* model) {
 
   page_before_search_ = initial_page_index;
   pagination_model_.SelectPage(initial_page_index, false);
+
   ActivePageChanged();
+
+  // Populate the contents animators.
+  AddAnimator(AppListModel::STATE_START, AppListModel::STATE_APPS,
+              scoped_ptr<ContentsAnimator>(new StartToAppsAnimator(this)));
+  default_animator_.reset(new DefaultAnimator(this));
 }
 
 void ContentsView::CancelDrag() {
@@ -203,18 +209,6 @@ bool ContentsView::IsShowingSearchResults() const {
   return IsStateActive(AppListModel::STATE_SEARCH_RESULTS);
 }
 
-gfx::Rect ContentsView::GetOffscreenPageBounds(int page_index) const {
-  gfx::Rect bounds(GetContentsBounds());
-  // The start page and search page origins are above; all other pages' origins
-  // are below.
-  int page_height = bounds.height();
-  bool origin_above =
-      GetPageIndexForState(AppListModel::STATE_START) == page_index ||
-      GetPageIndexForState(AppListModel::STATE_SEARCH_RESULTS) == page_index;
-  bounds.set_y(origin_above ? -page_height : page_height);
-  return bounds;
-}
-
 void ContentsView::NotifyCustomLauncherPageAnimationChanged(double progress,
                                                             int current_page,
                                                             int target_page) {
@@ -246,22 +240,48 @@ void ContentsView::UpdatePageBounds() {
 
   NotifyCustomLauncherPageAnimationChanged(progress, current_page, target_page);
 
-  // Move |current_page| from 0 to its origin. Move |target_page| from its
-  // origin to 0.
-  gfx::Rect on_screen(GetDefaultContentsBounds());
-  gfx::Rect current_page_origin(GetOffscreenPageBounds(current_page));
-  gfx::Rect target_page_origin(GetOffscreenPageBounds(target_page));
-  gfx::Rect current_page_rect(
-      gfx::Tween::RectValueBetween(progress, on_screen, current_page_origin));
-  gfx::Rect target_page_rect(
-      gfx::Tween::RectValueBetween(progress, target_page_origin, on_screen));
+  bool reverse;
+  ContentsAnimator* animator =
+      GetAnimatorForTransition(current_page, target_page, &reverse);
 
-  view_model_->view_at(current_page)->SetBoundsRect(current_page_rect);
-  view_model_->view_at(target_page)->SetBoundsRect(target_page_rect);
+  // Animate linearly (the PaginationModel handles easing).
+  if (reverse)
+    animator->Update(1 - progress, target_page, current_page);
+  else
+    animator->Update(progress, current_page, target_page);
 }
 
 PaginationModel* ContentsView::GetAppsPaginationModel() {
   return apps_container_view_->apps_grid_view()->pagination_model();
+}
+
+void ContentsView::AddAnimator(AppListModel::State from_state,
+                               AppListModel::State to_state,
+                               scoped_ptr<ContentsAnimator> animator) {
+  int from_page = GetPageIndexForState(from_state);
+  int to_page = GetPageIndexForState(to_state);
+  contents_animators_.insert(
+      std::make_pair(std::make_pair(from_page, to_page),
+                     linked_ptr<ContentsAnimator>(animator.release())));
+}
+
+ContentsAnimator* ContentsView::GetAnimatorForTransition(int from_page,
+                                                         int to_page,
+                                                         bool* reverse) const {
+  auto it = contents_animators_.find(std::make_pair(from_page, to_page));
+  if (it != contents_animators_.end()) {
+    *reverse = false;
+    return it->second.get();
+  }
+
+  it = contents_animators_.find(std::make_pair(to_page, from_page));
+  if (it != contents_animators_.end()) {
+    *reverse = true;
+    return it->second.get();
+  }
+
+  *reverse = false;
+  return default_animator_.get();
 }
 
 void ContentsView::ShowFolderContent(AppListFolderItem* item) {
