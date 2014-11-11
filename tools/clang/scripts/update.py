@@ -32,6 +32,7 @@ LLVM_BUILD_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'llvm-build',
                               'Release+Asserts')
 COMPILER_RT_BUILD_DIR = os.path.join(LLVM_BUILD_DIR, '32bit-compiler-rt')
 CLANG_DIR = os.path.join(LLVM_DIR, 'tools', 'clang')
+LLD_DIR = os.path.join(LLVM_DIR, 'tools', 'lld')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'projects', 'compiler-rt')
 STAMP_FILE = os.path.join(LLVM_BUILD_DIR, 'cr_build_revision')
 
@@ -179,6 +180,7 @@ def UpdateClang():
 
   Checkout('LLVM', LLVM_REPO_URL + '/llvm/trunk', LLVM_DIR)
   Checkout('Clang', LLVM_REPO_URL + '/cfe/trunk', CLANG_DIR)
+  Checkout('LLD', LLVM_REPO_URL + '/lld/trunk', LLD_DIR)
   Checkout('compiler-rt', LLVM_REPO_URL + '/compiler-rt/trunk', COMPILER_RT_DIR)
 
   if not os.path.exists(LLVM_BUILD_DIR):
