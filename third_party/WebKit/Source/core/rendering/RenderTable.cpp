@@ -420,10 +420,10 @@ void RenderTable::layout()
     LayoutUnit movedSectionLogicalTop = 0;
     {
         LayoutState state(*this, locationOffset());
+        LayoutUnit oldLogicalWidth = logicalWidth();
+        LayoutUnit oldLogicalHeight = logicalHeight();
 
         setLogicalHeight(0);
-
-        LayoutUnit oldLogicalWidth = logicalWidth();
         updateLogicalWidth();
 
         if (logicalWidth() != oldLogicalWidth) {
@@ -545,8 +545,8 @@ void RenderTable::layout()
         updateLogicalHeight();
 
         // table can be containing block of positioned elements.
-        // FIXME: Only pass true if width or height changed.
-        layoutPositionedObjects(true);
+        bool dimensionChanged = oldLogicalWidth != logicalWidth() || oldLogicalHeight != logicalHeight();
+        layoutPositionedObjects(dimensionChanged);
 
         updateLayerTransformAfterLayout();
 
