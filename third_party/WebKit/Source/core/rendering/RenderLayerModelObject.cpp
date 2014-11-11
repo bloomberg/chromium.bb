@@ -181,7 +181,8 @@ void RenderLayerModelObject::invalidateTreeIfNeeded(const PaintInvalidationState
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
     const RenderLayerModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
-    ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
+    // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
+    // ASSERT(&newPaintInvalidationContainer == containerForPaintInvalidation());
 
     PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState, newPaintInvalidationContainer);
     clearPaintInvalidationState(paintInvalidationState);

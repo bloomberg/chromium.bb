@@ -997,7 +997,7 @@ RenderLayer* RenderLayer::enclosingLayerForPaintInvalidation() const
     if (isPaintInvalidationContainer())
         return const_cast<RenderLayer*>(this);
 
-    for (const RenderLayer* curr = parent(); curr; curr = curr->parent()) {
+    for (const RenderLayer* curr = compositingContainer(); curr; curr = curr->compositingContainer()) {
         if (curr->isPaintInvalidationContainer())
             return const_cast<RenderLayer*>(curr);
     }
