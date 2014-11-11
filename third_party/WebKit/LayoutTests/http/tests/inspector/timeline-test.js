@@ -55,11 +55,6 @@ InspectorTest.timelineFrameModel = function()
     return WebInspector.panels.timeline._frameModel();
 }
 
-InspectorTest.timelineUIUtils = function()
-{
-    return WebInspector.panels.timeline._uiUtils;
-}
-
 InspectorTest.startTimeline = function(callback)
 {
     var panel = WebInspector.panels.timeline;
@@ -186,7 +181,7 @@ InspectorTest.dumpTimelineRecord = function(record, detailsCallback, level, filt
         message = message + "> ";
     if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
-        message += InspectorTest.timelineUIUtils().titleForRecord(record);
+        message += WebInspector.TimelineUIUtils.titleForRecord(record);
     } else  {
         message += record.type();
     }
@@ -236,7 +231,7 @@ InspectorTest.dumpPresentationRecord = function(presentationRecord, detailsCallb
         message += record.type() + " x " + presentationRecord.presentationChildren().length;
     } else if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp
         || record.type() === WebInspector.TimelineModel.RecordType.ConsoleTime) {
-        message += InspectorTest.timelineUIUtils().titleForRecord(record);
+        message += WebInspector.TimelineUIUtils.titleForRecord(record);
     } else {
         message += record.type();
     }

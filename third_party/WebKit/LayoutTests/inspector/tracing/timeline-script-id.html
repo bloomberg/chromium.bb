@@ -35,7 +35,7 @@ function test()
         if (recordTypes.indexOf(record.type()) === -1)
             return;
 
-        var details = WebInspector.TracingTimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), linkifier);
+        var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record.traceEvent(), linkifier);
         if (details)
             InspectorTest.addResult("details.textContent for " + record.type() + " event: '" + details.textContent + "'");
     }

@@ -30,7 +30,7 @@ function test()
             var record = presentationRecord.record();
             prefix = prefix || "";
             // Here and below: pretend coalesced record are just not there, as coalescation is time dependent and, hence, not stable.
-            var categoryName = WebInspector.panels.timeline._uiUtils.categoryForRecord(record).name;
+            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
             if (categoryName !== "loading" && categoryName !== "scripting")
                 return;
             var childPrefix = prefix;
