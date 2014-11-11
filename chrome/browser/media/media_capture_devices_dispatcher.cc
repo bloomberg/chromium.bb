@@ -54,10 +54,9 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permissions_data.h"
 #endif
@@ -222,10 +221,9 @@ const extensions::Extension* GetExtensionForOrigin(
   if (!security_origin.SchemeIs(extensions::kExtensionScheme))
     return NULL;
 
-  ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension =
-      extensions_service->extensions()->GetByID(security_origin.host());
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          security_origin.host());
   DCHECK(extension);
   return extension;
 }

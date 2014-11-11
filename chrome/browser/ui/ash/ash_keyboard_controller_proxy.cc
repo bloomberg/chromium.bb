@@ -7,7 +7,6 @@
 #include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -15,7 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_dispatcher.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/api/virtual_keyboard_private.h"
 #include "extensions/common/constants.h"
@@ -97,10 +96,9 @@ void AshKeyboardControllerProxy::RequestAudioInput(
   const extensions::Extension* extension = NULL;
   GURL origin(request.security_origin);
   if (origin.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionService* extensions_service =
-        extensions::ExtensionSystem::Get(
-            GetBrowserContext())->extension_service();
-    extension = extensions_service->extensions()->GetByID(origin.host());
+    const extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(GetBrowserContext());
+    extension = registry->enabled_extensions().GetByID(origin.host());
     DCHECK(extension);
   }
 

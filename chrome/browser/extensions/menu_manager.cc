@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -27,7 +26,6 @@
 #include "content/public/common/context_menu_params.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/common/extension.h"
@@ -36,7 +34,6 @@
 #include "ui/gfx/text_elider.h"
 
 using content::WebContents;
-using extensions::ExtensionSystem;
 
 namespace extensions {
 
@@ -616,11 +613,9 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
   if (!item)
     return;
 
-  // ExtensionService/Extension can be NULL in unit tests :(
-  ExtensionService* service =
-      ExtensionSystem::Get(browser_context_)->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
   const Extension* extension =
-      service ? service->extensions()->GetByID(item->extension_id()) : NULL;
+      registry->enabled_extensions().GetByID(item->extension_id());
 
   if (item->type() == MenuItem::RADIO)
     RadioItemSelected(item);
@@ -804,10 +799,9 @@ void MenuManager::WriteToStorage(const Extension* extension,
 
 void MenuManager::ReadFromStorage(const std::string& extension_id,
                                   scoped_ptr<base::Value> value) {
-  const Extension* extension = ExtensionSystem::Get(browser_context_)
-                                   ->extension_service()
-                                   ->extensions()
-                                   ->GetByID(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
   if (!extension)
     return;
 

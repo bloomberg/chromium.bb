@@ -13,6 +13,7 @@
 #include "chrome/common/extensions/manifest_handlers/mime_types_handler.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/test/result_catcher.h"
 #include "grit/browser_resources.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -51,7 +52,9 @@ class PDFExtensionTest : public ExtensionApiTest {
     service->component_loader()->Add(IDR_PDF_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("pdf")));
     const extensions::Extension* extension =
-        service->extensions()->GetByID("mhjfbmdgcfjbbpaeojofohoefgiehjai");
+        extensions::ExtensionRegistry::Get(profile())
+            ->enabled_extensions()
+            .GetByID("mhjfbmdgcfjbbpaeojofohoefgiehjai");
     ASSERT_TRUE(extension);
     ASSERT_TRUE(MimeTypesHandler::GetHandler(
         extension)->CanHandleMIMEType("application/pdf"));

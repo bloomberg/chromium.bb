@@ -16,7 +16,6 @@
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/devtools/devtools_target_impl.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -45,8 +44,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension_set.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
@@ -796,27 +794,26 @@ void DevToolsUIBindings::UpdateTheme() {
 }
 
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
-  const ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-      profile_->GetOriginalProfile())->extension_service();
-  if (!extension_service)
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile_->GetOriginalProfile());
+  if (!registry)
     return;
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
 
   base::ListValue results;
-  for (extensions::ExtensionSet::const_iterator extension(extensions->begin());
-       extension != extensions->end(); ++extension) {
-    if (extensions::chrome_manifest_urls::GetDevToolsPage(extension->get())
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
+    if (extensions::chrome_manifest_urls::GetDevToolsPage(extension.get())
             .is_empty())
       continue;
     base::DictionaryValue* extension_info = new base::DictionaryValue();
     extension_info->Set(
         "startPage",
         new base::StringValue(extensions::chrome_manifest_urls::GetDevToolsPage(
-                                  extension->get()).spec()));
-    extension_info->Set("name", new base::StringValue((*extension)->name()));
+                                  extension.get()).spec()));
+    extension_info->Set("name", new base::StringValue(extension->name()));
     extension_info->Set("exposeExperimentalAPIs",
                         new base::FundamentalValue(
-                            (*extension)->permissions_data()->HasAPIPermission(
+                            extension->permissions_data()->HasAPIPermission(
                                 extensions::APIPermission::kExperimental)));
     results.Append(extension_info);
   }

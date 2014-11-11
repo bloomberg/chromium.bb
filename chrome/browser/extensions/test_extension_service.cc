@@ -10,11 +10,6 @@ using extensions::Extension;
 
 TestExtensionService::~TestExtensionService() {}
 
-const extensions::ExtensionSet* TestExtensionService::extensions() const {
-  ADD_FAILURE();
-  return NULL;
-}
-
 extensions::PendingExtensionManager*
 TestExtensionService::pending_extension_manager() {
   ADD_FAILURE();

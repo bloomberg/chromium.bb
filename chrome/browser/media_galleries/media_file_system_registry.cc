@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
@@ -34,7 +33,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -769,10 +768,8 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
   Profile* profile = prefs->profile();
   // Get the Extensions, MediaGalleriesPreferences and ExtensionHostMap for
   // |profile|.
-  const ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  const extensions::ExtensionSet* extensions_set =
-      extension_service->extensions();
+  const extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
   ExtensionGalleriesHostMap::const_iterator host_map_it =
       extension_hosts_map_.find(profile);
   DCHECK(host_map_it != extension_hosts_map_.end());
@@ -786,7 +783,8 @@ void MediaFileSystemRegistry::OnGalleryRemoved(
   for (ExtensionHostMap::const_iterator it = extension_host_map.begin();
        it != extension_host_map.end();
        ++it) {
-    extensions.push_back(extensions_set->GetByID(it->first));
+    extensions.push_back(
+        extension_registry->enabled_extensions().GetByID(it->first));
   }
   for (size_t i = 0; i < extensions.size(); ++i) {
     if (!ContainsKey(extension_hosts_map_, profile))

@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 
@@ -20,7 +21,8 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
   void InstallExtensionSilently(ExtensionService* service,
                                 const char* filename) {
     service->set_show_extensions_prompts(false);
-    size_t num_before = service->extensions()->size();
+    ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+    size_t num_before = registry->enabled_extensions().size();
 
     base::FilePath path = test_data_dir_.AppendASCII(filename);
 
@@ -43,23 +45,19 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
     installer->InstallCrx(path);
     observer_->Wait();
 
-    size_t num_after = service->extensions()->size();
+    size_t num_after = registry->enabled_extensions().size();
     EXPECT_EQ(num_before + 1, num_after);
 
     extension_loaded_observer.Wait();
-    const Extension* extension = service->GetExtensionById(
-        last_loaded_extension_id(), false);
-    EXPECT_TRUE(extension != NULL);
-  }
-
-  ExtensionService* GetExtensionService() {
-    return ExtensionSystem::Get(profile())->extension_service();
+    const Extension* extension =
+        registry->enabled_extensions().GetByID(last_loaded_extension_id());
+    EXPECT_TRUE(extension);
   }
 };
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
                        PRE_TestAdblockExtensionCrash) {
-  InstallExtensionSilently(GetExtensionService(), "adblock.crx");
+  InstallExtensionSilently(extension_service(), "adblock.crx");
 }
 
 // Timing out on XP and Vista: http://crbug.com/387866
@@ -70,7 +68,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
                        MAYBE_TestAdblockExtensionCrash) {
-  ExtensionService* service = GetExtensionService();
+  ExtensionService* service = extension_service();
   // Verify that the extension is enabled and allowed in incognito
   // is disabled.
   EXPECT_TRUE(service->IsExtensionEnabled(last_loaded_extension_id()));
@@ -84,11 +82,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
 #define MAYBE_TestSetExtensionsState TestSetExtensionsState
 #endif
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, MAYBE_TestSetExtensionsState) {
-  InstallExtensionSilently(GetExtensionService(), "google_talk.crx");
+  InstallExtensionSilently(extension_service(), "google_talk.crx");
 
   // Disable the extension and verify.
   util::SetIsIncognitoEnabled(last_loaded_extension_id(), profile(), false);
-  ExtensionService* service = GetExtensionService();
+  ExtensionService* service = extension_service();
   service->DisableExtension(last_loaded_extension_id(),
                             Extension::DISABLE_USER_ACTION);
   EXPECT_FALSE(service->IsExtensionEnabled(last_loaded_extension_id()));

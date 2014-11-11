@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -258,10 +258,10 @@ const float kHideDuration = 0.7;
 - (NSString*)getLabelText {
   if (bubbleType_ == FEB_TYPE_NONE)
     return @"";
-  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-      browser_->profile())->extension_service();
-  return SysUTF16ToNSString(fullscreen_bubble::GetLabelTextForType(
-          bubbleType_, url_, extension_service));
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_->profile());
+  return SysUTF16ToNSString(
+      fullscreen_bubble::GetLabelTextForType(bubbleType_, url_, registry));
 }
 
 // This looks at the Main Menu and determines what the user has set as the

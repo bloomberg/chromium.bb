@@ -60,10 +60,6 @@ class MockExtensionService : public TestExtensionService {
   MockExtensionService() {}
   ~MockExtensionService() override {}
 
-  const extensions::ExtensionSet* extensions() const override {
-    return &extensions_;
-  }
-
   void AddExtension(const extensions::Extension* extension) override {
     extensions_.Insert(make_scoped_refptr(extension));
   }

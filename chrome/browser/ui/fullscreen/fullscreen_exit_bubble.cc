@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #include "chrome/grit/generated_resources.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -132,8 +132,7 @@ void FullscreenExitBubble::Cancel() {
 base::string16 FullscreenExitBubble::GetCurrentMessageText() const {
   return fullscreen_bubble::GetLabelTextForType(
       bubble_type_, url_,
-      extensions::ExtensionSystem::Get(
-          browser_->profile())->extension_service());
+      extensions::ExtensionRegistry::Get(browser_->profile()));
 }
 
 base::string16 FullscreenExitBubble::GetCurrentDenyButtonText() const {

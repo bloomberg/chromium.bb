@@ -20,6 +20,7 @@
 #include "extensions/browser/api/declarative/rules_cache_delegate.h"
 #include "extensions/browser/api/declarative/test_rules_registry.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/value_store/testing_value_store.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -345,7 +346,9 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
                             &error));
   ASSERT_TRUE(error.empty());
   extension_service->AddExtension(extension.get());
-  EXPECT_TRUE(extension_service->extensions()->Contains(extension->id()));
+  EXPECT_TRUE(extensions::ExtensionRegistry::Get(env_.profile())
+                  ->enabled_extensions()
+                  .Contains(extension->id()));
   EXPECT_TRUE(extension->permissions_data()->HasAPIPermission(
       APIPermission::kDeclarativeWebRequest));
   env_.GetExtensionSystem()->SetReady();

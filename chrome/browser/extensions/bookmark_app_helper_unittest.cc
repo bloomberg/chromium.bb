@@ -53,7 +53,7 @@ class BookmarkAppHelperExtensionServiceTest
     extensions::ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
     service_->Init();
-    EXPECT_EQ(0u, service_->extensions()->size());
+    EXPECT_EQ(0u, registry()->enabled_extensions().size());
   }
 
   void TearDown() override {
@@ -171,7 +171,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkApp) {
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
   EXPECT_TRUE(extension);
-  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
@@ -203,7 +203,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppWithManifest) {
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
   EXPECT_TRUE(extension);
-  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(GURL(kAppUrl), AppLaunchInfo::GetLaunchWebURL(extension));
@@ -226,7 +226,7 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateBookmarkAppNoContents) {
   const Extension* extension =
       service_->GetInstalledExtension(helper.extension()->id());
   EXPECT_TRUE(extension);
-  EXPECT_EQ(1u, service_->extensions()->size());
+  EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(extension->from_bookmark());
   EXPECT_EQ(kAppTitle, extension->name());
   EXPECT_EQ(kAppDescription, extension->description());
@@ -264,7 +264,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
 
   {
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
-    const Extension* extension = service_->extensions()->begin()->get();
+    const Extension* extension =
+        registry()->enabled_extensions().begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
@@ -282,7 +283,8 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, CreateAndUpdateBookmarkApp) {
 
   {
     EXPECT_EQ(1u, registry()->enabled_extensions().size());
-    const Extension* extension = service_->extensions()->begin()->get();
+    const Extension* extension =
+        registry()->enabled_extensions().begin()->get();
     EXPECT_TRUE(extension->from_bookmark());
     EXPECT_EQ(kAlternativeAppTitle, extension->name());
     EXPECT_EQ(kAppDescription, extension->description());
@@ -313,10 +315,9 @@ TEST_F(BookmarkAppHelperExtensionServiceTest, GetWebApplicationInfo) {
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   base::RunLoop run_loop;
   extensions::GetWebApplicationInfoFromApp(
-      profile_.get(),
-      service_->extensions()->begin()->get(),
-      base::Bind(
-          &ValidateWebApplicationInfo, run_loop.QuitClosure(), web_app_info));
+      profile_.get(), registry()->enabled_extensions().begin()->get(),
+      base::Bind(&ValidateWebApplicationInfo, run_loop.QuitClosure(),
+                 web_app_info));
   run_loop.Run();
 }
 

@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +27,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_icon_image.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/theme_resources.h"
@@ -127,9 +126,9 @@ const int kEVImages[3][9] = {
 const extensions::Extension* GetExtension(const GURL& url, Profile* profile) {
   if (!url.SchemeIs(extensions::kExtensionScheme))
     return NULL;
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  return service->extensions()->GetExtensionOrAppByURL(url);
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
+  return registry->enabled_extensions().GetByID(url.host());
 }
 
 }  // namespace

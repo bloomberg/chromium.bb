@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/options/website_settings_handler.h"
 
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
@@ -21,7 +20,6 @@
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -756,12 +754,10 @@ void WebsiteSettingsHandler::DeleteLocalStorage(const GURL& site_url) {
 const std::string& WebsiteSettingsHandler::GetReadableName(
     const GURL& site_url) {
   if (site_url.SchemeIs(extensions::kExtensionScheme)) {
-    Profile* profile = GetProfile();
-    ExtensionService* extension_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-
+    const extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(GetProfile());
     const extensions::Extension* extension =
-        extension_service->extensions()->GetExtensionOrAppByURL(site_url);
+        registry->enabled_extensions().GetByID(site_url.host());
     // If extension is NULL, it was removed and we cannot look up its name.
     if (!extension)
       return site_url.spec();

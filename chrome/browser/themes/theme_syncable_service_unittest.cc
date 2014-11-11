@@ -17,6 +17,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_url_handlers.h"
@@ -187,7 +188,9 @@ class ThemeSyncableServiceTest : public testing::Test {
     extensions::ExtensionPrefs::Get(profile_.get())
         ->AddGrantedPermissions(theme_extension_->id(), permissions.get());
     service->AddExtension(theme_extension_.get());
-    ASSERT_EQ(1u, service->extensions()->size());
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(profile_.get());
+    ASSERT_EQ(1u, registry->enabled_extensions().size());
   }
 
   // Overridden in PolicyInstalledThemeTest below.

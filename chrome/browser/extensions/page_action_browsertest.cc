@@ -7,13 +7,12 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 
@@ -122,10 +121,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
+  ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
 
-  size_t size_before = service->extensions()->size();
+  size_t size_before = registry->enabled_extensions().size();
 
   base::FilePath base_path = test_data_dir_.AppendASCII("browsertest")
                                      .AppendASCII("crash_44415");
@@ -133,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   const Extension* extensionA = LoadExtension(base_path.AppendASCII("ExtA"));
   ASSERT_TRUE(extensionA);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
 
   LOG(INFO) << "Load extension A done  : "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
@@ -143,7 +142,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   const Extension* extensionB = LoadExtension(base_path.AppendASCII("ExtB"));
   ASSERT_TRUE(extensionB);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(2));
-  ASSERT_EQ(size_before + 2, service->extensions()->size());
+  ASSERT_EQ(size_before + 2, registry->enabled_extensions().size());
 
   LOG(INFO) << "Load extension B done  : "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
@@ -152,8 +151,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
   std::string idA = extensionA->id();
   ReloadExtension(extensionA->id());
   // ExtensionA has changed, so refetch it.
-  ASSERT_EQ(size_before + 2, service->extensions()->size());
-  extensionA = service->extensions()->GetByID(idA);
+  ASSERT_EQ(size_before + 2, registry->enabled_extensions().size());
+  extensionA = registry->enabled_extensions().GetByID(idA);
 
   LOG(INFO) << "Reload extension A done: "
             << (base::TimeTicks::Now() - start_time).InMilliseconds()
@@ -178,9 +177,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionRefreshCrash) {
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ASSERT_TRUE(test_server()->Start());
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
-  const size_t size_before = service->extensions()->size();
+  ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
+  const size_t size_before = registry->enabled_extensions().size();
 
   base::FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized_pa"));
@@ -192,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
 
-  ASSERT_EQ(size_before + 1, service->extensions()->size());
+  ASSERT_EQ(size_before + 1, registry->enabled_extensions().size());
 
   EXPECT_STREQ(base::WideToUTF8(L"Hreggvi\u00F0ur: l10n page action").c_str(),
                extension->description().c_str());

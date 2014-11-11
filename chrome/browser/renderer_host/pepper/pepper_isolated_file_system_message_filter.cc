@@ -5,9 +5,6 @@
 #include "chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h"
 
 #include "chrome/browser/browser_process.h"
-#if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#endif
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -17,7 +14,7 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_view_host.h"
 #if defined(ENABLE_EXTENSIONS)
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -103,18 +100,9 @@ Profile* PepperIsolatedFileSystemMessageFilter::GetProfile() {
 std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
     Profile* profile) {
 #if defined(ENABLE_EXTENSIONS)
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  if (!extension_system)
-    return std::string();
-
-  const ExtensionService* extension_service =
-      extension_system->extension_service();
-  if (!extension_service)
-    return std::string();
-
   const extensions::Extension* extension =
-      extension_service->GetExtensionById(document_url_.host(), false);
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          document_url_.host());
   if (!extension)
     return std::string();
 
@@ -153,9 +141,8 @@ int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
   Profile* profile = GetProfile();
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    extension_set = extensions::ExtensionSystem::Get(profile)
-                        ->extension_service()
-                        ->extensions();
+    extension_set =
+        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   }
   if (!IsExtensionOrSharedModuleWhitelisted(
           document_url_, extension_set, allowed_crxfs_origins_) &&

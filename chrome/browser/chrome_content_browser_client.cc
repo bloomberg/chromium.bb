@@ -223,10 +223,9 @@
 
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/chrome_content_browser_client_extensions_part.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/guest_view_base.h"
 #include "extensions/browser/guest_view/guest_view_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -2367,11 +2366,8 @@ bool ChromeContentBrowserClient::AllowPepperSocketAPI(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    const ExtensionService* ext_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    if (ext_service) {
-      extension_set = ext_service->extensions();
-    }
+    extension_set =
+        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   }
 
   if (private_api) {
@@ -2604,11 +2600,8 @@ bool ChromeContentBrowserClient::IsPluginAllowedToCallRequestOSFileHandle(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    const ExtensionService* ext_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    if (ext_service) {
-      extension_set = ext_service->extensions();
-    }
+    extension_set =
+        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   }
   return IsExtensionOrSharedModuleWhitelisted(url, extension_set,
                                               allowed_file_handle_origins_) ||
@@ -2632,11 +2625,8 @@ bool ChromeContentBrowserClient::IsPluginAllowedToUseDevChannelAPIs(
   Profile* profile = Profile::FromBrowserContext(browser_context);
   const extensions::ExtensionSet* extension_set = NULL;
   if (profile) {
-    const ExtensionService* ext_service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
-    if (ext_service) {
-      extension_set = ext_service->extensions();
-    }
+    extension_set =
+        &extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
   }
 
   // Allow access for whitelisted applications.

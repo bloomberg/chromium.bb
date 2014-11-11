@@ -4,7 +4,7 @@
 
 #include "chrome/browser/content_settings/content_settings_internal_extension_provider.h"
 
-#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/extensions/api/plugins/plugins_handler.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
@@ -23,17 +24,14 @@ using extensions::UnloadedExtensionInfo;
 
 namespace content_settings {
 
-InternalExtensionProvider::InternalExtensionProvider(
-    ExtensionService* extension_service)
+InternalExtensionProvider::InternalExtensionProvider(Profile* profile)
     : registrar_(new content::NotificationRegistrar) {
   // Whitelist all extensions loaded so far.
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    if (extensions::PluginInfo::HasPlugins(it->get()))
-      SetContentSettingForExtension(it->get(), CONTENT_SETTING_ALLOW);
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
+    if (extensions::PluginInfo::HasPlugins(extension.get()))
+      SetContentSettingForExtension(extension.get(), CONTENT_SETTING_ALLOW);
   }
-  Profile* profile = extension_service->profile();
   registrar_->Add(this,
                   extensions::NOTIFICATION_EXTENSION_HOST_CREATED,
                   content::Source<Profile>(profile));

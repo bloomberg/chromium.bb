@@ -109,15 +109,14 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
   void WaitForServicesToStart(int num_expected_extensions,
                               bool expect_extensions_enabled) {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(browser()->profile());
 
     // Count the number of non-component extensions.
     int found_extensions = 0;
-    for (extensions::ExtensionSet::const_iterator it =
-             service->extensions()->begin();
-         it != service->extensions()->end(); ++it) {
-      if ((*it)->location() != extensions::Manifest::COMPONENT)
+    for (const scoped_refptr<const extensions::Extension>& extension :
+         registry->enabled_extensions()) {
+      if (extension->location() != extensions::Manifest::COMPONENT)
         found_extensions++;
     }
 
@@ -126,6 +125,9 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
 
     ASSERT_EQ(static_cast<uint32>(num_expected_extensions),
               static_cast<uint32>(found_extensions));
+
+    ExtensionService* service = extensions::ExtensionSystem::Get(
+                                    browser()->profile())->extension_service();
     ASSERT_EQ(expect_extensions_enabled, service->extensions_enabled());
 
     content::WindowedNotificationObserver user_scripts_observer(

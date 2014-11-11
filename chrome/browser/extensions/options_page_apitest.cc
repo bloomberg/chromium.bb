@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -11,7 +10,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -30,14 +29,13 @@ static const char kScriptClickOptionButton[] =
 // extension's options page.
 // Disabled because of flakiness. See http://crbug.com/174934.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_OptionsPage) {
-  ExtensionService* service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
-  size_t installed_extensions = service->extensions()->size();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
+  size_t installed_extensions = registry->enabled_extensions().size();
   // Install an extension with an options page.
   const Extension* extension =
       InstallExtension(test_data_dir_.AppendASCII("options.crx"), 1);
   ASSERT_TRUE(extension);
-  EXPECT_EQ(installed_extensions + 1, service->extensions()->size());
+  EXPECT_EQ(installed_extensions + 1, registry->enabled_extensions().size());
 
   // Go to the Extension Settings page and click the Options button.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIExtensionsURL));

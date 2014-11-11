@@ -43,6 +43,7 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/uninstall_reason.h"
@@ -56,6 +57,7 @@
 
 using extensions::Extension;
 using extensions::ExtensionCreator;
+using extensions::ExtensionRegistry;
 using extensions::FeatureSwitch;
 using extensions::Manifest;
 
@@ -97,13 +99,13 @@ Profile* ExtensionBrowserTest::profile() {
 
 // static
 const Extension* ExtensionBrowserTest::GetExtensionByPath(
-    const extensions::ExtensionSet* extensions, const base::FilePath& path) {
+    const extensions::ExtensionSet& extensions,
+    const base::FilePath& path) {
   base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
   EXPECT_TRUE(!extension_path.empty());
-  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    if ((*iter)->path() == extension_path) {
-      return iter->get();
+  for (const scoped_refptr<const Extension>& extension : extensions) {
+    if (extension->path() == extension_path) {
+      return extension.get();
     }
   }
   return NULL;
@@ -163,6 +165,7 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
     const std::string& install_param) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   {
     observer_->Watch(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
                      content::NotificationService::AllSources());
@@ -179,7 +182,8 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
 
   // Find the loaded extension by its path. See crbug.com/59531 for why
   // we cannot just use last_loaded_extension_id().
-  const Extension* extension = GetExtensionByPath(service->extensions(), path);
+  const Extension* extension =
+      GetExtensionByPath(registry->enabled_extensions(), path);
   if (!extension)
     return NULL;
 
@@ -208,7 +212,7 @@ ExtensionBrowserTest::LoadExtensionWithInstallParam(
     extensions::ExtensionPrefs::Get(profile())
         ->SetInstallParam(extension_id, install_param);
     // Re-enable the extension if needed.
-    if (service->extensions()->Contains(extension_id)) {
+    if (registry->enabled_extensions().Contains(extension_id)) {
       content::WindowedNotificationObserver load_signal(
           extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
           content::Source<Profile>(profile()));
@@ -264,6 +268,7 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
     const base::FilePath::CharType* manifest_relative_path) {
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
 
   std::string manifest;
   if (!base::ReadFileToString(path.Append(manifest_relative_path), &manifest)) {
@@ -271,7 +276,8 @@ const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(
   }
 
   std::string extension_id = service->component_loader()->Add(manifest, path);
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(extension_id);
   if (!extension)
     return NULL;
   observer_->set_last_loaded_extension_id(extension->id());
@@ -467,8 +473,9 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     bool is_ephemeral) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile())->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   service->set_show_extensions_prompts(false);
-  size_t num_before = service->extensions()->size();
+  size_t num_before = registry->enabled_extensions().size();
 
   {
     scoped_ptr<ExtensionInstallPrompt> install_ui;
@@ -512,17 +519,16 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
     observer_->Wait();
   }
 
-  size_t num_after = service->extensions()->size();
+  size_t num_after = registry->enabled_extensions().size();
   EXPECT_EQ(num_before + expected_change, num_after);
   if (num_before + expected_change != num_after) {
     VLOG(1) << "Num extensions before: " << base::IntToString(num_before)
             << " num after: " << base::IntToString(num_after)
             << " Installed extensions follow:";
 
-    for (extensions::ExtensionSet::const_iterator it =
-             service->extensions()->begin();
-         it != service->extensions()->end(); ++it)
-      VLOG(1) << "  " << (*it)->id();
+    for (const scoped_refptr<const Extension>& extension :
+         registry->enabled_extensions())
+      VLOG(1) << "  " << extension->id();
 
     VLOG(1) << "Errors follow:";
     const std::vector<base::string16>* errors =

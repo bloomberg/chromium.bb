@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,7 +19,7 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "grit/browser_resources.h"
@@ -161,10 +160,10 @@ void IdentityInternalsUIMessageHandler::OnTokenRevokerDone(
 
 const std::string IdentityInternalsUIMessageHandler::GetExtensionName(
     const extensions::ExtensionTokenKey& token_cache_key) {
-  ExtensionService* extension_service = extensions::ExtensionSystem::Get(
-      Profile::FromWebUI(web_ui()))->extension_service();
+  const extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));
   const extensions::Extension* extension =
-      extension_service->extensions()->GetByID(token_cache_key.extension_id);
+      registry->enabled_extensions().GetByID(token_cache_key.extension_id);
   if (!extension)
     return std::string();
   return extension->name();

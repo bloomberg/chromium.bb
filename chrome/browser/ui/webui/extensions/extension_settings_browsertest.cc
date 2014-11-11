@@ -24,6 +24,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_set.h"
 
@@ -76,8 +77,10 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
   Profile* profile = this->GetProfile();
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile);
   service->set_show_extensions_prompts(false);
-  size_t num_before = service->extensions()->size();
+  size_t num_before = registry->enabled_extensions().size();
   {
     scoped_ptr<ExtensionInstallPrompt> install_ui;
     install_ui.reset(new MockAutoConfirmExtensionInstallPrompt(
@@ -106,16 +109,15 @@ const Extension* ExtensionSettingsUIBrowserTest::InstallExtension(
     observer_->Wait();
   }
 
-  size_t num_after = service->extensions()->size();
+  size_t num_after = registry->enabled_extensions().size();
   if (num_before + 1 != num_after) {
     VLOG(1) << "Num extensions before: " << base::IntToString(num_before)
             << " num after: " << base::IntToString(num_after)
             << " Installed extensions follow:";
 
-    for (extensions::ExtensionSet::const_iterator it =
-             service->extensions()->begin();
-         it != service->extensions()->end(); ++it)
-      VLOG(1) << "  " << (*it)->id();
+    for (const scoped_refptr<const Extension>& extension :
+         registry->enabled_extensions())
+      VLOG(1) << "  " << extension->id();
 
     VLOG(1) << "Errors follow:";
     const std::vector<base::string16>* errors =

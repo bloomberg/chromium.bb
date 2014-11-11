@@ -81,6 +81,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -334,13 +335,12 @@ class BrowserTest : public ExtensionBrowserTest {
 
   // Returns the app extension aptly named "App Test".
   const Extension* GetExtension() {
-    const extensions::ExtensionSet* extensions =
-        extensions::ExtensionSystem::Get(
-            browser()->profile())->extension_service()->extensions();
-    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
-      if ((*it)->name() == "App Test")
-        return it->get();
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(browser()->profile());
+    for (const scoped_refptr<const extensions::Extension>& extension :
+         registry->enabled_extensions()) {
+      if (extension->name() == "App Test")
+        return extension.get();
     }
     NOTREACHED();
     return NULL;

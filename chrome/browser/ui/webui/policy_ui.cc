@@ -67,9 +67,8 @@
 #include "content/public/browser/web_contents.h"
 #endif
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_system.h"
+#if defined(ENABLE_EXTENSIONS)
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest.h"
@@ -633,18 +632,12 @@ void PolicyUIHandler::SendPolicyNames() const {
   }
   names.Set("chromePolicyNames", chrome_policy_names);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(ENABLE_EXTENSIONS)
   // Add extension policy names.
   base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
 
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  const extensions::ExtensionSet* extensions =
-      extension_system->extension_service()->extensions();
-
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const extensions::Extension* extension = it->get();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
         extensions::manifest_keys::kStorageManagedSchema))
@@ -667,7 +660,7 @@ void PolicyUIHandler::SendPolicyNames() const {
     extension_policy_names->Set(extension->id(), extension_value);
   }
   names.Set("extensionPolicyNames", extension_policy_names);
-#endif
+#endif  // defined(ENABLE_EXTENSIONS)
 
   web_ui()->CallJavascriptFunction("policy.Page.setPolicyNames", names);
 }
@@ -680,17 +673,14 @@ void PolicyUIHandler::SendPolicyValues() const {
   GetChromePolicyValues(chrome_policies);
   all_policies.Set("chromePolicies", chrome_policies);
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
+#if defined(ENABLE_EXTENSIONS)
   // Add extension policy values.
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
-  const extensions::ExtensionSet* extensions =
-      extension_system->extension_service()->extensions();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(Profile::FromWebUI(web_ui()));
   base::DictionaryValue* extension_values = new base::DictionaryValue;
 
-  for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const extensions::Extension* extension = it->get();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
     // Skip this extension if it's not an enterprise extension.
     if (!extension->manifest()->HasPath(
         extensions::manifest_keys::kStorageManagedSchema))

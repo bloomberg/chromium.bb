@@ -10,16 +10,16 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
 
 using content::BrowserThread;
+using extensions::ExtensionRegistry;
 
 namespace {
 
@@ -39,18 +39,17 @@ HelpAppLauncher::HelpAppLauncher(gfx::NativeWindow parent_window)
 
 void HelpAppLauncher::ShowHelpTopic(HelpTopic help_topic_id) {
   Profile* profile = ProfileHelper::GetSigninProfile();
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
 
-  DCHECK(service);
-  if (!service)
+  DCHECK(registry);
+  if (!registry)
     return;
 
   GURL url(base::StringPrintf(kHelpAppFormat,
                               static_cast<int>(help_topic_id)));
   // HelpApp component extension presents only in official builds so we can
   // show help only when the extensions is installed.
-  if (service->extensions()->GetByID(url.host()))
+  if (registry->enabled_extensions().GetByID(url.host()))
     ShowHelpTopicDialog(profile, GURL(url));
 }
 

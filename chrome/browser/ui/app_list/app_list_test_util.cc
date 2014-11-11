@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_set.h"
 
 const char AppListTestBase::kHostedAppId[] =
@@ -38,6 +39,5 @@ void AppListTestBase::SetUp() {
   service_->Init();
 
   // There should be 5 extensions in the test profile.
-  const extensions::ExtensionSet* extensions = service_->extensions();
-  ASSERT_EQ(static_cast<size_t>(5),  extensions->size());
+  ASSERT_EQ(5U, registry()->enabled_extensions().size());
 }

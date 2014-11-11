@@ -8,7 +8,9 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
-class ExtensionService;
+namespace extensions {
+class ExtensionRegistry;
+}
 
 // Describes the contents of the fullscreen exit bubble.
 // For example, if the user already agreed to fullscreen mode and the
@@ -36,7 +38,7 @@ namespace fullscreen_bubble {
 
 base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
                                    const GURL& url,
-                                   ExtensionService* extension_service);
+                                   extensions::ExtensionRegistry* registry);
 base::string16 GetDenyButtonTextForType(FullscreenExitBubbleType type);
 bool ShowButtonsForType(FullscreenExitBubbleType type);
 void PermissionRequestedByType(FullscreenExitBubbleType type,

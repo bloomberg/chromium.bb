@@ -8,14 +8,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/media_device_id.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "media/audio/audio_manager_base.h"
@@ -84,14 +83,12 @@ void WebrtcAudioPrivateEventService::SignalEvent() {
   EventRouter* router = EventRouter::Get(browser_context_);
   if (!router || !router->HasEventListener(kEventName))
     return;
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(browser_context_)->extension_service();
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const std::string& extension_id = (*it)->id();
+
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       ExtensionRegistry::Get(browser_context_)->enabled_extensions()) {
+    const std::string& extension_id = extension->id();
     if (router->ExtensionHasEventListener(extension_id, kEventName) &&
-        (*it)->permissions_data()->HasAPIPermission("webrtcAudioPrivate")) {
+        extension->permissions_data()->HasAPIPermission("webrtcAudioPrivate")) {
       scoped_ptr<Event> event(
           new Event(kEventName, make_scoped_ptr(new base::ListValue()).Pass()));
       router->DispatchEventToExtension(extension_id, event.Pass());

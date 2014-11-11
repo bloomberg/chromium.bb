@@ -18,6 +18,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -134,34 +135,31 @@ void RemoteDesktopBrowserTest::UninstallChromotingApp() {
 }
 
 void RemoteDesktopBrowserTest::VerifyChromotingLoaded(bool expected) {
-  const extensions::ExtensionSet* extensions =
-      extension_service()->extensions();
-  scoped_refptr<const extensions::Extension> extension;
   bool installed = false;
 
-  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    extension = *iter;
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       extensions::ExtensionRegistry::Get(profile())->enabled_extensions()) {
     // Is there a better way to recognize the chromoting extension
     // than name comparison?
     if (extension->name() == extension_name_) {
+      if (extension_) {
+        EXPECT_EQ(extension.get(), extension_);
+      } else {
+        extension_ = extension.get();
+      }
+
       installed = true;
       break;
     }
   }
 
   if (installed) {
-    if (extension_)
-      EXPECT_EQ(extension.get(), extension_);
-    else
-      extension_ = extension.get();
-
     // Either a V1 (TYPE_LEGACY_PACKAGED_APP) or a V2 (TYPE_PLATFORM_APP ) app.
-    extensions::Manifest::Type type = extension->GetType();
+    extensions::Manifest::Type type = extension_->GetType();
     EXPECT_TRUE(type == extensions::Manifest::TYPE_PLATFORM_APP ||
                 type == extensions::Manifest::TYPE_LEGACY_PACKAGED_APP);
 
-    EXPECT_TRUE(extension->ShouldDisplayInAppLauncher());
+    EXPECT_TRUE(extension_->ShouldDisplayInAppLauncher());
   }
 
   ASSERT_EQ(installed, expected);

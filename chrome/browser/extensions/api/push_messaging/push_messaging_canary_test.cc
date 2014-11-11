@@ -9,13 +9,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/push_messaging/sync_setup_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
-#include "extensions/common/extension_set.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 
@@ -133,19 +132,19 @@ class PushMessagingCanaryTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(PushMessagingCanaryTest, MANUAL_ReceivesPush) {
   InitializeSync();
 
-  const ExtensionSet* installed_extensions = extension_service()->extensions();
-  if (!installed_extensions->Contains(kTestExtensionId)) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  if (!registry->enabled_extensions().GetByID(kTestExtensionId)) {
     const Extension* extension =
         LoadExtension(test_data_dir_.AppendASCII("push_messaging_canary"));
     ASSERT_TRUE(extension);
   }
-  ASSERT_TRUE(installed_extensions->Contains(kTestExtensionId));
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 
   ResultCatcher catcher;
   catcher.RestrictToBrowserContext(profile());
 
   const Extension* extension =
-      extension_service()->extensions()->GetByID(kTestExtensionId);
+      registry->enabled_extensions().GetByID(kTestExtensionId);
   ASSERT_TRUE(extension);
   ui_test_utils::NavigateToURL(
       browser(), extension->GetResourceURL("push_messaging_canary.html"));

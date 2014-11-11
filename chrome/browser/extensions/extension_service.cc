@@ -341,10 +341,6 @@ ExtensionService::ExtensionService(Profile* profile,
                               install_directory_.value().length(), 0, 500, 100);
 }
 
-const ExtensionSet* ExtensionService::extensions() const {
-  return &registry_->enabled_extensions();
-}
-
 extensions::PendingExtensionManager*
     ExtensionService::pending_extension_manager() {
   return &pending_extension_manager_;
@@ -1918,7 +1914,7 @@ void ExtensionService::RegisterContentSettings(
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::INTERNAL_EXTENSION_PROVIDER,
       scoped_ptr<content_settings::ObservableProvider>(
-          new content_settings::InternalExtensionProvider(this)));
+          new content_settings::InternalExtensionProvider(profile_)));
 
   host_content_settings_map->RegisterProvider(
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER,

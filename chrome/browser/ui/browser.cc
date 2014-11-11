@@ -2440,8 +2440,9 @@ bool Browser::MaybeCreateBackgroundContents(
   // can create BackgroundContents. We don't have to check for background
   // permission as that is checked in RenderMessageFilter when the CreateWindow
   // message is processed.
-  const Extension* extension =
-      extensions_service->extensions()->GetHostedAppByURL(opener_url);
+  const Extension* extension = extensions::ExtensionRegistry::Get(profile_)
+                                   ->enabled_extensions()
+                                   .GetHostedAppByURL(opener_url);
   if (!extension)
     return false;
 

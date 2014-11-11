@@ -11,9 +11,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace extensions {
 namespace chromedirectsetting {
@@ -137,12 +136,9 @@ void ChromeDirectSettingAPI::OnPrefChanged(
     base::ListValue args;
     args.Append(result.release());
 
-    ExtensionService* extension_service =
-        ExtensionSystem::Get(profile_)->extension_service();
-    const ExtensionSet* extensions = extension_service->extensions();
-    for (ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
-      const std::string& extension_id = (*it)->id();
+    for (const scoped_refptr<const extensions::Extension>& extension :
+         ExtensionRegistry::Get(profile_)->enabled_extensions()) {
+      const std::string& extension_id = extension->id();
       if (router->ExtensionHasEventListener(extension_id, event_name)) {
         scoped_ptr<base::ListValue> args_copy(args.DeepCopy());
         scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));

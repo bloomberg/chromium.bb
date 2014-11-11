@@ -23,7 +23,6 @@ class TestExtensionService : public ExtensionServiceInterface {
   ~TestExtensionService() override;
 
   // ExtensionServiceInterface implementation.
-  const extensions::ExtensionSet* extensions() const override;
   extensions::PendingExtensionManager* pending_extension_manager() override;
 
   bool UpdateExtension(const std::string& id,

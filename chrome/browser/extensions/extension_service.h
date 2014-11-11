@@ -73,11 +73,6 @@ class ExtensionServiceInterface
  public:
   virtual ~ExtensionServiceInterface() {}
 
-  // DEPRECATED: Use ExtensionRegistry::enabled_extensions() instead.
-  //
-  // ExtensionRegistry also has the disabled, terminated and blacklisted sets.
-  virtual const extensions::ExtensionSet* extensions() const = 0;
-
   // Gets the object managing the set of pending extensions.
   virtual extensions::PendingExtensionManager* pending_extension_manager() = 0;
 
@@ -205,7 +200,6 @@ class ExtensionService
   // ExtensionServiceInterface implementation.
   //
   // NOTE: Many of these methods are DEPRECATED. See the interface for details.
-  const extensions::ExtensionSet* extensions() const override;
   extensions::PendingExtensionManager* pending_extension_manager() override;
   const extensions::Extension* GetExtensionById(
       const std::string& id,

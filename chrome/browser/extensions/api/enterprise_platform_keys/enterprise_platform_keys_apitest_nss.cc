@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chromeos/chromeos_switches.h"
@@ -21,6 +20,7 @@
 #include "content/public/test/test_utils.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/nss_cert_database.h"
@@ -373,10 +373,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_platform_keys");
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile())->extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(profile());
   const extensions::Extension* extension =
-      GetExtensionByPath(service->extensions(), extension_path);
+      GetExtensionByPath(registry->enabled_extensions(), extension_path);
   ASSERT_FALSE(extension->install_warnings().empty());
   EXPECT_EQ(
       "'enterprise.platformKeys' is not allowed for specified install "

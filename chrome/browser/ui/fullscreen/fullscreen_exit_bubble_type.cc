@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -17,14 +17,11 @@ namespace fullscreen_bubble {
 
 base::string16 GetLabelTextForType(FullscreenExitBubbleType type,
                                    const GURL& url,
-                                   ExtensionService* extension_service) {
+                                   extensions::ExtensionRegistry* registry) {
   base::string16 host(base::UTF8ToUTF16(url.host()));
-  if (extension_service) {
-    const extensions::ExtensionSet* extensions =
-        extension_service->extensions();
-    DCHECK(extensions);
+  if (registry) {
     const extensions::Extension* extension =
-        extensions->GetExtensionOrAppByURL(url);
+        registry->enabled_extensions().GetExtensionOrAppByURL(url);
     if (extension) {
       host = base::UTF8ToUTF16(extension->name());
     } else if (url.SchemeIs(extensions::kExtensionScheme)) {

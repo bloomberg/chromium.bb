@@ -864,12 +864,13 @@ void ExtensionSettingsHandler::AppInfoDialogClosed() {
 }
 
 void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
-  const ExtensionSet* extensions = extension_service_->extensions();
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(extension_service_->profile());
   std::vector<const Extension*> unpacked_extensions;
-  for (ExtensionSet::const_iterator extension = extensions->begin();
-       extension != extensions->end(); ++extension) {
-    if (Manifest::IsUnpackedLocation((*extension)->location()))
-      unpacked_extensions.push_back(extension->get());
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions()) {
+    if (Manifest::IsUnpackedLocation(extension->location()))
+      unpacked_extensions.push_back(extension.get());
   }
 
   for (std::vector<const Extension*>::iterator iter =
@@ -998,10 +999,11 @@ void ExtensionSettingsHandler::HandleInspectMessage(
 
   if (render_process_id == -1) {
     // This message is for a lazy background page. Start the page if necessary.
-    const Extension* extension =
-        extension_service_->extensions()->GetByID(extension_id);
-    DCHECK(extension);
     Profile* profile = Profile::FromWebUI(web_ui());
+    const Extension* extension =
+        ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+            extension_id);
+    DCHECK(extension);
     if (incognito)
       profile = profile->GetOffTheRecordProfile();
     devtools_util::InspectBackgroundPage(extension, profile);

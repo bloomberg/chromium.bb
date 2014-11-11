@@ -17,7 +17,6 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/media_galleries_private/media_galleries_private_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/media_galleries/fileapi/iapps_finder.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
@@ -33,7 +32,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -92,16 +91,11 @@ int NumberExtensionsUsingMediaGalleries(Profile* profile) {
   int count = 0;
   if (!profile)
     return count;
-  ExtensionService* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
-    return count;
 
-  const extensions::ExtensionSet* extensions = extension_service->extensions();
-  for (extensions::ExtensionSet::const_iterator i = extensions->begin();
-       i != extensions->end(); ++i) {
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
     const extensions::PermissionsData* permissions_data =
-        (*i)->permissions_data();
+        extension->permissions_data();
     if (permissions_data->HasAPIPermission(
             extensions::APIPermission::kMediaGalleries) ||
         permissions_data->HasAPIPermission(

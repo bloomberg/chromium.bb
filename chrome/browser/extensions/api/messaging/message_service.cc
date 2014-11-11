@@ -31,6 +31,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_host.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/lazy_background_task_queue.h"
@@ -244,10 +245,9 @@ void MessageService::OpenChannelToExtension(
     return;
   BrowserContext* context = source->GetBrowserContext();
 
-  ExtensionSystem* extension_system = ExtensionSystem::Get(context);
-  DCHECK(extension_system);
-  const Extension* target_extension = extension_system->extension_service()->
-      extensions()->GetByID(target_extension_id);
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  const Extension* target_extension =
+      registry->enabled_extensions().GetByID(target_extension_id);
   if (!target_extension) {
     DispatchOnDisconnect(
         source, receiver_port_id, kReceivingEndDoesntExistError);
@@ -724,9 +724,9 @@ void MessageService::GotChannelID(scoped_ptr<OpenChannelParams> params,
 
   BrowserContext* context = params->source->GetBrowserContext();
 
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const Extension* target_extension =
-      ExtensionSystem::Get(context)->extension_service()->extensions()->GetByID(
-          params->target_extension_id);
+      registry->enabled_extensions().GetByID(params->target_extension_id);
   if (!target_extension) {
     pending_tls_channel_id_channels_.erase(channel_id);
     DispatchOnDisconnect(

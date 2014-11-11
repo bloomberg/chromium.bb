@@ -8,12 +8,11 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/permissions/permissions_data.h"
 
@@ -93,23 +92,20 @@ void DispatchEventToExtensions(
   EventRouter* router = EventRouter::Get(profile);
   if (!router || !router->HasEventListener(event_name))
     return;
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  const ExtensionSet* extensions = extension_service->extensions();
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    std::string extension_id = (*it)->id();
+
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       ExtensionRegistry::Get(profile)->enabled_extensions()) {
     // TODO(bauerb): Only iterate over registered event listeners.
-    if (router->ExtensionHasEventListener(extension_id, event_name) &&
-        (*it)->permissions_data()->HasAPIPermission(permission) &&
-        (!incognito || IncognitoInfo::IsSplitMode(it->get()) ||
-         util::CanCrossIncognito(it->get(), profile))) {
+    if (router->ExtensionHasEventListener(extension->id(), event_name) &&
+        extension->permissions_data()->HasAPIPermission(permission) &&
+        (!incognito || IncognitoInfo::IsSplitMode(extension.get()) ||
+         util::CanCrossIncognito(extension.get(), profile))) {
       // Inject level of control key-value.
       base::DictionaryValue* dict;
       bool rv = args->GetDictionary(0, &dict);
       DCHECK(rv);
       std::string level_of_control =
-          GetLevelOfControl(profile, extension_id, browser_pref, incognito);
+          GetLevelOfControl(profile, extension->id(), browser_pref, incognito);
       dict->SetString(kLevelOfControlKey, level_of_control);
 
       // If the extension is in incognito split mode,
@@ -118,15 +114,12 @@ void DispatchEventToExtensions(
       //    incognito pref has not alredy been set
       Profile* restrict_to_profile = NULL;
       bool from_incognito = false;
-      if (IncognitoInfo::IsSplitMode(it->get())) {
-        if (incognito &&
-            util::IsIncognitoEnabled(extension_id, profile)) {
+      if (IncognitoInfo::IsSplitMode(extension.get())) {
+        if (incognito && util::IsIncognitoEnabled(extension->id(), profile)) {
           restrict_to_profile = profile->GetOffTheRecordProfile();
         } else if (!incognito &&
                    PreferenceAPI::Get(profile)->DoesExtensionControlPref(
-                       extension_id,
-                       browser_pref,
-                       &from_incognito) &&
+                       extension->id(), browser_pref, &from_incognito) &&
                    from_incognito) {
           restrict_to_profile = profile;
         }
@@ -135,7 +128,7 @@ void DispatchEventToExtensions(
       scoped_ptr<base::ListValue> args_copy(args->DeepCopy());
       scoped_ptr<Event> event(new Event(event_name, args_copy.Pass()));
       event->restrict_to_browser_context = restrict_to_profile;
-      router->DispatchEventToExtension(extension_id, event.Pass());
+      router->DispatchEventToExtension(extension->id(), event.Pass());
     }
   }
 }

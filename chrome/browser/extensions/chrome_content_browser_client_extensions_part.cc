@@ -41,6 +41,7 @@
 #include "extensions/common/manifest_handlers/web_accessible_resources_info.h"
 #include "extensions/common/switches.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::BrowserURLHandler;
 using content::RenderViewHost;
@@ -65,7 +66,7 @@ enum RenderProcessHostPrivilege {
 
 RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
     const GURL& url,
-    ExtensionService* service) {
+    ExtensionRegistry* registry) {
   // Default to a normal renderer cause it is lower privileged. This should only
   // occur if the URL on a site instance is either malformed, or uninitialized.
   // If it is malformed, then there is no need for better privileges anyways.
@@ -78,7 +79,8 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
   if (!url.SchemeIs(kExtensionScheme))
     return PRIV_NORMAL;
 
-  const Extension* extension = service->extensions()->GetByID(url.host());
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(url.host());
   if (extension && AppIsolationInfo::HasIsolatedStorage(extension))
     return PRIV_ISOLATED;
   if (extension && extension->is_hosted_app())
@@ -89,15 +91,15 @@ RenderProcessHostPrivilege GetPrivilegeRequiredByUrl(
 RenderProcessHostPrivilege GetProcessPrivilege(
     content::RenderProcessHost* process_host,
     ProcessMap* process_map,
-    ExtensionService* service) {
+    ExtensionRegistry* registry) {
   std::set<std::string> extension_ids =
       process_map->GetExtensionsInProcess(process_host->GetID());
   if (extension_ids.empty())
     return PRIV_NORMAL;
 
-  for (std::set<std::string>::iterator iter = extension_ids.begin();
-       iter != extension_ids.end(); ++iter) {
-    const Extension* extension = service->GetExtensionById(*iter, false);
+  for (const std::string& extension_id : extension_ids) {
+    const Extension* extension =
+        registry->enabled_extensions().GetByID(extension_id);
     if (extension && AppIsolationInfo::HasIsolatedStorage(extension))
       return PRIV_ISOLATED;
     if (extension && extension->is_hosted_app())
@@ -124,13 +126,12 @@ GURL ChromeContentBrowserClientExtensionsPart::GetEffectiveURL(
   // If the input |url| is part of an installed app, the effective URL is an
   // extension URL with the ID of that extension as the host. This has the
   // effect of grouping apps together in a common SiteInstance.
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  if (!registry)
     return url;
 
   const Extension* extension =
-      extension_service->extensions()->GetHostedAppByURL(url);
+      registry->enabled_extensions().GetHostedAppByURL(url);
   if (!extension)
     return url;
 
@@ -150,13 +151,12 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldUseProcessPerSite(
   if (!effective_url.SchemeIs(kExtensionScheme))
     return false;
 
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!extension_service)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  if (!registry)
     return false;
 
   const Extension* extension =
-      extension_service->extensions()->GetExtensionOrAppByURL(effective_url);
+      registry->enabled_extensions().GetByID(effective_url.host());
   if (!extension)
     return false;
 
@@ -186,20 +186,17 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   // load in any process (e.g., in an iframe).  However, the Chrome Web Store
   // cannot be loaded in iframes and should never be requested outside its
   // process.
-  Profile* profile =
-      Profile::FromBrowserContext(process_host->GetBrowserContext());
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(process_host->GetBrowserContext());
+  if (!registry)
     return true;
 
   const Extension* new_extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
-  if (new_extension &&
-      new_extension->is_hosted_app() &&
+      registry->enabled_extensions().GetExtensionOrAppByURL(url);
+  if (new_extension && new_extension->is_hosted_app() &&
       new_extension->id() == extensions::kWebStoreAppId &&
-      !ProcessMap::Get(profile)->Contains(
-          new_extension->id(), process_host->GetID())) {
+      !ProcessMap::Get(process_host->GetBrowserContext())
+           ->Contains(new_extension->id(), process_host->GetID())) {
     return false;
   }
   return true;
@@ -212,21 +209,20 @@ bool ChromeContentBrowserClientExtensionsPart::IsSuitableHost(
     const GURL& site_url) {
   DCHECK(profile);
 
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
   ProcessMap* process_map = ProcessMap::Get(profile);
 
   // These may be NULL during tests. In that case, just assume any site can
   // share any host.
-  if (!service || !process_map)
+  if (!registry || !process_map)
     return true;
 
   // Otherwise, just make sure the process privilege matches the privilege
   // required by the site.
   RenderProcessHostPrivilege privilege_required =
-      GetPrivilegeRequiredByUrl(site_url, service);
-  return GetProcessPrivilege(process_host, process_map, service) ==
-      privilege_required;
+      GetPrivilegeRequiredByUrl(site_url, registry);
+  return GetProcessPrivilege(process_host, process_map, registry) ==
+         privilege_required;
 }
 
 // static
@@ -237,14 +233,14 @@ ChromeContentBrowserClientExtensionsPart::ShouldTryToUseExistingProcessHost(
   // with background pages. It uses a globally set percentage of processes to
   // run such extensions and if the limit is exceeded, it returns true, to
   // indicate to the content module to group extensions together.
-  ExtensionService* service = profile ?
-      ExtensionSystem::Get(profile)->extension_service() : NULL;
-  if (!service)
+  ExtensionRegistry* registry =
+      profile ? ExtensionRegistry::Get(profile) : NULL;
+  if (!registry)
     return false;
 
   // We have to have a valid extension with background page to proceed.
   const Extension* extension =
-      service->extensions()->GetExtensionOrAppByURL(url);
+      registry->enabled_extensions().GetExtensionOrAppByURL(url);
   if (!extension)
     return false;
   if (!BackgroundInfo::HasBackgroundPage(extension))
@@ -277,13 +273,11 @@ bool ChromeContentBrowserClientExtensionsPart::
     ShouldSwapBrowsingInstancesForNavigation(SiteInstance* site_instance,
                                              const GURL& current_url,
                                              const GURL& new_url) {
-  // If we don't have an ExtensionService, then rely on the SiteInstance logic
+  // If we don't have an ExtensionRegistry, then rely on the SiteInstance logic
   // in RenderFrameHostManager to decide when to swap.
-  Profile* profile =
-      Profile::FromBrowserContext(site_instance->GetBrowserContext());
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  ExtensionRegistry* registry =
+      ExtensionRegistry::Get(site_instance->GetBrowserContext());
+  if (!registry)
     return false;
 
   // We must use a new BrowsingInstance (forcing a process swap and disabling
@@ -296,14 +290,14 @@ bool ChromeContentBrowserClientExtensionsPart::
   // to/from a hosted app will still trigger a SiteInstance swap in
   // RenderFrameHostManager.
   const Extension* current_extension =
-      service->extensions()->GetExtensionOrAppByURL(current_url);
+      registry->enabled_extensions().GetExtensionOrAppByURL(current_url);
   if (current_extension &&
       current_extension->is_hosted_app() &&
       current_extension->id() != extensions::kWebStoreAppId)
     current_extension = NULL;
 
   const Extension* new_extension =
-      service->extensions()->GetExtensionOrAppByURL(new_url);
+      registry->enabled_extensions().GetExtensionOrAppByURL(new_url);
   if (new_extension &&
       new_extension->is_hosted_app() &&
       new_extension->id() != extensions::kWebStoreAppId)
@@ -312,7 +306,7 @@ bool ChromeContentBrowserClientExtensionsPart::
   // First do a process check.  We should force a BrowsingInstance swap if the
   // current process doesn't know about new_extension, even if current_extension
   // is somehow the same as new_extension.
-  ProcessMap* process_map = ProcessMap::Get(profile);
+  ProcessMap* process_map = ProcessMap::Get(site_instance->GetBrowserContext());
   if (new_extension &&
       site_instance->HasProcess() &&
       !process_map->Contains(
@@ -349,20 +343,19 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
       (from_url.SchemeIsHTTPOrHTTPS() || from_url.SchemeIs(kExtensionScheme))) {
     Profile* profile = Profile::FromBrowserContext(
         site_instance->GetProcess()->GetBrowserContext());
-    ExtensionService* service =
-        ExtensionSystem::Get(profile)->extension_service();
-    if (!service) {
+    ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+    if (!registry) {
       *result = true;
       return true;
     }
     const Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(to_url);
+        registry->enabled_extensions().GetExtensionOrAppByURL(to_url);
     if (!extension) {
       *result = true;
       return true;
     }
     const Extension* from_extension =
-        service->extensions()->GetExtensionOrAppByURL(
+        registry->enabled_extensions().GetExtensionOrAppByURL(
             site_instance->GetSiteURL());
     if (from_extension && from_extension->id() == extension->id()) {
       *result = true;
@@ -404,68 +397,59 @@ void ChromeContentBrowserClientExtensionsPart::RenderProcessWillLaunch(
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceGotProcess(
     SiteInstance* site_instance) {
-  Profile* profile = Profile::FromBrowserContext(
-      site_instance->GetProcess()->GetBrowserContext());
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  BrowserContext* context = site_instance->GetProcess()->GetBrowserContext();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  if (!registry)
     return;
 
-  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-      site_instance->GetSiteURL());
+  const Extension* extension =
+      registry->enabled_extensions().GetExtensionOrAppByURL(
+          site_instance->GetSiteURL());
   if (!extension)
     return;
 
-  ProcessMap::Get(profile)->Insert(extension->id(),
+  ProcessMap::Get(context)->Insert(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&InfoMap::RegisterExtensionProcess,
-                                     ExtensionSystem::Get(profile)->info_map(),
-                                     extension->id(),
-                                     site_instance->GetProcess()->GetID(),
-                                     site_instance->GetId()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InfoMap::RegisterExtensionProcess,
+                 ExtensionSystem::Get(context)->info_map(), extension->id(),
+                 site_instance->GetProcess()->GetID(), site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::SiteInstanceDeleting(
     SiteInstance* site_instance) {
-  Profile* profile =
-      Profile::FromBrowserContext(site_instance->GetBrowserContext());
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  BrowserContext* context = site_instance->GetBrowserContext();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context);
+  if (!registry)
     return;
 
-  const Extension* extension = service->extensions()->GetExtensionOrAppByURL(
-      site_instance->GetSiteURL());
+  const Extension* extension =
+      registry->enabled_extensions().GetExtensionOrAppByURL(
+          site_instance->GetSiteURL());
   if (!extension)
     return;
 
-  ProcessMap::Get(profile)->Remove(extension->id(),
+  ProcessMap::Get(context)->Remove(extension->id(),
                                    site_instance->GetProcess()->GetID(),
                                    site_instance->GetId());
 
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&InfoMap::UnregisterExtensionProcess,
-                                     ExtensionSystem::Get(profile)->info_map(),
-                                     extension->id(),
-                                     site_instance->GetProcess()->GetID(),
-                                     site_instance->GetId()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InfoMap::UnregisterExtensionProcess,
+                 ExtensionSystem::Get(context)->info_map(), extension->id(),
+                 site_instance->GetProcess()->GetID(), site_instance->GetId()));
 }
 
 void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
     RenderViewHost* rvh,
     const GURL& url,
     WebPreferences* web_prefs) {
-  Profile* profile =
-      Profile::FromBrowserContext(rvh->GetProcess()->GetBrowserContext());
-
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  const ExtensionRegistry* registry =
+      ExtensionRegistry::Get(rvh->GetProcess()->GetBrowserContext());
+  if (!registry)
     return;
 
   // Note: it's not possible for kExtensionsScheme to change during the lifetime
@@ -481,7 +465,8 @@ void ChromeContentBrowserClientExtensionsPart::OverrideWebkitPrefs(
 
   WebContents* web_contents = WebContents::FromRenderViewHost(rvh);
   ViewType view_type = GetViewType(web_contents);
-  const Extension* extension = service->extensions()->GetByID(site_url.host());
+  const Extension* extension =
+      registry->enabled_extensions().GetByID(site_url.host());
   extension_webkit_preferences::SetPreferences(extension, view_type, web_prefs);
 }
 

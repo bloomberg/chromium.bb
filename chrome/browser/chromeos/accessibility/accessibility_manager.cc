@@ -48,6 +48,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/file_reader.h"
 #include "extensions/common/extension.h"
@@ -198,8 +199,9 @@ void InjectChromeVoxContentScript(
   if (!render_view_host)
     return;
   const extensions::Extension* extension =
-      extension_service->extensions()->GetByID(
-          extension_misc::kChromeVoxExtensionId);
+      extensions::ExtensionRegistry::Get(extension_service->profile())
+          ->enabled_extensions()
+          .GetByID(extension_misc::kChromeVoxExtensionId);
 
   // Set a flag to tell ChromeVox that it's just been enabled,
   // so that it won't interrupt our speech feedback enabled message.

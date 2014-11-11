@@ -6,13 +6,11 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/command.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
@@ -75,16 +73,14 @@ void ExtensionKeybindingRegistry::RemoveExtensionKeybinding(
 }
 
 void ExtensionKeybindingRegistry::Init() {
-  ExtensionService* service =
-      ExtensionSystem::Get(browser_context_)->extension_service();
-  if (!service)
-    return;  // ExtensionService can be null during testing.
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context_);
+  if (!registry)
+    return;  // ExtensionRegistry can be null during testing.
 
-  const ExtensionSet* extensions = service->extensions();
-  ExtensionSet::const_iterator iter = extensions->begin();
-  for (; iter != extensions->end(); ++iter)
-    if (ExtensionMatchesFilter(iter->get()))
-      AddExtensionKeybinding(iter->get(), std::string());
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       registry->enabled_extensions())
+    if (ExtensionMatchesFilter(extension.get()))
+      AddExtensionKeybinding(extension.get(), std::string());
 }
 
 bool ExtensionKeybindingRegistry::ShouldIgnoreCommand(
@@ -100,10 +96,9 @@ bool ExtensionKeybindingRegistry::NotifyEventTargets(
 
 void ExtensionKeybindingRegistry::CommandExecuted(
     const std::string& extension_id, const std::string& command) {
-  ExtensionService* service =
-      ExtensionSystem::Get(browser_context_)->extension_service();
-
-  const Extension* extension = service->extensions()->GetByID(extension_id);
+  const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                   ->enabled_extensions()
+                                   .GetByID(extension_id);
   if (!extension)
     return;
 
@@ -194,10 +189,9 @@ void ExtensionKeybindingRegistry::Observe(
           content::Details<std::pair<const std::string, const std::string> >(
               details).ptr();
 
-      const Extension* extension = ExtensionSystem::Get(browser_context_)
-                                       ->extension_service()
-                                       ->extensions()
-                                       ->GetByID(payload->first);
+      const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                       ->enabled_extensions()
+                                       .GetByID(payload->first);
       // During install and uninstall the extension won't be found. We'll catch
       // those events above, with the LOADED/UNLOADED, so we ignore this event.
       if (!extension)

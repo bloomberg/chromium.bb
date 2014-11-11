@@ -9,8 +9,7 @@
 #include "content/public/browser/web_contents.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -22,10 +21,9 @@ const extensions::Extension* GetExtensionForOrigin(Profile* profile,
   if (!security_origin.SchemeIs(extensions::kExtensionScheme))
     return NULL;
 
-  ExtensionService* extensions_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
   const extensions::Extension* extension =
-      extensions_service->extensions()->GetByID(security_origin.host());
+      extensions::ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          security_origin.host());
   DCHECK(extension);
   return extension;
 }

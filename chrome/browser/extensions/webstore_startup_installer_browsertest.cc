@@ -65,9 +65,10 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, Install) {
 
   RunTest("runTest");
 
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
   const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(
-          browser()->profile())->enabled_extensions().GetByID(kTestExtensionId);
+      registry->enabled_extensions().GetByID(kTestExtensionId);
   EXPECT_TRUE(extension);
 }
 
@@ -162,15 +163,17 @@ IN_PROC_BROWSER_TEST_F(WebstoreStartupInstallerTest, InstallFromHostedApp) {
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(browser()->profile())->
           extension_service();
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser()->profile());
 
   extension_service->AddExtension(hosted_app.get());
-  EXPECT_TRUE(extension_service->extensions()->Contains(hosted_app->id()));
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(hosted_app->id()));
 
   ui_test_utils::NavigateToURL(browser(), kInstallUrl);
 
-  EXPECT_FALSE(extension_service->extensions()->Contains(kTestExtensionId));
+  EXPECT_FALSE(registry->enabled_extensions().GetByID(kTestExtensionId));
   RunTest("runTest");
-  EXPECT_TRUE(extension_service->extensions()->Contains(kTestExtensionId));
+  EXPECT_TRUE(registry->enabled_extensions().GetByID(kTestExtensionId));
 }
 
 class WebstoreStartupInstallerSupervisedUsersTest

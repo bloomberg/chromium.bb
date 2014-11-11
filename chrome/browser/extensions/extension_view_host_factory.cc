@@ -4,13 +4,12 @@
 
 #include "chrome/browser/extensions/extension_view_host_factory.h"
 
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/view_type.h"
@@ -77,15 +76,14 @@ ExtensionViewHost* CreateViewHostForIncognito(const Extension* extension,
 // Returns the extension associated with |url| in |profile|. Returns NULL if
 // the extension does not exist.
 const Extension* GetExtensionForUrl(Profile* profile, const GURL& url) {
-  ExtensionService* service =
-      ExtensionSystem::Get(profile)->extension_service();
-  if (!service)
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile);
+  if (!registry)
     return NULL;
   std::string extension_id = url.host();
   if (url.SchemeIs(content::kChromeUIScheme) &&
       url.host() == chrome::kChromeUIExtensionInfoHost)
     extension_id = url.path().substr(1);
-  return service->extensions()->GetByID(extension_id);
+  return registry->enabled_extensions().GetByID(extension_id);
 }
 
 // Creates and initializes an ExtensionViewHost for the extension with |url|.

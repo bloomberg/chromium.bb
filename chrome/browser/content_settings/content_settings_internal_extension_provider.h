@@ -13,7 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class ExtensionService;
+class Profile;
 
 namespace extensions {
 class Extension;
@@ -25,7 +25,7 @@ namespace content_settings {
 class InternalExtensionProvider : public ObservableProvider,
                                   public content::NotificationObserver {
  public:
-  explicit InternalExtensionProvider(ExtensionService* extension_service);
+  explicit InternalExtensionProvider(Profile* profile);
 
   ~InternalExtensionProvider() override;
 

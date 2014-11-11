@@ -32,8 +32,7 @@
 #endif
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/extension_service.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/browser/view_type_utils.h"
@@ -286,8 +285,8 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 #if defined(ENABLE_EXTENSIONS)
       content::BrowserContext* context =
           render_process_host->GetBrowserContext();
-      ExtensionService* extension_service =
-          extensions::ExtensionSystem::Get(context)->extension_service();
+      extensions::ExtensionRegistry* extension_registry =
+          extensions::ExtensionRegistry::Get(context);
       extensions::ProcessMap* extension_process_map =
           extensions::ProcessMap::Get(context);
       is_extension = extension_process_map->Contains(
@@ -317,7 +316,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
         for (std::set<std::string>::iterator iter = extension_ids.begin();
              iter != extension_ids.end(); ++iter) {
           const Extension* extension =
-              extension_service->GetExtensionById(*iter, false);
+              extension_registry->enabled_extensions().GetByID(*iter);
           if (extension && !extension->is_hosted_app()) {
             process.renderer_type =
                 ProcessMemoryInformation::RENDERER_EXTENSION;
@@ -329,7 +328,7 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
 #if defined(ENABLE_EXTENSIONS)
       if (is_extension) {
         const Extension* extension =
-            extension_service->extensions()->GetByID(url.host());
+            extension_registry->enabled_extensions().GetByID(url.host());
         if (extension) {
           base::string16 title = base::UTF8ToUTF16(extension->name());
           process.titles.push_back(title);

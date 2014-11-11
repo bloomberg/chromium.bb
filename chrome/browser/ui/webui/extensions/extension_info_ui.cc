@@ -8,7 +8,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_basic_info.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
@@ -18,7 +17,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/browser/extension_prefs.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
 #include "grit/browser_resources.h"
@@ -57,10 +56,9 @@ GURL ExtensionInfoUI::GetURL(const std::string& extension_id) {
 void ExtensionInfoUI::AddExtensionDataToSource(
     const std::string& extension_id) {
   Profile* profile = Profile::FromWebUI(web_ui());
-  ExtensionService* extension_service =
-      ExtensionSystem::Get(profile)->extension_service();
   const Extension* extension =
-      extension_service->extensions()->GetByID(extension_id);
+      ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(
+          extension_id);
   if (!extension)
     return;
 

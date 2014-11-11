@@ -9,7 +9,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/client_side_detection_host.h"
@@ -22,7 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_icon_image.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "grit/components_strings.h"
@@ -123,8 +122,9 @@ bool OriginChipInfo::Update(const content::WebContents* web_contents,
 
   if (displayed_url_.SchemeIs(extensions::kExtensionScheme)) {
     const extensions::Extension* extension =
-        extensions::ExtensionSystem::Get(profile_)->extension_service()->
-            extensions()->GetExtensionOrAppByURL(displayed_url_);
+        extensions::ExtensionRegistry::Get(profile_)
+            ->enabled_extensions()
+            .GetByID(displayed_url_.host());
 
     if (extension) {
       icon_ = IDR_EXTENSIONS_FAVICON;
@@ -197,10 +197,10 @@ base::string16 OriginChip::LabelFromURLForProfile(const GURL& provided_url,
 
   // For chrome-extension URLs, return the extension name.
   if (url.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile)->extension_service();
     const extensions::Extension* extension =
-        service->extensions()->GetExtensionOrAppByURL(url);
+        extensions::ExtensionRegistry::Get(profile)
+            ->enabled_extensions()
+            .GetByID(url.host());
     return extension ?
         base::UTF8ToUTF16(extension->name()) : base::UTF8ToUTF16(url.host());
   }

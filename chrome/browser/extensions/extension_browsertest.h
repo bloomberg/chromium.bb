@@ -72,7 +72,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   virtual Profile* profile();
 
   static const extensions::Extension* GetExtensionByPath(
-      const extensions::ExtensionSet* extensions, const base::FilePath& path);
+      const extensions::ExtensionSet& extensions,
+      const base::FilePath& path);
 
   // InProcessBrowserTest
   void SetUp() override;

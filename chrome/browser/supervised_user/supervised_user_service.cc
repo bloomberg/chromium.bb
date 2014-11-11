@@ -562,7 +562,7 @@ SupervisedUserService::GetActiveSiteLists() {
     return site_lists.Pass();
 
   for (const scoped_refptr<const extensions::Extension>& extension :
-           *extension_service->extensions()) {
+       extensions::ExtensionRegistry::Get(profile_)->enabled_extensions()) {
     if (!extension_service->IsExtensionEnabled(extension->id()))
       continue;
 

@@ -457,10 +457,6 @@ class ServiceForManifestTests : public MockService {
     return registry_->disabled_extensions().GetByID(id);
   }
 
-  const ExtensionSet* extensions() const override {
-    return &registry_->enabled_extensions();
-  }
-
   PendingExtensionManager* pending_extension_manager() override {
     return &pending_extension_manager_;
   }

@@ -722,12 +722,12 @@ class PolicyTest : public InProcessBrowserTest {
     installer->Load(extension_path);
     observer.Wait();
 
-    const extensions::ExtensionSet* extensions =
-        extension_service()->extensions();
-    for (extensions::ExtensionSet::const_iterator it = extensions->begin();
-         it != extensions->end(); ++it) {
-      if ((*it)->path() == extension_path)
-        return it->get();
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(browser()->profile());
+    for (const scoped_refptr<const extensions::Extension>& extension :
+         registry->enabled_extensions()) {
+      if (extension->path() == extension_path)
+        return extension.get();
     }
     return NULL;
   }

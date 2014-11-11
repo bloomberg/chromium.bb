@@ -593,18 +593,13 @@ void BackgroundContentsService::LoadBackgroundContentsFromDictionary(
 
 void BackgroundContentsService::LoadBackgroundContentsFromManifests(
     Profile* profile) {
-  const extensions::ExtensionSet* extensions =
-      extensions::ExtensionSystem::Get(profile)->
-          extension_service()->extensions();
-  for (extensions::ExtensionSet::const_iterator iter = extensions->begin();
-       iter != extensions->end(); ++iter) {
-    const Extension* extension = iter->get();
+  for (const scoped_refptr<const extensions::Extension>& extension :
+       extensions::ExtensionRegistry::Get(profile)->enabled_extensions()) {
     if (extension->is_hosted_app() &&
-        BackgroundInfo::HasBackgroundPage(extension)) {
-      LoadBackgroundContents(profile,
-                             BackgroundInfo::GetBackgroundURL(extension),
-                             base::ASCIIToUTF16("background"),
-                             base::UTF8ToUTF16(extension->id()));
+        BackgroundInfo::HasBackgroundPage(extension.get())) {
+      LoadBackgroundContents(
+          profile, BackgroundInfo::GetBackgroundURL(extension.get()),
+          base::ASCIIToUTF16("background"), base::UTF8ToUTF16(extension->id()));
     }
   }
 }

@@ -45,6 +45,7 @@
 #include "content/public/browser/worker_service_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/switches.h"
@@ -315,7 +316,9 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
   bool LoadExtensionFromPath(const base::FilePath& path) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
-    size_t num_before = service->extensions()->size();
+    extensions::ExtensionRegistry* registry =
+        extensions::ExtensionRegistry::Get(browser()->profile());
+    size_t num_before = registry->enabled_extensions().size();
     {
       content::NotificationRegistrar registrar;
       registrar.Add(this,
@@ -329,7 +332,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
       content::RunMessageLoop();
       timeout.Cancel();
     }
-    size_t num_after = service->extensions()->size();
+    size_t num_after = registry->enabled_extensions().size();
     if (num_after != (num_before + 1))
       return false;
 

@@ -191,8 +191,10 @@ class UserScriptListenerTest : public ExtensionServiceTestBase {
   }
 
   void UnloadTestExtension() {
-    ASSERT_FALSE(service_->extensions()->is_empty());
-    service_->UnloadExtension((*service_->extensions()->begin())->id(),
+    const extensions::ExtensionSet& extensions =
+        registry()->enabled_extensions();
+    ASSERT_FALSE(extensions.is_empty());
+    service_->UnloadExtension((*extensions.begin())->id(),
                               UnloadedExtensionInfo::REASON_DISABLE);
   }
 
