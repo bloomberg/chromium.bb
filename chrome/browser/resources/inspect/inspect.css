@@ -181,6 +181,7 @@ img {
 
 .webview-thumbnail {
   display: inline-block;
+  flex-shrink: 0;
   margin-right: 5px;
   overflow: hidden;
   position: relative;
