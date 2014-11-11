@@ -64,9 +64,10 @@ class TestChannelIDKey : public ChannelIDKey {
     // The signature consists of a pair of 32-byte numbers.
     static const size_t kSignatureLength = 32 * 2;
     scoped_ptr<uint8[]> signature(new uint8[kSignatureLength]);
-    memset(signature.get(), 0, kSignatureLength);
-    BN_bn2bin(sig.get()->r, signature.get() + 32 - BN_num_bytes(sig.get()->r));
-    BN_bn2bin(sig.get()->s, signature.get() + 64 - BN_num_bytes(sig.get()->s));
+    if (!BN_bn2bin_padded(&signature[0], 32, sig->r) ||
+        !BN_bn2bin_padded(&signature[32], 32, sig->s)) {
+      return false;
+    }
 
     *out_signature = string(reinterpret_cast<char*>(signature.get()),
                             kSignatureLength);
