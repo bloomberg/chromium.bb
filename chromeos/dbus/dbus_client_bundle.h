@@ -18,6 +18,7 @@ class BluetoothGattDescriptorClient;
 class BluetoothGattManagerClient;
 class BluetoothGattServiceClient;
 class BluetoothInputClient;
+class BluetoothMediaClient;
 class BluetoothProfileManagerClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -124,6 +125,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
 
   BluetoothInputClient* bluetooth_input_client() {
     return bluetooth_input_client_.get();
+  }
+
+  BluetoothMediaClient* bluetooth_media_client() {
+    return bluetooth_media_client_.get();
   }
 
   BluetoothProfileManagerClient* bluetooth_profile_manager_client() {
@@ -250,6 +255,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<BluetoothGattManagerClient> bluetooth_gatt_manager_client_;
   scoped_ptr<BluetoothGattServiceClient> bluetooth_gatt_service_client_;
   scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
+  scoped_ptr<BluetoothMediaClient> bluetooth_media_client_;
   scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
   scoped_ptr<CrasAudioClient> cras_audio_client_;
   scoped_ptr<CrosDisksClient> cros_disks_client_;

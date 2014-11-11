@@ -16,6 +16,7 @@
 #include "chromeos/dbus/bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_media_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -30,6 +31,7 @@
 #include "chromeos/dbus/fake_bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
+#include "chromeos/dbus/fake_bluetooth_media_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_cras_audio_client.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
@@ -127,6 +129,7 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
         BluetoothAgentManagerClient::Create());
     bluetooth_device_client_.reset(BluetoothDeviceClient::Create());
     bluetooth_input_client_.reset(BluetoothInputClient::Create());
+    bluetooth_media_client_.reset(BluetoothMediaClient::Create());
     bluetooth_profile_manager_client_.reset(
         BluetoothProfileManagerClient::Create());
     bluetooth_gatt_characteristic_client_.reset(
@@ -142,6 +145,7 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     bluetooth_agent_manager_client_.reset(new FakeBluetoothAgentManagerClient);
     bluetooth_device_client_.reset(new FakeBluetoothDeviceClient);
     bluetooth_input_client_.reset(new FakeBluetoothInputClient);
+    bluetooth_media_client_.reset(new FakeBluetoothMediaClient);
     bluetooth_profile_manager_client_.reset(
         new FakeBluetoothProfileManagerClient);
     bluetooth_gatt_characteristic_client_.reset(

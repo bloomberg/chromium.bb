@@ -24,7 +24,7 @@ class CHROMEOS_EXPORT FakeBluetoothAdapterClient
     : public BluetoothAdapterClient {
  public:
   struct Properties : public BluetoothAdapterClient::Properties {
-    explicit Properties(const PropertyChangedCallback & callback);
+    explicit Properties(const PropertyChangedCallback& callback);
     ~Properties() override;
 
     // dbus::PropertySet override

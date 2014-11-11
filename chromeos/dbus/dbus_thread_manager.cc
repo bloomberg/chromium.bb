@@ -16,6 +16,7 @@
 #include "chromeos/dbus/bluetooth_gatt_manager_client.h"
 #include "chromeos/dbus/bluetooth_gatt_service_client.h"
 #include "chromeos/dbus/bluetooth_input_client.h"
+#include "chromeos/dbus/bluetooth_media_client.h"
 #include "chromeos/dbus/bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/cras_audio_client.h"
 #include "chromeos/dbus/cros_disks_client.h"
@@ -152,6 +153,10 @@ BluetoothInputClient* DBusThreadManager::GetBluetoothInputClient() {
   return client_bundle_->bluetooth_input_client();
 }
 
+BluetoothMediaClient* DBusThreadManager::GetBluetoothMediaClient() {
+  return client_bundle_->bluetooth_media_client();
+}
+
 BluetoothProfileManagerClient*
 DBusThreadManager::GetBluetoothProfileManagerClient() {
   return client_bundle_->bluetooth_profile_manager_client();
@@ -279,6 +284,7 @@ void DBusThreadManager::InitializeClients() {
   GetBluetoothGattManagerClient()->Init(GetSystemBus());
   GetBluetoothGattServiceClient()->Init(GetSystemBus());
   GetBluetoothInputClient()->Init(GetSystemBus());
+  GetBluetoothMediaClient()->Init(GetSystemBus());
   GetBluetoothProfileManagerClient()->Init(GetSystemBus());
   GetCrasAudioClient()->Init(GetSystemBus());
   GetCrosDisksClient()->Init(GetSystemBus());
@@ -471,6 +477,12 @@ void DBusThreadManagerSetter::SetBluetoothGattServiceClient(
 void DBusThreadManagerSetter::SetBluetoothInputClient(
     scoped_ptr<BluetoothInputClient> client) {
   DBusThreadManager::Get()->client_bundle_->bluetooth_input_client_ =
+      client.Pass();
+}
+
+void DBusThreadManagerSetter::SetBluetoothMediaClient(
+    scoped_ptr<BluetoothMediaClient> client) {
+  DBusThreadManager::Get()->client_bundle_->bluetooth_media_client_ =
       client.Pass();
 }
 

@@ -33,6 +33,7 @@ class BluetoothGattDescriptorClient;
 class BluetoothGattManagerClient;
 class BluetoothGattServiceClient;
 class BluetoothInputClient;
+class BluetoothMediaClient;
 class BluetoothProfileManagerClient;
 class CrasAudioClient;
 class CrosDisksClient;
@@ -121,6 +122,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   BluetoothGattManagerClient* GetBluetoothGattManagerClient();
   BluetoothGattServiceClient* GetBluetoothGattServiceClient();
   BluetoothInputClient* GetBluetoothInputClient();
+  BluetoothMediaClient* GetBluetoothMediaClient();
   BluetoothProfileManagerClient* GetBluetoothProfileManagerClient();
   CrasAudioClient* GetCrasAudioClient();
   CrosDisksClient* GetCrosDisksClient();
@@ -206,6 +208,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetBluetoothGattServiceClient(
       scoped_ptr<BluetoothGattServiceClient> client);
   void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
+  void SetBluetoothMediaClient(scoped_ptr<BluetoothMediaClient> client);
   void SetBluetoothProfileManagerClient(
       scoped_ptr<BluetoothProfileManagerClient> client);
   void SetCrasAudioClient(scoped_ptr<CrasAudioClient> client);
