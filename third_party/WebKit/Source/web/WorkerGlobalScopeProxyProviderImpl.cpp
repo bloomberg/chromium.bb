@@ -36,8 +36,6 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerMessagingProxy.h"
-#include "modules/serviceworkers/ServiceWorkerContainerClient.h"
-#include "public/platform/WebServiceWorkerProvider.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebPermissionClient.h"
@@ -57,7 +55,8 @@ WorkerGlobalScopeProxy* WorkerGlobalScopeProxyProviderImpl::createWorkerGlobalSc
         OwnPtrWillBeRawPtr<WorkerClients> workerClients = WorkerClients::create();
         provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
-        provideServiceWorkerContainerClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createServiceWorkerProvider(webFrame)));
+        // FIXME: call provideServiceWorkerContainerClientToWorker here when we
+        // support ServiceWorker in dedicated workers (http://crbug.com/371690)
         return new WorkerMessagingProxy(worker, workerClients.release());
     }
     ASSERT_NOT_REACHED();
