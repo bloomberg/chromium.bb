@@ -715,8 +715,8 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
   base::Closure continuation = base::Bind(&ServiceWorkerCache::PutImpl,
                                           base::Passed(put_context.Pass()));
 
-  if (!initialized_) {
-    Init(continuation);
+  if (backend_state_ == BACKEND_UNINITIALIZED) {
+    InitBackend(continuation);
     return;
   }
 
@@ -730,15 +730,20 @@ void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
       base::Bind(&ServiceWorkerCache::PendingResponseCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);
 
-  if (!initialized_) {
-    Init(base::Bind(&ServiceWorkerCache::Match, weak_ptr_factory_.GetWeakPtr(),
-                    base::Passed(request.Pass()), pending_callback));
-    return;
-  }
-  if (!backend_) {
-    pending_callback.Run(ErrorTypeStorage, scoped_ptr<ServiceWorkerResponse>(),
-                         scoped_ptr<storage::BlobDataHandle>());
-    return;
+  switch (backend_state_) {
+    case BACKEND_UNINITIALIZED:
+      InitBackend(base::Bind(&ServiceWorkerCache::Match,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(request.Pass()), pending_callback));
+      return;
+    case BACKEND_CLOSED:
+      pending_callback.Run(ErrorTypeStorage,
+                           scoped_ptr<ServiceWorkerResponse>(),
+                           scoped_ptr<storage::BlobDataHandle>());
+      return;
+    case BACKEND_OPEN:
+      DCHECK(backend_);
+      break;
   }
 
   scoped_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*);
@@ -764,14 +769,18 @@ void ServiceWorkerCache::Delete(scoped_ptr<ServiceWorkerFetchRequest> request,
       base::Bind(&ServiceWorkerCache::PendingErrorCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);
 
-  if (!initialized_) {
-    Init(base::Bind(&ServiceWorkerCache::Delete, weak_ptr_factory_.GetWeakPtr(),
-                    base::Passed(request.Pass()), pending_callback));
-    return;
-  }
-  if (!backend_) {
-    pending_callback.Run(ErrorTypeStorage);
-    return;
+  switch (backend_state_) {
+    case BACKEND_UNINITIALIZED:
+      InitBackend(base::Bind(&ServiceWorkerCache::Delete,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             base::Passed(request.Pass()), pending_callback));
+      return;
+    case BACKEND_CLOSED:
+      pending_callback.Run(ErrorTypeStorage);
+      return;
+    case BACKEND_OPEN:
+      DCHECK(backend_);
+      break;
   }
 
   scoped_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*);
@@ -795,14 +804,18 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
   RequestsCallback pending_callback =
       base::Bind(&ServiceWorkerCache::PendingRequestsCallback,
                  weak_ptr_factory_.GetWeakPtr(), callback);
-  if (!initialized_) {
-    Init(base::Bind(&ServiceWorkerCache::Keys, weak_ptr_factory_.GetWeakPtr(),
-                    pending_callback));
-    return;
-  }
-  if (!backend_) {
-    pending_callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
-    return;
+
+  switch (backend_state_) {
+    case BACKEND_UNINITIALIZED:
+      InitBackend(base::Bind(&ServiceWorkerCache::Keys,
+                             weak_ptr_factory_.GetWeakPtr(), pending_callback));
+      return;
+    case BACKEND_CLOSED:
+      pending_callback.Run(ErrorTypeStorage, scoped_ptr<Requests>());
+      return;
+    case BACKEND_OPEN:
+      DCHECK(backend_);
+      break;
   }
 
   // 1. Iterate through all of the entries, open them, and add them to a vector.
@@ -832,24 +845,23 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
 }
 
 void ServiceWorkerCache::Close(const base::Closure& callback) {
-  DCHECK(!initialized_ || backend_)
+  DCHECK(backend_state_ != BACKEND_CLOSED)
       << "Don't call ServiceWorkerCache::Close() twice.";
 
+  backend_state_ = BACKEND_CLOSED;
   if (pending_ops_ > 0) {
     DCHECK(ops_complete_callback_.is_null());
-    initialized_ = true;  // So that future operations halt.
-    ops_complete_callback_ = base::Bind(
-        &ServiceWorkerCache::Close, weak_ptr_factory_.GetWeakPtr(), callback);
+    ops_complete_callback_ =
+        base::Bind(&ServiceWorkerCache::CloseImpl,
+                   weak_ptr_factory_.GetWeakPtr(), callback);
     return;
   }
 
-  initialized_ = true;
-  backend_.reset();
-  callback.Run();
+  CloseImpl(callback);
 }
 
 int64 ServiceWorkerCache::MemoryBackedSize() const {
-  if (!backend_ || !memory_only_)
+  if (backend_state_ != BACKEND_OPEN || !memory_only_)
     return 0;
 
   scoped_ptr<disk_cache::Backend::Iterator> backend_iter =
@@ -887,7 +899,7 @@ ServiceWorkerCache::ServiceWorkerCache(
       request_context_(request_context),
       quota_manager_proxy_(quota_manager_proxy),
       blob_storage_context_(blob_context),
-      initialized_(false),
+      backend_state_(BACKEND_UNINITIALIZED),
       memory_only_(path.empty()),
       pending_ops_(0),
       weak_ptr_factory_(this) {
@@ -895,7 +907,8 @@ ServiceWorkerCache::ServiceWorkerCache(
 
 // static
 void ServiceWorkerCache::PutImpl(scoped_ptr<PutContext> put_context) {
-  if (!put_context->cache || !put_context->cache->backend_) {
+  if (!put_context->cache ||
+      put_context->cache->backend_state_ != BACKEND_OPEN) {
     put_context->callback.Run(ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -913,7 +926,8 @@ void ServiceWorkerCache::PutImpl(scoped_ptr<PutContext> put_context) {
 // static
 void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
                                       ErrorType delete_error) {
-  if (!put_context->cache || !put_context->cache->backend_) {
+  if (!put_context->cache ||
+      put_context->cache->backend_state_ != BACKEND_OPEN) {
     put_context->callback.Run(ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -1101,7 +1115,7 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
     return;
   }
 
-  if (!cache->backend_) {
+  if (cache->backend_state_ != BACKEND_OPEN) {
     keys_context->original_callback.Run(ErrorTypeNotFound,
                                         scoped_ptr<Requests>());
     return;
@@ -1168,6 +1182,12 @@ void ServiceWorkerCache::KeysDidReadMetadata(
   KeysProcessNextEntry(keys_context.Pass(), iter + 1);
 }
 
+void ServiceWorkerCache::CloseImpl(const base::Closure& callback) {
+  DCHECK(backend_state_ == BACKEND_CLOSED);
+  backend_.reset();
+  callback.Run();
+}
+
 void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
   DCHECK(!backend_);
 
@@ -1201,8 +1221,8 @@ void ServiceWorkerCache::CreateBackend(const ErrorCallback& callback) {
     create_cache_callback.Run(rv);
 }
 
-void ServiceWorkerCache::Init(const base::Closure& callback) {
-  DCHECK(!initialized_);
+void ServiceWorkerCache::InitBackend(const base::Closure& callback) {
+  DCHECK(backend_state_ == BACKEND_UNINITIALIZED);
   init_callbacks_.push_back(callback);
 
   // If this isn't the first call to Init then return as the initialization
@@ -1215,10 +1235,12 @@ void ServiceWorkerCache::Init(const base::Closure& callback) {
 }
 
 void ServiceWorkerCache::InitDone(ErrorType error) {
-  initialized_ = true;
+  backend_state_ = (error == ErrorTypeOK && backend_ &&
+                    backend_state_ == BACKEND_UNINITIALIZED)
+                       ? BACKEND_OPEN
+                       : BACKEND_CLOSED;
   for (std::vector<base::Closure>::iterator it = init_callbacks_.begin();
-       it != init_callbacks_.end();
-       ++it) {
+       it != init_callbacks_.end(); ++it) {
     it->Run();
   }
   init_callbacks_.clear();

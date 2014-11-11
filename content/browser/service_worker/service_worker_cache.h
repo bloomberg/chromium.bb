@@ -86,9 +86,8 @@ class CONTENT_EXPORT ServiceWorkerCache
   // Returns ErrorTypeOK and a vector of requests if there are no errors.
   void Keys(const RequestsCallback& callback);
 
-  // Prevents further operations from starting on this object, waits for
-  // existing operations to finish, and then deletes the backend.  Close should
-  // only be called once per ServiceWorkerCache.
+  // Closes the backend. Pending and future operations that require the backend
+  // will exit early. Close should only be called once per ServiceWorkerCache.
   void Close(const base::Closure& callback);
 
   // The size of the cache contents in memory. Returns 0 if the cache backend is
@@ -108,6 +107,15 @@ class CONTENT_EXPORT ServiceWorkerCache
   class BlobReader;
   struct KeysContext;
   struct PutContext;
+
+  // The backend progresses from uninitialized, to open, to closed, and cannot
+  // reverse direction.  The open step may be skipped.
+  enum BackendState {
+    BACKEND_UNINITIALIZED,  // No backend, create backend on first operation.
+    BACKEND_OPEN,           // Backend can be used.
+    BACKEND_CLOSED          // Backend cannot be used.  All ops should fail.
+  };
+
   typedef std::vector<disk_cache::Entry*> Entries;
 
   ServiceWorkerCache(
@@ -144,11 +152,13 @@ class CONTENT_EXPORT ServiceWorkerCache
       const Entries::iterator& iter,
       scoped_ptr<ServiceWorkerCacheMetadata> metadata);
 
+  void CloseImpl(const base::Closure& callback);
+
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
   virtual void CreateBackend(const ErrorCallback& callback);
 
-  void Init(const base::Closure& callback);
+  void InitBackend(const base::Closure& callback);
   void InitDone(ErrorType error);
 
   void IncPendingOps() { pending_ops_++; }
@@ -171,7 +181,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   net::URLRequestContext* request_context_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
-  bool initialized_;
+  BackendState backend_state_;
   std::vector<base::Closure> init_callbacks_;
 
   // Whether or not to store data in disk or memory.
