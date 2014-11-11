@@ -1,1 +1,7 @@
-#<skip -- not interesting on mac>
+AXWebArea AXRoleDescription='HTML content'
+    AXGroup AXRoleDescription='group'
+        AXStaticText AXRoleDescription='text' AXValue='Before'
+    AXSplitter AXRoleDescription='splitter'
+        AXStaticText AXRoleDescription='text' AXValue='Dividing Line'
+    AXGroup AXRoleDescription='group'
+        AXStaticText AXRoleDescription='text' AXValue='After'
