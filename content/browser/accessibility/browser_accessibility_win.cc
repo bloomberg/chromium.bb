@@ -3525,8 +3525,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
       ia2_role_ = IA2_ROLE_FORM;
       break;
     case ui::AX_ROLE_FOOTER:
-      ia_role_ = IA2_ROLE_FOOTER;
-      ia_state_ |= STATE_SYSTEM_READONLY;
+      ia_role_ = ROLE_SYSTEM_GROUPING;
+      ia2_role_ = IA2_ROLE_FOOTER;
       break;
     case ui::AX_ROLE_GRID:
       ia_role_ = ROLE_SYSTEM_TABLE;
