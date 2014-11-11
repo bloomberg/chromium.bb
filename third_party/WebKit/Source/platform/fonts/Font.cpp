@@ -263,7 +263,7 @@ namespace {
 
 template <bool hasOffsets>
 bool buildTextBlobInternal(const GlyphBuffer& glyphBuffer, SkScalar initialAdvance,
-    const SkRect* bounds, bool couldUseLCD, SkTextBlobBuilder& builder)
+    const SkRect* bounds, bool couldUseLCD, SkTextBlobBuilder& builder, const Font& font)
 {
     SkScalar x = initialAdvance;
     unsigned i = 0;
@@ -278,7 +278,7 @@ bool buildTextBlobInternal(const GlyphBuffer& glyphBuffer, SkScalar initialAdvan
         // factor, which is found via the GraphicsContext. This should be fixed
         // to avoid correctness problems here.
         SkPaint paint;
-        fontData->platformData().setupPaint(&paint);
+        fontData->platformData().setupPaint(&paint, 0, &font);
         paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
 
         // FIXME: this should go away after the big LCD cleanup.
@@ -324,8 +324,8 @@ PassTextBlobPtr Font::buildTextBlob(const GlyphBuffer& glyphBuffer, float initia
     SkRect skBounds = bounds;
 
     bool success = glyphBuffer.hasOffsets() ?
-        buildTextBlobInternal<true>(glyphBuffer, advance, &skBounds, couldUseLCD, builder) :
-        buildTextBlobInternal<false>(glyphBuffer, advance, &skBounds, couldUseLCD, builder);
+        buildTextBlobInternal<true>(glyphBuffer, advance, &skBounds, couldUseLCD, builder, *this) :
+        buildTextBlobInternal<false>(glyphBuffer, advance, &skBounds, couldUseLCD, builder, *this);
     return success ? adoptRef(builder.build()) : nullptr;
 }
 
