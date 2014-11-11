@@ -1864,3 +1864,18 @@ UNADDRESSABLE ACCESS
 name=bug_425097
 ...
 *!ash::test::ShelfViewTest_CheckDragAndDropFromOverflowBubbleToShelf_Test::TestBody
+
+UNINITIALIZED READ
+name=bug_432067
+system call NtCreateFile parameter #9
+MSWSOCK.dll!*
+content.dll!content::AppCacheStorageImpl::DatabaseTask::CallRun
+
+UNINITIALIZED READ
+name=bug_432071
+system call NtWriteFile parameter #5
+KERNELBASE.dll!WriteFile
+KERNEL32.dll!WriteFile
+base.dll!base::File::WriteAtCurrentPos
+content.dll!`anonymous namespace'::FontCacheWriter::CommitFontEntry
+
