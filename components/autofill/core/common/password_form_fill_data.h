@@ -42,11 +42,12 @@ struct PasswordFormFillData {
   // The name of the form.
   base::string16 name;
 
-  // An origin is (scheme, host, port, path and fragment identifier) only; it is
-  // just exactly a URL with the query string removed.
+  // An origin URL consists of the scheme, host, port and path; the rest is
+  // stripped.
   GURL origin;
 
-  // The action target of the form.
+  // The action target of the form; like |origin| URL consists of the scheme,
+  // host, port and path; the rest is stripped.
   GURL action;
 
   // True if this form was submitted by a user gesture and not javascript.
