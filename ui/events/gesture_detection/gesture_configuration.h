@@ -40,6 +40,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   bool gesture_begin_end_types_enabled() const {
     return gesture_begin_end_types_enabled_;
   }
+  void set_gesture_begin_end_types_enabled(bool val) {
+    gesture_begin_end_types_enabled_ = val;
+  }
   int long_press_time_in_ms() const { return long_press_time_in_ms_; }
   void set_long_press_time_in_ms(int val) { long_press_time_in_ms_ = val; }
   float max_distance_between_taps_for_double_tap() const {
@@ -59,6 +62,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   float max_gesture_bounds_length() const {
     return max_gesture_bounds_length_;
   }
+  void set_max_gesture_bounds_length(float val) {
+    max_gesture_bounds_length_ = val;
+  }
   float max_separation_for_gesture_touches_in_pixels() const {
     return max_separation_for_gesture_touches_in_pixels_;
   }
@@ -67,6 +73,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   }
   float max_swipe_deviation_angle() const {
     return max_swipe_deviation_angle_;
+  }
+  void set_max_swipe_deviation_angle(float val) {
+    max_swipe_deviation_angle_ = val;
   }
   int max_time_between_double_click_in_ms() const {
     return max_time_between_double_click_in_ms_;
@@ -94,6 +103,7 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
     min_distance_for_pinch_scroll_in_pixels_ = val;
   }
   float min_fling_velocity() const { return min_fling_velocity_; }
+  void set_min_fling_velocity(float val) { min_fling_velocity_ = val; }
   float min_gesture_bounds_length() const {
     return min_gesture_bounds_length_;
   }
@@ -105,6 +115,9 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   }
   float min_scaling_span_in_pixels() const {
     return min_scaling_span_in_pixels_;
+  }
+  void set_min_scaling_span_in_pixels(float val) {
+    min_scaling_span_in_pixels_ = val;
   }
   float min_scaling_touch_major() const { return min_scaling_touch_major_; }
   float min_swipe_velocity() const { return min_swipe_velocity_; }
@@ -118,9 +131,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   int semi_long_press_time_in_ms() const {
     return semi_long_press_time_in_ms_;
   }
-  VelocityTracker::Strategy velocity_tracker_strategy() const {
-    return velocity_tracker_strategy_;
-  }
   void set_semi_long_press_time_in_ms(int val) {
     semi_long_press_time_in_ms_ = val;
     double_tap_timeout_in_ms_ = val;
@@ -131,6 +141,7 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   }
   float span_slop() const { return span_slop_; }
   bool swipe_enabled() const { return swipe_enabled_; }
+  void set_swipe_enabled(bool val) { swipe_enabled_ = val; }
 
   // TODO(davemoore): Move into chrome/browser/ui.
   int tab_scrub_activation_delay_in_ms() const {
@@ -140,42 +151,36 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
     tab_scrub_activation_delay_in_ms_ = val;
   }
   bool two_finger_tap_enabled() const { return two_finger_tap_enabled_; }
+  void set_two_finger_tap_enabled(bool val) { two_finger_tap_enabled_ = val; }
+  VelocityTracker::Strategy velocity_tracker_strategy() const {
+    return velocity_tracker_strategy_;
+  }
+  void set_velocity_tracker_strategy(VelocityTracker::Strategy val) {
+    velocity_tracker_strategy_ = val;
+  }
 
  protected:
   GestureConfiguration();
   virtual ~GestureConfiguration();
 
+  // The below configuration parameters are dependent on other parameters,
+  // whose setter functions will setup these values as well, so we will not
+  // provide public setter functions for them.
   void set_double_tap_timeout_in_ms(int val) {
     double_tap_timeout_in_ms_ = val;
   }
-  void set_gesture_begin_end_types_enabled(bool val) {
-    gesture_begin_end_types_enabled_ = val;
-  }
-  void set_max_gesture_bounds_length(float val) {
-    max_gesture_bounds_length_ = val;
-  }
-  void set_max_swipe_deviation_angle(float val) {
-    max_swipe_deviation_angle_ = val;
-  }
-  void set_min_fling_velocity(float val) { min_fling_velocity_ = val; }
   void set_min_gesture_bounds_length(float val) {
     min_gesture_bounds_length_ = val;
-  }
-  void set_min_scaling_span_in_pixels(float val) {
-    min_scaling_span_in_pixels_ = val;
   }
   void set_min_scaling_touch_major(float val) {
     min_scaling_touch_major_ = val;
   }
-  void set_velocity_tracker_strategy(VelocityTracker::Strategy val) {
-    velocity_tracker_strategy_ = val;
-  }
   void set_span_slop(float val) { span_slop_ = val; }
-  void set_swipe_enabled(bool val) { swipe_enabled_ = val; }
-  void set_two_finger_tap_enabled(bool val) { two_finger_tap_enabled_ = val; }
 
  private:
   // These are listed in alphabetical order ignoring underscores.
+  // NOTE: Adding new configuration parameters requires initializing
+  // corresponding entries in aura_test_base.cc's SetUp().
 
   // The default touch radius length used when the only information given
   // by the device is the touch center.
@@ -211,7 +216,6 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   float min_scaling_span_in_pixels_;
   float min_scaling_touch_major_;
   float min_swipe_velocity_;
-  VelocityTracker::Strategy velocity_tracker_strategy_;
   int scroll_debounce_interval_in_ms_;
   int semi_long_press_time_in_ms_;
   int show_press_delay_in_ms_;
@@ -221,6 +225,7 @@ class GESTURE_DETECTION_EXPORT GestureConfiguration {
   // TODO(davemoore): Move into chrome/browser/ui.
   int tab_scrub_activation_delay_in_ms_;
   bool two_finger_tap_enabled_;
+  VelocityTracker::Strategy velocity_tracker_strategy_;
 
   friend struct DefaultSingletonTraits<GestureConfiguration>;
   DISALLOW_COPY_AND_ASSIGN(GestureConfiguration);

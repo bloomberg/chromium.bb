@@ -38,19 +38,34 @@ void AuraTestBase::SetUp() {
   // Changing the parameters for gesture recognition shouldn't cause
   // tests to fail, so we use a separate set of parameters for unit
   // testing.
+  gesture_config->set_default_radius(0);
+  gesture_config->set_fling_max_cancel_to_down_time_in_ms(400);
+  gesture_config->set_fling_max_tap_gap_time_in_ms(200);
+  gesture_config->set_gesture_begin_end_types_enabled(true);
   gesture_config->set_long_press_time_in_ms(1000);
-  gesture_config->set_semi_long_press_time_in_ms(400);
-  gesture_config->set_show_press_delay_in_ms(5);
+  gesture_config->set_max_distance_between_taps_for_double_tap(20);
   gesture_config->set_max_distance_for_two_finger_tap_in_pixels(300);
-  gesture_config->set_max_time_between_double_click_in_ms(700);
+  gesture_config->set_max_fling_velocity(15000);
+  gesture_config->set_max_gesture_bounds_length(0);
   gesture_config->set_max_separation_for_gesture_touches_in_pixels(150);
+  gesture_config->set_max_swipe_deviation_angle(20);
+  gesture_config->set_max_time_between_double_click_in_ms(700);
   gesture_config->set_max_touch_down_duration_for_click_in_ms(800);
   gesture_config->set_max_touch_move_in_pixels_for_click(5);
-  gesture_config->set_max_distance_between_taps_for_double_tap(20);
   gesture_config->set_min_distance_for_pinch_scroll_in_pixels(20);
-  gesture_config->set_default_radius(0);
-  gesture_config->set_max_fling_velocity(15000);
+  gesture_config->set_min_fling_velocity(30.0f);
+  gesture_config->set_min_pinch_update_span_delta(0);
+  gesture_config->set_min_scaling_span_in_pixels(125);
   gesture_config->set_min_swipe_velocity(10);
+  gesture_config->set_scroll_debounce_interval_in_ms(0);
+  gesture_config->set_semi_long_press_time_in_ms(400);
+  gesture_config->set_show_press_delay_in_ms(5);
+  gesture_config->set_swipe_enabled(true);
+  gesture_config->set_tab_scrub_activation_delay_in_ms(200);
+  gesture_config->set_two_finger_tap_enabled(true);
+  gesture_config->set_velocity_tracker_strategy(
+      ui::VelocityTracker::Strategy::LSQ2_RESTRICTED);
+
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
   ui::ContextFactory* context_factory =

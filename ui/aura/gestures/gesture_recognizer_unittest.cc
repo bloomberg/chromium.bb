@@ -4197,8 +4197,8 @@ TEST_F(GestureRecognizerWithSwitchTest, GestureEventSmallPinchDisabled) {
                   ui::ET_GESTURE_SCROLL_UPDATE,
                   ui::ET_GESTURE_PINCH_BEGIN);
 
-  // No pinch update occurs, as kCompensateForUnstablePinchZoom is on, and this
-  // is a very small pinch.
+  // No pinch update occurs, as kCompensateForUnstablePinchZoom is on and
+  // |min_pinch_update_span_delta| was nonzero, and this is a very small pinch.
   delegate->Reset();
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(65, 202),
                        kTouchId1, tes.Now());

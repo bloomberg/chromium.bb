@@ -32,9 +32,8 @@ GestureConfiguration::GestureConfiguration()
       // The default value of min_scaling_touch_major_ is 2 * default_radius_.
       min_scaling_touch_major_(50),
       min_swipe_velocity_(20),
-      velocity_tracker_strategy_(VelocityTracker::Strategy::STRATEGY_DEFAULT),
-// TODO(jdduke): Disable and remove entirely when issues with intermittent
-// scroll end detection on the Pixel are resolved, crbug.com/353702.
+      // TODO(jdduke): Disable and remove entirely when issues with intermittent
+      // scroll end detection on the Pixel are resolved, crbug.com/353702.
 #if defined(OS_CHROMEOS)
       scroll_debounce_interval_in_ms_(30),
 #else
@@ -47,7 +46,8 @@ GestureConfiguration::GestureConfiguration()
       span_slop_(30),
       swipe_enabled_(false),
       tab_scrub_activation_delay_in_ms_(200),
-      two_finger_tap_enabled_(false) {
+      two_finger_tap_enabled_(false),
+      velocity_tracker_strategy_(VelocityTracker::Strategy::STRATEGY_DEFAULT) {
 }
 
 GestureConfiguration::~GestureConfiguration() {
