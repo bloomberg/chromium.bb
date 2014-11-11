@@ -56,6 +56,10 @@ class DictionaryBuilder {
   // Can only be called once, after which it's invalid to use the builder.
   scoped_ptr<base::DictionaryValue> Build() { return dict_.Pass(); }
 
+  // Immediately serializes the current state to JSON. Can be called as many
+  // times as you like.
+  std::string ToJSON() const;
+
   DictionaryBuilder& Set(const std::string& path, int in_value);
   DictionaryBuilder& Set(const std::string& path, double in_value);
   DictionaryBuilder& Set(const std::string& path, const std::string& in_value);

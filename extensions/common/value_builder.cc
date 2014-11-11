@@ -4,6 +4,8 @@
 
 #include "extensions/common/value_builder.h"
 
+#include "base/json/json_writer.h"
+
 namespace extensions {
 
 // DictionaryBuilder
@@ -14,6 +16,13 @@ DictionaryBuilder::DictionaryBuilder(const base::DictionaryValue& init)
     : dict_(init.DeepCopy()) {}
 
 DictionaryBuilder::~DictionaryBuilder() {}
+
+std::string DictionaryBuilder::ToJSON() const {
+  std::string json;
+  base::JSONWriter::WriteWithOptions(
+      dict_.get(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  return json;
+}
 
 DictionaryBuilder& DictionaryBuilder::Set(const std::string& path,
                                           int in_value) {
