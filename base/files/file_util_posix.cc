@@ -28,8 +28,6 @@
 #include <glib.h>  // for g_get_home_dir()
 #endif
 
-#include <fstream>
-
 #include "base/basictypes.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -428,7 +426,7 @@ bool GetPosixFilePermissions(const FilePath& path, int* mode) {
 bool SetPosixFilePermissions(const FilePath& path,
                              int mode) {
   ThreadRestrictions::AssertIOAllowed();
-  DCHECK((mode & ~FILE_PERMISSION_MASK) == 0);
+  DCHECK_EQ(mode & ~FILE_PERMISSION_MASK, 0);
 
   // Calls stat() so that we can preserve the higher bits like S_ISGID.
   stat_wrapper_t stat_buf;
