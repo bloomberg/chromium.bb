@@ -6,6 +6,8 @@
 
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/test/base/athena_test_base.h"
+#include "athena/util/switches.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "ui/events/test/event_generator.h"
 
@@ -46,6 +48,21 @@ class TestPowerButtonObserver : public PowerButtonObserver {
   DISALLOW_COPY_AND_ASSIGN(TestPowerButtonObserver);
 };
 
+class InputManagerTest : public test::AthenaTestBase {
+ public:
+  InputManagerTest() {}
+  ~InputManagerTest() override {}
+
+  void SetUp() override {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kEnableDebugAccelerators);
+    test::AthenaTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InputManagerTest);
+};
+
 }  // namespace
 
 namespace test {
@@ -70,11 +87,7 @@ class ScopedPowerButtonTimeoutShortener {
 
 }  // namespace test
 
-typedef test::AthenaTestBase InputManagerTest;
-
-// This fails on bots. crbug.com/424109.
-// Investigate once crbug.com/424093 is fixed.
-TEST_F(InputManagerTest, DISABLED_PowerButton) {
+TEST_F(InputManagerTest, PowerButton) {
   test::ScopedPowerButtonTimeoutShortener shortener;
   TestPowerButtonObserver observer;
 

@@ -9,10 +9,12 @@
 namespace athena {
 namespace switches {
 
+const char kEnableDebugAccelerators[] = "debug-accelerators";
+
 bool IsDebugAcceleratorsEnabled() {
 #if NDEBUG
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      "debug-accelerators");
+      kEnableDebugAccelerators);
 #else
   return true;
 #endif

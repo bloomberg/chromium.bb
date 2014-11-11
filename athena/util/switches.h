@@ -5,8 +5,12 @@
 #ifndef ATHENA_UTIL_SWITCHES_H_
 #define ATHENA_UTIL_SWITCHES_H_
 
+#include "athena/athena_export.h"
+
 namespace athena {
 namespace switches {
+
+ATHENA_EXPORT extern const char kEnableDebugAccelerators[];
 
 bool IsDebugAcceleratorsEnabled();
 

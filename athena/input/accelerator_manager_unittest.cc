@@ -48,9 +48,9 @@ class TestHandler : public AcceleratorHandler {
 
 }  // namespace
 
-typedef test::AthenaTestBase InputManagerTest;
+typedef test::AthenaTestBase AcceleratorManagerTest;
 
-TEST_F(InputManagerTest, Basic) {
+TEST_F(AcceleratorManagerTest, Basic) {
   enum TestCommandId {
     COMMAND_A,
     COMMAND_B,
@@ -119,7 +119,7 @@ TEST_F(InputManagerTest, Basic) {
   EXPECT_EQ(COMMAND_E, test_handler.GetFiredCommandIdAndReset());
 }
 
-TEST_F(InputManagerTest, CloseActivity) {
+TEST_F(AcceleratorManagerTest, CloseActivity) {
   ActivityFactory* factory = ActivityFactory::Get();
   Activity* activity1 =
       factory->CreateWebActivity(NULL, base::string16(), GURL());
