@@ -30,12 +30,10 @@ UsageTracker::UsageTracker(const QuotaClientList& clients,
     : type_(type),
       storage_monitor_(storage_monitor),
       weak_factory_(this) {
-  for (QuotaClientList::const_iterator iter = clients.begin();
-      iter != clients.end();
-      ++iter) {
-    if ((*iter)->DoesSupport(type)) {
-      client_tracker_map_[(*iter)->id()] =
-          new ClientUsageTracker(this, *iter, type, special_storage_policy,
+  for (const auto& client : clients) {
+    if (client->DoesSupport(type)) {
+      client_tracker_map_[client->id()] =
+          new ClientUsageTracker(this, client, type, special_storage_policy,
                                  storage_monitor_);
     }
   }
@@ -49,7 +47,7 @@ ClientUsageTracker* UsageTracker::GetClientTracker(QuotaClient::ID client_id) {
   ClientTrackerMap::iterator found = client_tracker_map_.find(client_id);
   if (found != client_tracker_map_.end())
     return found->second;
-  return NULL;
+  return nullptr;
 }
 
 void UsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
@@ -75,10 +73,8 @@ void UsageTracker::GetGlobalLimitedUsage(const UsageCallback& callback) {
       &UsageTracker::AccumulateClientGlobalLimitedUsage,
       weak_factory_.GetWeakPtr(), base::Owned(info));
 
-  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
-       iter != client_tracker_map_.end();
-       ++iter)
-    iter->second->GetGlobalLimitedUsage(accumulator);
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetGlobalLimitedUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0);
@@ -101,10 +97,8 @@ void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
       &UsageTracker::AccumulateClientGlobalUsage, weak_factory_.GetWeakPtr(),
       base::Owned(info));
 
-  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
-       iter != client_tracker_map_.end();
-       ++iter)
-    iter->second->GetGlobalUsage(accumulator);
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetGlobalUsage(accumulator);
 
   // Fire the sentinel as we've now called GetGlobalUsage for all clients.
   accumulator.Run(0, 0);
@@ -128,10 +122,8 @@ void UsageTracker::GetHostUsage(const std::string& host,
       &UsageTracker::AccumulateClientHostUsage, weak_factory_.GetWeakPtr(),
       base::Owned(info), host);
 
-  for (ClientTrackerMap::iterator iter = client_tracker_map_.begin();
-       iter != client_tracker_map_.end();
-       ++iter)
-    iter->second->GetHostUsage(host, accumulator);
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetHostUsage(host, accumulator);
 
   // Fire the sentinel as we've now called GetHostUsage for all clients.
   accumulator.Run(0);
@@ -148,19 +140,15 @@ void UsageTracker::GetCachedHostsUsage(
     std::map<std::string, int64>* host_usage) const {
   DCHECK(host_usage);
   host_usage->clear();
-  for (ClientTrackerMap::const_iterator iter = client_tracker_map_.begin();
-       iter != client_tracker_map_.end(); ++iter) {
-    iter->second->GetCachedHostsUsage(host_usage);
-  }
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetCachedHostsUsage(host_usage);
 }
 
 void UsageTracker::GetCachedOrigins(std::set<GURL>* origins) const {
   DCHECK(origins);
   origins->clear();
-  for (ClientTrackerMap::const_iterator iter = client_tracker_map_.begin();
-       iter != client_tracker_map_.end(); ++iter) {
-    iter->second->GetCachedOrigins(origins);
-  }
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    client_id_and_tracker.second->GetCachedOrigins(origins);
 }
 
 void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
