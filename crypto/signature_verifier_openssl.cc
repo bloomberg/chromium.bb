@@ -122,8 +122,7 @@ bool SignatureVerifier::VerifyFinal() {
   int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(),
                                  vector_as_array(&signature_),
                                  signature_.size());
-  // rv is -1 if a DER-encoded ECDSA signature cannot be decoded correctly.
-  DCHECK_GE(rv, -1);
+  DCHECK_EQ(!!rv, rv);
   Reset();
   return rv == 1;
 }
