@@ -23,7 +23,6 @@
 #include "base/logging.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/worker_pool.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"
@@ -31,8 +30,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/widget/widget.h"
-
-using content::BrowserThread;
 
 namespace ash {
 namespace {

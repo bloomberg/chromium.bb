@@ -17,8 +17,6 @@
 #include "ash/test/test_user_wallpaper_delegate.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
