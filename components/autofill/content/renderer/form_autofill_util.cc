@@ -1095,7 +1095,7 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
 
     // If the element is not auto-filled, we did not preview it,
     // so there is nothing to reset.
-    if(!control_element.isAutofilled())
+    if (!control_element.isAutofilled())
       continue;
 
     if ((IsTextInput(input_element) ||
@@ -1128,26 +1128,6 @@ bool ClearPreviewedFormWithElement(const WebFormControlElement& element,
   }
 
   return true;
-}
-
-bool FormWithElementIsAutofilled(const WebInputElement& element) {
-  WebFormElement form_element = element.form();
-  if (form_element.isNull())
-    return false;
-
-  std::vector<WebFormControlElement> control_elements;
-  ExtractAutofillableElements(
-      form_element, ExtractionRequirements(), &control_elements);
-  for (size_t i = 0; i < control_elements.size(); ++i) {
-    WebInputElement* input_element = toWebInputElement(&control_elements[i]);
-    if (!IsAutofillableInputElement(input_element))
-      continue;
-
-    if (input_element->isAutofilled())
-      return true;
-  }
-
-  return false;
 }
 
 bool IsWebpageEmpty(const blink::WebFrame* frame) {

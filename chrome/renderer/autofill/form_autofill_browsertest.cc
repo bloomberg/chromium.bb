@@ -3481,35 +3481,6 @@ TEST_F(FormAutofillTest, ClearOnlyAutofilledFields) {
   EXPECT_FALSE(phone.isAutofilled());
 }
 
-TEST_F(FormAutofillTest, FormWithNodeIsAutofilled) {
-  LoadHTML("<FORM name='TestForm' action='http://buh.com' method='post'>"
-           "  <INPUT type='text' id='firstname' value='Wyatt'/>"
-           "  <INPUT type='text' id='lastname'/>"
-           "  <INPUT type='text' id='email'/>"
-           "  <INPUT type='email' id='email2'/>"
-           "  <INPUT type='tel' id='phone'/>"
-           "  <INPUT type='submit' value='Send'/>"
-           "</FORM>");
-
-  WebFrame* web_frame = GetMainFrame();
-  ASSERT_NE(static_cast<WebFrame*>(NULL), web_frame);
-
-  FormCache form_cache;
-  std::vector<FormData> forms = form_cache.ExtractNewForms(*web_frame);
-  ASSERT_EQ(1U, forms.size());
-
-  WebInputElement firstname =
-      web_frame->document().getElementById("firstname").to<WebInputElement>();
-
-  // Auto-filled attribute not set yet.
-  EXPECT_FALSE(FormWithElementIsAutofilled(firstname));
-
-  // Set the auto-filled attribute.
-  firstname.setAutofilled(true);
-
-  EXPECT_TRUE(FormWithElementIsAutofilled(firstname));
-}
-
 // If we have multiple labels per id, the labels concatenated into label string.
 TEST_F(FormAutofillTest, MultipleLabelsPerElement) {
   std::vector<base::string16> labels, names, values;
