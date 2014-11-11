@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
-#include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_version.h"
 #include "ui/app_list/app_list_constants.h"
@@ -327,11 +326,6 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                        views::BubbleBorder::Arrow arrow,
                                        bool border_accepts_events,
                                        const gfx::Vector2d& anchor_offset) {
-  // TODO(vadimt): Remove ScopedTracker below once crbug.com/426272 is fixed.
-  tracked_objects::ScopedTracker tracking_profile(
-      FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "426272 AppListView::InitAsBubbleInternal"));
-
   base::Time start_time = base::Time::Now();
 
   app_list_main_view_ = new AppListMainView(delegate_);
