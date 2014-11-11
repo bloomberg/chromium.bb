@@ -52,6 +52,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
  public:
   typedef base::Callback<void(const SuggestionsProfile&)> ResponseCallback;
 
+  // Class taking ownership of |suggestions_store|, |thumbnail_manager| and
+  // |blacklist_store|.
   SuggestionsService(
       net::URLRequestContextGetter* url_request_context,
       scoped_ptr<SuggestionsStore> suggestions_store,
@@ -73,10 +75,7 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // sync state changes.
   //
   // If state allows for a network request, it is initiated unless a pending one
-  // exists. To prevent multiple requests, all |callback|s are placed in a queue
-  // and are updated simultaneously when the fetch completes. Also posts a task
-  // to execute OnRequestTimeout if the request hasn't completed in a given
-  // amount of time.
+  // exists, to fill the cache for next time.
   void FetchSuggestionsData(SyncState sync_state,
                             ResponseCallback callback);
 
@@ -86,8 +85,8 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
       const GURL& url,
       base::Callback<void(const GURL&, const SkBitmap*)> callback);
 
-  // Issue a blacklist request. If there is already a blacklist request
-  // in flight, the new blacklist request is ignored.
+  // Issue a blacklist request. If there is already a blacklist or suggestions
+  // request in flight, the new blacklist request is ignored.
   void BlacklistURL(const GURL& candidate_url,
                     const ResponseCallback& callback);
 
@@ -101,25 +100,18 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // Sets default timestamp for suggestions which do not have expiry timestamp.
   void SetDefaultExpiryTimestamp(SuggestionsProfile* suggestions,
                                  int64 timestamp_usec);
+
+  // Issue a network request if there isn't already one happening. Visible for
+  // testing.
+  void IssueRequestIfNoneOngoing(const GURL& url);
+
  private:
   friend class SuggestionsServiceTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, BlacklistURLFails);
-  FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, FetchSuggestionsData);
   FRIEND_TEST_ALL_PREFIXES(SuggestionsServiceTest, UpdateBlacklistDelay);
-
-  // Similar to FetchSuggestionsData but doesn't post a task to execute
-  // OnDelaySinceFetch.
-  void FetchSuggestionsDataNoTimeout(ResponseCallback callback);
-
-  // Issue a request.
-  void IssueRequest(const GURL& url);
 
   // Creates a request to the suggestions service, properly setting headers.
   net::URLFetcher* CreateSuggestionsRequest(const GURL& url);
-
-  // Called to service the requestors if the issued suggestions request has
-  // not completed in a given amount of time.
-  virtual void OnRequestTimeout();
 
   // net::URLFetcherDelegate implementation.
   // Called when fetch request completes. Parses the received suggestions data,
@@ -129,18 +121,19 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
   // KeyedService implementation.
   void Shutdown() override;
 
-  // Load the cached suggestions and service the requestors with them.
+  // Loads the cached suggestions (or empty suggestions if no cache) and serves
+  // the requestors with them.
   void ServeFromCache();
 
-  // Apply the local blacklist to |suggestions|, then serve the requestors.
+  // Applies the local blacklist to |suggestions|, then serves the requestors.
   void FilterAndServe(SuggestionsProfile* suggestions);
 
-  // Schedule a blacklisting request if the local blacklist isn't empty.
+  // Schedules a blacklisting request if the local blacklist isn't empty.
   // |last_request_successful| is used for exponentially backing off when
   // requests fail.
   void ScheduleBlacklistUpload(bool last_request_successful);
 
-  // If the local blacklist isn't empty, pick a URL from it and issue a
+  // If the local blacklist isn't empty, picks a URL from it and issues a
   // blacklist request for it.
   void UploadOneFromBlacklist();
 
@@ -153,19 +146,24 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   base::ThreadChecker thread_checker_;
 
+  net::URLRequestContextGetter* url_request_context_;
+
   // The cache for the suggestions.
   scoped_ptr<SuggestionsStore> suggestions_store_;
+
+  // Used to obtain server thumbnails, if available.
+  scoped_ptr<ImageManager> thumbnail_manager_;
 
   // The local cache for temporary blacklist, until uploaded to the server.
   scoped_ptr<BlacklistStore> blacklist_store_;
 
-  // Contains the current suggestions fetch request. Will only have a value
-  // while a request is pending, and will be reset by |OnURLFetchComplete|.
-  scoped_ptr<net::URLFetcher> pending_request_;
+  // Delay used when scheduling a blacklisting task.
+  int blacklist_delay_sec_;
 
-  // A closure that is run on a timeout from issuing the suggestions fetch
-  // request, if the request hasn't completed.
-  scoped_ptr<base::CancelableClosure> pending_timeout_closure_;
+  // Contains the current suggestions fetch request. Will only have a value
+  // while a request is pending, and will be reset by |OnURLFetchComplete| or
+  // if cancelled.
+  scoped_ptr<net::URLFetcher> pending_request_;
 
   // The start time of the previous suggestions request. This is used to measure
   // the latency of requests. Initially zero.
@@ -179,18 +177,6 @@ class SuggestionsService : public KeyedService, public net::URLFetcherDelegate {
 
   // Queue of callbacks. These are flushed when fetch request completes.
   std::vector<ResponseCallback> waiting_requestors_;
-
-  // Used to obtain server thumbnails, if available.
-  scoped_ptr<ImageManager> thumbnail_manager_;
-
-  net::URLRequestContextGetter* url_request_context_;
-
-  // Delay used when scheduling a blacklisting task.
-  int blacklist_delay_sec_;
-
-  // Timeout (in ms) before serving requestors after a fetch suggestions request
-  // has been issued.
-  int request_timeout_ms_;
 
   // For callbacks may be run after destruction.
   base::WeakPtrFactory<SuggestionsService> weak_ptr_factory_;

@@ -67,14 +67,13 @@ GURL BuildBlacklistRequestURL(const std::string& blacklist_url_prefix,
 void DispatchRequestsAndClear(
     const SuggestionsProfile& suggestions,
     std::vector<SuggestionsService::ResponseCallback>* requestors) {
+  std::vector<SuggestionsService::ResponseCallback> temp_requestors;
+  temp_requestors.swap(*requestors);
   std::vector<SuggestionsService::ResponseCallback>::iterator it;
-  for (it = requestors->begin(); it != requestors->end(); ++it) {
+  for (it = temp_requestors.begin(); it != temp_requestors.end(); ++it) {
     if (!it->is_null()) it->Run(suggestions);
   }
-  std::vector<SuggestionsService::ResponseCallback>().swap(*requestors);
 }
-
-const int kDefaultRequestTimeoutMs = 200;
 
 // Default delay used when scheduling a blacklist request.
 const int kBlacklistDefaultDelaySec = 1;
@@ -98,7 +97,6 @@ const char kSuggestionsFieldTrialBlacklistUrlParam[] = "blacklist_url_param";
 const char kSuggestionsFieldTrialStateParam[] = "state";
 const char kSuggestionsFieldTrialControlParam[] = "control";
 const char kSuggestionsFieldTrialStateEnabled[] = "enabled";
-const char kSuggestionsFieldTrialTimeoutMs[] = "timeout_ms";
 
 // The default expiry timeout is 72 hours.
 const int64 kDefaultExpiryUsec = 72 * base::Time::kMicrosecondsPerHour;
@@ -122,23 +120,17 @@ SuggestionsService::SuggestionsService(
     scoped_ptr<SuggestionsStore> suggestions_store,
     scoped_ptr<ImageManager> thumbnail_manager,
     scoped_ptr<BlacklistStore> blacklist_store)
-    : suggestions_store_(suggestions_store.Pass()),
-      blacklist_store_(blacklist_store.Pass()),
+    : url_request_context_(url_request_context),
+      suggestions_store_(suggestions_store.Pass()),
       thumbnail_manager_(thumbnail_manager.Pass()),
-      url_request_context_(url_request_context),
+      blacklist_store_(blacklist_store.Pass()),
       blacklist_delay_sec_(kBlacklistDefaultDelaySec),
-      request_timeout_ms_(kDefaultRequestTimeoutMs),
       weak_ptr_factory_(this) {
   // Obtain various parameters from Variations.
   suggestions_url_ =
       GURL(GetExperimentParam(kSuggestionsFieldTrialURLParam) + "?" +
            GetExperimentParam(kSuggestionsFieldTrialCommonParamsParam));
   blacklist_url_prefix_ = GetBlacklistUrlPrefix();
-  std::string timeout = GetExperimentParam(kSuggestionsFieldTrialTimeoutMs);
-  int temp_timeout;
-  if (!timeout.empty() && base::StringToInt(timeout, &temp_timeout)) {
-    request_timeout_ms_ = temp_timeout;
-  }
 }
 
 SuggestionsService::~SuggestionsService() {}
@@ -159,32 +151,24 @@ void SuggestionsService::FetchSuggestionsData(
     SyncState sync_state,
     SuggestionsService::ResponseCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (sync_state == NOT_INITIALIZED_ENABLED) {
-    // Sync is not initialized yet, but enabled. Serve previously cached
-    // suggestions if available.
-    waiting_requestors_.push_back(callback);
-    ServeFromCache();
-    return;
-  } else if (sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
-    // Cancel any ongoing request (and the timeout closure). We must no longer
-    // interact with the server.
+  waiting_requestors_.push_back(callback);
+  if (sync_state == SYNC_OR_HISTORY_SYNC_DISABLED) {
+    // Cancel any ongoing request, to stop interacting with the server.
     pending_request_.reset(NULL);
-    pending_timeout_closure_.reset(NULL);
     suggestions_store_->ClearSuggestions();
-    callback.Run(SuggestionsProfile());
     DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
-    return;
+  } else if (sync_state == INITIALIZED_ENABLED_HISTORY ||
+             sync_state == NOT_INITIALIZED_ENABLED) {
+
+    // Sync is enabled. Serve previously cached suggestions if available, else
+    // an empty set of suggestions.
+    ServeFromCache();
+
+    // Issue a network request to refresh the suggestions in the cache.
+    IssueRequestIfNoneOngoing(suggestions_url_);
+  } else {
+    NOTREACHED();
   }
-
-  FetchSuggestionsDataNoTimeout(callback);
-
-  // Post a task to serve the cached suggestions if the request hasn't completed
-  // after some time. Cancels the previous such task, if one existed.
-  pending_timeout_closure_.reset(new CancelableClosure(base::Bind(
-      &SuggestionsService::OnRequestTimeout, weak_ptr_factory_.GetWeakPtr())));
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE, pending_timeout_closure_->callback(),
-      base::TimeDelta::FromMilliseconds(request_timeout_ms_));
 }
 
 void SuggestionsService::GetPageThumbnail(
@@ -199,15 +183,17 @@ void SuggestionsService::BlacklistURL(
   DCHECK(thread_checker_.CalledOnValidThread());
   waiting_requestors_.push_back(callback);
 
-  // Blacklist locally, for immediate effect.
-  if (!blacklist_store_->BlacklistUrl(candidate_url)) {
-    DVLOG(1) << "Failed blacklisting attempt.";
-    return;
-  }
+  // Blacklist locally for immediate effect and serve the requestors.
+  blacklist_store_->BlacklistUrl(candidate_url);
+  ServeFromCache();
 
-  // If there's an ongoing request, let it complete.
-  if (pending_request_.get()) return;
-  IssueRequest(BuildBlacklistRequestURL(blacklist_url_prefix_, candidate_url));
+  // Send blacklisting request. Even if this request ends up not being sent
+  // because of an ongoing request, a blacklist request is later scheduled.
+  // TODO(mathp): Currently, this will not send a request if there is already
+  // a request in flight (for suggestions or blacklist). Should we prioritize
+  // blacklist requests since they actually carry a payload?
+  IssueRequestIfNoneOngoing(
+      BuildBlacklistRequestURL(blacklist_url_prefix_, candidate_url));
 }
 
 // static
@@ -249,22 +235,11 @@ void SuggestionsService::SetDefaultExpiryTimestamp(
   }
 }
 
-void SuggestionsService::FetchSuggestionsDataNoTimeout(
-    SuggestionsService::ResponseCallback callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
+  // If there is an ongoing request, let it complete.
   if (pending_request_.get()) {
-    // Request already exists, so just add requestor to queue.
-    waiting_requestors_.push_back(callback);
     return;
   }
-
-  // Form new request.
-  DCHECK(waiting_requestors_.empty());
-  waiting_requestors_.push_back(callback);
-  IssueRequest(suggestions_url_);
-}
-
-void SuggestionsService::IssueRequest(const GURL& url) {
   pending_request_.reset(CreateSuggestionsRequest(url));
   pending_request_->Start();
   last_request_started_time_ = base::TimeTicks::Now();
@@ -283,40 +258,32 @@ net::URLFetcher* SuggestionsService::CreateSuggestionsRequest(const GURL& url) {
   return request;
 }
 
-void SuggestionsService::OnRequestTimeout() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ServeFromCache();
-}
-
 void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(pending_request_.get(), source);
-  // We no longer need the timeout closure. Delete it whether or not it has run.
-  // If it hasn't, this cancels it.
-  pending_timeout_closure_.reset();
 
   // The fetcher will be deleted when the request is handled.
   scoped_ptr<const net::URLFetcher> request(pending_request_.release());
+
   const net::URLRequestStatus& request_status = request->GetStatus();
   if (request_status.status() != net::URLRequestStatus::SUCCESS) {
+    // This represents network errors (i.e. the server did not provide a
+    // response).
     UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FailedRequestErrorCode",
                                 -request_status.error());
     DVLOG(1) << "Suggestions server request failed with error: "
              << request_status.error() << ": "
              << net::ErrorToString(request_status.error());
-    // Dispatch the cached profile on error.
-    ServeFromCache();
     ScheduleBlacklistUpload(false);
     return;
   }
 
-  // Log the response code.
   const int response_code = request->GetResponseCode();
   UMA_HISTOGRAM_SPARSE_SLOWLY("Suggestions.FetchResponseCode", response_code);
   if (response_code != net::HTTP_OK) {
-    // Aggressively clear the store.
+    // A non-200 response code means that server has no (longer) suggestions for
+    // this user. Aggressively clear the cache.
     suggestions_store_->ClearSuggestions();
-    DispatchRequestsAndClear(SuggestionsProfile(), &waiting_requestors_);
     ScheduleBlacklistUpload(false);
     return;
   }
@@ -335,40 +302,34 @@ void SuggestionsService::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = request->GetResponseAsString(&suggestions_data);
   DCHECK(success);
 
-  // Compute suggestions, and dispatch them to requestors. On error still
-  // dispatch empty suggestions.
+  // Parse the received suggestions and update the cache, or take proper action
+  // in the case of invalid response.
   SuggestionsProfile suggestions;
   if (suggestions_data.empty()) {
     LogResponseState(RESPONSE_EMPTY);
     suggestions_store_->ClearSuggestions();
   } else if (suggestions.ParseFromString(suggestions_data)) {
     LogResponseState(RESPONSE_VALID);
-    thumbnail_manager_->Initialize(suggestions);
-
     int64 now_usec = (base::Time::NowFromSystemTime() - base::Time::UnixEpoch())
         .ToInternalValue();
     SetDefaultExpiryTimestamp(&suggestions, now_usec + kDefaultExpiryUsec);
     suggestions_store_->StoreSuggestions(suggestions);
   } else {
     LogResponseState(RESPONSE_INVALID);
-    suggestions_store_->LoadSuggestions(&suggestions);
-    thumbnail_manager_->Initialize(suggestions);
   }
 
-  FilterAndServe(&suggestions);
   ScheduleBlacklistUpload(true);
 }
 
 void SuggestionsService::Shutdown() {
-  // Cancel pending request and timeout closure, then serve existing requestors
-  // from cache.
+  // Cancel pending request, then serve existing requestors from cache.
   pending_request_.reset(NULL);
-  pending_timeout_closure_.reset(NULL);
   ServeFromCache();
 }
 
 void SuggestionsService::ServeFromCache() {
   SuggestionsProfile suggestions;
+  // In case of empty cache or error, |suggestions| stays empty.
   suggestions_store_->LoadSuggestions(&suggestions);
   thumbnail_manager_->Initialize(suggestions);
   FilterAndServe(&suggestions);
@@ -399,15 +360,14 @@ void SuggestionsService::ScheduleBlacklistUpload(bool last_request_successful) {
 void SuggestionsService::UploadOneFromBlacklist() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // If there's an ongoing request, let it complete.
-  if (pending_request_.get()) return;
-
   GURL blacklist_url;
   if (!blacklist_store_->GetFirstUrlFromBlacklist(&blacklist_url))
     return;  // Local blacklist is empty.
 
-  // Send blacklisting request.
-  IssueRequest(BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
+  // Send blacklisting request. Even if this request ends up not being sent
+  // because of an ongoing request, a blacklist request is later scheduled.
+  IssueRequestIfNoneOngoing(
+      BuildBlacklistRequestURL(blacklist_url_prefix_, blacklist_url));
 }
 
 void SuggestionsService::UpdateBlacklistDelay(bool last_request_successful) {
