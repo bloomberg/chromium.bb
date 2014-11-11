@@ -68,7 +68,6 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
         mCurrentContextMenuParams = params;
 
         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-        contentViewCore.setIgnoreRemainingTouchEvents();
         view.setOnCreateContextMenuListener(this);
         view.showContextMenu();
     }
@@ -122,8 +121,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener, OnMenuIte
 
     private boolean shouldShowMenu(ContextMenuParams params) {
         // Custom menus are handled by this class and do not require a ContextMenuPopulator.
-        return params.isCustomMenu() ||
-                (mPopulator != null && mPopulator.shouldShowContextMenu(params));
+        return params.isCustomMenu()
+                || (mPopulator != null && mPopulator.shouldShowContextMenu(params));
     }
 
     private native void nativeOnStartDownload(long nativeContextMenuHelper, boolean isLink);

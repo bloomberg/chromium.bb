@@ -1107,10 +1107,6 @@ public class ContentViewCore
                 || eventAction == MotionEvent.ACTION_POINTER_UP;
     }
 
-    public void setIgnoreRemainingTouchEvents() {
-        resetGestureDetection();
-    }
-
     public boolean isScrollInProgress() {
         return mTouchScrollInProgress || mPotentiallyActiveFlingCount > 0;
     }
