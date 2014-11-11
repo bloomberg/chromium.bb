@@ -12,7 +12,6 @@
 
 namespace copresence {
 
-// TODO(ckehoe): Make DirectiveHandler an interface.
 class FakeDirectiveHandler final : public DirectiveHandler {
  public:
   FakeDirectiveHandler();
@@ -26,15 +25,12 @@ class FakeDirectiveHandler final : public DirectiveHandler {
     return removed_directives_;
   }
 
+  // DirectiveHandler overrides.
   void Start(WhispernetClient* /* whispernet_client */,
              const TokensCallback& /* tokens_cb */) override {}
-
   void AddDirective(const Directive& directive) override;
-
   void RemoveDirectives(const std::string& op_id) override;
-
   const std::string GetCurrentAudioToken(AudioType type) const override;
-
   bool IsAudioTokenHeard(AudioType type) const override;
 
  private:

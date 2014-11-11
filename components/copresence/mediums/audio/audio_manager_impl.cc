@@ -97,9 +97,11 @@ AudioManagerImpl::~AudioManagerImpl() {
   if (recorder_)
     recorder_->Finalize();
 
-  DCHECK(whispernet_client_);
-  whispernet_client_->RegisterTokensCallback(TokensCallback());
-  whispernet_client_->RegisterSamplesCallback(SamplesCallback());
+  // Whispernet initialization may never have completed.
+  if (whispernet_client_) {
+    whispernet_client_->RegisterTokensCallback(TokensCallback());
+    whispernet_client_->RegisterSamplesCallback(SamplesCallback());
+  }
 }
 
 void AudioManagerImpl::StartPlaying(AudioType type) {

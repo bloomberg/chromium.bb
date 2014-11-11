@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/handlers/directive_handler.h"
-
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/audio_directive_handler.h"
+#include "components/copresence/handlers/directive_handler_impl.h"
 #include "components/copresence/proto/data.pb.h"
 #include "components/copresence/test/stub_whispernet_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -108,7 +107,7 @@ class DirectiveHandlerTest : public testing::Test {
 
   scoped_ptr<WhispernetClient> whispernet_client_;
   FakeAudioDirectiveHandler* audio_handler_;
-  DirectiveHandler directive_handler_;
+  DirectiveHandlerImpl directive_handler_;
 };
 
 TEST_F(DirectiveHandlerTest, DirectiveTtl) {

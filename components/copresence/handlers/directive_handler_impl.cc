@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/handlers/directive_handler.h"
+#include "components/copresence/handlers/directive_handler_impl.h"
 
 #include "base/bind.h"
 #include "base/guid.h"
@@ -21,15 +21,14 @@ namespace copresence {
 
 // Public functions
 
-DirectiveHandler::DirectiveHandler(
+DirectiveHandlerImpl::DirectiveHandlerImpl(
     scoped_ptr<AudioDirectiveHandler> audio_handler)
-    : audio_handler_(audio_handler.Pass()), is_started_(false) {
-}
+    : audio_handler_(audio_handler.Pass()), is_started_(false) {}
 
-DirectiveHandler::~DirectiveHandler() {}
+DirectiveHandlerImpl::~DirectiveHandlerImpl() {}
 
-void DirectiveHandler::Start(WhispernetClient* whispernet_client,
-                             const TokensCallback& tokens_cb) {
+void DirectiveHandlerImpl::Start(WhispernetClient* whispernet_client,
+                                 const TokensCallback& tokens_cb) {
   audio_handler_->Initialize(whispernet_client, tokens_cb);
   DVLOG(2) << "Directive handler starting";
 
@@ -43,7 +42,7 @@ void DirectiveHandler::Start(WhispernetClient* whispernet_client,
   pending_directives_.clear();
 }
 
-void DirectiveHandler::AddDirective(const Directive& original_directive) {
+void DirectiveHandlerImpl::AddDirective(const Directive& original_directive) {
   // We may need to modify the directive's TTL.
   Directive directive(original_directive);
 
@@ -77,7 +76,7 @@ void DirectiveHandler::AddDirective(const Directive& original_directive) {
   }
 }
 
-void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
+void DirectiveHandlerImpl::RemoveDirectives(const std::string& op_id) {
   // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
   if (is_started_) {
     audio_handler_->RemoveInstructions(op_id);
@@ -86,19 +85,20 @@ void DirectiveHandler::RemoveDirectives(const std::string& op_id) {
   }
 }
 
-const std::string DirectiveHandler::GetCurrentAudioToken(AudioType type) const {
+const std::string DirectiveHandlerImpl::GetCurrentAudioToken(AudioType type)
+    const {
   // If whispernet_client_ is null, audio_handler_ hasn't been Initialized.
   return is_started_ ? audio_handler_->PlayingToken(type) : "";
 }
 
-bool DirectiveHandler::IsAudioTokenHeard(AudioType type) const {
+bool DirectiveHandlerImpl::IsAudioTokenHeard(AudioType type) const {
   return is_started_ ? audio_handler_->IsPlayingTokenHeard(type) : false;
 }
 
 // Private functions
 
-void DirectiveHandler::StartDirective(const std::string& op_id,
-                                      const Directive& directive) {
+void DirectiveHandlerImpl::StartDirective(const std::string& op_id,
+                                          const Directive& directive) {
   DCHECK(is_started_);
   const TokenInstruction& ti = directive.token_instruction();
   if (ti.medium() == AUDIO_ULTRASOUND_PASSBAND ||

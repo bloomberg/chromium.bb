@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/copresence/handlers/gcm_handler.h"
+#include "components/copresence/handlers/gcm_handler_impl.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -34,19 +34,19 @@ bool Base64Decode(std::string data, std::string* out) {
 
 namespace copresence {
 
-const char GCMHandler::kCopresenceAppId[] =
+const char GCMHandlerImpl::kCopresenceAppId[] =
     "com.google.android.gms.location.copresence";
-const char GCMHandler::kCopresenceSenderId[] = "745476177629";
-const char GCMHandler::kGcmMessageKey[] = "PUSH_MESSAGE";
+const char GCMHandlerImpl::kCopresenceSenderId[] = "745476177629";
+const char GCMHandlerImpl::kGcmMessageKey[] = "PUSH_MESSAGE";
 
 
 // Public functions.
 
-GCMHandler::GCMHandler(gcm::GCMDriver* gcm_driver,
-                       DirectiveHandler* directive_handler)
+GCMHandlerImpl::GCMHandlerImpl(gcm::GCMDriver* gcm_driver,
+                               DirectiveHandler* directive_handler)
     : driver_(gcm_driver),
       directive_handler_(directive_handler),
-      registration_callback_(base::Bind(&GCMHandler::RegistrationComplete,
+      registration_callback_(base::Bind(&GCMHandlerImpl::RegistrationComplete,
                                         AsWeakPtr())) {
   DCHECK(driver_);
   DCHECK(directive_handler_);
@@ -57,12 +57,12 @@ GCMHandler::GCMHandler(gcm::GCMDriver* gcm_driver,
                     registration_callback_);
 }
 
-GCMHandler::~GCMHandler() {
+GCMHandlerImpl::~GCMHandlerImpl() {
   if (driver_)
     driver_->RemoveAppHandler(kCopresenceAppId);
 }
 
-void GCMHandler::GetGcmId(const RegistrationCallback& callback) {
+void GCMHandlerImpl::GetGcmId(const RegistrationCallback& callback) {
   if (gcm_id_.empty()) {
     pending_id_requests_.push_back(callback);
   } else {
@@ -70,13 +70,13 @@ void GCMHandler::GetGcmId(const RegistrationCallback& callback) {
   }
 }
 
-void GCMHandler::ShutdownHandler() {
+void GCMHandlerImpl::ShutdownHandler() {
   // The GCMDriver is going away. Make sure we don't try to contact it.
   driver_ = nullptr;
 }
 
-void GCMHandler::OnMessage(const std::string& app_id,
-                           const GCMClient::IncomingMessage& message) {
+void GCMHandlerImpl::OnMessage(const std::string& app_id,
+                               const GCMClient::IncomingMessage& message) {
   DCHECK_EQ(kCopresenceAppId, app_id);
   DVLOG(2) << "Incoming GCM message";
 
@@ -113,31 +113,31 @@ void GCMHandler::OnMessage(const std::string& app_id,
       << "Discarding " << message_count << " copresence messages sent via GCM";
 }
 
-void GCMHandler::OnMessagesDeleted(const std::string& app_id) {
+void GCMHandlerImpl::OnMessagesDeleted(const std::string& app_id) {
   DCHECK_EQ(kCopresenceAppId, app_id);
   DVLOG(2) << "GCM message overflow reported";
 }
 
-void GCMHandler::OnSendError(
+void GCMHandlerImpl::OnSendError(
     const std::string& /* app_id */,
     const GCMClient::SendErrorDetails& /* send_error_details */) {
   NOTREACHED() << "Copresence clients should not be sending GCM messages";
 }
 
-void GCMHandler::OnSendAcknowledged(const std::string& /* app_id */,
-                                    const std::string& /* message_id */) {
+void GCMHandlerImpl::OnSendAcknowledged(const std::string& /* app_id */,
+                                        const std::string& /* message_id */) {
   NOTREACHED() << "Copresence clients should not be sending GCM messages";
 }
 
-bool GCMHandler::CanHandle(const std::string& app_id) const {
+bool GCMHandlerImpl::CanHandle(const std::string& app_id) const {
   return app_id == kCopresenceAppId;
 }
 
 
 // Private functions.
 
-void GCMHandler::RegistrationComplete(const std::string& registration_id,
-                                      GCMClient::Result result) {
+void GCMHandlerImpl::RegistrationComplete(const std::string& registration_id,
+                                          GCMClient::Result result) {
   if (result == GCMClient::SUCCESS) {
     DVLOG(2) << "GCM registration successful. ID: " << registration_id;
     gcm_id_ = registration_id;

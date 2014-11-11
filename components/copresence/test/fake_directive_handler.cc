@@ -8,7 +8,7 @@
 
 namespace copresence {
 
-FakeDirectiveHandler::FakeDirectiveHandler() : DirectiveHandler(nullptr) {}
+FakeDirectiveHandler::FakeDirectiveHandler() {}
 
 FakeDirectiveHandler::~FakeDirectiveHandler() {}
 

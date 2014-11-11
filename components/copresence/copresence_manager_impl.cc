@@ -9,8 +9,8 @@
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
 #include "base/timer/timer.h"
-#include "components/copresence/handlers/directive_handler.h"
-#include "components/copresence/handlers/gcm_handler.h"
+#include "components/copresence/handlers/directive_handler_impl.h"
+#include "components/copresence/handlers/gcm_handler_impl.h"
 #include "components/copresence/proto/rpcs.pb.h"
 #include "components/copresence/public/whispernet_client.h"
 #include "components/copresence/rpc/rpc_handler.h"
@@ -33,7 +33,7 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
           // This callback gets cancelled when we are destroyed.
           base::Unretained(this))),
       init_failed_(false),
-      directive_handler_(new DirectiveHandler),
+      directive_handler_(new DirectiveHandlerImpl),
       poll_timer_(new base::RepeatingTimer<CopresenceManagerImpl>),
       audio_check_timer_(new base::RepeatingTimer<CopresenceManagerImpl>) {
   DCHECK(delegate_);
@@ -42,8 +42,8 @@ CopresenceManagerImpl::CopresenceManagerImpl(CopresenceDelegate* delegate)
       whispernet_init_callback_.callback());
 
   if (delegate->GetGCMDriver())
-    gcm_handler_.reset(new GCMHandler(delegate->GetGCMDriver(),
-                                      directive_handler_.get()));
+    gcm_handler_.reset(new GCMHandlerImpl(delegate->GetGCMDriver(),
+                                          directive_handler_.get()));
 
   rpc_handler_.reset(new RpcHandler(delegate,
                                     directive_handler_.get(),
