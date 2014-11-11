@@ -723,11 +723,29 @@ public:
 
     virtual PassOwnPtr<BaseHeap> split(int normalPages) = 0;
     virtual void merge(PassOwnPtr<BaseHeap> other) = 0;
+};
 
+template<typename Header>
+class FreeList {
+public:
+    FreeList();
+
+    void addToFreeList(Address, size_t);
+    void clear();
+
+private:
     // Returns a bucket number for inserting a FreeListEntry of a
     // given size. All FreeListEntries in the given bucket, n, have
     // size >= 2^n.
     static int bucketIndexForSize(size_t);
+
+    int m_biggestFreeListIndex;
+
+    // All FreeListEntries in the nth list have size >= 2^n.
+    FreeListEntry* m_freeLists[blinkPageSizeLog2];
+    FreeListEntry* m_lastFreeListEntries[blinkPageSizeLog2];
+
+    friend class ThreadHeap<Header>;
 };
 
 // Thread heaps represent a part of the per-thread Blink heap.
@@ -772,8 +790,14 @@ public:
     ThreadState* threadState() { return m_threadState; }
     HeapStats& stats() { return m_threadState->stats(); }
 
+    void addToFreeList(Address address, size_t size)
+    {
+        ASSERT(heapPageFromAddress(address));
+        ASSERT(heapPageFromAddress(address + size - 1));
+        m_freeList.addToFreeList(address, size);
+    }
+
     inline Address allocate(size_t, const GCInfo*);
-    void addToFreeList(Address, size_t);
     inline static size_t roundedAllocationSize(size_t size)
     {
         return allocationSizeFromSize(size) - sizeof(Header);
@@ -834,13 +858,9 @@ private:
     // Merge point for parallel sweep.
     HeapPage<Header>* m_mergePoint;
 
-    int m_biggestFreeListIndex;
-
     ThreadState* m_threadState;
 
-    // All FreeListEntries in the nth list have size >= 2^n.
-    FreeListEntry* m_freeLists[blinkPageSizeLog2];
-    FreeListEntry* m_lastFreeListEntries[blinkPageSizeLog2];
+    FreeList<Header> m_freeList;
 
     // Index into the page pools. This is used to ensure that the pages of the
     // same type go into the correct page pool and thus avoid type confusion.

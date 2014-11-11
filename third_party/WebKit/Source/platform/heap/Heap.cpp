@@ -654,13 +654,18 @@ ThreadHeap<Header>::ThreadHeap(ThreadState* state, int index)
     , m_firstPageAllocatedDuringSweeping(0)
     , m_lastPageAllocatedDuringSweeping(0)
     , m_mergePoint(0)
-    , m_biggestFreeListIndex(0)
     , m_threadState(state)
     , m_index(index)
     , m_numberOfNormalPages(0)
     , m_promptlyFreedCount(0)
 {
     clearFreeLists();
+}
+
+template<typename Header>
+FreeList<Header>::FreeList()
+    : m_biggestFreeListIndex(0)
+{
 }
 
 template<typename Header>
@@ -711,7 +716,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
             threadState()->setGCRequested();
     }
     if (remainingAllocationSize() > 0) {
-        addToFreeList(currentAllocationPoint(), remainingAllocationSize());
+        m_freeList.addToFreeList(currentAllocationPoint(), remainingAllocationSize());
         setAllocationPoint(0, 0);
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
@@ -721,21 +726,21 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
 template<typename Header>
 bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
 {
-    size_t bucketSize = 1 << m_biggestFreeListIndex;
-    int i = m_biggestFreeListIndex;
+    size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
+    int i = m_freeList.m_biggestFreeListIndex;
     for (; i > 0; i--, bucketSize >>= 1) {
         if (bucketSize < minSize)
             break;
-        FreeListEntry* entry = m_freeLists[i];
+        FreeListEntry* entry = m_freeList.m_freeLists[i];
         if (entry) {
-            m_biggestFreeListIndex = i;
-            entry->unlink(&m_freeLists[i]);
+            m_freeList.m_biggestFreeListIndex = i;
+            entry->unlink(&m_freeList.m_freeLists[i]);
             setAllocationPoint(entry->address(), entry->size());
             ASSERT(currentAllocationPoint() && remainingAllocationSize() >= minSize);
             return true;
         }
     }
-    m_biggestFreeListIndex = i;
+    m_freeList.m_biggestFreeListIndex = i;
     return false;
 }
 
@@ -819,10 +824,8 @@ void ThreadHeap<Header>::snapshot(TracedValue* json, ThreadState::SnapshotInfo* 
 #endif
 
 template<typename Header>
-void ThreadHeap<Header>::addToFreeList(Address address, size_t size)
+void FreeList<Header>::addToFreeList(Address address, size_t size)
 {
-    ASSERT(heapPageFromAddress(address));
-    ASSERT(heapPageFromAddress(address + size - 1));
     ASSERT(size < blinkPagePayloadSize());
     // The free list entries are only pointer aligned (but when we allocate
     // from them we are 8 byte aligned due to the header size).
@@ -892,7 +895,7 @@ bool ThreadHeap<Header>::coalesce(size_t minSize)
     // The smallest bucket able to satisfy an allocation request for minSize is
     // the bucket where all free-list entries are guarantied to be larger than
     // minSize. That bucket is one larger than the bucket minSize would go into.
-    size_t neededBucketIndex = bucketIndexForSize(minSize) + 1;
+    size_t neededBucketIndex = FreeList<Header>::bucketIndexForSize(minSize) + 1;
     size_t neededFreeEntrySize = 1 << neededBucketIndex;
     size_t neededPromptlyFreedSize = neededFreeEntrySize * 3;
     size_t foundFreeEntrySize = 0;
@@ -1436,7 +1439,7 @@ bool ThreadHeap<Header>::isConsistentForSweeping()
     // be swept contain a freelist block or the current allocation
     // point.
     for (size_t i = 0; i < blinkPageSizeLog2; i++) {
-        for (FreeListEntry* freeListEntry = m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
+        for (FreeListEntry* freeListEntry = m_freeList.m_freeLists[i]; freeListEntry; freeListEntry = freeListEntry->next()) {
             if (pagesToBeSweptContains(freeListEntry->address())) {
                 return false;
             }
@@ -1479,13 +1482,21 @@ template<typename Header>
 void ThreadHeap<Header>::clearFreeLists()
 {
     m_promptlyFreedCount = 0;
+    m_freeList.clear();
+}
+
+template<typename Header>
+void FreeList<Header>::clear()
+{
+    m_biggestFreeListIndex = 0;
     for (size_t i = 0; i < blinkPageSizeLog2; i++) {
         m_freeLists[i] = 0;
         m_lastFreeListEntries[i] = 0;
     }
 }
 
-int BaseHeap::bucketIndexForSize(size_t size)
+template<typename Header>
+int FreeList<Header>::bucketIndexForSize(size_t size)
 {
     ASSERT(size > 0);
     int index = -1;
@@ -2749,11 +2760,11 @@ void ThreadHeap<Header>::merge(PassOwnPtr<BaseHeap> splitOffBase)
         splitOff->m_firstPage = 0;
         // Merge free lists.
         for (size_t i = 0; i < blinkPageSizeLog2; i++) {
-            if (!m_freeLists[i]) {
-                m_freeLists[i] = splitOff->m_freeLists[i];
-            } else if (splitOff->m_freeLists[i]) {
-                m_lastFreeListEntries[i]->append(splitOff->m_freeLists[i]);
-                m_lastFreeListEntries[i] = splitOff->m_lastFreeListEntries[i];
+            if (!m_freeList.m_freeLists[i]) {
+                m_freeList.m_freeLists[i] = splitOff->m_freeList.m_freeLists[i];
+            } else if (splitOff->m_freeList.m_freeLists[i]) {
+                m_freeList.m_lastFreeListEntries[i]->append(splitOff->m_freeList.m_freeLists[i]);
+                m_freeList.m_lastFreeListEntries[i] = splitOff->m_freeList.m_lastFreeListEntries[i];
             }
         }
     }
