@@ -2279,4 +2279,14 @@ const char kBrowserAddPersonEnabled[] = "profile.add_person_enabled";
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
 
+// The beginning of time span when we count user's "Nope" for the password
+// bubble.
+const char kPasswordBubbleTimeStamp[] = "password_bubble.timestamp";
+
+// The count of user's "Nope" for the password bubble.
+const char kPasswordBubbleNopesCount[] = "password_bubble.nopes";
+
+// Last user's interaction with the password bubble.
+const char kPasswordBubbleLastInteractions[] = "password_bubble.interactions";
+
 }  // namespace prefs

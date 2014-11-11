@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
+#include "chrome/browser/ui/passwords/password_bubble_experiment.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
@@ -31,6 +32,15 @@ int GetFieldWidth(FieldType type) {
       .GetFontList(ui::ResourceBundle::SmallFont)
       .GetExpectedTextWidth(type == USERNAME_FIELD ? kUsernameFieldSize
                                                    : kPasswordFieldSize);
+}
+
+void RecordExperimentStatistics(content::WebContents* web_contents,
+                                metrics_util::UIDismissalReason reason) {
+  if (!web_contents)
+    return;
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  password_bubble_experiment::RecordBubbleClosed(profile->GetPrefs(), reason);
 }
 
 }  // namespace
@@ -109,15 +119,20 @@ void ManagePasswordsBubbleModel::OnBubbleHidden() {
     return;
 
   metrics_util::LogUIDismissalReason(dismissal_reason_);
+  // Other use cases have been reported in the callbacks like OnSaveClicked().
+  if (dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION)
+    RecordExperimentStatistics(web_contents(), dismissal_reason_);
 }
 
 void ManagePasswordsBubbleModel::OnNopeClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NOPE;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   state_ = password_manager::ui::PENDING_PASSWORD_STATE;
 }
 
 void ManagePasswordsBubbleModel::OnNeverForThisSiteClicked() {
   dismissal_reason_ = metrics_util::CLICKED_NEVER;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->NeverSavePassword();
@@ -134,6 +149,7 @@ void ManagePasswordsBubbleModel::OnUnblacklistClicked() {
 
 void ManagePasswordsBubbleModel::OnSaveClicked() {
   dismissal_reason_ = metrics_util::CLICKED_SAVE;
+  RecordExperimentStatistics(web_contents(), dismissal_reason_);
   ManagePasswordsUIController* manage_passwords_ui_controller =
       ManagePasswordsUIController::FromWebContents(web_contents());
   manage_passwords_ui_controller->SavePassword();

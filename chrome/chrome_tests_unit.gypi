@@ -1145,6 +1145,7 @@
       'browser/ui/passwords/manage_passwords_bubble_model_unittest.cc',
       'browser/ui/passwords/manage_passwords_icon_mock.cc',
       'browser/ui/passwords/manage_passwords_ui_controller_unittest.cc',
+      'browser/ui/passwords/password_bubble_experiment_unittest.cc',
       'browser/ui/passwords/password_manager_presenter_unittest.cc',
       'browser/ui/search/instant_page_unittest.cc',
       'browser/ui/search/instant_search_prerenderer_unittest.cc',
