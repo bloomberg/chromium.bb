@@ -51,8 +51,6 @@
         '../ui/base/cocoa/nsview_additions.mm',
         'browser/app_controller_mac.h',
         'browser/app_controller_mac.mm',
-        'browser/ui/cocoa/about_ipc_controller.h',
-        'browser/ui/cocoa/about_ipc_controller.mm',
         'browser/ui/cocoa/animatable_view.h',
         'browser/ui/cocoa/animatable_view.mm',
         'browser/ui/cocoa/background_gradient_view.h',

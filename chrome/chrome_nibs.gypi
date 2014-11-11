@@ -50,7 +50,6 @@
       'app/nibs/WrenchMenu.xib',
     ],  # mac_translated_xibs
     'mac_untranslated_xibs': [
-      'app/nibs/AboutIPC.xib',
       'app/nibs/ActionBoxMenuItem.xib',
       'app/nibs/BookmarkBarFolderWindow.xib',
       'app/nibs/DevicePermissionsPrompt.xib',

@@ -103,18 +103,5 @@ bool HandleNonNavigationAboutURL(const GURL& url) {
     return true;
   }
 
-  // chrome://ipc/ is currently buggy, so we disable it for official builds.
-#if !defined(OFFICIAL_BUILD)
-
-#if (defined(OS_MACOSX) || defined(OS_WIN)) && defined(IPC_MESSAGE_LOG_ENABLED)
-  if (LowerCaseEqualsASCII(spec, chrome::kChromeUIIPCURL)) {
-    // Run the dialog. This will re-use the existing one if it's already up.
-    chrome::ShowAboutIPCDialog();
-    return true;
-  }
-#endif
-
-#endif  // OFFICIAL_BUILD
-
   return false;
 }

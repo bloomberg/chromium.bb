@@ -59,7 +59,6 @@ const char kChromeUIInspectURL[] = "chrome://inspect/";
 const char kChromeUIInstantURL[] = "chrome://instant/";
 const char kChromeUIInterstitialURL[] = "chrome://interstitials/";
 const char kChromeUIInvalidationsURL[] = "chrome://invalidations/";
-const char kChromeUIIPCURL[] = "chrome://ipc/";
 const char kChromeUIMemoryRedirectURL[] = "chrome://memory-redirect/";
 const char kChromeUIMemoryURL[] = "chrome://memory/";
 const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
@@ -198,7 +197,6 @@ const char kChromeUIInspectHost[] = "inspect";
 const char kChromeUIInstantHost[] = "instant";
 const char kChromeUIInterstitialHost[] = "interstitials";
 const char kChromeUIInvalidationsHost[] = "invalidations";
-const char kChromeUIIPCHost[] = "ipc";
 const char kChromeUIKillHost[] = "kill";
 const char kChromeUIMemoryHost[] = "memory";
 const char kChromeUIMemoryInternalsHost[] = "memory-internals";
@@ -613,7 +611,6 @@ const char* const kChromeHostURLs[] = {
   kChromeUIGCMInternalsHost,
   kChromeUIHelpHost,
   kChromeUIInspectHost,
-  kChromeUIIPCHost,
   kChromeUIPluginsHost,
   kChromeUIQuotaInternalsHost,
   kChromeUISettingsHost,

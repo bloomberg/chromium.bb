@@ -34,15 +34,6 @@ class WebDialogDelegate;
 
 namespace chrome {
 
-#if defined(IPC_MESSAGE_LOG_ENABLED)
-
-// The dialog is a singleton. If the dialog is already opened, it won't do
-// anything, so you can just blindly call this function all you want.
-// This is called from chrome/browser/browser_about_handler.cc
-void ShowAboutIPCDialog();
-
-#endif  // IPC_MESSAGE_LOG_ENABLED
-
 // Creates and shows an HTML dialog with the given delegate and context.
 // The window is automatically destroyed when it is closed.
 // Returns the created window.
