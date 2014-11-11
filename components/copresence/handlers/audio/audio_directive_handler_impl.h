@@ -48,7 +48,7 @@ class AudioDirectiveHandlerImpl final : public AudioDirectiveHandler {
                   const TokensCallback& tokens_cb) override;
   void AddInstruction(const copresence::TokenInstruction& instruction,
                       const std::string& op_id,
-                      base::TimeDelta ttl_ms) override;
+                      base::TimeDelta ttl) override;
   void RemoveInstructions(const std::string& op_id) override;
   const std::string PlayingToken(AudioType type) const override;
   bool IsPlayingTokenHeard(AudioType type) const override;

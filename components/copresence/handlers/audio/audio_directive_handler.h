@@ -32,7 +32,7 @@ class AudioDirectiveHandler {
   // removed after the ttl expires.
   virtual void AddInstruction(const TokenInstruction& instruction,
                               const std::string& op_id,
-                              base::TimeDelta ttl_ms) = 0;
+                              base::TimeDelta ttl) = 0;
 
   // Removes all instructions associated with this operation id.
   virtual void RemoveInstructions(const std::string& op_id) = 0;
