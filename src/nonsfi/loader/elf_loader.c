@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include "native_client/src/include/elf.h"
-#include "native_client/src/nonsfi/loader/elf_loader.h"
+#include "native_client/src/public/nonsfi/elf_loader.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 

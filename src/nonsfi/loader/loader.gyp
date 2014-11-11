@@ -20,7 +20,6 @@
       },
       'sources': [
         'elf_loader.c',
-        'elf_loader.h',
       ],
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
