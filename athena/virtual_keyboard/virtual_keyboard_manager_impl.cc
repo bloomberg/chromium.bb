@@ -88,6 +88,7 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
     // ResetInstance takes ownership.
     keyboard::KeyboardController::ResetInstance(controller);
     aura::Window* kb_container = controller->GetContainerWindow();
+    FillLayoutManager::SetAlwaysFill(kb_container);
     container_->AddChild(kb_container);
     kb_container->Show();
   }

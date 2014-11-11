@@ -5,6 +5,7 @@
 #include "athena/system/background_controller.h"
 
 #include "athena/system/public/system_ui.h"
+#include "athena/util/fill_layout_manager.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
@@ -60,6 +61,7 @@ BackgroundController::BackgroundController(aura::Window* background_container) {
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.parent = background_container;
   background_widget->Init(params);
+  FillLayoutManager::SetAlwaysFill(background_widget->GetNativeWindow());
   background_widget->GetNativeWindow()->layer()->SetMasksToBounds(true);
   background_view_ = new BackgroundView;
   background_widget->SetContentsView(background_view_);

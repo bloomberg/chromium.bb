@@ -12,6 +12,8 @@ namespace athena {
 
 class ATHENA_EXPORT FillLayoutManager : public aura::LayoutManager {
  public:
+  static void SetAlwaysFill(aura::Window* window);
+
   explicit FillLayoutManager(aura::Window* container);
   ~FillLayoutManager() override;
 
