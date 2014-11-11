@@ -112,16 +112,6 @@ class ChromeProxyBypass(ChromeProxyValidation):
     self._metrics.AddResultsForBypass(tab, results)
 
 
-class ChromeProxyFallback(ChromeProxyValidation):
-  """Correctness measurement for proxy fallback responses."""
-
-  def __init__(self):
-    super(ChromeProxyFallback, self).__init__(restart_after_each_page=True)
-
-  def AddResults(self, tab, results):
-    self._metrics.AddResultsForFallback(tab, results)
-
-
 class ChromeProxyCorsBypass(ChromeProxyValidation):
   """Correctness measurement for bypass responses for CORS requests."""
 
@@ -300,17 +290,27 @@ class ChromeProxyHTTPToDirectFallback(ChromeProxyValidation):
     super(ChromeProxyHTTPToDirectFallback, self).__init__(
         restart_after_each_page=True)
 
+  def CustomizeBrowserOptions(self, options):
+    super(ChromeProxyHTTPToDirectFallback,
+          self).CustomizeBrowserOptions(options)
+    # Set the primary proxy to something that will fail to be resolved so that
+    # this test will run using the HTTP fallback proxy.
+    options.AppendExtraBrowserArgs(
+        '--spdy-proxy-auth-origin=http://nonexistent.googlezip.net')
+
   def WillNavigateToPage(self, page, tab):
     super(ChromeProxyHTTPToDirectFallback, self).WillNavigateToPage(page, tab)
-    # In order to have this test run starting from the HTTP fallback proxy,
-    # the startup URL is set such that it will trigger a proxy fallback.
-    # Verify that this is true before beginning the test proper.
+    # Attempt to load a page through the nonexistent primary proxy in order to
+    # cause a proxy fallback, and have this test run starting from the HTTP
+    # fallback proxy.
+    tab.Navigate(_TEST_SERVER_DEFAULT_URL)
+    tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 300)
+
     proxies = [
-        self._metrics.effective_proxies['proxy'],
+        'nonexistent.googlezip.net:80',
         self._metrics.effective_proxies['fallback'],
         self._metrics.effective_proxies['direct']]
-    bad_proxies = [self._metrics.effective_proxies['proxy']]
-    self._metrics.VerifyProxyInfo(tab, proxies, bad_proxies)
+    self._metrics.VerifyProxyInfo(tab, proxies, proxies[:1])
 
   def AddResults(self, tab, results):
     self._metrics.AddResultsForHTTPToDirectFallback(tab, results)

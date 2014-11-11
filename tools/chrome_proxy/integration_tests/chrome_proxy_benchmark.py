@@ -90,13 +90,6 @@ class ChromeProxyBypass(benchmark.Benchmark):
 
 
 @benchmark.Enabled('android')
-class ChromeProxyFallback(benchmark.Benchmark):
-  tag = 'fallback'
-  test = measurements.ChromeProxyFallback
-  page_set = pagesets.FallbackPageSet
-
-
-@benchmark.Enabled('android')
 class ChromeProxyCorsBypass(benchmark.Benchmark):
   tag = 'bypass'
   test = measurements.ChromeProxyCorsBypass

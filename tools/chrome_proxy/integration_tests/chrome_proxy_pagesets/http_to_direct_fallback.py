@@ -10,9 +10,6 @@ class HTTPToDirectFallbackPage(page_module.Page):
   """Page that tests falling back from the HTTP proxy to a direct connection."""
   def __init__(self, url, page_set):
     super(HTTPToDirectFallbackPage, self).__init__(url=url, page_set=page_set)
-    # By making the startup URL trigger a proxy fallback, the test will use the
-    # HTTP fallback proxy.
-    self.startup_url = 'http://check.googlezip.net/fallback'
 
 
 class HTTPToDirectFallbackPageSet(page_set_module.PageSet):
