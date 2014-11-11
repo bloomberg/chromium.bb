@@ -117,11 +117,9 @@ base::FilePath CastDevToolsDelegate::GetDebugFrontendDir() {
   return base::FilePath();
 }
 
-scoped_ptr<net::StreamListenSocket>
-CastDevToolsDelegate::CreateSocketForTethering(
-    net::StreamListenSocket::Delegate* delegate,
-    std::string* name) {
-  return scoped_ptr<net::StreamListenSocket>();
+scoped_ptr<net::ServerSocket>
+CastDevToolsDelegate::CreateSocketForTethering(std::string* name) {
+  return scoped_ptr<net::ServerSocket>();
 }
 
 // CastDevToolsManagerDelegate -----------------------------------------------

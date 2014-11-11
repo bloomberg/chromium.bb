@@ -14,7 +14,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/common/url_constants.h"
 #include "grit/browser_resources.h"
-#include "net/socket/tcp_listen_socket.h"
+#include "net/base/net_errors.h"
+#include "net/socket/tcp_server_socket.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -22,6 +23,8 @@ namespace {
 
 const int kMinTetheringPort = 9333;
 const int kMaxTetheringPort = 9444;
+
+const int kBackLog = 10;
 
 base::LazyInstance<bool>::Leaky g_tethering_enabled = LAZY_INSTANCE_INITIALIZER;
 
@@ -74,16 +77,20 @@ base::FilePath BrowserListTabContentsProvider::GetDebugFrontendDir() {
 #endif
 }
 
-scoped_ptr<net::StreamListenSocket>
+scoped_ptr<net::ServerSocket>
 BrowserListTabContentsProvider::CreateSocketForTethering(
-    net::StreamListenSocket::Delegate* delegate,
     std::string* name) {
   if (!g_tethering_enabled.Get())
-    return scoped_ptr<net::StreamListenSocket>();
+    return scoped_ptr<net::ServerSocket>();
 
   if (last_tethering_port_ == kMaxTetheringPort)
     last_tethering_port_ = kMinTetheringPort;
   int port = ++last_tethering_port_;
   *name = base::IntToString(port);
-  return net::TCPListenSocket::CreateAndListen("127.0.0.1", port, delegate);
+  scoped_ptr<net::TCPServerSocket> socket(
+      new net::TCPServerSocket(nullptr, net::NetLog::Source()));
+  if (socket->ListenWithAddressAndPort("127.0.0.1", port, kBackLog) != net::OK)
+    return scoped_ptr<net::ServerSocket>();
+
+  return socket.Pass();
 }

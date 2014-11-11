@@ -67,6 +67,8 @@ const char kFrontEndURL[] =
     "http://chrome-devtools-frontend.appspot.com/serve_rev/%s/devtools.html";
 const char kTetheringSocketName[] = "chrome_devtools_tethering_%d_%d";
 
+const int kBackLog = 10;
+
 bool AuthorizeSocketAccessWithDebugPermission(
     const net::UnixDomainServerSocket::Credentials& credentials) {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -86,7 +88,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         auth_callback_(auth_callback) {
   }
 
-  virtual std::string GetDiscoveryPageHTML() override {
+  std::string GetDiscoveryPageHTML() override {
     // TopSites updates itself after a delay. Ask TopSites to update itself
     // when we're about to show the remote debugging landing page.
     content::BrowserThread::PostTask(
@@ -97,22 +99,24 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
         IDR_DEVTOOLS_DISCOVERY_PAGE_HTML).as_string();
   }
 
-  virtual bool BundlesFrontendResources() override {
+  bool BundlesFrontendResources() override {
     return false;
   }
 
-  virtual base::FilePath GetDebugFrontendDir() override {
+  base::FilePath GetDebugFrontendDir() override {
     return base::FilePath();
   }
 
-  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
-      net::StreamListenSocket::Delegate* delegate,
-      std::string* name) override {
+  scoped_ptr<net::ServerSocket>
+  CreateSocketForTethering(std::string* name) override {
     *name = base::StringPrintf(
         kTetheringSocketName, getpid(), ++last_tethering_socket_);
-    return net::deprecated::UnixDomainListenSocket::
-        CreateAndListenWithAbstractNamespace(
-            *name, "", delegate, auth_callback_);
+    scoped_ptr<net::UnixDomainServerSocket> socket(
+        new net::UnixDomainServerSocket(auth_callback_, true));
+    if (socket->ListenWithAddressAndPort(*name, 0, kBackLog) != net::OK)
+      return scoped_ptr<net::ServerSocket>();
+
+    return socket.Pass();
   }
 
  private:

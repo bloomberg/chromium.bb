@@ -10,7 +10,7 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/socket/stream_listen_socket.h"
+#include "net/socket/server_socket.h"
 
 namespace content {
 
@@ -32,8 +32,7 @@ class DevToolsHttpHandlerDelegate {
 
   // Creates named socket for reversed tethering implementation (used with
   // remote debugging, primarily for mobile).
-  virtual scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
-      net::StreamListenSocket::Delegate* delegate,
+  virtual scoped_ptr<net::ServerSocket> CreateSocketForTethering(
       std::string* name) = 0;
 };
 

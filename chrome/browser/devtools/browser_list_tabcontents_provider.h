@@ -26,8 +26,7 @@ class BrowserListTabContentsProvider
   std::string GetDiscoveryPageHTML() override;
   bool BundlesFrontendResources() override;
   base::FilePath GetDebugFrontendDir() override;
-  scoped_ptr<net::StreamListenSocket> CreateSocketForTethering(
-      net::StreamListenSocket::Delegate* delegate,
+  scoped_ptr<net::ServerSocket> CreateSocketForTethering(
       std::string* name) override;
 
  private:
