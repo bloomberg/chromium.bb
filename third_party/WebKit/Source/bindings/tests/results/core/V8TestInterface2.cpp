@@ -469,7 +469,7 @@ static void installV8TestInterface2Template(v8::Handle<v8::FunctionTemplate> fun
     ALLOW_UNUSED_LOCAL(prototypeTemplate);
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"CONST_VALUE_1", 1, 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-        V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
+        V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, &constantConfiguration, 1);
     }
     COMPILE_ASSERT(1 == TestInterface2::CONST_VALUE_1, TheValueOfTestInterface2_CONST_VALUE_1DoesntMatchWithImplementation);
     functionTemplate->InstanceTemplate()->SetIndexedPropertyHandler(TestInterface2V8Internal::indexedPropertyGetterCallback, TestInterface2V8Internal::indexedPropertySetterCallback, 0, TestInterface2V8Internal::indexedPropertyDeleterCallback, indexedPropertyEnumerator<TestInterface2>);

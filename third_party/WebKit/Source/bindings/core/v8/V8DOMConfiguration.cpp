@@ -34,13 +34,13 @@
 
 namespace blink {
 
-void V8DOMConfiguration::installAttributes(v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount, v8::Isolate* isolate)
+void V8DOMConfiguration::installAttributes(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> instanceTemplate, v8::Handle<v8::ObjectTemplate> prototype, const AttributeConfiguration* attributes, size_t attributeCount)
 {
     for (size_t i = 0; i < attributeCount; ++i)
         installAttribute(instanceTemplate, prototype, attributes[i], isolate);
 }
 
-void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount, v8::Isolate* isolate)
+void V8DOMConfiguration::installAccessors(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, const AccessorConfiguration* accessors, size_t accessorCount)
 {
     DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
     for (size_t i = 0; i < accessorCount; ++i) {
@@ -79,7 +79,7 @@ void V8DOMConfiguration::installAccessors(v8::Handle<v8::ObjectTemplate> prototy
 // constant is accessed, e.g. to handle deprecation or measuring usage. The
 // property appears the same to scripts, but is slower to access.
 
-void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount, v8::Isolate* isolate)
+void V8DOMConfiguration::installConstants(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const ConstantConfiguration* constants, size_t constantCount)
 {
     for (size_t i = 0; i < constantCount; ++i) {
         const ConstantConfiguration* constant = &constants[i];
@@ -110,14 +110,14 @@ void V8DOMConfiguration::installConstants(v8::Handle<v8::FunctionTemplate> funct
     }
 }
 
-void V8DOMConfiguration::installConstant(v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const char* name, v8::AccessorGetterCallback getter, v8::Isolate* isolate)
+void V8DOMConfiguration::installConstant(v8::Isolate* isolate, v8::Handle<v8::FunctionTemplate> functionDescriptor, v8::Handle<v8::ObjectTemplate> prototype, const char* name, v8::AccessorGetterCallback getter)
 {
     v8::Handle<v8::String> constantName = v8AtomicString(isolate, name);
     functionDescriptor->SetNativeDataProperty(constantName, getter, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
     prototype->SetNativeDataProperty(constantName, getter, 0, v8::Handle<v8::Value>(), static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete));
 }
 
-void V8DOMConfiguration::installMethods(v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount, v8::Isolate* isolate)
+void V8DOMConfiguration::installMethods(v8::Isolate* isolate, v8::Handle<v8::ObjectTemplate> prototype, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attributes, const MethodConfiguration* callbacks, size_t callbackCount)
 {
     for (size_t i = 0; i < callbackCount; ++i)
         installMethod(prototype, signature, attributes, callbacks[i], isolate);
@@ -150,11 +150,11 @@ v8::Local<v8::Signature> V8DOMConfiguration::installDOMClassTemplate(v8::Handle<
 
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(isolate, functionDescriptor);
     if (attributeCount)
-        installAttributes(instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount, isolate);
+        installAttributes(isolate, instanceTemplate, functionDescriptor->PrototypeTemplate(), attributes, attributeCount);
     if (accessorCount)
-        installAccessors(functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount, isolate);
+        installAccessors(isolate, functionDescriptor->PrototypeTemplate(), defaultSignature, accessors, accessorCount);
     if (callbackCount)
-        installMethods(functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount, isolate);
+        installMethods(isolate, functionDescriptor->PrototypeTemplate(), defaultSignature, static_cast<v8::PropertyAttribute>(v8::DontDelete), callbacks, callbackCount);
     return defaultSignature;
 }
 

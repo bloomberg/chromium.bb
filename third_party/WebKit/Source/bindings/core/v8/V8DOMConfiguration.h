@@ -82,7 +82,7 @@ public:
         ExposeConfiguration exposeConfiguration;
     };
 
-    static void installAttributes(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::ObjectTemplate>, const AttributeConfiguration*, size_t attributeCount, v8::Isolate*);
+    static void installAttributes(v8::Isolate*, v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::ObjectTemplate>, const AttributeConfiguration*, size_t attributeCount);
 
     template<class ObjectOrTemplate>
     static inline void installAttribute(v8::Handle<ObjectOrTemplate> instanceTemplate, v8::Handle<ObjectOrTemplate> prototype, const AttributeConfiguration& attribute, v8::Isolate* isolate)
@@ -128,8 +128,8 @@ public:
         ConstantType type;
     };
 
-    static void installConstants(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const ConstantConfiguration*, size_t constantCount, v8::Isolate*);
-    static void installConstant(v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const char* name, v8::AccessorGetterCallback, v8::Isolate*);
+    static void installConstants(v8::Isolate*, v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const ConstantConfiguration*, size_t constantCount);
+    static void installConstant(v8::Isolate*, v8::Handle<v8::FunctionTemplate>, v8::Handle<v8::ObjectTemplate>, const char* name, v8::AccessorGetterCallback);
 
     // MethodConfiguration translates into calls to Set() for setting up an
     // object's callbacks. It sets the method on both the FunctionTemplate or
@@ -162,7 +162,7 @@ public:
         ExposeConfiguration exposeConfiguration;
     };
 
-    static void installMethods(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount, v8::Isolate*);
+    static void installMethods(v8::Isolate*, v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, v8::PropertyAttribute, const MethodConfiguration*, size_t callbackCount);
 
     template <class ObjectOrTemplate, class Configuration>
     static void installMethod(v8::Handle<ObjectOrTemplate> objectOrTemplate, v8::Handle<v8::Signature> signature, v8::PropertyAttribute attribute, const Configuration& callback, v8::Isolate* isolate)
@@ -175,7 +175,7 @@ public:
         setMethod(objectOrTemplate, callback.methodName(isolate), functionTemplate, attribute);
     }
 
-    static void installAccessors(v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount, v8::Isolate*);
+    static void installAccessors(v8::Isolate*, v8::Handle<v8::ObjectTemplate>, v8::Handle<v8::Signature>, const AccessorConfiguration*, size_t accessorCount);
 
     static v8::Local<v8::Signature> installDOMClassTemplate(v8::Handle<v8::FunctionTemplate>, const char* interfaceName, v8::Handle<v8::FunctionTemplate> parentClass, size_t fieldCount,
         const AttributeConfiguration*, size_t attributeCount,

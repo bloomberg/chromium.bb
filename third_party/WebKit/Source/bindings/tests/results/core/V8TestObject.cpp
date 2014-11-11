@@ -10786,13 +10786,13 @@ static void installV8TestObjectTemplate(v8::Handle<v8::FunctionTemplate> functio
         {"CONST_VALUE_25", 0, 1, 0, V8DOMConfiguration::ConstantTypeFloat},
         {"CONST_JAVASCRIPT", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort},
     };
-    V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants), isolate);
+    V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, V8TestObjectConstants, WTF_ARRAY_LENGTH(V8TestObjectConstants));
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::ConstantConfiguration constantConfiguration = {"FEATURE_ENABLED_CONST", 1, 0, 0, V8DOMConfiguration::ConstantTypeShort};
-        V8DOMConfiguration::installConstants(functionTemplate, prototypeTemplate, &constantConfiguration, 1, isolate);
+        V8DOMConfiguration::installConstants(isolate, functionTemplate, prototypeTemplate, &constantConfiguration, 1);
     }
-    V8DOMConfiguration::installConstant(functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback, isolate);
-    V8DOMConfiguration::installConstant(functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback, isolate);
+    V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, "DEPRECATED_CONSTANT", TestObjectV8Internal::DEPRECATED_CONSTANTConstantGetterCallback);
+    V8DOMConfiguration::installConstant(isolate, functionTemplate, prototypeTemplate, "MEASURED_CONSTANT", TestObjectV8Internal::MEASURED_CONSTANTConstantGetterCallback);
     COMPILE_ASSERT(0 == TestObject::CONST_VALUE_0, TheValueOfTestObject_CONST_VALUE_0DoesntMatchWithImplementation);
     COMPILE_ASSERT(1 == TestObject::CONST_VALUE_1, TheValueOfTestObject_CONST_VALUE_1DoesntMatchWithImplementation);
     COMPILE_ASSERT(2 == TestObject::CONST_VALUE_2, TheValueOfTestObject_CONST_VALUE_2DoesntMatchWithImplementation);
