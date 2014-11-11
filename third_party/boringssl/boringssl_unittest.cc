@@ -156,6 +156,10 @@ TEST(BoringSSL, ByteString) {
   TestSimple("bytestring_test");
 }
 
+TEST(BoringSSL, ConstantTime) {
+  TestSimple("constant_time_test");
+}
+
 TEST(BoringSSL, Cipher) {
   base::FilePath data_file;
   ASSERT_TRUE(CryptoCipherPath(&data_file));
@@ -171,8 +175,16 @@ TEST(BoringSSL, DH) {
   TestSimple("dh_test");
 }
 
+TEST(BoringSSL, Digest) {
+  TestSimple("digest_test");
+}
+
 TEST(BoringSSL, DSA) {
   TestSimple("dsa_test");
+}
+
+TEST(BoringSSL, EC) {
+  TestSimple("ec_test");
 }
 
 TEST(BoringSSL, ECDSA) {
@@ -195,16 +207,8 @@ TEST(BoringSSL, LH) {
   TestSimple("lhash_test");
 }
 
-TEST(BoringSSL, MD5) {
-  TestSimple("md5_test");
-}
-
 TEST(BoringSSL, RSA) {
   TestSimple("rsa_test");
-}
-
-TEST(BoringSSL, SHA1) {
-  TestSimple("sha1_test");
 }
 
 TEST(BoringSSL, PKCS7) {

@@ -519,6 +519,12 @@ $L$SEH_begin_aesni_ecb_encrypt:
 	mov	r8,QWORD[40+rsp]
 
 
+	lea	rsp,[((-88))+rsp]
+	movaps	XMMWORD[rsp],xmm6
+	movaps	XMMWORD[16+rsp],xmm7
+	movaps	XMMWORD[32+rsp],xmm8
+	movaps	XMMWORD[48+rsp],xmm9
+$L$ecb_enc_body:
 	and	rdx,-16
 	jz	NEAR $L$ecb_ret
 
@@ -813,6 +819,12 @@ $L$ecb_dec_six:
 	movups	XMMWORD[80+rsi],xmm7
 
 $L$ecb_ret:
+	movaps	xmm6,XMMWORD[rsp]
+	movaps	xmm7,XMMWORD[16+rsp]
+	movaps	xmm8,XMMWORD[32+rsp]
+	movaps	xmm9,XMMWORD[48+rsp]
+	lea	rsp,[88+rsp]
+$L$ecb_enc_ret:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue
 	mov	rsi,QWORD[16+rsp]
 	DB	0F3h,0C3h		;repret
@@ -3378,26 +3390,7 @@ ALIGN	64
 EXTERN	__imp_RtlVirtualUnwind
 
 ALIGN	16
-ecb_se_handler:
-	push	rsi
-	push	rdi
-	push	rbx
-	push	rbp
-	push	r12
-	push	r13
-	push	r14
-	push	r15
-	pushfq
-	sub	rsp,64
-
-	mov	rax,QWORD[152+r8]
-
-	jmp	NEAR $L$common_seh_tail
-
-
-
-ALIGN	16
-ccm64_se_handler:
+ecb_ccm64_se_handler:
 	push	rsi
 	push	rdi
 	push	rbx
@@ -3600,14 +3593,15 @@ section	.xdata rdata align=8
 ALIGN	8
 $L$SEH_info_ecb:
 DB	9,0,0,0
-	DD	ecb_se_handler wrt ..imagebase
+	DD	ecb_ccm64_se_handler wrt ..imagebase
+	DD	$L$ecb_enc_body wrt ..imagebase,$L$ecb_enc_ret wrt ..imagebase
 $L$SEH_info_ccm64_enc:
 DB	9,0,0,0
-	DD	ccm64_se_handler wrt ..imagebase
+	DD	ecb_ccm64_se_handler wrt ..imagebase
 	DD	$L$ccm64_enc_body wrt ..imagebase,$L$ccm64_enc_ret wrt ..imagebase
 $L$SEH_info_ccm64_dec:
 DB	9,0,0,0
-	DD	ccm64_se_handler wrt ..imagebase
+	DD	ecb_ccm64_se_handler wrt ..imagebase
 	DD	$L$ccm64_dec_body wrt ..imagebase,$L$ccm64_dec_ret wrt ..imagebase
 $L$SEH_info_ctr32:
 DB	9,0,0,0
