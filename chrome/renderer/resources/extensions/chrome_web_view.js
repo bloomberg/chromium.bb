@@ -14,7 +14,7 @@ var CHROME_WEB_VIEW_EVENTS = {
     evt: CreateEvent('chromeWebViewInternal.contextmenu'),
     cancelable: true,
     customHandler: function(handler, event, webViewEvent) {
-      handler.webViewInternal.maybeHandleContextMenu(event, webViewEvent);
+      handler.webViewImpl.maybeHandleContextMenu(event, webViewEvent);
     },
     fields: ['items']
   }
