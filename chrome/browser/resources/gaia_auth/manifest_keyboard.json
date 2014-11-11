@@ -13,6 +13,7 @@
         "<all_urls>"
       ],
       "js": ["channel.js", "saml_injected.js"],
+      "run_at": "document_start",
       "all_frames": true
     },
     {
