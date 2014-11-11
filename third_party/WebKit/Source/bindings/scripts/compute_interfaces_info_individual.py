@@ -168,11 +168,10 @@ class InterfaceInfoCollector(object):
         self.union_types = set()
 
     def add_paths_to_partials_dict(self, partial_interface_name, full_path,
-                                   this_include_path=None):
+                                   include_paths):
         paths_dict = self.partial_interface_files[partial_interface_name]
         paths_dict['full_paths'].append(full_path)
-        if this_include_path:
-            paths_dict['include_paths'].append(this_include_path)
+        paths_dict['include_paths'].extend(include_paths)
 
     def collect_info(self, idl_filename):
         """Reads an idl file and collects information which is required by the
@@ -212,7 +211,14 @@ class InterfaceInfoCollector(object):
         if definition.is_partial:
             # We don't create interface_info for partial interfaces, but
             # adds paths to another dict.
-            self.add_paths_to_partials_dict(definition.name, full_path, this_include_path)
+            partial_include_paths = []
+            if this_include_path:
+                partial_include_paths.append(this_include_path)
+            if this_union_types:
+                component = idl_filename_to_component(idl_filename)
+                partial_include_paths.append(
+                    'bindings/%s/v8/UnionTypes%s.h' % (component, component.capitalize()))
+            self.add_paths_to_partials_dict(definition.name, full_path, partial_include_paths)
             return
 
         # 'implements' statements can be included in either the file for the
