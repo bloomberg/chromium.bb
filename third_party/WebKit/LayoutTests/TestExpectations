@@ -1068,15 +1068,6 @@ crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pas
 crbug.com/381464 fast/dom/Window/Location/window-shadow-location-using-string.html [ Pass Failure ]
 crbug.com/381464 fast/dom/Window/Location/window-shadow-location-using-js-object-with-toString.html [ Pass Failure ]
 
-crbug.com/377845 css1/box_properties/float_on_text_elements.html [ NeedsRebaseline ]
-crbug.com/377845 css2.1/t0905-c5525-fltwidth-00-c-g.html [ NeedsRebaseline ]
-crbug.com/377845 tables/mozilla/marvin/x_tr_align_justify.xml [ NeedsRebaseline ]
-crbug.com/377845 fast/text/basic/generic-family-reset.html [ NeedsRebaseline ]
-crbug.com/377845 virtual/antialiasedtext/fast/text/basic/generic-family-reset.html [ NeedsRebaseline ]
-crbug.com/377845 fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/377845 virtual/antialiasedtext/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-crbug.com/377845 virtual/textblob/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
-
 crbug.com/377476 fast/js/function-name.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRebaseline ]
