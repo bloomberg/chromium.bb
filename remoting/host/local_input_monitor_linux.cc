@@ -32,17 +32,17 @@ namespace remoting {
 
 namespace {
 
-class LocalInputMonitorX11 : public base::NonThreadSafe,
+class LocalInputMonitorLinux : public base::NonThreadSafe,
                                public LocalInputMonitor {
  public:
-  LocalInputMonitorX11(
+  LocalInputMonitorLinux(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  ~LocalInputMonitorX11() override;
+  ~LocalInputMonitorLinux() override;
 
  private:
-  // The actual implementation resides in LocalInputMonitorX11::Core class.
+  // The actual implementation resides in LocalInputMonitorLinux::Core class.
   class Core
       : public base::RefCountedThreadSafe<Core>,
         public base::MessagePumpLibevent::Watcher {
@@ -99,10 +99,10 @@ class LocalInputMonitorX11 : public base::NonThreadSafe,
 
   scoped_refptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorX11);
+  DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorLinux);
 };
 
-LocalInputMonitorX11::LocalInputMonitorX11(
+LocalInputMonitorLinux::LocalInputMonitorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -112,11 +112,11 @@ LocalInputMonitorX11::LocalInputMonitorX11(
   core_->Start();
 }
 
-LocalInputMonitorX11::~LocalInputMonitorX11() {
+LocalInputMonitorLinux::~LocalInputMonitorLinux() {
   core_->Stop();
 }
 
-LocalInputMonitorX11::Core::Core(
+LocalInputMonitorLinux::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -135,21 +135,21 @@ LocalInputMonitorX11::Core::Core(
   x_record_range_[1] = NULL;
 }
 
-void LocalInputMonitorX11::Core::Start() {
+void LocalInputMonitorLinux::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   input_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Core::StartOnInputThread, this));
 }
 
-void LocalInputMonitorX11::Core::Stop() {
+void LocalInputMonitorLinux::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   input_task_runner_->PostTask(FROM_HERE,
                                base::Bind(&Core::StopOnInputThread, this));
 }
 
-LocalInputMonitorX11::Core::~Core() {
+LocalInputMonitorLinux::Core::~Core() {
   DCHECK(!display_);
   DCHECK(!x_record_display_);
   DCHECK(!x_record_range_[0]);
@@ -157,7 +157,7 @@ LocalInputMonitorX11::Core::~Core() {
   DCHECK(!x_record_context_);
 }
 
-void LocalInputMonitorX11::Core::StartOnInputThread() {
+void LocalInputMonitorLinux::Core::StartOnInputThread() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
   DCHECK(!display_);
   DCHECK(!x_record_display_);
@@ -231,7 +231,7 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
   }
 }
 
-void LocalInputMonitorX11::Core::StopOnInputThread() {
+void LocalInputMonitorLinux::Core::StopOnInputThread() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   // Context must be disabled via the control channel because we can't send
@@ -265,7 +265,7 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
   }
 }
 
-void LocalInputMonitorX11::Core::OnFileCanReadWithoutBlocking(int fd) {
+void LocalInputMonitorLinux::Core::OnFileCanReadWithoutBlocking(int fd) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   // Fetch pending events if any.
@@ -275,11 +275,11 @@ void LocalInputMonitorX11::Core::OnFileCanReadWithoutBlocking(int fd) {
   }
 }
 
-void LocalInputMonitorX11::Core::OnFileCanWriteWithoutBlocking(int fd) {
+void LocalInputMonitorLinux::Core::OnFileCanWriteWithoutBlocking(int fd) {
   NOTREACHED();
 }
 
-void LocalInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
+void LocalInputMonitorLinux::Core::ProcessXEvent(xEvent* event) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   if (event->u.u.type == MotionNotify) {
@@ -306,7 +306,7 @@ void LocalInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
 }
 
 // static
-void LocalInputMonitorX11::Core::ProcessReply(XPointer self,
+void LocalInputMonitorLinux::Core::ProcessReply(XPointer self,
                                                 XRecordInterceptData* data) {
   if (data->category == XRecordFromServer) {
     xEvent* event = reinterpret_cast<xEvent*>(data->data);
@@ -322,7 +322,7 @@ scoped_ptr<LocalInputMonitor> LocalInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return make_scoped_ptr(new LocalInputMonitorX11(
+  return make_scoped_ptr(new LocalInputMonitorLinux(
       caller_task_runner, input_task_runner, client_session_control));
 }
 
