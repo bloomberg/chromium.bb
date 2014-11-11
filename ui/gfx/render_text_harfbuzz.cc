@@ -1206,11 +1206,9 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(internal::TextRunHarfBuzz* run,
     const SkScalar y_offset = SkFixedToScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
     run->width += SkFixedToScalar(hb_positions[i].x_advance);
-#if defined(OS_LINUX)
-    // Match Pango's glyph rounding logic on Linux.
+    // Round run widths if subpixel positioning is off to match native behavior.
     if (!run->render_params.subpixel_positioning)
       run->width = std::floor(run->width + 0.5f);
-#endif
   }
 
   hb_buffer_destroy(buffer);
