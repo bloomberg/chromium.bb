@@ -991,6 +991,8 @@ const char kDomainSearchParameterThirdPartyVpn[] = "domain_search";
 const char kDnsServersParameterThirdPartyVpn[] = "dns_servers";
 const char kObjectPathSuffixProperty[] = "ObjectPathSuffix";
 const char kObjectPathBase[] = "/thirdpartyvpn/";
+const char kNonIPDelimiter = ':';
+const char kIPDelimiter = ' ';
 }  // namespace shill
 
 namespace cromo {
