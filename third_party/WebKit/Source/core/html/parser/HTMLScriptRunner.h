@@ -82,6 +82,8 @@ private:
 
     bool isPendingScriptReady(const PendingScript&);
 
+    void stopWatchingResourceForLoad(Resource*);
+
     RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;
     PendingScript m_parserBlockingScript;

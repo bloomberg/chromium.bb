@@ -165,8 +165,34 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     ASSERT(!isExecutingScript());
 }
 
+void HTMLScriptRunner::stopWatchingResourceForLoad(Resource* resource)
+{
+    if (m_parserBlockingScript.resource() == resource) {
+        m_parserBlockingScript.stopWatchingForLoad(this);
+        m_parserBlockingScript.releaseElementAndClear();
+        return;
+    }
+    for (PendingScript& script : m_scriptsToExecuteAfterParsing) {
+        if (script.resource() == resource) {
+            script.stopWatchingForLoad(this);
+            script.releaseElementAndClear();
+            return;
+        }
+    }
+}
+
 void HTMLScriptRunner::notifyFinished(Resource* cachedResource)
 {
+    // Handle cancellations of parser-blocking script loads without
+    // notifying the host (i.e., parser) if these were initiated by nested
+    // document.write()s. The cancellation may have been triggered by
+    // script execution to signal an abrupt stop (e.g., window.close().)
+    //
+    // The parser is unprepared to be told, and doesn't need to be.
+    if (isExecutingScript() && cachedResource->wasCanceled()) {
+        stopWatchingResourceForLoad(cachedResource);
+        return;
+    }
     m_host->notifyScriptLoaded(cachedResource);
 }
 
