@@ -28,7 +28,9 @@ NinjaTargetWriter::NinjaTargetWriter(const Target* target,
     : settings_(target->settings()),
       target_(target),
       out_(out),
-      path_output_(settings_->build_settings()->build_dir(), ESCAPE_NINJA) {
+      path_output_(settings_->build_settings()->build_dir(),
+                   settings_->build_settings()->root_path_utf8(),
+                   ESCAPE_NINJA) {
 }
 
 NinjaTargetWriter::~NinjaTargetWriter() {
@@ -174,8 +176,9 @@ OutputFile NinjaTargetWriter::WriteInputDepsStampAndGetDep(
   // optimal thing in all cases.
 
   OutputFile input_stamp_file(
-      RebaseSourceAbsolutePath(GetTargetOutputDir(target_).value(),
-                               settings_->build_settings()->build_dir()));
+      RebasePath(GetTargetOutputDir(target_).value(),
+                 settings_->build_settings()->build_dir(),
+                 settings_->build_settings()->root_path_utf8()));
   input_stamp_file.value().append(target_->label().name());
   input_stamp_file.value().append(".inputdeps.stamp");
 

@@ -16,8 +16,9 @@ OutputFile::OutputFile(const base::StringPiece& str)
 
 OutputFile::OutputFile(const BuildSettings* build_settings,
                        const SourceFile& source_file)
-    : value_(RebaseSourceAbsolutePath(source_file.value(),
-                                      build_settings->build_dir())) {
+    : value_(RebasePath(source_file.value(),
+                        build_settings->build_dir(),
+                        build_settings->root_path_utf8())) {
 }
 
 OutputFile::~OutputFile() {

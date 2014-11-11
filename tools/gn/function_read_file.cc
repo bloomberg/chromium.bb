@@ -53,7 +53,8 @@ Value RunReadFile(Scope* scope,
 
   // Compute the file name.
   const SourceDir& cur_dir = scope->GetSourceDir();
-  SourceFile source_file = cur_dir.ResolveRelativeFile(args[0].string_value());
+  SourceFile source_file = cur_dir.ResolveRelativeFile(args[0].string_value(),
+      scope->settings()->build_settings()->root_path_utf8());
   base::FilePath file_path =
       scope->settings()->build_settings()->GetFullPath(source_file);
 

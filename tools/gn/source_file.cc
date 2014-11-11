@@ -9,21 +9,33 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/source_dir.h"
 
+namespace {
+
+void AssertValueSourceFileString(const std::string& s) {
+#if defined(OS_WIN)
+  DCHECK(s[0] == '/' ||
+         (s.size() > 2 && s[0] != '/' && s[1] == ':' && IsSlash(s[2])));
+#else
+  DCHECK(s[0] == '/');
+#endif
+  DCHECK(!EndsWithSlash(s));
+}
+
+}  // namespace
+
 SourceFile::SourceFile() {
 }
 
 SourceFile::SourceFile(const base::StringPiece& p)
     : value_(p.data(), p.size()) {
   DCHECK(!value_.empty());
-  DCHECK(value_[0] == '/');
-  DCHECK(!EndsWithSlash(value_));
+  AssertValueSourceFileString(value_);
 }
 
 SourceFile::SourceFile(SwapIn, std::string* value) {
   value_.swap(*value);
   DCHECK(!value_.empty());
-  DCHECK(value_[0] == '/');
-  DCHECK(!EndsWithSlash(value_));
+  AssertValueSourceFileString(value_);
 }
 
 SourceFile::~SourceFile() {

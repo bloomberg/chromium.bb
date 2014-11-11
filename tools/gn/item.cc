@@ -5,6 +5,7 @@
 #include "tools/gn/item.h"
 
 #include "base/logging.h"
+#include "tools/gn/settings.h"
 
 Item::Item(const Settings* settings, const Label& label)
     : settings_(settings),

@@ -12,7 +12,12 @@ namespace {
 
 void AssertValueSourceDirString(const std::string& s) {
   if (!s.empty()) {
+#if defined(OS_WIN)
+    DCHECK(s[0] == '/' ||
+           (s.size() > 2 && s[0] != '/' && s[1] == ':' && IsSlash(s[2])));
+#else
     DCHECK(s[0] == '/');
+#endif
     DCHECK(EndsWithSlash(s));
   }
 }
@@ -44,6 +49,8 @@ SourceFile SourceDir::ResolveRelativeFile(
     const base::StringPiece& source_root) const {
   SourceFile ret;
 
+  DCHECK(source_root.empty() || !source_root.ends_with("/"));
+
   // It's an error to resolve an empty string or one that is a directory
   // (indicated by a trailing slash) because this is the function that expects
   // to return a file.
@@ -69,6 +76,20 @@ SourceFile SourceDir::ResolveRelativeFile(
     return ret;
   }
 
+  if (!source_root.empty()) {
+    std::string absolute =
+        FilePathToUTF8(Resolve(UTF8ToFilePath(source_root)).AppendASCII(
+            p.as_string()).value());
+    NormalizePath(&absolute);
+    if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute,
+                                            &ret.value_))
+      ret.value_ = absolute;
+    return ret;
+  }
+
+  // With no source_root_, there's nothing we can do about
+  // e.g. p=../../../path/to/file and value_=//source and we'll
+  // errornously return //file.
   ret.value_.reserve(value_.size() + p.size());
   ret.value_.assign(value_);
   ret.value_.append(p.data(), p.size());
@@ -81,6 +102,8 @@ SourceDir SourceDir::ResolveRelativeDir(
     const base::StringPiece& p,
     const base::StringPiece& source_root) const {
   SourceDir ret;
+
+  DCHECK(source_root.empty() || !source_root.ends_with("/"));
 
   if (p.empty())
     return ret;
@@ -101,6 +124,18 @@ SourceDir SourceDir::ResolveRelativeDir(
       ret.value_.append(p.data(), p.size());
     }
     NormalizePath(&ret.value_);
+    if (!EndsWithSlash(ret.value_))
+      ret.value_.push_back('/');
+    return ret;
+  }
+
+  if (!source_root.empty()) {
+    std::string absolute =
+        FilePathToUTF8(Resolve(UTF8ToFilePath(source_root)).AppendASCII(
+            p.as_string()).value());
+    NormalizePath(&absolute);
+    if (!MakeAbsolutePathRelativeIfPossible(source_root, absolute, &ret.value_))
+      ret.value_ = absolute;
     if (!EndsWithSlash(ret.value_))
       ret.value_.push_back('/');
     return ret;

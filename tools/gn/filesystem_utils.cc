@@ -421,27 +421,6 @@ bool MakeAbsolutePathRelativeIfPossible(const base::StringPiece& source_root,
 #endif
 }
 
-std::string InvertDir(const SourceDir& path) {
-  const std::string value = path.value();
-  if (value.empty())
-    return std::string();
-
-  DCHECK(value[0] == '/');
-  size_t begin_index = 1;
-
-  // If the input begins with two slashes, skip over both (this is a
-  // source-relative dir). These must be forward slashes only.
-  if (value.size() > 1 && value[1] == '/')
-    begin_index = 2;
-
-  std::string ret;
-  for (size_t i = begin_index; i < value.size(); i++) {
-    if (IsSlash(value[i]))
-      ret.append("../");
-  }
-  return ret;
-}
-
 void NormalizePath(std::string* path) {
   char* pathbuf = path->empty() ? NULL : &(*path)[0];
 
@@ -539,18 +518,13 @@ void ConvertPathToSystem(std::string* path) {
 #endif
 }
 
-std::string RebaseSourceAbsolutePath(const std::string& input,
-                                     const SourceDir& dest_dir) {
-  CHECK(input.size() >= 2 && input[0] == '/' && input[1] == '/')
-      << "Input to rebase isn't source-absolute: " << input;
-  CHECK(dest_dir.is_source_absolute())
-      << "Dir to rebase to isn't source-absolute: " << dest_dir.value();
-
-  const std::string& dest = dest_dir.value();
+std::string MakeRelativePath(const std::string& input,
+                             const std::string& dest) {
+  std::string ret;
 
   // Skip the common prefixes of the source and dest as long as they end in
   // a [back]slash.
-  size_t common_prefix_len = 2;  // The beginning two "//" are always the same.
+  size_t common_prefix_len = 0;
   size_t max_common_length = std::min(input.size(), dest.size());
   for (size_t i = common_prefix_len; i < max_common_length; i++) {
     if (IsSlash(input[i]) && IsSlash(dest[i]))
@@ -560,7 +534,6 @@ std::string RebaseSourceAbsolutePath(const std::string& input,
   }
 
   // Invert the dest dir starting from the end of the common prefix.
-  std::string ret;
   for (size_t i = common_prefix_len; i < dest.size(); i++) {
     if (IsSlash(dest[i]))
       ret.append("../");
@@ -573,6 +546,58 @@ std::string RebaseSourceAbsolutePath(const std::string& input,
   if (ret.empty())
     ret.push_back('.');
 
+  return ret;
+}
+
+std::string RebasePath(const std::string& input,
+                       const SourceDir& dest_dir,
+                       const base::StringPiece& source_root) {
+  std::string ret;
+  DCHECK(source_root.empty() || !source_root.ends_with("/"));
+
+  bool input_is_source_path = (input.size() >= 2 &&
+                               input[0] == '/' && input[1] == '/');
+
+  if (!source_root.empty() &&
+      (!input_is_source_path || !dest_dir.is_source_absolute())) {
+    std::string input_full;
+    std::string dest_full;
+    if (input_is_source_path) {
+      source_root.AppendToString(&input_full);
+      input_full.push_back('/');
+      input_full.append(input, 2, std::string::npos);
+    } else {
+      input_full.append(input);
+    }
+    if (dest_dir.is_source_absolute()) {
+      source_root.AppendToString(&dest_full);
+      dest_full.push_back('/');
+      dest_full.append(dest_dir.value(), 2, std::string::npos);
+    } else {
+#if defined(OS_WIN)
+      // On Windows, SourceDir system-absolute paths start
+      // with /, e.g. "/C:/foo/bar".
+      const std::string& value = dest_dir.value();
+      if (value.size() > 2 && value[2] == ':')
+        dest_full.append(dest_dir.value().substr(1));
+      else
+        dest_full.append(dest_dir.value());
+#else
+      dest_full.append(dest_dir.value());
+#endif
+    }
+    bool remove_slash = false;
+    if (!EndsWithSlash(input_full)) {
+      input_full.push_back('/');
+      remove_slash = true;
+    }
+    ret = MakeRelativePath(input_full, dest_full);
+    if (remove_slash && ret.size() > 1)
+      ret.resize(ret.size() - 1);
+    return ret;
+  }
+
+  ret = MakeRelativePath(input, dest_dir.value());
   return ret;
 }
 
@@ -698,6 +723,16 @@ OutputFile GetOutputDirForSourceDirAsOutputFile(const Settings* settings,
     // slashes to append to the toolchain object directory.
     result.value().append(&source_dir.value()[2],
                           source_dir.value().size() - 2);
+  } else {
+    // system-absolute
+    const std::string& build_dir =
+        settings->build_settings()->build_dir().value();
+
+    if (StartsWithASCII(source_dir.value(), build_dir, true)) {
+      size_t build_dir_size = build_dir.size();
+      result.value().append(&source_dir.value()[build_dir_size],
+                            source_dir.value().size() - build_dir_size);
+    }
   }
   return result;
 }

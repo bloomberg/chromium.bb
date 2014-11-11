@@ -32,7 +32,9 @@ NinjaToolchainWriter::NinjaToolchainWriter(
       toolchain_(toolchain),
       targets_(targets),
       out_(out),
-      path_output_(settings_->build_settings()->build_dir(), ESCAPE_NINJA) {
+      path_output_(settings_->build_settings()->build_dir(),
+                   settings_->build_settings()->root_path_utf8(),
+                   ESCAPE_NINJA) {
 }
 
 NinjaToolchainWriter::~NinjaToolchainWriter() {

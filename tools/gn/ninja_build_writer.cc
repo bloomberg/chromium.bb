@@ -86,7 +86,8 @@ NinjaBuildWriter::NinjaBuildWriter(
       default_toolchain_targets_(default_toolchain_targets),
       out_(out),
       dep_out_(dep_out),
-      path_output_(build_settings->build_dir(), ESCAPE_NINJA) {
+      path_output_(build_settings->build_dir(),
+                   build_settings->root_path_utf8(), ESCAPE_NINJA) {
 }
 
 NinjaBuildWriter::~NinjaBuildWriter() {

@@ -102,8 +102,10 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
   // Include directories.
   if (subst.used[SUBSTITUTION_INCLUDE_DIRS]) {
     out_ << kSubstitutionNinjaNames[SUBSTITUTION_INCLUDE_DIRS] << " =";
-    PathOutput include_path_output(path_output_.current_dir(),
-                                   ESCAPE_NINJA_COMMAND);
+    PathOutput include_path_output(
+        path_output_.current_dir(),
+        settings_->build_settings()->root_path_utf8(),
+        ESCAPE_NINJA_COMMAND);
     RecursiveTargetConfigToStream<SourceDir>(
         target_, &ConfigValues::include_dirs,
         IncludeWriter(include_path_output), out_);
@@ -150,6 +152,7 @@ void NinjaBinaryTargetWriter::WriteSources(
     if (tool_type != Toolchain::TYPE_NONE) {
       out_ << "build";
       path_output_.WriteFiles(out_, tool_outputs);
+
       out_ << ": " << rule_prefix << Toolchain::ToolTypeToName(tool_type);
       out_ << " ";
       path_output_.WriteFile(out_, source);
@@ -288,6 +291,7 @@ void NinjaBinaryTargetWriter::WriteLinkerFlags() {
     // Since we're passing these on the command line to the linker and not
     // to Ninja, we need to do shell escaping.
     PathOutput lib_path_output(path_output_.current_dir(),
+                               settings_->build_settings()->root_path_utf8(),
                                ESCAPE_NINJA_COMMAND);
     for (size_t i = 0; i < all_lib_dirs.size(); i++) {
       out_ << " " << tool_->lib_dir_switch();

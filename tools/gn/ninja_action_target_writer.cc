@@ -17,6 +17,7 @@ NinjaActionTargetWriter::NinjaActionTargetWriter(const Target* target,
     : NinjaTargetWriter(target, out),
       path_output_no_escaping_(
           target->settings()->build_settings()->build_dir(),
+          target->settings()->build_settings()->root_path_utf8(),
           ESCAPE_NONE) {
 }
 

@@ -4,19 +4,19 @@
 
 #include "tools/gn/path_output.h"
 
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/output_file.h"
 #include "tools/gn/string_utils.h"
 
-PathOutput::PathOutput(const SourceDir& current_dir, EscapingMode escaping)
+PathOutput::PathOutput(const SourceDir& current_dir,
+                       const base::StringPiece& source_root,
+                       EscapingMode escaping)
     : current_dir_(current_dir) {
-  CHECK(current_dir.is_source_absolute())
-      << "Currently this only supports writing to output directories inside "
-         "the source root. There needs to be some tweaks to PathOutput to make "
-         "doing this work correctly.";
-  inverse_current_dir_ = InvertDir(current_dir_);
-
+  inverse_current_dir_ = RebasePath("//", current_dir, source_root);
+  if (!EndsWithSlash(inverse_current_dir_))
+    inverse_current_dir_.push_back('/');
   options_.mode = escaping;
 }
 

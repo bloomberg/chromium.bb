@@ -78,6 +78,59 @@ TEST(RebasePath, Strings) {
 #endif
 }
 
+TEST(RebasePath, StringsSystemPaths) {
+  TestWithScope setup;
+  Scope* scope = setup.scope();
+
+#if defined(OS_WIN)
+  setup.build_settings()->SetBuildDir(SourceDir("C:/ssd/out/Debug"));
+  setup.build_settings()->SetRootPath(base::FilePath(L"C:/hdd/src"));
+
+  // Test system absolute to-dir.
+  EXPECT_EQ("../../ssd/out/Debug",
+            RebaseOne(scope, ".", "//", "C:/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/",
+            RebaseOne(scope, "./", "//", "C:/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/foo",
+            RebaseOne(scope, "foo", "//", "C:/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/foo/",
+            RebaseOne(scope, "foo/", "//", "C:/ssd/out/Debug"));
+
+  // Test system absolute from-dir.
+  EXPECT_EQ("../../../hdd/src",
+            RebaseOne(scope, ".", "C:/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/",
+            RebaseOne(scope, "./", "C:/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/foo",
+            RebaseOne(scope, "foo", "C:/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/foo/",
+            RebaseOne(scope, "foo/", "C:/ssd/out/Debug", "//"));
+#else
+  setup.build_settings()->SetBuildDir(SourceDir("/ssd/out/Debug"));
+  setup.build_settings()->SetRootPath(base::FilePath("/hdd/src"));
+
+  // Test system absolute to-dir.
+  EXPECT_EQ("../../ssd/out/Debug",
+            RebaseOne(scope, ".", "//", "/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/",
+            RebaseOne(scope, "./", "//", "/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/foo",
+            RebaseOne(scope, "foo", "//", "/ssd/out/Debug"));
+  EXPECT_EQ("../../ssd/out/Debug/foo/",
+            RebaseOne(scope, "foo/", "//", "/ssd/out/Debug"));
+
+  // Test system absolute from-dir.
+  EXPECT_EQ("../../../hdd/src",
+            RebaseOne(scope, ".", "/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/",
+            RebaseOne(scope, "./", "/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/foo",
+            RebaseOne(scope, "foo", "/ssd/out/Debug", "//"));
+  EXPECT_EQ("../../../hdd/src/foo/",
+            RebaseOne(scope, "foo/", "/ssd/out/Debug", "//"));
+#endif
+}
+
 // Test list input.
 TEST(RebasePath, List) {
   TestWithScope setup;

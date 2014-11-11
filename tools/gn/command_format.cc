@@ -746,7 +746,8 @@ int RunFormat(const std::vector<std::string>& args) {
   Setup setup;
   SourceDir source_dir =
       SourceDirForCurrentDirectory(setup.build_settings().root_path());
-  SourceFile file = source_dir.ResolveRelativeFile(args[0]);
+  SourceFile file = source_dir.ResolveRelativeFile(args[0],
+      setup.build_settings().root_path_utf8());
 
   std::string output_string;
   if (FormatFileToString(&setup, file, dump_tree, &output_string)) {

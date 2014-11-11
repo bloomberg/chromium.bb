@@ -33,7 +33,8 @@ class PathOutput {
     DIR_NO_LAST_SLASH,
   };
 
-  PathOutput(const SourceDir& current_dir, EscapingMode escaping);
+  PathOutput(const SourceDir& current_dir, const base::StringPiece& source_root,
+             EscapingMode escaping);
   ~PathOutput();
 
   // Read-only since inverse_current_dir_ is computed depending on this.

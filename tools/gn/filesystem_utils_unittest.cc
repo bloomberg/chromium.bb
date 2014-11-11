@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -169,16 +170,6 @@ TEST(FilesystemUtils, MakeAbsolutePathRelativeIfPossible) {
 #endif
 }
 
-TEST(FilesystemUtils, InvertDir) {
-  EXPECT_TRUE(InvertDir(SourceDir()) == "");
-  EXPECT_TRUE(InvertDir(SourceDir("/")) == "");
-  EXPECT_TRUE(InvertDir(SourceDir("//")) == "");
-
-  EXPECT_TRUE(InvertDir(SourceDir("//foo/bar")) == "../../");
-  EXPECT_TRUE(InvertDir(SourceDir("//foo\\bar")) == "../../");
-  EXPECT_TRUE(InvertDir(SourceDir("/foo/bar/")) == "../../");
-}
-
 TEST(FilesystemUtils, NormalizePath) {
   std::string input;
 
@@ -247,54 +238,120 @@ TEST(FilesystemUtils, NormalizePath) {
   EXPECT_EQ("../bar", input);
 }
 
-TEST(FilesystemUtils, RebaseSourceAbsolutePath) {
+TEST(FilesystemUtils, RebasePath) {
+  base::StringPiece source_root("/source/root");
+
   // Degenerate case.
-  EXPECT_EQ(".", RebaseSourceAbsolutePath("//", SourceDir("//")));
-  EXPECT_EQ(".",
-            RebaseSourceAbsolutePath("//foo/bar/", SourceDir("//foo/bar/")));
+  EXPECT_EQ(".", RebasePath("//", SourceDir("//"), source_root));
+  EXPECT_EQ(".", RebasePath("//foo/bar/", SourceDir("//foo/bar/"),
+                            source_root));
 
   // Going up the tree.
-  EXPECT_EQ("../foo",
-            RebaseSourceAbsolutePath("//foo", SourceDir("//bar/")));
-  EXPECT_EQ("../foo/",
-            RebaseSourceAbsolutePath("//foo/", SourceDir("//bar/")));
-  EXPECT_EQ("../../foo",
-            RebaseSourceAbsolutePath("//foo", SourceDir("//bar/moo")));
-  EXPECT_EQ("../../foo/",
-            RebaseSourceAbsolutePath("//foo/", SourceDir("//bar/moo")));
+  EXPECT_EQ("../foo", RebasePath("//foo", SourceDir("//bar/"), source_root));
+  EXPECT_EQ("../foo/", RebasePath("//foo/", SourceDir("//bar/"), source_root));
+  EXPECT_EQ("../../foo", RebasePath("//foo", SourceDir("//bar/moo"),
+                                    source_root));
+  EXPECT_EQ("../../foo/", RebasePath("//foo/", SourceDir("//bar/moo"),
+                                     source_root));
 
   // Going down the tree.
-  EXPECT_EQ("foo/bar",
-            RebaseSourceAbsolutePath("//foo/bar", SourceDir("//")));
-  EXPECT_EQ("foo/bar/",
-            RebaseSourceAbsolutePath("//foo/bar/", SourceDir("//")));
+  EXPECT_EQ("foo/bar", RebasePath("//foo/bar", SourceDir("//"), source_root));
+  EXPECT_EQ("foo/bar/", RebasePath("//foo/bar/", SourceDir("//"),
+                                   source_root));
 
   // Going up and down the tree.
-  EXPECT_EQ("../../foo/bar",
-            RebaseSourceAbsolutePath("//foo/bar", SourceDir("//a/b/")));
-  EXPECT_EQ("../../foo/bar/",
-            RebaseSourceAbsolutePath("//foo/bar/", SourceDir("//a/b/")));
+  EXPECT_EQ("../../foo/bar", RebasePath("//foo/bar", SourceDir("//a/b/"),
+                                        source_root));
+  EXPECT_EQ("../../foo/bar/", RebasePath("//foo/bar/", SourceDir("//a/b/"),
+                                         source_root));
 
   // Sharing prefix.
-  EXPECT_EQ("foo",
-            RebaseSourceAbsolutePath("//a/foo", SourceDir("//a/")));
-  EXPECT_EQ("foo/",
-            RebaseSourceAbsolutePath("//a/foo/", SourceDir("//a/")));
-  EXPECT_EQ("foo",
-            RebaseSourceAbsolutePath("//a/b/foo", SourceDir("//a/b/")));
-  EXPECT_EQ("foo/",
-            RebaseSourceAbsolutePath("//a/b/foo/", SourceDir("//a/b/")));
-  EXPECT_EQ("foo/bar",
-            RebaseSourceAbsolutePath("//a/b/foo/bar", SourceDir("//a/b/")));
-  EXPECT_EQ("foo/bar/",
-            RebaseSourceAbsolutePath("//a/b/foo/bar/", SourceDir("//a/b/")));
+  EXPECT_EQ("foo", RebasePath("//a/foo", SourceDir("//a/"), source_root));
+  EXPECT_EQ("foo/", RebasePath("//a/foo/", SourceDir("//a/"), source_root));
+  EXPECT_EQ("foo", RebasePath("//a/b/foo", SourceDir("//a/b/"), source_root));
+  EXPECT_EQ("foo/", RebasePath("//a/b/foo/", SourceDir("//a/b/"),
+                               source_root));
+  EXPECT_EQ("foo/bar", RebasePath("//a/b/foo/bar", SourceDir("//a/b/"),
+                                  source_root));
+  EXPECT_EQ("foo/bar/", RebasePath("//a/b/foo/bar/", SourceDir("//a/b/"),
+                                   source_root));
 
   // One could argue about this case. Since the input doesn't have a slash it
   // would normally not be treated like a directory and we'd go up, which is
   // simpler. However, since it matches the output directory's name, we could
   // potentially infer that it's the same and return "." for this.
-  EXPECT_EQ("../bar",
-            RebaseSourceAbsolutePath("//foo/bar", SourceDir("//foo/bar/")));
+  EXPECT_EQ("../bar", RebasePath("//foo/bar", SourceDir("//foo/bar/"),
+                                 source_root));
+
+  // Check when only |input| is system-absolute
+  EXPECT_EQ("foo", RebasePath("/source/root/foo", SourceDir("//"),
+                              base::StringPiece("/source/root")));
+  EXPECT_EQ("foo/", RebasePath("/source/root/foo/", SourceDir("//"),
+                               base::StringPiece("/source/root")));
+  EXPECT_EQ("../../builddir/Out/Debug",
+            RebasePath("/builddir/Out/Debug", SourceDir("//"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../../../builddir/Out/Debug",
+            RebasePath("/builddir/Out/Debug", SourceDir("//"),
+                       base::StringPiece("/source/root/foo")));
+  EXPECT_EQ("../../../builddir/Out/Debug/",
+            RebasePath("/builddir/Out/Debug/", SourceDir("//"),
+                       base::StringPiece("/source/root/foo")));
+  EXPECT_EQ("../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("//"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("//a"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("/source/root")));
+
+  // Check when only |dest_dir| is system-absolute.
+  EXPECT_EQ(".",
+            RebasePath("//", SourceDir("/source/root"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("foo",
+            RebasePath("//foo", SourceDir("/source/root"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../foo",
+            RebasePath("//foo", SourceDir("/source/root/bar"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../../../source/root/foo",
+            RebasePath("//foo", SourceDir("/other/source/root"),
+                       base::StringPiece("/source/root")));
+  EXPECT_EQ("../../../../source/root/foo",
+            RebasePath("//foo", SourceDir("/other/source/root/bar"),
+                       base::StringPiece("/source/root")));
+
+  // Check when |input| and |dest_dir| are both system-absolute. Also,
+  // in this case |source_root| is never used so set it to a dummy
+  // value.
+  EXPECT_EQ("foo",
+            RebasePath("/source/root/foo", SourceDir("/source/root"),
+                       base::StringPiece("/x/y/z")));
+  EXPECT_EQ("foo/",
+            RebasePath("/source/root/foo/", SourceDir("/source/root"),
+                       base::StringPiece("/x/y/z")));
+  EXPECT_EQ("../../builddir/Out/Debug",
+            RebasePath("/builddir/Out/Debug",SourceDir("/source/root"),
+                       base::StringPiece("/x/y/z")));
+  EXPECT_EQ("../../../builddir/Out/Debug",
+            RebasePath("/builddir/Out/Debug", SourceDir("/source/root/foo"),
+                       base::StringPiece("/source/root/foo")));
+  EXPECT_EQ("../../../builddir/Out/Debug/",
+            RebasePath("/builddir/Out/Debug/", SourceDir("/source/root/foo"),
+                       base::StringPiece("/source/root/foo")));
+  EXPECT_EQ("../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("/source/root"),
+                       base::StringPiece("/x/y/z")));
+  EXPECT_EQ("../../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("/source/root/a"),
+                       base::StringPiece("/x/y/z")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/path/to/foo", SourceDir("/source/root/a/b"),
+                       base::StringPiece("/x/y/z")));
+
 }
 
 TEST(FilesystemUtils, DirectoryWithNoLastSlash) {

@@ -57,12 +57,6 @@ class BuildSettings {
   const SourceDir& build_dir() const { return build_dir_; }
   void SetBuildDir(const SourceDir& dir);
 
-  // The inverse of relative_build_dir, ending with a separator.
-  // Example: relative_build_dir_ = "out/Debug/" this will be "../../"
-  const std::string& build_to_source_dir_string() const {
-    return build_to_source_dir_string_;
-  }
-
   // The build args are normally specified on the command-line.
   Args& build_args() { return build_args_; }
   const Args& build_args() const { return build_args_; }
@@ -99,7 +93,6 @@ class BuildSettings {
 
   SourceFile build_config_file_;
   SourceDir build_dir_;
-  std::string build_to_source_dir_string_;
   Args build_args_;
 
   ItemDefinedCallback item_defined_callback_;

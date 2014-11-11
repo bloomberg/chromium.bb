@@ -17,7 +17,6 @@ BuildSettings::BuildSettings(const BuildSettings& other)
       python_path_(other.python_path_),
       build_config_file_(other.build_config_file_),
       build_dir_(other.build_dir_),
-      build_to_source_dir_string_(other.build_to_source_dir_string_),
       build_args_(other.build_args_) {
 }
 
@@ -36,7 +35,6 @@ void BuildSettings::SetSecondarySourcePath(const SourceDir& d) {
 
 void BuildSettings::SetBuildDir(const SourceDir& d) {
   build_dir_ = d;
-  build_to_source_dir_string_ = InvertDir(d);
 }
 
 base::FilePath BuildSettings::GetFullPath(const SourceFile& file) const {

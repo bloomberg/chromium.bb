@@ -235,10 +235,6 @@ OutputFile SubstitutionWriter::ApplyPatternToSourceAsOutputFile(
     const SubstitutionPattern& pattern,
     const SourceFile& source) {
   SourceFile result_as_source = ApplyPatternToSource(settings, pattern, source);
-  CHECK(result_as_source.is_source_absolute())
-      << "The result of the pattern \""
-      << pattern.AsString()
-      << "\" was not an absolute path beginning in \"//\".";
   return OutputFile(settings->build_settings(), result_as_source);
 }
 
@@ -357,8 +353,9 @@ std::string SubstitutionWriter::GetSourceSubstitution(
     case SUBSTITUTION_SOURCE_ROOT_RELATIVE_DIR:
       if (source.is_system_absolute())
         return DirectoryWithNoLastSlash(source.GetDir());
-      return RebaseSourceAbsolutePath(
-          DirectoryWithNoLastSlash(source.GetDir()), SourceDir("//"));
+      return RebasePath(
+          DirectoryWithNoLastSlash(source.GetDir()), SourceDir("//"),
+          settings->build_settings()->root_path_utf8());
 
     case SUBSTITUTION_SOURCE_GEN_DIR:
       to_rebase = DirectoryWithNoLastSlash(
@@ -382,7 +379,8 @@ std::string SubstitutionWriter::GetSourceSubstitution(
   // extension extraction) will have been handled via early return above.
   if (output_style == OUTPUT_ABSOLUTE)
     return to_rebase;
-  return RebaseSourceAbsolutePath(to_rebase, relative_to);
+  return RebasePath(to_rebase, relative_to,
+                    settings->build_settings()->root_path_utf8());
 }
 
 // static
