@@ -176,7 +176,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
 
   settings.throttle_frame_production =
       !cmd->HasSwitch(switches::kDisableGpuVsync);
-  settings.begin_frame_scheduling_enabled =
+  settings.use_external_begin_frame_source =
       cmd->HasSwitch(switches::kEnableBeginFrameScheduling);
   settings.main_frame_before_activation_enabled =
       cmd->HasSwitch(cc::switches::kEnableMainFrameBeforeActivation) &&
@@ -540,14 +540,14 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
 #if defined(OS_ANDROID)
   if (SynchronousCompositorFactory* factory =
       SynchronousCompositorFactory::GetInstance()) {
-    DCHECK(settings.begin_frame_scheduling_enabled);
+    DCHECK(settings.use_external_begin_frame_source);
     external_begin_frame_source =
         factory->CreateExternalBeginFrameSource(widget_->routing_id());
   }
 #endif
   if (render_thread &&
       !external_begin_frame_source.get() &&
-      settings.begin_frame_scheduling_enabled) {
+      settings.use_external_begin_frame_source) {
     external_begin_frame_source.reset(new CompositorExternalBeginFrameSource(
                                               widget_->routing_id()));
   }

@@ -29,7 +29,7 @@ BeginFrameSource* SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
     scheduler->primary_frame_source_internal_ =
         BackToBackBeginFrameSource::Create(scheduler->task_runner_.get());
     return scheduler->primary_frame_source_internal_.get();
-  } else if (scheduler->settings_.begin_frame_scheduling_enabled) {
+  } else if (scheduler->settings_.use_external_begin_frame_source) {
     TRACE_EVENT1("cc",
                  "Scheduler::Scheduler()",
                  "PrimaryFrameSource",

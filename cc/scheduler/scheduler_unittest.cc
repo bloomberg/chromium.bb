@@ -1,6 +1,7 @@
 // Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "cc/scheduler/scheduler.h"
 
 #include <string>
@@ -114,7 +115,7 @@ class FakeSchedulerClient : public SchedulerClient {
 
   TestScheduler* CreateScheduler(const SchedulerSettings& settings) {
     scoped_ptr<FakeExternalBeginFrameSource> fake_external_begin_frame_source;
-    if (settings.begin_frame_scheduling_enabled &&
+    if (settings.use_external_begin_frame_source &&
         settings.throttle_frame_production) {
       fake_external_begin_frame_source.reset(
           new FakeExternalBeginFrameSource(this));
@@ -150,7 +151,7 @@ class FakeSchedulerClient : public SchedulerClient {
   }
 
   bool ExternalBeginFrame() {
-    return scheduler_->settings().begin_frame_scheduling_enabled &&
+    return scheduler_->settings().use_external_begin_frame_source &&
            scheduler_->settings().throttle_frame_production;
   }
 
@@ -352,8 +353,9 @@ void InitializeOutputSurfaceAndFirstCommit(Scheduler* scheduler,
 
 TEST(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
   FakeSchedulerClient client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -367,6 +369,7 @@ TEST(SchedulerTest, InitializeOutputSurfaceDoesNotBeginImplFrame) {
 TEST(SchedulerTest, RequestCommit) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -432,6 +435,7 @@ TEST(SchedulerTest, RequestCommit) {
 TEST(SchedulerTest, RequestCommitAfterBeginMainFrameSent) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -530,8 +534,9 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
 // 2. the scheduler drawing twice inside a single tick
 TEST(SchedulerTest, RequestRedrawInsideDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -567,8 +572,9 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
 // Test that requesting redraw inside a failed draw doesn't lose the request.
 TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -645,8 +651,9 @@ class SchedulerClientThatSetNeedsCommitInsideDraw : public FakeSchedulerClient {
 // happen inside a ScheduledActionDrawAndSwap
 TEST(SchedulerTest, RequestCommitInsideDraw) {
   SchedulerClientThatSetNeedsCommitInsideDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -690,8 +697,9 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
 // Tests that when a draw fails then the pending commit should not be dropped.
 TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
   SchedulerClientThatsetNeedsDrawInsideDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -737,8 +745,9 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
 
 TEST(SchedulerTest, NoSwapWhenDrawFails) {
   SchedulerClientThatSetNeedsCommitInsideDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -779,8 +788,9 @@ class SchedulerClientNeedsManageTilesInDraw : public FakeSchedulerClient {
 // Test manage tiles is independant of draws.
 TEST(SchedulerTest, ManageTiles) {
   SchedulerClientNeedsManageTilesInDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -885,8 +895,9 @@ TEST(SchedulerTest, ManageTiles) {
 // initiates it, then the state machine should not ManageTiles on that frame.
 TEST(SchedulerTest, ManageTilesOncePerFrame) {
   FakeSchedulerClient client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -1005,6 +1016,7 @@ TEST(SchedulerTest, ShouldUpdateVisibleTiles) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting = true;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1064,8 +1076,9 @@ TEST(SchedulerTest, ShouldUpdateVisibleTiles) {
 
 TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {
   SchedulerClientNeedsManageTilesInDraw client;
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -1115,8 +1128,9 @@ void MainFrameInHighLatencyMode(int64 begin_main_frame_to_commit_estimate_in_ms,
       base::TimeDelta::FromMilliseconds(
           begin_main_frame_to_commit_estimate_in_ms),
       base::TimeDelta::FromMilliseconds(commit_to_activate_estimate_in_ms));
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
@@ -1182,8 +1196,9 @@ TEST(SchedulerTest, PollForCommitCompletion) {
       base::TimeDelta::FromMilliseconds(32),
       base::TimeDelta::FromMilliseconds(32));
   client.set_log_anticipated_draw_time_change(true);
-  SchedulerSettings default_scheduler_settings;
-  TestScheduler* scheduler = client.CreateScheduler(default_scheduler_settings);
+  SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
+  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
 
   scheduler->SetCanDraw(true);
   scheduler->SetCanStart();
@@ -1254,6 +1269,7 @@ TEST(SchedulerTest, PollForCommitCompletion) {
 TEST(SchedulerTest, BeginRetroFrame) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1327,6 +1343,7 @@ TEST(SchedulerTest, BeginRetroFrame) {
 TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1414,12 +1431,12 @@ TEST(SchedulerTest, BeginRetroFrame_SwapThrottled) {
   client.Reset();
 }
 
-void BeginFramesNotFromClient(bool begin_frame_scheduling_enabled,
+void BeginFramesNotFromClient(bool use_external_begin_frame_source,
                               bool throttle_frame_production) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
-  scheduler_settings.begin_frame_scheduling_enabled =
-      begin_frame_scheduling_enabled;
+  scheduler_settings.use_external_begin_frame_source =
+      use_external_begin_frame_source;
   scheduler_settings.throttle_frame_production = throttle_frame_production;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
@@ -1484,32 +1501,33 @@ void BeginFramesNotFromClient(bool begin_frame_scheduling_enabled,
 }
 
 TEST(SchedulerTest, SyntheticBeginFrames) {
-  bool begin_frame_scheduling_enabled = false;
+  bool use_external_begin_frame_source = false;
   bool throttle_frame_production = true;
-  BeginFramesNotFromClient(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient(use_external_begin_frame_source,
                            throttle_frame_production);
 }
 
 TEST(SchedulerTest, VSyncThrottlingDisabled) {
-  bool begin_frame_scheduling_enabled = true;
+  bool use_external_begin_frame_source = true;
   bool throttle_frame_production = false;
-  BeginFramesNotFromClient(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient(use_external_begin_frame_source,
                            throttle_frame_production);
 }
 
 TEST(SchedulerTest, SyntheticBeginFrames_And_VSyncThrottlingDisabled) {
-  bool begin_frame_scheduling_enabled = false;
+  bool use_external_begin_frame_source = false;
   bool throttle_frame_production = false;
-  BeginFramesNotFromClient(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient(use_external_begin_frame_source,
                            throttle_frame_production);
 }
 
-void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
-                                            bool throttle_frame_production) {
+void BeginFramesNotFromClient_SwapThrottled(
+    bool use_external_begin_frame_source,
+    bool throttle_frame_production) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
-  scheduler_settings.begin_frame_scheduling_enabled =
-      begin_frame_scheduling_enabled;
+  scheduler_settings.use_external_begin_frame_source =
+      use_external_begin_frame_source;
   scheduler_settings.throttle_frame_production = throttle_frame_production;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
@@ -1573,30 +1591,31 @@ void BeginFramesNotFromClient_SwapThrottled(bool begin_frame_scheduling_enabled,
 }
 
 TEST(SchedulerTest, SyntheticBeginFrames_SwapThrottled) {
-  bool begin_frame_scheduling_enabled = false;
+  bool use_external_begin_frame_source = false;
   bool throttle_frame_production = true;
-  BeginFramesNotFromClient_SwapThrottled(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
                                          throttle_frame_production);
 }
 
 TEST(SchedulerTest, VSyncThrottlingDisabled_SwapThrottled) {
-  bool begin_frame_scheduling_enabled = true;
+  bool use_external_begin_frame_source = true;
   bool throttle_frame_production = false;
-  BeginFramesNotFromClient_SwapThrottled(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
                                          throttle_frame_production);
 }
 
 TEST(SchedulerTest,
      SyntheticBeginFrames_And_VSyncThrottlingDisabled_SwapThrottled) {
-  bool begin_frame_scheduling_enabled = false;
+  bool use_external_begin_frame_source = false;
   bool throttle_frame_production = false;
-  BeginFramesNotFromClient_SwapThrottled(begin_frame_scheduling_enabled,
+  BeginFramesNotFromClient_SwapThrottled(use_external_begin_frame_source,
                                          throttle_frame_production);
 }
 
 TEST(SchedulerTest, DidLoseOutputSurfaceAfterOutputSurfaceIsInitialized) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1614,6 +1633,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterOutputSurfaceIsInitialized) {
 TEST(SchedulerTest, DidLoseOutputSurfaceAfterBeginFrameStarted) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1652,6 +1672,7 @@ void DidLoseOutputSurfaceAfterBeginFrameStartedWithHighLatency(
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting = impl_side_painting;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1719,6 +1740,7 @@ void DidLoseOutputSurfaceAfterReadyToCommit(bool impl_side_painting) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting = impl_side_painting;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1769,6 +1791,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterReadyToCommitWithImplPainting) {
 TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsManageTiles) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1799,6 +1822,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterSetNeedsManageTiles) {
 TEST(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1857,6 +1881,7 @@ TEST(SchedulerTest, DidLoseOutputSurfaceAfterBeginRetroFramePosted) {
 TEST(SchedulerTest, DidLoseOutputSurfaceDuringBeginRetroFrameRunning) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1930,7 +1955,6 @@ TEST(SchedulerTest,
      StopBeginFrameAfterDidLoseOutputSurfaceWithSyntheticBeginFrameSource) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
-  scheduler_settings.begin_frame_scheduling_enabled = false;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -1972,6 +1996,7 @@ TEST(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
   FakeSchedulerClient client;
   SchedulerSettings scheduler_settings;
   scheduler_settings.impl_side_painting = true;
+  scheduler_settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
   scheduler->SetCanStart();
   scheduler->SetVisible(true);
@@ -2072,6 +2097,7 @@ TEST(SchedulerTest,
      SimulateWindowsLowResolutionTimerOnBattery_PrioritizeImplLatencyOff) {
   FakeSchedulerClient client;
   SchedulerSettings settings;
+  settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(settings);
 
   scheduler->SetCanStart();
@@ -2117,6 +2143,7 @@ TEST(SchedulerTest,
   FakeSchedulerClient client;
   SchedulerSettings settings;
   settings.disable_hi_res_timer_tasks_on_battery = true;
+  settings.use_external_begin_frame_source = true;
   TestScheduler* scheduler = client.CreateScheduler(settings);
 
   scheduler->SetCanStart();

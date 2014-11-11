@@ -84,7 +84,7 @@ TestSchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
     scheduler->primary_frame_source_internal_ =
         TestBackToBackBeginFrameSource::Create(now_src_, test_task_runner_);
     return scheduler->primary_frame_source_internal_.get();
-  } else if (scheduler->settings_.begin_frame_scheduling_enabled) {
+  } else if (scheduler->settings_.use_external_begin_frame_source) {
     return SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
         scheduler);
   } else {

@@ -2376,7 +2376,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestLCDNotification);
 class LayerTreeHostTestBeginFrameNotification : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->use_external_begin_frame_source = true;
   }
 
   void BeginTest() override {
@@ -2404,7 +2404,7 @@ class LayerTreeHostTestBeginFrameNotificationShutdownWhileEnabled
     : public LayerTreeHostTest {
  public:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->use_external_begin_frame_source = true;
     settings->using_synchronous_renderer_compositor = true;
   }
 
@@ -2431,7 +2431,7 @@ class LayerTreeHostTestAbortedCommitDoesntStall : public LayerTreeHostTest {
       : commit_count_(0), commit_abort_count_(0), commit_complete_count_(0) {}
 
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->begin_frame_scheduling_enabled = true;
+    settings->use_external_begin_frame_source = true;
   }
 
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }

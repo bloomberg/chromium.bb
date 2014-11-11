@@ -10,7 +10,8 @@
 namespace cc {
 
 SchedulerSettings::SchedulerSettings()
-    : begin_frame_scheduling_enabled(true),
+    : use_external_begin_frame_source(false),
+      forward_begin_frames_to_children(false),
       main_frame_before_activation_enabled(false),
       impl_side_painting(false),
       timeout_and_draw_when_animation_checkerboards(true),
@@ -22,7 +23,9 @@ SchedulerSettings::SchedulerSettings()
 }
 
 SchedulerSettings::SchedulerSettings(const LayerTreeSettings& settings)
-    : begin_frame_scheduling_enabled(settings.begin_frame_scheduling_enabled),
+    : use_external_begin_frame_source(settings.use_external_begin_frame_source),
+      forward_begin_frames_to_children(
+          settings.forward_begin_frames_to_children),
       main_frame_before_activation_enabled(
           settings.main_frame_before_activation_enabled),
       impl_side_painting(settings.impl_side_painting),
@@ -45,8 +48,10 @@ scoped_refptr<base::debug::ConvertableToTraceFormat>
 SchedulerSettings::AsValue() const {
   scoped_refptr<base::debug::TracedValue> state =
       new base::debug::TracedValue();
-  state->SetBoolean("begin_frame_scheduling_enabled",
-                    begin_frame_scheduling_enabled);
+  state->SetBoolean("use_external_begin_frame_source",
+                    use_external_begin_frame_source);
+  state->SetBoolean("forward_begin_frames_to_children",
+                    forward_begin_frames_to_children);
   state->SetBoolean("main_frame_before_activation_enabled",
                     main_frame_before_activation_enabled);
   state->SetBoolean("impl_side_painting", impl_side_painting);

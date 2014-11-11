@@ -24,7 +24,8 @@ class CC_EXPORT LayerTreeSettings {
   bool force_blending_with_shaders;
   bool throttle_frame_production;
   bool single_thread_proxy_scheduler;
-  bool begin_frame_scheduling_enabled;
+  bool use_external_begin_frame_source;
+  bool forward_begin_frames_to_children;
   bool main_frame_before_activation_enabled;
   bool using_synchronous_renderer_compositor;
   bool disable_hi_res_timer_tasks_on_battery;
