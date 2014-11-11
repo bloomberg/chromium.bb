@@ -9726,7 +9726,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="GoogleUpdate.ErrorHresult">
+<histogram name="GoogleUpdate.ErrorHresult" enum="Hresult">
   <owner>grt@chromium.org</owner>
   <summary>The HRESULT for a failed on-demand update check.</summary>
 </histogram>
@@ -46526,6 +46526,24 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Preference not set"/>
   <int value="1" label="Hotwording enabled"/>
   <int value="2" label="Hotwording disabled"/>
+</enum>
+
+<enum name="Hresult" type="int">
+  <int value="-2147467262" label="E_NOINTERFACE"/>
+  <int value="-2147417848" label="RPC_E_DISCONNECTED"/>
+  <int value="-2147221164" label="REGDB_E_CLASSNOTREG"/>
+  <int value="-2147024894" label="ERROR_FILE_NOT_FOUND"/>
+  <int value="-2147024893" label="ERROR_PATH_NOT_FOUND"/>
+  <int value="-2147024891" label="ERROR_ACCESS_DENIED"/>
+  <int value="-2147024703" label="ERROR_BAD_EXE_FORMAT"/>
+  <int value="-2147024110" label="ERROR_ACCESS_DISABLED_NO_SAFER_UI_BY_POLICY"/>
+  <int value="-2147023838" label="ERROR_SERVICE_DISABLED"/>
+  <int value="-2147023673" label="ERROR_CANCELLED"/>
+  <int value="-2147023504" label="ERROR_FILE_CORRUPT"/>
+  <int value="-2147023436" label="ERROR_TIMEOUT"/>
+  <int value="-2147023179" label="RPC_S_UNKNOWN_IF"/>
+  <int value="-2147023174" label="RPC_S_SERVER_UNAVAILABLE"/>
+  <int value="-2146959355" label="CO_E_SERVER_EXEC_FAILURE"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">
