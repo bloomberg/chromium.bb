@@ -1462,7 +1462,7 @@ def CMDcomments(parser, args):
     return 0
 
   data = cl.GetIssueProperties()
-  for message in sorted(data['messages'], key=lambda x: x['date']):
+  for message in sorted(data.get('messages', []), key=lambda x: x['date']):
     if message['disapproval']:
       color = Fore.RED
     elif message['approval']:
