@@ -68,6 +68,8 @@ class ToughCompositorCasesPageSet(page_set_module.PageSet):
       'http://jsbin.com/giqafofe/1/quiet?JS_POSTER_CIRCLE',
       # Why: JS invalidation does lots of uploads """
       'http://jsbin.com/beqojupo/1/quiet?JS_FULL_SCREEN_INVALIDATION',
+      # Why: Creates a large number of new tilings """
+      'http://jsbin.com/covoqi/1/quiet?NEW_TILINGS',
     ]
 
     for url in scroll_urls_list:

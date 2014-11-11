@@ -13,6 +13,9 @@
         "tough_compositor_cases_000.wpr": [
             "http://jsbin.com/wixadinu/1/quiet?JS_SCROLL_TEXT_ONLY", 
             "http://jsbin.com/jevibahi/1/quiet?JS_SCROLL_200_LAYER_GRID"
+        ], 
+        "tough_compositor_cases_002.wpr": [
+            "http://jsbin.com/covoqi/1/quiet?NEW_TILINGS"
         ]
     }
 }
