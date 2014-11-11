@@ -31,6 +31,7 @@
 #include "core/html/shadow/MediaControlElements.h"
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "core/InputTypeNames.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
@@ -234,7 +235,7 @@ PassRefPtrWillBeRawPtr<MediaControlMuteButtonElement> MediaControlMuteButtonElem
 {
     RefPtrWillBeRawPtr<MediaControlMuteButtonElement> button = adoptRefWillBeNoop(new MediaControlMuteButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     return button.release();
 }
 
@@ -270,7 +271,7 @@ PassRefPtrWillBeRawPtr<MediaControlPlayButtonElement> MediaControlPlayButtonElem
 {
     RefPtrWillBeRawPtr<MediaControlPlayButtonElement> button = adoptRefWillBeNoop(new MediaControlPlayButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     return button.release();
 }
 
@@ -306,7 +307,7 @@ PassRefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> MediaControlOverlay
 {
     RefPtrWillBeRawPtr<MediaControlOverlayPlayButtonElement> button = adoptRefWillBeNoop(new MediaControlOverlayPlayButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     return button.release();
 }
 
@@ -350,7 +351,7 @@ PassRefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> MediaContr
 {
     RefPtrWillBeRawPtr<MediaControlToggleClosedCaptionsButtonElement> button = adoptRefWillBeNoop(new MediaControlToggleClosedCaptionsButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     button->hide();
     return button.release();
 }
@@ -391,7 +392,7 @@ PassRefPtrWillBeRawPtr<MediaControlTimelineElement> MediaControlTimelineElement:
 {
     RefPtrWillBeRawPtr<MediaControlTimelineElement> timeline = adoptRefWillBeNoop(new MediaControlTimelineElement(mediaControls));
     timeline->ensureUserAgentShadowRoot();
-    timeline->setType("range");
+    timeline->setType(InputTypeNames::range);
     timeline->setAttribute(stepAttr, "any");
     return timeline.release();
 }
@@ -469,7 +470,7 @@ PassRefPtrWillBeRawPtr<MediaControlVolumeSliderElement> MediaControlVolumeSlider
 {
     RefPtrWillBeRawPtr<MediaControlVolumeSliderElement> slider = adoptRefWillBeNoop(new MediaControlVolumeSliderElement(mediaControls));
     slider->ensureUserAgentShadowRoot();
-    slider->setType("range");
+    slider->setType(InputTypeNames::range);
     slider->setAttribute(stepAttr, "any");
     slider->setAttribute(maxAttr, "1");
     return slider.release();
@@ -537,7 +538,7 @@ PassRefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> MediaControlFullscre
 {
     RefPtrWillBeRawPtr<MediaControlFullscreenButtonElement> button = adoptRefWillBeNoop(new MediaControlFullscreenButtonElement(mediaControls));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     button->hide();
     return button.release();
 }
@@ -577,7 +578,7 @@ PassRefPtrWillBeRawPtr<MediaControlCastButtonElement> MediaControlCastButtonElem
 {
     RefPtrWillBeRawPtr<MediaControlCastButtonElement> button = adoptRefWillBeNoop(new MediaControlCastButtonElement(mediaControls, isOverlayButton));
     button->ensureUserAgentShadowRoot();
-    button->setType("button");
+    button->setType(InputTypeNames::button);
     return button.release();
 }
 
