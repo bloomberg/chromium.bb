@@ -11,7 +11,7 @@ namespace content {
 class WebContents;
 }
 
-// The view that surrounds a ToolbarAction and typically owns the
+// The view for a ToolbarAction, which is controlled by a
 // ToolbarActionViewController.
 class ToolbarActionViewDelegate {
  public:

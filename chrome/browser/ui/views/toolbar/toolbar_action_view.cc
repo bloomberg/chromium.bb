@@ -13,9 +13,9 @@
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,11 +40,11 @@ const int kBorderInset = 4;
 // ToolbarActionView
 
 ToolbarActionView::ToolbarActionView(
-    scoped_ptr<ToolbarActionViewController> view_controller,
+    ToolbarActionViewController* view_controller,
     Browser* browser,
     ToolbarActionView::Delegate* delegate)
     : MenuButton(this, base::string16(), NULL, false),
-      view_controller_(view_controller.Pass()),
+      view_controller_(view_controller),
       browser_(browser),
       delegate_(delegate),
       called_register_command_(false) {
@@ -66,6 +66,7 @@ ToolbarActionView::ToolbarActionView(
 }
 
 ToolbarActionView::~ToolbarActionView() {
+  view_controller_->SetDelegate(nullptr);
 }
 
 void ToolbarActionView::ViewHierarchyChanged(
@@ -84,8 +85,8 @@ void ToolbarActionView::OnDragDone() {
 }
 
 gfx::Size ToolbarActionView::GetPreferredSize() const {
-  return gfx::Size(BrowserActionsContainer::IconWidth(false),
-                   BrowserActionsContainer::IconHeight());
+  return gfx::Size(ToolbarActionsBar::IconWidth(false),
+                   ToolbarActionsBar::IconHeight());
 }
 
 void ToolbarActionView::PaintChildren(gfx::Canvas* canvas,

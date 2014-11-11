@@ -78,6 +78,9 @@ class ToolbarActionViewController {
   // Returns true if a popup is shown.
   virtual bool ExecuteAction(bool by_user) = 0;
 
+  // Updates the current state of the action.
+  virtual void UpdateState() = 0;
+
   // Paints any extra parts of the image (e.g., a badge).
   virtual void PaintExtra(gfx::Canvas* canvas,
                           const gfx::Rect& bounds,

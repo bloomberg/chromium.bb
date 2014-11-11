@@ -61,6 +61,7 @@ class MockComponentAction : public ToolbarActionViewController {
     ++click_count_;
     return false;
   }
+  void UpdateState() override {}
 
   size_t click_count() const { return click_count_; }
 

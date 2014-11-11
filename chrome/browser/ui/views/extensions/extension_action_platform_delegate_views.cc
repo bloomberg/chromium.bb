@@ -66,7 +66,8 @@ ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
 ExtensionActionPlatformDelegateViews::~ExtensionActionPlatformDelegateViews() {
   if (context_menu_owner == this)
     context_menu_owner = NULL;
-  controller_->HidePopup();
+  if (IsShowingPopup())
+    CloseOwnPopup();
   UnregisterCommand(false);
 }
 
