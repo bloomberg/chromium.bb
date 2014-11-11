@@ -56,6 +56,7 @@ class CONTENT_EXPORT PluginLoaderPosix
 
   // UtilityProcessHostClient:
   void OnProcessCrashed(int exit_code) override;
+  void OnProcessLaunchFailed() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
   // IPC::Sender:
@@ -80,14 +81,26 @@ class CONTENT_EXPORT PluginLoaderPosix
   void OnPluginLoaded(uint32 index, const WebPluginInfo& plugin);
   void OnPluginLoadFailed(uint32 index, const base::FilePath& plugin_path);
 
-  // Checks if the plugin path is an internal plugin, and, if it is, adds it to
-  // |loaded_plugins_|.
-  bool MaybeAddInternalPlugin(const base::FilePath& plugin_path);
+  // Returns an iterator to the plugin in |internal_plugins_| whose path
+  // matches |plugin_path|.
+  std::vector<WebPluginInfo>::iterator FindInternalPlugin(
+      const base::FilePath& plugin_path);
 
   // Runs all the registered callbacks on each's target loop if the condition
   // for ending the load process is done (i.e. the |next_load_index_| is outside
   // the range of the |canonical_list_|).
   bool MaybeRunPendingCallbacks();
+
+  // Returns true if there are no plugins left to load.
+  bool IsFinishedLoadingPlugins();
+
+  // This method should be called when the plugins are finished loading.
+  // It updates the PluginList's list of plugins, and runs the queued callbacks.
+  void FinishedLoadingPlugins();
+
+  // Launches the utility process that loads the plugins.
+  // Virtual for testing.
+  virtual bool LaunchUtilityProcess();
 
   // The process host for which this is a client.
   base::WeakPtr<UtilityProcessHost> process_host_;
@@ -110,8 +123,8 @@ class CONTENT_EXPORT PluginLoaderPosix
   // plugin loading process has been completed.
   std::vector<PluginService::GetPluginsCallback> callbacks_;
 
-  // The time at which plugin loading started.
-  base::TimeTicks load_start_time_;
+  // True if there is (or is about to be) a utility process that loads plugins.
+  bool loading_plugins_;
 
   friend class MockPluginLoaderPosix;
   DISALLOW_COPY_AND_ASSIGN(PluginLoaderPosix);

@@ -47,6 +47,13 @@ class MockPluginLoaderPosix : public PluginLoaderPosix {
     PluginLoaderPosix::LoadPluginsInternal();
   }
 
+  bool LaunchUtilityProcess() override {
+    // This method always does nothing and returns false. The actual
+    // implementation of this method launches another process, which is not
+    // very unit_test friendly.
+    return false;
+  }
+
   void TestOnPluginLoaded(uint32 index, const WebPluginInfo& plugin) {
     OnPluginLoaded(index, plugin);
   }
@@ -392,6 +399,25 @@ TEST_F(PluginLoaderPosixTest, AllCrashed) {
   EXPECT_EQ(1, did_callback);
 
   EXPECT_EQ(0u, plugin_loader()->loaded_plugins().size());
+}
+
+TEST_F(PluginLoaderPosixTest, PluginLaunchFailed) {
+  int did_callback = 0;
+  PluginService::GetPluginsCallback callback =
+      base::Bind(&VerifyCallback, base::Unretained(&did_callback));
+
+  EXPECT_CALL(*plugin_loader(), LoadPluginsInternal())
+      .WillOnce(testing::Invoke(
+          plugin_loader(), &MockPluginLoaderPosix::RealLoadPluginsInternal));
+
+  plugin_loader()->GetPlugins(callback);
+  message_loop()->RunUntilIdle();
+  EXPECT_EQ(1, did_callback);
+  EXPECT_EQ(0u, plugin_loader()->loaded_plugins().size());
+
+  // TODO(erikchen): This is a genuine leak that should be fixed.
+  // https://code.google.com/p/chromium/issues/detail?id=431906
+  testing::Mock::AllowLeak(plugin_loader());
 }
 
 }  // namespace content
