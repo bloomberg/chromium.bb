@@ -2018,6 +2018,13 @@ const Experiment kExperiments[] = {
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableCredentialManagerAPI)
   },
+  {
+    "reduced-referrer-granularity",
+    IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_NAME,
+    IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kReducedReferrerGranularity)
+  },
 #if defined(ENABLE_PLUGINS)
   {
     "enable-plugin-power-saver",

@@ -6198,6 +6198,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_CREDENTIAL_MANAGER_API_DESCRIPTION" desc="Description for the flag to enable 'navigator.credentials'.">
         Enables an experimental implementation of the Credential Manager API. No promises that this won't expose all your passwords to every site on the web; don't enable this unless you know what you're doing.
       </message>
+      <message name="IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_NAME" desc="Name for the flag to reduce referer granularity.">
+        Reduce default 'referer' header granularity.
+      </message>
+      <message name="IDS_FLAGS_REDUCED_REFERRER_GRANULARITY_DESCRIPTION" desc="Description for the flag to reduce referer granularity.">
+        If a page hasn't set an explicit referrer policy, setting this flag will reduce the amount of information in the 'referer' header for cross-origin requests.
+      </message>
 
       <if expr="chromeos">
         <message name="IDS_FLAGS_ALLOW_TOUCHPAD_THREE_FINGER_CLICK_NAME" desc="Name for the flag to enable touchpad three finger click as middle button.">

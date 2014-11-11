@@ -48054,6 +48054,7 @@ To add a new entry, add it with any value and run test to compute valid value.
     Command-line flag doesn't start with two dashes.
   </int>
   <int value="27507364" label="apps-keep-chrome-alive"/>
+  <int value="48159177" label="reduced-referrer-granularity"/>
   <int value="61205887" label="enable-text-input-focus-manager"/>
   <int value="79503461" label="disable-account-consistency"/>
   <int value="91938915" label="enable-suggestions-service"/>

@@ -718,6 +718,10 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // Causes the renderer process to display a dialog on launch.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
 
+// Reduce the default `referer` header's granularity.
+const char kReducedReferrerGranularity[] =
+  "reduced-referrer-granularity";
+
 // Handles frame scrolls via the root RenderLayer instead of the FrameView.
 const char kRootLayerScrolls[]              = "root-layer-scrolls";
 
