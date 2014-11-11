@@ -121,6 +121,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   RenderThreadImpl();
   // Constructor that's used when running in single process mode.
   explicit RenderThreadImpl(const std::string& channel_name);
+  // Constructor that's used in RendererMain.
+  explicit RenderThreadImpl(scoped_ptr<base::MessageLoop> main_message_loop);
   ~RenderThreadImpl() override;
   void Shutdown() override;
 
@@ -524,6 +526,11 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Cache of variables that are needed on the compositor thread by
   // GpuChannelHostFactory methods.
   scoped_refptr<base::MessageLoopProxy> io_message_loop_proxy_;
+
+  // The message loop of the renderer main thread.
+  // This message loop should be destructed before the RenderThreadImpl
+  // shuts down Blink.
+  scoped_ptr<base::MessageLoop> main_message_loop_;
 
   // A lazily initiated thread on which file operations are run.
   scoped_ptr<base::Thread> file_thread_;

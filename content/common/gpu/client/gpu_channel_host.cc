@@ -232,6 +232,13 @@ void GpuChannelHost::DestroyCommandBuffer(
   delete command_buffer;
 }
 
+void GpuChannelHost::DestroyChannel() {
+  // channel_ must be destroyed on the main thread.
+  if (channel_.get() && !factory_->IsMainThread())
+    factory_->GetMainLoop()->DeleteSoon(FROM_HERE, channel_.release());
+  channel_.reset();
+}
+
 void GpuChannelHost::AddRoute(
     int route_id, base::WeakPtr<IPC::Listener> listener) {
   DCHECK(MessageLoopProxy::current().get());
@@ -311,11 +318,8 @@ int32 GpuChannelHost::GenerateRouteID() {
 }
 
 GpuChannelHost::~GpuChannelHost() {
-  // channel_ must be destroyed on the main thread.
-  if (!factory_->IsMainThread())
-    factory_->GetMainLoop()->DeleteSoon(FROM_HERE, channel_.release());
+  DestroyChannel();
 }
-
 
 GpuChannelHost::MessageFilter::MessageFilter()
     : lost_(false) {

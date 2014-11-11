@@ -130,6 +130,9 @@ class GpuChannelHost : public IPC::Sender,
   // Destroy a command buffer created by this channel.
   void DestroyCommandBuffer(CommandBufferProxyImpl* command_buffer);
 
+  // Destroy this channel.
+  void DestroyChannel();
+
   // Add a route for the current message loop.
   void AddRoute(int route_id, base::WeakPtr<IPC::Listener> listener);
   void RemoveRoute(int route_id);
