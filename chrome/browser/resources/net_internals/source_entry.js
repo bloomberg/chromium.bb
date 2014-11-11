@@ -181,7 +181,7 @@ var SourceEntry = (function() {
     /**
      * Returns the starting entry for this source. Conceptually this is the
      * first entry that was logged to this source. However, we skip over the
-     * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START_JO
+     * TYPE_REQUEST_ALIVE entries which wrap TYPE_URL_REQUEST_START_JOB
      * entries.
      */
     getStartEntry_: function() {
