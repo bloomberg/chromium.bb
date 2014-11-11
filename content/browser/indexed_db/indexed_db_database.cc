@@ -1706,6 +1706,9 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
   DCHECK(connection->database() == this);
 
   IDB_TRACE("IndexedDBDatabase::Close");
+
+  connections_.erase(connection);
+
   // Abort outstanding transactions from the closing connection. This
   // can not happen if the close is requested by the connection itself
   // as the front-end defers the close until all transactions are
@@ -1720,7 +1723,6 @@ void IndexedDBDatabase::Close(IndexedDBConnection* connection, bool forced) {
     }
   }
 
-  connections_.erase(connection);
   if (pending_second_half_open_ &&
       pending_second_half_open_->connection() == connection) {
     pending_second_half_open_->callbacks()->OnError(

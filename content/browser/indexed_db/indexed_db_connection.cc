@@ -9,25 +9,34 @@ namespace content {
 IndexedDBConnection::IndexedDBConnection(
     scoped_refptr<IndexedDBDatabase> database,
     scoped_refptr<IndexedDBDatabaseCallbacks> callbacks)
-    : database_(database), callbacks_(callbacks) {}
+    : database_(database), callbacks_(callbacks), weak_factory_(this) {}
 
 IndexedDBConnection::~IndexedDBConnection() {}
 
 void IndexedDBConnection::Close() {
   if (!callbacks_.get())
     return;
+  base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
   database_->Close(this, false /* forced */);
-  database_ = NULL;
-  callbacks_ = NULL;
+  if (this_obj) {
+    database_ = nullptr;
+    callbacks_ = nullptr;
+  }
 }
 
 void IndexedDBConnection::ForceClose() {
   if (!callbacks_.get())
     return;
+
+  // IndexedDBDatabase::Close() can delete this instance.
+  base::WeakPtr<IndexedDBConnection> this_obj = weak_factory_.GetWeakPtr();
+  scoped_refptr<IndexedDBDatabaseCallbacks> callbacks(callbacks_);
   database_->Close(this, true /* forced */);
-  database_ = NULL;
-  callbacks_->OnForcedClose();
-  callbacks_ = NULL;
+  if (this_obj) {
+    database_ = nullptr;
+    callbacks_ = nullptr;
+  }
+  callbacks->OnForcedClose();
 }
 
 void IndexedDBConnection::VersionChangeIgnored() {
