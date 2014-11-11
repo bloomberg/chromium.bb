@@ -56,7 +56,6 @@ void SSLPolicy::OnCertError(SSLCertErrorHandler* handler) {
     case net::ERR_CERT_WEAK_SIGNATURE_ALGORITHM:
     case net::ERR_CERT_WEAK_KEY:
     case net::ERR_CERT_NAME_CONSTRAINT_VIOLATION:
-    case net::ERR_CERT_VALIDITY_TOO_LONG:
       if (!handler->fatal())
         options_mask |= OVERRIDABLE;
       else

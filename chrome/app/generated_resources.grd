@@ -2667,12 +2667,6 @@ Even if you have downloaded files from this website before, the website might ha
       <message name="IDS_CERT_ERROR_NAME_CONSTRAINT_VIOLATION_DESCRIPTION" desc="Description of the error page for a certificate that contains a name outside of its scope">
         Server's certificate violates name constraints.
       </message>
-      <message name="IDS_CERT_ERROR_VALIDITY_TOO_LONG_DETAILS" desc="Details of the error page for a certificate whose validity period is too long">
-        You attempted to reach <ph name="DOMAIN">&lt;strong&gt;$1<ex>paypal.com</ex>&lt;/strong&gt;</ph>, but the server presented a certificate for which the period is too long.
-      </message>
-      <message name="IDS_CERT_ERROR_VALIDITY_TOO_LONG_DESCRIPTION" desc="Description of the error page for a certificate whose validity period is too long">
-        The server certificate has a validity period that is too long.
-      </message>
 
       <message name="IDS_CERT_ERROR_UNKNOWN_ERROR_DETAILS" desc="Details of the error page for an unknown ssl error">
         An unknown error has occurred.
