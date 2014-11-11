@@ -117,6 +117,7 @@ CREATE TABLE `clActionTable` (
   KEY `build_id` (`build_id`),
   KEY `change_number` (`change_number`,`change_source`),
   KEY `change_number_2` (`change_number`,`patch_number`,`change_source`),
+  KEY `timestamp_index` (`timestamp`),
   CONSTRAINT `clActionTable_ibfk_1` FOREIGN KEY (`build_id`) REFERENCES `buildTable` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
