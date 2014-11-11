@@ -312,4 +312,26 @@ IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, ErrorOnRollbackRequested) {
   OobeScreenWaiter(OobeDisplay::SCREEN_ERROR_MESSAGE).Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, PRE_RevertAfterCancel) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kFactoryResetRequested, true);
+  RegisterSomeUser();
+}
+
+IN_PROC_BROWSER_TEST_F(ResetFirstAfterBootTest, RevertAfterCancel) {
+  update_engine_client_->set_can_rollback_check_result(true);
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  EXPECT_EQ(0, power_manager_client_->num_request_restart_calls());
+  EXPECT_EQ(0, session_manager_client_->start_device_wipe_call_count());
+  EXPECT_EQ(0, update_engine_client_->rollback_call_count());
+  JSExpect("!$('reset').classList.contains('rollback-proposal-view')");
+  InvokeRollbackOption();
+  JSExpect("$('reset').classList.contains('rollback-proposal-view')");
+  CloseResetScreen();
+  InvokeResetScreen();
+  OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_RESET).Wait();
+  InvokeRollbackOption();
+  JSExpect("$('reset').classList.contains('rollback-proposal-view')");
+}
+
 }  // namespace chromeos

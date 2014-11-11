@@ -97,7 +97,6 @@ void ResetScreenHandler::ChooseAndApplyShowScenario() {
       switches::kFirstExecAfterBoot);
 
   reboot_was_requested_ = false;
-  rollback_available_ = false;
   preparing_for_rollback_ = false;
   if (!restart_required_)  // First exec after boot.
     reboot_was_requested_ = prefs->GetBoolean(prefs::kFactoryResetRequested);
@@ -106,19 +105,17 @@ void ResetScreenHandler::ChooseAndApplyShowScenario() {
           switches::kDisableRollbackOption)) {
     rollback_available_ = false;
     ShowWithParams();
-  } else if (!restart_required_ && reboot_was_requested_) {
-    // First exec after boot.
+  } else if (restart_required_) {
+    // Will require restart.
+    ShowWithParams();
+  } else {
     chromeos::DBusThreadManager::Get()->GetUpdateEngineClient()->
         CanRollbackCheck(base::Bind(&ResetScreenHandler::OnRollbackCheck,
         weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    // Will require restart.
-    ShowWithParams();
   }
 }
 
 void ResetScreenHandler::Hide() {
-  DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 
 void ResetScreenHandler::SetDelegate(Delegate* delegate) {
