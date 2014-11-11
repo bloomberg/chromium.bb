@@ -60,7 +60,9 @@ udev \
 zlib1g"
 
 precise_specific_packages="libtasn1-3"
-trusty_specific_packages="libtasn1-6"
+trusty_specific_packages="\
+libtasn1-6 \
+harfbuzz"
 
 ubuntu_release=$(lsb_release -cs)
 

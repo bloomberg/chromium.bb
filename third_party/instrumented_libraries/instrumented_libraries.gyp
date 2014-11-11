@@ -143,6 +143,7 @@
         }, {
           'dependencies': [
             '<(_sanitizer_type)-libtasn1-6',
+            '<(_sanitizer_type)-harfbuzz',
           ],
         }],
         ['msan==1', {
@@ -665,6 +666,19 @@
       ],
       'dependencies=': [],
       'run_before_build': 'scripts/autogen.sh',
+      'includes': ['standard_instrumented_package_target.gypi'],
+    },
+    {
+      'package_name': 'harfbuzz',
+      'package_cflags': ['-Wno-c++11-narrowing'],
+      'extra_configure_flags': [
+          # From debian/rules.
+          '--with-graphite2=yes',
+          '--with-gobject',
+          # See above.
+          '--disable-introspection',
+      ],
+      'dependencies=': [],
       'includes': ['standard_instrumented_package_target.gypi'],
     },
   ],
