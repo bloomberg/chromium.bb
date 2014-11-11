@@ -735,12 +735,13 @@ bool RenderWidgetHostViewAndroid::OnTouchHandleEvent(
 void RenderWidgetHostViewAndroid::ResetGestureDetection() {
   const ui::MotionEvent* current_down_event =
       gesture_provider_.GetCurrentDownEvent();
-  if (!current_down_event)
-    return;
+  if (current_down_event) {
+    scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
+    OnTouchEvent(*cancel_event);
+  }
 
-  scoped_ptr<ui::MotionEvent> cancel_event = current_down_event->Cancel();
-  DCHECK(cancel_event);
-  OnTouchEvent(*cancel_event);
+  // A hard reset ensures prevention of any timer-based events.
+  gesture_provider_.ResetDetection();
 }
 
 void RenderWidgetHostViewAndroid::SetDoubleTapSupportEnabled(bool enabled) {

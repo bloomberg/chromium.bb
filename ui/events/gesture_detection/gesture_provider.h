@@ -64,6 +64,11 @@ class GESTURE_DETECTION_EXPORT GestureProvider {
   // be handled.
   bool OnTouchEvent(const MotionEvent& event);
 
+  // Reset any active gesture detection, including detection of timeout-based
+  // events (e.g., double-tap or delayed tap) for which the pointer has already
+  // been released.
+  void ResetDetection();
+
   // Update whether multi-touch pinch zoom is supported by the platform.
   void SetMultiTouchZoomSupportEnabled(bool enabled);
 

@@ -12,6 +12,7 @@
 #include "ui/events/gesture_detection/gesture_event_data.h"
 #include "ui/events/gesture_detection/gesture_listeners.h"
 #include "ui/events/gesture_detection/motion_event.h"
+#include "ui/events/gesture_detection/motion_event_generic.h"
 #include "ui/events/gesture_detection/scale_gesture_listeners.h"
 #include "ui/gfx/geometry/point_f.h"
 
@@ -709,6 +710,13 @@ bool GestureProvider::OnTouchEvent(const MotionEvent& event) {
   OnTouchEventHandlingEnd(event);
   uma_histogram_.RecordTouchEvent(event);
   return true;
+}
+
+void GestureProvider::ResetDetection() {
+  MotionEventGeneric generic_cancel_event(MotionEvent::ACTION_CANCEL,
+                                          base::TimeTicks::Now(),
+                                          PointerProperties());
+  OnTouchEvent(generic_cancel_event);
 }
 
 void GestureProvider::SetMultiTouchZoomSupportEnabled(bool enabled) {

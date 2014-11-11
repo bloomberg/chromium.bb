@@ -143,9 +143,10 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
   }
 
   void ResetGestureDetection() {
-    CancelActiveTouchSequence();
+    gesture_provider_->ResetDetection();
     gestures_.clear();
   }
+
   bool CancelActiveTouchSequence() {
     if (!gesture_provider_->current_down_event())
       return false;
@@ -609,7 +610,7 @@ TEST_F(GestureProviderTest, FlingEventSequence) {
       << "FlingStart should have the time of the ACTION_UP";
 }
 
-TEST_F(GestureProviderTest, GestureCancelledWhenWindowFocusLost) {
+TEST_F(GestureProviderTest, GestureCancelledOnCancelEvent) {
   const base::TimeTicks event_time = TimeTicks::Now();
 
   MockMotionEvent event =
@@ -622,8 +623,31 @@ TEST_F(GestureProviderTest, GestureCancelledWhenWindowFocusLost) {
   EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SHOW_PRESS));
   EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
 
-  // The long press triggers window focus loss by opening a context menu.
+  // A cancellation event may be triggered for a number of reasons, e.g.,
+  // from a context-menu-triggering long press resulting in loss of focus.
   EXPECT_TRUE(CancelActiveTouchSequence());
+  EXPECT_FALSE(HasDownEvent());
+
+  // A final ACTION_UP should have no effect.
+  event = ObtainMotionEvent(event_time + kOneMicrosecond * 2,
+                            MotionEvent::ACTION_UP);
+  EXPECT_FALSE(gesture_provider_->OnTouchEvent(event));
+}
+
+TEST_F(GestureProviderTest, GestureCancelledOnDetectionReset) {
+  const base::TimeTicks event_time = TimeTicks::Now();
+
+  MockMotionEvent event =
+      ObtainMotionEvent(event_time, MotionEvent::ACTION_DOWN);
+  EXPECT_TRUE(gesture_provider_->OnTouchEvent(event));
+  EXPECT_EQ(ET_GESTURE_TAP_DOWN, GetMostRecentGestureEventType());
+
+  RunTasksAndWait(GetLongPressTimeout() + GetShowPressTimeout() +
+                  kOneMicrosecond);
+  EXPECT_TRUE(HasReceivedGesture(ET_GESTURE_SHOW_PRESS));
+  EXPECT_EQ(ET_GESTURE_LONG_PRESS, GetMostRecentGestureEventType());
+
+  ResetGestureDetection();
   EXPECT_FALSE(HasDownEvent());
 
   // A final ACTION_UP should have no effect.

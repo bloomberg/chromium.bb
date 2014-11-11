@@ -41,6 +41,10 @@ void FilteredGestureProvider::OnTouchEventAck(bool event_consumed) {
   gesture_filter_.OnTouchEventAck(event_consumed);
 }
 
+void FilteredGestureProvider::ResetDetection() {
+  gesture_provider_.ResetDetection();
+}
+
 void FilteredGestureProvider::SetMultiTouchZoomSupportEnabled(
     bool enabled) {
   gesture_provider_.SetMultiTouchZoomSupportEnabled(enabled);
