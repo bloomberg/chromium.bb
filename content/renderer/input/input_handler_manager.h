@@ -28,16 +28,20 @@ namespace content {
 class InputHandlerWrapper;
 class InputHandlerManagerClient;
 struct DidOverscrollParams;
+class RendererScheduler;
 
 // InputHandlerManager class manages InputHandlerProxy instances for
 // the WebViews in this renderer.
 class InputHandlerManager {
  public:
-  // |message_loop_proxy| is the MessageLoopProxy of the compositor thread. Both
-  // the underlying MessageLoop and supplied |client| must outlive this object.
+  // |message_loop_proxy| is the MessageLoopProxy of the compositor thread. The
+  // underlying MessageLoop and supplied |client| and the |renderer_scheduler|
+  // must outlive this object. The RendererScheduler needs to know when input
+  // events and fling animations occur, which is why it's passed in here.
   InputHandlerManager(
       const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
-      InputHandlerManagerClient* client);
+      InputHandlerManagerClient* client,
+      RendererScheduler* renderer_scheduler);
   ~InputHandlerManager();
 
   // Callable from the main thread only.
@@ -60,6 +64,12 @@ class InputHandlerManager {
   // Called from the compositor's thread.
   void DidStopFlinging(int routing_id);
 
+  // Called from the compositor's thread.
+  void DidReceiveInputEvent(blink::WebInputEvent::Type type);
+
+  // Called from the compositor's thread.
+  void DidAnimateForInput();
+
  private:
   // Called from the compositor's thread.
   void AddInputHandlerOnCompositorThread(
@@ -74,6 +84,7 @@ class InputHandlerManager {
 
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   InputHandlerManagerClient* client_;
+  RendererScheduler* renderer_scheduler_;  // Not owned.
 };
 
 }  // namespace content

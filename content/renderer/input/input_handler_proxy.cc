@@ -195,7 +195,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   TRACE_EVENT1("input", "InputHandlerProxy::HandleInputEvent",
                "type", WebInputEventTraits::GetName(event.type));
 
-  client_->DidReceiveInputEvent();
+  client_->DidReceiveInputEvent(event.type);
   if (FilterInputEventForFlingBoosting(event))
     return DID_HANDLE;
 
@@ -649,6 +649,8 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     CancelCurrentFling();
     return;
   }
+
+  client_->DidAnimateForInput();
 
   if (!has_fling_animation_started_) {
     has_fling_animation_started_ = true;

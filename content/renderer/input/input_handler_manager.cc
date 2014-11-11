@@ -11,6 +11,7 @@
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/input_handler_wrapper.h"
+#include "content/renderer/scheduler/renderer_scheduler.h"
 
 using blink::WebInputEvent;
 
@@ -36,9 +37,11 @@ InputEventAckState InputEventDispositionToAck(
 
 InputHandlerManager::InputHandlerManager(
     const scoped_refptr<base::MessageLoopProxy>& message_loop_proxy,
-    InputHandlerManagerClient* client)
+    InputHandlerManagerClient* client,
+    RendererScheduler* renderer_scheduler)
     : message_loop_proxy_(message_loop_proxy),
-      client_(client) {
+      client_(client),
+      renderer_scheduler_(renderer_scheduler) {
   DCHECK(client_);
   client_->SetBoundHandler(base::Bind(&InputHandlerManager::HandleInputEvent,
                                       base::Unretained(this)));
@@ -129,6 +132,15 @@ void InputHandlerManager::DidOverscroll(int routing_id,
 
 void InputHandlerManager::DidStopFlinging(int routing_id) {
   client_->DidStopFlinging(routing_id);
+}
+
+void InputHandlerManager::DidReceiveInputEvent(
+    blink::WebInputEvent::Type type) {
+  renderer_scheduler_->DidReceiveInputEventOnCompositorThread(type);
+}
+
+void InputHandlerManager::DidAnimateForInput() {
+  renderer_scheduler_->DidAnimateForInputOnCompositorThread();
 }
 
 }  // namespace content

@@ -35,7 +35,8 @@ class InputHandlerWrapper : public InputHandlerProxyClient {
       const blink::WebSize& cumulativeScroll) override;
   void DidOverscroll(const DidOverscrollParams& params) override;
   void DidStopFlinging() override;
-  void DidReceiveInputEvent() override;
+  void DidReceiveInputEvent(blink::WebInputEvent::Type type) override;
+  void DidAnimateForInput() override;
 
  private:
   InputHandlerManager* input_handler_manager_;

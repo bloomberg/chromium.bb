@@ -28,7 +28,9 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void DidCommitFrameToCompositor() override;
-  void DidReceiveInputEventOnCompositorThread() override;
+  void DidReceiveInputEventOnCompositorThread(
+      blink::WebInputEvent::Type type) override;
+  void DidAnimateForInputOnCompositorThread() override;
   bool ShouldYieldForHighPriorityWork() override;
   void Shutdown() override;
 
@@ -90,6 +92,9 @@ class CONTENT_EXPORT RendererSchedulerImpl : public RendererScheduler {
 
   // Updates the scheduler policy. Must be called from the main thread.
   void UpdatePolicy();
+
+  // An input event of some sort happened, the policy may need updating.
+  void UpdateForInputEvent();
 
   // Start and end an idle period.
   void StartIdlePeriod();

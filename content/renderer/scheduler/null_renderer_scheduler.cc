@@ -66,7 +66,11 @@ void NullRendererScheduler::WillBeginFrame(const cc::BeginFrameArgs& args) {
 void NullRendererScheduler::DidCommitFrameToCompositor() {
 }
 
-void NullRendererScheduler::DidReceiveInputEventOnCompositorThread() {
+void NullRendererScheduler::DidReceiveInputEventOnCompositorThread(
+    blink::WebInputEvent::Type type) {
+}
+
+void NullRendererScheduler::DidAnimateForInputOnCompositorThread() {
 }
 
 bool NullRendererScheduler::ShouldYieldForHighPriorityWork() {

@@ -7,6 +7,7 @@
 
 #include "content/renderer/scheduler/single_thread_idle_task_runner.h"
 #include "content/renderer/scheduler/task_queue_manager.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace cc {
 struct BeginFrameArgs;
@@ -41,7 +42,12 @@ class CONTENT_EXPORT RendererScheduler {
 
   // Tells the scheduler that the system received an input event. Called by the
   // compositor (impl) thread.
-  virtual void DidReceiveInputEventOnCompositorThread() = 0;
+  virtual void DidReceiveInputEventOnCompositorThread(
+      blink::WebInputEvent::Type type) = 0;
+
+  // Tells the scheduler that the system is displaying an input animation (e.g.
+  // a fling). Called by the compositor (impl) thread.
+  virtual void DidAnimateForInputOnCompositorThread() = 0;
 
   // Returns true if there is high priority work pending on the main thread
   // and the caller should yield to let the scheduler service that work.

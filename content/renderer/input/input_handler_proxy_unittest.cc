@@ -175,7 +175,8 @@ class MockInputHandlerProxyClient
 
   MOCK_METHOD1(DidOverscroll, void(const DidOverscrollParams&));
   virtual void DidStopFlinging() override {}
-  virtual void DidReceiveInputEvent() override {}
+  virtual void DidReceiveInputEvent(blink::WebInputEvent::Type) override {}
+  virtual void DidAnimateForInput() override {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClient);
@@ -187,7 +188,8 @@ class MockInputHandlerProxyClientWithDidReceiveInputEvent
   MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
   virtual ~MockInputHandlerProxyClientWithDidReceiveInputEvent() {}
 
-  MOCK_METHOD0(DidReceiveInputEvent, void());
+  MOCK_METHOD1(DidReceiveInputEvent, void(blink::WebInputEvent::Type type));
+  MOCK_METHOD0(DidAnimateForInput, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockInputHandlerProxyClientWithDidReceiveInputEvent);
@@ -2029,9 +2031,38 @@ TEST_F(InputHandlerProxyTest, DidReceiveInputEvent) {
   wheel.type = WebInputEvent::MouseWheel;
   wheel.scrollByPage = true;
 
-  EXPECT_CALL(mock_client, DidReceiveInputEvent());
+  EXPECT_CALL(mock_client, DidReceiveInputEvent(WebInputEvent::MouseWheel));
 
   input_handler_->HandleInputEvent(wheel);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+}
+
+TEST_F(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
+  testing::StrictMock<
+      MockInputHandlerProxyClientWithDidReceiveInputEvent> mock_client;
+  input_handler_.reset(
+        new content::InputHandlerProxy(&mock_input_handler_, &mock_client));
+
+  gesture_.type = WebInputEvent::GestureFlingStart;
+  WebFloatPoint fling_delta = WebFloatPoint(100, 100);
+  gesture_.data.flingStart.velocityX = fling_delta.x;
+  gesture_.data.flingStart.velocityY = fling_delta.y;
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(cc::InputHandler::ScrollStarted));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd());
+  EXPECT_CALL(mock_client,
+      DidReceiveInputEvent(WebInputEvent::GestureFlingStart));
+  EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
+      input_handler_->HandleInputEvent(gesture_));
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  testing::Mock::VerifyAndClearExpectations(&mock_client);
+
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimate());
+  EXPECT_CALL(mock_client, DidAnimateForInput());
+  base::TimeTicks time = base::TimeTicks() + base::TimeDelta::FromSeconds(10);
+  input_handler_->Animate(time);
+
   testing::Mock::VerifyAndClearExpectations(&mock_client);
 }
 

@@ -90,9 +90,23 @@ void RendererSchedulerImpl::DidCommitFrameToCompositor() {
   }
 }
 
-void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread() {
-  // TODO(rmcilroy): Decide whether only a subset of input events should trigger
-  // compositor priority policy - http://crbug.com/429814.
+void RendererSchedulerImpl::DidReceiveInputEventOnCompositorThread(
+    blink::WebInputEvent::Type type) {
+  // Ignore mouse events because on windows these can very frequent.
+  // Ignore keyboard events because it doesn't really make sense to enter
+  // compositor priority for them.
+  if (blink::WebInputEvent::isMouseEventType(type) ||
+      blink::WebInputEvent::isKeyboardEventType(type)) {
+    return;
+  }
+  UpdateForInputEvent();
+}
+
+void RendererSchedulerImpl::DidAnimateForInputOnCompositorThread() {
+  UpdateForInputEvent();
+}
+
+void RendererSchedulerImpl::UpdateForInputEvent() {
   base::AutoLock lock(incoming_signals_lock_);
   if (last_input_time_.is_null()) {
     // Update scheduler policy if should start a new compositor policy mode.

@@ -20,7 +20,9 @@ class NullRendererScheduler : public RendererScheduler {
 
   void WillBeginFrame(const cc::BeginFrameArgs& args) override;
   void DidCommitFrameToCompositor() override;
-  void DidReceiveInputEventOnCompositorThread() override;
+  void DidReceiveInputEventOnCompositorThread(
+      blink::WebInputEvent::Type type) override;
+  void DidAnimateForInputOnCompositorThread() override;
   bool ShouldYieldForHighPriorityWork() override;
   void Shutdown() override;
 

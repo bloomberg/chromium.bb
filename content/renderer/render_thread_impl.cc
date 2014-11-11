@@ -913,9 +913,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       AddFilter(input_event_filter_.get());
       input_handler_manager_client = input_event_filter_.get();
     }
-    input_handler_manager_.reset(
-        new InputHandlerManager(compositor_message_loop_proxy_,
-                                input_handler_manager_client));
+    input_handler_manager_.reset(new InputHandlerManager(
+        compositor_message_loop_proxy_, input_handler_manager_client,
+        renderer_scheduler()));
   }
 
   scoped_refptr<base::MessageLoopProxy> output_surface_loop;
