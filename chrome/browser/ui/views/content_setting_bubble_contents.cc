@@ -21,6 +21,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -38,10 +39,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-
-#if defined(USE_AURA)
-#include "ui/base/cursor/cursor.h"
-#endif
+#include "ui/views/native_cursor.h"
 
 namespace {
 
@@ -108,12 +106,7 @@ void ContentSettingBubbleContents::Favicon::OnMouseReleased(
 
 gfx::NativeCursor ContentSettingBubbleContents::Favicon::GetCursor(
     const ui::MouseEvent& event) {
-#if defined(USE_AURA)
-  return ui::kCursorHand;
-#elif defined(OS_WIN)
-  static HCURSOR g_hand_cursor = LoadCursor(NULL, IDC_HAND);
-  return g_hand_cursor;
-#endif
+  return views::GetNativeHandCursor();
 }
 
 

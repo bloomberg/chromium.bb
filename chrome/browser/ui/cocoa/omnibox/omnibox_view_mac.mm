@@ -838,7 +838,7 @@ void OmniboxViewMac::OnSetFocus(bool control_down) {
 
 void OmniboxViewMac::OnKillFocus() {
   // Tell the model to reset itself.
-  model()->OnWillKillFocus(NULL);
+  model()->OnWillKillFocus();
   model()->OnKillFocus();
 
   OnDidKillFocus();

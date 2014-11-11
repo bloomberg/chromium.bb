@@ -16,13 +16,6 @@
 
 namespace views {
 
-// static
-int TooltipManager::GetTooltipHeight() {
-  // Not used for linux and chromeos.
-  NOTIMPLEMENTED();
-  return 0;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // TooltipManagerAura public:
 

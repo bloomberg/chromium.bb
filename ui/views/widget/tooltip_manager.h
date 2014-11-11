@@ -38,10 +38,6 @@ class VIEWS_EXPORT TooltipManager {
   TooltipManager() {}
   virtual ~TooltipManager() {}
 
-  // Returns the height of tooltips. This should only be invoked from within
-  // GetTooltipTextOrigin.
-  static int GetTooltipHeight();
-
   // Returns the maximum width of the tooltip. |x| and |y| give the location
   // the tooltip is to be displayed on in screen coordinates. |context| is
   // used to determine which gfx::Screen should be used.

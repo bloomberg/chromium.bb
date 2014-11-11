@@ -326,7 +326,6 @@ void LocationBarView::Init() {
   AddChildView(generated_credit_card_view_);
 
   zoom_view_ = new ZoomView(delegate_);
-  zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
   AddChildView(zoom_view_);
 
   open_pdf_in_reader_view_ = new OpenPDFInReaderView();

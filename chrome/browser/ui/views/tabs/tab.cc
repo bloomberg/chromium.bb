@@ -26,7 +26,6 @@
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/env.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -50,6 +49,10 @@
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
+
+#if defined(USE_AURA)
+#include "ui/aura/env.h"
+#endif
 
 using base::UserMetricsAction;
 
@@ -324,9 +327,11 @@ class Tab::TabCloseButton : public views::ImageButton,
     gfx::Rect contents_bounds = GetContentsBounds();
     contents_bounds.set_x(GetMirroredXForRect(contents_bounds));
 
+#if defined(USE_AURA)
     // Include the padding in hit-test for touch events.
     if (aura::Env::GetInstance()->is_touch_down())
       contents_bounds = GetLocalBounds();
+#endif
 
     return contents_bounds.Intersects(rect) ? this : parent();
   }
@@ -833,7 +838,7 @@ bool Tab::GetTooltipText(const gfx::Point& p, base::string16* tooltip) const {
 
 bool Tab::GetTooltipTextOrigin(const gfx::Point& p, gfx::Point* origin) const {
   origin->set_x(title_->x() + 10);
-  origin->set_y(-views::TooltipManager::GetTooltipHeight() - 4);
+  origin->set_y(-4);
   return true;
 }
 

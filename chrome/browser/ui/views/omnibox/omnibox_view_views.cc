@@ -33,8 +33,6 @@
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"
-#include "ui/aura/client/focus_client.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -839,16 +837,7 @@ void OmniboxViewViews::OnBlur() {
   saved_selection_for_focus_change_ = GetSelectedRange();
 
   views::Textfield::OnBlur();
-  gfx::NativeView native_view = NULL;
-  views::Widget* widget = GetWidget();
-  if (widget) {
-    aura::client::FocusClient* client =
-        aura::client::GetFocusClient(widget->GetNativeView());
-    if (client)
-      native_view = client->GetFocusedWindow();
-  }
-  model()->OnWillKillFocus(native_view);
-  // Close the popup.
+  model()->OnWillKillFocus();
   CloseOmniboxPopup();
 
   // Tell the model to reset itself.

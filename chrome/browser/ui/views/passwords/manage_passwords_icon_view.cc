@@ -7,7 +7,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_bubble_view.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,7 +14,6 @@
 
 ManagePasswordsIconView::ManagePasswordsIconView(CommandUpdater* updater)
     : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE) {
-  set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
   SetFocusable(true);
   UpdateVisibleUI();
 }

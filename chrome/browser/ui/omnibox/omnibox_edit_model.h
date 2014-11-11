@@ -270,7 +270,7 @@ class OmniboxEditModel {
   void SetCaretVisibility(bool visible);
 
   // Sent before |OnKillFocus| and before the popup is closed.
-  void OnWillKillFocus(gfx::NativeView view_gaining_focus);
+  void OnWillKillFocus();
 
   // Called when the view is losing focus.  Resets some state.
   void OnKillFocus();
