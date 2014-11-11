@@ -83,6 +83,7 @@
         # Don't add this target to the dependencies of targets with type=none.
         'link_dependency': 1,
       },
+      # NOTE: Please keep install-build-deps.sh in sync with this list.
       'dependencies': [
         '<(_sanitizer_type)-freetype',
         '<(_sanitizer_type)-libcairo2',
