@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/font_render_params.h"
 #include "ui/gfx/text_utils.h"
 
 using base::ASCIIToUTF16;
@@ -675,6 +676,23 @@ TEST(TextEliderTest, MAYBE_ElideRectangleTextCheckLineWidth) {
   EXPECT_LE(GetStringWidthF(lines[0], font_list), kAvailableWidth);
   EXPECT_LE(GetStringWidthF(lines[1], font_list), kAvailableWidth);
 }
+
+#ifdef OS_CHROMEOS
+// This test was created specifically to test a message from crbug.com/415213.
+// It tests that width of concatenation of words equals sum of widths of the
+// words.
+TEST(TextEliderTest, ElideRectangleTextCheckConcatWidthEqualsSumOfWidths) {
+  FontList font_list;
+  font_list = FontList("Noto Sans UI,ui-sans, 12px");
+  SetFontRenderParamsDeviceScaleFactor(1.25f);
+#define WIDTH(x) GetStringWidthF(UTF8ToUTF16(x), font_list)
+  EXPECT_EQ(WIDTH("The administrator for this account has"),
+            WIDTH("The ") + WIDTH("administrator ") + WIDTH("for ") +
+                WIDTH("this ") + WIDTH("account ") + WIDTH("has"));
+#undef WIDTH
+  SetFontRenderParamsDeviceScaleFactor(1.0f);
+}
+#endif // OS_CHROMEOS
 
 TEST(TextEliderTest, ElideRectangleString) {
   struct TestData {
