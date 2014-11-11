@@ -375,8 +375,10 @@ void AppListController::ProcessLocatedEvent(ui::LocatedEvent* event) {
   }
 
   aura::Window* window = view_->GetWidget()->GetNativeView()->parent();
-  if (!window->Contains(target))
+  if (!window->Contains(target) &&
+      !app_list::switches::ShouldNotDismissOnBlur()) {
     Dismiss();
+  }
 }
 
 void AppListController::UpdateBounds() {
@@ -413,7 +415,8 @@ void AppListController::OnWindowFocused(aura::Window* gained_focus,
     aura::Window* applist_container = applist_window->parent();
 
     if (applist_container->Contains(lost_focus) &&
-        (!gained_focus || !applist_container->Contains(gained_focus))) {
+        (!gained_focus || !applist_container->Contains(gained_focus)) &&
+        !app_list::switches::ShouldNotDismissOnBlur()) {
       Dismiss();
     }
   }
