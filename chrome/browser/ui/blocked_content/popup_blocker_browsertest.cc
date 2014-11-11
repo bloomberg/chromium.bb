@@ -28,6 +28,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/omnibox/autocomplete_result.h"
+#include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -482,6 +483,28 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DenialOfService) {
   GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-dos.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_EQ(25, GetBlockedContentsCount());
+}
+
+// Verify that an onunload popup does not show up for about:blank.
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Regress427477) {
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
+
+  GURL url(
+      embedded_test_server()->GetURL("/popup_blocker/popup-on-unload.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  tab->GetController().GoBack();
+  content::WaitForLoadStop(tab);
+
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+
+  // The popup from the unload event handler should not show up for about:blank.
+  ASSERT_EQ(0, GetBlockedContentsCount());
 }
 
 }  // namespace

@@ -515,9 +515,15 @@ void SetApplicationLocaleOnIOThread(const std::string& locale) {
 }
 
 void HandleBlockedPopupOnUIThread(const BlockedWindowParams& params) {
-  WebContents* tab = tab_util::GetWebContentsByID(params.render_process_id(),
-                                                  params.opener_id());
-  if (!tab)
+  // TODO(jochen): This code path should use RenderFrameHosts. See
+  // http://crbug.com/431769 for details.
+  RenderViewHost* render_view_host =
+      RenderViewHost::FromID(params.render_process_id(), params.opener_id());
+  if (!render_view_host)
+    return;
+  WebContents* tab = WebContents::FromRenderViewHost(render_view_host);
+  // The tab might already have navigated away.
+  if (!tab || tab->GetRenderViewHost() != render_view_host)
     return;
 
   prerender::PrerenderContents* prerender_contents =
