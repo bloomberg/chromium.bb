@@ -1152,6 +1152,9 @@ template<typename T>
 struct ParamStorageTraits<RawPtr<T> > : public PointerParamStorageTraits<T*, blink::IsGarbageCollectedType<T>::value> {
 };
 
+template<typename T>
+PassRefPtr<T> adoptRef(blink::RefCountedGarbageCollected<T>*) = delete;
+
 } // namespace WTF
 
 #endif

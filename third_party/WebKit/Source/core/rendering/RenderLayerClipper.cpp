@@ -113,8 +113,8 @@ ClipRects* RenderLayerClipper::clipRectsIfCached(const ClipRectsContext& context
     // This code is useful to check cached clip rects, but is too expensive to leave enabled in debug builds by default.
     ClipRectsContext tempContext(context);
     tempContext.cacheSlot = UncachedClipRects;
-    ClipRects clipRects;
-    calculateClipRects(tempContext, clipRects);
+    RefPtr<ClipRects> clipRects = ClipRects::create();
+    calculateClipRects(tempContext, *clipRects);
     ASSERT(clipRects == *entry.clipRects);
 #endif
 
@@ -153,9 +153,9 @@ ClipRects* RenderLayerClipper::getClipRects(const ClipRectsContext& context) con
     if (context.rootLayer != m_renderer.layer() && m_renderer.layer()->parent())
         parentClipRects = m_renderer.layer()->parent()->clipper().getClipRects(context);
 
-    ClipRects clipRects;
-    calculateClipRects(context, clipRects);
-    return storeClipRectsInCache(context, parentClipRects, clipRects);
+    RefPtr<ClipRects> clipRects = ClipRects::create();
+    calculateClipRects(context, *clipRects);
+    return storeClipRectsInCache(context, parentClipRects, *clipRects);
 }
 
 void RenderLayerClipper::clearClipRectsIncludingDescendants()
@@ -325,16 +325,16 @@ ClipRect RenderLayerClipper::backgroundClipRect(const ClipRectsContext& context)
     ASSERT(m_renderer.layer()->parent());
     ASSERT(m_renderer.view());
 
-    ClipRects parentClipRects;
+    RefPtr<ClipRects> parentClipRects = ClipRects::create();
     if (m_renderer.layer() == context.rootLayer)
-        parentClipRects.reset(PaintInfo::infiniteRect());
+        parentClipRects->reset(PaintInfo::infiniteRect());
     else
-        m_renderer.layer()->parent()->clipper().getOrCalculateClipRects(context, parentClipRects);
+        m_renderer.layer()->parent()->clipper().getOrCalculateClipRects(context, *parentClipRects);
 
-    ClipRect result = backgroundClipRectForPosition(parentClipRects, m_renderer.style()->position());
+    ClipRect result = backgroundClipRectForPosition(*parentClipRects, m_renderer.style()->position());
 
     // Note: infinite clipRects should not be scrolled here, otherwise they will accidentally no longer be considered infinite.
-    if (parentClipRects.fixed() && context.rootLayer->renderer() == m_renderer.view() && result != PaintInfo::infiniteRect())
+    if (parentClipRects->fixed() && context.rootLayer->renderer() == m_renderer.view() && result != PaintInfo::infiniteRect())
         result.move(m_renderer.view()->frameView()->scrollOffsetForFixedPosition());
 
     return result;

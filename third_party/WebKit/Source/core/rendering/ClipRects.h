@@ -27,10 +27,11 @@
 #define ClipRects_h
 
 #include "core/rendering/ClipRect.h"
+#include "wtf/RefCounted.h"
 
 namespace blink {
 
-class ClipRects {
+class ClipRects : public RefCounted<ClipRects> {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<ClipRects> create()
@@ -44,8 +45,7 @@ public:
     }
 
     ClipRects()
-        : m_refCnt(1)
-        , m_fixed(0)
+        : m_fixed(0)
     {
     }
 
@@ -69,13 +69,6 @@ public:
     bool fixed() const { return static_cast<bool>(m_fixed); }
     void setFixed(bool fixed) { m_fixed = fixed ? 1 : 0; }
 
-    void ref() { m_refCnt++; }
-    void deref()
-    {
-        if (!--m_refCnt)
-            delete this;
-    }
-
     bool operator==(const ClipRects& other) const
     {
         return m_overflowClipRect == other.overflowClipRect()
@@ -98,7 +91,6 @@ private:
         : m_overflowClipRect(r)
         , m_fixedClipRect(r)
         , m_posClipRect(r)
-        , m_refCnt(1)
         , m_fixed(0)
     {
     }
@@ -107,7 +99,6 @@ private:
         : m_overflowClipRect(other.overflowClipRect())
         , m_fixedClipRect(other.fixedClipRect())
         , m_posClipRect(other.posClipRect())
-        , m_refCnt(1)
         , m_fixed(other.fixed())
     {
     }
@@ -115,8 +106,7 @@ private:
     ClipRect m_overflowClipRect;
     ClipRect m_fixedClipRect;
     ClipRect m_posClipRect;
-    unsigned m_refCnt : 31;
-    unsigned m_fixed : 1;
+    unsigned m_fixed;
 };
 
 } // namespace blink
