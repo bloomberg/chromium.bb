@@ -2832,19 +2832,6 @@
    fun:_ZN7content27ServiceWorkerContextWrapper12InitInternalERKN4base8FilePathEPNS1_19SequencedTaskRunnerEPNS1_16MessageLoopProxyEPN5quota17QuotaManagerProxyE
 }
 {
-   bug_379359
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content27ServiceWorkerContextWrapperC1EPNS_14BrowserContextE
-   fun:_ZN7content20StoragePartitionImpl6CreateEPNS_14BrowserContextEbRKN4base8FilePathE
-   fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
-   fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContext*
-   fun:_ZN7content14BrowserContext19GetStoragePartitionEPS0_PNS_12SiteInstanceE
-   fun:_ZN7content14BrowserContext26GetDefaultStoragePartitionEPS0_
-   fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
-   fun:_ZN7content15BrowserMainLoop21PreMainMessageLoopRunEv
-}
-{
    bug_379943
    Memcheck:Leak
    fun:_Znw*
