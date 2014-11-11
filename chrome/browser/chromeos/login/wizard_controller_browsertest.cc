@@ -127,21 +127,15 @@ class PrefStoreStub : public TestingPrefStore {
 };
 
 struct SwitchLanguageTestData {
-  SwitchLanguageTestData() : success(false), done(false) {}
+  SwitchLanguageTestData() : result("", "", false), done(false) {}
 
-  std::string requested_locale;
-  std::string loaded_locale;
-  bool success;
+  locale_util::LanguageSwitchResult result;
   bool done;
 };
 
 void OnLocaleSwitched(SwitchLanguageTestData* self,
-                      const std::string& locale,
-                      const std::string& loaded_locale,
-                      const bool success) {
-  self->requested_locale = locale;
-  self->loaded_locale = loaded_locale;
-  self->success = success;
+                      const locale_util::LanguageSwitchResult& result) {
+  self->result = result;
   self->done = true;
 }
 
@@ -149,18 +143,17 @@ void RunSwitchLanguageTest(const std::string& locale,
                                   const std::string& expected_locale,
                                   const bool expect_success) {
   SwitchLanguageTestData data;
-  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
-      new locale_util::SwitchLanguageCallback(
-          base::Bind(&OnLocaleSwitched, base::Unretained(&data))));
-  locale_util::SwitchLanguage(locale, true, false, callback.Pass());
+  locale_util::SwitchLanguageCallback callback(
+      base::Bind(&OnLocaleSwitched, base::Unretained(&data)));
+  locale_util::SwitchLanguage(locale, true, false, callback);
 
   // Token writing moves control to BlockingPool and back.
   content::RunAllBlockingPoolTasksUntilIdle();
 
   EXPECT_EQ(data.done, true);
-  EXPECT_EQ(data.requested_locale, locale);
-  EXPECT_EQ(data.loaded_locale, expected_locale);
-  EXPECT_EQ(data.success, expect_success);
+  EXPECT_EQ(data.result.requested_locale, locale);
+  EXPECT_EQ(data.result.loaded_locale, expected_locale);
+  EXPECT_EQ(data.result.success, expect_success);
 }
 
 void SetUpCrasAndEnableChromeVox(int volume_percent, bool mute_on) {

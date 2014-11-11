@@ -21,20 +21,17 @@ struct SwitchLanguageData {
   SwitchLanguageData(const std::string& locale,
                      const bool enable_locale_keyboard_layouts,
                      const bool login_layouts_only,
-                     scoped_ptr<locale_util::SwitchLanguageCallback> callback)
-      : callback(callback.Pass()),
-        locale(locale),
+                     const locale_util::SwitchLanguageCallback& callback)
+      : callback(callback),
+        result(locale, std::string(), false),
         enable_locale_keyboard_layouts(enable_locale_keyboard_layouts),
-        login_layouts_only(login_layouts_only),
-        success(false) {}
+        login_layouts_only(login_layouts_only) {}
 
-  scoped_ptr<locale_util::SwitchLanguageCallback> callback;
+  const locale_util::SwitchLanguageCallback callback;
 
-  const std::string locale;
+  locale_util::LanguageSwitchResult result;
   const bool enable_locale_keyboard_layouts;
   const bool login_layouts_only;
-  std::string loaded_locale;
-  bool success;
 };
 
 // Runs on SequencedWorkerPool thread under PostTaskAndReply().
@@ -42,10 +39,11 @@ struct SwitchLanguageData {
 void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  data->loaded_locale =
-      ResourceBundle::GetSharedInstance().ReloadLocaleResources(data->locale);
+  data->result.loaded_locale =
+      ResourceBundle::GetSharedInstance().ReloadLocaleResources(
+          data->result.requested_locale);
 
-  data->success = !data->loaded_locale.empty();
+  data->result.success = !data->result.loaded_locale.empty();
 
   ResourceBundle::GetSharedInstance().ReloadFonts();
 }
@@ -53,8 +51,8 @@ void SwitchLanguageDoReloadLocale(SwitchLanguageData* data) {
 // Callback after SwitchLanguageDoReloadLocale() back in UI thread.
 void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  if (data->success) {
-    g_browser_process->SetApplicationLocale(data->loaded_locale);
+  if (data->result.success) {
+    g_browser_process->SetApplicationLocale(data->result.loaded_locale);
 
     if (data->enable_locale_keyboard_layouts) {
       input_method::InputMethodManager* manager =
@@ -67,7 +65,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
         // first hardware keyboard layout since the input method currently in
         // use may not be supported by the new locale.
         ime_state->EnableLoginLayouts(
-            data->loaded_locale,
+            data->result.loaded_locale,
             manager->GetInputMethodUtil()->GetHardwareLoginInputMethodIds());
       } else {
         // Enable all hardware keyboard layouts. This will also switch to the
@@ -78,7 +76,7 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
         // Enable all locale-specific layouts.
         std::vector<std::string> input_methods;
         manager->GetInputMethodUtil()->GetInputMethodIdsFromLanguageCode(
-            data->loaded_locale,
+            data->result.loaded_locale,
             input_method::kKeyboardLayoutsOnly,
             &input_methods);
         for (std::vector<std::string>::const_iterator it =
@@ -89,24 +87,29 @@ void FinishSwitchLanguage(scoped_ptr<SwitchLanguageData> data) {
     }
   }
   gfx::PlatformFontPango::ReloadDefaultFont();
-  if (data->callback)
-    data->callback->Run(data->locale, data->loaded_locale, data->success);
+  if (!data->callback.is_null())
+    data->callback.Run(data->result);
 }
 
 }  // namespace
 
 namespace locale_util {
 
+LanguageSwitchResult::LanguageSwitchResult(const std::string& requested_locale,
+                                           const std::string& loaded_locale,
+                                           bool success)
+    : requested_locale(requested_locale),
+      loaded_locale(loaded_locale),
+      success(success) {
+}
+
 void SwitchLanguage(const std::string& locale,
                     const bool enable_locale_keyboard_layouts,
                     const bool login_layouts_only,
-                    scoped_ptr<SwitchLanguageCallback> callback) {
+                    const SwitchLanguageCallback& callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  scoped_ptr<SwitchLanguageData> data(
-      new SwitchLanguageData(locale,
-                             enable_locale_keyboard_layouts,
-                             login_layouts_only,
-                             callback.Pass()));
+  scoped_ptr<SwitchLanguageData> data(new SwitchLanguageData(
+      locale, enable_locale_keyboard_layouts, login_layouts_only, callback));
   base::Closure reloader(
       base::Bind(&SwitchLanguageDoReloadLocale, base::Unretained(data.get())));
   content::BrowserThread::PostBlockingPoolTaskAndReply(

@@ -428,7 +428,7 @@ void UserSessionManager::SetAppModeChromeClientOAuthInfo(
 bool UserSessionManager::RespectLocalePreference(
     Profile* profile,
     const user_manager::User* user,
-    scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
+    const locale_util::SwitchLanguageCallback& callback) const {
   // TODO(alemate): http://crbug.com/288941 : Respect preferred language list in
   // the Google user profile.
   if (g_browser_process == NULL)
@@ -496,10 +496,8 @@ bool UserSessionManager::RespectLocalePreference(
   // So input methods should be enabled somewhere.
   const bool enable_layouts =
       user_manager::UserManager::Get()->IsLoggedInAsGuest();
-  locale_util::SwitchLanguage(pref_locale,
-                              enable_layouts,
-                              false /* login_layouts_only */,
-                              callback.Pass());
+  locale_util::SwitchLanguage(
+      pref_locale, enable_layouts, false /* login_layouts_only */, callback);
 
   return true;
 }

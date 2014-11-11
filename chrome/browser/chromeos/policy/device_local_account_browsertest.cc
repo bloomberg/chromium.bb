@@ -1924,6 +1924,25 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
                 ->GetCurrentInputMethod()
                 .id());
 
+  // Wait for 'tos-accept-button' to become enabled.
+  done = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents_,
+      "var screenElement = document.getElementById('tos-accept-button');"
+      "function SendReplyIfAcceptEnabled() {"
+      "  if ($('tos-accept-button').disabled)"
+      "    return false;"
+      "  domAutomationController.send(true);"
+      "  observer.disconnect();"
+      "  return true;"
+      "}"
+      "var observer = new MutationObserver(SendReplyIfAcceptEnabled);"
+      "if (!SendReplyIfAcceptEnabled()) {"
+      "  var options = { attributes: true };"
+      "  observer.observe(screenElement, options);"
+      "}",
+      &done));
+
   // Click the accept button.
   ASSERT_TRUE(content::ExecuteScript(contents_,
                                      "$('tos-accept-button').click();"));

@@ -9,6 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
@@ -20,8 +21,7 @@ namespace chromeos {
 
 class CoreOobeActor;
 class IdleDetector;
-
-struct NetworkScreenHandlerOnLanguageChangedCallbackData;
+class InputEventsBlocker;
 
 // WebUI implementation of NetworkScreenActor. It is used to interact with
 // the welcome screen (part of the page) of the OOBE.
@@ -62,6 +62,7 @@ class NetworkScreenHandler : public NetworkScreenActor,
   virtual void InputMethodChanged(input_method::InputMethodManager* manager,
                                   bool show_message) override;
 
+ private:
   // Reloads localized contents.
   void ReloadLocalizedContent();
 
@@ -69,17 +70,24 @@ class NetworkScreenHandler : public NetworkScreenActor,
   void HandleOnExit();
 
   // Async callback after ReloadResourceBundle(locale) completed.
-  static void OnLanguageChangedCallback(
-      scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> context,
-      const std::string& requested_locale,
-      const std::string& loaded_locale,
-      const bool success);
+  void OnLanguageChangedCallback(
+      const InputEventsBlocker* input_events_blocker,
+      const locale_util::LanguageSwitchResult& result);
 
   // Callback when the system timezone settings is changed.
   void OnSystemTimezoneChanged();
 
   // Returns available timezones. Caller gets the ownership.
   static base::ListValue* GetTimezoneList();
+
+  // Starts resolving language list on BlockingPool.
+  void ScheduleResolveLanguageList(
+      scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result);
+
+  // Callback for chromeos::ResolveUILanguageList() (from l10n_util).
+  void OnLanguageListResolved(scoped_ptr<base::ListValue> new_language_list,
+                              std::string new_language_list_locale,
+                              std::string new_selected_language);
 
   NetworkScreenActor::Delegate* screen_;
   CoreOobeActor* core_oobe_actor_;
@@ -100,6 +108,11 @@ class NetworkScreenHandler : public NetworkScreenActor,
   std::string locale_;
   std::string input_method_;
   std::string timezone_;
+
+  // Creation of language list happens on Blocking Pool, so we cache resolved
+  // data.
+  std::string language_list_locale_;
+  scoped_ptr<base::ListValue> language_list_;
 
   base::WeakPtrFactory<NetworkScreenHandler> weak_ptr_factory_;
 

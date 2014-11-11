@@ -472,9 +472,7 @@ class GuestLanguageSetCallbackData {
 
   // Must match SwitchLanguageCallback type.
   static void Callback(const scoped_ptr<GuestLanguageSetCallbackData>& self,
-                       const std::string& locale,
-                       const std::string& loaded_locale,
-                       bool success);
+                       const locale_util::LanguageSwitchResult& result);
 
   Profile* profile;
 };
@@ -482,9 +480,7 @@ class GuestLanguageSetCallbackData {
 // static
 void GuestLanguageSetCallbackData::Callback(
     const scoped_ptr<GuestLanguageSetCallbackData>& self,
-    const std::string& locale,
-    const std::string& loaded_locale,
-    bool success) {
+    const locale_util::LanguageSwitchResult& result) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
   scoped_refptr<input_method::InputMethodManager::State> ime_state =
@@ -500,7 +496,7 @@ void GuestLanguageSetCallbackData::Callback(
   // Second, enable locale based input methods.
   const std::string locale_default_input_method =
       manager->GetInputMethodUtil()->GetLanguageDefaultInputMethodId(
-          loaded_locale);
+          result.loaded_locale);
   if (!locale_default_input_method.empty()) {
     PrefService* user_prefs = self->profile->GetPrefs();
     user_prefs->SetString(prefs::kLanguagePreviousInputMethod,
@@ -518,13 +514,12 @@ void GuestLanguageSetCallbackData::Callback(
 void SetGuestLocale(Profile* const profile) {
   scoped_ptr<GuestLanguageSetCallbackData> data(
       new GuestLanguageSetCallbackData(profile));
-  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
-      new locale_util::SwitchLanguageCallback(base::Bind(
-          &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass()))));
+  locale_util::SwitchLanguageCallback callback(base::Bind(
+      &GuestLanguageSetCallbackData::Callback, base::Passed(data.Pass())));
   user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   UserSessionManager::GetInstance()->RespectLocalePreference(
-      profile, user, callback.Pass());
+      profile, user, callback);
 }
 
 void ChromeBrowserMainPartsChromeos::PostProfileInit() {

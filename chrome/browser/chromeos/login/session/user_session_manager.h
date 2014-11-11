@@ -172,7 +172,7 @@ class UserSessionManager
   bool RespectLocalePreference(
       Profile* profile,
       const user_manager::User* user,
-      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const;
+      const locale_util::SwitchLanguageCallback& callback) const;
 
   // Returns true if Easy unlock keys needs to be updated.
   bool NeedsToUpdateEasyUnlockKeys() const;

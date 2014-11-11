@@ -10,6 +10,8 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string16.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 
 namespace base {
 class DictionaryValue;
@@ -17,6 +19,11 @@ class ListValue;
 }
 
 namespace chromeos {
+
+typedef base::Callback<void(scoped_ptr<base::ListValue> /* new_language_list */,
+                            std::string /* new_language_list_locale */,
+                            std::string /* new_selected_language */)>
+    UILanguageListResolvedCallback;
 
 // GetUILanguageList() returns a concatenated list of the most relevant
 // languages followed by all others. An entry with its "code" attribute set to
@@ -36,6 +43,19 @@ extern const char kMostRelevantLanguagesDivider[];
 scoped_ptr<base::ListValue> GetUILanguageList(
     const std::vector<std::string>* most_relevant_language_codes,
     const std::string& selected);
+
+// Must be called on UI thread. Runs GetUILanguageList(), on Blocking Pool,
+// and calls |callback| on UI thread with result.
+// If |language_switch_result| is null, assume current browser locale is already
+// correct and has been successfully loaded.
+void ResolveUILanguageList(
+    scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result,
+    UILanguageListResolvedCallback callback);
+
+// Returns a minimal list of UI languages, which consists of active language
+// only. It is used as a placeholder until ResolveUILanguageList() finishes
+// on BlockingPool.
+scoped_ptr<base::ListValue> GetMinimalUILanguageList();
 
 // Returns the most first entry of |most_relevant_language_codes| that is
 // actually available (present in |available_locales|). If none of the entries
@@ -59,11 +79,13 @@ scoped_ptr<base::ListValue> GetAcceptLanguageList();
 // will also always contain the US keyboard layout. If |selected| matches the ID
 // of any entry in the resulting list, that entry will be marked as selected.
 // In addition to returning the list of keyboard layouts, this function also
-// activates them so that they can be selected by the user (e.g. by cycling
-// through keyboard layouts via keyboard shortcuts).
+// activates them if |activate_keyboards| is true, so that they can be selected
+// by the user (e.g. by cycling through keyboard layouts via keyboard
+// shortcuts).
 scoped_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
     const std::string& locale,
-    const std::string& selected);
+    const std::string& selected,
+    bool activate_keyboards);
 
 // Invokes |callback| with a list of keyboard layouts that can be used for
 // |locale|. Each list entry is a dictionary that contains data such as an ID

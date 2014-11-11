@@ -8,7 +8,10 @@
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
+#include "base/threading/worker_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -26,6 +29,8 @@
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "components/user_manager/user_manager.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/layout/fill_layout.h"
@@ -40,22 +45,6 @@ const char kJsApiNetworkOnExit[] = "networkOnExit";
 const char kJsApiNetworkOnLanguageChanged[] = "networkOnLanguageChanged";
 const char kJsApiNetworkOnInputMethodChanged[] = "networkOnInputMethodChanged";
 const char kJsApiNetworkOnTimezoneChanged[] = "networkOnTimezoneChanged";
-
-// For "UI Language" drop-down menu at OOBE screen we need to decide which
-// entry to mark "selected". If user has just selected "requested_locale",
-// but "loaded_locale" was actually loaded, we mark original user choice
-// "selected" only if loaded_locale is a backup for "requested_locale".
-std::string CalculateSelectedLanguage(const std::string& requested_locale,
-                                      const std::string& loaded_locale) {
-  std::string resolved_locale;
-  if (!l10n_util::CheckAndResolveLocale(requested_locale, &resolved_locale))
-    return loaded_locale;
-
-  if (resolved_locale == loaded_locale)
-    return requested_locale;
-
-  return loaded_locale;
-}
 
 }  // namespace
 
@@ -170,23 +159,77 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
 }
 
+void NetworkScreenHandler::OnLanguageListResolved(
+    scoped_ptr<base::ListValue> new_language_list,
+    std::string new_language_list_locale,
+    std::string new_selected_language) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  language_list_.reset(new_language_list.release());
+  language_list_locale_ = new_language_list_locale;
+  selected_language_code_ = new_selected_language;
+
+  g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
+                                              selected_language_code_);
+  ReloadLocalizedContent();
+}
+
+void NetworkScreenHandler::ScheduleResolveLanguageList(
+    scoped_ptr<locale_util::LanguageSwitchResult> language_switch_result) {
+  UILanguageListResolvedCallback callback =
+      base::Bind(&NetworkScreenHandler::OnLanguageListResolved,
+                 weak_ptr_factory_.GetWeakPtr());
+  ResolveUILanguageList(language_switch_result.Pass(), callback);
+}
+
 void NetworkScreenHandler::GetAdditionalParameters(
     base::DictionaryValue* dict) {
   const std::string application_locale =
       g_browser_process->GetApplicationLocale();
-  const std::string selected_language = selected_language_code_.empty() ?
-      application_locale : selected_language_code_;
   const std::string selected_input_method =
       input_method::InputMethodManager::Get()
           ->GetActiveIMEState()
           ->GetCurrentInputMethod()
           .id();
 
-  dict->Set("languageList",
-            GetUILanguageList(NULL, selected_language).release());
-  dict->Set("inputMethodsList",
-            GetAndActivateLoginKeyboardLayouts(
-                application_locale, selected_input_method).release());
+  scoped_ptr<base::ListValue> language_list;
+  if (language_list_.get() && language_list_locale_ == application_locale) {
+    language_list.reset(language_list_->DeepCopy());
+  } else {
+    ScheduleResolveLanguageList(
+        scoped_ptr<locale_util::LanguageSwitchResult>());
+
+    language_list.reset(GetMinimalUILanguageList().release());
+  }
+
+  // GetAdditionalParameters() is called when OOBE language is updated.
+  // This happens in two diferent cases:
+  //
+  // 1) User selects new locale on OOBE screen. We need to sync active input
+  // methods with locale, so EnableLoginLayouts() is needed.
+  //
+  // 2) This is signin to public session. User has selected some locale & input
+  // method on "Public Session User POD". After "Login" button is pressed,
+  // new user session is created, locale & input method are changed (both
+  // asynchronously).
+  // But after public user session is started, "Terms of Service" dialog is
+  // shown. It is a part of OOBE UI screens, so it initiates reload of UI
+  // strings in new locale. It also happens asynchronously, that leads to race
+  // between "locale change", "input method change" and
+  // "EnableLoginLayouts()".  This way EnableLoginLayouts() happens after user
+  // input method has been changed, resetting input method to hardware default.
+  //
+  // So we need to disable activation of login layouts if we are already in
+  // active user session.
+  //
+  const bool enable_layouts =
+      !user_manager::UserManager::Get()->IsUserLoggedIn();
+
+  dict->Set("languageList", language_list.release());
+  dict->Set(
+      "inputMethodsList",
+      GetAndActivateLoginKeyboardLayouts(
+          application_locale, selected_input_method, enable_layouts).release());
   dict->Set("timezoneList", GetTimezoneList());
 }
 
@@ -196,6 +239,10 @@ void NetworkScreenHandler::Initialize() {
     show_on_init_ = false;
     Show();
   }
+
+  // Reload localized strings if they are already resolved.
+  if (language_list_.get())
+    ReloadLocalizedContent();
 
   timezone_subscription_ = CrosSettings::Get()->AddSettingsObserver(
       kSystemTimezone,
@@ -226,46 +273,18 @@ void NetworkScreenHandler::HandleOnExit() {
     screen_->OnContinuePressed();
 }
 
-struct NetworkScreenHandlerOnLanguageChangedCallbackData {
-  explicit NetworkScreenHandlerOnLanguageChangedCallbackData(
-      const base::WeakPtr<NetworkScreenHandler>& handler)
-      : handler(handler) {}
-
-  base::WeakPtr<NetworkScreenHandler> handler;
-
-  // Block UI while resource bundle is being reloaded.
-  chromeos::InputEventsBlocker input_events_blocker;
-};
-
-// static
 void NetworkScreenHandler::OnLanguageChangedCallback(
-    scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> context,
-    const std::string& requested_locale,
-    const std::string& loaded_locale,
-    const bool success) {
-  if (!context || !context->handler)
-    return;
-
-  NetworkScreenHandler* const self = context->handler.get();
-
-  if (success) {
-    if (requested_locale == loaded_locale) {
-      self->selected_language_code_ = requested_locale;
-    } else {
-      self->selected_language_code_ =
-          CalculateSelectedLanguage(requested_locale, loaded_locale);
-    }
-  } else {
-    self->selected_language_code_ = loaded_locale;
+    const chromeos::InputEventsBlocker* /* input_events_blocker */,
+    const locale_util::LanguageSwitchResult& result) {
+  if (!selected_language_code_.empty()) {
+    // We still do not have device owner, so owner settings are not applied.
+    // But Guest session can be started before owner is created, so we need to
+    // save locale settings directly here.
+    g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
+                                                selected_language_code_);
   }
-
-  self->ReloadLocalizedContent();
-
-  // We still do not have device owner, so owner settings are not applied.
-  // But Guest session can be started before owner is created, so we need to
-  // save locale settings directly here.
-  g_browser_process->local_state()->SetString(prefs::kApplicationLocale,
-                                              self->selected_language_code_);
+  ScheduleResolveLanguageList(scoped_ptr<locale_util::LanguageSwitchResult>(
+      new locale_util::LanguageSwitchResult(result)));
 
   AccessibilityManager::Get()->OnLocaleChanged();
 }
@@ -288,18 +307,17 @@ void NetworkScreenHandler::SetApplicationLocale(const std::string& locale) {
     return;
 
   locale_ = locale;
-  base::WeakPtr<NetworkScreenHandler> weak_self =
-      weak_ptr_factory_.GetWeakPtr();
-  scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> callback_data(
-      new NetworkScreenHandlerOnLanguageChangedCallbackData(weak_self));
-  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
-      new locale_util::SwitchLanguageCallback(
-          base::Bind(&NetworkScreenHandler::OnLanguageChangedCallback,
-                     base::Passed(callback_data.Pass()))));
+
+  // Block UI while resource bundle is being reloaded.
+  // (InputEventsBlocker will live until callback is finished.)
+  locale_util::SwitchLanguageCallback callback(
+      base::Bind(&NetworkScreenHandler::OnLanguageChangedCallback,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Owned(new chromeos::InputEventsBlocker)));
   locale_util::SwitchLanguage(locale,
                               true /* enableLocaleKeyboardLayouts */,
                               true /* login_layouts_only */,
-                              callback.Pass());
+                              callback);
 }
 
 void NetworkScreenHandler::SetInputMethod(const std::string& input_method) {
