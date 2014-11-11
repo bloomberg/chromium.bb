@@ -981,6 +981,7 @@ enum HistogramValue {
   VPNPROVIDER_NOTIFYCONNECTIONSTATECHANGED,
   DOCUMENT_SCAN_SCAN,
   EASYUNLOCKPRIVATE_GETUSERIMAGE,
+  HOTWORDPRIVATE_NOTIFYSPEAKERMODELSAVED,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

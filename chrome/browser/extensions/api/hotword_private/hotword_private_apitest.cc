@@ -328,3 +328,22 @@ IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, Training) {
   EXPECT_TRUE(listenerFalse.WaitUntilSatisfied());
   EXPECT_FALSE(service()->IsTraining());
 }
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, OnSpeakerModelSaved) {
+  extensions::HotwordPrivateEventService::GetFactoryInstance();
+  ExtensionTestMessageListener listener("ready", false);
+  ASSERT_TRUE(
+      LoadExtensionAsComponent(test_data_dir_.AppendASCII(
+          "onSpeakerModelSaved")));
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  ExtensionTestMessageListener listenerNotification("notification", false);
+  EXPECT_TRUE(listenerNotification.WaitUntilSatisfied());
+}
+
+IN_PROC_BROWSER_TEST_F(HotwordPrivateApiTest, NotifySpeakerModelSaved) {
+  ExtensionTestMessageListener listener("speaker model saved", false);
+  ASSERT_TRUE(
+      RunComponentExtensionTest("notifySpeakerModelSaved")) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+}

@@ -38,6 +38,8 @@ class HotwordPrivateEventService : public BrowserContextKeyedAPI {
 
   void OnFinalizeSpeakerModel();
 
+  void OnSpeakerModelSaved();
+
  private:
   friend class BrowserContextKeyedAPIFactory<HotwordPrivateEventService>;
 
@@ -158,6 +160,19 @@ class HotwordPrivateFinalizeSpeakerModelFunction :
 
  protected:
   ~HotwordPrivateFinalizeSpeakerModelFunction() override {}
+
+  // ExtensionFunction:
+  bool RunSync() override;
+};
+
+class HotwordPrivateNotifySpeakerModelSavedFunction :
+    public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.notifySpeakerModelSaved",
+                             HOTWORDPRIVATE_NOTIFYSPEAKERMODELSAVED)
+
+ protected:
+  ~HotwordPrivateNotifySpeakerModelSavedFunction() override {}
 
   // ExtensionFunction:
   bool RunSync() override;

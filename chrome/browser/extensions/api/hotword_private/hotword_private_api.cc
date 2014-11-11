@@ -19,6 +19,8 @@ namespace extensions {
 
 namespace hotword_private_constants {
 const char kHotwordServiceUnavailable[] = "Hotword Service is unavailable.";
+const char kHotwordEventServiceUnavailable[] =
+    "Hotword Private Event Service is unavailable.";
 }  // hotword_private_constants
 
 namespace OnEnabledChanged =
@@ -78,6 +80,10 @@ void HotwordPrivateEventService::OnHotwordSessionStopped() {
 
 void HotwordPrivateEventService::OnFinalizeSpeakerModel() {
   SignalEvent(api::hotword_private::OnFinalizeSpeakerModel::kEventName);
+}
+
+void HotwordPrivateEventService::OnSpeakerModelSaved() {
+  SignalEvent(api::hotword_private::OnSpeakerModelSaved::kEventName);
 }
 
 void HotwordPrivateEventService::OnHotwordTriggered() {
@@ -224,6 +230,19 @@ bool HotwordPrivateFinalizeSpeakerModelFunction::RunSync() {
   }
 
   hotword_service->FinalizeSpeakerModel();
+  return true;
+}
+
+bool HotwordPrivateNotifySpeakerModelSavedFunction::RunSync() {
+  HotwordPrivateEventService* event_service =
+      BrowserContextKeyedAPIFactory<HotwordPrivateEventService>::Get(
+          GetProfile());
+  if (!event_service) {
+    error_ = hotword_private_constants::kHotwordEventServiceUnavailable;
+    return false;
+  }
+
+  event_service->OnSpeakerModelSaved();
   return true;
 }
 

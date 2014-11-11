@@ -95,6 +95,9 @@
     // Finalizess the speaker model.
     static void finalizeSpeakerModel(optional GenericDoneCallback callback);
 
+    // Notifies that the speaker model has been saved.
+    static void notifySpeakerModelSaved(optional GenericDoneCallback callback);
+
     // Stops the speaker model training.
     static void stopTraining(optional GenericDoneCallback callback);
   };
@@ -113,6 +116,9 @@
 
     // Fired when the speaker model should be finalized.
     static void onFinalizeSpeakerModel();
+
+    // Fired when the speaker model has been saved.
+    static void onSpeakerModelSaved();
 
     // Fired when a hotword has triggered.
     static void onHotwordTriggered();
