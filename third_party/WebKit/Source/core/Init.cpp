@@ -118,9 +118,8 @@ void CoreInitializer::init()
 
 void CoreInitializer::shutdown()
 {
-    // Make sure we stop the HTMLParserThread and ScriptStreamerThread before
-    // Platform::current() is cleared.
-    ScriptStreamerThread::shutdown();
+    // Make sure we stop the HTMLParserThread before Platform::current() is
+    // cleared.
     HTMLParserThread::shutdown();
 
     Partitions::shutdown();

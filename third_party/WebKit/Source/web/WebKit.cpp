@@ -31,6 +31,7 @@
 #include "config.h"
 #include "public/web/WebKit.h"
 
+#include "bindings/core/v8/ScriptStreamerThread.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "bindings/core/v8/V8Initializer.h"
@@ -203,6 +204,10 @@ void shutdown()
         delete s_messageLoopInterruptor;
         s_messageLoopInterruptor = 0;
     }
+
+    // Shutdown V8-related background threads before V8 is ramped down. Note
+    // that this will wait the thread to stop its operations.
+    ScriptStreamerThread::shutdown();
 
     v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
     V8PerIsolateData::willBeDestroyed(isolate);
