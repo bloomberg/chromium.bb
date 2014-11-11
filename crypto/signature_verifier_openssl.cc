@@ -122,7 +122,7 @@ bool SignatureVerifier::VerifyFinal() {
   int rv = EVP_DigestVerifyFinal(verify_context_->ctx.get(),
                                  vector_as_array(&signature_),
                                  signature_.size());
-  DCHECK_EQ(!!rv, rv);
+  DCHECK_EQ(static_cast<int>(!!rv), rv);
   Reset();
   return rv == 1;
 }
