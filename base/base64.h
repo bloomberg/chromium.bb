@@ -12,11 +12,12 @@
 
 namespace base {
 
-// Encodes the input string in base64.
+// Encodes the input string in base64. The encoding can be done in-place.
 BASE_EXPORT void Base64Encode(const StringPiece& input, std::string* output);
 
 // Decodes the base64 input string.  Returns true if successful and false
-// otherwise.  The output string is only modified if successful.
+// otherwise. The output string is only modified if successful. The decoding can
+// be done in-place.
 BASE_EXPORT bool Base64Decode(const StringPiece& input, std::string* output);
 
 }  // namespace base

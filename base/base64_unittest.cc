@@ -24,4 +24,17 @@ TEST(Base64Test, Basic) {
   EXPECT_EQ(kText, decoded);
 }
 
+TEST(Base64Test, InPlace) {
+  const std::string kText = "hello world";
+  const std::string kBase64Text = "aGVsbG8gd29ybGQ=";
+  std::string text(kText);
+
+  Base64Encode(text, &text);
+  EXPECT_EQ(kBase64Text, text);
+
+  bool ok = Base64Decode(text, &text);
+  EXPECT_TRUE(ok);
+  EXPECT_EQ(text, kText);
+}
+
 }  // namespace base
