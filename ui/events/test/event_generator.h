@@ -248,6 +248,15 @@ class EventGenerator {
   // other gesture events (e.g. GESTURE_BEGIN, END).
   void GestureTapDownAndUp(const gfx::Point& point);
 
+  // Calculates a time duration that can be used with the given |start|, |end|,
+  // and |steps| values when calling GestureScrollSequence (or
+  // GestureScrollSequenceWithCallback) to achieve the given |velocity|.
+  base::TimeDelta CalculateScrollDurationForFlingVelocity(
+      const gfx::Point& start,
+      const gfx::Point& end,
+      float velocity,
+      int steps);
+
   // Generates press, move, release touch-events to generate a sequence of
   // scroll events. |duration| and |steps| affect the velocity of the scroll,
   // and depending on these values, this may also generate FLING scroll

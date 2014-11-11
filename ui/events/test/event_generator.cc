@@ -280,6 +280,16 @@ void EventGenerator::GestureTapDownAndUp(const gfx::Point& location) {
   Dispatch(&release);
 }
 
+base::TimeDelta EventGenerator::CalculateScrollDurationForFlingVelocity(
+    const gfx::Point& start,
+    const gfx::Point& end,
+    float velocity,
+    int steps) {
+  const float kGestureDistance = (start - end).Length();
+  const float kFlingStepDelay = (kGestureDistance / velocity) / steps * 1000000;
+  return base::TimeDelta::FromMicroseconds(kFlingStepDelay);
+}
+
 void EventGenerator::GestureScrollSequence(const gfx::Point& start,
                                            const gfx::Point& end,
                                            const base::TimeDelta& step_delay,
