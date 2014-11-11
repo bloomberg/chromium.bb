@@ -10,5 +10,5 @@
     TypeChecking=Interface
 ] interface MediaKeySystemAccess {
     readonly attribute DOMString keySystem;
-    [CallWith=ScriptState] Promise createMediaKeys();
+    [CallWith=ScriptState] Promise<MediaKeys> createMediaKeys();
 };

@@ -7,5 +7,5 @@
 [
     RuntimeEnabled=EncryptedMedia
 ] partial interface Navigator {
-    [CallWith=ScriptState] Promise requestMediaKeySystemAccess(DOMString keySystem, optional sequence<MediaKeySystemOptions> supportedConfigurations);
+    [CallWith=ScriptState] Promise<MediaKeySystemAccess> requestMediaKeySystemAccess(DOMString keySystem, optional sequence<MediaKeySystemOptions> supportedConfigurations);
 };
