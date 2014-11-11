@@ -130,10 +130,8 @@ class VIEWS_EXPORT ViewsDelegate {
   // maximized windows; otherwise to restored windows.
   virtual bool WindowManagerProvidesTitleBar(bool maximized);
 
-#if defined(USE_AURA)
   // Returns the context factory for new windows.
   virtual ui::ContextFactory* GetContextFactory();
-#endif
 
 #if defined(OS_WIN)
   // Starts a query for the appbar autohide edges of the specified monitor and

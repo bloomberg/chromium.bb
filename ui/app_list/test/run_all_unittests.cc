@@ -14,7 +14,9 @@
 
 #if defined(OS_MACOSX)
 #include "base/test/mock_chrome_application_mac.h"
-#else
+#endif
+
+#if defined(TOOLKIT_VIEWS)
 #include "ui/gl/gl_surface.h"
 #endif
 
@@ -28,7 +30,8 @@ class AppListTestSuite : public base::TestSuite {
   void Initialize() override {
 #if defined(OS_MACOSX)
     mock_cr_app::RegisterMockCrApp();
-#else
+#endif
+#if defined(TOOLKIT_VIEWS)
     gfx::GLSurface::InitializeOneOffForTests();
 #endif
     base::TestSuite::Initialize();

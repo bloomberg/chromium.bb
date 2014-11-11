@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
+#include "content/public/browser/context_factory.h"
 #include "grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
@@ -33,7 +34,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "content/public/browser/context_factory.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #endif
@@ -382,11 +382,9 @@ bool ChromeViewsDelegate::WindowManagerProvidesTitleBar(bool maximized) {
 }
 #endif
 
-#if defined(USE_AURA)
 ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
   return content::GetContextFactory();
 }
-#endif
 
 #if defined(OS_WIN)
 int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
