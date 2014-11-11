@@ -415,6 +415,11 @@ f6b0b80d5f2d9a2fb41ebb6e2cee7ad8 *./updater4.sh
     """Verifies that we can get the chrome lkgm with a chrome revision."""
     self._TestChromeLKGM('deadbeef' * 5)
 
+  def testAbortHWTests(self):
+    """Verifies that HWTests are aborted for a specific non-CQ config."""
+    commands.AbortHWTests('my_config', 'my_version', debug=False)
+    self.assertCommandContains(['-i', 'my_config/my_version'])
+
   def testAbortCQHWTests(self):
     commands.AbortCQHWTests('my-version', debug=False)
     self.assertCommandContains(['cp'])

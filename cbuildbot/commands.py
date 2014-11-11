@@ -917,6 +917,38 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
       raise TestFailure('** HWTest failed (code %d) **' % result.returncode)
 
 
+def AbortHWTests(config_type_or_name, version, debug, suite=''):
+  """Abort the specified hardware tests for the given bot(s).
+
+  Args:
+    config_type_or_name: Either the name of the builder (e.g. link-paladin) or
+                         the config type if you want to abort all HWTests for
+                         that config (e.g. cbuildbot_config.CONFIG_TYPE_FULL).
+    version: The version of the current build. E.g. R18-1655.0.0-rc1
+    debug: Whether we are in debug mode.
+    suite: Name of the Autotest suite. If empty, abort all suites.
+  """
+  # Abort all jobs for the given config and version.
+  # Example for a specific config: link-paladin/R35-5542.0.0-rc1
+  # Example for a config type: paladin/R35-5542.0.0-rc1
+  substr = '%s/%s' % (config_type_or_name, version)
+
+  # Actually abort the build.
+  cmd = [_AUTOTEST_RPC_CLIENT,
+         _AUTOTEST_RPC_HOSTNAME,
+         'AbortSuiteByName',
+         '-i', substr,
+         '-s', suite]
+  if debug:
+    cros_build_lib.Info('AbortHWTests would run: %s',
+                        cros_build_lib.CmdToStr(cmd))
+  else:
+    try:
+      cros_build_lib.RunCommand(cmd)
+    except cros_build_lib.RunCommandError:
+      cros_build_lib.Warning('AbortHWTests failed', exc_info=True)
+
+
 def _GetAbortCQHWTestsURL(version, suite):
   """Get the URL where we should save state about the specified abort command.
 
@@ -939,25 +971,8 @@ def AbortCQHWTests(version, debug, suite=''):
   # Mark the substr/suite as aborted in Google Storage.
   ctx = gs.GSContext(dry_run=debug)
   ctx.Copy('-', _GetAbortCQHWTestsURL(version, suite), input='')
-
-  # Abort all jobs for the given version, containing the '-paladin' suffix.
-  # Example job id: link-paladin/R35-5542.0.0-rc1
-  substr = '%s/%s' % (cbuildbot_config.CONFIG_TYPE_PALADIN, version)
-
-  # Actually abort the build.
-  cmd = [_AUTOTEST_RPC_CLIENT,
-         _AUTOTEST_RPC_HOSTNAME,
-         'AbortSuiteByName',
-         '-i', substr,
-         '-s', suite]
-  if debug:
-    cros_build_lib.Info('AbortCQHWTests would run: %s',
-                        cros_build_lib.CmdToStr(cmd))
-  else:
-    try:
-      cros_build_lib.RunCommand(cmd)
-    except cros_build_lib.RunCommandError:
-      cros_build_lib.Warning('AbortCQHWTests failed', exc_info=True)
+  # Abort all jobs for the given version, containing the 'paladin' suffix.
+  AbortHWTests(cbuildbot_config.CONFIG_TYPE_PALADIN, version, debug, suite)
 
 
 def HaveCQHWTestsBeenAborted(version, suite=''):

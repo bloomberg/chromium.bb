@@ -750,7 +750,7 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
 
   @minimum_schema(2)
   def GetLastBuildStatuses(self, build_config, number):
-    """Returns the most recent pass/fail statuses for a given build.
+    """Returns basic information about most recent builds.
 
     Args:
       build_config: config name of the build.
@@ -759,14 +759,15 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     Returns:
       A sorted list of dicts containining up to |number| dictionaries for
       build statuses in descending order. Dictionaries contain
-      id, build_config, start_time, finish_time, and status.
+      id, build_config, start_time, finish_time, full_version and status.
     """
     results = self._Execute(
-        'SELECT id, build_config, start_time, finish_time, status'
+        'SELECT id, build_config, start_time, finish_time, full_version, status'
         ' FROM buildTable'
         ' WHERE build_config = "%s"'
         ' ORDER BY id DESC LIMIT %d' % (build_config, number)).fetchall()
-    columns = ['id', 'build_config', 'start_time', 'finish_time', 'status']
+    columns = ['id', 'build_config', 'start_time', 'finish_time',
+               'full_version', 'status']
     return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(11)
