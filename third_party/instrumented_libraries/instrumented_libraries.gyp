@@ -504,8 +504,7 @@
           # TODO(earthdok): find a better fix.
           '--disable-gudev'
       ],
-      # Required on Trusty due to autoconf version mismatch.
-      'run_before_build': 'scripts/autoreconf.sh',
+      'run_before_build': 'scripts/udev.sh',
       'includes': ['standard_instrumented_package_target.gypi'],
     },
     {
