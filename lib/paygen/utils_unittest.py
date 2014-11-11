@@ -56,7 +56,7 @@ class TestUtils(unittest_lib.MoxTestCase):
     # Verify the temp file goes away when we close it.
     self.assertFalse(os.path.exists(temp_name))
 
-  #pylint: disable-msg=E1101
+  # pylint: disable=E1101
   @osutils.TempDirDecorator
   def testListdirFullpath(self):
     file_a = os.path.join(self.tempdir, 'a')

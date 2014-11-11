@@ -607,7 +607,7 @@ class StatsManager(object):
     self.summary = {}
 
 
-  #pylint: disable-msg=W0613
+  # pylint: disable=W0613
   def Gather(self, start_date, end_date, sort_by_build_number=True,
              starting_build_number=0, creds=None):
     """Fetches build data into self.builds.

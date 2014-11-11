@@ -21,7 +21,7 @@ from chromite.lib import gs
 from chromite.lib.paygen import gslock
 
 # We access a lot of protected members during testing.
-# pylint: disable-msg=W0212
+# pylint: disable=W0212
 
 
 def _InProcessAcquire(lock_uri):

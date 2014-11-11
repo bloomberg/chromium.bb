@@ -454,7 +454,7 @@ class ChromeosReleases(object):
     """
     if random_str is None:
       random.seed()
-      # pylint: disable-msg=E1101
+      # pylint: disable=E1101
       random_str = hashlib.md5(str(random.getrandbits(128))).hexdigest()
 
     if key is None:

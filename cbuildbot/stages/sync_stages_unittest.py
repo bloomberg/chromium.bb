@@ -242,7 +242,7 @@ class BaseCQTestCase(generic_stages_unittest.StageTest):
                        return_value=committed, autospec=True)
       # Validation pool will mutate the return value it receives from
       # Query, therefore return a copy of the changes list.
-      # pylint: disable-msg=W0613
+      # pylint: disable=W0613
       def Query(*args, **kwargs):
         return list(changes)
       self.PatchObject(gerrit.GerritHelper, 'Query',

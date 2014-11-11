@@ -160,7 +160,7 @@ class PortageManipulationsTest(mox.MoxTestBase):
     mock_vartree.dbapi.cp_list(TEST_PACKAGE_CP).AndReturn([TEST_PACKAGE_CPV])
 
     mock_package = self.mox.CreateMockAnything('dblink')
-    portage.dblink(TEST_PACKAGE_C, TEST_PACKAGE_PV, #pylint: disable-msg=E1101
+    portage.dblink(TEST_PACKAGE_C, TEST_PACKAGE_PV, # pylint: disable=E1101
         settings=mock_vartree.settings,
         vartree=mock_vartree).AndReturn(mock_package)
     mock_package.getcontents().AndReturn(TEST_PACKAGE_OLDCONTENTS)
@@ -196,7 +196,7 @@ class PortageAPITest(unittest.TestCase):
       self.skipTest('Portage not available in test environment. Re-run test '
                     'in chroot.')
     try:
-      # pylint: disable-msg=E1101
+      # pylint: disable=E1101
       f = portage.vardbapi.writeContentsToContentsFile
     except AttributeError:
       self.fail('Required writeContentsToContentsFile function does '

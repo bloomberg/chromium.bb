@@ -45,7 +45,7 @@ TYPE_LOCAL = 'file'
 class NotSupportedForType(RuntimeError):
   """Raised when operation is not supported for a particular file type"""
   def __init__(self, uri_type, extra_msg=None):
-    # pylint: disable-msg=W0212
+    # pylint: disable=W0212
     function = sys._getframe(1).f_code.co_name
     msg = 'Function %s not supported for %s URIs' % (function, uri_type)
     if extra_msg:
@@ -57,7 +57,7 @@ class NotSupportedForType(RuntimeError):
 class NotSupportedForTypes(RuntimeError):
   """Raised when operation is not supported for all particular file type"""
   def __init__(self, extra_msg=None, *uri_types):
-    # pylint: disable-msg=W0212
+    # pylint: disable=W0212
     function = sys._getframe(1).f_code.co_name
     msg = ('Function %s not supported for set of URIs with types: %s' %
            (function, ', '.join(uri_types)))
@@ -70,7 +70,7 @@ class NotSupportedForTypes(RuntimeError):
 class NotSupportedBetweenTypes(RuntimeError):
   """Raised when operation is not supported between particular file types"""
   def __init__(self, uri_type1, uri_type2, extra_msg=None):
-    # pylint: disable-msg=W0212
+    # pylint: disable=W0212
     function = sys._getframe(1).f_code.co_name
     msg = ('Function %s not supported between %s and %s URIs' %
            (function, uri_type1, uri_type2))

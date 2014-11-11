@@ -33,7 +33,7 @@ CL_ACTION_COLUMNS = ['id', 'build_id', 'action', 'reason',
 _CLActionTuple = collections.namedtuple('_CLActionTuple', CL_ACTION_COLUMNS)
 
 
-#pylint: disable-msg=E1101,W0232
+# pylint: disable=E1101,W0232
 class CLAction(_CLActionTuple):
   """An action or history log entry for a particular CL."""
 

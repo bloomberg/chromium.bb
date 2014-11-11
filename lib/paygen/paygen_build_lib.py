@@ -46,10 +46,10 @@ try:
   from crostools.config import config
   from crostools.omaha import query
 
-  # pylint: disable-msg=F0401
+  # pylint: disable=F0401
   from site_utils.autoupdate.lib import test_params
   from site_utils.autoupdate.lib import test_control
-  # pylint: enable-msg=F0401
+  # pylint: enable=F0401
 
 except ImportError:
   config = None

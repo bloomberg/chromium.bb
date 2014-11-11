@@ -23,7 +23,7 @@ class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
   def setUp(self):
     # Ensure that we do not create any live connections in this unit test.
     self.connection_mock = self.PatchObject(cidb, 'CIDBConnection')
-    # pylint: disable-msg=W0212
+    # pylint: disable=W0212
     cidb.CIDBConnectionFactory._ClearCIDBSetup()
 
   def testGetConnectionBeforeSetup(self):

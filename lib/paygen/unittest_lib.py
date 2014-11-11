@@ -344,7 +344,7 @@ class TestCase(unittest.TestCase):
     Returns:
       Function that returns true if input line matches line_re.
     """
-    # pylint: disable-msg=C0111,W0612
+    # pylint: disable=C0111,W0612
     def _method(line):
       return line_re.search(line)
 

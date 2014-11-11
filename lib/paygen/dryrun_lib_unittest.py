@@ -15,7 +15,7 @@ from chromite.lib.paygen import dryrun_lib
 from chromite.lib.paygen import unittest_lib
 
 
-# pylint: disable-msg=W0212
+# pylint: disable=W0212
 
 
 class FuncClass(object):

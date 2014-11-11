@@ -37,7 +37,7 @@ class UnableToCreateTmpDir(Exception):
 
 class Timer(object):
   """Timer class to measure the time that is spent during a task."""
-  # pylint: disable-msg=W0201
+  # pylint: disable=W0201
 
   def __enter__(self):
     self.__start = time.time()
@@ -124,7 +124,7 @@ def RunCommand(cmd, error_ok=False, redirect_stdout=False,
   Raises:
     CommandFailedException: on child process failure and error_ok is False.
   """
-  # pylint: disable-msg=W0622
+  # pylint: disable=W0622
   cmd_result = CommandResult()
 
   # Prepare log_cmd for logging purposes only.

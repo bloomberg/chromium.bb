@@ -64,7 +64,7 @@ class PortagePackageAPIError(Exception):
 
 
 def GetNewestFileTime(path, ignore_subdirs=[]):
-  #pylint: disable-msg=W0102
+  # pylint: disable=W0102
   """Recursively determine the newest file modification time.
 
   Args:
@@ -163,7 +163,7 @@ def GetPackageAPI(portage_root, package_cp):
       vartree is of type portage.dbapi.vartree.vartree
   """
   if portage_root is None:
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     portage_root = portage.root
   # Ensure that portage_root ends with trailing slash.
   portage_root = os.path.join(portage_root, '')
@@ -187,7 +187,7 @@ def GetPackageAPI(portage_root, package_cp):
   # Convert string match to package dblink.
   package_cpv = matching_packages[0]
   package_split = portage_util.SplitCPV(package_cpv)
-  # pylint: disable-msg=E1101
+  # pylint: disable=E1101
   package = portage.dblink(package_split.category,
                            package_split.pv, settings=vartree.settings,
                            vartree=vartree)

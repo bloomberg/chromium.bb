@@ -12,7 +12,7 @@ database test instance.
 to the above test instance.
 """
 
-# pylint: disable-msg= W0212
+# pylint: disable= W0212
 
 from __future__ import print_function
 

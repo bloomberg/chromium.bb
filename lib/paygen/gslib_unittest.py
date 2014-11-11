@@ -24,7 +24,7 @@ from chromite.lib.paygen import unittest_lib
 from chromite.lib.paygen import utils
 
 
-# pylint: disable-msg=R0904
+# pylint: disable=R0904
 
 # Typical output for a GS failure that is not our fault, and we should retry.
 GS_RETRY_FAILURE = ('GSResponseError: status=403, code=InvalidAccessKeyId,'
@@ -737,7 +737,7 @@ class TestGsLibAccess(unittest_lib.MoxTestCase):
     5) Recalculate MD5 sum for local file.
     6) Verify that MD5 values are the same.
     """
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     gs_md5 = gslib.MD5Sum(self.small_gs_path)
     local_path = os.path.join(self.tempdir, 'md5-check-file')
     gslib.Copy(self.small_gs_path, local_path)

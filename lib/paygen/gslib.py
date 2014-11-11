@@ -473,7 +473,7 @@ def Move(src_path, dest_path, **kwargs):
   args = ['mv', src_path, dest_path]
   RunGsutilCommand(args, failed_exception=MoveFail, **kwargs)
 
-# pylint: disable-msg=C9011
+# pylint: disable=C9011
 
 @RetryGSLib
 def Remove(*paths, **kwargs):

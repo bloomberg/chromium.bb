@@ -87,7 +87,7 @@ class MetadataTest(cros_test_lib.TestCase):
     metadata = metadata_lib.CBuildbotMetadata(metadata_dict=starting_dict,
                                               multiprocess_manager=m)
 
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     update_dict = m.dict()
     update_dict['my_key'] = 'some value'
     metadata.UpdateBoardDictWithDict('board-1', update_dict)

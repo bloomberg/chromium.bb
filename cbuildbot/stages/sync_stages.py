@@ -724,7 +724,7 @@ class CommitQueueSyncStage(MasterSlaveLKGMSyncStage):
     else:
       self._SetPoolFromManifest(self.manifest_manager.GetLocalManifest())
 
-  # pylint: disable-msg=W0613
+  # pylint: disable=W0613
   def _ChangeFilter(self, pool, changes, non_manifest_changes):
     # First, look for changes that were tested by the Pre-CQ.
     changes_to_test = []

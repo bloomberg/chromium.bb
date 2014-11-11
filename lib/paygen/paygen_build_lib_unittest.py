@@ -35,13 +35,13 @@ from chromite.lib.paygen import paygen_payload_lib
 from chromite.lib.paygen import utils
 
 
-# pylint: disable-msg=F0401
+# pylint: disable=F0401
 from site_utils.autoupdate.lib import test_control
-# pylint: enable-msg=F0401
+# pylint: enable=F0401
 
 
 # We access a lot of protected members during testing.
-# pylint: disable-msg=W0212
+# pylint: disable=W0212
 
 
 class PaygenBuildLibTest(mox.MoxTestBase):
@@ -947,7 +947,7 @@ fsi_images: 2913.331.0,2465.105.0
     lock_uri = paygen._GetFlagURI(gspaths.ChromeosReleases.LOCK)
 
     # Pylint is confused because of helper stubbing things out.
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     gslock.Lock(lock_uri, dry_run=False).AndRaise(gslock.LockNotAcquired())
 
     # Run the test verification.

@@ -27,7 +27,7 @@ from chromite.lib.paygen import unittest_lib
 
 
 # We access a lot of protected members during testing.
-# pylint: disable-msg=W0212
+# pylint: disable=W0212
 
 # The inProcess methods have to be standalone to be pickleable.
 def _inProcessFetchIntoCache(uri_tempdir):
@@ -67,7 +67,7 @@ class DownloadCachePickleTest(unittest_lib.TestCase):
 
   @osutils.TempDirDecorator
   def testPickleUnpickle(self):
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     cache = download_cache.DownloadCache(self.tempdir)
     pickle_path = os.path.join(self.tempdir, 'cache.pickle')
 

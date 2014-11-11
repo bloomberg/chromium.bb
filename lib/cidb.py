@@ -86,7 +86,7 @@ def minimum_schema(min_version):
 
 class StrictModeListener(sqlalchemy.interfaces.PoolListener):
   """This listener ensures that STRICT_ALL_TABLES for all connections."""
-  # pylint: disable-msg=W0613
+  # pylint: disable=W0613
   def connect(self, dbapi_con, *args, **kwargs):
     cur = dbapi_con.cursor()
     cur.execute("SET SESSION sql_mode='STRICT_ALL_TABLES'")

@@ -270,7 +270,7 @@ class TestFileLib(unittest_lib.MoxTestCase):
 
   @osutils.TempDirDecorator
   def testRemove(self):
-    # pylint: disable-msg=E1101
+    # pylint: disable=E1101
     path1 = os.path.join(self.tempdir, 'file1')
     path2 = os.path.join(self.tempdir, 'file2')
     missing_path = os.path.join(self.tempdir, 'missing')

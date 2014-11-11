@@ -22,7 +22,7 @@ from chromite.lib.paygen import urilib
 
 
 # We access private members to test them.
-# pylint: disable-msg=E1101,W0201
+# pylint: disable=E1101,W0201
 
 
 class FakeHttpResponse(object):
@@ -46,7 +46,7 @@ class FakeHttpResponse(object):
 
 class TestFileManipulation(unittest_lib.TestCase):
   """Test general urilib file methods together."""
-  # pylint: disable-msg=E1101
+  # pylint: disable=E1101
 
   FILE1 = 'file1'
   FILE2 = 'file2'
