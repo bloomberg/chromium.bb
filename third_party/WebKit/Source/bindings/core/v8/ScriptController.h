@@ -96,6 +96,7 @@ public:
     // Otherwise, a new world is created.
     //
     // FIXME: Get rid of extensionGroup here.
+    // FIXME: We don't want to support multiple scripts.
     void executeScriptInIsolatedWorld(int worldID, const Vector<ScriptSourceCode>& sources, int extensionGroup, Vector<v8::Local<v8::Value> >* results);
 
     // Returns true if argument is a JavaScript URL.

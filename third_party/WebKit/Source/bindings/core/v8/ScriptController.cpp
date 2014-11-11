@@ -637,8 +637,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
         return;
 
     ScriptState* scriptState = isolatedWorldWindowProxy->scriptState();
-    v8::EscapableHandleScope handleScope(scriptState->isolate());
-    ScriptState::Scope scope(scriptState);
+    v8::Context::Scope scope(scriptState->context());
     v8::Local<v8::Array> resultArray = v8::Array::New(m_isolate, sources.size());
 
     for (size_t i = 0; i < sources.size(); ++i) {
@@ -650,7 +649,7 @@ void ScriptController::executeScriptInIsolatedWorld(int worldID, const Vector<Sc
 
     if (results) {
         for (size_t i = 0; i < resultArray->Length(); ++i)
-            results->append(handleScope.Escape(resultArray->Get(i)));
+            results->append(resultArray->Get(i));
     }
 }
 
