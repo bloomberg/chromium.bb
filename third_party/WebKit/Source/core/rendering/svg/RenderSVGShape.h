@@ -70,7 +70,7 @@ public:
     bool hasNonScalingStroke() const { return style()->svgStyle().vectorEffect() == VE_NON_SCALING_STROKE; }
     Path* nonScalingStrokePath(const Path*, const AffineTransform&) const;
     AffineTransform nonScalingStrokeTransform() const;
-    virtual AffineTransform localTransform() const override final { return m_localTransform; }
+    virtual AffineTransform localTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localTransform(); }
 
     virtual const Vector<MarkerPosition>* markerPositions() const { return 0; }
 
@@ -98,7 +98,7 @@ private:
     bool fillContains(const FloatPoint&, bool requiresFill = true, const WindRule fillRule = RULE_NONZERO);
     bool strokeContains(const FloatPoint&, bool requiresStroke = true);
 
-    virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform; }
+    virtual const AffineTransform& localToParentTransform() const override final { return m_localTransform ? *m_localTransform : RenderSVGModelObject::localToParentTransform(); }
 
     virtual bool isOfType(RenderObjectType type) const override { return type == RenderObjectSVGShape || RenderSVGModelObject::isOfType(type); }
     virtual const char* renderName() const override { return "RenderSVGShape"; }
@@ -113,10 +113,11 @@ private:
     FloatRect calculateObjectBoundingBox() const;
     FloatRect calculateStrokeBoundingBox() const;
     void updatePaintInvalidationBoundingBox();
+    void updateLocalTransform();
 
 private:
     FloatRect m_paintInvalidationBoundingBox;
-    AffineTransform m_localTransform;
+    OwnPtr<AffineTransform> m_localTransform;
     OwnPtr<Path> m_path;
 
     bool m_needsBoundariesUpdate : 1;

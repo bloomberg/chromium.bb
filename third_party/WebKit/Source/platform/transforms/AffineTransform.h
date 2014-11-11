@@ -51,6 +51,8 @@ public:
 
     void setMatrix(double a, double b, double c, double d, double e, double f);
 
+    void setTransform(const AffineTransform& other) { setMatrix(other.m_transform); }
+
     void map(double x, double y, double& x2, double& y2) const;
 
     // Rounds the mapped point to the nearest integer value.

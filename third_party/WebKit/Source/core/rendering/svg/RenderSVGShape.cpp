@@ -110,6 +110,19 @@ bool RenderSVGShape::strokeContains(const FloatPoint& point, bool requiresStroke
     return shapeDependentStrokeContains(point);
 }
 
+void RenderSVGShape::updateLocalTransform()
+{
+    SVGGraphicsElement* graphicsElement = toSVGGraphicsElement(element());
+    if (graphicsElement->hasAnimatedLocalTransform()) {
+        if (m_localTransform)
+            m_localTransform->setTransform(graphicsElement->calculateAnimatedLocalTransform());
+        else
+            m_localTransform = adoptPtr(new AffineTransform(graphicsElement->calculateAnimatedLocalTransform()));
+    } else {
+        m_localTransform = 0;
+    }
+}
+
 void RenderSVGShape::layout()
 {
     bool updateCachedBoundariesInParents = false;
@@ -123,7 +136,7 @@ void RenderSVGShape::layout()
     }
 
     if (m_needsTransformUpdate) {
-        m_localTransform =  toSVGGraphicsElement(element())->calculateAnimatedLocalTransform();
+        updateLocalTransform();
         m_needsTransformUpdate = false;
         updateCachedBoundariesInParents = true;
     }
@@ -175,7 +188,7 @@ bool RenderSVGShape::nodeAtFloatPoint(const HitTestRequest& request, HitTestResu
         return false;
 
     FloatPoint localPoint;
-    if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, m_localTransform, pointInParent, localPoint))
+    if (!SVGRenderSupport::transformToUserSpaceAndCheckClipping(this, localToParentTransform(), pointInParent, localPoint))
         return false;
 
     PointerEventsHitRules hitRules(PointerEventsHitRules::SVG_GEOMETRY_HITTESTING, request, style()->pointerEvents());

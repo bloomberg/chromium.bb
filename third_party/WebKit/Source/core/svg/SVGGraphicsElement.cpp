@@ -122,6 +122,14 @@ PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
     return SVGMatrixTearOff::create(getScreenCTM());
 }
 
+bool SVGGraphicsElement::hasAnimatedLocalTransform() const
+{
+    RenderStyle* style = renderer() ? renderer()->style() : 0;
+
+    // Each of these is used in SVGGraphicsElement::calculateAnimatedLocalTransform to create an animated local transform.
+    return (style && style->hasTransform()) || !m_transform->currentValue()->isEmpty() || hasSVGRareData();
+}
+
 AffineTransform SVGGraphicsElement::calculateAnimatedLocalTransform() const
 {
     AffineTransform matrix;

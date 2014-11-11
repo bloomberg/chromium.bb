@@ -51,6 +51,7 @@ public:
     SVGElement* farthestViewportElement() const;
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const override { return calculateAnimatedLocalTransform(); }
+    bool hasAnimatedLocalTransform() const;
     AffineTransform calculateAnimatedLocalTransform() const;
     virtual AffineTransform* animateMotionTransform() override;
 
