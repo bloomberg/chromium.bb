@@ -33,9 +33,6 @@ class BluetoothGattNotifySession;
 //      BluetoothGattService instance that represents a local service.
 class BluetoothGattCharacteristic {
  public:
-  // TODO(jamuraa): per chromium.org/developers/coding-style these should
-  // be MACRO_STYLE instead of kCamelCase. (crbug.com/418696)
-
   // Values representing the possible properties of a characteristic, which
   // define how the characteristic can be used. Each of these properties serve
   // a role as defined in the Bluetooth Specification.
