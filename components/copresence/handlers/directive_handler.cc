@@ -5,10 +5,17 @@
 #include "components/copresence/handlers/directive_handler.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "components/copresence/handlers/audio/audio_directive_handler_impl.h"
 #include "components/copresence/proto/data.pb.h"
+
+namespace {
+
+const int kMaxUnlabeledDirectiveTtl = 60000;  // 1 minute
+
+}  // namespace
 
 namespace copresence {
 
@@ -24,6 +31,7 @@ DirectiveHandler::~DirectiveHandler() {}
 void DirectiveHandler::Start(WhispernetClient* whispernet_client,
                              const TokensCallback& tokens_cb) {
   audio_handler_->Initialize(whispernet_client, tokens_cb);
+  DVLOG(2) << "Directive handler starting";
 
   is_started_ = true;
 
@@ -35,7 +43,10 @@ void DirectiveHandler::Start(WhispernetClient* whispernet_client,
   pending_directives_.clear();
 }
 
-void DirectiveHandler::AddDirective(const Directive& directive) {
+void DirectiveHandler::AddDirective(const Directive& original_directive) {
+  // We may need to modify the directive's TTL.
+  Directive directive(original_directive);
+
   // We only handle transmit and receive directives.
   // WiFi and BLE scans aren't implemented.
   DCHECK_EQ(directive.instruction_type(), TOKEN);
@@ -43,9 +54,20 @@ void DirectiveHandler::AddDirective(const Directive& directive) {
   std::string op_id = directive.published_message_id();
   if (op_id.empty())
     op_id = directive.subscription_id();
+
+  // GCM directives will not have a publish or subscribe ID populated.
   if (op_id.empty()) {
-    NOTREACHED() << "No operation associated with directive!";
-    return;
+    op_id = base::GenerateGUID();
+    DVLOG(3) << "No operation associated with directive. Setting op id to "
+             << op_id;
+
+    // The app can't cancel these directives, so make sure they're not too long.
+    if (directive.ttl_millis() > kMaxUnlabeledDirectiveTtl) {
+      DVLOG(2) << "Cutting TTL of unlabeled directive from "
+               << directive.ttl_millis() << " down to "
+               << kMaxUnlabeledDirectiveTtl << " milliseconds";
+      directive.set_ttl_millis(kMaxUnlabeledDirectiveTtl);
+    }
   }
 
   if (!is_started_) {

@@ -13,15 +13,25 @@
 using testing::ElementsAre;
 using testing::IsEmpty;
 
+namespace {
+
+const int64 kMaxUnlabeledTtl = 60000;  // 1 minute
+const int64 kExcessiveUnlabeledTtl = 120000;  // 2 minutes
+const int64 kDefaultTtl = 600000;  // 10 minutes
+
+}  // namespace
+
 namespace copresence {
 
 Directive CreateDirective(const std::string& publish_id,
                           const std::string& subscribe_id,
-                          const std::string& token) {
+                          const std::string& token,
+                          int64 ttl_ms) {
   Directive directive;
   directive.set_instruction_type(TOKEN);
   directive.set_published_message_id(publish_id);
   directive.set_subscription_id(subscribe_id);
+  directive.set_ttl_millis(ttl_ms);
 
   TokenInstruction* instruction = new TokenInstruction;
   instruction->set_token_id(token);
@@ -29,6 +39,12 @@ Directive CreateDirective(const std::string& publish_id,
   directive.set_allocated_token_instruction(instruction);
 
   return directive;
+}
+
+Directive CreateDirective(const std::string& publish_id,
+                          const std::string& subscribe_id,
+                          const std::string& token) {
+  return CreateDirective(publish_id, subscribe_id, token, kDefaultTtl);
 }
 
 class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
@@ -40,8 +56,9 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
 
   void AddInstruction(const TokenInstruction& instruction,
                       const std::string& /* op_id */,
-                      base::TimeDelta /* ttl_ms */) override {
+                      base::TimeDelta ttl) override {
     added_tokens_.push_back(instruction.token_id());
+    added_ttls_.push_back(ttl.InMilliseconds());
   }
 
   void RemoveInstructions(const std::string& op_id) override {
@@ -62,12 +79,17 @@ class FakeAudioDirectiveHandler final : public AudioDirectiveHandler {
     return added_tokens_;
   }
 
+  const std::vector<int64>& added_ttls() const {
+    return added_ttls_;
+  }
+
   const std::vector<std::string>& removed_operations() const {
     return removed_operations_;
   }
 
  private:
   std::vector<std::string> added_tokens_;
+  std::vector<int64> added_ttls_;
   std::vector<std::string> removed_operations_;
 };
 
@@ -80,10 +102,24 @@ class DirectiveHandlerTest : public testing::Test {
             make_scoped_ptr<AudioDirectiveHandler>(audio_handler_)) {}
 
  protected:
+  void StartDirectiveHandler() {
+    directive_handler_.Start(whispernet_client_.get(), TokensCallback());
+  }
+
   scoped_ptr<WhispernetClient> whispernet_client_;
   FakeAudioDirectiveHandler* audio_handler_;
   DirectiveHandler directive_handler_;
 };
+
+TEST_F(DirectiveHandlerTest, DirectiveTtl) {
+  StartDirectiveHandler();
+  directive_handler_.AddDirective(
+      CreateDirective("", "", "token 1", kMaxUnlabeledTtl));
+  directive_handler_.AddDirective(
+      CreateDirective("", "", "token 2", kExcessiveUnlabeledTtl));
+  EXPECT_THAT(audio_handler_->added_ttls(),
+      ElementsAre(kMaxUnlabeledTtl, kMaxUnlabeledTtl));
+}
 
 TEST_F(DirectiveHandlerTest, Queuing) {
   directive_handler_.AddDirective(CreateDirective("id 1", "", "token 1"));
@@ -94,10 +130,11 @@ TEST_F(DirectiveHandlerTest, Queuing) {
   EXPECT_THAT(audio_handler_->added_tokens(), IsEmpty());
   EXPECT_THAT(audio_handler_->removed_operations(), IsEmpty());
 
-  directive_handler_.Start(whispernet_client_.get(), TokensCallback());
+  StartDirectiveHandler();
   directive_handler_.RemoveDirectives("id 3");
 
   EXPECT_THAT(audio_handler_->added_tokens(), ElementsAre("token 3"));
+  EXPECT_THAT(audio_handler_->added_ttls(), ElementsAre(kDefaultTtl));
   EXPECT_THAT(audio_handler_->removed_operations(), ElementsAre("id 3"));
 }
 
