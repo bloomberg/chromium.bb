@@ -593,6 +593,15 @@ NSDictionary* attributeToMethodNameMap = nil;
   case ui::AX_ROLE_CONTENT_INFO:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_ADDRESS));
+  case ui::AX_ROLE_DESCRIPTION_LIST:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_DESCRIPTION_LIST));
+  case ui::AX_ROLE_DESCRIPTION_LIST_DETAIL:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_DESCRIPTION_DETAIL));
+  case ui::AX_ROLE_DESCRIPTION_LIST_TERM:
+    return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+        IDS_AX_ROLE_DESCRIPTION_TERM));
   case ui::AX_ROLE_FOOTER:
     return base::SysUTF16ToNSString(content_client->GetLocalizedString(
         IDS_AX_ROLE_FOOTER));
@@ -728,7 +737,7 @@ NSDictionary* attributeToMethodNameMap = nil;
   }
 
   if (browserAccessibilityRole == ui::AX_ROLE_DESCRIPTION_LIST)
-    return @"AXDescriptionList";
+    return @"AXDefinitionList";
 
   if (browserAccessibilityRole == ui::AX_ROLE_LIST)
     return @"AXContentList";

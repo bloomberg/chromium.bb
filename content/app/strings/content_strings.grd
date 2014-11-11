@@ -344,6 +344,15 @@ below:
       <message name="IDS_AX_ROLE_COMPLEMENTARY" desc="accessibility role description for complementary">
         complementary
       </message>
+      <message name="IDS_AX_ROLE_DESCRIPTION_DETAIL" desc="accessibility role description for a definition">
+        definition
+      </message>
+      <message name="IDS_AX_ROLE_DESCRIPTION_LIST" desc="accessibility role description for a definition list">
+        definition list
+      </message>
+      <message name="IDS_AX_ROLE_DESCRIPTION_TERM" desc="accessibility role description for description term(as in a description list)">
+        term
+      </message>
       <message name="IDS_AX_ROLE_WEB_AREA" desc="accessibility role description for web area">
         HTML content
       </message>

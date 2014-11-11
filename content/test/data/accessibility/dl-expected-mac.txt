@@ -1,8 +1,8 @@
-AXWebArea
-    AXList AXSubrole=AXDescriptionList
-        AXGroup AXSubrole=AXTerm
-            AXStaticText AXValue='Term'
-        AXGroup AXSubrole=AXDescription
-            AXStaticText AXValue='Description'
-    AXGroup AXSubrole=AXDefinition
-        AXStaticText AXValue='Definition'
+AXWebArea AXRoleDescription='HTML content'
+    AXList AXSubrole=AXDefinitionList AXRoleDescription='definition list'
+        AXGroup AXSubrole=AXTerm AXRoleDescription='term'
+            AXStaticText AXRoleDescription='text' AXValue='Term'
+        AXGroup AXSubrole=AXDefinition AXRoleDescription='definition'
+            AXStaticText AXRoleDescription='text' AXValue='Description'
+    AXGroup AXSubrole=AXDefinition AXRoleDescription='definition'
+        AXStaticText AXRoleDescription='text' AXValue='Definition'

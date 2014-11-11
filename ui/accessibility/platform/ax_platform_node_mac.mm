@@ -152,7 +152,7 @@ RoleMap BuildSubroleMap() {
       {ui::AX_ROLE_ALERT_DIALOG, @"AXApplicationAlertDialog"},
       {ui::AX_ROLE_ARTICLE, @"AXDocumentArticle"},
       {ui::AX_ROLE_DEFINITION, @"AXDefinition"},
-      {ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, @"AXDescription"},
+      {ui::AX_ROLE_DESCRIPTION_LIST_DETAIL, @"AXDefinition"},
       {ui::AX_ROLE_DESCRIPTION_LIST_TERM, @"AXTerm"},
       {ui::AX_ROLE_DIALOG, @"AXApplicationDialog"},
       {ui::AX_ROLE_DOCUMENT, @"AXDocument"},
