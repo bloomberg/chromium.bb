@@ -1,24 +1,5 @@
 description("Test the parsing of the background-blend-mode property.");
 
-function jsWrapperClass(node)
-{
-    if (!node)
-        return "[null]";
-    var string = Object.prototype.toString.apply(node);
-    return string.substr(8, string.length - 9);
-}
-
-function shouldBeType(expression, className, prototypeName, constructorName)
-{
-    if (!prototypeName)
-        prototypeName = "Object";
-    if (!constructorName)
-        constructorName = "Function";
-    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
-    shouldBe("jsWrapperClass(" + expression + ".__proto__)", "'" + prototypeName + "'");
-    shouldBe("jsWrapperClass(" + expression + ".constructor)", "'" + constructorName + "'");
-}
-
 // These have to be global for the test helpers to see them.
 var stylesheet, cssRule, declaration, blendModeRule, subRule;
 var styleElement = document.createElement("style");
@@ -38,12 +19,6 @@ function testBlendModeRule(description, rule, expectedLength, expectedValue, exp
     declaration = cssRule.style;
     shouldBe("declaration.length", "1");
     shouldBe("declaration.getPropertyValue('background-blend-mode')", "'" + expectedValue + "'");
-
-    blendModeRule = declaration.getPropertyCSSValue('background-blend-mode');
-    if(rule.indexOf(',') == -1)
-        shouldBeType("blendModeRule", "CSSPrimitiveValue");
-    else
-        shouldBeType("blendModeRule", "CSSValueList");
 }
 
 var blendmodes = ["normal", "multiply, screen", "screen, hue", "overlay, normal", "darken, lighten, normal, luminosity", "lighten", "color-dodge", "color-burn", "hard-light", "soft-light", "difference", "exclusion", "hue", "saturation", "color", "luminosity"];
