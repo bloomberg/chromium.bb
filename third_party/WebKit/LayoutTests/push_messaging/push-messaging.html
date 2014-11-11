@@ -31,12 +31,24 @@ function testPushRegistrationSuccess() {
         registration = reg;
         shouldBeEqualToString('registration.pushEndpoint', 'endpoint');
         shouldBeEqualToString('registration.pushRegistrationId', 'registrationId');
-        finishJSTest();
+        testPushHasPermission();
     }, function(e) {
         testFailed('Error callback invoked unexpectedly.');
         finishJSTest();
     });
 }
+
+function testPushHasPermission() {
+    navigator.push.hasPermission().then(function(permissionStatus) {
+        status  = permissionStatus;
+        shouldBeEqualToString('status', 'granted');
+        finishJSTest();
+    }, function() {
+        testFailed('Error callback invoked unexpectedly.');
+        finishJSTest();
+    });
+}
+
 </script>
 </body>
 </html>

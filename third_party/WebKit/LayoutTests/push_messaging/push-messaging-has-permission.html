@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<script>
+description('Tests for the Push API hasPermission method.');
+
+if (!window.testRunner)
+    debug('This test can not run without testRunner');
+
+window.jsTestIsAsync = true;
+
+function testPushHasPermissionDefault() {
+    window.testRunner.setMockPushClientError('permission_default');
+    testPushHasPermission('default', testPushHasPermissionDenied);
+}
+
+function testPushHasPermissionDenied() {
+    window.testRunner.setMockPushClientError('deny_permission');
+    testPushHasPermission('denied', testPushHasPermissionGranted);
+}
+
+function testPushHasPermissionGranted() {
+    window.testRunner.setMockPushClientSuccess('endpoint', 'registrationId');
+    testPushHasPermission('granted');
+}
+
+function testPushHasPermission(expectedStatus, runNext) {
+    navigator.push.hasPermission().then(function(permissionStatus) {
+        status = permissionStatus;
+        shouldBeEqualToString('status', expectedStatus);
+        if (runNext)
+            runNext();
+        else
+            finishJSTest();
+    }, function() {
+        testFailed('Promise rejected unexpectedly.');
+        finishJSTest();
+    });
+}
+
+testPushHasPermissionDefault();
+
+</script>
+</body>
+</html>
