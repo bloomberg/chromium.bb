@@ -41,6 +41,14 @@ if sys.platform == 'darwin':
   test.must_exist(result_file)
   TestMac.CheckFileType(test, result_file, ['x86_64'])
 
+  test.run_gyp('test-dependencies.gyp', chdir='archs')
+  test.build('test-dependencies.gyp', target=test.ALL, chdir='archs')
+  products = ['c_standalone', 'd_standalone']
+  for product in products:
+    result_file = test.built_file_path(
+        product, chdir='archs', type=test.STATIC_LIB)
+    test.must_exist(result_file)
+
   if test.format != 'make':
     # Build all targets except 'exe_32_64_no_sources' that does build
     # but should not cause error when generating ninja files

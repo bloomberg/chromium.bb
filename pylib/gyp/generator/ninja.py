@@ -1056,9 +1056,19 @@ class NinjaWriter:
                                       arch=arch)
                 for arch in self.archs]
       extra_bindings = []
+      build_output = output
       if not self.is_mac_bundle:
         self.AppendPostbuildVariable(extra_bindings, spec, output, output)
-      self.ninja.build(output, 'lipo', inputs, variables=extra_bindings)
+
+      # TODO(yyanagisawa): more work needed to fix:
+      # https://code.google.com/p/gyp/issues/detail?id=411
+      if (spec['type'] in ('shared_library', 'loadable_module') and
+          not self.is_mac_bundle):
+        extra_bindings.append(('lib', output))
+        self.ninja.build([output, output + '.TOC'], 'solipo', inputs,
+            variables=extra_bindings)
+      else:
+        self.ninja.build(build_output, 'lipo', inputs, variables=extra_bindings)
       return output
 
   def WriteLinkForArch(self, ninja_file, spec, config_name, config,
@@ -2097,6 +2107,16 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       'lipo',
       description='LIPO $out, POSTBUILDS',
       command='rm -f $out && lipo -create $in -output $out$postbuilds')
+    master_ninja.rule(
+      'solipo',
+      description='SOLIPO $out, POSTBUILDS',
+      command=(
+          'rm -f $lib $lib.TOC && lipo -create $in -output $lib$postbuilds &&'
+          '%(extract_toc)s > $lib.TOC'
+          % { 'extract_toc':
+                '{ otool -l $lib | grep LC_ID_DYLIB -A 5; '
+                'nm -gP $lib | cut -f1-2 -d\' \' | grep -v U$$; true; }'}))
+
 
     # Record the public interface of $lib in $lib.TOC. See the corresponding
     # comment in the posix section above for details.
