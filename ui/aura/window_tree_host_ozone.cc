@@ -5,7 +5,6 @@
 #include "ui/aura/window_tree_host_ozone.h"
 
 #include "ui/aura/window_event_dispatcher.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 

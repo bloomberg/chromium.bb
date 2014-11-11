@@ -140,7 +140,6 @@ component("aura") {
     ]
 
     deps += [
-      "//ui/events/ozone:events_ozone",
       "//ui/ozone",
     ]
   }
