@@ -301,17 +301,8 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
 // Tests that the callback passed to CopyFromCompositingSurfaceToVideoFrame is
 // always called, even when the RenderWidgetHost is deleting in the middle of
 // an async copy.
-//
-// Test is flaky on Win. http://crbug.com/276783
-#if defined(OS_WIN) || (defined(OS_CHROMEOS) && !defined(NDEBUG))
-#define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
-  DISABLED_CopyFromCompositingSurface_CallbackDespiteDelete
-#else
-#define MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete \
-  CopyFromCompositingSurface_CallbackDespiteDelete
-#endif
 IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTest,
-                       MAYBE_CopyFromCompositingSurface_CallbackDespiteDelete) {
+                       CopyFromCompositingSurface_CallbackDespiteDelete) {
   SET_UP_SURFACE_OR_PASS_TEST(NULL);
   RenderWidgetHostViewBase* const view = GetRenderWidgetHostView();
   if (!view->CanCopyToVideoFrame()) {
@@ -554,28 +545,22 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     if (!ShouldContinueAfterTestURLLoad())
       return;
 
-    RenderWidgetHostViewBase* rwhvp = GetRenderWidgetHostView();
-    if (video_frame && !rwhvp->CanCopyToVideoFrame()) {
-      // This should only happen on Mac when using the software compositor.
-      // Otherwise, raise an error. This can be removed when Mac is moved to a
-      // browser compositor.
-      // http://crbug.com/314190
-#if defined(OS_MACOSX)
-      if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
-        LOG(WARNING) << ("Blindly passing this test because copying to "
-                         "video frames is not supported on this platform.");
-        return;
-      }
-#endif
-      NOTREACHED();
-    }
+    RenderWidgetHostViewBase* rwhv = GetRenderWidgetHostView();
+    ASSERT_TRUE(!video_frame || rwhv->CanCopyToVideoFrame());
 
-    // The page is loaded in the renderer, wait for a new frame to arrive.
-    uint32 frame = rwhvp->RendererFrameNumber();
-    while (!GetRenderWidgetHost()->ScheduleComposite())
-      GiveItSomeTime();
-    while (rwhvp->RendererFrameNumber() == frame)
-      GiveItSomeTime();
+    // The page is loaded in the renderer.  Request frames from the renderer
+    // until a new frame arrives that has a cyan upper-left pixel.  This is
+    // needed because painting/compositing is not synchronous with the
+    // Javascript engine, and so the "DONE" signal above could be received
+    // before the renderer provides a frame with the expected content.
+    // http://crbug.com/405282
+    do {
+      uint32 frame = rwhv->RendererFrameNumber();
+      while (!GetRenderWidgetHost()->ScheduleComposite())
+        GiveItSomeTime();
+      while (rwhv->RendererFrameNumber() == frame)
+        GiveItSomeTime();
+    } while (!IsUpperLeftPixelCyan(rwhv));
 
     SkBitmap expected_bitmap;
     SetupLeftRightBitmap(output_size, &expected_bitmap);
@@ -602,9 +587,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                      base::Unretained(this),
                      video_frame,
                      run_loop.QuitClosure());
-      rwhvp->CopyFromCompositingSurfaceToVideoFrame(copy_rect,
-                                                    video_frame,
-                                                    callback);
+      rwhv->CopyFromCompositingSurfaceToVideoFrame(copy_rect,
+                                                   video_frame,
+                                                   callback);
     } else {
       if (IsDelegatedRendererEnabled()) {
         if (!content::GpuDataManager::GetInstance()
@@ -622,10 +607,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
                        CopyFromCompositingSurfaceCallback,
                    base::Unretained(this),
                    run_loop.QuitClosure());
-      rwhvp->CopyFromCompositingSurface(copy_rect,
-                                        output_size,
-                                        callback,
-                                        kN32_SkColorType);
+      rwhv->CopyFromCompositingSurface(copy_rect,
+                                       output_size,
+                                       callback,
+                                       kN32_SkColorType);
     }
     run_loop.Run();
   }
@@ -654,6 +639,36 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
   }
 
  private:
+  bool IsUpperLeftPixelCyan(RenderWidgetHostViewBase* rwhv) {
+    base::RunLoop run_loop;
+    bool saw_cyan_pixel = false;
+    rwhv->CopyFromCompositingSurface(
+        gfx::Rect(0, 0, 1, 1),
+        gfx::Size(1, 1),
+        base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
+                       CheckResultForCyanPixel,
+                   base::Unretained(this),
+                   &saw_cyan_pixel,
+                   run_loop.QuitClosure()),
+        kN32_SkColorType);
+    run_loop.Run();
+    return saw_cyan_pixel;
+  }
+
+  void CheckResultForCyanPixel(bool* saw_cyan_pixel,
+                               base::Closure done_callback,
+                               bool result,
+                               const SkBitmap& bitmap) {
+    if (result) {
+      SkAutoLockPixels bitmap_lock(bitmap);
+      if (bitmap.width() > 0 && bitmap.height() > 0 &&
+          bitmap.getColor(0, 0) == SK_ColorCYAN) {
+        *saw_cyan_pixel = true;
+      }
+    }
+    done_callback.Run();
+  }
+
   bool expected_copy_from_compositing_surface_result_;
   SkBitmap expected_copy_from_compositing_surface_bitmap_;
   int allowable_error_;
@@ -780,12 +795,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI
       CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI);
 };
 
-// ImageSkia (related to ResourceBundle) implementation crashes the process on
-// Windows when this content_browsertest forces a device scale factor.
-// http://crbug.com/399349
-//
-// These tests are flaky on ChromeOS builders.  See http://crbug.com/406018.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// NineImagePainter implementation crashes the process on Windows when this
+// content_browsertest forces a device scale factor.  http://crbug.com/399349
+#if defined(OS_WIN)
 #define MAYBE_CopyToBitmap_EntireRegion DISABLED_CopyToBitmap_EntireRegion
 #define MAYBE_CopyToBitmap_CenterRegion DISABLED_CopyToBitmap_CenterRegion
 #define MAYBE_CopyToBitmap_ScaledResult DISABLED_CopyToBitmap_ScaledResult
