@@ -44,7 +44,6 @@ group("untrusted") {
     if (use_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)",
-        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_x86)"
       ]
     }
     if (use_glibc) {
@@ -55,15 +54,16 @@ group("untrusted") {
     if (use_clang) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)",
-        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)"
       ]
     }
+    deps += [
+      "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_x86)"
+    ]
   }
   if (use_nacl_x64) {
     if (use_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)",
-        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_x64)"
       ]
     }
     if (use_glibc) {
@@ -74,17 +74,21 @@ group("untrusted") {
     if (use_clang) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)",
-        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)"
       ]
     }
+    deps += [
+      "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_x64)"
+    ]
   }
   if (use_nacl_arm) {
     if (use_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
-        "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:newlib_arm)"
       ]
     }
     # No gcc build, yet.
+    deps += [
+      "//native_client/src/:irt_targets(//native_client/build/toolchain/nacl:irt_arm)"
+    ]
   }
 }

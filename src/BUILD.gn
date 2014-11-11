@@ -44,6 +44,6 @@ group("untrusted_targets") {
 
 group("irt_targets") {
   deps = [
-    "//native_client/src/untrusted/irt:irt_core_raw",
+    "//native_client/src/untrusted/irt:irt_core",
   ]
 }

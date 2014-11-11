@@ -204,8 +204,6 @@ template("base_nacl_toolchain") {
 }
 
 template("nacl_toolchain") {
-  assert(defined(invoker.toolprefix),
-         "nacl_toolchain() must specify a \"toolprefix\" value")
   assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
   assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
   assert(defined(invoker.ar), "nacl_toolchain() must specify a \"ar\" value")
@@ -227,10 +225,10 @@ template("nacl_toolchain") {
   toolchain_cpu_arch = invoker.toolchain_cpu_arch
   package = invoker.package
 
-  cc = invoker.toolprefix + invoker.cc
-  cxx = invoker.toolprefix + invoker.cxx
-  ar = invoker.toolprefix + invoker.ar
-  ld = invoker.toolprefix + invoker.ld
+  cc = invoker.cc
+  cxx = invoker.cxx
+  ar = invoker.ar
+  ld = invoker.ld
 
   base_nacl_toolchain("raw_" + target_name) {
     deps = [
@@ -242,5 +240,8 @@ template("nacl_toolchain") {
     deps = [
       "//native_client/build/toolchain:prep_${package}(//native_client/build/toolchain/nacl:toolchain_prep)"
     ]
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
   }
 }
