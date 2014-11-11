@@ -77,6 +77,11 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = ui::Accelerator(ui::VKEY_C, ui::EF_CONTROL_DOWN);
       return true;
 
+    case IDC_CONTENT_CONTEXT_INSPECTELEMENT:
+      *accel = ui::Accelerator(ui::VKEY_I,
+                               ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN);
+      return true;
+
     case IDC_CONTENT_CONTEXT_PASTE:
       *accel = ui::Accelerator(ui::VKEY_V, ui::EF_CONTROL_DOWN);
       return true;
@@ -96,6 +101,10 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
 
     case IDC_CONTENT_CONTEXT_ROTATECW:
       *accel = ui::Accelerator(ui::VKEY_OEM_6, ui::EF_CONTROL_DOWN);
+      return true;
+
+    case IDC_PRINT:
+      *accel = ui::Accelerator(ui::VKEY_P, ui::EF_CONTROL_DOWN);
       return true;
 
     default:
