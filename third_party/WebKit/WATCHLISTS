@@ -93,6 +93,10 @@
     'public_api': {
       'filepath': 'public'
     },
+    'scheduler': {
+      'filepath': 'Source/platform/scheduler' \
+                  '|Source/core/html/parser/.*Scheduler'
+    },
     'serviceworkers' : {
       'filepath': 'Source/modules/serviceworkers' \
                   '|LayoutTests/http/tests/serviceworker'
@@ -383,6 +387,7 @@
     'prerender': [ 'gavinp+prerender@chromium.org',
                    'yoav@yoav.ws' ],
     'preloadScanner': [ 'yoav@yoav.ws' ],
+    'scheduler': [ 'scheduler-bugs@chromium.org' ],
     'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org', 'philipj@opera.com', 'glenn@chromium.org', 'fs@opera.com', 'eric.carlson@apple.com' ],
     'media': [ 'feature-media-reviews@chromium.org', 'philipj@opera.com', 'eric.carlson@apple.com' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com',
