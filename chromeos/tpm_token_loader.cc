@@ -8,35 +8,18 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop_proxy.h"
 #include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
-#include "chromeos/dbus/cryptohome_client.h"
+#include "base/thread_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/tpm_token_info_getter.h"
 #include "crypto/nss_util.h"
 
 namespace chromeos {
 
 namespace {
-
-const int64 kInitialRequestDelayMs = 100;
-const int64 kMaxRequestDelayMs = 300000;  // 5 minutes
-
-// Calculates the delay before running next attempt to initiatialize the TPM
-// token, if |last_delay| was the last or initial delay.
-base::TimeDelta GetNextRequestDelayMs(base::TimeDelta last_delay) {
-  // This implements an exponential backoff, as we don't know in which order of
-  // magnitude the TPM token changes it's state.
-  base::TimeDelta next_delay = last_delay * 2;
-
-  // Cap the delay to prevent an overflow. This threshold is arbitrarily chosen.
-  const base::TimeDelta max_delay =
-      base::TimeDelta::FromMilliseconds(kMaxRequestDelayMs);
-  if (next_delay > max_delay)
-    next_delay = max_delay;
-  return next_delay;
-}
 
 void PostResultToTaskRunner(scoped_refptr<base::SequencedTaskRunner> runner,
                             const base::Callback<void(bool)>& callback,
@@ -82,8 +65,10 @@ bool TPMTokenLoader::IsInitialized() {
 TPMTokenLoader::TPMTokenLoader(bool for_test)
     : initialized_for_test_(for_test),
       tpm_token_state_(TPM_STATE_UNKNOWN),
-      tpm_request_delay_(
-          base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
+      tpm_token_info_getter_(
+          TPMTokenInfoGetter::CreateForSystemToken(
+              DBusThreadManager::Get()->GetCryptohomeClient(),
+              base::ThreadTaskRunnerHandle::Get())),
       tpm_token_slot_id_(-1),
       weak_factory_(this) {
   if (!initialized_for_test_ && LoginState::IsInitialized())
@@ -170,28 +155,14 @@ void TPMTokenLoader::ContinueTokenInitialization() {
       return;
     }
     case TPM_TOKEN_ENABLED_FOR_NSS: {
-      DBusThreadManager::Get()->GetCryptohomeClient()->TpmIsEnabled(
-          base::Bind(&TPMTokenLoader::OnTpmIsEnabled,
+      tpm_token_info_getter_->Start(
+          base::Bind(&TPMTokenLoader::OnGotTpmTokenInfo,
                      weak_factory_.GetWeakPtr()));
       return;
     }
     case TPM_DISABLED: {
       // TPM is disabled, so proceed with empty tpm token name.
       NotifyTPMTokenReady();
-      return;
-    }
-    case TPM_ENABLED: {
-      DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11IsTpmTokenReady(
-          base::Bind(&TPMTokenLoader::OnPkcs11IsTpmTokenReady,
-                     weak_factory_.GetWeakPtr()));
-      return;
-    }
-    case TPM_TOKEN_READY: {
-      // Retrieve user_pin_ here since they will never change
-      // and CryptohomeClient calls are not thread safe.
-      DBusThreadManager::Get()->GetCryptohomeClient()->Pkcs11GetTpmTokenInfo(
-          base::Bind(&TPMTokenLoader::OnPkcs11GetTpmTokenInfo,
-                     weak_factory_.GetWeakPtr()));
       return;
     }
     case TPM_TOKEN_INFO_RECEIVED: {
@@ -201,7 +172,7 @@ void TPMTokenLoader::ContinueTokenInitialization() {
               &crypto::InitializeTPMTokenAndSystemSlot,
               tpm_token_slot_id_,
               base::Bind(&PostResultToTaskRunner,
-                         base::MessageLoopProxy::current(),
+                         base::ThreadTaskRunnerHandle::Get(),
                          base::Bind(&TPMTokenLoader::OnTPMTokenInitialized,
                                     weak_factory_.GetWeakPtr()))));
       return;
@@ -213,61 +184,21 @@ void TPMTokenLoader::ContinueTokenInitialization() {
   }
 }
 
-void TPMTokenLoader::RetryTokenInitializationLater() {
-  CHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "Retry token initialization later.";
-  base::MessageLoopProxy::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&TPMTokenLoader::ContinueTokenInitialization,
-                 weak_factory_.GetWeakPtr()),
-      tpm_request_delay_);
-  tpm_request_delay_ = GetNextRequestDelayMs(tpm_request_delay_);
-}
-
 void TPMTokenLoader::OnTPMTokenEnabledForNSS() {
   VLOG(1) << "TPMTokenEnabledForNSS";
   tpm_token_state_ = TPM_TOKEN_ENABLED_FOR_NSS;
   ContinueTokenInitialization();
 }
 
-void TPMTokenLoader::OnTpmIsEnabled(DBusMethodCallStatus call_status,
-                                    bool tpm_is_enabled) {
-  VLOG(1) << "OnTpmIsEnabled: " << tpm_is_enabled;
-
-  if (call_status == DBUS_METHOD_CALL_SUCCESS && tpm_is_enabled)
-    tpm_token_state_ = TPM_ENABLED;
-  else
+void TPMTokenLoader::OnGotTpmTokenInfo(const TPMTokenInfo& token_info) {
+  if (!token_info.tpm_is_enabled) {
     tpm_token_state_ = TPM_DISABLED;
-
-  ContinueTokenInitialization();
-}
-
-void TPMTokenLoader::OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
-                                             bool is_tpm_token_ready) {
-  VLOG(1) << "OnPkcs11IsTpmTokenReady: " << is_tpm_token_ready;
-
-  if (call_status == DBUS_METHOD_CALL_FAILURE || !is_tpm_token_ready) {
-    RetryTokenInitializationLater();
+    ContinueTokenInitialization();
     return;
   }
 
-  tpm_token_state_ = TPM_TOKEN_READY;
-  ContinueTokenInitialization();
-}
-
-void TPMTokenLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
-                                             const std::string& token_name,
-                                             const std::string& user_pin,
-                                             int token_slot_id) {
-  VLOG(1) << "OnPkcs11GetTpmTokenInfo: " << token_name;
-
-  if (call_status == DBUS_METHOD_CALL_FAILURE) {
-    RetryTokenInitializationLater();
-    return;
-  }
-
-  tpm_token_slot_id_ = token_slot_id;
-  tpm_user_pin_ = user_pin;
+  tpm_token_slot_id_ = token_info.token_slot_id;
+  tpm_user_pin_ = token_info.user_pin;
   tpm_token_state_ = TPM_TOKEN_INFO_RECEIVED;
 
   ContinueTokenInitialization();
@@ -275,11 +206,8 @@ void TPMTokenLoader::OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
 
 void TPMTokenLoader::OnTPMTokenInitialized(bool success) {
   VLOG(1) << "OnTPMTokenInitialized: " << success;
-  if (!success) {
-    RetryTokenInitializationLater();
-    return;
-  }
-  tpm_token_state_ = TPM_TOKEN_INITIALIZED;
+
+  tpm_token_state_ = success ? TPM_TOKEN_INITIALIZED : TPM_DISABLED;
   ContinueTokenInitialization();
 }
 

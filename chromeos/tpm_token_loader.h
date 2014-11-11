@@ -6,15 +6,14 @@
 #define CHROMEOS_TPM_TOKEN_LOADER_H_
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/login/login_state.h"
 
 namespace base {
@@ -22,6 +21,9 @@ class SequencedTaskRunner;
 }
 
 namespace chromeos {
+
+struct TPMTokenInfo;
+class TPMTokenInfoGetter;
 
 // This class is responsible for loading the TPM backed token for the system
 // slot when the user logs in. It is expected to be constructed on the UI thread
@@ -72,7 +74,7 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
 
  private:
   explicit TPMTokenLoader(bool for_test);
-  virtual ~TPMTokenLoader();
+  ~TPMTokenLoader() override;
 
   bool IsTPMLoadingEnabled() const;
 
@@ -83,25 +85,14 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
   // This is the cyclic chain of callbacks to initialize the TPM token.
   void ContinueTokenInitialization();
   void OnTPMTokenEnabledForNSS();
-  void OnTpmIsEnabled(DBusMethodCallStatus call_status,
-                      bool tpm_is_enabled);
-  void OnPkcs11IsTpmTokenReady(DBusMethodCallStatus call_status,
-                               bool is_tpm_token_ready);
-  void OnPkcs11GetTpmTokenInfo(DBusMethodCallStatus call_status,
-                               const std::string& token_name,
-                               const std::string& user_pin,
-                               int token_slot_id);
+  void OnGotTpmTokenInfo(const TPMTokenInfo& token_info);
   void OnTPMTokenInitialized(bool success);
-
-  // If token initialization step fails (e.g. if tpm token is not yet ready)
-  // schedules the initialization step retry attempt after a timeout.
-  void RetryTokenInitializationLater();
 
   // Notifies observers that the TPM token is ready.
   void NotifyTPMTokenReady();
 
   // LoginState::Observer
-  virtual void LoggedInStateChanged() override;
+  void LoggedInStateChanged() override;
 
   bool initialized_for_test_;
 
@@ -114,16 +105,12 @@ class CHROMEOS_EXPORT TPMTokenLoader : public LoginState::Observer {
     TPM_INITIALIZATION_STARTED,
     TPM_TOKEN_ENABLED_FOR_NSS,
     TPM_DISABLED,
-    TPM_ENABLED,
-    TPM_TOKEN_READY,
     TPM_TOKEN_INFO_RECEIVED,
     TPM_TOKEN_INITIALIZED,
   };
   TPMTokenState tpm_token_state_;
 
-  // The current request delay before the next attempt to initialize the
-  // TPM. Will be adapted after each attempt.
-  base::TimeDelta tpm_request_delay_;
+  scoped_ptr<TPMTokenInfoGetter> tpm_token_info_getter_;
 
   // Cached TPM token info.
   int tpm_token_slot_id_;
