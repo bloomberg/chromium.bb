@@ -2841,6 +2841,7 @@
    fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContext*
    fun:_ZN7content14BrowserContext19GetStoragePartitionEPS0_PNS_12SiteInstanceE
    fun:_ZN7content14BrowserContext26GetDefaultStoragePartitionEPS0_
+   ...
    fun:_ZN7content21ShellBrowserMainParts21PreMainMessageLoopRunEv
    fun:_ZN7content15BrowserMainLoop21PreMainMessageLoopRunEv
 }
