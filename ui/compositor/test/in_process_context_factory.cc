@@ -4,11 +4,17 @@
 
 #include "ui/compositor/test/in_process_context_factory.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/threading/thread.h"
+#include "cc/output/compositor_frame.h"
+#include "cc/output/context_provider.h"
+#include "cc/output/output_surface_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_shared_bitmap_manager.h"
+#include "gpu/command_buffer/client/context_support.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/reflector.h"
 #include "ui/gl/gl_implementation.h"
@@ -18,9 +24,47 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 
 namespace ui {
+namespace {
+
+// An OutputSurface implementation that directly draws and swaps to an actual
+// GL surface.
+class DirectOutputSurface : public cc::OutputSurface {
+ public:
+  explicit DirectOutputSurface(
+      const scoped_refptr<cc::ContextProvider>& context_provider)
+      : cc::OutputSurface(context_provider), weak_ptr_factory_(this) {}
+
+  ~DirectOutputSurface() override {}
+
+  // cc::OutputSurface implementation
+  void SwapBuffers(cc::CompositorFrame* frame) override {
+    DCHECK(context_provider_.get());
+    DCHECK(frame->gl_frame_data);
+    if (frame->gl_frame_data->sub_buffer_rect ==
+        gfx::Rect(frame->gl_frame_data->size)) {
+      context_provider_->ContextSupport()->Swap();
+    } else {
+      context_provider_->ContextSupport()->PartialSwapBuffers(
+          frame->gl_frame_data->sub_buffer_rect);
+    }
+    uint32_t sync_point =
+        context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
+    context_provider_->ContextSupport()->SignalSyncPoint(
+        sync_point, base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                               weak_ptr_factory_.GetWeakPtr()));
+    client_->DidSwapBuffers();
+  }
+
+ private:
+  base::WeakPtrFactory<DirectOutputSurface> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectOutputSurface);
+};
+
+}  // namespace
 
 InProcessContextFactory::InProcessContextFactory()
-    : next_surface_id_namespace_(1u) {
+    : next_surface_id_namespace_(1u), use_test_surface_(true) {
   DCHECK_NE(gfx::GetGLImplementation(), gfx::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
       << "gfx::GLSurface::InitializeOneOffForTests()";
@@ -60,9 +104,14 @@ void InProcessContextFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderInProcess> context_provider =
       ContextProviderInProcess::Create(context3d.Pass(), "UICompositor");
 
-  bool flipped_output_surface = false;
-  compositor->SetOutputSurface(make_scoped_ptr(new cc::PixelTestOutputSurface(
-      context_provider, flipped_output_surface)));
+  if (use_test_surface_) {
+    bool flipped_output_surface = false;
+    compositor->SetOutputSurface(make_scoped_ptr(new cc::PixelTestOutputSurface(
+        context_provider, flipped_output_surface)));
+  } else {
+    compositor->SetOutputSurface(
+        make_scoped_ptr(new DirectOutputSurface(context_provider)));
+  }
 }
 
 scoped_refptr<Reflector> InProcessContextFactory::CreateReflector(

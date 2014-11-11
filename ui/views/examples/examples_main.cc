@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
   // The ContextFactory must exist before any Compositors are created.
   scoped_ptr<ui::InProcessContextFactory> context_factory(
       new ui::InProcessContextFactory());
+  context_factory->set_use_test_surface(false);
 
   base::MessageLoopForUI message_loop;
 
