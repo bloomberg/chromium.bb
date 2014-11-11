@@ -272,8 +272,18 @@ void ResourceManagerImpl::UpdateVisibilityStates() {
 
     // Change the visibility of our activities in a pre-processing step. This is
     // required since it might change the order/number of activities.
+    // Note: We cannot use the order of items in the ActivityManager since it
+    // does not follow the order of windows.
     size_t count = 0;
-    for (Activity* activity : ActivityManager::Get()->GetActivityList()) {
+    const aura::Window::Windows& windows =
+        WindowManager::Get()->GetWindowListProvider()->GetWindowList();
+    for (aura::Window::Windows::const_reverse_iterator it = windows.rbegin();
+         it != windows.rend(); it++) {
+      Activity* activity = ActivityManager::Get()->GetActivityForWindow(*it);
+      // It is possible that the window was not yet added to the ActivityManager
+      // in which case we are not interested in managing it yet.
+      if (!activity)
+        continue;
       Activity::ActivityState state = activity->GetCurrentState();
 
       // The first |kMaxVisibleActivities| entries should be visible, all others
