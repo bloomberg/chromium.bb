@@ -729,8 +729,13 @@ bool ThreadHeap<Header>::allocateFromFreeList(size_t minSize)
     size_t bucketSize = 1 << m_freeList.m_biggestFreeListIndex;
     int i = m_freeList.m_biggestFreeListIndex;
     for (; i > 0; i--, bucketSize >>= 1) {
-        if (bucketSize < minSize)
-            break;
+        if (bucketSize < minSize) {
+            // A FreeListEntry for bucketSize might be larger than minSize.
+            // FIXME: We check only the first FreeListEntry because searching
+            // the entire list is costly.
+            if (!m_freeList.m_freeLists[i] || m_freeList.m_freeLists[i]->size() < minSize)
+                break;
+        }
         FreeListEntry* entry = m_freeList.m_freeLists[i];
         if (entry) {
             m_freeList.m_biggestFreeListIndex = i;
