@@ -636,7 +636,7 @@ static void CheckBeginEndQueryBadMemoryFails(GLES2DecoderTestBase* test,
 
   QueryManager* query_manager = test->GetDecoder()->GetQueryManager();
   ASSERT_TRUE(query_manager != NULL);
-  bool process_success = query_manager->ProcessPendingQueries();
+  bool process_success = query_manager->ProcessPendingQueries(false);
 
   EXPECT_TRUE(error1 != error::kNoError || error2 != error::kNoError ||
               !process_success);
@@ -797,7 +797,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
       .WillOnce(Return(GL_TIMEOUT_EXPIRED))
       .RetiresOnSaturation();
-  bool process_success = query_manager->ProcessPendingQueries();
+  bool process_success = query_manager->ProcessPendingQueries(false);
 
   EXPECT_TRUE(process_success);
   EXPECT_TRUE(query->pending());
@@ -810,7 +810,7 @@ TEST_P(GLES2DecoderManualInitTest, BeginEndQueryEXTCommandsCompletedCHROMIUM) {
   EXPECT_CALL(*gl_, ClientWaitSync(kGlSync, _, _))
       .WillOnce(Return(GL_ALREADY_SIGNALED))
       .RetiresOnSaturation();
-  process_success = query_manager->ProcessPendingQueries();
+  process_success = query_manager->ProcessPendingQueries(false);
 
   EXPECT_TRUE(process_success);
   EXPECT_FALSE(query->pending());

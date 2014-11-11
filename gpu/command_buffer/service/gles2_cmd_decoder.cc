@@ -628,7 +628,7 @@ class GLES2DecoderImpl : public GLES2Decoder,
     return vertex_array_manager_.get();
   }
   ImageManager* GetImageManager() override { return image_manager_.get(); }
-  bool ProcessPendingQueries() override;
+  bool ProcessPendingQueries(bool did_finish) override;
   bool HasMoreIdleWork() override;
   void PerformIdleWork() override;
 
@@ -3998,12 +3998,12 @@ bool GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
 void GLES2DecoderImpl::DoFinish() {
   glFinish();
   ProcessPendingReadPixels();
-  ProcessPendingQueries();
+  ProcessPendingQueries(true);
 }
 
 void GLES2DecoderImpl::DoFlush() {
   glFlush();
-  ProcessPendingQueries();
+  ProcessPendingQueries(false);
 }
 
 void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
@@ -9958,11 +9958,11 @@ void GLES2DecoderImpl::DeleteQueriesEXTHelper(
   }
 }
 
-bool GLES2DecoderImpl::ProcessPendingQueries() {
+bool GLES2DecoderImpl::ProcessPendingQueries(bool did_finish) {
   if (query_manager_.get() == NULL) {
     return false;
   }
-  if (!query_manager_->ProcessPendingQueries()) {
+  if (!query_manager_->ProcessPendingQueries(did_finish)) {
     current_decoder_error_ = error::kOutOfBounds;
   }
   return query_manager_->HavePendingQueries();

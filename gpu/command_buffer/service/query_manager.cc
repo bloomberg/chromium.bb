@@ -64,7 +64,7 @@ class AsyncPixelTransfersCompletedQuery
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -105,7 +105,7 @@ bool AsyncPixelTransfersCompletedQuery::End(
   return AddToPendingTransferQueue(submit_count);
 }
 
-bool AsyncPixelTransfersCompletedQuery::Process() {
+bool AsyncPixelTransfersCompletedQuery::Process(bool did_finish) {
   QuerySync* sync = manager()->decoder()->GetSharedMemoryAs<QuerySync*>(
       shm_id(), shm_offset(), sizeof(*sync));
   if (!sync)
@@ -141,7 +141,7 @@ class AllSamplesPassedQuery : public QueryManager::Query {
       GLuint service_id);
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -169,7 +169,7 @@ bool AllSamplesPassedQuery::End(base::subtle::Atomic32 submit_count) {
   return AddToPendingQueue(submit_count);
 }
 
-bool AllSamplesPassedQuery::Process() {
+bool AllSamplesPassedQuery::Process(bool did_finish) {
   GLuint available = 0;
   glGetQueryObjectuivARB(
       service_id_, GL_QUERY_RESULT_AVAILABLE_EXT, &available);
@@ -200,7 +200,7 @@ class CommandsIssuedQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -226,7 +226,7 @@ bool CommandsIssuedQuery::End(base::subtle::Atomic32 submit_count) {
   return MarkAsCompleted(elapsed.InMicroseconds());
 }
 
-bool CommandsIssuedQuery::Process() {
+bool CommandsIssuedQuery::Process(bool did_finish) {
   NOTREACHED();
   return true;
 }
@@ -247,7 +247,7 @@ class CommandLatencyQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -269,7 +269,7 @@ bool CommandLatencyQuery::End(base::subtle::Atomic32 submit_count) {
     return MarkAsCompleted(now.InMicroseconds());
 }
 
-bool CommandLatencyQuery::Process() {
+bool CommandLatencyQuery::Process(bool did_finish) {
   NOTREACHED();
   return true;
 }
@@ -293,7 +293,7 @@ class AsyncReadPixelsCompletedQuery
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -324,7 +324,7 @@ bool AsyncReadPixelsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
       base::Bind(&AsyncReadPixelsCompletedQuery::Complete,
                  AsWeakPtr()));
 
-  return Process();
+  return Process(false);
 }
 
 void AsyncReadPixelsCompletedQuery::Complete() {
@@ -332,7 +332,7 @@ void AsyncReadPixelsCompletedQuery::Complete() {
   complete_result_ = MarkAsCompleted(1);
 }
 
-bool AsyncReadPixelsCompletedQuery::Process() {
+bool AsyncReadPixelsCompletedQuery::Process(bool did_finish) {
   return !completed_ || complete_result_;
 }
 
@@ -353,7 +353,7 @@ class GetErrorQuery : public QueryManager::Query {
 
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -376,7 +376,7 @@ bool GetErrorQuery::End(base::subtle::Atomic32 submit_count) {
   return MarkAsCompleted(manager()->decoder()->GetErrorState()->GetGLError());
 }
 
-bool GetErrorQuery::Process() {
+bool GetErrorQuery::Process(bool did_finish) {
   NOTREACHED();
   return true;
 }
@@ -400,7 +400,7 @@ class CommandsCompletedQuery : public QueryManager::Query {
   // Overridden from QueryManager::Query:
   bool Begin() override;
   bool End(base::subtle::Atomic32 submit_count) override;
-  bool Process() override;
+  bool Process(bool did_finish) override;
   void Destroy(bool have_context) override;
 
  protected:
@@ -424,9 +424,16 @@ bool CommandsCompletedQuery::End(base::subtle::Atomic32 submit_count) {
   return AddToPendingQueue(submit_count);
 }
 
-bool CommandsCompletedQuery::Process() {
-  if (fence_ && !fence_->HasCompleted())
+bool CommandsCompletedQuery::Process(bool did_finish) {
+  // Note: |did_finish| guarantees that the GPU has passed the fence but
+  // we cannot assume that GLFence::HasCompleted() will return true yet as
+  // that's not guaranteed by all GLFence implementations.
+  //
+  // TODO(reveman): Add UMA stats to determine how common it is that glFinish()
+  // needs to be called for these queries to complete. crbug.com/431845
+  if (!did_finish && fence_ && !fence_->HasCompleted())
     return true;
+
   return MarkAsCompleted(0);
 }
 
@@ -635,10 +642,10 @@ bool QueryManager::Query::MarkAsCompleted(uint64 result) {
   return true;
 }
 
-bool QueryManager::ProcessPendingQueries() {
+bool QueryManager::ProcessPendingQueries(bool did_finish) {
   while (!pending_queries_.empty()) {
     Query* query = pending_queries_.front().get();
-    if (!query->Process()) {
+    if (!query->Process(did_finish)) {
       return false;
     }
     if (query->pending()) {
@@ -658,7 +665,7 @@ bool QueryManager::HavePendingQueries() {
 bool QueryManager::ProcessPendingTransferQueries() {
   while (!pending_transfer_queries_.empty()) {
     Query* query = pending_transfer_queries_.front().get();
-    if (!query->Process()) {
+    if (!query->Process(false)) {
       return false;
     }
     if (query->pending()) {

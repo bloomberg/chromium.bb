@@ -171,7 +171,7 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   virtual ImageManager* GetImageManager() = 0;
 
   // Process any pending queries. Returns false if there are no pending queries.
-  virtual bool ProcessPendingQueries() = 0;
+  virtual bool ProcessPendingQueries(bool did_finish) = 0;
 
   // Returns false if there are no idle work to be made.
   virtual bool HasMoreIdleWork() = 0;

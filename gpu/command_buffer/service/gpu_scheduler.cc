@@ -170,7 +170,7 @@ bool GpuScheduler::IsScheduled() {
 
 bool GpuScheduler::HasMoreWork() {
   return !unschedule_fences_.empty() ||
-         (decoder_ && decoder_->ProcessPendingQueries()) ||
+         (decoder_ && decoder_->ProcessPendingQueries(false)) ||
          HasMoreIdleWork();
 }
 
