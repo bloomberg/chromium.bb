@@ -550,15 +550,6 @@ system call NtCreate*
 *!content::BrowserThreadImpl::CacheThreadRun
 *!content::BrowserThreadImpl::Run
 
-UNADDRESSABLE ACCESS
-name=http://crbug.com/379204
-...
-*!WTF::MessageQueue<>::waitForMessageWithTimeout
-*!blink::WorkerRunLoop::run
-*!blink::WorkerRunLoop::run
-*!blink::WorkerThread::workerThread
-*!WTF::threadEntryPoint
-
 GDI USAGE ERROR
 name=379774
 system call NtUserCallOneParam.RELEASEDC
