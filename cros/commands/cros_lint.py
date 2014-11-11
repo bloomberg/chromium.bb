@@ -6,12 +6,15 @@
 
 from __future__ import print_function
 
+import functools
+import multiprocessing
 import os
 import sys
 
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import parallel
 
 from chromite import cros
 
@@ -34,21 +37,32 @@ def _GetProjectPath(path):
     return os.path.dirname(path)
 
 
+def _GetPylintrc(path):
+  """Locate the pylintrc file that applies to |path|."""
+  if not path.endswith('.py'):
+    return
+
+  path = os.path.realpath(path)
+  project_path = _GetProjectPath(path)
+  parent = os.path.dirname(path)
+  while project_path and parent.startswith(project_path):
+    pylintrc = os.path.join(parent, 'pylintrc')
+    if os.path.isfile(pylintrc):
+      break
+    parent = os.path.dirname(parent)
+
+  if project_path is None or not os.path.isfile(pylintrc):
+    pylintrc = os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
+
+  return pylintrc
+
+
 def _GetPylintGroups(paths):
   """Return a dictionary mapping pylintrc files to lists of paths."""
   groups = {}
   for path in paths:
-    if path.endswith('.py'):
-      path = os.path.realpath(path)
-      project_path = _GetProjectPath(path)
-      parent = os.path.dirname(path)
-      while project_path and parent.startswith(project_path):
-        pylintrc = os.path.join(parent, 'pylintrc')
-        if os.path.isfile(pylintrc):
-          break
-        parent = os.path.dirname(parent)
-      if project_path is None or not os.path.isfile(pylintrc):
-        pylintrc = os.path.join(constants.SOURCE_ROOT, 'chromite', 'pylintrc')
+    pylintrc = _GetPylintrc(path)
+    if pylintrc:
       groups.setdefault(pylintrc, []).append(path)
   return groups
 
@@ -56,25 +70,25 @@ def _GetPylintGroups(paths):
 def _GetPythonPath(paths):
   """Return the set of Python library paths to use."""
   return sys.path + [
-    # Add the Portage installation inside the chroot to the Python path.
-    # This ensures that scripts that need to import portage can do so.
-    os.path.join(constants.SOURCE_ROOT, 'chroot', 'usr', 'lib', 'portage',
-                 'pym'),
+      # Add the Portage installation inside the chroot to the Python path.
+      # This ensures that scripts that need to import portage can do so.
+      os.path.join(constants.SOURCE_ROOT, 'chroot', 'usr', 'lib', 'portage',
+                   'pym'),
 
-    # Scripts outside of chromite expect the scripts in src/scripts/lib to
-    # be importable.
-    os.path.join(constants.CROSUTILS_DIR, 'lib'),
+      # Scripts outside of chromite expect the scripts in src/scripts/lib to
+      # be importable.
+      os.path.join(constants.CROSUTILS_DIR, 'lib'),
 
-    # Allow platform projects to be imported by name (e.g. crostestutils).
-    os.path.join(constants.SOURCE_ROOT, 'src', 'platform'),
+      # Allow platform projects to be imported by name (e.g. crostestutils).
+      os.path.join(constants.SOURCE_ROOT, 'src', 'platform'),
 
-    # Ideally we'd modify meta_path in pylint to handle our virtual chromite
-    # module, but that's not possible currently.  We'll have to deal with
-    # that at some point if we want `cros lint` to work when the dir is not
-    # named 'chromite'.
-    constants.SOURCE_ROOT,
+      # Ideally we'd modify meta_path in pylint to handle our virtual chromite
+      # module, but that's not possible currently.  We'll have to deal with
+      # that at some point if we want `cros lint` to work when the dir is not
+      # named 'chromite'.
+      constants.SOURCE_ROOT,
 
-    # Also allow scripts to import from their current directory.
+      # Also allow scripts to import from their current directory.
   ] + list(set(os.path.dirname(x) for x in paths))
 
 
@@ -87,36 +101,31 @@ CPPLINT_OUTPUT_FORMAT_MAP = {
 }
 
 
-def _CpplintFiles(files, output_format, debug):
-  """Returns true if cpplint ran successfully on all files."""
+def _LinterRunCommand(cmd, debug, **kwargs):
+  """Run the linter with common RunCommand args set as higher levels expect."""
+  return cros_build_lib.RunCommand(
+      cmd, error_code_ok=True, print_cmd=debug, **kwargs)
+
+
+def _CpplintFile(path, output_format, debug):
+  """Returns result of running cpplint on |path|."""
   cmd = [os.path.join(constants.DEPOT_TOOLS_DIR, 'cpplint.py')]
   if output_format != 'default':
     cmd.append('--output=%s' % CPPLINT_OUTPUT_FORMAT_MAP[output_format])
-  cmd += files
-  res = cros_build_lib.RunCommand(cmd,
-                                  error_code_ok=True,
-                                  print_cmd=debug)
-  return res.returncode != 0
+  cmd.append(path)
+  return _LinterRunCommand(cmd, debug)
 
 
-def _PylintFiles(files, output_format, debug):
-  """Returns true if pylint ran successfully on all files."""
-  errors = False
+def _PylintFile(path, output_format, debug):
+  """Returns result of running pylint on |path|."""
   pylint = os.path.join(constants.DEPOT_TOOLS_DIR, 'pylint')
-  for pylintrc, paths in sorted(_GetPylintGroups(files).items()):
-    paths = sorted(list(set([os.path.realpath(x) for x in paths])))
-    cmd = [pylint, '--rcfile=%s' % pylintrc]
-    if output_format != 'default':
-      cmd.append('--output-format=%s' % output_format)
-    cmd += paths
-    extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
-    res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
-                                    error_code_ok=True,
-                                    print_cmd=debug)
-    if res.returncode != 0:
-      errors = True
-
-  return errors
+  pylintrc = _GetPylintrc(path)
+  cmd = [pylint, '--rcfile=%s' % pylintrc]
+  if output_format != 'default':
+    cmd.append('--output-format=%s' % output_format)
+  cmd.append(path)
+  extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath([path]))}
+  return _LinterRunCommand(cmd, debug, extra_env=extra_env)
 
 
 def _BreakoutFilesByLinter(files):
@@ -125,13 +134,21 @@ def _BreakoutFilesByLinter(files):
   for f in files:
     extension = os.path.splitext(f)[1]
     if extension in PYTHON_EXTENSIONS:
-      pylint_list = map_to_return.setdefault(_PylintFiles, [])
+      pylint_list = map_to_return.setdefault(_PylintFile, [])
       pylint_list.append(f)
     elif extension in CPP_EXTENSIONS:
-      cpplint_list = map_to_return.setdefault(_CpplintFiles, [])
+      cpplint_list = map_to_return.setdefault(_CpplintFile, [])
       cpplint_list.append(f)
 
   return map_to_return
+
+
+def _Dispatcher(errors, output_format, debug, linter, path):
+  """Call |linter| on |path| and take care of coalescing exit codes/output."""
+  result = linter(path, output_format, debug)
+  if result.returncode:
+    with errors.get_lock():
+      errors.value += 1
 
 
 @cros.CommandDecorator('lint')
@@ -165,10 +182,22 @@ run other checks (e.g. pyflakes, etc.)
       # they are aware that nothing was linted.
       cros_build_lib.Warning('No files provided to lint.  Doing nothing.')
 
-    errors = False
+    errors = multiprocessing.Value('i')
     linter_map = _BreakoutFilesByLinter(files)
-    for linter, files in linter_map.iteritems():
-      errors = linter(files, self.options.output, self.options.debug)
+    dispatcher = functools.partial(_Dispatcher, errors,
+                                   self.options.output, self.options.debug)
 
-    if errors:
+    # Special case one file as it's common -- faster to avoid parallel startup.
+    if sum([len(x) for _, x in linter_map.iteritems()]) == 1:
+      linter, files = linter_map.items()[0]
+      dispatcher(linter, files[0])
+    else:
+      # Run the linter in parallel on the files.
+      with parallel.BackgroundTaskRunner(dispatcher) as q:
+        for linter, files in linter_map.iteritems():
+          for path in files:
+            q.put([linter, path])
+
+    if errors.value:
+      cros_build_lib.Error('linter found errors in %i files', errors.value)
       sys.exit(1)
