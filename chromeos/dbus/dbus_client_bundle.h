@@ -41,6 +41,7 @@ class NfcDeviceClient;
 class NfcTagClient;
 class NfcRecordClient;
 class PermissionBrokerClient;
+class PrivetDaemonClient;
 class SystemClockClient;
 class PowerManagerClient;
 class SessionManagerClient;
@@ -73,10 +74,11 @@ class CHROMEOS_EXPORT DBusClientBundle {
     NFC =                  1 << 12,
     PERMISSION_BROKER =    1 << 13,
     POWER_MANAGER =        1 << 14,
-    SESSION_MANAGER =      1 << 15,
-    SMS =                  1 << 16,
-    SYSTEM_CLOCK =         1 << 17,
-    UPDATE_ENGINE =        1 << 18,
+    PRIVET_DAEMON =        1 << 15,
+    SESSION_MANAGER =      1 << 16,
+    SMS =                  1 << 17,
+    SYSTEM_CLOCK =         1 << 18,
+    UPDATE_ENGINE =        1 << 19,
   };
 
   explicit DBusClientBundle(DBusClientTypeMask unstub_client_mask);
@@ -219,6 +221,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return permission_broker_client_.get();
   }
 
+  PrivetDaemonClient* privet_daemon_client() {
+    return privet_daemon_client_.get();
+  }
+
   SystemClockClient* system_clock_client() {
     return system_clock_client_.get();
   }
@@ -263,6 +269,7 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<DebugDaemonClient> debug_daemon_client_;
   scoped_ptr<EasyUnlockClient> easy_unlock_client_;
   scoped_ptr<LorgnetteManagerClient> lorgnette_manager_client_;
+  scoped_ptr<PrivetDaemonClient> privet_daemon_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;
   scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
   scoped_ptr<ShillManagerClient> shill_manager_client_;

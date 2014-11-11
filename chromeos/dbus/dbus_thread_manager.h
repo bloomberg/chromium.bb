@@ -54,6 +54,7 @@ class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class PowerPolicyController;
+class PrivetDaemonClient;
 class SessionManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
@@ -142,6 +143,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
   PowerPolicyController* GetPowerPolicyController();
+  PrivetDaemonClient* GetPrivetDaemonClient();
   SessionManagerClient* GetSessionManagerClient();
   ShillDeviceClient* GetShillDeviceClient();
   ShillIPConfigClient* GetShillIPConfigClient();
@@ -233,6 +235,7 @@ class CHROMEOS_EXPORT DBusThreadManagerSetter {
   void SetNfcTagClient(scoped_ptr<NfcTagClient> client);
   void SetPermissionBrokerClient(scoped_ptr<PermissionBrokerClient> client);
   void SetPowerManagerClient(scoped_ptr<PowerManagerClient> client);
+  void SetPrivetDaemonClient(scoped_ptr<PrivetDaemonClient> client);
   void SetSessionManagerClient(scoped_ptr<SessionManagerClient> client);
   void SetSMSClient(scoped_ptr<SMSClient> client);
   void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
