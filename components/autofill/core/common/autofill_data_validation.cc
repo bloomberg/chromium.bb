@@ -59,9 +59,12 @@ bool IsValidFormData(const FormData& form) {
 }
 
 bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {
-  if (!IsValidFormData(form.basic_data) ||
-      !IsValidString(form.preferred_realm))
+  if (!IsValidString16(form.name) || !IsValidGURL(form.origin) ||
+      !IsValidGURL(form.action) || !IsValidFormFieldData(form.username_field) ||
+      !IsValidFormFieldData(form.password_field) ||
+      !IsValidString(form.preferred_realm)) {
     return false;
+  }
 
   for (PasswordFormFillData::LoginCollection::const_iterator it =
            form.additional_logins.begin();

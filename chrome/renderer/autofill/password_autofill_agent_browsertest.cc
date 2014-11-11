@@ -202,13 +202,13 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     FormFieldData username_field;
     username_field.name = ASCIIToUTF16(kUsernameName);
     username_field.value = username1_;
-    fill_data_.basic_data.fields.push_back(username_field);
+    fill_data_.username_field = username_field;
 
     FormFieldData password_field;
     password_field.name = ASCIIToUTF16(kPasswordName);
     password_field.value = password1_;
     password_field.form_control_type = "password";
-    fill_data_.basic_data.fields.push_back(password_field);
+    fill_data_.password_field = password_field;
 
     PasswordAndRealm password2;
     password2.password = password2_;
@@ -226,7 +226,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
     UpdateOriginForHTML(kFormHTML);
-    fill_data_.basic_data.action = GURL("http://www.bidule.com");
+    fill_data_.action = GURL("http://www.bidule.com");
 
     LoadHTML(kFormHTML);
 
@@ -242,7 +242,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void UpdateOriginForHTML(const std::string& html) {
     std::string origin = "data:text/html;charset=utf-8," + html;
-    fill_data_.basic_data.origin = GURL(origin);
+    fill_data_.origin = GURL(origin);
   }
 
   void UpdateUsernameAndPasswordElements() {
@@ -399,7 +399,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     Tuple5<int, base::i18n::TextDirection, base::string16, bool, gfx::RectF>
         args;
     AutofillHostMsg_ShowPasswordSuggestions::Read(message, &args);
-    EXPECT_EQ(2u, fill_data_.basic_data.fields.size());
     EXPECT_EQ(kPasswordFillFormDataId, args.a);
     EXPECT_EQ(ASCIIToUTF16(username), args.c);
     EXPECT_EQ(show_all, args.d);
@@ -490,7 +489,7 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
 
   // Set the expected form origin and action URLs.
   UpdateOriginForHTML(kEmptyActionFormHTML);
-  fill_data_.basic_data.action = fill_data_.basic_data.origin;
+  fill_data_.action = fill_data_.origin;
 
   // Simulate the browser sending back the login info, it triggers the
   // autocomplete.
@@ -850,8 +849,8 @@ TEST_F(PasswordAutofillAgentTest, IframeNoFillTest) {
   LoadHTML(page_html.c_str());
 
   // Set the expected form origin and action URLs.
-  fill_data_.basic_data.origin = GURL(origin);
-  fill_data_.basic_data.action = GURL(origin);
+  fill_data_.origin = GURL(origin);
+  fill_data_.action = GURL(origin);
 
   SimulateOnFillPasswordForm(fill_data_);
 

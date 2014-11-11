@@ -39,9 +39,22 @@ struct PasswordFormFillData {
   typedef std::map<UsernamesCollectionKey,
                    std::vector<base::string16> > UsernamesCollection;
 
-  // Identifies the HTML form on the page and preferred username/password for
-  // login.
-  FormData basic_data;
+  // The name of the form.
+  base::string16 name;
+
+  // An origin is (scheme, host, port, path and fragment identifier) only; it is
+  // just exactly a URL with the query string removed.
+  GURL origin;
+
+  // The action target of the form.
+  GURL action;
+
+  // True if this form was submitted by a user gesture and not javascript.
+  bool user_submitted;
+
+  // Username and password input fields in the form.
+  FormFieldData username_field;
+  FormFieldData password_field;
 
   // The signon realm of the preferred user/pass pair.
   std::string preferred_realm;

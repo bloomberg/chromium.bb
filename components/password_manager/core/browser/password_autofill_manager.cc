@@ -29,9 +29,8 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     std::vector<base::string16>* realms,
                     bool show_all) {
   if (show_all ||
-      StartsWith(
-          fill_data.basic_data.fields[0].value, current_username, false)) {
-    suggestions->push_back(fill_data.basic_data.fields[0].value);
+      StartsWith(fill_data.username_field.value, current_username, false)) {
+    suggestions->push_back(fill_data.username_field.value);
     realms->push_back(base::UTF8ToUTF16(fill_data.preferred_realm));
   }
 
@@ -201,8 +200,8 @@ bool PasswordAutofillManager::GetPasswordForUsername(
   // fetch the actual password. See crbug.com/178358 for more context.
 
   // Look for any suitable matches to current field text.
-  if (fill_data.basic_data.fields[0].value == current_username) {
-    *password = fill_data.basic_data.fields[1].value;
+  if (fill_data.username_field.value == current_username) {
+    *password = fill_data.password_field.value;
     return true;
   }
 

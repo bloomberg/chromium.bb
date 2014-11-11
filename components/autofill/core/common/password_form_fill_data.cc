@@ -22,7 +22,8 @@ bool UsernamesCollectionKey::operator<(
   return realm < other.realm;
 }
 
-PasswordFormFillData::PasswordFormFillData() : wait_for_username(false) {
+PasswordFormFillData::PasswordFormFillData()
+    : user_submitted(false), wait_for_username(false) {
 }
 
 PasswordFormFillData::~PasswordFormFillData() {
@@ -47,11 +48,12 @@ void InitPasswordFormFillData(
   password_field.form_control_type = "password";
 
   // Fill basic form data.
-  result->basic_data.name = form_on_page.form_data.name;
-  result->basic_data.origin = form_on_page.origin;
-  result->basic_data.action = form_on_page.action;
-  result->basic_data.fields.push_back(username_field);
-  result->basic_data.fields.push_back(password_field);
+  result->name = form_on_page.form_data.name;
+  result->origin = form_on_page.origin;
+  result->action = form_on_page.action;
+  result->user_submitted = form_on_page.form_data.user_submitted;
+  result->username_field = username_field;
+  result->password_field = password_field;
   result->wait_for_username = wait_for_username_before_autofill;
 
   result->preferred_realm = preferred_match->original_signon_realm;

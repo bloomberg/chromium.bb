@@ -81,12 +81,12 @@ class PasswordAutofillManagerTest : public testing::Test {
     autofill::FormFieldData username_field;
     username_field.name = base::ASCIIToUTF16(kUsernameName);
     username_field.value = test_username_;
-    fill_data_.basic_data.fields.push_back(username_field);
+    fill_data_.username_field = username_field;
 
     autofill::FormFieldData password_field;
     password_field.name = base::ASCIIToUTF16(kPasswordName);
     password_field.value = test_password_;
-    fill_data_.basic_data.fields.push_back(password_field);
+    fill_data_.password_field = password_field;
   }
 
   void InitializePasswordAutofillManager(
@@ -173,9 +173,8 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
-  data.basic_data.fields.resize(2);
-  data.basic_data.fields[0].value = test_username_;
-  data.basic_data.fields[1].value = test_password_;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -212,9 +211,8 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
-  data.basic_data.fields.resize(2);
-  data.basic_data.fields[0].value = test_username_;
-  data.basic_data.fields[1].value = test_password_;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
   data.preferred_realm = "http://foo.com/";
 
   autofill::PasswordAndRealm additional;

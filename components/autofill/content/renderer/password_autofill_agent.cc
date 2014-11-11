@@ -61,6 +61,10 @@ struct FormElements {
 
 typedef std::vector<FormElements*> FormElementsList;
 
+bool FillDataContainsUsername(const PasswordFormFillData& fill_data) {
+  return !fill_data.username_field.name.empty();
+}
+
 // Utility function to find the unique entry of the |form_element| for the
 // specified input |field|. On successful find, adds it to |result| and returns
 // |true|. Otherwise clears the references from each |HTMLInputElement| from
@@ -118,25 +122,16 @@ bool FindFormInputElement(blink::WebFormElement* form_element,
 // Helper to search the given form element for the specified input elements in
 // |data|, and add results to |result|.
 bool FindFormInputElements(blink::WebFormElement* form_element,
-                           const FormData& data,
+                           const PasswordFormFillData& data,
                            FormElements* result) {
-  const bool username_is_present = !data.fields[0].name.empty();
-
-  // Loop through the list of elements we need to find on the form in order to
-  // autofill it. If we don't find any one of them, abort processing this
-  // form; it can't be the right one.
-  // First field is the username, skip it if not present.
-  for (size_t j = (username_is_present ? 0 : 1); j < data.fields.size(); ++j) {
-    if (!FindFormInputElement(form_element, data.fields[j], result))
-      return false;
-  }
-
-  return true;
+  return FindFormInputElement(form_element, data.password_field, result) &&
+         (!FillDataContainsUsername(data) ||
+          FindFormInputElement(form_element, data.username_field, result));
 }
 
 // Helper to locate form elements identified by |data|.
 void FindFormElements(blink::WebView* view,
-                      const FormData& data,
+                      const PasswordFormFillData& data,
                       FormElementsList* results) {
   DCHECK(view);
   DCHECK(results);
@@ -244,10 +239,6 @@ void LogHTMLForm(SavePasswordProgressLogger* logger,
                       GURL(form.action().utf8()));
 }
 
-bool FillDataContainsUsername(const PasswordFormFillData& fill_data) {
-  return !fill_data.basic_data.fields[0].name.empty();
-}
-
 // Sets |suggestions_present| to true if there are any suggestions to be derived
 // from |fill_data|. Unless |show_all| is true, only considers suggestions with
 // usernames having |current_username| as a prefix. Returns true if a username
@@ -269,8 +260,8 @@ bool GetSuggestionsStats(const PasswordFormFillData& fill_data,
     }
   }
 
-  if (show_all || StartsWith(fill_data.basic_data.fields[0].value,
-                             current_username, false)) {
+  if (show_all ||
+      StartsWith(fill_data.username_field.value, current_username, false)) {
     *suggestions_present = true;
     return false;
   }
@@ -312,11 +303,10 @@ bool FillUserNameAndPassword(
   base::string16 password;
 
   // Look for any suitable matches to current field text.
-  if (DoUsernamesMatch(fill_data.basic_data.fields[0].value,
-                       current_username,
+  if (DoUsernamesMatch(fill_data.username_field.value, current_username,
                        exact_username_match)) {
-    username = fill_data.basic_data.fields[0].value;
-    password = fill_data.basic_data.fields[1].value;
+    username = fill_data.username_field.value;
+    password = fill_data.password_field.value;
   } else {
     // Scan additional logins for a match.
     PasswordFormFillData::LoginCollection::const_iterator iter;
@@ -412,7 +402,7 @@ bool FillFormOnPasswordRecieved(
       IsElementAutocompletable(username_element) &&
       username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
-    username_element.setValue(fill_data.basic_data.fields[0].value, true);
+    username_element.setValue(fill_data.username_field.value, true);
   }
 
   // Fill if we have an exact match for the username. Note that this sets
@@ -1027,7 +1017,7 @@ void PasswordAutofillAgent::OnFillPasswordForm(
 
   FormElementsList forms;
   // We own the FormElements* in forms.
-  FindFormElements(render_view()->GetWebView(), form_data.basic_data, &forms);
+  FindFormElements(render_view()->GetWebView(), form_data, &forms);
   FormElementsList::iterator iter;
   for (iter = forms.begin(); iter != forms.end(); ++iter) {
     scoped_ptr<FormElements> form_elements(*iter);
@@ -1039,17 +1029,17 @@ void PasswordAutofillAgent::OnFillPasswordForm(
     bool form_contains_username_field = FillDataContainsUsername(form_data);
     if (form_contains_username_field) {
       username_element =
-          form_elements->input_elements[form_data.basic_data.fields[0].name];
+          form_elements->input_elements[form_data.username_field.name];
     }
 
     // No password field, bail out.
-    if (form_data.basic_data.fields[1].name.empty())
+    if (form_data.password_field.name.empty())
       break;
 
     // Get pointer to password element. (We currently only support single
     // password forms).
     password_element =
-        form_elements->input_elements[form_data.basic_data.fields[1].name];
+        form_elements->input_elements[form_data.password_field.name];
 
     // If wait_for_username is true, we don't want to initially fill the form
     // until the user types in a valid username.
