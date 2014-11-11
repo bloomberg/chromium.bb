@@ -89,6 +89,7 @@
       'public/common/process_type.h',
       'public/common/push_messaging_status.cc',
       'public/common/push_messaging_status.h',
+      'public/common/referrer.cc',
       'public/common/referrer.h',
       'public/common/renderer_preferences.cc',
       'public/common/renderer_preferences.h',
