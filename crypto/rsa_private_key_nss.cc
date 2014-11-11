@@ -285,6 +285,9 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
   // and signature generation.
   const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
                                  KU_DIGITAL_SIGNATURE;
+  // TODO(davidben): PK11_ImportDERPrivateKeyInfoAndReturnKey calls NSS's
+  // SEC_ASN1DecodeItem which does not enforce that there is no trailing
+  // data.
   SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(
       slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
       key_usage, &result->key_, NULL);

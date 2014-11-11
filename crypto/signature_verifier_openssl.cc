@@ -141,19 +141,14 @@ bool SignatureVerifier::CommonInit(const EVP_MD* digest,
 
   signature_.assign(signature, signature + signature_len);
 
-  // BIO_new_mem_buf is not const aware, but it does not modify the buffer.
-  char* data = reinterpret_cast<char*>(const_cast<uint8*>(public_key_info));
-  ScopedBIO bio(BIO_new_mem_buf(data, public_key_info_len));
-  if (!bio.get())
-    return false;
-
-  ScopedEVP_PKEY public_key(d2i_PUBKEY_bio(bio.get(), NULL));
-  if (!public_key.get())
+  const uint8_t* ptr = public_key_info;
+  ScopedEVP_PKEY public_key(d2i_PUBKEY(nullptr, &ptr, public_key_info_len));
+  if (!public_key.get() || ptr != public_key_info + public_key_info_len)
     return false;
 
   verify_context_->ctx.reset(EVP_MD_CTX_create());
   int rv = EVP_DigestVerifyInit(verify_context_->ctx.get(), pkey_ctx,
-                                digest, NULL, public_key.get());
+                                digest, nullptr, public_key.get());
   return rv == 1;
 }
 

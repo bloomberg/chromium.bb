@@ -4,6 +4,8 @@
 
 #include "content/child/webcrypto/nss/rsa_key_nss.h"
 
+#include <secasn1.h>
+
 #include "base/logging.h"
 #include "content/child/webcrypto/crypto_data.h"
 #include "content/child/webcrypto/generate_key_result.h"
@@ -640,9 +642,21 @@ Status RsaHashedAlgorithm::ImportKeyPkcs8(
   if (!key_data.byte_length())
     return Status::ErrorImportEmptyKeyData();
 
+  crypto::ScopedPLArenaPool arena(PORT_NewArena(DER_DEFAULT_CHUNKSIZE));
+  if (!arena.get())
+    return Status::OperationError();
+
   // The binary blob 'key_data' is expected to be a DER-encoded ASN.1 PKCS#8
-  // private key info object.
-  SECItem pki_der = MakeSECItemForBuffer(key_data);
+  // private key info object. Excess data is illegal, but NSS silently accepts
+  // it, so first ensure that 'key_data' consists of a single ASN.1 element.
+  SECItem key_item = MakeSECItemForBuffer(key_data);
+  SECItem pki_der;
+  if (SEC_QuickDERDecodeItem(arena.get(),
+                             &pki_der,
+                             SEC_ASN1_GET(SEC_AnyTemplate),
+                             &key_item) != SECSuccess) {
+    return Status::DataError();
+  }
 
   SECKEYPrivateKey* seckey_private_key = NULL;
   crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());

@@ -191,13 +191,9 @@ Status ImportUnverifiedPkeyFromSpki(const CryptoData& key_data,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
-                                        key_data.byte_length()));
-  if (!bio.get())
-    return Status::ErrorUnexpected();
-
-  pkey->reset(d2i_PUBKEY_bio(bio.get(), NULL));
-  if (!pkey->get())
+  const uint8_t* ptr = key_data.bytes();
+  pkey->reset(d2i_PUBKEY(nullptr, &ptr, key_data.byte_length()));
+  if (!pkey->get() || ptr != key_data.bytes() + key_data.byte_length())
     return Status::DataError();
 
   if (EVP_PKEY_id(pkey->get()) != expected_pkey_id)
@@ -214,14 +210,10 @@ Status ImportUnverifiedPkeyFromPkcs8(const CryptoData& key_data,
 
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
 
-  crypto::ScopedBIO bio(BIO_new_mem_buf(const_cast<uint8_t*>(key_data.bytes()),
-                                        key_data.byte_length()));
-  if (!bio.get())
-    return Status::ErrorUnexpected();
-
+  const uint8_t* ptr = key_data.bytes();
   crypto::ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
-      p8inf(d2i_PKCS8_PRIV_KEY_INFO_bio(bio.get(), NULL));
-  if (!p8inf.get())
+      p8inf(d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, key_data.byte_length()));
+  if (!p8inf.get() || ptr != key_data.bytes() + key_data.byte_length())
     return Status::DataError();
 
   pkey->reset(EVP_PKCS82PKEY(p8inf.get()));

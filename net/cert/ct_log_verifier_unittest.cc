@@ -89,4 +89,13 @@ TEST_F(CTLogVerifierTest, DoesNotSetInvalidSTH) {
   ASSERT_FALSE(log_->SetSignedTreeHead(sth.Pass()));
 }
 
+// Test that excess data after the public key is rejected.
+TEST_F(CTLogVerifierTest, ExcessDataInPublicKey) {
+  std::string key = ct::GetTestPublicKey();
+  key += "extra";
+
+  scoped_ptr<CTLogVerifier> log = CTLogVerifier::Create(key, "testlog");
+  EXPECT_FALSE(log);
+}
+
 }  // namespace net

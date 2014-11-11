@@ -19,6 +19,9 @@ namespace crypto {
 
 namespace {
 
+typedef ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type
+    ScopedPKCS8_PRIV_KEY_INFO;
+
 // Function pointer definition, for injecting the required key export function
 // into ExportKey, below. The supplied function should export EVP_PKEY into
 // the supplied BIO, returning 1 on success or 0 on failure.
@@ -76,17 +79,16 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     return NULL;
 
   OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  // BIO_new_mem_buf is not const aware, but it does not modify the buffer.
-  char* data = reinterpret_cast<char*>(const_cast<uint8*>(&input[0]));
-  ScopedBIO bio(BIO_new_mem_buf(data, input.size()));
-  if (!bio.get())
-    return NULL;
 
   // Importing is a little more involved than exporting, as we must first
   // PKCS#8 decode the input, and then import the EVP_PKEY from Private Key
   // Info structure returned.
-  ScopedOpenSSL<PKCS8_PRIV_KEY_INFO, PKCS8_PRIV_KEY_INFO_free>::Type p8inf(
-      d2i_PKCS8_PRIV_KEY_INFO_bio(bio.get(), NULL));
+  //
+  // TODO(davidben): This should check that |ptr| advanced to the end of |input|
+  // to ensure there is no trailing data.
+  const uint8_t* ptr = &input[0];
+  ScopedPKCS8_PRIV_KEY_INFO p8inf(
+      d2i_PKCS8_PRIV_KEY_INFO(nullptr, &ptr, input.size()));
   if (!p8inf.get())
     return NULL;
 

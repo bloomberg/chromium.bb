@@ -258,6 +258,26 @@ TEST(SignatureVerifierTest, BasicTest) {
     ok = verifier.VerifyFinal();
     EXPECT_FALSE(ok);
   }
+
+  // Test 5: import an invalid key.
+  uint8_t bad_public_key_info[sizeof(public_key_info)];
+  memcpy(bad_public_key_info, public_key_info, sizeof(public_key_info));
+  bad_public_key_info[0] += 1;  // Corrupt part of the SPKI syntax.
+  ok = verifier.VerifyInit(signature_algorithm,
+                           sizeof(signature_algorithm),
+                           signature, sizeof(signature),
+                           bad_public_key_info, sizeof(bad_public_key_info));
+  EXPECT_FALSE(ok);
+
+  // Test 6: import a key with extra data.
+  uint8_t long_public_key_info[sizeof(public_key_info) + 5];
+  memset(long_public_key_info, 0, sizeof(long_public_key_info));
+  memcpy(long_public_key_info, public_key_info, sizeof(public_key_info));
+  ok = verifier.VerifyInit(signature_algorithm,
+                           sizeof(signature_algorithm),
+                           signature, sizeof(signature),
+                           long_public_key_info, sizeof(long_public_key_info));
+  EXPECT_FALSE(ok);
 }
 
 //////////////////////////////////////////////////////////////////////
