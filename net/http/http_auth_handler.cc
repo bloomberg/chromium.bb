@@ -64,7 +64,7 @@ NetLog::EventType EventTypeFromAuthTarget(HttpAuth::Target target) {
 int HttpAuthHandler::GenerateAuthToken(
     const AuthCredentials* credentials, const HttpRequestInfo* request,
     const CompletionCallback& callback, std::string* auth_token) {
-  // TODO(cbentzel): Enforce non-NULL callback after cleaning up SocketStream.
+  DCHECK(!callback.is_null());
   DCHECK(request);
   DCHECK(credentials != NULL || AllowsDefaultCredentials());
   DCHECK(auth_token != NULL);

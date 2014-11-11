@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_basic.h"
 #include "net/http/http_request_info.h"
@@ -41,8 +42,9 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
                                 base::ASCIIToUTF16(tests[i].password));
     HttpRequestInfo request_info;
     std::string auth_token;
+    TestCompletionCallback callback;
     int rv = basic->GenerateAuthToken(&credentials, &request_info,
-                                      CompletionCallback(), &auth_token);
+                                      callback.callback(), &auth_token);
     EXPECT_EQ(OK, rv);
     EXPECT_STREQ(tests[i].expected_credentials, auth_token.c_str());
   }
