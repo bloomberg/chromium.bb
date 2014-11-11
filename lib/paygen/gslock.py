@@ -77,8 +77,8 @@ class Lock(object):
     It assumes that local server time is in sync with Google Storage server
     time.
   """
-
-  def __init__(self, gs_path, lock_timeout_mins=120, dry_run=False):
+  def __init__(self, gs_path, lock_timeout_mins=120, dry_run=False,
+               ctx=None):
     """Initializer for the lock.
 
     Args:
@@ -90,12 +90,13 @@ class Lock(object):
         unexpectedly rebooted, lost network connectivity or had
         some other catastrophic error.
       dry_run: do nothing, always succeed
+      ctx: chromite.lib.gs.GSContext to use.
     """
     self._gs_path = gs_path
     self._timeout = datetime.timedelta(minutes=lock_timeout_mins)
     self._contents = cros_build_lib.MachineDetails()
     self._generation = 0
-    self._ctx = gs.GSContext(dry_run=dry_run)
+    self._ctx = ctx if ctx is not None else gs.GSContext(dry_run=dry_run)
 
   def _LockExpired(self):
     """Check to see if an existing lock has timed out.

@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import multiprocessing
 import os
 import socket
@@ -17,22 +16,12 @@ fixup_path.FixupPath()
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
 
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
-from chromite.lib.paygen import unittest_lib
 
 # We access a lot of protected members during testing.
 # pylint: disable-msg=W0212
-
-class GSLockMockNotLocked(unittest_lib.ContextManagerObj):
-  """This is a helper class for mocking out GSLocks which get the lock."""
-
-
-class GSLockMockLocked(unittest_lib.ContextManagerObj):
-  """This is a helper class for mocking out GSLocks which don't get the lock."""
-  def __enter__(self):
-    raise gslock.LockNotAcquired()
 
 
 def _InProcessAcquire(lock_uri):
@@ -101,29 +90,30 @@ def _InProcessDataUpdate(lock_uri_data_uri):
     boolean describing if this method got the lock.
   """
   lock_uri, data_uri = lock_uri_data_uri
+  ctx = gs.GSContext()
 
   # Keep trying until the lock is acquired.
   while True:
     try:
       with gslock.Lock(lock_uri):
-        if gslib.Exists(data_uri):
-          data = int(gslib.Cat(data_uri)) + 1
+        if ctx.Exists(data_uri):
+          data = int(ctx.Cat(data_uri)) + 1
         else:
           data = 1
 
-        gslib.CreateWithContents(data_uri, str(data))
+        ctx.CreateWithContents(data_uri, str(data))
         return True
 
     except gslock.LockNotAcquired:
       pass
 
 
-class GSLockTest(mox.MoxTestBase):
+class GSLockTest(cros_test_lib.MockTestCase):
   """This test suite covers the GSLock file."""
 
   @cros_test_lib.NetworkTest()
   def setUp(self):
-    self.mox = mox.Mox()
+    self.ctx = gs.GSContext()
 
     # Use the unique id to make sure the tests can be run multiple places.
     unique_id = "%s.%d" % (socket.gethostname(), os.getpid())
@@ -132,65 +122,58 @@ class GSLockTest(mox.MoxTestBase):
     self.data_uri = 'gs://chromeos-releases-test/test-%s-data' % unique_id
 
     # Clear out any flags left from previous failure
-    gslib.Remove(self.lock_uri, ignore_no_match=True)
-    gslib.Remove(self.data_uri, ignore_no_match=True)
+    self.ctx.Remove(self.lock_uri, ignore_missing=True)
+    self.ctx.Remove(self.data_uri, ignore_missing=True)
 
     # To make certain we don't self update while running tests.
     os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
 
   @cros_test_lib.NetworkTest()
   def tearDown(self):
-    self.assertFalse(gslib.Exists(self.lock_uri))
-    self.assertFalse(gslib.Exists(self.data_uri))
-    self.mox.UnsetStubs()
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
+    self.assertFalse(self.ctx.Exists(self.data_uri))
 
   @cros_test_lib.NetworkTest()
   def testLock(self):
     """Test getting a lock."""
-    # We aren't using the mox in the usual way, we just want to force a known
-    # hostname.
-    self.mox.StubOutWithMock(cros_build_lib, 'MachineDetails')
-    cros_build_lib.MachineDetails().MultipleTimes().AndReturn('TestHost')
-    self.mox.ReplayAll()
+    # Force a known host name.
+    self.PatchObject(cros_build_lib, 'MachineDetails', return_value='TestHost')
 
     lock = gslock.Lock(self.lock_uri)
 
-    self.assertFalse(gslib.Exists(self.lock_uri))
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
     lock.Acquire()
-    self.assertTrue(gslib.Exists(self.lock_uri))
+    self.assertTrue(self.ctx.Exists(self.lock_uri))
 
-    contents = gslib.Cat(self.lock_uri)
+    contents = self.ctx.Cat(self.lock_uri)
     self.assertEqual(contents, 'TestHost')
 
     lock.Release()
-    self.assertFalse(gslib.Exists(self.lock_uri))
-
-    self.mox.VerifyAll()
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
 
   @cros_test_lib.NetworkTest()
   def testLockRepetition(self):
     """Test aquiring same lock multiple times."""
-    self.mox.StubOutWithMock(cros_build_lib, 'MachineDetails')
-    cros_build_lib.MachineDetails().MultipleTimes().AndReturn('TestHost')
-    self.mox.ReplayAll()
+    # Force a known host name.
+    self.PatchObject(cros_build_lib, 'MachineDetails', return_value='TestHost')
 
     lock = gslock.Lock(self.lock_uri)
 
-    self.assertFalse(gslib.Exists(self.lock_uri))
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
     lock.Acquire()
-    self.assertTrue(gslib.Exists(self.lock_uri))
+    self.assertTrue(self.ctx.Exists(self.lock_uri))
 
     lock.Acquire()
-    self.assertTrue(gslib.Exists(self.lock_uri))
+    self.assertTrue(self.ctx.Exists(self.lock_uri))
 
     lock.Release()
-    self.assertFalse(gslib.Exists(self.lock_uri))
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
 
     lock.Acquire()
-    self.assertTrue(gslib.Exists(self.lock_uri))
+    self.assertTrue(self.ctx.Exists(self.lock_uri))
 
     lock.Release()
-    self.assertFalse(gslib.Exists(self.lock_uri))
+    self.assertFalse(self.ctx.Exists(self.lock_uri))
 
   @cros_test_lib.NetworkTest()
   def testLockConflict(self):
@@ -227,7 +210,7 @@ class GSLockTest(mox.MoxTestBase):
     lock1.Acquire()
     lock2.Acquire()
 
-    gslib.Remove(self.lock_uri)
+    self.ctx.Remove(self.lock_uri)
 
   @cros_test_lib.NetworkTest()
   def testRaceToAcquire(self):
@@ -237,7 +220,7 @@ class GSLockTest(mox.MoxTestBase):
     results = pool.map(_InProcessAcquire, [self.lock_uri] * count)
 
     # Clean up the lock since the processes explicitly only acquire.
-    gslib.Remove(self.lock_uri)
+    self.ctx.Remove(self.lock_uri)
 
     # Ensure that only one of them got the lock.
     self.assertEqual(results.count(True), 1)
@@ -250,7 +233,7 @@ class GSLockTest(mox.MoxTestBase):
     results = pool.map(_InProcessDoubleAcquire, [self.lock_uri] * count)
 
     # Clean up the lock sinc the processes explicitly only acquire.
-    gslib.Remove(self.lock_uri)
+    self.ctx.Remove(self.lock_uri)
 
     # Ensure that only one of them got the lock (and got it twice).
     self.assertEqual(results.count(0), count-1)
@@ -259,18 +242,18 @@ class GSLockTest(mox.MoxTestBase):
   @cros_test_lib.NetworkTest()
   def testMultiProcessDataUpdate(self):
     """Have lots of processes update a GS file proctected by a lock."""
-    count = 200
+    count = 20   # To really stress, bump up to 200.
     pool = multiprocessing.Pool(processes=count)
     results = pool.map(_InProcessDataUpdate,
                        [(self.lock_uri, self.data_uri)] * count)
 
-    self.assertEqual(gslib.Cat(self.data_uri), str(count))
+    self.assertEqual(self.ctx.Cat(self.data_uri), str(count))
 
     # Ensure that all report success
     self.assertEqual(results.count(True), count)
 
     # Clean up the data file.
-    gslib.Remove(self.data_uri)
+    self.ctx.Remove(self.data_uri)
 
 
 if __name__ == '__main__':
