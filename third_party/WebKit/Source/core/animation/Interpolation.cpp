@@ -47,7 +47,7 @@ Interpolation::Interpolation(PassOwnPtrWillBeRawPtr<InterpolableValue> start, Pa
 void Interpolation::interpolate(int iteration, double fraction) const
 {
     if (m_cachedFraction != fraction || m_cachedIteration != iteration) {
-        m_cachedValue = m_start->interpolate(*m_end, fraction);
+        m_start->interpolate(*m_end, fraction, *m_cachedValue);
         m_cachedIteration = iteration;
         m_cachedFraction = fraction;
     }

@@ -9,43 +9,43 @@ namespace blink {
 
 DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(InterpolableValue);
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableNumber::interpolate(const InterpolableValue &to, const double progress) const
+void InterpolableNumber::interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const
 {
     const InterpolableNumber& toNumber = toInterpolableNumber(to);
-    if (!progress)
-        return create(m_value);
-    if (progress == 1)
-        return create(toNumber.m_value);
-    return create(m_value * (1 - progress) + toNumber.m_value * progress);
+    InterpolableNumber& resultNumber = toInterpolableNumber(result);
+
+    if (progress == 0)
+        resultNumber.m_value = m_value;
+    else if (progress == 1)
+        resultNumber.m_value = toNumber.m_value;
+    else
+        resultNumber.m_value = m_value * (1 - progress) + toNumber.m_value * progress;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableBool::interpolate(const InterpolableValue &to, const double progress) const
+void InterpolableBool::interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const
 {
-    if (progress < 0.5) {
-        return clone();
-    }
-    return to.clone();
+    const InterpolableBool& toBool = toInterpolableBool(to);
+    InterpolableBool& resultBool = toInterpolableBool(result);
+
+    if (progress < 0.5)
+        resultBool.m_value = m_value;
+    else
+        resultBool.m_value = toBool.m_value;
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableList::interpolate(const InterpolableValue &to, const double progress) const
+void InterpolableList::interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const
 {
     const InterpolableList& toList = toInterpolableList(to);
+    InterpolableList& resultList = toInterpolableList(result);
+
     ASSERT(toList.m_size == m_size);
+    ASSERT(resultList.m_size == m_size);
 
-    if (!progress) {
-        return create(*this);
-    }
-    if (progress == 1) {
-        return InterpolableList::create(toList);
-    }
-
-    OwnPtrWillBeRawPtr<InterpolableList> result = create(m_size);
     for (size_t i = 0; i < m_size; i++) {
         ASSERT(m_values[i]);
         ASSERT(toList.m_values[i]);
-        result->set(i, m_values[i]->interpolate(*(toList.m_values[i]), progress));
+        m_values[i]->interpolate(*(toList.m_values[i]), progress, *(resultList.m_values[i]));
     }
-    return result.release();
 }
 
 void InterpolableList::trace(Visitor* visitor)
@@ -56,14 +56,15 @@ void InterpolableList::trace(Visitor* visitor)
     InterpolableValue::trace(visitor);
 }
 
-PassOwnPtrWillBeRawPtr<InterpolableValue> InterpolableAnimatableValue::interpolate(const InterpolableValue &other, const double percentage) const
+void InterpolableAnimatableValue::interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const
 {
-    const InterpolableAnimatableValue& otherValue = toInterpolableAnimatableValue(other);
-    if (!percentage)
-        return create(m_value);
-    if (percentage == 1)
-        return create(otherValue.m_value);
-    return create(AnimatableValue::interpolate(m_value.get(), otherValue.m_value.get(), percentage));
+    const InterpolableAnimatableValue& toValue = toInterpolableAnimatableValue(to);
+    InterpolableAnimatableValue& resultValue = toInterpolableAnimatableValue(result);
+    if (progress == 0)
+        resultValue.m_value = m_value;
+    if (progress == 1)
+        resultValue.m_value = toValue.m_value;
+    resultValue.m_value = AnimatableValue::interpolate(m_value.get(), toValue.m_value.get(), progress);
 }
 
 void InterpolableAnimatableValue::trace(Visitor* visitor)

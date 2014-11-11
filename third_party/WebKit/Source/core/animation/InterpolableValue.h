@@ -25,7 +25,7 @@ public:
     virtual void trace(Visitor*) { }
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const = 0;
+    virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const = 0;
 
     friend class Interpolation;
 
@@ -51,7 +51,7 @@ public:
     virtual void trace(Visitor* visitor) override { InterpolableValue::trace(visitor); }
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const override final;
+    virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     double m_value;
 
     explicit InterpolableNumber(double value)
@@ -75,7 +75,7 @@ public:
     virtual void trace(Visitor* visitor) override { InterpolableValue::trace(visitor); }
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &to, const double progress) const override final;
+    virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     bool m_value;
 
     explicit InterpolableBool(bool value)
@@ -114,7 +114,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const override final;
+    virtual void interpolate(const InterpolableValue& to, const double progress, InterpolableValue& result) const override final;
     explicit InterpolableList(size_t size)
         : m_size(size)
         , m_values(m_size)
@@ -148,7 +148,7 @@ public:
     virtual void trace(Visitor*) override;
 
 private:
-    virtual PassOwnPtrWillBeRawPtr<InterpolableValue> interpolate(const InterpolableValue &other, const double progress) const override final;
+    virtual void interpolate(const InterpolableValue &to, const double progress, InterpolableValue& result) const override final;
     RefPtrWillBeMember<AnimatableValue> m_value;
 
     InterpolableAnimatableValue(PassRefPtrWillBeRawPtr<AnimatableValue> value)
