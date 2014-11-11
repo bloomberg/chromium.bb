@@ -95,12 +95,6 @@ namespace content {
 
 PPB_VideoDecoder_Impl::PPB_VideoDecoder_Impl(PP_Instance instance)
     : PPB_VideoDecoder_Shared(instance), ppp_videodecoder_(NULL) {
-  PluginModule* plugin_module =
-      HostGlobals::Get()->GetInstance(pp_instance())->module();
-  if (plugin_module) {
-    ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
-        plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
-  }
 }
 
 PPB_VideoDecoder_Impl::~PPB_VideoDecoder_Impl() { Destroy(); }
@@ -138,6 +132,18 @@ bool PPB_VideoDecoder_Impl::Init(PP_Resource graphics_context,
   DCHECK(channel);
   decoder_ = channel->CreateVideoDecoder(command_buffer_route_id);
   return (decoder_ && decoder_->Initialize(PPToMediaProfile(profile), this));
+}
+
+const PPP_VideoDecoder_Dev* PPB_VideoDecoder_Impl::GetPPP() {
+  if (!ppp_videodecoder_) {
+    PluginModule* plugin_module =
+        HostGlobals::Get()->GetInstance(pp_instance())->module();
+    if (plugin_module) {
+      ppp_videodecoder_ = static_cast<const PPP_VideoDecoder_Dev*>(
+          plugin_module->GetPluginInterface(PPP_VIDEODECODER_DEV_INTERFACE));
+    }
+  }
+  return ppp_videodecoder_;
 }
 
 int32_t PPB_VideoDecoder_Impl::Decode(
@@ -234,46 +240,44 @@ void PPB_VideoDecoder_Impl::ProvidePictureBuffers(
     const gfx::Size& dimensions,
     uint32 texture_target) {
   DCHECK(RenderThreadImpl::current());
-  if (!ppp_videodecoder_)
+  if (!GetPPP())
     return;
 
   PP_Size out_dim = PP_MakeSize(dimensions.width(), dimensions.height());
-  ppp_videodecoder_->ProvidePictureBuffers(pp_instance(),
-                                           pp_resource(),
-                                           requested_num_of_buffers,
-                                           &out_dim,
-                                           texture_target);
+  GetPPP()->ProvidePictureBuffers(pp_instance(), pp_resource(),
+                                  requested_num_of_buffers, &out_dim,
+                                  texture_target);
 }
 
 void PPB_VideoDecoder_Impl::PictureReady(const media::Picture& picture) {
   // So far picture.visible_rect is not used. If used, visible_rect should
   // be validated since it comes from GPU process and may not be trustworthy.
   DCHECK(RenderThreadImpl::current());
-  if (!ppp_videodecoder_)
+  if (!GetPPP())
     return;
 
   PP_Picture_Dev output;
   output.picture_buffer_id = picture.picture_buffer_id();
   output.bitstream_buffer_id = picture.bitstream_buffer_id();
-  ppp_videodecoder_->PictureReady(pp_instance(), pp_resource(), &output);
+  GetPPP()->PictureReady(pp_instance(), pp_resource(), &output);
 }
 
 void PPB_VideoDecoder_Impl::DismissPictureBuffer(int32 picture_buffer_id) {
   DCHECK(RenderThreadImpl::current());
-  if (!ppp_videodecoder_)
+  if (!GetPPP())
     return;
-  ppp_videodecoder_->DismissPictureBuffer(
-      pp_instance(), pp_resource(), picture_buffer_id);
+  GetPPP()->DismissPictureBuffer(pp_instance(), pp_resource(),
+                                 picture_buffer_id);
 }
 
 void PPB_VideoDecoder_Impl::NotifyError(
     media::VideoDecodeAccelerator::Error error) {
   DCHECK(RenderThreadImpl::current());
-  if (!ppp_videodecoder_)
+  if (!GetPPP())
     return;
 
   PP_VideoDecodeError_Dev pp_error = MediaToPPError(error);
-  ppp_videodecoder_->NotifyError(pp_instance(), pp_resource(), pp_error);
+  GetPPP()->NotifyError(pp_instance(), pp_resource(), pp_error);
   UMA_HISTOGRAM_ENUMERATION("Media.PepperVideoDecoderError",
                             error,
                             media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);

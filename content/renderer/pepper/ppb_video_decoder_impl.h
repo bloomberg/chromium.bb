@@ -58,12 +58,19 @@ class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
   explicit PPB_VideoDecoder_Impl(PP_Instance instance);
   bool Init(PP_Resource graphics_context,
             PP_VideoDecoder_Profile profile);
+  // Returns the associated PPP_VideoDecoder_Dev interface to use when
+  // making calls on the plugin. This fetches the interface lazily. For
+  // out-of-process plugins, this means a synchronous message to the plugin,
+  // so it's important to never call this in response to a synchronous
+  // plugin->renderer message (such as the Create message).
+  const PPP_VideoDecoder_Dev* GetPPP();
 
   // This is NULL before initialization, and after destruction.
   // Holds a GpuVideoDecodeAcceleratorHost.
   scoped_ptr<media::VideoDecodeAccelerator> decoder_;
 
-  // Reference to the plugin requesting this interface.
+  // The interface to use when making calls on the plugin. For the most part,
+  // methods should not use this directly but should call GetPPP() instead.
   const PPP_VideoDecoder_Dev* ppp_videodecoder_;
 
   DISALLOW_COPY_AND_ASSIGN(PPB_VideoDecoder_Impl);
