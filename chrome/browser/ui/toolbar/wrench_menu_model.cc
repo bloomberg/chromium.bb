@@ -17,6 +17,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
@@ -517,10 +518,11 @@ WrenchMenuModel::WrenchMenuModel()
 }
 
 bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
-  if (browser_->profile()->IsSupervised())
+  if (browser_->profile()->IsGuestSession())
     return false;
 
-  return !browser_->profile()->IsGuestSession();
+  return IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
+      IncognitoModePrefs::DISABLED;
 }
 
 void WrenchMenuModel::Build() {

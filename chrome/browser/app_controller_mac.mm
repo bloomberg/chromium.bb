@@ -33,6 +33,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/mac/handoff_utility.h"
 #include "chrome/browser/mac/mac_startup_profiler.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -1467,7 +1468,9 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [dockMenu addItem:item];
 
   // |profile| can be NULL during unit tests.
-  if (!profile || !profile->IsSupervised()) {
+  if (!profile ||
+      IncognitoModePrefs::GetAvailability(profile->GetPrefs()) !=
+          IncognitoModePrefs::DISABLED) {
     titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
     item.reset(
         [[NSMenuItem alloc] initWithTitle:titleStr

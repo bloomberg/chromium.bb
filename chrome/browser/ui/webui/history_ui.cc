@@ -177,21 +177,23 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("entrySummary", IDS_HISTORY_ENTRY_SUMMARY);
   source->AddBoolean("isFullHistorySyncEnabled",
                      WebHistoryServiceFactory::GetForProfile(profile) != NULL);
-  source->AddBoolean("groupByDomain",
+  source->AddBoolean("groupByDomain", profile->IsSupervised() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kHistoryEnableGroupByDomain));
-  source->AddBoolean("allowDeletingHistory",
-                     prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory));
+  bool allow_deleting_history =
+      prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+  source->AddBoolean("allowDeletingHistory", allow_deleting_history);
   source->AddBoolean("isInstantExtendedApiEnabled",
                      chrome::IsInstantExtendedAPIEnabled());
+  source->AddBoolean("isSupervisedProfile", profile->IsSupervised());
+  source->AddBoolean("hideDeleteVisitUI",
+                     profile->IsSupervised() && !allow_deleting_history);
 
   source->SetJsonPath(kStringsJsFile);
   source->AddResourcePath(kHistoryJsFile, IDR_HISTORY_JS);
   source->AddResourcePath(kOtherDevicesJsFile, IDR_OTHER_DEVICES_JS);
   source->SetDefaultResource(IDR_HISTORY_HTML);
   source->DisableDenyXFrameOptions();
-  source->AddBoolean("isSupervisedProfile", profile->IsSupervised());
-  source->AddBoolean("showDeleteVisitUI", !profile->IsSupervised());
 
   return source;
 }

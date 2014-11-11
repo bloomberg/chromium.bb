@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -455,8 +456,18 @@ syncer::ModelTypeSet SupervisedUserService::GetPreferredDataTypes() const {
 }
 
 void SupervisedUserService::OnHistoryRecordingStateChanged() {
-  includes_sync_sessions_type_ =
+  bool record_history =
       profile_->GetPrefs()->GetBoolean(prefs::kRecordHistory);
+  GetSettingsService()->SetLocalSetting(
+      supervised_users::kAllowDeletingBrowserHistory,
+      make_scoped_ptr(new base::FundamentalValue(!record_history)));
+  GetSettingsService()->SetLocalSetting(
+      supervised_users::kIncognitoModeAvailability,
+      make_scoped_ptr(new base::FundamentalValue(
+          record_history ? IncognitoModePrefs::DISABLED
+                         : IncognitoModePrefs::ENABLED)));
+
+  includes_sync_sessions_type_ = record_history;
   ProfileSyncServiceFactory::GetForProfile(profile_)
       ->ReconfigureDatatypeManager();
 }

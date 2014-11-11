@@ -135,7 +135,7 @@ void SupervisedUserSettingsService::UploadItem(const std::string& key,
   dict->SetWithoutPathExpansion(key_suffix, value.release());
 }
 
-void SupervisedUserSettingsService::SetLocalSettingForTesting(
+void SupervisedUserSettingsService::SetLocalSetting(
     const std::string& key,
     scoped_ptr<base::Value> value) {
   if (value)

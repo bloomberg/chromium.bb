@@ -201,7 +201,7 @@ TEST_F(SupervisedUserSettingsServiceTest, SetLocalSetting) {
   EXPECT_FALSE(settings_->GetWithoutPathExpansion(kSettingsName, &value));
 
   settings_.reset();
-  settings_service_.SetLocalSettingForTesting(
+  settings_service_.SetLocalSetting(
       kSettingsName,
       scoped_ptr<base::Value>(new base::StringValue(kSettingsValue)));
   ASSERT_TRUE(settings_);

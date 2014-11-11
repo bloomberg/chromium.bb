@@ -6,11 +6,13 @@
 
 namespace supervised_users {
 
+const char kAllowDeletingBrowserHistory[] = "AllowDeletingBrowserHistory";
 const char kContentPackDefaultFilteringBehavior[] =
     "ContentPackDefaultFilteringBehavior";
 const char kContentPackManualBehaviorHosts[] = "ContentPackManualBehaviorHosts";
 const char kContentPackManualBehaviorURLs[] = "ContentPackManualBehaviorURLs";
 const char kForceSafeSearch[] = "ForceSafeSearch";
+const char kIncognitoModeAvailability[] = "IncognitoModeAvailability";
 const char kRecordHistory[] = "RecordHistory";
 const char kSigninAllowed[] = "SigninAllowed";
 const char kUserName[] = "UserName";

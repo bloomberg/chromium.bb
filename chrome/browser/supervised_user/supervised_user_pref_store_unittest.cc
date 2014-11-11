@@ -127,7 +127,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetBoolean("example.com", true);
   dict->SetBoolean("moose.org", false);
-  service_.SetLocalSettingForTesting(
+  service_.SetLocalSetting(
       supervised_users::kContentPackManualBehaviorHosts,
       scoped_ptr<base::Value>(dict->DeepCopy()));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
@@ -138,7 +138,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // kForceSafeSearch can be configured by the custodian, overriding the
   // hardcoded default.
   fixture.changed_prefs()->Clear();
-  service_.SetLocalSettingForTesting(
+  service_.SetLocalSetting(
       supervised_users::kForceSafeSearch,
       scoped_ptr<base::Value>(new base::FundamentalValue(false)));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());

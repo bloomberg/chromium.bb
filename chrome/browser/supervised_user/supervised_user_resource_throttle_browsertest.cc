@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserResourceThrottleTest,
   Profile* profile = browser()->profile();
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
-  supervised_user_settings_service->SetLocalSettingForTesting(
+  supervised_user_settings_service->SetLocalSetting(
       supervised_users::kContentPackDefaultFilteringBehavior,
       scoped_ptr<base::Value>(
           new base::FundamentalValue(SupervisedUserURLFilter::BLOCK)));

@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
       SupervisedUserSettingsServiceFactory::GetForProfile(profile);
 
   std::string name = "Supervised User Test Name";
-  settings->SetLocalSettingForTesting(
+  settings->SetLocalSetting(
       supervised_users::kUserName,
       scoped_ptr<base::Value>(new base::StringValue(name)));
   EXPECT_FALSE(prefs->IsUserModifiablePreference(prefs::kProfileName));
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
 
   // Change the name once more.
   std::string new_name = "New Supervised User Test Name";
-  settings->SetLocalSettingForTesting(
+  settings->SetLocalSetting(
       supervised_users::kUserName,
       scoped_ptr<base::Value>(new base::StringValue(new_name)));
   EXPECT_EQ(new_name, prefs->GetString(prefs::kProfileName));
@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserServiceTestSupervised, ProfileName) {
             base::UTF16ToUTF8(cache.GetNameOfProfileAtIndex(profile_index)));
 
   // Remove the setting.
-  settings->SetLocalSettingForTesting(supervised_users::kUserName,
+  settings->SetLocalSetting(supervised_users::kUserName,
                                       scoped_ptr<base::Value>());
   EXPECT_EQ(original_name, prefs->GetString(prefs::kProfileName));
   profile_index = cache.GetIndexOfProfileWithPath(profile->GetPath());

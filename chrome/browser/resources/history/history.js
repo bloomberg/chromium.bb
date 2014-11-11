@@ -1682,9 +1682,9 @@ HistoryView.prototype.updateFocusGrid_ = function() {
 HistoryView.prototype.updateNavBar_ = function() {
   this.updateRangeButtons_();
 
-  // Supervised users have the control bar on top, don't show it on the bottom
-  // as well.
-  if (!loadTimeData.getBoolean('isSupervisedProfile')) {
+  // If grouping by domain is enabled, there's a control bar on top, don't show
+  // the one on the bottom as well.
+  if (!loadTimeData.getBoolean('groupByDomain')) {
     $('newest-button').hidden = this.pageIndex_ == 0;
     $('newer-button').hidden = this.pageIndex_ == 0;
     $('older-button').hidden =
@@ -1924,7 +1924,7 @@ function load() {
     });
   }
 
-  if (!loadTimeData.getBoolean('showDeleteVisitUI'))
+  if (loadTimeData.getBoolean('hideDeleteVisitUI'))
     $('remove-visit').hidden = true;
 
   searchField.addEventListener('search', doSearch);
@@ -1935,15 +1935,16 @@ function load() {
     activeVisit = null;
   });
 
-  // Only show the controls if the command line switch is activated.
-  if (loadTimeData.getBoolean('groupByDomain') ||
-      loadTimeData.getBoolean('isSupervisedProfile')) {
-    // Hide the top container which has the "Clear browsing data" and "Remove
-    // selected entries" buttons since they're unavailable for supervised users.
-    $('top-container').hidden = true;
+  // Only show the controls if the command line switch is activated or the user
+  // is supervised.
+  if (loadTimeData.getBoolean('groupByDomain')) {
     $('history-page').classList.add('big-topbar-page');
     $('filter-controls').hidden = false;
   }
+  // Hide the top container which has the "Clear browsing data" and "Remove
+  // selected entries" buttons if deleting history is not allowed.
+  if (!loadTimeData.getBoolean('allowDeletingHistory'))
+    $('top-container').hidden = true;
 
   uber.setTitle(loadTimeData.getString('title'));
 

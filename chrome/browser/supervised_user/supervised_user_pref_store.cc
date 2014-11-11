@@ -26,6 +26,10 @@ struct SupervisedUserSettingsPrefMappingEntry {
 
 SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   {
+      supervised_users::kAllowDeletingBrowserHistory,
+      prefs::kAllowDeletingBrowserHistory,
+  },
+  {
     supervised_users::kContentPackDefaultFilteringBehavior,
     prefs::kDefaultSupervisedUserFilteringBehavior,
   },
@@ -39,6 +43,10 @@ SupervisedUserSettingsPrefMappingEntry kSupervisedUserSettingsPrefMapping[] = {
   },
   {
     supervised_users::kForceSafeSearch, prefs::kForceSafeSearch,
+  },
+  {
+      supervised_users::kIncognitoModeAvailability,
+      prefs::kIncognitoModeAvailability,
   },
   {
     supervised_users::kRecordHistory, prefs::kRecordHistory,
