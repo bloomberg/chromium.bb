@@ -31,16 +31,13 @@ class ModalWidgetDelegate : public views::WidgetDelegate {
   ~ModalWidgetDelegate() override {}
 
   // Overridden from WidgetDelegate:
-  virtual views::Widget* GetWidget() override {
+  void DeleteDelegate() override { delete this; }
+  views::Widget* GetWidget() override { return contents_view_->GetWidget(); }
+  const views::Widget* GetWidget() const override {
     return contents_view_->GetWidget();
   }
-  virtual const views::Widget* GetWidget() const override {
-    return contents_view_->GetWidget();
-  }
-  virtual views::View* GetContentsView() override { return contents_view_; }
-  virtual ui::ModalType GetModalType() const override {
-    return ui::MODAL_TYPE_SYSTEM;
-  }
+  views::View* GetContentsView() override { return contents_view_; }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
 
  private:
   views::View* contents_view_;
