@@ -5,10 +5,8 @@
 #ifndef CONTENT_PUBLIC_COMMON_REFERRER_H_
 #define CONTENT_PUBLIC_COMMON_REFERRER_H_
 
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "content/common/content_export.h"
-#include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "url/gurl.h"
 
@@ -37,22 +35,12 @@ struct CONTENT_EXPORT Referrer {
       return sanitized_referrer;
     }
 
-    bool is_downgrade =
-        sanitized_referrer.url.SchemeIsSecure() && !request.SchemeIsSecure();
-
     switch (sanitized_referrer.policy) {
       case blink::WebReferrerPolicyDefault:
-        if (is_downgrade) {
+        if (sanitized_referrer.url.SchemeIsSecure() &&
+            !request.SchemeIsSecure()) {
           sanitized_referrer.url = GURL();
-        } else if (request.GetOrigin() != sanitized_referrer.url.GetOrigin() &&
-                   base::CommandLine::ForCurrentProcess()->HasSwitch(
-                       switches::kReducedReferrerGranularity)) {
-          sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
         }
-        break;
-      case blink::WebReferrerPolicyNoReferrerWhenDowngrade:
-        if (is_downgrade)
-          sanitized_referrer.url = GURL();
         break;
       case blink::WebReferrerPolicyAlways:
         break;
