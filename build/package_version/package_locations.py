@@ -9,6 +9,7 @@ import os
 import posixpath
 
 SHARED_FOLDER = 'shared'
+ARCHIVE_DIR = 'package_archives'
 
 
 def GetRemotePackageKey(is_shared, rev_num, package_target, package_name):
@@ -62,37 +63,27 @@ def GetLocalPackageFile(tar_dir, package_target, package_name):
                       package_name + '.json')
 
 
-def GetLocalPackageArchiveDir(tar_dir, package_target, package_name):
-  """Returns the local package archive directory location.
-
-  Args:
-    tar_dir: The tar directory for where package archives would be found.
-    package_target: The package target of the package containing the archive.
-    package_name: The name of the package.
-  Returns:
-    The standard directory where local package archive files are found.
-  """
-  return os.path.join(tar_dir,
-                      package_target,
-                      package_name)
-
-
-def GetLocalPackageArchiveFile(tar_dir, package_target, package_name,
-                               archive_name):
+def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   """Returns the local package archive file location.
 
   Args:
-    tar_dir: The tar directory for where package archives would be found.
-    package_target: The package target of the package containing the archive.
-    package_name: The name of the package containing the archive.
+    tar_dir: The tar root directory for where package archives would be found.
     archive_name: The name of the archive contained within the package.
+    archive_hash: The hash of the archive, which will be part of the final name.
   Returns:
     The standard location where local package archive file is found.
   """
-  return os.path.join(GetLocalPackageArchiveDir(tar_dir,
-                                                package_target,
-                                                package_name),
-                      archive_name)
+  # Have the file keep the extension so that extractions know the file type.
+  name_split = archive_name.split('.', 1)
+  if len(name_split) == 2:
+    archive_ext = '.' + name_split[1]
+  else:
+    archive_ext = ''
+
+  return os.path.join(tar_dir,
+                      ARCHIVE_DIR,
+                      archive_name,
+                      archive_hash + archive_ext)
 
 
 def GetLocalPackageArchiveLogFile(archive_file):

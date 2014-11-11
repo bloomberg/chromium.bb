@@ -136,37 +136,6 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   local_package_file = package_locations.GetLocalPackageFile(tar_dir,
                                                              package_target,
                                                              package_name)
-  # To ensure that we do not redownload extra archives that we already have,
-  # create a dictionary of old package archives that contains the hash of each
-  # package archive.
-  old_archives = {}
-  if os.path.isfile(local_package_file):
-    try:
-      old_package_desc = package_info.PackageInfo(local_package_file)
-      old_archives_list = old_package_desc.GetArchiveList()
-      old_archive_names = [archive.GetArchiveData().name
-                           for archive
-                           in old_archives_list]
-      for archive_name in old_archive_names:
-        archive_file = package_locations.GetLocalPackageArchiveFile(
-            tar_dir,
-            package_target,
-            package_name,
-            archive_name
-            )
-
-        archive_hash = archive_info.GetArchiveHash(archive_file)
-        if archive_hash is not None:
-          old_archives[archive_name] = archive_hash
-    except:
-      # Nothing can be trusted here anymore, delete all package archives.
-      archive_directory = package_locations.GetLocalPackageArchiveDir(
-          tar_dir,
-          package_target,
-          package_name
-          )
-      os.unlink(local_package_file)
-      pynacl.file_tools.RemoveDir(archive_directory)
 
   # Download packages information file along with each of the package
   # archives described in the information file. Also keep track of what
@@ -175,25 +144,24 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
   update_archives = []
   for archive_obj in package_desc.GetArchiveList():
     archive_desc = archive_obj.GetArchiveData()
-    old_hash = old_archives.get(archive_desc.name, None)
-    if old_hash is not None:
-      old_archives.pop(archive_desc.name)
-      if archive_desc.hash == old_hash:
+    local_archive_file = package_locations.GetLocalPackageArchiveFile(
+        tar_dir,
+        archive_desc.name,
+        archive_desc.hash)
+
+    old_hash = archive_info.GetArchiveHash(local_archive_file)
+    if archive_desc.hash == old_hash:
         logging.debug('Skipping matching archive: %s', archive_desc.name)
         continue
-    update_archives.append(archive_obj)
+
+    archive_tuple = (local_archive_file, archive_obj.GetArchiveData())
+    update_archives.append(archive_tuple)
 
   if update_archives:
     logging.info('--Syncing %s to revision %s--' % (package_name, revision_num))
     num_archives = len(update_archives)
-    for index, archive_obj in enumerate(update_archives):
-      archive_desc = archive_obj.GetArchiveData()
-      local_archive_file = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          archive_desc.name
-      )
+    for index, archive_tuple in enumerate(update_archives):
+      local_archive_file, archive_desc = archive_tuple
       pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
 
       if archive_desc.url is None:
@@ -209,8 +177,7 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
 
       # Delete any stale log files
       local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
-          local_archive_file
-      )
+          local_archive_file)
       if os.path.isfile(local_archive_log):
         os.unlink(local_archive_log)
 
@@ -229,13 +196,10 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
       if archive_desc.log_url:
         local_archive_file = package_locations.GetLocalPackageArchiveFile(
             tar_dir,
-            package_target,
-            package_name,
-            archive_desc.name
-        )
+            archive_desc.name,
+            archive_desc.hash)
         local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
-            local_archive_file
-        )
+            local_archive_file)
         if not os.path.isfile(local_archive_log):
           download_log_tuple = (archive_desc.name,
                                 archive_desc.log_url,
@@ -256,21 +220,8 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
           raise IOError('Could not download log URL (%s): %s' %
                         (log_url, e))
 
-  # Delete any stale left over packages.
-  for old_archive in old_archives:
-    archive_file = package_locations.GetLocalPackageArchiveFile(
-        tar_dir,
-        package_target,
-        package_name,
-        old_archive)
-    os.unlink(archive_file)
-
-    archive_log = package_locations.GetLocalPackageArchiveLogFile(archive_file)
-    if os.path.isfile(archive_log):
-      os.unlink(archive_log)
-
   # Save the package file so we know what we currently have.
-  if update_archives or old_archives:
+  if update_archives:
     package_desc.SavePackageFile(local_package_file)
 
   return downloaded_files
@@ -338,23 +289,6 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
     archive_json = archive_basename + '.json'
     valid_archive_files.update([archive_basename, archive_json])
 
-  # Delete any stale archive files
-  local_archive_dir = package_locations.GetLocalPackageArchiveDir(
-      tar_dir,
-      package_target,
-      package_name)
-
-  if os.path.isdir(local_archive_dir):
-    for dir_item in os.listdir(local_archive_dir):
-      if dir_item in valid_archive_files:
-        continue
-
-      item_path = os.path.join(local_archive_dir, dir_item)
-      if os.path.isdir(item_path):
-        pynacl.file_tools.RemoveDir(item_path)
-      else:
-        pynacl.file_tools.RemoveFile(item_path)
-
   # We do not need to archive the package if it already matches. But if the
   # local package file is invalid or does not match, then we should recreate
   # the json file.
@@ -370,15 +304,19 @@ def ArchivePackageArchives(tar_dir, package_target, package_name, archives,
   # Copy each of the packages over to the tar directory first.
   for archive_file in archive_list:
     archive_name = os.path.basename(archive_file)
+    archive_hash = archive_info.GetArchiveHash(archive_file)
     local_archive_file = package_locations.GetLocalPackageArchiveFile(
         tar_dir,
-        package_target,
-        package_name,
-        archive_name)
+        archive_name,
+        archive_hash
+    )
 
-    logging.info('Archiving file: %s', archive_file)
-    pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
-    shutil.copyfile(archive_file, local_archive_file)
+    if archive_hash == archive_info.GetArchiveHash(local_archive_file):
+      logging.info('Skipping archive of duplicate file: %s', archive_file)
+    else:
+      logging.info('Archiving file: %s', archive_file)
+      pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
+      shutil.copyfile(archive_file, local_archive_file)
 
   # Once all the copying is completed, update the local packages file.
   logging.info('Package "%s" archived: %s', package_name, local_package_file)
@@ -436,9 +374,8 @@ def UploadPackage(storage, revision, tar_dir, package_target, package_name,
 
       archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
-          package_target,
-          package_name,
-          archive_desc.name)
+          archive_desc.name,
+          archive_desc.hash)
       archive_hash = archive_info.GetArchiveHash(archive_file)
       if archive_hash is None:
         raise error.Error('Missing Archive File: %s' % archive_file)
@@ -552,23 +489,17 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
       archive_file = None
       overlay_archive_desc = overlay_archives.get(archive_desc.name, None)
       if overlay_archive_desc:
-        overlay_archive_file = package_locations.GetLocalPackageArchiveFile(
+        logging.info('Using overlaid archive: %s', archive_desc.name)
+        archive_desc = overlay_archive_desc
+        archive_file = package_locations.GetLocalPackageArchiveFile(
             overlay_tar_dir,
-            package_target,
-            package_name,
-            archive_desc.name
-        )
-        if os.path.isfile(overlay_archive_file):
-          logging.info('Using overlaid archive: %s', overlay_archive_file)
-          archive_desc = overlay_archive_desc
-          archive_file = overlay_archive_file
-
+            archive_desc.name,
+            archive_desc.hash)
       if archive_file is None:
         archive_file = package_locations.GetLocalPackageArchiveFile(
             tar_dir,
-            package_target,
-            package_name,
-            archive_desc.name
+            archive_desc.name,
+            archive_desc.hash
         )
 
       # Upon extraction, some files may not be downloaded (or have stale files),
@@ -953,16 +884,17 @@ def _DoFillEmptyTarsCmd(arguments):
         else:
           raise error.Error('Unknown archive type: %s.' % archive_data.name)
 
+        temp_archive_file = os.path.join(arguments.tar_dir, archive_data.name)
+        tar_file = cygtar.CygTar(temp_archive_file, mode)
+        tar_file.Close()
+        tar_hash = archive_info.GetArchiveHash(temp_archive_file)
+
         archive_file = package_locations.GetLocalPackageArchiveFile(
             arguments.tar_dir,
-            package_target,
-            package_name,
-            archive_data.name
-            )
-
-        tar_file = cygtar.CygTar(archive_file, mode)
-        tar_file.Close()
-        tar_hash = archive_info.GetArchiveHash(archive_file)
+            archive_data.name,
+            tar_hash)
+        file_tools.MakeParentDirectoryIfAbsent(archive_file)
+        os.rename(temp_archive_file, archive_file)
 
         empty_archive = archive_info.ArchiveInfo(name=archive_data.name,
                                                  hash=tar_hash)

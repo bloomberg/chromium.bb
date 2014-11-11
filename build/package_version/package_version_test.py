@@ -7,6 +7,7 @@
 
 import os
 import random
+import shutil
 import sys
 import tarfile
 import unittest
@@ -15,6 +16,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
 import pynacl.fake_downloader
 import pynacl.fake_storage
 import pynacl.file_tools
+import pynacl.log_tools
 import pynacl.platform
 import pynacl.working_directory
 
@@ -31,7 +33,7 @@ class TestPackageVersion(unittest.TestCase):
     self._fake_downloader = pynacl.fake_downloader.FakeDownloader()
 
   def GenerateMockFile(self, work_dir, mock_dir = 'mock_dir',
-                       mock_file='mockfile.txt', contents='mock contents'):
+                       mock_file=None, contents='mock contents'):
     """Generates a file with random content in it.
 
     Args:
@@ -42,9 +44,11 @@ class TestPackageVersion(unittest.TestCase):
     Returns:
       File path for the mock file with the mock contents with random content.
     """
+    if mock_file is None:
+      mock_file = 'mockfile_%s.txt' % str(random.random())
+
     full_mock_dir = os.path.join(work_dir, mock_dir)
-    if not os.path.isdir(full_mock_dir):
-      os.makedirs(full_mock_dir)
+    pynacl.file_tools.MakeDirectoryIfAbsent(full_mock_dir)
 
     full_mock_file = os.path.join(full_mock_dir, mock_file)
     with open(full_mock_file, 'wt') as f:
@@ -53,21 +57,20 @@ class TestPackageVersion(unittest.TestCase):
 
     return full_mock_file
 
-  def GeneratePackageInfo(self, archive_list, name_dict={},
+  def GeneratePackageInfo(self, archive_list,
                           url_dict={}, src_dir_dict={}, dir_dict={},
                           log_url_dict={}):
     """Generates a package_info.PackageInfo object for list of archives."
 
     Args:
       archive_list: List of file paths where package archives sit.
-      name_dict: optional dict of archive to names, otherwise use filename.
       url_dict: dict of archive file path to URL if url exists.
       src_dir_dict: dict of archive file path to source tar dir if exists.
       dir_dict: dict of archive file path to root dir if exists.
     """
     package_desc = package_info.PackageInfo()
     for archive_file in archive_list:
-      archive_name = name_dict.get(archive_file, os.path.basename(archive_file))
+      archive_name = os.path.basename(archive_file)
 
       if os.path.isfile(archive_file):
         archive_hash = archive_info.GetArchiveHash(archive_file)
@@ -88,10 +91,22 @@ class TestPackageVersion(unittest.TestCase):
 
     return package_desc
 
+  def CopyToLocalArchiveFile(self, archive_file, tar_dir):
+      local_archive_file = package_locations.GetLocalPackageArchiveFile(
+          tar_dir,
+          os.path.basename(archive_file),
+          archive_info.GetArchiveHash(archive_file)
+      )
+
+      pynacl.file_tools.MakeParentDirectoryIfAbsent(local_archive_file)
+      shutil.copy2(archive_file, local_archive_file)
+
   def test_DownloadArchive(self):
     # Check that we can download a package archive correctly.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       mock_tar = self.GenerateMockFile(work_dir)
+      mock_hash = archive_info.GetArchiveHash(mock_tar)
+
       fake_url = 'http://www.fake.com/archive.tar'
       self._fake_downloader.StoreURL(fake_url, mock_tar)
 
@@ -122,20 +137,15 @@ class TestPackageVersion(unittest.TestCase):
       mock_name = os.path.basename(mock_tar)
       local_archive_file = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
-          package_target,
-          package_name,
-          mock_name
-      )
+          mock_name,
+          mock_hash)
 
-      self.assertEqual(
-          archive_info.GetArchiveHash(local_archive_file),
-          archive_info.GetArchiveHash(mock_tar)
-       )
+      self.assertEqual(archive_info.GetArchiveHash(local_archive_file),
+                       mock_hash)
 
       # Check log is not downloaded.
       local_archive_log = package_locations.GetLocalPackageArchiveLogFile(
-          local_archive_file
-      )
+          local_archive_file)
       self.assertFalse(os.path.isfile(local_archive_log))
 
       # Check log is downloaded when include_logs is True
@@ -152,8 +162,7 @@ class TestPackageVersion(unittest.TestCase):
 
       self.assertEqual(
           archive_info.GetArchiveHash(local_archive_log),
-          archive_info.GetArchiveHash(mock_log)
-       )
+          archive_info.GetArchiveHash(mock_log))
 
   def test_DownloadArchiveMissingURLFails(self):
     # Checks that we fail when the archive has no URL set.
@@ -237,6 +246,64 @@ class TestPackageVersion(unittest.TestCase):
           package_desc,
           downloader=self._fake_downloader.Download
       )
+
+  def test_DownloadSharedTarsDownloadsOnce(self):
+  # Test that tars with same name and hash get downloaded only once.
+    with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
+      tar_dir = os.path.join(work_dir, 'tar_dir')
+      overlay_dir = os.path.join(work_dir, 'overlay_dir')
+      dest_dir = os.path.join(work_dir, 'dest_dir')
+      package_target_1 = 'custom_package_target_1'
+      package_name_1 = 'custom_package_1'
+      package_target_2 = 'custom_package_target_2'
+      package_name_2 = 'custom_package_2'
+      package_revision = 10
+
+      mock_file = self.GenerateMockFile(work_dir)
+      mock_tar = os.path.join(work_dir, 'shared_archive.tar')
+      with tarfile.TarFile(mock_tar, 'w') as f:
+        f.add(mock_file, arcname=os.path.basename(mock_file))
+
+      fake_url = 'http://www.fake.com/archive.tar'
+      self._fake_downloader.StoreURL(fake_url, mock_tar)
+
+      # Generate 2 package files both containing the same tar file
+      package_desc_1 = self.GeneratePackageInfo([mock_tar],
+                                                url_dict={mock_tar: fake_url})
+      package_file_1 = package_locations.GetLocalPackageFile(
+          tar_dir,
+          package_target_1,
+          package_name_1
+      )
+      package_desc_1.SavePackageFile(package_file_1)
+
+      package_desc_2 = self.GeneratePackageInfo([mock_tar],
+                                                url_dict={mock_tar: fake_url})
+      package_file_2 = package_locations.GetLocalPackageFile(
+          tar_dir,
+          package_target_2,
+          package_name_2
+      )
+      package_desc_2.SavePackageFile(package_file_2)
+
+      package_version.DownloadPackageArchives(
+          tar_dir,
+          package_target_1,
+          package_name_1,
+          package_desc_1,
+          downloader=self._fake_downloader.Download,
+          include_logs=False,
+      )
+      package_version.DownloadPackageArchives(
+          tar_dir,
+          package_target_2,
+          package_name_2,
+          package_desc_2,
+          downloader=self._fake_downloader.Download,
+          include_logs=False,
+      )
+      self.assertEqual(self._fake_downloader.GetDownloadCount(), 1,
+                       "Expected a single archive to have been downloaded.")
 
   def test_ArchivePackageArchives(self):
     # Check if we can archive a list of archives to the tar directory.
@@ -425,20 +492,15 @@ class TestPackageVersion(unittest.TestCase):
       package_revision = 10
 
       mock_file = self.GenerateMockFile(work_dir)
-      mock_tar = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name.tar'
-      )
-      os.makedirs(os.path.dirname(mock_tar))
+      mock_tar = os.path.join(work_dir, 'archive_name.tar')
       with tarfile.TarFile(mock_tar, 'w') as f:
         f.add(mock_file)
 
       package_desc = self.GeneratePackageInfo([mock_tar])
-
       package_file = os.path.join(work_dir, 'package_file.json')
       package_desc.SavePackageFile(package_file)
+
+      self.CopyToLocalArchiveFile(mock_tar, tar_dir)
 
       package_version.UploadPackage(
           self._fake_storage,
@@ -487,34 +549,22 @@ class TestPackageVersion(unittest.TestCase):
       package_name = 'custom_package'
       package_revision = 10
 
-      mock_tar1 = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name1.tar'
-      )
-      os.makedirs(os.path.dirname(mock_tar1))
+      mock_tar1 = os.path.join(work_dir, 'archive_name1.tar')
       with tarfile.TarFile(mock_tar1, 'w') as f:
         f.add(mock_file1, arcname=os.path.basename(mock_file1))
 
-      mock_tar2 = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name2.tar'
-      )
+      mock_tar2 = os.path.join(work_dir, 'archive_name2.tar')
       with tarfile.TarFile(mock_tar2, 'w') as f:
         f.add(mock_file2, arcname=os.path.basename(mock_file2))
 
-      mock_tar3 = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name3.tar'
-      )
+      mock_tar3 = os.path.join(work_dir, 'archive_name3.tar')
       with tarfile.TarFile(mock_tar3, 'w') as f:
         arcname = os.path.join('rel_dir', os.path.basename(mock_file3))
         f.add(mock_file3, arcname=arcname)
+
+      self.CopyToLocalArchiveFile(mock_tar1, tar_dir)
+      self.CopyToLocalArchiveFile(mock_tar2, tar_dir)
+      self.CopyToLocalArchiveFile(mock_tar3, tar_dir)
 
       package_desc = self.GeneratePackageInfo(
         [mock_tar1, mock_tar2, mock_tar3],
@@ -542,19 +592,13 @@ class TestPackageVersion(unittest.TestCase):
           package_target,
           package_name
       )
-      dest_mock_file1 = os.path.join(
-          full_dest_dir,
-          os.path.basename(mock_file1)
-      )
-      dest_mock_file2 = os.path.join(
-          full_dest_dir,
-          'tar2_dir',
-          os.path.basename(mock_file2)
-      )
-      dest_mock_file3 = os.path.join(
-          full_dest_dir,
-          os.path.basename(mock_file3)
-      )
+      dest_mock_file1 = os.path.join(full_dest_dir,
+                                     os.path.basename(mock_file1))
+      dest_mock_file2 = os.path.join(full_dest_dir,
+                                     'tar2_dir',
+                                     os.path.basename(mock_file2))
+      dest_mock_file3 = os.path.join(full_dest_dir,
+                                     os.path.basename(mock_file3))
 
       with open(mock_file1, 'rb') as f:
         mock_contents1 = f.read()
@@ -587,37 +631,27 @@ class TestPackageVersion(unittest.TestCase):
       package_name = 'custom_package'
       package_revision = 10
 
+      os.makedirs(tar_dir)
+      os.makedirs(overlay_dir)
+
       # Tar1 (mockfile1) will be a regular archive within the tar directory,
       # while tar2 (mockfile2) will be overlaid and replaced by
       # overlay_tar2 (mockfile3).
-      mock_tar1 = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name1.tar'
-      )
-      os.makedirs(os.path.dirname(mock_tar1))
+      mock_tar1 = os.path.join(tar_dir, 'archive_name1.tar')
       with tarfile.TarFile(mock_tar1, 'w') as f:
         f.add(mock_file1, arcname=os.path.basename(mock_file1))
 
-      mock_tar2 = package_locations.GetLocalPackageArchiveFile(
-          tar_dir,
-          package_target,
-          package_name,
-          'archive_name2.tar'
-      )
+      mock_tar2 = os.path.join(tar_dir, 'archive_name2.tar')
       with tarfile.TarFile(mock_tar2, 'w') as f:
         f.add(mock_file2, arcname=os.path.basename(mock_file2))
 
-      overlay_tar2 = package_locations.GetLocalPackageArchiveFile(
-          overlay_dir,
-          package_target,
-          package_name,
-          'archive_name2.tar'
-      )
-      os.makedirs(os.path.dirname(overlay_tar2))
+      overlay_tar2 = os.path.join(overlay_dir, 'archive_name2.tar')
       with tarfile.TarFile(overlay_tar2, 'w') as f:
         f.add(mock_file3, arcname=os.path.basename(mock_file3))
+
+      self.CopyToLocalArchiveFile(mock_tar1, tar_dir)
+      self.CopyToLocalArchiveFile(mock_tar2, tar_dir)
+      self.CopyToLocalArchiveFile(overlay_tar2, overlay_dir)
 
       # Generate the regular package file, along with the overlay package file.
       package_desc = self.GeneratePackageInfo([mock_tar1, mock_tar2])
@@ -679,7 +713,7 @@ class TestPackageVersion(unittest.TestCase):
       self.assertEqual(mock_contents3, dest_mock_contents3)
 
   def test_DownloadMismatchArchiveUponExtraction(self):
-    # Tests that mismatching archive files are downloaded upon extraction.
+    # Test that mismatching archive files are downloaded upon extraction.
     with pynacl.working_directory.TemporaryWorkingDirectory() as work_dir:
       mock_file1 = self.GenerateMockFile(work_dir, mock_file='mockfile1.txt')
       mock_file2 = self.GenerateMockFile(work_dir, mock_file='mockfile2.txt')
@@ -708,9 +742,8 @@ class TestPackageVersion(unittest.TestCase):
       # Have tar1 be missing, have tar2 be a file with invalid data.
       mismatch_tar2 = package_locations.GetLocalPackageArchiveFile(
           tar_dir,
-          package_target,
-          package_name,
-          'mock2.tar'
+          os.path.basename(mock_tar2),
+          archive_info.GetArchiveHash(mock_tar2)
       )
       os.makedirs(os.path.dirname(mismatch_tar2))
       with open(mismatch_tar2, 'wb') as f:
@@ -765,4 +798,8 @@ class TestPackageVersion(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  verbose = '-v' in sys.argv or '--verbose' in sys.argv
+  quiet = not verbose
+  pynacl.log_tools.SetupLogging(verbose, quiet=quiet)
+
   unittest.main()
