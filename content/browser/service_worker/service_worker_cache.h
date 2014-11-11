@@ -94,10 +94,6 @@ class CONTENT_EXPORT ServiceWorkerCache
   // not a memory cache backend.
   int64 MemoryBackedSize() const;
 
-  void set_backend(scoped_ptr<disk_cache::Backend> backend) {
-    backend_ = backend.Pass();
-  }
-
   base::WeakPtr<ServiceWorkerCache> AsWeakPtr();
 
  private:
@@ -117,6 +113,7 @@ class CONTENT_EXPORT ServiceWorkerCache
   };
 
   typedef std::vector<disk_cache::Entry*> Entries;
+  typedef scoped_ptr<disk_cache::Backend> ScopedBackendPtr;
 
   ServiceWorkerCache(
       const GURL& origin,
@@ -125,8 +122,7 @@ class CONTENT_EXPORT ServiceWorkerCache
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
       base::WeakPtr<storage::BlobStorageContext> blob_context);
 
-  // Operations in progress will complete after the cache is deleted but pending
-  // operations (those operations waiting for init to finish) won't.
+  // Async operations in progress will cancel and not run their callbacks.
   virtual ~ServiceWorkerCache();
 
   // Put callbacks.
@@ -141,6 +137,15 @@ class CONTENT_EXPORT ServiceWorkerCache
                               disk_cache::ScopedEntryPtr entry,
                               bool success);
 
+  // Delete callbacks
+  void DeleteDidOpenEntry(
+      const GURL& origin,
+      scoped_ptr<ServiceWorkerFetchRequest> request,
+      const ServiceWorkerCache::ErrorCallback& callback,
+      scoped_ptr<disk_cache::Entry*> entryptr,
+      const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy,
+      int rv);
+
   // Keys callbacks.
   void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context, int rv);
   void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
@@ -154,6 +159,9 @@ class CONTENT_EXPORT ServiceWorkerCache
   // Loads the backend and calls the callback with the result (true for
   // success). The callback will always be called. Virtual for tests.
   virtual void CreateBackend(const ErrorCallback& callback);
+  void CreateBackendDidCreate(const ServiceWorkerCache::ErrorCallback& callback,
+                              scoped_ptr<ScopedBackendPtr> backend_ptr,
+                              int rv);
 
   void InitBackend(const base::Closure& callback);
   void InitDone(ErrorType error);
