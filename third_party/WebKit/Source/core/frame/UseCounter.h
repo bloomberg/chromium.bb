@@ -558,6 +558,7 @@ public:
         InputTypeSubmit = 591,
         InputTypeSubmitWithValue = 592,
         SetReferrerPolicy = 593,
+        DOMImplementationHasFeatureReturnFalseInternal = 594,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

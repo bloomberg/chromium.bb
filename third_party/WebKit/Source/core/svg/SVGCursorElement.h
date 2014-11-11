@@ -52,7 +52,7 @@ public:
 private:
     explicit SVGCursorElement(Document&);
 
-    virtual bool isValid() const override { return SVGTests::isValid(); }
+    virtual bool isValid() const override { return SVGTests::isValid(document()); }
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;

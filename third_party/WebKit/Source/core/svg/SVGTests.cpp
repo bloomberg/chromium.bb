@@ -24,8 +24,9 @@
 
 #include "core/SVGNames.h"
 #include "core/dom/DOMImplementation.h"
-#include "platform/Language.h"
+#include "core/frame/UseCounter.h"
 #include "core/svg/SVGElement.h"
+#include "platform/Language.h"
 
 namespace blink {
 
@@ -47,15 +48,19 @@ bool SVGTests::hasExtension(const String&)
     return false;
 }
 
-bool SVGTests::isValid() const
+bool SVGTests::isValid(Document& document) const
 {
     if (m_requiredFeatures->isSpecified()) {
         const Vector<String>& requiredFeatures = m_requiredFeatures->value()->values();
         Vector<String>::const_iterator it = requiredFeatures.begin();
         Vector<String>::const_iterator itEnd = requiredFeatures.end();
         for (; it != itEnd; ++it) {
-            if (it->isEmpty() || !DOMImplementation::hasFeature(*it, String()))
+            if (it->isEmpty())
                 return false;
+            if (!DOMImplementation::hasFeature(*it, String())) {
+                UseCounter::count(document, UseCounter::DOMImplementationHasFeatureReturnFalseInternal);
+                return false;
+            }
         }
     }
 

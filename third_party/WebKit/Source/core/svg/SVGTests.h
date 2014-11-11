@@ -26,6 +26,7 @@
 
 namespace blink {
 
+class Document;
 class QualifiedName;
 class SVGElement;
 
@@ -37,7 +38,7 @@ public:
     SVGStringListTearOff* systemLanguage() { return m_systemLanguage->tearOff(); }
     bool hasExtension(const String&);
 
-    bool isValid() const;
+    bool isValid(Document&) const;
 
     bool parseAttribute(const QualifiedName&, const AtomicString&);
     bool isKnownAttribute(const QualifiedName&);

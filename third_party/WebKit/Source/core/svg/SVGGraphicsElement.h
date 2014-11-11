@@ -62,7 +62,7 @@ public:
     virtual void toClipPath(Path&);
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    virtual bool isValid() const override final { return SVGTests::isValid(); }
+    virtual bool isValid() const override final { return SVGTests::isValid(document()); }
 
     SVGAnimatedTransformList* transform() { return m_transform.get(); }
     const SVGAnimatedTransformList* transform() const { return m_transform.get(); }
