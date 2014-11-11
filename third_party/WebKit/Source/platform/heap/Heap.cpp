@@ -2767,6 +2767,8 @@ void ThreadHeap<Header>::merge(PassOwnPtr<BaseHeap> splitOffBase)
                 m_freeList.m_lastFreeListEntries[i] = splitOff->m_freeList.m_lastFreeListEntries[i];
             }
         }
+        if (m_freeList.m_biggestFreeListIndex < splitOff->m_freeList.m_biggestFreeListIndex)
+            m_freeList.m_biggestFreeListIndex = splitOff->m_freeList.m_biggestFreeListIndex;
     }
 }
 
