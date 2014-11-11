@@ -97,15 +97,16 @@ REGRESSION_CONFIDENCE_ERROR_TEMPLATE = """
 We could not reproduce the regression with this test/metric/platform combination
 with enough confidence.
 
-Here are the results for the initial revision range:
-'Good' revision: {good_rev}
-\tmean: {good_mean}
-\tstd.err.:{good_std_err}
-\tsample size:{good_sample_size}
-'Bad' revision: {bad_rev}
-\tmean: {bad_mean}
-\tstd.err.:{bad_std_err}
-\tsample size:{bad_sample_size}
+Here are the results for the given "good" and "bad" revisions:
+"Good" revision: {good_rev}
+\tMean: {good_mean}
+\tStandard error: {good_std_err}
+\tSample size: {good_sample_size}
+
+"Bad" revision: {bad_rev}
+\tMean: {bad_mean}
+\tStandard error: {bad_std_err}
+\tSample size: {bad_sample_size}
 
 NOTE: There's still a chance that this is actually a regression, but you may
       need to bisect a different platform."""
