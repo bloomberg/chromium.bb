@@ -750,15 +750,14 @@ function testExecuteScriptFail() {
   var webview = document.createElement('webview');
   document.body.appendChild(webview);
   setTimeout(function() {
-    try {
     webview.executeScript(
-      {code:'document.body.style.backgroundColor = "red";'},
-      function(results) {
-        embedder.test.fail();
-      });
-    } catch (e) {
+        {code:'document.body.style.backgroundColor = "red";'},
+        function(results) {
+          embedder.test.fail();
+        });
+    setTimeout(function() {
       embedder.test.succeed();
-    }
+    }, 0);
   }, 0);
 }
 

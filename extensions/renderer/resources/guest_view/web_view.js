@@ -50,10 +50,6 @@ WebViewImpl.prototype.createBrowserPluginNode = function() {
   return browserPluginNode;
 };
 
-WebViewImpl.prototype.getGuestInstanceId = function() {
-  return this.guestInstanceId;
-};
-
 // Resets some state upon reattaching <webview> element to the DOM.
 WebViewImpl.prototype.reset = function() {
   // If guestInstanceId is defined then the <webview> has navigated and has
@@ -101,13 +97,6 @@ WebViewImpl.prototype.setupFocusPropagation = function() {
     // Blur the BrowserPlugin when the <webview> loses focus.
     this.browserPluginNode.blur();
   }.bind(this));
-};
-
-// Validation helper function for executeScript() and insertCSS().
-WebViewImpl.prototype.validateExecuteCodeCall  = function() {
-  if (!this.guestInstanceId) {
-    throw new Error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
-  }
 };
 
 WebViewImpl.prototype.setupWebviewNodeProperties = function() {
@@ -175,64 +164,29 @@ WebViewImpl.prototype.onSizeChanged = function(webViewEvent) {
 
   // Check the current bounds to make sure we do not resize <webview>
   // outside of current constraints.
-  var maxWidth;
-  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MAXWIDTH) &&
-      node[WebViewConstants.ATTRIBUTE_MAXWIDTH]) {
-    maxWidth = node[WebViewConstants.ATTRIBUTE_MAXWIDTH];
-  } else {
-    maxWidth = width;
-  }
+  var maxWidth = this.attributes[
+    WebViewConstants.ATTRIBUTE_MAXWIDTH].getValue() || width;
+  var minWidth = this.attributes[
+    WebViewConstants.ATTRIBUTE_MINWIDTH].getValue() || width;
+  var maxHeight = this.attributes[
+    WebViewConstants.ATTRIBUTE_MAXHEIGHT].getValue() || height;
+  var minHeight = this.attributes[
+    WebViewConstants.ATTRIBUTE_MINHEIGHT].getValue() || height;
 
-  var minWidth;
-  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MINWIDTH) &&
-      node[WebViewConstants.ATTRIBUTE_MINWIDTH]) {
-    minWidth = node[WebViewConstants.ATTRIBUTE_MINWIDTH];
-  } else {
-    minWidth = width;
-  }
-  if (minWidth > maxWidth) {
-    minWidth = maxWidth;
-  }
-
-  var maxHeight;
-  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MAXHEIGHT) &&
-      node[WebViewConstants.ATTRIBUTE_MAXHEIGHT]) {
-    maxHeight = node[WebViewConstants.ATTRIBUTE_MAXHEIGHT];
-  } else {
-    maxHeight = height;
-  }
-
-  var minHeight;
-  if (node.hasAttribute(WebViewConstants.ATTRIBUTE_MINHEIGHT) &&
-      node[WebViewConstants.ATTRIBUTE_MINHEIGHT]) {
-    minHeight = node[WebViewConstants.ATTRIBUTE_MINHEIGHT];
-  } else {
-    minHeight = height;
-  }
-  if (minHeight > maxHeight) {
-    minHeight = maxHeight;
-  }
+  minWidth = Math.min(minWidth, maxWidth);
+  minHeight = Math.min(minHeight, maxHeight);
 
   if (!this.attributes[WebViewConstants.ATTRIBUTE_AUTOSIZE].getValue() ||
       (newWidth >= minWidth &&
-       newWidth <= maxWidth &&
-       newHeight >= minHeight &&
-       newHeight <= maxHeight)) {
+      newWidth <= maxWidth &&
+      newHeight >= minHeight &&
+      newHeight <= maxHeight)) {
     node.style.width = newWidth + 'px';
     node.style.height = newHeight + 'px';
     // Only fire the DOM event if the size of the <webview> has actually
     // changed.
     this.dispatchEvent(webViewEvent);
   }
-};
-
-// Returns if <object> is in the render tree.
-WebViewImpl.prototype.isPluginInRenderTree = function() {
-  return !!this.internalInstanceId && this.internalInstanceId != 0;
-};
-
-WebViewImpl.prototype.hasNavigated = function() {
-  return !this.beforeFirstNavigation;
 };
 
 WebViewImpl.prototype.parseSrcAttribute = function() {
@@ -253,13 +207,6 @@ WebViewImpl.prototype.parseSrcAttribute = function() {
   WebViewInternal.navigate(
       this.guestInstanceId,
       this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue());
-};
-
-WebViewImpl.prototype.parseAttributes = function() {
-  if (!this.elementAttached) {
-    return;
-  }
-  this.parseSrcAttribute();
 };
 
 WebViewImpl.prototype.createGuest = function() {
@@ -356,7 +303,7 @@ WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
   this.guestInstanceId = guestInstanceId;
   var params = this.buildAttachParams();
 
-  if (!this.isPluginInRenderTree()) {
+  if (!this.internalInstanceId) {
     return true;
   }
 
@@ -398,16 +345,26 @@ WebViewImpl.prototype.clearData = function() {
   $Function.apply(WebViewInternal.clearData, null, args);
 };
 
-// Injects JavaScript code into the guest page.
-WebViewImpl.prototype.executeScript = function(var_args) {
-  this.validateExecuteCodeCall();
+// Shared implementation of executeScript() and insertCSS().
+WebViewImpl.prototype.executeCode = function(func, args) {
+  if (!this.guestInstanceId) {
+    window.console.error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
+    return;
+  }
+
   var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
   if (this.baseUrlForDataUrl != '') {
     webviewSrc = this.baseUrlForDataUrl;
   }
-  var args = $Array.concat([this.guestInstanceId, webviewSrc],
-                           $Array.slice(arguments));
-  $Function.apply(WebViewInternal.executeScript, null, args);
+
+  args = $Array.concat([this.guestInstanceId, webviewSrc],
+                       $Array.slice(args));
+  $Function.apply(func, null, args);
+}
+
+// Injects JavaScript code into the guest page.
+WebViewImpl.prototype.executeScript = function(var_args) {
+  this.executeCode(WebViewInternal.executeScript, $Array.slice(arguments));
 };
 
 // Initiates a find-in-page request.
@@ -453,14 +410,7 @@ WebViewImpl.prototype.go = function(relativeIndex, callback) {
 
 // Injects CSS into the guest page.
 WebViewImpl.prototype.insertCSS = function(var_args) {
-  this.validateExecuteCodeCall();
-  var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
-  if (this.baseUrlForDataUrl != '') {
-    webviewSrc = this.baseUrlForDataUrl;
-  }
-  var args = $Array.concat([this.guestInstanceId, webviewSrc],
-                           $Array.slice(arguments));
-  $Function.apply(WebViewInternal.insertCSS, null, args);
+  this.executeCode(WebViewInternal.insertCSS, $Array.slice(arguments));
 };
 
 // Indicates whether or not the webview's user agent string has been overridden.
@@ -594,7 +544,7 @@ function registerWebViewElement() {
     }
     if (!internal.elementAttached) {
       internal.elementAttached = true;
-      internal.parseAttributes();
+      internal.parseSrcAttribute();
     }
   };
 
@@ -664,7 +614,6 @@ WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 
 // Implemented when the experimental WebView API is available.
 WebViewImpl.maybeGetExperimentalAPIs = function() {};
-WebViewImpl.prototype.maybeGetExperimentalEvents = function() {};
 WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
 
 // Exports.

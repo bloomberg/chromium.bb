@@ -671,14 +671,17 @@ function testExecuteScript() {
 
 function testExecuteScriptFail() {
   var webview = document.createElement('webview');
-  try {
+  document.body.appendChild(webview);
+  setTimeout(function() {
     webview.executeScript(
-        {code: 'document.body.style.backgroundColor = "red";'},
-        function(results) { embedder.test.fail(); });
-  }
-  catch (e) {
-    embedder.test.succeed();
-  }
+        {code:'document.body.style.backgroundColor = "red";'},
+        function(results) {
+          embedder.test.fail();
+        });
+    setTimeout(function() {
+      embedder.test.succeed();
+    }, 0);
+  }, 0);
 }
 
 // This test verifies that the call of executeScript will fail and return null

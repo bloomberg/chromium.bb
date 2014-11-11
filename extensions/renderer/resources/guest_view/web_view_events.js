@@ -269,10 +269,6 @@ WebViewEvents.prototype.setupWebRequestEvents = function() {
 };
 
 WebViewEvents.prototype.getEvents = function() {
-  var experimentalEvents = this.webViewImpl.maybeGetExperimentalEvents();
-  for (var eventName in experimentalEvents) {
-    WEB_VIEW_EVENTS[eventName] = experimentalEvents[eventName];
-  }
   var chromeEvents = this.webViewImpl.maybeGetChromeWebViewEvents();
   for (var eventName in chromeEvents) {
     WEB_VIEW_EVENTS[eventName] = chromeEvents[eventName];
@@ -327,7 +323,7 @@ WebViewEvents.prototype.handleDialogEvent = function(event, webViewEvent) {
   };
 
   var getGuestInstanceId = function() {
-    return this.webViewImpl.getGuestInstanceId();
+    return this.webViewImpl.guestInstanceId;
   }.bind(this);
 
   var dialog = {
@@ -414,7 +410,7 @@ WebViewEvents.prototype.handleNewWindowEvent = function(event, webViewEvent) {
   var requestId = event.requestId;
   var actionTaken = false;
   var getGuestInstanceId = function() {
-    return this.webViewImpl.getGuestInstanceId();
+    return this.webViewImpl.guestInstanceId;
   }.bind(this);
 
   var validateCall = function() {
@@ -530,7 +526,7 @@ WebViewEvents.prototype.handlePermissionEvent =
 
   var requestId = event.requestId;
   var getGuestInstanceId = function() {
-    return this.webViewImpl.getGuestInstanceId();
+    return this.webViewImpl.guestInstanceId;
   }.bind(this);
 
   if (this.permissionTypes.indexOf(event.permission) < 0) {

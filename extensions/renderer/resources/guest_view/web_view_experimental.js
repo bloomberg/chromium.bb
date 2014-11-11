@@ -11,14 +11,6 @@
 var WebViewImpl = require('webView').WebViewImpl;
 var WebViewInternal = require('webViewInternal').WebViewInternal;
 
-// Returns a map of experimental <webview> DOM event names to their associated
-// extension event descriptor objects. See |WEB_VIEW_EVENTS| in
-// web_view_events.js for more information and details on how this map should
-// be formatted.
-WebViewImpl.prototype.maybeGetExperimentalEvents = function() {
-  return {};
-};
-
 // Loads a data URL with a specified base URL used for relative links.
 // Optionally, a virtual URL can be provided to be shown to the user instead
 // of the data URL.
