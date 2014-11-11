@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import os
 import shutil
 import socket
@@ -17,23 +16,27 @@ import fixup_path
 fixup_path.FixupPath()
 
 from chromite.lib import cros_test_lib
+from chromite.lib import gs
+from chromite.lib import gs_unittest
 
-from chromite.lib.paygen import gslib
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import signer_payloads_client
 from chromite.lib.paygen import utils
 
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
 
 # pylint: disable=W0212
 
-
-class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
+class SignerPayloadsClientGoogleStorageTest(gs_unittest.AbstractGSContextTest):
   """Test suite for the class SignerPayloadsClientGoogleStorage."""
+
+  orig_timeout = (
+      signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS)
 
   def setUp(self):
     """Setup for tests, and store off some standard expected values."""
-    super(SignerPayloadsClientGoogleStorageTest, self).setUp()
-
     self.hash_names = [
         '1.payload.hash',
         '2.payload.hash',
@@ -46,8 +49,6 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
     os.environ['CROSTOOLS_NO_SOURCE_UPDATE'] = '1'
 
     # Some tests depend on this timeout. Make it smaller, then restore.
-    self.orig_timeout = (
-        signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS)
     signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = 0.01
 
   def tearDown(self):
@@ -55,8 +56,6 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
     # Some tests modify this timeout. Restore the original value.
     signer_payloads_client.DELAY_CHECKING_FOR_SIGNER_RESULTS_SECONDS = (
         self.orig_timeout)
-
-    super(SignerPayloadsClientGoogleStorageTest, self).tearDown()
 
   def createStandardClient(self):
     """Test helper method to create a client with standard arguments."""
@@ -66,7 +65,8 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
         'foo-board',
         'foo-version',
         bucket='foo-bucket',
-        unique='foo-unique')
+        unique='foo-unique',
+        ctx=self.ctx)
     return client
 
   def testUris(self):
@@ -115,28 +115,21 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
 
     client = self.createStandardClient()
 
-    self.mox.StubOutWithMock(gslock, 'Lock')
-    self.mox.StubOutWithMock(gslib, 'Remove')
+    # Fake lock failed then acquired.
+    lock = self.PatchObject(gslock, 'Lock', autospec=True,
+                            side_effect=[gslock.LockNotAcquired(),
+                                         mock.MagicMock()])
 
-    # pylint: disable=E1101
-    # Fail to acquire the lock the first time.
-    gslock.Lock(lock_uri).AndRaise(gslock.LockNotAcquired())
-
-    lock = self.mox.CreateMockAnything()
-
-    gslock.Lock(lock_uri).AndReturn(lock)
-    lock.__enter__().AndReturn(lock)
-    lock.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    for uri in expected_removals:
-      gslib.Remove(uri, ignore_no_match=True).InAnyOrder()
-
-    self.mox.ReplayAll()
-
+    # Do the work.
     client._CleanSignerFilesByKeyset(hashes, keyset)
 
-    self.mox.VerifyAll()
+    # Assert locks created with expected lock_uri.
+    lock.assert_called_with(lock_uri)
+
+    # Verify all expected files were removed.
+    for uri in expected_removals:
+      self.gs_mock.assertCommandContains(['rm', uri])
+
 
   def testCleanSignerFiles(self):
     """Test that GS cleanup works as expected."""
@@ -182,32 +175,21 @@ class SignerPayloadsClientGoogleStorageTest(mox.MoxTestBase):
 
     client = self.createStandardClient()
 
-    self.mox.StubOutWithMock(gslock, 'Lock')
-    self.mox.StubOutWithMock(gslib, 'Remove')
+    # Fake lock failed then acquired.
+    lock = self.PatchObject(gslock, 'Lock', autospec=True)
 
-
-    lock1 = self.mox.CreateMockAnything()
-    gslock.Lock(lock_uri1).AndReturn(lock1)
-    lock1.__enter__().AndReturn(lock1)
-    lock1.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    lock2 = self.mox.CreateMockAnything()
-    gslock.Lock(lock_uri2).AndReturn(lock2)
-    lock2.__enter__().AndReturn(lock2)
-    lock2.__exit__(
-        mox.IgnoreArg(), mox.IgnoreArg(), mox.IgnoreArg()).AndReturn(None)
-
-    for uri in expected_removals:
-      gslib.Remove(uri, ignore_no_match=True).InAnyOrder()
-
-    gslib.Remove(signing_dir, ignore_no_match=True, recurse=True).InAnyOrder()
-
-    self.mox.ReplayAll()
-
+    # Do the work.
     client._CleanSignerFiles(hashes, keysets)
 
-    self.mox.VerifyAll()
+    # Check created with lock_uri1, lock_uri2.
+    self.assertEqual(lock.call_args_list,
+                     [mock.call(lock_uri1), mock.call(lock_uri2)])
+
+    # Verify expected removals.
+    for uri in expected_removals:
+      self.gs_mock.assertCommandContains(['rm', uri])
+
+    self.gs_mock.assertCommandContains(['rm', signing_dir])
 
   def testCreateInstructionsUri(self):
     """Test that the expected instructions URI is correct."""
@@ -339,73 +321,65 @@ versionrev = foo-version
 
   def testWaitForSignaturesInstant(self):
     """Test that we can correctly wait for a list of URIs to be created."""
-
-    self.mox.StubOutWithMock(gslib, 'Exists')
-
-    # Assert that each uri is tested exactly once.
-    gslib.Exists('foo').InAnyOrder().AndReturn(True)
-    gslib.Exists('bar').InAnyOrder().AndReturn(True)
-    gslib.Exists('is').InAnyOrder().AndReturn(True)
-
-    self.mox.ReplayAll()
-
     uris = ['foo', 'bar', 'is']
 
-    client = self.createStandardClient()
-    self.assertTrue(client._WaitForSignatures(uris))
+    # All Urls exist.
+    exists = self.PatchObject(self.ctx, 'Exists', returns=True)
 
-    self.mox.VerifyAll()
+    client = self.createStandardClient()
+
+    self.assertTrue(client._WaitForSignatures(uris, timeout=0.02))
+
+    # Make sure it really looked for every URL listed.
+    self.assertEqual(exists.call_args_list,
+                     [mock.call(u) for u in uris])
+
 
   def testWaitForSignaturesNever(self):
     """Test that we can correctly timeout waiting for a list of URIs."""
-
-    self.mox.StubOutWithMock(gslib, 'Exists')
-    gslib.Exists(mox.IsA(str)).MultipleTimes().AndReturn(False)
-
-    self.mox.ReplayAll()
-
     uris = ['foo', 'bar', 'is']
 
+    # Default mock GSContext behavior is nothing Exists.
     client = self.createStandardClient()
-
     self.assertFalse(client._WaitForSignatures(uris, timeout=0.02))
 
-    self.mox.VerifyAll()
+    # We don't care which URLs it checked, since it doesn't have to check
+    # them all in this case.
+
+
+class SignerPayloadsClientIntegrationTest(cros_test_lib.TestCase):
+  """Test suite integration with live signer servers."""
+
+  def setUp(self):
+    # This is in the real production chromeos-releases, but the listed
+    # build has never, and will never exist.
+    self.client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
+        'test-channel',
+        'crostools-client',
+        'Rxx-Ryy')
 
   @cros_test_lib.NetworkTest()
   def testDownloadSignatures(self):
     """Test that we can correctly download a list of URIs."""
-
     uris = ['gs://chromeos-releases-test/sigining-test/foo',
             'gs://chromeos-releases-test/sigining-test/bar']
 
-    client = self.createStandardClient()
-    downloads = client._DownloadSignatures(uris)
+    downloads = self.client._DownloadSignatures(uris)
     self.assertEquals(downloads, ['FooSig\r\n\r', 'BarSig'])
-
-
-class SignerPayloadsClientIntegrationTest(mox.MoxTestBase):
-  """Test suite integration with live signer servers."""
 
   @cros_test_lib.NetworkTest()
   def testGetHashSignatures(self):
     """Integration test that talks to the real signer with test hashes."""
+    ctx = gs.GSContext()
 
     unique_id = "%s.%d" % (socket.gethostname(), os.getpid())
     clean_uri = ('gs://chromeos-releases/test-channel/%s/'
                  'crostools-client/**') % unique_id
 
     # Cleanup before we start
-    gslib.Remove(clean_uri, ignore_no_match=True)
+    ctx.Remove(clean_uri, ignore_missing=True)
 
     try:
-      # This is in the real production chromeos-releases, but the listed
-      # build has never, and will never exist.
-      client = signer_payloads_client.SignerPayloadsClientGoogleStorage(
-          'test-channel',
-          'crostools-client',
-          'Rxx-Ryy')
-
       hashes = ['0' * 32,
                 '1' * 32,
                 ('29834370e415b3124a926c903906f18b'
@@ -443,14 +417,14 @@ class SignerPayloadsClientIntegrationTest(mox.MoxTestBase):
 
       expected_sigs = [[sig[0].decode('hex')] for sig in expected_sigs_hex]
 
-      all_signatures = client.GetHashSignatures(hashes, keysets)
+      all_signatures = self.client.GetHashSignatures(hashes, keysets)
 
       self.assertEquals(all_signatures, expected_sigs)
-      self.assertEquals(gslib.List(clean_uri), [])
+      self.assertRaises(gs.GSNoSuchKey, ctx.List, clean_uri)
 
     finally:
       # Cleanup when we are over
-      gslib.Remove(clean_uri, ignore_no_match=True)
+      ctx.Remove(clean_uri, ignore_missing=True)
 
 
 if __name__ == '__main__':

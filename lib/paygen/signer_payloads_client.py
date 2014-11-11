@@ -10,7 +10,6 @@ import logging
 import os
 import re
 import shutil
-import socket
 import tempfile
 import time
 import threading
@@ -18,7 +17,8 @@ import threading
 import fixup_path
 fixup_path.FixupPath()
 
-from chromite.lib.paygen import gslib
+from chromite.lib import cros_build_lib
+from chromite.lib import gs
 from chromite.lib.paygen import gslock
 from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import utils
@@ -33,7 +33,8 @@ SIGNER_PRIORITY = 45
 class SignerPayloadsClientGoogleStorage(object):
   """This class implements the Google Storage signer interface for payloads."""
 
-  def __init__(self, channel, board, version, bucket=None, unique=None):
+  def __init__(self, channel, board, version, bucket=None, unique=None,
+               ctx=None):
     """This initializer identifies the build an payload that need signatures.
 
     Args:
@@ -42,11 +43,13 @@ class SignerPayloadsClientGoogleStorage(object):
       version: Version of the build whose payload is being signed.
       bucket: Bucket used to reach the signer. [defaults 'chromeos-releases']
       unique: Force known 'unique' id. Mostly for unittests.
+      ctx: GS Context to use for GS operations.
     """
     self.channel = channel
     self.board = board
     self.version = version
     self.bucket = bucket if bucket else gspaths.ChromeosReleases.BUCKET
+    self._ctx = ctx if ctx is not None else gs.GSContext()
 
     build_signing_uri = gspaths.ChromeosReleases.BuildPayloadsSigningUri(
         channel,
@@ -94,7 +97,7 @@ class SignerPayloadsClientGoogleStorage(object):
       try:
         with gslock.Lock(request_uri + '.lock'):
           for path in paths:
-            gslib.Remove(path, ignore_no_match=True)
+            self._ctx.Remove(path, ignore_missing=True)
 
           return
       except gslock.LockNotAcquired:
@@ -121,7 +124,7 @@ class SignerPayloadsClientGoogleStorage(object):
       self._CleanSignerFilesByKeyset(hashes, keyset)
 
     # After all keysets have been cleaned up, clean up the archive.
-    gslib.Remove(self.signing_base_dir, recurse=True, ignore_no_match=True)
+    self._ctx.Remove(self.signing_base_dir, recursive=True, ignore_missing=True)
 
   def _CreateInstructionsURI(self, keyset):
     """Construct the URI used to upload a set of instructions.
@@ -278,7 +281,7 @@ versionrev = %(version)s
     missing_signatures = signature_uris[:]
 
     while missing_signatures and time.time() < end_time:
-      while missing_signatures and gslib.Exists(missing_signatures[0]):
+      while missing_signatures and self._ctx.Exists(missing_signatures[0]):
         missing_signatures.pop(0)
 
       if missing_signatures:
@@ -302,7 +305,7 @@ versionrev = %(version)s
       with tempfile.NamedTemporaryFile(delete=False) as sig_file:
         sig_file_name = sig_file.name
       try:
-        gslib.Copy(uri, sig_file_name)
+        self._ctx.Copy(uri, sig_file_name)
         with open(sig_file_name) as sig_file:
           results.append(sig_file.read())
       finally:
@@ -344,7 +347,7 @@ versionrev = %(version)s
       # Create and upload the archive of hashes to sign.
       with tempfile.NamedTemporaryFile() as archive_file:
         self._CreateArchive(archive_file.name, hashes, hash_names)
-        gslib.Copy(archive_file.name, self.archive_uri)
+        self._ctx.Copy(archive_file.name, self.archive_uri)
 
       # [sig_uri, ...]
       all_signature_uris = []
@@ -357,14 +360,14 @@ versionrev = %(version)s
       for keyset in keysets:
         instructions_uri = self._CreateInstructionsURI(keyset)
 
-        gslib.CreateWithContents(
-          instructions_uri,
-          self._CreateInstructions(hash_names, keyset))
+        self._ctx.CreateWithContents(
+            instructions_uri,
+            self._CreateInstructions(hash_names, keyset))
 
         # Create signer request file with debug friendly contents.
-        gslib.CreateWithContents(
-          self._SignerRequestUri(instructions_uri),
-          'Client: %s, %s, %s' % (socket.gethostname(), os.getpid(), id(self)))
+        self._ctx.CreateWithContents(
+            self._SignerRequestUri(instructions_uri),
+            cros_build_lib.MachineDetails())
 
         # Remember which signatures we just requested.
         uris = self._CreateSignatureURIs(hash_names, keyset)
