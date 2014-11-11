@@ -734,6 +734,7 @@
                   'content/browser/renderer_host/media/|'\
                   'content/common/gpu/media/|'\
                   'content/renderer/media/|'\
+                  'media/base/android/|'\
                   'media/video/|'\
                   'video.*_accelerat',
     },
