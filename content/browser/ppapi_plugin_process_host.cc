@@ -341,6 +341,10 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
       if (!existing_args.empty())
         existing_args.append(",");
       existing_args.append("enable_hw_video_decode=1");
+#if defined(OS_MACOSX)
+      // TODO(ihf): Remove this once Flash newer than 15.0.0.223 is released.
+      existing_args.append(",enable_hw_video_decode_mac=1");
+#endif
     }
     cmd_line->AppendSwitchASCII(switches::kPpapiFlashArgs, existing_args);
   }
