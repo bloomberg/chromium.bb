@@ -565,10 +565,8 @@ class ServiceWorkerCache::BlobReader : public net::URLRequest::Delegate {
 
 // The state needed to pass between ServiceWorkerCache::Keys callbacks.
 struct ServiceWorkerCache::KeysContext {
-  KeysContext(const ServiceWorkerCache::RequestsCallback& callback,
-              base::WeakPtr<ServiceWorkerCache> cache)
+  KeysContext(const ServiceWorkerCache::RequestsCallback& callback)
       : original_callback(callback),
-        cache(cache),
         out_keys(new ServiceWorkerCache::Requests()),
         enumerated_entry(NULL) {}
 
@@ -581,9 +579,6 @@ struct ServiceWorkerCache::KeysContext {
 
   // The callback passed to the Keys() function.
   ServiceWorkerCache::RequestsCallback original_callback;
-
-  // The ServiceWorkerCache that Keys was called on.
-  base::WeakPtr<ServiceWorkerCache> cache;
 
   // The vector of open entries in the backend.
   Entries entries;
@@ -606,7 +601,6 @@ struct ServiceWorkerCache::PutContext {
       scoped_ptr<ServiceWorkerResponse> response,
       scoped_ptr<storage::BlobDataHandle> blob_data_handle,
       const ServiceWorkerCache::ResponseCallback& callback,
-      base::WeakPtr<ServiceWorkerCache> cache,
       net::URLRequestContext* request_context,
       const scoped_refptr<storage::QuotaManagerProxy>& quota_manager_proxy)
       : origin(origin),
@@ -614,7 +608,6 @@ struct ServiceWorkerCache::PutContext {
         response(response.Pass()),
         blob_data_handle(blob_data_handle.Pass()),
         callback(callback),
-        cache(cache),
         request_context(request_context),
         quota_manager_proxy(quota_manager_proxy),
         cache_entry(NULL) {}
@@ -629,7 +622,6 @@ struct ServiceWorkerCache::PutContext {
   scoped_ptr<ServiceWorkerResponse> response;
   scoped_ptr<storage::BlobDataHandle> blob_data_handle;
   ServiceWorkerCache::ResponseCallback callback;
-  base::WeakPtr<ServiceWorkerCache> cache;
   net::URLRequestContext* request_context;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy;
 
@@ -702,8 +694,7 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
 
   scoped_ptr<PutContext> put_context(new PutContext(
       origin_, request.Pass(), response.Pass(), blob_data_handle.Pass(),
-      pending_callback, weak_ptr_factory_.GetWeakPtr(), request_context_,
-      quota_manager_proxy_));
+      pending_callback, request_context_, quota_manager_proxy_));
 
   if (put_context->blob_data_handle) {
     // Grab another handle to the blob for the callback response.
@@ -712,8 +703,9 @@ void ServiceWorkerCache::Put(scoped_ptr<ServiceWorkerFetchRequest> request,
             put_context->response->blob_uuid);
   }
 
-  base::Closure continuation = base::Bind(&ServiceWorkerCache::PutImpl,
-                                          base::Passed(put_context.Pass()));
+  base::Closure continuation =
+      base::Bind(&ServiceWorkerCache::PutImpl, weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(put_context.Pass()));
 
   if (backend_state_ == BACKEND_UNINITIALIZED) {
     InitBackend(continuation);
@@ -828,15 +820,15 @@ void ServiceWorkerCache::Keys(const RequestsCallback& callback) {
   // The entries have to be loaded into a vector first because enumeration loops
   // forever if you read data from a cache entry while enumerating.
 
-  scoped_ptr<KeysContext> keys_context(
-      new KeysContext(pending_callback, weak_ptr_factory_.GetWeakPtr()));
+  scoped_ptr<KeysContext> keys_context(new KeysContext(pending_callback));
 
   keys_context->backend_iterator = backend_->CreateIterator();
   disk_cache::Backend::Iterator& iterator = *keys_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
 
-  net::CompletionCallback open_entry_callback =
-      base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
+  net::CompletionCallback open_entry_callback = base::Bind(
+      &ServiceWorkerCache::KeysDidOpenNextEntry, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(keys_context.Pass()));
 
   int rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
@@ -905,10 +897,8 @@ ServiceWorkerCache::ServiceWorkerCache(
       weak_ptr_factory_(this) {
 }
 
-// static
 void ServiceWorkerCache::PutImpl(scoped_ptr<PutContext> put_context) {
-  if (!put_context->cache ||
-      put_context->cache->backend_state_ != BACKEND_OPEN) {
+  if (backend_state_ != BACKEND_OPEN) {
     put_context->callback.Run(ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -917,17 +907,15 @@ void ServiceWorkerCache::PutImpl(scoped_ptr<PutContext> put_context) {
 
   scoped_ptr<ServiceWorkerFetchRequest> request_copy(
       new ServiceWorkerFetchRequest(*put_context->request));
-  ServiceWorkerCache* cache_ptr = put_context->cache.get();
 
-  cache_ptr->Delete(request_copy.Pass(),
-                    base::Bind(PutDidDelete, base::Passed(put_context.Pass())));
+  Delete(request_copy.Pass(), base::Bind(&ServiceWorkerCache::PutDidDelete,
+                                         weak_ptr_factory_.GetWeakPtr(),
+                                         base::Passed(put_context.Pass())));
 }
 
-// static
 void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
                                       ErrorType delete_error) {
-  if (!put_context->cache ||
-      put_context->cache->backend_state_ != BACKEND_OPEN) {
+  if (backend_state_ != BACKEND_OPEN) {
     put_context->callback.Run(ErrorTypeStorage,
                               scoped_ptr<ServiceWorkerResponse>(),
                               scoped_ptr<storage::BlobDataHandle>());
@@ -936,10 +924,11 @@ void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
 
   disk_cache::Entry** entry_ptr = &put_context->cache_entry;
   ServiceWorkerFetchRequest* request_ptr = put_context->request.get();
-  disk_cache::Backend* backend_ptr = put_context->cache->backend_.get();
+  disk_cache::Backend* backend_ptr = backend_.get();
 
-  net::CompletionCallback create_entry_callback =
-      base::Bind(PutDidCreateEntry, base::Passed(put_context.Pass()));
+  net::CompletionCallback create_entry_callback = base::Bind(
+      &ServiceWorkerCache::PutDidCreateEntry, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(put_context.Pass()));
 
   int create_rv = backend_ptr->CreateEntry(
       request_ptr->url.spec(), entry_ptr, create_entry_callback);
@@ -948,7 +937,6 @@ void ServiceWorkerCache::PutDidDelete(scoped_ptr<PutContext> put_context,
     create_entry_callback.Run(create_rv);
 }
 
-// static
 void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
                                            int rv) {
   if (rv != net::OK) {
@@ -1002,7 +990,8 @@ void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
   disk_cache::Entry* tmp_entry_ptr = put_context->cache_entry;
 
   net::CompletionCallback write_headers_callback = base::Bind(
-      PutDidWriteHeaders, base::Passed(put_context.Pass()), buffer->size());
+      &ServiceWorkerCache::PutDidWriteHeaders, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(put_context.Pass()), buffer->size());
 
   rv = tmp_entry_ptr->WriteData(INDEX_HEADERS,
                                 0 /* offset */,
@@ -1015,7 +1004,6 @@ void ServiceWorkerCache::PutDidCreateEntry(scoped_ptr<PutContext> put_context,
     write_headers_callback.Run(rv);
 }
 
-// static
 void ServiceWorkerCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
                                             int expected_bytes,
                                             int rv) {
@@ -1057,15 +1045,14 @@ void ServiceWorkerCache::PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
   scoped_ptr<storage::BlobDataHandle> blob_data_handle =
       put_context->blob_data_handle.Pass();
 
-  reader_ptr->StreamBlobToCache(entry.Pass(),
-                                request_context,
-                                blob_data_handle.Pass(),
-                                base::Bind(PutDidWriteBlobToCache,
-                                           base::Passed(put_context.Pass()),
-                                           base::Passed(reader.Pass())));
+  reader_ptr->StreamBlobToCache(
+      entry.Pass(), request_context, blob_data_handle.Pass(),
+      base::Bind(&ServiceWorkerCache::PutDidWriteBlobToCache,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(put_context.Pass()),
+                 base::Passed(reader.Pass())));
 }
 
-// static
 void ServiceWorkerCache::PutDidWriteBlobToCache(
     scoped_ptr<PutContext> put_context,
     scoped_ptr<BlobReader> blob_reader,
@@ -1096,7 +1083,6 @@ void ServiceWorkerCache::PutDidWriteBlobToCache(
                             put_context->out_blob_data_handle.Pass());
 }
 
-// static
 void ServiceWorkerCache::KeysDidOpenNextEntry(
     scoped_ptr<KeysContext> keys_context,
     int rv) {
@@ -1108,14 +1094,13 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
     return;
   }
 
-  base::WeakPtr<ServiceWorkerCache> cache = keys_context->cache;
-  if (rv < 0 || !cache) {
+  if (rv < 0) {
     keys_context->original_callback.Run(ErrorTypeStorage,
                                         scoped_ptr<Requests>());
     return;
   }
 
-  if (cache->backend_state_ != BACKEND_OPEN) {
+  if (backend_state_ != BACKEND_OPEN) {
     keys_context->original_callback.Run(ErrorTypeNotFound,
                                         scoped_ptr<Requests>());
     return;
@@ -1128,8 +1113,9 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
   // Enumerate the next entry.
   disk_cache::Backend::Iterator& iterator = *keys_context->backend_iterator;
   disk_cache::Entry** enumerated_entry = &keys_context->enumerated_entry;
-  net::CompletionCallback open_entry_callback =
-      base::Bind(KeysDidOpenNextEntry, base::Passed(keys_context.Pass()));
+  net::CompletionCallback open_entry_callback = base::Bind(
+      &ServiceWorkerCache::KeysDidOpenNextEntry, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(keys_context.Pass()));
 
   rv = iterator.OpenNextEntry(enumerated_entry, open_entry_callback);
 
@@ -1137,7 +1123,6 @@ void ServiceWorkerCache::KeysDidOpenNextEntry(
     open_entry_callback.Run(rv);
 }
 
-// static
 void ServiceWorkerCache::KeysProcessNextEntry(
     scoped_ptr<KeysContext> keys_context,
     const Entries::iterator& iter) {
@@ -1148,12 +1133,11 @@ void ServiceWorkerCache::KeysProcessNextEntry(
     return;
   }
 
-  ReadMetadata(
-      *iter,
-      base::Bind(KeysDidReadMetadata, base::Passed(keys_context.Pass()), iter));
+  ReadMetadata(*iter, base::Bind(&ServiceWorkerCache::KeysDidReadMetadata,
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 base::Passed(keys_context.Pass()), iter));
 }
 
-// static
 void ServiceWorkerCache::KeysDidReadMetadata(
     scoped_ptr<KeysContext> keys_context,
     const Entries::iterator& iter,

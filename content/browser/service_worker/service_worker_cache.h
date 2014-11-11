@@ -130,27 +130,24 @@ class CONTENT_EXPORT ServiceWorkerCache
   virtual ~ServiceWorkerCache();
 
   // Put callbacks.
-  static void PutImpl(scoped_ptr<PutContext> put_context);
-  static void PutDidDelete(scoped_ptr<PutContext> put_context,
-                           ErrorType delete_error);
-  static void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
-  static void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
-                                 int expected_bytes,
-                                 int rv);
-  static void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
-                                     scoped_ptr<BlobReader> blob_reader,
-                                     disk_cache::ScopedEntryPtr entry,
-                                     bool success);
+  void PutImpl(scoped_ptr<PutContext> put_context);
+  void PutDidDelete(scoped_ptr<PutContext> put_context, ErrorType delete_error);
+  void PutDidCreateEntry(scoped_ptr<PutContext> put_context, int rv);
+  void PutDidWriteHeaders(scoped_ptr<PutContext> put_context,
+                          int expected_bytes,
+                          int rv);
+  void PutDidWriteBlobToCache(scoped_ptr<PutContext> put_context,
+                              scoped_ptr<BlobReader> blob_reader,
+                              disk_cache::ScopedEntryPtr entry,
+                              bool success);
 
-  // Static callbacks for the Keys function.
-  static void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context,
-                                   int rv);
-  static void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
-                                   const Entries::iterator& iter);
-  static void KeysDidReadMetadata(
-      scoped_ptr<KeysContext> keys_context,
-      const Entries::iterator& iter,
-      scoped_ptr<ServiceWorkerCacheMetadata> metadata);
+  // Keys callbacks.
+  void KeysDidOpenNextEntry(scoped_ptr<KeysContext> keys_context, int rv);
+  void KeysProcessNextEntry(scoped_ptr<KeysContext> keys_context,
+                            const Entries::iterator& iter);
+  void KeysDidReadMetadata(scoped_ptr<KeysContext> keys_context,
+                           const Entries::iterator& iter,
+                           scoped_ptr<ServiceWorkerCacheMetadata> metadata);
 
   void CloseImpl(const base::Closure& callback);
 
