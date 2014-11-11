@@ -2918,10 +2918,6 @@ Element* RenderObject::offsetParent() const
     if (isOutOfFlowPositioned() && style()->position() == FixedPosition)
         return 0;
 
-    // If A is an area HTML element which has a map HTML element somewhere in the ancestor
-    // chain return the nearest ancestor map HTML element and stop this algorithm.
-    // FIXME: Implement!
-
     float effectiveZoom = style()->effectiveZoom();
     Node* node = 0;
     for (RenderObject* ancestor = parent(); ancestor; ancestor = ancestor->parent()) {
