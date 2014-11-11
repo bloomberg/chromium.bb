@@ -387,10 +387,16 @@ public:
     void setIsTransitionDocument() { m_isTransitionDocument = true; }
     void hideTransitionElements(const AtomicString& cssSelector);
 
+    struct TransitionElement {
+        String id;
+        IntRect rect;
+    };
+
     struct TransitionElementData {
         String scope;
         String selector;
         String markup;
+        Vector<TransitionElement> elements;
     };
     void getTransitionElementData(Vector<TransitionElementData>&);
 

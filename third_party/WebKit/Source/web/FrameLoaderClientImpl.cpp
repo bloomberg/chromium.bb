@@ -83,6 +83,7 @@
 #include "public/web/WebPluginParams.h"
 #include "public/web/WebPluginPlaceholder.h"
 #include "public/web/WebSecurityOrigin.h"
+#include "public/web/WebTransitionElementData.h"
 #include "public/web/WebViewClient.h"
 #include "web/PluginPlaceholderImpl.h"
 #include "web/SharedWorkerRepositoryClientImpl.h"
@@ -484,10 +485,24 @@ NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const Resource
     return static_cast<NavigationPolicy>(webPolicy);
 }
 
-void FrameLoaderClientImpl::dispatchAddNavigationTransitionData(const String& allowedDestinationOrigin, const String& selector, const String& markup)
+void FrameLoaderClientImpl::dispatchAddNavigationTransitionData(const Document::TransitionElementData& data)
 {
-    if (m_webFrame->client())
-        m_webFrame->client()->addNavigationTransitionData(allowedDestinationOrigin, selector, markup);
+    if (!m_webFrame->client())
+        return;
+
+    // FIXME: change to use WebTransitionElementData after the chrome side is done.
+    Vector<String> ids;
+    Vector<IntRect> rects;
+    for (size_t i = 0; i < data.elements.size(); ++i) {
+        ids.append(data.elements[i].id);
+        rects.append(data.elements[i].rect);
+    }
+    m_webFrame->client()->addNavigationTransitionData(
+        WebString(data.scope),
+        WebString(data.selector),
+        WebString(data.markup),
+        WebVector<WebString>(ids),
+        WebVector<WebRect>(rects));
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)

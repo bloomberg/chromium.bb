@@ -96,6 +96,7 @@ struct WebPluginParams;
 struct WebPopupMenuInfo;
 struct WebRect;
 struct WebSize;
+struct WebTransitionElementData;
 struct WebURLError;
 
 class WebFrameClient {
@@ -316,7 +317,11 @@ public:
     // Transition navigations -----------------------------------------------
 
     // Provides serialized markup of transition elements for use in the following navigation.
+    virtual void addNavigationTransitionData(const WebTransitionElementData&) { }
+
+    // FIXME: remove the following two addNavigationTransitionData() functions after the chrome side is done.
     virtual void addNavigationTransitionData(const WebString& allowedDestinationOrigin, const WebString& selector, const WebString& markup) { }
+    virtual void addNavigationTransitionData(const WebString& allowedDestinationOrigin, const WebString& selector, const WebString& markup, const WebVector<WebString>& ids, const WebVector<WebRect>& rects) { }
 
 
     // Web Notifications ---------------------------------------------------

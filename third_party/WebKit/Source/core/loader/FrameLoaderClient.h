@@ -30,6 +30,7 @@
 #ifndef FrameLoaderClient_h
 #define FrameLoaderClient_h
 
+#include "core/dom/Document.h"
 #include "core/dom/IconURL.h"
 #include "core/frame/FrameClient.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -99,7 +100,7 @@ namespace blink {
 
         virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy, bool isTransitionNavigation) = 0;
 
-        virtual void dispatchAddNavigationTransitionData(const String& origin, const String& selector, const String& markup) { }
+        virtual void dispatchAddNavigationTransitionData(const Document::TransitionElementData&) { }
         virtual void dispatchWillRequestResource(FetchRequest*) { }
 
         virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;

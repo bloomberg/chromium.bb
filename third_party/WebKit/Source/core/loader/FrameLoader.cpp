@@ -1249,7 +1249,7 @@ bool FrameLoader::dispatchNavigationTransitionData()
 
     Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
     for (; iter != elementData.end(); ++iter)
-        client()->dispatchAddNavigationTransitionData(iter->scope, iter->selector, iter->markup);
+        client()->dispatchAddNavigationTransitionData(*iter);
 
     return true;
 }

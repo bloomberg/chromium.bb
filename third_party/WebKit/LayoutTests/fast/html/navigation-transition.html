@@ -4,7 +4,7 @@
 <script src="../../resources/js-test.js"></script>
 <script>
 
-description('Tests for the HTML markup serializer used for transition elements');
+description('Tests for the HTML markup serializer used for transition elements and transition element names and rects');
 jsTestIsAsync = true;
 
 window.onload = function() {
@@ -40,6 +40,22 @@ window.onload = function() {
         // Hiding transition elements should not shift any other elements on the page.
         shouldBe('preHidingBottomElementRect.top', 'postHidingBottomElementRect.top');
         shouldBe('preHidingBottomElementRect.left', 'postHidingBottomElementRect.left');
+
+        transitionElementIds = internals.getTransitionElementIds();
+        shouldBeEqualToString('transitionElementIds[0]', 'transitionElement');
+        shouldBeEqualToString('transitionElementIds[1]', 'boxTransitionElement');
+
+        transitionElementRects = internals.getTransitionElementRects();
+        transitionElementBounds = internals.boundsInRootViewSpace(transitionElement);
+        boxTransitionElementBounds = internals.boundsInRootViewSpace(sourceElement);
+        shouldBeTrue('transitionElementRects[0].left == transitionElementBounds.left');
+        shouldBeTrue('transitionElementRects[0].top == transitionElementBounds.top');
+        shouldBeTrue('transitionElementRects[0].width == transitionElementBounds.width');
+        shouldBeTrue('transitionElementRects[0].height == transitionElementBounds.height');
+        shouldBeTrue('transitionElementRects[1].left == boxTransitionElementBounds.left');
+        shouldBeTrue('transitionElementRects[1].top == boxTransitionElementBounds.top');
+        shouldBeTrue('transitionElementRects[1].width == boxTransitionElementBounds.width');
+        shouldBeTrue('transitionElementRects[1].height == boxTransitionElementBounds.height');
 
         finishJSTest();
     }

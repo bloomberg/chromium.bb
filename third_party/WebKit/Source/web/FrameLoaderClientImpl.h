@@ -97,7 +97,7 @@ public:
 
     virtual void dispatchDidChangeThemeColor() override;
     virtual NavigationPolicy decidePolicyForNavigation(const ResourceRequest&, DocumentLoader*, NavigationPolicy, bool isTransitionNavigation) override;
-    virtual void dispatchAddNavigationTransitionData(const String& allowedDestinationOrigin, const String& selector, const String& markup) override;
+    virtual void dispatchAddNavigationTransitionData(const Document::TransitionElementData&) override;
     virtual void dispatchWillRequestResource(FetchRequest*) override;
     virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
     virtual void dispatchWillSubmitForm(HTMLFormElement*) override;

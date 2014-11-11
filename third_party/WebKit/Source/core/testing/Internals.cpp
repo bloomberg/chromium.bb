@@ -2257,6 +2257,12 @@ unsigned Internals::countHitRegions(CanvasRenderingContext2D* context)
     return context->hitRegionsCount();
 }
 
+PassRefPtrWillBeRawPtr<ClientRect> Internals::boundsInRootViewSpace(Element* element)
+{
+    ASSERT(element);
+    return ClientRect::create(element->boundsInRootViewSpace());
+}
+
 String Internals::serializeNavigationMarkup()
 {
     Vector<Document::TransitionElementData> elementData;
@@ -2268,6 +2274,37 @@ String Internals::serializeNavigationMarkup()
         markup.append(iter->markup);
 
     return markup.toString();
+}
+
+Vector<String> Internals::getTransitionElementIds()
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+
+    Vector<String> ids;
+    for (size_t i = 0; i < elementData.size(); ++i) {
+        for (size_t j = 0; j < elementData[i].elements.size(); ++j)
+            ids.append(elementData[i].elements[j].id);
+    }
+
+    return ids;
+}
+
+PassRefPtrWillBeRawPtr<ClientRectList> Internals::getTransitionElementRects()
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+
+    Vector<IntRect> rects;
+    for (size_t i = 0; i < elementData.size(); ++i) {
+        for (size_t j = 0; j < elementData[i].elements.size(); ++j)
+            rects.append(elementData[i].elements[j].rect);
+    }
+
+    Vector<FloatQuad> quads(rects.size());
+    for (size_t i = 0; i < rects.size(); ++i)
+        quads[i] = FloatRect(rects[i]);
+    return ClientRectList::create(quads);
 }
 
 void Internals::hideAllTransitionElements()

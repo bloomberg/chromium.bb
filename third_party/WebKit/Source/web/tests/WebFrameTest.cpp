@@ -6864,7 +6864,12 @@ public:
         , m_provisionalLoadCount(0)
         , m_wasLastProvisionalLoadATransition(false) { }
 
-    virtual void addNavigationTransitionData(const WebString& allowedDestinationOrigin, const WebString& selector, const WebString& markup) override
+    virtual void addNavigationTransitionData(
+        const WebString& allowedDestinationOrigin,
+        const WebString& selector,
+        const WebString& markup,
+        const WebVector<WebString>& names,
+        const WebVector<WebRect>& rects) override
     {
         m_navigationalDataReceivedCount++;
     }

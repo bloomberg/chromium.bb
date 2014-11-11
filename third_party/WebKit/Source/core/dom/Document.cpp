@@ -61,6 +61,7 @@
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
+#include "core/dom/ClientRect.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
@@ -5623,13 +5624,20 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
         if (!nodeListLength)
             continue;
 
+        TransitionElementData newElements;
         StringBuilder markup;
         for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
             Element* element = elementList->item(nodeIndex);
             markup.append(createStyledMarkupForNavigationTransition(element));
+            TransitionElement transitionElement;
+            if (element->hasID())
+                transitionElement.id = element->getIdAttribute().string();
+            else
+                transitionElement.id = "";
+            transitionElement.rect = element->boundsInRootViewSpace();
+            newElements.elements.append(transitionElement);
         }
 
-        TransitionElementData newElements;
         newElements.scope = metaElementContents.substring(firstSemicolon + 1).stripWhiteSpace();
         newElements.selector = selector;
         newElements.markup = markup.toString();
