@@ -87,9 +87,10 @@ tt_print_all() {
 # Print a summary of the last 10 commits for each repo.
 tt_brief_summary() {
   echo "@@@BUILD_STEP Brief summary of recent CLs in every branch@@@"
-  for p in $@; do
-    echo $project
-    (cd $CHROME_SRC/../$p && git log -n 10 --format="   %H %s   %an, %ad" | cat)
+  for project in $@; do
+    echo $project:
+    local full_path=$CHROME_SRC/../$project
+    (cd $full_path && git log -n 10 --format="   %H %s   %an, %ad" | cat)
     echo "================================================================="
   done
 }
