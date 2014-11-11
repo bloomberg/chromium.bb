@@ -569,8 +569,6 @@
       'indexeddb/IDBObjectStore.h',
       'indexeddb/IDBOpenDBRequest.cpp',
       'indexeddb/IDBOpenDBRequest.h',
-      'indexeddb/IDBPendingTransactionMonitor.cpp',
-      'indexeddb/IDBPendingTransactionMonitor.h',
       'indexeddb/IDBRequest.cpp',
       'indexeddb/IDBRequest.h',
       'indexeddb/IDBTracing.h',

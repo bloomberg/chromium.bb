@@ -63,7 +63,7 @@ public:
 
     void deactivateNewTransactions()
     {
-        V8PerIsolateData::from(isolate())->ensureIDBPendingTransactionMonitor()->deactivateNewTransactions();
+        V8PerIsolateData::from(isolate())->runEndOfScopeTasks();
     }
 
 private:

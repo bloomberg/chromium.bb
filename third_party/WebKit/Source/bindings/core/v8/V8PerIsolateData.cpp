@@ -133,7 +133,7 @@ void V8PerIsolateData::willBeDestroyed(v8::Isolate* isolate)
 
     // Clear any data that may have handles into the heap,
     // prior to calling ThreadState::detach().
-    data->m_idbPendingTransactionMonitor.clear();
+    data->clearEndOfScopeTasks();
 }
 
 void V8PerIsolateData::destroy(v8::Isolate* isolate)
@@ -249,11 +249,23 @@ v8::Handle<v8::FunctionTemplate> V8PerIsolateData::toStringTemplate()
     return m_toStringTemplate.newLocal(isolate());
 }
 
-IDBPendingTransactionMonitor* V8PerIsolateData::ensureIDBPendingTransactionMonitor()
+void V8PerIsolateData::addEndOfScopeTask(PassOwnPtr<EndOfScopeTask> task)
 {
-    if (!m_idbPendingTransactionMonitor)
-        m_idbPendingTransactionMonitor = adoptPtr(new IDBPendingTransactionMonitor());
-    return m_idbPendingTransactionMonitor.get();
+    m_endOfScopeTasks.append(task);
+}
+
+void V8PerIsolateData::runEndOfScopeTasks()
+{
+    Vector<OwnPtr<EndOfScopeTask>> tasks;
+    tasks.swap(m_endOfScopeTasks);
+    for (const auto& task : tasks)
+        task->Run();
+    ASSERT(m_endOfScopeTasks.isEmpty());
+}
+
+void V8PerIsolateData::clearEndOfScopeTasks()
+{
+    m_endOfScopeTasks.clear();
 }
 
 } // namespace blink

@@ -12,5 +12,4 @@ include_rules = [
     # TODO(tasak): Get this list to zero.
     "!bindings/modules/v8/V8CryptoKey.h",
     "!bindings/modules/v8/V8DOMFileSystem.h",
-    "!modules/indexeddb/IDBPendingTransactionMonitor.h",
 ]
