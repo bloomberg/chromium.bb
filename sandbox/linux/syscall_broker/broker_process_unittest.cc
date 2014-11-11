@@ -25,6 +25,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "sandbox/linux/syscall_broker/broker_client.h"
 #include "sandbox/linux/tests/scoped_temporary_file.h"
 #include "sandbox/linux/tests/test_utils.h"
 #include "sandbox/linux/tests/unit_tests.h"
@@ -37,8 +38,10 @@ namespace syscall_broker {
 class BrokerProcessTestHelper {
  public:
   static void CloseChannel(BrokerProcess* broker) { broker->CloseChannel(); }
-  static int get_ipc_socketpair(const BrokerProcess* broker) {
-    return broker->ipc_socketpair_;
+  // Get the client's IPC descriptor to send IPC requests directly.
+  // TODO(jln): refator tests to get rid of this.
+  static int GetIPCDescriptor(const BrokerProcess* broker) {
+    return broker->broker_client_->GetIPCDescriptor();
   }
 };
 
@@ -457,7 +460,7 @@ SANDBOX_TEST_ALLOW_NOISE(BrokerProcess, RecvMsgDescriptorLeak) {
   BrokerProcess open_broker(EPERM, read_whitelist, std::vector<std::string>());
   SANDBOX_ASSERT(open_broker.Init(base::Bind(&NoOpCallback)));
 
-  const int ipc_fd = BrokerProcessTestHelper::get_ipc_socketpair(&open_broker);
+  const int ipc_fd = BrokerProcessTestHelper::GetIPCDescriptor(&open_broker);
   SANDBOX_ASSERT(ipc_fd >= 0);
 
   static const char kBogus[] = "not a pickle";

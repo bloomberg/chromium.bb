@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/pickle.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
 #include "sandbox/linux/syscall_broker/broker_policy.h"
 
@@ -75,12 +76,9 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
   // temporary socketpair (created internally by SendRecvMsg()).
   // Then read the reply on this new socketpair in reply_buf and put an
   // eventual attached file descriptor in |returned_fd|.
-  ssize_t msg_len = UnixDomainSocket::SendRecvMsgWithFlags(ipc_channel_,
-                                                           reply_buf,
-                                                           sizeof(reply_buf),
-                                                           recvmsg_flags,
-                                                           &returned_fd,
-                                                           write_pickle);
+  ssize_t msg_len = UnixDomainSocket::SendRecvMsgWithFlags(
+      ipc_channel_.get(), reply_buf, sizeof(reply_buf), recvmsg_flags,
+      &returned_fd, write_pickle);
   if (msg_len <= 0) {
     if (!quiet_failures_for_tests_)
       RAW_LOG(ERROR, "Could not make request to broker process");
@@ -119,11 +117,11 @@ int BrokerClient::PathAndFlagsSyscall(IPCCommand syscall_type,
 }
 
 BrokerClient::BrokerClient(const BrokerPolicy& broker_policy,
-                           int ipc_channel,
+                           BrokerChannel::EndPoint ipc_channel,
                            bool fast_check_in_client,
                            bool quiet_failures_for_tests)
     : broker_policy_(broker_policy),
-      ipc_channel_(ipc_channel),
+      ipc_channel_(ipc_channel.Pass()),
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests) {
 }

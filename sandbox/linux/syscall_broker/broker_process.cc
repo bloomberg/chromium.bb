@@ -6,7 +6,6 @@
 
 #include <fcntl.h>
 #include <signal.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
@@ -23,6 +22,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
+#include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_client.h"
 #include "sandbox/linux/syscall_broker/broker_host.h"
 
@@ -36,17 +36,15 @@ BrokerProcess::BrokerProcess(int denied_errno,
                              bool fast_check_in_client,
                              bool quiet_failures_for_tests)
     : initialized_(false),
-      is_child_(false),
       fast_check_in_client_(fast_check_in_client),
       quiet_failures_for_tests_(quiet_failures_for_tests),
       broker_pid_(-1),
-      policy_(denied_errno, allowed_r_files, allowed_w_files),
-      ipc_socketpair_(-1) {
+      policy_(denied_errno, allowed_r_files, allowed_w_files) {
 }
 
 BrokerProcess::~BrokerProcess() {
   if (initialized_) {
-    if (ipc_socketpair_ != -1) {
+    if (broker_client_.get()) {
       // Closing the socket should be enough to notify the child to die,
       // unless it has been duplicated.
       CloseChannel();
@@ -62,49 +60,32 @@ BrokerProcess::~BrokerProcess() {
 bool BrokerProcess::Init(
     const base::Callback<bool(void)>& broker_process_init_callback) {
   CHECK(!initialized_);
-  int socket_pair[2];
-  // Use SOCK_SEQPACKET, because we need to preserve message boundaries
-  // but we also want to be notified (recvmsg should return and not block)
-  // when the connection has been broken (one of the processes died).
-  if (socketpair(AF_UNIX, SOCK_SEQPACKET, 0, socket_pair)) {
-    LOG(ERROR) << "Failed to create socketpair";
-    return false;
-  }
+  BrokerChannel::EndPoint ipc_reader;
+  BrokerChannel::EndPoint ipc_writer;
+  BrokerChannel::CreatePair(&ipc_reader, &ipc_writer);
 
 #if !defined(THREAD_SANITIZER)
   DCHECK_EQ(1, base::GetNumberOfThreads(base::GetCurrentProcessHandle()));
 #endif
   int child_pid = fork();
   if (child_pid == -1) {
-    close(socket_pair[0]);
-    close(socket_pair[1]);
     return false;
   }
   if (child_pid) {
     // We are the parent and we have just forked our broker process.
-    close(socket_pair[0]);
-    // We should only be able to write to the IPC channel. We'll always send
-    // a new file descriptor to receive the reply on.
-    shutdown(socket_pair[1], SHUT_RD);
-    ipc_socketpair_ = socket_pair[1];
-    is_child_ = false;
+    ipc_reader.reset();
     broker_pid_ = child_pid;
-    broker_client_.reset(new BrokerClient(policy_, ipc_socketpair_,
+    broker_client_.reset(new BrokerClient(policy_, ipc_writer.Pass(),
                                           fast_check_in_client_,
                                           quiet_failures_for_tests_));
     initialized_ = true;
     return true;
   } else {
-    // We are the broker.
-    close(socket_pair[1]);
-    // We should only be able to read from this IPC channel. We will send our
-    // replies on a new file descriptor attached to the requests.
-    shutdown(socket_pair[0], SHUT_WR);
-    ipc_socketpair_ = socket_pair[0];
-    is_child_ = true;
+    // We are the broker process. Make sure to close the writer's end so that
+    // we get notified if the client disappears.
+    ipc_writer.reset();
     CHECK(broker_process_init_callback.Run());
-    BrokerHost broker_host(policy_, ipc_socketpair_);
-    initialized_ = true;
+    BrokerHost broker_host(policy_, ipc_reader.Pass());
     for (;;) {
       switch (broker_host.HandleRequest()) {
         case BrokerHost::RequestStatus::LOST_CLIENT:
@@ -120,9 +101,7 @@ bool BrokerProcess::Init(
 }
 
 void BrokerProcess::CloseChannel() {
-  CHECK_NE(-1, ipc_socketpair_);
-  PCHECK(0 == IGNORE_EINTR(close(ipc_socketpair_)));
-  ipc_socketpair_ = -1;
+  broker_client_.reset();
 }
 
 int BrokerProcess::Access(const char* pathname, int mode) const {

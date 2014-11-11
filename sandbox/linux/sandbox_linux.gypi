@@ -228,6 +228,8 @@
         'services/thread_helpers.h',
         'services/yama.cc',
         'services/yama.h',
+        'syscall_broker/broker_channel.cc',
+        'syscall_broker/broker_channel.h',
         'syscall_broker/broker_client.cc',
         'syscall_broker/broker_client.h',
         'syscall_broker/broker_common.h',

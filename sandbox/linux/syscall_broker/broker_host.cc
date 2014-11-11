@@ -154,8 +154,9 @@ bool HandleRemoteCommand(const BrokerPolicy& policy,
 
 }  // namespace
 
-BrokerHost::BrokerHost(const BrokerPolicy& broker_policy, int ipc_channel)
-    : broker_policy_(broker_policy), ipc_channel_(ipc_channel) {
+BrokerHost::BrokerHost(const BrokerPolicy& broker_policy,
+                       BrokerChannel::EndPoint ipc_channel)
+    : broker_policy_(broker_policy), ipc_channel_(ipc_channel.Pass()) {
 }
 
 BrokerHost::~BrokerHost() {
@@ -170,7 +171,7 @@ BrokerHost::RequestStatus BrokerHost::HandleRequest() const {
   char buf[kMaxMessageLength];
   errno = 0;
   const ssize_t msg_len =
-      UnixDomainSocket::RecvMsg(ipc_channel_, buf, sizeof(buf), &fds);
+      UnixDomainSocket::RecvMsg(ipc_channel_.get(), buf, sizeof(buf), &fds);
 
   if (msg_len == 0 || (msg_len == -1 && errno == ECONNRESET)) {
     // EOF from the client, or the client died, we should die.

@@ -229,6 +229,8 @@ component("sandbox_services") {
     "services/thread_helpers.h",
     "services/yama.h",
     "services/yama.cc",
+    "syscall_broker/broker_channel.cc",
+    "syscall_broker/broker_channel.h",
     "syscall_broker/broker_client.cc",
     "syscall_broker/broker_client.h",
     "syscall_broker/broker_common.h",

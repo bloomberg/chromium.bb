@@ -6,6 +6,7 @@
 #define SANDBOX_LINUX_SYSCALL_BROKER_BROKER_CLIENT_H_
 
 #include "base/macros.h"
+#include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_common.h"
 
 namespace sandbox {
@@ -30,7 +31,7 @@ class BrokerClient {
   // |fast_check_in_client| should be set to true and
   // |quiet_failures_for_tests| to false unless you are writing tests.
   BrokerClient(const BrokerPolicy& policy,
-               int ipc_channel,
+               BrokerChannel::EndPoint ipc_channel,
                bool fast_check_in_client,
                bool quiet_failures_for_tests);
   ~BrokerClient();
@@ -48,9 +49,12 @@ class BrokerClient {
   // This is async signal safe.
   int Open(const char* pathname, int flags) const;
 
+  // Get the file descriptor used for IPC. This is used for tests.
+  int GetIPCDescriptor() const { return ipc_channel_.get(); }
+
  private:
   const BrokerPolicy& broker_policy_;
-  const int ipc_channel_;
+  const BrokerChannel::EndPoint ipc_channel_;
   const bool fast_check_in_client_;  // Whether to forward a request that we
                                      // know will be denied to the broker. (Used
                                      // for tests).

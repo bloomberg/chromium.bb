@@ -71,19 +71,15 @@ class SANDBOX_EXPORT BrokerProcess {
   friend class BrokerProcessTestHelper;
 
   // Close the IPC channel with the other party. This should only be used
-  // by tests.
+  // by tests an none of the class methods should be used afterwards.
   void CloseChannel();
 
   bool initialized_;  // Whether we've been through Init() yet.
-  bool is_child_;     // Whether we're the child (broker process).
-  bool fast_check_in_client_;
-  bool quiet_failures_for_tests_;
+  const bool fast_check_in_client_;
+  const bool quiet_failures_for_tests_;
   pid_t broker_pid_;                     // The PID of the broker (child).
   syscall_broker::BrokerPolicy policy_;  // The sandboxing policy.
-  scoped_ptr<syscall_broker::BrokerClient>
-      broker_client_;  // Can only exist if is_child_ is true.
-
-  int ipc_socketpair_;  // Our communication channel to parent or child.
+  scoped_ptr<syscall_broker::BrokerClient> broker_client_;
 
   DISALLOW_COPY_AND_ASSIGN(BrokerProcess);
 };
