@@ -16,11 +16,11 @@ class NetworkState;
 
 class NetworkPortalNotificationController {
  public:
+  // The values of these metrics are being used for UMA gathering, so it is
+  // important that they don't change between releases.
   enum NotificationMetric {
     NOTIFICATION_METRIC_DISPLAYED = 0,
-    // TODO(peter): The ERROR metric is not being used anymore, remove it.
-    NOTIFICATION_METRIC_ERROR,
-    NOTIFICATION_METRIC_COUNT
+    NOTIFICATION_METRIC_COUNT = 2
   };
 
   enum UserActionMetric {
