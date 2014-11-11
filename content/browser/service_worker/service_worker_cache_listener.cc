@@ -417,7 +417,8 @@ void ServiceWorkerCacheListener::OnCachePutCallback(
     return;
   }
 
-  StoreBlobDataHandle(blob_data_handle.Pass());
+  if (blob_data_handle)
+    StoreBlobDataHandle(blob_data_handle.Pass());
 
   std::vector<ServiceWorkerResponse> responses;
   responses.push_back(*response);
@@ -438,6 +439,7 @@ void ServiceWorkerCacheListener::DropCacheReference(CacheID cache_id) {
 
 void ServiceWorkerCacheListener::StoreBlobDataHandle(
     scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+  DCHECK(blob_data_handle);
   std::pair<UUIDToBlobDataHandleList::iterator, bool> rv =
       blob_handle_store_.insert(std::make_pair(
           blob_data_handle->uuid(), std::list<storage::BlobDataHandle>()));
