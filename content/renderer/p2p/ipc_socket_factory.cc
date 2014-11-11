@@ -11,7 +11,9 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/renderer/media/webrtc_logging.h"
@@ -63,7 +65,7 @@ bool JingleSocketOptionToP2PSocketOption(rtc::Socket::Option option,
 
 // TODO(miu): This needs tuning.  http://crbug.com/237960
 // http://crbug.com/427555
-const size_t kMaximumInFlightBytes = 256 * 1024;  // 256 KB
+const size_t kMaximumInFlightBytes = 64 * 1024;  // 64 KB
 
 // IpcPacketSocket implements rtc::AsyncPacketSocket interface
 // using P2PSocketClient that works over IPC-channel. It must be used
@@ -130,6 +132,10 @@ class IpcPacketSocket : public rtc::AsyncPacketSocket,
                        const rtc::SocketAddress& remote_address);
 
   int DoSetOption(P2PSocketOption option, int value);
+
+  // Allow a finch experiment to control the initial value of
+  // send_bytes_available_;
+  void AdjustUdpSendBufferSize();
 
   P2PSocketType type_;
 
@@ -251,6 +257,19 @@ void IpcPacketSocket::IncrementDiscardCounters(size_t bytes_discarded) {
   }
 }
 
+void IpcPacketSocket::AdjustUdpSendBufferSize() {
+  DCHECK_EQ(type_, P2P_SOCKET_UDP);
+  unsigned int send_buffer_size = 0;
+
+  base::StringToUint(
+      base::FieldTrialList::FindFullName("WebRTC-ApplicationUDPSendSocketSize"),
+      &send_buffer_size);
+
+  if (send_buffer_size > 0) {
+    send_bytes_available_ = send_buffer_size;
+  }
+}
+
 bool IpcPacketSocket::Init(P2PSocketType type,
                            P2PSocketClientImpl* client,
                            const rtc::SocketAddress& local_address,
@@ -268,6 +287,10 @@ bool IpcPacketSocket::Init(P2PSocketType type,
   if (!jingle_glue::SocketAddressToIPEndPoint(
           local_address, &local_endpoint)) {
     return false;
+  }
+
+  if (type_ == P2P_SOCKET_UDP) {
+    AdjustUdpSendBufferSize();
   }
 
   net::IPEndPoint remote_endpoint;
