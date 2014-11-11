@@ -122,15 +122,11 @@ source_set("test_support") {
 # GYP version: //extensions/extensions.gyp:extensions_shell_and_test_pak
 repack("shell_and_test_pak") {
   sources = [
-    "$root_gen_dir/chrome/common_resources.pak",
-    "$root_gen_dir/chrome/extensions_api_resources.pak",
-    # TODO(jamescook): Extract the extension/app related resources
-    # from generated_resources_en-US.pak. http://crbug.com/397250
-    "$root_gen_dir/chrome/generated_resources_en-US.pak",
-    "$root_gen_dir/chrome/renderer_resources_100_percent.pak",
+    "$root_gen_dir/blink/public/resources/blink_resources.pak",
     "$root_gen_dir/content/app/strings/content_strings_en-US.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
+    "$root_gen_dir/extensions/extensions_browser_resources_100_percent.pak",
     "$root_gen_dir/extensions/extensions_renderer_resources.pak",
     "$root_gen_dir/extensions/extensions_resources.pak",
     "$root_gen_dir/extensions/shell/app_shell_resources.pak",
@@ -145,16 +141,12 @@ repack("shell_and_test_pak") {
 
   deps = [
     ":extensions_resources",
-    # Need extension related resources in common_resources.pak and
-    # renderer_resources_100_percent.pak
-    "//chrome:resources",
-    # Need dev-tools related resources in shell_resources.pak and
-    # devtools_resources.pak.
-    "//content/browser/devtools:resources",
-    "//content/shell:resources",
     "//content:resources",
+    "//content/browser/devtools:devtools_resources",
+    "//content/shell:resources",
     "//extensions/shell:resources",
     "//extensions/strings",
+    "//third_party/WebKit/public:resources",
     "//ui/resources",
     "//ui/strings",
   ]
