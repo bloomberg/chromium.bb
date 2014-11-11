@@ -7,9 +7,14 @@
 #include "athena/activity/public/activity_factory.h"
 #include "athena/home/home_card_constants.h"
 #include "athena/home/home_card_impl.h"
+#include "athena/home/home_card_view.h"
 #include "athena/test/base/athena_test_base.h"
 #include "athena/test/base/test_windows.h"
 #include "athena/wm/public/window_manager.h"
+#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate.h"
+#include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -279,6 +284,39 @@ TEST_F(HomeCardTest, DontMinimizeWithModalWindow) {
 
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_TRUE(wm::IsActiveWindow(home_card));
+}
+
+TEST_F(HomeCardTest, AppListStates) {
+  app_list::AppListModel* model =
+      static_cast<HomeCardImpl*>(HomeCard::Get())->view_delegate_->GetModel();
+
+  WindowManager::Get()->EnterOverview();
+  ASSERT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  ASSERT_EQ(app_list::AppListModel::STATE_START, model->state());
+
+  // Changes the contents of the home card to "apps" view, which should change
+  // the home card state to VISIBLE_CENTERED.
+  app_list::ContentsView* contents_view =
+      static_cast<HomeCardImpl*>(HomeCard::Get())
+          ->home_card_view_->main_view_->contents_view();
+  contents_view->SetActivePage(
+      contents_view->GetPageIndexForState(app_list::AppListModel::STATE_APPS));
+  EXPECT_EQ(HomeCard::VISIBLE_CENTERED, HomeCard::Get()->GetState());
+  EXPECT_EQ(app_list::AppListModel::STATE_APPS, model->state());
+
+  // VISIBLE_BOTTOM state should always show the start page.
+  HomeCard::Get()->SetState(HomeCard::VISIBLE_BOTTOM);
+  EXPECT_EQ(app_list::AppListModel::STATE_START, model->state());
+
+  // VISIBLE_CENTERED with apps mode state to minimized -- and then back to
+  // VISIBLE_BOTTOM.
+  contents_view->SetActivePage(
+      contents_view->GetPageIndexForState(app_list::AppListModel::STATE_APPS));
+  EXPECT_EQ(app_list::AppListModel::STATE_APPS, model->state());
+  WindowManager::Get()->ExitOverview();
+  WindowManager::Get()->EnterOverview();
+  EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
+  EXPECT_EQ(app_list::AppListModel::STATE_START, model->state());
 }
 
 }  // namespace athena

@@ -134,6 +134,7 @@ HomeCardImpl::~HomeCardImpl() {
 
   // Reset the view delegate first as it access search provider during
   // shutdown.
+  view_delegate_->GetModel()->RemoveObserver(this);
   view_delegate_.reset();
   instance = nullptr;
 }
@@ -151,6 +152,7 @@ void HomeCardImpl::Init() {
   view_delegate_.reset(
       new AppListViewDelegate(model_builder_.get(), search_factory_.get()));
 
+  view_delegate_->GetModel()->AddObserver(this);
   home_card_view_ = new HomeCardView(view_delegate_.get(), this);
   home_card_widget_ = new views::Widget();
   views::Widget::InitParams widget_params(
@@ -303,6 +305,20 @@ void HomeCardImpl::OnSplitViewModeEnter() {
 }
 
 void HomeCardImpl::OnSplitViewModeExit() {
+}
+
+void HomeCardImpl::OnAppListModelStateChanged(
+    app_list::AppListModel::State old_state,
+    app_list::AppListModel::State new_state) {
+  // State change should not happen in minimized mode.
+  DCHECK_NE(VISIBLE_MINIMIZED, state_);
+
+  if (state_ == VISIBLE_BOTTOM) {
+    if (old_state == app_list::AppListModel::STATE_START)
+      SetState(VISIBLE_CENTERED);
+    else
+      DCHECK_EQ(app_list::AppListModel::STATE_START, new_state);
+  }
 }
 
 // static

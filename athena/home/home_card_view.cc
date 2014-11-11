@@ -8,6 +8,7 @@
 #include "athena/wm/public/window_manager.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/closure_animation_observer.h"
@@ -179,6 +180,11 @@ void HomeCardView::SetStateWithAnimation(
   }
 
   main_view_->UpdateSearchBoxVisibility();
+  if (state == HomeCard::VISIBLE_BOTTOM) {
+    app_list::ContentsView* contents_view = main_view_->contents_view();
+    contents_view->SetActivePage(contents_view->GetPageIndexForState(
+        app_list::AppListModel::STATE_START));
+  }
 }
 
 void HomeCardView::ClearGesture() {

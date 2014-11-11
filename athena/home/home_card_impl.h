@@ -11,6 +11,8 @@
 #include "athena/home/public/search_controller_factory.h"
 #include "athena/input/public/accelerator_manager.h"
 #include "athena/wm/public/window_manager_observer.h"
+#include "base/gtest_prod_util.h"
+#include "ui/app_list/app_list_model_observer.h"
 
 namespace app_list {
 class AppListViewDelegate;
@@ -40,7 +42,8 @@ class HomeCardView;
 class ATHENA_EXPORT HomeCardImpl : public HomeCard,
                                    public AcceleratorHandler,
                                    public HomeCardGestureManager::Delegate,
-                                   public WindowManagerObserver {
+                                   public WindowManagerObserver,
+                                   public app_list::AppListModelObserver {
  public:
   HomeCardImpl(scoped_ptr<AppModelBuilder> model_builder,
                scoped_ptr<SearchControllerFactory> search_factory);
@@ -51,6 +54,8 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
   aura::Window* GetHomeCardWindowForTest() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HomeCardTest, AppListStates);
+
   enum Command {
     COMMAND_SHOW_HOME_CARD,
   };
@@ -79,6 +84,11 @@ class ATHENA_EXPORT HomeCardImpl : public HomeCard,
   void OnOverviewModeExit() override;
   void OnSplitViewModeEnter() override;
   void OnSplitViewModeExit() override;
+
+  // app_list::AppListModelObserver:
+  void OnAppListModelStateChanged(
+      app_list::AppListModel::State old_state,
+      app_list::AppListModel::State new_state) override;
 
   scoped_ptr<AppModelBuilder> model_builder_;
   scoped_ptr<SearchControllerFactory> search_factory_;

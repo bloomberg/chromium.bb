@@ -5,8 +5,10 @@
 #ifndef ATHENA_HOME_HOME_CARD_VIEW_H_
 #define ATHENA_HOME_HOME_CARD_VIEW_H_
 
+#include "athena/athena_export.h"
 #include "athena/home/home_card_gesture_manager.h"
 #include "base/callback_forward.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/gfx/animation/tween.h"
@@ -29,7 +31,7 @@ class View;
 namespace athena {
 
 // The container view of home card contents.
-class HomeCardView : public views::WidgetDelegateView {
+class ATHENA_EXPORT HomeCardView : public views::WidgetDelegateView {
  public:
   HomeCardView(app_list::AppListViewDelegate* view_delegate,
                HomeCardGestureManager::Delegate* gesture_delegate);
@@ -53,6 +55,8 @@ class HomeCardView : public views::WidgetDelegateView {
   void Layout() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(HomeCardTest, AppListStates);
+
   gfx::Rect GetDragIndicatorBounds(HomeCard::State state);
 
   gfx::Rect GetMainViewBounds(HomeCard::State state);
