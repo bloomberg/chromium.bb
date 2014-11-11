@@ -801,6 +801,8 @@ void CompositedLayerMapping::updateOverflowControlsHostLayerGeometry(const Rende
             m_owningLayer.renderer()->mapLocalToContainer(compositingStackingContext->renderer(), transformState, ApplyContainerFlip);
             transformState.flatten();
             LayoutPoint offsetFromStackingContainer = LayoutPoint(transformState.lastPlanarPoint());
+            if (RenderLayerScrollableArea* scrollableArea = compositingStackingContext->scrollableArea())
+                offsetFromStackingContainer.move(LayoutSize(scrollableArea->adjustedScrollOffset()));
             m_overflowControlsHostLayer->setPosition(FloatPoint(offsetFromStackingContainer));
         }
     } else {
