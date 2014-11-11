@@ -128,6 +128,7 @@ if env.Bit('bitcode'):
     # Constant pool items are sometimes too far away with nacl-gcc.
     # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
+    settings['allow_float'] = 0
 
   envlist = []
   pnacl_env = base_env.Clone()
@@ -161,4 +162,5 @@ else:
     # Constant pool items sometimes too far away:
     # BUG: http://code.google.com/p/nativeclient/issues/detail?id=3205
     settings['allow_double'] = 0
+    settings['allow_float'] = 0
   AddTest(base_env, 'callingconv', envlist, settings)

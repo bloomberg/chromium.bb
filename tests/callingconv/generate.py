@@ -60,6 +60,9 @@ def GenerateTypeInfo(settings):
   if not settings.allow_double:
     all_exclude += [ 't_double', 't_ldouble' ]
 
+  if not settings.allow_float:
+    all_exclude += [ 't_float']
+
   if not settings.allow_struct_va_arg:
     va_arg_exclude += [ 't_tiny', 't_big' ]
 
@@ -94,6 +97,7 @@ class Settings(object):
     self.num_modules = 0
     self.allow_struct = 1
     self.allow_double = 1
+    self.allow_float = 1
     self.allow_struct_va_arg = 1
     self._script_argv = None
 
@@ -105,6 +109,7 @@ class Settings(object):
     self.num_modules = int(self.num_modules)
     self.allow_struct = bool(int(self.allow_struct))
     self.allow_double = bool(int(self.allow_double))
+    self.allow_float = bool(int(self.allow_float))
     self.allow_struct_va_arg = bool(int(self.allow_struct_va_arg))
 
   def set(self, k, v):
@@ -125,6 +130,7 @@ def Usage():
   print "  --num_modules=<num_modules>"
   print "  --allow_struct=<0|1>         Test struct arguments (by value)"
   print "  --allow_double=<0|1>         Test double arguments (by value)"
+  print "  --allow_float=<0|1>          Test float arguments (by value)"
   print "  --allow_struct_va_arg=<0|1>  Test va_arg on struct arguments"
   sys.exit(1)
 
