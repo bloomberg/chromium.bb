@@ -10,7 +10,7 @@
 
 namespace extensions {
 
-// TODO(jamescook): Write this function. It needs to talk to privet via DBus.
+// See shell_gcd.idl for documentation.
 class ShellGcdGetSetupStatusFunction : public UIThreadExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("shell.gcd.getSetupStatus", UNKNOWN);
@@ -24,6 +24,9 @@ class ShellGcdGetSetupStatusFunction : public UIThreadExtensionFunction {
   ResponseAction Run() override;
 
  private:
+  // Callback for status from DBus call to GCD privet daemon.
+  void OnSetupStatus(const std::string& status_string);
+
   DISALLOW_COPY_AND_ASSIGN(ShellGcdGetSetupStatusFunction);
 };
 

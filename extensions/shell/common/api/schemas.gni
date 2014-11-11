@@ -9,6 +9,9 @@ gypi_values = exec_script(
     [ "schemas.gypi" ])
 
 sources = gypi_values.schema_files
+if (is_chromeos) {
+  sources += gypi_values.chromeos_schema_files
+}
 
 uncompiled_sources = gypi_values.non_compiled_schema_files
 

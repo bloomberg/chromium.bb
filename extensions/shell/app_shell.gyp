@@ -52,8 +52,6 @@
         'app/shell_main_delegate.h',
         'browser/api/identity/identity_api.cc',
         'browser/api/identity/identity_api.h',
-        'browser/api/shell_gcd/shell_gcd_api.cc',
-        'browser/api/shell_gcd/shell_gcd_api.h',
         'browser/api/shell_window/shell_window_api.cc',
         'browser/api/shell_window/shell_window_api.h',
         'browser/shell_browser_context_keyed_service_factories.cc',
@@ -129,6 +127,10 @@
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos',
             '<(DEPTH)/ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '<(DEPTH)/ui/display/display.gyp:display',
+          ],
+          'sources': [
+            'browser/api/shell_gcd/shell_gcd_api.cc',
+            'browser/api/shell_gcd/shell_gcd_api.h',
           ],
         }],
         ['disable_nacl==0 and OS=="linux"', {
@@ -250,23 +252,24 @@
       'sources': [
         '../test/extensions_unittests_main.cc',
         'browser/api/identity/identity_api_unittest.cc',
-        'browser/api/shell_gcd/shell_gcd_api_unittest.cc',
         'browser/api/shell_window/shell_window_api_unittest.cc',
         'browser/shell_audio_controller_chromeos_unittest.cc',
         'browser/shell_desktop_controller_unittest.cc',
-        'browser/shell_nacl_browser_delegate_unittest.cc',
         'browser/shell_oauth2_token_service_unittest.cc',
         'common/shell_content_client_unittest.cc'
       ],
       'conditions': [
-        ['disable_nacl==1', {
-          'sources!': [
+        ['disable_nacl==0', {
+          'sources': [
             'browser/shell_nacl_browser_delegate_unittest.cc',
           ],
         }],
         ['chromeos==1', {
           'dependencies': [
             '<(DEPTH)/chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
+          ],
+          'sources': [
+            'browser/api/shell_gcd/shell_gcd_api_unittest.cc',
           ],
         }],
         ['OS=="win" and win_use_allocator_shim==1', {
