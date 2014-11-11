@@ -4495,7 +4495,7 @@ usage(int error_code)
 			"\t\t\t\tdrm-backend.so\n"
 #endif
 #if defined(BUILD_FBDEV_COMPOSITOR)
-			"\t\t\t\tfbdev-backend.so"
+			"\t\t\t\tfbdev-backend.so\n"
 #endif
 #if defined(BUILD_X11_COMPOSITOR)
 			"\t\t\t\tx11-backend.so\n"
