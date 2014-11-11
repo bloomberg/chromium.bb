@@ -1065,9 +1065,6 @@ crbug.com/247716 [ Mac XP ] editing/spelling/inline-spelling-markers-hidpi-compo
 
 crbug.com/381730 http/tests/navigation/pending-location-change-assert.html [ Pass Failure ]
 
-crbug.com/381464 fast/dom/Window/Location/window-shadow-location-using-string.html [ Pass Failure ]
-crbug.com/381464 fast/dom/Window/Location/window-shadow-location-using-js-object-with-toString.html [ Pass Failure ]
-
 crbug.com/377476 fast/js/function-name.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/getOwnPropertyDescriptor.html [ NeedsManualRebaseline ]
 crbug.com/377476 fast/js/mozilla/strict/function-name-arity.html [ NeedsManualRebaseline ]

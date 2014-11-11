@@ -1,5 +1,12 @@
 <html>
-<body>
+<head>
+<script>
+function finishTest() {
+  window.parent.postMessage("done", "*");
+}
+</script>
+</head>
+<body onload="finishTest()">
 <pre>
 PASS
 </pre>
