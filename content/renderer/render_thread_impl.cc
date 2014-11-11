@@ -75,6 +75,8 @@
 #include "content/renderer/dom_storage/dom_storage_dispatcher.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/gpu/compositor_external_begin_frame_source.h"
+#include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "content/renderer/gpu/compositor_output_surface.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
@@ -98,7 +100,6 @@
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "ipc/ipc_channel_handle.h"
-#include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
 #include "media/base/audio_hardware_config.h"
@@ -643,9 +644,9 @@ void RenderThreadImpl::Shutdown() {
   if (file_thread_)
     file_thread_->Stop();
 
-  if (compositor_output_surface_filter_.get()) {
-    RemoveFilter(compositor_output_surface_filter_.get());
-    compositor_output_surface_filter_ = NULL;
+  if (compositor_message_filter_.get()) {
+    RemoveFilter(compositor_message_filter_.get());
+    compositor_message_filter_ = NULL;
   }
 
   media_thread_.reset();
@@ -918,15 +919,15 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
         renderer_scheduler()));
   }
 
-  scoped_refptr<base::MessageLoopProxy> output_surface_loop;
+  scoped_refptr<base::MessageLoopProxy> compositor_impl_side_loop;
   if (enable)
-    output_surface_loop = compositor_message_loop_proxy_;
+    compositor_impl_side_loop = compositor_message_loop_proxy_;
   else
-    output_surface_loop = base::MessageLoopProxy::current();
+    compositor_impl_side_loop = base::MessageLoopProxy::current();
 
-  compositor_output_surface_filter_ =
-      CompositorOutputSurface::CreateFilter(output_surface_loop.get());
-  AddFilter(compositor_output_surface_filter_.get());
+  compositor_message_filter_ = new CompositorForwardingMessageFilter(
+      compositor_impl_side_loop.get());
+  AddFilter(compositor_message_filter_.get());
 
   RenderThreadImpl::RegisterSchemes();
 

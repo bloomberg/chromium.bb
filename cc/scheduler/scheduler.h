@@ -34,7 +34,6 @@ namespace cc {
 
 class SchedulerClient {
  public:
-  virtual BeginFrameSource* ExternalBeginFrameSource() = 0;
   virtual void WillBeginImplFrame(const BeginFrameArgs& args) = 0;
   virtual void ScheduledActionSendBeginMainFrame() = 0;
   virtual DrawResult ScheduledActionDrawAndSwapIfPossible() = 0;
@@ -81,13 +80,15 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      base::PowerMonitor* power_monitor) {
+      base::PowerMonitor* power_monitor,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     SchedulerFrameSourcesConstructor frame_sources_constructor;
     return make_scoped_ptr(new Scheduler(client,
                                          scheduler_settings,
                                          layer_tree_host_id,
                                          task_runner,
                                          power_monitor,
+                                         external_begin_frame_source.Pass(),
                                          &frame_sources_constructor));
   }
 
@@ -174,6 +175,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
             int layer_tree_host_id,
             const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
             base::PowerMonitor* power_monitor,
+            scoped_ptr<BeginFrameSource> external_begin_frame_source,
             SchedulerFrameSourcesConstructor* frame_sources_constructor);
 
   // virtual for testing - Don't call these in the constructor or

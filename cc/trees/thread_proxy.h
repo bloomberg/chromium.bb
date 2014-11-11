@@ -25,6 +25,7 @@ class SingleThreadTaskRunner;
 
 namespace cc {
 
+class BeginFrameSource;
 class ContextProvider;
 class InputHandlerClient;
 class LayerTreeHost;
@@ -40,7 +41,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   ~ThreadProxy() override;
 
@@ -96,7 +98,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
     CompositorThreadOnly(
         ThreadProxy* proxy,
         int layer_tree_host_id,
-        RenderingStatsInstrumentation* rendering_stats_instrumentation);
+        RenderingStatsInstrumentation* rendering_stats_instrumentation,
+        scoped_ptr<BeginFrameSource> external_begin_frame_source);
     ~CompositorThreadOnly();
 
     const int layer_tree_host_id;
@@ -136,6 +139,8 @@ class CC_EXPORT ThreadProxy : public Proxy,
     DelayedUniqueNotifier smoothness_priority_expiration_notifier;
 
     ProxyTimingHistory timing_history;
+
+    scoped_ptr<BeginFrameSource> external_begin_frame_source;
 
     scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl;
     base::WeakPtrFactory<ThreadProxy> weak_factory;
@@ -204,7 +209,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void DidManageTiles() override;
 
   // SchedulerClient implementation
-  BeginFrameSource* ExternalBeginFrameSource() override;
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
   void ScheduledActionSendBeginMainFrame() override;
   DrawResult ScheduledActionDrawAndSwapIfPossible() override;
@@ -225,9 +229,11 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void ReadyToFinalizeTextureUpdates() override;
 
  protected:
-  ThreadProxy(LayerTreeHost* layer_tree_host,
-              scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-              scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+  ThreadProxy(
+      LayerTreeHost* layer_tree_host,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
  private:
   // Called on main thread.

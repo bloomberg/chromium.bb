@@ -27,6 +27,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -409,7 +410,8 @@ void CompositorImpl::SetVisible(bool visible) {
         HostSharedBitmapManager::current(),
         BrowserGpuMemoryBufferManager::current(),
         settings,
-        base::MessageLoopProxy::current());
+        base::MessageLoopProxy::current(),
+        nullptr);
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);

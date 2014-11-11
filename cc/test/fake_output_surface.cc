@@ -20,9 +20,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider),
       client_(NULL),
       num_sent_frames_(0),
-      needs_begin_frame_(false),
-      has_external_stencil_test_(false),
-      fake_weak_ptr_factory_(this) {
+      has_external_stencil_test_(false) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -35,8 +33,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      has_external_stencil_test_(false),
-      fake_weak_ptr_factory_(this) {
+      has_external_stencil_test_(false) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -50,8 +47,7 @@ FakeOutputSurface::FakeOutputSurface(
     : OutputSurface(context_provider, software_device.Pass()),
       client_(NULL),
       num_sent_frames_(0),
-      has_external_stencil_test_(false),
-      fake_weak_ptr_factory_(this) {
+      has_external_stencil_test_(false) {
   if (delegated_rendering) {
     capabilities_.delegated_rendering = true;
     capabilities_.max_frames_pending = 1;
@@ -81,24 +77,6 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
   PostSwapBuffersComplete();
   client_->DidSwapBuffers();
 }
-
-void FakeOutputSurface::SetNeedsBeginFrame(bool enable) {
-  needs_begin_frame_ = enable;
-  OutputSurface::SetNeedsBeginFrame(enable);
-
-  if (enable) {
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&FakeOutputSurface::OnBeginFrame,
-                   fake_weak_ptr_factory_.GetWeakPtr()),
-        base::TimeDelta::FromMilliseconds(16));
-  }
-}
-
-void FakeOutputSurface::OnBeginFrame() {
-  client_->BeginFrame(CreateBeginFrameArgsForTesting());
-}
-
 
 bool FakeOutputSurface::BindToClient(OutputSurfaceClient* client) {
   if (OutputSurface::BindToClient(client)) {

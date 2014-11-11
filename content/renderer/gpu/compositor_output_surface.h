@@ -15,14 +15,10 @@
 #include "base/time/time.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/output_surface.h"
+#include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "ipc/ipc_sync_message_filter.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace IPC {
-class ForwardingMessageFilter;
 class Message;
 }
 
@@ -43,9 +39,6 @@ class CompositorOutputSurface
     : NON_EXPORTED_BASE(public cc::OutputSurface),
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  static IPC::ForwardingMessageFilter* CreateFilter(
-      base::TaskRunner* target_task_runner);
-
   CompositorOutputSurface(
       int32 routing_id,
       uint32 output_surface_id,
@@ -58,9 +51,6 @@ class CompositorOutputSurface
   // cc::OutputSurface implementation.
   bool BindToClient(cc::OutputSurfaceClient* client) override;
   void SwapBuffers(cc::CompositorFrame* frame) override;
-#if defined(OS_ANDROID)
-  virtual void SetNeedsBeginFrame(bool enable) override;
-#endif
 
   // TODO(epenner): This seems out of place here and would be a better fit
   // int CompositorThread after it is fully refactored (http://crbug/170828)
@@ -100,14 +90,12 @@ class CompositorOutputSurface
   void OnMessageReceived(const IPC::Message& message);
   void OnUpdateVSyncParametersFromBrowser(base::TimeTicks timebase,
                                           base::TimeDelta interval);
-#if defined(OS_ANDROID)
-  void OnBeginFrame(const cc::BeginFrameArgs& args);
-#endif
   bool Send(IPC::Message* message);
 
   bool use_swap_compositor_frame_message_;
 
-  scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
+  scoped_refptr<CompositorForwardingMessageFilter> output_surface_filter_;
+  CompositorForwardingMessageFilter::Handler output_surface_filter_handler_;
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
   scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;

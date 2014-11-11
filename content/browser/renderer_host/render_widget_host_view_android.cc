@@ -308,8 +308,8 @@ bool RenderWidgetHostViewAndroid::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ViewHostMsg_StartContentIntent, OnStartContentIntent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidChangeBodyBackgroundColor,
                         OnDidChangeBodyBackgroundColor)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrame,
-                        OnSetNeedsBeginFrame)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_SetNeedsBeginFrames,
+                        OnSetNeedsBeginFrames)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
                         OnTextInputStateChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SmartClipDataExtracted,
@@ -673,9 +673,9 @@ void RenderWidgetHostViewAndroid::OnDidChangeBodyBackgroundColor(
     content_view_core_->OnBackgroundColorChanged(color);
 }
 
-void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame(bool enabled) {
+void RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames(bool enabled) {
   DCHECK(!using_synchronous_compositor_);
-  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrame",
+  TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::OnSetNeedsBeginFrames",
                "enabled", enabled);
   if (enabled)
     RequestVSyncUpdate(PERSISTENT_BEGIN_FRAME);

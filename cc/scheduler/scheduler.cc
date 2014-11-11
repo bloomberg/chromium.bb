@@ -5,6 +5,7 @@
 #include "cc/scheduler/scheduler.h"
 
 #include <algorithm>
+
 #include "base/auto_reset.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
@@ -32,8 +33,10 @@ BeginFrameSource* SchedulerFrameSourcesConstructor::ConstructPrimaryFrameSource(
     TRACE_EVENT1("cc",
                  "Scheduler::Scheduler()",
                  "PrimaryFrameSource",
-                 "SchedulerClient");
-    return scheduler->client_->ExternalBeginFrameSource();
+                 "ExternalBeginFrameSource");
+    DCHECK(scheduler->primary_frame_source_internal_)
+        << "Need external BeginFrameSource";
+    return scheduler->primary_frame_source_internal_.get();
   } else {
     TRACE_EVENT1("cc",
                  "Scheduler::Scheduler()",
@@ -74,11 +77,12 @@ Scheduler::Scheduler(
     int layer_tree_host_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     base::PowerMonitor* power_monitor,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source,
     SchedulerFrameSourcesConstructor* frame_sources_constructor)
     : frame_source_(),
       primary_frame_source_(NULL),
       background_frame_source_(NULL),
-      primary_frame_source_internal_(),
+      primary_frame_source_internal_(external_begin_frame_source.Pass()),
       background_frame_source_internal_(),
       vsync_observer_(NULL),
       settings_(scheduler_settings),
@@ -114,6 +118,7 @@ Scheduler::Scheduler(
   primary_frame_source_ =
       frame_sources_constructor->ConstructPrimaryFrameSource(this);
   frame_source_->AddSource(primary_frame_source_);
+  primary_frame_source_->SetClientReady();
 
   // Background ticking frame source
   background_frame_source_ =
@@ -125,6 +130,8 @@ Scheduler::Scheduler(
 
 Scheduler::~Scheduler() {
   TeardownPowerMonitoring();
+  if (frame_source_->NeedsBeginFrames())
+    frame_source_->SetNeedsBeginFrames(false);
 }
 
 base::TimeTicks Scheduler::Now() const {

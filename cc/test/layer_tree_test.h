@@ -17,6 +17,7 @@ class WebGraphicsContext3D;
 }
 
 namespace cc {
+class ExternalBeginFrameSourceForTest;
 class FakeLayerTreeHostClient;
 class FakeOutputSurface;
 class LayerImpl;
@@ -210,6 +211,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   scoped_ptr<LayerTreeHostClientForTesting> client_;
   scoped_ptr<LayerTreeHost> layer_tree_host_;
   FakeOutputSurface* output_surface_;
+  ExternalBeginFrameSourceForTest* external_begin_frame_source_;
 
   bool beginning_;
   bool end_when_begin_returns_;

@@ -18,6 +18,7 @@
 #include "ipc/ipc_message.h"
 
 namespace cc {
+class BeginFrameSource;
 class InputHandler;
 }
 
@@ -27,6 +28,7 @@ class WebInputEvent;
 
 namespace content {
 class InputHandlerManager;
+class SynchronousCompositorExternalBeginFrameSource;
 struct DidOverscrollParams;
 
 // The purpose of this class is to act as the intermediary between the various
@@ -47,6 +49,12 @@ class SynchronousCompositorImpl
   static SynchronousCompositorImpl* FromRoutingID(int routing_id);
 
   InputEventAckState HandleInputEvent(const blink::WebInputEvent& input_event);
+
+  void DidInitializeExternalBeginFrameSource(
+      SynchronousCompositorExternalBeginFrameSource* begin_frame_source);
+  void DidDestroyExternalBeginFrameSource(
+      SynchronousCompositorExternalBeginFrameSource* begin_frame_source);
+  void NeedsBeginFramesChanged() const;
 
   // SynchronousCompositor
   virtual void SetClient(SynchronousCompositorClient* compositor_client)
@@ -71,7 +79,6 @@ class SynchronousCompositorImpl
       SynchronousCompositorOutputSurface* output_surface) override;
   virtual void DidDestroySynchronousOutputSurface(
       SynchronousCompositorOutputSurface* output_surface) override;
-  virtual void SetContinuousInvalidate(bool enable) override;
   virtual void DidActivatePendingTree() override;
 
   // LayerScrollOffsetDelegate
@@ -95,13 +102,16 @@ class SynchronousCompositorImpl
   friend class WebContentsUserData<SynchronousCompositorImpl>;
 
   void UpdateFrameMetaData(const cc::CompositorFrameMetadata& frame_info);
+  void NotifyDidDestroyCompositorToClient();
   void DeliverMessages();
   bool CalledOnValidThread() const;
 
   SynchronousCompositorClient* compositor_client_;
   SynchronousCompositorOutputSurface* output_surface_;
+  SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
   WebContents* contents_;
   cc::InputHandler* input_handler_;
+  bool invoking_composite_;
 
   base::WeakPtrFactory<SynchronousCompositorImpl> weak_ptr_factory_;
 

@@ -13,6 +13,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/output/output_surface_client.h"
 #include "cc/resources/resource_provider.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/fake_delegated_renderer_layer.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
@@ -99,7 +100,7 @@ class LayerTreeHostNoMessageLoopTest
     LayerTreeSettings settings;
     settings.single_thread_proxy_scheduler = false;
     layer_tree_host_ = LayerTreeHost::CreateSingleThreaded(
-        this, this, NULL, NULL, settings, NULL);
+        this, this, nullptr, nullptr, settings, nullptr, nullptr);
     layer_tree_host_->SetViewportSize(size_);
     layer_tree_host_->SetRootLayer(root_layer_);
   }

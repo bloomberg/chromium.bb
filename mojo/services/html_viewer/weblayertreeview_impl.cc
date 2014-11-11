@@ -8,6 +8,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "mojo/cc/context_provider_mojo.h"
 #include "mojo/cc/output_surface_mojo.h"
@@ -47,7 +48,8 @@ WebLayerTreeViewImpl::WebLayerTreeViewImpl(
                                         gpu_memory_buffer_manager,
                                         settings,
                                         base::MessageLoopProxy::current(),
-                                        compositor_message_loop_proxy);
+                                        compositor_message_loop_proxy,
+                                        nullptr);
   DCHECK(layer_tree_host_);
 }
 

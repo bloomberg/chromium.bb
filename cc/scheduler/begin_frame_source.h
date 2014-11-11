@@ -117,6 +117,9 @@ class CC_EXPORT BeginFrameSource {
   virtual void AddObserver(BeginFrameObserver* obs) = 0;
   virtual void RemoveObserver(BeginFrameObserver* obs) = 0;
 
+  // Tells the Source that client is ready to handle BeginFrames messages.
+  virtual void SetClientReady() = 0;
+
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.
   virtual void AsValueInto(base::debug::TracedValue* dict) const = 0;
@@ -137,8 +140,9 @@ class CC_EXPORT BeginFrameSourceMixIn : public BeginFrameSource {
   bool NeedsBeginFrames() const override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void DidFinishFrame(size_t remaining_frames) override {}
-  void AddObserver(BeginFrameObserver* obs) override;
-  void RemoveObserver(BeginFrameObserver* obs) override;
+  void AddObserver(BeginFrameObserver* obs) final;
+  void RemoveObserver(BeginFrameObserver* obs) final;
+  void SetClientReady() override {}
 
   // Tracing support - Recommend (but not required) to call this implementation
   // in any override.

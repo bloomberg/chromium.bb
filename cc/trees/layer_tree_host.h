@@ -48,6 +48,7 @@ class GpuMemoryBufferManager;
 
 namespace cc {
 class AnimationRegistrar;
+class BeginFrameSource;
 class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostImpl;
@@ -92,7 +93,8 @@ class CC_EXPORT LayerTreeHost {
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   static scoped_ptr<LayerTreeHost> CreateSingleThreaded(
       LayerTreeHostClient* client,
@@ -100,7 +102,8 @@ class CC_EXPORT LayerTreeHost {
       SharedBitmapManager* shared_bitmap_manager,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
   virtual ~LayerTreeHost();
 
   void SetLayerTreeHostClientReady();
@@ -318,10 +321,12 @@ class CC_EXPORT LayerTreeHost {
                 const LayerTreeSettings& settings);
   void InitializeThreaded(
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
   void InitializeSingleThreaded(
       LayerTreeHostSingleThreadClient* single_thread_client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
   void InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;

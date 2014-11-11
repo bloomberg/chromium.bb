@@ -31,7 +31,6 @@
 #include "cc/quads/render_pass.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/tile_manager.h"
-#include "cc/scheduler/begin_frame_source.h"
 #include "cc/scheduler/draw_result.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -112,7 +111,6 @@ class CC_EXPORT LayerTreeHostImpl
       public OutputSurfaceClient,
       public TopControlsManagerClient,
       public ScrollbarAnimationControllerClient,
-      public BeginFrameSourceMixIn,
       public base::SupportsWeakPtr<LayerTreeHostImpl> {
  public:
   static scoped_ptr<LayerTreeHostImpl> Create(
@@ -124,9 +122,6 @@ class CC_EXPORT LayerTreeHostImpl
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       int id);
   ~LayerTreeHostImpl() override;
-
-  // BeginFrameSourceMixIn implementation
-  void OnNeedsBeginFramesChange(bool needs_begin_frames) override;
 
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
@@ -252,8 +247,6 @@ class CC_EXPORT LayerTreeHostImpl
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void SetNeedsRedrawRect(const gfx::Rect& rect) override;
-  void BeginFrame(const BeginFrameArgs& args) override;
-
   void SetExternalDrawConstraints(
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
@@ -427,7 +420,7 @@ class CC_EXPORT LayerTreeHostImpl
     return begin_impl_frame_interval_;
   }
 
-  void AsValueInto(base::debug::TracedValue* value) const override;
+  void AsValueInto(base::debug::TracedValue* value) const;
   void AsValueWithFrameInto(FrameData* frame,
                             base::debug::TracedValue* value) const;
   scoped_refptr<base::debug::ConvertableToTraceFormat> AsValue() const;

@@ -19,6 +19,7 @@
 
 namespace cc {
 
+class BeginFrameSource;
 class ContextProvider;
 class LayerTreeHost;
 class LayerTreeHostSingleThreadClient;
@@ -30,7 +31,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   static scoped_ptr<Proxy> Create(
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
   ~SingleThreadProxy() override;
 
   // Proxy implementation
@@ -59,7 +61,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   bool MainFrameWillHappenForTesting() override;
 
   // SchedulerClient implementation
-  BeginFrameSource* ExternalBeginFrameSource() override;
   void WillBeginImplFrame(const BeginFrameArgs& args) override;
   void ScheduledActionSendBeginMainFrame() override;
   DrawResult ScheduledActionDrawAndSwapIfPossible() override;
@@ -115,7 +116,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   SingleThreadProxy(
       LayerTreeHost* layer_tree_host,
       LayerTreeHostSingleThreadClient* client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   void BeginMainFrame();
   void BeginMainFrameAbortedOnImplThread();
@@ -160,6 +162,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   // This is the callback for the scheduled RequestNewOutputSurface.
   base::CancelableClosure output_surface_creation_callback_;
+
+  scoped_ptr<BeginFrameSource> external_begin_frame_source_;
 
   base::WeakPtrFactory<SingleThreadProxy> weak_factory_;
 

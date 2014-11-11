@@ -63,7 +63,6 @@ class CC_SURFACES_EXPORT Display : public OutputSurfaceClient,
   void CommitVSyncParameters(base::TimeTicks timebase,
                              base::TimeDelta interval) override;
   void SetNeedsRedrawRect(const gfx::Rect& damage_rect) override {}
-  void BeginFrame(const BeginFrameArgs& args) override {}
   void DidSwapBuffers() override;
   void DidSwapBuffersComplete() override;
   void ReclaimResources(const CompositorFrameAck* ack) override {}

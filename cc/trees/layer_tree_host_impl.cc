@@ -203,8 +203,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     int id)
-    : BeginFrameSourceMixIn(),
-      client_(client),
+    : client_(client),
       proxy_(proxy),
       use_gpu_rasterization_(false),
       input_handler_client_(NULL),
@@ -1348,10 +1347,6 @@ void LayerTreeHostImpl::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
   client_->SetNeedsRedrawRectOnImplThread(damage_rect);
 }
 
-void LayerTreeHostImpl::BeginFrame(const BeginFrameArgs& args) {
-  CallOnBeginFrame(args);
-}
-
 void LayerTreeHostImpl::DidSwapBuffers() {
   client_->DidSwapBuffersOnImplThread();
 }
@@ -1588,13 +1583,6 @@ bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   }
   renderer_->SwapBuffers(metadata);
   return true;
-}
-
-void LayerTreeHostImpl::OnNeedsBeginFramesChange(bool enable) {
-  if (output_surface_)
-    output_surface_->SetNeedsBeginFrame(enable);
-  else
-    DCHECK(!enable);
 }
 
 void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -3191,10 +3179,6 @@ BeginFrameArgs LayerTreeHostImpl::CurrentBeginFrameArgs() const {
                                 BeginFrameArgs::DefaultInterval());
 }
 
-void LayerTreeHostImpl::AsValueInto(base::debug::TracedValue* value) const {
-  return AsValueWithFrameInto(NULL, value);
-}
-
 scoped_refptr<base::debug::ConvertableToTraceFormat>
 LayerTreeHostImpl::AsValue() const {
   return AsValueWithFrame(NULL);
@@ -3206,6 +3190,10 @@ LayerTreeHostImpl::AsValueWithFrame(FrameData* frame) const {
       new base::debug::TracedValue();
   AsValueWithFrameInto(frame, state.get());
   return state;
+}
+
+void LayerTreeHostImpl::AsValueInto(base::debug::TracedValue* value) const {
+  return AsValueWithFrameInto(NULL, value);
 }
 
 void LayerTreeHostImpl::AsValueWithFrameInto(

@@ -19,7 +19,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
 
 namespace {
@@ -29,26 +28,6 @@ int g_prefer_smoothness_count = 0;
 } // namespace
 
 namespace content {
-
-//------------------------------------------------------------------------------
-
-// static
-IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
-    base::TaskRunner* target_task_runner)
-{
-  uint32 messages_to_filter[] = {
-    ViewMsg_UpdateVSyncParameters::ID,
-    ViewMsg_SwapCompositorFrameAck::ID,
-    ViewMsg_ReclaimCompositorResources::ID,
-#if defined(OS_ANDROID)
-    ViewMsg_BeginFrame::ID
-#endif
-  };
-
-  return new IPC::ForwardingMessageFilter(
-      messages_to_filter, arraysize(messages_to_filter),
-      target_task_runner);
-}
 
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
@@ -61,7 +40,7 @@ CompositorOutputSurface::CompositorOutputSurface(
       output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
-          RenderThreadImpl::current()->compositor_output_surface_filter()),
+          RenderThreadImpl::current()->compositor_message_filter()),
       frame_swap_message_queue_(swap_frame_message_queue),
       routing_id_(routing_id),
       prefers_smoothness_(false),
@@ -84,13 +63,14 @@ CompositorOutputSurface::CompositorOutputSurface(
 
 CompositorOutputSurface::~CompositorOutputSurface() {
   DCHECK(CalledOnValidThread());
-  SetNeedsBeginFrame(false);
   if (!HasClient())
     return;
   UpdateSmoothnessTakesPriority(false);
   if (output_surface_proxy_.get())
     output_surface_proxy_->ClearOutputSurface();
-  output_surface_filter_->RemoveRoute(routing_id_);
+  output_surface_filter_->RemoveHandlerOnCompositorThread(
+                              routing_id_,
+                              output_surface_filter_handler_);
 }
 
 bool CompositorOutputSurface::BindToClient(
@@ -101,10 +81,12 @@ bool CompositorOutputSurface::BindToClient(
     return false;
 
   output_surface_proxy_ = new CompositorOutputSurfaceProxy(this);
-  output_surface_filter_->AddRoute(
-      routing_id_,
+  output_surface_filter_handler_ =
       base::Bind(&CompositorOutputSurfaceProxy::OnMessageReceived,
-                 output_surface_proxy_));
+                 output_surface_proxy_);
+  output_surface_filter_->AddHandlerOnCompositorThread(
+                              routing_id_,
+                              output_surface_filter_handler_);
 
   if (!context_provider()) {
     // Without a GPU context, the memory policy otherwise wouldn't be set.
@@ -193,9 +175,6 @@ void CompositorOutputSurface::OnMessageReceived(const IPC::Message& message) {
                         OnUpdateVSyncParametersFromBrowser);
     IPC_MESSAGE_HANDLER(ViewMsg_SwapCompositorFrameAck, OnSwapAck);
     IPC_MESSAGE_HANDLER(ViewMsg_ReclaimCompositorResources, OnReclaimResources);
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(ViewMsg_BeginFrame, OnBeginFrame);
-#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -205,18 +184,6 @@ void CompositorOutputSurface::OnUpdateVSyncParametersFromBrowser(
   DCHECK(CalledOnValidThread());
   CommitVSyncParameters(timebase, interval);
 }
-
-#if defined(OS_ANDROID)
-void CompositorOutputSurface::SetNeedsBeginFrame(bool enable) {
-  DCHECK(CalledOnValidThread());
-  Send(new ViewHostMsg_SetNeedsBeginFrame(routing_id_, enable));
-}
-
-void CompositorOutputSurface::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  DCHECK(CalledOnValidThread());
-  client_->BeginFrame(args);
-}
-#endif  // defined(OS_ANDROID)
 
 void CompositorOutputSurface::OnSwapAck(uint32 output_surface_id,
                                         const cc::CompositorFrameAck& ack) {

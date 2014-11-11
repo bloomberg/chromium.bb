@@ -5,6 +5,8 @@
 #include "content/browser/android/in_process/synchronous_compositor_factory_impl.h"
 
 #include "base/observer_list.h"
+#include "content/browser/android/in_process/synchronous_compositor_external_begin_frame_source.h"
+#include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_output_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
@@ -191,6 +193,13 @@ SynchronousCompositorFactoryImpl::CreateOutputSurface(
 InputHandlerManagerClient*
 SynchronousCompositorFactoryImpl::GetInputHandlerManagerClient() {
   return synchronous_input_event_filter();
+}
+
+scoped_ptr<cc::BeginFrameSource>
+SynchronousCompositorFactoryImpl::CreateExternalBeginFrameSource(
+    int routing_id) {
+  return make_scoped_ptr(
+             new SynchronousCompositorExternalBeginFrameSource(routing_id));
 }
 
 scoped_refptr<ContextProviderWebContext>

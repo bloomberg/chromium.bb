@@ -23,15 +23,20 @@ namespace cc {
 scoped_ptr<Proxy> SingleThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
     LayerTreeHostSingleThreadClient* client,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
-  return make_scoped_ptr(
-      new SingleThreadProxy(layer_tree_host, client, main_task_runner));
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+  return make_scoped_ptr(new SingleThreadProxy(
+                                 layer_tree_host,
+                                 client,
+                                 main_task_runner,
+                                 external_begin_frame_source.Pass()));
 }
 
 SingleThreadProxy::SingleThreadProxy(
     LayerTreeHost* layer_tree_host,
     LayerTreeHostSingleThreadClient* client,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source)
     : Proxy(main_task_runner, NULL),
       layer_tree_host_(layer_tree_host),
       client_(client),
@@ -43,6 +48,7 @@ SingleThreadProxy::SingleThreadProxy(
       commit_requested_(false),
       inside_synchronous_composite_(false),
       output_surface_creation_requested_(false),
+      external_begin_frame_source_(external_begin_frame_source.Pass()),
       weak_factory_(this) {
   TRACE_EVENT0("cc", "SingleThreadProxy::SingleThreadProxy");
   DCHECK(Proxy::IsMainThread());
@@ -84,11 +90,13 @@ void SingleThreadProxy::SetLayerTreeHostClientReady() {
   if (layer_tree_host_->settings().single_thread_proxy_scheduler &&
       !scheduler_on_impl_thread_) {
     SchedulerSettings scheduler_settings(layer_tree_host_->settings());
-    scheduler_on_impl_thread_ = Scheduler::Create(this,
-                                                  scheduler_settings,
-                                                  layer_tree_host_->id(),
-                                                  MainThreadTaskRunner(),
-                                                  base::PowerMonitor::Get());
+    scheduler_on_impl_thread_ =
+        Scheduler::Create(this,
+                          scheduler_settings,
+                          layer_tree_host_->id(),
+                          MainThreadTaskRunner(),
+                          base::PowerMonitor::Get(),
+                          external_begin_frame_source_.Pass());
     scheduler_on_impl_thread_->SetCanStart();
     scheduler_on_impl_thread_->SetVisible(layer_tree_host_impl_->visible());
   }
@@ -630,10 +638,6 @@ void SingleThreadProxy::DidCommitAndDrawFrame() {
 
 bool SingleThreadProxy::MainFrameWillHappenForTesting() {
   return false;
-}
-
-BeginFrameSource* SingleThreadProxy::ExternalBeginFrameSource() {
-  return layer_tree_host_impl_.get();
 }
 
 void SingleThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {

@@ -33,6 +33,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/common/content_switches.h"
+#include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/scheduler/renderer_scheduler.h"
@@ -535,6 +536,21 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
     main_thread_compositor_task_runner =
         render_thread->main_thread_compositor_task_runner();
   }
+  scoped_ptr<cc::BeginFrameSource> external_begin_frame_source;
+#if defined(OS_ANDROID)
+  if (SynchronousCompositorFactory* factory =
+      SynchronousCompositorFactory::GetInstance()) {
+    DCHECK(settings.begin_frame_scheduling_enabled);
+    external_begin_frame_source =
+        factory->CreateExternalBeginFrameSource(widget_->routing_id());
+  }
+#endif
+  if (render_thread &&
+      !external_begin_frame_source.get() &&
+      settings.begin_frame_scheduling_enabled) {
+    external_begin_frame_source.reset(new CompositorExternalBeginFrameSource(
+                                              widget_->routing_id()));
+  }
   if (compositor_message_loop_proxy.get()) {
     layer_tree_host_ =
         cc::LayerTreeHost::CreateThreaded(this,
@@ -542,15 +558,17 @@ void RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
                                           gpu_memory_buffer_manager,
                                           settings,
                                           main_thread_compositor_task_runner,
-                                          compositor_message_loop_proxy);
+                                          compositor_message_loop_proxy,
+                                          external_begin_frame_source.Pass());
   } else {
     layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-        this,
-        this,
-        shared_bitmap_manager,
-        gpu_memory_buffer_manager,
-        settings,
-        main_thread_compositor_task_runner);
+                           this,
+                           this,
+                           shared_bitmap_manager,
+                           gpu_memory_buffer_manager,
+                           settings,
+                           main_thread_compositor_task_runner,
+                           external_begin_frame_source.Pass());
   }
   DCHECK(layer_tree_host_);
 }

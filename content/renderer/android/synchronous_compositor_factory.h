@@ -14,6 +14,7 @@ class MessageLoopProxy;
 }
 
 namespace cc {
+class BeginFrameSource;
 class ContextProvider;
 class OutputSurface;
 }
@@ -51,6 +52,9 @@ class SynchronousCompositorFactory {
 
   // The factory maintains ownership of the returned interface.
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() = 0;
+
+  virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+      int routing_id) = 0;
 
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
       CreateOffscreenContextProvider(

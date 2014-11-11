@@ -308,6 +308,8 @@
       'browser/android/edge_effect_l.cc',
       'browser/android/edge_effect_l.h',
       'browser/android/gesture_event_type_list.h',
+      'browser/android/in_process/synchronous_compositor_external_begin_frame_source.cc',
+      'browser/android/in_process/synchronous_compositor_external_begin_frame_source.h',
       'browser/android/in_process/synchronous_compositor_factory_impl.cc',
       'browser/android/in_process/synchronous_compositor_factory_impl.h',
       'browser/android/in_process/synchronous_compositor_impl.cc',

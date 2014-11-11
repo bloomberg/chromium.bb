@@ -162,16 +162,19 @@ class TestScheduler : public Scheduler {
       const SchedulerSettings& scheduler_settings,
       int layer_tree_host_id,
       const scoped_refptr<OrderedSimpleTaskRunner>& task_runner,
-      base::PowerMonitor* power_monitor) {
+      base::PowerMonitor* power_monitor,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     TestSchedulerFrameSourcesConstructor frame_sources_constructor(
         task_runner.get(), now_src.get());
-    return make_scoped_ptr(new TestScheduler(now_src,
-                                             client,
-                                             scheduler_settings,
-                                             layer_tree_host_id,
-                                             task_runner,
-                                             power_monitor,
-                                             &frame_sources_constructor));
+    return make_scoped_ptr(new TestScheduler(
+                                   now_src,
+                                   client,
+                                   scheduler_settings,
+                                   layer_tree_host_id,
+                                   task_runner,
+                                   power_monitor,
+                                   &frame_sources_constructor,
+                                   external_begin_frame_source.Pass()));
   }
 
   // Extra test helper functionality
@@ -195,7 +198,8 @@ class TestScheduler : public Scheduler {
       int layer_tree_host_id,
       const scoped_refptr<OrderedSimpleTaskRunner>& test_task_runner,
       base::PowerMonitor* power_monitor,
-      TestSchedulerFrameSourcesConstructor* frame_sources_constructor);
+      TestSchedulerFrameSourcesConstructor* frame_sources_constructor,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source);
 
   scoped_refptr<TestNowSource> now_src_;
 };

@@ -9,7 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
-#include "cc/output/begin_frame_args.h"
 #include "cc/output/context_provider.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -33,7 +32,6 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void CommitVSyncParameters(base::TimeTicks timebase,
                                      base::TimeDelta interval) = 0;
   virtual void SetNeedsRedrawRect(const gfx::Rect& damage_rect) = 0;
-  virtual void BeginFrame(const BeginFrameArgs& args) = 0;
   virtual void DidSwapBuffers() = 0;
   virtual void DidSwapBuffersComplete() = 0;
   virtual void ReclaimResources(const CompositorFrameAck* ack) = 0;

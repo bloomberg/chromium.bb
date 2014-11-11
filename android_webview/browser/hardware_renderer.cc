@@ -17,6 +17,7 @@
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
@@ -101,7 +102,7 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
   settings.single_thread_proxy_scheduler = false;
 
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-      this, this, NULL, NULL, settings, NULL);
+      this, this, nullptr, nullptr, settings, nullptr, nullptr);
   layer_tree_host_->SetRootLayer(root_layer_);
   layer_tree_host_->SetLayerTreeHostClientReady();
   layer_tree_host_->set_has_transparent_background(true);

@@ -905,10 +905,6 @@ IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
 
 IPC_MESSAGE_ROUTED0(ViewMsg_ShowImeIfNeeded)
 
-// Sent by the browser when the renderer should generate a new frame.
-IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
-                    cc::BeginFrameArgs /* args */)
-
 // Sent by the browser when an IME update that requires acknowledgement has been
 // processed on the browser side.
 IPC_MESSAGE_ROUTED0(ViewMsg_ImeEventAck)
@@ -958,8 +954,18 @@ IPC_MESSAGE_ROUTED0(ViewMsg_SelectWordAroundCaret)
 IPC_MESSAGE_ROUTED1(ViewMsg_ForceRedraw,
                     int /* request_id */)
 
+// Sent by the browser when the renderer should generate a new frame.
+IPC_MESSAGE_ROUTED1(ViewMsg_BeginFrame,
+                    cc::BeginFrameArgs /* args */)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
+
+// Sent by renderer to request a ViewMsg_BeginFrame message for upcoming
+// display events. If |enabled| is true, the BeginFrame message will continue
+// to be be delivered until the notification is disabled.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrames,
+                    bool /* enabled */)
 
 // Sent by the renderer when it is creating a new window.  The browser creates
 // a tab for it and responds with a ViewMsg_CreatingNew_ACK.  If route_id is
@@ -1586,12 +1592,6 @@ IPC_MESSAGE_CONTROL3(ViewHostMsg_RunWebAudioMediaCodec,
                      base::SharedMemoryHandle /* encoded_data_handle */,
                      base::FileDescriptor /* pcm_output */,
                      uint32_t /* data_size*/)
-
-// Sent by renderer to request a ViewMsg_BeginFrame message for upcoming
-// display events. If |enabled| is true, the BeginFrame message will continue
-// to be be delivered until the notification is disabled.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_SetNeedsBeginFrame,
-                    bool /* enabled */)
 
 // Reply to the ViewMsg_ExtractSmartClipData message.
 IPC_MESSAGE_ROUTED3(ViewHostMsg_SmartClipDataExtracted,

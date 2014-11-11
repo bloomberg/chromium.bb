@@ -49,10 +49,6 @@ class TestOutputSurface : public OutputSurface {
     CommitVSyncParameters(timebase, interval);
   }
 
-  void BeginFrameForTesting() {
-    client_->BeginFrame(CreateExpiredBeginFrameArgsForTesting());
-  }
-
   void DidSwapBuffersForTesting() { client_->DidSwapBuffers(); }
 
   void OnSwapBuffersCompleteForTesting() { client_->DidSwapBuffersComplete(); }

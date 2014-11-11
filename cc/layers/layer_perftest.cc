@@ -40,7 +40,7 @@ class LayerPerfTest : public testing::Test {
   virtual void SetUp() override {
     layer_tree_host_ = FakeLayerTreeHost::Create(&fake_client_);
     layer_tree_host_->InitializeSingleThreaded(
-        &fake_client_, base::MessageLoopProxy::current());
+        &fake_client_, base::MessageLoopProxy::current(), nullptr);
   }
 
   virtual void TearDown() override {

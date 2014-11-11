@@ -2116,7 +2116,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
                                           shared_bitmap_manager.get(),
                                           NULL,
                                           settings,
-                                          base::MessageLoopProxy::current());
+                                          base::MessageLoopProxy::current(),
+                                          nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2138,7 +2139,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
                                           shared_bitmap_manager.get(),
                                           NULL,
                                           settings,
-                                          base::MessageLoopProxy::current());
+                                          base::MessageLoopProxy::current(),
+                                          nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2160,7 +2162,8 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
                                           shared_bitmap_manager.get(),
                                           NULL,
                                           settings,
-                                          base::MessageLoopProxy::current());
+                                          base::MessageLoopProxy::current(),
+                                          nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 
@@ -2183,7 +2186,8 @@ TEST(LayerTreeHostTest,
                                           shared_bitmap_manager.get(),
                                           NULL,
                                           settings,
-                                          base::MessageLoopProxy::current());
+                                          base::MessageLoopProxy::current(),
+                                          nullptr);
   client.SetLayerTreeHost(host.get());
   host->Composite(base::TimeTicks::Now());
 

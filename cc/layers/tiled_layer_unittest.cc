@@ -82,7 +82,8 @@ class SynchronousOutputSurfaceLayerTreeHost : public LayerTreeHost {
       : LayerTreeHost(client, manager, NULL, settings),
         output_surface_created_(false) {
     LayerTreeHost::InitializeThreaded(base::MessageLoopProxy::current(),
-                                      impl_task_runner);
+                                      impl_task_runner,
+                                      nullptr);
   }
 
   bool output_surface_created_;

@@ -52,7 +52,6 @@ class ContextProvider;
 }
 
 namespace IPC {
-class ForwardingMessageFilter;
 class MessageFilter;
 }
 
@@ -79,6 +78,7 @@ class AecDumpMessageFilter;
 class AudioInputMessageFilter;
 class AudioMessageFilter;
 class AudioRendererMixerManager;
+class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
@@ -211,8 +211,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
     return main_thread_compositor_task_runner_;
   }
 
-  IPC::ForwardingMessageFilter* compositor_output_surface_filter() const {
-    return compositor_output_surface_filter_.get();
+  CompositorForwardingMessageFilter* compositor_message_filter() const {
+    return compositor_message_filter_.get();
   }
 
   InputHandlerManager* input_handler_manager() const {
@@ -548,7 +548,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // May be null if unused by the |input_handler_manager_|.
   scoped_refptr<InputEventFilter> input_event_filter_;
   scoped_ptr<InputHandlerManager> input_handler_manager_;
-  scoped_refptr<IPC::ForwardingMessageFilter> compositor_output_surface_filter_;
+  scoped_refptr<CompositorForwardingMessageFilter> compositor_message_filter_;
 
   scoped_refptr<webkit::gpu::ContextProviderWebContext>
       shared_main_thread_contexts_;

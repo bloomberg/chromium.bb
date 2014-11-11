@@ -79,9 +79,9 @@ void BeginFrameSourceMixIn::SetNeedsBeginFrames(bool needs_begin_frames) {
                "new state",
                needs_begin_frames);
   if (needs_begin_frames_ != needs_begin_frames) {
+    needs_begin_frames_ = needs_begin_frames;
     OnNeedsBeginFramesChange(needs_begin_frames);
   }
-  needs_begin_frames_ = needs_begin_frames;
 }
 
 void BeginFrameSourceMixIn::AddObserver(BeginFrameObserver* obs) {

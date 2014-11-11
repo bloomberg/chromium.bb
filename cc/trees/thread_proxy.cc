@@ -48,22 +48,27 @@ struct ThreadProxy::SchedulerStateRequest {
 scoped_ptr<Proxy> ThreadProxy::Create(
     LayerTreeHost* layer_tree_host,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  return make_scoped_ptr(
-      new ThreadProxy(layer_tree_host, main_task_runner, impl_task_runner));
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+  return make_scoped_ptr(new ThreadProxy(layer_tree_host,
+                                         main_task_runner,
+                                         impl_task_runner,
+                                         external_begin_frame_source.Pass()));
 }
 
 ThreadProxy::ThreadProxy(
     LayerTreeHost* layer_tree_host,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source)
     : Proxy(main_task_runner, impl_task_runner),
       main_thread_only_vars_unsafe_(this, layer_tree_host->id()),
       main_thread_or_blocked_vars_unsafe_(layer_tree_host),
       compositor_thread_vars_unsafe_(
           this,
           layer_tree_host->id(),
-          layer_tree_host->rendering_stats_instrumentation()) {
+          layer_tree_host->rendering_stats_instrumentation(),
+          external_begin_frame_source.Pass()) {
   TRACE_EVENT0("cc", "ThreadProxy::ThreadProxy");
   DCHECK(IsMainThread());
   DCHECK(this->layer_tree_host());
@@ -99,7 +104,8 @@ ThreadProxy::MainThreadOrBlockedMainThread::contents_texture_manager() {
 ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
     ThreadProxy* proxy,
     int layer_tree_host_id,
-    RenderingStatsInstrumentation* rendering_stats_instrumentation)
+    RenderingStatsInstrumentation* rendering_stats_instrumentation,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source)
     : layer_tree_host_id(layer_tree_host_id),
       contents_texture_manager(NULL),
       commit_completion_event(NULL),
@@ -113,6 +119,7 @@ ThreadProxy::CompositorThreadOnly::CompositorThreadOnly(
           base::TimeDelta::FromMilliseconds(
               kSmoothnessTakesPriorityExpirationDelay * 1000)),
       timing_history(rendering_stats_instrumentation),
+      external_begin_frame_source(external_begin_frame_source.Pass()),
       weak_factory(proxy) {
 }
 
@@ -334,10 +341,6 @@ void ThreadProxy::DidSwapBuffersCompleteOnImplThread() {
   Proxy::MainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&ThreadProxy::DidCompleteSwapBuffers, main_thread_weak_ptr_));
-}
-
-BeginFrameSource* ThreadProxy::ExternalBeginFrameSource() {
-  return impl().layer_tree_host_impl.get();
 }
 
 void ThreadProxy::WillBeginImplFrame(const BeginFrameArgs& args) {
@@ -1149,13 +1152,14 @@ void ThreadProxy::InitializeImplOnImplThread(CompletionEvent* completion) {
   impl().layer_tree_host_impl =
       layer_tree_host()->CreateLayerTreeHostImpl(this);
   SchedulerSettings scheduler_settings(layer_tree_host()->settings());
-  impl().scheduler = Scheduler::Create(this,
-                                       scheduler_settings,
-                                       impl().layer_tree_host_id,
-                                       ImplThreadTaskRunner(),
-                                       base::PowerMonitor::Get());
+  impl().scheduler = Scheduler::Create(
+                         this,
+                         scheduler_settings,
+                         impl().layer_tree_host_id,
+                         ImplThreadTaskRunner(),
+                         base::PowerMonitor::Get(),
+                         impl().external_begin_frame_source.Pass());
   impl().scheduler->SetVisible(impl().layer_tree_host_impl->visible());
-
   impl_thread_weak_ptr_ = impl().weak_factory.GetWeakPtr();
   completion->Signal();
 }
@@ -1213,7 +1217,6 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   layer_tree_host()->DeleteContentsTexturesOnImplThread(
       impl().layer_tree_host_impl->resource_provider());
   impl().current_resource_update_controller = nullptr;
-  impl().layer_tree_host_impl->SetNeedsBeginFrames(false);
   impl().scheduler = nullptr;
   impl().layer_tree_host_impl = nullptr;
   impl().weak_factory.InvalidateWeakPtrs();

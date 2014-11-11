@@ -42,7 +42,9 @@ class MockLayerTreeHost : public LayerTreeHost {
  public:
   explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, nullptr, nullptr, LayerTreeSettings()) {
-    InitializeSingleThreaded(client, base::MessageLoopProxy::current());
+    InitializeSingleThreaded(client,
+                             base::MessageLoopProxy::current(),
+                             nullptr);
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
@@ -935,7 +937,8 @@ class LayerTreeHostFactory {
                shared_bitmap_manager_.get(),
                gpu_memory_buffer_manager_.get(),
                LayerTreeSettings(),
-               base::MessageLoopProxy::current()).Pass();
+               base::MessageLoopProxy::current(),
+               nullptr);
   }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
@@ -945,7 +948,8 @@ class LayerTreeHostFactory {
                shared_bitmap_manager_.get(),
                gpu_memory_buffer_manager_.get(),
                settings,
-               base::MessageLoopProxy::current()).Pass();
+               base::MessageLoopProxy::current(),
+               nullptr);
   }
 
  private:

@@ -31,6 +31,7 @@ namespace content {
 
 class FrameSwapMessageQueue;
 class SynchronousCompositorClient;
+class SynchronousCompositorExternalBeginFrameSource;
 class SynchronousCompositorOutputSurface;
 class WebGraphicsContext3DCommandBufferImpl;
 
@@ -40,7 +41,6 @@ class SynchronousCompositorOutputSurfaceDelegate {
       SynchronousCompositorOutputSurface* output_surface) = 0;
   virtual void DidDestroySynchronousOutputSurface(
       SynchronousCompositorOutputSurface* output_surface) = 0;
-  virtual void SetContinuousInvalidate(bool enable) = 0;
   virtual void DidActivatePendingTree() = 0;
 
  protected:
@@ -67,7 +67,6 @@ class SynchronousCompositorOutputSurface
   // OutputSurface.
   virtual bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
   virtual void Reshape(const gfx::Size& size, float scale_factor) override;
-  virtual void SetNeedsBeginFrame(bool enable) override;
   virtual void SwapBuffers(cc::CompositorFrame* frame) override;
 
   // Partial SynchronousCompositor API implementation.
@@ -86,6 +85,11 @@ class SynchronousCompositorOutputSurface
   void SetMemoryPolicy(size_t bytes_limit);
   void GetMessagesToDeliver(ScopedVector<IPC::Message>* messages);
 
+  void set_external_begin_frame_source(
+      SynchronousCompositorExternalBeginFrameSource* begin_frame_source) {
+    begin_frame_source_ = begin_frame_source;
+  }
+
  private:
   class SoftwareDevice;
   friend class SoftwareDevice;
@@ -100,8 +104,6 @@ class SynchronousCompositorOutputSurface
   SynchronousCompositorOutputSurfaceDelegate* GetDelegate();
 
   int routing_id_;
-  bool needs_begin_frame_;
-  bool invoking_composite_;
 
   gfx::Transform cached_hw_transform_;
   gfx::Rect cached_hw_viewport_;
@@ -118,6 +120,8 @@ class SynchronousCompositorOutputSurface
   scoped_ptr<cc::CompositorFrame> frame_holder_;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
+
+  SynchronousCompositorExternalBeginFrameSource* begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorOutputSurface);
 };

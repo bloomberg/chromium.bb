@@ -125,11 +125,6 @@ class CC_EXPORT OutputSurface {
   // processing should be stopped, or lowered in priority.
   virtual void UpdateSmoothnessTakesPriority(bool prefer_smoothness) {}
 
-  // Requests a BeginFrame notification from the output surface. The
-  // notification will be delivered by calling
-  // OutputSurfaceClient::BeginFrame until the callback is disabled.
-  virtual void SetNeedsBeginFrame(bool enable) {}
-
   bool HasClient() { return !!client_; }
 
   // Get the class capable of informing cc of hardware overlay capability.

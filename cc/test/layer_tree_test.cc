@@ -15,6 +15,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/test/animation_test_common.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/test_context_provider.h"
@@ -53,6 +54,52 @@ void TestHooks::CreateResourceAndRasterWorkerPool(
       raster_worker_pool, resource_pool, staging_resource_pool);
 }
 
+class ExternalBeginFrameSourceForTest
+    : public BeginFrameSourceMixIn,
+      public NON_EXPORTED_BASE(base::NonThreadSafe) {
+ public:
+  explicit ExternalBeginFrameSourceForTest(double refresh_rate)
+      : milliseconds_per_frame_(1000.0 / refresh_rate),
+        is_ready_(false),
+        weak_ptr_factory_(this) {
+    DetachFromThread();
+  }
+
+  virtual ~ExternalBeginFrameSourceForTest() {
+    DCHECK(CalledOnValidThread());
+  }
+
+  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
+    DCHECK(CalledOnValidThread());
+    if (needs_begin_frames) {
+      base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ExternalBeginFrameSourceForTest::TestOnBeginFrame,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::TimeDelta::FromMilliseconds(milliseconds_per_frame_));
+    }
+  }
+
+  virtual void SetClientReady() override {
+    DCHECK(CalledOnValidThread());
+    is_ready_ = true;
+  }
+
+  bool is_ready() const {
+    return is_ready_;
+  }
+
+  void TestOnBeginFrame() {
+    DCHECK(CalledOnValidThread());
+    CallOnBeginFrame(CreateBeginFrameArgsForTesting());
+  }
+
+ private:
+  double milliseconds_per_frame_;
+  bool is_ready_;
+  base::WeakPtrFactory<ExternalBeginFrameSourceForTest> weak_ptr_factory_;
+};
+
 // Adapts ThreadProxy for test. Injects test hooks for testing.
 class ThreadProxyForTest : public ThreadProxy {
  public:
@@ -60,9 +107,14 @@ class ThreadProxyForTest : public ThreadProxy {
       TestHooks* test_hooks,
       LayerTreeHost* host,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     return make_scoped_ptr(new ThreadProxyForTest(
-        test_hooks, host, main_task_runner, impl_task_runner));
+        test_hooks,
+        host,
+        main_task_runner,
+        impl_task_runner,
+        external_begin_frame_source.Pass()));
   }
 
   ~ThreadProxyForTest() override {}
@@ -105,8 +157,11 @@ class ThreadProxyForTest : public ThreadProxy {
       TestHooks* test_hooks,
       LayerTreeHost* host,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner)
-      : ThreadProxy(host, main_task_runner, impl_task_runner),
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source)
+      : ThreadProxy(host, main_task_runner,
+                    impl_task_runner,
+                    external_begin_frame_source.Pass()),
         test_hooks_(test_hooks) {}
 };
 
@@ -360,7 +415,8 @@ class LayerTreeHostForTesting : public LayerTreeHost {
       LayerTreeHostClientForTesting* client,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+      scoped_ptr<BeginFrameSource> external_begin_frame_source) {
     scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
         new LayerTreeHostForTesting(test_hooks, client, settings));
     if (impl_task_runner.get()) {
@@ -368,10 +424,14 @@ class LayerTreeHostForTesting : public LayerTreeHost {
           ThreadProxyForTest::Create(test_hooks,
                                      layer_tree_host.get(),
                                      main_task_runner,
-                                     impl_task_runner));
+                                     impl_task_runner,
+                                     external_begin_frame_source.Pass()));
     } else {
       layer_tree_host->InitializeForTesting(SingleThreadProxy::Create(
-          layer_tree_host.get(), client, main_task_runner));
+          layer_tree_host.get(),
+          client,
+          main_task_runner,
+          external_begin_frame_source.Pass()));
     }
     return layer_tree_host.Pass();
   }
@@ -416,6 +476,7 @@ class LayerTreeHostForTesting : public LayerTreeHost {
 
 LayerTreeTest::LayerTreeTest()
     : output_surface_(nullptr),
+      external_begin_frame_source_(nullptr),
       beginning_(false),
       end_when_begin_returns_(false),
       timed_out_(false),
@@ -545,13 +606,22 @@ void LayerTreeTest::WillBeginTest() {
 void LayerTreeTest::DoBeginTest() {
   client_ = LayerTreeHostClientForTesting::Create(this);
 
+  scoped_ptr<ExternalBeginFrameSourceForTest> external_begin_frame_source;
+  if (settings_.begin_frame_scheduling_enabled &&
+      settings_.throttle_frame_production) {
+    external_begin_frame_source.reset(
+        new ExternalBeginFrameSourceForTest(settings_.refresh_rate));
+    external_begin_frame_source_ = external_begin_frame_source.get();
+  }
+
   DCHECK(!impl_thread_ || impl_thread_->message_loop_proxy().get());
   layer_tree_host_ = LayerTreeHostForTesting::Create(
       this,
       client_.get(),
       settings_,
       base::MessageLoopProxy::current(),
-      impl_thread_ ? impl_thread_->message_loop_proxy() : NULL);
+      impl_thread_ ? impl_thread_->message_loop_proxy() : NULL,
+      external_begin_frame_source.Pass());
   ASSERT_TRUE(layer_tree_host_);
 
   started_ = true;
@@ -720,6 +790,12 @@ scoped_ptr<OutputSurface> LayerTreeTest::CreateOutputSurface(bool fallback) {
               output_surface->capabilities().delegated_rendering);
   }
   output_surface_ = output_surface.get();
+
+  if (settings_.begin_frame_scheduling_enabled &&
+      settings_.throttle_frame_production) {
+    DCHECK(external_begin_frame_source_);
+    DCHECK(external_begin_frame_source_->is_ready());
+  }
   return output_surface.Pass();
 }
 

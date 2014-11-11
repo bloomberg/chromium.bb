@@ -32,6 +32,7 @@
 #include "cc/layers/render_surface.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/ui_resource_request.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -71,12 +72,15 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   DCHECK(main_task_runner.get());
   DCHECK(impl_task_runner.get());
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
       client, shared_bitmap_manager, gpu_memory_buffer_manager, settings));
-  layer_tree_host->InitializeThreaded(main_task_runner, impl_task_runner);
+  layer_tree_host->InitializeThreaded(main_task_runner,
+                                      impl_task_runner,
+                                      external_begin_frame_source.Pass());
   return layer_tree_host.Pass();
 }
 
@@ -86,11 +90,13 @@ scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
     SharedBitmapManager* shared_bitmap_manager,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const LayerTreeSettings& settings,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   scoped_ptr<LayerTreeHost> layer_tree_host(new LayerTreeHost(
       client, shared_bitmap_manager, gpu_memory_buffer_manager, settings));
   layer_tree_host->InitializeSingleThreaded(single_thread_client,
-                                            main_task_runner);
+                                            main_task_runner,
+                                            external_begin_frame_source.Pass());
   return layer_tree_host.Pass();
 }
 
@@ -139,16 +145,23 @@ LayerTreeHost::LayerTreeHost(
 
 void LayerTreeHost::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  InitializeProxy(
-      ThreadProxy::Create(this, main_task_runner, impl_task_runner));
+    scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
+  InitializeProxy(ThreadProxy::Create(this,
+                                      main_task_runner,
+                                      impl_task_runner,
+                                      external_begin_frame_source.Pass()));
 }
 
 void LayerTreeHost::InitializeSingleThreaded(
     LayerTreeHostSingleThreadClient* single_thread_client,
-    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
+    scoped_ptr<BeginFrameSource> external_begin_frame_source) {
   InitializeProxy(
-      SingleThreadProxy::Create(this, single_thread_client, main_task_runner));
+      SingleThreadProxy::Create(this,
+                                single_thread_client,
+                                main_task_runner,
+                                external_begin_frame_source.Pass()));
 }
 
 void LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {

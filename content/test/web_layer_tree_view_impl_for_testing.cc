@@ -11,6 +11,7 @@
 #include "cc/blink/web_layer_impl.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/trees/layer_tree_host.h"
@@ -43,7 +44,13 @@ void WebLayerTreeViewImplForTesting::Initialize() {
   // Accelerated animations are enabled for unit tests.
   settings.accelerated_animation_enabled = true;
   layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
-      this, this, NULL, NULL, settings, base::MessageLoopProxy::current());
+      this,
+      this,
+      nullptr,
+      nullptr,
+      settings,
+      base::MessageLoopProxy::current(),
+      nullptr);
   DCHECK(layer_tree_host_);
 }
 

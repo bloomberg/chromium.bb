@@ -38,6 +38,8 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       scoped_refptr<content::FrameSwapMessageQueue> frame_swap_message_queue)
       override;
   virtual InputHandlerManagerClient* GetInputHandlerManagerClient() override;
+  virtual scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource(
+      int routing_id) override;
   virtual scoped_refptr<webkit::gpu::ContextProviderWebContext>
       CreateOffscreenContextProvider(
           const blink::WebGraphicsContext3D::Attributes& attributes,
