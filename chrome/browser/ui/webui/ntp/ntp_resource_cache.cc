@@ -83,7 +83,7 @@ const char kLearnMoreGuestSessionUrl[] =
 #if defined(OS_CHROMEOS)
     "https://www.google.com/support/chromeos/bin/answer.py?answer=1057090";
 #else
-    "https://support.google.com/chrome/answer/95464#guest";
+    "https://support.google.com/chrome/?p=ui_guest";
 #endif
 
 std::string SkColorToRGBAString(SkColor color) {
