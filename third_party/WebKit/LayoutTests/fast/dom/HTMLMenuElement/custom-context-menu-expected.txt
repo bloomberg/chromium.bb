@@ -25,8 +25,13 @@ PASS items1.length - items.length is 0
 PASS items2.length - items.length is 0
 PASS items3.length - items.length is 0
 PASS items4.length - items.length is 0
+PASS items5.length - items.length is 3
+PASS items5[0] is "Item1"
+PASS items5[1] is "Item2"
+PASS items5[2] is "Item3"
 PASS successfullyParsed is true
 
 TEST COMPLETE
    
       
+

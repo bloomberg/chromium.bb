@@ -95,13 +95,13 @@ void ContextMenuController::populateCustomContextMenu(const Event& event)
         return;
 
     HTMLElement& element = toHTMLElement(*node);
-    RefPtrWillBeRawPtr<HTMLMenuElement> menuElement = element.contextMenu();
+    RefPtrWillBeRawPtr<HTMLMenuElement> menuElement = element.assignedContextMenu();
     if (!menuElement || !equalIgnoringCase(menuElement->fastGetAttribute(typeAttr), "popup"))
         return;
     RefPtrWillBeRawPtr<RelatedEvent> relatedEvent = RelatedEvent::create(EventTypeNames::show, true, true, node);
     if (!menuElement->dispatchEvent(relatedEvent.release()))
         return;
-    if (menuElement != element.contextMenu())
+    if (menuElement != element.assignedContextMenu())
         return;
     m_menuProvider = CustomContextMenuProvider::create(*menuElement, element);
     m_menuProvider->populateContextMenu(m_contextMenu.get());

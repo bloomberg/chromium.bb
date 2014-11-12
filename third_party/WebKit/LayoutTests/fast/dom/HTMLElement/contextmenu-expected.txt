@@ -45,6 +45,8 @@ PASS container9.contextMenu.type is ""
 PASS container9.contextMenu.label is "menu without type"
 Test setting contextmenu attribute to menu element which is in shadow dom
 PASS container10.contextMenu is null
+Test contextmenu attribute of an element with no contextmenu attribute but parent has valid contextmenu
+PASS inner.contextMenu is null
 PASS successfullyParsed is true
 
 TEST COMPLETE

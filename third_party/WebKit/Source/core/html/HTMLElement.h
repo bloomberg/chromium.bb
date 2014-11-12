@@ -96,6 +96,7 @@ public:
 
     static const AtomicString& eventParameterName();
 
+    HTMLMenuElement* assignedContextMenu() const;
     HTMLMenuElement* contextMenu() const;
     void setContextMenu(HTMLMenuElement*);
 

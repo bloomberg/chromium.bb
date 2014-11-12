@@ -934,6 +934,13 @@ bool HTMLElement::isInteractiveContent() const
     return false;
 }
 
+HTMLMenuElement* HTMLElement::assignedContextMenu() const
+{
+    if (HTMLMenuElement* menu = contextMenu())
+        return menu;
+
+    return parentElement() && parentElement()->isHTMLElement() ? toHTMLElement(parentElement())->assignedContextMenu() : nullptr;
+}
 
 HTMLMenuElement* HTMLElement::contextMenu() const
 {

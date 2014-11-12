@@ -124,5 +124,9 @@ container10.createShadowRoot().appendChild(menu5);
 container10.contextMenu = menu5;
 shouldBeNull("container10.contextMenu");
 
+debug("Test contextmenu attribute of an element with no contextmenu attribute but parent has valid contextmenu");
+document.write("<div contextmenu='menu7'><button id='inner'></button><menu id='menu7' type='popup' label='menu 7'></menu></div>");
+var inner = document.getElementById('inner');
+shouldBeNull("inner.contextMenu");
 </script>
 </html>

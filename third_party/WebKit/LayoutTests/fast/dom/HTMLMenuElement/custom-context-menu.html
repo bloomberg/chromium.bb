@@ -81,6 +81,17 @@
     <menu id="menu_4" type="popup">
     </menu>
 </button>
+<!-- Test if an element A has a parent element, then A's assigned context menu is the assigned context menu of its parent element. -->
+<div contextmenu="menu_5">
+    <div>
+        <button id="button_5" style="height: 100px; width: 100px;"></button>
+    </div>
+    <menu id="menu_5" type="popup">
+        <menuitem label="Item1">
+        <menuitem label="Item2">
+        <menuitem label="Item3">
+    </menu>
+</div>
 <script>
 if (!window.eventSender)
     debug("This test requires window.eventSender.")
@@ -136,6 +147,12 @@ eventSender.keyDown("escape");
 var button4 = document.getElementById("button_4");
 var items4 = contextClickAndGetMenuItems(button4);
 
+// Esc key to hide the context menu.
+eventSender.keyDown("escape");
+
+var button5 = document.getElementById("button_5");
+var items5 = contextClickAndGetMenuItems(button5);
+
 shouldBeEqualToNumber("itemsWithCustomContextMenu.length - items.length", 17);
 shouldBeEqualToString("itemsWithCustomContextMenu[0]", "Item1");
 shouldBeEqualToString("itemsWithCustomContextMenu[1]", "Item2");
@@ -158,5 +175,9 @@ shouldBeEqualToNumber("items1.length - items.length", 0);
 shouldBeEqualToNumber("items2.length - items.length", 0);
 shouldBeEqualToNumber("items3.length - items.length", 0);
 shouldBeEqualToNumber("items4.length - items.length", 0);
+shouldBeEqualToNumber("items5.length - items.length", 3);
+shouldBeEqualToString("items5[0]", "Item1");
+shouldBeEqualToString("items5[1]", "Item2");
+shouldBeEqualToString("items5[2]", "Item3");
 
 </script>
