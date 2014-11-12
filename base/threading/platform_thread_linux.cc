@@ -27,6 +27,7 @@ namespace base {
 
 namespace {
 
+#if !defined(OS_NACL)
 int ThreadNiceValue(ThreadPriority priority) {
   switch (priority) {
     case kThreadPriority_RealtimeAudio:
@@ -42,6 +43,7 @@ int ThreadNiceValue(ThreadPriority priority) {
       return 0;
   }
 }
+#endif  // !defined(OS_NACL)
 
 }  // namespace
 

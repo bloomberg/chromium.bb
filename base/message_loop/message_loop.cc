@@ -106,9 +106,11 @@ typedef MessagePumpDefault MessagePumpForIO;
 typedef MessagePumpLibevent MessagePumpForIO;
 #endif
 
+#if !defined(OS_NACL_SFI)
 MessagePumpForIO* ToPumpIO(MessagePump* pump) {
   return static_cast<MessagePumpForIO*>(pump);
 }
+#endif  // !defined(OS_NACL_SFI)
 
 }  // namespace
 

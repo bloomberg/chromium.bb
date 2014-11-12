@@ -28,6 +28,7 @@ namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 const int32 kTransferBufferSize = 1024 * 1024;
 
+#if !defined(OS_NACL)
 base::SharedMemoryHandle TransportSHMHandle(
     Dispatcher* dispatcher,
     const base::SharedMemoryHandle& handle) {
@@ -35,6 +36,7 @@ base::SharedMemoryHandle TransportSHMHandle(
   // Don't close the handle, it doesn't belong to us.
   return dispatcher->ShareHandleWithRemote(source, false);
 }
+#endif  // !defined(OS_NACL)
 
 gpu::CommandBuffer::State GetErrorState() {
   gpu::CommandBuffer::State error_state;
@@ -378,4 +380,3 @@ void PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin(
 
 }  // namespace proxy
 }  // namespace ppapi
-
