@@ -164,7 +164,7 @@ void CastSessionDelegate::GetEventLogsAndReset(
                                               &output_bytes);
 
   if (!success) {
-    VLOG(2) << "Failed to serialize event log.";
+    DVLOG(2) << "Failed to serialize event log.";
     callback.Run(make_scoped_ptr(new base::BinaryValue).Pass());
     return;
   }

@@ -193,7 +193,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
     for (base::hash_map<std::string, double>::const_iterator it =
              features_->features().begin();
          it != features_->features().end(); ++it) {
-      VLOG(2) << "Feature: " << it->first << " = " << it->second;
+      DVLOG(2) << "Feature: " << it->first << " = " << it->second;
       bool result = hashed_features.AddRealFeature(
           crypto::SHA256HashString(it->first), it->second);
       DCHECK(result);

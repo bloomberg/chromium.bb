@@ -208,8 +208,8 @@ void PhishingClassifierDelegate::ClassificationDone(
     const ClientPhishingRequest& verdict) {
   // We no longer need the page text.
   classifier_page_text_.clear();
-  VLOG(2) << "Phishy verdict = " << verdict.is_phishing()
-          << " score = " << verdict.client_score();
+  DVLOG(2) << "Phishy verdict = " << verdict.is_phishing()
+           << " score = " << verdict.client_score();
   if (verdict.client_score() != PhishingClassifier::kInvalidScore) {
     DCHECK_EQ(last_url_sent_to_classifier_.spec(), verdict.url());
     RenderThread::Get()->Send(new SafeBrowsingHostMsg_PhishingDetectionDone(
@@ -235,7 +235,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   // classified at all (as opposed to deferring it until we get an IPC or the
   // load completes), we discard the page text since it won't be needed.
   if (!classifier_->is_ready()) {
-    VLOG(2) << "Not starting classification, no Scorer created.";
+    DVLOG(2) << "Not starting classification, no Scorer created.";
     // Keep classifier_page_text_, in case a Scorer is set later.
     return;
   }
@@ -244,7 +244,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     // Skip loads from session history navigation.  However, update the
     // last URL sent to the classifier, so that we'll properly detect
     // in-page navigations.
-    VLOG(2) << "Not starting classification for back/forward navigation";
+    DVLOG(2) << "Not starting classification for back/forward navigation";
     last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;
@@ -256,14 +256,14 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     // We've already classified this toplevel URL, so this was likely an
     // in-page navigation or a subframe navigation.  The browser should not
     // send a StartPhishingDetection IPC in this case.
-    VLOG(2) << "Toplevel URL is unchanged, not starting classification.";
+    DVLOG(2) << "Toplevel URL is unchanged, not starting classification.";
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;
     return;
   }
 
   if (!have_page_text_) {
-    VLOG(2) << "Not starting classification, there is no page text ready.";
+    DVLOG(2) << "Not starting classification, there is no page text ready.";
     return;
   }
 
@@ -272,15 +272,15 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
     // so defer classification for now.  Note: the ref does not affect
     // any of the browser's preclassification checks, so we don't require it
     // to match.
-    VLOG(2) << "Not starting classification, last url from browser is "
-            << last_url_received_from_browser_ << ", last finished load is "
-            << last_finished_load_url_;
+    DVLOG(2) << "Not starting classification, last url from browser is "
+             << last_url_received_from_browser_ << ", last finished load is "
+             << last_finished_load_url_;
     // Keep classifier_page_text_, in case the browser notifies us later that
     // we should classify the URL.
     return;
   }
 
-  VLOG(2) << "Starting classification for " << last_finished_load_url_;
+  DVLOG(2) << "Starting classification for " << last_finished_load_url_;
   last_url_sent_to_classifier_ = last_finished_load_url_;
   is_classifying_ = true;
   classifier_->BeginClassification(
