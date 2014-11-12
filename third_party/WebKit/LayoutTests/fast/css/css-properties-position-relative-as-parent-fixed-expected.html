@@ -39,6 +39,11 @@
         .rtl {
             direction: rtl;
         }
+
+        .inline {
+            display: inline-block;
+            position: relative;
+        }
     </style>
 </head>
 <body>
@@ -48,40 +53,28 @@
     <h5>Case 1: fixed text box (blue) should be just after relative text box (green).</h5>
     <div class="container">
         <div class="main relative green" style="left: 100px;">
-            relative
-            <span class="fixed blue">
-                fixed
-            </span>
+            relative<div class="inline blue">fixed</div>
         </div>
     </div>
 
     <h5>Case 2: fixed text box (blue) should be just before relative text box (green).</h5>
     <div class="container">
         <div class="main relative green rtl" style="left: 100px;">
-            relative
-            <span class="fixed blue">
-                fixed
-            </span>
+            relative<div class="inline blue">fixed</div>
         </div>
     </div>
 
     <h5>Case 3: fixed text box (blue) should be just after relative text box (green).</h5>
     <div class="container">
         <div class="main relative green" style="right: 100px;">
-            relative
-            <span class="fixed blue">
-                fixed
-            </span>
+            relative<div class="inline blue">fixed</div>
         </div>
     </div>
 
     <h5>Case 4: fixed text box (blue) should be just before relative text box (green).</h5>
     <div class="container">
         <div class="main relative green rtl" style="right: 100px;">
-            relative
-            <span class="fixed blue">
-                fixed
-            </span>
+            relative<div class="inline blue">fixed</div>
         </div>
     </div>
 
@@ -90,10 +83,7 @@
         <div class="main relative grey" style="left: 100px;">
             relative
             <span class="relative green" style="left: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -103,10 +93,7 @@
         <div class="main relative grey rtl" style="left: 100px;">
             relative
             <span class="relative green" style="left: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -116,10 +103,7 @@
         <div class="main relative grey" style="left: 100px;">
             relative
             <span class="relative green" style="right: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -129,10 +113,7 @@
         <div class="main relative grey rtl" style="left: 100px;">
             relative
             <span class="relative green" style="right: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -142,10 +123,7 @@
         <div class="main relative grey" style="right: 100px;">
             relative
             <span class="relative green" style="left: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -155,10 +133,7 @@
         <div class="main relative grey rtl" style="right: 100px;">
             relative
             <span class="relative green" style="left: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -168,10 +143,7 @@
         <div class="main relative grey" style="right: 100px;">
             relative
             <span class="relative green" style="right: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
@@ -181,10 +153,7 @@
         <div class="main relative grey rtl" style="right: 100px;">
             relative
             <span class="relative green" style="right: 100px;">
-                relative2
-                <span class="fixed blue">
-                    fixed
-                </span>
+                relative2<div class="inline blue">fixed</div>
             </span>
         </div>
     </div>
