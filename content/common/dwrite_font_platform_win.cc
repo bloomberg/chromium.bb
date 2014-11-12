@@ -75,14 +75,16 @@ const double kMaxPercentileOfFontFileSizeToCache = 0.7;
 // We have chosen current font file length arbitrarily. In our logic
 // if we don't find file we are looking for in cache we end up loading
 // that file directly from system fonts folder.
-const unsigned int kMaxFontFileNameLength = 32;
+const unsigned int kMaxFontFileNameLength = 34;
 
 const DWORD kCacheFileVersion = 101;
 const DWORD kFileSignature = 0x4D4F5243; // CROM
 const DWORD kMagicCompletionSignature = 0x454E4F44; // DONE
 
-const DWORD kUndefinedDWORDS = 32;
+const DWORD kUndefinedDWORDS = 36;
 
+// Make sure that all structure sizes align with 8 byte boundary otherwise
+// dr. memory test may complain.
 #pragma pack(push, 8)
 // Cache file header, includes signature, completion bits and version.
 struct CacheFileHeader {
