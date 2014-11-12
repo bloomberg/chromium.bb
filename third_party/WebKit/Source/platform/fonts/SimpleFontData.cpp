@@ -201,10 +201,10 @@ void SimpleFontData::platformInit()
     // https://crbug.com/420901
     m_maxCharWidth = std::max(m_avgCharWidth, m_fontMetrics.floatAscent());
 #else
-    // FIXME: This seems incorrect and should probably use fMaxCharWidth as
-    // the code path above.
-    SkScalar xRange = metrics.fXMax - metrics.fXMin;
-    m_maxCharWidth = SkScalarRoundToInt(xRange * SkScalarRoundToInt(m_platformData.size()));
+    // Better would be to rely on either fMaxCharWidth or fAveCharWidth.
+    // skbug.com/3087
+    m_maxCharWidth = SkScalarRoundToInt(metrics.fXMax - metrics.fXMin);
+
 #endif
 
 #if !OS(MACOSX)

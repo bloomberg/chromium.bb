@@ -11,6 +11,7 @@
     # AFTER the flag has been removed from skia.gyp in Chromium.
     'blink_skia_defines': [
           'SK_FM_NEW_MATCH_FAMILY_STYLE_CHARACTER=1',
+          'SK_USE_SCALED_FONTMETRICS',
     ],
   },
 }
