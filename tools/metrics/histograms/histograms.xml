@@ -28930,7 +28930,51 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeDeferred_Active">
+<histogram name="ResourceScheduler.ClientLoadedTime.Active">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the ResourceScheduler is informed of a
+    Client's creation or starts loading and when that Client finishes loading in
+    a Client which has been user-observable the entire time.
+
+    Note: Will not include time for the main resource if PlzNavigate is in use.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.ClientLoadedTime.Background">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the ResourceScheduler is informed of a
+    Client's creation or starts loading and when that Client finishes loading in
+    a Client which has been background the entire time.
+
+    Note: Will not include time for the main resource if PlzNavigate is in use.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.ClientLoadedTime.Other">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between when the ResourceScheduler is informed of a
+    Client's creation or starts loading and when that Client finishes loading in
+    a Client which has switched between Active and Background.
+
+    Note: Will not include time for the main resource if PlzNavigate is in use.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.ClientLoadedTime.Other.SwitchedToActive">
+  <owner>aiolos@chromium.org</owner>
+  <summary>
+    The amount of time between the last time that a Client becomes
+    user-observable and when that Client finishes loading in a Client that was
+    user-observable when the load completed.
+
+    Note: Will not include time for the main resource if PlzNavigate is in use.
+  </summary>
+</histogram>
+
+<histogram name="ResourceScheduler.RequestTimeDeferred.Active">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after
@@ -28939,7 +28983,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeDeferred_Background">
+<histogram name="ResourceScheduler.RequestTimeDeferred.Background">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after
@@ -28948,7 +28992,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
-<histogram name="ResourceScheduler.RequestTimeDeferred_Other">
+<histogram name="ResourceScheduler.RequestTimeDeferred.Other">
   <owner>aiolos@chromium.org</owner>
   <summary>
     The amount of time the ResourceScheduler is throttling a request after

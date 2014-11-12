@@ -283,11 +283,11 @@ class ResourceScheduler::Client {
         is_paused_(false),
         has_body_(false),
         using_spdy_proxy_(false),
+        load_started_time_(base::TimeTicks::Now()),
+        scheduler_(scheduler),
         in_flight_delayable_count_(0),
         total_layout_blocking_count_(0),
-        throttle_state_(ResourceScheduler::THROTTLED) {
-    scheduler_ = scheduler;
-  }
+        throttle_state_(ResourceScheduler::THROTTLED) {}
 
   ~Client() {
     // Update to default state and pause to ensure the scheduler has a
@@ -338,18 +338,21 @@ class ResourceScheduler::Client {
   bool is_visible() const { return is_visible_; }
 
   void OnAudibilityChanged(bool is_audible) {
-    if (is_audible == is_audible_) {
-      return;
-    }
-    is_audible_ = is_audible;
-    UpdateThrottleState();
+    UpdateState(is_audible, &is_audible_);
   }
 
   void OnVisibilityChanged(bool is_visible) {
-    if (is_visible == is_visible_) {
+    UpdateState(is_visible, &is_visible_);
+  }
+
+  // Function to update any client state variable used to determine whether a
+  // Client is active or background. Used for is_visible_ and is_audible_.
+  void UpdateState(bool new_state, bool* current_state) {
+    bool was_active = is_active();
+    *current_state = new_state;
+    if (was_active == is_active())
       return;
-    }
-    is_visible_ = is_visible;
+    last_active_switch_time_ = base::TimeTicks::Now();
     UpdateThrottleState();
   }
 
@@ -359,6 +362,25 @@ class ResourceScheduler::Client {
     }
     is_loaded_ = is_loaded;
     UpdateThrottleState();
+    if (!is_loaded_) {
+      load_started_time_ = base::TimeTicks::Now();
+      last_active_switch_time_ = base::TimeTicks();
+      return;
+    }
+    base::TimeTicks cur_time = base::TimeTicks::Now();
+    const char* client_catagory = "Other";
+    if (last_active_switch_time_.is_null()) {
+      client_catagory = is_active() ? "Active" : "Background";
+    } else if (is_active()) {
+      PostHistogram("ClientLoadedTime", "Other.SwitchedToActive",
+                    cur_time - last_active_switch_time_);
+    }
+    PostHistogram("ClientLoadedTime", client_catagory,
+                  cur_time - load_started_time_);
+    // TODO(aiolos): The above histograms will not take main resource load time
+    // into account with PlzNavigate into account. The ResourceScheduler also
+    // will load the main resources without a clients with the current logic.
+    // Find a way to fix both of these issues.
   }
 
   void SetPaused() {
@@ -754,6 +776,9 @@ class ResourceScheduler::Client {
   bool using_spdy_proxy_;
   RequestQueue pending_requests_;
   RequestSet in_flight_requests_;
+  base::TimeTicks load_started_time_;
+  // The last time the client switched state between active and background.
+  base::TimeTicks last_active_switch_time_;
   ResourceScheduler* scheduler_;
   // The number of delayable in-flight requests.
   size_t in_flight_delayable_count_;
