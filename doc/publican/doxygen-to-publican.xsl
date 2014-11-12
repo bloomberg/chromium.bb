@@ -131,7 +131,9 @@
     <varlistentry id="{@id}">
         <term>
           <xsl:value-of select="name"/>
-        - <xsl:apply-templates select="briefdescription" />
+          <xsl:if test="normalize-space(briefdescription) != ''">
+            - <xsl:apply-templates select="briefdescription" />
+          </xsl:if>
         </term>
         <listitem>
           <para>
@@ -150,8 +152,8 @@
     <xsl:if test="@kind = 'class'">
     <varlistentry id="{@id}">
         <term>
-            <xsl:apply-templates select="compoundname" />
-            <xsl:if test="briefdescription">
+            <xsl:value-of select="compoundname" />
+            <xsl:if test="normalize-space(briefdescription) != ''">
                 - <xsl:apply-templates select="briefdescription" />
             </xsl:if>
         </term>
