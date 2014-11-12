@@ -1181,7 +1181,7 @@ class UnmockedStatTest(cros_test_lib.TempDirTestCase):
       self.assertRaises(gs.GSNoSuchKey, ctx.Stat, url)
 
       # Populate the URL.
-      ctx.Copy('-', url, input='test file contents')
+      ctx.CreateWithContents(url, 'test file contents')
 
       # Stat a URL that exists.
       result = ctx.Stat(url)
@@ -1288,6 +1288,10 @@ class DryRunTest(cros_build_lib_unittest.RunCommandTestCase):
     """Test Copy in dry_run mode."""
     self.ctx.Copy('/dev/null', 'gs://foo/bar')
     self.ctx.Copy('gs://foo/bar', '/dev/null')
+
+  def testCreateWithContents(self):
+    """Test Copy in dry_run mode."""
+    self.ctx.CreateWithContents('gs://foo/bar', 'My Little Content(tm)')
 
   def testCopyInto(self):
     """Test CopyInto in dry_run mode."""

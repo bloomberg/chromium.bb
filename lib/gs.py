@@ -729,6 +729,19 @@ class GSContext(object):
           return None
         raise
 
+  def CreateWithContents(self, gs_uri, contents, **kwargs):
+    """Creates the specified file with specified contents.
+
+    Args:
+      gs_uri: The URI of a file on Google Storage.
+      contents: String with contents to write to the file.
+      kwargs: See additional options that Copy takes.
+
+    Raises:
+      See Copy.
+    """
+    self.Copy('-', gs_uri, input=contents, **kwargs)
+
   # TODO: Merge LS() and List()?
   def LS(self, path, **kwargs):
     """Does a directory listing of the given gs path.
