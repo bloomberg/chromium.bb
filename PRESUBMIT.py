@@ -165,6 +165,8 @@ _BANNED_CPP_FUNCTIONS = (
       (
         r"^base[\\\/]process[\\\/]process_metrics_linux\.cc$",
         r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]boot_times_loader\.cc$",
+        r"^chrome[\\\/]browser[\\\/]chromeos[\\\/]"
+            "customization_document_browsertest\.cc$",
         r"^components[\\\/]crash[\\\/]app[\\\/]breakpad_mac\.mm$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_browser_main\.cc$",
         r"^content[\\\/]shell[\\\/]browser[\\\/]shell_message_filter\.cc$",
