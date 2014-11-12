@@ -199,6 +199,13 @@ bool EventDeviceInfo::HasAbsXY() const {
   return false;
 }
 
+bool EventDeviceInfo::HasMTAbsXY() const {
+  if (HasAbsEvent(ABS_MT_POSITION_X) && HasAbsEvent(ABS_MT_POSITION_Y))
+    return true;
+
+  return false;
+}
+
 bool EventDeviceInfo::HasRelXY() const {
   return HasRelEvent(REL_X) && HasRelEvent(REL_Y);
 }
@@ -208,14 +215,14 @@ bool EventDeviceInfo::IsMappedToScreen() const {
   if (HasProp(INPUT_PROP_DIRECT))
     return true;
 
-  // Device position moves the cursor.
-  if (HasProp(INPUT_PROP_POINTER))
-    return false;
-
   // Tablets are mapped to the screen.
   if (HasKeyEvent(BTN_TOOL_PEN) || HasKeyEvent(BTN_STYLUS) ||
       HasKeyEvent(BTN_STYLUS2))
     return true;
+
+  // Device position moves the cursor.
+  if (HasProp(INPUT_PROP_POINTER))
+    return false;
 
   // Touchpads are not mapped to the screen.
   if (HasKeyEvent(BTN_LEFT) || HasKeyEvent(BTN_MIDDLE) ||

@@ -58,7 +58,8 @@ struct OpenInputDeviceParams {
 
 #if defined(USE_EVDEV_GESTURES)
 bool UseGesturesLibraryForDevice(const EventDeviceInfo& devinfo) {
-  if (devinfo.HasAbsXY() && !devinfo.IsMappedToScreen())
+  if ((devinfo.HasAbsXY() || devinfo.HasMTAbsXY()) &&
+      !devinfo.IsMappedToScreen())
     return true;  // touchpad
 
   if (devinfo.HasRelXY())
@@ -89,8 +90,7 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
-  scoped_ptr<EventConverterEvdev> converter;
-  if (devinfo.HasAbsXY())
+  if (devinfo.HasMTAbsXY())
     return make_scoped_ptr<EventConverterEvdev>(new TouchEventConverterEvdev(
         fd, params.path, params.id, devinfo, params.dispatch_callback));
 

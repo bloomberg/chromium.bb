@@ -48,8 +48,11 @@ class EVENTS_OZONE_EVDEV_EXPORT EventDeviceInfo {
   // Check input device properties.
   bool HasProp(unsigned int code) const;
 
-  // Has absolute X & Y axes.
+  // Has absolute X & Y axes (excludes MT)
   bool HasAbsXY() const;
+
+  // Has MT absolute events
+  bool HasMTAbsXY() const;
 
   // Has relativeX & Y axes.
   bool HasRelXY() const;
