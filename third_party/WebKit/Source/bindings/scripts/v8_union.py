@@ -12,6 +12,17 @@ UNION_H_INCLUDES = frozenset([
     'platform/heap/Handle.h',
 ])
 
+UNION_CPP_INCLUDES_BLACKLIST = frozenset([
+    # This header defines static functions needed to implement event handler
+    # attributes in interfaces that implement GlobalEventHandlers. They are not
+    # needed or used by UnionTypes*.cpp, so including the header causes
+    # compilation errors.
+    # FIXME: We should solve this problem in a way that doesn't involve special-
+    # casing a header like this.
+    'core/dom/GlobalEventHandlers.h',
+])
+
+
 cpp_includes = set()
 header_forward_decls = set()
 
@@ -39,7 +50,7 @@ def union_context(union_types, interfaces_info):
     return {
         'containers': [container_context(union_type, interfaces_info)
                        for union_type in union_types_for_containers],
-        'cpp_includes': sorted(cpp_includes),
+        'cpp_includes': sorted(cpp_includes - UNION_CPP_INCLUDES_BLACKLIST),
         'header_forward_decls': sorted(header_forward_decls),
         'header_includes': sorted(UNION_H_INCLUDES),
         'nullable_cpp_types': nullable_cpp_types,

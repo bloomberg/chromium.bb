@@ -43,29 +43,6 @@
 
 namespace blink {
 
-void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "add", "HTMLOptionsCollection", info.Holder(), info.GetIsolate());
-    if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate())) {
-        exceptionState.throwTypeError("The element provided was not an HTMLOptionElement.");
-    } else {
-        HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());
-        HTMLOptionElement* option = V8HTMLOptionElement::toImpl(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
-
-        if (info.Length() < 2) {
-            impl->add(option, exceptionState);
-        } else {
-            int index = toInt32(info[1], exceptionState);
-            if (exceptionState.throwIfNeeded())
-                return;
-
-            impl->add(option, index, exceptionState);
-        }
-    }
-
-    exceptionState.throwIfNeeded();
-}
-
 void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     HTMLOptionsCollection* impl = V8HTMLOptionsCollection::toImpl(info.Holder());

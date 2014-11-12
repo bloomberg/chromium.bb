@@ -31,6 +31,7 @@
     // FIXME: The spec and firefox return an Element (the first matching Element).
     [ImplementedAs=namedGetter] getter (NodeList or Element)? namedItem(DOMString name);
 
-    [Custom, RaisesException] void add([Default=Undefined] optional HTMLOptionElement option, optional unsigned long index);
+    [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element,
+                                                       optional (HTMLElement or long)? before = null);
     void remove(unsigned long index);
 };

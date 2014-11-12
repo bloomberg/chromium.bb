@@ -31,6 +31,7 @@
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/HTMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Attribute.h"
@@ -211,22 +212,25 @@ int HTMLSelectElement::activeSelectionEndListIndex() const
     return lastSelectedListIndex();
 }
 
-void HTMLSelectElement::add(HTMLElement* element, HTMLElement* before, ExceptionState& exceptionState)
+void HTMLSelectElement::add(const HTMLOptionElementOrHTMLOptGroupElement& element, const HTMLElementOrLong& before, ExceptionState& exceptionState)
 {
-    // Make sure the element is ref'd and deref'd so we don't leak it.
-    RefPtrWillBeRawPtr<HTMLElement> protectNewChild(element);
+    RefPtrWillBeRawPtr<HTMLElement> elementToInsert;
+    ASSERT(!element.isNull());
+    if (element.isHTMLOptionElement())
+        elementToInsert = element.getAsHTMLOptionElement();
+    else
+        elementToInsert = element.getAsHTMLOptGroupElement();
 
-    if (!element || !(isHTMLOptionElement(element) || isHTMLOptGroupElement(element) || isHTMLHRElement(element)))
-        return;
+    RefPtrWillBeRawPtr<HTMLElement> beforeElement;
+    if (before.isHTMLElement())
+        beforeElement = before.getAsHTMLElement();
+    else if (before.isLong())
+        beforeElement = options()->item(before.getAsLong());
+    else
+        beforeElement = nullptr;
 
-    insertBefore(element, before, exceptionState);
+    insertBefore(elementToInsert, beforeElement.get(), exceptionState);
     setNeedsValidityCheck();
-}
-
-void HTMLSelectElement::addBeforeOptionAtIndex(HTMLElement* element, int beforeIndex, ExceptionState& exceptionState)
-{
-    HTMLOptionElement* beforeElement = options()->item(beforeIndex);
-    add(element, beforeElement, exceptionState);
 }
 
 void HTMLSelectElement::remove(int optionIndex)
@@ -465,18 +469,20 @@ void HTMLSelectElement::setOption(unsigned index, HTMLOptionElement* option, Exc
     if (index > maxSelectItems - 1)
         index = maxSelectItems - 1;
     int diff = index - length();
-    RefPtrWillBeRawPtr<HTMLOptionElement> before = nullptr;
+    HTMLOptionElementOrHTMLOptGroupElement element;
+    element.setHTMLOptionElement(option);
+    HTMLElementOrLong before;
     // Out of array bounds? First insert empty dummies.
     if (diff > 0) {
         setLength(index, exceptionState);
         // Replace an existing entry?
     } else if (diff < 0) {
-        before = options()->item(index + 1);
+        before.setHTMLElement(options()->item(index + 1));
         remove(index);
     }
     // Finally add the new element.
     if (!exceptionState.hadException()) {
-        add(option, before.get(), exceptionState);
+        add(element, before, exceptionState);
         if (diff >= 0 && option->selected())
             optionSelectionStateChanged(option, true);
     }
@@ -490,9 +496,7 @@ void HTMLSelectElement::setLength(unsigned newLen, ExceptionState& exceptionStat
 
     if (diff < 0) { // Add dummy elements.
         do {
-            RefPtrWillBeRawPtr<Element> option = document().createElement(optionTag, false);
-            ASSERT(option);
-            add(toHTMLElement(option), 0, exceptionState);
+            appendChild(document().createElement(optionTag, false), exceptionState);
             if (exceptionState.hadException())
                 break;
         } while (++diff);

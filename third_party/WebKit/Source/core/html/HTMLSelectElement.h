@@ -37,6 +37,8 @@ namespace blink {
 class AutoscrollController;
 class ExceptionState;
 class HTMLOptionElement;
+class HTMLOptionElementOrHTMLOptGroupElement;
+class HTMLElementOrLong;
 
 class HTMLSelectElement final : public HTMLFormControlElementWithState, public TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
@@ -64,8 +66,7 @@ public:
 
     bool usesMenuList() const;
 
-    void add(HTMLElement*, HTMLElement* beforeElement, ExceptionState&);
-    void addBeforeOptionAtIndex(HTMLElement*, int beforeIndex, ExceptionState&);
+    void add(const HTMLOptionElementOrHTMLOptGroupElement&, const HTMLElementOrLong&, ExceptionState&);
 
     using Node::remove;
     void remove(int index);

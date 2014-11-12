@@ -30,6 +30,8 @@
 namespace blink {
 
 class ExceptionState;
+class HTMLOptionElementOrHTMLOptGroupElement;
+class HTMLElementOrLong;
 class NodeListOrElement;
 
 class HTMLOptionsCollection final : public HTMLCollection {
@@ -39,8 +41,7 @@ public:
 
     HTMLOptionElement* item(unsigned offset) const { return toHTMLOptionElement(HTMLCollection::item(offset)); }
 
-    void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, ExceptionState&);
-    void add(PassRefPtrWillBeRawPtr<HTMLOptionElement>, int index, ExceptionState&);
+    void add(const HTMLOptionElementOrHTMLOptGroupElement&, const HTMLElementOrLong&, ExceptionState&);
     void remove(int index);
 
     int selectedIndex() const;

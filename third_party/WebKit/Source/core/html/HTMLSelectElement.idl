@@ -37,9 +37,8 @@ interface HTMLSelectElement : HTMLElement {
 
     getter Element item(unsigned long index);
     Element namedItem([Default=Undefined] optional DOMString name);
-    // FIXME: should be union type http://crbug.com/240176
-    [RaisesException, TypeChecking=Interface] void add(HTMLElement element, optional HTMLElement? before = null);
-    [ImplementedAs=addBeforeOptionAtIndex, RaisesException, TypeChecking=Interface] void add(HTMLElement element, long before);
+    [RaisesException, TypeChecking=Interface] void add((HTMLOptionElement or HTMLOptGroupElement) element,
+                                                       optional (HTMLElement or long)? before = null);
     [RaisesException] void remove(); // ChildNode overload
     void remove(long index);
     [RaisesException, TypeChecking=Interface] setter HTMLOptionElement (unsigned long index, HTMLOptionElement? value);
