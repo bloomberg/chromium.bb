@@ -506,7 +506,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
                self.tool.GetTimeoutScale())
     if (self.device.GetProp('ro.build.version.sdk')
         < constants.ANDROID_SDK_VERSION_CODES.JELLY_BEAN):
-      timeout *= 4
+      timeout *= 10
 
     start_ms = 0
     duration_ms = 0
