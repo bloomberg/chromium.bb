@@ -844,7 +844,7 @@
             '../ui/gfx/gfx_tests.gyp:gfx_unittests_apk',
           ],
           'conditions': [
-            ['"<(libpeer_target_type)"=="static_library"', {
+            ['enable_webrtc==1 and "<(libpeer_target_type)"=="static_library"', {
               'dependencies': [
                 '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
                 '../components/devtools_bridge.gyp:devtools_bridge_tests2_apk',
