@@ -29,6 +29,9 @@ public:
 
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* paintingRoot = 0);
 
+    enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
+    static void applyRoundedRectClips(RenderLayer&, const LayerPaintingInfo&, GraphicsContext*, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+
 private:
     enum ClipState { HasNotClipped, HasClipped };
 
@@ -53,9 +56,6 @@ private:
     void paintTransformedLayerIntoFragments(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
     void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
-    enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
-
-    void applyRoundedRectClips(const LayerPaintingInfo&, GraphicsContext*, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
     static bool needsToClip(const LayerPaintingInfo& localPaintingInfo, const ClipRect&);
 
     // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedLayerMapping to draw into composited

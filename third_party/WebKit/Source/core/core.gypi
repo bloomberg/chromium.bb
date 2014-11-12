@@ -1518,6 +1518,8 @@
             'paint/EllipsisBoxPainter.h',
             'paint/FileUploadControlPainter.cpp',
             'paint/FileUploadControlPainter.h',
+            'paint/FilterPainter.cpp',
+            'paint/FilterPainter.h',
             'paint/FramePainter.cpp',
             'paint/FramePainter.h',
             'paint/GridPainter.cpp',

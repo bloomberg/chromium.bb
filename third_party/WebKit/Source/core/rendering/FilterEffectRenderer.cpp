@@ -39,14 +39,12 @@
 #include "platform/FloatConversion.h"
 #include "platform/LengthFunctions.h"
 #include "platform/graphics/ColorSpace.h"
-#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/ImageFilter.h"
 #include "platform/graphics/UnacceleratedImageBufferSurface.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
 #include "platform/graphics/filters/FEComponentTransfer.h"
 #include "platform/graphics/filters/FEDropShadow.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
-#include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
@@ -254,27 +252,6 @@ void FilterEffectRenderer::clearIntermediateResults()
         m_lastEffect->clearResultsRecursive();
 }
 
-bool FilterEffectRenderer::beginFilterEffect(GraphicsContext* context, const FloatRect& filterBoxRect)
-{
-    SkiaImageFilterBuilder builder(context);
-    m_lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
-    RefPtr<ImageFilter> imageFilter = builder.build(m_lastEffect.get(), ColorSpaceDeviceRGB);
-    if (!imageFilter)
-        return false;
-    context->save();
-    FloatRect boundaries = mapImageFilterRect(imageFilter.get(), filterBoxRect);
-    context->translate(filterBoxRect.x(), filterBoxRect.y());
-    boundaries.move(-filterBoxRect.x(), -filterBoxRect.y());
-    context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
-    context->translate(-filterBoxRect.x(), -filterBoxRect.y());
-    return true;
-}
-
-void FilterEffectRenderer::endFilterEffect(GraphicsContext* context)
-{
-    context->endLayer();
-    context->restore();
-}
 
 } // namespace blink
 

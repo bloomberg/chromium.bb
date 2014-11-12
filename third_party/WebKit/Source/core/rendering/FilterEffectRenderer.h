@@ -51,8 +51,6 @@ public:
     }
 
     bool build(RenderObject* renderer, const FilterOperations&);
-    bool beginFilterEffect(GraphicsContext*, const FloatRect& filterBoxRect);
-    void endFilterEffect(GraphicsContext*);
     void clearIntermediateResults();
 
     PassRefPtr<FilterEffect> lastEffect() const
