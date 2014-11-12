@@ -57,8 +57,8 @@ class FileMetadataLinuxTest : public testing::Test {
                           "user.test", "test", 4, 0);
     is_xattr_supported_ = (!result) || (errno != ENOTSUP);
     if (!is_xattr_supported_) {
-      VLOG(0) << "Test will be skipped because extended attributes are not "
-                << "supported on this OS/file system.";
+      DVLOG(0) << "Test will be skipped because extended attributes are not "
+               << "supported on this OS/file system.";
     }
   }
 

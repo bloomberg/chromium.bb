@@ -156,7 +156,7 @@ bool DownloadResourceHandler::OnResponseStarted(
   DCHECK(!on_response_started_called_);
   on_response_started_called_ = true;
 
-  VLOG(20) << __FUNCTION__ << "()" << DebugString();
+  DVLOG(20) << __FUNCTION__ << "()" << DebugString();
   download_start_time_ = base::TimeTicks::Now();
 
   // If it's a download, we don't want to poison the cache with it.
@@ -343,10 +343,10 @@ void DownloadResourceHandler::OnResponseCompleted(
     bool* defer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   int response_code = status.is_success() ? request()->GetResponseCode() : 0;
-  VLOG(20) << __FUNCTION__ << "()" << DebugString()
-           << " status.status() = " << status.status()
-           << " status.error() = " << status.error()
-           << " response_code = " << response_code;
+  DVLOG(20) << __FUNCTION__ << "()" << DebugString()
+            << " status.status() = " << status.status()
+            << " status.error() = " << status.error()
+            << " response_code = " << response_code;
 
   net::Error error_code = net::OK;
   if (status.status() == net::URLRequestStatus::FAILED ||

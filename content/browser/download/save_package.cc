@@ -1071,9 +1071,9 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
   if (flag == WebPageSerializerClient::AllFramesAreFinished) {
     for (SaveUrlItemMap::iterator it = in_progress_items_.begin();
          it != in_progress_items_.end(); ++it) {
-      VLOG(20) << " " << __FUNCTION__ << "()"
-               << " save_id = " << it->second->save_id()
-               << " url = \"" << it->second->url().spec() << "\"";
+      DVLOG(20) << " " << __FUNCTION__ << "()"
+                << " save_id = " << it->second->save_id()
+                << " url = \"" << it->second->url().spec() << "\"";
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&SaveFileManager::SaveFinished,
@@ -1123,9 +1123,9 @@ void SavePackage::OnReceivedSerializedHtmlData(const GURL& frame_url,
 
   // Current frame is completed saving, call finish in file thread.
   if (flag == WebPageSerializerClient::CurrentFrameIsFinished) {
-    VLOG(20) << " " << __FUNCTION__ << "()"
-             << " save_id = " << save_item->save_id()
-             << " url = \"" << save_item->url().spec() << "\"";
+    DVLOG(20) << " " << __FUNCTION__ << "()"
+              << " save_id = " << save_item->save_id()
+              << " url = \"" << save_item->url().spec() << "\"";
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveFileManager::SaveFinished,

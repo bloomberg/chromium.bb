@@ -325,8 +325,8 @@ DownloadManagerDelegate* DownloadManagerImpl::GetDelegate() const {
 }
 
 void DownloadManagerImpl::Shutdown() {
-  VLOG(20) << __FUNCTION__ << "()"
-           << " shutdown_needed_ = " << shutdown_needed_;
+  DVLOG(20) << __FUNCTION__ << "()"
+            << " shutdown_needed_ = " << shutdown_needed_;
   if (!shutdown_needed_)
     return;
   shutdown_needed_ = false;
@@ -662,7 +662,7 @@ DownloadItem* DownloadManagerImpl::CreateDownloadItem(
       net::BoundNetLog::Make(net_log_, net::NetLog::SOURCE_DOWNLOAD));
   downloads_[id] = item;
   FOR_EACH_OBSERVER(Observer, observers_, OnDownloadCreated(this, item));
-  VLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "() download = " << item->DebugString(true);
   return item;
 }
 

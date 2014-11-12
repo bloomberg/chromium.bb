@@ -263,10 +263,10 @@ void SaveFileManager::SaveFinished(int save_id,
                                    const GURL& save_url,
                                    int render_process_id,
                                    bool is_success) {
-  VLOG(20) << " " << __FUNCTION__ << "()"
-           << " save_id = " << save_id
-           << " save_url = \"" << save_url.spec() << "\""
-           << " is_success = " << is_success;
+  DVLOG(20) << " " << __FUNCTION__ << "()"
+            << " save_id = " << save_id
+            << " save_url = \"" << save_url.spec() << "\""
+            << " is_success = " << is_success;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   SaveFileMap::iterator it = save_file_map_.find(save_id);
   if (it != save_file_map_.end()) {
@@ -278,8 +278,8 @@ void SaveFileManager::SaveFinished(int save_id,
     // TODO(rdsmith): Fix this logic and put the DCHECK below back in.
     // DCHECK(save_file->InProgress());
 
-    VLOG(20) << " " << __FUNCTION__ << "()"
-             << " save_file = " << save_file->DebugString();
+    DVLOG(20) << " " << __FUNCTION__ << "()"
+              << " save_file = " << save_file->DebugString();
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&SaveFileManager::OnSaveFinished, this, save_id,

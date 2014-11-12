@@ -306,7 +306,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
   DCHECK(!IsDone());
   DCHECK(IsDangerous());
 
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
   if (IsDone() || !IsDangerous())
     return;
@@ -327,7 +327,7 @@ void DownloadItemImpl::ValidateDangerousDownload() {
 
 void DownloadItemImpl::StealDangerousDownload(
     const AcquireFileCallback& callback) {
-  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(IsDangerous());
   if (download_file_) {
@@ -386,7 +386,7 @@ void DownloadItemImpl::Resume() {
 void DownloadItemImpl::Cancel(bool user_cancel) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   if (state_ != IN_PROGRESS_INTERNAL &&
       state_ != INTERRUPTED_INTERNAL &&
       state_ != RESUMING_INTERNAL) {
@@ -434,7 +434,7 @@ void DownloadItemImpl::Cancel(bool user_cancel) {
 }
 
 void DownloadItemImpl::Remove() {
-  VLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "() download = " << DebugString(true);
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   delegate_->AssertStateConsistent(this);
@@ -781,8 +781,8 @@ WebContents* DownloadItemImpl::GetWebContents() const {
 void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(AllDataSaved());
-  VLOG(20) << __FUNCTION__ << " danger_type=" << danger_type
-           << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " danger_type=" << danger_type
+            << " download=" << DebugString(true);
   SetDangerType(danger_type);
   UpdateObservers();
 }
@@ -986,7 +986,7 @@ void DownloadItemImpl::NotifyRemoved() {
 
 void DownloadItemImpl::OnDownloadedFileRemoved() {
   file_externally_removed_ = true;
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
   UpdateObservers();
 }
 
@@ -1009,7 +1009,7 @@ void DownloadItemImpl::OnAllDataSaved(const std::string& final_hash) {
   DCHECK_EQ(IN_PROGRESS_INTERNAL, state_);
   DCHECK(!all_data_saved_);
   all_data_saved_ = true;
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
   // Store final hash and null out intermediate serialized hash state.
   hash_ = final_hash;
@@ -1030,8 +1030,9 @@ void DownloadItemImpl::DestinationUpdate(int64 bytes_so_far,
                                          int64 bytes_per_sec,
                                          const std::string& hash_state) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
-           << " per_sec=" << bytes_per_sec << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " so_far=" << bytes_so_far
+            << " per_sec=" << bytes_per_sec << " download="
+            << DebugString(true);
 
   if (GetState() != IN_PROGRESS) {
     // Ignore if we're no longer in-progress.  This can happen if we race a
@@ -1074,7 +1075,7 @@ void DownloadItemImpl::DestinationError(DownloadInterruptReason reason) {
 }
 
 void DownloadItemImpl::DestinationCompleted(const std::string& final_hash) {
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
   if (GetState() != IN_PROGRESS)
     return;
   OnAllDataSaved(final_hash);
@@ -1115,7 +1116,7 @@ void DownloadItemImpl::Init(bool active,
         net::NetLog::TYPE_DOWNLOAD_ITEM_ACTIVE, active_data);
   }
 
-  VLOG(20) << __FUNCTION__ << "() " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "() " << DebugString(true);
 }
 
 // We're starting the download.
@@ -1194,8 +1195,8 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
   // name determination complete" semantics, we need to make sure that the
   // error is kept completely invisible until that point.
 
-  VLOG(20) << __FUNCTION__ << " " << target_path.value() << " " << disposition
-           << " " << danger_type << " " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " " << target_path.value() << " " << disposition
+            << " " << danger_type << " " << DebugString(true);
 
   target_path_ = target_path;
   target_disposition_ = disposition;
@@ -1241,7 +1242,7 @@ void DownloadItemImpl::OnDownloadRenamedToIntermediateName(
     DownloadInterruptReason reason,
     const base::FilePath& full_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << " download=" << DebugString(true);
 
   if (DOWNLOAD_INTERRUPT_REASON_NONE != destination_error_) {
     // Process destination error.  If both |reason| and |destination_error_|
@@ -1303,8 +1304,8 @@ void DownloadItemImpl::OnDownloadCompleting() {
   if (state_ != IN_PROGRESS_INTERNAL)
     return;
 
-  VLOG(20) << __FUNCTION__ << "()"
-           << " " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "()"
+            << " " << DebugString(true);
   DCHECK(!GetTargetFilePath().empty());
   DCHECK(!IsDangerous());
 
@@ -1344,9 +1345,9 @@ void DownloadItemImpl::OnDownloadRenamedToFinalName(
   if (state_ != IN_PROGRESS_INTERNAL)
     return;
 
-  VLOG(20) << __FUNCTION__ << "()"
-           << " full_path = \"" << full_path.value() << "\""
-           << " " << DebugString(false);
+  DVLOG(20) << __FUNCTION__ << "()"
+            << " full_path = \"" << full_path.value() << "\""
+            << " " << DebugString(false);
 
   if (DOWNLOAD_INTERRUPT_REASON_NONE != reason) {
     Interrupt(reason);
@@ -1395,7 +1396,7 @@ void DownloadItemImpl::DelayedDownloadOpened(bool auto_opened) {
 void DownloadItemImpl::Completed() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  VLOG(20) << __FUNCTION__ << "() " << DebugString(false);
+  DVLOG(20) << __FUNCTION__ << "() " << DebugString(false);
 
   DCHECK(all_data_saved_);
   end_time_ = base::Time::Now();
@@ -1602,9 +1603,9 @@ void DownloadItemImpl::TransitionTo(DownloadInternalState new_state,
       break;
   }
 
-  VLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true)
-    << " " << InternalToExternalState(old_state)
-    << " " << InternalToExternalState(state_);
+  DVLOG(20) << " " << __FUNCTION__ << "()" << " this = " << DebugString(true)
+     << " " << InternalToExternalState(old_state)
+     << " " << InternalToExternalState(state_);
 
   bool is_done = (state_ != IN_PROGRESS_INTERNAL &&
                   state_ != COMPLETING_INTERNAL);
@@ -1650,9 +1651,9 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
 
 void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  VLOG(20) << __FUNCTION__ << "()"
-           << " new_path = \"" << new_path.value() << "\""
-           << " " << DebugString(true);
+  DVLOG(20) << __FUNCTION__ << "()"
+            << " new_path = \"" << new_path.value() << "\""
+            << " " << DebugString(true);
   DCHECK(!new_path.empty());
 
   bound_net_log_.AddEvent(
