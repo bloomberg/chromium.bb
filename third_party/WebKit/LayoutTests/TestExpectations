@@ -1271,8 +1271,6 @@ crbug.com/418324 http/tests/media/media-source/mediasource-redundant-seek.html [
 
 crbug.com/340522 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance.html [ Pass ImageOnlyFailure ]
 
-crbug.com/428324 svg/custom/svg-image-par-resize.html [ NeedsRebaseline ]
-
 crbug.com/427606 virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Pass ImageOnlyFailure ]
 
 crbug.com/419486 [ Mac ] fast/text/atsui-small-caps-punctuation-size.html [ Pass Failure ]
