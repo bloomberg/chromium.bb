@@ -17,10 +17,7 @@ var lowFrequency = 10;
 var highFrequency = nyquist + 2000; // go slightly higher than nyquist to make sure we generate silence there
 var context = 0;
 
-function generateExponentialOscillatorSweep(oscillatorType) {
-    // Create offline audio context.
-    context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
-
+function generateExponentialOscillatorSweep(context, oscillatorType) {
     var osc = context.createOscillator();
     if (oscillatorType == "custom") {
         // Create a simple waveform with three Fourier coefficients.
@@ -44,9 +41,4 @@ function generateExponentialOscillatorSweep(oscillatorType) {
     var nyquist = 0.5 * sampleRate;
     osc.frequency.setValueAtTime(10, 0);
     osc.frequency.exponentialRampToValueAtTime(highFrequency, lengthInSeconds);
-
-    context.oncomplete = finishAudioTest;
-    context.startRendering();    
-
-    testRunner.waitUntilDone();
 }

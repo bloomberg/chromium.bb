@@ -21,7 +21,14 @@ function init() {
     if (!window.testRunner)
         return;
 
-    generateExponentialOscillatorSweep("square");
+    // Create offline audio context.
+    context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+    generateExponentialOscillatorSweep(context, "square");
+
+    context.oncomplete = finishAudioTest;
+    context.startRendering();    
+
+    testRunner.waitUntilDone();
 }
 
 </script>

@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Oscillator Node: sine</title>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/buffer-loader.js"></script>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/oscillator-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+        // See oscillator-sine.html for more info on the actual wave shape.
+        //
+        // This test is a partial duplicate of oscillator-sine but is designed to be less sensitive
+        // to the actual output versus the reference. Instead of requiring an exact match, we check
+        // several criteria to pass the test. The SNR between the actual and expected signals must
+        // be large enough.  The maximum difference must be below a threshold, and the actual number
+        // of points that are different must be below a threshold.
+
+        var sampleRate = 44100.0;
+        var nyquist = 0.5 * sampleRate;
+        var lengthInSeconds = 4;
+        var lowFrequency = 10;
+        var highFrequency = nyquist + 2000; // go slightly higher than nyquist to make sure we generate silence there
+        var context = 0;
+        var reference = 0;
+        var renderedData = 0;
+        var signalPower = 0;
+        var noisePower = 0;
+
+        // Scaling factor for converting the 16-bit WAV data to float (and vice-versa).
+        var waveScaleFactor = 32768;
+
+        // Thresholds for verifying the test passes.  The thresholds are experimentally determined.
+      
+        // SNR must be greater than this to pass the test.
+        // Q: Why is the SNR threshold not infinity?
+        // A: The reference result is a 16-bit WAV file, so it won't compare exactly with the
+        //    floating point result.
+        var thresholdSNR = 86.58;
+
+        // Max diff must be less than this to pass the test.
+        var thresholdDiff = 2.9 / waveScaleFactor;
+
+        // Count the number of differences between the expected and actual result. The tests passes
+        // if the count is less than this threshold.
+        var thresholdDiffCount = 5850;
+
+        function db(sPower, nPower)
+        {
+            if (nPower == 0 && sPower > 0) {
+                return 1000;
+            }
+            return 10 * Math.log10(sPower / nPower);
+        }
+
+        function checkResult (event) {
+            renderedData = event.renderedBuffer.getChannelData(0);
+            // Compute signal to noise ratio between the result and the reference. Also keep track
+            // of the max difference (and position).
+
+            var maxError = -1;
+            var errorPosition = -1;
+            var diffCount = 0;
+
+            for (var k = 0; k < renderedData.length; ++k) {
+                var diff = renderedData[k] - reference[k];
+                noisePower += diff * diff;
+                signalPower += reference[k] * reference[k];
+                if (Math.abs(diff) > maxError) {
+                    maxError = Math.abs(diff);
+                    errorPosition = k;
+                }
+                // The reference file is a 16-bit WAV file, so we will never get an exact match
+                // between it and the actual floating-point result.
+                if (diff > 1/waveScaleFactor) {
+                    diffCount++;
+                }
+            }
+
+            var snr = db(signalPower, noisePower);
+            if (snr < thresholdSNR) {
+                testFailed("Expected SNR of " + thresholdSNR + " dB, but actual SNR is " + snr + " dB");
+            } else {
+                testPassed("Exceeded SNR threshold of " + thresholdSNR + " dB");
+            }
+
+            if (maxError > thresholdDiff) {
+                testFailed("Maximum difference of " + (maxError * waveScaleFactor) + " at "
+                    + errorPosition + " exceeded threshold of " + (thresholdDiff * waveScaleFactor)
+                    + " ulp (16-bits)");
+            } else {
+                testPassed("Maximum difference below threshold of "
+                    + (thresholdDiff * waveScaleFactor) + " ulp (16-bits)");
+            }
+            if (diffCount > thresholdDiffCount) {
+                testFailed(diffCount + " differences found but expected no more than " + thresholdDiffCount);
+            } else {
+                testPassed("Number of differences between actual and expected result is less than " + thresholdDiffCount);
+            }
+
+            finishJSTest();
+        }
+
+        function finishedLoading(bufferList) {
+            reference = bufferList[0].getChannelData(0);
+            generateExponentialOscillatorSweep(context, "sine");
+            context.oncomplete = checkResult;
+            context.startRendering();    
+        }
+
+        function runTest () {
+            window.jsTestIsAsync = true;
+
+            // Create offline audio context.
+            context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
+
+            bufferLoader = new BufferLoader(
+                context,
+                [ "oscillator-sine-expected.wav" ],
+                finishedLoading);
+
+            bufferLoader.load();
+        }
+
+        runTest();
+        successfullyParsed = true;
+    </script>
+  </body>
+</html>

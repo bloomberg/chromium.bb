@@ -774,7 +774,6 @@ crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform08.xhtml [ Crash P
 crbug.com/347365 [ Linux ] dom/xhtml/level3/core/canonicalform09.xhtml [ Crash Pass ]
 
 crbug.com/309197 [ Win Debug ] webaudio/oscillator-custom.html [ Skip ]
-crbug.com/309197 [ Win Debug ] webaudio/oscillator-sine.html [ Skip ]
 crbug.com/309197 [ Win Debug ] webaudio/oscillator-square.html [ Skip ]
 
 crbug.com/356777 http/tests/history/frameset-repeated-name.html [ Pass Failure ]
@@ -1374,6 +1373,5 @@ crbug.com/384723 accessibility/chromium-only-roles.html [ Failure ]
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
-crbug.com/431688 [ Win Release ] webaudio/oscillator-sine.html [ Failure ]
 crbug.com/431778 [ Win7 Linux Debug ] http/tests/security/shape-image-cors.html [ Pass Crash ]
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]

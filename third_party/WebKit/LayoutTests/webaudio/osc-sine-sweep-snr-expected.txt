@@ -1,0 +1,7 @@
+PASS Exceeded SNR threshold of 86.58 dB
+PASS Maximum difference below threshold of 2.9 ulp (16-bits)
+PASS Number of differences between actual and expected result is less than 5850
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
