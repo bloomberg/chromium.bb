@@ -246,7 +246,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures')
 
   def testChangesNoAllTested(self):
-    """Tests that we assume no changes are fully verified in this case."""
+    """Tests that those changes are fully verified."""
     no_stat = failing = messages = []
     inflight = ['foo-paladin']
     changes_by_config = {'foo-paladin': []}
@@ -255,7 +255,7 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
         self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
 
-    self.assertEquals(verified, set())
+    self.assertEquals(verified, set(self.changes))
 
   def testChangesNotVerified(self):
     """Tests that changes are not verified if builds failed prematurely."""

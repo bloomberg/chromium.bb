@@ -593,19 +593,21 @@ class CalculateSuspects(object):
     no_stat = set(no_stat)
     failing = set(failing)
     inflight = set(inflight)
-    # Verify that every change is at least tested on one slave. If
-    # not, somethings has gone seriously wrong. No changes should be
-    # marked fully verified.
+
+    fully_verified = set()
+
     all_tested_changes = set()
     for tested_changes in changes_by_config.itervalues():
       all_tested_changes.update(tested_changes)
+
     untested_changes = changes - all_tested_changes
     if untested_changes:
-      logging.warning('Some changes were not tested on any slave: %s',
-                      cros_patch.GetChangesAsString(untested_changes))
-      return set()
+      # Some board overlay changes were not tested by CQ at all.
+      logging.info('These changes were not tested by any slaves, '
+                   'so they will be submitted: %s',
+                   cros_patch.GetChangesAsString(untested_changes))
+      fully_verified.update(untested_changes)
 
-    fully_verified = set()
     for change in all_tested_changes:
       # If all relevant configs associated with a change passed, the
       # change is fully verified.
