@@ -1118,7 +1118,7 @@ wl_socket_init_for_display_name(struct wl_socket *s, const char *name)
 		 * "failed to add socket: Success" */
 		errno = ENAMETOOLONG;
 		return -1;
-	};
+	}
 
 	return 0;
 }
