@@ -9,7 +9,6 @@
             'V8BlobCustomHelpers.cpp',
             'V8BlobCustomHelpers.h',
             'V8CSSStyleDeclarationCustom.cpp',
-            'V8CSSValueCustom.cpp',
             'V8CanvasRenderingContext2DCustom.cpp',
             'V8CustomEventCustom.cpp',
             'V8CustomXPathNSResolver.cpp',

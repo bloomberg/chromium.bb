@@ -2934,15 +2934,6 @@ CSSRule* CSSComputedStyleDeclaration::parentRule() const
     return 0;
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(const String& propertyName)
-{
-    CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return nullptr;
-    RefPtrWillBeRawPtr<CSSValue> value = getPropertyCSSValue(propertyID);
-    return value ? value->cloneForCSSOM() : nullptr;
-}
-
 String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);

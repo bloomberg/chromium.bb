@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/ExceptionCode.h"
 #include "modules/serviceworkers/Cache.h"
 #include "public/platform/WebServiceWorkerCacheError.h"
 #include "public/platform/WebServiceWorkerCacheStorage.h"

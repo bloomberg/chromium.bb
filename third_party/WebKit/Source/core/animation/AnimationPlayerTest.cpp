@@ -36,6 +36,7 @@
 #include "core/animation/AnimationClock.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/QualifiedName.h"
 #include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>

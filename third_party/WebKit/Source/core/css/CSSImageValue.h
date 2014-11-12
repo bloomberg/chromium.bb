@@ -60,8 +60,6 @@ public:
 
     String customCSSText() const;
 
-    PassRefPtrWillBeRawPtr<CSSValue> cloneForCSSOM() const;
-
     bool hasFailedOrCanceledSubresources() const;
 
     bool equals(const CSSImageValue&) const;

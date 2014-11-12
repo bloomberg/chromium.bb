@@ -109,14 +109,6 @@ String CSSImageValue::customCSSText() const
     return "url(" + quoteCSSURLIfNeeded(m_absoluteURL) + ")";
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> CSSImageValue::cloneForCSSOM() const
-{
-    // NOTE: We expose CSSImageValues as URI primitive values in CSSOM to maintain old behavior.
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> uriValue = CSSPrimitiveValue::create(m_absoluteURL, CSSPrimitiveValue::CSS_URI);
-    uriValue->setCSSOMSafe();
-    return uriValue.release();
-}
-
 bool CSSImageValue::knownToBeOpaque(const RenderObject* renderer) const
 {
     return m_image ? m_image->knownToBeOpaque(renderer) : false;

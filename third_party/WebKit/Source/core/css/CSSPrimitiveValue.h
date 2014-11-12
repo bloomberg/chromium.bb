@@ -36,7 +36,6 @@ class CSSBasicShape;
 class CSSCalcValue;
 class CSSToLengthConversionData;
 class Counter;
-class ExceptionState;
 class Length;
 class LengthSize;
 class Pair;
@@ -280,41 +279,28 @@ public:
     // Converts to a Length, mapping various unit types appropriately.
     template<int> Length convertToLength(const CSSToLengthConversionData&);
 
-    double getDoubleValue(UnitType, ExceptionState&) const;
     double getDoubleValue(UnitType) const;
     double getDoubleValue() const;
 
-    // setFloatValue(..., ExceptionState&) and setStringValue() must use unsigned short instead of UnitType to match IDL bindings.
-    void setFloatValue(unsigned short unitType, double floatValue, ExceptionState&);
-    float getFloatValue(unsigned short unitType, ExceptionState& exceptionState) const { return getValue<float>(static_cast<UnitType>(unitType), exceptionState); }
     float getFloatValue(UnitType type) const { return getValue<float>(type); }
     float getFloatValue() const { return getValue<float>(); }
 
-    int getIntValue(UnitType type, ExceptionState& exceptionState) const { return getValue<int>(type, exceptionState); }
     int getIntValue(UnitType type) const { return getValue<int>(type); }
     int getIntValue() const { return getValue<int>(); }
 
-    template<typename T> inline T getValue(UnitType type, ExceptionState& exceptionState) const { return clampTo<T>(getDoubleValue(type, exceptionState)); }
     template<typename T> inline T getValue(UnitType type) const { return clampTo<T>(getDoubleValue(type)); }
     template<typename T> inline T getValue() const { return clampTo<T>(getDoubleValue()); }
 
-    void setStringValue(unsigned short stringType, const String& stringValue, ExceptionState&);
-    String getStringValue(ExceptionState&) const;
     String getStringValue() const;
 
-    Counter* getCounterValue(ExceptionState&) const;
     Counter* getCounterValue() const { return m_primitiveUnitType != CSS_COUNTER ? 0 : m_value.counter; }
 
-    Rect* getRectValue(ExceptionState&) const;
     Rect* getRectValue() const { return m_primitiveUnitType != CSS_RECT ? 0 : m_value.rect; }
 
-    Quad* getQuadValue(ExceptionState&) const;
     Quad* getQuadValue() const { return m_primitiveUnitType != CSS_QUAD ? 0 : m_value.quad; }
 
-    PassRefPtrWillBeRawPtr<RGBColor> getRGBColorValue(ExceptionState&) const;
     RGBA32 getRGBA32Value() const { return m_primitiveUnitType != CSS_RGBCOLOR ? 0 : m_value.rgbcolor; }
 
-    Pair* getPairValue(ExceptionState&) const;
     Pair* getPairValue() const { return m_primitiveUnitType != CSS_PAIR ? 0 : m_value.pair; }
 
     CSSBasicShape* getShapeValue() const { return m_primitiveUnitType != CSS_SHAPE ? 0 : m_value.shape; }
@@ -330,9 +316,6 @@ public:
     String customCSSText(CSSTextFormattingFlags = QuoteCSSStringIfNeeded) const;
 
     bool isQuirkValue() { return m_isQuirkValue; }
-
-    PassRefPtrWillBeRawPtr<CSSPrimitiveValue> cloneForCSSOM() const;
-    void setCSSOMSafe() { m_isCSSOMSafe = true; }
 
     bool equals(const CSSPrimitiveValue&) const;
 

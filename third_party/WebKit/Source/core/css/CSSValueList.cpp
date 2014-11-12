@@ -137,20 +137,6 @@ bool CSSValueList::hasFailedOrCanceledSubresources() const
     return false;
 }
 
-CSSValueList::CSSValueList(const CSSValueList& cloneFrom)
-    : CSSValue(cloneFrom.classType(), /* isCSSOMSafe */ true)
-{
-    m_valueListSeparator = cloneFrom.m_valueListSeparator;
-    m_values.resize(cloneFrom.m_values.size());
-    for (unsigned i = 0; i < m_values.size(); ++i)
-        m_values[i] = cloneFrom.m_values[i]->cloneForCSSOM();
-}
-
-PassRefPtrWillBeRawPtr<CSSValueList> CSSValueList::cloneForCSSOM() const
-{
-    return adoptRefWillBeNoop(new CSSValueList(*this));
-}
-
 void CSSValueList::traceAfterDispatch(Visitor* visitor)
 {
     visitor->trace(m_values);

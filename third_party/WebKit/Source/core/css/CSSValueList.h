@@ -60,13 +60,10 @@ public:
 
     bool hasFailedOrCanceledSubresources() const;
 
-    PassRefPtrWillBeRawPtr<CSSValueList> cloneForCSSOM() const;
-
     void traceAfterDispatch(Visitor*);
 
 protected:
     CSSValueList(ClassType, ValueListSeparator);
-    CSSValueList(const CSSValueList& cloneFrom);
 
 private:
     explicit CSSValueList(ValueListSeparator);

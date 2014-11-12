@@ -50,15 +50,12 @@ CSSKeyframeRule
 CSSKeyframesRule
 CSSMediaRule
 CSSPageRule
-CSSPrimitiveValue
 CSSRule
 CSSRuleList
 CSSStyleDeclaration
 CSSStyleRule
 CSSStyleSheet
 CSSUnknownRule
-CSSValue
-CSSValueList
 CSSViewportRule
 CanvasGradient
 CanvasPattern
@@ -73,7 +70,6 @@ CloseEvent
 Comment
 CompositionEvent
 ConvolverNode
-Counter
 Credential
 CredentialsContainer
 CustomEvent
@@ -287,13 +283,11 @@ ProcessingInstruction
 ProgressEvent
 Promise
 PushEvent
-RGBColor
 RTCIceCandidate
 RTCSessionDescription
 Range
 RangeError
 ReadableStream
-Rect
 ReferenceError
 RegExp
 RelatedEvent
@@ -489,9 +483,7 @@ WebGLTexture
 WebGLUniformLocation
 WebKitAnimationEvent
 WebKitCSSFilterRule
-WebKitCSSFilterValue
 WebKitCSSMatrix
-WebKitCSSTransformValue
 WebKitGamepad
 WebKitMutationObserver
 WebKitTransitionEvent

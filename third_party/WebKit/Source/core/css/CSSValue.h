@@ -21,8 +21,6 @@
 #ifndef CSSValue_h
 #define CSSValue_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
-#include "core/dom/ExceptionCode.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
@@ -32,16 +30,9 @@
 
 namespace blink {
 
-class ExceptionState;
-
 enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 
-// FIXME: The current CSSValue and subclasses should be turned into internal types (StyleValue).
-// The few subtypes that are actually exposed in CSSOM can be seen in the cloneForCSSOM() function.
-// They should be handled by separate wrapper classes.
-
-// Please don't expose more CSSValue types to the web.
-class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue>, public ScriptWrappableBase {
+class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
     enum Type {
         CSS_INHERIT = 0,
@@ -49,7 +40,6 @@ public:
         CSS_VALUE_LIST = 2,
         CSS_CUSTOM = 3,
         CSS_INITIAL = 4
-
     };
 
     // Override RefCounted's deref() to ensure operator delete is called on
@@ -67,7 +57,6 @@ public:
     Type cssValueType() const;
 
     String cssText() const;
-    void setCSSText(const String&, ExceptionState&) { } // FIXME: Not implemented.
 
     bool isPrimitiveValue() const { return m_classType == PrimitiveClass; }
     bool isValueList() const { return m_classType >= ValueListClass; }
@@ -93,7 +82,6 @@ public:
     bool isRadialGradientValue() const { return m_classType == RadialGradientClass; }
     bool isReflectValue() const { return m_classType == ReflectClass; }
     bool isShadowValue() const { return m_classType == ShadowClass; }
-    bool isTextCloneCSSValue() const { return m_isTextClone; }
     bool isCubicBezierTimingFunctionValue() const { return m_classType == CubicBezierTimingFunctionClass; }
     bool isStepsTimingFunctionValue() const { return m_classType == StepsTimingFunctionClass; }
     bool isTransformValue() const { return m_classType == CSSTransformClass; }
@@ -105,14 +93,6 @@ public:
     bool isContentDistributionValue() const { return m_classType == CSSContentDistributionClass; }
     bool isUnicodeRangeValue() const { return m_classType == UnicodeRangeClass; }
     bool isGridLineNamesValue() const { return m_classType == GridLineNamesClass; }
-
-    bool isCSSOMSafe() const { return m_isCSSOMSafe; }
-    bool isSubtypeExposedToCSSOM() const
-    {
-        return isPrimitiveValue() || isValueList();
-    }
-
-    PassRefPtrWillBeRawPtr<CSSValue> cloneForCSSOM() const;
 
     bool hasFailedOrCanceledSubresources() const;
 
@@ -182,10 +162,8 @@ protected:
 
     ClassType classType() const { return static_cast<ClassType>(m_classType); }
 
-    explicit CSSValue(ClassType classType, bool isCSSOMSafe = false)
-        : m_isCSSOMSafe(isCSSOMSafe)
-        , m_isTextClone(false)
-        , m_primitiveUnitType(0)
+    explicit CSSValue(ClassType classType)
+        : m_primitiveUnitType(0)
         , m_hasCachedCSSText(false)
         , m_isQuirkValue(false)
         , m_valueListSeparator(SpaceSeparator)
@@ -202,8 +180,6 @@ private:
     void destroy();
 
 protected:
-    unsigned m_isCSSOMSafe : 1;
-    unsigned m_isTextClone : 1;
     // The bits in this section are only used by specific subclasses but kept here
     // to maximize struct packing.
 

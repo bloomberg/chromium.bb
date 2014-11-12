@@ -21,14 +21,12 @@
 #ifndef Counter_h
 #define Counter_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-class Counter : public RefCountedWillBeGarbageCollected<Counter>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO();
+class Counter : public RefCountedWillBeGarbageCollected<Counter> {
 public:
     static PassRefPtrWillBeRawPtr<Counter> create(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> identifier, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> listStyle, PassRefPtrWillBeRawPtr<CSSPrimitiveValue> separator)
     {
@@ -50,13 +48,6 @@ public:
         return identifier() == other.identifier()
             && listStyle() == other.listStyle()
             && separator() == other.separator();
-    }
-
-    PassRefPtrWillBeRawPtr<Counter> cloneForCSSOM() const
-    {
-        return create(m_identifier ? m_identifier->cloneForCSSOM() : nullptr
-            , m_listStyle ? m_listStyle->cloneForCSSOM() : nullptr
-            , m_separator ? m_separator->cloneForCSSOM() : nullptr);
     }
 
     void trace(Visitor*);

@@ -21,7 +21,6 @@
 #include "config.h"
 #include "core/css/CSSPrimitiveValue.h"
 
-#include "bindings/core/v8/ExceptionState.h"
 #include "core/css/CSSBasicShapes.h"
 #include "core/css/CSSCalculationValue.h"
 #include "core/css/CSSHelper.h"
@@ -29,10 +28,8 @@
 #include "core/css/CSSToLengthConversionData.h"
 #include "core/css/Counter.h"
 #include "core/css/Pair.h"
-#include "core/css/RGBColor.h"
 #include "core/css/Rect.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/dom/Node.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/Decimal.h"
@@ -682,14 +679,6 @@ void CSSPrimitiveValue::accumulateLengthArray(CSSLengthArray& lengthArray, doubl
         lengthArray.at(lengthType) += m_value.num * conversionToCanonicalUnitsScaleFactor(static_cast<UnitType>(m_primitiveUnitType)) * multiplier;
 }
 
-void CSSPrimitiveValue::setFloatValue(unsigned short, double, ExceptionState& exceptionState)
-{
-    // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
-    // No other engine supports mutating style through this API. Computed style is always read-only anyway.
-    // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    exceptionState.throwDOMException(NoModificationAllowedError, "CSSPrimitiveValue objects are read-only.");
-}
-
 double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitType)
 {
     double factor = 1.0;
@@ -740,18 +729,6 @@ double CSSPrimitiveValue::conversionToCanonicalUnitsScaleFactor(UnitType unitTyp
     }
 
     return factor;
-}
-
-double CSSPrimitiveValue::getDoubleValue(UnitType unitType, ExceptionState& exceptionState) const
-{
-    double result = 0;
-    bool success = getDoubleValueInternal(unitType, &result);
-    if (!success) {
-        exceptionState.throwDOMException(InvalidAccessError, "Failed to obtain a double value.");
-        return 0.0;
-    }
-
-    return result;
 }
 
 double CSSPrimitiveValue::getDoubleValue(UnitType unitType) const
@@ -913,33 +890,6 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::lengthUnitTypeToUnitType(LengthUn
     return CSSPrimitiveValue::CSS_UNKNOWN;
 }
 
-void CSSPrimitiveValue::setStringValue(unsigned short, const String&, ExceptionState& exceptionState)
-{
-    // Keeping values immutable makes optimizations easier and allows sharing of the primitive value objects.
-    // No other engine supports mutating style through this API. Computed style is always read-only anyway.
-    // Supporting setter would require making primitive value copy-on-write and taking care of style invalidation.
-    exceptionState.throwDOMException(NoModificationAllowedError, "CSSPrimitiveValue objects are read-only.");
-}
-
-String CSSPrimitiveValue::getStringValue(ExceptionState& exceptionState) const
-{
-    switch (m_primitiveUnitType) {
-        case CSS_STRING:
-        case CSS_ATTR:
-        case CSS_URI:
-            return m_value.string;
-        case CSS_VALUE_ID:
-            return valueName(m_value.valueID);
-        case CSS_PROPERTY_ID:
-            return propertyName(m_value.propertyID);
-        default:
-            exceptionState.throwDOMException(InvalidAccessError, "This object's value cannot be represented as a string.");
-            break;
-    }
-
-    return String();
-}
-
 String CSSPrimitiveValue::getStringValue() const
 {
     switch (m_primitiveUnitType) {
@@ -956,57 +906,6 @@ String CSSPrimitiveValue::getStringValue() const
     }
 
     return String();
-}
-
-Counter* CSSPrimitiveValue::getCounterValue(ExceptionState& exceptionState) const
-{
-    if (m_primitiveUnitType != CSS_COUNTER) {
-        exceptionState.throwDOMException(InvalidAccessError, "This object is not a counter value.");
-        return 0;
-    }
-
-    return m_value.counter;
-}
-
-Rect* CSSPrimitiveValue::getRectValue(ExceptionState& exceptionState) const
-{
-    if (m_primitiveUnitType != CSS_RECT) {
-        exceptionState.throwDOMException(InvalidAccessError, "This object is not a rect value.");
-        return 0;
-    }
-
-    return m_value.rect;
-}
-
-Quad* CSSPrimitiveValue::getQuadValue(ExceptionState& exceptionState) const
-{
-    if (m_primitiveUnitType != CSS_QUAD) {
-        exceptionState.throwDOMException(InvalidAccessError, "This object is not a quad value.");
-        return 0;
-    }
-
-    return m_value.quad;
-}
-
-PassRefPtrWillBeRawPtr<RGBColor> CSSPrimitiveValue::getRGBColorValue(ExceptionState& exceptionState) const
-{
-    if (m_primitiveUnitType != CSS_RGBCOLOR) {
-        exceptionState.throwDOMException(InvalidAccessError, "This object is not an RGB color value.");
-        return nullptr;
-    }
-
-    // FIMXE: This should not return a new object for each invocation.
-    return RGBColor::create(m_value.rgbcolor);
-}
-
-Pair* CSSPrimitiveValue::getPairValue(ExceptionState& exceptionState) const
-{
-    if (m_primitiveUnitType != CSS_PAIR) {
-        exceptionState.throwDOMException(InvalidAccessError, "This object is not a pair value.");
-        return 0;
-    }
-
-    return m_value.pair;
 }
 
 static String formatNumber(double number, const char* suffix, unsigned suffixLength)
@@ -1239,89 +1138,6 @@ String CSSPrimitiveValue::customCSSText(CSSTextFormattingFlags formattingFlag) c
     cssTextCache().set(this, text);
     m_hasCachedCSSText = true;
     return text;
-}
-
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPrimitiveValue::cloneForCSSOM() const
-{
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> result = nullptr;
-
-    switch (m_primitiveUnitType) {
-    case CSS_STRING:
-    case CSS_URI:
-    case CSS_ATTR:
-    case CSS_COUNTER_NAME:
-        result = CSSPrimitiveValue::create(m_value.string, static_cast<UnitType>(m_primitiveUnitType));
-        break;
-    case CSS_COUNTER:
-        result = CSSPrimitiveValue::create(m_value.counter->cloneForCSSOM());
-        break;
-    case CSS_RECT:
-        result = CSSPrimitiveValue::create(m_value.rect->cloneForCSSOM());
-        break;
-    case CSS_QUAD:
-        result = CSSPrimitiveValue::create(m_value.quad->cloneForCSSOM());
-        break;
-    case CSS_PAIR:
-        // Pair is not exposed to the CSSOM, no need for a deep clone.
-        result = CSSPrimitiveValue::create(m_value.pair);
-        break;
-    case CSS_CALC:
-        // CSSCalcValue is not exposed to the CSSOM, no need for a deep clone.
-        result = CSSPrimitiveValue::create(m_value.calc);
-        break;
-    case CSS_SHAPE:
-        // CSSShapeValue is not exposed to the CSSOM, no need for a deep clone.
-        result = CSSPrimitiveValue::create(m_value.shape);
-        break;
-    case CSS_NUMBER:
-    case CSS_PERCENTAGE:
-    case CSS_EMS:
-    case CSS_EXS:
-    case CSS_REMS:
-    case CSS_CHS:
-    case CSS_PX:
-    case CSS_CM:
-    case CSS_MM:
-    case CSS_IN:
-    case CSS_PT:
-    case CSS_PC:
-    case CSS_DEG:
-    case CSS_RAD:
-    case CSS_GRAD:
-    case CSS_MS:
-    case CSS_S:
-    case CSS_HZ:
-    case CSS_KHZ:
-    case CSS_TURN:
-    case CSS_VW:
-    case CSS_VH:
-    case CSS_VMIN:
-    case CSS_VMAX:
-    case CSS_DPPX:
-    case CSS_DPI:
-    case CSS_DPCM:
-    case CSS_FR:
-        result = CSSPrimitiveValue::create(m_value.num, static_cast<UnitType>(m_primitiveUnitType));
-        break;
-    case CSS_PROPERTY_ID:
-        result = CSSPrimitiveValue::createIdentifier(m_value.propertyID);
-        break;
-    case CSS_VALUE_ID:
-        result = CSSPrimitiveValue::createIdentifier(m_value.valueID);
-        break;
-    case CSS_RGBCOLOR:
-        result = CSSPrimitiveValue::createColor(m_value.rgbcolor);
-        break;
-    case CSS_DIMENSION:
-    case CSS_UNKNOWN:
-    case CSS_PARSER_HEXCOLOR:
-        ASSERT_NOT_REACHED();
-        break;
-    }
-    if (result)
-        result->setCSSOMSafe();
-
-    return result;
 }
 
 bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const

@@ -14,6 +14,7 @@
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/Timing.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/testing/DummyPageHolder.h"
 #include <gtest/gtest.h>
 #include <v8.h>

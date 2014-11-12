@@ -34,6 +34,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/MessagePort.h"
 #include "core/events/Event.h"
 #include "modules/EventTargetModules.h"

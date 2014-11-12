@@ -76,15 +76,4 @@ String CSSTransformValue::customCSSText() const
     return transformValueToCssString(m_type, CSSValueList::customCSSText());
 }
 
-CSSTransformValue::CSSTransformValue(const CSSTransformValue& cloneFrom)
-    : CSSValueList(cloneFrom)
-    , m_type(cloneFrom.m_type)
-{
-}
-
-PassRefPtrWillBeRawPtr<CSSTransformValue> CSSTransformValue::cloneForCSSOM() const
-{
-    return adoptRefWillBeNoop(new CSSTransformValue(*this));
-}
-
 }

@@ -61,15 +61,12 @@ public:
 
     FilterOperationType operationType() const { return m_type; }
 
-    PassRefPtrWillBeRawPtr<CSSFilterValue> cloneForCSSOM() const;
-
     bool equals(const CSSFilterValue&) const;
 
     void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
 
 private:
     explicit CSSFilterValue(FilterOperationType);
-    explicit CSSFilterValue(const CSSFilterValue& cloneFrom);
 
     FilterOperationType m_type;
 };

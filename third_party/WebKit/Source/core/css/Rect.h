@@ -21,14 +21,13 @@
 #ifndef Rect_h
 #define Rect_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
-class RectBase : public RefCountedWillBeGarbageCollected<RectBase>, public ScriptWrappableBase {
+class RectBase : public RefCountedWillBeGarbageCollected<RectBase> {
     DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RectBase);
 public:
     CSSPrimitiveValue* top() const { return m_top.get(); }
@@ -53,13 +52,6 @@ public:
 
 protected:
     RectBase() { }
-    RectBase(const RectBase& cloneFrom)
-        : m_top(cloneFrom.m_top ? cloneFrom.m_top->cloneForCSSOM() : nullptr)
-        , m_right(cloneFrom.m_right ? cloneFrom.m_right->cloneForCSSOM() : nullptr)
-        , m_bottom(cloneFrom.m_bottom ? cloneFrom.m_bottom->cloneForCSSOM() : nullptr)
-        , m_left(cloneFrom.m_left ? cloneFrom.m_left->cloneForCSSOM() : nullptr)
-    {
-    }
 
 private:
     RefPtrWillBeMember<CSSPrimitiveValue> m_top;
@@ -72,8 +64,6 @@ class Rect : public RectBase {
 public:
     static PassRefPtrWillBeRawPtr<Rect> create() { return adoptRefWillBeNoop(new Rect); }
 
-    PassRefPtrWillBeRawPtr<Rect> cloneForCSSOM() const { return adoptRefWillBeNoop(new Rect(*this)); }
-
     String cssText() const
     {
         return generateCSSString(top()->cssText(), right()->cssText(), bottom()->cssText(), left()->cssText());
@@ -81,7 +71,6 @@ public:
 
 private:
     Rect() { }
-    Rect(const Rect& cloneFrom) : RectBase(cloneFrom) { }
     static String generateCSSString(const String& top, const String& right, const String& bottom, const String& left)
     {
         return "rect(" + top + ' ' + right + ' ' + bottom + ' ' + left + ')';
@@ -96,8 +85,6 @@ class Quad : public RectBase {
 public:
     static PassRefPtrWillBeRawPtr<Quad> create() { return adoptRefWillBeNoop(new Quad); }
 
-    PassRefPtrWillBeRawPtr<Quad> cloneForCSSOM() const { return adoptRefWillBeNoop(new Quad(*this)); }
-
     String cssText() const
     {
         return generateCSSString(top()->cssText(), right()->cssText(), bottom()->cssText(), left()->cssText());
@@ -105,7 +92,6 @@ public:
 
 private:
     Quad() { }
-    Quad(const Quad& cloneFrom) : RectBase(cloneFrom) { }
     static String generateCSSString(const String& top, const String& right, const String& bottom, const String& left)
     {
         StringBuilder result;

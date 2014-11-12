@@ -179,17 +179,4 @@ bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
     return true;
 }
 
-CSSImageSetValue::CSSImageSetValue(const CSSImageSetValue& cloneFrom)
-    : CSSValueList(cloneFrom)
-    , m_accessedBestFitImage(false)
-    , m_scaleFactor(1)
-{
-    // Non-CSSValueList data is not accessible through CSS OM, no need to clone.
-}
-
-PassRefPtrWillBeRawPtr<CSSImageSetValue> CSSImageSetValue::cloneForCSSOM() const
-{
-    return adoptRefWillBeNoop(new CSSImageSetValue(*this));
-}
-
 } // namespace blink

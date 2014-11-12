@@ -30,6 +30,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/CrossThreadTask.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioContext.h"

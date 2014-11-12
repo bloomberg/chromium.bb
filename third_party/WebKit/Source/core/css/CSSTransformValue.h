@@ -70,13 +70,10 @@ public:
 
     TransformOperationType operationType() const { return m_type; }
 
-    PassRefPtrWillBeRawPtr<CSSTransformValue> cloneForCSSOM() const;
-
     void traceAfterDispatch(Visitor* visitor) { CSSValueList::traceAfterDispatch(visitor); }
 
 private:
     CSSTransformValue(TransformOperationType);
-    CSSTransformValue(const CSSTransformValue& cloneFrom);
 
     TransformOperationType m_type;
 };

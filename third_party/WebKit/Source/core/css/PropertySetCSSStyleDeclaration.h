@@ -50,7 +50,6 @@ private:
     virtual CSSRule* parentRule() const override { return 0; }
     virtual unsigned length() const override final;
     virtual String item(unsigned index) const override final;
-    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(const String& propertyName) override final;
     virtual String getPropertyValue(const String& propertyName) override final;
     virtual String getPropertyPriority(const String& propertyName) override final;
     virtual String getPropertyShorthand(const String& propertyName) override final;
@@ -66,15 +65,11 @@ private:
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const override final;
     virtual PassRefPtrWillBeRawPtr<MutableStylePropertySet> copyProperties() const override final;
 
-    CSSValue* cloneAndCacheForCSSOM(CSSValue*);
-
 protected:
     enum MutationType { NoChanges, PropertyChanged };
     virtual void willMutate() { }
     virtual void didMutate(MutationType) { }
     virtual MutableStylePropertySet& propertySet() const = 0;
-
-    OwnPtrWillBeMember<WillBeHeapHashMap<RawPtrWillBeMember<CSSValue>, RefPtrWillBeMember<CSSValue> > > m_cssomCSSValueClones;
 };
 
 class PropertySetCSSStyleDeclaration : public AbstractPropertySetCSSStyleDeclaration {

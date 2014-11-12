@@ -82,17 +82,6 @@ String CSSFilterValue::customCSSText() const
     return result.toString();
 }
 
-CSSFilterValue::CSSFilterValue(const CSSFilterValue& cloneFrom)
-    : CSSValueList(cloneFrom)
-    , m_type(cloneFrom.m_type)
-{
-}
-
-PassRefPtrWillBeRawPtr<CSSFilterValue> CSSFilterValue::cloneForCSSOM() const
-{
-    return adoptRefWillBeNoop(new CSSFilterValue(*this));
-}
-
 bool CSSFilterValue::equals(const CSSFilterValue& other) const
 {
     return m_type == other.m_type && CSSValueList::equals(other);

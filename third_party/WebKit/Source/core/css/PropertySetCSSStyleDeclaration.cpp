@@ -172,14 +172,6 @@ void AbstractPropertySetCSSStyleDeclaration::setCSSText(const String& text, Exce
     mutationScope.enqueueMutationRecord();
 }
 
-PassRefPtrWillBeRawPtr<CSSValue> AbstractPropertySetCSSStyleDeclaration::getPropertyCSSValue(const String& propertyName)
-{
-    CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
-        return nullptr;
-    return cloneAndCacheForCSSOM(propertySet().getPropertyCSSValue(propertyID).get());
-}
-
 String AbstractPropertySetCSSStyleDeclaration::getPropertyValue(const String &propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
@@ -270,22 +262,6 @@ void AbstractPropertySetCSSStyleDeclaration::setPropertyInternal(CSSPropertyID p
         mutationScope.enqueueMutationRecord();
 }
 
-CSSValue* AbstractPropertySetCSSStyleDeclaration::cloneAndCacheForCSSOM(CSSValue* internalValue)
-{
-    if (!internalValue)
-        return 0;
-
-    // The map is here to maintain the object identity of the CSSValues over multiple invocations.
-    // FIXME: It is likely that the identity is not important for web compatibility and this code should be removed.
-    if (!m_cssomCSSValueClones)
-        m_cssomCSSValueClones = adoptPtrWillBeNoop(new WillBeHeapHashMap<RawPtrWillBeMember<CSSValue>, RefPtrWillBeMember<CSSValue> >);
-
-    RefPtrWillBeMember<CSSValue>& clonedValue = m_cssomCSSValueClones->add(internalValue, RefPtrWillBeMember<CSSValue>()).storedValue->value;
-    if (!clonedValue)
-        clonedValue = internalValue->cloneForCSSOM();
-    return clonedValue.get();
-}
-
 StyleSheetContents* AbstractPropertySetCSSStyleDeclaration::contextStyleSheet() const
 {
     CSSStyleSheet* cssStyleSheet = parentStyleSheet();
@@ -304,9 +280,6 @@ bool AbstractPropertySetCSSStyleDeclaration::cssPropertyMatches(CSSPropertyID pr
 
 void AbstractPropertySetCSSStyleDeclaration::trace(Visitor* visitor)
 {
-#if ENABLE(OILPAN)
-    visitor->trace(m_cssomCSSValueClones);
-#endif
     CSSStyleDeclaration::trace(visitor);
 }
 
@@ -351,9 +324,6 @@ void StyleRuleCSSStyleDeclaration::willMutate()
 
 void StyleRuleCSSStyleDeclaration::didMutate(MutationType type)
 {
-    if (type == PropertyChanged)
-        m_cssomCSSValueClones.clear();
-
     // Style sheet mutation needs to be signaled even if the change failed. willMutateRules/didMutateRules must pair.
     if (m_parentRule && m_parentRule->parentStyleSheet())
         m_parentRule->parentStyleSheet()->didMutateRules();
@@ -390,8 +360,6 @@ void InlineCSSStyleDeclaration::didMutate(MutationType type)
 {
     if (type == NoChanges)
         return;
-
-    m_cssomCSSValueClones.clear();
 
     if (!m_parentElement)
         return;

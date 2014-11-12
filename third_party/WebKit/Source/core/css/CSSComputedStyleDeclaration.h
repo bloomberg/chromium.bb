@@ -88,7 +88,6 @@ private:
     virtual unsigned length() const override;
     virtual String item(unsigned index) const override;
     PassRefPtr<RenderStyle> computeRenderStyle() const;
-    virtual PassRefPtrWillBeRawPtr<CSSValue> getPropertyCSSValue(const String& propertyName) override;
     virtual String getPropertyValue(const String& propertyName) override;
     virtual String getPropertyPriority(const String& propertyName) override;
     virtual String getPropertyShorthand(const String& propertyName) override;

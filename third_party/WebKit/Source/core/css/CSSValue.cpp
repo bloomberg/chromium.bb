@@ -58,49 +58,11 @@
 namespace blink {
 
 struct SameSizeAsCSSValue : public RefCountedWillBeGarbageCollectedFinalized<SameSizeAsCSSValue>
-// VC++ 2013 doesn't support EBCO (Empty Base Class Optimization), and having
-// multiple empty base classes makes the size of CSSValue bloat (Note that both
-// of GarbageCollectedFinalized and ScriptWrappableBase are empty classes).
-// See the following article for details.
-// http://social.msdn.microsoft.com/forums/vstudio/en-US/504c6598-6076-4acf-96b6-e6acb475d302/vc-multiple-inheritance-empty-base-classes-bloats-object-size
-//
-// FIXME: Remove this #if directive once VC++'s issue gets fixed.
-// Note that we're going to split CSSValue class into two classes; CSSOMValue
-// (assumed name) which derives ScriptWrappable and CSSValue (new one) which
-// doesn't derive ScriptWrappable or ScriptWrappableBase. Then, we can safely
-// remove this #if directive.
-#if ENABLE(OILPAN) && COMPILER(MSVC)
-    , public ScriptWrappableBase
-#endif
 {
     uint32_t bitfields;
 };
 
 COMPILE_ASSERT(sizeof(CSSValue) <= sizeof(SameSizeAsCSSValue), CSS_value_should_stay_small);
-
-class TextCloneCSSValue : public CSSValue {
-public:
-    static PassRefPtrWillBeRawPtr<TextCloneCSSValue> create(ClassType classType, const String& text)
-    {
-        return adoptRefWillBeNoop(new TextCloneCSSValue(classType, text));
-    }
-
-    String cssText() const { return m_cssText; }
-
-    void traceAfterDispatch(Visitor* visitor) { CSSValue::traceAfterDispatch(visitor); }
-
-private:
-    TextCloneCSSValue(ClassType classType, const String& text)
-        : CSSValue(classType, /*isCSSOMSafe*/ true)
-        , m_cssText(text)
-    {
-        m_isTextClone = true;
-    }
-
-    String m_cssText;
-};
-
-DEFINE_CSS_VALUE_TYPE_CASTS(TextCloneCSSValue, isTextCloneCSSValue());
 
 bool CSSValue::isImplicitInitialValue() const
 {
@@ -122,9 +84,6 @@ CSSValue::Type CSSValue::cssValueType() const
 
 bool CSSValue::hasFailedOrCanceledSubresources() const
 {
-    // This should get called for internal instances only.
-    ASSERT(!isCSSOMSafe());
-
     if (isValueList())
         return toCSSValueList(this)->hasFailedOrCanceledSubresources();
     if (classType() == FontFaceSrcClass)
@@ -147,11 +106,6 @@ inline static bool compareCSSValues(const CSSValue& first, const CSSValue& secon
 
 bool CSSValue::equals(const CSSValue& other) const
 {
-    if (m_isTextClone) {
-        ASSERT(isCSSOMSafe());
-        return toTextCloneCSSValue(this)->cssText() == other.cssText();
-    }
-
     if (m_classType == other.m_classType) {
         switch (m_classType) {
         case BorderImageSliceClass:
@@ -225,12 +179,6 @@ bool CSSValue::equals(const CSSValue& other) const
 
 String CSSValue::cssText() const
 {
-    if (m_isTextClone) {
-         ASSERT(isCSSOMSafe());
-        return toTextCloneCSSValue(this)->cssText();
-    }
-    ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
-
     switch (classType()) {
     case BorderImageSliceClass:
         return toCSSBorderImageSliceValue(this)->customCSSText();
@@ -297,13 +245,6 @@ String CSSValue::cssText() const
 
 void CSSValue::destroy()
 {
-    if (m_isTextClone) {
-        ASSERT(isCSSOMSafe());
-        delete toTextCloneCSSValue(this);
-        return;
-    }
-    ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
-
     switch (classType()) {
     case BorderImageSliceClass:
         delete toCSSBorderImageSliceValue(this);
@@ -398,13 +339,6 @@ void CSSValue::destroy()
 
 void CSSValue::finalizeGarbageCollectedObject()
 {
-    if (m_isTextClone) {
-        ASSERT(isCSSOMSafe());
-        toTextCloneCSSValue(this)->~TextCloneCSSValue();
-        return;
-    }
-    ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
-
     switch (classType()) {
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->~CSSBorderImageSliceValue();
@@ -499,13 +433,6 @@ void CSSValue::finalizeGarbageCollectedObject()
 
 void CSSValue::trace(Visitor* visitor)
 {
-    if (m_isTextClone) {
-        ASSERT(isCSSOMSafe());
-        toTextCloneCSSValue(this)->traceAfterDispatch(visitor);
-        return;
-    }
-    ASSERT(!isCSSOMSafe() || isSubtypeExposedToCSSOM());
-
     switch (classType()) {
     case BorderImageSliceClass:
         toCSSBorderImageSliceValue(this)->traceAfterDispatch(visitor);
@@ -596,28 +523,6 @@ void CSSValue::trace(Visitor* visitor)
         return;
     }
     ASSERT_NOT_REACHED();
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSValue::cloneForCSSOM() const
-{
-    switch (classType()) {
-    case PrimitiveClass:
-        return toCSSPrimitiveValue(this)->cloneForCSSOM();
-    case ValueListClass:
-        return toCSSValueList(this)->cloneForCSSOM();
-    case ImageClass:
-    case CursorImageClass:
-        return toCSSImageValue(this)->cloneForCSSOM();
-    case CSSFilterClass:
-        return toCSSFilterValue(this)->cloneForCSSOM();
-    case CSSTransformClass:
-        return toCSSTransformValue(this)->cloneForCSSOM();
-    case ImageSetClass:
-        return toCSSImageSetValue(this)->cloneForCSSOM();
-    default:
-        ASSERT(!isSubtypeExposedToCSSOM());
-        return TextCloneCSSValue::create(classType(), cssText());
-    }
 }
 
 }
