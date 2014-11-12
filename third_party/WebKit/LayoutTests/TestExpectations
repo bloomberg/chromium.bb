@@ -183,6 +183,9 @@ crbug.com/377960 fast/css/font-load-while-styleresolver-missing.html  [ Pass Ima
 
 crbug.com/377970 [ Win Linux ] http/tests/misc/image-blocked-src-change.html [ Failure Pass ]
 
+Bug(hartmanng) [ Win Mac Android ] compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
+Bug(hartmanng) [ Win Mac Android ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ NeedsRebaseline ]
+
 # Flaky on Linux ASAN and debug bots.
 crbug.com/321607 [ Linux ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 crbug.com/321607 [ Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]

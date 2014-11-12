@@ -2538,8 +2538,6 @@ void FrameView::updateLayoutAndStyleForPainting()
 
     updateLayoutAndStyleIfNeededRecursive();
 
-    updateWidgetPositionsIfNeeded();
-
     RenderView* view = renderView();
     if (view) {
         TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "UpdateLayerTree", "frame", m_frame.get());
@@ -2611,6 +2609,7 @@ void FrameView::updateLayoutAndStyleIfNeededRecursive()
     m_frame->document()->renderView()->assertRendererLaidOut();
 #endif
 
+    updateWidgetPositionsIfNeeded();
 }
 
 void FrameView::invalidateTreeIfNeededRecursive()
