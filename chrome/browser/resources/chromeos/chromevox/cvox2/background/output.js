@@ -72,14 +72,14 @@ Output.RULES = {
       braille: ''
     },
     button: {
-      speak: '$name $earcon(@tag_button, BUTTON)'
+      speak: '$name $earcon(BUTTON, @tag_button)'
     },
     checkBox: {
       speak: '$or($checked, @describe_checkbox_checked($name), ' +
           '@describe_checkbox_unchecked($name)) ' +
           '$or($checked, ' +
-              '$earcon(@input_type_checkbox, CHECK_ON), ' +
-              '$earcon(@input_type_checkbox, CHECK_OFF))'
+              '$earcon(CHECK_ON, @input_type_checkbox), ' +
+              '$earcon(CHECK_OFF, @input_type_checkbox))'
     },
     heading: {
       enter: '@aria_role_heading',
@@ -89,9 +89,9 @@ Output.RULES = {
       speak: '$value='
     },
     link: {
-      enter: '$name= $visited $earcon(@tag_link, LINK)=',
+      enter: '$name= $visited $earcon(LINK, @tag_link)=',
       stay: '$name= $visited @tag_link',
-      speak: '$name= $visited $earcon(@tag_link, LINK)='
+      speak: '$name= $visited $earcon(LINK, @tag_link)='
     },
     list: {
       enter: '$role'
@@ -104,6 +104,21 @@ Output.RULES = {
     },
     staticText: {
       speak: '$value'
+    },
+    window: {
+      enter: '$name $role= $earcon(OBJECT_OPEN)'
+      // TODO(dtseng): A leave event is not reliable because views does not fire
+      // focus events after closing windows.
+    }
+  },
+  menuStart: {
+    'default': {
+      speak: '@chrome_menu_opened($name) $role $earcon(OBJECT_OPEN)'
+    }
+  },
+    menuEnd: {
+    'default': {
+      speak: '$earcon(OBJECT_CLOSE)'
     }
   }
 };
@@ -273,10 +288,11 @@ Output.prototype = {
               this.format_(node, cond.nextSibling.nextSibling, buff);
           } else if (token == 'earcon') {
             var contentBuff = new cvox.Spannable();
-            this.format_(node, tree.firstChild, contentBuff);
+            if (tree.firstChild.nextSibling)
+              this.format_(node, tree.firstChild.nextSibling, contentBuff);
             options.annotation = new Output.Action(function() {
               cvox.ChromeVox.earcons.playEarcon(
-                  cvox.AbstractEarcons[tree.firstChild.nextSibling.value]);
+                  cvox.AbstractEarcons[tree.firstChild.value]);
             });
             this.addToSpannable_(buff, contentBuff, options);
           }
@@ -293,11 +309,10 @@ Output.prototype = {
             return;
           }
           arg = arg.slice(1);
-          if (!node.attributes[arg]) {
-            console.error('Attribute not found: ' + arg);
-            return;
-          }
-          msgArgs.push(node.attributes[arg]);
+          if (!node.attributes[arg])
+            msgArgs.push('');
+          else
+            msgArgs.push(node.attributes[arg]);
           curMsg = curMsg.nextSibling;
         }
 

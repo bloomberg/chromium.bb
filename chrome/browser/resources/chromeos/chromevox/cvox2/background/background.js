@@ -74,7 +74,10 @@ Background = function() {
    * @type {!Object.<EventType, function(Object) : void>}
    */
   this.listeners_ = {
+    alert: this.onEventDefault,
     focus: this.onEventDefault,
+    menuStart: this.onEventDefault,
+    menuEnd: this.onEventDefault,
     loadComplete: this.onLoadComplete
   };
 
