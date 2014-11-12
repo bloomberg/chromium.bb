@@ -221,9 +221,16 @@ def DownloadPackageArchives(tar_dir, package_target, package_name, package_desc,
                         (log_url, e))
 
   # Save the package file so we know what we currently have.
-  if update_archives:
-    package_desc.SavePackageFile(local_package_file)
+  if not update_archives and os.path.isfile(local_package_file):
+    try:
+      local_package_desc = package_info.PackageInfo(local_package_file)
+      if local_package_desc == package_desc:
+        return downloaded_files
+    except:
+      # Something is wrong with our package file, just resave it.
+      pass
 
+  package_desc.SavePackageFile(local_package_file)
   return downloaded_files
 
 
@@ -548,6 +555,77 @@ def ExtractPackageTargets(package_target_packages, tar_dir, dest_dir,
 
     pynacl.file_tools.MakeParentDirectoryIfAbsent(dest_package_file)
     package_desc.SavePackageFile(dest_package_file)
+
+
+def CleanupTarDirectory(tar_dir):
+  """Deletes any files within the tar directory that are not referenced.
+
+  Files such as package archives are shared between packages and therefore
+  non-trivial to delete. Package files may also change so old packages may
+  stay on the local hard drive even though they are not read anymore. This
+  function will walk through the tar directory and cleanup any stale files
+  it does not recognize.
+
+  Args:
+    tar_dir: Source tar directory where package archives live.
+  """
+  # Keep track of the names of all known files and directories. Because of
+  # case insensitive file systems, we should lowercase all the paths so
+  # that we do not accidentally delete any files.
+  known_directories = set()
+  known_files = set()
+
+  for package_target, package_list in package_locations.WalkPackages(tar_dir):
+    for package_name in package_list:
+      package_file = package_locations.GetLocalPackageFile(tar_dir,
+                                                           package_target,
+                                                           package_name)
+      try:
+        package_desc = package_info.PackageInfo(package_file, skip_missing=True)
+      except:
+        continue
+
+      for archive_obj in package_desc.GetArchiveList():
+        archive_desc = archive_obj.GetArchiveData()
+        if not archive_desc.hash:
+          continue
+        archive_file = package_locations.GetLocalPackageArchiveFile(
+            tar_dir,
+            archive_desc.name,
+            archive_desc.hash)
+        log_file = package_locations.GetLocalPackageArchiveLogFile(archive_file)
+
+        known_files.add(archive_file.lower())
+        known_files.add(log_file.lower())
+
+      package_name = package_info.GetLocalPackageName(package_file)
+      package_directory = os.path.join(os.path.dirname(package_file),
+                                       package_name)
+
+      known_files.add(package_file.lower())
+      known_directories.add(package_directory.lower())
+
+  # We are going to be deleting all files that do not match any known files,
+  # so do a sanity check that this is an actual tar directory. If we have no
+  # known files or directories, we probably do not have a valid tar directory.
+  if not known_directories or not known_files:
+    raise error.Error('No packages found for tar directory: %s' % tar_dir)
+
+  for dirpath, dirnames, filenames in os.walk(tar_dir, topdown=False):
+    if dirpath.lower() in known_directories:
+      continue
+
+    for filename in filenames:
+      full_path = os.path.join(dirpath, filename)
+      if full_path.lower() in known_files:
+        continue
+
+      logging.debug('Removing stale file: %s', full_path)
+      os.unlink(full_path)
+
+    if not os.listdir(dirpath):
+      logging.debug('Removing stale directory: %s', dirpath)
+      os.rmdir(dirpath)
 
 
 #
@@ -916,6 +994,14 @@ def _DoRecalcRevsCmd(arguments):
       revision_desc.SaveRevisionFile(revision_file)
 
 
+def _CleanupParser(subparser):
+  subparser.description = 'Cleans up any unused package archives files.'
+
+
+def _DoCleanupCmd(arguments):
+  CleanupTarDirectory(arguments.tar_dir)
+
+
 CommandFuncs = collections.namedtuple(
     'CommandFuncs',
     ['parse_func', 'do_cmd_func'])
@@ -931,6 +1017,7 @@ COMMANDS = {
     'getrevision': CommandFuncs(_GetRevisionCmdArgParser, _DoGetRevisionCmd),
     'fillemptytars': CommandFuncs(_FillEmptyTarsParser, _DoFillEmptyTarsCmd),
     'recalcrevisions': CommandFuncs(_RecalcRevsParser, _DoRecalcRevsCmd),
+    'cleanup': CommandFuncs(_CleanupParser, _DoCleanupCmd),
 }
 
 
@@ -1086,12 +1173,20 @@ def ParseArgs(args):
 
 
 def main(args):
-  try:
+  # If verbose is on, do not catch error.Error() exceptions separately but
+  # allow python to catch the errors and print out the entire callstack.
+  # Note that we cannot rely on ParseArgs() to parse if verbose is on, because
+  # ParseArgs() could throw an exception.
+  if '-v' in args or '--verbose' in args:
     arguments = ParseArgs(args)
     return COMMANDS[arguments.command].do_cmd_func(arguments)
-  except error.Error as e:
-    sys.stderr.write('package_version: ' + str(e) + '\n')
-    return 1
+  else:
+    try:
+      arguments = ParseArgs(args)
+      return COMMANDS[arguments.command].do_cmd_func(arguments)
+    except error.Error as e:
+      sys.stderr.write('package_version: ' + str(e) + '\n')
+      return 1
 
 
 if __name__ == '__main__':

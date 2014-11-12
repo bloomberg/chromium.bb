@@ -93,6 +93,14 @@ hooks = [
                "sync", "--extract",
     ],
   },
+  # Cleanup any stale package_version files.
+  {
+    "pattern": ".",
+    "action": ["python",
+               "native_client/build/package_version/package_version.py",
+               "cleanup",
+    ],
+  },
   {
     # Update the Windows toolchain if necessary.
     "name": "win_toolchain",

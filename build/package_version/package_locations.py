@@ -63,6 +63,38 @@ def GetLocalPackageFile(tar_dir, package_target, package_name):
                       package_name + '.json')
 
 
+def GetArchiveExtension(archive_name):
+  """Returns the extension of an archive.
+
+  Note that the archive extension is different from how os.path.splitext splits
+  extensions. The standard python one splits on the last period, while this one
+  will split on the first period.
+
+  Args:
+    archive_name: The name of the archive.
+  Returns:
+    The extension of the archive.
+  """
+  name_split = archive_name.split('.', 1)
+  if len(name_split) == 2:
+    return '.' + name_split[1]
+  return ''
+
+
+def GetLocalPackageArchiveDir(tar_dir, archive_name):
+  """Returns directory where local package archive files live.
+
+  Args:
+    tar_dir: The tar root directory for where package archives would be found.
+    archive_name: The name of the archive contained within the package.
+  Returns:
+    The standard location where local package archive files are found.
+  """
+  return os.path.join(tar_dir,
+                      ARCHIVE_DIR,
+                      archive_name)
+
+
 def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   """Returns the local package archive file location.
 
@@ -73,17 +105,12 @@ def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   Returns:
     The standard location where local package archive file is found.
   """
-  # Have the file keep the extension so that extractions know the file type.
-  name_split = archive_name.split('.', 1)
-  if len(name_split) == 2:
-    archive_ext = '.' + name_split[1]
-  else:
-    archive_ext = ''
+  archive_directory = GetLocalPackageArchiveDir(tar_dir, archive_name)
 
-  return os.path.join(tar_dir,
-                      ARCHIVE_DIR,
-                      archive_name,
-                      archive_hash + archive_ext)
+  # Have the file keep the extension so that extractions know the file type.
+  archive_filename = archive_hash + GetArchiveExtension(archive_name)
+
+  return os.path.join(archive_directory, archive_filename)
 
 
 def GetLocalPackageArchiveLogFile(archive_file):
@@ -140,3 +167,33 @@ def GetDestPackageFile(dest_dir, package_target, package_name):
 
   return os.path.join(GetFullDestDir(dest_dir, package_target, package_name),
                       package_name + '.json')
+
+
+def WalkPackages(tar_dir):
+  """Generator for local package target packages within a root tar directory.
+
+  Use this generator to walk through the list of package targets and their
+  respective packages found within a local tar directory. This function does
+  not guarantee that these are valid package targets or packages, so it could
+  yield invalid names for malformed tar directories.
+
+  Args:
+    tar_dir: The tar root directory where package archives would be found.
+
+  Yields:
+    Tuple containing (package_target, [list-of package_names]).
+  """
+  if os.path.isdir(tar_dir):
+    for package_target_dir in os.listdir(tar_dir):
+      # Skip the package archive directory
+      if package_target_dir == ARCHIVE_DIR:
+        continue
+
+      full_package_target_dir = os.path.join(tar_dir, package_target_dir)
+      if os.path.isdir(full_package_target_dir):
+        packages = [os.path.splitext(package_name)[0]
+                    for package_name in os.listdir(full_package_target_dir)
+                    if package_name.endswith('.json') and
+                       os.path.isfile(os.path.join(full_package_target_dir,
+                                                   package_name))]
+        yield (package_target_dir, packages)
