@@ -10,7 +10,6 @@
     {
       'target_name': 'app_shell_lib',
       'type': 'static_library',
-      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'app_shell_version_header',
         '<(DEPTH)/base/base.gyp:base',
@@ -156,7 +155,6 @@
     {
       'target_name': 'app_shell',
       'type': 'executable',
-      'defines!': ['CONTENT_IMPLEMENTATION'],
       'dependencies': [
         'app_shell_lib',
         '<(DEPTH)/extensions/extensions.gyp:extensions_shell_and_test_pak',
