@@ -232,6 +232,10 @@ class BASE_EXPORT Time {
   static const int64 kNanosecondsPerSecond = kNanosecondsPerMicrosecond *
                                              kMicrosecondsPerSecond;
 
+  // The representation of Jan 1, 1970 UTC in microseconds since the
+  // platform-dependent epoch.
+  static const int64 kTimeTToMicrosecondsOffset;
+
 #if !defined(OS_WIN)
   // On Mac & Linux, this value is the delta from the Windows epoch of 1601 to
   // the Posix delta of 1970. This is used for migrating between the old
@@ -491,10 +495,6 @@ class BASE_EXPORT Time {
   static bool FromStringInternal(const char* time_string,
                                  bool is_local,
                                  Time* parsed_time);
-
-  // The representation of Jan 1, 1970 UTC in microseconds since the
-  // platform-dependent epoch.
-  static const int64 kTimeTToMicrosecondsOffset;
 
   // Time in microseconds in UTC.
   int64 us_;

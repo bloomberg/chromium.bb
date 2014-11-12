@@ -27,7 +27,7 @@ using autofill::PasswordForm;
 
 namespace password_manager {
 
-static const int kCurrentVersionNumber = 8;
+static const int kCurrentVersionNumber = 9;
 static const int kCompatibleVersionNumber = 1;
 
 Pickle SerializeVector(const std::vector<base::string16>& vec) {
@@ -91,7 +91,7 @@ void BindAddStatement(const PasswordForm& form,
   s->BindString(COLUMN_SIGNON_REALM, form.signon_realm);
   s->BindInt(COLUMN_SSL_VALID, form.ssl_valid);
   s->BindInt(COLUMN_PREFERRED, form.preferred);
-  s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
+  s->BindInt64(COLUMN_DATE_CREATED, form.date_created.ToInternalValue());
   s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s->BindInt(COLUMN_SCHEME, form.scheme);
   s->BindInt(COLUMN_PASSWORD_TYPE, form.type);
@@ -257,6 +257,19 @@ bool LoginDatabase::MigrateOldVersionsAsNeeded() {
       // Fall through.
       // TODO(gcasto): Remove use_additional_auth by copying table.
       // https://www.sqlite.org/lang_altertable.html
+    case 8: {
+      sql::Statement s;
+      s.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
+                                      "UPDATE logins SET "
+                                      "date_created = "
+                                      "(date_created * ?) + ?"));
+      s.BindInt64(0, base::Time::kMicrosecondsPerSecond);
+      s.BindInt64(1, base::Time::kTimeTToMicrosecondsOffset);
+      if (!s.Run())
+        return false;
+      meta_table_.SetVersionNumber(9);
+      // Fall through.
+    }
     case kCurrentVersionNumber:
       // Already up to date
       return true;
@@ -476,7 +489,7 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   s.BindInt(5, form.times_used);
   s.BindString16(6, form.submit_element);
   s.BindInt64(7, form.date_synced.ToInternalValue());
-  s.BindInt64(8, form.date_created.ToTimeT());
+  s.BindInt64(8, form.date_created.ToInternalValue());
   s.BindInt(9, form.blacklisted_by_user);
   s.BindInt(10, form.scheme);
   s.BindInt(11, form.type);
@@ -527,9 +540,9 @@ bool LoginDatabase::RemoveLoginsCreatedBetween(base::Time delete_begin,
   sql::Statement s(db_.GetCachedStatement(SQL_FROM_HERE,
       "DELETE FROM logins WHERE "
       "date_created >= ? AND date_created < ?"));
-  s.BindInt64(0, delete_begin.ToTimeT());
+  s.BindInt64(0, delete_begin.ToInternalValue());
   s.BindInt64(1, delete_end.is_null() ? std::numeric_limits<int64>::max()
-                                      : delete_end.ToTimeT());
+                                      : delete_end.ToInternalValue());
 
   return s.Run();
 }
@@ -571,8 +584,8 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->signon_realm = tmp;
   form->ssl_valid = (s.ColumnInt(COLUMN_SSL_VALID) > 0);
   form->preferred = (s.ColumnInt(COLUMN_PREFERRED) > 0);
-  form->date_created = base::Time::FromTimeT(
-      s.ColumnInt64(COLUMN_DATE_CREATED));
+  form->date_created =
+      base::Time::FromInternalValue(s.ColumnInt64(COLUMN_DATE_CREATED));
   form->blacklisted_by_user = (s.ColumnInt(COLUMN_BLACKLISTED_BY_USER) > 0);
   int scheme_int = s.ColumnInt(COLUMN_SCHEME);
   DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
@@ -711,9 +724,9 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "federation_url, is_zero_click FROM logins "
       "WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
-  s.BindInt64(0, begin.ToTimeT());
+  s.BindInt64(0, begin.ToInternalValue());
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
-                               : end.ToTimeT());
+                               : end.ToInternalValue());
 
   while (s.Step()) {
     scoped_ptr<PasswordForm> new_form(new PasswordForm());

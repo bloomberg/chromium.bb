@@ -284,6 +284,7 @@
             # TODO(blundell): Eliminate the need for this dependency in code
             # that iOS shares. crbug.com/325243
             '../content/content_shell_and_tests.gyp:test_support_content',
+            '../sql/sql.gyp:test_support_sql',
             '../sync/sync.gyp:sync',
             '../sync/sync.gyp:test_support_sync_api',
             '../testing/gmock.gyp:gmock',

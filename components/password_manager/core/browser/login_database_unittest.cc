@@ -8,11 +8,15 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
+#include "sql/connection.h"
+#include "sql/statement.h"
+#include "sql/test/test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -927,8 +931,6 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.submit_element = ASCIIToUTF16("submit_element");
   form.date_synced = base::Time::Now();
   form.date_created = base::Time::Now() - base::TimeDelta::FromDays(1);
-  // Remove this line after crbug/374132 is fixed.
-  form.date_created = base::Time::FromTimeT(form.date_created.ToTimeT());
   form.blacklisted_by_user = true;
   form.scheme = PasswordForm::SCHEME_BASIC;
   form.type = PasswordForm::TYPE_GENERATED;
@@ -961,5 +963,83 @@ TEST_F(LoginDatabaseTest, FilePermissions) {
   EXPECT_EQ((mode & base::FILE_PERMISSION_USER_MASK), mode);
 }
 #endif  // defined(OS_POSIX)
+
+class LoginDatabaseMigrationTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    PathService::Get(base::DIR_SOURCE_ROOT, &database_dump_);
+    database_dump_ = database_dump_.AppendASCII("components")
+                         .AppendASCII("test")
+                         .AppendASCII("data")
+                         .AppendASCII("password_manager")
+                         .AppendASCII("login_db_v8.sql");
+
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    database_path_ = temp_dir_.path().AppendASCII("test.db");
+    ASSERT_TRUE(
+        sql::test::CreateDatabaseFromSQL(database_path_, database_dump_));
+  }
+
+  void TearDown() override {
+    if (!database_path_.empty())
+      base::DeleteFile(database_path_, false);
+  }
+
+  // Returns an empty vector on failure. Otherwise returns the values of the
+  // date_created field from the logins table. The order of the returned rows
+  // is well-defined.
+  std::vector<int64_t> GetDateCreated(const base::FilePath& db_path) {
+    sql::Connection db;
+    std::vector<int64_t> results;
+    if (!db.Open(db_path))
+      return results;
+
+    sql::Statement s(db.GetCachedStatement(
+        SQL_FROM_HERE,
+        "SELECT date_created from logins order by username_value"));
+    if (!s.is_valid()) {
+      db.Close();
+      return results;
+    }
+
+    while (s.Step())
+      results.push_back(s.ColumnInt64(0));
+
+    s.Clear();
+    db.Close();
+    return results;
+  }
+
+  base::FilePath database_path_;
+
+ private:
+  base::FilePath database_dump_;
+  base::ScopedTempDir temp_dir_;
+};
+
+// Tests the migration of the login database from version 8 to version 9.
+TEST_F(LoginDatabaseMigrationTest, MigrationV8ToV9) {
+  // Original date, in seconds since UTC epoch.
+  std::vector<int64_t> date_created(GetDateCreated(database_path_));
+  ASSERT_EQ(1402955745, date_created[0]);
+  ASSERT_EQ(1402950000, date_created[1]);
+
+  // Assert that the database was successfully opened and migrated.
+  {
+    LoginDatabase db;
+    ASSERT_TRUE(db.Init(database_path_));
+  }
+
+  // New date, in microseconds since platform independent epoch.
+  std::vector<int64_t> new_date_created(GetDateCreated(database_path_));
+  ASSERT_EQ(13047429345000000, new_date_created[0]);
+  ASSERT_EQ(13047423600000000, new_date_created[1]);
+
+  // Check that the two dates match up.
+  for (size_t i = 0; i < date_created.size(); ++i) {
+    EXPECT_EQ(base::Time::FromInternalValue(new_date_created[i]),
+              base::Time::FromTimeT(date_created[i]));
+  }
+}
 
 }  // namespace password_manager
