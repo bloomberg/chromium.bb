@@ -73,6 +73,7 @@ public class ChromeShellToolbar extends LinearLayout {
     private SuggestionPopup mSuggestionPopup;
 
     private ImageButton mStopReloadButton;
+    private ImageButton mAddButton;
     private int mProgress = 0;
     private boolean mLoading = true;
 
@@ -144,6 +145,7 @@ public class ChromeShellToolbar extends LinearLayout {
         initializeTabSwitcherButton();
         initializeMenuButton();
         initializeStopReloadButton();
+        initializeAddButton();
     }
 
     void setMenuHandler(AppMenuHandler menuHandler) {
@@ -245,6 +247,25 @@ public class ChromeShellToolbar extends LinearLayout {
                 }
             }
         });
+    }
+
+    private void initializeAddButton() {
+        mAddButton = (ImageButton) findViewById(R.id.add_button);
+        mAddButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mTabManager.createNewTab();
+            }
+        });
+    }
+
+    /**
+     * Shows or hides the add and the stop/reload button .
+     * @param visibility The visibility status of the add button.
+     */
+    public void showAddButton(boolean visibility) {
+        mAddButton.setVisibility(visibility ? VISIBLE : GONE);
+        mStopReloadButton.setVisibility(visibility ? GONE : VISIBLE);
     }
 
     /**

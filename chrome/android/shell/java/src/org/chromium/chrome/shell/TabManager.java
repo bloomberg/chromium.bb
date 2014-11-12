@@ -6,8 +6,10 @@ package org.chromium.chrome.shell;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
+import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.ContentViewRenderView;
@@ -40,13 +43,14 @@ public class TabManager extends LinearLayout {
     private String mStartupUrl = DEFAULT_URL;
 
     private ChromeShellTabModelSelector mTabModelSelector;
+    private AccessibilityTabModelWrapper mTabModelWrapper;
 
     private final EmptyTabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
         public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
             assert tab instanceof ChromeShellTab;
             setCurrentTab((ChromeShellTab) tab);
-            mTabModelSelector.hideTabSwitcher();
+            hideTabSwitcher();
         }
 
         @Override
@@ -75,7 +79,7 @@ public class TabManager extends LinearLayout {
         mContentViewHolder = (ViewGroup) findViewById(R.id.content_container);
 
         mTabModelSelector = new ChromeShellTabModelSelector(
-                window, videoViewClient, mContentViewHolder, this);
+                window, videoViewClient, mContentViewHolder.getContext(), this);
         mTabModelSelector.getModel(false).addObserver(mTabModelObserver);
 
         mToolbar = (ChromeShellToolbar) findViewById(R.id.toolbar);
@@ -184,18 +188,52 @@ public class TabManager extends LinearLayout {
     }
 
     /**
+     * Hide the tab switcher.
+     */
+    public void hideTabSwitcher() {
+        if (mTabModelWrapper == null) return;
+        ViewParent parent = mTabModelWrapper.getParent();
+        if (parent != null) {
+            assert parent == mContentViewHolder;
+            mContentViewHolder.removeView(mTabModelWrapper);
+        }
+        mToolbar.showAddButton(false);
+    }
+
+    /**
+     * Shows the tab switcher.
+     */
+    private void showTabSwitcher() {
+        if (mTabModelWrapper == null) {
+            mTabModelWrapper = (AccessibilityTabModelWrapper) LayoutInflater.from(
+                    mContentViewHolder.getContext()).inflate(
+                            R.layout.accessibility_tab_switcher, null);
+            mTabModelWrapper.setup(null);
+            mTabModelWrapper.setTabModelSelector(mTabModelSelector);
+        }
+
+        if (mTabModelWrapper.getParent() == null) {
+            mContentViewHolder.addView(mTabModelWrapper);
+        }
+        mToolbar.showAddButton(true);
+    }
+
+    /**
+     * Returns the visibility status of the tab switcher.
+     */
+    public boolean isTabSwitcherVisible() {
+        return mTabModelWrapper != null && mTabModelWrapper.getParent() == mContentViewHolder;
+    }
+
+    /**
      * Toggles the tab switcher visibility.
      */
     public void toggleTabSwitcher() {
-        mTabModelSelector.toggleTabSwitcher();
-    }
-
-    public boolean isTabSwitcherVisible() {
-        return mTabModelSelector.isTabSwitcherVisible();
-    }
-
-    public void hideTabSwitcher() {
-        mTabModelSelector.hideTabSwitcher();
+        if (!isTabSwitcherVisible()) {
+            showTabSwitcher();
+        } else {
+            hideTabSwitcher();
+        }
     }
 
     /**

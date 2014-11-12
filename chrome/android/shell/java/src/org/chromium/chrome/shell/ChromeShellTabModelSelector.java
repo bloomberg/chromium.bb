@@ -4,9 +4,7 @@
 
 package org.chromium.chrome.shell;
 
-import android.view.LayoutInflater;
-import android.view.ViewGroup;
-import android.view.ViewParent;
+import android.content.Context;
 
 import org.chromium.chrome.browser.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModel;
@@ -16,7 +14,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelDelegate;
 import org.chromium.chrome.browser.tabmodel.TabModelOrderController;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorBase;
-import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -30,18 +27,17 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
 
     private final WindowAndroid mWindow;
     private final ContentVideoViewClient mContentVideoViewClient;
-    private final ViewGroup mParent;
+    private final Context mContext;
     private final TabModelOrderController mOrderController;
 
-    private AccessibilityTabModelWrapper mTabModelWrapper;
     private TabManager mTabManager;
 
     public ChromeShellTabModelSelector(
-            WindowAndroid window, ContentVideoViewClient videoViewClient, ViewGroup parent,
+            WindowAndroid window, ContentVideoViewClient videoViewClient, Context context,
             TabManager tabManager) {
         mWindow = window;
         mContentVideoViewClient = videoViewClient;
-        mParent = parent;
+        mContext = context;
         mOrderController = new TabModelOrderController(this);
         mTabManager = tabManager;
 
@@ -68,7 +64,7 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
 
             @Override
             public boolean isInOverviewMode() {
-                return isTabSwitcherVisible();
+                return mTabManager.isTabSwitcherVisible();
             }
 
             @Override
@@ -96,52 +92,12 @@ class ChromeShellTabModelSelector extends TabModelSelectorBase {
             }
         };
         ChromeShellTab tab = new ChromeShellTab(
-                mParent.getContext(), loadUrlParams.getUrl(), mWindow, client, mTabManager);
+                mContext, loadUrlParams.getUrl(), mWindow, client, mTabManager);
         int index = mOrderController.determineInsertionIndex(type, tab);
         TabModel tabModel = getCurrentModel();
         tabModel.addTab(tab, index, type);
         tabModel.setIndex(index, TabSelectionType.FROM_NEW);
         return tab;
-    }
-
-    /**
-     * Toggles the tab switcher visibility.
-     */
-    public void toggleTabSwitcher() {
-        if (!isTabSwitcherVisible()) {
-            showTabSwitcher();
-        } else {
-            hideTabSwitcher();
-        }
-    }
-
-    /*
-     * Hide the tab switcher.
-     */
-    public void hideTabSwitcher() {
-        if (mTabModelWrapper == null) return;
-        ViewParent parent = mTabModelWrapper.getParent();
-        if (parent != null) {
-            assert parent == mParent;
-            mParent.removeView(mTabModelWrapper);
-        }
-    }
-
-    private void showTabSwitcher() {
-        if (mTabModelWrapper == null) {
-            mTabModelWrapper = (AccessibilityTabModelWrapper) LayoutInflater.from(
-                    mParent.getContext()).inflate(R.layout.accessibility_tab_switcher, null);
-            mTabModelWrapper.setup(null);
-            mTabModelWrapper.setTabModelSelector(this);
-        }
-
-        if (mTabModelWrapper.getParent() == null) {
-            mParent.addView(mTabModelWrapper);
-        }
-    }
-
-    public boolean isTabSwitcherVisible() {
-        return mTabModelWrapper != null && mTabModelWrapper.getParent() == mParent;
     }
 
 }

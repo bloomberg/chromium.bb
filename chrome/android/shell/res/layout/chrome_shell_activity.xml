@@ -17,6 +17,13 @@
         android:orientation="horizontal"
         android:background="@drawable/progress">
         <org.chromium.chrome.browser.widget.TintedImageButton
+            android:id="@+id/add_button"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@android:drawable/ic_menu_add"
+            android:visibility="gone"
+            android:scaleType="center"/>
+        <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/stop_reload_button"
             android:layout_width="38dp"
             android:layout_height="38dp"
