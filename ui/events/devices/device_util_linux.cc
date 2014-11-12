@@ -8,11 +8,16 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 
 namespace ui {
 
+// We consider the touchscreen to be internal if it is an I2c device. We search
+// all the dev input nodes registered by I2C devices to see if we can find
+// eventXXX.
 bool IsTouchscreenInternal(const base::FilePath& path) {
+  DCHECK(!base::MessageLoopForUI::IsCurrent());
   std::string event_node = path.BaseName().value();
   if (event_node.empty() || !StartsWithASCII(event_node, "event", false))
     return false;

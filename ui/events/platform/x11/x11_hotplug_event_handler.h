@@ -6,6 +6,7 @@
 #define UI_EVENTS_PLATFORM_X11_X11_HOTPLUG_EVENT_HANDLER_H_
 
 #include "ui/events/devices/x11/device_list_cache_x11.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 
 namespace ui {
 
@@ -15,17 +16,14 @@ class DeviceHotplugEventObserver;
 // observer.
 class X11HotplugEventHandler {
  public:
-  explicit X11HotplugEventHandler(DeviceHotplugEventObserver* delegate);
+  X11HotplugEventHandler();
   ~X11HotplugEventHandler();
 
   // Called on an X11 hotplug event.
   void OnHotplugEvent();
 
  private:
-  void HandleTouchscreenDevices(const XIDeviceList& device_list);
-  void HandleKeyboardDevices(const XIDeviceList& device_list);
-
-  DeviceHotplugEventObserver* delegate_;  // Not owned.
+  X11AtomCache atom_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(X11HotplugEventHandler);
 };

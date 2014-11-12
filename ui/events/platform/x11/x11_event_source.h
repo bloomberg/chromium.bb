@@ -50,6 +50,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource {
   // PlatformEventSource:
   uint32_t DispatchEvent(XEvent* xevent) override;
   void StopCurrentEventStream() override;
+  void OnDispatcherListChanged() override;
 
   // The connection to the X11 server used to receive the events.
   XDisplay* display_;
