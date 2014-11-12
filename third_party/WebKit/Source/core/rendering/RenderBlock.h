@@ -444,7 +444,7 @@ protected:
     enum PageBoundaryRule { ExcludePageBoundary, IncludePageBoundary };
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule = ExcludePageBoundary) const;
 
-    bool createsBlockFormattingContext() const;
+    bool createsNewFormattingContext() const;
 
 public:
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit offset) const;

@@ -1285,7 +1285,7 @@ bool RenderBlock::isSelfCollapsingBlock() const
     // We should be able to give a quick answer if the box is a relayout boundary.
     // Being a relayout boundary implies a block formatting context, and also
     // our internal layout shouldn't affect our container in any way.
-    if (createsBlockFormattingContext())
+    if (createsNewFormattingContext())
         return false;
 
     // Placeholder elements are not laid out until the dimensions of their parent text control are known, so they
@@ -1543,10 +1543,11 @@ void RenderBlock::addVisualOverflowFromTheme()
     addVisualOverflow(inflatedRect);
 }
 
-bool RenderBlock::createsBlockFormattingContext() const
+bool RenderBlock::createsNewFormattingContext() const
 {
     return isInlineBlockOrInlineTable() || isFloatingOrOutOfFlowPositioned() || hasOverflowClip() || isFlexItemIncludingDeprecated()
-        || style()->specifiesColumns() || isRenderFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot() || isDocumentElement() || style()->columnSpan();
+        || style()->specifiesColumns() || isRenderFlowThread() || isTableCell() || isTableCaption() || isFieldset() || isWritingModeRoot()
+        || isDocumentElement() || style()->columnSpan() || isGridItem();
 }
 
 void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, RenderBox* child)

@@ -438,7 +438,7 @@ inline bool RenderBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
     // Expand our intrinsic height to encompass floats.
-    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsBlockFormattingContext())
+    if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) && createsNewFormattingContext())
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
     if (RenderMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
@@ -929,7 +929,7 @@ void RenderBlockFlow::rebuildFloatsFromIntruding()
     RenderBlockFlow* parentBlockFlow = toRenderBlockFlow(parent());
     bool parentHasFloats = false;
     RenderObject* prev = previousSibling();
-    while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats() || toRenderBlock(prev)->createsBlockFormattingContext())) {
+    while (prev && (!prev->isBox() || !prev->isRenderBlock() || toRenderBlock(prev)->avoidsFloats() || toRenderBlock(prev)->createsNewFormattingContext())) {
         if (prev->isFloating())
             parentHasFloats = true;
         prev = prev->previousSibling();
@@ -1078,7 +1078,7 @@ MarginInfo::MarginInfo(RenderBlockFlow* blockFlow, LayoutUnit beforeBorderPaddin
 {
     RenderStyle* blockStyle = blockFlow->style();
     ASSERT(blockFlow->isRenderView() || blockFlow->parent());
-    m_canCollapseWithChildren = !blockFlow->createsBlockFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
+    m_canCollapseWithChildren = !blockFlow->createsNewFormattingContext() && !blockFlow->isRenderFlowThread() && !blockFlow->isRenderView();
 
     m_canCollapseMarginBeforeWithChildren = m_canCollapseWithChildren && !beforeBorderPadding && blockStyle->marginBeforeCollapse() != MSEPARATE;
 
@@ -1776,7 +1776,7 @@ void RenderBlockFlow::addOverflowFromFloats()
 void RenderBlockFlow::computeOverflow(LayoutUnit oldClientAfterEdge, bool recomputeFloats)
 {
     RenderBlock::computeOverflow(oldClientAfterEdge, recomputeFloats);
-    if (!hasColumns() && (recomputeFloats || createsBlockFormattingContext() || hasSelfPaintingLayer()))
+    if (!hasColumns() && (recomputeFloats || createsNewFormattingContext() || hasSelfPaintingLayer()))
         addOverflowFromFloats();
 }
 
@@ -2476,7 +2476,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
     ASSERT(!avoidsFloats());
 
     // If we create our own block formatting context then our contents don't interact with floats outside it, even those from our parent.
-    if (createsBlockFormattingContext())
+    if (createsNewFormattingContext())
         return;
 
     // If the parent or previous sibling doesn't have any floats to add, don't bother.
@@ -2513,7 +2513,7 @@ void RenderBlockFlow::addIntrudingFloats(RenderBlockFlow* prev, LayoutUnit logic
 void RenderBlockFlow::addOverhangingFloats(RenderBlockFlow* child, bool makeChildPaintOtherFloats)
 {
     // Prevent floats from being added to the canvas by the root element, e.g., <html>.
-    if (!child->containsFloats() || child->isRenderRegion() || child->createsBlockFormattingContext())
+    if (!child->containsFloats() || child->isRenderRegion() || child->createsNewFormattingContext())
         return;
 
     LayoutUnit childLogicalTop = child->logicalTop();
