@@ -1237,9 +1237,15 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
     if (type == Resource::MainResource)
         return;
 
+    ASSERT(type == Resource::Script || type == Resource::CSSStyleSheet || type == Resource::Image);
+
     String encoding;
-    if (type == Resource::Script || type == Resource::CSSStyleSheet)
+    if (type == Resource::Script || type == Resource::CSSStyleSheet) {
         encoding = charset.isEmpty() ? m_document->charset().string() : charset;
+
+        // RequestContext for Resource::Image is set in fetchImage below.
+        determineRequestContext(request.mutableResourceRequest(), type);
+    }
 
     request.setCharset(encoding);
     request.setForPreload(true);
@@ -1248,6 +1254,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
     // Loading images involves several special cases, so use dedicated fetch method instead.
     if (type == Resource::Image)
         resource = fetchImage(request);
+
     if (!resource)
         resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
