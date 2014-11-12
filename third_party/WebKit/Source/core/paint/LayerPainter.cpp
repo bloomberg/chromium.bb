@@ -158,6 +158,72 @@ void LayerPainter::paintLayerContentsAndReflection(GraphicsContext* context, con
     paintLayerContents(context, paintingInfo, localPaintFlags);
 }
 
+class ClipPathHelper {
+public:
+    ClipPathHelper(GraphicsContext* context, const RenderLayer& renderLayer, const LayerPaintingInfo& paintingInfo, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed,
+        const LayoutPoint& offsetFromRoot, PaintLayerFlags paintFlags)
+        : m_resourceClipper(0), m_clipStateSaver(*context, false), m_renderLayer(renderLayer), m_context(context)
+    {
+        RenderStyle* style = renderLayer.renderer()->style();
+
+        // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
+        // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
+        // scrolling contents and scrollbars.
+        if (!renderLayer.renderer()->hasClipPath() || !style || (renderLayer.needsCompositedScrolling() && !(paintFlags & PaintLayerPaintingChildClippingMaskPhase)))
+            return;
+
+        m_clipperState = RenderSVGResourceClipper::ClipperNotApplied;
+
+        ASSERT(style->clipPath());
+        if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
+            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
+            if (clipPath->isValid()) {
+                m_clipStateSaver.save();
+
+                if (!rootRelativeBoundsComputed) {
+                    rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+                    rootRelativeBoundsComputed = true;
+                }
+
+                context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
+            }
+        } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
+            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style->clipPath());
+            Document& document = renderLayer.renderer()->document();
+            // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
+            Element* element = document.getElementById(referenceClipPathOperation->fragment());
+            if (isSVGClipPathElement(element) && element->renderer()) {
+                // FIXME: Saving at this point is not required in the 'mask'-
+                // case, or if the clip ends up empty.
+                m_clipStateSaver.save();
+                if (!rootRelativeBoundsComputed) {
+                    rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+                    rootRelativeBoundsComputed = true;
+                }
+
+                m_resourceClipper = toRenderSVGResourceClipper(toRenderSVGResourceContainer(element->renderer()));
+                if (!m_resourceClipper->applyClippingToContext(renderLayer.renderer(), rootRelativeBounds,
+                    paintingInfo.paintDirtyRect, context, m_clipperState)) {
+                    // No need to post-apply the clipper if this failed.
+                    m_resourceClipper = 0;
+                }
+            }
+        }
+    }
+
+    ~ClipPathHelper()
+    {
+        if (m_resourceClipper)
+            m_resourceClipper->postApplyStatefulResource(m_renderLayer.renderer(), m_context, m_clipperState);
+    }
+private:
+    RenderSVGResourceClipper* m_resourceClipper;
+    GraphicsContextStateSaver m_clipStateSaver;
+    RenderSVGResourceClipper::ClipperState m_clipperState;
+    const RenderLayer& m_renderLayer;
+    GraphicsContext* m_context;
+};
+
 void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
     ASSERT(m_renderLayer.isSelfPaintingLayer() || m_renderLayer.hasSelfPaintingLayerDescendant());
@@ -199,52 +265,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
 
-    // Apply clip-path to context.
-    GraphicsContextStateSaver clipStateSaver(*context, false);
-    RenderStyle* style = m_renderLayer.renderer()->style();
-    RenderSVGResourceClipper* resourceClipper = 0;
-    RenderSVGResourceClipper::ClipperState clipperState = RenderSVGResourceClipper::ClipperNotApplied;
-
-    // Clip-path, like border radius, must not be applied to the contents of a composited-scrolling container.
-    // It must, however, still be applied to the mask layer, so that the compositor can properly mask the
-    // scrolling contents and scrollbars.
-    if (m_renderLayer.renderer()->hasClipPath() && style && (!m_renderLayer.needsCompositedScrolling() || paintFlags & PaintLayerPaintingChildClippingMaskPhase)) {
-        ASSERT(style->clipPath());
-        if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
-            ShapeClipPathOperation* clipPath = toShapeClipPathOperation(style->clipPath());
-            if (clipPath->isValid()) {
-                clipStateSaver.save();
-
-                if (!rootRelativeBoundsComputed) {
-                    rootRelativeBounds = m_renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
-                    rootRelativeBoundsComputed = true;
-                }
-
-                context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
-            }
-        } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
-            ReferenceClipPathOperation* referenceClipPathOperation = toReferenceClipPathOperation(style->clipPath());
-            Document& document = m_renderLayer.renderer()->document();
-            // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)
-            Element* element = document.getElementById(referenceClipPathOperation->fragment());
-            if (isSVGClipPathElement(element) && element->renderer()) {
-                // FIXME: Saving at this point is not required in the 'mask'-
-                // case, or if the clip ends up empty.
-                clipStateSaver.save();
-                if (!rootRelativeBoundsComputed) {
-                    rootRelativeBounds = m_renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
-                    rootRelativeBoundsComputed = true;
-                }
-
-                resourceClipper = toRenderSVGResourceClipper(toRenderSVGResourceContainer(element->renderer()));
-                if (!resourceClipper->applyClippingToContext(m_renderLayer.renderer(), rootRelativeBounds,
-                    paintingInfo.paintDirtyRect, context, clipperState)) {
-                    // No need to post-apply the clipper if this failed.
-                    resourceClipper = 0;
-                }
-            }
-        }
-    }
+    ClipPathHelper clipPathHelper(context, m_renderLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
 
     // Blending operations must be performed only with the nearest ancestor stacking context.
     // Note that there is no need to create a transparency layer if we're painting the root.
@@ -333,9 +354,6 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         context->restore();
         m_renderLayer.setUsedTransparency(false);
     }
-
-    if (resourceClipper)
-        resourceClipper->postApplyStatefulResource(m_renderLayer.renderer(), context, clipperState);
 }
 
 static bool inContainingBlockChain(RenderLayer* startLayer, RenderLayer* endLayer)
