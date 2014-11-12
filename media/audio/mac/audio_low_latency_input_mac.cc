@@ -461,16 +461,6 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   if (!audio_input)
     return kAudioUnitErr_InvalidElement;
 
-  // Update the |mDataByteSize| value in the audio_buffer_list() since
-  // |number_of_frames| can be changed on the fly.
-  // |mDataByteSize| needs to be exactly mapping to |number_of_frames|,
-  // otherwise it will put CoreAudio into bad state and results in
-  // AudioUnitRender() returning -50 for the new created stream.
-  // See crbug/428706 for details.
-  AudioBuffer* audio_buffer = audio_input->audio_buffer_list()->mBuffers;
-  audio_buffer->mDataByteSize =
-      number_of_frames * audio_input->format_.mBytesPerFrame;
-
   // Receive audio from the AUHAL from the output scope of the Audio Unit.
   OSStatus result = AudioUnitRender(audio_input->audio_unit(),
                                     flags,
