@@ -24,6 +24,12 @@ enum State {
 };
 
 State GetProcessState() {
+  // Disables the new avatar menu if the web-based signin is turned on, because
+  // the new avatar menu always uses the inline signin, which may break some
+  // SAML users.
+  if (switches::IsEnableWebBasedSignin())
+    return STATE_OLD_AVATAR_MENU;
+
   // Find the state of both command line args.
   bool is_new_avatar_menu =
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -126,8 +132,7 @@ bool IsEnableAccountConsistency() {
 
 bool IsEnableWebBasedSignin() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebBasedSignin) && !IsNewProfileManagement() &&
-      !IsEnableWebviewBasedSignin();
+      switches::kEnableWebBasedSignin) && !IsEnableWebviewBasedSignin();
 }
 
 bool IsEnableWebviewBasedSignin() {
