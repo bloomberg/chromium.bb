@@ -886,26 +886,24 @@ String StylePropertySerializer::backgroundRepeatPropertyValue() const
         return String();
     if (m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatX) != m_propertySet.propertyIsImportant(CSSPropertyBackgroundRepeatY))
         return String();
-    if (repeatX->cssValueType() == repeatY->cssValueType()
-        && (repeatX->cssValueType() == CSSValue::CSS_INITIAL || repeatX->cssValueType() == CSSValue::CSS_INHERIT)) {
+    if ((repeatX->isInitialValue() && repeatY->isInitialValue()) || (repeatX->isInheritedValue() && repeatY->isInheritedValue()))
         return repeatX->cssText();
-    }
 
     const CSSValueList* repeatXList = 0;
     int repeatXLength = 1;
-    if (repeatX->cssValueType() == CSSValue::CSS_VALUE_LIST) {
+    if (repeatX->isValueList()) {
         repeatXList = toCSSValueList(repeatX);
         repeatXLength = repeatXList->length();
-    } else if (repeatX->cssValueType() != CSSValue::CSS_PRIMITIVE_VALUE) {
+    } else if (!repeatX->isPrimitiveValue()) {
         return String();
     }
 
     const CSSValueList* repeatYList = 0;
     int repeatYLength = 1;
-    if (repeatY->cssValueType() == CSSValue::CSS_VALUE_LIST) {
+    if (repeatY->isValueList()) {
         repeatYList = toCSSValueList(repeatY);
         repeatYLength = repeatYList->length();
-    } else if (repeatY->cssValueType() != CSSValue::CSS_PRIMITIVE_VALUE) {
+    } else if (!repeatY->isPrimitiveValue()) {
         return String();
     }
 

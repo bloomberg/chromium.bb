@@ -34,14 +34,6 @@ enum CSSTextFormattingFlags { QuoteCSSStringIfNeeded, AlwaysQuoteCSSString };
 
 class CSSValue : public RefCountedWillBeGarbageCollectedFinalized<CSSValue> {
 public:
-    enum Type {
-        CSS_INHERIT = 0,
-        CSS_PRIMITIVE_VALUE = 1,
-        CSS_VALUE_LIST = 2,
-        CSS_CUSTOM = 3,
-        CSS_INITIAL = 4
-    };
-
     // Override RefCounted's deref() to ensure operator delete is called on
     // the appropriate subclass type.
     // When oilpan is enabled the finalize method is called by the garbage
@@ -53,8 +45,6 @@ public:
             destroy();
     }
 #endif // !ENABLE(OILPAN)
-
-    Type cssValueType() const;
 
     String cssText() const;
 

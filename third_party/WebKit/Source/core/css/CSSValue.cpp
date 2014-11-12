@@ -69,19 +69,6 @@ bool CSSValue::isImplicitInitialValue() const
     return m_classType == InitialClass && toCSSInitialValue(this)->isImplicit();
 }
 
-CSSValue::Type CSSValue::cssValueType() const
-{
-    if (isInheritedValue())
-        return CSS_INHERIT;
-    if (isPrimitiveValue())
-        return CSS_PRIMITIVE_VALUE;
-    if (isValueList())
-        return CSS_VALUE_LIST;
-    if (isInitialValue())
-        return CSS_INITIAL;
-    return CSS_CUSTOM;
-}
-
 bool CSSValue::hasFailedOrCanceledSubresources() const
 {
     if (isValueList())

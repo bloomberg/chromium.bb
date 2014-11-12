@@ -30,29 +30,21 @@ void DeferredLegacyStyleInterpolation::apply(StyleResolverState& state) const
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSValue& value)
 {
-    switch (value.cssValueType()) {
-    case CSSValue::CSS_INHERIT:
+    // FIXME: should not require resolving styles for initial.
+    if (value.isInitialValue() || value.isInheritedValue())
         return true;
-    case CSSValue::CSS_PRIMITIVE_VALUE:
+    if (value.isPrimitiveValue())
         return interpolationRequiresStyleResolve(toCSSPrimitiveValue(value));
-    case CSSValue::CSS_VALUE_LIST:
+    if (value.isValueList())
         return interpolationRequiresStyleResolve(toCSSValueList(value));
-    case CSSValue::CSS_CUSTOM:
-        if (value.isImageValue())
-            return interpolationRequiresStyleResolve(toCSSImageValue(value));
-        if (value.isShadowValue())
-            return interpolationRequiresStyleResolve(toCSSShadowValue(value));
-        if (value.isSVGDocumentValue())
-            return interpolationRequiresStyleResolve(toCSSSVGDocumentValue(value));
-        // FIXME: consider other custom types.
-        return true;
-    case CSSValue::CSS_INITIAL:
-        // FIXME: should not require resolving styles for initial.
-        return true;
-    default:
-        ASSERT_NOT_REACHED();
-        return true;
-    }
+    if (value.isImageValue())
+        return interpolationRequiresStyleResolve(toCSSImageValue(value));
+    if (value.isShadowValue())
+        return interpolationRequiresStyleResolve(toCSSShadowValue(value));
+    if (value.isSVGDocumentValue())
+        return interpolationRequiresStyleResolve(toCSSSVGDocumentValue(value));
+    // FIXME: consider other custom types.
+    return true;
 }
 
 bool DeferredLegacyStyleInterpolation::interpolationRequiresStyleResolve(const CSSPrimitiveValue& primitiveValue)
