@@ -67,18 +67,18 @@ if [[ -n "@@SXS_USER_DATA_DIR@@" ]]; then
   fi
 fi
 
-# Make sure that the profile directory specified in the environment, if any,
-# overrides the default.
-if [[ -n "$CHROME_USER_DATA_DIR" ]]; then
-  PROFILE_DIRECTORY_FLAG="--user-data-dir=$CHROME_USER_DATA_DIR"
-fi
-
 # Sanitize std{in,out,err} because they'll be shared with untrusted child
 # processes (http://crbug.com/376567).
 exec < /dev/null
 exec > >(exec cat)
 exec 2> >(exec cat >&2)
 
-# Note: exec -a below is a bashism.
-exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$PROFILE_DIRECTORY_FLAG" \
-  "$@"
+# Make sure that the profile directory specified in the environment, if any,
+# overrides the default.
+if [[ -n "$CHROME_USER_DATA_DIR" ]]; then
+  # Note: exec -a below is a bashism.
+  exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ \
+    --user-data-dir="$CHROME_USER_DATA_DIR" "$@"
+else
+  exec -a "$0" "$HERE/@@PROGNAME@@" @@DEFAULT_FLAGS@@ "$@"
+fi
