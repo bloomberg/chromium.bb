@@ -22,8 +22,8 @@ base::StaticAtomicSequenceNumber g_ref_num;
 // 8 bits set to 0 for use as flags.
 inline uint32 GetRefNumUpper24() {
   base::debug::TraceLog* trace_log = base::debug::TraceLog::GetInstance();
-  int32 pid = trace_log ? trace_log->process_id() : 0;
-  int32 count = g_ref_num.GetNext();
+  uint32 pid = trace_log ? trace_log->process_id() : 0;
+  uint32 count = g_ref_num.GetNext();
   // The 24 bit hash is composed of 14 bits of the count and 10 bits of the
   // Process ID. With the current trace event buffer cap, the 14-bit count did
   // not appear to wrap during a trace. Note that it is not a big deal if
