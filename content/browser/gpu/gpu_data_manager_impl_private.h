@@ -76,7 +76,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 
   void GetBlacklistReasons(base::ListValue* reasons) const;
 
-  std::vector<std::string> GetDriverBugWorkarounds() const;
+  void GetDriverBugWorkarounds(base::ListValue* workarounds) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

@@ -26,6 +26,15 @@
                     { "name": "driverBugWorkarounds", "type": "array", "items": { "type": "string" }, "description": "An optional array of GPU driver bug workarounds." }
                 ],
                 "description": "Provides information about the GPU(s) on the system."
+            },
+            {
+                "id": "SystemInfo",
+                "type": "object",
+                "properties": [
+                    { "name": "gpu", "$ref": "GPUInfo", "description": "Information about the GPUs on the system." },
+                    { "name": "modelName", "type": "string", "description": "A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro 10.1'. Will be the empty string if not supported." }
+                ],
+                "description": "Provides information about the system."
             }
         ],
         "commands": [
@@ -33,9 +42,7 @@
                 "name": "getInfo",
                 "description": "Returns information about the system.",
                 "returns": [
-                    { "name": "gpu", "$ref": "GPUInfo", "description": "Information about the GPUs on the system." },
-                    { "name": "modelName", "type": "string", "description": "A platform-dependent description of the model of the machine. On Mac OS, this is, for example, 'MacBookPro'. Will be the empty string if not supported." },
-                    { "name": "modelVersion", "type": "string", "description": "A platform-dependent description of the version of the machine. On Mac OS, this is, for example, '10.1'. Will be the empty string if not supported." }
+                    { "name": "info", "$ref": "SystemInfo", "description": "Information about the system." }
                 ],
                 "handlers": ["browser"]
             }

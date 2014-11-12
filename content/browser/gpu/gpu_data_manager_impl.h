@@ -120,8 +120,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   void GetBlacklistReasons(base::ListValue* reasons) const;
 
   // Returns the workarounds that are applied to the current system as
-  // a vector of strings.
-  std::vector<std::string> GetDriverBugWorkarounds() const;
+  // a list of strings.
+  void GetDriverBugWorkarounds(base::ListValue* workarounds) const;
 
   void AddLogMessage(int level,
                      const std::string& header,

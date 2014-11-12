@@ -274,7 +274,7 @@ bool UseSurfacesEnabled() {
   return command_line.HasSwitch(switches::kUseSurfaces);
 }
 
-base::DictionaryValue* GetFeatureStatus() {
+base::Value* GetFeatureStatus() {
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
   std::string gpu_access_blocked_reason;
   bool gpu_access_blocked =
@@ -371,8 +371,10 @@ base::Value* GetProblems() {
   return problem_list;
 }
 
-std::vector<std::string> GetDriverBugWorkarounds() {
-  return GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds();
+base::Value* GetDriverBugWorkarounds() {
+  base::ListValue* workaround_list = new base::ListValue();
+  GpuDataManagerImpl::GetInstance()->GetDriverBugWorkarounds(workaround_list);
+  return workaround_list;
 }
 
 }  // namespace content

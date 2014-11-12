@@ -18,8 +18,8 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_protocol.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
+#include "content/browser/devtools/devtools_system_info_handler.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
-#include "content/browser/devtools/protocol/system_info_handler.h"
 #include "content/browser/devtools/protocol/tethering_handler.h"
 #include "content/browser/devtools/protocol/tracing_handler.h"
 #include "content/common/devtools_messages.h"
@@ -413,7 +413,6 @@ class BrowserTarget {
       : message_loop_(message_loop),
         server_wrapper_(server_wrapper),
         connection_id_(connection_id),
-        system_info_handler_(new devtools::system_info::SystemInfoHandler()),
         tethering_handler_(new devtools::tethering::TetheringHandler(
             delegate, message_loop->message_loop_proxy())),
         tracing_handler_(new devtools::tracing::TracingHandler(
@@ -421,9 +420,20 @@ class BrowserTarget {
         protocol_handler_(new DevToolsProtocolHandlerImpl()) {
     protocol_handler_->SetNotifier(
         base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
-    protocol_handler_->SetSystemInfoHandler(system_info_handler_.get());
     protocol_handler_->SetTetheringHandler(tethering_handler_.get());
     protocol_handler_->SetTracingHandler(tracing_handler_.get());
+  }
+
+  ~BrowserTarget() {
+    STLDeleteElements(&handlers_);
+  }
+
+  // Takes ownership.
+  void RegisterHandler(DevToolsProtocol::Handler* handler) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+    handler->SetNotifier(
+        base::Bind(&BrowserTarget::Respond, base::Unretained(this)));
+    handlers_.push_back(handler);
   }
 
   void HandleMessage(const std::string& message) {
@@ -438,6 +448,11 @@ class BrowserTarget {
 
     scoped_refptr<DevToolsProtocol::Response> response =
         protocol_handler_->HandleCommand(command);
+    for (const auto& handler : handlers_) {
+      if (response.get())
+        break;
+      response = handler->HandleCommand(command);
+    }
 
     if (response.get()) {
       if (!response->is_async_promise())
@@ -461,10 +476,10 @@ class BrowserTarget {
   base::MessageLoop* const message_loop_;
   ServerWrapper* const server_wrapper_;
   const int connection_id_;
-  scoped_ptr<devtools::system_info::SystemInfoHandler> system_info_handler_;
   scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> protocol_handler_;
+  std::vector<DevToolsProtocol::Handler*> handlers_;
 };
 
 }  // namespace
@@ -901,10 +916,13 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequest(
   std::string browser_prefix = "/devtools/browser";
   size_t browser_pos = request.path.find(browser_prefix);
   if (browser_pos == 0) {
-    browser_targets_[connection_id] = new BrowserTarget(thread_->message_loop(),
-                                                        server_wrapper_,
-                                                        delegate_.get(),
-                                                        connection_id);
+    BrowserTarget* browser_target = new BrowserTarget(thread_->message_loop(),
+                                                      server_wrapper_,
+                                                      delegate_.get(),
+                                                      connection_id);
+    browser_target->RegisterHandler(
+        new DevToolsSystemInfoHandler());
+    browser_targets_[connection_id] = browser_target;
     AcceptWebSocket(connection_id, request);
     return;
   }

@@ -18,9 +18,7 @@ class SystemInfoHandler {
   SystemInfoHandler();
   virtual ~SystemInfoHandler();
 
-  Response GetInfo(scoped_refptr<devtools::system_info::GPUInfo>* gpu,
-                   std::string* model_name,
-                   std::string* model_version);
+  Response GetInfo(scoped_refptr<SystemInfo>* info);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SystemInfoHandler);
