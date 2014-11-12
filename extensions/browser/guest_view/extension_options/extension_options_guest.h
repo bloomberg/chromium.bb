@@ -60,6 +60,9 @@ class ExtensionOptionsGuest
       content::SessionStorageNamespace* session_storage_namespace) override;
 
   // content::WebContentsObserver implementation.
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:
