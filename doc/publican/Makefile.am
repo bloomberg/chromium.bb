@@ -47,6 +47,7 @@ if HAVE_XMLTO
 if HAVE_XSLTPROC
 noinst_DATA = Wayland $(publican_targets)
 XMLTO_PARAM = \
+	--skip-validation \
 	--stringparam chunk.section.depth=0 \
 	--stringparam toc.section.depth=1 \
 	--stringparam html.stylesheet=css/default.css

@@ -61,7 +61,7 @@
 </xsl:template>
 
 <xsl:template match="ref">
-  <emphasis><xsl:apply-templates /></emphasis>
+  <link linkend="{@refid}"><xsl:value-of select="." /></link>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='return']">
@@ -81,10 +81,7 @@
   <itemizedlist>
     <listitem>
       <para>
-        See also:
-        <xsl:for-each select="para/ref">
-          <emphasis><xsl:apply-templates /><xsl:text> </xsl:text></emphasis>
-        </xsl:for-each>
+        See also: <xsl:apply-templates />
       </para>
     </listitem>
   </itemizedlist>
@@ -94,7 +91,7 @@
   <itemizedlist>
     <listitem>
       <para>
-        Since: <xsl:apply-templates select="para"/>
+        Since: <xsl:apply-templates />
       </para>
     </listitem>
   </itemizedlist>
@@ -102,10 +99,6 @@
 
 <xsl:template match="simplesect[@kind='note']">
   <emphasis>Note: <xsl:apply-templates /></emphasis>
-</xsl:template>
-
-<xsl:template match="programlisting//sp">
-  <xsl:text> </xsl:text>
 </xsl:template>
 
 <xsl:template match="sp">
@@ -135,9 +128,9 @@
 <!-- methods -->
 <xsl:template match="memberdef" >
   <xsl:if test="@kind = 'function' and @static = 'no'">
-    <varlistentry>
+    <varlistentry id="{@id}">
         <term>
-          <xsl:apply-templates select="name"/>
+          <xsl:value-of select="name"/>
         - <xsl:apply-templates select="briefdescription" />
         </term>
         <listitem>
@@ -154,8 +147,8 @@
 
 <!-- classes -->
 <xsl:template match="compounddef" >
-    <xsl:if test="@kind = 'class' ">
-    <varlistentry>
+    <xsl:if test="@kind = 'class'">
+    <varlistentry id="{@id}">
         <term>
             <xsl:apply-templates select="compoundname" />
             <xsl:if test="briefdescription">
@@ -164,7 +157,7 @@
         </term>
 
         <listitem>
-          <xsl:apply-templates select="detaileddescription/para" />
+          <xsl:apply-templates select="detaileddescription" />
         </listitem>
     </varlistentry>
     </xsl:if>
