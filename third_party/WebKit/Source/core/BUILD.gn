@@ -260,6 +260,8 @@ source_set("remaining") {
 
   if (is_mac) {
     sources -= [
+      "rendering/RenderThemeChromiumDefault.cpp",
+      "rendering/RenderThemeChromiumDefault.h",
       "rendering/RenderThemeChromiumFontProvider.cpp",
       "rendering/RenderThemeChromiumFontProvider.h",
       "rendering/RenderThemeChromiumSkia.cpp",
