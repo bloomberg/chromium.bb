@@ -51,6 +51,8 @@ public:
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
+    bool isSelected() const;
+
 protected:
     virtual void willBeDestroyed() override;
 
@@ -66,8 +68,6 @@ protected:
     virtual LayoutUnit minimumReplacedHeight() const { return LayoutUnit(); }
 
     virtual void setSelectionState(SelectionState) override final;
-
-    bool isSelected() const;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
 

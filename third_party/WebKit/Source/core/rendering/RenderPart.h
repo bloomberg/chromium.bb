@@ -53,6 +53,7 @@ public:
     bool updateWidgetGeometry();
 
     virtual bool isRenderPart() const override final { return true; }
+    virtual void paintContents(PaintInfo&, const LayoutPoint&);
 
 protected:
     virtual LayerType layerTypeRequired() const override;
@@ -60,7 +61,6 @@ protected:
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override final;
     virtual void layout() override;
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
-    virtual void paintContents(PaintInfo&, const LayoutPoint&);
     virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const override final;
 
 private:

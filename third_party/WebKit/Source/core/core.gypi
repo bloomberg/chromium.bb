@@ -1480,6 +1480,8 @@
             'paint/ObjectPainter.h',
             'paint/MultiColumnSetPainter.cpp',
             'paint/MultiColumnSetPainter.h',
+            'paint/PartPainter.cpp',
+            'paint/PartPainter.h',
             'paint/ReplacedPainter.cpp',
             'paint/ReplacedPainter.h',
             'paint/ReplicaPainter.cpp',

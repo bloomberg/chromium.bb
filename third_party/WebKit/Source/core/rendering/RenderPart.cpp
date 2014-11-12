@@ -30,8 +30,8 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/paint/BoxPainter.h"
+#include "core/paint/PartPainter.h"
 #include "core/plugins/PluginView.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
@@ -223,85 +223,14 @@ void RenderPart::layout()
     clearNeedsLayout();
 }
 
-// FIXME: factor into PartPainter.
 void RenderPart::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
-
-    if (!shouldPaint(paintInfo, paintOffset))
-        return;
-
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-
-    if (hasBoxDecorationBackground() && (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection))
-        paintBoxDecorationBackground(paintInfo, adjustedPaintOffset);
-
-    if (paintInfo.phase == PaintPhaseMask) {
-        paintMask(paintInfo, adjustedPaintOffset);
-        return;
-    }
-
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && style()->hasOutline())
-        ObjectPainter(*this).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, size()));
-
-    if (paintInfo.phase != PaintPhaseForeground)
-        return;
-
-    if (style()->hasBorderRadius()) {
-        LayoutRect borderRect = LayoutRect(adjustedPaintOffset, size());
-
-        if (borderRect.isEmpty())
-            return;
-
-        // Push a clip if we have a border radius, since we want to round the foreground content that gets painted.
-        paintInfo.context->save();
-        RoundedRect roundedInnerRect = style()->getRoundedInnerBorderFor(borderRect,
-            paddingTop() + borderTop(), paddingBottom() + borderBottom(), paddingLeft() + borderLeft(), paddingRight() + borderRight(), true, true);
-        BoxPainter::clipRoundedInnerRect(paintInfo.context, borderRect, roundedInnerRect);
-    }
-
-    if (this->widget())
-        paintContents(paintInfo, paintOffset);
-
-    if (style()->hasBorderRadius())
-        paintInfo.context->restore();
-
-    // Paint a partially transparent wash over selected widgets.
-    if (isSelected() && !document().printing()) {
-        LayoutRect rect = localSelectionRect();
-        rect.moveBy(adjustedPaintOffset);
-        paintInfo.context->fillRect(pixelSnappedIntRect(rect), selectionBackgroundColor());
-    }
-
-    if (canResize())
-        layer()->scrollableArea()->paintResizer(paintInfo.context, roundedIntPoint(adjustedPaintOffset), paintInfo.rect);
+    PartPainter(*this).paint(paintInfo, paintOffset);
 }
 
 void RenderPart::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    LayoutPoint adjustedPaintOffset = paintOffset + location();
-
-    Widget* widget = this->widget();
-    RELEASE_ASSERT(widget);
-
-    // Tell the widget to paint now. This is the only time the widget is allowed
-    // to paint itself. That way it will composite properly with z-indexed layers.
-    IntPoint widgetLocation = widget->frameRect().location();
-    IntPoint paintLocation(roundToInt(adjustedPaintOffset.x() + borderLeft() + paddingLeft()),
-        roundToInt(adjustedPaintOffset.y() + borderTop() + paddingTop()));
-    IntRect paintRect = paintInfo.rect;
-
-    IntSize widgetPaintOffset = paintLocation - widgetLocation;
-    // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,
-    // not the root. In this case, shift the CTM and adjust the paintRect to be root-relative to fix plug-in drawing.
-    if (!widgetPaintOffset.isZero()) {
-        paintInfo.context->translate(widgetPaintOffset.width(), widgetPaintOffset.height());
-        paintRect.move(-widgetPaintOffset);
-    }
-    widget->paint(paintInfo.context, paintRect);
-
-    if (!widgetPaintOffset.isZero())
-        paintInfo.context->translate(-widgetPaintOffset.width(), -widgetPaintOffset.height());
+    PartPainter(*this).paintContents(paintInfo, paintOffset);
 }
 
 CursorDirective RenderPart::getCursor(const LayoutPoint& point, Cursor& cursor) const
