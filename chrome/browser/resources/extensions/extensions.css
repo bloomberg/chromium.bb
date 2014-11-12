@@ -20,9 +20,9 @@ html:not(.focus-outline-visible)
 
 #dev-controls {
   -webkit-margin-end: 20px;
-  -webkit-transition: padding 100ms, height 100ms, opacity 100ms;
+  -webkit-transition: padding 100ms, max-height 100ms, opacity 100ms;
   border-bottom: 1px solid #eee;
-  height: 0;
+  max-height: 0;
   opacity: 0;
   overflow: hidden;
 }
@@ -30,15 +30,15 @@ html:not(.focus-outline-visible)
 #dev-controls .buttons-container {
   -webkit-padding-end: 3px;
   -webkit-padding-start: 4px;
-}
-
-#dev-controls .buttons-container {
-  display: -webkit-box;
-  height: 32px;  /* height + padding-top matches #dev-controls height. */
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 8px;
   padding-top: 13px;
 }
 
 #dev-controls button {
+  flex-shrink: 0;
   white-space: nowrap;
 }
 
@@ -84,17 +84,14 @@ html:not(.focus-outline-visible)
 
 #extension-settings.dev-mode #dev-controls {
   -webkit-transition-duration: 250ms;
-  height: 45px;
+  max-height: 93px;
   opacity: 1;
   padding-bottom: 7px;
 }
 
 #extension-settings.dev-mode.adt-promo #dev-controls {
-  height: 105px;  /* Allow more height for the Apps Developer Tools promo. */
-}
-
-#dev-controls-spacer {
-  -webkit-box-flex: 1;
+  /* Allow more height for the Apps Developer Tools promo. */
+  max-height: 150px;
 }
 
 #dev-toggle {
