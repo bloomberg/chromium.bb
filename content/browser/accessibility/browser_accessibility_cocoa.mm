@@ -1205,7 +1205,6 @@ NSDictionary* attributeToMethodNameMap = nil;
       NSAccessibilityChildrenAttribute,
       NSAccessibilityDescriptionAttribute,
       NSAccessibilityEnabledAttribute,
-      NSAccessibilityExpandedAttribute,
       NSAccessibilityFocusedAttribute,
       NSAccessibilityHelpAttribute,
       NSAccessibilityLinkedUIElementsAttribute,
@@ -1331,6 +1330,14 @@ NSDictionary* attributeToMethodNameMap = nil;
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         @"AXARIAAtomic",
         @"AXARIABusy",
+        nil]];
+  }
+
+  //Add expanded attribute only if it has expanded or collapsed state.
+  if (GetState(browserAccessibility_,ui::AX_STATE_EXPANDED) ||
+        GetState(browserAccessibility_,ui::AX_STATE_COLLAPSED)) {
+    [ret addObjectsFromArray:[NSArray arrayWithObjects:
+        NSAccessibilityExpandedAttribute,
         nil]];
   }
 

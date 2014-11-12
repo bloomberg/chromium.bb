@@ -1,4 +1,4 @@
 #<skip -- aria-haspopup not exposed crbug.com/423651>
-AXWebArea AXExpanded='0'
-    AXComboBox AXExpanded='0'
-    AXComboBox AXExpanded='0'
+AXWebArea
+    AXComboBox
+    AXComboBox

@@ -1,5 +1,5 @@
-AXWebArea AXExpanded='0'
-    AXMenu AXExpanded='0'
+AXWebArea
+    AXMenu
         AXMenuItem AXTitle='New' AXExpanded='0'
         AXMenuItem AXTitle='Open' AXExpanded='1'
         AXMenuItem AXTitle='Save' AXExpanded='0'
