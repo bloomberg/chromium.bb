@@ -270,6 +270,7 @@ class Forwarder(object):
       pid_file.seek(0)
       pid_file.write(
           '%s:%s' % (pid_for_lock, str(_GetProcessStartTime(pid_for_lock))))
+      pid_file.truncate()
 
   def _InitDeviceLocked(self, device, tool):
     """Initializes the device_forwarder daemon for a specific device (once).
