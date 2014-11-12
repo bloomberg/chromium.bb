@@ -152,6 +152,19 @@ public class UrlRequestContextConfig {
     }
 
     /**
+     * Sets experimental QUIC connection options, overwriting any pre-existing
+     * options. List of options is subject to change.
+     *
+     * @param quicConnectionOptions comma-separated QUIC options (for example
+     * "PACE,IW10") to use if QUIC is enabled.
+     */
+    public UrlRequestContextConfig setExperimentalQuicConnectionOptions(
+            String quicConnectionOptions) {
+        return putString(UrlRequestContextConfigList.QUIC_OPTIONS,
+                         quicConnectionOptions);
+    }
+
+    /**
      * Get JSON string representation of the config.
      */
     @Override

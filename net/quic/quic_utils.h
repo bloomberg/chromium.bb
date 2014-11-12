@@ -7,6 +7,8 @@
 #ifndef NET_QUIC_QUIC_UTILS_H_
 #define NET_QUIC_QUIC_UTILS_H_
 
+#include <string>
+
 #include "net/base/int128.h"
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
@@ -67,6 +69,11 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // name if possible (i.e. kABCD -> "ABCD"), or will just treat it as a number
   // if not.
   static std::string TagToString(QuicTag tag);
+
+  // Returns the list of QUIC tags represented by the comma separated
+  // string in |connection_options|.
+  static QuicTagVector ParseQuicConnectionOptions(
+      const std::string& connection_options);
 
   // Given a binary buffer, return a hex+ASCII dump in the style of
   // tcpdump's -X and -XX options:

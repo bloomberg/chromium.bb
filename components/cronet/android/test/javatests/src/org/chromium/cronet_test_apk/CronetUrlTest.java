@@ -160,16 +160,18 @@ public class CronetUrlTest extends CronetTestBase {
         String quicNegotiatedProtocol = "quic/1+spdy/3";
         config.enableQUIC(true);
         config.addQuicHint("www.google.com", 443, 443);
+        config.setExperimentalQuicConnectionOptions("PACE,IW10,FOO,DEADBEEF");
 
         String[] commandLineArgs = {
                 CronetTestActivity.CONFIG_KEY, config.toString() };
         CronetTestActivity activity =
-                launchCronetTestAppWithUrlAndCommandLineArgs(quicURL,
+                launchCronetTestAppWithUrlAndCommandLineArgs(null,
                                                              commandLineArgs);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
         waitForActiveShellToBeDoneLoading();
+        activity.startNetLog();
 
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
@@ -194,6 +196,7 @@ public class CronetUrlTest extends CronetTestBase {
         }
 
         assertEquals(quicNegotiatedProtocol, listener.mNegotiatedProtocol);
+        activity.stopNetLog();
     }
 
     @SmallTest

@@ -27,6 +27,7 @@
 #include "net/dns/host_resolver.h"
 #include "net/proxy/proxy_config_service.h"
 #include "net/proxy/proxy_service.h"
+#include "net/quic/quic_protocol.h"
 #include "net/socket/next_proto.h"
 
 namespace net {
@@ -72,6 +73,7 @@ class NET_EXPORT URLRequestContextBuilder {
     std::string trusted_spdy_proxy;
     bool use_alternate_protocols;
     bool enable_quic;
+    QuicTagVector quic_connection_options;
   };
 
   URLRequestContextBuilder();
@@ -161,6 +163,12 @@ class NET_EXPORT URLRequestContextBuilder {
   // Adjust |http_network_session_params_.next_protos| to enable SPDY and QUIC.
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
                              bool quic_enabled);
+
+  void set_quic_connection_options(
+      const QuicTagVector& quic_connection_options) {
+    http_network_session_params_.quic_connection_options =
+        quic_connection_options;
+  }
 
   void set_throttling_enabled(bool throttling_enabled) {
     throttling_enabled_ = throttling_enabled;

@@ -69,6 +69,8 @@ struct URLRequestContextConfig {
   std::string user_agent;
   // App-provided list of servers that support QUIC.
   ScopedVector<QuicHint> quic_hints;
+  // Comma-separted list of QUIC connection options.
+  std::string quic_connection_options;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);

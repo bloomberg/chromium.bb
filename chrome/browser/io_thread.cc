@@ -74,6 +74,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_protocol.h"
+#include "net/quic/quic_utils.h"
 #include "net/socket/tcp_client_socket.h"
 #include "net/spdy/spdy_session.h"
 #include "net/ssl/channel_id_service.h"
@@ -1283,7 +1284,7 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
     const CommandLine& command_line,
     const VariationParameters& quic_trial_params) {
   if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
-    return ParseQuicConnectionOptions(
+    return net::QuicUtils::ParseQuicConnectionOptions(
         command_line.GetSwitchValueASCII(switches::kQuicConnectionOptions));
   }
 
@@ -1296,27 +1297,7 @@ net::QuicTagVector IOThread::GetQuicConnectionOptions(
       return net::QuicTagVector();
   }
 
-  return ParseQuicConnectionOptions(it->second);
-}
-
-// static
-net::QuicTagVector IOThread::ParseQuicConnectionOptions(
-    const std::string& connection_options) {
-  net::QuicTagVector options;
-  std::vector<std::string> tokens;
-  base::SplitString(connection_options, ',', &tokens);
-  // Tokens are expected to be no more than 4 characters long, but we
-  // handle overflow gracefully.
-  for (std::vector<std::string>::iterator token = tokens.begin();
-       token != tokens.end(); ++token) {
-    uint32 option = 0;
-    for (size_t i = token->length() ; i > 0; --i) {
-      option <<= 8;
-      option |= static_cast<unsigned char>((*token)[i - 1]);
-    }
-    options.push_back(static_cast<net::QuicTag>(option));
-  }
-  return options;
+  return net::QuicUtils::ParseQuicConnectionOptions(it->second);
 }
 
 // static

@@ -393,11 +393,6 @@ class IOThread : public content::BrowserThreadDelegate {
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
-  // Returns the list of QUIC tags represented by the comma separated
-  // string in |connection_options|.
-  static net::QuicTagVector ParseQuicConnectionOptions(
-      const std::string& connection_options);
-
   // Returns the alternate protocol probability threshold specified by
   // any flags in |command_line| or |quic_trial_params|.
   static double GetAlternateProtocolProbabilityThreshold(

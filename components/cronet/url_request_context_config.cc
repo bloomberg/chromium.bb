@@ -6,6 +6,8 @@
 
 #include "base/json/json_reader.h"
 #include "base/values.h"
+#include "net/quic/quic_protocol.h"
+#include "net/quic/quic_utils.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace cronet {
@@ -74,6 +76,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   }
   context_builder->set_user_agent(user_agent);
   context_builder->SetSpdyAndQuicEnabled(enable_spdy, enable_quic);
+  context_builder->set_quic_connection_options(
+      net::QuicUtils::ParseQuicConnectionOptions(quic_connection_options));
   // TODO(mef): Use |config| to set cookies.
 }
 
@@ -94,6 +98,9 @@ void URLRequestContextConfig::RegisterJSONConverter(
                               &URLRequestContextConfig::http_cache_max_size);
   converter->RegisterRepeatedMessage(REQUEST_CONTEXT_CONFIG_QUIC_HINTS,
                                      &URLRequestContextConfig::quic_hints);
+  converter->RegisterStringField(
+      REQUEST_CONTEXT_CONFIG_QUIC_OPTIONS,
+      &URLRequestContextConfig::quic_connection_options);
 }
 
 }  // namespace cronet

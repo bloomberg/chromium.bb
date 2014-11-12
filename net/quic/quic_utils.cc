@@ -7,12 +7,15 @@
 #include <ctype.h>
 
 #include <algorithm>
+#include <vector>
 
 #include "base/basictypes.h"
+#include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/port.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "net/quic/quic_write_blocked_list.h"
 
 using base::StringPiece;
@@ -277,6 +280,25 @@ string QuicUtils::TagToString(QuicTag tag) {
   }
 
   return base::UintToString(orig_tag);
+}
+
+// static
+QuicTagVector QuicUtils::ParseQuicConnectionOptions(
+    const std::string& connection_options) {
+  QuicTagVector options;
+  std::vector<std::string> tokens;
+  base::SplitString(connection_options, ',', &tokens);
+  // Tokens are expected to be no more than 4 characters long, but we
+  // handle overflow gracefully.
+  for (const std::string& token : tokens) {
+    uint32 option = 0;
+    for (char token_char : base::Reversed(token)) {
+      option <<= 8;
+      option |= static_cast<unsigned char>(token_char);
+    }
+    options.push_back(option);
+  }
+  return options;
 }
 
 // static
