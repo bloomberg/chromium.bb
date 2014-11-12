@@ -72,13 +72,12 @@ private:
     virtual bool isQueueEmpty() const = 0;
     virtual void clearQueue() = 0;
 
-    void callOrSchedulePull();
+    void callPullIfNeeded();
 
     Member<UnderlyingSource> m_source;
     bool m_isStarted;
     bool m_isDraining;
     bool m_isPulling;
-    bool m_isSchedulingPull;
     State m_state;
 
     Member<WaitPromise> m_wait;
