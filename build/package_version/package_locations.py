@@ -105,6 +105,9 @@ def GetLocalPackageArchiveFile(tar_dir, archive_name, archive_hash):
   Returns:
     The standard location where local package archive file is found.
   """
+  if isinstance(archive_hash, (int, long)):
+    archive_hash = '%040x' % archive_hash
+
   archive_directory = GetLocalPackageArchiveDir(tar_dir, archive_name)
 
   # Have the file keep the extension so that extractions know the file type.

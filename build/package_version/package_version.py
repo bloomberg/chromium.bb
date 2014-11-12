@@ -971,7 +971,7 @@ def _DoFillEmptyTarsCmd(arguments):
             arguments.tar_dir,
             archive_data.name,
             tar_hash)
-        file_tools.MakeParentDirectoryIfAbsent(archive_file)
+        pynacl.file_tools.MakeParentDirectoryIfAbsent(archive_file)
         os.rename(temp_archive_file, archive_file)
 
         empty_archive = archive_info.ArchiveInfo(name=archive_data.name,
