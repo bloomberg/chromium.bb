@@ -1355,7 +1355,7 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox& child, LayoutUni
                 // height correctly even when there's an overrideHeight.
                 LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
                 child.forceChildLayout();
-                child.updateIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
+                child.setIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
             }
         }
     } else if (isColumnFlow() && child.style()->logicalWidth().isAuto()) {

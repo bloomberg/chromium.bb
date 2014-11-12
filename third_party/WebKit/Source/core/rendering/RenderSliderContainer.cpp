@@ -82,7 +82,7 @@ void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
             trackHeight *= zoomFactor;
 
         // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
-        updateIntrinsicContentLogicalHeight(trackHeight);
+        setIntrinsicContentLogicalHeight(trackHeight);
 
         RenderBox::computeLogicalHeight(trackHeight, logicalTop, computedValues);
         return;
@@ -91,7 +91,7 @@ void RenderSliderContainer::computeLogicalHeight(LayoutUnit logicalHeight, Layou
         logicalHeight = RenderSlider::defaultTrackLength;
 
     // FIXME: The trackHeight should have been added before updateLogicalHeight was called to avoid this hack.
-    updateIntrinsicContentLogicalHeight(logicalHeight);
+    setIntrinsicContentLogicalHeight(logicalHeight);
 
     RenderBox::computeLogicalHeight(logicalHeight, logicalTop, computedValues);
 }

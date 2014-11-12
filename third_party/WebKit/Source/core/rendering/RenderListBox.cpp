@@ -125,7 +125,7 @@ void RenderListBox::computeLogicalHeight(LayoutUnit, LayoutUnit logicalTop, Logi
 {
     LayoutUnit height = itemHeight() * size();
     // FIXME: The item height should have been added before updateLogicalHeight was called to avoid this hack.
-    updateIntrinsicContentLogicalHeight(height);
+    setIntrinsicContentLogicalHeight(height);
 
     height += borderAndPaddingHeight();
 

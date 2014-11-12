@@ -643,7 +643,7 @@ public:
 
     bool backgroundHasOpaqueTopLayer() const;
 
-    void updateIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
+    void setIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 protected:
     virtual void willBeDestroyed() override;
 

@@ -558,7 +558,7 @@ void RenderTable::layout()
 
     // FIXME: This value isn't the intrinsic content logical height, but we need
     // to update the value as its used by flexbox layout. crbug.com/367324
-    updateIntrinsicContentLogicalHeight(contentLogicalHeight());
+    setIntrinsicContentLogicalHeight(contentLogicalHeight());
 
     if (view()->layoutState()->pageLogicalHeight())
         setPageLogicalOffset(view()->layoutState()->pageLogicalOffset(*this, logicalTop()));

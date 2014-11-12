@@ -140,7 +140,7 @@ void RenderTextControl::computeLogicalHeight(LayoutUnit logicalHeight, LayoutUni
 
         // FIXME: The logical height of the inner text box should have been added before calling computeLogicalHeight to
         // avoid this hack.
-        updateIntrinsicContentLogicalHeight(logicalHeight);
+        setIntrinsicContentLogicalHeight(logicalHeight);
 
         logicalHeight += borderAndPaddingHeight();
     }
