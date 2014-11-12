@@ -19,6 +19,9 @@
 #include "components/cronet/url_request_context_config.h"
 #include "jni/ChromiumUrlRequestContext_jni.h"
 
+using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertJavaStringToUTF8;
+
 namespace {
 
 // Delegate of URLRequestContextAdapter that delivers callbacks to the Java
@@ -30,8 +33,8 @@ class JniURLRequestContextAdapterDelegate
   JniURLRequestContextAdapterDelegate(JNIEnv* env, jobject owner)
       : owner_(env->NewGlobalRef(owner)) {}
 
-  virtual void OnContextInitialized(
-      cronet::URLRequestContextAdapter* context) override {
+  void OnContextInitialized(
+      cronet::URLRequestContextAdapter* context_adapter) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequestContext_initNetworkThread(env, owner_);
     // TODO(dplotnikov): figure out if we need to detach from the thread.
@@ -39,7 +42,7 @@ class JniURLRequestContextAdapterDelegate
   }
 
  protected:
-  virtual ~JniURLRequestContextAdapterDelegate() {
+  ~JniURLRequestContextAdapterDelegate() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     env->DeleteGlobalRef(owner_);
   }
@@ -59,20 +62,18 @@ bool ChromiumUrlRequestContextRegisterJni(JNIEnv* env) {
 
 // Sets global user-agent to be used for all subsequent requests.
 static jlong CreateRequestContextAdapter(JNIEnv* env,
-                                         jobject object,
-                                         jobject context,
-                                         jstring user_agent,
-                                         jint log_level,
-                                         jstring config) {
-  std::string user_agent_string =
-      base::android::ConvertJavaStringToUTF8(env, user_agent);
+                                         jobject jcaller,
+                                         jobject jcontext,
+                                         jstring juser_agent,
+                                         jint jlog_level,
+                                         jstring jconfig) {
+  std::string user_agent = ConvertJavaStringToUTF8(env, juser_agent);
 
-  std::string config_string =
-      base::android::ConvertJavaStringToUTF8(env, config);
+  std::string config = ConvertJavaStringToUTF8(env, jconfig);
 
-  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config_string));
+  scoped_ptr<base::Value> config_value(base::JSONReader::Read(config));
   if (!config_value || !config_value->IsType(base::Value::TYPE_DICTIONARY)) {
-    DLOG(ERROR) << "Bad JSON: " << config_string;
+    DLOG(ERROR) << "Bad JSON: " << config;
     return 0;
   }
 
@@ -85,33 +86,33 @@ static jlong CreateRequestContextAdapter(JNIEnv* env,
   }
 
   // Set application context.
-  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
+  base::android::ScopedJavaLocalRef<jobject> scoped_context(env, jcontext);
   base::android::InitApplicationContext(env, scoped_context);
 
   // TODO(mef): MinLogLevel is global, shared by all URLRequestContexts.
   // Revisit this if each URLRequestContext would need an individual log level.
-  logging::SetMinLogLevel(static_cast<int>(log_level));
+  logging::SetMinLogLevel(static_cast<int>(jlog_level));
 
   // TODO(dplotnikov): set application context.
-  URLRequestContextAdapter* adapter = new URLRequestContextAdapter(
-      new JniURLRequestContextAdapterDelegate(env, object), user_agent_string);
-  adapter->AddRef();  // Hold onto this ref-counted object.
-  adapter->Initialize(context_config.Pass());
-  return reinterpret_cast<jlong>(adapter);
+  URLRequestContextAdapter* context_adapter = new URLRequestContextAdapter(
+      new JniURLRequestContextAdapterDelegate(env, jcaller), user_agent);
+  context_adapter->AddRef();  // Hold onto this ref-counted object.
+  context_adapter->Initialize(context_config.Pass());
+  return reinterpret_cast<jlong>(context_adapter);
 }
 
 // Releases native objects.
 static void ReleaseRequestContextAdapter(JNIEnv* env,
-                                         jobject object,
-                                         jlong urlRequestContextAdapter) {
-  URLRequestContextAdapter* adapter =
-      reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
+                                         jobject jcaller,
+                                         jlong jurl_request_context_adapter) {
+  URLRequestContextAdapter* context_adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
   // TODO(mef): Revisit this from thread safety point of view: Can we delete a
   // thread while running on that thread?
   // URLRequestContextAdapter is a ref-counted object, and may have pending
   // tasks,
   // so we need to release it instead of deleting here.
-  adapter->Release();
+  context_adapter->Release();
 }
 
 // Starts recording statistics.
@@ -119,41 +120,43 @@ static void InitializeStatistics(JNIEnv* env, jobject jcaller) {
   base::StatisticsRecorder::Initialize();
 }
 
-// Gets current statistics with |filter| as a substring as JSON text (an empty
-// |filter| will include all registered histograms).
-static jstring GetStatisticsJSON(JNIEnv* env, jobject jcaller, jstring filter) {
-  std::string query = base::android::ConvertJavaStringToUTF8(env, filter);
+// Gets current statistics with |jfilter| as a substring as JSON text (an empty
+// |jfilter| will include all registered histograms).
+static jstring GetStatisticsJSON(JNIEnv* env,
+                                 jobject jcaller,
+                                 jstring jfilter) {
+  std::string query = ConvertJavaStringToUTF8(env, jfilter);
   std::string json = base::StatisticsRecorder::ToJSON(query);
-  return base::android::ConvertUTF8ToJavaString(env, json).Release();
+  return ConvertUTF8ToJavaString(env, json).Release();
 }
 
-// Starts recording NetLog into file with |fileName|.
+// Starts recording NetLog into file with |jfilename|.
 static void StartNetLogToFile(JNIEnv* env,
                               jobject jcaller,
-                              jlong urlRequestContextAdapter,
-                              jstring fileName) {
-  URLRequestContextAdapter* adapter =
-      reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
-  std::string file_name = base::android::ConvertJavaStringToUTF8(env, fileName);
-  adapter->StartNetLogToFile(file_name);
+                              jlong jurl_request_context_adapter,
+                              jstring jfilename) {
+  URLRequestContextAdapter* context_adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
+  std::string filename = ConvertJavaStringToUTF8(env, jfilename);
+  context_adapter->StartNetLogToFile(filename);
 }
 
 // Stops recording NetLog.
 static void StopNetLog(JNIEnv* env,
                        jobject jcaller,
-                       jlong urlRequestContextAdapter) {
-  URLRequestContextAdapter* adapter =
-      reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
-  adapter->StopNetLog();
+                       jlong jurl_request_context_adapter) {
+  URLRequestContextAdapter* context_adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
+  context_adapter->StopNetLog();
 }
 
 // Called on application's main Java thread.
 static void InitRequestContextOnMainThread(JNIEnv* env,
                                            jobject jcaller,
-                                           jlong url_request_context_adapter) {
-  URLRequestContextAdapter* adapter =
-      reinterpret_cast<URLRequestContextAdapter*>(url_request_context_adapter);
-  adapter->InitRequestContextOnMainThread();
+                                           jlong jurl_request_context_adapter) {
+  URLRequestContextAdapter* context_adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
+  context_adapter->InitRequestContextOnMainThread();
 }
 
 }  // namespace cronet

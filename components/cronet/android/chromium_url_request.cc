@@ -15,6 +15,7 @@
 #include "net/http/http_response_headers.h"
 
 using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertJavaStringToUTF8;
 
 namespace cronet {
 namespace {
@@ -37,18 +38,17 @@ net::RequestPriority ConvertRequestPriority(jint request_priority) {
 }
 
 void SetPostContentType(JNIEnv* env,
-                        URLRequestAdapter* request,
+                        URLRequestAdapter* request_adapter,
                         jstring content_type) {
-  DCHECK(request != NULL);
+  DCHECK(request_adapter);
 
   std::string method_post("POST");
-  request->SetMethod(method_post);
+  request_adapter->SetMethod(method_post);
 
   std::string content_type_header("Content-Type");
-  std::string content_type_string(
-      base::android::ConvertJavaStringToUTF8(env, content_type));
+  std::string content_type_string(ConvertJavaStringToUTF8(env, content_type));
 
-  request->AddHeader(content_type_header, content_type_string);
+  request_adapter->AddHeader(content_type_header, content_type_string);
 }
 
 // A delegate of URLRequestAdapter that delivers callbacks to the Java layer.
@@ -59,29 +59,28 @@ class JniURLRequestAdapterDelegate
     owner_ = env->NewGlobalRef(owner);
   }
 
-  virtual void OnResponseStarted(URLRequestAdapter* request) override {
+  void OnResponseStarted(URLRequestAdapter* request_adapter) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequest_onResponseStarted(env, owner_);
   }
 
-  virtual void OnBytesRead(URLRequestAdapter* request) override {
-    int bytes_read = request->bytes_read();
+  void OnBytesRead(URLRequestAdapter* request_adapter) override {
+    int bytes_read = request_adapter->bytes_read();
     if (bytes_read != 0) {
       JNIEnv* env = base::android::AttachCurrentThread();
       base::android::ScopedJavaLocalRef<jobject> java_buffer(
-          env, env->NewDirectByteBuffer(request->Data(), bytes_read));
+          env, env->NewDirectByteBuffer(request_adapter->Data(), bytes_read));
       cronet::Java_ChromiumUrlRequest_onBytesRead(
           env, owner_, java_buffer.obj());
     }
   }
 
-  virtual void OnRequestFinished(URLRequestAdapter* request) override {
+  void OnRequestFinished(URLRequestAdapter* request_adapter) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     cronet::Java_ChromiumUrlRequest_finish(env, owner_);
   }
 
-  virtual int ReadFromUploadChannel(net::IOBuffer* buf,
-                                    int buf_length) override {
+  int ReadFromUploadChannel(net::IOBuffer* buf, int buf_length) override {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::ScopedJavaLocalRef<jobject> java_buffer(
         env, env->NewDirectByteBuffer(buf->data(), buf_length));
@@ -91,7 +90,7 @@ class JniURLRequestAdapterDelegate
   }
 
  protected:
-  virtual ~JniURLRequestAdapterDelegate() {
+  ~JniURLRequestAdapterDelegate() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     env->DeleteGlobalRef(owner_);
   }
@@ -110,148 +109,144 @@ bool ChromiumUrlRequestRegisterJni(JNIEnv* env) {
 }
 
 static jlong CreateRequestAdapter(JNIEnv* env,
-                                  jobject object,
-                                  jlong urlRequestContextAdapter,
-                                  jstring url_string,
-                                  jint priority) {
-  URLRequestContextAdapter* context =
-      reinterpret_cast<URLRequestContextAdapter*>(urlRequestContextAdapter);
-  DCHECK(context != NULL);
+                                  jobject jcaller,
+                                  jlong jurl_request_context_adapter,
+                                  jstring jurl,
+                                  jint jrequest_priority) {
+  URLRequestContextAdapter* context_adapter =
+      reinterpret_cast<URLRequestContextAdapter*>(jurl_request_context_adapter);
+  DCHECK(context_adapter);
 
-  GURL url(base::android::ConvertJavaStringToUTF8(env, url_string));
+  GURL url(ConvertJavaStringToUTF8(env, jurl));
 
   VLOG(1) << "New chromium network request: " << url.possibly_invalid_spec();
 
-  URLRequestAdapter* adapter =
-      new URLRequestAdapter(context,
-                            new JniURLRequestAdapterDelegate(env, object),
-                            url,
-                            ConvertRequestPriority(priority));
+  URLRequestAdapter* adapter = new URLRequestAdapter(
+      context_adapter, new JniURLRequestAdapterDelegate(env, jcaller), url,
+      ConvertRequestPriority(jrequest_priority));
 
   return reinterpret_cast<jlong>(adapter);
 }
 
 // synchronized
 static void AddHeader(JNIEnv* env,
-                      jobject object,
-                      jlong urlRequestAdapter,
-                      jstring name,
-                      jstring value) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  DCHECK(request);
+                      jobject jcaller,
+                      jlong jurl_request_adapter,
+                      jstring jheader_name,
+                      jstring jheader_value) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
 
-  std::string name_string(base::android::ConvertJavaStringToUTF8(env, name));
-  std::string value_string(base::android::ConvertJavaStringToUTF8(env, value));
+  std::string header_name(ConvertJavaStringToUTF8(env, jheader_name));
+  std::string header_value(ConvertJavaStringToUTF8(env, jheader_value));
 
-  request->AddHeader(name_string, value_string);
+  request_adapter->AddHeader(header_name, header_value);
 }
 
 static void SetMethod(JNIEnv* env,
-                      jobject object,
-                      jlong urlRequestAdapter,
-                      jstring method) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  DCHECK(request);
+                      jobject jcaller,
+                      jlong jurl_request_adapter,
+                      jstring jmethod) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(request_adapter);
 
-  std::string method_string(
-      base::android::ConvertJavaStringToUTF8(env, method));
+  std::string method(ConvertJavaStringToUTF8(env, jmethod));
 
-  request->SetMethod(method_string);
+  request_adapter->SetMethod(method);
 }
 
 static void SetUploadData(JNIEnv* env,
-                          jobject object,
-                          jlong urlRequestAdapter,
-                          jstring content_type,
-                          jbyteArray content) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  SetPostContentType(env, request, content_type);
+                          jobject jcaller,
+                          jlong jurl_request_adapter,
+                          jstring jcontent_type,
+                          jbyteArray jcontent) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  SetPostContentType(env, request_adapter, jcontent_type);
 
-  if (content != NULL) {
-    jsize size = env->GetArrayLength(content);
+  if (jcontent != NULL) {
+    jsize size = env->GetArrayLength(jcontent);
     if (size > 0) {
-      jbyte* content_bytes = env->GetByteArrayElements(content, NULL);
-      request->SetUploadContent(reinterpret_cast<const char*>(content_bytes),
-                                size);
-      env->ReleaseByteArrayElements(content, content_bytes, 0);
+      jbyte* content_bytes = env->GetByteArrayElements(jcontent, NULL);
+      request_adapter->SetUploadContent(
+          reinterpret_cast<const char*>(content_bytes), size);
+      env->ReleaseByteArrayElements(jcontent, content_bytes, 0);
     }
   }
 }
 
 static void SetUploadChannel(JNIEnv* env,
-                             jobject object,
-                             jlong urlRequestAdapter,
-                             jstring content_type,
-                             jlong content_length) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  SetPostContentType(env, request, content_type);
+                             jobject jcaller,
+                             jlong jurl_request_adapter,
+                             jstring jcontent_type,
+                             jlong jcontent_length) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  SetPostContentType(env, request_adapter, jcontent_type);
 
-  request->SetUploadChannel(env, content_length);
+  request_adapter->SetUploadChannel(env, jcontent_length);
 }
 
 static void EnableChunkedUpload(JNIEnv* env,
-                               jobject object,
-                               jlong urlRequestAdapter,
-                               jstring content_type) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  SetPostContentType(env, request, content_type);
+                                jobject jcaller,
+                                jlong jurl_request_adapter,
+                                jstring jcontent_type) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  SetPostContentType(env, request_adapter, jcontent_type);
 
-  request->EnableChunkedUpload();
+  request_adapter->EnableChunkedUpload();
 }
 
 static void AppendChunk(JNIEnv* env,
-                        jobject object,
-                        jlong urlRequestAdapter,
-                        jobject chunk_byte_buffer,
-                        jint chunk_size,
-                        jboolean is_last_chunk) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  DCHECK(chunk_byte_buffer != NULL);
+                        jobject jcaller,
+                        jlong jurl_request_adapter,
+                        jobject jchunk_byte_buffer,
+                        jint jchunk_size,
+                        jboolean jis_last_chunk) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  DCHECK(jchunk_byte_buffer);
 
-  void* chunk = env->GetDirectBufferAddress(chunk_byte_buffer);
-  request->AppendChunk(
-      reinterpret_cast<const char*>(chunk), chunk_size, is_last_chunk);
+  void* chunk = env->GetDirectBufferAddress(jchunk_byte_buffer);
+  request_adapter->AppendChunk(reinterpret_cast<const char*>(chunk),
+                               jchunk_size, jis_last_chunk);
 }
 
 /* synchronized */
-static void Start(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request != NULL) {
-    request->Start();
-  }
+static void Start(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter != NULL)
+    request_adapter->Start();
 }
 
 /* synchronized */
 static void DestroyRequestAdapter(JNIEnv* env,
-                                  jobject object,
-                                  jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request != NULL) {
-    request->Destroy();
-  }
+                                  jobject jcaller,
+                                  jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter != NULL)
+    request_adapter->Destroy();
 }
 
 /* synchronized */
-static void Cancel(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request != NULL) {
-    request->Cancel();
-  }
+static void Cancel(JNIEnv* env, jobject jcaller, jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter != NULL)
+    request_adapter->Cancel();
 }
 
-static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  int error_code = request->error_code();
+static jint GetErrorCode(JNIEnv* env,
+                         jobject jcaller,
+                         jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  int error_code = request_adapter->error_code();
   switch (error_code) {
     // TODO(mef): Investigate returning success on positive values, too, as
     // they technically indicate success.
@@ -287,11 +282,11 @@ static jint GetErrorCode(JNIEnv* env, jobject object, jlong urlRequestAdapter) {
 }
 
 static jstring GetErrorString(JNIEnv* env,
-                              jobject object,
-                              jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  int error_code = request->error_code();
+                              jobject jcaller,
+                              jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  int error_code = request_adapter->error_code();
   char buffer[200];
   std::string error_string = net::ErrorToString(error_code);
   snprintf(buffer,
@@ -303,30 +298,30 @@ static jstring GetErrorString(JNIEnv* env,
 }
 
 static jint GetHttpStatusCode(JNIEnv* env,
-                              jobject object,
-                              jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  return request->http_status_code();
+                              jobject jcaller,
+                              jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  return request_adapter->http_status_code();
 }
 
 static jstring GetHttpStatusText(JNIEnv* env,
-                                 jobject object,
-                                 jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  return ConvertUTF8ToJavaString(env, request->http_status_text()).Release();
+                                 jobject jcaller,
+                                 jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  return ConvertUTF8ToJavaString(env, request_adapter->http_status_text())
+      .Release();
 }
 
 static jstring GetContentType(JNIEnv* env,
-                              jobject object,
-                              jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request == NULL) {
+                              jobject jcaller,
+                              jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter == NULL)
     return NULL;
-  }
-  std::string type = request->content_type();
+  std::string type = request_adapter->content_type();
   if (!type.empty()) {
     return ConvertUTF8ToJavaString(env, type.c_str()).Release();
   } else {
@@ -335,45 +330,42 @@ static jstring GetContentType(JNIEnv* env,
 }
 
 static jlong GetContentLength(JNIEnv* env,
-                              jobject object,
-                              jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request == NULL) {
+                              jobject jcaller,
+                              jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter == NULL)
     return 0;
-  }
-  return request->content_length();
+  return request_adapter->content_length();
 }
 
 static jstring GetHeader(JNIEnv* env,
-                         jobject object,
-                         jlong urlRequestAdapter,
-                         jstring name) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request == NULL) {
+                         jobject jcaller,
+                         jlong jurl_request_adapter,
+                         jstring jheader_name) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter == NULL)
     return NULL;
-  }
-
-  std::string name_string = base::android::ConvertJavaStringToUTF8(env, name);
-  std::string value = request->GetHeader(name_string);
-  if (!value.empty()) {
-    return ConvertUTF8ToJavaString(env, value.c_str()).Release();
+  std::string header_name = ConvertJavaStringToUTF8(env, jheader_name);
+  std::string header_value = request_adapter->GetHeader(header_name);
+  if (!header_value.empty()) {
+    return ConvertUTF8ToJavaString(env, header_value.c_str()).Release();
   } else {
     return NULL;
   }
 }
 
 static void GetAllHeaders(JNIEnv* env,
-                          jobject object,
-                          jlong urlRequestAdapter,
-                          jobject headersMap) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request == NULL)
+                          jobject jcaller,
+                          jlong jurl_request_adapter,
+                          jobject jheaders_map) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter == NULL)
     return;
 
-  net::HttpResponseHeaders* headers = request->GetResponseHeaders();
+  net::HttpResponseHeaders* headers = request_adapter->GetResponseHeaders();
   if (headers == NULL)
     return;
 
@@ -385,27 +377,27 @@ static void GetAllHeaders(JNIEnv* env,
         ConvertUTF8ToJavaString(env, header_name);
     ScopedJavaLocalRef<jstring> value =
         ConvertUTF8ToJavaString(env, header_value);
-    Java_ChromiumUrlRequest_onAppendResponseHeader(
-        env, object, headersMap, name.Release(), value.Release());
+    Java_ChromiumUrlRequest_onAppendResponseHeader(env, jcaller, jheaders_map,
+                                                   name.obj(), value.obj());
   }
 
   // Some implementations (notably HttpURLConnection) include a mapping for the
   // null key; in HTTP's case, this maps to the HTTP status line.
   ScopedJavaLocalRef<jstring> status_line =
       ConvertUTF8ToJavaString(env, headers->GetStatusLine());
-  Java_ChromiumUrlRequest_onAppendResponseHeader(
-      env, object, headersMap, NULL, status_line.Release());
+  Java_ChromiumUrlRequest_onAppendResponseHeader(env, jcaller, jheaders_map,
+                                                 NULL, status_line.obj());
 }
 
 static jstring GetNegotiatedProtocol(JNIEnv* env,
-                                     jobject object,
-                                     jlong urlRequestAdapter) {
-  URLRequestAdapter* request =
-      reinterpret_cast<URLRequestAdapter*>(urlRequestAdapter);
-  if (request == NULL)
+                                     jobject jcaller,
+                                     jlong jurl_request_adapter) {
+  URLRequestAdapter* request_adapter =
+      reinterpret_cast<URLRequestAdapter*>(jurl_request_adapter);
+  if (request_adapter == NULL)
     return ConvertUTF8ToJavaString(env, "").Release();
 
-  std::string negotiated_protocol = request->GetNegotiatedProtocol();
+  std::string negotiated_protocol = request_adapter->GetNegotiatedProtocol();
   return ConvertUTF8ToJavaString(env, negotiated_protocol.c_str()).Release();
 }
 
