@@ -57,8 +57,6 @@ public:
     LayoutUnit paginationStrut() const { return m_paginationStrut; }
     void setPaginationStrut(LayoutUnit strut) { m_paginationStrut = strut; }
 
-    void setPaginatedLineWidth(LayoutUnit width) { m_paginatedLineWidth = width; }
-
     LayoutUnit selectionTop() const;
     LayoutUnit selectionBottom() const;
     LayoutUnit selectionHeight() const { return max<LayoutUnit>(0, selectionBottom() - selectionTop()); }
@@ -201,7 +199,6 @@ private:
     LayoutUnit m_lineBottomWithLeading;
     LayoutUnit m_selectionBottom;
     LayoutUnit m_paginationStrut;
-    LayoutUnit m_paginatedLineWidth;
 };
 
 } // namespace blink

@@ -40,7 +40,7 @@ namespace blink {
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
     unsigned unsignedVariable;
     void* pointers[3];
-    LayoutUnit layoutVariables[7];
+    LayoutUnit layoutVariables[6];
 };
 
 COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInlineBox_should_stay_small);
@@ -58,7 +58,6 @@ RootInlineBox::RootInlineBox(RenderBlockFlow& block)
     , m_lineBottomWithLeading(0)
     , m_selectionBottom(0)
     , m_paginationStrut(0)
-    , m_paginatedLineWidth(0)
 {
     setIsHorizontal(block.isHorizontalWritingMode());
 }
@@ -235,8 +234,6 @@ LayoutUnit RootInlineBox::alignBoxesInBlockDirection(LayoutUnit heightOfBlock, G
     maxHeight = std::max<LayoutUnit>(0, maxHeight); // FIXME: Is this really necessary?
 
     setLineTopBottomPositions(lineTop, lineBottom, heightOfBlock, heightOfBlock + maxHeight, selectionBottom);
-    if (block().view()->layoutState()->isPaginated())
-        setPaginatedLineWidth(block().availableLogicalWidthForContent());
 
     LayoutUnit annotationsAdjustment = beforeAnnotationsAdjustment();
     if (annotationsAdjustment) {
