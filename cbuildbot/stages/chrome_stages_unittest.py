@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import os
 import sys
 
@@ -24,6 +23,10 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel_unittest
 
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
+import mock
+
 
 # pylint: disable=R0901,W0212
 class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
@@ -39,8 +42,7 @@ class ChromeSDKStageTest(generic_stages_unittest.AbstractStageTest,
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to
     # SetupMockCidb
-    mock_cidb = mox.MockObject(cidb.CIDBConnection)
-    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock.MagicMock())
 
     self._Prepare()
 

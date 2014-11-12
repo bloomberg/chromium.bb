@@ -17,12 +17,12 @@ from chromite.cbuildbot import constants
 from chromite.lib import cidb
 from chromite.lib import cros_test_lib
 
-class CIDBConnectionFactoryTest(cros_test_lib.MoxTestCase):
+class CIDBConnectionFactoryTest(cros_test_lib.MockTestCase):
   """Test that CIDBConnectionFactory behaves as expected."""
 
   def setUp(self):
     # Ensure that we do not create any live connections in this unit test.
-    self.mox.StubOutWithMock(cidb, 'CIDBConnection')
+    self.connection_mock = self.PatchObject(cidb, 'CIDBConnection')
     # pylint: disable-msg=W0212
     cidb.CIDBConnectionFactory._ClearCIDBSetup()
 
@@ -33,12 +33,11 @@ class CIDBConnectionFactoryTest(cros_test_lib.MoxTestCase):
 
   def testSetupProd(self):
     """Test that SetupProd behaves as expected."""
-    # Expected constructor call
-    cidb.CIDBConnection(constants.CIDB_PROD_BOT_CREDS)
-    self.mox.ReplayAll()
-
     cidb.CIDBConnectionFactory.SetupProdCidb()
     cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+
+    # Expected constructor call
+    self.connection_mock.assert_called_once_with(constants.CIDB_PROD_BOT_CREDS)
     self.assertTrue(cidb.CIDBConnectionFactory.IsCIDBSetup())
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)
@@ -47,12 +46,11 @@ class CIDBConnectionFactoryTest(cros_test_lib.MoxTestCase):
 
   def testSetupDebug(self):
     """Test that SetupDebug behaves as expected."""
-    # Expected constructor call
-    cidb.CIDBConnection(constants.CIDB_DEBUG_BOT_CREDS)
-    self.mox.ReplayAll()
-
     cidb.CIDBConnectionFactory.SetupDebugCidb()
     cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()
+
+    # Expected constructor call
+    self.connection_mock.assert_called_once_with(constants.CIDB_DEBUG_BOT_CREDS)
     self.assertTrue(cidb.CIDBConnectionFactory.IsCIDBSetup())
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupProdCidb)
     self.assertRaises(AssertionError, cidb.CIDBConnectionFactory.SetupDebugCidb)

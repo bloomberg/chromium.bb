@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import os
 import sys
 
@@ -39,14 +38,11 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests that BuildStartStage behaves as expected."""
 
   def setUp(self):
-    self.mock_cidb = mox.MockObject(cidb.CIDBConnection)
+    self.mock_cidb = mock.MagicMock()
     cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
     retry_stats.SetupStats()
     os.environ['BUILDBOT_MASTERNAME'] = 'chromiumos'
     self._Prepare(build_id = None)
-
-  def tearDown(self):
-    mox.Verify(self.mock_cidb)
 
   def testUnknownWaterfall(self):
     """Test that an assertion is thrown is master name is not valid."""
@@ -55,14 +51,16 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
 
   def testPerformStage(self):
     """Test that a normal run of the stage does a database insert."""
-    self.mock_cidb.InsertBuild(bot_hostname=mox.IgnoreArg(),
-                               build_config='x86-generic-paladin',
-                               build_number=1234321,
-                               builder_name=mox.IgnoreArg(),
-                               master_build_id=None,
-                               waterfall='chromiumos').AndReturn(31337)
-    mox.Replay(self.mock_cidb)
+    self.PatchObject(self.mock_cidb, 'InsertBuild', return_value=31337)
+
     self.RunStage()
+    self.mock_cidb.InsertBuild.assert_called_once_with(
+        bot_hostname=mock.ANY,
+        build_config='x86-generic-paladin',
+        build_number=1234321,
+        builder_name=mock.ANY,
+        master_build_id=None,
+        waterfall='chromiumos')
     self.assertEqual(self._run.attrs.metadata.GetValue('build_id'), 31337)
     self.assertEqual(self._run.attrs.metadata.GetValue('db_type'),
                      cidb.CIDBConnectionFactory._CONNECTION_TYPE_MOCK)
@@ -118,8 +116,7 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
     # Set up a general purpose cidb mock. Tests with more specific
     # mock requirements can replace this with a separate call to
     # SetupMockCidb
-    mock_cidb = mox.MockObject(cidb.CIDBConnection)
-    cidb.CIDBConnectionFactory.SetupMockCidb(mock_cidb)
+    cidb.CIDBConnectionFactory.SetupMockCidb(mock.MagicMock())
 
     self._Prepare()
 
