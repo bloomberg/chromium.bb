@@ -54,13 +54,10 @@ public:
     LayoutUnit lineTopWithLeading() const { return m_lineTopWithLeading; }
     LayoutUnit lineBottomWithLeading() const { return m_lineBottomWithLeading; }
 
-    LayoutUnit paginationStrut() const { return m_fragmentationData ? m_fragmentationData->m_paginationStrut : LayoutUnit(0); }
-    void setPaginationStrut(LayoutUnit strut) { ensureLineFragmentationData()->m_paginationStrut = strut; }
+    LayoutUnit paginationStrut() const { return m_paginationStrut; }
+    void setPaginationStrut(LayoutUnit strut) { m_paginationStrut = strut; }
 
-    bool isFirstAfterPageBreak() const { return m_fragmentationData ? m_fragmentationData->m_isFirstAfterPageBreak : false; }
-    void setIsFirstAfterPageBreak(bool isFirstAfterPageBreak) { ensureLineFragmentationData()->m_isFirstAfterPageBreak = isFirstAfterPageBreak; }
-
-    void setPaginatedLineWidth(LayoutUnit width) { ensureLineFragmentationData()->m_paginatedLineWidth = width; }
+    void setPaginatedLineWidth(LayoutUnit width) { m_paginatedLineWidth = width; }
 
     LayoutUnit selectionTop() const;
     LayoutUnit selectionBottom() const;
@@ -186,15 +183,6 @@ public:
 private:
     LayoutUnit beforeAnnotationsAdjustment() const;
 
-    struct LineFragmentationData;
-    LineFragmentationData* ensureLineFragmentationData()
-    {
-        if (!m_fragmentationData)
-            m_fragmentationData = adoptPtr(new LineFragmentationData());
-
-        return m_fragmentationData.get();
-    }
-
     // This folds into the padding at the end of InlineFlowBox on 64-bit.
     unsigned m_lineBreakPos;
 
@@ -202,24 +190,6 @@ private:
     // we can create an InlineIterator beginning just after the end of this line.
     RenderObject* m_lineBreakObj;
     RefPtr<BidiContext> m_lineBreakContext;
-
-    struct LineFragmentationData {
-        WTF_MAKE_NONCOPYABLE(LineFragmentationData); WTF_MAKE_FAST_ALLOCATED;
-    public:
-        LineFragmentationData()
-            : m_paginationStrut(0)
-            , m_paginatedLineWidth(0)
-            , m_isFirstAfterPageBreak(false)
-        {
-
-        }
-
-        LayoutUnit m_paginationStrut;
-        LayoutUnit m_paginatedLineWidth;
-        bool m_isFirstAfterPageBreak;
-    };
-
-    OwnPtr<LineFragmentationData> m_fragmentationData;
 
     // Floats hanging off the line are pushed into this vector during layout. It is only
     // good for as long as the line has not been marked dirty.
@@ -230,6 +200,8 @@ private:
     LayoutUnit m_lineTopWithLeading;
     LayoutUnit m_lineBottomWithLeading;
     LayoutUnit m_selectionBottom;
+    LayoutUnit m_paginationStrut;
+    LayoutUnit m_paginatedLineWidth;
 };
 
 } // namespace blink

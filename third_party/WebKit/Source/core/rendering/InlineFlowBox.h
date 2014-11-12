@@ -56,6 +56,7 @@ public:
         , m_lineBreakBidiStatusEor(WTF::Unicode::LeftToRight)
         , m_lineBreakBidiStatusLastStrong(WTF::Unicode::LeftToRight)
         , m_lineBreakBidiStatusLast(WTF::Unicode::LeftToRight)
+        , m_isFirstAfterPageBreak(false)
 #if ENABLE(ASSERT)
         , m_hasBadChildList(false)
 #endif
@@ -288,6 +289,9 @@ public:
             parent()->clearDescendantsHaveSameLineHeightAndBaseline();
     }
 
+    bool isFirstAfterPageBreak() const { return m_isFirstAfterPageBreak; }
+    void setIsFirstAfterPageBreak(bool isFirstAfterPageBreak) { m_isFirstAfterPageBreak = isFirstAfterPageBreak; }
+
 private:
     void addBoxShadowVisualOverflow(LayoutRect& logicalVisualOverflow);
     void addBorderOutsetVisualOverflow(LayoutRect& logicalVisualOverflow);
@@ -333,6 +337,8 @@ protected:
     unsigned m_lineBreakBidiStatusEor : 5; // WTF::Unicode::Direction
     unsigned m_lineBreakBidiStatusLastStrong : 5; // WTF::Unicode::Direction
     unsigned m_lineBreakBidiStatusLast : 5; // WTF::Unicode::Direction
+
+    unsigned m_isFirstAfterPageBreak : 1;
 
     // End of RootInlineBox-specific members.
 

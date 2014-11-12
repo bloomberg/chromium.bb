@@ -39,8 +39,8 @@ namespace blink {
 
 struct SameSizeAsRootInlineBox : public InlineFlowBox {
     unsigned unsignedVariable;
-    void* pointers[4];
-    LayoutUnit layoutVariables[5];
+    void* pointers[3];
+    LayoutUnit layoutVariables[7];
 };
 
 COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInlineBox_should_stay_small);
@@ -57,6 +57,8 @@ RootInlineBox::RootInlineBox(RenderBlockFlow& block)
     , m_lineTopWithLeading(0)
     , m_lineBottomWithLeading(0)
     , m_selectionBottom(0)
+    , m_paginationStrut(0)
+    , m_paginatedLineWidth(0)
 {
     setIsHorizontal(block.isHorizontalWritingMode());
 }
