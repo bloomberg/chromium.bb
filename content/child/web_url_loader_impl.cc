@@ -551,6 +551,9 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
   new_request.setDownloadToFile(request_.downloadToFile());
   new_request.setRequestContext(request_.requestContext());
   new_request.setFrameType(request_.frameType());
+  new_request.setSkipServiceWorker(request_.skipServiceWorker());
+  new_request.setFetchRequestMode(request_.fetchRequestMode());
+  new_request.setFetchCredentialsMode(request_.fetchCredentialsMode());
 
   new_request.setHTTPReferrer(WebString::fromUTF8(redirect_info.new_referrer),
                               referrer_policy_);
