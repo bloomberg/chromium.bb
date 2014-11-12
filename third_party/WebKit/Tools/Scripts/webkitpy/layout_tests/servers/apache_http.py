@@ -126,12 +126,10 @@ class ApacheHTTP(server_base.ServerBase):
 
     def _spawn_process(self):
         _log.debug('Starting %s server, cmd="%s"' % (self._name, str(self._start_cmd)))
-        self._process = self._executive.popen(self._start_cmd, stderr=self._executive.PIPE)
-        if self._process.returncode is not None:
-            retval = self._process.returncode
-            err = self._process.stderr.read()
-            if retval or len(err):
-                raise server_base.ServerError('Failed to start %s: %s' % (self._name, err))
+        self._process = self._executive.popen(self._start_cmd)
+        retval = self._process.returncode
+        if retval:
+            raise server_base.ServerError('Failed to start %s: %s' % (self._name, retval))
 
         # For some reason apache isn't guaranteed to have created the pid file before
         # the process exits, so we wait a little while longer.
