@@ -31,6 +31,12 @@ public class UrlUtilities {
             "data", "filesystem", "http", "https");
 
     /**
+     * URI schemes that are internal to Chrome.
+     */
+    private static final HashSet<String> INTERNAL_SCHEMES = CollectionUtil.newHashSet(
+            "chrome", "chrome-native", "about");
+
+    /**
      * @param uri A URI.
      *
      * @return True if the URI's scheme is one that ContentView can handle.
@@ -72,6 +78,15 @@ public class UrlUtilities {
         } catch (URISyntaxException e) {
             return false;
         }
+    }
+
+    /**
+     * @param uri A URI.
+     *
+     * @return Whether the URI's scheme is for a internal chrome page.
+     */
+    public static boolean isInternalScheme(URI uri) {
+        return INTERNAL_SCHEMES.contains(uri.getScheme());
     }
 
     /**
