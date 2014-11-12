@@ -8,9 +8,7 @@
     'type': '<(component)',
     'dependencies': [
       '<(DEPTH)/base/base.gyp:base',
-      '<(DEPTH)/components/components.gyp:cloud_policy_proto',
       '<(DEPTH)/components/components.gyp:keyed_service_core',
-      '<(DEPTH)/components/components.gyp:policy',
       '<(DEPTH)/components/components.gyp:policy_component_common',
       '<(DEPTH)/crypto/crypto.gyp:crypto',
     ],
@@ -30,5 +28,13 @@
       'ownership/owner_settings_service.cc',
       'ownership/owner_settings_service.h',
      ],
+    'conditions': [
+      ['configuration_policy==1', {
+        'dependencies': [
+          '<(DEPTH)/components/components.gyp:cloud_policy_proto',
+          '<(DEPTH)/components/components.gyp:policy',
+        ],
+      }],
+    ],
   }],
 }
