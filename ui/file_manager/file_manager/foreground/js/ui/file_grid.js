@@ -45,14 +45,60 @@ FileGrid.decorate = function(self, metadataCache, volumeManager) {
   self.scrollBar_.initialize(self.parentElement, self);
   self.setBottomMarginForPanel(0);
 
+  /**
+   * Map of URL and ListItem generated at the previous update time.
+   * This is used for updating existing item synchronously.
+   * @type {Object.<string, !cr.ui.ListItem>}
+   * @private
+   * @const
+   */
+  self.previousItems_ = {};
+
   self.itemConstructor = function(entry) {
-    var item = self.ownerDocument.createElement('LI');
+    var item = self.previousItems_[entry.toURL()];
+    if (item) {
+      // At this point, previous items that are needed to be replaced have been
+      // removed.
+      assert(item.parentElement == null);
+
+      // If the thumbnail has already been loaded, mark it cached to prevent
+      // playing fadein animation. Then update the thumbnail.
+      var img = item.querySelector('img');
+      if (img) {
+        img.classList.add('cached');
+        FileGrid.decorateThumbnailBox(
+            item.querySelector('.thumbnail-frame div'),
+            entry,
+            self.metadataCache_,
+            self.volumeManager_,
+            ThumbnailLoader.FillMode.AUTO,
+            FileGrid.ThumbnailQuality.LOW,
+            /* animation */ false);
+      }
+      return item;
+    }
+    item = self.ownerDocument.createElement('LI');
     FileGrid.Item.decorate(item, entry, /** @type {FileGrid} */ (self));
+    self.previousItems_[entry.toURL()] =
+        /** @type {!FileGrid.Item} */ (item);
     return item;
   };
 
   self.relayoutRateLimiter_ =
       new AsyncUtil.RateLimiter(self.relayoutImmediately_.bind(self));
+};
+
+/**
+ * @override
+ */
+FileGrid.prototype.mergeItems = function() {
+  cr.ui.Grid.prototype.mergeItems.apply(this, arguments);
+
+  // Update item cache.
+  for (var url in this.previousItems_) {
+    if (this.getIndexOfListItem(this.previousItems_[url]) === -1)
+      delete this.previousItems_[url];
+  }
 };
 
 /**
@@ -74,8 +120,9 @@ FileGrid.prototype.updateListItemsMetadata = function(type, entries) {
                                   entry,
                                   this.metadataCache_,
                                   this.volumeManager_,
-                                  ThumbnailLoader.FillMode.FIT,
-                                  FileGrid.ThumbnailQuality.LOW);
+                                  ThumbnailLoader.FillMode.AUTO,
+                                  FileGrid.ThumbnailQuality.LOW,
+                                  /* animation */ false);
   }
 };
 
@@ -121,7 +168,8 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
                                   metadataCache,
                                   volumeManager,
                                   ThumbnailLoader.FillMode.AUTO,
-                                  FileGrid.ThumbnailQuality.LOW);
+                                  FileGrid.ThumbnailQuality.LOW,
+                                  /* animation */ true);
   }
   frame.appendChild(box);
 
@@ -140,12 +188,13 @@ FileGrid.decorateThumbnail = function(li, entry, metadataCache, volumeManager) {
  * @param {VolumeManagerWrapper} volumeManager Volume manager instance.
  * @param {ThumbnailLoader.FillMode} fillMode Fill mode.
  * @param {FileGrid.ThumbnailQuality} quality Thumbnail quality.
+ * @param {boolean} animation Whther to use fadein animation or not.
  * @param {function(HTMLImageElement)=} opt_imageLoadCallback Callback called
  *     when the image has been loaded before inserting it into the DOM.
  */
 FileGrid.decorateThumbnailBox = function(
     box, entry, metadataCache, volumeManager, fillMode, quality,
-    opt_imageLoadCallback) {
+    animation, opt_imageLoadCallback) {
   var locationInfo = volumeManager.getLocationInfo(entry);
   box.className = 'img-container';
 
@@ -190,7 +239,12 @@ FileGrid.decorateThumbnailBox = function(
             load(box,
                 fillMode,
                 ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
-                opt_imageLoadCallback);
+                function(image, transform) {
+                  if (animation == false)
+                    image.classList.add('cached');
+                  if (opt_imageLoadCallback)
+                    opt_imageLoadCallback(image);
+                });
       });
 };
 

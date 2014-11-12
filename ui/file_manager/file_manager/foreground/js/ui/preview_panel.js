@@ -454,6 +454,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
           this.volumeManager_,
           ThumbnailLoader.FillMode.FILL,
           FileGrid.ThumbnailQuality.LOW,
+          /* animation */ false,
           i == 0 && length == 1 ? this.setZoomedImage_.bind(this) : undefined);
     }
 
