@@ -643,6 +643,7 @@ public:
 
     bool backgroundHasOpaqueTopLayer() const;
 
+    void updateIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 protected:
     virtual void willBeDestroyed() override;
 
@@ -671,8 +672,6 @@ protected:
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer* currentCompositedLayer, const LayoutPoint& layerOffset, const LayoutRect& containerRect) const override;
     virtual void computeSelfHitTestRects(Vector<LayoutRect>&, const LayoutPoint& layerOffset) const override;
-
-    void updateIntrinsicContentLogicalHeight(LayoutUnit intrinsicContentLogicalHeight) const { m_intrinsicContentLogicalHeight = intrinsicContentLogicalHeight; }
 
     virtual PaintInvalidationReason paintInvalidationReason(const RenderLayerModelObject& paintInvalidationContainer,
         const LayoutRect& oldBounds, const LayoutPoint& oldPositionFromPaintInvalidationContainer,

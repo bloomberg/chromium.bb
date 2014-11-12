@@ -1350,7 +1350,12 @@ void RenderFlexibleBox::applyStretchAlignmentToChild(RenderBox& child, LayoutUni
                 child.setOverrideLogicalContentHeight(desiredLogicalHeight - child.borderAndPaddingLogicalHeight());
             if (childNeedsRelayout) {
                 child.setLogicalHeight(0);
+                // We cache the child's intrinsic content logical height to avoid it being reset to the stretched height.
+                // FIXME: This is fragile. RenderBoxes should be smart enough to determine their intrinsic content logical
+                // height correctly even when there's an overrideHeight.
+                LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
                 child.forceChildLayout();
+                child.updateIntrinsicContentLogicalHeight(childIntrinsicContentLogicalHeight);
             }
         }
     } else if (isColumnFlow() && child.style()->logicalWidth().isAuto()) {
