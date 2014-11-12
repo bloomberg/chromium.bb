@@ -162,7 +162,7 @@ TEST_F(OverrideSettingsTest, ParseBrokenManifest) {
       Extension::NO_FLAGS,
       &error);
 #if defined(OS_WIN)
-  EXPECT_FALSE(extension);
+  EXPECT_FALSE(extension.get());
   EXPECT_EQ(
       extensions::ErrorUtils::FormatErrorMessage(
           extensions::manifest_errors::kInvalidEmptyDictionary,

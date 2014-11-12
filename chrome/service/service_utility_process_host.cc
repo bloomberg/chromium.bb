@@ -322,11 +322,8 @@ void ServiceUtilityProcessHost::OnRenderPDFPagesToMetafilesPageDone(
     return OnPDFToEmfFinished(false);
   base::File emf_file = pdf_to_emf_state_->TakeNextFile();
   base::PostTaskAndReplyWithResult(
-      client_message_loop_proxy_,
-      FROM_HERE,
-      base::Bind(&Client::MetafileAvailable,
-                 client_.get(),
-                 scale_factor,
+      client_message_loop_proxy_.get(), FROM_HERE,
+      base::Bind(&Client::MetafileAvailable, client_.get(), scale_factor,
                  base::Passed(&emf_file)),
       base::Bind(&ServiceUtilityProcessHost::OnMetafileSpooled,
                  weak_ptr_factory_.GetWeakPtr()));

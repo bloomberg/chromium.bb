@@ -360,7 +360,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       tracked_objects::ScopedTracker tracking_profile(
           FROM_HERE_WITH_EXPLICIT_FUNCTION("Core_OnObjectSignaled"));
 
-      DCHECK(xps_print_job_);
+      DCHECK(xps_print_job_.get());
       DCHECK(object == job_progress_event_.Get());
       ResetEvent(job_progress_event_.Get());
       if (!delegate_)
@@ -391,7 +391,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
           : job_ptr_(job_ptr) {
       }
       ~PrintJobCanceler() {
-        if (job_ptr_ && *job_ptr_) {
+        if (job_ptr_ && job_ptr_->get()) {
           (*job_ptr_)->Cancel();
           job_ptr_->Release();
         }
@@ -443,7 +443,7 @@ class JobSpoolerWin : public PrintSystem::JobSpooler {
       DCHECK(g_service_process->io_thread()->message_loop_proxy()->
           BelongsToCurrentThread());
       scoped_ptr<ServiceUtilityProcessHost> utility_host(
-          new ServiceUtilityProcessHost(this, client_message_loop_proxy));
+          new ServiceUtilityProcessHost(this, client_message_loop_proxy.get()));
       // TODO(gene): For now we disabling autorotation for CloudPrinting.
       // Landscape/Portrait setting is passed in the print ticket and
       // server is generating portrait PDF always.
@@ -589,7 +589,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     DCHECK(g_service_process->io_thread()->message_loop_proxy()->
         BelongsToCurrentThread());
     scoped_ptr<ServiceUtilityProcessHost> utility_host(
-        new ServiceUtilityProcessHost(this, client_message_loop_proxy));
+        new ServiceUtilityProcessHost(this, client_message_loop_proxy.get()));
     if (utility_host->StartGetPrinterCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
       utility_host.release();
@@ -606,7 +606,7 @@ class PrinterCapsHandler : public ServiceUtilityProcessHost::Client {
     DCHECK(g_service_process->io_thread()->message_loop_proxy()->
         BelongsToCurrentThread());
     scoped_ptr<ServiceUtilityProcessHost> utility_host(
-        new ServiceUtilityProcessHost(this, client_message_loop_proxy));
+        new ServiceUtilityProcessHost(this, client_message_loop_proxy.get()));
     if (utility_host->StartGetPrinterSemanticCapsAndDefaults(printer_name_)) {
       // The object will self-destruct when the child process dies.
       utility_host.release();
