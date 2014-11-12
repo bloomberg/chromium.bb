@@ -37,4 +37,11 @@ count_open_fds(void);
 void
 exec_fd_leak_check(int nr_expected_fds); /* never returns */
 
+/*
+ * set/reset the timeout in seconds. The timeout starts
+ * at the point of invoking this function
+ */
+void
+test_set_timeout(unsigned int);
+
 #endif

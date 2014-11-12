@@ -44,6 +44,11 @@ static void* (*sys_calloc)(size_t, size_t);
 
 int leak_check_enabled;
 
+/* when this var is set to 0, every call to test_set_timeout() is
+ * suppressed - handy when debugging the test. Can be set by
+ * WAYLAND_TESTS_NO_TIMEOUTS evnironment var */
+static int timeouts_enabled = 1;
+
 extern const struct test __start_test_section, __stop_test_section;
 
 __attribute__ ((visibility("default"))) void *
@@ -110,14 +115,55 @@ usage(const char *name, int status)
 	exit(status);
 }
 
+void
+test_set_timeout(unsigned int to)
+{
+	int re;
+
+	if (!timeouts_enabled) {
+		fprintf(stderr, "Timeouts suppressed.\n");
+		return;
+	}
+
+	re = alarm(to);
+	fprintf(stderr, "Timeout was %sset", re ? "re-" : "");
+
+	if (to != 0)
+		fprintf(stderr, " to %d second%c from now.\n",
+			to, to > 1 ? 's' : 0);
+	else
+		fprintf(stderr, " off.\n");
+}
+
+static void
+sigalrm_handler(int signum)
+{
+	fprintf(stderr, "Test timed out.\n");
+	abort();
+}
+
 static void
 run_test(const struct test *t)
 {
 	int cur_alloc = num_alloc;
 	int cur_fds, num_fds;
+	struct sigaction sa;
 
 	cur_fds = count_open_fds();
+
+	if (timeouts_enabled) {
+		sa.sa_handler = sigalrm_handler;
+		sa.sa_flags = 0;
+		sigemptyset(&sa.sa_mask);
+		assert(sigaction(SIGALRM, &sa, NULL) == 0);
+	}
+
 	t->run();
+
+	/* turn off timeout (if any) after test completition */
+	if (timeouts_enabled)
+		alarm(0);
+
 	if (leak_check_enabled) {
 		if (cur_alloc != num_alloc) {
 			fprintf(stderr, "Memory leak detected in test. "
@@ -189,6 +235,7 @@ int main(int argc, char *argv[])
 	sys_free = dlsym(RTLD_NEXT, "free");
 
 	leak_check_enabled = !getenv("NO_ASSERT_LEAK_CHECK");
+	timeouts_enabled = !getenv("WAYLAND_TESTS_NO_TIMEOUTS");
 
 	if (argc == 2 && strcmp(argv[1], "--help") == 0)
 		usage(argv[0], EXIT_SUCCESS);
