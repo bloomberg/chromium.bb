@@ -137,6 +137,11 @@ def GetCommitPosition(git_revision, cwd=None):
   Returns:
     Git commit position as integer or None.
   """
+  # Angle repository is pure git based, unlike other repositories it doesn't
+  # have commit position.
+  if cwd and 'angle' in cwd:
+    return None
+
   cmd = ['footers', '--position-num', git_revision]
   output = bisect_utils.CheckRunGit(cmd, cwd)
   commit_position = output.strip()

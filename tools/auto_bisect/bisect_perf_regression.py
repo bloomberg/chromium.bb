@@ -419,7 +419,7 @@ def _UpdateDEPSForAngle(revision, depot, deps_file):
     # e.g. "angle_revision": "fa63e947cb3eccf463648d21a05d5002c9b8adfa".
     angle_rev_pattern = re.compile(r'(?<="%s": ")([a-fA-F0-9]{40})(?=")' %
                                    deps_var, re.MULTILINE)
-    match = re.search(angle_rev_pattern % deps_var, deps_contents)
+    match = re.search(angle_rev_pattern, deps_contents)
     if match:
       # Update the revision information for the given depot
       new_data = re.sub(angle_rev_pattern, revision, deps_contents)
