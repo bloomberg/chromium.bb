@@ -41,7 +41,8 @@ class ChromeExtensionsDelegate : public ExtensionsDelegate {
     return extension_service_->GetBrowserContext();
   }
   const extensions::ExtensionSet& GetInstalledExtensions() override {
-    return *extension_service_->extensions();
+    return extensions::ExtensionRegistry::Get(GetBrowserContext())
+        ->enabled_extensions();
   }
   bool LaunchApp(const std::string& app_id) override {
     // Check Running apps
