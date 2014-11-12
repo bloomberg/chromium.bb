@@ -36,8 +36,6 @@ FakeHostPairingController::~FakeHostPairingController() {
 }
 
 void FakeHostPairingController::ApplyConfig(const std::string& config) {
-  typedef std::vector<std::string> Tokens;
-
   base::StringPairs kv_pairs;
   CHECK(base::SplitStringIntoKeyValuePairs(config, ':', ',', &kv_pairs))
       << "Wrong config format.";

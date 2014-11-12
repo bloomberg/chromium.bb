@@ -96,10 +96,13 @@
           ],
         }],
         [ 'clang==1', {
-          # G_DEFINE_TYPE automatically generates a *get_instance_private inline function after glib 2.37.
-          # That's unused. Prevent to complain about it.
           'cflags': [
+            # G_DEFINE_TYPE automatically generates a *get_instance_private inline function after glib 2.37.
+            # That's unused. Prevent to complain about it.
             '-Wno-unused-function',
+
+            # G_STATIC_ASSERT uses a typedef as a static_assert.
+            '-Wno-unused-local-typedef',
           ],
         }],
       ],

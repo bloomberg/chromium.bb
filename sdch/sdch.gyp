@@ -71,6 +71,11 @@
       # introduce static initializers, and which prevents open-vcdiff's
       # logging.h from being used).
       'variables': {
+        'clang_warning_flags': [
+          # sdch uses the pre-c++11 typedef-as-static_assert hack.
+          # https://code.google.com/p/open-vcdiff/issues/detail?id=44
+          '-Wno-unused-local-typedef',
+        ],
         'logging_path': 'logging_forward.h',
         'conditions': [
           # gyp leaves unspecified what the cwd is when running the compiler,

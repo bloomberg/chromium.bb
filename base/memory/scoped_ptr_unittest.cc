@@ -669,7 +669,9 @@ TEST(ScopedPtrTest, SelfResetAbortsWithCustomDeleter) {
 TEST(ScopedPtrTest, SelfResetWithCustomDeleterOptOut) {
   // A custom deleter should be able to opt out of self-reset abort behavior.
   struct NoOpDeleter {
+#if !defined(NDEBUG)
     typedef void AllowSelfReset;
+#endif
     inline void operator()(int*) {}
   };
   scoped_ptr<int> owner(new int);

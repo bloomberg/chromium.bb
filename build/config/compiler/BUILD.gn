@@ -745,9 +745,6 @@ config("default_warnings") {
 
         # TODO(thakis): Remove, http://crbug.com/263960
         "-Wno-reserved-user-defined-literal",
-
-        # TODO(hans): Clean this up. Or disable with finer granularity.
-        "-Wno-unused-local-typedef",
       ]
     }
     if (gcc_version >= 48) {
