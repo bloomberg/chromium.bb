@@ -57,7 +57,7 @@ CYGTAR = os.path.join(BUILD_DIR, 'cygtar.py')
 PKGVER = os.path.join(BUILD_DIR, 'package_version', 'package_version.py')
 
 NACLPORTS_URL = 'https://chromium.googlesource.com/external/naclports.git'
-NACLPORTS_REV = '873ca4910a5f9d4206306aacb4ed79c587c6a5f3'
+NACLPORTS_REV = '796184d48c27d65f48638a51ae144d651cd9f90d'
 
 GYPBUILD_DIR = 'gypbuild'
 
