@@ -102,6 +102,7 @@ class CONTENT_EXPORT ServiceWorkerCache
 
   class BlobReader;
   struct KeysContext;
+  struct MatchContext;
   struct PutContext;
 
   // The backend progresses from uninitialized, to open, to closed, and cannot
@@ -124,6 +125,14 @@ class CONTENT_EXPORT ServiceWorkerCache
 
   // Async operations in progress will cancel and not run their callbacks.
   virtual ~ServiceWorkerCache();
+
+  // Match callbacks
+  void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv);
+  void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
+                            scoped_ptr<ServiceWorkerCacheMetadata> headers);
+  void MatchDidReadResponseBodyData(scoped_ptr<MatchContext> match_context,
+                                    int rv);
+  void MatchDoneWithBody(scoped_ptr<MatchContext> match_context);
 
   // Put callbacks.
   void PutImpl(scoped_ptr<PutContext> put_context);
