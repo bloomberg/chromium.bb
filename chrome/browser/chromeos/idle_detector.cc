@@ -10,9 +10,8 @@
 
 namespace chromeos {
 
-IdleDetector::IdleDetector(const base::Closure& on_active_callback,
-                           const base::Closure& on_idle_callback)
-    : active_callback_(on_active_callback), idle_callback_(on_idle_callback) {}
+IdleDetector::IdleDetector(const base::Closure& on_idle_callback)
+    : idle_callback_(on_idle_callback) {}
 
 IdleDetector::~IdleDetector() {
   wm::UserActivityDetector* user_activity_detector =
@@ -22,8 +21,6 @@ IdleDetector::~IdleDetector() {
 }
 
 void IdleDetector::OnUserActivity(const ui::Event* event) {
-  if (!active_callback_.is_null())
-    active_callback_.Run();
   ResetTimer();
 }
 

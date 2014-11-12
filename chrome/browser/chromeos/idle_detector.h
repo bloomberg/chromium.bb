@@ -16,8 +16,7 @@ namespace chromeos {
 
 class IdleDetector : public wm::UserActivityObserver {
  public:
-  IdleDetector(const base::Closure& on_active_callback,
-               const base::Closure& on_idle_callback);
+  explicit IdleDetector(const base::Closure& on_idle_callback);
   virtual ~IdleDetector();
 
   void Start(const base::TimeDelta& timeout);
@@ -31,7 +30,6 @@ class IdleDetector : public wm::UserActivityObserver {
 
   base::OneShotTimer<IdleDetector> timer_;
 
-  base::Closure active_callback_;
   base::Closure idle_callback_;
 
   base::TimeDelta timeout_;

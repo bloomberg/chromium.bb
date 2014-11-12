@@ -67,8 +67,7 @@ void DemoModeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
 void DemoModeDetector::StartIdleDetection() {
   if (!idle_detector_.get()) {
     idle_detector_.reset(
-        new IdleDetector(base::Closure(),
-                         base::Bind(&DemoModeDetector::OnIdle,
+        new IdleDetector(base::Bind(&DemoModeDetector::OnIdle,
                                     weak_ptr_factory_.GetWeakPtr())));
   }
   idle_detector_->Start(derelict_idle_timeout_);
