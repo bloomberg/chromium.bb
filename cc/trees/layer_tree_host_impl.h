@@ -469,8 +469,8 @@ class CC_EXPORT LayerTreeHostImpl
   void RegisterPictureLayerImpl(PictureLayerImpl* layer);
   void UnregisterPictureLayerImpl(PictureLayerImpl* layer);
 
-  void GetPictureLayerImplPairs(
-      std::vector<PictureLayerImpl::Pair>* layers) const;
+  void GetPictureLayerImplPairs(std::vector<PictureLayerImpl::Pair>* layers,
+                                bool need_valid_tile_priorities) const;
 
   void SetTopControlsLayoutHeight(float height);
 

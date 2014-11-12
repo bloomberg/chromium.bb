@@ -25,6 +25,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
                                  const gfx::Rect& rect) override;
   RasterSource* GetRasterSource() override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
+  TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
   size_t GetMaxTilesForInterestArea() const override;
   float GetSkewportTargetTimeInSeconds() const override;
   int GetSkewportExtrapolationLimitInContentPixels() const override;
@@ -47,6 +48,9 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_text_rect(const gfx::Rect& rect) { text_rect_ = rect; }
   void set_allow_create_tile(bool allow) { allow_create_tile_ = allow; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
+  void set_max_tile_priority_bin(TilePriority::PriorityBin bin) {
+    max_tile_priority_bin_ = bin;
+  }
   void set_max_tiles_for_interest_area(size_t area) {
     max_tiles_for_interest_area_ = area;
   }
@@ -73,6 +77,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   gfx::Rect text_rect_;
   bool allow_create_tile_;
   Region invalidation_;
+  TilePriority::PriorityBin max_tile_priority_bin_;
   size_t max_tiles_for_interest_area_;
   float skewport_target_time_in_seconds_;
   int skewport_extrapolation_limit_in_content_pixels_;

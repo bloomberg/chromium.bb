@@ -781,13 +781,16 @@ void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
   // TODO(vmpstr): This code should return the priority instead of setting it on
   // the tile. This should be a part of the change to move tile priority from
   // tiles into iterators.
+  TilePriority::PriorityBin max_tile_priority_bin =
+      client_->GetMaxTilePriorityBin();
   WhichTree tree = client_->GetTree();
 
   DCHECK_EQ(TileAt(tile->tiling_i_index(), tile->tiling_j_index()), tile);
   gfx::Rect tile_bounds =
       tiling_data_.TileBounds(tile->tiling_i_index(), tile->tiling_j_index());
 
-  if (current_visible_rect_.Intersects(tile_bounds)) {
+  if (max_tile_priority_bin <= TilePriority::NOW &&
+      current_visible_rect_.Intersects(tile_bounds)) {
     tile->SetPriority(tree, TilePriority(resolution_, TilePriority::NOW, 0));
     if (tree == PENDING_TREE) {
       tile->set_required_for_activation(
@@ -810,8 +813,9 @@ void PictureLayerTiling::UpdateTilePriority(Tile* tile) const {
       current_visible_rect_.ManhattanInternalDistance(tile_bounds) *
       content_to_screen_scale_;
 
-  if (current_soon_border_rect_.Intersects(tile_bounds) ||
-      current_skewport_rect_.Intersects(tile_bounds)) {
+  if (max_tile_priority_bin <= TilePriority::SOON &&
+      (current_soon_border_rect_.Intersects(tile_bounds) ||
+       current_skewport_rect_.Intersects(tile_bounds))) {
     tile->SetPriority(
         tree,
         TilePriority(resolution_, TilePriority::SOON, distance_to_visible));

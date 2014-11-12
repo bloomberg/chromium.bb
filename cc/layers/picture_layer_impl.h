@@ -126,6 +126,7 @@ class CC_EXPORT PictureLayerImpl
       const PictureLayerTiling* tiling) const override;
   PictureLayerTiling* GetRecycledTwinTiling(
       const PictureLayerTiling* tiling) override;
+  TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
   size_t GetMaxTilesForInterestArea() const override;
   float GetSkewportTargetTimeInSeconds() const override;
   int GetSkewportExtrapolationLimitInContentPixels() const override;

@@ -664,6 +664,12 @@ PictureLayerTiling* PictureLayerImpl::GetRecycledTwinTiling(
   return recycled_twin->tilings_->TilingAtScale(tiling->contents_scale());
 }
 
+TilePriority::PriorityBin PictureLayerImpl::GetMaxTilePriorityBin() const {
+  if (!HasValidTilePriorities())
+    return TilePriority::EVENTUALLY;
+  return TilePriority::NOW;
+}
+
 size_t PictureLayerImpl::GetMaxTilesForInterestArea() const {
   return layer_tree_impl()->settings().max_tiles_for_interest_area;
 }
@@ -1573,11 +1579,12 @@ PictureLayerImpl::LayerEvictionTileIterator::LayerEvictionTileIterator(
       tree_priority_(tree_priority),
       current_category_(PictureLayerTiling::EVENTUALLY),
       current_tiling_range_type_(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES),
-      current_tiling_(CurrentTilingRange().start - 1u) {
-  // TODO(vmpstr): Once tile priorities are determined by the iterators, ensure
-  // that layers that don't have valid tile priorities have lowest priorities so
-  // they evict their tiles first (crbug.com/381704)
-  DCHECK(layer_->tilings_);
+      current_tiling_(0u) {
+  // Early out if the layer has no tilings.
+  if (!layer_->tilings_ || !layer_->tilings_->num_tilings())
+    return;
+
+  current_tiling_ = CurrentTilingRange().start - 1u;
   do {
     if (!AdvanceToNextTiling())
       break;

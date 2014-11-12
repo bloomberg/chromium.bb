@@ -121,6 +121,10 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->GetRecycledTwinTiling(tiling);
   }
 
+  TilePriority::PriorityBin GetMaxTilePriorityBin() const override {
+    return base_client_->GetMaxTilePriorityBin();
+  }
+
   size_t GetMaxTilesForInterestArea() const override {
     return base_client_->GetMaxTilesForInterestArea();
   }

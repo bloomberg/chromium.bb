@@ -1177,7 +1177,8 @@ void LayerTreeHostImpl::DidInitializeVisibleTile() {
 }
 
 void LayerTreeHostImpl::GetPictureLayerImplPairs(
-    std::vector<PictureLayerImpl::Pair>* layer_pairs) const {
+    std::vector<PictureLayerImpl::Pair>* layer_pairs,
+    bool need_valid_tile_priorities) const {
   DCHECK(layer_pairs->empty());
   for (std::vector<PictureLayerImpl*>::const_iterator it =
            picture_layers_.begin();
@@ -1185,24 +1186,25 @@ void LayerTreeHostImpl::GetPictureLayerImplPairs(
        ++it) {
     PictureLayerImpl* layer = *it;
 
-    // TODO(vmpstr): Iterators and should handle this instead. crbug.com/381704
-    if (!layer->HasValidTilePriorities())
+    if (!layer->IsOnActiveOrPendingTree() ||
+        (need_valid_tile_priorities && !layer->HasValidTilePriorities()))
       continue;
 
     PictureLayerImpl* twin_layer = layer->GetPendingOrActiveTwinLayer();
 
     // Ignore the twin layer when tile priorities are invalid.
-    // TODO(vmpstr): Iterators should handle this instead. crbug.com/381704
-    if (twin_layer && !twin_layer->HasValidTilePriorities())
+    if (need_valid_tile_priorities && twin_layer &&
+        !twin_layer->HasValidTilePriorities())
       twin_layer = NULL;
 
     // If the current tree is ACTIVE_TREE, then always generate a layer_pair.
     // If current tree is PENDING_TREE, then only generate a layer_pair if
     // there is no twin layer.
     if (layer->GetTree() == ACTIVE_TREE) {
-      DCHECK(!twin_layer || twin_layer->GetTree() == PENDING_TREE);
+      DCHECK_IMPLIES(twin_layer, twin_layer->GetTree() == PENDING_TREE);
       layer_pairs->push_back(PictureLayerImpl::Pair(layer, twin_layer));
     } else if (!twin_layer) {
+      DCHECK(layer->GetTree() == PENDING_TREE);
       layer_pairs->push_back(PictureLayerImpl::Pair(NULL, layer));
     }
   }
@@ -1212,7 +1214,7 @@ void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
                                          TreePriority tree_priority) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildRasterQueue");
   picture_layer_pairs_.clear();
-  GetPictureLayerImplPairs(&picture_layer_pairs_);
+  GetPictureLayerImplPairs(&picture_layer_pairs_, true);
   queue->Build(picture_layer_pairs_, tree_priority);
 }
 
@@ -1220,7 +1222,7 @@ void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,
                                            TreePriority tree_priority) {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::BuildEvictionQueue");
   picture_layer_pairs_.clear();
-  GetPictureLayerImplPairs(&picture_layer_pairs_);
+  GetPictureLayerImplPairs(&picture_layer_pairs_, false);
   queue->Build(picture_layer_pairs_, tree_priority);
 }
 

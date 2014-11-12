@@ -7587,7 +7587,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   LayerImpl* pending_layer = pending_tree->root_layer();
 
   std::vector<PictureLayerImpl::Pair> layer_pairs;
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
+  host_impl_->GetPictureLayerImplPairs(&layer_pairs, true);
   EXPECT_EQ(1u, layer_pairs.size());
   EXPECT_EQ(pending_layer, layer_pairs[0].pending);
   EXPECT_EQ(nullptr, layer_pairs[0].active);
@@ -7604,7 +7604,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   host_impl_->CreatePendingTree();
 
   layer_pairs.clear();
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
+  host_impl_->GetPictureLayerImplPairs(&layer_pairs, true);
   EXPECT_EQ(1u, layer_pairs.size());
   EXPECT_EQ(active_layer, layer_pairs[0].active);
   EXPECT_EQ(pending_layer, layer_pairs[0].pending);
@@ -7613,7 +7613,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   host_impl_->ActivateSyncTree();
 
   layer_pairs.clear();
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
+  host_impl_->GetPictureLayerImplPairs(&layer_pairs, true);
   EXPECT_EQ(1u, layer_pairs.size());
   EXPECT_EQ(active_layer, layer_pairs[0].active);
   EXPECT_EQ(nullptr, layer_pairs[0].pending);
@@ -7627,7 +7627,7 @@ TEST_F(LayerTreeHostImplTest, GetPictureLayerImplPairs) {
   LayerImpl* new_pending_layer = pending_tree->root_layer()->children()[0];
 
   layer_pairs.clear();
-  host_impl_->GetPictureLayerImplPairs(&layer_pairs);
+  host_impl_->GetPictureLayerImplPairs(&layer_pairs, true);
   EXPECT_EQ(2u, layer_pairs.size());
 
   // The pair ordering is flaky, so make it consistent.
