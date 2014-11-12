@@ -6,6 +6,8 @@
 
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/ipc_tags.h"
+#include "sandbox/win/src/policy_params.h"
+#include "sandbox/win/src/policy_target.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sharedmem_ipc_client.h"
@@ -54,6 +56,29 @@ NTSTATUS WINAPI TargetNtCreateKey(NtCreateKeyFunction orig_CreateKey,
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
     if (!NT_SUCCESS(ret) || NULL == name)
+      break;
+
+    uint32 desired_access_uint32 = desired_access;
+    CountedParameterSet<OpenKey> params;
+    params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
+
+    wchar_t* full_name = NULL;
+
+    if (root_directory) {
+      ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
+      if (!NT_SUCCESS(ret) || NULL == full_name)
+        break;
+      params[OpenKey::NAME] = ParamPickerMake(full_name);
+    } else {
+      params[OpenKey::NAME] = ParamPickerMake(name);
+    }
+
+    bool query_broker = QueryBroker(IPC_NTCREATEKEY_TAG, params.GetBase());
+
+    if (full_name != NULL)
+      operator delete(full_name, NT_ALLOC);
+
+    if (!query_broker)
       break;
 
     SharedMemIPCClient ipc(memory);
@@ -113,6 +138,29 @@ NTSTATUS WINAPI CommonNtOpenKey(NTSTATUS status, PHANDLE key,
     NTSTATUS ret = AllocAndCopyName(object_attributes, &name, &attributes,
                                     &root_directory);
     if (!NT_SUCCESS(ret) || NULL == name)
+      break;
+
+    uint32 desired_access_uint32 = desired_access;
+    CountedParameterSet<OpenKey> params;
+    params[OpenKey::ACCESS] = ParamPickerMake(desired_access_uint32);
+
+    wchar_t* full_name = NULL;
+
+    if (root_directory) {
+      ret = sandbox::AllocAndGetFullPath(root_directory, name, &full_name);
+      if (!NT_SUCCESS(ret) || NULL == full_name)
+        break;
+      params[OpenKey::NAME] = ParamPickerMake(full_name);
+    } else {
+      params[OpenKey::NAME] = ParamPickerMake(name);
+    }
+
+    bool query_broker = QueryBroker(IPC_NTOPENKEY_TAG, params.GetBase());
+
+    if (full_name != NULL)
+      operator delete(full_name, NT_ALLOC);
+
+    if (!query_broker)
       break;
 
     SharedMemIPCClient ipc(memory);

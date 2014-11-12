@@ -103,6 +103,11 @@ NTSTATUS CopyData(void* destination, const void* source, size_t bytes);
 NTSTATUS AllocAndCopyName(const OBJECT_ATTRIBUTES* in_object,
                           wchar_t** out_name, uint32* attributes, HANDLE* root);
 
+// Determine full path name from object root and path.
+NTSTATUS AllocAndGetFullPath(HANDLE root,
+                             wchar_t* path,
+                             wchar_t** full_path);
+
 // Initializes our ntdll level heap
 bool InitHeap();
 
