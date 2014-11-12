@@ -20,6 +20,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../base/ui_base.gyp:ui_base',
         '../events/events.gyp:events',
         '../gfx/gfx.gyp:gfx',
       ],
