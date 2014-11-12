@@ -81,43 +81,45 @@ ServiceWorkerCacheResponse::ResponseType WebResponseTypeToProtoResponseType(
   return ServiceWorkerCacheResponse::OPAQUE_TYPE;
 }
 
-struct ResponseReadContext {
-  ResponseReadContext(scoped_refptr<net::IOBufferWithSize> buff,
-                      scoped_refptr<storage::BlobData> blob)
-      : buffer(buff), blob_data(blob), total_bytes_read(0) {}
+struct MatchContext {
+  MatchContext(scoped_ptr<ServiceWorkerFetchRequest> request,
+               const ServiceWorkerCache::ResponseCallback& callback,
+               base::WeakPtr<storage::BlobStorageContext> blob_storage_context)
+      : request(request.Pass()),
+        original_callback(callback),
+        blob_storage_context(blob_storage_context),
+        entry(nullptr),
+        total_bytes_read(0) {}
 
-  scoped_refptr<net::IOBufferWithSize> buffer;
+  ~MatchContext() {
+    if (entry)
+      entry->Close();
+  }
+
+  // Input
+  scoped_ptr<ServiceWorkerFetchRequest> request;
+  ServiceWorkerCache::ResponseCallback original_callback;
+  base::WeakPtr<storage::BlobStorageContext> blob_storage_context;
+  disk_cache::Entry* entry;
+
+  // Output
+  scoped_ptr<ServiceWorkerResponse> response;
   scoped_refptr<storage::BlobData> blob_data;
-  int total_bytes_read;
 
-  DISALLOW_COPY_AND_ASSIGN(ResponseReadContext);
+  // For reading the cache entry data into a blob.
+  scoped_refptr<net::IOBufferWithSize> response_body_buffer;
+  size_t total_bytes_read;
+
+  DISALLOW_COPY_AND_ASSIGN(MatchContext);
 };
 
 // Match callbacks
-void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       const ServiceWorkerCache::ResponseCallback& callback,
-                       base::WeakPtr<storage::BlobStorageContext> blob_storage,
-                       scoped_ptr<disk_cache::Entry*> entryptr,
-                       int rv);
-void MatchDidReadMetadata(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
-    const ServiceWorkerCache::ResponseCallback& callback,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage,
-    disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerCacheMetadata> headers);
-void MatchDidReadResponseBodyData(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
-    const ServiceWorkerCache::ResponseCallback& callback,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage,
-    disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<ResponseReadContext> response_context,
-    int rv);
-void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       const ServiceWorkerCache::ResponseCallback& callback,
-                       base::WeakPtr<storage::BlobStorageContext> blob_storage,
-                       scoped_ptr<ServiceWorkerResponse> response,
-                       scoped_ptr<ResponseReadContext> response_context);
+void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv);
+void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
+                          scoped_ptr<ServiceWorkerCacheMetadata> headers);
+void MatchDidReadResponseBodyData(scoped_ptr<MatchContext> match_context,
+                                  int rv);
+void MatchDoneWithBody(scoped_ptr<MatchContext> match_context);
 
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
@@ -128,29 +130,20 @@ void ReadMetadataDidReadMetadata(
     const scoped_refptr<net::IOBufferWithSize>& buffer,
     int rv);
 
-void MatchDidOpenEntry(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       const ServiceWorkerCache::ResponseCallback& callback,
-                       base::WeakPtr<storage::BlobStorageContext> blob_storage,
-                       scoped_ptr<disk_cache::Entry*> entryptr,
-                       int rv) {
+void MatchDidOpenEntry(scoped_ptr<MatchContext> match_context, int rv) {
   if (rv != net::OK) {
-    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
-  DCHECK(entryptr);
-  disk_cache::ScopedEntryPtr entry(*entryptr);
-
   // Copy the entry pointer before passing it in base::Bind.
-  disk_cache::Entry* tmp_entry_ptr = entry.get();
+  disk_cache::Entry* tmp_entry_ptr = match_context->entry;
+  DCHECK(tmp_entry_ptr);
 
-  MetadataCallback headers_callback = base::Bind(MatchDidReadMetadata,
-                                                 base::Passed(request.Pass()),
-                                                 callback,
-                                                 blob_storage,
-                                                 base::Passed(entry.Pass()));
+  MetadataCallback headers_callback =
+      base::Bind(MatchDidReadMetadata, base::Passed(match_context.Pass()));
 
   ReadMetadata(tmp_entry_ptr, headers_callback);
 }
@@ -191,27 +184,22 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   return true;
 }
 
-void MatchDidReadMetadata(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
-    const ServiceWorkerCache::ResponseCallback& callback,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage,
-    disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerCacheMetadata> metadata) {
+void MatchDidReadMetadata(scoped_ptr<MatchContext> match_context,
+                          scoped_ptr<ServiceWorkerCacheMetadata> metadata) {
   if (!metadata) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
-  scoped_ptr<ServiceWorkerResponse> response(new ServiceWorkerResponse(
-      request->url,
-      metadata->response().status_code(),
+  match_context->response.reset(new ServiceWorkerResponse(
+      match_context->request->url, metadata->response().status_code(),
       metadata->response().status_text(),
       ProtoResponseTypeToWebResponseType(metadata->response().response_type()),
-      ServiceWorkerHeaderMap(),
-      "",
-      0));
+      ServiceWorkerHeaderMap(), "", 0));
+
+  ServiceWorkerResponse* response = match_context->response.get();
 
   if (metadata->response().has_url())
     response->url = GURL(metadata->response().url());
@@ -227,106 +215,79 @@ void MatchDidReadMetadata(
     cached_request_headers[header.name()] = header.value();
   }
 
-  if (!VaryMatches(
-          request->headers, cached_request_headers, response->headers)) {
-    callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+  if (!VaryMatches(match_context->request->headers, cached_request_headers,
+                   response->headers)) {
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeNotFound,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
-  if (entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
-    callback.Run(ServiceWorkerCache::ErrorTypeOK,
-                 response.Pass(),
-                 scoped_ptr<storage::BlobDataHandle>());
+  if (match_context->entry->GetDataSize(INDEX_RESPONSE_BODY) == 0) {
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeOK,
+                                         match_context->response.Pass(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
   // Stream the response body into a blob.
-  if (!blob_storage) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+  if (!match_context->blob_storage_context) {
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
   response->blob_uuid = base::GenerateGUID();
 
-  scoped_refptr<storage::BlobData> blob_data =
-      new storage::BlobData(response->blob_uuid);
-  scoped_refptr<net::IOBufferWithSize> response_body_buffer(
-      new net::IOBufferWithSize(kBufferSize));
+  match_context->blob_data = new storage::BlobData(response->blob_uuid);
+  match_context->response_body_buffer = new net::IOBufferWithSize(kBufferSize);
 
-  scoped_ptr<ResponseReadContext> read_context(
-      new ResponseReadContext(response_body_buffer, blob_data));
+  disk_cache::Entry* tmp_entry_ptr = match_context->entry;
+  net::IOBufferWithSize* response_body_buffer =
+      match_context->response_body_buffer.get();
 
-  // Copy the entry pointer before passing it in base::Bind.
-  disk_cache::Entry* tmp_entry_ptr = entry.get();
+  net::CompletionCallback read_callback = base::Bind(
+      MatchDidReadResponseBodyData, base::Passed(match_context.Pass()));
 
-  net::CompletionCallback read_callback =
-      base::Bind(MatchDidReadResponseBodyData,
-                 base::Passed(request.Pass()),
-                 callback,
-                 blob_storage,
-                 base::Passed(entry.Pass()),
-                 base::Passed(response.Pass()),
-                 base::Passed(read_context.Pass()));
-
-  int read_rv = tmp_entry_ptr->ReadData(INDEX_RESPONSE_BODY,
-                                        0,
-                                        response_body_buffer.get(),
-                                        response_body_buffer->size(),
-                                        read_callback);
+  int read_rv =
+      tmp_entry_ptr->ReadData(INDEX_RESPONSE_BODY, 0, response_body_buffer,
+                              response_body_buffer->size(), read_callback);
 
   if (read_rv != net::ERR_IO_PENDING)
     read_callback.Run(read_rv);
 }
 
-void MatchDidReadResponseBodyData(
-    scoped_ptr<ServiceWorkerFetchRequest> request,
-    const ServiceWorkerCache::ResponseCallback& callback,
-    base::WeakPtr<storage::BlobStorageContext> blob_storage,
-    disk_cache::ScopedEntryPtr entry,
-    scoped_ptr<ServiceWorkerResponse> response,
-    scoped_ptr<ResponseReadContext> response_context,
-    int rv) {
+void MatchDidReadResponseBodyData(scoped_ptr<MatchContext> match_context,
+                                  int rv) {
   if (rv < 0) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
   if (rv == 0) {
-    response->blob_uuid = response_context->blob_data->uuid();
-    response->blob_size = response_context->total_bytes_read;
-    MatchDoneWithBody(request.Pass(),
-                      callback,
-                      blob_storage,
-                      response.Pass(),
-                      response_context.Pass());
+    match_context->response->blob_uuid = match_context->blob_data->uuid();
+    match_context->response->blob_size = match_context->total_bytes_read;
+    MatchDoneWithBody(match_context.Pass());
     return;
   }
 
   // TODO(jkarlin): This copying of the the entire cache response into memory is
   // awful. Create a new interface around SimpleCache that provides access the
   // data directly from the file. See bug http://crbug.com/403493.
-  response_context->blob_data->AppendData(response_context->buffer->data(), rv);
-  response_context->total_bytes_read += rv;
-  int total_bytes_read = response_context->total_bytes_read;
+  match_context->blob_data->AppendData(
+      match_context->response_body_buffer->data(), rv);
+  match_context->total_bytes_read += rv;
+  int total_bytes_read = match_context->total_bytes_read;
 
-  // Grab some pointers before passing them in bind.
-  net::IOBufferWithSize* buffer = response_context->buffer.get();
-  disk_cache::Entry* tmp_entry_ptr = entry.get();
+  // Grab some pointers before passing match_context in bind.
+  net::IOBufferWithSize* buffer = match_context->response_body_buffer.get();
+  disk_cache::Entry* tmp_entry_ptr = match_context->entry;
 
-  net::CompletionCallback read_callback =
-      base::Bind(MatchDidReadResponseBodyData,
-                 base::Passed(request.Pass()),
-                 callback,
-                 blob_storage,
-                 base::Passed(entry.Pass()),
-                 base::Passed(response.Pass()),
-                 base::Passed(response_context.Pass()));
+  net::CompletionCallback read_callback = base::Bind(
+      MatchDidReadResponseBodyData, base::Passed(match_context.Pass()));
 
   int read_rv = tmp_entry_ptr->ReadData(INDEX_RESPONSE_BODY,
                                         total_bytes_read,
@@ -338,24 +299,21 @@ void MatchDidReadResponseBodyData(
     read_callback.Run(read_rv);
 }
 
-void MatchDoneWithBody(scoped_ptr<ServiceWorkerFetchRequest> request,
-                       const ServiceWorkerCache::ResponseCallback& callback,
-                       base::WeakPtr<storage::BlobStorageContext> blob_storage,
-                       scoped_ptr<ServiceWorkerResponse> response,
-                       scoped_ptr<ResponseReadContext> response_context) {
-  if (!blob_storage) {
-    callback.Run(ServiceWorkerCache::ErrorTypeStorage,
-                 scoped_ptr<ServiceWorkerResponse>(),
-                 scoped_ptr<storage::BlobDataHandle>());
+void MatchDoneWithBody(scoped_ptr<MatchContext> match_context) {
+  if (!match_context->blob_storage_context) {
+    match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeStorage,
+                                         scoped_ptr<ServiceWorkerResponse>(),
+                                         scoped_ptr<storage::BlobDataHandle>());
     return;
   }
 
   scoped_ptr<storage::BlobDataHandle> blob_data_handle(
-      blob_storage->AddFinishedBlob(response_context->blob_data.get()));
+      match_context->blob_storage_context->AddFinishedBlob(
+          match_context->blob_data.get()));
 
-  callback.Run(ServiceWorkerCache::ErrorTypeOK,
-               response.Pass(),
-               blob_data_handle.Pass());
+  match_context->original_callback.Run(ServiceWorkerCache::ErrorTypeOK,
+                                       match_context->response.Pass(),
+                                       blob_data_handle.Pass());
 }
 
 void ReadMetadata(disk_cache::Entry* entry, const MetadataCallback& callback) {
@@ -681,15 +639,14 @@ void ServiceWorkerCache::Match(scoped_ptr<ServiceWorkerFetchRequest> request,
       break;
   }
 
-  scoped_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*);
+  scoped_ptr<MatchContext> match_context(new MatchContext(
+      request.Pass(), pending_callback, blob_storage_context_));
 
-  disk_cache::Entry** entry_ptr = entry.get();
+  disk_cache::Entry** entry_ptr = &match_context->entry;
+  ServiceWorkerFetchRequest* request_ptr = match_context->request.get();
 
-  ServiceWorkerFetchRequest* request_ptr = request.get();
-
-  net::CompletionCallback open_entry_callback = base::Bind(
-      MatchDidOpenEntry, base::Passed(request.Pass()), pending_callback,
-      blob_storage_context_, base::Passed(entry.Pass()));
+  net::CompletionCallback open_entry_callback =
+      base::Bind(MatchDidOpenEntry, base::Passed(match_context.Pass()));
 
   int rv = backend_->OpenEntry(
       request_ptr->url.spec(), entry_ptr, open_entry_callback);
