@@ -30,10 +30,13 @@ WebViewImpl.prototype.loadDataWithBaseUrl = function(
       });
 };
 
+// An array of <webview>'s experimental API methods. See |WEB_VIEW_API_METHODS|
+// in web_view_api_methods.js for more details.
+var WEB_VIEW_EXPERIMENTAL_API_METHODS = [
+  'loadDataWithBaseUrl'
+];
+
 // Registers the experimantal WebVIew API when available.
-WebViewImpl.maybeGetExperimentalAPIs = function() {
-  var experimentalMethods = [
-    'loadDataWithBaseUrl'
-  ];
-  return experimentalMethods;
+WebViewImpl.maybeGetExperimentalApiMethods = function() {
+  return WEB_VIEW_EXPERIMENTAL_API_METHODS;
 };

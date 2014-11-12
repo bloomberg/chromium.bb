@@ -37,6 +37,7 @@
       <include name="IDR_UNCAUGHT_EXCEPTION_HANDLER_JS" file="uncaught_exception_handler.js" type="BINDATA" />
       <include name="IDR_UNLOAD_EVENT_JS" file="unload_event.js" type="BINDATA" />
       <include name="IDR_UTILS_JS" file="utils.js" type="BINDATA" />
+      <include name="IDR_WEB_VIEW_API_METHODS_JS" file="guest_view/web_view_api_methods.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_ATTRIBUTES_JS" file="guest_view/web_view_attributes.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_CONSTANTS_JS" file="guest_view/web_view_constants.js" type="BINDATA" />
       <include name="IDR_WEB_VIEW_DENY_JS" file="guest_view/web_view_deny.js" type="BINDATA" />

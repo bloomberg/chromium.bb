@@ -316,40 +316,11 @@ WebViewImpl.prototype.attachWindow = function(guestInstanceId) {
   );
 };
 
-// -----------------------------------------------------------------------------
-// Public-facing API methods.
-
-
-// Navigates to the previous history entry.
-WebViewImpl.prototype.back = function(callback) {
-  return this.go(-1, callback);
-};
-
-// Returns whether there is a previous history entry to navigate to.
-WebViewImpl.prototype.canGoBack = function() {
-  return this.entryCount > 1 && this.currentEntryIndex > 0;
-};
-
-// Returns whether there is a subsequent history entry to navigate to.
-WebViewImpl.prototype.canGoForward = function() {
-  return this.currentEntryIndex >= 0 &&
-      this.currentEntryIndex < (this.entryCount - 1);
-};
-
-// Clears browsing data for the WebView partition.
-WebViewImpl.prototype.clearData = function() {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
-  $Function.apply(WebViewInternal.clearData, null, args);
-};
-
 // Shared implementation of executeScript() and insertCSS().
 WebViewImpl.prototype.executeCode = function(func, args) {
   if (!this.guestInstanceId) {
     window.console.error(WebViewConstants.ERROR_MSG_CANNOT_INJECT_SCRIPT);
-    return;
+    return false;
   }
 
   var webviewSrc = this.attributes[WebViewConstants.ATTRIBUTE_SRC].getValue();
@@ -360,122 +331,8 @@ WebViewImpl.prototype.executeCode = function(func, args) {
   args = $Array.concat([this.guestInstanceId, webviewSrc],
                        $Array.slice(args));
   $Function.apply(func, null, args);
+  return true;
 }
-
-// Injects JavaScript code into the guest page.
-WebViewImpl.prototype.executeScript = function(var_args) {
-  this.executeCode(WebViewInternal.executeScript, $Array.slice(arguments));
-};
-
-// Initiates a find-in-page request.
-WebViewImpl.prototype.find = function(search_text, options, callback) {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.find(this.guestInstanceId, search_text, options, callback);
-};
-
-// Navigates to the subsequent history entry.
-WebViewImpl.prototype.forward = function(callback) {
-  return this.go(1, callback);
-};
-
-// Returns Chrome's internal process ID for the guest web page's current
-// process.
-WebViewImpl.prototype.getProcessId = function() {
-  return this.processId;
-};
-
-// Returns the user agent string used by the webview for guest page requests.
-WebViewImpl.prototype.getUserAgent = function() {
-  return this.userAgentOverride || navigator.userAgent;
-};
-
-// Gets the current zoom factor.
-WebViewImpl.prototype.getZoom = function(callback) {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.getZoom(this.guestInstanceId, callback);
-};
-
-// Navigates to a history entry using a history index relative to the current
-// navigation.
-WebViewImpl.prototype.go = function(relativeIndex, callback) {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.go(this.guestInstanceId, relativeIndex, callback);
-};
-
-// Injects CSS into the guest page.
-WebViewImpl.prototype.insertCSS = function(var_args) {
-  this.executeCode(WebViewInternal.insertCSS, $Array.slice(arguments));
-};
-
-// Indicates whether or not the webview's user agent string has been overridden.
-WebViewImpl.prototype.isUserAgentOverridden = function() {
-  return !!this.userAgentOverride &&
-      this.userAgentOverride != navigator.userAgent;
-};
-
-// Prints the contents of the webview.
-WebViewImpl.prototype.print = function() {
-  this.executeScript({code: 'window.print();'});
-};
-
-// Reloads the current top-level page.
-WebViewImpl.prototype.reload = function() {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.reload(this.guestInstanceId);
-};
-
-// Override the user agent string used by the webview for guest page requests.
-WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {
-  this.userAgentOverride = userAgentOverride;
-  if (!this.guestInstanceId) {
-    // If we are not attached yet, then we will pick up the user agent on
-    // attachment.
-    return;
-  }
-  WebViewInternal.overrideUserAgent(this.guestInstanceId, userAgentOverride);
-};
-
-// Changes the zoom factor of the page.
-WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.setZoom(this.guestInstanceId, zoomFactor, callback);
-};
-
-// Stops loading the current navigation if one is in progress.
-WebViewImpl.prototype.stop = function() {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.stop(this.guestInstanceId);
-};
-
-// Ends the current find session.
-WebViewImpl.prototype.stopFinding = function(action) {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.stopFinding(this.guestInstanceId, action);
-};
-
-// Forcibly kills the guest web page's renderer process.
-WebViewImpl.prototype.terminate = function() {
-  if (!this.guestInstanceId) {
-    return;
-  }
-  WebViewInternal.terminate(this.guestInstanceId);
-};
-
-// -----------------------------------------------------------------------------
 
 // Registers browser plugin <object> custom element.
 function registerBrowserPluginElement() {
@@ -549,43 +406,40 @@ function registerWebViewElement() {
   };
 
   // Public-facing API methods.
-  var methods = [
-    'back',
-    'canGoBack',
-    'canGoForward',
-    'clearData',
-    'executeScript',
-    'find',
-    'forward',
-    'getProcessId',
-    'getUserAgent',
-    'getZoom',
-    'go',
-    'insertCSS',
-    'isUserAgentOverridden',
-    'print',
-    'reload',
-    'setUserAgentOverride',
-    'setZoom',
-    'stop',
-    'stopFinding',
-    'terminate'
-  ];
+  var apiMethods = WebViewImpl.getApiMethods();
 
   // Add the experimental API methods, if available.
-  var experimentalMethods =
-      WebViewImpl.maybeGetExperimentalAPIs();
-  methods = $Array.concat(methods, experimentalMethods);
+  var experimentalApiMethods =
+      WebViewImpl.maybeGetExperimentalApiMethods();
+  apiMethods = $Array.concat(apiMethods, experimentalApiMethods);
+
+  // Create default implementations for undefined API methods.
+  var createDefaultApiMethod = function(m) {
+    return function(var_args) {
+      if (!this.guestInstanceId) {
+        return false;
+      }
+      var args = $Array.concat([this.guestInstanceId], $Array.slice(arguments));
+      $Function.apply(WebViewInternal[m], null, args);
+      return true;
+    };
+  };
+  for (var i = 0; i != apiMethods.length; ++i) {
+    if (WebViewImpl.prototype[apiMethods[i]] == undefined) {
+      WebViewImpl.prototype[apiMethods[i]] =
+          createDefaultApiMethod(apiMethods[i]);
+    }
+  }
 
   // Forward proto.foo* method calls to WebViewImpl.foo*.
-  var createHandler = function(m) {
+  var createProtoHandler = function(m) {
     return function(var_args) {
       var internal = privates(this).internal;
       return $Function.apply(internal[m], internal, arguments);
     };
   };
-  for (var i = 0; methods[i]; ++i) {
-    proto[methods[i]] = createHandler(methods[i]);
+  for (var i = 0; i != apiMethods.length; ++i) {
+    proto[apiMethods[i]] = createProtoHandler(apiMethods[i]);
   }
 
   window.WebView =
@@ -613,7 +467,7 @@ window.addEventListener('readystatechange', function listener(event) {
 WebViewImpl.prototype.maybeGetChromeWebViewEvents = function() {};
 
 // Implemented when the experimental WebView API is available.
-WebViewImpl.maybeGetExperimentalAPIs = function() {};
+WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
 WebViewImpl.prototype.setupExperimentalContextMenus = function() {};
 
 // Exports.
