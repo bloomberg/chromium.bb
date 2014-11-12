@@ -1,4 +1,4 @@
-#<skip - Unskip after blink change rolls in form tag>
 android.webkit.WebView focusable focused scrollable
     android.view.View
-        android.view.View clickable name='Browser Engine's:'
+        android.view.View
+            android.view.View clickable name='Browser Engine's:'

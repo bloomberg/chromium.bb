@@ -164,6 +164,7 @@ RoleMap BuildSubroleMap() {
       {ui::AX_ROLE_MAIN, @"AXLandmarkMain"},
       {ui::AX_ROLE_NAVIGATION, @"AXLandmarkNavigation"},
       {ui::AX_ROLE_SEARCH, @"AXLandmarkSearch"},
+      {ui::AX_ROLE_FORM, @"AXLandmarkForm"},
       {ui::AX_ROLE_LOG, @"AXApplicationLog"},
       {ui::AX_ROLE_MARQUEE, @"AXApplicationMarquee"},
       {ui::AX_ROLE_MATH, @"AXDocumentMath"},

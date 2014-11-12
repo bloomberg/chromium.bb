@@ -394,6 +394,9 @@ below:
       <message name="IDS_AX_ROLE_NAVIGATIONAL_LINK" desc="accessibility role description for group of navigational links.">
         navigation
       </message>
+      <message name="IDS_AX_ROLE_FORM" desc="accessibility role description for form">
+        form
+      </message>
 
       <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
         press
