@@ -114,8 +114,6 @@
       'browser/ui/bookmarks/bookmark_utils.h',
       'browser/ui/bookmarks/recently_used_folders_combo_model.cc',
       'browser/ui/bookmarks/recently_used_folders_combo_model.h',
-      'browser/ui/browser_commands.cc',
-      'browser/ui/browser_commands.h',
       'browser/ui/browser_commands_chromeos.cc',
       'browser/ui/browser_commands_chromeos.h',
       'browser/ui/browser_commands_mac.cc',
@@ -1790,6 +1788,8 @@
       'browser/ui/zoom/zoom_controller.h',
     ],
     'chrome_browser_ui_non_mobile_sources': [
+      'browser/ui/browser_commands.cc',
+      'browser/ui/browser_commands.h',
       'browser/ui/browser_tab_restorer.cc',
       'browser/ui/browser_window_state.cc',
       'browser/ui/browser_window_state.h',
