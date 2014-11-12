@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_SUPPORT_UMA_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_SUPPORT_UMA_H_
+#ifndef MEDIA_BASE_KEY_SYSTEMS_SUPPORT_UMA_H_
+#define MEDIA_BASE_KEY_SYSTEMS_SUPPORT_UMA_H_
 
 #include <string>
 
 #include "base/containers/scoped_ptr_hash_map.h"
 
-namespace content {
+namespace media {
 
 // Key system support UMA statistics for queried key systems.
 // 1. The key system is queried (with or without a MIME type).
@@ -52,6 +52,6 @@ class KeySystemsSupportUMA {
   Reporters reporters_;
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_SUPPORT_UMA_H_
+#endif  // MEDIA_BASE_KEY_SYSTEMS_SUPPORT_UMA_H_

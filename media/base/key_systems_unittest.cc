@@ -5,16 +5,12 @@
 #include <string>
 #include <vector>
 
-#include "content/public/common/content_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/crypto/key_systems.h"
-#include "content/test/test_content_client.h"
+#include "base/logging.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_info.h"
+#include "media/base/key_systems.h"
+#include "media/base/media_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-
-#include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
 // Death tests are not always available, including on Android.
 // EXPECT_DEBUG_DEATH_PORTABLE executes tests correctly except in the case that
@@ -34,18 +30,17 @@
 #endif  // defined(NDEBUG)
 #endif  // defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
-namespace content {
-
-using blink::WebString;
-using media::KeySystemInfo;
+namespace media {
 
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as Pepper-based or Android platform CDM.
 const char kUsesAes[] = "org.example.clear";
 const char kUsesAesParent[] = "org.example";  // Not registered.
+const char kUseAesNameForUMA[] = "UseAes";
 const char kExternal[] = "com.example.test";
 const char kExternalParent[] = "com.example";
+const char kExternalNameForUMA[] = "External";
 
 const char kClearKey[] = "org.w3.clearkey";
 const char kPrefixedClearKey[] = "webkit-org.w3.clearkey";
@@ -66,17 +61,17 @@ enum TestCodec {
   TEST_CODEC_FOO_ALL = TEST_CODEC_FOO_AUDIO_ALL | TEST_CODEC_FOO_VIDEO_ALL
 };
 
-COMPILE_ASSERT((TEST_CODEC_FOO_ALL & media::EME_CODEC_ALL) ==
-                   media::EME_CODEC_NONE,
+COMPILE_ASSERT((TEST_CODEC_FOO_ALL & EME_CODEC_ALL) == EME_CODEC_NONE,
                test_codec_masks_should_only_use_invalid_codec_masks);
 
 // Adds test container and codec masks.
-// This function must be called after SetContentClient() is called.
+// This function must be called after SetMediaClient() if a MediaClient will be
+// provided.
 // More details: AddXxxMask() will create KeySystems if it hasn't been created.
-// During KeySystems's construction GetContentClient() will be used to add key
-// systems. In test code, the content client is set by SetContentClient().
-// Therefore, SetContentClient() must be called before this function to avoid
-// access violation.
+// During KeySystems's construction GetMediaClient() will be used to add key
+// systems. In test code, the MediaClient is set by SetMediaClient().
+// Therefore, SetMediaClient() must be called before this function to make sure
+// MediaClient in effect when constructing KeySystems.
 static void AddContainerAndCodecMasksForTest() {
   // Since KeySystems is a singleton. Make sure we only add test container and
   // codec masks once per process.
@@ -93,23 +88,92 @@ static void AddContainerAndCodecMasksForTest() {
   is_test_masks_added = true;
 }
 
-class TestContentRendererClient : public ContentRendererClient {
-  void AddKeySystems(std::vector<media::KeySystemInfo>* key_systems) override;
+class TestMediaClient : public MediaClient {
+ public:
+  TestMediaClient();
+  ~TestMediaClient() final;
+
+  // MediaClient implementation.
+  void AddKeySystemsInfoForUMA(
+      std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) final;
+  bool IsKeySystemsUpdateNeeded() final;
+  void AddSupportedKeySystems(
+      std::vector<KeySystemInfo>* key_systems_info) final;
+
+  // Helper function to test the case where IsKeySystemsUpdateNeeded() is true
+  // after AddSupportedKeySystems() is called.
+  void SetKeySystemsUpdateNeeded();
+
+  // Helper function to disable "kExternal" key system support so that we can
+  // test the key system update case.
+  void DisableExternalKeySystemSupport();
+
+ protected:
+  void AddUsesAesKeySystem(
+      std::vector<KeySystemInfo>* key_systems_info);
+  void AddExternalKeySystem(
+      std::vector<KeySystemInfo>* key_systems_info);
+
+ private:
+  bool is_update_needed_;
+  bool supports_external_key_system_;
 };
 
-void TestContentRendererClient::AddKeySystems(
-    std::vector<media::KeySystemInfo>* key_systems) {
+TestMediaClient::TestMediaClient()
+    : is_update_needed_(true), supports_external_key_system_(true) {
+}
+
+TestMediaClient::~TestMediaClient() {
+}
+
+void TestMediaClient::AddKeySystemsInfoForUMA(
+    std::vector<KeySystemInfoForUMA>* key_systems_info_for_uma) {
+  key_systems_info_for_uma->push_back(
+      media::KeySystemInfoForUMA(kUsesAes, kUseAesNameForUMA, false));
+  key_systems_info_for_uma->push_back(
+      media::KeySystemInfoForUMA(kExternal, kExternalNameForUMA, true));
+}
+
+bool TestMediaClient::IsKeySystemsUpdateNeeded() {
+  return is_update_needed_;
+}
+
+void TestMediaClient::AddSupportedKeySystems(
+    std::vector<KeySystemInfo>* key_systems) {
+  DCHECK(is_update_needed_);
+
+  AddUsesAesKeySystem(key_systems);
+
+  if (supports_external_key_system_)
+    AddExternalKeySystem(key_systems);
+
+  is_update_needed_ = false;
+}
+
+void TestMediaClient::SetKeySystemsUpdateNeeded() {
+  is_update_needed_ = true;
+}
+
+void TestMediaClient::DisableExternalKeySystemSupport() {
+  supports_external_key_system_ = false;
+}
+
+void TestMediaClient::AddUsesAesKeySystem(
+    std::vector<KeySystemInfo>* key_systems) {
   KeySystemInfo aes(kUsesAes);
-  aes.supported_codecs = media::EME_CODEC_WEBM_ALL;
+  aes.supported_codecs = EME_CODEC_WEBM_ALL;
   aes.supported_codecs |= TEST_CODEC_FOO_ALL;
-  aes.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
+  aes.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
   aes.use_aes_decryptor = true;
   key_systems->push_back(aes);
+}
 
+void TestMediaClient::AddExternalKeySystem(
+    std::vector<KeySystemInfo>* key_systems) {
   KeySystemInfo ext(kExternal);
-  ext.supported_codecs = media::EME_CODEC_WEBM_ALL;
+  ext.supported_codecs = EME_CODEC_WEBM_ALL;
   ext.supported_codecs |= TEST_CODEC_FOO_ALL;
-  ext.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
+  ext.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
   ext.parent_key_system = kExternalParent;
 #if defined(ENABLE_PEPPER_CDMS)
   ext.pepper_type = "application/x-ppapi-external-cdm";
@@ -153,22 +217,21 @@ class KeySystemsTest : public testing::Test {
     mixed_codecs_.push_back("vorbis");
     mixed_codecs_.push_back("foovideo");
 
-    // KeySystems requires a valid ContentRendererClient and thus ContentClient.
-    // The TestContentClient is not available inside Death Tests on some
-    // platforms (see below). Therefore, always provide a TestContentClient.
-    // Explanation: When Death Tests fork, there is a valid ContentClient.
-    // However, when they launch a new process instead of forking, the global
-    // variable is not copied and for some reason TestContentClientInitializer
-    // does not get created to set the global variable in the new process.
-    SetContentClient(&test_content_client_);
-    SetRendererClientForTesting(&content_renderer_client_);
+    SetMediaClient(&test_media_client_);
   }
 
-  void SetUp() override { AddContainerAndCodecMasksForTest(); }
+  void SetUp() override {
+    AddContainerAndCodecMasksForTest();
+  }
 
   ~KeySystemsTest() override {
-    // Clear the use of content_client_, which was set in SetUp().
-    SetContentClient(NULL);
+    // Clear the use of |test_media_client_|, which was set in SetUp().
+    SetMediaClient(nullptr);
+  }
+
+  void UpdateClientKeySystems() {
+    test_media_client_.SetKeySystemsUpdateNeeded();
+    test_media_client_.DisableExternalKeySystemSupport();
   }
 
   typedef std::vector<std::string> CodecVector;
@@ -223,8 +286,7 @@ class KeySystemsTest : public testing::Test {
 
   CodecVector mixed_codecs_;
 
-  TestContentClient test_content_client_;
-  TestContentRendererClient content_renderer_client_;
+  TestMediaClient test_media_client_;
 };
 
 // TODO(ddorwin): Consider moving GetPepperType() calls out to their own test.
@@ -233,7 +295,7 @@ TEST_F(KeySystemsTest, EmptyKeySystem) {
   EXPECT_FALSE(IsConcreteSupportedKeySystem(std::string()));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), std::string()));
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(std::string()));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(std::string()));
 }
 
 // Clear Key is the only key system registered in content.
@@ -242,13 +304,13 @@ TEST_F(KeySystemsTest, ClearKey) {
   EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kClearKey));
 
-  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kClearKey));
+  EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey));
 
   // Prefixed Clear Key is not supported internally.
   EXPECT_FALSE(IsConcreteSupportedKeySystem(kPrefixedClearKey));
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kPrefixedClearKey));
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kPrefixedClearKey));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kPrefixedClearKey));
 }
 
 // The key system is not registered and therefore is unrecognized.
@@ -259,7 +321,7 @@ TEST_F(KeySystemsTest, Basic_UnrecognizedKeySystem) {
   EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
       kVideoWebM, no_codecs(), kUnrecognized));
 
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUnrecognized));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUnrecognized));
 
   bool can_use = false;
   EXPECT_DEBUG_DEATH_PORTABLE(
@@ -281,7 +343,7 @@ TEST_F(KeySystemsTest, Basic_UsesAesDecryptor) {
       kVideoWebM, no_codecs(), kUsesAes));
 
   // No UMA value for this test key system.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUsesAes));
+  EXPECT_EQ("UseAes", GetKeySystemNameForUMA(kUsesAes));
 
   EXPECT_TRUE(CanUseAesDecryptor(kUsesAes));
 #if defined(ENABLE_PEPPER_CDMS)
@@ -346,7 +408,7 @@ TEST_F(KeySystemsTest, Parent_NoParentRegistered) {
       kVideoWebM, no_codecs(), kUsesAesParent));
 
   // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kUsesAesParent));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kUsesAesParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kUsesAesParent),
                               "org.example is not a known concrete system");
@@ -470,7 +532,6 @@ TEST_F(KeySystemsTest, Basic_ExternalDecryptor) {
 #if defined(ENABLE_PEPPER_CDMS)
   EXPECT_EQ("application/x-ppapi-external-cdm", GetPepperType(kExternal));
 #endif  // defined(ENABLE_PEPPER_CDMS)
-
 }
 
 TEST_F(KeySystemsTest, Parent_ParentRegistered) {
@@ -480,7 +541,7 @@ TEST_F(KeySystemsTest, Parent_ParentRegistered) {
       kVideoWebM, no_codecs(), kExternalParent));
 
   // The parent is not supported for most things.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kExternalParent));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalParent));
   bool result = false;
   EXPECT_DEBUG_DEATH_PORTABLE(result = CanUseAesDecryptor(kExternalParent),
                               "com.example is not a known concrete system");
@@ -631,19 +692,30 @@ TEST_F(
 }
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
-  EXPECT_EQ("ClearKey", KeySystemNameForUMA(kClearKey));
+  EXPECT_EQ("ClearKey", GetKeySystemNameForUMA(kClearKey));
   // Prefixed is not supported internally.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kPrefixedClearKey));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kPrefixedClearKey));
 
   // External Clear Key never has a UMA name.
-  EXPECT_EQ("Unknown", KeySystemNameForUMA(kExternalClearKey));
-
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  const char* const kTestWidevineUmaName = "Widevine";
-#else
-  const char* const kTestWidevineUmaName = "Unknown";
-#endif
-  EXPECT_EQ(kTestWidevineUmaName, KeySystemNameForUMA("com.widevine.alpha"));
+  EXPECT_EQ("Unknown", GetKeySystemNameForUMA(kExternalClearKey));
 }
 
-}  // namespace content
+TEST_F(KeySystemsTest, KeySystemsUpdate) {
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kUsesAes));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kUsesAes));
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kExternal));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kExternal));
+
+  UpdateClientKeySystems();
+
+  EXPECT_TRUE(IsConcreteSupportedKeySystem(kUsesAes));
+  EXPECT_TRUE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kUsesAes));
+  EXPECT_FALSE(IsConcreteSupportedKeySystem(kExternal));
+  EXPECT_FALSE(IsSupportedKeySystemWithMediaMimeType(
+      kVideoWebM, no_codecs(), kExternal));
+}
+
+}  // namespace media

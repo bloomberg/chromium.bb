@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_H_
-#define CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_H_
+#ifndef MEDIA_BASE_KEY_SYSTEMS_H_
+#define MEDIA_BASE_KEY_SYSTEMS_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/common/content_export.h"
+#include "media/base/media_export.h"
 
-namespace content {
+namespace media {
 
 // Prefixed EME API only supports prefixed (webkit-) key system name for
 // certain key systems. But internally only unprefixed key systems are
@@ -19,26 +19,28 @@ namespace content {
 // unprefixed key system names.
 
 // Gets the unprefixed key system name for |key_system|.
-std::string GetUnprefixedKeySystemName(const std::string& key_system);
+MEDIA_EXPORT std::string GetUnprefixedKeySystemName(
+    const std::string& key_system);
 
 // Gets the prefixed key system name for |key_system|.
-std::string GetPrefixedKeySystemName(const std::string& key_system);
+MEDIA_EXPORT std::string GetPrefixedKeySystemName(
+    const std::string& key_system);
 
 // Returns false if a container-specific |init_data_type| is specified with an
 // inappropriate container.
 // TODO(sandersd): Remove this essentially internal detail if the spec is
 // updated to not convolve the two in a single method call.
 // TODO(sandersd): Use enum values instead of strings. http://crbug.com/417440
-bool IsSaneInitDataTypeWithContainer(
+MEDIA_EXPORT bool IsSaneInitDataTypeWithContainer(
     const std::string& init_data_type,
     const std::string& container);
 
 // Note: Shouldn't be used for prefixed API as the original
 // IsSupportedKeySystemWithMediaMimeType() path reports UMAs, but this path does
 // not.
-bool IsSupportedKeySystem(const std::string& key_system);
+MEDIA_EXPORT bool IsSupportedKeySystem(const std::string& key_system);
 
-bool IsSupportedKeySystemWithInitDataType(
+MEDIA_EXPORT bool IsSupportedKeySystemWithInitDataType(
     const std::string& key_system,
     const std::string& init_data_type);
 
@@ -48,33 +50,33 @@ bool IsSupportedKeySystemWithInitDataType(
 // Call IsSupportedKeySystemWithMediaMimeType() to determine whether a
 // |key_system| supports a specific type of media or to check parent key
 // systems.
-CONTENT_EXPORT bool IsConcreteSupportedKeySystem(const std::string& key_system);
+MEDIA_EXPORT bool IsConcreteSupportedKeySystem(const std::string& key_system);
 
 // Returns whether |key_sytem| supports the specified media type and codec(s).
-CONTENT_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
+MEDIA_EXPORT bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system);
 
 // Returns a name for |key_system| suitable to UMA logging.
-CONTENT_EXPORT std::string KeySystemNameForUMA(const std::string& key_system);
+MEDIA_EXPORT std::string GetKeySystemNameForUMA(const std::string& key_system);
 
 // Returns whether AesDecryptor can be used for the given |concrete_key_system|.
-CONTENT_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
+MEDIA_EXPORT bool CanUseAesDecryptor(const std::string& concrete_key_system);
 
 #if defined(ENABLE_PEPPER_CDMS)
 // Returns the Pepper MIME type for |concrete_key_system|.
 // Returns empty string if |concrete_key_system| is unknown or not Pepper-based.
-CONTENT_EXPORT std::string GetPepperType(
+MEDIA_EXPORT std::string GetPepperType(
     const std::string& concrete_key_system);
 #endif
 
 #if defined(UNIT_TEST)
 // Helper functions to add container/codec types for testing purposes.
-CONTENT_EXPORT void AddContainerMask(const std::string& container, uint32 mask);
-CONTENT_EXPORT void AddCodecMask(const std::string& codec, uint32 mask);
+MEDIA_EXPORT void AddContainerMask(const std::string& container, uint32 mask);
+MEDIA_EXPORT void AddCodecMask(const std::string& codec, uint32 mask);
 #endif  // defined(UNIT_TEST)
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_CRYPTO_KEY_SYSTEMS_H_
+#endif  // MEDIA_BASE_KEY_SYSTEMS_H_

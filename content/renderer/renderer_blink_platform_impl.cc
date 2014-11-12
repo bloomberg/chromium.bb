@@ -45,7 +45,6 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
@@ -61,6 +60,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/audio/audio_output_device.h"
 #include "media/base/audio_hardware_config.h"
+#include "media/base/key_systems.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
@@ -416,11 +416,11 @@ RendererBlinkPlatformImpl::MimeRegistry::supportsMediaMIMEType(
       return IsNotSupported;
 
     std::string key_system_ascii =
-        GetUnprefixedKeySystemName(base::UTF16ToASCII(key_system));
+        media::GetUnprefixedKeySystemName(base::UTF16ToASCII(key_system));
     std::vector<std::string> strict_codecs;
     net::ParseCodecString(ToASCIIOrEmpty(codecs), &strict_codecs, true);
 
-    if (!IsSupportedKeySystemWithMediaMimeType(
+    if (!media::IsSupportedKeySystemWithMediaMimeType(
             mime_type_ascii, strict_codecs, key_system_ascii)) {
       return IsNotSupported;
     }
@@ -479,7 +479,7 @@ bool RendererBlinkPlatformImpl::MimeRegistry::supportsEncryptedMediaMIMEType(
   net::ParseCodecString(base::UTF16ToASCII(codecs), &codec_vector,
                         strip_suffix);
 
-  return IsSupportedKeySystemWithMediaMimeType(
+  return media::IsSupportedKeySystemWithMediaMimeType(
       mime_type_ascii, codec_vector, base::UTF16ToASCII(key_system));
 }
 

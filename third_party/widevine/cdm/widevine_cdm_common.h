@@ -15,6 +15,9 @@ const int kWidevineCdmVersionNumComponents = 4;
 // "alpha" is a temporary name until a convention is defined.
 const char kWidevineKeySystem[] = "com.widevine.alpha";
 
+// This name is used by UMA. Do not change it!
+const char kWidevineKeySystemNameForUMA[] = "Widevine";
+
 const char kWidevineCdmDisplayName[] = "Widevine Content Decryption Module";
 // Will be parsed as HTML.
 const char kWidevineCdmDescription[] =

@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/numerics/safe_conversions.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
@@ -19,6 +18,7 @@
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/key_systems.h"
 #include "media/base/limits.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
@@ -297,7 +297,7 @@ void ReportSystemCodeUMA(const std::string& key_system, uint32 system_code) {
   // Sparse histogram macro does not cache the histogram, so it's safe to use
   // macro with non-static histogram name here.
   UMA_HISTOGRAM_SPARSE_SLOWLY(
-      "Media.EME." + KeySystemNameForUMA(key_system) + ".SystemCode",
+      "Media.EME." + media::GetKeySystemNameForUMA(key_system) + ".SystemCode",
       system_code);
 }
 

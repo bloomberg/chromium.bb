@@ -86,6 +86,7 @@
 #include "content/renderer/media/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/media_stream_center.h"
 #include "content/renderer/media/midi_message_filter.h"
+#include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/video_capture_message_filter.h"
@@ -939,6 +940,8 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (!media::IsMediaLibraryInitialized()) {
     WebRuntimeFeatures::enableWebAudio(false);
   }
+
+  RenderMediaClient::Initialize();
 
   FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 

@@ -10,12 +10,12 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/pepper/content_decryptor_delegate.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/data_buffer.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/key_systems.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 
@@ -31,7 +31,7 @@ scoped_ptr<PpapiDecryptor> PpapiDecryptor::Create(
     const media::SessionErrorCB& session_error_cb,
     const media::SessionKeysChangeCB& session_keys_change_cb,
     const media::SessionExpirationUpdateCB& session_expiration_update_cb) {
-  std::string plugin_type = GetPepperType(key_system);
+  std::string plugin_type = media::GetPepperType(key_system);
   DCHECK(!plugin_type.empty());
   scoped_ptr<PepperCdmWrapper> pepper_cdm_wrapper =
       create_pepper_cdm_cb.Run(plugin_type, security_origin);

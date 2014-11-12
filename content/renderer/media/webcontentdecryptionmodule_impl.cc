@@ -10,9 +10,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/cdm_session_adapter.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -36,7 +36,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   }
 
   std::string key_system_ascii = base::UTF16ToASCII(key_system);
-  if (!IsConcreteSupportedKeySystem(key_system_ascii))
+  if (!media::IsConcreteSupportedKeySystem(key_system_ascii))
     return NULL;
 
   // If unique security origin, don't try to create the CDM.

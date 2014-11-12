@@ -23,7 +23,6 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/media/android/renderer_demuxer_android.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
@@ -35,6 +34,7 @@
 #include "media/base/android/media_common_android.h"
 #include "media/base/android/media_player_android.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -1416,7 +1416,7 @@ static void EmeUMAHistogramEnumeration(const std::string& key_system,
                                        int sample,
                                        int boundary_value) {
   base::LinearHistogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      kMediaEme + media::GetKeySystemNameForUMA(key_system) + "." + method,
       1, boundary_value, boundary_value + 1,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
@@ -1426,7 +1426,7 @@ static void EmeUMAHistogramCounts(const std::string& key_system,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
   base::Histogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      kMediaEme + media::GetKeySystemNameForUMA(key_system) + "." + method,
       1, 1000000, 50, base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
@@ -1468,7 +1468,7 @@ bool WebMediaPlayerAndroid::IsKeySystemSupported(
     const std::string& key_system) {
   // On Android, EME only works with MSE.
   return player_type_ == MEDIA_PLAYER_TYPE_MEDIA_SOURCE &&
-         IsConcreteSupportedKeySystem(key_system);
+         media::IsConcreteSupportedKeySystem(key_system);
 }
 
 WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
@@ -1480,7 +1480,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::generateKeyRequest(
                           static_cast<size_t>(init_data_length));
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
 
   WebMediaPlayer::MediaKeyException e =
       GenerateKeyRequestInternal(ascii_key_system, init_data, init_data_length);
@@ -1575,7 +1575,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::addKey(
            << base::string16(session_id) << "]";
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e = AddKeyInternal(ascii_key_system,
@@ -1616,7 +1616,7 @@ WebMediaPlayer::MediaKeyException WebMediaPlayerAndroid::cancelKeyRequest(
            << " [" << base::string16(session_id) << "]";
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e =
@@ -1711,7 +1711,7 @@ void WebMediaPlayerAndroid::OnKeyAdded(const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
 
   client_->keyAdded(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id));
 }
 
@@ -1730,7 +1730,7 @@ void WebMediaPlayerAndroid::OnKeyError(const std::string& session_id,
   }
 
   client_->keyError(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       static_cast<blink::WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       short_system_code);
@@ -1742,7 +1742,7 @@ void WebMediaPlayerAndroid::OnKeyMessage(const std::string& session_id,
   DCHECK(destination_url.is_empty() || destination_url.is_valid());
 
   client_->keyMessage(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       message.empty() ? NULL : &message[0],
       message.size(),

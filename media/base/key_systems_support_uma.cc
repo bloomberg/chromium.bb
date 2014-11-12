@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/key_systems_support_uma.h"
+#include "media/base/key_systems_support_uma.h"
 
 #include <string>
 
 #include "base/metrics/histogram.h"
-#include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/crypto/key_systems.h"
+#include "media/base/key_systems.h"
 
-namespace content {
+namespace media {
 
 namespace {
 
@@ -53,7 +52,7 @@ void OneTimeReporter::Report() {
   // Not using UMA_HISTOGRAM_ENUMERATION directly because UMA_* macros require
   // the names to be constant throughout the process' lifetime.
   base::LinearHistogram::FactoryGet(
-      kKeySystemSupportUMAPrefix + KeySystemNameForUMA(key_system_), 1,
+      kKeySystemSupportUMAPrefix + GetKeySystemNameForUMA(key_system_), 1,
       KEY_SYSTEM_SUPPORT_STATUS_COUNT, KEY_SYSTEM_SUPPORT_STATUS_COUNT + 1,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(status_);
 
@@ -133,4 +132,4 @@ KeySystemsSupportUMA::Reporter* KeySystemsSupportUMA::GetReporter(
   return reporter->second;
 }
 
-}  // namespace content
+}  // namespace media

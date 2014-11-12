@@ -8,10 +8,10 @@
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
+#include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "url/gurl.h"
 
@@ -28,10 +28,8 @@ CdmSessionAdapter::~CdmSessionAdapter() {}
 bool CdmSessionAdapter::Initialize(media::CdmFactory* cdm_factory,
                                    const std::string& key_system,
                                    const GURL& security_origin) {
-  // TODO(xhwang): This is why we need to include "key_systems.h". Move
-  // KeySystemNameForUMA out of src/content so we can move CdmSessionAdapter to
-  // src/media.
-  key_system_uma_prefix_ = kMediaEME + KeySystemNameForUMA(key_system) + kDot;
+  key_system_uma_prefix_ =
+      kMediaEME + media::GetKeySystemNameForUMA(key_system) + kDot;
 
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ = cdm_factory->Create(

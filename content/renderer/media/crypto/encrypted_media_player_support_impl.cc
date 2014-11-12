@@ -12,10 +12,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/crypto/key_systems.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/key_systems.h"
 #include "media/blink/encrypted_media_player_support.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
@@ -66,7 +66,7 @@ static void EmeUMAHistogramEnumeration(const std::string& key_system,
                                        int sample,
                                        int boundary_value) {
   base::LinearHistogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      kMediaEme + media::GetKeySystemNameForUMA(key_system) + "." + method,
       1, boundary_value, boundary_value + 1,
       base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
@@ -76,7 +76,7 @@ static void EmeUMAHistogramCounts(const std::string& key_system,
                                   int sample) {
   // Use the same parameters as UMA_HISTOGRAM_COUNTS.
   base::Histogram::FactoryGet(
-      kMediaEme + KeySystemNameForUMA(key_system) + "." + method,
+      kMediaEme + media::GetKeySystemNameForUMA(key_system) + "." + method,
       1, 1000000, 50, base::Histogram::kUmaTargetedHistogramFlag)->Add(sample);
 }
 
@@ -151,7 +151,7 @@ EncryptedMediaPlayerSupportImpl::GenerateKeyRequest(
                           static_cast<size_t>(init_data_length));
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
 
   WebMediaPlayer::MediaKeyException e =
       GenerateKeyRequestInternal(frame, ascii_key_system, init_data,
@@ -166,7 +166,7 @@ EncryptedMediaPlayerSupportImpl::GenerateKeyRequestInternal(
     const std::string& key_system,
     const unsigned char* init_data,
     unsigned init_data_length) {
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!media::IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   // We do not support run-time switching between key systems for now.
@@ -233,7 +233,7 @@ WebMediaPlayer::MediaKeyException EncryptedMediaPlayerSupportImpl::AddKey(
            << base::string16(session_id) << "]";
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e = AddKeyInternal(ascii_key_system,
@@ -257,7 +257,7 @@ EncryptedMediaPlayerSupportImpl::AddKeyInternal(
   DCHECK(key);
   DCHECK_GT(key_length, 0u);
 
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!media::IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.empty() || key_system != current_key_system_)
@@ -276,7 +276,7 @@ EncryptedMediaPlayerSupportImpl::CancelKeyRequest(
            << " [" << base::string16(session_id) << "]";
 
   std::string ascii_key_system =
-      GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
+      media::GetUnprefixedKeySystemName(ToASCIIOrEmpty(key_system));
   std::string ascii_session_id = ToASCIIOrEmpty(session_id);
 
   WebMediaPlayer::MediaKeyException e =
@@ -289,7 +289,7 @@ WebMediaPlayer::MediaKeyException
 EncryptedMediaPlayerSupportImpl::CancelKeyRequestInternal(
     const std::string& key_system,
     const std::string& session_id) {
-  if (!IsConcreteSupportedKeySystem(key_system))
+  if (!media::IsConcreteSupportedKeySystem(key_system))
     return WebMediaPlayer::MediaKeyExceptionKeySystemNotSupported;
 
   if (current_key_system_.empty() || key_system != current_key_system_)
@@ -398,7 +398,7 @@ void EncryptedMediaPlayerSupportImpl::OnKeyAdded(
     const std::string& session_id) {
   EmeUMAHistogramCounts(current_key_system_, "KeyAdded", 1);
   client_->keyAdded(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id));
 }
 
@@ -417,7 +417,7 @@ void EncryptedMediaPlayerSupportImpl::OnKeyError(const std::string& session_id,
   }
 
   client_->keyError(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       static_cast<WebMediaPlayerClient::MediaKeyErrorCode>(error_code),
       short_system_code);
@@ -430,7 +430,7 @@ void EncryptedMediaPlayerSupportImpl::OnKeyMessage(
   DCHECK(destination_url.is_empty() || destination_url.is_valid());
 
   client_->keyMessage(
-      WebString::fromUTF8(GetPrefixedKeySystemName(current_key_system_)),
+      WebString::fromUTF8(media::GetPrefixedKeySystemName(current_key_system_)),
       WebString::fromUTF8(session_id),
       message.empty() ? NULL : &message[0],
       message.size(),

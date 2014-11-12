@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/crypto/key_systems.h"
+#include "media/base/key_systems.h"
 
 #include <string>
 
@@ -12,29 +12,20 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "content/public/common/content_client.h"
-#include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/crypto/key_systems_support_uma.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_info.h"
+#include "media/base/key_systems_support_uma.h"
+#include "media/base/media_client.h"
 
-#if defined(OS_ANDROID)
-#include "media/base/android/media_codec_bridge.h"
-#endif
-
-#include "widevine_cdm_version.h" // In SHARED_INTERMEDIATE_DIR.
-
-namespace content {
-
-using media::EmeCodec;
-using media::EmeInitDataType;
-using media::KeySystemInfo;
-using media::SupportedInitDataTypes;
-using media::SupportedCodecs;
+namespace media {
 
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kPrefixedClearKeyKeySystem[] = "webkit-org.w3.clearkey";
 const char kUnsupportedClearKeyKeySystem[] = "unsupported-org.w3.clearkey";
+
+// These names are used by UMA. Do not change them!
+const char kClearKeyKeySystemNameForUMA[] = "ClearKey";
+const char kUnknownKeySystemNameForUMA[] = "Unknown";
 
 struct NamedInitDataType {
   const char* name;
@@ -44,9 +35,9 @@ struct NamedInitDataType {
 // Mapping between initialization data types names and enum values. When adding
 // entries, make sure to update IsSaneInitDataTypeWithContainer().
 static NamedInitDataType kInitDataTypeNames[] = {
-    {"webm", media::EME_INIT_DATA_TYPE_WEBM},
+    {"webm", EME_INIT_DATA_TYPE_WEBM},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"cenc", media::EME_INIT_DATA_TYPE_CENC}
+    {"cenc", EME_INIT_DATA_TYPE_CENC}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
@@ -59,25 +50,25 @@ struct NamedCodec {
 // Only audio codec can belong to a "audio/*" container. Both audio and video
 // codecs can belong to a "video/*" container.
 static NamedCodec kContainerToCodecMasks[] = {
-    {"audio/webm", media::EME_CODEC_WEBM_AUDIO_ALL},
-    {"video/webm", media::EME_CODEC_WEBM_ALL},
+    {"audio/webm", EME_CODEC_WEBM_AUDIO_ALL},
+    {"video/webm", EME_CODEC_WEBM_ALL},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"audio/mp4", media::EME_CODEC_MP4_AUDIO_ALL},
-    {"video/mp4", media::EME_CODEC_MP4_ALL}
+    {"audio/mp4", EME_CODEC_MP4_AUDIO_ALL},
+    {"video/mp4", EME_CODEC_MP4_ALL}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
 // Mapping between codec names and enum values.
 static NamedCodec kCodecStrings[] = {
-    {"vorbis", media::EME_CODEC_WEBM_VORBIS},
-    {"vp8", media::EME_CODEC_WEBM_VP8},
-    {"vp8.0", media::EME_CODEC_WEBM_VP8},
-    {"vp9", media::EME_CODEC_WEBM_VP9},
-    {"vp9.0", media::EME_CODEC_WEBM_VP9},
+    {"vorbis", EME_CODEC_WEBM_VORBIS},
+    {"vp8", EME_CODEC_WEBM_VP8},
+    {"vp8.0", EME_CODEC_WEBM_VP8},
+    {"vp9", EME_CODEC_WEBM_VP9},
+    {"vp9.0", EME_CODEC_WEBM_VP9},
 #if defined(USE_PROPRIETARY_CODECS)
-    {"mp4a", media::EME_CODEC_MP4_AAC},
-    {"avc1", media::EME_CODEC_MP4_AVC1},
-    {"avc3", media::EME_CODEC_MP4_AVC1}
+    {"mp4a", EME_CODEC_MP4_AAC},
+    {"avc1", EME_CODEC_MP4_AVC1},
+    {"avc3", EME_CODEC_MP4_AVC1}
 #endif  // defined(USE_PROPRIETARY_CODECS)
 };
 
@@ -88,18 +79,18 @@ static void AddClearKey(std::vector<KeySystemInfo>* concrete_key_systems) {
   // http://developer.android.com/guide/appendix/media-formats.html
   // VP9 support is device dependent.
 
-  info.supported_init_data_types = media::EME_INIT_DATA_TYPE_WEBM;
-  info.supported_codecs = media::EME_CODEC_WEBM_ALL;
+  info.supported_init_data_types = EME_INIT_DATA_TYPE_WEBM;
+  info.supported_codecs = EME_CODEC_WEBM_ALL;
 
 #if defined(OS_ANDROID)
   // Temporarily disable VP9 support for Android.
   // TODO(xhwang): Use mime_util.h to query VP9 support on Android.
-  info.supported_codecs &= ~media::EME_CODEC_WEBM_VP9;
+  info.supported_codecs &= ~EME_CODEC_WEBM_VP9;
 #endif  // defined(OS_ANDROID)
 
 #if defined(USE_PROPRIETARY_CODECS)
-  info.supported_init_data_types |= media::EME_INIT_DATA_TYPE_CENC;
-  info.supported_codecs |= media::EME_CODEC_MP4_ALL;
+  info.supported_init_data_types |= EME_INIT_DATA_TYPE_CENC;
+  info.supported_codecs |= EME_CODEC_MP4_ALL;
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
   info.use_aes_decryptor = true;
@@ -126,6 +117,8 @@ class KeySystems {
       const std::vector<std::string>& codecs,
       const std::string& key_system);
 
+  std::string GetKeySystemNameForUMA(const std::string& key_system) const;
+
   bool UseAesDecryptor(const std::string& concrete_key_system);
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -136,6 +129,8 @@ class KeySystems {
   void AddCodecMask(const std::string& codec, uint32 mask);
 
  private:
+  void InitializeUMAInfo();
+
   void UpdateSupportedKeySystems();
 
   void AddConcreteSupportedKeySystems(
@@ -155,7 +150,7 @@ class KeySystems {
 
   struct KeySystemProperties {
     KeySystemProperties()
-        : use_aes_decryptor(false), supported_codecs(media::EME_CODEC_NONE) {}
+        : use_aes_decryptor(false), supported_codecs(EME_CODEC_NONE) {}
 
     bool use_aes_decryptor;
 #if defined(ENABLE_PEPPER_CDMS)
@@ -170,7 +165,8 @@ class KeySystems {
   typedef base::hash_map<std::string, std::string> ParentKeySystemMap;
   typedef base::hash_map<std::string, SupportedCodecs> ContainerCodecsMap;
   typedef base::hash_map<std::string, EmeCodec> CodecsMap;
-  typedef base::hash_map<std::string, media::EmeInitDataType> InitDataTypesMap;
+  typedef base::hash_map<std::string, EmeInitDataType> InitDataTypesMap;
+  typedef base::hash_map<std::string, std::string> KeySystemNameForUMAMap;
 
   KeySystems();
   ~KeySystems() {}
@@ -211,9 +207,7 @@ class KeySystems {
   InitDataTypesMap init_data_type_name_map_;
   ContainerCodecsMap container_to_codec_mask_map_;
   CodecsMap codec_string_map_;
-
-  bool needs_update_;
-  base::Time last_update_time_;
+  KeySystemNameForUMAMap key_system_name_for_uma_map_;
 
   // Makes sure all methods are called from the same thread.
   base::ThreadChecker thread_checker_;
@@ -231,7 +225,7 @@ KeySystems& KeySystems::GetInstance() {
 
 // Because we use a LazyInstance, the key systems info must be populated when
 // the instance is lazily initiated.
-KeySystems::KeySystems() : needs_update_(true) {
+KeySystems::KeySystems() {
   for (size_t i = 0; i < arraysize(kInitDataTypeNames); ++i) {
     const std::string& name = kInitDataTypeNames[i].name;
     DCHECK(!init_data_type_name_map_.count(name));
@@ -248,11 +242,10 @@ KeySystems::KeySystems() : needs_update_(true) {
     codec_string_map_[name] = kCodecStrings[i].type;
   }
 
-  UpdateSupportedKeySystems();
+  InitializeUMAInfo();
 
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  key_systems_support_uma_.AddKeySystemToReport(kWidevineKeySystem);
-#endif  // defined(WIDEVINE_CDM_AVAILABLE)
+  // Always update supported key systems during construction.
+  UpdateSupportedKeySystems();
 }
 
 EmeInitDataType KeySystems::GetInitDataTypeForName(
@@ -261,7 +254,7 @@ EmeInitDataType KeySystems::GetInitDataTypeForName(
       init_data_type_name_map_.find(init_data_type);
   if (iter != init_data_type_name_map_.end())
     return iter->second;
-  return media::EME_INIT_DATA_TYPE_NONE;
+  return EME_INIT_DATA_TYPE_NONE;
 }
 
 SupportedCodecs KeySystems::GetCodecMaskForContainer(
@@ -270,14 +263,14 @@ SupportedCodecs KeySystems::GetCodecMaskForContainer(
       container_to_codec_mask_map_.find(container);
   if (iter != container_to_codec_mask_map_.end())
     return iter->second;
-  return media::EME_CODEC_NONE;
+  return EME_CODEC_NONE;
 }
 
 EmeCodec KeySystems::GetCodecForString(const std::string& codec) const {
   CodecsMap::const_iterator iter = codec_string_map_.find(codec);
   if (iter != codec_string_map_.end())
     return iter->second;
-  return media::EME_CODEC_NONE;
+  return EME_CODEC_NONE;
 }
 
 const std::string& KeySystems::GetConcreteKeySystemName(
@@ -289,45 +282,47 @@ const std::string& KeySystems::GetConcreteKeySystemName(
   return key_system;
 }
 
-void KeySystems::UpdateIfNeeded() {
-#if defined(WIDEVINE_CDM_AVAILABLE)
+void KeySystems::InitializeUMAInfo() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!needs_update_)
-    return;
+  DCHECK(key_system_name_for_uma_map_.empty());
 
-  // The update could involve a sync IPC to the browser process. Use a minimum
-  // update interval to avoid unnecessary frequent IPC to the browser.
-  static const int kMinUpdateIntervalInSeconds = 1;
-  base::Time now = base::Time::Now();
-  if (now - last_update_time_ <
-      base::TimeDelta::FromSeconds(kMinUpdateIntervalInSeconds)) {
-    return;
+  std::vector<KeySystemInfoForUMA> key_systems_info_for_uma;
+  if (GetMediaClient())
+    GetMediaClient()->AddKeySystemsInfoForUMA(&key_systems_info_for_uma);
+
+  for (const KeySystemInfoForUMA& info : key_systems_info_for_uma) {
+    key_system_name_for_uma_map_[info.key_system] =
+        info.key_system_name_for_uma;
+    if (info.reports_key_system_support_to_uma)
+      key_systems_support_uma_.AddKeySystemToReport(info.key_system);
   }
 
-  UpdateSupportedKeySystems();
-#endif
+  // Clear Key is always supported.
+  key_system_name_for_uma_map_[kClearKeyKeySystem] =
+      kClearKeyKeySystemNameForUMA;
+}
+
+void KeySystems::UpdateIfNeeded() {
+  if (GetMediaClient() && GetMediaClient()->IsKeySystemsUpdateNeeded())
+    UpdateSupportedKeySystems();
 }
 
 void KeySystems::UpdateSupportedKeySystems() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(needs_update_);
   concrete_key_system_map_.clear();
   parent_key_system_map_.clear();
 
   // Build KeySystemInfo.
   std::vector<KeySystemInfo> key_systems_info;
-  GetContentClient()->renderer()->AddKeySystems(&key_systems_info);
+
+  // Add key systems supported by the MediaClient implementation.
+  if (GetMediaClient())
+    GetMediaClient()->AddSupportedKeySystems(&key_systems_info);
+
   // Clear Key is always supported.
   AddClearKey(&key_systems_info);
 
   AddConcreteSupportedKeySystems(key_systems_info);
-
-#if defined(WIDEVINE_CDM_AVAILABLE) && defined(WIDEVINE_CDM_IS_COMPONENT)
-  if (IsConcreteSupportedKeySystem(kWidevineKeySystem))
-    needs_update_ = false;
-#endif
-
-  last_update_time_ = base::Time::Now();
 }
 
 void KeySystems::AddConcreteSupportedKeySystems(
@@ -514,6 +509,18 @@ bool KeySystems::IsSupportedKeySystemWithMediaMimeType(
   return true;
 }
 
+std::string KeySystems::GetKeySystemNameForUMA(
+    const std::string& key_system) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  KeySystemNameForUMAMap::const_iterator iter =
+      key_system_name_for_uma_map_.find(key_system);
+  if (iter == key_system_name_for_uma_map_.end())
+    return kUnknownKeySystemNameForUMA;
+
+  return iter->second;
+}
+
 bool KeySystems::UseAesDecryptor(const std::string& concrete_key_system) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -612,14 +619,8 @@ bool IsSupportedKeySystemWithMediaMimeType(
       mime_type, codecs, key_system);
 }
 
-std::string KeySystemNameForUMA(const std::string& key_system) {
-  if (key_system == kClearKeyKeySystem)
-    return "ClearKey";
-#if defined(WIDEVINE_CDM_AVAILABLE)
-  if (key_system == kWidevineKeySystem)
-    return "Widevine";
-#endif  // WIDEVINE_CDM_AVAILABLE
-  return "Unknown";
+std::string GetKeySystemNameForUMA(const std::string& key_system) {
+  return KeySystems::GetInstance().GetKeySystemNameForUMA(key_system);
 }
 
 bool CanUseAesDecryptor(const std::string& concrete_key_system) {
@@ -635,16 +636,16 @@ std::string GetPepperType(const std::string& concrete_key_system) {
 // These two functions are for testing purpose only. The declaration in the
 // header file is guarded by "#if defined(UNIT_TEST)" so that they can be used
 // by tests but not non-test code. However, this .cc file is compiled as part of
-// "content" where "UNIT_TEST" is not defined. So we need to specify
-// "CONTENT_EXPORT" here again so that they are visible to tests.
+// "media" where "UNIT_TEST" is not defined. So we need to specify
+// "MEDIA_EXPORT" here again so that they are visible to tests.
 
-CONTENT_EXPORT void AddContainerMask(const std::string& container,
+MEDIA_EXPORT void AddContainerMask(const std::string& container,
                                      uint32 mask) {
   KeySystems::GetInstance().AddContainerMask(container, mask);
 }
 
-CONTENT_EXPORT void AddCodecMask(const std::string& codec, uint32 mask) {
+MEDIA_EXPORT void AddCodecMask(const std::string& codec, uint32 mask) {
   KeySystems::GetInstance().AddCodecMask(codec, mask);
 }
 
-}  // namespace content
+}  // namespace media
