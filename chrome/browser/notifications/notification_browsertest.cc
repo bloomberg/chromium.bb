@@ -837,3 +837,55 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
 
   ASSERT_EQ(1, GetNotificationPopupCount());
 }
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationValidIcon) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  AllowAllOrigins();
+
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+  ASSERT_EQ(0, GetNotificationPopupCount());
+
+  std::string result = CreateNotification(
+      browser(), true, "icon.png", "Title1", "Body1", "chat");
+  EXPECT_NE("-1", result);
+
+  message_center::NotificationList::PopupNotifications notifications =
+      message_center::MessageCenter::Get()->GetPopupNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  auto* notification = *notifications.rbegin();
+
+  EXPECT_EQ(100, notification->icon().Width());
+  EXPECT_EQ(100, notification->icon().Height());
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationInvalidIcon) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  AllowAllOrigins();
+
+  ui_test_utils::NavigateToURL(browser(), GetTestPageURL());
+  ASSERT_EQ(0, GetNotificationPopupCount());
+
+  // Not supplying an icon URL.
+  std::string result = CreateNotification(
+      browser(), true, "", "Title1", "Body1", "chat");
+  EXPECT_NE("-1", result);
+
+  message_center::NotificationList::PopupNotifications notifications =
+      message_center::MessageCenter::Get()->GetPopupNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  auto* notification = *notifications.rbegin();
+  EXPECT_TRUE(notification->icon().IsEmpty());
+
+  // Supplying an invalid icon URL.
+  result = CreateNotification(
+      browser(), true, "invalid.png", "Title1", "Body1", "chat");
+  EXPECT_NE("-1", result);
+
+  notifications = message_center::MessageCenter::Get()->GetPopupNotifications();
+  ASSERT_EQ(1u, notifications.size());
+
+  notification = *notifications.rbegin();
+  EXPECT_TRUE(notification->icon().IsEmpty());
+}

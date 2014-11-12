@@ -103,6 +103,8 @@
       'child/multipart_response_delegate.h',
       'child/notifications/notification_dispatcher.cc',
       'child/notifications/notification_dispatcher.h',
+      'child/notifications/notification_image_loader.cc',
+      'child/notifications/notification_image_loader.h',
       'child/notifications/notification_manager.cc',
       'child/notifications/notification_manager.h',
       'child/npapi/np_channel_base.cc',

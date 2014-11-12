@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/worker_task_runner.h"
 #include "third_party/WebKit/public/platform/WebNotificationManager.h"
@@ -16,6 +17,7 @@ class SkBitmap;
 
 namespace content {
 
+class NotificationImageLoader;
 class ThreadSafeSender;
 
 class NotificationManager : public blink::WebNotificationManager,
@@ -55,8 +57,22 @@ class NotificationManager : public blink::WebNotificationManager,
   void OnClose(int id);
   void OnClick(int id);
 
+  // Sends an IPC to the browser process to display the notification,
+  // accompanied by the downloaded icon.
+  void DisplayNotification(const blink::WebSerializedOrigin& origin,
+                           const blink::WebNotificationData& notification_data,
+                           blink::WebNotificationDelegate* delegate,
+                           const SkBitmap& icon);
+
+  // Removes the notification identified by |delegate| from the vector of
+  // pending notifications, and returns whether it could be found.
+  bool RemovePendingNotification(blink::WebNotificationDelegate* delegate);
+
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
+
+  // A vector tracking notifications whose icon is still being downloaded.
+  ScopedVector<NotificationImageLoader> pending_notifications_;
 
   // Map to store the delegate associated with a notification request Id.
   std::map<int, blink::WebNotificationDelegate*> active_notifications_;
