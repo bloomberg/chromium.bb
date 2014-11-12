@@ -223,6 +223,7 @@ void RenderPart::layout()
     clearNeedsLayout();
 }
 
+// FIXME: factor into PartPainter.
 void RenderPart::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     ANNOTATE_GRAPHICS_CONTEXT(paintInfo, this);
@@ -241,7 +242,7 @@ void RenderPart::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
     }
 
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && style()->hasOutline())
-        paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, size()));
+        ObjectPainter(*this).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, size()));
 
     if (paintInfo.phase != PaintPhaseForeground)
         return;

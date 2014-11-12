@@ -966,11 +966,6 @@ bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
     return false;
 }
 
-void RenderObject::paintOutline(PaintInfo& paintInfo, const LayoutRect& paintRect)
-{
-    ObjectPainter(*this).paintOutline(paintInfo, paintRect);
-}
-
 void RenderObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
 {
     for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {

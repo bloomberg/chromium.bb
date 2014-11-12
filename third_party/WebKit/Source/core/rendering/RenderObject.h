@@ -1138,8 +1138,6 @@ protected:
     void propagateStyleToAnonymousChildren(bool blockChildrenOnly = false);
     virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
 
-public:
-    void paintOutline(PaintInfo&, const LayoutRect&);
 protected:
     void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const;
 

@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/TableRowPainter.h"
 
+#include "core/paint/ObjectPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
@@ -32,7 +33,7 @@ void TableRowPainter::paintOutlineForRowIfNeeded(PaintInfo& paintInfo, const Lay
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableRow.location();
     PaintPhase paintPhase = paintInfo.phase;
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_renderTableRow.style()->visibility() == VISIBLE)
-        m_renderTableRow.paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableRow.size()));
+        ObjectPainter(m_renderTableRow).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableRow.size()));
 }
 
 } // namespace blink

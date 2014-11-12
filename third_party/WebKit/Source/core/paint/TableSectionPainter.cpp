@@ -5,6 +5,7 @@
 #include "config.h"
 #include "core/paint/TableSectionPainter.h"
 
+#include "core/paint/ObjectPainter.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
@@ -39,7 +40,7 @@ void TableSectionPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
     }
 
     if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_renderTableSection.style()->visibility() == VISIBLE)
-        m_renderTableSection.paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
+        ObjectPainter(m_renderTableSection).paintOutline(paintInfo, LayoutRect(adjustedPaintOffset, m_renderTableSection.size()));
 }
 
 static inline bool compareCellPositions(RenderTableCell* elem1, RenderTableCell* elem2)

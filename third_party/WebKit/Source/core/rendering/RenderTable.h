@@ -269,10 +269,9 @@ public:
     void addColumn(const RenderTableCol*);
     void removeColumn(const RenderTableCol*);
 
-    // FIXME: this method should be moved into TablePainter.
-    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override final;
 
-    virtual void paintMask(PaintInfo&, const LayoutPoint&) override;
+    virtual void paintMask(PaintInfo&, const LayoutPoint&) override final;
 
     const CollapsedBorderValues& collapsedBorders() { return m_collapsedBorders; }
     void subtractCaptionRect(LayoutRect&) const;

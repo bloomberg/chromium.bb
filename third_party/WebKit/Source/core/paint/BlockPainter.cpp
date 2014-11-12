@@ -211,7 +211,7 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
         // Don't paint focus ring for anonymous block continuation because the
         // inline element having outline-style:auto paints the whole focus ring.
         if (!m_renderBlock.style()->outlineStyleIsAuto() || !m_renderBlock.isAnonymousBlockContinuation())
-            m_renderBlock.paintOutline(paintInfo, LayoutRect(paintOffset, m_renderBlock.size()));
+            ObjectPainter(m_renderBlock).paintOutline(paintInfo, LayoutRect(paintOffset, m_renderBlock.size()));
     }
 
     // 6. paint continuation outlines.

@@ -7,6 +7,7 @@
 
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DrawingRecorder.h"
+#include "core/paint/ObjectPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBoxClipper.h"
@@ -41,7 +42,7 @@ void TablePainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
         paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask) {
-        m_renderTable.paintMask(paintInfo, paintOffset);
+        paintMask(paintInfo, paintOffset);
         return;
     }
 
@@ -84,7 +85,7 @@ void TablePainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
 
     // Paint outline.
     if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_renderTable.style()->hasOutline() && m_renderTable.style()->visibility() == VISIBLE)
-        m_renderTable.paintOutline(paintInfo, LayoutRect(paintOffset, m_renderTable.size()));
+        ObjectPainter(m_renderTable).paintOutline(paintInfo, LayoutRect(paintOffset, m_renderTable.size()));
 }
 
 void TablePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
