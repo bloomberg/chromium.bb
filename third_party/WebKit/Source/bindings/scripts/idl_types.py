@@ -84,6 +84,13 @@ STRING_TYPES = frozenset([
     'USVString',
 ])
 
+STANDARD_CALLBACK_FUNCTIONS = frozenset([
+    # http://heycam.github.io/webidl/#common-Function
+    'Function',
+    # http://heycam.github.io/webidl/#common-VoidFunction
+    'VoidFunction',
+])
+
 
 ################################################################################
 # Inheritance
@@ -126,7 +133,7 @@ class IdlType(IdlTypeBase):
     # FIXME: incorporate Nullable, etc.
     # to support types like short?[] vs. short[]?, instead of treating these
     # as orthogonal properties (via flags).
-    callback_functions = set()
+    callback_functions = set(STANDARD_CALLBACK_FUNCTIONS)
     callback_interfaces = set()
     dictionaries = set()
     enums = {}  # name -> values
