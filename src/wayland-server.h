@@ -144,18 +144,18 @@ wl_client_post_no_memory(struct wl_client *client);
  * listener should be done through provided accessor methods. A listener can
  * only listen to one signal at a time.
  *
- * ~~~
+ * \code
  * struct wl_listener your_listener;
  *
  * your_listener.notify = your_callback_method;
  *
- * \comment{Direct access}
+ * // Direct access
  * wl_signal_add(&some_object->destroy_signal, &your_listener);
  *
- * \comment{Accessor access}
+ * // Accessor access
  * wl_event_loop *loop = ...;
  * wl_event_loop_add_destroy_listener(loop, &your_listener);
- * ~~~
+ * \endcode
  *
  * If the listener is part of a larger struct, #wl_container_of can be used
  * to retrieve a pointer to it:

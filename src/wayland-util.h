@@ -88,8 +88,7 @@ struct wl_interface {
  * "item_t", and the item member as "struct wl_list link".
  *
  * The following code will initialize a list:
- *
- * ~~~
+ * \code
  * struct wl_list foo_list;
  *
  * struct item_t {
@@ -99,20 +98,19 @@ struct wl_interface {
  * struct item_t item1, item2, item3;
  *
  * wl_list_init(&foo_list);
- * wl_list_insert(&foo_list, &item1.link);   \comment{Pushes item1 at the head}
- * wl_list_insert(&foo_list, &item2.link);   \comment{Pushes item2 at the head}
- * wl_list_insert(&item2.link, &item3.link); \comment{Pushes item3 after item2}
- * ~~~
+ * wl_list_insert(&foo_list, &item1.link);	// Pushes item1 at the head
+ * wl_list_insert(&foo_list, &item2.link);	// Pushes item2 at the head
+ * wl_list_insert(&item2.link, &item3.link);	// Pushes item3 after item2
+ * \endcode
  *
  * The list now looks like [item2, item3, item1]
  *
- * Will iterate the list in ascending order:
- *
+ * Iterate the list in ascending order:
  * \code
- * item_t *item;
- * wl_list_for_each(item, foo_list, link) {
- * 	Do_something_with_item(item);
- * }
+ *	item_t *item;
+ *	wl_list_for_each(item, foo_list, link) {
+ *		Do_something_with_item(item);
+ *	}
  * \endcode
  */
 struct wl_list {
@@ -138,10 +136,10 @@ void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
  * To demonstrate, the following example retrieves a pointer to
  * `example_container` given only its `destroy_listener` member:
  *
- * ~~~
+ * \code
  * struct example_container {
  *     struct wl_listener destroy_listener;
- *     \comment{other members...}
+ *     // other members...
  * };
  *
  * void example_container_destroy(struct wl_listener *listener, void *data)
@@ -149,9 +147,9 @@ void wl_list_insert_list(struct wl_list *list, struct wl_list *other);
  *     struct example_container *ctr;
  *
  *     ctr = wl_container_of(listener, ctr, destroy_listener);
- *     \comment{destroy ctr...}
+ *     // destroy ctr...
  * }
- * ~~~
+ * \endcode
  *
  * \param ptr A valid pointer to the contained item.
  *

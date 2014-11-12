@@ -1326,10 +1326,12 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * it will assume the file descriptor is readable and read events from
  * the fd by calling wl_display_dispatch().  Simplified, we have:
  *
- *   wl_display_dispatch_pending(display);
- *   wl_display_flush(display);
- *   poll(fds, nfds, -1);
- *   wl_display_dispatch(display);
+ * \code
+ * wl_display_dispatch_pending(display);
+ * wl_display_flush(display);
+ * poll(fds, nfds, -1);
+ * wl_display_dispatch(display);
+ * \endcode
  *
  * There are two races here: first, before blocking in poll(), the fd
  * could become readable and another thread reads the events.  Some of
@@ -1344,13 +1346,14 @@ wl_display_prepare_read_queue(struct wl_display *display,
  * fds in the event loop.
  *
  * A correct sequence would be:
- *
- *   while (wl_display_prepare_read(display) != 0)
- *           wl_display_dispatch_pending(display);
- *   wl_display_flush(display);
- *   poll(fds, nfds, -1);
- *   wl_display_read_events(display);
- *   wl_display_dispatch_pending(display);
+ * \code
+ * while (wl_display_prepare_read(display) != 0)
+ *         wl_display_dispatch_pending(display);
+ * wl_display_flush(display);
+ * poll(fds, nfds, -1);
+ * wl_display_read_events(display);
+ * wl_display_dispatch_pending(display);
+ * \endcode
  *
  * Here we call wl_display_prepare_read(), which ensures that between
  * returning from that call and eventually calling
