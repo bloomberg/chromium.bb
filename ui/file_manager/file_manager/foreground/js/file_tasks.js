@@ -355,7 +355,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(entries, opt_callback) {
     var webStoreUrl = FileTasks.createWebStoreLink(extension, mimeType);
     var text = strf(textMessageId, webStoreUrl, str('NO_ACTION_FOR_FILE_URL'));
     var title = titleMessageId ? str(titleMessageId) : filename;
-    this.fileManager_.alert.showHtml(title, text, function() {});
+    this.fileManager_.ui.alertDialog.showHtml(title, text, null, null, null);
     callback(false, entries);
   }.bind(this);
 
@@ -487,7 +487,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
         return;
       }
 
-      fm.alert.showHtml(
+      fm.ui.alertDialog.showHtml(
           loadTimeData.getString('OFFLINE_HEADER'),
           props[0].hosted ?
               loadTimeData.getStringF(
@@ -520,7 +520,7 @@ FileTasks.prototype.checkAvailability_ = function(callback) {
           if (!driveProps[i].availableWhenMetered)
             sizeToDownload += fileProps[i].size;
         }
-        fm.confirm.show(
+        fm.ui.confirmDialog.show(
             loadTimeData.getStringF(
                 entries.length === 1 ?
                     'CONFIRM_MOBILE_DATA_USE' :
@@ -601,8 +601,10 @@ FileTasks.prototype.mountArchivesInternal_ = function(entries) {
           tracker.stop();
           var path = util.extractFilePath(url);
           var namePos = path.lastIndexOf('/');
-          fm.alert.show(strf('ARCHIVE_MOUNT_FAILED',
-                             path.substr(namePos + 1), error), null, null);
+          fm.ui.alertDialog.show(
+              strf('ARCHIVE_MOUNT_FAILED', path.substr(namePos + 1), error),
+              null,
+              null);
         }.bind(null, urls[index]));
   }
 };

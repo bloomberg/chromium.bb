@@ -175,52 +175,6 @@ function FileManager() {
   this.bannersController_ = null;
 
   // --------------------------------------------------------------------------
-  // Dialogs.
-
-  /**
-   * Error dialog.
-   * @type {ErrorDialog}
-   */
-  this.error = null;
-
-  /**
-   * Alert dialog.
-   * @type {cr.ui.dialogs.AlertDialog}
-   */
-  this.alert = null;
-
-  /**
-   * Confirm dialog.
-   * @type {cr.ui.dialogs.ConfirmDialog}
-   */
-  this.confirm = null;
-
-  /**
-   * Prompt dialog.
-   * @type {cr.ui.dialogs.PromptDialog}
-   */
-  this.prompt = null;
-
-  /**
-   * Share dialog.
-   * @type {ShareDialog}
-   * @private
-   */
-  this.shareDialog_ = null;
-
-  /**
-   * Default task picker.
-   * @type {cr.filebrowser.DefaultActionDialog}
-   */
-  this.defaultTaskPicker = null;
-
-  /**
-   * Suggest apps dialog.
-   * @type {SuggestAppsDialog}
-   */
-  this.suggestAppsDialog = null;
-
-  // --------------------------------------------------------------------------
   // Menus.
 
   /**
@@ -1050,7 +1004,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
-    this.ui_ = new FileManagerUI(this.dialogDom_, this.dialogType);
+    assert(this.launchParams_);
+    this.ui_ = new FileManagerUI(this.dialogDom_, this.launchParams_);
 
     // Show the window as soon as the UI pre-initialization is done.
     if (this.dialogType == DialogType.FULL_PAGE && !util.runningInBrowser()) {
@@ -1059,26 +1014,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     } else {
       callback();
     }
-  };
-
-  /**
-   * One-time initialization of dialogs.
-   * @private
-   */
-  FileManager.prototype.initDialogs_ = function() {
-    // Initialize the dialog.
-    this.ui_.initDialogs();
-    FileManagerDialogBase.setFileManager(this);
-
-    // Obtains the dialog instances from FileManagerUI.
-    // TODO(hirono): Remove the properties from the FileManager class.
-    this.error = this.ui_.errorDialog;
-    this.alert = this.ui_.alertDialog;
-    this.confirm = this.ui_.confirmDialog;
-    this.prompt = this.ui_.promptDialog;
-    this.shareDialog_ = this.ui_.shareDialog;
-    this.defaultTaskPicker = this.ui_.defaultTaskPicker;
-    this.suggestAppsDialog = this.ui_.suggestAppsDialog;
   };
 
   /**
@@ -1097,7 +1032,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var dom = this.dialogDom_;
     assert(dom);
 
-    this.initDialogs_();
+    // Initialize the dialog.
+    FileManagerDialogBase.setFileManager(this);
 
     var table = queryRequiredElement(dom, '.detail-table');
     FileTable.decorate(
@@ -1840,7 +1776,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }
 
       // Change default was clicked. We should open "change default" dialog.
-      selection.tasks.showTaskPicker(this.defaultTaskPicker,
+      selection.tasks.showTaskPicker(this.ui_.defaultTaskPicker,
           loadTimeData.getString('CHANGE_DEFAULT_MENU_ITEM'),
           strf('CHANGE_DEFAULT_CAPTION', format),
           this.onDefaultTaskDone_.bind(this),
@@ -1903,8 +1839,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.commandHandler.updateAvailability();
     if (this.dialogContainer_)
       this.dialogContainer_.setAttribute('connection', connection.type);
-    this.shareDialog_.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
-    this.suggestAppsDialog.onDriveConnectionChanged(connection.type);
+    this.ui_.shareDialog.hideWithResult(ShareDialog.Result.NETWORK_ERROR);
+    this.ui_.suggestAppsDialog.onDriveConnectionChanged(connection.type);
   };
 
   /**
@@ -1952,9 +1888,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
     // Add the overlapped class to prevent the applicaiton window from
     // captureing mouse events.
-    this.shareDialog_.show(entries[0], function(result) {
+    this.ui_.shareDialog.show(entries[0], function(result) {
       if (result == ShareDialog.Result.NETWORK_ERROR)
-        this.error.show(str('SHARE_ERROR'));
+        this.ui_.errorDialog.show(str('SHARE_ERROR'), null, null, null);
     }.bind(this));
   };
 
@@ -2128,9 +2064,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       };
 
       if (FileTasks.EXECUTABLE_EXTENSIONS.indexOf(extension) !== -1) {
-        this.suggestAppsDialog.showByFilename(filename, onDialogClosed);
+        this.ui_.suggestAppsDialog.showByFilename(filename, onDialogClosed);
       } else {
-        this.suggestAppsDialog.showByExtensionAndMime(
+        this.ui_.suggestAppsDialog.showByExtensionAndMime(
             extension, mime, onDialogClosed);
       }
     }.bind(this));
@@ -2419,9 +2355,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var onError = function(error) {
       self.ui_.listContainer.endBatchUpdates();
 
-      self.alert.show(strf('ERROR_CREATING_FOLDER', current(),
-                           util.getFileErrorString(error.name)),
-                      null, null);
+      self.ui_.alertDialog.show(
+          strf('ERROR_CREATING_FOLDER',
+               current(),
+               util.getFileErrorString(error.name)),
+          null, null);
     };
 
     var onAbort = function() {

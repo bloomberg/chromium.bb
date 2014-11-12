@@ -37,11 +37,8 @@ var CWS_WIDGET_ORIGIN = 'https://clients5.google.com';
 /**
  * Creates dialog in DOM tree.
  *
- * @param {HTMLElement} parentNode Node to be parent for this dialog.
- * @param {{
- *   overrideCwsContainerUrlForTest: string,
- *   overrideCwsContainerOriginForTest: string
- * }} state Static state of suggest app dialog.
+ * @param {!HTMLElement} parentNode Node to be parent for this dialog.
+ * @param {!SuggestAppDialogState} state Static state of suggest app dialog.
  * @constructor
  * @extends {FileManagerDialogBase}
  */
@@ -394,8 +391,11 @@ SuggestAppsDialog.prototype.onInstallCompleted_ = function(result, error) {
     case AppInstaller.Result.ERROR:
       SuggestAppsDialog.Metrics.recordInstall(
           SuggestAppsDialog.Metrics.INSTALL.FAILED);
-      fileManager.error.show(str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
-                             null, null, null);
+      fileManager.ui.errorDialog.show(
+          str('SUGGEST_DIALOG_INSTALLATION_FAILED'),
+          null,
+          null,
+          null);
       break;
   }
 };

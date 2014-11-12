@@ -3,6 +3,14 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   overrideCwsContainerUrlForTest: string,
+ *   overrideCwsContainerOriginForTest: string
+ * }}
+ */
+var SuggestAppDialogState;
+
+/**
  * @param {!Object} unformatted Unformatted option.
  * @constructor
  * @struct
@@ -57,4 +65,16 @@ function LaunchParam(unformatted) {
    * @const
    */
   this.shouldReturnLocalPath = !!unformatted['shouldReturnLocalPath'];
+
+  /**
+   * @type {!SuggestAppDialogState}
+   * @const
+   */
+  this.suggestAppsDialogState =
+      unformatted['suggestAppsDialogState'] ?
+      unformatted['suggestAppsDialogState'] :
+      {
+        overrideCwsContainerUrlForTest: '',
+        overrideCwsContainerOriginForTest: ''
+      };
 }

@@ -6,13 +6,18 @@
  * The root of the file manager's view managing the DOM of Files.app.
  *
  * @param {!HTMLElement} element Top level element of Files.app.
- * @param {DialogType} dialogType Dialog type.
+ * @param {!LaunchParam} launchParam Launch param.
  * @constructor
  * @struct
  */
-function FileManagerUI(element, dialogType) {
+function FileManagerUI(element, launchParam) {
   // Pre-populate the static localized strings.
   i18nTemplate.process(element.ownerDocument, loadTimeData);
+
+  // Initialize the dialog label. This should be done before constructing dialog
+  // instances.
+  cr.ui.dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
+  cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
 
   /**
    * Top level element of Files.app.
@@ -26,67 +31,80 @@ function FileManagerUI(element, dialogType) {
    * @type {DialogType}
    * @private
    */
-  this.dialogType_ = dialogType;
+  this.dialogType_ = launchParam.type;
 
   /**
    * Error dialog.
-   * @type {ErrorDialog}
+   * @type {!ErrorDialog}
+   * @const
    */
-  this.errorDialog = null;
+  this.errorDialog = new ErrorDialog(this.element_);
 
   /**
    * Alert dialog.
-   * @type {cr.ui.dialogs.AlertDialog}
+   * @type {!cr.ui.dialogs.AlertDialog}
+   * @const
    */
-  this.alertDialog = null;
+  this.alertDialog = new cr.ui.dialogs.AlertDialog(this.element_);
 
   /**
    * Confirm dialog.
-   * @type {cr.ui.dialogs.ConfirmDialog}
+   * @type {!cr.ui.dialogs.ConfirmDialog}
+   * @const
    */
-  this.confirmDialog = null;
+  this.confirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element_);
 
   /**
    * Confirm dialog for delete.
-   * @type {cr.ui.dialogs.ConfirmDialog}
+   * @type {!cr.ui.dialogs.ConfirmDialog}
+   * @const
    */
-  this.deleteConfirmDialog = null;
+  this.deleteConfirmDialog = new cr.ui.dialogs.ConfirmDialog(this.element_);
+  this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
 
   /**
    * Prompt dialog.
-   * @type {cr.ui.dialogs.PromptDialog}
+   * @type {!cr.ui.dialogs.PromptDialog}
+   * @const
    */
-  this.promptDialog = null;
+  this.promptDialog = new cr.ui.dialogs.PromptDialog(this.element_);
 
   /**
    * Share dialog.
-   * @type {ShareDialog}
+   * @type {!ShareDialog}
+   * @const
    */
-  this.shareDialog = null;
+  this.shareDialog = new ShareDialog(this.element_);
 
   /**
    * Multi-profile share dialog.
-   * @type {MultiProfileShareDialog}
+   * @type {!MultiProfileShareDialog}
+   * @const
    */
-  this.multiProfileShareDialog = null;
+  this.multiProfileShareDialog = new MultiProfileShareDialog(this.element_);
 
   /**
    * Default task picker.
-   * @type {cr.filebrowser.DefaultActionDialog}
+   * @type {!cr.filebrowser.DefaultActionDialog}
+   * @const
    */
-  this.defaultTaskPicker = null;
+  this.defaultTaskPicker =
+      new cr.filebrowser.DefaultActionDialog(this.element_);
 
   /**
    * Suggest apps dialog.
-   * @type {SuggestAppsDialog}
+   * @type {!SuggestAppsDialog}
+   * @const
    */
-  this.suggestAppsDialog = null;
+  this.suggestAppsDialog = new SuggestAppsDialog(
+      this.element_, launchParam.suggestAppsDialogState);
 
   /**
    * Conflict dialog.
-   * @type {ConflictDialog}
+   * @type {!ConflictDialog}
+   * @const
    */
-  this.conflictDialog = null;
+  this.conflictDialog = new ConflictDialog(this.element_);
 
   /**
    * Location line.
@@ -182,32 +200,6 @@ FileManagerUI.queryDecoratedElement_ = function(query, type) {
   var element = queryRequiredElement(document, query);
   type.decorate(element);
   return element;
-};
-
-/**
- * Initialize the dialogs.
- */
-FileManagerUI.prototype.initDialogs = function() {
-  // Initialize the dialog label.
-  var dialogs = cr.ui.dialogs;
-  dialogs.BaseDialog.OK_LABEL = str('OK_LABEL');
-  dialogs.BaseDialog.CANCEL_LABEL = str('CANCEL_LABEL');
-  var appState = window.appState || {};
-
-  // Create the dialog instances.
-  this.errorDialog = new ErrorDialog(this.element_);
-  this.alertDialog = new dialogs.AlertDialog(this.element_);
-  this.confirmDialog = new dialogs.ConfirmDialog(this.element_);
-  this.deleteConfirmDialog = new dialogs.ConfirmDialog(this.element_);
-  this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
-  this.promptDialog = new dialogs.PromptDialog(this.element_);
-  this.shareDialog = new ShareDialog(this.element_);
-  this.multiProfileShareDialog = new MultiProfileShareDialog(this.element_);
-  this.defaultTaskPicker =
-      new cr.filebrowser.DefaultActionDialog(this.element_);
-  this.suggestAppsDialog = new SuggestAppsDialog(
-      this.element_, appState.suggestAppsDialogState || {});
-  this.conflictDialog = new ConflictDialog(this.element_);
 };
 
 /**

@@ -348,7 +348,8 @@ CommandHandler.COMMANDS_['unmount'] = /** @type {Command} */ ({
       return;
     }
     var errorCallback = function() {
-      fileManager.alert.showHtml('', str('UNMOUNT_FAILED'), null, null, null);
+      fileManager.ui.alertDialog.showHtml(
+          '', str('UNMOUNT_FAILED'), null, null, null);
     };
     var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
     if (!volumeInfo) {
@@ -409,7 +410,7 @@ CommandHandler.COMMANDS_['format'] = /** @type {Command} */ ({
 
     var volumeInfo = fileManager.volumeManager.getVolumeInfo(root);
     if (volumeInfo) {
-      fileManager.confirm.show(
+      fileManager.ui.confirmDialog.show(
           loadTimeData.getString('FORMATTING_WARNING'),
           chrome.fileManagerPrivate.formatVolume.bind(null,
                                                       volumeInfo.volumeId),
@@ -731,7 +732,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
   execute: function(event, fileManager) {
     var tasks = fileManager.getSelection().tasks;
     if (tasks) {
-      tasks.showTaskPicker(fileManager.defaultTaskPicker,
+      tasks.showTaskPicker(fileManager.ui.defaultTaskPicker,
           str('OPEN_WITH_BUTTON_LABEL'),
           '',
           function(task) {
@@ -849,11 +850,12 @@ CommandHandler.COMMANDS_['toggle-pinned'] = /** @type {Command} */ ({
 
       // Show the error
       showError: function(filesystem) {
-        fileManager.alert.showHtml(str('DRIVE_OUT_OF_SPACE_HEADER'),
-                                   strf('DRIVE_OUT_OF_SPACE_MESSAGE',
-                                        unescape(currentEntry.name),
-                                        util.bytesToString(filesystem.size)),
-                                   null, null, null);
+        fileManager.ui.alertDialog.showHtml(
+            str('DRIVE_OUT_OF_SPACE_HEADER'),
+            strf('DRIVE_OUT_OF_SPACE_MESSAGE',
+                 unescape(currentEntry.name),
+                 util.bytesToString(filesystem.size)),
+            null, null, null);
       }
     };
     steps.start();
