@@ -71,8 +71,12 @@ def GetIssueState(issue_id):
 
 def CheckIssueClosed(issue_id):
   """Checks if a given issue is closed. Returns False when in doubt."""
-  try:
-    return GetIssueState(issue_id) == 'closed'
-  except IssueTrackerQueryException:
-    # When we can't be sure we return false
-    return False
+  # We only check when issue_id appears to be valid
+  if str(issue_id).isdigit():
+    try:
+      return GetIssueState(issue_id) == 'closed'
+    except IssueTrackerQueryException:
+      # We let this fall through to the return False
+      pass
+  # We return False for anything other than a positive number
+  return False
