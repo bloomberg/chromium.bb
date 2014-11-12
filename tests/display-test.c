@@ -333,21 +333,6 @@ register_reading(struct wl_display *display)
 	assert(wl_display_flush(display) >= 0);
 }
 
-#define USEC_TO_NSEC(n) (1000 * (n))
-
-/* since we are using alarm() and SIGABRT, we can not
- * use usleep function (see 'man usleep') */
-static void
-test_usleep(useconds_t usec)
-{
-	struct timespec ts = {
-		.tv_sec = 0,
-		.tv_nsec = USEC_TO_NSEC(usec)
-	};
-
-	assert(nanosleep(&ts, NULL) == 0);
-}
-
 /* create thread that will call prepare+read so that
  * it will block */
 static pthread_t

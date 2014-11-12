@@ -5,6 +5,8 @@
 #error "Tests must not be built with NDEBUG defined, they rely on assert()."
 #endif
 
+#include <unistd.h>
+
 struct test {
 	const char *name;
 	void (*run)(void);
@@ -43,5 +45,15 @@ exec_fd_leak_check(int nr_expected_fds); /* never returns */
  */
 void
 test_set_timeout(unsigned int);
+
+/* test-runner uses alarm() and SIGALRM, so we can not
+ * use usleep and sleep functions in tests (see 'man usleep'
+ * or 'man sleep', respectively). Following functions are safe
+ * to use in tests */
+void
+test_usleep(useconds_t);
+
+void
+test_sleep(unsigned int);
 
 #endif

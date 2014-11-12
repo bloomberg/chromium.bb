@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "test-runner.h"
 
@@ -61,4 +62,35 @@ exec_fd_leak_check(int nr_expected_fds)
 	snprintf(number, sizeof number - 1, "%d", nr_expected_fds);
 	execl(exe, exe, number, (char *)NULL);
 	assert(0 && "execing fd leak checker failed");
+}
+
+#define USEC_TO_NSEC(n) (1000 * (n))
+
+/* our implementation of usleep and sleep functions that are safe to use with
+ * timeouts (timeouts are implemented using alarm(), so it is not safe use
+ * usleep and sleep. See man pages of these functions)
+ */
+void
+test_usleep(useconds_t usec)
+{
+	struct timespec ts = {
+		.tv_sec = 0,
+		.tv_nsec = USEC_TO_NSEC(usec)
+	};
+
+	assert(nanosleep(&ts, NULL) == 0);
+}
+
+/* we must write the whole function instead of
+ * wrapping test_usleep, because useconds_t may not
+ * be able to contain such a big number of microseconds */
+void
+test_sleep(unsigned int sec)
+{
+	struct timespec ts = {
+		.tv_sec = sec,
+		.tv_nsec = 0
+	};
+
+	assert(nanosleep(&ts, NULL) == 0);
 }
