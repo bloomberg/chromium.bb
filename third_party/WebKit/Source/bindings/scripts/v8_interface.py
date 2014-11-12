@@ -842,11 +842,32 @@ def resolution_tests_methods(effective_overloads):
         test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
         yield test, method
 
-    # 8. Otherwise: if V is any kind of object except for a native Date object,
+    # 13. Otherwise: if IsCallable(V) is true, and there is an entry in S that
+    # has one of the following types at position i of its type list,
+    # • a callback function type
+    # ...
+    #
+    # FIXME:
+    # We test for functions rather than callability, which isn't strictly the
+    # same thing.
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_callback_function)
+        test = '%s->IsFunction()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
+
+    # 14. Otherwise: if V is any kind of object except for a native Date object,
+    # a native RegExp object, and there is an entry in S that has one of the
+    # following types at position i of its type list,
+    # • a sequence type
+    # ...
+    #
+    # 15. Otherwise: if V is any kind of object except for a native Date object,
     # a native RegExp object, and there is an entry in S that has one of the
     # following types at position i of its type list,
     # • an array type
-    # • a sequence type
     # ...
     # • a dictionary
     #
