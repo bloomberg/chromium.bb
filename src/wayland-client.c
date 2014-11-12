@@ -1217,7 +1217,7 @@ cancel_read(struct wl_display *display)
  * This will read events from the file descriptor for the display.
  * This function does not dispatch events, it only reads and queues
  * events into their corresponding event queues.  If no data is
- * avilable on the file descriptor, wl_display_read_events() returns
+ * available on the file descriptor, wl_display_read_events() returns
  * immediately.  To dispatch events that may have been queued, call
  * wl_display_dispatch_pending() or
  * wl_display_dispatch_queue_pending().
