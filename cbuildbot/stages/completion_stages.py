@@ -556,16 +556,6 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     MasterSlaveSyncCompletionStage.HandleFailure(
         self, failing, inflight, no_stat)
 
-    # Abort hardware tests to save time if we have already seen a failure,
-    # except in the case where the only failure is a hardware test failure.
-    #
-    # When we're debugging hardware test failures, it's useful to see the
-    # results on all platforms, to see if the failure is platform-specific.
-    tracebacks = results_lib.Results.GetTracebacks()
-    if not self.success and self._run.config['important']:
-      if len(tracebacks) != 1 or tracebacks[0].failed_prefix != 'HWTest':
-        self._AbortCQHWTests()
-
     if self._run.config.master:
       self.CQMasterHandleFailure(failing, inflight, no_stat)
 

@@ -156,7 +156,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
     self.StartPatcher(BuilderRunMock())
 
     self.mox.StubOutWithMock(lab_status, 'CheckLabStatus')
-    self.mox.StubOutWithMock(commands, 'HaveCQHWTestsBeenAborted')
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepWarnings')
     self.mox.StubOutWithMock(cros_build_lib, 'PrintBuildbotStepFailure')
@@ -195,11 +194,6 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
       fails: Whether the command as a whole should fail.
       timeout: Whether the the hw tests should time out.
     """
-    if config.IsCQType(self._run.config.build_type):
-      version = self._run.GetVersion()
-      for _ in range(1 + int(returncode != 0)):
-        commands.HaveCQHWTestsBeenAborted(version).AndReturn(False)
-
     lab_status.CheckLabStatus(mox.IgnoreArg())
 
     if not debug:
@@ -331,23 +325,8 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTest):
   def testHandleLabDownAsFatal(self):
     """Test that the stage fails when lab is down."""
     self._Prepare('lumpy-paladin')
-    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndReturn(False)
     check_lab = lab_status.CheckLabStatus(mox.IgnoreArg())
     check_lab.AndRaise(lab_status.LabIsDownException('Lab is not up.'))
-    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndReturn(False)
-    cros_build_lib.PrintBuildbotStepFailure()
-    cros_build_lib.Error(mox.IgnoreArg())
-    self.mox.ReplayAll()
-    self.assertRaises(failures_lib.StepFailure, self.RunStage)
-    self.mox.VerifyAll()
-
-  def testCheckAbortedFailedForCQ(self):
-    """Test that when unable to check, treat it as a failure."""
-    self._Prepare('lumpy-paladin')
-    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndRaise(
-        Exception('error'))
-    commands.HaveCQHWTestsBeenAborted(mox.IgnoreArg()).AndRaise(
-        Exception('error'))
     cros_build_lib.PrintBuildbotStepFailure()
     cros_build_lib.Error(mox.IgnoreArg())
     self.mox.ReplayAll()
@@ -385,8 +364,6 @@ class AUTestStageTest(generic_stages_unittest.AbstractStageTest,
     self.StartPatcher(BuilderRunMock())
     self.PatchObject(commands, 'ArchiveFile', autospec=True,
                      return_value='foo.txt')
-    self.PatchObject(commands, 'HaveCQHWTestsBeenAborted', autospec=True,
-                     return_value=False)
     self.PatchObject(lab_status, 'CheckLabStatus', autospec=True)
 
     self.archive_stage = None

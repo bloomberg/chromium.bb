@@ -37,9 +37,6 @@ corresponding update directory.
 """
 PRE_CQ = validation_pool.PRE_CQ
 
-CQ_HWTEST_WAS_ABORTED = ('HWTest was aborted, because another commit '
-                         'queue builder failed outside of HWTest.')
-
 
 class UnitTestStage(generic_stages.BoardSpecificBuilderStage):
   """Run unit tests."""
@@ -218,21 +215,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     self.suite_config = suite_config
     self.wait_for_results = True
 
-  @failures_lib.SetFailureType(failures_lib.GSFailure)
-  def _CheckAborted(self):
-    """Checks with GS to see if HWTest for this build's release_tag was aborted.
-
-    We currently only support aborting HWTests for the CQ, so this method only
-    returns True for paladin builders.
-
-    Returns:
-      True if HWTest have been aborted for this build's release_tag.
-      False otherwise.
-    """
-    aborted = (cbuildbot_config.IsCQType(self._run.config.build_type) and
-               commands.HaveCQHWTestsBeenAborted(self._run.GetVersion()))
-    return aborted
-
   # Disable complaint about calling _HandleStageException.
   # pylint: disable=W0212
   def _HandleStageException(self, exc_info):
@@ -245,20 +227,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exc_info)
-
-    aborted = False
-    try:
-      # _CheckAborted accesses Google Storage and could fail for many
-      # reasons. Ignore any failures because we are already handling
-      # exceptions.
-      aborted = self._CheckAborted()
-    except Exception:
-      logging.warning('Unable to check whether HWTest was aborted.')
-
-    if aborted:
-      # HWTest was aborted. This is only applicable to CQ.
-      logging.warning(CQ_HWTEST_WAS_ABORTED)
-      return self._HandleExceptionAsWarning(exc_info)
 
     if issubclass(exc_type, commands.TestWarning):
       # HWTest passed with warning. All builders should pass.
@@ -288,11 +256,6 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       cros_build_lib.PrintBuildbotStepText('missing payloads')
       cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
                              'failed. See UploadTestArtifacts for details.')
-      return
-
-    if self._CheckAborted():
-      cros_build_lib.PrintBuildbotStepText('aborted')
-      cros_build_lib.Warning(CQ_HWTEST_WAS_ABORTED)
       return
 
     build = '/'.join([self._bot_id, self.version])
