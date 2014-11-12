@@ -82,7 +82,6 @@ class WM_EXPORT TransientWindowManager : public aura::WindowObserver {
   // WindowObserver:
   void OnWindowParentChanged(aura::Window* window,
                              aura::Window* parent) override;
-  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowStackingChanged(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;

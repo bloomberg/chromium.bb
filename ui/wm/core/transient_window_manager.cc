@@ -153,20 +153,26 @@ void TransientWindowManager::UpdateTransientChildVisibility(
   }
 }
 
-void TransientWindowManager::OnWindowVisibilityChanging(Window* window,
-                                                        bool visible) {
-  DCHECK_EQ(window_, window);
-
-  for (auto* child : transient_children_)
-    Get(child)->UpdateTransientChildVisibility(visible);
-}
-
 void TransientWindowManager::OnWindowVisibilityChanged(Window* window,
                                                        bool visible) {
-  if (window_ != window || ignore_visibility_changed_event_ ||
+  if (window_ != window)
+    return;
+
+  // If the window has transient children, updates the transient children's
+  // visiblity as well.
+  for (Window* child : transient_children_)
+    Get(child)->UpdateTransientChildVisibility(visible);
+
+  // Remember the show request in |show_on_parent_visible_| and hide it again
+  // if the following conditions are met
+  // - |parent_controls_visibility| is set to true.
+  // - the window is hidden while the transient parent is not visible.
+  // - Show/Hide was NOT called from TransientWindowManager.
+  if (ignore_visibility_changed_event_ ||
       !transient_parent_ || !parent_controls_visibility_) {
     return;
   }
+
   if (!transient_parent_->TargetVisibility() && visible) {
     base::AutoReset<bool> reset(&ignore_visibility_changed_event_, true);
     show_on_parent_visible_ = true;
