@@ -108,6 +108,16 @@ hooks = [
     'action':
          [
     'python',
+    'native_client/build/package_version/package_version.py',
+    'cleanup'
+],
+    'pattern':
+         '.'
+},
+    {
+    'action':
+         [
+    'python',
     'native_client/build/vs_toolchain.py',
     'update'
 ],
