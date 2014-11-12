@@ -343,6 +343,9 @@
     // Finds all the AutomationNodes in this node's subtree which matches the
     // given search parameters.
     static AutomationNode[] findAll(FindParams params);
+
+    // Returns whether this node matches the given $(ref:automation.FindParams).
+    static boolean matches(FindParams params);
   };
 
   // Called when the <code>AutomationNode</code> for the page is available.

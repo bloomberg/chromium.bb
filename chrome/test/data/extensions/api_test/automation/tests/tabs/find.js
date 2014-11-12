@@ -140,6 +140,35 @@ var allTests = [
                                    attributes: { hierarchicalLevel: true }} ));
 
     chrome.test.succeed();
+  },
+
+  function testMatches() {
+    initializeNodes(rootNode);
+    assertTrue(h1.matches({ role: RoleType.heading }),
+               'h1 should match RoleType.heading');
+    assertTrue(h1.matches({ role: RoleType.heading,
+                            attributes: { hierarchicalLevel: 1 } }),
+               'h1 should match RoleType.heading and hierarchicalLevel: 1');
+    assertFalse(h1.matches({ role: RoleType.heading,
+                             state: { focusable: true },
+                             attributes: { hierarchicalLevel: 1 } }),
+               'h1 should not match focusable: true');
+    assertTrue(h1.matches({ role: RoleType.heading,
+                            state: { focusable: false },
+                            attributes: { hierarchicalLevel: 1 } }),
+               'h1 should match focusable: false');
+
+    var p2StaticText = p2.firstChild();
+    assertTrue(
+        p2StaticText.matches({ role: RoleType.staticText,
+                               attributes: { value: /relationship/ } }),
+        'p2StaticText should match value: /relationship/ (regex match)');
+    assertFalse(
+        p2StaticText.matches({ role: RoleType.staticText,
+                               attributes: { value: 'relationship' } }),
+      'p2 should not match value: \'relationship');
+
+    chrome.test.succeed();
   }
 ];
 

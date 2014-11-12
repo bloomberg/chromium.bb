@@ -109,6 +109,10 @@ AutomationNodeImpl.prototype = {
     return this.findInternal_(params, []);
   },
 
+  matches: function(params) {
+    return this.matchInternal_(params);
+  },
+
   addEventListener: function(eventType, callback, capture) {
     this.removeEventListener(eventType, callback);
     if (!this.listeners[eventType])
@@ -721,6 +725,7 @@ var AutomationNode = utils.expose('AutomationNode',
                                                 'findAll',
                                                 'focus',
                                                 'makeVisible',
+                                                'matches',
                                                 'setSelection',
                                                 'addEventListener',
                                                 'removeEventListener',
