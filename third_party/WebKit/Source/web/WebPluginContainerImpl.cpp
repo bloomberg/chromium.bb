@@ -591,6 +591,12 @@ WebLayer* WebPluginContainerImpl::platformLayer() const
 v8::Local<v8::Object> WebPluginContainerImpl::scriptableObject(v8::Isolate* isolate)
 {
     v8::Local<v8::Object> object = m_webPlugin->v8ScriptableObject(isolate);
+    // |m_webPlugin| may be destroyed during the above line due to re-entrancy
+    // caused by sync messages to the plugin. If this is the case just return an
+    // empty handle. crbug.com/423263.
+    if (!m_webPlugin)
+        return v8::Local<v8::Object>();
+
     if (!object.IsEmpty()) {
         // WebPlugin implementation can't provide the obsolete NPObject at the same time:
         ASSERT(!m_webPlugin->scriptableObject());
