@@ -42,7 +42,6 @@ bool ScreenOrientationDelegateAndroid::FullScreenRequired(
 }
 
 void ScreenOrientationDelegateAndroid::Lock(
-    WebContents* web_contents,
     blink::WebScreenOrientationLockType lock_orientation) {
   Java_ScreenOrientationProvider_lockOrientation(
       base::android::AttachCurrentThread(), lock_orientation);
@@ -53,7 +52,7 @@ bool ScreenOrientationDelegateAndroid::ScreenOrientationProviderSupported() {
   return true;
 }
 
-void ScreenOrientationDelegateAndroid::Unlock(WebContents* web_contents) {
+void ScreenOrientationDelegateAndroid::Unlock() {
   Java_ScreenOrientationProvider_unlockOrientation(
       base::android::AttachCurrentThread());
 }

@@ -35,11 +35,11 @@ class ScreenOrientationDelegateAndroid : public ScreenOrientationDelegate {
   static void StopAccurateListening();
 
   // ScreenOrientationDelegate:
-  bool FullScreenRequired(WebContents* web_contents) override;
-  void Lock(WebContents* web_contents,
-            blink::WebScreenOrientationLockType lock_orientation) override;
-  bool ScreenOrientationProviderSupported() override;
-  void Unlock(WebContents* web_contents) override;
+  virtual bool FullScreenRequired(WebContents* web_contents) override;
+  virtual void Lock(
+      blink::WebScreenOrientationLockType lock_orientation) override;
+  virtual bool ScreenOrientationProviderSupported() override;
+  virtual void Unlock() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDelegateAndroid);
