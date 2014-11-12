@@ -262,6 +262,21 @@ html[dir=rtl] .main-pane {
   background-image: url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED');
 }
 
+.custom-icon-locked-to-be-activated {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED');
+}
+
+.custom-icon-locked-to-be-activated.icon-with-tooltip:hover {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER');
+}
+
+.custom-icon-locked-to-be-activated.interactive-custom-icon:active {
+  background-image:
+      url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED');
+}
+
 .custom-icon-locked-with-proximity-hint {
   background-image:
       url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT');
@@ -302,6 +317,12 @@ html[dir=rtl] .main-pane {
     url('chrome://theme/IDR_EASY_UNLOCK_LOCKED')
     url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_HOVER')
     url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_PRESSED')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_HOVER')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_TO_BE_ACTIVATED_PRESSED')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_HOVER')
+    url('chrome://theme/IDR_EASY_UNLOCK_LOCKED_WITH_PROXIMITY_HINT_PRESSED')
     url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED')
     url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_HOVER')
     url('chrome://theme/IDR_EASY_UNLOCK_UNLOCKED_PRESSED');

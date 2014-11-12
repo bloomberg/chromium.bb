@@ -20,6 +20,7 @@ namespace {
 // Icons used by EasyUnlockScreenlockStateHandler. The icon id values are the
 // same as the ones set by ScreenlockBridge.
 const char kLockedIconId[] = "locked";
+const char kLockedToBeActivatedIconId[] = "locked-to-be-activated";
 const char kUnlockedIconId[] = "unlocked";
 const char kSpinnerIconId[] = "spinner";
 const char kHardlockedIconId[] = "hardlocked";
@@ -565,14 +566,14 @@ TEST_F(EasyUnlockScreenlockStateHandlerTest, PairingChangedHardlock) {
 
   EXPECT_EQ(1u, lock_handler_->GetAndResetShowIconCount());
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(kHardlockedIconId, lock_handler_->GetCustomIconId());
+  EXPECT_EQ(kLockedToBeActivatedIconId, lock_handler_->GetCustomIconId());
 
   state_handler_->ChangeState(
       EasyUnlockScreenlockStateHandler::STATE_AUTHENTICATED);
 
   EXPECT_EQ(0u, lock_handler_->GetAndResetShowIconCount());
   ASSERT_TRUE(lock_handler_->HasCustomIcon());
-  EXPECT_EQ(kHardlockedIconId, lock_handler_->GetCustomIconId());
+  EXPECT_EQ(kLockedToBeActivatedIconId, lock_handler_->GetCustomIconId());
 }
 
 TEST_F(EasyUnlockScreenlockStateHandlerTest,

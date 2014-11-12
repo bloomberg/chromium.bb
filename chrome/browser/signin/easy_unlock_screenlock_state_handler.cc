@@ -232,6 +232,10 @@ void EasyUnlockScreenlockStateHandler::ShowHardlockUI() {
   ScreenlockBridge::UserPodCustomIconOptions icon_options;
   if (hardlock_state_ == LOGIN_FAILED) {
     icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED);
+  } else if (hardlock_state_ == PAIRING_CHANGED ||
+             hardlock_state_ == PAIRING_ADDED) {
+    icon_options.SetIcon(
+        ScreenlockBridge::USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED);
   } else {
     icon_options.SetIcon(ScreenlockBridge::USER_POD_CUSTOM_ICON_HARDLOCKED);
   }

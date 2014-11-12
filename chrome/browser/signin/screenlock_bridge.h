@@ -42,6 +42,7 @@ class ScreenlockBridge {
     USER_POD_CUSTOM_ICON_NONE,
     USER_POD_CUSTOM_ICON_HARDLOCKED,
     USER_POD_CUSTOM_ICON_LOCKED,
+    USER_POD_CUSTOM_ICON_LOCKED_TO_BE_ACTIVATED,
     // TODO(isherman): The "locked with proximity hint" icon is currently the
     // same as the "locked" icon. It's treated as a separate case to allow an
     // easy asset swap without changing the code, in case we decide to use a
