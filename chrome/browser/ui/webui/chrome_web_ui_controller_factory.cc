@@ -519,9 +519,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       || url.host() == chrome::kChromeUIDiscardsHost
       || url.host() == chrome::kChromeUIOSCreditsHost
 #endif
-#if defined(WEBUI_TASK_MANAGER)
-      || url.host() == chrome::kChromeUITaskManagerHost
-#endif
       ) {
     return &NewWebUI<AboutUI>;
   }
