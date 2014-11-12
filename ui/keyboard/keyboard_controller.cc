@@ -145,17 +145,6 @@ void ToggleTouchEventLogging(bool enable) {
 #endif
 }
 
-aura::Window *GetFrameWindow(aura::Window *window) {
-  // Each container window has a non-negative id.  Stop traversing at the child
-  // of a container window.
-  if (!window)
-    return NULL;
-  while (window->parent() && window->parent()->id() < 0) {
-    window = window->parent();
-  }
-  return window;
-}
-
 }  // namespace
 
 namespace keyboard {
@@ -309,18 +298,18 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
       // window is created while the keyboard is visible.
       scoped_ptr<content::RenderWidgetHostIterator> widgets(
           content::RenderWidgetHost::GetRenderWidgetHosts());
-      aura::Window *keyboard_window = proxy_->GetKeyboardWindow();
-      aura::Window *root_window = keyboard_window->GetRootWindow();
+      aura::Window* keyboard_window = proxy_->GetKeyboardWindow();
+      aura::Window* root_window = keyboard_window->GetRootWindow();
       while (content::RenderWidgetHost* widget = widgets->GetNextHost()) {
         content::RenderWidgetHostView* view = widget->GetView();
         // Can be NULL, e.g. if the RenderWidget is being destroyed or
         // the render process crashed.
         if (view) {
-          aura::Window *window = view->GetNativeView();
+          aura::Window* window = view->GetNativeView();
           // If virtual keyboard failed to load, a widget that displays error
           // message will be created and adds as a child of the virtual keyboard
           // window. We want to avoid add BoundsChangedObserver to that window.
-          if (GetFrameWindow(window) != keyboard_window &&
+          if (!keyboard_window->Contains(window) &&
               window->GetRootWindow() == root_window) {
             gfx::Rect window_bounds = window->GetBoundsInScreen();
             gfx::Rect intersect = gfx::IntersectRects(window_bounds,
@@ -576,7 +565,7 @@ void KeyboardController::HideAnimationFinished() {
 }
 
 void KeyboardController::AddBoundsChangedObserver(aura::Window* window) {
-  aura::Window* target_window = GetFrameWindow(window);
+  aura::Window* target_window = window ? window->GetToplevelWindow() : nullptr;
   if (target_window)
     window_bounds_observer_->AddObservedWindow(target_window);
 }

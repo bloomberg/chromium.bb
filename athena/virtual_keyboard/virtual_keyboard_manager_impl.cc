@@ -90,7 +90,6 @@ class VirtualKeyboardManagerImpl : public VirtualKeyboardManager {
     aura::Window* kb_container = controller->GetContainerWindow();
     FillLayoutManager::SetAlwaysFill(kb_container);
     container_->AddChild(kb_container);
-    kb_container->Show();
   }
 
   content::BrowserContext* browser_context_;
