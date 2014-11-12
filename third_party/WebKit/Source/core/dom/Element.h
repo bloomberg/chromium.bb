@@ -48,6 +48,7 @@ class ClientRectList;
 class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
+class Dictionary;
 class Document;
 class ElementRareData;
 class ElementShadow;

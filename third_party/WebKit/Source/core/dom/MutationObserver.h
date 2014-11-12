@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class Dictionary;
 class ExceptionState;
 class MutationCallback;
 class MutationObserver;

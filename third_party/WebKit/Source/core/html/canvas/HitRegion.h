@@ -5,7 +5,6 @@
 #ifndef HitRegion_h
 #define HitRegion_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "core/dom/Element.h"
 #include "core/html/canvas/HitRegionOptions.h"
 #include "platform/graphics/Path.h"
