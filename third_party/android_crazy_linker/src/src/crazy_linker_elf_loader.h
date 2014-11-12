@@ -71,13 +71,13 @@ class ElfLoader {
                          // values in the library to get the corresponding
                          // memory address.
 
+  const ELF::Phdr* loaded_phdr_;  // points to the loaded program header.
+
   const bool no_map_exec_support_fallback_enabled_;  // Whether the fallback due
                                                      // to lack of support for
                                                      // mapping the APK file
                                                      // with executable
                                                      // permission is enabled.
-
-  const ELF::Phdr* loaded_phdr_;  // points to the loaded program header.
 
   // Individual steps used by ::LoadAt()
   bool ReadElfHeader(Error* error);
