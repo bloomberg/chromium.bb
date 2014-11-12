@@ -73,7 +73,8 @@ class TestRunner(instr_test_runner.TestRunner):
                       package=self._package),
         blocking=True,
         force_stop=True)
-    cmd = ['uiautomator', 'runtest', self.test_pkg.GetPackageName(),
+    cmd = ['uiautomator', 'runtest',
+           self.test_pkg.UIAUTOMATOR_PATH + self.test_pkg.GetPackageName(),
            '-e', 'class', test]
     return self.device.RunShellCommand(cmd, timeout=timeout, retries=0)
 

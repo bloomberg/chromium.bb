@@ -11,6 +11,11 @@ from pylib.instrumentation import test_jar
 
 
 class TestPackage(test_jar.TestJar):
+
+  UIAUTOMATOR_PATH = 'uiautomator/'
+  UIAUTOMATOR_DEVICE_DIR = os.path.join(constants.TEST_EXECUTABLE_DIR,
+                                        UIAUTOMATOR_PATH)
+
   def __init__(self, jar_path, jar_info_path):
     test_jar.TestJar.__init__(self, jar_info_path)
 
@@ -24,4 +29,5 @@ class TestPackage(test_jar.TestJar):
 
   # Override.
   def Install(self, device):
-    device.PushChangedFiles([(self._jar_path, constants.TEST_EXECUTABLE_DIR)])
+    device.PushChangedFiles([(self._jar_path, self.UIAUTOMATOR_DEVICE_DIR +
+                              self.GetPackageName())])
