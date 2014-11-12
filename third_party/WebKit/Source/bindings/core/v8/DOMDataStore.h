@@ -65,7 +65,6 @@ public:
     {
         // The second fastest way to check if we're in the main world is to check if
         // the wrappable's wrapper is the same as the holder.
-        // FIXME: Investigate if it's worth having this check for performance.
         if (holderContainsWrapper(holder, wrappable))
             return object->setReturnValue(returnValue);
         return current(returnValue.GetIsolate()).setReturnValueFrom(returnValue, object);
@@ -76,7 +75,6 @@ public:
         if (canUseScriptWrappable(node)
             // The second fastest way to check if we're in the main world is to
             // check if the wrappable's wrapper is the same as the holder.
-            // FIXME: Investigate if it's worth having this check for performance.
             || holderContainsWrapper(holder, wrappable))
             return ScriptWrappable::fromNode(node)->setReturnValue(returnValue);
         return current(returnValue.GetIsolate()).setReturnValueFrom(returnValue, ScriptWrappable::fromNode(node));
