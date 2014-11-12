@@ -16,7 +16,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/point_conversions.h"
 
-#if defined(USE_XI2_MT)
+#if defined(USE_X11)
 #include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
 #endif
@@ -103,7 +103,7 @@ void TouchUMA::RecordTouchEvent(aura::Window* target,
 
   // Prefer raw event location (when available) over calibrated location.
   if (event.HasNativeEvent()) {
-#if defined(USE_XI2_MT)
+#if defined(USE_X11)
     XEvent* xevent = event.native_event();
     CHECK_EQ(GenericEvent, xevent->type);
     XIEvent* xievent = static_cast<XIEvent*>(xevent->xcookie.data);

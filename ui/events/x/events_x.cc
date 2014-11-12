@@ -109,7 +109,6 @@ class XModifierStateWatcher{
   DISALLOW_COPY_AND_ASSIGN(XModifierStateWatcher);
 };
 
-#if defined(USE_XI2_MT)
 // Detects if a touch event is a driver-generated 'special event'.
 // A 'special event' is a touch event with maximum radius and pressure at
 // location (0, 0).
@@ -139,7 +138,6 @@ bool TouchEventIsGeneratedHack(const base::NativeEvent& native_event) {
 
   return radius * 2 == max;
 }
-#endif
 
 int GetEventFlagsFromXState(unsigned int state) {
   int flags = 0;
@@ -246,7 +244,6 @@ int GetButtonMaskForX2Event(XIDeviceEvent* xievent) {
 ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
   XIDeviceEvent* event =
       static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-#if defined(USE_XI2_MT)
   switch(event->evtype) {
     case XI_TouchBegin:
       return TouchEventIsGeneratedHack(native_event) ? ui::ET_UNKNOWN :
@@ -258,7 +255,6 @@ ui::EventType GetTouchEventType(const base::NativeEvent& native_event) {
       return TouchEventIsGeneratedHack(native_event) ? ui::ET_TOUCH_CANCELLED :
                                                        ui::ET_TOUCH_RELEASED;
   }
-#endif  // defined(USE_XI2_MT)
 
   DCHECK(ui::TouchFactory::GetInstance()->IsTouchDevice(event->sourceid));
   switch (event->evtype) {
@@ -487,7 +483,6 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
 
       switch (xievent->evtype) {
-#if defined(USE_XI2_MT)
         case XI_TouchBegin:
         case XI_TouchUpdate:
         case XI_TouchEnd:
@@ -496,7 +491,6 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
                  GetEventFlagsFromXState(
                      XModifierStateWatcher::GetInstance()->state());
           break;
-#endif
         case XI_ButtonPress:
         case XI_ButtonRelease: {
           const bool touch =

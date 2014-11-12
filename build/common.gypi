@@ -549,12 +549,6 @@
       # components.
       'use_icu_alternatives_on_android%': 0,
 
-      # XInput2 multitouch support is enabled by default (use_xi2_mt=2).
-      # Setting to zero value disables XI2 MT. When XI2 MT is enabled,
-      # the input value also defines the required XI2 minor minimum version.
-      # For example, use_xi2_mt=2 means XI2.2 or above version is required.
-      'use_xi2_mt%': 2,
-
       # Use of precompiled headers on Windows.
       #
       # This variable may be explicitly set to 1 (enabled) or 0
@@ -1099,7 +1093,6 @@
     'chromecast%': '<(chromecast)',
     'enable_viewport%': '<(enable_viewport)',
     'enable_hidpi%': '<(enable_hidpi)',
-    'use_xi2_mt%':'<(use_xi2_mt)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
     'dont_embed_build_metadata%': '<(dont_embed_build_metadata)',
@@ -2620,9 +2613,6 @@
       }],
       ['enable_pre_sync_backup==1', {
         'defines': ['ENABLE_PRE_SYNC_BACKUP'],
-      }],
-      ['use_xi2_mt!=0 and use_x11==1', {
-        'defines': ['USE_XI2_MT=<(use_xi2_mt)'],
       }],
       ['image_loader_extension==1', {
         'defines': ['IMAGE_LOADER_EXTENSION=1'],

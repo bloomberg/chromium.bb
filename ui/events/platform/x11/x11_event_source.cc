@@ -35,23 +35,16 @@ bool InitializeXInput2(XDisplay* display) {
   }
   g_xinput_opcode = xiopcode;
 
-#if defined(USE_XI2_MT)
-  // USE_XI2_MT also defines the required XI2 minor minimum version.
-  int major = 2, minor = USE_XI2_MT;
-#else
-  int major = 2, minor = 0;
-#endif
+  int major = 2, minor = 2;
   if (XIQueryVersion(display, &major, &minor) == BadRequest) {
     DVLOG(1) << "XInput2 not supported in the server.";
     return false;
   }
-#if defined(USE_XI2_MT)
-  if (major < 2 || (major == 2 && minor < USE_XI2_MT)) {
+  if (major < 2 || (major == 2 && minor < 2)) {
     DVLOG(1) << "XI version on server is " << major << "." << minor << ". "
-            << "But 2." << USE_XI2_MT << " is required.";
+            << "But 2.2 is required.";
     return false;
   }
-#endif
 
   return true;
 }

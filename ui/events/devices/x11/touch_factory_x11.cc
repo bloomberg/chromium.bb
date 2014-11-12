@@ -85,7 +85,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   touchscreen_ids_.clear();
   max_touch_points_ = -1;
 
-#if !defined(USE_XI2_MT)
   // NOTE: The new API for retrieving the list of devices (XIQueryDevice) does
   // not provide enough information to detect a touch device. As a result, the
   // old version of query function (XListInputDevices) is used instead.
@@ -101,7 +100,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
       touch_device_list_[dev_list[i].id] = false;
     }
   }
-#endif
 
   if (!DeviceDataManagerX11::GetInstance()->IsXInput2Available())
     return;
@@ -124,7 +122,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
   for (int i = 0; i < xi_dev_list.count; i++) {
     XIDeviceInfo* devinfo = xi_dev_list.devices + i;
     if (devinfo->use == XIFloatingSlave || devinfo->use == XIMasterPointer) {
-#if defined(USE_XI2_MT)
       for (int k = 0; k < devinfo->num_classes; ++k) {
         XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
         if (xiclassinfo->type == XITouchClass) {
@@ -139,13 +136,11 @@ void TouchFactory::UpdateDeviceList(Display* display) {
           }
         }
       }
-#endif
       pointer_device_lookup_[devinfo->deviceid] = true;
     } else if (devinfo->use == XIMasterKeyboard) {
       virtual_core_keyboard_device_ = devinfo->deviceid;
     }
 
-#if defined(USE_XI2_MT)
     if (devinfo->use == XIFloatingSlave || devinfo->use == XISlavePointer) {
       for (int k = 0; k < devinfo->num_classes; ++k) {
         XIAnyClassInfo* xiclassinfo = devinfo->classes[k];
@@ -158,7 +153,6 @@ void TouchFactory::UpdateDeviceList(Display* display) {
         }
       }
     }
-#endif
   }
 }
 
@@ -167,13 +161,12 @@ bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
   XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
   XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
 
-#if defined(USE_XI2_MT)
   if (event->evtype == XI_TouchBegin ||
       event->evtype == XI_TouchUpdate ||
       event->evtype == XI_TouchEnd) {
     return !touch_events_disabled_ && IsTouchDevice(xiev->deviceid);
   }
-#endif
+
   // Make sure only key-events from the virtual core keyboard are processed.
   if (event->evtype == XI_KeyPress || event->evtype == XI_KeyRelease) {
     return (virtual_core_keyboard_device_ < 0) ||
@@ -204,11 +197,10 @@ void TouchFactory::SetupXI2ForXWindow(Window window) {
   unsigned char mask[XIMaskLen(XI_LASTEVENT)];
   memset(mask, 0, sizeof(mask));
 
-#if defined(USE_XI2_MT)
   XISetMask(mask, XI_TouchBegin);
   XISetMask(mask, XI_TouchUpdate);
   XISetMask(mask, XI_TouchEnd);
-#endif
+
   XISetMask(mask, XI_ButtonPress);
   XISetMask(mask, XI_ButtonRelease);
   XISetMask(mask, XI_Motion);

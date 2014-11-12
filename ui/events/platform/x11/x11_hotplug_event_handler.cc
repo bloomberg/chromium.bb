@@ -100,12 +100,10 @@ struct DeviceInfo {
           valuator_class_infos.push_back(ValuatorClassInfo(
               *reinterpret_cast<XIValuatorClassInfo*>(device.classes[i])));
           break;
-#if defined(USE_XI2_MT)
         case XITouchClass:
           touch_class_infos.push_back(TouchClassInfo(
               *reinterpret_cast<XITouchClassInfo*>(device.classes[i])));
           break;
-#endif
         default:
           break;
       }
@@ -129,9 +127,7 @@ struct DeviceInfo {
 
   std::vector<ValuatorClassInfo> valuator_class_infos;
 
-#if defined(USE_XI2_MT)
   std::vector<TouchClassInfo> touch_class_infos;
-#endif
 };
 
 // X11 display cache used on worker threads. This is filled on the UI thread and
@@ -281,11 +277,9 @@ void HandleTouchscreenDevicesInWorker(
       }
     }
 
-#if defined(USE_XI2_MT)
     for (const TouchClassInfo& info : device_info.touch_class_infos) {
       is_direct_touch = info.mode == XIDirectTouch;
     }
-#endif
 
     // Touchscreens should have absolute X and Y axes, and be direct touch
     // devices.

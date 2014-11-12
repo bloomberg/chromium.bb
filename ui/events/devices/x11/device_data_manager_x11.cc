@@ -165,22 +165,16 @@ bool DeviceDataManagerX11::InitializeXInputInternal() {
   }
 
   // Check the XInput version.
-#if defined(USE_XI2_MT)
-  int major = 2, minor = USE_XI2_MT;
-#else
-  int major = 2, minor = 0;
-#endif
+  int major = 2, minor = 2;
   if (XIQueryVersion(gfx::GetXDisplay(), &major, &minor) == BadRequest) {
     VLOG(1) << "XInput2 not supported in the server.";
     return false;
   }
-#if defined(USE_XI2_MT)
-  if (major < 2 || (major == 2 && minor < USE_XI2_MT)) {
+  if (major < 2 || (major == 2 && minor < 2)) {
     DVLOG(1) << "XI version on server is " << major << "." << minor << ". "
-            << "But 2." << USE_XI2_MT << " is required.";
+            << "But 2.2 is required.";
     return false;
   }
-#endif
 
   xi_opcode_ = opcode;
   CHECK_NE(-1, xi_opcode_);
@@ -290,17 +284,12 @@ void DeviceDataManagerX11::UpdateDeviceList(Display* display) {
 }
 
 bool DeviceDataManagerX11::GetSlotNumber(const XIDeviceEvent* xiev, int* slot) {
-#if defined(USE_XI2_MT)
   ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
   if (!factory->IsMultiTouchDevice(xiev->sourceid)) {
     *slot = 0;
     return true;
   }
   return factory->QuerySlotForTrackingID(xiev->detail, slot);
-#else
-  *slot = 0;
-  return true;
-#endif
 }
 
 void DeviceDataManagerX11::GetEventRawData(const XEvent& xev, EventData* data) {
@@ -674,13 +663,13 @@ void DeviceDataManagerX11::InitializeValuatorsForTest(int deviceid,
 
 bool DeviceDataManagerX11::TouchEventNeedsCalibrate(
     unsigned int touch_device_id) const {
-#if defined(OS_CHROMEOS) && defined(USE_XI2_MT)
+#if defined(OS_CHROMEOS) && defined(USE_X11)
   int64 touch_display_id = GetDisplayForTouchDevice(touch_device_id);
   if (base::SysInfo::IsRunningOnChromeOS() &&
       touch_display_id == gfx::Display::InternalDisplayId()) {
     return true;
   }
-#endif  // defined(OS_CHROMEOS) && defined(USE_XI2_MT)
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
   return false;
 }
 

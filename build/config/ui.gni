@@ -27,10 +27,6 @@ declare_args() {
   # of a replacement for GDI or GTK.
   use_aura = is_win || is_linux
 
-  # XInput2 multitouch support. Zero means disabled, nonzero indicates the
-  # minimum XI2 version. For example, use_xi2_mt=2 means XI2.2 or above.
-  use_xi2_mt = 2
-
   # True means the UI is built using the "views" framework.
   toolkit_views = is_win || is_chromeos || use_aura
 }

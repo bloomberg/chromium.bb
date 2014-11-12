@@ -215,7 +215,6 @@ TEST_F(EventsXTest, ClickCount) {
   }
 }
 
-#if defined(USE_XI2_MT)
 TEST_F(EventsXTest, TouchEventBasic) {
   std::vector<unsigned int> devices;
   devices.push_back(0);
@@ -350,7 +349,6 @@ TEST_F(EventsXTest, TouchEventIdRefcounting) {
   urelease0.reset();
   EXPECT_EQ(-1, GetTouchIdForTrackingId(kTrackingId0));
 }
-#endif
 
 TEST_F(EventsXTest, NumpadKeyEvents) {
   XEvent event;
@@ -508,7 +506,6 @@ TEST_F(EventsXTest, FunctionKeyEvents) {
   EXPECT_FALSE(HasFunctionKeyFlagSetIfSupported(display, XK_F35 + 1));
 }
 
-#if defined(USE_XI2_MT)
 // Verifies that the type of events from a disabled keyboard is ET_UNKNOWN, but
 // that an exception list of keys can still be processed.
 TEST_F(EventsXTest, DisableKeyboard) {
@@ -597,7 +594,6 @@ TEST_F(EventsXTest, DisableMouse) {
       EF_LEFT_MOUSE_BUTTON);
   EXPECT_EQ(ui::ET_MOUSE_PRESSED, ui::EventTypeFromNative(xev));
 }
-#endif  // defined(USE_XI2_MT)
 
 #if !defined(OS_CHROMEOS)
 TEST_F(EventsXTest, ImeFabricatedKeyEvents) {

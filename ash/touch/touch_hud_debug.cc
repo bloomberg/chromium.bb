@@ -72,7 +72,7 @@ const char* GetTouchEventLabel(ui::EventType type) {
 int GetTrackingId(const ui::TouchEvent& event) {
   if (!event.HasNativeEvent())
     return 0;
-#if defined(USE_XI2_MT)
+#if defined(USE_X11)
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();
   double tracking_id;
   if (manager->GetEventData(*event.native_event(),
