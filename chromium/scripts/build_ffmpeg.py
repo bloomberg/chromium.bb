@@ -83,7 +83,7 @@ def DetermineHostOsAndArch():
     host_os = 'linux'
   elif platform.system() == 'Darwin':
     host_os = 'mac'
-  elif platform.system() == 'Windows' or platform.system() == 'CYGWIN_NT-6.1':
+  elif platform.system() == 'Windows' or 'CYGWIN_NT' in platform.system():
     host_os = 'win'
   else:
     return None
@@ -389,7 +389,7 @@ def main(argv):
         '--extra-cflags=-I' + os.path.join(FFMPEG_DIR, 'chromium/include/win'),
     ])
 
-    if platform.system() == 'CYGWIN_NT-6.1':
+    if 'CYGWIN_NT' in platform.system():
       configure_flags['Common'].extend([
           '--cc=cygwin-wrapper cl',
           '--ld=cygwin-wrapper link',
