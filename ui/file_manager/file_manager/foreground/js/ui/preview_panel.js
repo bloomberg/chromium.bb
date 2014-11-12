@@ -458,8 +458,11 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
     }
 
     // Register the click handler.
-    if (clickHandler)
-      box.addEventListener('click', clickHandler);
+    if (clickHandler) {
+      box.addEventListener('click', function(event) {
+        clickHandler();
+      });
+    }
 
     // Append
     this.element_.appendChild(box);
