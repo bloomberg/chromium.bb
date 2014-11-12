@@ -75,11 +75,11 @@ EXTRA_ENV = {
                          '}',
 
   'BCLD_OFORMAT'               : '${BCLD_OFORMAT_%ARCH%}',
-  'BCLD_OFORMAT_ARM'           : 'elf32-littlearm',
+  'BCLD_OFORMAT_ARM'           : 'elf32-littlearm-nacl',
   'BCLD_OFORMAT_X8632'         : 'elf32-i386-nacl',
   'BCLD_OFORMAT_X8664'         : 'elf64-x86-64-nacl',
   'BCLD_OFORMAT_MIPS32'        : 'elf32-tradlittlemips-nacl',
-  'BCLD_OFORMAT_ARM_NONSFI'    : 'elf32-littlearm',
+  'BCLD_OFORMAT_ARM_NONSFI'    : 'elf32-littlearm-nacl',
   'BCLD_OFORMAT_X8632_NONSFI'  : 'elf32-i386-nacl',
 
   'BCLD_ALLOW_UNRESOLVED'  :
