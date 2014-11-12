@@ -82,8 +82,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
 
   EGLNativeWindowType window_;
 
-  virtual void SetSwapInterval(int interval) override;
-
  private:
   EGLSurface surface_;
   bool supports_post_sub_buffer_;
@@ -91,10 +89,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   gfx::Size size_;
 
   scoped_ptr<VSyncProvider> vsync_provider_;
-
-  int swap_interval_;
-  unsigned int swap_generation_;
-  static unsigned int current_swap_generation_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGL);
 };
