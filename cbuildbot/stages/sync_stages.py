@@ -850,8 +850,12 @@ class PreCQSyncStage(SyncStage):
   def __init__(self, builder_run, patches, **kwargs):
     super(PreCQSyncStage, self).__init__(builder_run, **kwargs)
 
-    # The list of patches to test.
-    self.patches = patches
+    # As a workaround for crbug.com/432706, we scan patches to see if they
+    # are already being merged. If they are, we don't test them in the PreCQ.
+    self.patches = [p for p in patches if not p.IsBeingMerged()]
+
+    if not self.patches:
+      cros_build_lib.Die('No patches that still need testing.')
 
     # The ValidationPool of patches to test. Initialized in PerformStage, and
     # refreshed after bootstrapping by HandleSkip.

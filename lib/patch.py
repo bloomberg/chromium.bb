@@ -1464,6 +1464,10 @@ class GerritPatch(GerritFetchOnlyPatch):
     """Returns whether the patch has already been merged in Gerrit."""
     return self.status == 'MERGED'
 
+  def IsBeingMerged(self):
+    """Whether the patch is merged or in the progress of being merged."""
+    return self.status in ('SUBMITTED', 'MERGED')
+
   def HasApproval(self, field, value):
     """Return whether the current patchset has the specified approval.
 
