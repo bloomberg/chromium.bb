@@ -1,0 +1,13 @@
+include_rules = [
+  "+content/public/browser/screen_orientation_delegate.h",
+  "+content/public/browser/screen_orientation_provider.h",
+  "+content/public/browser/browser_context.h",
+  "+content/public/browser/web_contents.h",
+  "+third_party/WebKit/public/platform/WebScreenOrientationLockType.h",
+]
+
+specific_include_rules = {
+  ".*test\.cc": [
+    "+content/public/test/test_browser_context.h"
+  ],
+}

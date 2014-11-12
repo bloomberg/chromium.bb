@@ -118,6 +118,7 @@ class ResolutionNotificationController;
 class RootWindowController;
 class ScopedTargetRootWindow;
 class ScreenAsh;
+class ScreenOrientationDelegate;
 class ScreenPositionController;
 class SessionStateDelegate;
 class Shelf;
@@ -535,6 +536,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return logout_confirmation_controller_.get();
   }
 
+  ScreenOrientationDelegate* screen_orientation_delegate() {
+    return screen_orientation_delegate_.get();
+  }
+
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
   }
@@ -729,6 +734,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Listens for output changes and updates the display manager.
   scoped_ptr<DisplayChangeObserver> display_change_observer_;
+
+  // Implements content::ScreenOrientationDelegate for ChromeOS
+  scoped_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 
   scoped_ptr<TouchTransformerController> touch_transformer_controller_;
 

@@ -121,6 +121,7 @@
 #include "ui/gfx/x/x11_types.h"
 #endif  // defined(USE_X11)
 #include "ash/ash_constants.h"
+#include "ash/content/display/screen_orientation_delegate_chromeos.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_configurator_animation.h"
 #include "ash/display/display_error_observer_chromeos.h"
@@ -1060,6 +1061,7 @@ void Shell::Init(const ShellInitParams& init_params) {
       new VideoActivityNotifier(video_detector_.get()));
   bluetooth_notification_controller_.reset(new BluetoothNotificationController);
   last_window_closed_logout_reminder_.reset(new LastWindowClosedLogoutReminder);
+  screen_orientation_delegate_.reset(new ScreenOrientationDelegate());
 #endif
 
   weak_display_manager_factory_.reset(
