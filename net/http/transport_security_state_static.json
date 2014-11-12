@@ -1395,7 +1395,7 @@
     // Facebook would like to have pinning enforced on (*.)facebook.com and
     // HSTS enforced on specific names. We can't (yet) represent that in JSON
     // So we're currently only applying pinning on the specific names.
-    { "name": "facebook.com", "mode": "force-https", "pins": "facebook" },
+    { "name": "facebook.com", "mode": "force-https", "pins": "facebook", "include_subdomains_for_pinning": true },
     { "name": "www.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
     { "name": "m.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },
     { "name": "tablet.facebook.com", "include_subdomains": true, "mode": "force-https", "pins": "facebook" },

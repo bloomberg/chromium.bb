@@ -415,7 +415,8 @@ struct PreloadResult {
   // hostname_offset contains the number of bytes from the start of the given
   // hostname where the name of the matching entry starts.
   size_t hostname_offset;
-  bool include_subdomains;
+  bool sts_include_subdomains;
+  bool pkp_include_subdomains;
   bool force_https;
   bool has_pins;
 };
@@ -509,15 +510,19 @@ bool DecodeHSTSPreloadRaw(const std::string& hostname,
 
       if (c == kEndOfString) {
         PreloadResult tmp;
-        if (!reader.Next(&tmp.include_subdomains) ||
+        if (!reader.Next(&tmp.sts_include_subdomains) ||
             !reader.Next(&tmp.force_https) ||
             !reader.Next(&tmp.has_pins)) {
           return false;
         }
 
+        tmp.pkp_include_subdomains = tmp.sts_include_subdomains;
+
         if (tmp.has_pins) {
           if (!reader.Read(4, &tmp.pinset_id) ||
-              !reader.Read(9, &tmp.domain_id)) {
+              !reader.Read(9, &tmp.domain_id) ||
+              (!tmp.sts_include_subdomains &&
+               !reader.Next(&tmp.pkp_include_subdomains))) {
             return false;
           }
         }
@@ -525,13 +530,16 @@ bool DecodeHSTSPreloadRaw(const std::string& hostname,
         tmp.hostname_offset = hostname_offset;
 
         if (hostname_offset == 0 || hostname[hostname_offset - 1] == '.') {
-          *out_found = tmp.include_subdomains;
+          *out_found =
+              tmp.sts_include_subdomains || tmp.pkp_include_subdomains;
           *out = tmp;
-        }
 
-        if (hostname_offset == 0) {
-          *out_found = true;
-          return true;
+          if (hostname_offset > 0) {
+            out->force_https &= tmp.sts_include_subdomains;
+          } else {
+            *out_found = true;
+            return true;
+          }
         }
 
         continue;
@@ -768,7 +776,7 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
     return false;
 
   out->domain = host.substr(result.hostname_offset);
-  out->sts.include_subdomains = result.include_subdomains;
+  out->sts.include_subdomains = result.sts_include_subdomains;
   out->sts.last_observed = base::GetBuildTime();
   out->sts.upgrade_mode =
       TransportSecurityState::DomainState::MODE_DEFAULT;
@@ -778,7 +786,7 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   }
 
   if (enable_static_pins_ && result.has_pins) {
-    out->pkp.include_subdomains = result.include_subdomains;
+    out->pkp.include_subdomains = result.pkp_include_subdomains;
     out->pkp.last_observed = base::GetBuildTime();
 
     if (result.pinset_id >= arraysize(kPinsets))

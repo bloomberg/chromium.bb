@@ -299,7 +299,6 @@ TEST_F(TransportSecurityStateTest, Preloaded) {
 
   EXPECT_TRUE(HasStaticState("paypal.com"));
   EXPECT_FALSE(HasStaticState("www2.paypal.com"));
-  EXPECT_FALSE(HasStaticState("www2.paypal.com"));
 
   // Google hosts:
 
@@ -535,6 +534,24 @@ TEST_F(TransportSecurityStateTest, PreloadedPins) {
   EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
 
   EXPECT_TRUE(HasStaticPublicKeyPins("www.twitter.com"));
+
+  // Check that Facebook subdomains have pinning but not HSTS.
+  EXPECT_TRUE(state.GetStaticDomainState("facebook.com", &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(StaticShouldRedirect("facebook.com"));
+
+  EXPECT_TRUE(state.GetStaticDomainState("foo.facebook.com", &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_FALSE(StaticShouldRedirect("foo.facebook.com"));
+
+  EXPECT_TRUE(state.GetStaticDomainState("www.facebook.com", &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(StaticShouldRedirect("www.facebook.com"));
+
+  EXPECT_TRUE(
+      state.GetStaticDomainState("foo.www.facebook.com", &domain_state));
+  EXPECT_FALSE(domain_state.pkp.spki_hashes.empty());
+  EXPECT_TRUE(StaticShouldRedirect("foo.www.facebook.com"));
 }
 
 TEST_F(TransportSecurityStateTest, LongNames) {
