@@ -198,12 +198,6 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 } // namespace
 
-void V8HTMLAppletElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    invokeOnScriptableObject<V8HTMLAppletElement>(info);
-    UseCounter::countIfNotPrivateScript(info.GetIsolate(), V8HTMLAppletElement::toImpl(info.Holder())->document(), UseCounter::HTMLAppletElementLegacyCall);
-}
-
 void V8HTMLEmbedElement::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     invokeOnScriptableObject<V8HTMLEmbedElement>(info);

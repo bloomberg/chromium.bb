@@ -175,7 +175,7 @@ public:
         DOMNodeInsertedIntoDocumentEvent = 147,
         DOMCharacterDataModifiedEvent = 148,
         DocumentAllLegacyCall = 150,
-        HTMLAppletElementLegacyCall = 151,
+        HTMLAppletElementLegacyCall = 151, // Removed
         HTMLEmbedElementLegacyCall = 152,
         HTMLObjectElementLegacyCall = 153,
         GetMatchedCSSRules = 155,

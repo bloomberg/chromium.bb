@@ -18,9 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Custom=LegacyCallAsFunction,
-] interface HTMLAppletElement : HTMLElement {
+interface HTMLAppletElement : HTMLElement {
     [Reflect] attribute DOMString align;
     [Reflect] attribute DOMString alt;
     [Reflect] attribute DOMString archive;
