@@ -27,6 +27,7 @@
 #define CanvasRenderingContext2D_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/css/CSSFontSelectorClient.h"
 #include "core/html/canvas/Canvas2DContextAttributes.h"
 #include "core/html/canvas/CanvasPathMethods.h"
@@ -63,6 +64,8 @@ class HTMLImageElement;
 class HTMLVideoElement;
 class ImageData;
 class TextMetrics;
+
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmap CanvasImageSourceUnion;
 
 typedef WillBeHeapHashMap<String, RefPtrWillBeMember<MutableStylePropertySet>> MutableStylePropertyMap;
 
@@ -180,9 +183,9 @@ public:
 
     void clearShadow();
 
-    void drawImage(CanvasImageSource*, float x, float y, ExceptionState&);
-    void drawImage(CanvasImageSource*, float x, float y, float width, float height, ExceptionState&);
-    void drawImage(CanvasImageSource*, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, float x, float y, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, float x, float y, float width, float height, ExceptionState&);
+    void drawImage(const CanvasImageSourceUnion&, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh, ExceptionState&);
 
     void drawImageFromRect(HTMLImageElement*, float sx = 0, float sy = 0, float sw = 0, float sh = 0,
                            float dx = 0, float dy = 0, float dw = 0, float dh = 0, const String& compositeOperation = emptyString());
@@ -193,7 +196,7 @@ public:
 
     PassRefPtrWillBeRawPtr<CanvasGradient> createLinearGradient(float x0, float y0, float x1, float y1);
     PassRefPtrWillBeRawPtr<CanvasGradient> createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1, ExceptionState&);
-    PassRefPtrWillBeRawPtr<CanvasPattern> createPattern(CanvasImageSource*, const String& repetitionType, ExceptionState&);
+    PassRefPtrWillBeRawPtr<CanvasPattern> createPattern(const CanvasImageSourceUnion&, const String& repetitionType, ExceptionState&);
 
     PassRefPtrWillBeRawPtr<ImageData> createImageData(PassRefPtrWillBeRawPtr<ImageData>) const;
     PassRefPtrWillBeRawPtr<ImageData> createImageData(float width, float height, ExceptionState&) const;

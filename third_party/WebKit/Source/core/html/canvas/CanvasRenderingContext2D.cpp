@@ -1483,25 +1483,42 @@ static inline void clipRectsToImageRect(const FloatRect& imageRect, FloatRect* s
     dstRect->move(offset);
 }
 
-void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource, float x, float y, ExceptionState& exceptionState)
+static inline CanvasImageSource* toImageSourceInternal(const CanvasImageSourceUnion& value)
 {
-    FloatSize sourceRectSize = imageSource->sourceSize();
-    FloatSize destRectSize = imageSource->defaultDestinationSize();
-    drawImageInternal(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+    if (value.isHTMLImageElement())
+        return value.getAsHTMLImageElement().get();
+    if (value.isHTMLVideoElement())
+        return value.getAsHTMLVideoElement().get();
+    if (value.isHTMLCanvasElement())
+        return value.getAsHTMLCanvasElement().get();
+    if (value.isImageBitmap())
+        return value.getAsImageBitmap().get();
+    ASSERT_NOT_REACHED();
+    return nullptr;
 }
 
-void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
+void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource, float x, float y, ExceptionState& exceptionState)
+{
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    FloatSize sourceRectSize = imageSourceInternal->sourceSize();
+    FloatSize destRectSize = imageSourceInternal->defaultDestinationSize();
+    drawImageInternal(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, destRectSize.width(), destRectSize.height(), exceptionState);
+}
+
+void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource,
     float x, float y, float width, float height, ExceptionState& exceptionState)
 {
-    FloatSize sourceRectSize = imageSource->sourceSize();
-    drawImageInternal(imageSource, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    FloatSize sourceRectSize = imageSourceInternal->sourceSize();
+    drawImageInternal(imageSourceInternal, 0, 0, sourceRectSize.width(), sourceRectSize.height(), x, y, width, height, exceptionState);
 }
 
-void CanvasRenderingContext2D::drawImage(CanvasImageSource* imageSource,
+void CanvasRenderingContext2D::drawImage(const CanvasImageSourceUnion& imageSource,
     float sx, float sy, float sw, float sh,
     float dx, float dy, float dw, float dh, ExceptionState& exceptionState)
 {
-    drawImageInternal(imageSource, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    drawImageInternal(imageSourceInternal, sx, sy, sw, sh, dx, dy, dw, dh, exceptionState);
 }
 
 static void drawVideo(GraphicsContext* c, CanvasImageSource* imageSource, FloatRect srcRect, FloatRect dstRect)
@@ -1683,7 +1700,7 @@ PassRefPtrWillBeRawPtr<CanvasGradient> CanvasRenderingContext2D::createRadialGra
     return gradient.release();
 }
 
-PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(CanvasImageSource* imageSource,
+PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(const CanvasImageSourceUnion& imageSource,
     const String& repetitionType, ExceptionState& exceptionState)
 {
     Pattern::RepeatMode repeatMode = CanvasPattern::parseRepetitionType(repetitionType, exceptionState);
@@ -1691,13 +1708,14 @@ PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(Ca
         return nullptr;
 
     SourceImageStatus status;
-    RefPtr<Image> imageForRendering = imageSource->getSourceImageForCanvas(CopySourceImageIfVolatile, &status);
+    CanvasImageSource* imageSourceInternal = toImageSourceInternal(imageSource);
+    RefPtr<Image> imageForRendering = imageSourceInternal->getSourceImageForCanvas(CopySourceImageIfVolatile, &status);
 
     switch (status) {
     case NormalSourceImageStatus:
         break;
     case ZeroSizeCanvasSourceImageStatus:
-        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSource->sourceSize().width() ? "height" : "width"));
+        exceptionState.throwDOMException(InvalidStateError, String::format("The canvas %s is 0.", imageSourceInternal->sourceSize().width() ? "height" : "width"));
         return nullptr;
     case UndecodableSourceImageStatus:
         exceptionState.throwDOMException(InvalidStateError, "Source image is in the 'broken' state.");
@@ -1714,7 +1732,7 @@ PassRefPtrWillBeRawPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(Ca
     }
     ASSERT(imageForRendering);
 
-    bool originClean = !wouldTaintOrigin(imageSource);
+    bool originClean = !wouldTaintOrigin(imageSourceInternal);
 
     return CanvasPattern::create(imageForRendering.release(), repeatMode, originClean);
 }

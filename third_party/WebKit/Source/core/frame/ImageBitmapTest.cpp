@@ -32,6 +32,7 @@
 #include "core/frame/ImageBitmap.h"
 
 #include "SkPixelRef.h" // FIXME: qualify this skia header file.
+#include "bindings/core/v8/UnionTypesCore.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
@@ -39,6 +40,7 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasRenderingContext2D.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
@@ -207,7 +209,9 @@ TEST_F(ImageBitmapTest, ImageResourceLifetime)
     }
     CanvasRenderingContext* context = canvasElement->getContext("2d");
     TrackExceptionState exceptionState;
-    toCanvasRenderingContext2D(context)->drawImage(imageBitmapDerived.get(), 0, 0, exceptionState);
+    CanvasImageSourceUnion imageSource;
+    imageSource.setImageBitmap(imageBitmapDerived);
+    toCanvasRenderingContext2D(context)->drawImage(imageSource, 0, 0, exceptionState);
 }
 
 } // namespace
