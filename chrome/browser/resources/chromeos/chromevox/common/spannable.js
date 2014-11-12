@@ -12,7 +12,7 @@ goog.require('goog.object');
 
 /**
  * @constructor
- * @param {string=} opt_string Initial value of the spannable.
+ * @param {string|!cvox.Spannable=} opt_string Initial value of the spannable.
  * @param {*=} opt_annotation Initial annotation for the entire string.
  */
 cvox.Spannable = function(opt_string, opt_annotation) {
@@ -21,7 +21,7 @@ cvox.Spannable = function(opt_string, opt_annotation) {
    * @type {string}
    * @private
    */
-  this.string_ = opt_string || '';
+  this.string_ = opt_string instanceof cvox.Spannable ? '' : opt_string || '';
 
   /**
    * Spans (annotations).
@@ -29,6 +29,10 @@ cvox.Spannable = function(opt_string, opt_annotation) {
    * @private
    */
   this.spans_ = [];
+
+  // Append the initial spannable.
+  if (opt_string instanceof cvox.Spannable)
+  this.append(opt_string);
 
   // Optionally annotate the entire string.
   if (goog.isDef(opt_annotation)) {
@@ -133,6 +137,22 @@ cvox.Spannable.prototype.getSpanInstanceOf = function(constructor) {
       return span.value;
     }
   }
+};
+
+/**
+ * Returns all span values which are an instance of a given constructor.
+ * @param {!Function} constructor Constructor.
+ * @return {!Array.<Object>} Array of object.
+ */
+cvox.Spannable.prototype.getSpansInstanceOf = function(constructor) {
+  var ret = [];
+  for (var i = 0; i < this.spans_.length; i++) {
+    var span = this.spans_[i];
+    if (span.value instanceof constructor) {
+      ret.push(span.value);
+    }
+  }
+  return ret;
 };
 
 

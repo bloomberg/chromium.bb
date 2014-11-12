@@ -118,9 +118,7 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
       expectAfter('foxtraut', doCmd('nextElement'));
       expectAfter('end', doCmd('nextElement'));
       expectAfter('foxtraut', doCmd('previousElement'));
-
-      // TODO(dtseng): cleanup these utterances.
-      expectAfter(', end, paragraph, of test, paragraph', doCmd('nextLine'));
+      expectAfter('end of test', doCmd('nextLine'));
 
       expectAfter('start', doCmd('goToBeginning'));
       expectAfter('of test', doCmd('goToEnd'));
@@ -139,22 +137,22 @@ TEST_F('BackgroundTest', 'CaretNavigation', function() {
       cvox.ChromeVox.tts.expectSpeech('start');
       expectAfter('t', doCmd('nextCharacter'), true);
       expectAfter('a', doCmd('nextCharacter'), true);
-      expectAfter('alpha', doCmd('nextWord'), true);
-      expectAfter('beta', doCmd('nextWord'), true);
-      expectAfter('charlie', doCmd('nextWord'), true);
-      expectAfter('delta', doCmd('nextLine'), true);
-      expectAfter('echo', doCmd('nextLine'), true);
-      expectAfter('foxtraut', doCmd('nextLine'), true);
+      expectAfter('Link alpha', doCmd('nextWord'), true);
+      expectAfter('Link beta', doCmd('nextWord'), true);
+      expectAfter('Heading charlie', doCmd('nextWord'), true);
+      expectAfter('Link delta', doCmd('nextLine'), true);
+      expectAfter('Link echo', doCmd('nextLine'), true);
+      expectAfter('Heading foxtraut', doCmd('nextLine'), true);
       expectAfter(
-          ', end, paragraph, of test, paragraph', doCmd('nextLine'), true);
+          'end of test', doCmd('nextLine'), true);
       expectAfter('n', doCmd('nextCharacter'), true);
       expectAfter('e', doCmd('previousCharacter'), true);
-      expectAfter('t', doCmd('previousCharacter'), true);
+      expectAfter('Heading t', doCmd('previousCharacter'), true);
       expectAfter('foxtraut', doCmd('previousWord'), true);
-      expectAfter('echo', doCmd('previousWord'), true);
-      expectAfter('a', doCmd('previousCharacter'), true);
+      expectAfter('Link echo', doCmd('previousWord'), true);
+      expectAfter('Link a', doCmd('previousCharacter'), true);
       expectAfter('t', doCmd('previousCharacter'), true);
-      expectAfter('echo', doCmd('nextWord'), true);
+      expectAfter('Link echo', doCmd('nextWord'), true);
 
       cvox.ChromeVox.tts.finishExpectations();
   }.bind(this));

@@ -272,6 +272,38 @@ cursors.Range.fromNode = function(node) {
   return new cursors.Range(cursor, cursor);
 };
 
+ /**
+ * Given |rangeA| and |rangeB| in order, determine which |Dir|
+ * relates them.
+ * @param {!cursors.Range} rangeA
+ * @param {!cursors.Range} rangeB
+ * @return {Dir}
+ */
+cursors.Range.getDirection = function(rangeA, rangeB) {
+  if (!rangeA || !rangeB)
+    return Dir.FORWARD;
+
+  // They are the same range.
+  if (rangeA.getStart().getNode() === rangeB.getStart().getNode() &&
+      rangeB.getEnd().getNode() === rangeA.getEnd().getNode())
+    return Dir.FORWARD;
+
+  var testDirA =
+      AutomationUtil.getDirection(
+          rangeA.getStart().getNode(), rangeB.getEnd().getNode());
+  var testDirB =
+      AutomationUtil.getDirection(
+          rangeB.getStart().getNode(), rangeA.getEnd().getNode());
+
+  // The two ranges are either partly overlapping or non overlapping.
+  if (testDirA == Dir.FORWARD && testDirB == Dir.BACKWARD)
+    return Dir.FORWARD;
+  else if (testDirA == Dir.BACKWARD && testDirB == Dir.FORWARD)
+    return Dir.BACKWARD;
+  else
+    return testDirA;
+};
+
 cursors.Range.prototype = {
   /**
    * Returns true if |rhs| is equal to this range.
@@ -287,9 +319,13 @@ cursors.Range.prototype = {
    * Gets a cursor bounding this range.
    * @param {Dir} dir Which endpoint cursor to return; Dir.FORWARD for end,
    * Dir.BACKWARD for start.
+   * @param {boolean=} opt_reverse Specify to have Dir.BACKWARD return end,
+   * Dir.FORWARD return start.
    * @return {!cursors.Cursor}
    */
-  getBound: function(dir) {
+  getBound: function(dir, opt_reverse) {
+    if (opt_reverse)
+      return dir == Dir.BACKWARD ? this.end_ : this.start_;
     return dir == Dir.FORWARD ? this.end_ : this.start_;
   },
 
@@ -308,7 +344,7 @@ cursors.Range.prototype = {
   },
 
   /**
-   * Returns whether true if this range covers less than a node.
+   * Returns true if this range covers less than a node.
    * @return {boolean}
    */
   isSubNode: function() {

@@ -1229,6 +1229,18 @@ chrome.automation.AutomationNode.prototype.role;
 
 
 /**
+ * @type {!Object.<chrome.automation.StateType, boolean>}
+ */
+chrome.automation.AutomationNode.prototype.state;
+
+
+/**
+ * @type {number}
+ */
+chrome.automation.AutomationNode.prototype.indexInParent;
+
+
+/**
  * @type {{
  *     name: string,
  *     value: string,

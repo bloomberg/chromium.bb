@@ -41,5 +41,13 @@ ChromeVoxNextE2ETest.prototype = {
       command_line->AppendSwitch(chromeos::switches::kEnableChromeVoxNext);
     */});
     ChromeVoxE2ETest.prototype.testGenPreamble.call(this);
+  },
+
+  runWithAutomation: function(doc, callback) {
+    this.runWithDocument(doc, function() {
+      chrome.automation.getTree(function(root) {
+        callback(root);
+      }.bind(this));
+    }.bind(this));
   }
 };

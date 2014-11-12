@@ -154,4 +154,74 @@ AutomationUtil.findNodeUntil = function(cur, dir, pred, opt_options) {
   return opt_options.before ? before : after;
 };
 
+/**
+ * Returns an array containing ancestors of node starting at root down to node.
+ * @param {!AutomationNode} node
+ * @return {!Array.<AutomationNode>}
+ */
+AutomationUtil.getAncestors = function(node) {
+  var ret = [];
+  var candidate = node;
+  while (candidate) {
+    ret.push(candidate);
+    candidate = candidate.parent();
+  }
+  return ret.reverse();
+};
+
+/**
+ * Gets the first index where the two input arrays differ. Returns -1 if they
+ * do not.
+ * @param {!Array.<AutomationNode>} ancestorsA
+ * @param {!Array.<AutomationNode>} ancestorsB
+ * @return {number}
+ */
+AutomationUtil.getDivergence = function(ancestorsA, ancestorsB) {
+  for (var i = 0; i < ancestorsA.length; i++) {
+    if (ancestorsA[i] !== ancestorsB[i])
+      return i;
+  }
+  return -1;
+};
+
+/**
+ * Returns ancestors of |node| that are not also ancestors of |prevNode|.
+ * @param {!AutomationNode} prevNode
+ * @param {!AutomationNode} node
+ * @return {!Array<AutomationNode>}
+ */
+AutomationUtil.getUniqueAncestors = function(prevNode, node) {
+  var prevAncestors = AutomationUtil.getAncestors(prevNode);
+  var ancestors = AutomationUtil.getAncestors(node);
+  var divergence = AutomationUtil.getDivergence(prevAncestors, ancestors);
+  return ancestors.slice(divergence);
+};
+
+/**
+ * Given |nodeA| and |nodeB| in that order, determines their ordering in the
+ * document.
+ * @param {!AutomationNode} nodeA
+ * @param {!AutomationNode} nodeB
+ * @return {AutomationUtil.Dir}
+ */
+AutomationUtil.getDirection = function(nodeA, nodeB) {
+  var ancestorsA = AutomationUtil.getAncestors(nodeA);
+  var ancestorsB = AutomationUtil.getAncestors(nodeB);
+  var divergence = AutomationUtil.getDivergence(ancestorsA, ancestorsB);
+
+  // Default to Dir.FORWARD.
+  if (divergence == -1)
+    return Dir.FORWARD;
+
+  var divA = ancestorsA[divergence];
+  var divB = ancestorsB[divergence];
+
+  // One of the nodes is an ancestor of the other. Don't distinguish and just
+  // consider it Dir.FORWARD.
+  if (!divA || !divB || divA.parent() === nodeB || divB.parent() === nodeA)
+    return Dir.FORWARD;
+
+  return divA.indexInParent <= divB.indexInParent ? Dir.FORWARD : Dir.BACKWARD;
+};
+
 });  // goog.scope

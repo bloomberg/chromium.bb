@@ -1,0 +1,104 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Include test fixture.
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+
+/**
+ * Test fixture for automation_util.js.
+ * @constructor
+ * @extends {ChromeVoxE2ETestBase}
+ */
+function AutomationUtilE2ETest() {}
+
+AutomationUtilE2ETest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    window.Dir = AutomationUtil.Dir;
+  },
+
+  basicDoc: function() {/*!
+    <p><a href='#'></a>hello</p>
+    <h1><ul><li>a</ul><button></h1>
+  */}
+};
+
+TEST_F('AutomationUtilE2ETest', 'GetAncestors', function() {
+  this.runWithAutomation(this.basicDoc,
+    function(root) {
+      var expectedLength = 1;
+      while (root) {
+        var ancestors = AutomationUtil.getAncestors(root);
+        assertEquals(expectedLength++, ancestors.length);
+        root = root.firstChild();
+      }
+    testDone();
+  }.bind(this));
+});
+  
+TEST_F('AutomationUtilE2ETest', 'GetUniqueAncestors', function() {
+  this.runWithAutomation(this.basicDoc, function(root) {
+    var leftmost = root, rightmost = root;
+    while (leftmost.firstChild())
+      leftmost = leftmost.firstChild();
+    while (rightmost.lastChild())
+      rightmost = rightmost.lastChild();
+
+    var leftAncestors = AutomationUtil.getAncestors(leftmost);
+    var rightAncestors = AutomationUtil.getAncestors(rightmost);
+    assertEquals(chrome.automation.RoleType.link, leftmost.role);
+    assertEquals(chrome.automation.RoleType.button, rightmost.role);
+    assertEquals(
+        1, AutomationUtil.getDivergence(leftAncestors, rightAncestors));
+    assertEquals(
+        -1, AutomationUtil.getDivergence(leftAncestors, leftAncestors));
+
+    var uniqueAncestorsLeft =
+        AutomationUtil.getUniqueAncestors(rightmost, leftmost);
+    var uniqueAncestorsRight =
+        AutomationUtil.getUniqueAncestors(leftmost, rightmost);
+
+    assertEquals(2, uniqueAncestorsLeft.length);
+    assertEquals(chrome.automation.RoleType.paragraph,
+        uniqueAncestorsLeft[0].role);
+    assertEquals(chrome.automation.RoleType.link,
+        uniqueAncestorsLeft[1].role);
+
+    assertEquals(3, uniqueAncestorsRight.length);
+    assertEquals(chrome.automation.RoleType.heading,
+        uniqueAncestorsRight[0].role);
+    assertEquals(chrome.automation.RoleType.group,
+        uniqueAncestorsRight[1].role);
+    assertEquals(chrome.automation.RoleType.button,
+        uniqueAncestorsRight[2].role);
+
+    assertEquals(
+        1, AutomationUtil.getUniqueAncestors(leftmost, leftmost).length);
+
+    testDone();
+  }.bind(this));
+});
+  
+TEST_F('AutomationUtilE2ETest', 'GetDirection', function() {
+  this.runWithAutomation(this.basicDoc, function(root) {
+    var left = root, right = root;
+
+    // Same node.
+    assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
+
+    // Ancestor.
+    left = left.firstChild();
+    assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
+    assertEquals(Dir.FORWARD, AutomationUtil.getDirection(right, left));
+
+    // Ordered.
+    right = right.lastChild();
+    assertEquals(Dir.BACKWARD, AutomationUtil.getDirection(right, left));
+    assertEquals(Dir.FORWARD, AutomationUtil.getDirection(left, right));
+
+    testDone();
+  }.bind(this));
+});

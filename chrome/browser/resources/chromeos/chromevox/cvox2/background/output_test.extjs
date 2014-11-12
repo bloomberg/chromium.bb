@@ -1,0 +1,39 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+GEN_INCLUDE(['../../testing/assert_additions.js']);
+GEN_INCLUDE(['../../testing/chromevox_next_e2e_test_base.js']);
+
+/**
+ * Test fixture for output.js.
+ * @constructor
+ * @extends {ChromeVoxNextE2ETestBase}
+ */
+function OutputE2ETest() {}
+
+OutputE2ETest.prototype = {
+  __proto__: ChromeVoxNextE2ETest.prototype,
+
+  /** @override */
+  setUp: function() {
+    window.Dir = AutomationUtil.Dir;
+  }
+};
+
+TEST_F('OutputE2ETest', 'RenderBasic', function() {
+  this.runWithAutomation('<a href="#">Click here</a>',
+    function(root) {
+      var link = root.firstChild().firstChild();
+      var range = cursors.Range.fromNode(link);
+      var o = new Output(range, null, 'navigate');
+      assertEqualsJSON({string_: 'Click here Link', 'spans_': [
+                        {value: 'name', start: 0, end: 10},
+                        // Link earcon.
+                        {value: {}, start: 11, end: 15}
+          ]},
+          o.getBuffer());
+      testDone();
+  }.bind(this));
+});
+  
