@@ -70,9 +70,7 @@ BrowserViewRenderer::BrowserViewRenderer(
       compositor_needs_continuous_invalidate_(false),
       invalidate_after_composite_(false),
       block_invalidates_(false),
-      fallback_tick_pending_(false),
-      width_(0),
-      height_(0) {
+      fallback_tick_pending_(false) {
 }
 
 BrowserViewRenderer::~BrowserViewRenderer() {
@@ -138,23 +136,10 @@ size_t BrowserViewRenderer::CalculateDesiredMemoryPolicy() {
   return bytes_limit;
 }
 
-bool BrowserViewRenderer::OnDraw(jobject java_canvas,
-                                 bool is_hardware_canvas,
-                                 const gfx::Vector2d& scroll,
-                                 const gfx::Rect& global_visible_rect) {
+void BrowserViewRenderer::PrepareToDraw(const gfx::Vector2d& scroll,
+                                        const gfx::Rect& global_visible_rect) {
   last_on_draw_scroll_offset_ = scroll;
   last_on_draw_global_visible_rect_ = global_visible_rect;
-
-  if (clear_view_)
-    return false;
-
-  if (is_hardware_canvas && attached_to_window_ &&
-      !switches::ForceAuxiliaryBitmap()) {
-    return OnDrawHardware();
-  }
-
-  // Perform a software draw
-  return OnDrawSoftware(java_canvas);
 }
 
 bool BrowserViewRenderer::OnDrawHardware() {
@@ -202,7 +187,7 @@ scoped_ptr<cc::CompositorFrame> BrowserViewRenderer::CompositeHw() {
 
   parent_draw_constraints_ =
       shared_renderer_state_.GetParentDrawConstraintsOnUI();
-  gfx::Size surface_size(width_, height_);
+  gfx::Size surface_size(size_);
   gfx::Rect viewport(surface_size);
   gfx::Rect clip = viewport;
   gfx::Transform transform_for_tile_priority =
@@ -273,26 +258,14 @@ void BrowserViewRenderer::InvalidateOnFunctorDestroy() {
   client_->InvalidateOnFunctorDestroy();
 }
 
-bool BrowserViewRenderer::OnDrawSoftware(jobject java_canvas) {
+bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
   if (!compositor_) {
     TRACE_EVENT_INSTANT0(
         "android_webview", "EarlyOut_NoCompositor", TRACE_EVENT_SCOPE_THREAD);
     return false;
   }
 
-  // TODO(hush): right now webview size is passed in as the auxiliary bitmap
-  // size, which might hurt performace (only for software draws with auxiliary
-  // bitmap). For better performance, get global visible rect, transform it
-  // from screen space to view space, then intersect with the webview in
-  // viewspace.  Use the resulting rect as the auxiliary
-  // bitmap.
-  return BrowserViewRendererJavaHelper::GetInstance()
-      ->RenderViaAuxilaryBitmapIfNeeded(
-          java_canvas,
-          last_on_draw_scroll_offset_,
-          gfx::Size(width_, height_),
-          base::Bind(&BrowserViewRenderer::CompositeSW,
-                     base::Unretained(this)));
+  return CompositeSW(canvas);
 }
 
 skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
@@ -371,8 +344,7 @@ void BrowserViewRenderer::OnSizeChanged(int width, int height) {
                        width,
                        "height",
                        height);
-  width_ = width;
-  height_ = height;
+  size_.SetSize(width, height);
 }
 
 void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
@@ -383,8 +355,7 @@ void BrowserViewRenderer::OnAttachedToWindow(int width, int height) {
                "height",
                height);
   attached_to_window_ = true;
-  width_ = width;
-  height_ = height;
+  size_.SetSize(width, height);
 }
 
 void BrowserViewRenderer::OnDetachedFromWindow() {
@@ -413,7 +384,7 @@ bool BrowserViewRenderer::IsVisible() const {
 }
 
 gfx::Rect BrowserViewRenderer::GetScreenRect() const {
-  return gfx::Rect(client_->GetLocationOnScreen(), gfx::Size(width_, height_));
+  return gfx::Rect(client_->GetLocationOnScreen(), size_);
 }
 
 void BrowserViewRenderer::DidInitializeCompositor(
@@ -742,7 +713,7 @@ std::string BrowserViewRenderer::ToString() const {
                       "compositor_needs_continuous_invalidate: %d ",
                       compositor_needs_continuous_invalidate_);
   base::StringAppendF(&str, "block_invalidates: %d ", block_invalidates_);
-  base::StringAppendF(&str, "view width height: [%d %d] ", width_, height_);
+  base::StringAppendF(&str, "view size: %s ", size_.ToString().c_str());
   base::StringAppendF(&str, "attached_to_window: %d ", attached_to_window_);
   base::StringAppendF(&str,
                       "global visible rect: %s ",

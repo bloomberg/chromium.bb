@@ -30,22 +30,15 @@ jint AwPicture::GetHeight(JNIEnv* env, jobject obj) {
   return picture_->height();
 }
 
-namespace {
-bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
-  picture->draw(canvas);
-  return true;
-}
-}
-
 void AwPicture::Draw(JNIEnv* env, jobject obj, jobject canvas) {
-  bool ok = JavaBrowserViewRendererHelper::GetInstance()
-                ->RenderViaAuxilaryBitmapIfNeeded(
-                    canvas,
-                    gfx::Vector2d(),
-                    gfx::Size(picture_->width(), picture_->height()),
-                    base::Bind(&RenderPictureToCanvas,
-                               base::Unretained(picture_.get())));
-  LOG_IF(ERROR, !ok) << "Couldn't draw picture";
+  scoped_ptr<SoftwareCanvasHolder> canvas_holder = SoftwareCanvasHolder::Create(
+      canvas, gfx::Vector2d(),
+      gfx::Size(picture_->width(), picture_->height()));
+  if (!canvas_holder || !canvas_holder->GetCanvas()) {
+    LOG(ERROR) << "Couldn't draw picture";
+    return;
+  }
+  picture_->draw(canvas_holder->GetCanvas());
 }
 
 bool RegisterAwPicture(JNIEnv* env) {

@@ -16,6 +16,7 @@
 #include "android_webview/browser/scoped_app_gl_state_restore.h"
 #include "android_webview/browser/shared_renderer_state.h"
 #include "android_webview/common/aw_hit_test_data.h"
+#include "android_webview/common/aw_switches.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_autofill_client.h"
 #include "android_webview/native/aw_browser_dependency_factory.h"
@@ -304,7 +305,7 @@ static jlong Init(JNIEnv* env, jclass, jobject browser_context) {
 
 static void SetAwDrawSWFunctionTable(JNIEnv* env, jclass,
                                      jlong function_table) {
-  JavaBrowserViewRendererHelper::SetAwDrawSWFunctionTable(
+  RasterHelperSetAwDrawSWFunctionTable(
       reinterpret_cast<AwDrawSWFunctionTable*>(function_table));
 }
 
@@ -849,14 +850,29 @@ bool AwContents::OnDraw(JNIEnv* env,
                         jint visible_right,
                         jint visible_bottom) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return browser_view_renderer_.OnDraw(
-      canvas,
-      is_hardware_accelerated,
-      gfx::Vector2d(scroll_x, scroll_y),
-      gfx::Rect(visible_left,
-                visible_top,
-                visible_right - visible_left,
-                visible_bottom - visible_top));
+  gfx::Vector2d scroll(scroll_x, scroll_y);
+  browser_view_renderer_.PrepareToDraw(
+      scroll, gfx::Rect(visible_left, visible_top, visible_right - visible_left,
+                        visible_bottom - visible_top));
+  if (is_hardware_accelerated && browser_view_renderer_.attached_to_window() &&
+      !switches::ForceAuxiliaryBitmap()) {
+    return browser_view_renderer_.OnDrawHardware();
+  }
+
+  gfx::Size view_size = browser_view_renderer_.size();
+  if (view_size.IsEmpty())
+    return false;
+
+  // TODO(hush): Right now webview size is passed in as the auxiliary bitmap
+  // size, which might hurt performace (only for software draws with auxiliary
+  // bitmap). For better performance, get global visible rect, transform it
+  // from screen space to view space, then intersect with the webview in
+  // viewspace.  Use the resulting rect as the auxiliary bitmap.
+  scoped_ptr<SoftwareCanvasHolder> canvas_holder =
+      SoftwareCanvasHolder::Create(canvas, scroll, view_size);
+  if (!canvas_holder || !canvas_holder->GetCanvas())
+    return false;
+  return browser_view_renderer_.OnDrawSoftware(canvas_holder->GetCanvas());
 }
 
 void AwContents::SetPendingWebContentsForPopup(
