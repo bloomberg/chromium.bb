@@ -1533,7 +1533,7 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
     self.messages = [
         triage_lib_unittest.TestFindSuspects.GetFailedMessage(
             [Exception()], stage=self.stage_name)]
-    self.PatchObject(triage_lib.CalculateSuspects, 'GetFullyVerfiedChanges')
+    self.PatchObject(triage_lib.CalculateSuspects, 'GetFullyVerifiedChanges')
 
   def GetMessages(self):
     """Return a list of failure messages containing a single traceback.

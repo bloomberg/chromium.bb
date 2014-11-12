@@ -537,13 +537,12 @@ class CalculateSuspects(object):
   def _CanIgnoreFailures(cls, messages, change, build_root):
     """Examine whether we can ignore the failures for |change|.
 
-    Examine the |failed_messages| to see if we are allowed to ignore
+    Examine the |messages| to see if we are allowed to ignore
     the failures base on the per-repository settings in
     COMMIT_QUEUE.ini.
 
     Args:
-      messages: A list of BuildFailureMessage or NoneType objects from
-        the failed slaves.
+      messages: A list of BuildFailureMessage from the failed slaves.
       change: A GerritPatch instance to examine.
       build_root: Build root directory.
 
@@ -567,8 +566,8 @@ class CalculateSuspects(object):
     return False
 
   @classmethod
-  def GetFullyVerfiedChanges(cls, changes, changes_by_config, no_stat, failing,
-                             inflight, messages, build_root):
+  def GetFullyVerifiedChanges(cls, changes, changes_by_config, failing,
+                              inflight, no_stat, messages, build_root):
 
     """Examines build failures and returns a set of fully verified changes.
 

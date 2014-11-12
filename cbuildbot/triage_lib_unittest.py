@@ -251,8 +251,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     inflight = ['foo-paladin']
     changes_by_config = {'foo-paladin': []}
 
-    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
-        self.changes, changes_by_config, no_stat, failing, inflight,
+    verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
 
     self.assertEquals(verified, set())
@@ -266,8 +266,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
                          'bar-paladin': set(self.changes),
                          'puppy-paladin': set(self.changes[-2:])}
 
-    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
-        self.changes, changes_by_config, no_stat, failing, inflight,
+    verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
     self.assertEquals(verified, set(self.changes[2:-2]))
 
@@ -280,8 +280,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
 
     self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
                      return_value=False)
-    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
-        self.changes, changes_by_config, no_stat, failing, inflight,
+    verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
     self.assertEquals(verified, set(self.changes[2:]))
 
@@ -294,8 +294,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
 
     self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
                      return_value=True)
-    verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
-        self.changes, changes_by_config, no_stat, failing, inflight,
+    verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
+        self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
     self.assertEquals(verified, set(self.changes))
 

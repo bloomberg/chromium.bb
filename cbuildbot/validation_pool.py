@@ -2089,15 +2089,17 @@ class ValidationPool(object):
     """
     should_submit = self._GetShouldSubmitChanges(
         changes, messages, self.build_root, no_stat)
-    fully_verified = triage_lib.CalculateSuspects.GetFullyVerfiedChanges(
+    fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
 
-    logging.info('The following changes will be submitted: %s',
-                 cros_patch.GetChangesAsString(should_submit))
-    logging.info('The following changes would be submitted if we switch to '
-                 'using board-specific triaging logic: %s',
-                 cros_patch.GetChangesAsString(fully_verified))
+    if should_submit:
+      logging.info('The following changes will be submitted: %s',
+                   cros_patch.GetChangesAsString(should_submit))
+    if fully_verified:
+      logging.info('The following changes would be submitted if we switch to '
+                   'using board-specific triaging logic: %s',
+                   cros_patch.GetChangesAsString(fully_verified))
 
     # TODO(yjhong): send the stats to either GS or CIDB.
     if should_submit - fully_verified:
