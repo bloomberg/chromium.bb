@@ -684,7 +684,11 @@ def GetBuildtoolsPath():
 
   # Some projects' top directory is not named 'src'.
   source_dir_name = GetGClientPrimarySolutionName(gclient_root) or 'src'
-  return os.path.join(gclient_root, source_dir_name, 'buildtools')
+  buildtools_path = os.path.join(gclient_root, source_dir_name, 'buildtools')
+  if not os.path.exists(buildtools_path):
+    # Buildtools may be in the gclient root.
+    buildtools_path = os.path.join(gclient_root, 'buildtools')
+  return buildtools_path
 
 
 def GetBuildtoolsPlatformBinaryPath():
