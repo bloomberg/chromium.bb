@@ -461,6 +461,28 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   if (!audio_input)
     return kAudioUnitErr_InvalidElement;
 
+  // Update the |mDataByteSize| value in the audio_buffer_list() since
+  // |number_of_frames| can be changed on the fly.
+  // |mDataByteSize| needs to be exactly mapping to |number_of_frames|,
+  // otherwise it will put CoreAudio into bad state and results in
+  // AudioUnitRender() returning -50 for the new created stream.
+  // See crbug/428706 for details.
+  UInt32 new_size = number_of_frames * audio_input->format_.mBytesPerFrame;
+  AudioBuffer* audio_buffer = audio_input->audio_buffer_list()->mBuffers;
+  if (new_size != audio_buffer->mDataByteSize) {
+    if (new_size > audio_buffer->mDataByteSize) {
+      // This can happen iff the device is unpluged during recording. In such
+      // case the buffer will not be used anymore since |audio_unit_| becomes
+      // invalid. We allocate enough memory here to avoid depending on
+      // how CoreAudio handles it.
+      audio_input->audio_data_buffer_.reset(new uint8[new_size]);
+      audio_buffer->mData = audio_input->audio_data_buffer_.get();
+    }
+
+    // Update the |mDataByteSize| to match |number_of_frames|.
+    audio_buffer->mDataByteSize = new_size;
+  }
+
   // Receive audio from the AUHAL from the output scope of the Audio Unit.
   OSStatus result = AudioUnitRender(audio_input->audio_unit(),
                                     flags,
