@@ -15,8 +15,11 @@ namespace pulse {
 
 namespace {
 
-static const std::string kGoogleChromeDisplayName = "google-chrome";
-static const std::string kChromiumBrowserDisplayName = "chromium-browser";
+#if defined(GOOGLE_CHROME_BUILD)
+static const char kBrowserDisplayName[] = "google-chrome";
+#else
+static const char kBrowserDisplayName[] = "chromium-browser";
+#endif
 
 pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
   switch (channel) {
@@ -176,11 +179,7 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
   // tells PulseAudio what the stream icon should be.
   ScopedPropertyList property_list;
   pa_proplist_sets(property_list.get(), PA_PROP_APPLICATION_ICON_NAME,
-#if defined(GOOGLE_CHROME_BUILD)
-                   kGoogleChromeDisplayName.c_str());
-#else
-                   kChromiumBrowserDisplayName.c_str());
-#endif
+                   kBrowserDisplayName);
   *stream = pa_stream_new_with_proplist(context, "RecordStream",
                                         &sample_specifications, map,
                                         property_list.get());
@@ -289,11 +288,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   // tell PulseAudio what the stream icon should be.
   ScopedPropertyList property_list;
   pa_proplist_sets(property_list.get(), PA_PROP_APPLICATION_ICON_NAME,
-#if defined(GOOGLE_CHROME_BUILD)
-                   kGoogleChromeDisplayName.c_str());
-#else
-                   kChromiumBrowserDisplayName.c_str());
-#endif
+                   kBrowserDisplayName);
   *stream = pa_stream_new_with_proplist(
       *context, "Playback", &sample_specifications, map, property_list.get());
   RETURN_ON_FAILURE(*stream, "failed to create PA playback stream");
