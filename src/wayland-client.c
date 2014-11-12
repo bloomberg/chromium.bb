@@ -1539,7 +1539,7 @@ wl_display_dispatch(struct wl_display *display)
  * to dispatch.
  *
  * To proper integrate the wayland display fd into a main loop, the
- * client should always call \ref wl_display_dispatch_pending() and then
+ * client should always call wl_display_dispatch_pending() and then
  * \ref wl_display_flush() prior to going back to sleep. At that point,
  * the fd typically doesn't have data so attempting I/O could block, but
  * events queued up on the main queue should be dispatched.
