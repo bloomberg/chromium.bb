@@ -158,6 +158,11 @@ GaiaScreenHandler::~GaiaScreenHandler() {
 }
 
 void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
+  if (!auth_extension_) {
+    Profile* signin_profile = ProfileHelper::GetSigninProfile();
+    auth_extension_.reset(new ScopedGaiaAuthExtension(signin_profile));
+  }
+
   base::DictionaryValue params;
   const bool is_enrolling_consumer_management =
       context.is_enrolling_consumer_management;

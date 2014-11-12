@@ -10,7 +10,6 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/extensions/signin/scoped_gaia_auth_extension.h"
 #include "chrome/browser/ui/chrome_web_modal_dialog_manager_delegate.h"
 #include "components/web_modal/popup_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
@@ -192,8 +191,6 @@ class WebUILoginView : public views::View,
 
   // True to forward keyboard event.
   bool forward_keyboard_event_;
-
-  scoped_ptr<ScopedGaiaAuthExtension> auth_extension_;
 
   ObserverList<web_modal::ModalDialogHostObserver> observer_list_;
   ObserverList<FrameObserver> frame_observer_list_;
