@@ -1134,7 +1134,6 @@ JobScheduler::QueueType JobScheduler::GetJobQueueType(JobType type) {
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:
-    case TYPE_CREATE_FILE:
     case TYPE_ADD_PERMISSION:
       return METADATA_QUEUE;
 

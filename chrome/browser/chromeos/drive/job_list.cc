@@ -50,8 +50,6 @@ std::string JobTypeToString(JobType type) {
       return "TYPE_UPLOAD_NEW_FILE";
     case TYPE_UPLOAD_EXISTING_FILE:
       return "TYPE_UPLOAD_EXISTING_FILE";
-    case TYPE_CREATE_FILE:
-      return "TYPE_CREATE_FILE";
     case TYPE_ADD_PERMISSION:
       return "TYPE_ADD_PERMISSION";
   }
@@ -117,7 +115,6 @@ bool IsActiveFileTransferJobInfo(const JobInfo& job_info) {
     case TYPE_ADD_RESOURCE_TO_DIRECTORY:
     case TYPE_REMOVE_RESOURCE_FROM_DIRECTORY:
     case TYPE_ADD_NEW_DIRECTORY:
-    case TYPE_CREATE_FILE:
     case TYPE_ADD_PERMISSION:
       return false;
     case TYPE_DOWNLOAD_FILE:
