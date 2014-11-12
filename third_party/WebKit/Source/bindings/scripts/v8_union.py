@@ -6,6 +6,7 @@ import v8_utilities
 
 
 UNION_H_INCLUDES = frozenset([
+    'bindings/core/v8/Dictionary.h',
     'bindings/core/v8/ExceptionState.h',
     'bindings/core/v8/V8Binding.h',
     'platform/heap/Handle.h',
@@ -68,12 +69,13 @@ def container_context(union_type, interfaces_info):
             if array_buffer_view_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             array_buffer_view_type = context
-        elif member.is_interface_type:
-            interface_types.append(context)
-        elif member.is_dictionary:
+        # FIXME: Remove generic Dictionary special casing.
+        elif member.is_dictionary or member.base_type == 'Dictionary':
             if dictionary_type:
                 raise Exception('%s is ambiguous.' % union_type.name)
             dictionary_type = context
+        elif member.is_interface_type:
+            interface_types.append(context)
         elif member is union_type.boolean_member_type:
             boolean_type = context
         elif member is union_type.numeric_member_type:
@@ -125,5 +127,6 @@ def member_context(member, interfaces_info):
         'specific_type_enum': 'SpecificType' + member.name,
         'type_name': member.name,
         'v8_value_to_local_cpp_value': member.v8_value_to_local_cpp_value(
-            {}, 'v8Value', 'cppValue', needs_exception_state_for_string=True),
+            {}, 'v8Value', 'cppValue', isolate='isolate',
+            needs_exception_state_for_string=True),
     }

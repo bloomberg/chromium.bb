@@ -80,9 +80,11 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
     {# FIXME: This should also check "object but not Date or RegExp". Add checks
        when we implement conversions for Date and RegExp. #}
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        {{container.dictionary_type.cpp_local_type}} cppValue = V8{{container.dictionary_type.type_name}}::toImpl(isolate, v8Value, exceptionState);
-        if (!exceptionState.hadException())
-            impl.set{{container.dictionary_type.type_name}}(cppValue);
+        {% if container.dictionary_type.type_name != 'Dictionary' %}
+        {{container.dictionary_type.cpp_local_type}} cppValue;
+        {% endif %}
+        {{container.dictionary_type.v8_value_to_local_cpp_value}};
+        impl.set{{container.dictionary_type.type_name}}(cppValue);
         return;
     }
 

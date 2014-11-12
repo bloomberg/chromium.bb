@@ -7,6 +7,7 @@
 #include "config.h"
 #include "bindings/core/v8/UnionTypesCore.h"
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
 #include "bindings/core/v8/V8Node.h"
@@ -26,6 +27,100 @@
 #include "core/html/LabelsNodeList.h"
 
 namespace blink {
+
+ArrayBufferOrArrayBufferViewOrDictionary::ArrayBufferOrArrayBufferViewOrDictionary()
+    : m_type(SpecificTypeNone)
+{
+}
+
+PassRefPtr<TestArrayBuffer> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBuffer() const
+{
+    ASSERT(isArrayBuffer());
+    return m_arrayBuffer;
+}
+
+void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBuffer(PassRefPtr<TestArrayBuffer> value)
+{
+    ASSERT(isNull());
+    m_arrayBuffer = value;
+    m_type = SpecificTypeArrayBuffer;
+}
+
+PassRefPtr<TestArrayBufferView> ArrayBufferOrArrayBufferViewOrDictionary::getAsArrayBufferView() const
+{
+    ASSERT(isArrayBufferView());
+    return m_arrayBufferView;
+}
+
+void ArrayBufferOrArrayBufferViewOrDictionary::setArrayBufferView(PassRefPtr<TestArrayBufferView> value)
+{
+    ASSERT(isNull());
+    m_arrayBufferView = value;
+    m_type = SpecificTypeArrayBufferView;
+}
+
+Dictionary ArrayBufferOrArrayBufferViewOrDictionary::getAsDictionary() const
+{
+    ASSERT(isDictionary());
+    return m_dictionary;
+}
+
+void ArrayBufferOrArrayBufferViewOrDictionary::setDictionary(Dictionary value)
+{
+    ASSERT(isNull());
+    m_dictionary = value;
+    m_type = SpecificTypeDictionary;
+}
+
+void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Value, ArrayBufferOrArrayBufferViewOrDictionary& impl, ExceptionState& exceptionState)
+{
+    if (v8Value.IsEmpty())
+        return;
+
+    if (V8ArrayBuffer::hasInstance(v8Value, isolate)) {
+        RefPtr<TestArrayBuffer> cppValue = V8ArrayBuffer::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setArrayBuffer(cppValue);
+        return;
+    }
+
+    if (V8ArrayBufferView::hasInstance(v8Value, isolate)) {
+        RefPtr<TestArrayBufferView> cppValue = V8ArrayBufferView::toImpl(v8::Handle<v8::Object>::Cast(v8Value));
+        impl.setArrayBufferView(cppValue);
+        return;
+    }
+
+    if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
+        Dictionary cppValue = Dictionary(v8Value, isolate);
+        impl.setDictionary(cppValue);
+        return;
+    }
+
+    exceptionState.throwTypeError("Not a valid union member.");
+}
+
+v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
+{
+    switch (impl.m_type) {
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeNone:
+        return v8::Null(isolate);
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBuffer:
+        return toV8(impl.getAsArrayBuffer(), creationContext, isolate);
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeArrayBufferView:
+        return toV8(impl.getAsArrayBufferView(), creationContext, isolate);
+    case ArrayBufferOrArrayBufferViewOrDictionary::SpecificTypeDictionary:
+        return impl.getAsDictionary().v8Value();
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return v8::Handle<v8::Value>();
+}
+
+ArrayBufferOrArrayBufferViewOrDictionary NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary>::nativeValue(const v8::Handle<v8::Value>& value, v8::Isolate* isolate, ExceptionState& exceptionState)
+{
+    ArrayBufferOrArrayBufferViewOrDictionary impl;
+    V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(isolate, value, impl, exceptionState);
+    return impl;
+}
 
 BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble()
     : m_type(SpecificTypeNone)
@@ -711,9 +806,9 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
     }
 
     if (isUndefinedOrNull(v8Value) || v8Value->IsObject()) {
-        TestDictionary cppValue = V8TestDictionary::toImpl(isolate, v8Value, exceptionState);
-        if (!exceptionState.hadException())
-            impl.setTestDictionary(cppValue);
+        TestDictionary cppValue;
+        TONATIVE_VOID_EXCEPTIONSTATE_ARGINTERNAL(V8TestDictionary::toImpl(isolate, v8Value, cppValue, exceptionState), exceptionState);
+        impl.setTestDictionary(cppValue);
         return;
     }
 

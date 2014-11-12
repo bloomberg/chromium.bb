@@ -7,6 +7,7 @@
 #ifndef UnionTypeCore_h
 #define UnionTypeCore_h
 
+#include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "platform/heap/Handle.h"
@@ -22,6 +23,58 @@ class TestInterfaceEmpty;
 class TestInterfaceGarbageCollected;
 class TestInterfaceImplementation;
 class TestInterfaceWillBeGarbageCollected;
+
+class ArrayBufferOrArrayBufferViewOrDictionary final {
+    ALLOW_ONLY_INLINE_ALLOCATION();
+public:
+    ArrayBufferOrArrayBufferViewOrDictionary();
+    bool isNull() const { return m_type == SpecificTypeNone; }
+
+    bool isArrayBuffer() const { return m_type == SpecificTypeArrayBuffer; }
+    PassRefPtr<TestArrayBuffer> getAsArrayBuffer() const;
+    void setArrayBuffer(PassRefPtr<TestArrayBuffer>);
+
+    bool isArrayBufferView() const { return m_type == SpecificTypeArrayBufferView; }
+    PassRefPtr<TestArrayBufferView> getAsArrayBufferView() const;
+    void setArrayBufferView(PassRefPtr<TestArrayBufferView>);
+
+    bool isDictionary() const { return m_type == SpecificTypeDictionary; }
+    Dictionary getAsDictionary() const;
+    void setDictionary(Dictionary);
+
+private:
+    enum SpecificTypes {
+        SpecificTypeNone,
+        SpecificTypeArrayBuffer,
+        SpecificTypeArrayBufferView,
+        SpecificTypeDictionary,
+    };
+    SpecificTypes m_type;
+
+    RefPtr<TestArrayBuffer> m_arrayBuffer;
+    RefPtr<TestArrayBufferView> m_arrayBufferView;
+    Dictionary m_dictionary;
+
+    friend v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+};
+
+class V8ArrayBufferOrArrayBufferViewOrDictionary final {
+public:
+    static void toImpl(v8::Isolate*, v8::Handle<v8::Value>, ArrayBufferOrArrayBufferViewOrDictionary&, ExceptionState&);
+};
+
+v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary&, v8::Handle<v8::Object>, v8::Isolate*);
+
+template <class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBufferOrArrayBufferViewOrDictionary& impl)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
+template <>
+struct NativeValueTraits<ArrayBufferOrArrayBufferViewOrDictionary> {
+    static ArrayBufferOrArrayBufferViewOrDictionary nativeValue(const v8::Handle<v8::Value>&, v8::Isolate*, ExceptionState&);
+};
 
 class BooleanOrStringOrUnrestrictedDouble final {
     ALLOW_ONLY_INLINE_ALLOCATION();
