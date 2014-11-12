@@ -218,6 +218,21 @@ TEST_F(CopresenceApiUnittest, DefaultStrategies) {
                 .token_exchange_strategy().broadcast_scan_configuration());
 }
 
+TEST_F(CopresenceApiUnittest, LowPowerStrategy) {
+  scoped_ptr<Operation> subscribe_operation(new Operation);
+  subscribe_operation->subscribe.reset(CreateSubscribe("sub"));
+  subscribe_operation->subscribe->strategies.reset(new Strategy);
+  subscribe_operation->subscribe->strategies->low_power.reset(new bool(true));
+
+  ListValue* operation_list = new ListValue;
+  operation_list->Append(subscribe_operation->ToValue().release());
+  EXPECT_TRUE(ExecuteOperations(operation_list));
+
+  EXPECT_EQ(copresence::BROADCAST_SCAN_CONFIGURATION_UNKNOWN,
+            request_sent().manage_subscriptions_request().subscription(0)
+                .token_exchange_strategy().broadcast_scan_configuration());
+}
+
 TEST_F(CopresenceApiUnittest, UnPubSub) {
   // First we need to create a publish and a subscribe to cancel.
   scoped_ptr<Operation> publish_operation(new Operation);

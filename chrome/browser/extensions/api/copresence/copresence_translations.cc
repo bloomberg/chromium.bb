@@ -34,9 +34,6 @@ int SanitizeTtl(int* user_ttl) {
 }
 
 BroadcastScanConfiguration TranslateStrategy(const Strategy& strategy) {
-  if (strategy.low_power && *strategy.low_power)
-    return BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
-
   bool only_broadcast = strategy.only_broadcast && *strategy.only_broadcast;
   bool only_scan = strategy.only_scan && *strategy.only_scan;
 
@@ -55,10 +52,16 @@ void SetTokenExchangeStrategy(const Strategy* strategy,
                               BroadcastScanConfiguration default_config,
                               TokenExchangeStrategy* strategy_proto) {
   if (strategy) {
-    BroadcastScanConfiguration config = TranslateStrategy(*strategy);
-    strategy_proto->set_broadcast_scan_configuration(
-        config == BROADCAST_SCAN_CONFIGURATION_UNKNOWN ?
-        default_config : config);
+    BroadcastScanConfiguration config;
+    if (strategy->low_power && *(strategy->low_power)) {
+      config = BROADCAST_SCAN_CONFIGURATION_UNKNOWN;
+    } else {
+      config = TranslateStrategy(*strategy);
+      if (config == BROADCAST_SCAN_CONFIGURATION_UNKNOWN)
+        config = default_config;
+    }
+
+    strategy_proto->set_broadcast_scan_configuration(config);
     strategy_proto->set_audio_configuration(
         strategy->audible && *strategy->audible ? AUDIO_CONFIGURATION_AUDIBLE
                                                 : AUDIO_CONFIGURATION_UNKNOWN);
