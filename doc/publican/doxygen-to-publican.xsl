@@ -108,6 +108,10 @@
   <xsl:text> </xsl:text>
 </xsl:template>
 
+<xsl:template match="sp">
+  <xsl:text> </xsl:text>
+</xsl:template>
+
 <xsl:template match="programlisting">
   <programlisting><xsl:apply-templates /></programlisting>
 </xsl:template>
