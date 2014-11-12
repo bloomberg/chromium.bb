@@ -111,7 +111,7 @@ cr.define('options.search_engines', function() {
         this.classList.add('default');
 
       this.deletable = engine.canBeRemoved;
-      this.closeButtonElement.tabIndex = 0;
+      this.closeButtonFocusAllowed = true;
 
       // Construct the name column.
       var nameColEl = this.ownerDocument.createElement('div');

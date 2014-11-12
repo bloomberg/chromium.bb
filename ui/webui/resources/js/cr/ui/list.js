@@ -112,46 +112,54 @@ cr.define('cr.ui', function() {
      * @type {ArrayDataModel}
      */
     set dataModel(dataModel) {
-      if (this.dataModel_ != dataModel) {
-        if (!this.boundHandleDataModelPermuted_) {
-          this.boundHandleDataModelPermuted_ =
-              this.handleDataModelPermuted_.bind(this);
-          this.boundHandleDataModelChange_ =
-              this.handleDataModelChange_.bind(this);
-        }
+      if (this.dataModel_ == dataModel)
+        return;
 
-        if (this.dataModel_) {
-          this.dataModel_.removeEventListener(
-              'permuted',
-              this.boundHandleDataModelPermuted_);
-          this.dataModel_.removeEventListener('change',
-                                              this.boundHandleDataModelChange_);
-        }
-
-        this.dataModel_ = dataModel;
-
-        this.cachedItems_ = {};
-        this.cachedItemHeights_ = {};
-        this.selectionModel.clear();
-        if (dataModel)
-          this.selectionModel.adjustLength(dataModel.length);
-
-        if (this.dataModel_) {
-          this.dataModel_.addEventListener(
-              'permuted',
-              this.boundHandleDataModelPermuted_);
-          this.dataModel_.addEventListener('change',
-                                           this.boundHandleDataModelChange_);
-        }
-
-        this.redraw();
+      if (!this.boundHandleDataModelPermuted_) {
+        this.boundHandleDataModelPermuted_ =
+            this.handleDataModelPermuted_.bind(this);
+        this.boundHandleDataModelChange_ =
+            this.handleDataModelChange_.bind(this);
       }
+
+      if (this.dataModel_) {
+        this.dataModel_.removeEventListener(
+            'permuted',
+            this.boundHandleDataModelPermuted_);
+        this.dataModel_.removeEventListener('change',
+                                            this.boundHandleDataModelChange_);
+      }
+
+      this.dataModel_ = dataModel;
+
+      this.cachedItems_ = {};
+      this.cachedItemHeights_ = {};
+      this.selectionModel.clear();
+      if (dataModel)
+        this.selectionModel.adjustLength(dataModel.length);
+
+      if (this.dataModel_) {
+        this.dataModel_.addEventListener(
+            'permuted',
+            this.boundHandleDataModelPermuted_);
+        this.dataModel_.addEventListener('change',
+                                         this.boundHandleDataModelChange_);
+      }
+
+      this.redraw();
+      this.onSetDataModelComplete();
     },
 
     get dataModel() {
       return this.dataModel_;
     },
 
+    /**
+     * Override to be notified when |this.dataModel| is set.
+     * @protected
+     */
+    onSetDataModelComplete: function() {
+    },
 
     /**
      * Cached item for measuring the default item size by measureItem().

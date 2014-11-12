@@ -133,6 +133,10 @@
     "includes": [23000],
     "structures": [23200],
   },
+  "chrome/browser/resources/options_test_resources.grd": {
+    "includes": [23400],
+    "structures": [23450],
+  },
   "cloud_print/virtual_driver/win/install/virtual_driver_setup_resources.grd": {
     "messages": [23500],
     "includes": [23550],

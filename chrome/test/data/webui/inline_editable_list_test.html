@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<script>
+
+function setUp() {
+  loadTimeData.data = { 
+    'deletableItemDeleteButtonTitle': 'test_deletable_button_title'
+  };
+  
+  cr.define('options', function() {
+    /** @const */ var InlineEditableItemList = options.InlineEditableItemList;
+    /** @const */ var InlineEditableItem = options.InlineEditableItem;
+  
+    /**
+     * Creates a test list item.
+     * @param {string} name This item's name.
+     * @constructor
+     * @extends {options.InlineEditableItem}
+     */
+    function TestItem(name) {
+      var el = cr.doc.createElement('div');
+      el.name_ = name;
+      TestItem.decorate(el);
+      return el;
+    }
+    
+    /**
+     * Decorates an element as a test list item.
+     * @param {!HTMLElement} el The element to decorate.
+     */
+    TestItem.decorate = function(el) {
+      el.__proto__ = TestItem.prototype;
+      el.decorate();
+    };
+    
+    TestItem.prototype = {
+      __proto__: InlineEditableItem.prototype,
+    
+      /**
+       * Item name. Used to set the item's text fields.
+       * @type {string}
+       * @private
+       */
+      name_: null,
+    
+      /** @override */
+      decorate: function() {
+        InlineEditableItem.prototype.decorate.call(this);
+  
+        var fieldEl = this.createEditableTextCell(this.name_);
+        this.contentElement.appendChild(fieldEl);
+  
+        fieldEl = this.createEditableTextCell(this.name_ + '_two');
+        this.contentElement.appendChild(fieldEl);
+      },
+    };
+  
+    /**
+     * @constructor
+     * @extends {options.InlineEditableItemList}
+     */
+    var TestItemList = cr.ui.define('list');
+    
+     TestItemList.prototype = {
+      __proto__: InlineEditableItemList.prototype,
+    
+      /**
+       * @override
+       * @param {string} name
+       */
+      createItem: function(name) {
+        return new TestItem(name);
+      },
+  
+      /**
+       * @param {!Element} el
+       * @return {boolean} True if |el| or any of its children are focusable. 
+       * @private
+       */
+      hasFocusableElement_: function(el) {
+        return el.querySelectorAll('[tabindex="0"]').length > 0;
+      },
+  
+      /**
+       * @param {number} itemIndex
+       * @return {boolean} True if item at |itemIndex| has a focusable element
+       *     and no other items have focusable elements.
+       */      
+      hasExactlyOneItemFocusable: function(itemIndex) {
+        var length = this.items.length;
+        for(var i = 0; i < length; ++i) {
+          if (this.hasFocusableElement_(this.items[i]) != (i == itemIndex))
+            return false;
+        }
+        return true;
+      },
+    };
+  
+    // Export.
+    return {
+      TestItemList: TestItemList
+    };
+  
+  })
+}
+
+/**
+ * @param {!EventTarget} target Where to send the event. 
+ * @param {!string} keyIdentifier Which key to send. 
+ */      
+function sendKeyDownEvent(target, keyIdentifier) {
+  var event = document.createEvent('KeyboardEvent');
+  event.initKeyboardEvent('keydown', true, true, window, keyIdentifier);
+  assertEquals(keyIdentifier, event.keyIdentifier);
+  target.dispatchEvent(event);  
+}
+
+/**
+ * Test that exactly one item in the list is focusable after navigating the
+ * list using up and down arrow keys.
+ */
+function testUpDownFocus() {
+  var list = document.createElement('ul');
+  list.style.position = 'absolute';
+  list.style.width = '800px';
+  list.style.height = '800px';
+  options.TestItemList.decorate(list);
+  document.body.appendChild(list);
+
+  var model = new cr.ui.ArrayDataModel(['itemA', 'itemB', 'itemC']);
+  list.dataModel = model;
+  list.selectionModel.setIndexSelected(0, true);
+  list.selectionModel.leadIndex = 0;
+
+  assertTrue(list.hasExactlyOneItemFocusable(0));
+  sendKeyDownEvent(list, 'Down');
+  assertTrue(list.hasExactlyOneItemFocusable(1));
+  sendKeyDownEvent(list, 'Down');
+  assertTrue(list.hasExactlyOneItemFocusable(2));
+  sendKeyDownEvent(list, 'Up');
+  assertTrue(list.hasExactlyOneItemFocusable(1));
+  sendKeyDownEvent(list, 'Up');
+  assertTrue(list.hasExactlyOneItemFocusable(0));
+  sendKeyDownEvent(list, 'Down');
+  assertTrue(list.hasExactlyOneItemFocusable(1));
+}
+
+</script>
+
+</body>
+</html>

@@ -455,7 +455,7 @@ cr.define('options.autofillOptions', function() {
         // selected.
         var firstItem = this.getListItemByIndex(0);
         if (!selectedItem && firstItem && e.newValue)
-          firstItem.handleFocus_();
+          firstItem.handleFocus();
       }
     },
 

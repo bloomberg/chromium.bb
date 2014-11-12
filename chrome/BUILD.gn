@@ -410,6 +410,14 @@ repack("packed_extra_resources") {
   }
 }
 
+# GYP version: chrome/chrome_resources.gyp:browser_tests_pak
+repack("browser_tests_pak") {
+  sources = [
+    "$root_gen_dir/chrome/options_test_resources.pak",
+  ]
+  output = "$root_out_dir/browser_tests.pak"
+}
+
 # Collects per-locale grit files from many sources into global per-locale files.
 chrome_repack_locales("repack_locales_pack") {
   visibility = [ ":*" ]

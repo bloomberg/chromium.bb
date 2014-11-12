@@ -38,6 +38,14 @@ cr.define('options', function() {
      */
     deletable_: true,
 
+    /**
+     * Whether or not the close button can ever be navigated to using the
+     * keyboard.
+     * @type {boolean}
+     * @protected
+     */
+    closeButtonFocusAllowed: false,
+
     /** @override */
     decorate: function() {
       ListItem.prototype.decorate.call(this);
@@ -57,7 +65,7 @@ cr.define('options', function() {
       this.closeButtonElement_.addEventListener('mouseup',
                                                 this.handleMouseDownUpOnClose_);
       this.closeButtonElement_.addEventListener('focus',
-                                                this.handleFocus_.bind(this));
+                                                this.handleFocus.bind(this));
       this.closeButtonElement_.tabIndex = -1;
       this.closeButtonElement_.title =
           loadTimeData.getString('deletableItemDeleteButtonTitle');
@@ -94,9 +102,9 @@ cr.define('options', function() {
     /**
      * Called when a focusable child element receives focus. Selects this item
      * in the list selection model.
-     * @private
+     * @protected
      */
-    handleFocus_: function() {
+    handleFocus: function() {
       // This handler is also fired when the child receives focus as a result of
       // the item getting selected by the customized mouse/keyboard handling in
       // SelectionController. Take care not to destroy a potential multiple

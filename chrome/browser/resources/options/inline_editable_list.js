@@ -88,7 +88,20 @@ cr.define('options', function() {
      * @private
      */
     handleLeadChange_: function() {
+      // Add focusability before call to updateEditState.
+      if (this.lead) {
+        this.setEditableValuesFocusable(true);
+        this.setCloseButtonFocusable(true);
+      }
+
       this.updateEditState();
+
+      // Remove focusability after call to updateEditState.
+      this.setStaticValuesFocusable(false);
+      if (!this.lead) {
+        this.setEditableValuesFocusable(false);
+        this.setCloseButtonFocusable(false);
+      }
     },
 
     /**
@@ -122,27 +135,8 @@ cr.define('options', function() {
 
         var focusElement = this.editClickTarget_ || this.initialFocusElement;
         this.editClickTarget_ = null;
-
-        if (focusElement) {
-          var self = this;
-          // We should delay to give focus on |focusElement| if this is called
-          // in mousedown event handler. If we did give focus immediately, Blink
-          // would try to focus on an ancestor of the mousedown target element,
-          // and remove focus from |focusElement|.
-          if (focusElement.staticVersion &&
-              focusElement.staticVersion.hasAttribute('tabindex')) {
-            setTimeout(function() {
-              if (self.editing) {
-                if (focusElement.disabled)
-                  self.parentNode.focus();
-                self.focusAndMaybeSelect_(focusElement);
-              }
-              focusElement.staticVersion.removeAttribute('tabindex');
-            }, 0);
-          } else {
-            this.focusAndMaybeSelect_(focusElement);
-          }
-        }
+        if (focusElement)
+          this.focusAndMaybeSelect_(focusElement);
       } else {
         if (!this.editCancelled_ && this.hasBeenEdited &&
             this.currentInputIsValid) {
@@ -229,6 +223,48 @@ cr.define('options', function() {
     },
 
     /**
+     * Sets whether the editable values can be given focus using the keyboard.
+     * @param {boolean} focusable The desired focusable state.
+     */
+    setEditableValuesFocusable: function(focusable) {
+      focusable = focusable && this.editable;
+      var editFields = this.editFields_;
+      for (var i = 0; i < editFields.length; i++) {
+        editFields[i].tabIndex = focusable ? 0 : -1;
+      }
+    },
+
+    /**
+     * Sets whether the static values can be given focus using the keyboard.
+     * @param {boolean} focusable The desired focusable state.
+     */
+    setStaticValuesFocusable: function(focusable) {
+      var editFields = this.editFields_;
+      for (var i = 0; i < editFields.length; i++) {
+        var staticVersion = editFields[i].staticVersion;
+        if (!staticVersion)
+          continue;
+        if (this.editable) {
+          staticVersion.tabIndex = focusable ? 0 : -1;
+        } else {
+          // staticVersion remains visible when !this.editable. Remove
+          // tabindex so that it will not become focused by clicking on it and
+          // have selection box drawn around it.
+          staticVersion.removeAttribute('tabindex');
+        }
+      }
+    },
+
+    /**
+     * Sets whether the close button can be focused using the keyboard.
+     * @param {boolean} focusable The desired focusable state.
+     */
+    setCloseButtonFocusable: function(focusable) {
+      this.closeButtonElement.tabIndex =
+          focusable && this.closeButtonFocusAllowed ? 0 : -1;
+    },
+
+    /**
      * Returns a div containing an <input>, as well as static text if
      * isPlaceholder is not true.
      * @param {string} text The text of the cell.
@@ -268,7 +304,7 @@ cr.define('options', function() {
 
       // In some cases 'focus' event may arrive before 'input'.
       // To make sure revalidation is triggered we postpone 'focus' handling.
-      var handler = this.handleFocus_.bind(this);
+      var handler = this.handleFocus.bind(this);
       inputEl.addEventListener('focus', function() {
         window.setTimeout(function() {
           if (inputEl.ownerDocument.activeElement == inputEl)
@@ -290,6 +326,16 @@ cr.define('options', function() {
      */
     addEditField: function(control, staticElement) {
       control.staticVersion = staticElement;
+      if (this.editable)
+        control.tabIndex = -1;
+
+      if (control.staticVersion) {
+        if (this.editable)
+          control.staticVersion.tabIndex = -1;
+        control.staticVersion.editableVersion = control;
+        control.staticVersion.addEventListener('focus',
+                                               this.handleFocus.bind(this));
+      }
       this.editFields_.push(control);
     },
 
@@ -375,20 +421,32 @@ cr.define('options', function() {
      * @private
      */
     handleMouseDown_: function(e) {
-      if (!this.editable || this.editing)
+      if (!this.editable)
         return;
 
       var clickTarget = e.target;
       var editFields = this.editFields_;
+      var editClickTarget;
       for (var i = 0; i < editFields.length; i++) {
-        if (editFields[i].staticVersion == clickTarget)
-          clickTarget.tabIndex = 0;
         if (editFields[i] == clickTarget ||
             editFields[i].staticVersion == clickTarget) {
-          this.editClickTarget_ = editFields[i];
-          return;
+          editClickTarget = editFields[i];
+          break;
         }
       }
+
+      if (this.editing) {
+        if (!editClickTarget) {
+          // Clicked on the list item outside of an edit field. Don't lose focus
+          // from currently selected edit field.
+          e.stopPropagation();
+          e.preventDefault();
+        }
+        return;
+      }
+
+      if (editClickTarget && !editClickTarget.disabled)
+        this.editClickTarget_ = editClickTarget;
     },
   };
 
@@ -442,10 +500,38 @@ cr.define('options', function() {
     handleListFocusChange_: function(e) {
       var leadItem = this.getListItemByIndex(this.selectionModel.leadIndex);
       if (leadItem) {
-        if (e.newValue)
+        if (e.newValue) {
+          // Add focusability before making other changes.
+          leadItem.setEditableValuesFocusable(true);
+          leadItem.setCloseButtonFocusable(true);
           leadItem.updateEditState();
-        else
+          // Remove focusability after making other changes.
+          leadItem.setStaticValuesFocusable(false);
+        } else {
+          // Add focusability before making other changes.
+          leadItem.setStaticValuesFocusable(true);
+          leadItem.setCloseButtonFocusable(true);
           leadItem.editing = false;
+          // Remove focusability after making other changes.
+          if (!leadItem.isPlaceholder)
+            leadItem.setEditableValuesFocusable(false);
+        }
+      }
+    },
+
+    /**
+     * Called after the DataModel for the list has been set.
+     * @override
+     */
+    onSetDataModelComplete: function() {
+      DeletableItemList.prototype.onSetDataModelComplete.call(this);
+
+      var firstItem = this.getListItemByIndex(0);
+      if (firstItem) {
+        firstItem.setStaticValuesFocusable(true);
+        firstItem.setCloseButtonFocusable(true);
+        if (firstItem.isPlaceholder)
+          firstItem.setEditableValuesFocusable(true);
       }
     },
 

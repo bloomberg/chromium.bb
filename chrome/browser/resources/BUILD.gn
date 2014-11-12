@@ -94,6 +94,15 @@ if (!is_ios) {
     output_dir = "$root_gen_dir/chrome"
   }
 
+  grit("options_test_resources") {
+    source = "options_test_resources.grd"
+    outputs = [
+      "grit/options_test_resources.h",
+      "options_test_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
+
   grit("quota_internals_resources") {
     source = "quota_internals_resources.grd"
     outputs = [

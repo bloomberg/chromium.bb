@@ -1842,6 +1842,7 @@
       'type': 'executable',
       'dependencies': [
         'browser',
+        'chrome_resources.gyp:browser_tests_pak',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
         'chrome_resources.gyp:packed_extra_resources',

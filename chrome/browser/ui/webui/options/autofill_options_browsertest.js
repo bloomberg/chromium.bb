@@ -195,7 +195,20 @@ TEST_F('AutofillEditAddressAsyncWebUITest',
     input.focus();
     document.execCommand('insertText', false, '111-222-333');
     assertEquals('111-222-333', input.value);
-    input.blur();
+    // TODO(bondd, dbeam): The way that focus/blur interact with the testing
+    // system is rather confusing. The next line was originally
+    // input.blur();
+    // but the test would time out when run as a single test locally (i.e.
+    // --gtest_filter=<test_name>), and complete successfully when other tests
+    // were run first (e.g. by the trybot, or locally with a wider
+    // gtest_filter). Changing the line to
+    // phoneList.blur();
+    // makes the result more deterministic when the test is run by itself.
+    //
+    // phoneList.blur() calls cr.ui.List.handleElementBlur_, which triggers
+    // InlineEditableItemList.handleListFocusChange_, which sends the
+    // 'commitedit' event.
+    phoneList.blur();
     phoneList.doneValidating().then(testDone);
   });
 });
