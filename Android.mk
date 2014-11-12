@@ -26,5 +26,4 @@ LOCAL_MODULE_TAGS := \
 LOCAL_MODULE := \
 	libjsoncpp
 
-include external/stlport/libstlport.mk
 include $(BUILD_STATIC_LIBRARY)
