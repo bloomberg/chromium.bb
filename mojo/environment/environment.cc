@@ -6,6 +6,7 @@
 
 #include "mojo/environment/default_async_waiter_impl.h"
 #include "mojo/environment/default_logger_impl.h"
+#include "mojo/environment/default_run_loop_impl.h"
 
 namespace mojo {
 
@@ -31,6 +32,16 @@ const MojoAsyncWaiter* Environment::GetDefaultAsyncWaiter() {
 // static
 const MojoLogger* Environment::GetDefaultLogger() {
   return internal::GetDefaultLoggerImpl();
+}
+
+// static
+void Environment::InstantiateDefaultRunLoop() {
+  internal::InstantiateDefaultRunLoopImpl();
+}
+
+// static
+void Environment::DestroyDefaultRunLoop() {
+  internal::DestroyDefaultRunLoopImpl();
 }
 
 }  // namespace mojo

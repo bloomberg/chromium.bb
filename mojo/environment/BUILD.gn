@@ -28,6 +28,8 @@ component("chromium_impl") {
     "default_async_waiter_impl.h",
     "default_logger_impl.cc",
     "default_logger_impl.h",
+    "default_run_loop_impl.cc",
+    "default_run_loop_impl.h",
   ]
 
   defines = [

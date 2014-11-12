@@ -133,6 +133,8 @@
         'environment/default_async_waiter_impl.h',
         'environment/default_logger_impl.cc',
         'environment/default_logger_impl.h',
+        'environment/default_run_loop_impl.cc',
+        'environment/default_run_loop_impl.h',
       ],
       'include_dirs': [
         '..',
