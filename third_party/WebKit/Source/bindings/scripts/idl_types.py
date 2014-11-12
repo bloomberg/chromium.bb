@@ -253,7 +253,7 @@ class IdlUnionType(IdlTypeBase):
         self.member_types = member_types
 
     def __str__(self):
-        return self.name
+        return '(' + ' or '.join(str(member_type) for member_type in self.member_types) + ')'
 
     def __hash__(self):
         return hash(self.name)
