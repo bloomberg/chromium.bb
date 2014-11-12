@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Benchmark - CSS Blending and CSS Animation</title>
+  <style>
+    #backdrop {
+      float: left;
+      width: 400px;
+      height: 400px;
+      isolation: isolate;
+      background-image: linear-gradient(to bottom,
+          rgba(255, 255, 0, 0.9),
+          rgba(255, 0, 0, 0.9),
+          rgba(0, 255, 0, 0.9),
+          rgba(0, 0, 255, 0.9),
+          rgba(0, 0, 0, 0.9));
+      position: absolute;
+      top: 50px;
+      left: 100px;
+    }
+    #backdrop div {
+      width: 5%;
+      height: 5%;
+      background-color: rgba(200, 100, 100, 0.7);
+      float: left;
+      will-change: transform;
+      mix-blend-mode: hue;
+      animation: rotate 3s infinite linear;
+    }
+    @keyframes rotate {
+      to {transform: rotateZ(360deg);}
+    }
+  }
+  </style>
+  <script src="../resources/runner.js"></script>
+  <script src="resources/framerate.js"></script>
+  <script>
+    window.onload = function () {
+      var backdrop = document.getElementById("backdrop");
+      for (var i = 0; i < 400; i++) {
+        var div = document.createElement("div");
+        backdrop.appendChild(div);
+      }
+      PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measure performance of CSS Animation on elements having mix-blend-mode: hue (a non-separable blend mode).",
+        done: onCompletedRun,
+        unit: 'fps'
+      });
+      startTrackingFrameRate();
+    }
+
+    function onCompletedRun() {
+      stopTrackingFrameRate();    
+    }
+  </script>
+</head>
+<body>
+  <pre id="log"></pre>
+  <div id="backdrop"></div>
+</body>
+</html>

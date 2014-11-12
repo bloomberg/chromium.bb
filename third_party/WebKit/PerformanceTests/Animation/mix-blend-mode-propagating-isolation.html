@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Painting deep tree with CSS Blending</title>
+  <!-- https://codereview.chromium.org/478333002/ -->
   <style>
     .box {
       width: 100px;
@@ -23,8 +25,13 @@
   <script src="../resources/runner.js"></script>
   <script src="resources/framerate.js"></script>
   <script>
+    var intervalId = 0;
     window.onload = function () {
-      PerfTestRunner.prepareToMeasureValuesAsync({done: onCompletedRun, unit: 'fps'});
+      PerfTestRunner.prepareToMeasureValuesAsync({
+        description: "Measure performance of software-animating a deep DOM subtree having one blending leaf.",
+        done: onCompletedRun,
+        unit: 'fps'
+      });
 
       // The leaf element has blending
       var lastElement = document.createElement("div");
@@ -38,15 +45,18 @@
       }
       var container = document.getElementById("container");
       container.appendChild(lastElement);
-      startTrackingFrameRate({run: softwareAnimationStep});
+
+      intervalId = window.setInterval(function () {
+        var leftVal = parseInt(container.style.left) || 0;
+        container.style.left = (leftVal + 1) + "px";
+      }, 16);
+
+      startTrackingFrameRate();
     }
 
     function onCompletedRun() {
+      clearInterval(intervalId);
       stopTrackingFrameRate();    
-    }
-    function softwareAnimationStep() {
-      var leftVal = parseInt(container.style.left) || 0;
-      container.style.left = (leftVal + 1) + "px";
     }
   </script>
 </head>
