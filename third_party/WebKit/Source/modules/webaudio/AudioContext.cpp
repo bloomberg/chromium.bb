@@ -201,6 +201,9 @@ void AudioContext::uninitialize()
     // Get rid of the sources which may still be playing.
     derefUnfinishedSourceNodes();
 
+    ASSERT(m_listener);
+    m_listener->waitForHRTFDatabaseLoaderThreadCompletion();
+
     clear();
 }
 

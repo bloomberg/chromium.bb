@@ -92,7 +92,8 @@ bool AudioListener::isHRTFDatabaseLoaded()
 
 void AudioListener::waitForHRTFDatabaseLoaderThreadCompletion()
 {
-    m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
+    if (m_hrtfDatabaseLoader)
+        m_hrtfDatabaseLoader->waitForLoaderThreadCompletion();
 }
 
 void AudioListener::markPannersAsDirty(unsigned type)

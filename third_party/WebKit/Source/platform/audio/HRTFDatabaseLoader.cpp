@@ -33,6 +33,7 @@
 #include "platform/audio/HRTFDatabaseLoader.h"
 
 #include "platform/Task.h"
+#include "platform/TaskSynchronizer.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 
@@ -71,10 +72,10 @@ HRTFDatabaseLoader::HRTFDatabaseLoader(float sampleRate)
 HRTFDatabaseLoader::~HRTFDatabaseLoader()
 {
     ASSERT(isMainThread());
-    waitForLoaderThreadCompletion();
+    ASSERT(!m_thread);
 }
 
-void HRTFDatabaseLoader::load()
+void HRTFDatabaseLoader::loadTask()
 {
     ASSERT(!isMainThread());
     m_thread->attachGC();
@@ -98,7 +99,7 @@ void HRTFDatabaseLoader::loadAsynchronously()
     if (!m_hrtfDatabase && !m_thread) {
         // Start the asynchronous database loading process.
         m_thread = WebThreadSupportingGC::create("HRTF database loader");
-        m_thread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::load, this)));
+        m_thread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::loadTask, this)));
     }
 }
 
@@ -108,8 +109,21 @@ bool HRTFDatabaseLoader::isLoaded()
     return m_hrtfDatabase;
 }
 
+// This cleanup task is needed just to make sure that the loader thread finishes
+// the load task and thus the loader thread doesn't touch m_thread any more.
+void HRTFDatabaseLoader::cleanupTask(TaskSynchronizer* sync)
+{
+    sync->taskCompleted();
+}
+
 void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
 {
+    if (!m_thread)
+        return;
+
+    TaskSynchronizer sync;
+    m_thread->postTask(new Task(WTF::bind(&HRTFDatabaseLoader::cleanupTask, this, &sync)));
+    sync.waitForTaskCompletion();
     m_thread.clear();
 }
 
