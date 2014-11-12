@@ -38,7 +38,7 @@ public:
 
     const void* data() const { return buffer()->data(); }
     void* data() { return buffer()->data(); }
-    unsigned long byteLength() const { return buffer()->byteLength(); }
+    unsigned byteLength() const { return buffer()->byteLength(); }
     PassRefPtr<DOMArrayBuffer> slice(int begin, int end) const
     {
         return create(buffer()->slice(begin, end));
