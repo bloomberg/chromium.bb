@@ -20,7 +20,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/localized_error.h"
 #include "chrome/common/pref_names.h"

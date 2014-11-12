@@ -16,7 +16,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -92,7 +91,6 @@ const int kPrefsToObserveLength = arraysize(kPrefsToObserve);
 // API cannot be used), so we can avoid registering them altogether.
 void RegisterFontFamilyPrefs(user_prefs::PrefRegistrySyncable* registry,
                              const std::set<std::string>& fonts_with_defaults) {
-
   // Expand the font concatenated with script name so this stays at RO memory
   // rather than allocated in heap.
   static const char* const kFontFamilyMap[] = {

@@ -28,7 +28,6 @@
 #include "chrome/browser/safe_browsing/malware_details.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -68,10 +67,10 @@ namespace {
 // For malware interstitial pages, we link the problematic URL to Google's
 // diagnostic page.
 #if defined(GOOGLE_CHROME_BUILD)
-const char* const kSbDiagnosticUrl =
+const char kSbDiagnosticUrl[] =
     "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=googlechrome";
 #else
-const char* const kSbDiagnosticUrl =
+const char kSbDiagnosticUrl[] =
     "http://safebrowsing.clients.google.com/safebrowsing/diagnostic?site=%s&client=chromium";
 #endif
 
@@ -402,7 +401,7 @@ void SafeBrowsingBlockingPage::OverrideRendererPrefs(
       web_contents_->GetBrowserContext());
   renderer_preferences_util::UpdateFromSystemSettings(
       prefs, profile, web_contents_);
- }
+}
 
 void SafeBrowsingBlockingPage::SetReportingPreference(bool report) {
   Profile* profile = Profile::FromBrowserContext(

@@ -26,7 +26,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/render_messages.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"

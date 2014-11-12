@@ -14,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/pdf/browser/open_pdf_in_reader_prompt_client.h"

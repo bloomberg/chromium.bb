@@ -25,7 +25,6 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_classification.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
-#include "chrome/browser/ui/zoom/zoom_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
