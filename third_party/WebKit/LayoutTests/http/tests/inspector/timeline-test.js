@@ -1,6 +1,7 @@
 var initialize_Timeline = function() {
 
 InspectorTest.preloadPanel("timeline");
+WebInspector.TempFile = InspectorTest.TempFileMock;
 
 // Scrub values when printing out these properties in the record or data field.
 InspectorTest.timelinePropertyFormatters = {

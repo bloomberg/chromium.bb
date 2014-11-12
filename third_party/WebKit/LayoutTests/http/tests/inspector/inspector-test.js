@@ -445,11 +445,10 @@ InspectorTest.MockSetting.prototype = {
  * @param {!string} name
  * @param {!function(?WebInspector.TempFile)} callback
  */
-InspectorTest.TempFileMock = function(dirPath, name, callback)
+InspectorTest.TempFileMock = function(dirPath, name)
 {
     this._chunks = [];
     this._name = name;
-    setTimeout(callback.bind(this, this), 1);
 }
 
 InspectorTest.TempFileMock.prototype = {
@@ -527,6 +526,12 @@ InspectorTest.TempFileMock.prototype = {
     remove: function() { }
 }
 
+InspectorTest.TempFileMock.create = function(dirPath, name)
+{
+    var tempFile = new InspectorTest.TempFileMock(dirPath, name);
+    return Promise.resolve(tempFile);
+}
+
 InspectorTest.dumpLoadedModules = function(next)
 {
     function moduleSorter(left, right)
@@ -580,8 +585,6 @@ InspectorTest.TimeoutMock.prototype = {
         this._timeoutIdToMillis = {};
     }
 }
-
-WebInspector.TempFile = InspectorTest.TempFileMock;
 
 WebInspector.targetManager.observeTargets({
     targetAdded: function(target)

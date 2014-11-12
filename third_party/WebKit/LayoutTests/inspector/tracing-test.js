@@ -2,6 +2,7 @@ function initialize_TracingTest()
 {
 
 InspectorTest.preloadPanel("timeline");
+WebInspector.TempFile = InspectorTest.TempFileMock;
 
 InspectorTest.tracingManager = function()
 {
