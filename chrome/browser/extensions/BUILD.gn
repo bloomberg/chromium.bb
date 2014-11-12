@@ -93,6 +93,7 @@ static_library("extensions") {
       "//third_party/libevent",
       "//third_party/protobuf:protobuf_lite",
       "//chromeos/ime:gencode",
+      "//remoting/host/it2me:common",
     ]
   } else {
     sources += [
@@ -227,6 +228,9 @@ static_library("extensions") {
   if (is_chromeos && use_ozone) {
     sources -= [
       "global_shortcut_listener_chromeos.cc",
+    ]
+    deps -= [
+      "//remoting/host/it2me:common",
     ]
   }
   if (!use_ozone) {

@@ -76,6 +76,7 @@
     'remoting_android.gypi',
     'remoting_client.gypi',
     'remoting_host.gypi',
+    'remoting_host_srcs.gypi',
     'remoting_srcs.gypi',
     'remoting_test.gypi',
     'remoting_version.gypi',
