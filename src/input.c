@@ -423,12 +423,14 @@ static const struct weston_keyboard_grab_interface
 static void
 pointer_unmap_sprite(struct weston_pointer *pointer)
 {
-	if (weston_surface_is_mapped(pointer->sprite->surface))
-		weston_surface_unmap(pointer->sprite->surface);
+	struct weston_surface *surface = pointer->sprite->surface;
+
+	if (weston_surface_is_mapped(surface))
+		weston_surface_unmap(surface);
 
 	wl_list_remove(&pointer->sprite_destroy_listener.link);
-	pointer->sprite->surface->configure = NULL;
-	pointer->sprite->surface->configure_private = NULL;
+	surface->configure = NULL;
+	surface->configure_private = NULL;
 	weston_view_destroy(pointer->sprite);
 	pointer->sprite = NULL;
 }
