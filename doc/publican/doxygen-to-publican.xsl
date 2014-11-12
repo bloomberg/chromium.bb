@@ -45,9 +45,7 @@
           <xsl:apply-templates select="parameternamelist/parametername"/>
         </term>
       <listitem>
-        <para>
-          <xsl:apply-templates select="parameterdescription/para"/>
-        </para>
+        <xsl:apply-templates select="parameterdescription"/>
       </listitem>
     </varlistentry>
 </xsl:template>
@@ -69,32 +67,22 @@
     <varlistentry>
       <term>Returns:</term>
       <listitem>
-        <para>
-          <xsl:apply-templates />
-        </para>
+        <xsl:apply-templates />
       </listitem>
     </varlistentry>
   </variablelist>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='see']">
-  <itemizedlist>
-    <listitem>
-      <para>
-        See also: <xsl:apply-templates />
-      </para>
-    </listitem>
-  </itemizedlist>
+  <para>
+    See also: <xsl:apply-templates />
+  </para>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='since']">
-  <itemizedlist>
-    <listitem>
-      <para>
-        Since: <xsl:apply-templates />
-      </para>
-    </listitem>
-  </itemizedlist>
+  <para>
+    Since: <xsl:apply-templates />
+  </para>
 </xsl:template>
 
 <xsl:template match="simplesect[@kind='note']">
