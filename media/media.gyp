@@ -1124,34 +1124,11 @@
       ],
     },
     {
-      'target_name': 'mojo_media_renderer_apptest',
-      'type': 'loadable_module',
-      'includes': [
-        '../mojo/mojo_variables.gypi',
-      ],
-      'dependencies': [
-        'media',
-        'media_mojo_bindings',
-        'media_mojo_lib',
-        'media_test_support',
-        'mojo_media_renderer_app',
-        '../base/base.gyp:base',
-        '../base/base.gyp:test_support_base',
-        '../testing/gtest.gyp:gtest',
-        '../mojo/mojo_base.gyp:mojo_application_chromium',
-        '<(mojo_system_for_loadable_module)',
-      ],
-      'sources': [
-        'mojo/services/renderer_unittest.cc',
-      ],
-    },
-    {
       'target_name': 'media_mojo',
       'type': 'none',
       'dependencies': [
         'media_mojo_lib',
         'media_mojo_lib_unittests',
-        'mojo_media_renderer_apptest',
         'mojo_media_renderer_app',
       ]
     },

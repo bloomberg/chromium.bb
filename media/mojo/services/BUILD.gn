@@ -92,21 +92,26 @@ test("mojo_media_lib_unittests") {
   ]
 }
 
-# GYP version: media/media.gyp:mojo_media_renderer_apptest
 # Not a 'test' because this is loaded via mojo_shell as an app.
-shared_library("renderer_apptest") {
+# To run the test:
+#   out/Debug/mojo_shell mojo:mojo_media_renderer_apptest
+# You may need to get "mojo_shell" from a mojo checkout and symlink all required
+# libraries.
+# TODO(msw): Fix GYP build for ApplicationTestBase so that we can add a GYP
+# version of this test.
+shared_library("media_renderer_apptest") {
   testonly = true
   output_name = "mojo_media_renderer_apptest"
 
   deps = [
     "//base",
-    "//base/test:test_support",
     "//media",
     "//media:shared_memory_support",
     "//media/mojo/interfaces",
-    "//mojo/common",
     "//mojo/application",
-    "//testing/gtest",
+    "//mojo/application:test_support",
+    "//mojo/common",
+    "//mojo/environment:chromium",
     ":renderer_impl_lib",
     ":renderer_app",
     ":lib",
@@ -114,7 +119,7 @@ shared_library("renderer_apptest") {
   ]
 
   sources = [
-    "renderer_unittest.cc",
+    "media_renderer_apptest.cc",
   ]
 }
 
@@ -130,6 +135,6 @@ group("tests") {
   testonly = true
   deps = [
     ":mojo_media_lib_unittests",
-    ":renderer_apptest",
+    ":media_renderer_apptest",
   ]
 }

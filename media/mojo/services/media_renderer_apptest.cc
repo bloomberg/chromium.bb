@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "media/base/audio_decoder_config.h"
@@ -13,10 +11,9 @@
 #include "media/base/sample_format.h"
 #include "media/base/video_decoder_config.h"
 #include "media/mojo/services/mojo_renderer_impl.h"
-#include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "mojo/public/cpp/application/application_test_base.h"
 
 namespace {
 
@@ -40,9 +37,6 @@ class MojoRendererTestHelper : public mojo::ApplicationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MojoRendererTestHelper);
 };
 
-// TODO(tim): Reconcile this with mojo apptest framework when ready.
-MojoRendererTestHelper* g_test_delegate = NULL;
-
 // TODO(tim): Make media::FakeDemuxerStream support audio and use that for the
 // DemuxerStream implementation instead.
 class FakeDemuxerStream : public media::DemuxerStreamProvider,
@@ -53,8 +47,9 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
 
   // media::Demuxer implementation.
   media::DemuxerStream* GetStream(media::DemuxerStream::Type type) override {
-    DCHECK_EQ(media::DemuxerStream::AUDIO, type);
-    return this;
+    if (type == media::DemuxerStream::AUDIO)
+      return this;
+    return nullptr;
   }
   media::DemuxerStreamProvider::Liveness GetLiveness() const override {
     return media::DemuxerStreamProvider::LIVENESS_UNKNOWN;
@@ -104,15 +99,25 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
 
 namespace media {
 
-class MojoRendererTest : public testing::Test {
+class MojoRendererTest : public mojo::test::ApplicationTestBase {
  public:
-  MojoRendererTest() : service_provider_(NULL) {}
+  MojoRendererTest()
+      : ApplicationTestBase(mojo::Array<mojo::String>()),
+        service_provider_(NULL) {}
+  ~MojoRendererTest() override {}
+
+ protected:
+  // ApplicationTestBase implementation.
+  mojo::ApplicationDelegate* GetApplicationDelegate() override {
+    return &mojo_renderer_test_helper_;
+  }
 
   void SetUp() override {
+    ApplicationTestBase::SetUp();
     demuxer_stream_provider_.reset(new FakeDemuxerStream());
     service_provider_ =
-        g_test_delegate->application_impl()
-            ->ConnectToApplication("mojo:media_mojo_renderer_app")
+        application_impl()
+            ->ConnectToApplication("mojo:mojo_media_renderer_app")
             ->GetServiceProvider();
   }
 
@@ -125,6 +130,7 @@ class MojoRendererTest : public testing::Test {
   }
 
  private:
+  MojoRendererTestHelper mojo_renderer_test_helper_;
   scoped_ptr<DemuxerStreamProvider> demuxer_stream_provider_;
   mojo::ServiceProvider* service_provider_;
 
@@ -140,14 +146,12 @@ void ErrorCallback(PipelineStatus* output, PipelineStatus status) {
 // connection. The test also initializes a media::AudioRendererImpl which
 // will error-out expectedly due to lack of support for decoder selection.
 TEST_F(MojoRendererTest, BasicInitialize) {
-  MojoRendererImpl rimpl(task_runner(), service_provider());
+  MojoRendererImpl mojo_renderer_impl(task_runner(), service_provider());
   PipelineStatus expected_error(PIPELINE_OK);
-  rimpl.Initialize(stream_provider(),
-                   base::MessageLoop::current()->QuitClosure(),
-                   media::StatisticsCB(),
-                   base::Closure(),
-                   base::Bind(&ErrorCallback, &expected_error),
-                   media::BufferingStateCB());
+  mojo_renderer_impl.Initialize(
+      stream_provider(), base::MessageLoop::current()->QuitClosure(),
+      media::StatisticsCB(), base::Closure(),
+      base::Bind(&ErrorCallback, &expected_error), media::BufferingStateCB());
   base::MessageLoop::current()->Run();
 
   // We expect an error during initialization because MojoRendererService
@@ -156,29 +160,3 @@ TEST_F(MojoRendererTest, BasicInitialize) {
 }
 
 }  // namespace media
-
-MojoResult MojoMain(MojoHandle shell_handle) {
-  base::CommandLine::Init(0, NULL);
-#if !defined(COMPONENT_BUILD)
-  base::AtExitManager at_exit;
-#endif
-
-  // TODO(tim): Reconcile this with apptest framework when it is ready.
-  scoped_ptr<mojo::ApplicationDelegate> delegate(new MojoRendererTestHelper());
-  g_test_delegate = static_cast<MojoRendererTestHelper*>(delegate.get());
-  {
-    base::MessageLoop loop;
-    mojo::ApplicationImpl impl(
-        delegate.get(),
-        mojo::MakeScopedHandle(mojo::MessagePipeHandle(shell_handle)));
-
-    int argc = 0;
-    char** argv = NULL;
-    testing::InitGoogleTest(&argc, argv);
-    mojo_ignore_result(RUN_ALL_TESTS());
-  }
-
-  g_test_delegate = NULL;
-  delegate.reset();
-  return MOJO_RESULT_OK;
-}
