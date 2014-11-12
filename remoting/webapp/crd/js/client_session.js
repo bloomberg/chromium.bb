@@ -30,6 +30,18 @@ var remoting = remoting || {};
 remoting.enableCast = false;
 
 /**
+ * True to enable mouse lock.
+ * This is currently disabled because the current client plugin does not
+ * properly handle mouse lock and delegated large cursors at the same time.
+ * This should be re-enabled (by removing this flag) once a version of
+ * the plugin that supports both has reached Chrome Stable channel.
+ * (crbug.com/429322).
+ *
+ * @type {boolean}
+ */
+remoting.enableMouseLock = false;
+
+/**
  * @param {remoting.SignalStrategy} signalStrategy Signal strategy.
  * @param {HTMLElement} container Container element for the client view.
  * @param {string} hostDisplayName A human-readable name for the host.
@@ -505,6 +517,13 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
   // Apply customized key remappings if the plugin supports remapKeys.
   if (this.plugin_.hasFeature(remoting.ClientPlugin.Feature.REMAP_KEY)) {
     this.applyRemapKeys_(true);
+  }
+
+  // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
+  // Enable automatic mouse-lock.
+  if (remoting.enableMouseLock &&
+      this.plugin_.hasFeature(remoting.ClientPlugin.Feature.ALLOW_MOUSE_LOCK)) {
+    this.plugin_.allowMouseLock();
   }
 
   // Enable MediaSource-based rendering on Chrome 37 and above.

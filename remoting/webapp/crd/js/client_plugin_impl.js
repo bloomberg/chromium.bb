@@ -851,6 +851,14 @@ remoting.ClientPluginImpl.prototype.useAsyncPinDialog =
 };
 
 /**
+ * Allows automatic mouse-lock.
+ */
+remoting.ClientPluginImpl.prototype.allowMouseLock = function() {
+  this.plugin_.postMessage(JSON.stringify(
+      { method: 'allowMouseLock', data: {} }));
+};
+
+/**
  * Sets the third party authentication token and shared secret.
  *
  * @param {string} token The token received from the token URL.

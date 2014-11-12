@@ -151,6 +151,11 @@ remoting.ClientPlugin.prototype.requestPairing =
 remoting.ClientPlugin.prototype.onPinFetched = function(pin) {};
 
 /**
+ * Allows automatic mouse-lock.
+ */
+remoting.ClientPlugin.prototype.allowMouseLock = function() {};
+
+/**
  * Sets the third party authentication token and shared secret.
  *
  * @param {string} token The token received from the token URL.
@@ -289,6 +294,7 @@ remoting.ClientPlugin.Feature = {
   THIRD_PARTY_AUTH: 'thirdPartyAuth',
   TRAP_KEY: 'trapKey',
   PINLESS_AUTH: 'pinlessAuth',
+  ALLOW_MOUSE_LOCK: 'allowMouseLock',
   EXTENSION_MESSAGE: 'extensionMessage',
   MEDIA_SOURCE_RENDERING: 'mediaSourceRendering',
   VIDEO_CONTROL: 'videoControl'
