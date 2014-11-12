@@ -558,6 +558,11 @@ void PasswordManager::Autofill(const PasswordForm& form_for_autofill,
                                bool wait_for_username) const {
   PossiblyInitializeUsernamesExperiment(best_matches);
 
+  scoped_ptr<BrowserSavePasswordProgressLogger> logger;
+  if (client_->IsLoggingActive()) {
+    logger.reset(new BrowserSavePasswordProgressLogger(client_));
+    logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILL);
+  }
   switch (form_for_autofill.scheme) {
     case PasswordForm::SCHEME_HTML: {
       // Note the check above is required because the observers_ for a non-HTML
@@ -569,10 +574,16 @@ void PasswordManager::Autofill(const PasswordForm& form_for_autofill,
                                wait_for_username,
                                OtherPossibleUsernamesEnabled(),
                                &fill_data);
+      if (logger)
+        logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
       driver_->FillPasswordForm(fill_data);
       break;
     }
     default:
+      if (logger) {
+        logger->LogBoolean(Logger::STRING_LOGINMODELOBSERVER_PRESENT,
+                           observers_.might_have_observers());
+      }
       FOR_EACH_OBSERVER(
           LoginModelObserver,
           observers_,

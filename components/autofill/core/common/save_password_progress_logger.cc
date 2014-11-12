@@ -157,6 +157,12 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
       return "only_visible";
     case SavePasswordProgressLogger::STRING_SHOW_PASSWORD_PROMPT:
       return "Show password prompt";
+    case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILL:
+      return "PasswordManager::Autofill";
+    case SavePasswordProgressLogger::STRING_WAIT_FOR_USERNAME:
+      return "wait_for_username";
+    case SavePasswordProgressLogger::STRING_LOGINMODELOBSERVER_PRESENT:
+      return "Instances of LoginModelObserver may be present";
     case SavePasswordProgressLogger::STRING_INVALID:
       return "INVALID";
       // Intentionally no default: clause here -- all IDs need to get covered.
