@@ -1380,3 +1380,4 @@ crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing
 
 crbug.com/432566 transitions/cross-fade-background-image.html [ Failure ]
 crbug.com/432566 virtual/threaded/transitions/cross-fade-background-image.html [ Failure ]
+Bug(senorblanco) virtual/textblob/fast/text/justify-ideograph-vertical.html [ NeedsRebaseline ]
