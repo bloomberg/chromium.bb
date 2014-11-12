@@ -126,13 +126,14 @@ void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
     MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
     skia::SetIsDraftMode(*canvas, is_print_ready_metafile_sent_);
     skia::SetIsPreviewMetafile(*canvas, is_preview);
-
+#if defined(ENABLE_PRINT_PREVIEW)
     if (params.display_header_footer) {
       PrintHeaderAndFooter(static_cast<blink::WebCanvas*>(canvas),
                            page_number + 1,
                            print_preview_context_.total_page_count(), *frame,
                            scale_factor, page_layout_in_points, params);
     }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
     RenderPageContent(frame, page_number, canvas_area, content_area,
                       scale_factor, static_cast<blink::WebCanvas*>(canvas));
   }
