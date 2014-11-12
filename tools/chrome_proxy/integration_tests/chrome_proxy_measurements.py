@@ -121,7 +121,7 @@ class ChromeProxyCorsBypass(ChromeProxyValidation):
   def ValidateAndMeasurePage(self, page, tab, results):
     # The test page sets window.xhrRequestCompleted to true when the XHR fetch
     # finishes.
-    tab.WaitForJavaScriptExpression('window.xhrRequestCompleted', 15000)
+    tab.WaitForJavaScriptExpression('window.xhrRequestCompleted', 300)
     super(ChromeProxyCorsBypass,
           self).ValidateAndMeasurePage(page, tab, results)
 
