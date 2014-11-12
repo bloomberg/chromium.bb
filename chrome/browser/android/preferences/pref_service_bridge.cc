@@ -43,6 +43,7 @@ using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ScopedJavaLocalRef;
+using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
 
 namespace {
@@ -98,25 +99,21 @@ bool IsContentSettingManaged(HostContentSettingsMap* content_settings,
   return provider == HostContentSettingsMap::POLICY_PROVIDER;
 }
 
-void ReturnAbsoluteProfilePathValue(std::string path_value) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+void OnGotProfilePath(ScopedJavaGlobalRef<jobject>* callback,
+                      std::string path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> j_path_value =
-      ConvertUTF8ToJavaString(env, path_value);
-  Java_PrefServiceBridge_setProfilePathValue(env, j_path_value.obj());
+  ScopedJavaLocalRef<jstring> j_path = ConvertUTF8ToJavaString(env, path);
+  Java_PrefServiceBridge_onGotProfilePath(env, j_path.obj(), callback->obj());
 }
 
-void GetAbsolutePath(Profile* profile) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  if (profile) {
-    base::FilePath profile_path = profile->GetPath();
-    profile_path = base::MakeAbsoluteFilePath(profile_path);
-    if (!profile_path.empty()) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::Bind(&ReturnAbsoluteProfilePathValue, profile_path.value()));
-    }
-  }
+std::string GetProfilePathOnFileThread(Profile* profile) {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  if (!profile)
+    return std::string();
+
+  base::FilePath profile_path = profile->GetPath();
+  return base::MakeAbsoluteFilePath(profile_path).value();
 }
 
 PrefService* GetPrefService() {
@@ -652,9 +649,13 @@ static jobject GetAboutVersionStrings(JNIEnv* env, jobject obj) {
       ConvertUTF8ToJavaString(env, os_version).obj()).Release();
 }
 
-static void SetPathValuesForAboutChrome(JNIEnv* env, jobject obj) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&GetAbsolutePath, GetOriginalProfile()));
+static void GetProfilePath(JNIEnv* env, jobject obj, jobject j_callback) {
+  ScopedJavaGlobalRef<jobject>* callback = new ScopedJavaGlobalRef<jobject>();
+  callback->Reset(env, j_callback);
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&GetProfilePathOnFileThread, GetOriginalProfile()),
+      base::Bind(&OnGotProfilePath, base::Owned(callback)));
 }
 
 static jstring GetSupervisedUserCustodianName(JNIEnv* env, jobject obj) {

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences;
 
+import android.text.TextUtils;
+
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -29,7 +31,7 @@ public final class PrefServiceBridge {
     public static final int SUPERVISED_USER_FILTERING_WARN = 1;
     public static final int SUPERVISED_USER_FILTERING_BLOCK = 2;
 
-    private static String sProfilePathValue;
+    private static String sProfilePath;
 
     // Object to notify when "clear browsing data" completes.
     private OnClearBrowsingDataListener mClearBrowsingDataListener;
@@ -71,6 +73,16 @@ public final class PrefServiceBridge {
         public String getOSVersion() {
             return mOSVersion;
         }
+    }
+
+    /**
+     * Callback to receive the profile path.
+     */
+    public interface ProfilePathCallback {
+        /**
+         * Called with the profile path, once it's available.
+         */
+        void onGotProfilePath(String profilePath);
     }
 
     /**
@@ -131,18 +143,29 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * @return the About Chrome value for profile path.
+     * Don't use this. This will be deleted soon. Use getProfilePath() instead.
+     * TODO(newt): delete this once all callers are updated.
      */
     public String getProfilePathValue() {
-        return sProfilePathValue;
+        return "";
     }
 
     /**
-     * Set the About Chrome value for profile path.
+     * Returns the path to the user's profile directory via a callback. The callback may be
+     * called synchronously or asynchronously.
      */
+    public void getProfilePath(ProfilePathCallback callback) {
+        if (!TextUtils.isEmpty(sProfilePath)) {
+            callback.onGotProfilePath(sProfilePath);
+        } else {
+            nativeGetProfilePath(callback);
+        }
+    }
+
     @CalledByNative
-    public static void setProfilePathValue(String pathValue) {
-        sProfilePathValue = pathValue;
+    private static void onGotProfilePath(String profilePath, ProfilePathCallback callback) {
+        sProfilePath = profilePath;
+        callback.onGotProfilePath(profilePath);
     }
 
     public boolean isAcceptCookiesEnabled() {
@@ -600,12 +623,10 @@ public final class PrefServiceBridge {
     }
 
     /**
-     * Set profile path value needed for about chrome.
+     * Don't use this. Will be deleted soon.
+     * TODO(newt): delete this once all callers are updated.
      */
     public void setPathValuesForAboutChrome() {
-        if (sProfilePathValue == null) {
-            nativeSetPathValuesForAboutChrome();
-        }
     }
 
     /**
@@ -702,7 +723,7 @@ public final class PrefServiceBridge {
     private native void nativeSetCrashReporting(boolean reporting);
     private native boolean nativeCanPredictNetworkActions();
     private native AboutVersionStrings nativeGetAboutVersionStrings();
-    private native void nativeSetPathValuesForAboutChrome();
+    private native void nativeGetProfilePath(ProfilePathCallback callback);
     private native void nativeSetContextualSearchPreference(String preference);
     private native String nativeGetContextualSearchPreference();
     private native boolean nativeGetSearchSuggestEnabled();
