@@ -631,8 +631,10 @@ std::vector<views::View*> AppListViewDelegate::CreateCustomPageWebViews(
        it != custom_page_contents_.end();
        ++it) {
     content::WebContents* web_contents = (*it)->web_contents();
-    // TODO(mgiuca): DCHECK_EQ(profile_, web_contents->GetBrowserContext())
-    // after http://crbug.com/392763 resolved.
+
+    // The web contents should belong to the current profile.
+    DCHECK_EQ(profile_, web_contents->GetBrowserContext());
+
     views::WebView* web_view =
         new views::WebView(web_contents->GetBrowserContext());
     web_view->SetPreferredSize(size);
