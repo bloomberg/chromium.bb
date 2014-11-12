@@ -5,9 +5,9 @@
 #ifndef DictionaryPluginPlaceholder_h
 #define DictionaryPluginPlaceholder_h
 
-#include "bindings/core/v8/Dictionary.h"
 #include "core/html/shadow/PluginPlaceholderElement.h"
 #include "core/plugins/PluginPlaceholder.h"
+#include "core/testing/PluginPlaceholderOptions.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
@@ -17,16 +17,14 @@ namespace blink {
 class DictionaryPluginPlaceholder : public NoBaseWillBeGarbageCollected<DictionaryPluginPlaceholder>, public PluginPlaceholder {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(DictionaryPluginPlaceholder);
 public:
-    static PassOwnPtrWillBeRawPtr<DictionaryPluginPlaceholder> create(Document& document, const Dictionary& options)
+    static PassOwnPtrWillBeRawPtr<DictionaryPluginPlaceholder> create(Document& document, const PluginPlaceholderOptions& options)
     {
         RefPtrWillBeRawPtr<PluginPlaceholderElement> placeholder = PluginPlaceholderElement::create(document);
-        String stringValue;
-        if (DictionaryHelper::get(options, "message", stringValue))
-            placeholder->setMessage(stringValue);
+        if (options.hasMessage())
+            placeholder->setMessage(options.message());
 
-        bool booleanValue;
-        if (DictionaryHelper::get(options, "closeable", booleanValue))
-            placeholder->setIsCloseable(booleanValue);
+        if (options.hasCloseable())
+            placeholder->setIsCloseable(options.closeable());
 
         return adoptPtrWillBeNoop(new DictionaryPluginPlaceholder(placeholder.release()));
     }

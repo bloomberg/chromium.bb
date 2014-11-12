@@ -123,6 +123,7 @@
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
 #include "core/testing/MockPagePopupDriver.h"
+#include "core/testing/PluginPlaceholderOptions.h"
 #include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
@@ -2327,7 +2328,7 @@ void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRaw
     toHTMLPlugInElement(element)->setPlaceholder(DocumentFragmentPluginPlaceholder::create(fragment));
 }
 
-void Internals::forcePluginPlaceholder(HTMLElement* element, const Dictionary& options, ExceptionState& exceptionState)
+void Internals::forcePluginPlaceholder(HTMLElement* element, const PluginPlaceholderOptions& options, ExceptionState& exceptionState)
 {
     if (!element->isPluginElement()) {
         exceptionState.throwDOMException(InvalidNodeTypeError, "The element provided is not a plugin.");

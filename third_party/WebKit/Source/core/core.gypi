@@ -3440,6 +3440,7 @@
         ],
         'core_testing_dictionary_idl_files': [
           'testing/InternalDictionary.idl',
+          'testing/PluginPlaceholderOptions.idl',
         ],
         'webcore_testing_idl_files': [
           'testing/DictionaryTest.idl',
@@ -3467,6 +3468,8 @@
         'generated_core_testing_dictionary_files': [
           '<(blink_core_output_dir)/testing/InternalDictionary.cpp',
           '<(blink_core_output_dir)/testing/InternalDictionary.h',
+          '<(blink_core_output_dir)/testing/PluginPlaceholderOptions.cpp',
+          '<(blink_core_output_dir)/testing/PluginPlaceholderOptions.h',
         ],
         'webcore_testing_files': [
             '<(blink_core_output_dir)/InternalSettingsGenerated.cpp',

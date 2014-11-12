@@ -785,6 +785,8 @@
         '<(bindings_core_v8_output_dir)/V8RefCountedScriptWrappable.h',
         '<(bindings_core_v8_output_dir)/V8InternalDictionary.cpp',
         '<(bindings_core_v8_output_dir)/V8InternalDictionary.h',
+        '<(bindings_core_v8_output_dir)/V8PluginPlaceholderOptions.cpp',
+        '<(bindings_core_v8_output_dir)/V8PluginPlaceholderOptions.h',
       ],
       'sources/': [
         ['exclude', 'testing/js'],

@@ -66,6 +66,7 @@ class LocalFrame;
 class Node;
 class Page;
 class PagePopupController;
+class PluginPlaceholderOptions;
 class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
@@ -333,7 +334,7 @@ public:
     unsigned countHitRegions(CanvasRenderingContext2D*);
 
     void forcePluginPlaceholder(HTMLElement* plugin, PassRefPtrWillBeRawPtr<DocumentFragment>, ExceptionState&);
-    void forcePluginPlaceholder(HTMLElement* plugin, const Dictionary& options, ExceptionState&);
+    void forcePluginPlaceholder(HTMLElement* plugin, const PluginPlaceholderOptions&, ExceptionState&);
 
     Iterator* iterator(ScriptState*, ExceptionState&);
 
