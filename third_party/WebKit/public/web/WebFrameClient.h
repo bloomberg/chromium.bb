@@ -79,6 +79,7 @@ class WebSocketHandle;
 class WebNode;
 class WebPlugin;
 class WebPluginPlaceholder;
+class WebPushClient;
 class WebRTCPeerConnectionHandler;
 class WebScreenOrientationClient;
 class WebSharedWorker;
@@ -337,7 +338,11 @@ public:
     // Push API ---------------------------------------------------
 
     // Requests permission to use the Push API in the origin of this frame.
+    // FIXME: Merge this into WebPushClient as it's not going away as originally planned.
     virtual void requestPushPermission(WebCallback* callback) { }
+
+    // Used to access the embedder for the Push API.
+    virtual WebPushClient* pushClient() { return 0; }
 
 
     // Editing -------------------------------------------------------------

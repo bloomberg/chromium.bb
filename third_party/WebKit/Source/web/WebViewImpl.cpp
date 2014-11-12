@@ -91,7 +91,6 @@
 #include "modules/encryptedmedia/MediaKeysController.h"
 #include "modules/filesystem/InspectorFileSystemAgent.h"
 #include "modules/indexeddb/InspectorIndexedDBAgent.h"
-#include "modules/push_messaging/PushController.h"
 #include "platform/ContextMenu.h"
 #include "platform/ContextMenuItem.h"
 #include "platform/Cursor.h"
@@ -448,7 +447,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_page->makeOrdinary();
 
     if (m_client) {
-        providePushControllerTo(*m_page, m_client->webPushClient());
         setDeviceScaleFactor(m_client->screenInfo().deviceScaleFactor);
         setVisibilityState(m_client->visibilityState(), true);
     }

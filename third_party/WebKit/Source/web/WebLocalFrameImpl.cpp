@@ -151,6 +151,7 @@
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/notifications/NotificationController.h"
 #include "modules/notifications/NotificationPermissionClient.h"
+#include "modules/push_messaging/PushController.h"
 #include "modules/screen_orientation/ScreenOrientationController.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
@@ -1582,8 +1583,10 @@ void WebLocalFrameImpl::setCoreFrame(PassRefPtrWillBeRawPtr<LocalFrame> frame)
     // FIXME: we shouldn't add overhead to every frame by registering these objects when they're not used.
     if (m_frame) {
         OwnPtr<NotificationPresenterImpl> notificationPresenter = adoptPtr(new NotificationPresenterImpl());
-        if (m_client)
+        if (m_client) {
             notificationPresenter->initialize(m_client->notificationPresenter());
+            providePushControllerTo(*m_frame, m_client->pushClient());
+        }
 
         provideNotification(*m_frame, notificationPresenter.release());
         provideNotificationPermissionClientTo(*m_frame, NotificationPermissionClientImpl::create());

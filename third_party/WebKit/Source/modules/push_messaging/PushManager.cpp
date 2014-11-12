@@ -38,7 +38,7 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     ASSERT(scriptState->executionContext()->isDocument());
 
     Document* document = toDocument(scriptState->executionContext());
-    if (!document->domWindow() || !document->page())
+    if (!document->domWindow() || !document->frame())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Document is detached from window."));
 
     WebServiceWorkerProvider* serviceWorkerProvider = NavigatorServiceWorker::serviceWorker(*document->domWindow()->navigator())->provider();
@@ -48,7 +48,7 @@ ScriptPromise PushManager::registerPushMessaging(ScriptState* scriptState)
     // FIXME: Once everything except permission request goes through platform,
     // delete WebPushClient and usage such as this one.
     // See crbug.com/389194
-    WebPushClient* client = PushController::clientFrom(document->page());
+    WebPushClient* client = PushController::clientFrom(document->frame());
     ASSERT(client);
 
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(scriptState);
@@ -70,9 +70,9 @@ ScriptPromise PushManager::hasPermission(ScriptState* scriptState)
     ASSERT(scriptState->executionContext()->isDocument());
 
     Document* document = toDocument(scriptState->executionContext());
-    if (!document->domWindow() || !document->page())
+    if (!document->domWindow() || !document->frame())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-    blink::WebPushClient* client = PushController::clientFrom(document->page());
+    blink::WebPushClient* client = PushController::clientFrom(document->frame());
     ASSERT(client);
 
     // The currently implemented specification does not require a Service Worker to be present for the

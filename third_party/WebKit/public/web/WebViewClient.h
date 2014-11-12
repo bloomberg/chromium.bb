@@ -60,7 +60,6 @@ class WebImage;
 class WebInputElement;
 class WebKeyboardEvent;
 class WebNode;
-class WebPushClient;
 class WebRange;
 class WebSpeechRecognizer;
 class WebStorageNamespace;
@@ -280,11 +279,6 @@ public:
     {
         return WebPageVisibilityStateVisible;
     }
-
-
-    // Push Messaging -------------------------------------------------------
-
-    virtual WebPushClient* webPushClient() { return 0; }
 
 
     // Content detection ----------------------------------------------------

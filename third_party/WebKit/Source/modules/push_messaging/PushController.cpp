@@ -20,9 +20,9 @@ PassOwnPtrWillBeRawPtr<PushController> PushController::create(WebPushClient* cli
     return adoptPtrWillBeNoop(new PushController(client));
 }
 
-WebPushClient* PushController::clientFrom(Page* page)
+WebPushClient* PushController::clientFrom(LocalFrame* frame)
 {
-    if (PushController* controller = PushController::from(page))
+    if (PushController* controller = PushController::from(frame))
         return controller->client();
     return 0;
 }
@@ -32,9 +32,9 @@ const char* PushController::supplementName()
     return "PushController";
 }
 
-void providePushControllerTo(Page& page, WebPushClient* client)
+void providePushControllerTo(LocalFrame& frame, WebPushClient* client)
 {
-    PushController::provideTo(page, PushController::supplementName(), PushController::create(client));
+    PushController::provideTo(frame, PushController::supplementName(), PushController::create(client));
 }
 
 } // namespace blink
