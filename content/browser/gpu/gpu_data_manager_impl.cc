@@ -187,10 +187,9 @@ void GpuDataManagerImpl::GetBlacklistReasons(base::ListValue* reasons) const {
   private_->GetBlacklistReasons(reasons);
 }
 
-void GpuDataManagerImpl::GetDriverBugWorkarounds(
-    base::ListValue* workarounds) const {
+std::vector<std::string> GpuDataManagerImpl::GetDriverBugWorkarounds() const {
   base::AutoLock auto_lock(lock_);
-  private_->GetDriverBugWorkarounds(workarounds);
+  return private_->GetDriverBugWorkarounds();
 }
 
 void GpuDataManagerImpl::AddLogMessage(int level,
