@@ -559,8 +559,8 @@ void Mp2tStreamParser::OnEmitVideoBuffer(
       << stream_parser_buffer->timestamp().InMilliseconds()
       << " dur="
       << stream_parser_buffer->duration().InMilliseconds()
-      << " IsKeyframe="
-      << stream_parser_buffer->IsKeyframe();
+      << " is_key_frame="
+      << stream_parser_buffer->is_key_frame();
 
   // Ignore the incoming buffer if it is not associated with any config.
   if (buffer_queue_chain_.empty()) {

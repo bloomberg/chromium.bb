@@ -360,6 +360,9 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
   }
 
+  if (packet.get()->flags & AV_PKT_FLAG_KEY)
+    buffer->set_is_key_frame(true);
+
   last_packet_timestamp_ = buffer->timestamp();
   last_packet_duration_ = buffer->duration();
 

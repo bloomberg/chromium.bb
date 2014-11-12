@@ -195,7 +195,7 @@ class SourceBufferRange {
 
   // Returns true if |timestamp| is the timestamp of the next buffer in
   // sequence after |buffers_.back()|, false otherwise.
-  bool IsNextInSequence(DecodeTimestamp timestamp, bool is_keyframe) const;
+  bool IsNextInSequence(DecodeTimestamp timestamp, bool is_key_frame) const;
 
   // Adds all buffers which overlap [start, end) to the end of |buffers|.  If
   // no buffers exist in the range returns false, true otherwise.

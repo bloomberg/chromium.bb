@@ -332,7 +332,7 @@ bool FrameProcessor::HandlePartialAppendWindowTrimming(
     const scoped_refptr<StreamParserBuffer>& buffer) {
   DCHECK(buffer->duration() > base::TimeDelta());
   DCHECK_EQ(DemuxerStream::AUDIO, buffer->type());
-  DCHECK(buffer->IsKeyframe());
+  DCHECK(buffer->is_key_frame());
 
   const base::TimeDelta frame_end_timestamp =
       buffer->timestamp() + buffer->duration();
@@ -446,7 +446,7 @@ bool FrameProcessor::ProcessFrame(
              << ", PTS=" << presentation_timestamp.InSecondsF()
              << ", DTS=" << decode_timestamp.InSecondsF()
              << ", DUR=" << frame_duration.InSecondsF()
-             << ", RAP=" << frame->IsKeyframe();
+             << ", RAP=" << frame->is_key_frame();
 
     // Sanity check the timestamps.
     if (presentation_timestamp == kNoTimestamp()) {
@@ -638,7 +638,7 @@ bool FrameProcessor::ProcessFrame(
       // 12.1. If the coded frame is not a random access point, then drop the
       //       coded frame and jump to the top of the loop to start processing
       //       the next coded frame.
-      if (!frame->IsKeyframe()) {
+      if (!frame->is_key_frame()) {
         DVLOG(3) << __FUNCTION__
                  << ": Dropping frame that is not a random access point";
         return true;

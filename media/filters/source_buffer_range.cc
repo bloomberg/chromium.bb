@@ -36,7 +36,7 @@ SourceBufferRange::SourceBufferRange(
       interbuffer_distance_cb_(interbuffer_distance_cb),
       size_in_bytes_(0) {
   CHECK(!new_buffers.empty());
-  DCHECK(new_buffers.front()->IsKeyframe());
+  DCHECK(new_buffers.front()->is_key_frame());
   DCHECK(!interbuffer_distance_cb.is_null());
   AppendBuffersToEnd(new_buffers);
 }
@@ -55,7 +55,7 @@ void SourceBufferRange::AppendBuffersToEnd(const BufferQueue& new_buffers) {
     buffers_.push_back(*itr);
     size_in_bytes_ += (*itr)->data_size();
 
-    if ((*itr)->IsKeyframe()) {
+    if ((*itr)->is_key_frame()) {
       keyframe_map_.insert(
           std::make_pair((*itr)->GetDecodeTimestamp(),
                          buffers_.size() - 1 + keyframe_map_index_base_));
@@ -449,7 +449,7 @@ bool SourceBufferRange::CanAppendBuffersToEnd(
     const BufferQueue& buffers) const {
   DCHECK(!buffers_.empty());
   return IsNextInSequence(buffers.front()->GetDecodeTimestamp(),
-                          buffers.front()->IsKeyframe());
+                          buffers.front()->is_key_frame());
 }
 
 bool SourceBufferRange::BelongsToRange(DecodeTimestamp timestamp) const {
@@ -532,7 +532,7 @@ DecodeTimestamp SourceBufferRange::KeyframeBeforeTimestamp(
 }
 
 bool SourceBufferRange::IsNextInSequence(
-    DecodeTimestamp timestamp, bool is_keyframe) const {
+    DecodeTimestamp timestamp, bool is_key_frame) const {
   DecodeTimestamp end = buffers_.back()->GetDecodeTimestamp();
   if (end < timestamp &&
       (gap_policy_ == ALLOW_GAPS ||
@@ -541,7 +541,7 @@ bool SourceBufferRange::IsNextInSequence(
   }
 
   return timestamp == end && AllowSameTimestamp(
-      buffers_.back()->IsKeyframe(), is_keyframe);
+      buffers_.back()->is_key_frame(), is_key_frame);
 }
 
 base::TimeDelta SourceBufferRange::GetFudgeRoom() const {

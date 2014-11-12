@@ -178,6 +178,9 @@ struct MediaDecoderBuffer {
   // The number of bytes in |data|.
   uint32 data_size;
 
+  // Indicates whether or not this buffer is a random access point.
+  bool is_key_frame;
+
   // This is backed by an std::vector and results in a few copies.
   // Into the vector, onto and off the MessagePipe, back into a vector.
   array<uint8>? side_data;

@@ -110,13 +110,12 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   static scoped_refptr<StreamParserBuffer> CreateEOSBuffer();
 
   static scoped_refptr<StreamParserBuffer> CopyFrom(
-      const uint8* data, int data_size, bool is_keyframe, Type type,
+      const uint8* data, int data_size, bool is_key_frame, Type type,
       TrackId track_id);
   static scoped_refptr<StreamParserBuffer> CopyFrom(
       const uint8* data, int data_size,
-      const uint8* side_data, int side_data_size, bool is_keyframe, Type type,
+      const uint8* side_data, int side_data_size, bool is_key_frame, Type type,
       TrackId track_id);
-  bool IsKeyframe() const { return is_keyframe_; }
 
   // Decode timestamp. If not explicitly set, or set to kNoTimestamp(), the
   // value will be taken from the normal timestamp.
@@ -174,11 +173,10 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
  private:
   StreamParserBuffer(const uint8* data, int data_size,
                      const uint8* side_data, int side_data_size,
-                     bool is_keyframe, Type type,
+                     bool is_key_frame, Type type,
                      TrackId track_id);
   ~StreamParserBuffer() override;
 
-  bool is_keyframe_;
   DecodeTimestamp decode_timestamp_;
   int config_id_;
   Type type_;

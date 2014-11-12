@@ -19,7 +19,7 @@ static std::string BufferQueueToString(
        itr != buffers.end();
        ++itr) {
     ss << " " << (*itr)->timestamp().InMilliseconds();
-    if ((*itr)->IsKeyframe())
+    if ((*itr)->is_key_frame())
       ss << "K";
   }
   ss << " }";

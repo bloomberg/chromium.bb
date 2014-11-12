@@ -25,6 +25,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
       reinterpret_cast<const uint8*>(&kSideData), kSideDataSize));
   buffer->set_timestamp(base::TimeDelta::FromMilliseconds(123));
   buffer->set_duration(base::TimeDelta::FromMilliseconds(456));
+  buffer->set_is_key_frame(true);
   buffer->set_splice_timestamp(base::TimeDelta::FromMilliseconds(200));
   buffer->set_discard_padding(media::DecoderBuffer::DiscardPadding(
       base::TimeDelta::FromMilliseconds(5),
@@ -41,8 +42,16 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   EXPECT_EQ(0, memcmp(result->side_data(), kSideData, kSideDataSize));
   EXPECT_EQ(buffer->timestamp(), result->timestamp());
   EXPECT_EQ(buffer->duration(), result->duration());
+  EXPECT_EQ(buffer->is_key_frame(), result->is_key_frame());
   EXPECT_EQ(buffer->splice_timestamp(), result->splice_timestamp());
   EXPECT_EQ(buffer->discard_padding(), result->discard_padding());
+
+  // Verify a false |is_key_frame| round-trips.
+  buffer->set_is_key_frame(false);
+  MediaDecoderBufferPtr ptr2(MediaDecoderBuffer::From(buffer));
+  scoped_refptr<DecoderBuffer> result2(ptr2.To<scoped_refptr<DecoderBuffer>>());
+  EXPECT_EQ(0, memcmp(result2->data(), kData, kDataSize));
+  EXPECT_EQ(buffer->is_key_frame(), result2->is_key_frame());
 }
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {

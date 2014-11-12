@@ -108,13 +108,28 @@ class FFmpegDemuxerTest : public testing::Test {
 
   MOCK_METHOD2(OnReadDoneCalled, void(int, int64));
 
+  struct ReadExpectation {
+    ReadExpectation(int size,
+                    int64 timestamp_us,
+                    const base::TimeDelta& discard_front_padding,
+                    bool is_key_frame)
+        : size(size),
+          timestamp_us(timestamp_us),
+          discard_front_padding(discard_front_padding),
+          is_key_frame(is_key_frame) {
+    }
+
+    int size;
+    int64 timestamp_us;
+    base::TimeDelta discard_front_padding;
+    bool is_key_frame;
+  };
+
   // Verifies that |buffer| has a specific |size| and |timestamp|.
   // |location| simply indicates where the call to this function was made.
   // This makes it easier to track down where test failures occur.
   void OnReadDone(const tracked_objects::Location& location,
-                  int size,
-                  int64 timestamp_us,
-                  base::TimeDelta discard_front_padding,
+                  const ReadExpectation& read_expectation,
                   DemuxerStream::Status status,
                   const scoped_refptr<DecoderBuffer>& buffer) {
     std::string location_str;
@@ -122,39 +137,46 @@ class FFmpegDemuxerTest : public testing::Test {
     location_str += "\n";
     SCOPED_TRACE(location_str);
     EXPECT_EQ(status, DemuxerStream::kOk);
-    OnReadDoneCalled(size, timestamp_us);
     EXPECT_TRUE(buffer.get() != NULL);
-    EXPECT_EQ(size, buffer->data_size());
-    EXPECT_EQ(timestamp_us, buffer->timestamp().InMicroseconds());
-    EXPECT_EQ(discard_front_padding, buffer->discard_padding().first);
+    EXPECT_EQ(read_expectation.size, buffer->data_size());
+    EXPECT_EQ(read_expectation.timestamp_us,
+              buffer->timestamp().InMicroseconds());
+    EXPECT_EQ(read_expectation.discard_front_padding,
+              buffer->discard_padding().first);
+    EXPECT_EQ(read_expectation.is_key_frame, buffer->is_key_frame());
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    OnReadDoneCalled(read_expectation.size, read_expectation.timestamp_us);
     message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   DemuxerStream::ReadCB NewReadCB(const tracked_objects::Location& location,
                                   int size,
-                                  int64 timestamp_us) {
-    EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
-    return base::Bind(&FFmpegDemuxerTest::OnReadDone,
-                      base::Unretained(this),
-                      location,
-                      size,
-                      timestamp_us,
-                      base::TimeDelta());
+                                  int64 timestamp_us,
+                                  bool is_key_frame) {
+    return NewReadCBWithCheckedDiscard(location,
+                                       size,
+                                       timestamp_us,
+                                       base::TimeDelta(),
+                                       is_key_frame);
   }
 
   DemuxerStream::ReadCB NewReadCBWithCheckedDiscard(
       const tracked_objects::Location& location,
       int size,
       int64 timestamp_us,
-      base::TimeDelta discard_front_padding) {
+      base::TimeDelta discard_front_padding,
+      bool is_key_frame) {
     EXPECT_CALL(*this, OnReadDoneCalled(size, timestamp_us));
+
+    struct ReadExpectation read_expectation(size,
+                                            timestamp_us,
+                                            discard_front_padding,
+                                            is_key_frame);
+
     return base::Bind(&FFmpegDemuxerTest::OnReadDone,
                       base::Unretained(this),
                       location,
-                      size,
-                      timestamp_us,
-                      discard_front_padding);
+                      read_expectation);
   }
 
   // TODO(xhwang): This is a workaround of the issue that move-only parameters
@@ -374,10 +396,10 @@ TEST_F(FFmpegDemuxerTest, Read_Audio) {
   // Attempt a read from the audio stream and run the message loop until done.
   DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
 
-  audio->Read(NewReadCB(FROM_HERE, 29, 0));
+  audio->Read(NewReadCB(FROM_HERE, 29, 0, true));
   message_loop_.Run();
 
-  audio->Read(NewReadCB(FROM_HERE, 27, 3000));
+  audio->Read(NewReadCB(FROM_HERE, 27, 3000, true));
   message_loop_.Run();
 }
 
@@ -389,10 +411,10 @@ TEST_F(FFmpegDemuxerTest, Read_Video) {
   // Attempt a read from the video stream and run the message loop until done.
   DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
 
-  video->Read(NewReadCB(FROM_HERE, 22084, 0));
+  video->Read(NewReadCB(FROM_HERE, 22084, 0, true));
   message_loop_.Run();
 
-  video->Read(NewReadCB(FROM_HERE, 1057, 33000));
+  video->Read(NewReadCB(FROM_HERE, 1057, 33000, false));
   message_loop_.Run();
 }
 
@@ -406,10 +428,10 @@ TEST_F(FFmpegDemuxerTest, Read_Text) {
   ASSERT_TRUE(text_stream);
   EXPECT_EQ(DemuxerStream::TEXT, text_stream->type());
 
-  text_stream->Read(NewReadCB(FROM_HERE, 31, 0));
+  text_stream->Read(NewReadCB(FROM_HERE, 31, 0, true));
   message_loop_.Run();
 
-  text_stream->Read(NewReadCB(FROM_HERE, 19, 500000));
+  text_stream->Read(NewReadCB(FROM_HERE, 19, 500000, true));
   message_loop_.Run();
 }
 
@@ -438,9 +460,11 @@ TEST_F(FFmpegDemuxerTest, Read_VideoPositiveStartTime) {
 
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
-    video->Read(NewReadCB(FROM_HERE, 5636, video_start_time.InMicroseconds()));
+    video->Read(NewReadCB(FROM_HERE, 5636, video_start_time.InMicroseconds(),
+                          true));
     message_loop_.Run();
-    audio->Read(NewReadCB(FROM_HERE, 165, audio_start_time.InMicroseconds()));
+    audio->Read(NewReadCB(FROM_HERE, 165, audio_start_time.InMicroseconds(),
+                          true));
     message_loop_.Run();
 
     // Verify that the start time is equal to the lowest timestamp (ie the
@@ -466,7 +490,7 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
     demuxer_->GetStream(DemuxerStream::AUDIO)
-        ->Read(NewReadCB(FROM_HERE, 4095, 0));
+        ->Read(NewReadCB(FROM_HERE, 4095, 0, true));
     message_loop_.Run();
     EXPECT_EQ(base::TimeDelta(), demuxer_->start_time());
 
@@ -478,8 +502,9 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNoStartTime) {
 }
 
 // TODO(dalecurtis): Test is disabled since FFmpeg does not currently guarantee
-// the order of demuxed packets in OGG containers.  Re-enable once we decide to
-// either workaround it or attempt a fix upstream.  See http://crbug.com/387996.
+// the order of demuxed packets in OGG containers.  Re-enable and fix key frame
+// expectations once we decide to either workaround it or attempt a fix
+// upstream.  See http://crbug.com/387996.
 TEST_F(FFmpegDemuxerTest,
        DISABLED_Read_AudioNegativeStartTimeAndOggDiscard_Bear) {
   // Many ogg files have negative starting timestamps, so ensure demuxing and
@@ -494,27 +519,29 @@ TEST_F(FFmpegDemuxerTest,
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
     audio->Read(
-        NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration()));
+        NewReadCBWithCheckedDiscard(FROM_HERE, 40, 0, kInfiniteDuration(),
+                                    true));
     message_loop_.Run();
     audio->Read(
-        NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903, kInfiniteDuration()));
+        NewReadCBWithCheckedDiscard(FROM_HERE, 41, 2903, kInfiniteDuration(),
+                                    true));
     message_loop_.Run();
     audio->Read(NewReadCBWithCheckedDiscard(
-        FROM_HERE, 173, 5805, base::TimeDelta::FromMicroseconds(10159)));
+        FROM_HERE, 173, 5805, base::TimeDelta::FromMicroseconds(10159), true));
     message_loop_.Run();
 
-    audio->Read(NewReadCB(FROM_HERE, 148, 18866));
+    audio->Read(NewReadCB(FROM_HERE, 148, 18866, true));
     message_loop_.Run();
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(-15964),
               demuxer_->start_time());
 
-    video->Read(NewReadCB(FROM_HERE, 5751, 0));
+    video->Read(NewReadCB(FROM_HERE, 5751, 0, true));
     message_loop_.Run();
 
-    video->Read(NewReadCB(FROM_HERE, 846, 33367));
+    video->Read(NewReadCB(FROM_HERE, 846, 33367, true));
     message_loop_.Run();
 
-    video->Read(NewReadCB(FROM_HERE, 1255, 66733));
+    video->Read(NewReadCB(FROM_HERE, 1255, 66733, true));
     message_loop_.Run();
 
     // Seek back to the beginning and repeat the test.
@@ -540,10 +567,10 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
   // Run the test twice with a seek in between.
   for (int i = 0; i < 2; ++i) {
     audio->Read(NewReadCBWithCheckedDiscard(
-        FROM_HERE, 1, 0, base::TimeDelta::FromMicroseconds(2902)));
+        FROM_HERE, 1, 0, base::TimeDelta::FromMicroseconds(2902), true));
     message_loop_.Run();
 
-    audio->Read(NewReadCB(FROM_HERE, 1, 2902));
+    audio->Read(NewReadCB(FROM_HERE, 1, 2902, true));
     message_loop_.Run();
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(-2902),
               demuxer_->start_time());
@@ -552,13 +579,13 @@ TEST_F(FFmpegDemuxerTest, Read_AudioNegativeStartTimeAndOggDiscard_Sync) {
     // must always be greater than zero.
     EXPECT_EQ(base::TimeDelta(), demuxer_->GetStartTime());
 
-    video->Read(NewReadCB(FROM_HERE, 9997, 0));
+    video->Read(NewReadCB(FROM_HERE, 9997, 0, true));
     message_loop_.Run();
 
-    video->Read(NewReadCB(FROM_HERE, 16, 33241));
+    video->Read(NewReadCB(FROM_HERE, 16, 33241, false));
     message_loop_.Run();
 
-    video->Read(NewReadCB(FROM_HERE, 631, 66482));
+    video->Read(NewReadCB(FROM_HERE, 631, 66482, false));
     message_loop_.Run();
 
     // Seek back to the beginning and repeat the test.
@@ -646,7 +673,7 @@ TEST_F(FFmpegDemuxerTest, Seek) {
   ASSERT_TRUE(audio);
 
   // Read a video packet and release it.
-  video->Read(NewReadCB(FROM_HERE, 22084, 0));
+  video->Read(NewReadCB(FROM_HERE, 22084, 0, true));
   message_loop_.Run();
 
   // Issue a simple forward seek, which should discard queued packets.
@@ -656,19 +683,19 @@ TEST_F(FFmpegDemuxerTest, Seek) {
   event.RunAndWaitForStatus(PIPELINE_OK);
 
   // Audio read #1.
-  audio->Read(NewReadCB(FROM_HERE, 145, 803000));
+  audio->Read(NewReadCB(FROM_HERE, 145, 803000, true));
   message_loop_.Run();
 
   // Audio read #2.
-  audio->Read(NewReadCB(FROM_HERE, 148, 826000));
+  audio->Read(NewReadCB(FROM_HERE, 148, 826000, true));
   message_loop_.Run();
 
   // Video read #1.
-  video->Read(NewReadCB(FROM_HERE, 5425, 801000));
+  video->Read(NewReadCB(FROM_HERE, 5425, 801000, true));
   message_loop_.Run();
 
   // Video read #2.
-  video->Read(NewReadCB(FROM_HERE, 1906, 834000));
+  video->Read(NewReadCB(FROM_HERE, 1906, 834000, false));
   message_loop_.Run();
 }
 
@@ -690,7 +717,7 @@ TEST_F(FFmpegDemuxerTest, SeekText) {
   ASSERT_TRUE(audio);
 
   // Read a text packet and release it.
-  text_stream->Read(NewReadCB(FROM_HERE, 31, 0));
+  text_stream->Read(NewReadCB(FROM_HERE, 31, 0, true));
   message_loop_.Run();
 
   // Issue a simple forward seek, which should discard queued packets.
@@ -700,27 +727,27 @@ TEST_F(FFmpegDemuxerTest, SeekText) {
   event.RunAndWaitForStatus(PIPELINE_OK);
 
   // Audio read #1.
-  audio->Read(NewReadCB(FROM_HERE, 145, 803000));
+  audio->Read(NewReadCB(FROM_HERE, 145, 803000, true));
   message_loop_.Run();
 
   // Audio read #2.
-  audio->Read(NewReadCB(FROM_HERE, 148, 826000));
+  audio->Read(NewReadCB(FROM_HERE, 148, 826000, true));
   message_loop_.Run();
 
   // Video read #1.
-  video->Read(NewReadCB(FROM_HERE, 5425, 801000));
+  video->Read(NewReadCB(FROM_HERE, 5425, 801000, true));
   message_loop_.Run();
 
   // Video read #2.
-  video->Read(NewReadCB(FROM_HERE, 1906, 834000));
+  video->Read(NewReadCB(FROM_HERE, 1906, 834000, false));
   message_loop_.Run();
 
   // Text read #1.
-  text_stream->Read(NewReadCB(FROM_HERE, 19, 500000));
+  text_stream->Read(NewReadCB(FROM_HERE, 19, 500000, true));
   message_loop_.Run();
 
   // Text read #2.
-  text_stream->Read(NewReadCB(FROM_HERE, 19, 1000000));
+  text_stream->Read(NewReadCB(FROM_HERE, 19, 1000000, true));
   message_loop_.Run();
 }
 
@@ -772,7 +799,7 @@ TEST_F(FFmpegDemuxerTest, SeekWithCuesBeforeFirstCluster) {
   ASSERT_TRUE(audio);
 
   // Read a video packet and release it.
-  video->Read(NewReadCB(FROM_HERE, 22084, 0));
+  video->Read(NewReadCB(FROM_HERE, 22084, 0, true));
   message_loop_.Run();
 
   // Issue a simple forward seek, which should discard queued packets.
@@ -782,19 +809,19 @@ TEST_F(FFmpegDemuxerTest, SeekWithCuesBeforeFirstCluster) {
   event.RunAndWaitForStatus(PIPELINE_OK);
 
   // Audio read #1.
-  audio->Read(NewReadCB(FROM_HERE, 40, 2403000));
+  audio->Read(NewReadCB(FROM_HERE, 40, 2403000, true));
   message_loop_.Run();
 
   // Audio read #2.
-  audio->Read(NewReadCB(FROM_HERE, 42, 2406000));
+  audio->Read(NewReadCB(FROM_HERE, 42, 2406000, true));
   message_loop_.Run();
 
   // Video read #1.
-  video->Read(NewReadCB(FROM_HERE, 5276, 2402000));
+  video->Read(NewReadCB(FROM_HERE, 5276, 2402000, true));
   message_loop_.Run();
 
   // Video read #2.
-  video->Read(NewReadCB(FROM_HERE, 1740, 2436000));
+  video->Read(NewReadCB(FROM_HERE, 1740, 2436000, false));
   message_loop_.Run();
 }
 

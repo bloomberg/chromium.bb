@@ -189,8 +189,8 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   DCHECK(!end_of_stream_);
 
   // New media segments must begin with a keyframe.
-  if (new_media_segment_ && !buffers.front()->IsKeyframe()) {
-    MEDIA_LOG(log_cb_) << "Media segment did not begin with keyframe.";
+  if (new_media_segment_ && !buffers.front()->is_key_frame()) {
+    MEDIA_LOG(log_cb_) << "Media segment did not begin with key frame.";
     return false;
   }
 
@@ -206,7 +206,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   }
 
   if (!IsNextTimestampValid(buffers.front()->GetDecodeTimestamp(),
-                            buffers.front()->IsKeyframe())) {
+                            buffers.front()->is_key_frame())) {
     MEDIA_LOG(log_cb_) << "Invalid same timestamp construct detected at time "
                        << buffers.front()->GetDecodeTimestamp().InSecondsF();
 
@@ -227,7 +227,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
   if (range_for_next_append_ != ranges_.end()) {
     (*range_for_next_append_)->AppendBuffersToEnd(buffers);
     last_appended_buffer_timestamp_ = buffers.back()->GetDecodeTimestamp();
-    last_appended_buffer_is_keyframe_ = buffers.back()->IsKeyframe();
+    last_appended_buffer_is_keyframe_ = buffers.back()->is_key_frame();
   } else {
     DecodeTimestamp new_range_start_time = std::min(
         media_segment_start_time_, buffers.front()->GetDecodeTimestamp());
@@ -235,25 +235,25 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
     BufferQueue trimmed_buffers;
 
     // If the new range is not being created because of a new media
-    // segment, then we must make sure that we start with a keyframe.
+    // segment, then we must make sure that we start with a key frame.
     // This can happen if the GOP in the previous append gets destroyed
     // by a Remove() call.
     if (!new_media_segment_) {
       BufferQueue::const_iterator itr = buffers.begin();
 
-      // Scan past all the non-keyframes.
-      while (itr != buffers.end() && !(*itr)->IsKeyframe()) {
+      // Scan past all the non-key-frames.
+      while (itr != buffers.end() && !(*itr)->is_key_frame()) {
         ++itr;
       }
 
-      // If we didn't find a keyframe, then update the last appended
+      // If we didn't find a key frame, then update the last appended
       // buffer state and return.
       if (itr == buffers.end()) {
         last_appended_buffer_timestamp_ = buffers.back()->GetDecodeTimestamp();
-        last_appended_buffer_is_keyframe_ = buffers.back()->IsKeyframe();
+        last_appended_buffer_is_keyframe_ = buffers.back()->is_key_frame();
         return true;
       } else if (itr != buffers.begin()) {
-        // Copy the first keyframe and everything after it into
+        // Copy the first key frame and everything after it into
         // |trimmed_buffers|.
         trimmed_buffers.assign(itr, buffers.end());
         buffers_for_new_range = &trimmed_buffers;
@@ -272,7 +272,7 @@ bool SourceBufferStream::Append(const BufferQueue& buffers) {
     last_appended_buffer_timestamp_ =
         buffers_for_new_range->back()->GetDecodeTimestamp();
     last_appended_buffer_is_keyframe_ =
-        buffers_for_new_range->back()->IsKeyframe();
+        buffers_for_new_range->back()->is_key_frame();
   }
 
   new_media_segment_ = false;
@@ -456,7 +456,7 @@ bool SourceBufferStream::IsMonotonicallyIncreasing(
   for (BufferQueue::const_iterator itr = buffers.begin();
        itr != buffers.end(); ++itr) {
     DecodeTimestamp current_timestamp = (*itr)->GetDecodeTimestamp();
-    bool current_is_keyframe = (*itr)->IsKeyframe();
+    bool current_is_keyframe = (*itr)->is_key_frame();
     DCHECK(current_timestamp != kNoDecodeTimestamp());
     DCHECK((*itr)->duration() >= base::TimeDelta())
         << "Packet with invalid duration."
@@ -740,7 +740,7 @@ void SourceBufferStream::PrepareRangesForNextAppend(
   DecodeTimestamp prev_timestamp = last_appended_buffer_timestamp_;
   bool prev_is_keyframe = last_appended_buffer_is_keyframe_;
   DecodeTimestamp next_timestamp = new_buffers.front()->GetDecodeTimestamp();
-  bool next_is_keyframe = new_buffers.front()->IsKeyframe();
+  bool next_is_keyframe = new_buffers.front()->is_key_frame();
 
   if (prev_timestamp != kNoDecodeTimestamp() &&
       prev_timestamp != next_timestamp) {

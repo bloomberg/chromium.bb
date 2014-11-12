@@ -220,6 +220,7 @@ MediaDecoderBufferPtr TypeConverter<MediaDecoderBufferPtr,
 
   mojo_buffer->timestamp_usec = input->timestamp().InMicroseconds();
   mojo_buffer->duration_usec = input->duration().InMicroseconds();
+  mojo_buffer->is_key_frame = input->is_key_frame();
   mojo_buffer->data_size = input->data_size();
   mojo_buffer->side_data_size = input->side_data_size();
   mojo_buffer->front_discard_usec =
@@ -290,6 +291,10 @@ scoped_refptr<media::DecoderBuffer>  TypeConverter<
       base::TimeDelta::FromMicroseconds(input->timestamp_usec));
   buffer->set_duration(
       base::TimeDelta::FromMicroseconds(input->duration_usec));
+
+  if (input->is_key_frame)
+    buffer->set_is_key_frame(true);
+
   media::DecoderBuffer::DiscardPadding discard_padding(
       base::TimeDelta::FromMicroseconds(input->front_discard_usec),
       base::TimeDelta::FromMicroseconds(input->back_discard_usec));

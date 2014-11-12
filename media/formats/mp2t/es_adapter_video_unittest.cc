@@ -92,7 +92,7 @@ void EsAdapterVideoTest::OnNewConfig(const VideoDecoderConfig& video_config) {
 void EsAdapterVideoTest::OnNewBuffer(
     scoped_refptr<StreamParserBuffer> buffer) {
   buffer_descriptors_ << "(" << buffer->duration().InMilliseconds() << ","
-                      << (buffer->IsKeyframe() ? "Y" : "N") << ") ";
+                      << (buffer->is_key_frame() ? "Y" : "N") << ") ";
 }
 
 std::string EsAdapterVideoTest::RunAdapterTest(

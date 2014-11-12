@@ -42,16 +42,18 @@ class MEDIA_EXPORT DecoderBuffer
   };
 
   // Allocates buffer with |size| >= 0.  Buffer will be padded and aligned
-  // as necessary.
+  // as necessary, and |is_key_frame_| will default to false.
   explicit DecoderBuffer(int size);
 
   // Create a DecoderBuffer whose |data_| is copied from |data|.  Buffer will be
   // padded and aligned as necessary.  |data| must not be NULL and |size| >= 0.
+  // The buffer's |is_key_frame_| will default to false.
   static scoped_refptr<DecoderBuffer> CopyFrom(const uint8* data, int size);
 
   // Create a DecoderBuffer whose |data_| is copied from |data| and |side_data_|
   // is copied from |side_data|. Buffers will be padded and aligned as necessary
-  // Data pointers must not be NULL and sizes must be >= 0.
+  // Data pointers must not be NULL and sizes must be >= 0. The buffer's
+  // |is_key_frame_| will default to false.
   static scoped_refptr<DecoderBuffer> CopyFrom(const uint8* data, int size,
                                                const uint8* side_data,
                                                int side_data_size);
@@ -154,6 +156,16 @@ class MEDIA_EXPORT DecoderBuffer
     splice_timestamp_ = splice_timestamp;
   }
 
+  bool is_key_frame() const {
+    DCHECK(!end_of_stream());
+    return is_key_frame_;
+  }
+
+  void set_is_key_frame(bool is_key_frame) {
+    DCHECK(!end_of_stream());
+    is_key_frame_ = is_key_frame;
+  }
+
   // Returns a human-readable string describing |*this|.
   std::string AsHumanReadableString();
 
@@ -162,7 +174,8 @@ class MEDIA_EXPORT DecoderBuffer
 
   // Allocates a buffer of size |size| >= 0 and copies |data| into it.  Buffer
   // will be padded and aligned as necessary.  If |data| is NULL then |data_| is
-  // set to NULL and |buffer_size_| to 0.
+  // set to NULL and |buffer_size_| to 0.  |is_key_frame_| will default to
+  // false.
   DecoderBuffer(const uint8* data, int size,
                 const uint8* side_data, int side_data_size);
   virtual ~DecoderBuffer();
@@ -178,6 +191,7 @@ class MEDIA_EXPORT DecoderBuffer
   scoped_ptr<DecryptConfig> decrypt_config_;
   DiscardPadding discard_padding_;
   base::TimeDelta splice_timestamp_;
+  bool is_key_frame_;
 
   // Constructor helper method for memory allocations.
   void Initialize();

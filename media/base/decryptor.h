@@ -69,6 +69,9 @@ class MEDIA_EXPORT Decryptor {
   //   decrypted buffer must be NULL.
   // - This parameter should not be set to kNeedMoreData.
   // Second parameter: The decrypted buffer.
+  // - Only |data|, |data_size| and |timestamp| are set in the returned
+  //   DecoderBuffer. The callback handler is responsible for setting other
+  //   fields as appropriate.
   typedef base::Callback<void(Status,
                               const scoped_refptr<DecoderBuffer>&)> DecryptCB;
 

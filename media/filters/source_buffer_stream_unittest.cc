@@ -232,7 +232,7 @@ class SourceBufferStreamTest : public testing::Test {
         break;
 
       if (expect_keyframe && current_position == starting_position)
-        EXPECT_TRUE(buffer->IsKeyframe());
+        EXPECT_TRUE(buffer->is_key_frame());
 
       if (expected_data) {
         const uint8* actual_data = buffer->data();
@@ -295,7 +295,7 @@ class SourceBufferStreamTest : public testing::Test {
 
       // Handle preroll buffers.
       if (EndsWith(timestamps[i], "P", true)) {
-        ASSERT_TRUE(buffer->IsKeyframe());
+        ASSERT_TRUE(buffer->is_key_frame());
         scoped_refptr<StreamParserBuffer> preroll_buffer;
         preroll_buffer.swap(buffer);
 
@@ -312,10 +312,10 @@ class SourceBufferStreamTest : public testing::Test {
                   preroll_buffer->GetDecodeTimestamp());
         ASSERT_EQ(kInfiniteDuration(), preroll_buffer->discard_padding().first);
         ASSERT_EQ(base::TimeDelta(), preroll_buffer->discard_padding().second);
-        ASSERT_TRUE(buffer->IsKeyframe());
+        ASSERT_TRUE(buffer->is_key_frame());
 
         ss << "P";
-      } else if (buffer->IsKeyframe()) {
+      } else if (buffer->is_key_frame()) {
         ss << "K";
       }
 
@@ -2301,7 +2301,7 @@ TEST_F(SourceBufferStreamTest, PresentationTimestampIndependence) {
     scoped_refptr<StreamParserBuffer> buffer;
     ASSERT_EQ(stream_->GetNextBuffer(&buffer), SourceBufferStream::kSuccess);
 
-    if (buffer->IsKeyframe()) {
+    if (buffer->is_key_frame()) {
       EXPECT_EQ(DecodeTimestamp::FromPresentationTime(buffer->timestamp()),
                 buffer->GetDecodeTimestamp());
       last_keyframe_idx = i;

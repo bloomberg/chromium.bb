@@ -186,6 +186,8 @@ class AudioDecoderTest : public testing::TestWithParam<DecoderTestData> {
         reader_->GetAVStreamForTesting()->time_base, packet.pts));
     buffer->set_duration(ConvertFromTimeBase(
         reader_->GetAVStreamForTesting()->time_base, packet.duration));
+    if (packet.flags & AV_PKT_FLAG_KEY)
+      buffer->set_is_key_frame(true);
 
     // Don't set discard padding for Opus, it already has discard behavior set
     // based on the codec delay in the AudioDecoderConfig.
