@@ -41,6 +41,7 @@ class StyleRuleViewport;
 class StyleRuleCSSStyleDeclaration;
 
 class CSSViewportRule final: public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSViewportRule> create(StyleRuleViewport* viewportRule, CSSStyleSheet* sheet)
     {

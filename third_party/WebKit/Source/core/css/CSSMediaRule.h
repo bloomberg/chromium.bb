@@ -31,6 +31,7 @@ namespace blink {
 class StyleRuleMedia;
 
 class CSSMediaRule final : public CSSGroupingRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSMediaRule> create(StyleRuleMedia* rule, CSSStyleSheet* sheet)
     {

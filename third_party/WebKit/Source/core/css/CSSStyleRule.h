@@ -32,6 +32,7 @@ class StyleRuleCSSStyleDeclaration;
 class StyleRule;
 
 class CSSStyleRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSStyleRule> create(StyleRule* rule, CSSStyleSheet* sheet)
     {

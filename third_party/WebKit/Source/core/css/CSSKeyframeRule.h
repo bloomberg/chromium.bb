@@ -75,6 +75,7 @@ private:
 };
 
 class CSSKeyframeRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~CSSKeyframeRule();
 

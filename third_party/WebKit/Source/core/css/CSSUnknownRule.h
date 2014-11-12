@@ -27,6 +27,7 @@
 namespace blink {
 
 class CSSUnknownRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     CSSUnknownRule() : CSSRule(0) { }
     virtual ~CSSUnknownRule() { }

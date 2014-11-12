@@ -31,6 +31,7 @@ class MediaList;
 class StyleRuleImport;
 
 class CSSImportRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSImportRule> create(StyleRuleImport* rule, CSSStyleSheet* sheet)
     {

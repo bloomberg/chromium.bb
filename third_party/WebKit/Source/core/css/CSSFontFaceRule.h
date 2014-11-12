@@ -32,6 +32,7 @@ class StyleRuleFontFace;
 class StyleRuleCSSStyleDeclaration;
 
 class CSSFontFaceRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSFontFaceRule> create(StyleRuleFontFace* rule, CSSStyleSheet* sheet)
     {

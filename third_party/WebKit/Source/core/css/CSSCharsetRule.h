@@ -27,6 +27,7 @@
 namespace blink {
 
 class CSSCharsetRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSCharsetRule> create(CSSStyleSheet* parent, const String& encoding)
     {

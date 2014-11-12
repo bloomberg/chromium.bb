@@ -34,7 +34,8 @@ class CSSParserContext;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-class CSSRule : public RefCountedWillBeGarbageCollectedFinalized<CSSRule>, public ScriptWrappableBase {
+class CSSRule : public RefCountedWillBeGarbageCollectedFinalized<CSSRule>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~CSSRule() { }
 

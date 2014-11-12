@@ -40,6 +40,7 @@ class StyleRuleFilter;
 class StyleRuleCSSStyleDeclaration;
 
 class CSSFilterRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSFilterRule> create(StyleRuleFilter* rule, CSSStyleSheet* sheet)
     {

@@ -19,13 +19,11 @@
  */
 
 // Introduced in DOM Level 2:
+// http://dev.w3.org/csswg/cssom/#the-cssrule-interface
 [
-    Custom=Wrap,
     DependentLifetime,
-    NotScriptWrappable,
     WillBeGarbageCollected,
 ] interface CSSRule {
-
     // RuleType
     const unsigned short UNKNOWN_RULE = 0;
     const unsigned short STYLE_RULE = 1;
@@ -48,5 +46,4 @@
 
     readonly attribute CSSStyleSheet    parentStyleSheet;
     readonly attribute CSSRule          parentRule;
-
 };

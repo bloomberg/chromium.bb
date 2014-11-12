@@ -36,6 +36,7 @@ namespace blink {
 class StyleRuleSupports;
 
 class CSSSupportsRule final : public CSSGroupingRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSSupportsRule> create(StyleRuleSupports* rule, CSSStyleSheet* sheet)
     {

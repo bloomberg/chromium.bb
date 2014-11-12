@@ -73,6 +73,7 @@ private:
 DEFINE_STYLE_RULE_TYPE_CASTS(Keyframes);
 
 class CSSKeyframesRule final : public CSSRule {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<CSSKeyframesRule> create(StyleRuleKeyframes* rule, CSSStyleSheet* sheet)
     {

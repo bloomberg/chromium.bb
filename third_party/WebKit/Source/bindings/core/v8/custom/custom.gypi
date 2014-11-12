@@ -8,7 +8,6 @@
             'V8BlobCustom.cpp',
             'V8BlobCustomHelpers.cpp',
             'V8BlobCustomHelpers.h',
-            'V8CSSRuleCustom.cpp',
             'V8CSSStyleDeclarationCustom.cpp',
             'V8CSSValueCustom.cpp',
             'V8CanvasRenderingContext2DCustom.cpp',
