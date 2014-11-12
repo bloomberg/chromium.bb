@@ -830,11 +830,19 @@ IntSize BoxPainter::calculateFillTileSize(const RenderBoxModelObject& obj, const
         // If one of the values is auto we have to use the appropriate
         // scale to maintain our aspect ratio.
         if (layerWidth.isAuto() && !layerHeight.isAuto()) {
-            if (imageIntrinsicSize.height())
-                tileSize.setWidth(imageIntrinsicSize.width() * tileSize.height() / imageIntrinsicSize.height());
+            if (imageIntrinsicSize.height()) {
+                LayoutUnit adjustedWidth = imageIntrinsicSize.width() * tileSize.height() / imageIntrinsicSize.height();
+                if (imageIntrinsicSize.width() >= 1 && adjustedWidth < 1)
+                    adjustedWidth = 1;
+                tileSize.setWidth(adjustedWidth);
+            }
         } else if (!layerWidth.isAuto() && layerHeight.isAuto()) {
-            if (imageIntrinsicSize.width())
-                tileSize.setHeight(imageIntrinsicSize.height() * tileSize.width() / imageIntrinsicSize.width());
+            if (imageIntrinsicSize.width()) {
+                LayoutUnit adjustedHeight = imageIntrinsicSize.height() * tileSize.width() / imageIntrinsicSize.width();
+                if (imageIntrinsicSize.height() >= 1 && adjustedHeight < 1)
+                    adjustedHeight = 1;
+                tileSize.setHeight(adjustedHeight);
+            }
         } else if (layerWidth.isAuto() && layerHeight.isAuto()) {
             // If both width and height are auto, use the image's intrinsic size.
             tileSize = imageIntrinsicSize;
