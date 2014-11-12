@@ -24,9 +24,9 @@
     
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [1, "box", "webkitTransform", [-1,0,0,-1], 0.2],
-      [2, "box", "webkitTransform", [1,0,0,1], 0.2],
-      [3, "box", "webkitTransform", [-1,0,0,-1], 0.2],
+      [1, "box", "webkitTransform", [-1,0,0,-1,0,0], 0.2],
+      [2, "box", "webkitTransform", [1,0,0,1,0,0], 0.2],
+      [3, "box", "webkitTransform", [-1,0,0,-1,0,0], 0.2],
     ];
     
     runAnimationTest(expectedValues);

@@ -1,4 +1,0 @@
-Shadow on texts
-PASS - "text-shadow" property for "text" element at 0s saw something close to: -25,-5,0,15
-PASS - "text-shadow" property for "text" element at 1s saw something close to: 5,5,0,15
-

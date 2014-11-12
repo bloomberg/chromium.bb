@@ -45,9 +45,9 @@
      {
        var animated = document.getElementById('animated');
        var result;
-       var expected = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -200, 0, 200, 1];
+       var expected = "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -200, 0, 200, 1)";
        var computed = getPropertyValue("webkitTransform", "animated");
-       if (comparePropertyValue("webkitTransform", computed, expected, 0.002)) {
+       if (comparePropertyValue(computed, expected, 0.002)) {
          result = "PASS - Computed final position is correct.";
        } else {
          result = "FAIL - Computed final position is incorrect. Expected " + expected + ", got " + computed;

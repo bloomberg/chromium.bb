@@ -53,12 +53,12 @@
     var animsFinished = 0;
     const allowance = 5;
     const expectedValues = [
-      {id: "none",                   start: 100, end: 100},
-      {id: "backwards",              start: 300, end: 100},
-      {id: "forwards",               start: 100, end: 200},
-      {id: "both",                   start: 300, end: 200},
-      {id: "both_iterating",         start: 200, end: 200},
-      {id: "both_iterating_reverse", start: 300, end: 300}
+      {id: "none",                   start: "100px", end: "100px"},
+      {id: "backwards",              start: "300px", end: "100px"},
+      {id: "forwards",               start: "100px", end: "200px"},
+      {id: "both",                   start: "300px", end: "200px"},
+      {id: "both_iterating",         start: "200px", end: "200px"},
+      {id: "both_iterating_reverse", start: "300px", end: "300px"}
     ];
     var result = "";
 
@@ -79,7 +79,7 @@
         for (var i = 0; i < expectedValues.length; i++) {
             var realValue = getPropertyValue("left", expectedValues[i].id);
             var expectedValue = expectedValues[i].end;
-            if (comparePropertyValue("left", realValue, expectedValue, allowance))
+            if (comparePropertyValue(realValue, expectedValue, allowance))
                 result += "PASS";
             else
                 result += "FAIL";
@@ -95,7 +95,7 @@
         for (var i = 0; i < expectedValues.length; i++) {
             var realValue = getPropertyValue("left", expectedValues[i].id);
             var expectedValue = expectedValues[i].start;
-            if (comparePropertyValue("left", realValue, expectedValue, allowance))
+            if (comparePropertyValue(realValue, expectedValue, allowance))
                 result += "PASS";
             else
                 result += "FAIL";

@@ -30,9 +30,10 @@
     
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.4, "box", "webkitTransform.5", 0, 0],
+      [0.4, "box", "transform", "none", 0],
     ];
-    
+
+    // FIXME: This doesn't get called so we don't trigger a transition...
     function setup()
     {
         document.getElementById("box").style.webkitTransform = "translateX(400px)";

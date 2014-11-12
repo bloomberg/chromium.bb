@@ -58,9 +58,9 @@
     function endTest() {
 
         for (var i = 0; i < expectedValues.length; i++) {
-            var realValue = getPropertyValue("webkitTransform.4", expectedValues[i].id);
+            var realValue = getPropertyValue("transform", expectedValues[i].id);
             var expectedValue = expectedValues[i].end;
-            if (comparePropertyValue("webkitTransform.4", realValue, expectedValue, allowance))
+            if (comparePropertyValue(realValue, expectedValue, allowance, 4))
                 result += "PASS";
             else
                 result += "FAIL";
@@ -74,9 +74,9 @@
     
     window.onload = function () {
       for (var i = 0; i < expectedValues.length; i++) {
-          var realValue = getPropertyValue("webkitTransform.4", expectedValues[i].id);
+          var realValue = getPropertyValue("transform", expectedValues[i].id);
           var expectedValue = expectedValues[i].start;
-          if (comparePropertyValue("webkitTransform.4", realValue, expectedValue, allowance))
+          if (comparePropertyValue(realValue, expectedValue, allowance, 4))
               result += "PASS";
           else
               result += "FAIL";

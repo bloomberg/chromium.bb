@@ -50,9 +50,9 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, 'box', 'background-position', [40, 40], 2],
-      [0.5, 'box2', 'background-position', [40, 40], 2],
-      [0.5, 'box3', 'background-position', [40, 40], 2],
+      [0.5, 'box', 'background-position', "40px 40px, 40px 40px", 2],
+      [0.5, 'box2', 'background-position', "40px 40px", 2],
+      [0.5, 'box3', 'background-position',  "40px 40px, 40px 80px", 2],
     ];
   
     function setupTest()

@@ -50,9 +50,9 @@
 
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, 'box', '-webkit-mask-position', [40, 40], 5],
-      [0.5, 'box2', '-webkit-mask-position', [40, 40], 5],
-      [0.5, 'box3', '-webkit-mask-position', [40, 40], 5],
+      [0.5, 'box', '-webkit-mask-position', "40px 40px, 40px 40px", 5],
+      [0.5, 'box2', '-webkit-mask-position', "40px 40px", 5],
+      [0.5, 'box3', '-webkit-mask-position', "40px 40px, 40px 80px", 5],
     ];
   
     function setupTest()

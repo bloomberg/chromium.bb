@@ -19,13 +19,13 @@
   <script type="text/javascript">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.10, "box", "counter-increment", ["counter", 2], 0],
+      [0.10, "box", "counter-increment", "counter 2", 0],
       [0.10, "box", "overflow", "hidden", 0],
-      [0.10, "box", "transition-duration", [500,500,500,500], 0],
+      [0.10, "box", "transition-duration", "0.5s", 0],
       [0.25, "box", "top", 25, 5],
-      [0.40, "box", "counter-increment", ["counter", 2], 0],
+      [0.40, "box", "counter-increment", "counter 2", 0],
       [0.40, "box", "overflow", "hidden", 0],
-      [0.40, "box", "transition-duration", [500,500,500,500], 0],
+      [0.40, "box", "transition-duration", "0.5s", 0],
     ];
 
     function setupTest()

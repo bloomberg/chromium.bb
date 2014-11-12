@@ -23,8 +23,8 @@
       -webkit-animation: saturate-anim 2s linear
     }
 
-    #huerotate-box {
-      -webkit-animation: huerotate-anim 2s linear
+    #hue-rotate-box {
+      -webkit-animation: hue-rotate-anim 2s linear
     }
 
     #invert-box {
@@ -67,7 +67,7 @@
         to   { -webkit-filter: saturate(1); }
     }
 
-    @-webkit-keyframes huerotate-anim {
+    @-webkit-keyframes hue-rotate-anim {
         from { -webkit-filter: hue-rotate(0); }
         to   { -webkit-filter: hue-rotate(180deg); }
     }
@@ -110,7 +110,7 @@
       [1, "grayscale-box", "webkitFilter", 'grayscale(0.5)', 0.05],
       [1, "sepia-box", "webkitFilter", 'sepia(0.5)', 0.05],
       [1, "saturate-box", "webkitFilter", 'saturate(0.5)', 0.05],
-      [1, "huerotate-box", "webkitFilter", 'huerotate(90deg)', 2],
+      [1, "hue-rotate-box", "webkitFilter", 'hue-rotate(90deg)', 2],
       [1, "invert-box", "webkitFilter", 'invert(0.5)', 0.05],
       [1, "opacity-box", "webkitFilter", 'opacity(0.5)', 0.05],
       [1, "brightness-box", "webkitFilter", 'brightness(0.5)', 0.05],
@@ -128,7 +128,7 @@
 <div class="box" id="grayscale-box"></div>
 <div class="box" id="sepia-box"></div>
 <div class="box" id="saturate-box"></div>
-<div class="box" id="huerotate-box"></div>
+<div class="box" id="hue-rotate-box"></div>
 <div class="box" id="invert-box"></div>
 <div class="box" id="opacity-box"></div>
 <div class="box" id="brightness-box"></div>

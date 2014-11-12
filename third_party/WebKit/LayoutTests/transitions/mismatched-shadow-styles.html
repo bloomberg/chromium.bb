@@ -45,10 +45,10 @@
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
       // For box-shadow, we test shadow-x and shadow-y to see if it's animating.
-      [0.25, 'none-to-normal', 'box-shadow', [10, 10], 1],
-      [0.25, 'none-to-inset', 'box-shadow', [10, 10], 1],
-      [0.25, 'inset-to-normal', 'box-shadow', [20, 20], 1],
-      [0.25, 'normal-to-inset', 'box-shadow', [20, 20], 1],
+      [0.3, 'none-to-normal', 'box-shadow', 'rgba(0, 0, 0, 0.6) 12px 12px 6px 0px', 1],
+      [0.3, 'none-to-inset', 'box-shadow', 'rgba(0, 0, 0, 0.6) 12px 12px 6px 0px inset', 1],
+      [0.3, 'inset-to-normal', 'box-shadow', 'rgb(0, 0, 0) 20px 20px 10px 0px', 1],
+      [0.3, 'normal-to-inset', 'box-shadow', 'rgb(0, 0, 0) 20px 20px 10px 0px inset', 1],
     ];
   
     function setupTest()
