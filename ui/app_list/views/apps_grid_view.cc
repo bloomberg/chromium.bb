@@ -1341,7 +1341,7 @@ void AppsGridView::AnimationBetweenRows(AppListItemView* view,
 
 void AppsGridView::ExtractDragLocation(const ui::LocatedEvent& event,
                                        gfx::Point* drag_point) {
-#if defined(USE_AURA) && !defined(OS_WIN)
+#if defined(USE_AURA)
   // Use root location of |event| instead of location in |drag_view_|'s
   // coordinates because |drag_view_| has a scale transform and location
   // could have integer round error and causes jitter.
@@ -1582,7 +1582,8 @@ void AppsGridView::EndDragFromReparentItemInRootLevel(
       ReparentItemForReorder(drag_view_, reorder_drop_target_);
     } else if (drop_attempt_ == DROP_FOR_FOLDER &&
                IsValidIndex(folder_drop_target_)) {
-      ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
+      cancel_reparent =
+          !ReparentItemToAnotherFolder(drag_view_, folder_drop_target_);
     } else {
       NOTREACHED();
     }
@@ -1858,23 +1859,30 @@ void AppsGridView::ReparentItemForReorder(AppListItemView* item_view,
   UpdatePaging();
 }
 
-void AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
+bool AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
                                                const Index& target) {
   DCHECK(IsDraggingForReparentInRootLevelGridView());
 
   AppListItemView* target_view =
       GetViewDisplayedAtSlotOnCurrentPage(target.slot);
   if (!target_view)
-    return;
-
-  // Make change to data model.
-  item_list_->RemoveObserver(this);
+    return false;
 
   AppListItem* reparent_item = item_view->item();
   DCHECK(reparent_item->IsInFolder());
   const std::string source_folder_id = reparent_item->folder_id();
   AppListFolderItem* source_folder =
       static_cast<AppListFolderItem*>(item_list_->FindItem(source_folder_id));
+
+  AppListItem* target_item = target_view->item();
+
+  // An app is being reparented to its original folder. Just cancel the
+  // reparent.
+  if (target_item->id() == reparent_item->folder_id())
+    return false;
+
+  // Make change to data model.
+  item_list_->RemoveObserver(this);
 
   // Remove the source folder view if there is only 1 item in it, since the
   // source folder will be deleted after its only child item merged into the
@@ -1883,15 +1891,13 @@ void AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
     DeleteItemViewAtIndex(
         view_model_.GetIndexOfView(activated_folder_item_view()));
 
-  AppListItem* target_item = target_view->item();
-
   // Move item to the target folder.
   std::string target_id_after_merge =
       model_->MergeItems(target_item->id(), reparent_item->id());
   if (target_id_after_merge.empty()) {
     LOG(ERROR) << "Unable to reparent to item id: " << target_item->id();
     item_list_->AddObserver(this);
-    return;
+    return false;
   }
 
   if (target_id_after_merge != target_item->id()) {
@@ -1924,6 +1930,8 @@ void AppsGridView::ReparentItemToAnotherFolder(AppListItemView* item_view,
       scoped_ptr<gfx::AnimationDelegate>(
           new ItemRemoveAnimationDelegate(drag_view_)));
   UpdatePaging();
+
+  return true;
 }
 
 // After moving the re-parenting item out of the folder, if there is only 1 item

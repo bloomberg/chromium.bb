@@ -343,8 +343,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void ReparentItemForReorder(AppListItemView* item_view, const Index& target);
 
   // Updates both data model and view_model_ for re-parenting a folder item
-  // to anther folder target.
-  void ReparentItemToAnotherFolder(AppListItemView* item_view,
+  // to anther folder target. Returns whether the reparent succeeded.
+  bool ReparentItemToAnotherFolder(AppListItemView* item_view,
                                    const Index& target);
 
   // If there is only 1 item left in the source folder after reparenting an item

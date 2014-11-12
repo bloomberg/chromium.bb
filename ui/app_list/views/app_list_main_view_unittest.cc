@@ -342,5 +342,35 @@ TEST_F(AppListMainViewTest, MouseDragItemOutOfFolderWithCancel) {
   EXPECT_FALSE(FolderGridView()->has_dragged_view());
 }
 
+// Test that dragging an app out of a single item folder and reparenting it
+// back into its original folder results in a cancelled reparent. This is a
+// regression test for http://crbug.com/429083.
+TEST_F(AppListMainViewTest, ReparentSingleItemOntoSelf) {
+  // Add a folder with 1 item.
+  AppListItemView* folder_item_view = CreateAndOpenSingleItemFolder();
+  std::string folder_id = folder_item_view->item()->id();
+
+  // Add another top level app.
+  delegate_->GetTestModel()->PopulateApps(1);
+  gfx::Point drag_point = folder_item_view->bounds().CenterPoint();
+
+  views::View::ConvertPointToTarget(RootGridView(), FolderGridView(),
+                                    &drag_point);
+
+  AppListItemView* dragged = StartDragForReparent(0);
+
+  // Drag the reparent item back into its folder.
+  SimulateUpdateDrag(FolderGridView(), AppsGridView::MOUSE, dragged,
+                     drag_point);
+  FolderGridView()->EndDrag(false);
+
+  // The app list model should remain unchanged.
+  EXPECT_EQ(1, FolderViewModel()->view_size());
+  EXPECT_EQ(2, RootViewModel()->view_size());
+  EXPECT_EQ(folder_id, RootGridView()->GetItemViewAt(0)->item()->id());
+  EXPECT_NE(nullptr,
+            delegate_->GetTestModel()->FindFolderItem("single_item_folder"));
+}
+
 }  // namespace test
 }  // namespace app_list
