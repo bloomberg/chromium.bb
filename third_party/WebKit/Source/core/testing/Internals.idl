@@ -286,6 +286,7 @@
     DOMString[] getTransitionElementIds();
     ClientRectList getTransitionElementRects();
     void hideAllTransitionElements();
+    void showAllTransitionElements();
 
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, DocumentFragment fragment);
     [RaisesException, TypeChecking=Interface] void forcePluginPlaceholder(HTMLElement plugin, Dictionary options);

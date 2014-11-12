@@ -5645,7 +5645,7 @@ void Document::getTransitionElementData(Vector<TransitionElementData>& elementDa
     }
 }
 
-void Document::hideTransitionElements(const AtomicString& cssSelector)
+void Document::updateElementOpacity(const AtomicString& cssSelector, double opacity)
 {
     TrackExceptionState exceptionState;
     RefPtrWillBeRawPtr<StaticElementList> elementList = querySelectorAll(cssSelector, exceptionState);
@@ -5654,9 +5654,19 @@ void Document::hideTransitionElements(const AtomicString& cssSelector)
 
         for (unsigned nodeIndex = 0; nodeIndex < nodeListLength; ++nodeIndex) {
             Element* element = elementList->item(nodeIndex);
-            element->setInlineStyleProperty(CSSPropertyOpacity, 0.0, CSSPrimitiveValue::CSS_NUMBER);
+            element->setInlineStyleProperty(CSSPropertyOpacity, opacity, CSSPrimitiveValue::CSS_NUMBER);
         }
     }
+}
+
+void Document::hideTransitionElements(const AtomicString& cssSelector)
+{
+    updateElementOpacity(cssSelector, 0.0);
+}
+
+void Document::showTransitionElements(const AtomicString& cssSelector)
+{
+    updateElementOpacity(cssSelector, 1.0);
 }
 
 bool Document::hasFocus() const

@@ -21,6 +21,7 @@ PASS transitionElementRects[1].left == boxTransitionElementBounds.left is true
 PASS transitionElementRects[1].top == boxTransitionElementBounds.top is true
 PASS transitionElementRects[1].width == boxTransitionElementBounds.width is true
 PASS transitionElementRects[1].height == boxTransitionElementBounds.height is true
+PASS postShowingTransitionElementOpacity == 1 is true
 PASS successfullyParsed is true
 
 TEST COMPLETE

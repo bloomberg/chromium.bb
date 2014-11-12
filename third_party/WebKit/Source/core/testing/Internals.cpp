@@ -2308,6 +2308,16 @@ void Internals::hideAllTransitionElements()
         frame()->document()->hideTransitionElements(AtomicString(iter->selector));
 }
 
+void Internals::showAllTransitionElements()
+{
+    Vector<Document::TransitionElementData> elementData;
+    frame()->document()->getTransitionElementData(elementData);
+
+    Vector<Document::TransitionElementData>::iterator iter = elementData.begin();
+    for (; iter != elementData.end(); ++iter)
+        frame()->document()->showTransitionElements(AtomicString(iter->selector));
+}
+
 void Internals::forcePluginPlaceholder(HTMLElement* element, PassRefPtrWillBeRawPtr<DocumentFragment> fragment, ExceptionState& exceptionState)
 {
     if (!element->isPluginElement()) {

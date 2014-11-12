@@ -57,6 +57,10 @@ window.onload = function() {
         shouldBeTrue('transitionElementRects[1].width == boxTransitionElementBounds.width');
         shouldBeTrue('transitionElementRects[1].height == boxTransitionElementBounds.height');
 
+        internals.showAllTransitionElements();
+        postShowingTransitionElementOpacity = window.getComputedStyle(transitionElement).opacity;
+        shouldBeTrue('postShowingTransitionElementOpacity == 1');
+
         finishJSTest();
     }
 }

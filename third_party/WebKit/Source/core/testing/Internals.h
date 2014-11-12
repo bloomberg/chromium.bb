@@ -328,6 +328,7 @@ public:
     Vector<String> getTransitionElementIds();
     PassRefPtrWillBeRawPtr<ClientRectList> getTransitionElementRects();
     void hideAllTransitionElements();
+    void showAllTransitionElements();
 
     unsigned countHitRegions(CanvasRenderingContext2D*);
 

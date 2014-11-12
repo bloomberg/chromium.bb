@@ -386,6 +386,7 @@ public:
     bool isTransitionDocument() const { return m_isTransitionDocument; }
     void setIsTransitionDocument() { m_isTransitionDocument = true; }
     void hideTransitionElements(const AtomicString& cssSelector);
+    void showTransitionElements(const AtomicString& cssSelector);
 
     struct TransitionElement {
         String id;
@@ -1166,6 +1167,8 @@ private:
 
     using EventFactorySet = HashSet<OwnPtr<EventFactoryBase>>;
     static EventFactorySet& eventFactories();
+
+    void updateElementOpacity(const AtomicString& cssSelector, double opacity);
 
     DocumentLifecycle m_lifecycle;
 

@@ -121,6 +121,8 @@ public:
     BLINK_EXPORT WebSize maximumScrollOffset() const;
     BLINK_EXPORT void setIsTransitionDocument();
     BLINK_EXPORT void beginExitTransition(const WebString& cssSelector);
+    BLINK_EXPORT void hideTransitionElements(const WebString& cssSelector);
+    BLINK_EXPORT void showTransitionElements(const WebString& cssSelector);
 
     // Accessibility support. These methods should only be called on the
     // top-level document, because one accessibility cache spans all of
