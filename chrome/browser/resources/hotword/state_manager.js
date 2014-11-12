@@ -206,11 +206,11 @@ cr.define('hotword', function() {
           this.hotwordStatus_.alwaysOnEnabled ||
           this.hotwordStatus_.trainingEnabled) {
         // Start the detector if there's a session and the user is unlocked, and
-        // shut it down otherwise.
+        // stops it otherwise.
         if (this.sessions_.length && !this.isLocked_)
           this.startDetector_();
         else
-          this.shutdownDetector_();
+          this.stopDetector_();
 
         if (!chrome.idle.onStateChanged.hasListener(
                 this.idleStateChangedListener_)) {
@@ -304,6 +304,17 @@ cr.define('hotword', function() {
           session.startedCb_();
           session.startedCb_ = null;
         }
+      }
+    },
+
+    /**
+     * Stops the hotword detector, if it's running.
+     * @private
+     */
+    stopDetector_: function() {
+      if (this.pluginManager_ && this.state_ == State_.RUNNING) {
+        this.state_ = State_.STOPPED;
+        this.pluginManager_.stopRecognizer();
       }
     },
 
