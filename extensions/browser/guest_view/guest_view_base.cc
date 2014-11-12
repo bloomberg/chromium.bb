@@ -419,12 +419,6 @@ void GuestViewBase::DidStopLoading(content::RenderViewHost* render_view_host) {
 
 void GuestViewBase::RenderViewReady() {
   GuestReady();
-  content::RenderViewHost* rvh = web_contents()->GetRenderViewHost();
-  if (auto_size_enabled_) {
-    rvh->EnableAutoResize(min_auto_size_, max_auto_size_);
-  } else {
-    rvh->DisableAutoResize(element_size_);
-  }
 }
 
 void GuestViewBase::WebContentsDestroyed() {

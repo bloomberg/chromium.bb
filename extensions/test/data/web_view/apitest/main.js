@@ -222,8 +222,6 @@ function testAutosizeBeforeNavigation() {
   webview.setAttribute('maxheight', 110);
 
   webview.addEventListener('sizechanged', function(e) {
-    embedder.test.assertEq(0, e.oldWidth);
-    embedder.test.assertEq(0, e.oldHeight);
     embedder.test.assertTrue(e.newWidth >= 200 && e.newWidth <= 210);
     embedder.test.assertTrue(e.newHeight >= 100 && e.newHeight <= 110);
     embedder.test.succeed();
@@ -248,7 +246,6 @@ function testAutosizeHeight() {
   webview.addEventListener('sizechanged', function(e) {
     switch (step) {
       case 1:
-        embedder.test.assertEq(0, e.oldHeight);
         embedder.test.assertEq(200, e.newHeight);
         // Change the maxheight to verify that we see the change.
         webview.maxheight = 50;

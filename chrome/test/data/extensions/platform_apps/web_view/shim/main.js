@@ -140,7 +140,6 @@ function testAutosizeHeight() {
   webview.addEventListener('sizechanged', function(e) {
     switch (step) {
       case 1:
-        embedder.test.assertEq(0, e.oldHeight);
         embedder.test.assertEq(200, e.newHeight);
         // Change the maxheight to verify that we see the change.
         webview.maxheight = 50;

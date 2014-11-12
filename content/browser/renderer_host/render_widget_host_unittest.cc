@@ -139,9 +139,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   // Allow poking at a few private members.
+  using RenderWidgetHostImpl::GetResizeParams;
   using RenderWidgetHostImpl::OnUpdateRect;
   using RenderWidgetHostImpl::RendererExited;
-  using RenderWidgetHostImpl::last_requested_size_;
+  using RenderWidgetHostImpl::SetInitialRenderSizeParams;
+  using RenderWidgetHostImpl::old_resize_params_;
   using RenderWidgetHostImpl::is_hidden_;
   using RenderWidgetHostImpl::resize_ack_pending_;
   using RenderWidgetHostImpl::input_router_;
@@ -440,10 +442,13 @@ class RenderWidgetHostTest : public testing::Test {
     host_.reset(
         new MockRenderWidgetHost(delegate_.get(), process_, MSG_ROUTING_NONE));
     view_.reset(new TestView(host_.get()));
+    ConfigureView(view_.get());
     host_->SetView(view_.get());
+    SetInitialRenderSizeParams();
     host_->Init();
     host_->DisableGestureDebounce();
   }
+
   void TearDown() override {
     view_.reset();
     host_.reset();
@@ -462,6 +467,15 @@ class RenderWidgetHostTest : public testing::Test {
 
     // Process all pending tasks to avoid leaks.
     base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  void SetInitialRenderSizeParams() {
+    ViewMsg_Resize_Params render_size_params;
+    host_->GetResizeParams(&render_size_params);
+    host_->SetInitialRenderSizeParams(render_size_params);
+  }
+
+  virtual void ConfigureView(TestView* view) {
   }
 
   int64 GetLatencyComponentId() {
@@ -630,7 +644,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->SetMockPhysicalBackingSize(gfx::Size());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Setting the bounds to a "real" rect should send out the notification.
@@ -639,7 +653,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->ClearMockPhysicalBackingSize();
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send out a update that's not a resize ack after setting resize ack pending
@@ -654,7 +668,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   process_->InitUpdateRectParams(&params);
   host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(second_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
 
   // Sending out a new notification should NOT send out a new IPC message since
   // a resize ACK is pending.
@@ -663,7 +677,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(third_size);
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(second_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(second_size.size(), host_->old_resize_params_->new_size);
   EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send a update that's a resize ack, but for the original_size we sent. Since
@@ -674,7 +688,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = original_size.size();
   host_->OnUpdateRect(params);
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(third_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
   ASSERT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send the resize ack for the latest size.
@@ -682,7 +696,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   params.view_size = third_size.size();
   host_->OnUpdateRect(params);
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(third_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(third_size.size(), host_->old_resize_params_->new_size);
   ASSERT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // Now clearing the bounds should send out a notification but we shouldn't
@@ -692,7 +706,7 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(gfx::Rect());
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->last_requested_size_);
+  EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Send a rect that has no area but has either width or height set.
@@ -700,21 +714,21 @@ TEST_F(RenderWidgetHostTest, Resize) {
   view_->set_bounds(gfx::Rect(0, 0, 0, 30));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->last_requested_size_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Set the same size again. It should not be sent again.
   process_->sink().ClearMessages();
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 30), host_->last_requested_size_);
+  EXPECT_EQ(gfx::Size(0, 30), host_->old_resize_params_->new_size);
   EXPECT_FALSE(process_->sink().GetFirstMessageMatching(ViewMsg_Resize::ID));
 
   // A different size should be sent again, however.
   view_->set_bounds(gfx::Rect(0, 0, 0, 31));
   host_->WasResized();
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(0, 31), host_->last_requested_size_);
+  EXPECT_EQ(gfx::Size(0, 31), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 }
 
@@ -729,7 +743,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   view_->set_bounds(original_size);
   host_->WasResized();
   EXPECT_TRUE(host_->resize_ack_pending_);
-  EXPECT_EQ(original_size.size(), host_->last_requested_size_);
+  EXPECT_EQ(original_size.size(), host_->old_resize_params_->new_size);
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
 
   // Simulate a renderer crash before the update message.  Ensure all the
@@ -738,7 +752,7 @@ TEST_F(RenderWidgetHostTest, ResizeThenCrash) {
   host_->SetView(NULL);
   host_->RendererExited(base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   EXPECT_FALSE(host_->resize_ack_pending_);
-  EXPECT_EQ(gfx::Size(), host_->last_requested_size_);
+  EXPECT_EQ(gfx::Size(), host_->old_resize_params_->new_size);
 
   // Reset the view so we can exit the test cleanly.
   host_->SetView(view_.get());
@@ -1492,6 +1506,41 @@ TEST_F(RenderWidgetHostTest, RendererExitedResetsIsHidden) {
 
   // Make sure the input router is in a fresh state.
   ASSERT_FALSE(host_->input_router()->HasPendingEvents());
+}
+
+TEST_F(RenderWidgetHostTest, ResizeParams) {
+  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Size physical_backing_size(40, 50);
+  view_->set_bounds(bounds);
+  view_->SetMockPhysicalBackingSize(physical_backing_size);
+
+  ViewMsg_Resize_Params resize_params;
+  host_->GetResizeParams(&resize_params);
+  EXPECT_EQ(bounds.size(), resize_params.new_size);
+  EXPECT_EQ(physical_backing_size, resize_params.physical_backing_size);
+}
+
+class RenderWidgetHostInitialSizeTest : public RenderWidgetHostTest {
+ public:
+  RenderWidgetHostInitialSizeTest()
+      : RenderWidgetHostTest(), initial_size_(200, 100) {}
+
+  virtual void ConfigureView(TestView* view) override {
+    view->set_bounds(gfx::Rect(initial_size_));
+  }
+
+ protected:
+  gfx::Size initial_size_;
+};
+
+TEST_F(RenderWidgetHostInitialSizeTest, InitialSize) {
+  // Having an initial size set means that the size information had been sent
+  // with the reqiest to new up the RenderView and so subsequent WasResized
+  // calls should not result in new IPC (unless the size has actually changed).
+  host_->WasResized();
+  EXPECT_FALSE(process_->sink().GetUniqueMessageMatching(ViewMsg_Resize::ID));
+  EXPECT_EQ(initial_size_, host_->old_resize_params_->new_size);
+  EXPECT_TRUE(host_->resize_ack_pending_);
 }
 
 }  // namespace content

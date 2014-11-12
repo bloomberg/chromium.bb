@@ -78,6 +78,7 @@ class SkBitmap;
 struct PP_NetAddress_Private;
 struct FrameMsg_Navigate_Params;
 struct ViewMsg_PostMessage_Params;
+struct ViewMsg_Resize_Params;
 struct ViewMsg_StopFinding_Params;
 
 namespace base {
@@ -178,7 +179,10 @@ class CONTENT_EXPORT RenderViewImpl
                                 bool hidden,
                                 bool never_visible,
                                 int32 next_page_id,
-                                const blink::WebScreenInfo& screen_info);
+                                const ViewMsg_Resize_Params& initial_size,
+                                bool enable_auto_resize,
+                                const gfx::Size& min_size,
+                                const gfx::Size& max_size);
 
   // Used by content_layouttest_support to hook into the creation of
   // RenderViewImpls.

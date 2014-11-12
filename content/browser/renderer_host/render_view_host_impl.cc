@@ -289,9 +289,14 @@ bool RenderViewHostImpl::CreateRenderView(
   params.never_visible = delegate_->IsNeverVisible();
   params.window_was_created_with_opener = window_was_created_with_opener;
   params.next_page_id = next_page_id;
-  GetWebScreenInfo(&params.screen_info);
+  params.enable_auto_resize = auto_resize_enabled();
+  params.min_size = min_size_for_auto_resize();
+  params.max_size = max_size_for_auto_resize();
+  GetResizeParams(&params.initial_size);
 
-  Send(new ViewMsg_New(params));
+  if (!Send(new ViewMsg_New(params)))
+    return false;
+  SetInitialRenderSizeParams(params.initial_size);
 
   // If it's enabled, tell the renderer to set up the Javascript bindings for
   // sending messages back to the browser.
@@ -1379,12 +1384,12 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
 
 void RenderViewHostImpl::EnableAutoResize(const gfx::Size& min_size,
                                           const gfx::Size& max_size) {
-  SetShouldAutoResize(true);
+  SetAutoResize(true, min_size, max_size);
   Send(new ViewMsg_EnableAutoResize(GetRoutingID(), min_size, max_size));
 }
 
 void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
-  SetShouldAutoResize(false);
+  SetAutoResize(false, gfx::Size(), gfx::Size());
   Send(new ViewMsg_DisableAutoResize(GetRoutingID(), new_size));
   if (!new_size.IsEmpty())
     GetView()->SetSize(new_size);

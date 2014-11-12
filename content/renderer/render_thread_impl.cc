@@ -1362,7 +1362,10 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
                          params.hidden,
                          params.never_visible,
                          params.next_page_id,
-                         params.screen_info);
+                         params.initial_size,
+                         params.enable_auto_resize,
+                         params.min_size,
+                         params.max_size);
 }
 
 GpuChannelHost* RenderThreadImpl::EstablishGpuChannelSync(

@@ -138,7 +138,7 @@ bool DelegatedFrameHost::ShouldCreateResizeLock() {
   if (resize_lock_)
     return false;
 
-  if (host->should_auto_resize())
+  if (host->auto_resize_enabled())
     return false;
 
   gfx::Size desired_size = client_->DesiredFrameSize();

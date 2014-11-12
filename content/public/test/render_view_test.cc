@@ -204,7 +204,11 @@ void RenderViewTest::SetUp() {
                              false,  // hidden
                              false,  // never_visible
                              1,      // next_page_id
-                             blink::WebScreenInfo());
+                             *InitialSizeParams(),
+                             false, // enable_auto_resize
+                             gfx::Size(), // min_size
+                             gfx::Size() // max_size
+                            );
   view->AddRef();
   view_ = view;
 }
@@ -405,6 +409,10 @@ ContentBrowserClient* RenderViewTest::CreateContentBrowserClient() {
 
 ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
+}
+
+scoped_ptr<ViewMsg_Resize_Params> RenderViewTest::InitialSizeParams() {
+  return make_scoped_ptr(new ViewMsg_Resize_Params());
 }
 
 void RenderViewTest::GoToOffset(int offset, const PageState& state) {

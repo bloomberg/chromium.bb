@@ -9,7 +9,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/common/view_message_enums.h"
+#include "ui/gfx/geometry/size.h"
+
+struct ViewMsg_Resize_Params;
 
 namespace blink {
 struct WebScreenInfo;
@@ -37,7 +39,10 @@ struct CONTENT_EXPORT RenderViewImplParams {
                        bool hidden,
                        bool never_visible,
                        int32 next_page_id,
-                       const blink::WebScreenInfo& screen_info);
+                       const ViewMsg_Resize_Params& initial_size,
+                       bool enable_auto_resize,
+                       const gfx::Size& min_size,
+                       const gfx::Size& max_size);
   ~RenderViewImplParams();
 
   int32 opener_id;
@@ -55,7 +60,10 @@ struct CONTENT_EXPORT RenderViewImplParams {
   bool hidden;
   bool never_visible;
   int32 next_page_id;
-  const blink::WebScreenInfo& screen_info;
+  const ViewMsg_Resize_Params& initial_size;
+  bool enable_auto_resize;
+  gfx::Size min_size;
+  gfx::Size max_size;
 };
 
 }  // namespace content

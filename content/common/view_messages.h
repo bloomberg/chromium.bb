@@ -413,6 +413,26 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
+IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
+  // Information about the screen (dpi, depth, etc..).
+  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
+  // The size of the renderer.
+  IPC_STRUCT_MEMBER(gfx::Size, new_size)
+  // The size of the view's backing surface in non-DPI-adjusted pixels.
+  IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
+  // The amount that the viewport size given to Blink was shrunk by the URL-bar
+  // (always 0 on platforms where URL-bar hiding isn't supported).
+  IPC_STRUCT_MEMBER(float, top_controls_layout_height)
+  // The size of the visible viewport, which may be smaller than the view if the
+  // view is partially occluded (e.g. by a virtual keyboard).  The size is in
+  // DPI-adjusted pixels.
+  IPC_STRUCT_MEMBER(gfx::Size, visible_viewport_size)
+  // The resizer rect.
+  IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
+  // Indicates whether a page is fullscreen or not.
+  IPC_STRUCT_MEMBER(bool, is_fullscreen)
+IPC_STRUCT_END()
+
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Renderer-wide preferences.
   IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
@@ -460,8 +480,17 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // to a view and are only updated by the renderer after this initial value.
   IPC_STRUCT_MEMBER(int32, next_page_id)
 
-  // The properties of the screen associated with the view.
-  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
+  // The initial renderer size.
+  IPC_STRUCT_MEMBER(ViewMsg_Resize_Params, initial_size)
+
+  // Whether to enable auto-resize.
+  IPC_STRUCT_MEMBER(bool, enable_auto_resize)
+
+  // The minimum size to layout the page if auto-resize is enabled.
+  IPC_STRUCT_MEMBER(gfx::Size, min_size)
+
+  // The maximum size to layout the page if auto-resize is enabled.
+  IPC_STRUCT_MEMBER(gfx::Size, max_size)
 IPC_STRUCT_END()
 
 IPC_STRUCT_BEGIN(ViewMsg_PostMessage_Params)
@@ -563,16 +592,6 @@ IPC_MESSAGE_CONTROL0(ViewMsg_TimezoneChange)
 // Tells the render view to close.
 // Expects a Close_ACK message when finished.
 IPC_MESSAGE_ROUTED0(ViewMsg_Close)
-
-IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
-  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
-  IPC_STRUCT_MEMBER(gfx::Size, new_size)
-  IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
-  IPC_STRUCT_MEMBER(float, top_controls_layout_height)
-  IPC_STRUCT_MEMBER(gfx::Size, visible_viewport_size)
-  IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
-  IPC_STRUCT_MEMBER(bool, is_fullscreen)
-IPC_STRUCT_END()
 
 // Tells the render view to change its size.  A ViewHostMsg_UpdateRect message
 // is generated in response provided new_size is not empty and not equal to

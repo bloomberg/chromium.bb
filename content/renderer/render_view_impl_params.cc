@@ -22,7 +22,10 @@ RenderViewImplParams::RenderViewImplParams(
     bool hidden,
     bool never_visible,
     int32 next_page_id,
-    const blink::WebScreenInfo& screen_info)
+    const ViewMsg_Resize_Params& initial_size,
+    bool enable_auto_resize,
+    const gfx::Size& min_size,
+    const gfx::Size& max_size)
     : opener_id(opener_id),
       window_was_created_with_opener(window_was_created_with_opener),
       renderer_prefs(renderer_prefs),
@@ -38,7 +41,10 @@ RenderViewImplParams::RenderViewImplParams(
       hidden(hidden),
       never_visible(never_visible),
       next_page_id(next_page_id),
-      screen_info(screen_info) {}
+      initial_size(initial_size),
+      enable_auto_resize(enable_auto_resize),
+      min_size(min_size),
+      max_size(max_size) {}
 
 RenderViewImplParams::~RenderViewImplParams() {}
 

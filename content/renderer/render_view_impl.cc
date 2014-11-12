@@ -643,7 +643,7 @@ void ApplyFontsFromMap(const ScriptFontFamilyMap& map,
 
 RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
     : RenderWidget(blink::WebPopupTypeNone,
-                   params->screen_info,
+                   params->initial_size.screen_info,
                    params->swapped_out,
                    params->hidden,
                    params->never_visible),
@@ -789,6 +789,12 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
     webview()->setOpenedByDOM();
 
   OnSetRendererPrefs(params->renderer_prefs);
+
+  if (!params->enable_auto_resize) {
+    OnResize(params->initial_size);
+  } else {
+    OnEnableAutoResize(params->min_size, params->max_size);
+  }
 
   new MHTMLGenerator(this);
 #if defined(OS_MACOSX)
@@ -1142,7 +1148,10 @@ RenderViewImpl* RenderViewImpl::Create(
     bool hidden,
     bool never_visible,
     int32 next_page_id,
-    const blink::WebScreenInfo& screen_info) {
+    const ViewMsg_Resize_Params& initial_size,
+    bool enable_auto_resize,
+    const gfx::Size& min_size,
+    const gfx::Size& max_size) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
   RenderViewImplParams params(opener_id,
                               window_was_created_with_opener,
@@ -1159,7 +1168,10 @@ RenderViewImpl* RenderViewImpl::Create(
                               hidden,
                               never_visible,
                               next_page_id,
-                              screen_info);
+                              initial_size,
+                              enable_auto_resize,
+                              min_size,
+                              max_size);
   RenderViewImpl* render_view = NULL;
   if (g_create_render_view_impl)
     render_view = g_create_render_view_impl(&params);
@@ -1672,6 +1684,9 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
+  ViewMsg_Resize_Params initial_size = ViewMsg_Resize_Params();
+  initial_size.screen_info = screen_info_;
+
   // The initial hidden state for the RenderViewImpl here has to match what the
   // browser will eventually decide for the given disposition. Since we have to
   // return from this call synchronously, we just have to make our best guess
@@ -1693,7 +1708,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
       params.disposition == NEW_BACKGROUND_TAB,  // hidden
       never_visible,
       1,  // next_page_id
-      screen_info_);
+      initial_size,
+      false, // enable_auto_resize
+      gfx::Size(), // min_size
+      gfx::Size() // max_size
+  );
   view->opened_by_user_gesture_ = params.user_gesture;
 
   // Record whether the creator frame is trying to suppress the opener field.
