@@ -183,6 +183,10 @@ static bool tryGetMessageFrom(WebMessagePortChannel& webChannel, RefPtr<Serializ
 
 void MessagePort::dispatchMessages()
 {
+    // Because close() doesn't cancel any in flight calls to dispatchMessages() we need to check if the port is still open before dispatch.
+    if (m_closed)
+        return;
+
     // Messages for contexts that are not fully active get dispatched too, but JSAbstractEventListener::handleEvent() doesn't call handlers for these.
     // The HTML5 spec specifies that any messages sent to a document that is not fully active should be dropped, so this behavior is OK.
     if (!started())

@@ -1,0 +1,8 @@
+Test whether opening and closing a messageport in different microtasks correctly receives an in-flight message.
+
+Should be a START message, followed by a HELLO message then DONE.
+
+START
+PASS. Got Message: HELLO before close
+DONE
+
