@@ -29,6 +29,9 @@
 #include "test-runner.h"
 #include "wayland-util.h"
 
+#define WL_HIDE_DEPRECATED
+#include "test-compositor.h"
+
 extern int leak_check_enabled;
 
 TEST(empty)
@@ -124,4 +127,68 @@ TEST(sanity_fd_exec)
 	assert(pipe(fd) >= 0);
 
 	exec_fd_leak_check(nr_fds + 2);
+}
+
+FAIL_TEST(timeout_tst)
+{
+	test_set_timeout(1);
+	/* test should reach timeout */
+	test_sleep(2);
+}
+
+TEST(timeout2_tst)
+{
+	/* the test should end before reaching timeout,
+	 * thus it should pass */
+	test_set_timeout(1);
+	/* 200 000 microsec = 0.2 sec */
+	test_usleep(200000);
+}
+
+FAIL_TEST(timeout_reset_tst)
+{
+	test_set_timeout(5);
+	test_set_timeout(10);
+	test_set_timeout(1);
+
+	/* test should fail on timeout */
+	test_sleep(2);
+}
+
+TEST(timeout_turnoff)
+{
+	test_set_timeout(1);
+	test_set_timeout(0);
+
+	test_usleep(2);
+}
+
+/* test timeouts with test-compositor */
+FAIL_TEST(tc_timeout_tst)
+{
+	struct display *d = display_create();
+	client_create(d, timeout_tst);
+	display_run(d);
+	display_destroy(d);
+}
+
+FAIL_TEST(tc_timeout2_tst)
+{
+	struct display *d = display_create();
+	client_create(d, timeout_reset_tst);
+	display_run(d);
+	display_destroy(d);
+}
+
+TEST(tc_timeout3_tst)
+{
+	struct display *d = display_create();
+
+	client_create(d, timeout2_tst);
+	display_run(d);
+
+	client_create(d, timeout_turnoff);
+	display_run(d);
+
+	display_destroy(d);
 }
