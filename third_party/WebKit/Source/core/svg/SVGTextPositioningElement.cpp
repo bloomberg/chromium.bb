@@ -90,15 +90,12 @@ void SVGTextPositioningElement::svgAttributeChanged(const QualifiedName& attrNam
     markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(RenderObject* renderer)
+SVGTextPositioningElement* SVGTextPositioningElement::elementFromRenderer(RenderObject& renderer)
 {
-    if (!renderer)
+    if (!renderer.isSVGText() && !renderer.isSVGInline())
         return 0;
 
-    if (!renderer->isSVGText() && !renderer->isSVGInline())
-        return 0;
-
-    Node* node = renderer->node();
+    Node* node = renderer.node();
     ASSERT(node);
     ASSERT(node->isSVGElement());
 
