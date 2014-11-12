@@ -2244,6 +2244,14 @@ set_title(struct shell_surface *shsurf, const char *title)
 {
 	free(shsurf->title);
 	shsurf->title = strdup(title);
+	shsurf->surface->timeline.force_refresh = 1;
+}
+
+static void
+set_type(struct shell_surface *shsurf, enum shell_surface_type t)
+{
+	shsurf->type = t;
+	shsurf->surface->timeline.force_refresh = 1;
 }
 
 static void
@@ -2274,6 +2282,7 @@ shell_surface_set_class(struct wl_client *client,
 
 	free(shsurf->class);
 	shsurf->class = strdup(class);
+	shsurf->surface->timeline.force_refresh = 1;
 }
 
 static void
@@ -2440,7 +2449,7 @@ set_toplevel(struct shell_surface *shsurf)
 {
 	shell_surface_set_parent(shsurf, NULL);
 	surface_clear_next_states(shsurf);
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	set_type(shsurf, SHELL_SURFACE_TOPLEVEL);
 
 	/* The layer_link is updated in set_surface_type(),
 	 * called from configure. */
@@ -2471,7 +2480,7 @@ set_transient(struct shell_surface *shsurf,
 
 	shsurf->next_state.relative = true;
 	shsurf->state_changed = true;
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	set_type(shsurf, SHELL_SURFACE_TOPLEVEL);
 
 	/* The layer_link is updated in set_surface_type(),
 	 * called from configure. */
@@ -2497,7 +2506,7 @@ set_fullscreen(struct shell_surface *shsurf,
 	       struct weston_output *output)
 {
 	shell_surface_set_output(shsurf, output);
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	set_type(shsurf, SHELL_SURFACE_TOPLEVEL);
 
 	shsurf->fullscreen_output = shsurf->output;
 	shsurf->fullscreen.type = method;
@@ -2582,7 +2591,7 @@ set_popup(struct shell_surface *shsurf,
 	shsurf->popup.x = x;
 	shsurf->popup.y = y;
 
-	shsurf->type = SHELL_SURFACE_POPUP;
+	set_type(shsurf, SHELL_SURFACE_POPUP);
 }
 
 static void
@@ -2686,7 +2695,7 @@ shell_surface_set_maximized(struct wl_client *client,
 	shsurf->next_state.maximized = true;
 	shsurf->state_changed = true;
 
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	set_type(shsurf, SHELL_SURFACE_TOPLEVEL);
 	shell_surface_set_parent(shsurf, NULL);
 
 	if (output_resource)
@@ -2974,7 +2983,7 @@ set_xwayland(struct shell_surface *shsurf, int x, int y, uint32_t flags)
 
 	shell_surface_set_parent(shsurf, NULL);
 
-	shsurf->type = SHELL_SURFACE_XWAYLAND;
+	set_type(shsurf, SHELL_SURFACE_XWAYLAND);
 	shsurf->state_changed = true;
 }
 
@@ -3576,7 +3585,7 @@ create_common_surface(struct shell_client *owner, void *shell,
 	wl_list_init(&shsurf->children_list);
 	shsurf->parent = NULL;
 
-	shsurf->type = SHELL_SURFACE_NONE;
+	set_type(shsurf, SHELL_SURFACE_NONE);
 
 	shsurf->client = client;
 
@@ -3703,6 +3712,7 @@ xdg_surface_set_app_id(struct wl_client *client,
 
 	free(shsurf->class);
 	shsurf->class = strdup(app_id);
+	shsurf->surface->timeline.force_refresh = 1;
 }
 
 static void
@@ -3932,7 +3942,7 @@ create_xdg_surface(struct shell_client *owner, void *shell,
 	if (!shsurf)
 		return NULL;
 
-	shsurf->type = SHELL_SURFACE_TOPLEVEL;
+	set_type(shsurf, SHELL_SURFACE_TOPLEVEL);
 
 	return shsurf;
 }
@@ -4014,7 +4024,7 @@ create_xdg_popup(struct shell_client *owner, void *shell,
 	if (!shsurf)
 		return NULL;
 
-	shsurf->type = SHELL_SURFACE_POPUP;
+	set_type(shsurf, SHELL_SURFACE_POPUP);
 	shsurf->popup.shseat = seat;
 	shsurf->popup.serial = serial;
 	shsurf->popup.x = x;

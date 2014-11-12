@@ -69,6 +69,9 @@ weston_SOURCES =					\
 	src/noop-renderer.c				\
 	src/pixman-renderer.c				\
 	src/pixman-renderer.h				\
+	src/timeline.c					\
+	src/timeline.h					\
+	src/timeline-object.h				\
 	shared/matrix.c					\
 	shared/matrix.h					\
 	shared/zalloc.h					\
@@ -157,6 +160,7 @@ westonincludedir = $(includedir)/weston
 westoninclude_HEADERS =				\
 	src/version.h				\
 	src/compositor.h			\
+	src/timeline-object.h			\
 	shared/matrix.h				\
 	shared/config-parser.h			\
 	shared/zalloc.h

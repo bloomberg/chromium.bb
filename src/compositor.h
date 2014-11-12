@@ -40,6 +40,7 @@ extern "C" {
 #include "matrix.h"
 #include "config-parser.h"
 #include "zalloc.h"
+#include "timeline-object.h"
 
 #ifndef MIN
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
@@ -234,6 +235,8 @@ struct weston_output {
 			  uint16_t *r,
 			  uint16_t *g,
 			  uint16_t *b);
+
+	struct weston_timeline_object timeline;
 };
 
 struct weston_pointer_grab;
@@ -915,6 +918,8 @@ struct weston_surface {
 	 * and replace role_name with configure.
 	 */
 	const char *role_name;
+
+	struct weston_timeline_object timeline;
 };
 
 struct weston_subsurface {

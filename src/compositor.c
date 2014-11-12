@@ -53,6 +53,8 @@
 #include <libunwind.h>
 #endif
 
+#include "timeline.h"
+
 #include "compositor.h"
 #include "scaler-server-protocol.h"
 #include "presentation_timing-server-protocol.h"
@@ -1778,6 +1780,11 @@ surface_flush_damage(struct weston_surface *surface)
 	    wl_shm_buffer_get(surface->buffer_ref.buffer->resource))
 		surface->compositor->renderer->flush_damage(surface);
 
+	if (weston_timeline_enabled_ &&
+	    pixman_region32_not_empty(&surface->damage))
+		TL_POINT("core_flush_damage", TLP_SURFACE(surface),
+			 TLP_OUTPUT(surface->output), TLP_END);
+
 	pixman_region32_clear(&surface->damage);
 }
 
@@ -2002,6 +2009,8 @@ weston_output_repaint(struct weston_output *output)
 	if (output->destroying)
 		return 0;
 
+	TL_POINT("core_repaint_begin", TLP_OUTPUT(output), TLP_END);
+
 	/* Rebuild the surface list and update surface transforms up front. */
 	weston_compositor_build_view_list(ec);
 
@@ -2057,6 +2066,8 @@ weston_output_repaint(struct weston_output *output)
 		animation->frame(animation, output, output->frame_time);
 	}
 
+	TL_POINT("core_repaint_posted", TLP_OUTPUT(output), TLP_END);
+
 	return r;
 }
 
@@ -2080,6 +2091,9 @@ weston_output_finish_frame(struct weston_output *output,
 	int fd, r;
 	uint32_t refresh_nsec;
 
+	TL_POINT("core_repaint_finished", TLP_OUTPUT(output),
+		 TLP_VBLANK(stamp), TLP_END);
+
 	refresh_nsec = 1000000000000UL / output->current_mode->refresh;
 	weston_presentation_feedback_present_list(&output->feedback_list,
 						  output, refresh_nsec, stamp,
@@ -2096,6 +2110,8 @@ weston_output_finish_frame(struct weston_output *output,
 	}
 
 	output->repaint_scheduled = 0;
+	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
+
 	if (compositor->input_loop_source)
 		return;
 
@@ -2172,6 +2188,9 @@ weston_output_schedule_repaint(struct weston_output *output)
 	    compositor->state == WESTON_COMPOSITOR_OFFSCREEN)
 		return;
 
+	if (!output->repaint_needed)
+		TL_POINT("core_repaint_req", TLP_OUTPUT(output), TLP_END);
+
 	loop = wl_display_get_event_loop(compositor->wl_display);
 	output->repaint_needed = 1;
 	if (output->repaint_scheduled)
@@ -2179,6 +2198,8 @@ weston_output_schedule_repaint(struct weston_output *output)
 
 	wl_event_loop_add_idle(loop, idle_repaint, output);
 	output->repaint_scheduled = 1;
+	TL_POINT("core_repaint_enter_loop", TLP_OUTPUT(output), TLP_END);
+
 
 	if (compositor->input_loop_source) {
 		wl_event_source_remove(compositor->input_loop_source);
@@ -2350,6 +2371,9 @@ weston_surface_commit_state(struct weston_surface *surface,
 	state->buffer_viewport.changed = 0;
 
 	/* wl_surface.damage */
+	if (weston_timeline_enabled_ &&
+	    pixman_region32_not_empty(&state->damage))
+		TL_POINT("core_commit_damage", TLP_SURFACE(surface), TLP_END);
 	pixman_region32_union(&surface->damage, &surface->damage,
 			      &state->damage);
 	pixman_region32_intersect_rect(&surface->damage, &surface->damage,
@@ -2819,6 +2843,7 @@ weston_surface_set_label_func(struct weston_surface *surface,
 					  char *, size_t))
 {
 	surface->get_label = desc;
+	surface->timeline.force_refresh = 1;
 }
 
 static void
@@ -4024,6 +4049,18 @@ weston_environment_get_fd(const char *env)
 	return fd;
 }
 
+static void
+timeline_key_binding_handler(struct weston_seat *seat, uint32_t time,
+			     uint32_t key, void *data)
+{
+	struct weston_compositor *compositor = data;
+
+	if (weston_timeline_enabled_)
+		weston_timeline_close();
+	else
+		weston_timeline_open(compositor);
+}
+
 WL_EXPORT int
 weston_compositor_init(struct weston_compositor *ec,
 		       struct wl_display *display,
@@ -4120,6 +4157,9 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	weston_layer_init(&ec->fade_layer, &ec->layer_list);
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
+
+	weston_compositor_add_debug_binding(ec, KEY_T,
+					    timeline_key_binding_handler, ec);
 
 	weston_compositor_schedule_repaint(ec);
 
