@@ -718,8 +718,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
           : net::android::GetTelephonyNetworkCountryIso();
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new AddressDetector()));
-  content_detectors_.push_back(linked_ptr<ContentDetector>(
-      new PhoneNumberDetector(region_code)));
+  if (!region_code.empty()) {
+    content_detectors_.push_back(linked_ptr<ContentDetector>(
+        new PhoneNumberDetector(region_code)));
+  }
   content_detectors_.push_back(linked_ptr<ContentDetector>(
       new EmailDetector()));
 #endif
@@ -3978,8 +3980,6 @@ void RenderViewImpl::draggableRegionsChanged() {
 #if defined(OS_ANDROID)
 WebContentDetectionResult RenderViewImpl::detectContentAround(
     const WebHitTestResult& touch_hit) {
-  DCHECK(!touch_hit.isNull());
-  DCHECK(!touch_hit.node().isNull());
   DCHECK(touch_hit.node().isTextNode());
 
   // Process the position with all the registered content detectors until
@@ -4013,7 +4013,7 @@ void RenderViewImpl::cancelScheduledContentIntents() {
 void RenderViewImpl::LaunchAndroidContentIntent(const GURL& intent,
                                                 size_t request_id) {
   if (request_id != expected_content_intent_id_)
-      return;
+    return;
 
   // Remove the content highlighting if any.
   scheduleComposite();
