@@ -11,6 +11,9 @@
  * @struct
  */
 function FileManagerUI(element, dialogType) {
+  // Pre-populate the static localized strings.
+  i18nTemplate.process(element.ownerDocument, loadTimeData);
+
   /**
    * Top level element of Files.app.
    * @type {!HTMLElement}
@@ -164,9 +167,6 @@ function FileManagerUI(element, dialogType) {
   this.element_.addEventListener('drop', function(e) {
     e.preventDefault();
   });
-
-  // Pre-populate the static localized strings.
-  i18nTemplate.process(this.element_.ownerDocument, loadTimeData);
 }
 
 /**
