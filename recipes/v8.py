@@ -18,7 +18,7 @@ class V8(recipe_util.Recipe):
     solution = {
         'name'        : 'v8',
         'url'         : url,
-        'deps_file'   : '.DEPS.git',
+        'deps_file'   : 'DEPS',
         'managed'     : False,
         'custom_deps' : {},
         'safesync_url': '',
@@ -26,22 +26,10 @@ class V8(recipe_util.Recipe):
     spec = {
       'solutions': [solution],
       'with_branch_heads': True,
-      'svn_url': 'https://v8.googlecode.com/svn',
-      'git_svn_fetch': {
-        'branches/bleeding_edge': 'refs/remotes/origin/master',
-        'trunk': 'refs/remotes/origin/candidates',
-        'branches/3.28': 'refs/remotes/branch-heads/3.28',
-        'branches/3.29': 'refs/remotes/branch-heads/3.29',
-      },
-      'git_svn_branches': {},
     }
-    checkout_type = 'gclient_git_svn'
-    if props.get('nosvn'):
-      checkout_type = 'gclient_git'
-    spec_type = '%s_spec' % checkout_type
     return {
-      'type': checkout_type,
-      spec_type: spec,
+      'type': 'gclient_git',
+      'gclient_git_spec': spec,
     }
 
   @staticmethod
