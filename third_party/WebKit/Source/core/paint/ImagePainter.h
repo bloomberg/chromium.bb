@@ -17,9 +17,10 @@ class ImagePainter {
 public:
     ImagePainter(RenderImage& renderImage) : m_renderImage(renderImage) { }
 
-    void paint(PaintInfo&, const LayoutPoint&);
-    void paintReplaced(PaintInfo&, const LayoutPoint&);
-    void paintIntoRect(GraphicsContext*, const LayoutRect&);
+    void paint(PaintInfo&, const LayoutPoint& paintOffset);
+    void paintReplaced(PaintInfo&, const LayoutPoint& paintOffset);
+    void paintIntoRect(GraphicsContext*, const LayoutRect& paintOffset);
+    void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint& paintOffset);
 
 private:
     void paintAreaElementFocusRing(PaintInfo&);

@@ -81,6 +81,8 @@ protected:
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 
     virtual void paint(PaintInfo&, const LayoutPoint&) override final;
+    virtual void paintBoxDecorationBackground(PaintInfo&, const LayoutPoint&) override final;
+
     virtual void layout() override;
     virtual bool updateImageLoadingPriorities() override final;
 

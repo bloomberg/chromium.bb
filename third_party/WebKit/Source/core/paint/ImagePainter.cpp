@@ -200,4 +200,17 @@ void ImagePainter::paintIntoRect(GraphicsContext* context, const LayoutRect& rec
     InspectorInstrumentation::didPaintImage(&m_renderImage);
 }
 
+void ImagePainter::paintBoxDecorationBackground(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    // Don't anti-alias the background of an image. See crbug.com/423834 for the reason why.
+    // However, don't turn off anti-aliasing for subclasses such as video.
+    bool shouldAntialias = !m_renderImage.isRenderImage();
+
+    bool oldShouldAntialias = paintInfo.context->shouldAntialias();
+
+    paintInfo.context->setShouldAntialias(shouldAntialias);
+    BoxPainter(m_renderImage).paintBoxDecorationBackground(paintInfo, paintOffset);
+    paintInfo.context->setShouldAntialias(oldShouldAntialias);
+}
+
 } // namespace blink

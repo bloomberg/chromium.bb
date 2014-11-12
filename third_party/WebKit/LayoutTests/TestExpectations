@@ -1,4 +1,11 @@
-
+crbug.com/423834 fast/borders/border-radius-mask-video-ratio.html [ NeedsRebaseline ]
+crbug.com/423834 fast/borders/border-radius-mask-video-shadow.html [ NeedsRebaseline ]
+crbug.com/423834 fast/borders/border-radius-mask-video.html [ NeedsRebaseline ]
+crbug.com/423834 fast/overflow/overflow-update-transform.html [ NeedsRebaseline ]
+crbug.com/423834 fast/replaced/border-radius-clip-content-edge.html [ NeedsRebaseline ]
+crbug.com/423834 fast/replaced/selection-rect-transform.html [ NeedsRebaseline ]
+crbug.com/423834 ietestcenter/css3/bordersbackgrounds/border-radius-content-edge-001.htm [ NeedsRebaseline ]
+ 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
 
