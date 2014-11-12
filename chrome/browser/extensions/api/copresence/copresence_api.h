@@ -30,8 +30,8 @@ class GCMDriver;
 
 namespace extensions {
 
-class CopresenceService : public BrowserContextKeyedAPI,
-                          public copresence::CopresenceDelegate {
+class CopresenceService final : public BrowserContextKeyedAPI,
+                                public copresence::CopresenceDelegate {
  public:
   explicit CopresenceService(content::BrowserContext* context);
   ~CopresenceService() override;
