@@ -224,8 +224,8 @@ gfx::Display ScreenAsh::GetDisplayNearestWindow(gfx::NativeView window) const {
   DisplayManager* display_manager = GetDisplayManager();
   // RootWindow needs Display to determine its device scale factor
   // for non desktop display.
-  if (display_manager->non_desktop_display().id() == id)
-    return display_manager->non_desktop_display();
+  if (display_manager->mirroring_display().id() == id)
+    return display_manager->mirroring_display();
   return display_manager->GetDisplayForId(id);
 }
 

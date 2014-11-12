@@ -1226,6 +1226,7 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
   display_manager->SetSecondDisplayMode(DisplayManager::MIRRORING);
   display_manager->UpdateDisplays();
+  RunAllPendingInMessageLoop();
   EXPECT_TRUE(display_observer.changed_and_reset());
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_EQ("0,0 300x400",

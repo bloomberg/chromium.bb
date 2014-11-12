@@ -153,8 +153,8 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   void OnHostResized(const aura::WindowTreeHost* host) override;
 
   // aura::DisplayManager::Delegate overrides:
-  void CreateOrUpdateNonDesktopDisplay(const DisplayInfo& info) override;
-  void CloseNonDesktopDisplay() override;
+  void CreateOrUpdateMirroringDisplay(const DisplayInfo& info) override;
+  void CloseMirroringDisplay() override;
   void PreDisplayConfigurationChange(bool clear_focus) override;
   void PostDisplayConfigurationChange() override;
 

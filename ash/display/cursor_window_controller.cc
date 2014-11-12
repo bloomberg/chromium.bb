@@ -127,6 +127,8 @@ void CursorWindowController::UpdateContainer() {
       display_ = Shell::GetScreen()->GetPrimaryDisplay();
     SetContainer(mirror_window);
   }
+  // Updates the hot point based on the current display/container.
+  UpdateCursorImage();
 }
 
 void CursorWindowController::SetDisplay(const gfx::Display& display) {

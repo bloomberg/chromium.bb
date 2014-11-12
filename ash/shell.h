@@ -706,8 +706,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr< ::wm::InputMethodEventFilter> input_method_filter_;
 
   scoped_ptr<DisplayManager> display_manager_;
-  scoped_ptr<base::WeakPtrFactory<DisplayManager> >
-      weak_display_manager_factory_;
 
   scoped_ptr<LocaleNotificationController> locale_notification_controller_;
 

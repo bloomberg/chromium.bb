@@ -750,7 +750,7 @@ Shell::~Shell() {
 
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
-  display_controller_->CloseNonDesktopDisplay();
+  display_controller_->CloseMirroringDisplay();
 
   // Chrome implementation of shelf delegate depends on FocusClient,
   // so must be deleted before |focus_client_|.
@@ -1063,16 +1063,10 @@ void Shell::Init(const ShellInitParams& init_params) {
   last_window_closed_logout_reminder_.reset(new LastWindowClosedLogoutReminder);
   screen_orientation_delegate_.reset(new ScreenOrientationDelegate());
 #endif
-
-  weak_display_manager_factory_.reset(
-      new base::WeakPtrFactory<DisplayManager>(display_manager_.get()));
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
   // is started.
-  base::MessageLoopForUI::current()->PostTask(
-      FROM_HERE,
-      base::Bind(&DisplayManager::CreateMirrorWindowIfAny,
-                 weak_display_manager_factory_->GetWeakPtr()));
+  display_manager_->CreateMirrorWindowAsyncIfAny();
 }
 
 void Shell::InitKeyboard() {

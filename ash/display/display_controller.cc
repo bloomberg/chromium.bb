@@ -653,7 +653,7 @@ void DisplayController::OnHostResized(const aura::WindowTreeHost* host) {
   }
 }
 
-void DisplayController::CreateOrUpdateNonDesktopDisplay(
+void DisplayController::CreateOrUpdateMirroringDisplay(
     const DisplayInfo& info) {
   switch (GetDisplayManager()->second_display_mode()) {
     case DisplayManager::MIRRORING:
@@ -665,7 +665,7 @@ void DisplayController::CreateOrUpdateNonDesktopDisplay(
   }
 }
 
-void DisplayController::CloseNonDesktopDisplay() {
+void DisplayController::CloseMirroringDisplay() {
   mirror_window_controller_->Close();
   // If cursor_compositing is enabled for large cursor, the cursor window is
   // always on the desktop display (the visible cursor on the non-desktop

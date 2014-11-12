@@ -205,9 +205,11 @@ bool AshTestBase::SupportsHostWindowResize() {
 }
 
 void AshTestBase::UpdateDisplay(const std::string& display_specs) {
-  DisplayManagerTestApi display_manager_test_api(
-      Shell::GetInstance()->display_manager());
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayManagerTestApi display_manager_test_api(display_manager);
   display_manager_test_api.UpdateDisplay(display_specs);
+  if (display_manager->HasSoftwareMirroringDisplay())
+    RunAllPendingInMessageLoop();
 }
 
 aura::Window* AshTestBase::CurrentContext() {
