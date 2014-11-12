@@ -116,7 +116,7 @@ DeathData::DeathData(int count) {
 
 void DeathData::RecordDeath(const int32 queue_duration,
                             const int32 run_duration,
-                            int32 random_number) {
+                            const uint32 random_number) {
   // We'll just clamp at INT_MAX, but we should note this in the UI as such.
   if (count_ < INT_MAX)
     ++count_;
@@ -307,7 +307,7 @@ void ThreadData::PushToHeadOfList() {
   (void)VALGRIND_MAKE_MEM_DEFINED_IF_ADDRESSABLE(&random_number_,
                                                  sizeof(random_number_));
   MSAN_UNPOISON(&random_number_, sizeof(random_number_));
-  random_number_ += static_cast<int32>(this - static_cast<ThreadData*>(0));
+  random_number_ += static_cast<uint32>(this - static_cast<ThreadData*>(0));
   random_number_ ^= (Now() - TrackedTime()).InMilliseconds();
 
   DCHECK(!next_);
@@ -453,10 +453,10 @@ void ThreadData::TallyADeath(const Births& birth,
   int32 run_duration = stopwatch.RunDurationMs();
 
   // Stir in some randomness, plus add constant in case durations are zero.
-  const int32 kSomePrimeNumber = 2147483647;
+  const uint32 kSomePrimeNumber = 2147483647;
   random_number_ += queue_duration + run_duration + kSomePrimeNumber;
   // An address is going to have some randomness to it as well ;-).
-  random_number_ ^= static_cast<int32>(&birth - reinterpret_cast<Births*>(0));
+  random_number_ ^= static_cast<uint32>(&birth - reinterpret_cast<Births*>(0));
 
   // We don't have queue durations without OS timer. OS timer is automatically
   // used for task-post-timing, so the use of an alternate timer implies all

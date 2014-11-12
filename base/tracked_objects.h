@@ -273,7 +273,7 @@ class BASE_EXPORT DeathData {
   // |duration|, and has had a queueing delay of |queue_duration|.
   void RecordDeath(const int32 queue_duration,
                    const int32 run_duration,
-                   int random_number);
+                   const uint32 random_number);
 
   // Metrics accessors, used only for serialization and in tests.
   int count() const;
@@ -685,7 +685,7 @@ class BASE_EXPORT ThreadData {
   // representative sample in each DeathData instance.  We can't start off with
   // much randomness (because we can't call RandInt() on all our threads), so
   // we stir in more and more as we go.
-  int32 random_number_;
+  uint32 random_number_;
 
   // Record of what the incarnation_counter_ was when this instance was created.
   // If the incarnation_counter_ has changed, then we avoid pushing into the
