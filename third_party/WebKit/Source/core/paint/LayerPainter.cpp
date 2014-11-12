@@ -79,9 +79,9 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
         // layer from the parent now, assuming there is a parent
         if (paintFlags & PaintLayerHaveTransparency) {
             if (m_renderLayer.parent())
-                LayerPainter(*m_renderLayer.parent()).beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+                beginTransparencyLayers(context, *m_renderLayer.parent(), paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
             else
-                beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+                beginTransparencyLayers(context, m_renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
         }
 
         if (m_renderLayer.enclosingPaginationLayer()) {
@@ -115,28 +115,28 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
     paintLayerContentsAndReflection(context, paintingInfo, paintFlags);
 }
 
-void LayerPainter::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
+void LayerPainter::beginTransparencyLayers(GraphicsContext* context, RenderLayer& renderLayer, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
 {
-    bool createTransparencyLayerForBlendMode = m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
-    if ((m_renderLayer.paintsWithTransparency(paintBehavior) || createTransparencyLayerForBlendMode) && m_renderLayer.usedTransparency())
+    bool createTransparencyLayerForBlendMode = renderLayer.stackingNode()->isStackingContext() && renderLayer.hasNonIsolatedDescendantWithBlendMode();
+    if ((renderLayer.paintsWithTransparency(paintBehavior) || createTransparencyLayerForBlendMode) && renderLayer.usedTransparency())
         return;
 
-    RenderLayer* ancestor = m_renderLayer.transparentPaintingAncestor();
+    RenderLayer* ancestor = renderLayer.transparentPaintingAncestor();
     if (ancestor)
-        LayerPainter(*ancestor).beginTransparencyLayers(context, rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
+        beginTransparencyLayers(context, *ancestor, rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
 
-    if (m_renderLayer.paintsWithTransparency(paintBehavior) || createTransparencyLayerForBlendMode) {
-        m_renderLayer.setUsedTransparency(true);
+    if (renderLayer.paintsWithTransparency(paintBehavior) || createTransparencyLayerForBlendMode) {
+        renderLayer.setUsedTransparency(true);
         context->save();
-        LayoutRect clipRect = m_renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
+        LayoutRect clipRect = renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
         context->clip(clipRect);
 
-        if (m_renderLayer.renderer()->hasBlendMode())
-            context->setCompositeOperation(context->compositeOperation(), m_renderLayer.renderer()->style()->blendMode());
+        if (renderLayer.renderer()->hasBlendMode())
+            context->setCompositeOperation(context->compositeOperation(), renderLayer.renderer()->style()->blendMode());
 
-        context->beginTransparencyLayer(m_renderLayer.renderer()->opacity());
+        context->beginTransparencyLayer(renderLayer.renderer()->opacity());
 
-        if (m_renderLayer.renderer()->hasBlendMode())
+        if (renderLayer.renderer()->hasBlendMode())
             context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 #ifdef REVEAL_TRANSPARENCY_LAYERS
         context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
@@ -251,7 +251,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     bool createTransparencyLayerForBlendMode = !m_renderLayer.renderer()->isDocumentElement() && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
 
     if (createTransparencyLayerForBlendMode)
-        beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+        beginTransparencyLayers(context, m_renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
 
@@ -265,7 +265,7 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
             shouldPaintContent = atLeastOneFragmentIntersectsDamageRect(layerFragments, localPaintingInfo, paintFlags, offsetFromRoot);
     }
 
-    bool selectionOnly  = localPaintingInfo.paintBehavior & PaintBehaviorSelectionOnly;
+    bool selectionOnly = localPaintingInfo.paintBehavior & PaintBehaviorSelectionOnly;
     // If this layer's renderer is a child of the paintingRoot, we render unconditionally, which
     // is done by passing a nil paintingRoot down to our renderer (as if no paintingRoot was ever set).
     // Else, our renderer tree may or may not contain the painting root, so we pass that root along
@@ -275,29 +275,8 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
         paintingRootForRenderer = localPaintingInfo.paintingRoot;
 
     { // Begin block for the lifetime of any filter.
-        OwnPtr<FilterPainter> filterPainter;
-        if (m_renderLayer.filterRenderer() && m_renderLayer.paintsWithFilters()) {
-            ASSERT(m_renderLayer.filterInfo());
-
-            if (!rootRelativeBoundsComputed)
-                rootRelativeBounds = m_renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
-
-            // Do transparency and clipping before starting filter processing.
-            if (haveTransparency) {
-                // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
-                beginTransparencyLayers(context, localPaintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
-            }
-
-            // We'll handle clipping to the dirty rect before filter rasterization.
-            // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
-            // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
-            ClipRect backgroundRect = layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect;
-
-            // Subsequent code should not clip to the dirty rect, since we've already
-            // done it above, and doing it later will defeat the outsets.
-            localPaintingInfo.clipToDirtyRect = false;
-            filterPainter = adoptPtr(new FilterPainter(m_renderLayer, context, rootRelativeBounds, backgroundRect, localPaintingInfo, paintFlags));
-        }
+        FilterPainter filterPainter(m_renderLayer, context, offsetFromRoot, layerFragments.isEmpty() ? ClipRect() : layerFragments[0].backgroundRect, localPaintingInfo, paintFlags,
+            rootRelativeBounds, rootRelativeBoundsComputed);
 
         ASSERT(!(localPaintingInfo.paintBehavior & PaintBehaviorForceBlackText));
 
@@ -711,7 +690,7 @@ void LayerPainter::paintBackgroundForFragments(const LayerFragments& layerFragme
     for (const auto& fragment: layerFragments) {
         // Begin transparency layers lazily now that we know we have to paint something.
         if (haveTransparency)
-            beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
+            beginTransparencyLayers(context, m_renderLayer, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
 
         paintFragmentWithPhase(PaintPhaseBlockBackground, fragment, context, fragment.backgroundRect, localPaintingInfo, paintBehavior, paintingRootForRenderer, paintFlags, HasNotClipped);
     }
@@ -726,7 +705,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
         for (size_t i = 0; i < layerFragments.size(); ++i) {
             const LayerFragment& fragment = layerFragments.at(i);
             if (!fragment.foregroundRect.isEmpty()) {
-                beginTransparencyLayers(context, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
+                beginTransparencyLayers(context, m_renderLayer, localPaintingInfo.rootLayer, transparencyPaintDirtyRect, localPaintingInfo.subPixelAccumulation, localPaintingInfo.paintBehavior);
                 break;
             }
         }

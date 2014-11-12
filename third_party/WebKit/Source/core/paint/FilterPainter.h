@@ -18,7 +18,7 @@ class RenderLayer;
 
 class FilterPainter {
 public:
-    FilterPainter(RenderLayer&, GraphicsContext*, const FloatRect& filterBoxRect, const ClipRect&, const LayerPaintingInfo&, PaintLayerFlags paintFlags);
+    FilterPainter(RenderLayer&, GraphicsContext*, const LayoutPoint& offsetFromRoot, const ClipRect&, LayerPaintingInfo&, PaintLayerFlags paintFlags, LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed);
     ~FilterPainter();
 
 private:

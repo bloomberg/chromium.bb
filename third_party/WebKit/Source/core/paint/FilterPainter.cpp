@@ -14,16 +14,41 @@
 
 namespace blink {
 
-FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context, const FloatRect& filterBoxRect, const ClipRect& clipRect, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
+FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context, const LayoutPoint& offsetFromRoot, const ClipRect& clipRect, LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags,
+    LayoutRect& rootRelativeBounds, bool& rootRelativeBoundsComputed)
     : m_filterInProgress(false)
     , m_context(context)
 {
+    if (!renderLayer.filterRenderer() || !renderLayer.paintsWithFilters())
+        return;
+
+    ASSERT(renderLayer.filterInfo());
+
     SkiaImageFilterBuilder builder(context);
     RefPtrWillBeRawPtr<FilterEffect> lastEffect = renderLayer.filterRenderer()->lastEffect();
     lastEffect->determineFilterPrimitiveSubregion(MapRectForward);
     RefPtr<ImageFilter> imageFilter = builder.build(lastEffect.get(), ColorSpaceDeviceRGB);
     if (!imageFilter)
         return;
+
+    if (!rootRelativeBoundsComputed) {
+        rootRelativeBounds = renderLayer.physicalBoundingBoxIncludingReflectionAndStackingChildren(paintingInfo.rootLayer, offsetFromRoot);
+        rootRelativeBoundsComputed = true;
+    }
+
+    // Do transparency and clipping before starting filter processing.
+    if (paintFlags & PaintLayerHaveTransparency) {
+        // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
+        LayerPainter::beginTransparencyLayers(context, renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+    }
+
+    // We'll handle clipping to the dirty rect before filter rasterization.
+    // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
+    // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
+
+    // Subsequent code should not clip to the dirty rect, since we've already
+    // done it above, and doing it later will defeat the outsets.
+    paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
         m_clipRecorder = adoptPtr(new ClipRecorder(&renderLayer, context, DisplayItem::ClipLayerFilter, clipRect));
@@ -32,11 +57,11 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     }
 
     context->save();
-    FloatRect boundaries = mapImageFilterRect(imageFilter.get(), filterBoxRect);
-    context->translate(filterBoxRect.x(), filterBoxRect.y());
-    boundaries.move(-filterBoxRect.x(), -filterBoxRect.y());
+    FloatRect boundaries = mapImageFilterRect(imageFilter.get(), rootRelativeBounds);
+    context->translate(rootRelativeBounds.x().toFloat(), rootRelativeBounds.y().toFloat());
+    boundaries.move(-rootRelativeBounds.x().toFloat(), -rootRelativeBounds.y().toFloat());
     context->beginLayer(1, CompositeSourceOver, &boundaries, ColorFilterNone, imageFilter.get());
-    context->translate(-filterBoxRect.x(), -filterBoxRect.y());
+    context->translate(-rootRelativeBounds.x().toFloat(), -rootRelativeBounds.y().toFloat());
     m_filterInProgress = true;
 }
 
