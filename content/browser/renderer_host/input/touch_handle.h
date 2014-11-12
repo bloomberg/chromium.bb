@@ -33,7 +33,6 @@ class CONTENT_EXPORT TouchHandleDrawable {
   virtual void SetOrientation(TouchHandleOrientation orientation) = 0;
   virtual void SetAlpha(float alpha) = 0;
   virtual void SetFocus(const gfx::PointF& position) = 0;
-  virtual void SetVisible(bool visible) = 0;
   virtual bool IntersectsWith(const gfx::RectF& rect) const = 0;
 };
 

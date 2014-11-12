@@ -46,7 +46,6 @@ TouchHandle::TouchHandle(TouchHandleClient* client,
   drawable_->SetEnabled(enabled_);
   drawable_->SetOrientation(orientation_);
   drawable_->SetAlpha(alpha_);
-  drawable_->SetVisible(is_visible_);
   drawable_->SetFocus(position_);
 }
 
@@ -240,7 +239,6 @@ void TouchHandle::BeginFade() {
     return;
   }
 
-  drawable_->SetVisible(true);
   fade_end_time_ = base::TimeTicks::Now() +
                    base::TimeDelta::FromMillisecondsD(
                        kFadeDurationMs * std::abs(target_alpha - alpha_));
@@ -253,7 +251,6 @@ void TouchHandle::EndFade() {
   animate_deferred_fade_ = false;
   fade_end_time_ = base::TimeTicks();
   SetAlpha(is_visible_ ? 1.f : 0.f);
-  drawable_->SetVisible(is_visible_);
 }
 
 void TouchHandle::SetAlpha(float alpha) {

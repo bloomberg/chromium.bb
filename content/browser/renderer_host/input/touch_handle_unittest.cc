@@ -42,14 +42,15 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
     data_->orientation = orientation;
   }
 
-  void SetAlpha(float alpha) override { data_->alpha = alpha; }
+  void SetAlpha(float alpha) override {
+    data_->alpha = alpha;
+    data_->visible = alpha > 0;
+  }
 
   void SetFocus(const gfx::PointF& position) override {
     // Anchor focus to the top left of the rect (regardless of orientation).
     data_->rect.set_origin(position);
   }
-
-  void SetVisible(bool visible) override { data_->visible = visible; }
 
   bool IntersectsWith(const gfx::RectF& rect) const override {
     return data_->rect.Intersects(rect);
@@ -166,7 +167,7 @@ TEST_F(TouchHandleTest, VisibilityAnimation) {
 
   handle.SetVisible(true, TouchHandle::ANIMATION_SMOOTH);
   EXPECT_TRUE(NeedsAnimate());
-  EXPECT_TRUE(drawable().visible);
+  EXPECT_FALSE(drawable().visible);
   EXPECT_EQ(0.f, drawable().alpha);
 
   Animate(handle);

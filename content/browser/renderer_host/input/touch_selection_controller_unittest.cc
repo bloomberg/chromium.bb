@@ -24,7 +24,6 @@ class MockTouchHandleDrawable : public TouchHandleDrawable {
   void SetOrientation(TouchHandleOrientation orientation) override {}
   void SetAlpha(float alpha) override {}
   void SetFocus(const gfx::PointF& position) override {}
-  void SetVisible(bool visible) override {}
   bool IntersectsWith(const gfx::RectF& rect) const override {
     return *intersects_rect_;
   }

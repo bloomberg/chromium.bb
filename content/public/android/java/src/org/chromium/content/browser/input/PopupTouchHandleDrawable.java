@@ -362,12 +362,6 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @CalledByNative
-    private void setOpacity(float alpha) {
-        // Ignore opacity updates from the caller as they are not compatible
-        // with the custom fade animation.
-    }
-
-    @CalledByNative
     private void setFocus(float focusX, float focusY) {
         int x = (int) focusX - Math.round(mHotspotX);
         int y = (int) focusY - Math.round(mHotspotY);

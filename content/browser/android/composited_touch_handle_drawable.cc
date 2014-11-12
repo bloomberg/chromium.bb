@@ -127,18 +127,16 @@ void CompositedTouchHandleDrawable::SetOrientation(
 
 void CompositedTouchHandleDrawable::SetAlpha(float alpha) {
   DCHECK(layer_->parent());
-  layer_->SetOpacity(std::max(0.f, std::min(1.f, alpha)));
+  alpha = std::max(0.f, std::min(1.f, alpha));
+  bool hidden = alpha <= 0;
+  layer_->SetOpacity(alpha);
+  layer_->SetHideLayerAndSubtree(hidden);
 }
 
 void CompositedTouchHandleDrawable::SetFocus(const gfx::PointF& position) {
   DCHECK(layer_->parent());
   focal_position_ = gfx::ScalePoint(position, dpi_scale_);
   layer_->SetPosition(focal_position_ - focal_offset_from_origin_);
-}
-
-void CompositedTouchHandleDrawable::SetVisible(bool visible) {
-  DCHECK(layer_->parent());
-  layer_->SetHideLayerAndSubtree(!visible);
 }
 
 bool CompositedTouchHandleDrawable::IntersectsWith(
