@@ -664,8 +664,6 @@ TEST_P(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 
 // TODO(gman): RequestExtensionCHROMIUM
 
-// TODO(gman): GetMultipleIntegervCHROMIUM
-
 // TODO(gman): GetProgramInfoCHROMIUM
 
 // TODO(gman): GetTranslatedShaderSourceANGLE

@@ -694,11 +694,6 @@ void GLES2InterfaceStub::RequestExtensionCHROMIUM(const char* /* extension */) {
 }
 void GLES2InterfaceStub::RateLimitOffscreenContextCHROMIUM() {
 }
-void GLES2InterfaceStub::GetMultipleIntegervCHROMIUM(const GLenum* /* pnames */,
-                                                     GLuint /* count */,
-                                                     GLint* /* results */,
-                                                     GLsizeiptr /* size */) {
-}
 void GLES2InterfaceStub::GetProgramInfoCHROMIUM(GLuint /* program */,
                                                 GLsizei /* bufsize */,
                                                 GLsizei* /* size */,

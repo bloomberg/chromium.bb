@@ -1207,15 +1207,6 @@ void GLES2TraceImplementation::RateLimitOffscreenContextCHROMIUM() {
   gl_->RateLimitOffscreenContextCHROMIUM();
 }
 
-void GLES2TraceImplementation::GetMultipleIntegervCHROMIUM(const GLenum* pnames,
-                                                           GLuint count,
-                                                           GLint* results,
-                                                           GLsizeiptr size) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::GetMultipleIntegervCHROMIUM");
-  gl_->GetMultipleIntegervCHROMIUM(pnames, count, results, size);
-}
-
 void GLES2TraceImplementation::GetProgramInfoCHROMIUM(GLuint program,
                                                       GLsizei bufsize,
                                                       GLsizei* size,

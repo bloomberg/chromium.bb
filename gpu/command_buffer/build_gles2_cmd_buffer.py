@@ -1870,14 +1870,6 @@ _FUNCTION_INFO = {
     'chromium': True,
     'impl_func': False,
   },
-  'GetMultipleIntegervCHROMIUM': {
-    'type': 'Custom',
-    'data_transfer_methods': ['shm'],
-    'expectation': False,
-    'extension': True,
-    'chromium': True,
-    'client_test': False,
-  },
   'GetProgramiv': {
     'type': 'GETn',
     'decoder_func': 'DoGetProgramiv',

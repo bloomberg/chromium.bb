@@ -751,13 +751,6 @@ void GLES2RequestExtensionCHROMIUM(const char* extension) {
 void GLES2RateLimitOffscreenContextCHROMIUM() {
   gles2::GetGLContext()->RateLimitOffscreenContextCHROMIUM();
 }
-void GLES2GetMultipleIntegervCHROMIUM(const GLenum* pnames,
-                                      GLuint count,
-                                      GLint* results,
-                                      GLsizeiptr size) {
-  gles2::GetGLContext()->GetMultipleIntegervCHROMIUM(pnames, count, results,
-                                                     size);
-}
 void GLES2GetProgramInfoCHROMIUM(GLuint program,
                                  GLsizei bufsize,
                                  GLsizei* size,
@@ -1676,10 +1669,6 @@ extern const NameToFunc g_gles2_function_table[] = {
      "glRateLimitOffscreenContextCHROMIUM",
      reinterpret_cast<GLES2FunctionPointer>(
          glRateLimitOffscreenContextCHROMIUM),
-    },
-    {
-     "glGetMultipleIntegervCHROMIUM",
-     reinterpret_cast<GLES2FunctionPointer>(glGetMultipleIntegervCHROMIUM),
     },
     {
      "glGetProgramInfoCHROMIUM",

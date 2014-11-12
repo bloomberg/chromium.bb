@@ -7,9 +7,75 @@
 
 #include "gpu/gpu_export.h"
 
+// From gl2.h. We want to avoid including gl headers because client-side and
+// service-side headers conflict.
+#define GL_FRAGMENT_SHADER 0x8B30
+#define GL_VERTEX_SHADER 0x8B31
+#define GL_LOW_FLOAT 0x8DF0
+#define GL_MEDIUM_FLOAT 0x8DF1
+#define GL_HIGH_FLOAT 0x8DF2
+#define GL_LOW_INT 0x8DF3
+#define GL_MEDIUM_INT 0x8DF4
+#define GL_HIGH_INT 0x8DF5
+
 namespace gpu {
 
 struct GPU_EXPORT Capabilities {
+  struct ShaderPrecision {
+    ShaderPrecision() : min_range(0), max_range(0), precision(0) {}
+    int min_range;
+    int max_range;
+    int precision;
+  };
+
+  struct PerStagePrecisions {
+    PerStagePrecisions();
+
+    ShaderPrecision low_int;
+    ShaderPrecision medium_int;
+    ShaderPrecision high_int;
+    ShaderPrecision low_float;
+    ShaderPrecision medium_float;
+    ShaderPrecision high_float;
+  };
+
+  Capabilities();
+
+  template <typename T>
+  void VisitStagePrecisions(unsigned stage,
+                            PerStagePrecisions* precisions,
+                            const T& visitor) {
+    visitor(stage, GL_LOW_INT, &precisions->low_int);
+    visitor(stage, GL_MEDIUM_INT, &precisions->medium_int);
+    visitor(stage, GL_HIGH_INT, &precisions->high_int);
+    visitor(stage, GL_LOW_FLOAT, &precisions->low_float);
+    visitor(stage, GL_MEDIUM_FLOAT, &precisions->medium_float);
+    visitor(stage, GL_HIGH_FLOAT, &precisions->high_float);
+  }
+
+  template <typename T>
+  void VisitPrecisions(const T& visitor) {
+    VisitStagePrecisions(GL_VERTEX_SHADER, &vertex_shader_precisions, visitor);
+    VisitStagePrecisions(GL_FRAGMENT_SHADER, &fragment_shader_precisions,
+                         visitor);
+  }
+
+  PerStagePrecisions vertex_shader_precisions;
+  PerStagePrecisions fragment_shader_precisions;
+  int max_combined_texture_image_units;
+  int max_cube_map_texture_size;
+  int max_fragment_uniform_vectors;
+  int max_renderbuffer_size;
+  int max_texture_image_units;
+  int max_texture_size;
+  int max_varying_vectors;
+  int max_vertex_attribs;
+  int max_vertex_texture_image_units;
+  int max_vertex_uniform_vectors;
+  int num_compressed_texture_formats;
+  int num_shader_binary_formats;
+  int bind_generates_resource_chromium;
+
   bool post_sub_buffer;
   bool egl_image_external;
   bool texture_format_bgra8888;
@@ -25,8 +91,6 @@ struct GPU_EXPORT Capabilities {
   bool future_sync_points;
   bool blend_equation_advanced;
   bool blend_equation_advanced_coherent;
-
-  Capabilities();
 };
 
 }  // namespace gpu

@@ -1538,20 +1538,6 @@ void RequestExtensionCHROMIUM(uint32_t bucket_id) {
   }
 }
 
-void GetMultipleIntegervCHROMIUM(uint32_t pnames_shm_id,
-                                 uint32_t pnames_shm_offset,
-                                 GLuint count,
-                                 uint32_t results_shm_id,
-                                 uint32_t results_shm_offset,
-                                 GLsizeiptr size) {
-  gles2::cmds::GetMultipleIntegervCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::GetMultipleIntegervCHROMIUM>();
-  if (c) {
-    c->Init(pnames_shm_id, pnames_shm_offset, count, results_shm_id,
-            results_shm_offset, size);
-  }
-}
-
 void GetProgramInfoCHROMIUM(GLuint program, uint32_t bucket_id) {
   gles2::cmds::GetProgramInfoCHROMIUM* c =
       GetCmdSpace<gles2::cmds::GetProgramInfoCHROMIUM>();

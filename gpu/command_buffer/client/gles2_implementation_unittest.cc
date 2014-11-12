@@ -409,42 +409,35 @@ class GLES2ImplementationTest : public testing::Test {
       helper_->Initialize(kCommandBufferSizeBytes);
 
       gpu_control_.reset(new StrictMock<MockClientGpuControl>());
-      EXPECT_CALL(*gpu_control_, GetCapabilities())
-          .WillOnce(testing::Return(Capabilities()));
-
-      GLES2Implementation::GLStaticState state;
-      GLES2Implementation::GLStaticState::IntState& int_state = state.int_state;
-      int_state.max_combined_texture_image_units =
+      Capabilities capabilities;
+      capabilities.VisitPrecisions(
+          [](GLenum shader, GLenum type,
+             Capabilities::ShaderPrecision* precision) {
+            precision->min_range = 3;
+            precision->max_range = 5;
+            precision->precision = 7;
+          });
+      capabilities.max_combined_texture_image_units =
           kMaxCombinedTextureImageUnits;
-      int_state.max_cube_map_texture_size = kMaxCubeMapTextureSize;
-      int_state.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
-      int_state.max_renderbuffer_size = kMaxRenderbufferSize;
-      int_state.max_texture_image_units = kMaxTextureImageUnits;
-      int_state.max_texture_size = kMaxTextureSize;
-      int_state.max_varying_vectors = kMaxVaryingVectors;
-      int_state.max_vertex_attribs = kMaxVertexAttribs;
-      int_state.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
-      int_state.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
-      int_state.num_compressed_texture_formats = kNumCompressedTextureFormats;
-      int_state.num_shader_binary_formats = kNumShaderBinaryFormats;
-      int_state.bind_generates_resource_chromium =
+      capabilities.max_cube_map_texture_size = kMaxCubeMapTextureSize;
+      capabilities.max_fragment_uniform_vectors = kMaxFragmentUniformVectors;
+      capabilities.max_renderbuffer_size = kMaxRenderbufferSize;
+      capabilities.max_texture_image_units = kMaxTextureImageUnits;
+      capabilities.max_texture_size = kMaxTextureSize;
+      capabilities.max_varying_vectors = kMaxVaryingVectors;
+      capabilities.max_vertex_attribs = kMaxVertexAttribs;
+      capabilities.max_vertex_texture_image_units = kMaxVertexTextureImageUnits;
+      capabilities.max_vertex_uniform_vectors = kMaxVertexUniformVectors;
+      capabilities.num_compressed_texture_formats =
+          kNumCompressedTextureFormats;
+      capabilities.num_shader_binary_formats = kNumShaderBinaryFormats;
+      capabilities.bind_generates_resource_chromium =
           bind_generates_resource_service ? 1 : 0;
-
-      // This just happens to work for now because IntState has 1 GLint per
-      // state.
-      // If IntState gets more complicated this code will need to get more
-      // complicated.
-      ExpectedMemoryInfo mem1 = transfer_buffer_->GetExpectedMemory(
-          sizeof(GLES2Implementation::GLStaticState::IntState) * 2 +
-          sizeof(cmds::GetShaderPrecisionFormat::Result) * 12);
+      EXPECT_CALL(*gpu_control_, GetCapabilities())
+          .WillOnce(testing::Return(capabilities));
 
       {
         InSequence sequence;
-
-        EXPECT_CALL(*command_buffer_, OnFlush())
-            .WillOnce(SetMemory(mem1.ptr + sizeof(int_state), int_state))
-            .RetiresOnSaturation();
-        GetNextToken();  // eat the token that starting up will use.
 
         const bool support_client_side_arrays = true;
         gl_.reset(new GLES2Implementation(helper_.get(),
@@ -462,7 +455,6 @@ class GLES2ImplementationTest : public testing::Test {
           return false;
       }
 
-      EXPECT_CALL(*command_buffer_, OnFlush()).Times(1).RetiresOnSaturation();
       helper_->CommandBufferHelper::Finish();
       ::testing::Mock::VerifyAndClearExpectations(gl_.get());
 
@@ -819,20 +811,22 @@ TEST_F(GLES2ImplementationTest, GetShaderPrecisionFormat) {
     cmds::GetShaderPrecisionFormat cmd;
   };
   typedef cmds::GetShaderPrecisionFormat::Result Result;
+  const unsigned kDummyType1 = 3;
+  const unsigned kDummyType2 = 4;
 
-  // The first call for mediump should trigger a command buffer request.
+  // The first call for dummy type 1 should trigger a command buffer request.
   GLint range1[2] = {0, 0};
   GLint precision1 = 0;
   Cmds expected1;
   ExpectedMemoryInfo client_result1 = GetExpectedResultMemory(4);
-  expected1.cmd.Init(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
-                     client_result1.id, client_result1.offset);
+  expected1.cmd.Init(GL_FRAGMENT_SHADER, kDummyType1, client_result1.id,
+                     client_result1.offset);
   Result server_result1 = {true, 14, 14, 10};
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(client_result1.ptr, server_result1))
       .RetiresOnSaturation();
-  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
-                                range1, &precision1);
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, kDummyType1, range1,
+                                &precision1);
   const void* commands2 = GetPut();
   EXPECT_NE(commands_, commands2);
   EXPECT_EQ(0, memcmp(&expected1, commands_, sizeof(expected1)));
@@ -840,39 +834,53 @@ TEST_F(GLES2ImplementationTest, GetShaderPrecisionFormat) {
   EXPECT_EQ(range1[1], 14);
   EXPECT_EQ(precision1, 10);
 
-  // The second call for mediump should use the cached value and avoid
+  // The second call for dummy type 1 should use the cached value and avoid
   // triggering a command buffer request, so we do not expect a call to
   // OnFlush() here. We do expect the results to be correct though.
   GLint range2[2] = {0, 0};
   GLint precision2 = 0;
-  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT,
-                                range2, &precision2);
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, kDummyType1, range2,
+                                &precision2);
   const void* commands3 = GetPut();
   EXPECT_EQ(commands2, commands3);
   EXPECT_EQ(range2[0], 14);
   EXPECT_EQ(range2[1], 14);
   EXPECT_EQ(precision2, 10);
 
-  // If we then make a request for highp, we should get another command
+  // If we then make a request for dummy type 2, we should get another command
   // buffer request since it hasn't been cached yet.
   GLint range3[2] = {0, 0};
   GLint precision3 = 0;
   Cmds expected3;
   ExpectedMemoryInfo result3 = GetExpectedResultMemory(4);
-  expected3.cmd.Init(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
-                     result3.id, result3.offset);
+  expected3.cmd.Init(GL_FRAGMENT_SHADER, kDummyType2, result3.id,
+                     result3.offset);
   Result result3_source = {true, 62, 62, 16};
   EXPECT_CALL(*command_buffer(), OnFlush())
       .WillOnce(SetMemory(result3.ptr, result3_source))
       .RetiresOnSaturation();
-  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT,
-                                range3, &precision3);
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, kDummyType2, range3,
+                                &precision3);
   const void* commands4 = GetPut();
   EXPECT_NE(commands3, commands4);
   EXPECT_EQ(0, memcmp(&expected3, commands3, sizeof(expected3)));
   EXPECT_EQ(range3[0], 62);
   EXPECT_EQ(range3[1], 62);
   EXPECT_EQ(precision3, 16);
+
+  // Any call for predefined types should use the cached value from the
+  // Capabilities  and avoid triggering a command buffer request, so we do not
+  // expect a call to OnFlush() here. We do expect the results to be correct
+  // though.
+  GLint range4[2] = {0, 0};
+  GLint precision4 = 0;
+  gl_->GetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_MEDIUM_FLOAT, range4,
+                                &precision4);
+  const void* commands5 = GetPut();
+  EXPECT_EQ(commands4, commands5);
+  EXPECT_EQ(range4[0], 3);
+  EXPECT_EQ(range4[1], 5);
+  EXPECT_EQ(precision4, 7);
 }
 
 TEST_F(GLES2ImplementationTest, ShaderSource) {
@@ -1947,122 +1955,6 @@ TEST_F(GLES2ImplementationTest, MapUnmapTexSubImage2DCHROMIUMBadArgs) {
   const char* kPtr = "something";
   gl_->UnmapTexSubImage2DCHROMIUM(kPtr);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-}
-
-TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMValidArgs) {
-  const GLenum pnames[] = {
-    GL_DEPTH_WRITEMASK,
-    GL_COLOR_WRITEMASK,
-    GL_STENCIL_WRITEMASK,
-  };
-  const GLint num_results = 6;
-  GLint results[num_results + 1];
-  struct Cmds {
-    cmds::GetMultipleIntegervCHROMIUM get_multiple;
-    cmd::SetToken set_token;
-  };
-  const GLsizei kNumPnames = arraysize(pnames);
-  const GLsizeiptr kResultsSize = num_results * sizeof(results[0]);
-  const size_t kPNamesSize = kNumPnames * sizeof(pnames[0]);
-
-  ExpectedMemoryInfo mem1 = GetExpectedMemory(kPNamesSize + kResultsSize);
-  ExpectedMemoryInfo result1 = GetExpectedResultMemory(
-      sizeof(cmds::GetError::Result));
-
-  const uint32 kPnamesOffset = mem1.offset;
-  const uint32 kResultsOffset = mem1.offset + kPNamesSize;
-  Cmds expected;
-  expected.get_multiple.Init(
-      mem1.id, kPnamesOffset, kNumPnames,
-      mem1.id, kResultsOffset, kResultsSize);
-  expected.set_token.Init(GetNextToken());
-
-  const GLint kSentinel = 0x12345678;
-  memset(results, 0, sizeof(results));
-  results[num_results] = kSentinel;
-  const GLint returned_results[] = {
-    1, 0, 1, 0, 1, -1,
-  };
-  // One call to flush to wait for results
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemoryFromArray(mem1.ptr + kPNamesSize,
-                                   returned_results, sizeof(returned_results)))
-      .WillOnce(SetMemory(result1.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-
-  gl_->GetMultipleIntegervCHROMIUM(
-      &pnames[0], kNumPnames, &results[0], kResultsSize);
-  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
-  EXPECT_EQ(0, memcmp(&returned_results, results, sizeof(returned_results)));
-  EXPECT_EQ(kSentinel, results[num_results]);
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), gl_->GetError());
-}
-
-TEST_F(GLES2ImplementationTest, GetMultipleIntegervCHROMIUMBadArgs) {
-  GLenum pnames[] = {
-    GL_DEPTH_WRITEMASK,
-    GL_COLOR_WRITEMASK,
-    GL_STENCIL_WRITEMASK,
-  };
-  const GLint num_results = 6;
-  GLint results[num_results + 1];
-  const GLsizei kNumPnames = arraysize(pnames);
-  const GLsizeiptr kResultsSize = num_results * sizeof(results[0]);
-
-  ExpectedMemoryInfo result1 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-  ExpectedMemoryInfo result2 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-  ExpectedMemoryInfo result3 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-  ExpectedMemoryInfo result4 =
-      GetExpectedResultMemory(sizeof(cmds::GetError::Result));
-
-  // Calls to flush to wait for GetError
-  EXPECT_CALL(*command_buffer(), OnFlush())
-      .WillOnce(SetMemory(result1.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result2.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result3.ptr, GLuint(GL_NO_ERROR)))
-      .WillOnce(SetMemory(result4.ptr, GLuint(GL_NO_ERROR)))
-      .RetiresOnSaturation();
-
-  const GLint kSentinel = 0x12345678;
-  memset(results, 0, sizeof(results));
-  results[num_results] = kSentinel;
-  // try bad size.
-  gl_->GetMultipleIntegervCHROMIUM(
-      &pnames[0], kNumPnames, &results[0], kResultsSize + 1);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  EXPECT_EQ(0, results[0]);
-  EXPECT_EQ(kSentinel, results[num_results]);
-  // try bad size.
-  ClearCommands();
-  gl_->GetMultipleIntegervCHROMIUM(
-      &pnames[0], kNumPnames, &results[0], kResultsSize - 1);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  EXPECT_EQ(0, results[0]);
-  EXPECT_EQ(kSentinel, results[num_results]);
-  // try uncleared results.
-  ClearCommands();
-  results[2] = 1;
-  gl_->GetMultipleIntegervCHROMIUM(
-      &pnames[0], kNumPnames, &results[0], kResultsSize);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_VALUE), gl_->GetError());
-  EXPECT_EQ(0, results[0]);
-  EXPECT_EQ(kSentinel, results[num_results]);
-  // try bad enum results.
-  ClearCommands();
-  results[2] = 0;
-  pnames[1] = GL_TRUE;
-  gl_->GetMultipleIntegervCHROMIUM(
-      &pnames[0], kNumPnames, &results[0], kResultsSize);
-  EXPECT_TRUE(NoCommandsWritten());
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_ENUM), gl_->GetError());
-  EXPECT_EQ(0, results[0]);
-  EXPECT_EQ(kSentinel, results[num_results]);
 }
 
 TEST_F(GLES2ImplementationTest, GetProgramInfoCHROMIUMGoodArgs) {

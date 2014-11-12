@@ -195,7 +195,6 @@
 #define glRequestExtensionCHROMIUM GLES2_GET_FUN(RequestExtensionCHROMIUM)
 #define glRateLimitOffscreenContextCHROMIUM \
   GLES2_GET_FUN(RateLimitOffscreenContextCHROMIUM)
-#define glGetMultipleIntegervCHROMIUM GLES2_GET_FUN(GetMultipleIntegervCHROMIUM)
 #define glGetProgramInfoCHROMIUM GLES2_GET_FUN(GetProgramInfoCHROMIUM)
 #define glCreateStreamTextureCHROMIUM GLES2_GET_FUN(CreateStreamTextureCHROMIUM)
 #define glCreateImageCHROMIUM GLES2_GET_FUN(CreateImageCHROMIUM)

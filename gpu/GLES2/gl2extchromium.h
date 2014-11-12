@@ -623,13 +623,9 @@ typedef void (GL_APIENTRYP PFNGLRESIZECHROMIUMPROC) (
 #ifndef GL_CHROMIUM_get_multiple
 #define GL_CHROMIUM_get_multiple 1
 #ifdef GL_GLEXT_PROTOTYPES
-GL_APICALL void GL_APIENTRY glGetMultipleIntegervCHROMIUM(
-    const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void GL_APIENTRY glGetProgramInfoCHROMIUM(
     GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 #endif
-typedef void (GL_APIENTRYP PFNGLGETMULTIPLEINTEGERVCHROMIUMPROC) (
-   const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 typedef void (GL_APIENTRYP PFNGLGETPROGRAMINFOCHROMIUMPROC) (
    GLuint program, GLsizei bufsize, GLsizei* size, void* info);
 #endif  /* GL_CHROMIUM_get_multiple */

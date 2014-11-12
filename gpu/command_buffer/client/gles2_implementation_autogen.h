@@ -552,11 +552,6 @@ void RequestExtensionCHROMIUM(const char* extension) override;
 
 void RateLimitOffscreenContextCHROMIUM() override;
 
-void GetMultipleIntegervCHROMIUM(const GLenum* pnames,
-                                 GLuint count,
-                                 GLint* results,
-                                 GLsizeiptr size) override;
-
 void GetProgramInfoCHROMIUM(GLuint program,
                             GLsizei bufsize,
                             GLsizei* size,

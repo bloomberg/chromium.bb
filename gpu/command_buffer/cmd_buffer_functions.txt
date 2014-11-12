@@ -183,7 +183,6 @@ GL_APICALL void         GL_APIENTRY glResizeCHROMIUM (GLuint width, GLuint heigh
 GL_APICALL const GLchar* GL_APIENTRY glGetRequestableExtensionsCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glRequestExtensionCHROMIUM (const char* extension);
 GL_APICALL void         GL_APIENTRY glRateLimitOffscreenContextCHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glGetMultipleIntegervCHROMIUM (const GLenum* pnames, GLuint count, GLint* results, GLsizeiptr size);
 GL_APICALL void         GL_APIENTRY glGetProgramInfoCHROMIUM (GLidProgram program, GLsizeiNotNegative bufsize, GLsizei* size, void* info);
 GL_APICALL GLuint       GL_APIENTRY glCreateStreamTextureCHROMIUM (GLuint texture);
 GL_APICALL GLuint       GL_APIENTRY glCreateImageCHROMIUM (ClientBuffer buffer, GLsizei width, GLsizei height, GLenum internalformat);
