@@ -41,6 +41,7 @@ class GPU_EXPORT ShaderTranslatorCache
 
  private:
   friend class base::RefCounted<ShaderTranslatorCache>;
+  friend class ShaderTranslatorCacheTest_InitParamComparable_Test;
   ~ShaderTranslatorCache() override;
 
   // Parameters passed into ShaderTranslator::Init
@@ -52,18 +53,18 @@ class GPU_EXPORT ShaderTranslatorCache
         glsl_implementation_type;
     ShCompileOptions driver_bug_workarounds;
 
-    ShaderTranslatorInitParams(
-        sh::GLenum shader_type,
-        ShShaderSpec shader_spec,
-        const ShBuiltInResources& resources,
-        ShaderTranslatorInterface::GlslImplementationType
-            glsl_implementation_type,
-        ShCompileOptions driver_bug_workarounds)
-      : shader_type(shader_type),
-        shader_spec(shader_spec),
-        resources(resources),
-        glsl_implementation_type(glsl_implementation_type),
-        driver_bug_workarounds(driver_bug_workarounds) {
+    ShaderTranslatorInitParams(sh::GLenum shader_type,
+                               ShShaderSpec shader_spec,
+                               const ShBuiltInResources& resources,
+                               ShaderTranslatorInterface::GlslImplementationType
+                                   glsl_implementation_type,
+                               ShCompileOptions driver_bug_workarounds) {
+      memset(this, 0, sizeof(*this));
+      this->shader_type = shader_type;
+      this->shader_spec = shader_spec;
+      this->resources = resources;
+      this->glsl_implementation_type = glsl_implementation_type;
+      this->driver_bug_workarounds = driver_bug_workarounds;
     }
 
     ShaderTranslatorInitParams(const ShaderTranslatorInitParams& params) {
@@ -77,6 +78,10 @@ class GPU_EXPORT ShaderTranslatorCache
     bool operator< (const ShaderTranslatorInitParams& params) const {
       return memcmp(&params, this, sizeof(*this)) < 0;
     }
+
+   private:
+    ShaderTranslatorInitParams();
+    ShaderTranslatorInitParams& operator=(const ShaderTranslatorInitParams&);
   };
 
   typedef std::map<ShaderTranslatorInitParams, ShaderTranslator* > Cache;
