@@ -144,7 +144,7 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
     self.assertEqual('test.package.TestClass#testMethod', result.GetName())
     self.assertEqual(base_test_result.ResultType.UNKNOWN, result.GetType())
     self.assertEqual('', result.GetLog())
-    self.assertEqual(1000, result.GetDur())
+    self.assertEqual(1000, result.GetDuration())
 
   def testGenerateTestResult_testPassed(self):
     statuses = [

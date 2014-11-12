@@ -131,7 +131,7 @@ class ResultsUploader(object):
         test_result = json_results_generator.TestResult(
             test=single_test_result.GetName(),
             failed=failed,
-            elapsed_time=single_test_result.GetDur() / 1000)
+            elapsed_time=single_test_result.GetDuration() / 1000)
         # The WebKit TestResult object sets the modifier it based on test name.
         # Since we don't use the same test naming convention as WebKit the
         # modifier will be wrong, so we need to overwrite it.

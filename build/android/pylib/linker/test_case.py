@@ -340,7 +340,7 @@ class LinkerTestCaseBase(object):
         base_test_result.BaseTestResult(
             self.tagged_name,
             status,
-            logs))
+            log=logs))
 
     return results
 
