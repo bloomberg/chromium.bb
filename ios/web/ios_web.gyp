@@ -20,8 +20,10 @@
         '../../ui/gfx/gfx.gyp:gfx',
       ],
       'sources': [
+        'browser_state.cc',
         'navigation/navigation_item_impl.h',
         'navigation/navigation_item_impl.mm',
+        'public/browser_state.h',
         'public/favicon_status.cc',
         'public/favicon_status.h',
         'public/navigation_item.h',
