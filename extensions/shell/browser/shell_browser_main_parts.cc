@@ -80,10 +80,7 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
-  if (devtools_http_handler_) {
-    // Note that Stop destroys devtools_http_handler_.
-    devtools_http_handler_->Stop();
-  }
+  DCHECK(!devtools_http_handler_);
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopStart() {
@@ -222,6 +219,11 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_main_delegate_->Shutdown();
+  if (devtools_http_handler_) {
+    // Note that Stop destroys devtools_http_handler_.
+    devtools_http_handler_->Stop();
+    devtools_http_handler_ = nullptr;
+  }
 
 #if !defined(DISABLE_NACL)
   task_tracker_.TryCancelAll();

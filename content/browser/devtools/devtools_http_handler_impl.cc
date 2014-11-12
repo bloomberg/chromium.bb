@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/devtools/devtools_http_handler_impl.h"
-
 #include <algorithm>
 #include <utility>
 
@@ -27,6 +25,7 @@
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
+#include "content/public/browser/devtools_http_handler.h"
 #include "content/public/browser/devtools_http_handler_delegate.h"
 #include "content/public/browser/devtools_target.h"
 #include "content/public/common/content_client.h"
@@ -37,6 +36,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 #include "net/server/http_server_response_info.h"
 #include "net/socket/server_socket.h"
@@ -71,18 +71,272 @@ const char kTargetDevtoolsFrontendUrlField[] = "devtoolsFrontendUrl";
 // Maximum write buffer size of devtools http/websocket connectinos.
 const int32 kSendBufferSizeForDevTools = 100 * 1024 * 1024;  // 100Mb
 
-// DevToolsAgentHostClientImpl -----------------------------------------------
+class BrowserTarget;
+class DevToolsAgentHostClientImpl;
+class ServerWrapper;
 
+// DevToolsHttpHandlerImpl ---------------------------------------------------
+
+class DevToolsHttpHandlerImpl : public DevToolsHttpHandler {
+ public:
+  DevToolsHttpHandlerImpl(scoped_ptr<ServerSocketFactory> server_socket_factory,
+                          const std::string& frontend_url,
+                          DevToolsHttpHandlerDelegate* delegate,
+                          const base::FilePath& output_directory);
+  ~DevToolsHttpHandlerImpl() override;
+
+  void OnJsonRequest(int connection_id,
+                     const net::HttpServerRequestInfo& info);
+  void OnThumbnailRequest(int connection_id, const std::string& target_id);
+  void OnDiscoveryPageRequest(int connection_id);
+
+  void OnWebSocketRequest(int connection_id,
+                          const net::HttpServerRequestInfo& info);
+  void OnWebSocketMessage(int connection_id, const std::string& data);
+  void OnClose(int connection_id);
+
+  void ServerStarted(base::Thread* thread,
+                     ServerWrapper* server_wrapper,
+                     scoped_ptr<net::IPEndPoint> ip_address);
+
+ private:
+  // DevToolsHttpHandler implementation.
+  void Stop() override;
+  GURL GetFrontendURL() override;
+
+
+  static void OnTargetListReceivedWeak(
+      base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+      int connection_id,
+      const std::string& host,
+      const DevToolsManagerDelegate::TargetList& targets);
+  void OnTargetListReceived(
+      int connection_id,
+      const std::string& host,
+      const DevToolsManagerDelegate::TargetList& targets);
+
+  DevToolsTarget* GetTarget(const std::string& id);
+
+  void SendJson(int connection_id,
+                net::HttpStatusCode status_code,
+                base::Value* value,
+                const std::string& message);
+  void Send200(int connection_id,
+               const std::string& data,
+               const std::string& mime_type);
+  void Send404(int connection_id);
+  void Send500(int connection_id,
+               const std::string& message);
+  void AcceptWebSocket(int connection_id,
+                       const net::HttpServerRequestInfo& request);
+
+  // Returns the front end url without the host at the beginning.
+  std::string GetFrontendURLInternal(const std::string target_id,
+                                     const std::string& host);
+
+  base::DictionaryValue* SerializeTarget(const DevToolsTarget& target,
+                                         const std::string& host);
+
+  // The thread used by the devtools handler to run server socket.
+  base::Thread* thread_;
+
+  std::string frontend_url_;
+  ServerWrapper* server_wrapper_;
+  scoped_ptr<net::IPEndPoint> server_ip_address_;
+  typedef std::map<int, DevToolsAgentHostClientImpl*> ConnectionToClientMap;
+  ConnectionToClientMap connection_to_client_;
+  const scoped_ptr<DevToolsHttpHandlerDelegate> delegate_;
+  typedef std::map<std::string, DevToolsTarget*> TargetMap;
+  TargetMap target_map_;
+  typedef std::map<int, BrowserTarget*> BrowserTargets;
+  BrowserTargets browser_targets_;
+  base::WeakPtrFactory<DevToolsHttpHandlerImpl> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DevToolsHttpHandlerImpl);
+};
+
+// ServerWrapper -------------------------------------------------------------
+// All methods in this class are only called on handler thread.
+class ServerWrapper : net::HttpServer::Delegate {
+ public:
+  ServerWrapper(base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+                scoped_ptr<net::ServerSocket> socket,
+                const base::FilePath& frontend_dir,
+                bool bundles_resources);
+
+  int GetLocalAddress(net::IPEndPoint* address);
+
+  void AcceptWebSocket(int connection_id,
+                       const net::HttpServerRequestInfo& request);
+  void SendOverWebSocket(int connection_id, const std::string& message);
+  void SendResponse(int connection_id,
+                    const net::HttpServerResponseInfo& response);
+  void Send200(int connection_id,
+               const std::string& data,
+               const std::string& mime_type);
+  void Send404(int connection_id);
+  void Send500(int connection_id, const std::string& message);
+  void Close(int connection_id);
+
+  void WriteActivePortToUserProfile(const base::FilePath& output_directory);
+
+  virtual ~ServerWrapper() {}
+
+ private:
+  // net::HttpServer::Delegate implementation.
+  void OnConnect(int connection_id) override {}
+  void OnHttpRequest(int connection_id,
+                     const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketRequest(int connection_id,
+                          const net::HttpServerRequestInfo& info) override;
+  void OnWebSocketMessage(int connection_id,
+                          const std::string& data) override;
+  void OnClose(int connection_id) override;
+
+  base::WeakPtr<DevToolsHttpHandlerImpl> handler_;
+  scoped_ptr<net::HttpServer> server_;
+  base::FilePath frontend_dir_;
+  bool bundles_resources_;
+};
+
+ServerWrapper::ServerWrapper(base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+                             scoped_ptr<net::ServerSocket> socket,
+                             const base::FilePath& frontend_dir,
+                             bool bundles_resources)
+    : handler_(handler),
+      server_(new net::HttpServer(socket.Pass(), this)),
+      frontend_dir_(frontend_dir),
+      bundles_resources_(bundles_resources) {
+}
+
+int ServerWrapper::GetLocalAddress(net::IPEndPoint* address) {
+  return server_->GetLocalAddress(address);
+}
+
+void ServerWrapper::AcceptWebSocket(int connection_id,
+                                    const net::HttpServerRequestInfo& request) {
+  server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
+  server_->AcceptWebSocket(connection_id, request);
+}
+
+void ServerWrapper::SendOverWebSocket(int connection_id,
+                                      const std::string& message) {
+  server_->SendOverWebSocket(connection_id, message);
+}
+
+void ServerWrapper::SendResponse(int connection_id,
+                                 const net::HttpServerResponseInfo& response) {
+  server_->SendResponse(connection_id, response);
+}
+
+void ServerWrapper::Send200(int connection_id,
+                            const std::string& data,
+                            const std::string& mime_type) {
+  server_->Send200(connection_id, data, mime_type);
+}
+
+void ServerWrapper::Send404(int connection_id) {
+  server_->Send404(connection_id);
+}
+
+void ServerWrapper::Send500(int connection_id,
+                            const std::string& message) {
+  server_->Send500(connection_id, message);
+}
+
+void ServerWrapper::Close(int connection_id) {
+  server_->Close(connection_id);
+}
+
+// Thread and ServerWrapper lifetime management ------------------------------
+
+void TerminateOnUI(base::Thread* thread, ServerWrapper* server_wrapper) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (server_wrapper) {
+    DCHECK(thread);
+    thread->message_loop()->DeleteSoon(FROM_HERE, server_wrapper);
+  }
+  if (thread) {
+    BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, thread);
+  }
+}
+
+void ServerStartedOnUI(
+    base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+    base::Thread* thread,
+    ServerWrapper* server_wrapper,
+    scoped_ptr<net::IPEndPoint> ip_address) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (handler && thread && server_wrapper) {
+    handler->ServerStarted(thread, server_wrapper, ip_address.Pass());
+  } else {
+    TerminateOnUI(thread, server_wrapper);
+  }
+}
+
+void StartServerOnHandlerThread(
+    base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+    base::Thread* thread,
+    scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> server_socket_factory,
+    const base::FilePath& output_directory,
+    const base::FilePath& frontend_dir,
+    bool bundles_resources) {
+  DCHECK_EQ(thread->message_loop(), base::MessageLoop::current());
+  ServerWrapper* server_wrapper = nullptr;
+  scoped_ptr<net::ServerSocket> server_socket =
+      server_socket_factory->CreateAndListen();
+  scoped_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
+  if (server_socket) {
+    server_wrapper = new ServerWrapper(handler, server_socket.Pass(),
+                                       frontend_dir, bundles_resources);
+    if (!output_directory.empty())
+      server_wrapper->WriteActivePortToUserProfile(output_directory);
+
+    if (server_wrapper->GetLocalAddress(ip_address.get()) != net::OK)
+      ip_address.reset();
+  } else {
+    ip_address.reset();
+    LOG(ERROR) << "Cannot start http server for devtools. Stop devtools.";
+  }
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ServerStartedOnUI,
+                 handler, thread, server_wrapper, base::Passed(&ip_address)));
+}
+
+void StartServerOnFile(
+    base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+    scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> server_socket_factory,
+    const base::FilePath& output_directory,
+    const base::FilePath& frontend_dir,
+    bool bundles_resources) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  scoped_ptr<base::Thread> thread(new base::Thread(kDevToolsHandlerThreadName));
+  base::Thread::Options options;
+  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  if (thread->StartWithOptions(options)) {
+    base::MessageLoop* message_loop = thread->message_loop();
+    message_loop->PostTask(FROM_HERE,
+        base::Bind(&StartServerOnHandlerThread,
+                   handler,
+                   base::Unretained(thread.release()),
+                   base::Passed(&server_socket_factory),
+                   output_directory,
+                   frontend_dir,
+                   bundles_resources));
+  }
+}
+
+// DevToolsAgentHostClientImpl -----------------------------------------------
 // An internal implementation of DevToolsAgentHostClient that delegates
 // messages sent to a DebuggerShell instance.
 class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
  public:
   DevToolsAgentHostClientImpl(base::MessageLoop* message_loop,
-                              net::HttpServer* server,
+                              ServerWrapper* server_wrapper,
                               int connection_id,
                               DevToolsAgentHost* agent_host)
       : message_loop_(message_loop),
-        server_(server),
+        server_wrapper_(server_wrapper),
         connection_id_(connection_id),
         agent_host_(agent_host) {
     agent_host_->AttachClient(this);
@@ -108,15 +362,15 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
         notification.DeepCopy())->Serialize();
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&net::HttpServer::SendOverWebSocket,
-                   base::Unretained(server_),
+        base::Bind(&ServerWrapper::SendOverWebSocket,
+                   base::Unretained(server_wrapper_),
                    connection_id_,
                    response));
 
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&net::HttpServer::Close,
-                   base::Unretained(server_),
+        base::Bind(&ServerWrapper::Close,
+                   base::Unretained(server_wrapper_),
                    connection_id_));
   }
 
@@ -125,8 +379,8 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
     DCHECK(agent_host == agent_host_.get());
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&net::HttpServer::SendOverWebSocket,
-                   base::Unretained(server_),
+        base::Bind(&ServerWrapper::SendOverWebSocket,
+                   base::Unretained(server_wrapper_),
                    connection_id_,
                    message));
   }
@@ -138,7 +392,7 @@ class DevToolsAgentHostClientImpl : public DevToolsAgentHostClient {
 
  private:
   base::MessageLoop* const message_loop_;
-  net::HttpServer* const server_;
+  ServerWrapper* const server_wrapper_;
   const int connection_id_;
   scoped_refptr<DevToolsAgentHost> agent_host_;
 };
@@ -148,18 +402,16 @@ static bool TimeComparator(const DevToolsTarget* target1,
   return target1->GetLastActivityTime() > target2->GetLastActivityTime();
 }
 
-}  // namespace
+// BrowserTarget -------------------------------------------------------------
 
-// DevToolsHttpHandlerImpl::BrowserTarget ------------------------------------
-
-class DevToolsHttpHandlerImpl::BrowserTarget {
+class BrowserTarget {
  public:
   BrowserTarget(base::MessageLoop* message_loop,
-                net::HttpServer* server,
+                ServerWrapper* server_wrapper,
                 DevToolsHttpHandlerDelegate* delegate,
                 int connection_id)
       : message_loop_(message_loop),
-        server_(server),
+        server_wrapper_(server_wrapper),
         connection_id_(connection_id),
         tethering_handler_(new devtools::tethering::TetheringHandler(
             delegate, message_loop->message_loop_proxy())),
@@ -214,21 +466,23 @@ class DevToolsHttpHandlerImpl::BrowserTarget {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     message_loop_->PostTask(
         FROM_HERE,
-        base::Bind(&net::HttpServer::SendOverWebSocket,
-                   base::Unretained(server_),
+        base::Bind(&ServerWrapper::SendOverWebSocket,
+                   base::Unretained(server_wrapper_),
                    connection_id_,
                    message));
   }
 
  private:
   base::MessageLoop* const message_loop_;
-  net::HttpServer* const server_;
+  ServerWrapper* const server_wrapper_;
   const int connection_id_;
   scoped_ptr<devtools::tethering::TetheringHandler> tethering_handler_;
   scoped_ptr<devtools::tracing::TracingHandler> tracing_handler_;
   scoped_ptr<DevToolsProtocolHandlerImpl> protocol_handler_;
   std::vector<DevToolsProtocol::Handler*> handlers_;
 };
+
+}  // namespace
 
 // DevToolsHttpHandler -------------------------------------------------------
 
@@ -258,7 +512,6 @@ DevToolsHttpHandler* DevToolsHttpHandler::Start(
                                   frontend_url,
                                   delegate,
                                   active_port_output_directory);
-  http_handler->Start();
   return http_handler;
 }
 
@@ -289,64 +542,14 @@ DevToolsHttpHandler::ServerSocketFactory::CreateAndListen() const {
 // DevToolsHttpHandlerImpl ---------------------------------------------------
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  // Stop() must be called prior to destruction.
-  DCHECK(server_.get() == NULL);
-  DCHECK(thread_.get() == NULL);
   STLDeleteValues(&target_map_);
-}
-
-void DevToolsHttpHandlerImpl::Start() {
-  if (thread_)
-    return;
-  thread_.reset(new base::Thread(kDevToolsHandlerThreadName));
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StartHandlerThread, this));
-}
-
-// Runs on FILE thread.
-void DevToolsHttpHandlerImpl::StartHandlerThread() {
-  base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
-  if (!thread_->StartWithOptions(options)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
-    return;
-  }
-
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::Init, this));
-}
-
-void DevToolsHttpHandlerImpl::ResetHandlerThread() {
-  thread_.reset();
-  server_ip_address_.reset();
-}
-
-void DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease() {
-  ResetHandlerThread();
-  Release();
+  STLDeleteValues(&browser_targets_);
+  STLDeleteValues(&connection_to_client_);
 }
 
 void DevToolsHttpHandlerImpl::Stop() {
-  if (!thread_)
-    return;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this),
-      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThreadAndRelease, this));
-}
-
-void DevToolsHttpHandlerImpl::StopWithoutRelease() {
-  if (!thread_)
-    return;
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::StopHandlerThread, this),
-      base::Bind(&DevToolsHttpHandlerImpl::ResetHandlerThread, this));
+  TerminateOnUI(thread_, server_wrapper_);
+  delete this;
 }
 
 GURL DevToolsHttpHandlerImpl::GetFrontendURL() {
@@ -383,17 +586,16 @@ static std::string GetMimeType(const std::string& filename) {
   return "text/plain";
 }
 
-void DevToolsHttpHandlerImpl::OnHttpRequest(
-    int connection_id,
-    const net::HttpServerRequestInfo& info) {
+void ServerWrapper::OnHttpRequest(int connection_id,
+                                  const net::HttpServerRequestInfo& info) {
   server_->SetSendBufferSize(connection_id, kSendBufferSizeForDevTools);
 
   if (info.path.find("/json") == 0) {
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnJsonRequestUI,
-                   this,
+        base::Bind(&DevToolsHttpHandlerImpl::OnJsonRequest,
+                   handler_,
                    connection_id,
                    info));
     return;
@@ -402,17 +604,13 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   if (info.path.find(kThumbUrlPrefix) == 0) {
     // Thumbnail request.
     const std::string target_id = info.path.substr(strlen(kThumbUrlPrefix));
-    DevToolsTarget* target = GetTarget(target_id);
-    GURL page_url;
-    if (target)
-      page_url = target->GetURL();
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnThumbnailRequestUI,
-                   this,
+        base::Bind(&DevToolsHttpHandlerImpl::OnThumbnailRequest,
+                   handler_,
                    connection_id,
-                   page_url));
+                   target_id));
     return;
   }
 
@@ -421,8 +619,8 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
     BrowserThread::PostTask(
         BrowserThread::UI,
         FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI,
-                   this,
+        base::Bind(&DevToolsHttpHandlerImpl::OnDiscoveryPageRequest,
+                   handler_,
                    connection_id));
     return;
   }
@@ -435,15 +633,14 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   std::string filename = PathWithoutParams(info.path.substr(10));
   std::string mime_type = GetMimeType(filename);
 
-  base::FilePath frontend_dir = delegate_->GetDebugFrontendDir();
-  if (!frontend_dir.empty()) {
-    base::FilePath path = frontend_dir.AppendASCII(filename);
+  if (!frontend_dir_.empty()) {
+    base::FilePath path = frontend_dir_.AppendASCII(filename);
     std::string data;
     base::ReadFileToString(path, &data);
     server_->Send200(connection_id, data, mime_type);
     return;
   }
-  if (delegate_->BundlesFrontendResources()) {
+  if (bundles_resources_) {
     int resource_id = DevToolsHttpHandler::GetFrontendResourceId(filename);
     if (resource_id != -1) {
       base::StringPiece data = GetContentClient()->GetDataResource(
@@ -455,39 +652,38 @@ void DevToolsHttpHandlerImpl::OnHttpRequest(
   server_->Send404(connection_id);
 }
 
-void DevToolsHttpHandlerImpl::OnWebSocketRequest(
+void ServerWrapper::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &DevToolsHttpHandlerImpl::OnWebSocketRequestUI,
-          this,
+          &DevToolsHttpHandlerImpl::OnWebSocketRequest,
+          handler_,
           connection_id,
           request));
 }
 
-void DevToolsHttpHandlerImpl::OnWebSocketMessage(
-    int connection_id,
-    const std::string& data) {
+void ServerWrapper::OnWebSocketMessage(int connection_id,
+                                       const std::string& data) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &DevToolsHttpHandlerImpl::OnWebSocketMessageUI,
-          this,
+          &DevToolsHttpHandlerImpl::OnWebSocketMessage,
+          handler_,
           connection_id,
           data));
 }
 
-void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
+void ServerWrapper::OnClose(int connection_id) {
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &DevToolsHttpHandlerImpl::OnCloseUI,
-          this,
+          &DevToolsHttpHandlerImpl::OnClose,
+          handler_,
           connection_id));
 }
 
@@ -528,7 +724,7 @@ static bool ParseJsonPath(
   return true;
 }
 
-void DevToolsHttpHandlerImpl::OnJsonRequestUI(
+void DevToolsHttpHandlerImpl::OnJsonRequest(
     int connection_id,
     const net::HttpServerRequestInfo& info) {
   // Trim /json
@@ -572,13 +768,12 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
 
   if (command == "list") {
     std::string host = info.headers["host"];
-    AddRef();  // Balanced in OnTargetListReceived.
     DevToolsManagerDelegate* manager_delegate =
         DevToolsManager::GetInstance()->delegate();
     if (manager_delegate) {
       manager_delegate->EnumerateTargets(
-          base::Bind(&DevToolsHttpHandlerImpl::OnTargetListReceived,
-                     this, connection_id, host));
+          base::Bind(&DevToolsHttpHandlerImpl::OnTargetListReceivedWeak,
+                     weak_factory_.GetWeakPtr(), connection_id, host));
     } else {
       DevToolsManagerDelegate::TargetList empty_list;
       OnTargetListReceived(connection_id, host, empty_list);
@@ -653,6 +848,19 @@ void DevToolsHttpHandlerImpl::OnJsonRequestUI(
   return;
 }
 
+// static
+void DevToolsHttpHandlerImpl::OnTargetListReceivedWeak(
+    base::WeakPtr<DevToolsHttpHandlerImpl> handler,
+    int connection_id,
+    const std::string& host,
+    const DevToolsManagerDelegate::TargetList& targets) {
+  if (handler) {
+    handler->OnTargetListReceived(connection_id, host, targets);
+  } else {
+    STLDeleteContainerPointers(targets.begin(), targets.end());
+  }
+}
+
 void DevToolsHttpHandlerImpl::OnTargetListReceived(
     int connection_id,
     const std::string& host,
@@ -669,7 +877,6 @@ void DevToolsHttpHandlerImpl::OnTargetListReceived(
     list_value.Append(SerializeTarget(*target, host));
   }
   SendJson(connection_id, net::HTTP_OK, &list_value, std::string());
-  Release();  // Balanced in OnJsonRequestUI.
 }
 
 DevToolsTarget* DevToolsHttpHandlerImpl::GetTarget(const std::string& id) {
@@ -679,8 +886,12 @@ DevToolsTarget* DevToolsHttpHandlerImpl::GetTarget(const std::string& id) {
   return it->second;
 }
 
-void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
-    int connection_id, const GURL& page_url) {
+void DevToolsHttpHandlerImpl::OnThumbnailRequest(
+    int connection_id, const std::string& target_id) {
+  DevToolsTarget* target = GetTarget(target_id);
+  GURL page_url;
+  if (target)
+    page_url = target->GetURL();
   DevToolsManagerDelegate* manager_delegate =
       DevToolsManager::GetInstance()->delegate();
   std::string data =
@@ -691,12 +902,12 @@ void DevToolsHttpHandlerImpl::OnThumbnailRequestUI(
     Send404(connection_id);
 }
 
-void DevToolsHttpHandlerImpl::OnDiscoveryPageRequestUI(int connection_id) {
+void DevToolsHttpHandlerImpl::OnDiscoveryPageRequest(int connection_id) {
   std::string response = delegate_->GetDiscoveryPageHTML();
   Send200(connection_id, response, "text/html; charset=UTF-8");
 }
 
-void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
+void DevToolsHttpHandlerImpl::OnWebSocketRequest(
     int connection_id,
     const net::HttpServerRequestInfo& request) {
   if (!thread_)
@@ -705,8 +916,10 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   std::string browser_prefix = "/devtools/browser";
   size_t browser_pos = request.path.find(browser_prefix);
   if (browser_pos == 0) {
-    BrowserTarget* browser_target = new BrowserTarget(
-        thread_->message_loop(), server_.get(), delegate_.get(), connection_id);
+    BrowserTarget* browser_target = new BrowserTarget(thread_->message_loop(),
+                                                      server_wrapper_,
+                                                      delegate_.get(),
+                                                      connection_id);
     browser_target->RegisterHandler(
         new DevToolsSystemInfoHandler());
     browser_targets_[connection_id] = browser_target;
@@ -736,13 +949,13 @@ void DevToolsHttpHandlerImpl::OnWebSocketRequestUI(
   }
 
   DevToolsAgentHostClientImpl* client_host = new DevToolsAgentHostClientImpl(
-      thread_->message_loop(), server_.get(), connection_id, agent.get());
-  connection_to_client_ui_[connection_id] = client_host;
+      thread_->message_loop(), server_wrapper_, connection_id, agent.get());
+  connection_to_client_[connection_id] = client_host;
 
   AcceptWebSocket(connection_id, request);
 }
 
-void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
+void DevToolsHttpHandlerImpl::OnWebSocketMessage(
     int connection_id,
     const std::string& data) {
   BrowserTargets::iterator browser_it = browser_targets_.find(connection_id);
@@ -752,16 +965,12 @@ void DevToolsHttpHandlerImpl::OnWebSocketMessageUI(
   }
 
   ConnectionToClientMap::iterator it =
-      connection_to_client_ui_.find(connection_id);
-  if (it == connection_to_client_ui_.end())
-    return;
-
-  DevToolsAgentHostClientImpl* client =
-      static_cast<DevToolsAgentHostClientImpl*>(it->second);
-  client->OnMessage(data);
+      connection_to_client_.find(connection_id);
+  if (it != connection_to_client_.end())
+    it->second->OnMessage(data);
 }
 
-void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
+void DevToolsHttpHandlerImpl::OnClose(int connection_id) {
   BrowserTargets::iterator browser_it = browser_targets_.find(connection_id);
   if (browser_it != browser_targets_.end()) {
     delete browser_it->second;
@@ -770,78 +979,48 @@ void DevToolsHttpHandlerImpl::OnCloseUI(int connection_id) {
   }
 
   ConnectionToClientMap::iterator it =
-      connection_to_client_ui_.find(connection_id);
-  if (it != connection_to_client_ui_.end()) {
-    DevToolsAgentHostClientImpl* client =
-        static_cast<DevToolsAgentHostClientImpl*>(it->second);
-    delete client;
-    connection_to_client_ui_.erase(connection_id);
+      connection_to_client_.find(connection_id);
+  if (it != connection_to_client_.end()) {
+    delete it->second;
+    connection_to_client_.erase(connection_id);
   }
-}
-
-void DevToolsHttpHandlerImpl::OnHttpServerInitialized(
-    const net::IPEndPoint& ip_address) {
-  server_ip_address_.reset(new net::IPEndPoint(ip_address));
 }
 
 DevToolsHttpHandlerImpl::DevToolsHttpHandlerImpl(
     scoped_ptr<ServerSocketFactory> server_socket_factory,
     const std::string& frontend_url,
     DevToolsHttpHandlerDelegate* delegate,
-    const base::FilePath& active_port_output_directory)
-    : frontend_url_(frontend_url),
-      server_socket_factory_(server_socket_factory.Pass()),
+    const base::FilePath& output_directory)
+    : thread_(nullptr),
+      frontend_url_(frontend_url),
+      server_wrapper_(nullptr),
       delegate_(delegate),
-      active_port_output_directory_(active_port_output_directory) {
+      weak_factory_(this) {
   if (frontend_url_.empty())
     frontend_url_ = "/devtools/devtools.html";
 
-  // Balanced in ResetHandlerThreadAndRelease().
-  AddRef();
-}
-
-// Runs on the handler thread
-void DevToolsHttpHandlerImpl::Init() {
-  scoped_ptr<net::ServerSocket> server_socket =
-      server_socket_factory_->CreateAndListen();
-  if (!server_socket) {
-    LOG(ERROR) << "Cannot start http server for devtools. Stop devtools.";
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DevToolsHttpHandlerImpl::StopWithoutRelease, this));
-    return;
-  }
-
-  server_.reset(new net::HttpServer(server_socket.Pass(), this));
-  net::IPEndPoint ip_address;
-  server_->GetLocalAddress(&ip_address);
   BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::OnHttpServerInitialized,
-                 this, ip_address));
-  if (!active_port_output_directory_.empty())
-    WriteActivePortToUserProfile();
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&StartServerOnFile,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(&server_socket_factory),
+                 output_directory,
+                 delegate_->GetDebugFrontendDir(),
+                 delegate_->BundlesFrontendResources()));
 }
 
-// Runs on the handler thread
-void DevToolsHttpHandlerImpl::Teardown() {
-  server_.reset();
+void DevToolsHttpHandlerImpl::ServerStarted(
+    base::Thread* thread,
+    ServerWrapper* server_wrapper,
+    scoped_ptr<net::IPEndPoint> ip_address) {
+  thread_ = thread;
+  server_wrapper_ = server_wrapper;
+  server_ip_address_.swap(ip_address);
 }
 
-// Runs on FILE thread to make sure that it is serialized against
-// {Start|Stop}HandlerThread and to allow calling pthread_join.
-void DevToolsHttpHandlerImpl::StopHandlerThread() {
-  if (!thread_->message_loop())
-    return;
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&DevToolsHttpHandlerImpl::Teardown, this));
-  // Thread::Stop joins the thread.
-  thread_->Stop();
-}
-
-void DevToolsHttpHandlerImpl::WriteActivePortToUserProfile() {
-  DCHECK(!active_port_output_directory_.empty());
+void ServerWrapper::WriteActivePortToUserProfile(
+    const base::FilePath& output_directory) {
+  DCHECK(!output_directory.empty());
   net::IPEndPoint endpoint;
   int err;
   if ((err = server_->GetLocalAddress(&endpoint)) != net::OK) {
@@ -851,8 +1030,7 @@ void DevToolsHttpHandlerImpl::WriteActivePortToUserProfile() {
 
   // Write this port to a well-known file in the profile directory
   // so Telemetry can pick it up.
-  base::FilePath path = active_port_output_directory_.Append(
-      kDevToolsActivePortFileName);
+  base::FilePath path = output_directory.Append(kDevToolsActivePortFileName);
   std::string port_string = base::IntToString(endpoint.port());
   if (base::WriteFile(path, port_string.c_str(), port_string.length()) < 0) {
     LOG(ERROR) << "Error writing DevTools active port to file";
@@ -882,8 +1060,8 @@ void DevToolsHttpHandlerImpl::SendJson(int connection_id,
 
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::SendResponse,
-                 base::Unretained(server_.get()),
+      base::Bind(&ServerWrapper::SendResponse,
+                 base::Unretained(server_wrapper_),
                  connection_id,
                  response));
 }
@@ -895,8 +1073,8 @@ void DevToolsHttpHandlerImpl::Send200(int connection_id,
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send200,
-                 base::Unretained(server_.get()),
+      base::Bind(&ServerWrapper::Send200,
+                 base::Unretained(server_wrapper_),
                  connection_id,
                  data,
                  mime_type));
@@ -907,8 +1085,8 @@ void DevToolsHttpHandlerImpl::Send404(int connection_id) {
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send404,
-                 base::Unretained(server_.get()),
+      base::Bind(&ServerWrapper::Send404,
+                 base::Unretained(server_wrapper_),
                  connection_id));
 }
 
@@ -918,8 +1096,8 @@ void DevToolsHttpHandlerImpl::Send500(int connection_id,
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::Send500,
-                 base::Unretained(server_.get()),
+      base::Bind(&ServerWrapper::Send500,
+                 base::Unretained(server_wrapper_),
                  connection_id,
                  message));
 }
@@ -931,14 +1109,8 @@ void DevToolsHttpHandlerImpl::AcceptWebSocket(
     return;
   thread_->message_loop()->PostTask(
       FROM_HERE,
-      base::Bind(&net::HttpServer::SetSendBufferSize,
-                 base::Unretained(server_.get()),
-                 connection_id,
-                 kSendBufferSizeForDevTools));
-  thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&net::HttpServer::AcceptWebSocket,
-                 base::Unretained(server_.get()),
+      base::Bind(&ServerWrapper::AcceptWebSocket,
+                 base::Unretained(server_wrapper_),
                  connection_id,
                  request));
 }

@@ -428,7 +428,6 @@
       'browser/devtools/devtools_frontend_host_impl.cc',
       'browser/devtools/devtools_frontend_host_impl.h',
       'browser/devtools/devtools_http_handler_impl.cc',
-      'browser/devtools/devtools_http_handler_impl.h',
       'browser/devtools/devtools_manager.cc',
       'browser/devtools/devtools_manager.h',
       'browser/devtools/devtools_netlog_observer.cc',
