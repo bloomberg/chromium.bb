@@ -240,7 +240,6 @@ void InstallerState::Initialize(const CommandLine& command_line,
             keep_binaries = true;
             break;
           }
-
         }
       }
 
@@ -582,8 +581,7 @@ bool InstallerState::AreBinariesInUse(
 
 base::FilePath InstallerState::GetInstallerDirectory(
     const Version& version) const {
-  return target_path().Append(base::ASCIIToWide(version.GetString()))
-      .Append(kInstallerDir);
+  return target_path().AppendASCII(version.GetString()).Append(kInstallerDir);
 }
 
 // static

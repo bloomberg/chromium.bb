@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/installer/util/self_cleaning_temp_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +15,7 @@ namespace {
 
 // Returns a string of 8 characters consisting of the letter 'R' followed by
 // seven random hex digits.
-std::wstring GetRandomFilename() {
+std::string GetRandomFilename() {
   uint8 data[4];
   HCRYPTPROV crypt_ctx = NULL;
 
@@ -34,7 +33,7 @@ std::wstring GetRandomFilename() {
   // Replace the first digit with the letter 'R' (for "random", get it?).
   result[0] = 'R';
 
-  return base::ASCIIToWide(result);
+  return result;
 }
 
 }  // namespace
@@ -57,7 +56,7 @@ TEST_F(SelfCleaningTempDirTest, TopLevel) {
 TEST_F(SelfCleaningTempDirTest, TopLevelPlusOne) {
   base::FilePath base_dir;
   base::FilePath parent_dir(L"C:\\");
-  parent_dir = parent_dir.Append(GetRandomFilename());
+  parent_dir = parent_dir.AppendASCII(GetRandomFilename());
   SelfCleaningTempDir::GetTopDirToCreate(parent_dir, &base_dir);
   EXPECT_EQ(parent_dir, base_dir);
 }
@@ -161,7 +160,7 @@ TEST_F(SelfCleaningTempDirTest, LeaveUsedOnDestroy) {
     EXPECT_TRUE(base::DirectoryExists(temp_dir.path()));
     // Drop a file somewhere.
     EXPECT_EQ(arraysize(kHiHon) - 1,
-              base::WriteFile(parent_temp_dir.Append(GetRandomFilename()),
+              base::WriteFile(parent_temp_dir.AppendASCII(GetRandomFilename()),
                               kHiHon, arraysize(kHiHon) - 1));
   }
   EXPECT_FALSE(base::DirectoryExists(parent_temp_dir.Append(L"Three")));

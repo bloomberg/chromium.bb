@@ -524,12 +524,11 @@ TEST_F(InstallerStateTest, RemoveOldVersionDirs) {
     installer_state.target_path().Append(L"1.2.3.4"),
     installer_state.target_path().Append(L"1.2.3.5"),
     installer_state.target_path().Append(L"1.2.3.6"),
-    installer_state.target_path().Append(base::ASCIIToWide(kOldVersion)),
-    installer_state.target_path().Append(
-        base::ASCIIToWide(kOldChromeExeVersion)),
+    installer_state.target_path().AppendASCII(kOldVersion),
+    installer_state.target_path().AppendASCII(kOldChromeExeVersion),
     installer_state.target_path().Append(L"2.1.1.0"),
-    installer_state.target_path().Append(base::ASCIIToWide(kChromeExeVersion)),
-    installer_state.target_path().Append(base::ASCIIToWide(kNewVersion)),
+    installer_state.target_path().AppendASCII(kChromeExeVersion),
+    installer_state.target_path().AppendASCII(kNewVersion),
     installer_state.target_path().Append(L"3.9.1.1"),
   };
 
@@ -705,7 +704,7 @@ class InstallerStateCriticalVersionTest : public ::testing::Test {
         CommandLine::FromString(L"setup.exe") :
         CommandLine::FromString(
             L"setup.exe --critical-update-version=" +
-            base::ASCIIToWide(version->GetString()));
+            base::ASCIIToUTF16(version->GetString()));
     prefs_.reset(new MasterPreferences(cmd_line_));
     machine_state_.Initialize();
     installer_state_.Initialize(cmd_line_, *prefs_, machine_state_);

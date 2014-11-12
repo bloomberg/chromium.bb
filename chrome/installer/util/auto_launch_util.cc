@@ -19,7 +19,6 @@
 #include "crypto/sha2.h"
 
 using base::ASCIIToUTF16;
-using base::ASCIIToWide;
 
 namespace auto_launch_util {
 
@@ -50,8 +49,8 @@ base::string16 ProfileToKeyName(const base::string16& profile_directory) {
   uint8 hash[16];
   crypto::SHA256HashString(input, hash, sizeof(hash));
   std::string hash_string = base::HexEncode(hash, sizeof(hash));
-  return base::string16(kAutolaunchKeyValue) + ASCIIToWide("_") +
-         ASCIIToWide(hash_string);
+  return base::string16(kAutolaunchKeyValue) + ASCIIToUTF16("_") +
+         ASCIIToUTF16(hash_string);
 }
 
 // Returns whether the Chrome executable specified in |application_path| is set

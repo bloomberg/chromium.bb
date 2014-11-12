@@ -338,16 +338,16 @@ bool CreateExperimentDetails(int flavor, ExperimentDetails* experiment) {
 
   base::string16 locale;
   GoogleUpdateSettings::GetLanguage(&locale);
-  if (locale.empty() || (locale == base::ASCIIToWide("en")))
-    locale = base::ASCIIToWide("en-US");
+  if (locale.empty() || (locale == L"en"))
+    locale = L"en-US";
 
   base::string16 brand;
   if (!GoogleUpdateSettings::GetBrand(&brand))
-    brand = base::ASCIIToWide("");  // Could still be viable for catch-all rules
+    brand.clear();  // Could still be viable for catch-all rules
 
   for (int i = 0; i < arraysize(kExperiments); ++i) {
-    if (kExperiments[i].locale != locale &&
-        kExperiments[i].locale != base::ASCIIToWide("*"))
+    base::string16 experiment_locale = kExperiments[i].locale;
+    if (experiment_locale != locale && experiment_locale != L"*")
       continue;
 
     std::vector<base::string16> brand_codes;

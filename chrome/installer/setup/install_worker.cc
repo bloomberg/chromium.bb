@@ -50,7 +50,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/work_item_list.h"
 
-using base::ASCIIToWide;
+using base::ASCIIToUTF16;
 using base::win::RegKey;
 
 namespace installer {
@@ -783,13 +783,13 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
                                          uninstall_reg,
                                          KEY_WOW64_32KEY,
                                          L"Version",
-                                         ASCIIToWide(new_version.GetString()),
+                                         ASCIIToUTF16(new_version.GetString()),
                                          true);
     install_list->AddSetRegValueWorkItem(reg_root,
                                          uninstall_reg,
                                          KEY_WOW64_32KEY,
                                          L"DisplayVersion",
-                                         ASCIIToWide(new_version.GetString()),
+                                         ASCIIToUTF16(new_version.GetString()),
                                          true);
     // TODO(wfh): Ensure that this value is preserved in the 64-bit hive when
     // 64-bit installs place the uninstall information into the 64-bit registry.
@@ -861,7 +861,7 @@ void AddVersionKeyWorkItems(HKEY root,
                                version_key,
                                KEY_WOW64_32KEY,
                                google_update::kRegVersionField,
-                               ASCIIToWide(new_version.GetString()),
+                               ASCIIToUTF16(new_version.GetString()),
                                true);  // overwrite version
 }
 
@@ -1155,7 +1155,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
             version_key,
             KEY_WOW64_32KEY,
             google_update::kRegOldVersionField,
-            ASCIIToWide(current_version->GetString()),
+            ASCIIToUTF16(current_version->GetString()),
             true);
       }
       if (critical_version.IsValid()) {
@@ -1164,7 +1164,7 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
             version_key,
             KEY_WOW64_32KEY,
             google_update::kRegCriticalVersionField,
-            ASCIIToWide(critical_version.GetString()),
+            ASCIIToUTF16(critical_version.GetString()),
             true);
       } else {
         in_use_update_work_items->AddDeleteRegValueWorkItem(
