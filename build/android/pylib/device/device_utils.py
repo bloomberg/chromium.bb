@@ -24,6 +24,7 @@ from pylib.device import decorators
 from pylib.device import device_errors
 from pylib.device.commands import install_commands
 from pylib.utils import apk_helper
+from pylib.utils import device_temp_file
 from pylib.utils import host_utils
 from pylib.utils import parallelizer
 from pylib.utils import timeout_retry
@@ -429,13 +430,14 @@ class DeviceUtils(object):
 
     if not isinstance(cmd, basestring):
       cmd = ' '.join(cmd_helper.SingleQuote(s) for s in cmd)
-    if as_root and self.NeedsSU():
-      cmd = 'su -c %s' % cmd
     if env:
       env = ' '.join(env_quote(k, v) for k, v in env.iteritems())
       cmd = '%s %s' % (env, cmd)
     if cwd:
       cmd = 'cd %s && %s' % (cmd_helper.SingleQuote(cwd), cmd)
+    if as_root and self.NeedsSU():
+      # "su -c sh -c" allows using shell features in |cmd|
+      cmd = 'su -c sh -c %s' % cmd_helper.SingleQuote(cmd)
     if timeout is None:
       timeout = self._default_timeout
 
@@ -866,16 +868,19 @@ class DeviceUtils(object):
       return self.old_interface.GetFileContents(device_path)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
-  def WriteFile(self, device_path, contents, as_root=False, timeout=None,
-                retries=None):
+  def WriteFile(self, device_path, contents, as_root=False, force_push=False,
+                timeout=None, retries=None):
     """Writes |contents| to a file on the device.
 
     Args:
       device_path: A string containing the absolute path to the file to write
-                   on the device.
+          on the device.
       contents: A string containing the data to write to the device.
       as_root: A boolean indicating whether the write should be executed with
-               root privileges.
+          root privileges (if available).
+      force_push: A boolean indicating whether to force the operation to be
+          performed by pushing a file to the device. The default is, when the
+          contents are short, to pass the contents using a shell script instead.
       timeout: timeout in seconds
       retries: number of retries
 
@@ -884,39 +889,24 @@ class DeviceUtils(object):
       CommandTimeoutError on timeout.
       DeviceUnreachableError on missing device.
     """
-    if as_root:
-      if not self.old_interface.CanAccessProtectedFileContents():
-        raise device_errors.CommandFailedError(
-            'Cannot write to %s with root privileges.' % device_path)
-      self.old_interface.SetProtectedFileContents(device_path, contents)
+    if len(contents) < 512 and not force_push:
+      cmd = 'echo -n %s > %s' % (cmd_helper.SingleQuote(contents),
+                                 cmd_helper.SingleQuote(device_path))
+      self.RunShellCommand(cmd, as_root=as_root, check_return=True)
     else:
-      self.old_interface.SetFileContents(device_path, contents)
-
-  @decorators.WithTimeoutAndRetriesFromInstance()
-  def WriteTextFile(self, device_path, text, as_root=False, timeout=None,
-                    retries=None):
-    """Writes |text| to a file on the device.
-
-    Assuming that |text| is a small string, this is typically more efficient
-    than |WriteFile|, as no files are pushed into the device.
-
-    Args:
-      device_path: A string containing the absolute path to the file to write
-                   on the device.
-      text: A short string of text to write to the file on the device.
-      as_root: A boolean indicating whether the write should be executed with
-               root privileges.
-      timeout: timeout in seconds
-      retries: number of retries
-
-    Raises:
-      CommandFailedError if the file could not be written on the device.
-      CommandTimeoutError on timeout.
-      DeviceUnreachableError on missing device.
-    """
-    cmd = 'echo %s > %s' % (cmd_helper.SingleQuote(text),
-                            cmd_helper.SingleQuote(device_path))
-    self.RunShellCommand(cmd, as_root=as_root, check_return=True)
+      with tempfile.NamedTemporaryFile() as host_temp:
+        host_temp.write(contents)
+        host_temp.flush()
+        if as_root and self.NeedsSU():
+          with device_temp_file.DeviceTempFile(self) as device_temp:
+            self.adb.Push(host_temp.name, device_temp.name)
+            # Here we need 'cp' rather than 'mv' because the temp and
+            # destination files might be on different file systems (e.g.
+            # on internal storage and an external sd card)
+            self.RunShellCommand(['cp', device_temp.name, device_path],
+                                 as_root=True, check_return=True)
+        else:
+          self.adb.Push(host_temp.name, device_path)
 
   @decorators.WithTimeoutAndRetriesFromInstance()
   def Ls(self, device_path, timeout=None, retries=None):

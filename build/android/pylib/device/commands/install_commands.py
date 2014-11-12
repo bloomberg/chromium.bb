@@ -41,7 +41,7 @@ def InstallCommands(device):
     shell_command = _SHELL_COMMAND_FORMAT % (
         constants.TEST_EXECUTABLE_DIR, main_class)
     shell_file = '%s/%s' % (BIN_DIR, command)
-    device.WriteTextFile(shell_file, shell_command)
+    device.WriteFile(shell_file, shell_command)
     device.RunShellCommand(
         ['chmod', '755', shell_file], check_return=True)
 
