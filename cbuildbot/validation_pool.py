@@ -2108,7 +2108,6 @@ class ValidationPool(object):
                    'using board-specific triaging logic: %s',
                    cros_patch.GetChangesAsString(fully_verified))
 
-    # TODO(yjhong): send the stats to either GS or CIDB.
     if should_submit - fully_verified:
       logging.warning('Board-specific triaging logic would not have '
                       'submitted changes: %s',
@@ -2119,6 +2118,13 @@ class ValidationPool(object):
                    'submitted changes: %s',
                    cros_patch.GetChangesAsString(
                        fully_verified - should_submit))
+
+    # Record the difference of CL submission count between the old and
+    # the new board-specific submission logic in metadata.json.
+    # TODO(yjhong): Remove this counter once we have enough stats to
+    # show that the board-specific submission logic is superior.
+    self._run.attrs.metadata.UpdateWithDict(
+      {'bs_submission_diff_count': len(fully_verified) - len(should_submit)})
 
     # TODO(yjhong): Replace should_submit with fully_verified once we
     # confirm there will be no regression (crbug.com/422639).
