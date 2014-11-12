@@ -322,8 +322,6 @@
       'renderer/notification_provider.h',
       'renderer/push_messaging_dispatcher.cc',
       'renderer/push_messaging_dispatcher.h',
-      'renderer/push_permission_dispatcher.cc',
-      'renderer/push_permission_dispatcher.h',
       'renderer/render_font_warmup_win.cc',
       'renderer/render_frame_impl.cc',
       'renderer/render_frame_impl.h',

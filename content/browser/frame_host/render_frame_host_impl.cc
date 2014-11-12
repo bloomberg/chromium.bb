@@ -41,7 +41,6 @@
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/platform_notification_messages.h"
-#include "content/common/push_messaging_messages.h"
 #include "content/common/render_frame_setup.mojom.h"
 #include "content/common/swapped_out_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
@@ -393,8 +392,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
                         OnAccessibilityLocationChanges)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_FindInPageResult,
                         OnAccessibilityFindInPageResult)
-    IPC_MESSAGE_HANDLER(PushMessagingHostMsg_RequestPermission,
-                        OnRequestPushPermission)
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -1213,22 +1210,6 @@ void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
   }
 }
 
-void RenderFrameHostImpl::OnRequestPushPermission(int request_id,
-                                                  bool user_gesture) {
-  if (!delegate()->GetAsWebContents())
-    return;
-
-  GetContentClient()->browser()->RequestPermission(
-      PERMISSION_PUSH_MESSAGING,
-      delegate()->GetAsWebContents(),
-      routing_id_,
-      GetLastCommittedURL().GetOrigin(),
-      user_gesture,
-      base::Bind(&RenderFrameHostImpl::PushPermissionRequestDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 request_id));
-}
-
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
@@ -1528,11 +1509,6 @@ void RenderFrameHostImpl::PlatformNotificationPermissionRequestDone(
 
   Send(new PlatformNotificationMsg_PermissionRequestComplete(
       routing_id_, request_id, permission));
-}
-
-void RenderFrameHostImpl::PushPermissionRequestDone(int request_id,
-                                                    bool allowed) {
-  Send(new PushMessagingMsg_RequestPermissionResponse(routing_id_, request_id));
 }
 
 void RenderFrameHostImpl::UpdateCrossProcessIframeAccessibility(

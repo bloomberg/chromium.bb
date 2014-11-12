@@ -84,7 +84,6 @@
 #include "content/renderer/notification_provider.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
 #include "content/renderer/push_messaging_dispatcher.h"
-#include "content/renderer/push_permission_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -3174,12 +3173,6 @@ blink::WebGeolocationClient* RenderFrameImpl::geolocationClient() {
   if (!geolocation_dispatcher_)
     geolocation_dispatcher_ = new GeolocationDispatcher(this);
   return geolocation_dispatcher_;
-}
-
-void RenderFrameImpl::requestPushPermission(blink::WebCallback* callback) {
-  if (!push_permission_dispatcher_)
-    push_permission_dispatcher_ = new PushPermissionDispatcher(this);
-  push_permission_dispatcher_->RequestPermission(callback);
 }
 
 blink::WebPushClient* RenderFrameImpl::pushClient() {
