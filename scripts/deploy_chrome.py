@@ -272,11 +272,15 @@ class DeployChrome(object):
         """Checks if the passed-in file is present in the build directory."""
         return os.path.exists(os.path.join(self.options.build_dir, filename))
 
-      if BinaryExists('app_shell') and not BinaryExists('chrome'):
-        # app_shell deployment.
-        self.copy_paths = chrome_util.GetCopyPaths('app_shell')
+      # Handle non-Chrome deployments.
+      if not BinaryExists('chrome'):
+        if BinaryExists('envoy_shell'):
+          self.copy_paths = chrome_util.GetCopyPaths('envoy')
+        elif BinaryExists('app_shell'):
+          self.copy_paths = chrome_util.GetCopyPaths('app_shell')
+
         # TODO(derat): Update _Deploy() and remove this after figuring out how
-        # app_shell should be executed.
+        # {app,envoy}_shell should be executed.
         self.options.startui = False
 
   def _PrepareStagingDir(self):
