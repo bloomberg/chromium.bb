@@ -608,6 +608,11 @@ crbug.com/344239 inspector-protocol/heap-profiler/heap-objects-tracking.html [ C
 
 crbug.com/313846 http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 
+crbug.com/331251 fast/block/float/float-not-removed-from-next-sibling2.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/float/nestedAnonymousBlocks.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-continuation-on-line.html [ NeedsRebaseline ]
+crbug.com/331251 fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-other-block-on-line.html [ NeedsRebaseline ]
+
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
 crbug.com/320099 webaudio/oscillator-sawtooth.html [ NeedsManualRebaseline ]
@@ -1207,6 +1212,9 @@ crbug.com/395127 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_mea
 crbug.com/396791 [ Debug ] virtual/threaded/printing/print-close-crash.html [ Pass Crash ]
 
 crbug.com/396851 [ Lion ] inspector/console/console-stack-overflow.html [ Timeout ]
+
+crbug.com/331251 virtual/slimmingpaint/fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-continuation-on-line.html [ NeedsRebaseline ]
+crbug.com/331251 virtual/slimmingpaint/fast/block/do-not-strip-anonymous-blocks-when-block-child-becomes-float-and-other-block-on-line.html [ NeedsRebaseline ]
 
 # crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideograph-small-caps.html [ Crash ]
 # crbug.com/396936 [ Lion ] fast/writing-mode/broken-ideographic-font.html [ Crash ]

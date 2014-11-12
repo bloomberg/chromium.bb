@@ -357,6 +357,8 @@ private:
 
     virtual bool isSelfCollapsingBlock() const override;
 
+    void removeAnonymousWrappersIfRequired();
+
     void insertIntoTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
     static void removeFromTrackedRendererMaps(RenderBox* descendant, TrackedDescendantsMap*&, TrackedContainerMap*&);
 
