@@ -73,7 +73,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -171,7 +171,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -269,7 +269,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -360,7 +360,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {

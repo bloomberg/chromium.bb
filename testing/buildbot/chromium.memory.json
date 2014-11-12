@@ -62,7 +62,7 @@
       "sandbox_linux_unittests",
       "sql_unittests",
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -150,7 +150,7 @@
       "remoting_unittests",
       "sql_unittests",
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       "url_unittests"
     ]
   },
@@ -211,7 +211,7 @@
       "remoting_unittests",
       "sql_unittests",
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -303,7 +303,7 @@
           "shards": 2
         }
       },
-      "ui_unittests",
+      "ui_base_unittests",
       "url_unittests",
       "views_unittests"
     ]

@@ -75,7 +75,7 @@
       "remoting_unittests",
       "sandbox_linux_unittests",
       "sql_unittests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "sync_integration_tests",
         "swarming": {
@@ -184,7 +184,7 @@
       "remoting_unittests",
       "sandbox_linux_unittests",
       "sql_unittests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "sync_integration_tests",
         "swarming": {
@@ -289,7 +289,7 @@
         "args": ["--test-launcher-print-test-stdio=always"]
       },
       "sql_unittests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "sync_integration_tests",
         "swarming": {
@@ -346,7 +346,7 @@
       "sandbox_linux_unittests",
       "sql_unittests",
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       "unit_tests"
     ]
   }

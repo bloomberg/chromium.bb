@@ -82,7 +82,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_unittests",
+      "ui_base_unittests",
       "url_unittests",
       "views_unittests",
       "wm_unittests"
@@ -191,7 +191,7 @@
           "can_use_on_swarming_builders": true
         }
       },
-      "ui_unittests",
+      "ui_base_unittests",
       "url_unittests",
       "views_unittests",
       "wm_unittests"
@@ -296,7 +296,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -402,7 +402,7 @@
       },
       "sql_unittests",
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
@@ -513,7 +513,7 @@
         }
       },
       "sync_unit_tests",
-      "ui_unittests",
+      "ui_base_unittests",
       {
         "test": "unit_tests",
         "swarming": {
