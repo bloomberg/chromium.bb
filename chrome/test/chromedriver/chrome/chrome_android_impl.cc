@@ -24,6 +24,10 @@ ChromeAndroidImpl::ChromeAndroidImpl(
 
 ChromeAndroidImpl::~ChromeAndroidImpl() {}
 
+Status ChromeAndroidImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
+  return Status(kUnknownError, "operation is unsupported on Android");
+}
+
 std::string ChromeAndroidImpl::GetOperatingSystemName() {
   return "ANDROID";
 }

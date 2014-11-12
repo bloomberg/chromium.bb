@@ -753,10 +753,11 @@ Status ExecuteScreenshot(
     return status;
 
   std::string screenshot;
-  if (session->chrome->GetAsDesktop() && !session->force_devtools_screenshot) {
+  ChromeDesktopImpl* desktop = NULL;
+  status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsOk() && !session->force_devtools_screenshot) {
     AutomationExtension* extension = NULL;
-    status =
-        session->chrome->GetAsDesktop()->GetAutomationExtension(&extension);
+    status = desktop->GetAutomationExtension(&extension);
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);

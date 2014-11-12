@@ -47,7 +47,7 @@ class ChromeDesktopImpl : public ChromeImpl {
   Status GetAutomationExtension(AutomationExtension** extension);
 
   // Overridden from Chrome:
-  ChromeDesktopImpl* GetAsDesktop() override;
+  Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:

@@ -17,7 +17,7 @@ class Chrome {
  public:
   virtual ~Chrome() {}
 
-  virtual ChromeDesktopImpl* GetAsDesktop() = 0;
+  virtual Status GetAsDesktop(ChromeDesktopImpl** desktop) = 0;
 
   virtual const BrowserInfo* GetBrowserInfo() = 0;
 

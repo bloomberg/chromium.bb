@@ -10,8 +10,8 @@ StubChrome::StubChrome() {}
 
 StubChrome::~StubChrome() {}
 
-ChromeDesktopImpl* StubChrome::GetAsDesktop() {
-  return NULL;
+Status StubChrome::GetAsDesktop(ChromeDesktopImpl** desktop) {
+  return Status(kUnknownError, "not supported");
 }
 
 const BrowserInfo* StubChrome::GetBrowserInfo() {

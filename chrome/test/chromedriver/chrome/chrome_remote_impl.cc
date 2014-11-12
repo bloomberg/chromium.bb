@@ -19,6 +19,11 @@ ChromeRemoteImpl::ChromeRemoteImpl(
 
 ChromeRemoteImpl::~ChromeRemoteImpl() {}
 
+Status ChromeRemoteImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
+  return Status(kUnknownError,
+                "operation is unsupported with remote debugging");
+}
+
 std::string ChromeRemoteImpl::GetOperatingSystemName() {
  return std::string();
 }

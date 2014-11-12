@@ -16,8 +16,8 @@ ChromeImpl::~ChromeImpl() {
     port_reservation_->Leak();
 }
 
-ChromeDesktopImpl* ChromeImpl::GetAsDesktop() {
-  return NULL;
+Status ChromeImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
+  return Status(kUnknownError, "operation unsupported");
 }
 
 const BrowserInfo* ChromeImpl::GetBrowserInfo() {

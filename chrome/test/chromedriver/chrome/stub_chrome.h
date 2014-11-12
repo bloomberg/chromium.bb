@@ -21,7 +21,7 @@ class StubChrome : public Chrome {
   ~StubChrome() override;
 
   // Overridden from Chrome:
-  ChromeDesktopImpl* GetAsDesktop() override;
+  Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   const BrowserInfo* GetBrowserInfo() override;
   bool HasCrashedWebView() override;
   Status GetWebViewIds(std::list<std::string>* web_view_ids) override;

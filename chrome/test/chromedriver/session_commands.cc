@@ -92,12 +92,15 @@ scoped_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("acceptSslCerts", true);
   caps->SetBoolean("nativeEvents", true);
   scoped_ptr<base::DictionaryValue> chrome_caps(new base::DictionaryValue());
-  if (chrome->GetAsDesktop()) {
+
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = chrome->GetAsDesktop(&desktop);
+  if (status.IsOk()) {
     chrome_caps->SetString(
         "userDataDir",
-        chrome->GetAsDesktop()->command().GetSwitchValueNative(
-            "user-data-dir"));
+        desktop->command().GetSwitchValueNative("user-data-dir"));
   }
+
   caps->Set("chrome", chrome_caps.release());
   return caps.Pass();
 }
@@ -223,13 +226,13 @@ Status ExecuteLaunchApp(
   if (!params.GetString("id", &id))
     return Status(kUnknownError, "'id' must be a string");
 
-  if (!session->chrome->GetAsDesktop())
-    return Status(kUnknownError,
-                  "apps can only be launched on desktop platforms");
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status =
-      session->chrome->GetAsDesktop()->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 
@@ -457,15 +460,13 @@ Status ExecuteGetWindowPosition(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = session->chrome->GetAsDesktop();
-  if (!desktop) {
-    return Status(
-        kUnknownError,
-        "command only supported for desktop Chrome without debuggerAddress");
-  }
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 
@@ -490,15 +491,13 @@ Status ExecuteSetWindowPosition(
   if (!params.GetDouble("x", &x) || !params.GetDouble("y", &y))
     return Status(kUnknownError, "missing or invalid 'x' or 'y'");
 
-  ChromeDesktopImpl* desktop = session->chrome->GetAsDesktop();
-  if (!desktop) {
-    return Status(
-        kUnknownError,
-        "command only supported for desktop Chrome without debuggerAddress");
-  }
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 
@@ -509,15 +508,13 @@ Status ExecuteGetWindowSize(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = session->chrome->GetAsDesktop();
-  if (!desktop) {
-    return Status(
-        kUnknownError,
-        "command only supported for desktop Chrome without debuggerAddress");
-  }
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 
@@ -543,15 +540,13 @@ Status ExecuteSetWindowSize(
       !params.GetDouble("height", &height))
     return Status(kUnknownError, "missing or invalid 'width' or 'height'");
 
-  ChromeDesktopImpl* desktop = session->chrome->GetAsDesktop();
-  if (!desktop) {
-    return Status(
-        kUnknownError,
-        "command only supported for desktop Chrome without debuggerAddress");
-  }
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 
@@ -563,15 +558,13 @@ Status ExecuteMaximizeWindow(
     Session* session,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  ChromeDesktopImpl* desktop = session->chrome->GetAsDesktop();
-  if (!desktop) {
-    return Status(
-        kUnknownError,
-        "command only supported for desktop Chrome without debuggerAddress");
-  }
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
 
   AutomationExtension* extension = NULL;
-  Status status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension);
   if (status.IsError())
     return status;
 

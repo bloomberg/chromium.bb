@@ -26,6 +26,7 @@ class ChromeAndroidImpl : public ChromeImpl {
   ~ChromeAndroidImpl() override;
 
   // Overridden from Chrome:
+  Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl:

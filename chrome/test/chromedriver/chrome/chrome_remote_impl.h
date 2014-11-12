@@ -23,6 +23,7 @@ class ChromeRemoteImpl : public ChromeImpl {
   ~ChromeRemoteImpl() override;
 
   // Overridden from Chrome.
+  Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   std::string GetOperatingSystemName() override;
 
   // Overridden from ChromeImpl.

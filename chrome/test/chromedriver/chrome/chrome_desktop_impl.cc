@@ -155,8 +155,9 @@ Status ChromeDesktopImpl::GetAutomationExtension(
   return Status(kOk);
 }
 
-ChromeDesktopImpl* ChromeDesktopImpl::GetAsDesktop() {
-  return this;
+Status ChromeDesktopImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
+  *desktop = this;
+  return Status(kOk);
 }
 
 std::string ChromeDesktopImpl::GetOperatingSystemName() {
