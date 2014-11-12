@@ -81,7 +81,7 @@ private:
 
     virtual void addChild(RenderObject* newChild, RenderObject* beforeChild = 0) override final;
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const override final;
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
     virtual bool canBeProgramaticallyScrolled() const override final { return true; }
 };

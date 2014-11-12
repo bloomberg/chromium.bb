@@ -56,7 +56,7 @@ private:
 
     virtual FloatRect strokeBoundingBox() const override { return m_objectBoundingBox; }
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const override;
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override;
 
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) override;
 

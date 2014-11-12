@@ -61,7 +61,7 @@ protected:
 
     virtual void addChild(RenderObject* child, RenderObject* beforeChild = 0) override final;
     virtual void removeChild(RenderObject*) override final;
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const override final;
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const override final;
 
     virtual FloatRect objectBoundingBox() const override final { return m_objectBoundingBox; }
     virtual FloatRect strokeBoundingBox() const override final { return m_strokeBoundingBox; }

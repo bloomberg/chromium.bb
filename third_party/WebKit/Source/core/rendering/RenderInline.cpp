@@ -1368,21 +1368,18 @@ public:
 
 } // unnamed namespace
 
-void RenderInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
+void RenderInline::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     AbsoluteLayoutRectsIgnoringEmptyRectsGeneratorContext context(rects, additionalOffset);
     generateLineBoxRects(context);
 
-    addChildFocusRingRects(rects, additionalOffset, paintContainer);
+    addChildFocusRingRects(rects, additionalOffset);
 
     if (continuation()) {
-        // If the continuation doesn't paint into the same container, let its paint invalidation container handle it.
-        if (paintContainer != continuation()->containerForPaintInvalidation())
-            return;
         if (continuation()->isInline())
-            continuation()->addFocusRingRects(rects, additionalOffset + (continuation()->containingBlock()->location() - containingBlock()->location()), paintContainer);
+            continuation()->addFocusRingRects(rects, additionalOffset + (continuation()->containingBlock()->location() - containingBlock()->location()));
         else
-            continuation()->addFocusRingRects(rects, additionalOffset + (toRenderBox(continuation())->location() - containingBlock()->location()), paintContainer);
+            continuation()->addFocusRingRects(rects, additionalOffset + (toRenderBox(continuation())->location() - containingBlock()->location()));
     }
 }
 

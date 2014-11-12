@@ -982,7 +982,7 @@ public:
 
     bool createsGroup() const { return isTransparent() || hasMask() || hasFilter() || hasBlendMode(); }
 
-    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const { }
+    virtual void addFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const { }
 
     // Compute a list of hit-test rectangles per layer rooted at this renderer.
     virtual void computeLayerHitTestRects(LayerHitTestRects&) const;
@@ -1139,8 +1139,6 @@ protected:
     virtual void updateAnonymousChildStyle(const RenderObject* child, RenderStyle* style) const { }
 
 protected:
-    void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const;
-
     void clearLayoutRootIfNeeded() const;
     virtual void willBeDestroyed();
     void postDestroy();

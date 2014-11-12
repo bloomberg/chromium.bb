@@ -18,7 +18,7 @@ namespace blink {
 void ObjectPainter::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
 {
     Vector<LayoutRect> focusRingRects;
-    m_renderObject.addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer());
+    m_renderObject.addFocusRingRects(focusRingRects, paintOffset);
     ASSERT(style->outlineStyleIsAuto());
     Vector<IntRect> focusRingIntRects;
     for (size_t i = 0; i < focusRingRects.size(); ++i)

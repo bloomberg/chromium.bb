@@ -966,32 +966,6 @@ bool RenderObject::mustInvalidateBackgroundOrBorderPaintOnHeightChange() const
     return false;
 }
 
-void RenderObject::addChildFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
-{
-    for (RenderObject* current = slowFirstChild(); current; current = current->nextSibling()) {
-        if (current->isText() || current->isListMarker())
-            continue;
-
-        if (current->isBox()) {
-            RenderBox* box = toRenderBox(current);
-            if (box->hasLayer()) {
-                Vector<LayoutRect> layerFocusRingRects;
-                box->addFocusRingRects(layerFocusRingRects, LayoutPoint(), box);
-                for (size_t i = 0; i < layerFocusRingRects.size(); ++i) {
-                    FloatQuad quadInBox = box->localToContainerQuad(FloatQuad(layerFocusRingRects[i]), paintContainer);
-                    LayoutRect rect = LayoutRect(quadInBox.boundingBox());
-                    if (!rect.isEmpty())
-                        rects.append(rect);
-                }
-            } else {
-                box->addFocusRingRects(rects, additionalOffset + box->locationOffset(), paintContainer);
-            }
-        } else {
-            current->addFocusRingRects(rects, additionalOffset, paintContainer);
-        }
-    }
-}
-
 IntRect RenderObject::absoluteBoundingBoxRect() const
 {
     Vector<FloatQuad> quads;
@@ -1026,8 +1000,8 @@ IntRect RenderObject::absoluteBoundingBoxRectIgnoringTransforms() const
 IntRect RenderObject::absoluteFocusRingBoundingBoxRect() const
 {
     Vector<LayoutRect> rects;
-    const RenderLayerModelObject* container = containerForPaintInvalidation();
-    addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)), container);
+    const RenderLayerModelObject* container = enclosingLayer()->renderer();
+    addFocusRingRects(rects, LayoutPoint(localToContainerPoint(FloatPoint(), container)));
     return container->localToAbsoluteQuad(FloatQuad(unionRect(rects))).enclosingBoundingBox();
 }
 

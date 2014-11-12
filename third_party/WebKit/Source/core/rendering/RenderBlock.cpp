@@ -4019,7 +4019,7 @@ LayoutRect RenderBlock::localCaretRect(InlineBox* inlineBox, int caretOffset, La
     return caretRect;
 }
 
-void RenderBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer) const
+void RenderBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
     // inline boxes above and below us (thus getting merged with them to form a single irregular
@@ -4049,11 +4049,11 @@ void RenderBlock::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint
                 rects.append(rect);
         }
 
-        addChildFocusRingRects(rects, additionalOffset, paintContainer);
+        addChildFocusRingRects(rects, additionalOffset);
     }
 
     if (inlineElementContinuation())
-        inlineElementContinuation()->addFocusRingRects(rects, additionalOffset + (inlineElementContinuation()->containingBlock()->location() - location()), paintContainer);
+        inlineElementContinuation()->addFocusRingRects(rects, additionalOffset + (inlineElementContinuation()->containingBlock()->location() - location()));
 }
 
 void RenderBlock::computeSelfHitTestRects(Vector<LayoutRect>& rects, const LayoutPoint& layerOffset) const

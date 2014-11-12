@@ -76,6 +76,8 @@ protected:
 
     virtual void addLayerHitTestRects(LayerHitTestRects&, const RenderLayer*, const LayoutPoint&, const LayoutRect&) const override;
 
+    void addChildFocusRingRects(Vector<LayoutRect>&, const LayoutPoint& additionalOffset) const;
+
 private:
     virtual bool isLayerModelObject() const override final { return true; }
 

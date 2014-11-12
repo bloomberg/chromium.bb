@@ -567,7 +567,7 @@ FloatQuad RenderBox::absoluteContentQuad() const
     return localToAbsoluteQuad(FloatRect(rect));
 }
 
-void RenderBox::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*) const
+void RenderBox::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     if (!size().isEmpty())
         rects.append(LayoutRect(additionalOffset, size()));
@@ -3930,7 +3930,7 @@ LayoutBoxExtent RenderBox::computeVisualEffectOverflowExtent() const
         if (style()->outlineStyleIsAuto()) {
             // The result focus ring rects are in coordinates of this object's border box.
             Vector<LayoutRect> focusRingRects;
-            addFocusRingRects(focusRingRects, LayoutPoint(), this);
+            addFocusRingRects(focusRingRects, LayoutPoint());
             LayoutRect rect = unionRect(focusRingRects);
 
             int outlineSize = GraphicsContext::focusRingOutsetExtent(style()->outlineOffset(), style()->outlineWidth());

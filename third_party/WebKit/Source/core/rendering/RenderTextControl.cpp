@@ -283,7 +283,7 @@ void RenderTextControl::computePreferredLogicalWidths()
     clearPreferredLogicalWidthsDirty();
 }
 
-void RenderTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset, const RenderLayerModelObject*) const
+void RenderTextControl::addFocusRingRects(Vector<LayoutRect>& rects, const LayoutPoint& additionalOffset) const
 {
     if (!size().isEmpty())
         rects.append(LayoutRect(additionalOffset, size()));
