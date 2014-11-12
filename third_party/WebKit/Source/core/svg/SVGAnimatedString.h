@@ -38,13 +38,13 @@ namespace blink {
 
 class SVGAnimatedString final : public SVGAnimatedProperty<SVGString> {
 public:
-    static PassRefPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)
     {
-        return adoptRef(new SVGAnimatedString(contextElement, attributeName, initialValue));
+        return adoptRefWillBeNoop(new SVGAnimatedString(contextElement, attributeName, initialValue));
     }
 
 protected:
-    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGString> initialValue)
+    SVGAnimatedString(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)
         : SVGAnimatedProperty<SVGString>(contextElement, attributeName, initialValue)
     {
     }

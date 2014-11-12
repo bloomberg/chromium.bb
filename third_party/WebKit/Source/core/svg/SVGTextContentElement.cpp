@@ -49,9 +49,9 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGLengthAd
 // It should return getComputedTextLength() when textLength is not specified manually.
 class SVGAnimatedTextLength final : public SVGAnimatedLength {
 public:
-    static PassRefPtr<SVGAnimatedTextLength> create(SVGTextContentElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedTextLength> create(SVGTextContentElement* contextElement)
     {
-        return adoptRef(new SVGAnimatedTextLength(contextElement));
+        return adoptRefWillBeNoop(new SVGAnimatedTextLength(contextElement));
     }
 
     virtual SVGLengthTearOff* baseVal() override
@@ -79,6 +79,13 @@ SVGTextContentElement::SVGTextContentElement(const QualifiedName& tagName, Docum
 {
     addToPropertyMap(m_textLength);
     addToPropertyMap(m_lengthAdjust);
+}
+
+void SVGTextContentElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_textLength);
+    visitor->trace(m_lengthAdjust);
+    SVGGraphicsElement::trace(visitor);
 }
 
 unsigned SVGTextContentElement::getNumberOfChars()
@@ -109,7 +116,7 @@ float SVGTextContentElement::getSubStringLength(unsigned charnum, unsigned nchar
     return SVGTextQuery(renderer()).subStringLength(charnum, nchars);
 }
 
-PassRefPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -122,7 +129,7 @@ PassRefPtr<SVGPointTearOff> SVGTextContentElement::getStartPositionOfChar(unsign
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -135,7 +142,7 @@ PassRefPtr<SVGPointTearOff> SVGTextContentElement::getEndPositionOfChar(unsigned
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGTextContentElement::getExtentOfChar(unsigned charnum, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
 
@@ -160,7 +167,7 @@ float SVGTextContentElement::getRotationOfChar(unsigned charnum, ExceptionState&
     return SVGTextQuery(renderer()).rotationOfCharacter(charnum);
 }
 
-int SVGTextContentElement::getCharNumAtPosition(PassRefPtr<SVGPointTearOff> point, ExceptionState& exceptionState)
+int SVGTextContentElement::getCharNumAtPosition(PassRefPtrWillBeRawPtr<SVGPointTearOff> point, ExceptionState& exceptionState)
 {
     document().updateLayoutIgnorePendingStylesheets();
     return SVGTextQuery(renderer()).characterNumberAtPosition(point->target()->value());

@@ -42,12 +42,12 @@ public:
     typedef void TearOffType;
     typedef int PrimitiveType;
 
-    static PassRefPtr<SVGInteger> create(int value = 0)
+    static PassRefPtrWillBeRawPtr<SVGInteger> create(int value = 0)
     {
-        return adoptRef(new SVGInteger(value));
+        return adoptRefWillBeNoop(new SVGInteger(value));
     }
 
-    virtual PassRefPtr<SVGInteger> clone() const;
+    virtual PassRefPtrWillBeRawPtr<SVGInteger> clone() const;
 
     int value() const { return m_value; }
     void setValue(int value) { m_value = value; }
@@ -56,8 +56,8 @@ public:
     virtual void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedInteger; }
 
@@ -67,9 +67,9 @@ protected:
     int m_value;
 };
 
-inline PassRefPtr<SVGInteger> toSVGInteger(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGInteger> toSVGInteger(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGInteger::classType());
     return static_pointer_cast<SVGInteger>(base.release());
 }

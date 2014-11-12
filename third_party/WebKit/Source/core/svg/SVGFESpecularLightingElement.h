@@ -28,6 +28,7 @@
 #include "core/svg/SVGFELightElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FESpecularLighting.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,6 +44,9 @@ public:
     SVGAnimatedNumber* kernelUnitLengthX() { return m_kernelUnitLength->firstNumber(); }
     SVGAnimatedNumber* kernelUnitLengthY() { return m_kernelUnitLength->secondNumber(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
+
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFESpecularLightingElement(Document&);
 
@@ -50,16 +54,16 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
     static const AtomicString& kernelUnitLengthXIdentifier();
     static const AtomicString& kernelUnitLengthYIdentifier();
 
-    RefPtr<SVGAnimatedNumber> m_specularConstant;
-    RefPtr<SVGAnimatedNumber> m_specularExponent;
-    RefPtr<SVGAnimatedNumber> m_surfaceScale;
-    RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-    RefPtr<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_specularConstant;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_specularExponent;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_surfaceScale;
+    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

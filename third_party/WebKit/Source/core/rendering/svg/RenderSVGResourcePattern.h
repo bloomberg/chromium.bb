@@ -25,6 +25,7 @@
 #include "core/rendering/svg/RenderSVGResourcePaintServer.h"
 #include "core/svg/PatternAttributes.h"
 
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -50,6 +51,8 @@ public:
 
     static const RenderSVGResourceType s_resourceType = PatternResourceType;
     virtual RenderSVGResourceType resourceType() const override { return s_resourceType; }
+
+    virtual void trace(Visitor*) override;
 
 private:
     PassOwnPtr<PatternData> buildPatternData(const RenderObject&);

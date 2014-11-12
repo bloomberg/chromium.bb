@@ -51,7 +51,7 @@ SVGPoint::SVGPoint(const FloatPoint& point)
 {
 }
 
-PassRefPtr<SVGPoint> SVGPoint::clone() const
+PassRefPtrWillBeRawPtr<SVGPoint> SVGPoint::clone() const
 {
     return SVGPoint::create(m_value);
 }
@@ -122,13 +122,13 @@ void SVGPoint::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
     ASSERT_NOT_REACHED();
 }
 
-void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();
 }
 
-float SVGPoint::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement)
+float SVGPoint::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement)
 {
     // SVGPoint is not animated by itself
     ASSERT_NOT_REACHED();

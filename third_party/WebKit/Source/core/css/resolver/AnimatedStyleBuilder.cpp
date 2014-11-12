@@ -144,9 +144,9 @@ void setFillSize(FillLayer* fillLayer, const AnimatableValue* value, const Style
         state.styleMap().mapFillSize(fillLayer, toAnimatableUnknown(value)->toCSSValue().get());
 }
 
-PassRefPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
+PassRefPtrWillBeRawPtr<SVGLength> animatableValueToNonNegativeSVGLength(const AnimatableValue* value)
 {
-    RefPtr<SVGLength> length = toAnimatableSVGLength(value)->toSVGLength();
+    RefPtrWillBeRawPtr<SVGLength> length = toAnimatableSVGLength(value)->toSVGLength();
     if (length->valueInSpecifiedUnits() < 0)
         length->setValueInSpecifiedUnits(0);
     return length.release();

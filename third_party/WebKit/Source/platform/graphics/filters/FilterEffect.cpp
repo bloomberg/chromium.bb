@@ -49,6 +49,11 @@ FilterEffect::~FilterEffect()
 {
 }
 
+void FilterEffect::trace(Visitor* visitor)
+{
+    visitor->trace(m_inputEffects);
+}
+
 float FilterEffect::maxFilterArea()
 {
     return kMaxFilterArea;

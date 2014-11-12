@@ -34,10 +34,11 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
-SVGRectTearOff::SVGRectTearOff(PassRefPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGRectTearOff::SVGRectTearOff(PassRefPtrWillBeRawPtr<SVGRect> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGRect>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }

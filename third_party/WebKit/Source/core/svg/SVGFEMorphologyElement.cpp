@@ -49,6 +49,14 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
     addToPropertyMap(m_svgOperator);
 }
 
+void SVGFEMorphologyElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_radius);
+    visitor->trace(m_in1);
+    visitor->trace(m_svgOperator);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFEMorphologyElement)
 
 bool SVGFEMorphologyElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -105,7 +113,7 @@ void SVGFEMorphologyElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
     float xRadius = radiusX()->currentValue()->value();
@@ -117,7 +125,7 @@ PassRefPtr<FilterEffect> SVGFEMorphologyElement::build(SVGFilterBuilder* filterB
     if (xRadius < 0 || yRadius < 0)
         return nullptr;
 
-    RefPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEMorphology::create(filter, m_svgOperator->currentValue()->enumValue(), xRadius, yRadius);
     effect->inputEffects().append(input1);
     return effect.release();
 }

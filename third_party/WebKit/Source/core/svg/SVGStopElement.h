@@ -24,6 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -36,6 +37,8 @@ public:
 
     SVGAnimatedNumber* offset() { return m_offset.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGStopElement(Document&);
 
@@ -45,7 +48,7 @@ private:
     virtual RenderObject* createRenderer(RenderStyle*) override;
     virtual bool rendererIsNeeded(const RenderStyle&) override;
 
-    RefPtr<SVGAnimatedNumber> m_offset;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_offset;
 };
 
 } // namespace blink

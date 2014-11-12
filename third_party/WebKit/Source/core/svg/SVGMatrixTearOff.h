@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/RefCounted.h"
 
@@ -43,17 +44,17 @@ class SVGTransformTearOff;
 // SVGMatrixTearOff wraps a AffineTransform for Javascript.
 // Its instance can either hold a static value, or this can be teared off from |SVGTransform.matrix|.
 // This does not derive from SVGPropertyTearOff, as its instances are never tied to an animated property nor an XML attribute.
-class SVGMatrixTearOff final : public RefCounted<SVGMatrixTearOff>, public ScriptWrappable {
+class SVGMatrixTearOff final : public RefCountedWillBeGarbageCollectedFinalized<SVGMatrixTearOff>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGMatrixTearOff> create(const AffineTransform& value)
+    static PassRefPtrWillBeRawPtr<SVGMatrixTearOff> create(const AffineTransform& value)
     {
-        return adoptRef(new SVGMatrixTearOff(value));
+        return adoptRefWillBeNoop(new SVGMatrixTearOff(value));
     }
 
-    static PassRefPtr<SVGMatrixTearOff> create(SVGTransformTearOff* target)
+    static PassRefPtrWillBeRawPtr<SVGMatrixTearOff> create(SVGTransformTearOff* target)
     {
-        return adoptRef(new SVGMatrixTearOff(target));
+        return adoptRefWillBeNoop(new SVGMatrixTearOff(target));
     }
 
     ~SVGMatrixTearOff();
@@ -72,33 +73,34 @@ public:
     void setE(double, ExceptionState&);
     void setF(double, ExceptionState&);
 
-    PassRefPtr<SVGMatrixTearOff> translate(double tx, double ty);
-    PassRefPtr<SVGMatrixTearOff> scale(double);
-    PassRefPtr<SVGMatrixTearOff> scaleNonUniform(double sx, double sy);
-    PassRefPtr<SVGMatrixTearOff> rotate(double);
-    PassRefPtr<SVGMatrixTearOff> flipX();
-    PassRefPtr<SVGMatrixTearOff> flipY();
-    PassRefPtr<SVGMatrixTearOff> skewX(double);
-    PassRefPtr<SVGMatrixTearOff> skewY(double);
-    PassRefPtr<SVGMatrixTearOff> multiply(PassRefPtr<SVGMatrixTearOff>);
-    PassRefPtr<SVGMatrixTearOff> inverse(ExceptionState&);
-    PassRefPtr<SVGMatrixTearOff> rotateFromVector(double x, double y, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> translate(double tx, double ty);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> scale(double);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> scaleNonUniform(double sx, double sy);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> rotate(double);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> flipX();
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> flipY();
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> skewX(double);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> skewY(double);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> multiply(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> inverse(ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> rotateFromVector(double x, double y, ExceptionState&);
 
     SVGTransformTearOff* contextTransform() { return m_contextTransform; }
 
     const AffineTransform& value() const;
 
+    virtual void trace(Visitor*);
+
 private:
-    SVGMatrixTearOff(const AffineTransform&);
-    SVGMatrixTearOff(SVGTransformTearOff*);
+    explicit SVGMatrixTearOff(const AffineTransform&);
+    explicit SVGMatrixTearOff(SVGTransformTearOff*);
 
     AffineTransform* mutableValue();
     void commitChange();
 
     AffineTransform m_staticValue;
 
-    // FIXME: oilpan: This is raw-ptr to avoid reference cycles. Should be Member in oilpan.
-    SVGTransformTearOff* m_contextTransform;
+    RawPtrWillBeMember<SVGTransformTearOff> m_contextTransform;
 };
 
 } // namespace blink

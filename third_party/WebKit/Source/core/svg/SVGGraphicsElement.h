@@ -26,6 +26,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGRectTearOff.h"
 #include "core/svg/SVGTests.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -35,6 +36,7 @@ class SVGMatrixTearOff;
 
 class SVGGraphicsElement : public SVGElement, public SVGTests {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGraphicsElement);
 public:
     virtual ~SVGGraphicsElement();
 
@@ -42,10 +44,10 @@ public:
 
     AffineTransform getCTM(StyleUpdateStrategy = AllowStyleUpdate);
     AffineTransform getScreenCTM(StyleUpdateStrategy = AllowStyleUpdate);
-    PassRefPtr<SVGMatrixTearOff> getCTMFromJavascript();
-    PassRefPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getCTMFromJavascript();
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getScreenCTMFromJavascript();
 
-    PassRefPtr<SVGMatrixTearOff> getTransformToElement(SVGElement*, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> getTransformToElement(SVGElement*, ExceptionState&);
 
     SVGElement* nearestViewportElement() const;
     SVGElement* farthestViewportElement() const;
@@ -56,7 +58,7 @@ public:
     virtual AffineTransform* animateMotionTransform() override;
 
     virtual FloatRect getBBox();
-    PassRefPtr<SVGRectTearOff> getBBoxFromJavascript();
+    PassRefPtrWillBeRawPtr<SVGRectTearOff> getBBoxFromJavascript();
 
     // "base class" methods for all the elements which render as paths
     virtual void toClipPath(Path&);
@@ -70,6 +72,8 @@ public:
     AffineTransform computeCTM(SVGElement::CTMScope mode, SVGGraphicsElement::StyleUpdateStrategy,
         const SVGGraphicsElement* ancestor = 0) const;
 
+    virtual void trace(Visitor*) override;
+
 protected:
     SVGGraphicsElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -79,7 +83,7 @@ protected:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
 
-    RefPtr<SVGAnimatedTransformList> m_transform;
+    RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
 
 private:
     virtual bool isSVGGraphicsElement() const override final { return true; }

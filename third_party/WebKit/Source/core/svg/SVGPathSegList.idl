@@ -30,6 +30,7 @@
     ImplementedAs=SVGPathSegListTearOff,
     RuntimeEnabled=SVG1DOM,
     MeasureAs=SVGPathSegDOM,
+    WillBeGarbageCollected,
 ] interface SVGPathSegList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

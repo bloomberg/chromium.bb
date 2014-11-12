@@ -21,6 +21,7 @@
 #define SVGElementRareData_h
 
 #include "core/svg/SVGElement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"

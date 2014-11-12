@@ -29,9 +29,9 @@ namespace blink {
 class SVGPathSegLinetoVerticalRel final : public SVGPathSegLinetoVertical {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegLinetoVerticalRel> create(SVGPathElement* element, float y)
+    static PassRefPtrWillBeRawPtr<SVGPathSegLinetoVerticalRel> create(SVGPathElement* element, float y)
     {
-        return adoptRef(new SVGPathSegLinetoVerticalRel(element, y));
+        return adoptRefWillBeNoop(new SVGPathSegLinetoVerticalRel(element, y));
     }
 
 private:

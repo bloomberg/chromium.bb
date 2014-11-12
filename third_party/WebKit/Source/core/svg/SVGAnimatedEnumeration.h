@@ -38,14 +38,14 @@ namespace blink {
 template<typename Enum>
 class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
 public:
-    static PassRefPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, Enum initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, Enum initialValue)
     {
-        return adoptRef(new SVGAnimatedEnumeration(contextElement, attributeName, SVGEnumeration<Enum>::create(initialValue)));
+        return adoptRefWillBeNoop(new SVGAnimatedEnumeration(contextElement, attributeName, SVGEnumeration<Enum>::create(initialValue)));
     }
 
-    static PassRefPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumeration<Enum> > initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedEnumeration<Enum> > create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGEnumeration<Enum> > initialValue)
     {
-        return adoptRef(new SVGAnimatedEnumeration(contextElement, attributeName, initialValue));
+        return adoptRefWillBeNoop(new SVGAnimatedEnumeration(contextElement, attributeName, initialValue));
     }
 
     SVGEnumeration<Enum>* baseValue()
@@ -64,7 +64,7 @@ public:
     }
 
 protected:
-    SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGEnumeration<Enum> > initialValue)
+    SVGAnimatedEnumeration(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGEnumeration<Enum> > initialValue)
         : SVGAnimatedEnumerationBase(contextElement, attributeName, initialValue)
     {
     }

@@ -56,16 +56,22 @@ SVGPathSegList::~SVGPathSegList()
 {
 }
 
-PassRefPtr<SVGPathSegList> SVGPathSegList::clone()
+void SVGPathSegList::trace(Visitor* visitor)
 {
-    RefPtr<SVGPathSegList> svgPathSegList = adoptRef(new SVGPathSegList(m_contextElement, byteStream()->copy()));
+    visitor->trace(m_contextElement);
+    SVGListPropertyHelper<SVGPathSegList, SVGPathSeg>::trace(visitor);
+}
+
+PassRefPtrWillBeRawPtr<SVGPathSegList> SVGPathSegList::clone()
+{
+    RefPtrWillBeRawPtr<SVGPathSegList> svgPathSegList = adoptRefWillBeNoop(new SVGPathSegList(m_contextElement, byteStream()->copy()));
     svgPathSegList->invalidateList();
     return svgPathSegList.release();
 }
 
-PassRefPtr<SVGPropertyBase> SVGPathSegList::cloneForAnimation(const String& value) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGPathSegList::cloneForAnimation(const String& value) const
 {
-    RefPtr<SVGPathSegList> svgPathSegList = SVGPathSegList::create(m_contextElement);
+    RefPtrWillBeRawPtr<SVGPathSegList> svgPathSegList = SVGPathSegList::create(m_contextElement);
     svgPathSegList->setValueAsString(value, IGNORE_EXCEPTION);
     return svgPathSegList;
 }
@@ -120,10 +126,10 @@ void SVGPathSegList::invalidateList()
     Base::clear();
 }
 
-PassRefPtr<SVGPathSeg> SVGPathSegList::appendItem(PassRefPtr<SVGPathSeg> passItem)
+PassRefPtrWillBeRawPtr<SVGPathSeg> SVGPathSegList::appendItem(PassRefPtrWillBeRawPtr<SVGPathSeg> passItem)
 {
     updateListFromByteStream();
-    RefPtr<SVGPathSeg> item = Base::appendItem(passItem);
+    RefPtrWillBeRawPtr<SVGPathSeg> item = Base::appendItem(passItem);
 
     if (m_byteStream) {
         SVGPathByteStreamBuilder builder;
@@ -158,7 +164,7 @@ void SVGPathSegList::setValueAsString(const String& string, ExceptionState& exce
 
 void SVGPathSegList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
 {
-    RefPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
+    RefPtrWillBeRawPtr<SVGPathSegList> otherList = toSVGPathSegList(other);
     if (length() != otherList->length())
         return;
 
@@ -167,16 +173,16 @@ void SVGPathSegList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGEleme
     invalidateList();
 }
 
-void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     invalidateList();
 
     ASSERT(animationElement);
     bool isToAnimation = animationElement->animationMode() == ToAnimation;
 
-    const RefPtr<SVGPathSegList> from = toSVGPathSegList(fromValue);
-    const RefPtr<SVGPathSegList> to = toSVGPathSegList(toValue);
-    const RefPtr<SVGPathSegList> toAtEndOfDuration = toSVGPathSegList(toAtEndOfDurationValue);
+    const RefPtrWillBeRawPtr<SVGPathSegList> from = toSVGPathSegList(fromValue);
+    const RefPtrWillBeRawPtr<SVGPathSegList> to = toSVGPathSegList(toValue);
+    const RefPtrWillBeRawPtr<SVGPathSegList> toAtEndOfDuration = toSVGPathSegList(toAtEndOfDurationValue);
 
     const SVGPathByteStream* toStream = to->byteStream();
     const SVGPathByteStream* fromStream = from->byteStream();
@@ -227,7 +233,7 @@ void SVGPathSegList::calculateAnimatedValue(SVGAnimationElement* animationElemen
     }
 }
 
-float SVGPathSegList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
+float SVGPathSegList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Support paced animations.
     return -1;

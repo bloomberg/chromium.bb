@@ -25,6 +25,7 @@
 #define SVGPathConsumer_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/Noncopyable.h"
 
@@ -40,10 +41,13 @@ enum PathParsingMode {
     UnalteredParsing
 };
 
-class SVGPathConsumer {
-    WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED;
+class SVGPathConsumer : public NoBaseWillBeGarbageCollectedFinalized<SVGPathConsumer> {
+    WTF_MAKE_NONCOPYABLE(SVGPathConsumer); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     SVGPathConsumer() { }
+    virtual ~SVGPathConsumer() { }
+    virtual void trace(Visitor*) { }
+
     virtual void incrementPathSegmentCount() = 0;
     virtual bool continueConsuming() = 0;
     virtual void cleanup() = 0;
@@ -61,9 +65,6 @@ public:
     virtual void curveToQuadratic(const FloatPoint&, const FloatPoint&, PathCoordinateMode) = 0;
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) = 0;
     virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) = 0;
-
-protected:
-    virtual ~SVGPathConsumer() { }
 };
 
 } // namespace blink

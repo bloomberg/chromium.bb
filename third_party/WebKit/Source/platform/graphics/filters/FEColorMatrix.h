@@ -38,7 +38,7 @@ enum ColorMatrixType {
 
 class PLATFORM_EXPORT FEColorMatrix : public FilterEffect {
 public:
-    static PassRefPtr<FEColorMatrix> create(Filter*, ColorMatrixType, const Vector<float>&);
+    static PassRefPtrWillBeRawPtr<FEColorMatrix> create(Filter*, ColorMatrixType, const Vector<float>&);
 
     ColorMatrixType type() const;
     bool setType(ColorMatrixType);

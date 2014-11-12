@@ -50,7 +50,7 @@ public:
     static void setDocumentResourceReference(const FilterOperation*, PassOwnPtr<DocumentResourceReference>);
     static void clearDocumentResourceReference(const FilterOperation*);
 
-    static PassRefPtr<FilterEffect> build(Filter*, RenderObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation*);
+    static PassRefPtrWillBeRawPtr<FilterEffect> build(Filter*, RenderObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation*);
 
 private:
     static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* documentResourceReferences;

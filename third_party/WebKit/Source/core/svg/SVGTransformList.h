@@ -43,29 +43,29 @@ class SVGTransformList final : public SVGListPropertyHelper<SVGTransformList, SV
 public:
     typedef SVGTransformListTearOff TearOffType;
 
-    static PassRefPtr<SVGTransformList> create()
+    static PassRefPtrWillBeRawPtr<SVGTransformList> create()
     {
-        return adoptRef(new SVGTransformList());
+        return adoptRefWillBeNoop(new SVGTransformList());
     }
 
-    static PassRefPtr<SVGTransformList> create(SVGTransformType, const String&);
+    static PassRefPtrWillBeRawPtr<SVGTransformList> create(SVGTransformType, const String&);
 
     virtual ~SVGTransformList();
 
-    PassRefPtr<SVGTransform> consolidate();
+    PassRefPtrWillBeRawPtr<SVGTransform> consolidate();
 
     bool concatenate(AffineTransform& result) const;
 
     // SVGPropertyBase:
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
     bool parse(const UChar*& ptr, const UChar* end);
     bool parse(const LChar*& ptr, const LChar* end);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedTransformList; }
 

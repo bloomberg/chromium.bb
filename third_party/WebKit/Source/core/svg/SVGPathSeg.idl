@@ -28,6 +28,7 @@
     DependentLifetime,
     RuntimeEnabled=SVG1DOM,
     MeasureAs=SVGPathSegDOM,
+    WillBeGarbageCollected,
 ] interface SVGPathSeg {
     // Path Segment Types
     const unsigned short PATHSEG_UNKNOWN = 0;

@@ -43,7 +43,7 @@ namespace blink {
 class SVGElement;
 class SVGAnimationElement;
 
-class SVGPropertyBase : public RefCounted<SVGPropertyBase> {
+class SVGPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGPropertyBase> {
     WTF_MAKE_NONCOPYABLE(SVGPropertyBase);
 
 public:
@@ -52,19 +52,23 @@ public:
 
     virtual ~SVGPropertyBase()
     {
+#if !ENABLE(OILPAN)
+        // Oilpan: a property can legitimately be swept out along with its list,
+        // hence this cannot be made to hold.
         ASSERT(!m_ownerList);
+#endif
     }
 
     // FIXME: remove this in WebAnimations transition.
     // This is used from SVGAnimatedNewPropertyAnimator for its animate-by-string implementation.
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const = 0;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const = 0;
 
     virtual String valueAsString() const = 0;
 
     // FIXME: remove below and just have this inherit AnimatableValue in WebAnimations transition.
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) = 0;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) = 0;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) = 0;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) = 0;
 
     AnimatedPropertyType type()
     {
@@ -84,6 +88,11 @@ public:
         m_ownerList = ownerList;
     }
 
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_ownerList);
+    }
+
 protected:
     explicit SVGPropertyBase(AnimatedPropertyType type)
         : m_type(type)
@@ -94,7 +103,7 @@ protected:
 private:
     const AnimatedPropertyType m_type;
 
-    SVGPropertyBase* m_ownerList;
+    RawPtrWillBeMember<SVGPropertyBase> m_ownerList;
 };
 
 }

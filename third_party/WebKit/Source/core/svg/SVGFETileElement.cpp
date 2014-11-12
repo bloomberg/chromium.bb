@@ -35,6 +35,12 @@ inline SVGFETileElement::SVGFETileElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
+void SVGFETileElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_in1);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFETileElement)
 
 void SVGFETileElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
@@ -53,14 +59,14 @@ void SVGFETileElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGFilterPrimitiveStandardAttributes::svgAttributeChanged(attrName);
 }
 
-PassRefPtr<FilterEffect> SVGFETileElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFETileElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return nullptr;
 
-    RefPtr<FilterEffect> effect = FETile::create(filter);
+    RefPtrWillBeRawPtr<FilterEffect> effect = FETile::create(filter);
     effect->inputEffects().append(input1);
     return effect.release();
 }

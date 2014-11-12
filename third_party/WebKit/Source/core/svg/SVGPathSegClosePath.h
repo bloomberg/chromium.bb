@@ -28,9 +28,9 @@ namespace blink {
 class SVGPathSegClosePath final : public SVGPathSegWithContext {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegClosePath> create(SVGPathElement* element)
+    static PassRefPtrWillBeRawPtr<SVGPathSegClosePath> create(SVGPathElement* element)
     {
-        return adoptRef(new SVGPathSegClosePath(element));
+        return adoptRefWillBeNoop(new SVGPathSegClosePath(element));
     }
 
 private:

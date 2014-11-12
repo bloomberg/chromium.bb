@@ -25,6 +25,7 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEComposite.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,6 +44,8 @@ public:
     SVGAnimatedString* in2() { return m_in2.get(); }
     SVGAnimatedEnumeration<CompositeOperationType>* svgOperator() { return m_svgOperator.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFECompositeElement(Document&);
 
@@ -50,15 +53,15 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumber> m_k1;
-    RefPtr<SVGAnimatedNumber> m_k2;
-    RefPtr<SVGAnimatedNumber> m_k3;
-    RefPtr<SVGAnimatedNumber> m_k4;
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedString> m_in2;
-    RefPtr<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_k1;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_k2;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_k3;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_k4;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedString> m_in2;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<CompositeOperationType> > m_svgOperator;
 };
 
 } // namespace blink

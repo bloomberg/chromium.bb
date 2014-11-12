@@ -51,6 +51,14 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
     addToPropertyMap(m_type);
 }
 
+void SVGFEColorMatrixElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_values);
+    visitor->trace(m_in1);
+    visitor->trace(m_type);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFEColorMatrixElement)
 
 bool SVGFEColorMatrixElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -103,7 +111,7 @@ void SVGFEColorMatrixElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
@@ -130,7 +138,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
             break;
         }
     } else {
-        RefPtr<SVGNumberList> values = m_values->currentValue();
+        RefPtrWillBeRawPtr<SVGNumberList> values = m_values->currentValue();
         size_t size = values->length();
 
         if ((filterType == FECOLORMATRIX_TYPE_MATRIX && size != 20)
@@ -141,7 +149,7 @@ PassRefPtr<FilterEffect> SVGFEColorMatrixElement::build(SVGFilterBuilder* filter
         filterValues = values->toFloatVector();
     }
 
-    RefPtr<FilterEffect> effect = FEColorMatrix::create(filter, filterType, filterValues);
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEColorMatrix::create(filter, filterType, filterValues);
     effect->inputEffects().append(input1);
     return effect.release();
 }

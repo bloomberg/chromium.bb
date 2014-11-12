@@ -130,14 +130,14 @@ SVGLength::SVGLength(const SVGLength& o)
 {
 }
 
-PassRefPtr<SVGLength> SVGLength::clone() const
+PassRefPtrWillBeRawPtr<SVGLength> SVGLength::clone() const
 {
-    return adoptRef(new SVGLength(*this));
+    return adoptRefWillBeNoop(new SVGLength(*this));
 }
 
-PassRefPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const String& value) const
 {
-    RefPtr<SVGLength> length = create();
+    RefPtrWillBeRawPtr<SVGLength> length = create();
 
     length->m_unitMode = m_unitMode;
     length->m_unitType = m_unitType;
@@ -262,7 +262,7 @@ void SVGLength::convertToSpecifiedUnits(SVGLengthType type, const SVGLengthConte
     m_unitType = originalType;
 }
 
-PassRefPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
+PassRefPtrWillBeRawPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
 {
     ASSERT(value);
 
@@ -301,14 +301,14 @@ PassRefPtr<SVGLength> SVGLength::fromCSSPrimitiveValue(CSSPrimitiveValue* value)
         break;
     };
 
-    RefPtr<SVGLength> length = SVGLength::create();
+    RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
     length->newValueSpecifiedUnits(svgType, value->getFloatValue());
     return length.release();
 }
 
-PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRefPtr<SVGLength> passLength)
+PassRefPtrWillBeRawPtr<CSSPrimitiveValue> SVGLength::toCSSPrimitiveValue(PassRefPtrWillBeRawPtr<SVGLength> passLength)
 {
-    RefPtr<SVGLength> length = passLength;
+    RefPtrWillBeRawPtr<SVGLength> length = passLength;
 
     CSSPrimitiveValue::UnitType cssType = CSSPrimitiveValue::CSS_UNKNOWN;
     switch (length->unitType()) {
@@ -386,9 +386,9 @@ SVGLengthMode SVGLength::lengthModeForAnimatedLengthAttribute(const QualifiedNam
     return LengthModeOther;
 }
 
-PassRefPtr<SVGLength> SVGLength::blend(PassRefPtr<SVGLength> passFrom, float progress) const
+PassRefPtrWillBeRawPtr<SVGLength> SVGLength::blend(PassRefPtrWillBeRawPtr<SVGLength> passFrom, float progress) const
 {
-    RefPtr<SVGLength> from = passFrom;
+    RefPtrWillBeRawPtr<SVGLength> from = passFrom;
 
     SVGLengthType toType = unitType();
     SVGLengthType fromType = from->unitType();
@@ -400,7 +400,7 @@ PassRefPtr<SVGLength> SVGLength::blend(PassRefPtr<SVGLength> passFrom, float pro
         || (!from->isZero() && !isZero() && (fromType == LengthTypeEMS || fromType == LengthTypeEXS) && fromType != toType))
         return clone();
 
-    RefPtr<SVGLength> length = create();
+    RefPtrWillBeRawPtr<SVGLength> length = create();
 
     if (fromType == LengthTypePercentage || toType == LengthTypePercentage) {
         float fromPercent = from->valueAsPercentage() * 100;
@@ -444,11 +444,11 @@ void SVGLength::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* c
     setValue(value(lengthContext) + toSVGLength(other)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
 }
 
-void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
-    RefPtr<SVGLength> fromLength = toSVGLength(fromValue);
-    RefPtr<SVGLength> toLength = toSVGLength(toValue);
-    RefPtr<SVGLength> toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
+    RefPtrWillBeRawPtr<SVGLength> fromLength = toSVGLength(fromValue);
+    RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
+    RefPtrWillBeRawPtr<SVGLength> toAtEndOfDurationLength = toSVGLength(toAtEndOfDurationValue);
 
     SVGLengthContext lengthContext(contextElement);
     float animatedNumber = value(lengthContext, IGNORE_EXCEPTION);
@@ -459,10 +459,10 @@ void SVGLength::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     setValue(animatedNumber, lengthContext, ASSERT_NO_EXCEPTION);
 }
 
-float SVGLength::calculateDistance(PassRefPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGLength::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     SVGLengthContext lengthContext(contextElement);
-    RefPtr<SVGLength> toLength = toSVGLength(toValue);
+    RefPtrWillBeRawPtr<SVGLength> toLength = toSVGLength(toValue);
 
     return fabsf(toLength->value(lengthContext, IGNORE_EXCEPTION) - value(lengthContext, IGNORE_EXCEPTION));
 }

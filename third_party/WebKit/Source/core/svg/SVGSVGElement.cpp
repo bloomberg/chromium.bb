@@ -99,7 +99,7 @@ SVGSVGElement::~SVGSVGElement()
 #endif
 }
 
-PassRefPtr<SVGRectTearOff> SVGSVGElement::viewport() const
+PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGSVGElement::viewport() const
 {
     // FIXME: This method doesn't follow the spec and is basically untested. Parent documents are not considered here.
     // As we have no test coverage for this, we're going to disable it completly for now.
@@ -172,9 +172,9 @@ void SVGSVGElement::setCurrentScale(float scale)
 
 class SVGCurrentTranslateTearOff : public SVGPointTearOff {
 public:
-    static PassRefPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGCurrentTranslateTearOff> create(SVGSVGElement* contextElement)
     {
-        return adoptRef(new SVGCurrentTranslateTearOff(contextElement));
+        return adoptRefWillBeNoop(new SVGCurrentTranslateTearOff(contextElement));
     }
 
     virtual void commitChange() override
@@ -190,7 +190,7 @@ private:
     }
 };
 
-PassRefPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGSVGElement::currentTranslateFromJavascript()
 {
     return SVGCurrentTranslateTearOff::create(this);
 }
@@ -248,7 +248,7 @@ bool SVGSVGElement::isPresentationAttribute(const QualifiedName& name) const
 void SVGSVGElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (isOutermostSVGSVGElement() && (name == SVGNames::widthAttr || name == SVGNames::heightAttr)) {
-        RefPtr<SVGLength> length = SVGLength::create(LengthModeOther);
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
         TrackExceptionState exceptionState;
         length->setValueAsString(value, exceptionState);
         if (!exceptionState.hadException()) {
@@ -382,21 +382,21 @@ PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::collectIntersectionOrEnclo
     return StaticNodeList::adopt(nodes);
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getIntersectionList(PassRefPtrWillBeRawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckIntersection);
 }
 
-PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(PassRefPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
+PassRefPtrWillBeRawPtr<StaticNodeList> SVGSVGElement::getEnclosureList(PassRefPtrWillBeRawPtr<SVGRectTearOff> rect, SVGElement* referenceElement) const
 {
     document().updateLayoutIgnorePendingStylesheets();
 
     return collectIntersectionOrEnclosureList(rect->target()->value(), referenceElement, CheckEnclosure);
 }
 
-bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtrWillBeRawPtr<SVGRectTearOff> rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -404,7 +404,7 @@ bool SVGSVGElement::checkIntersection(SVGElement* element, PassRefPtr<SVGRectTea
     return checkIntersectionOrEnclosure(*element, rect->target()->value(), CheckIntersection);
 }
 
-bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtr<SVGRectTearOff> rect) const
+bool SVGSVGElement::checkEnclosure(SVGElement* element, PassRefPtrWillBeRawPtr<SVGRectTearOff> rect) const
 {
     ASSERT(element);
     document().updateLayoutIgnorePendingStylesheets();
@@ -418,42 +418,42 @@ void SVGSVGElement::deselectAll()
         frame->selection().clear();
 }
 
-PassRefPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
+PassRefPtrWillBeRawPtr<SVGNumberTearOff> SVGSVGElement::createSVGNumber()
 {
     return SVGNumberTearOff::create(SVGNumber::create(0.0f), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
+PassRefPtrWillBeRawPtr<SVGLengthTearOff> SVGSVGElement::createSVGLength()
 {
     return SVGLengthTearOff::create(SVGLength::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
+PassRefPtrWillBeRawPtr<SVGAngleTearOff> SVGSVGElement::createSVGAngle()
 {
     return SVGAngleTearOff::create(SVGAngle::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGSVGElement::createSVGPoint()
 {
     return SVGPointTearOff::create(SVGPoint::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGSVGElement::createSVGMatrix()
 {
     return SVGMatrixTearOff::create(AffineTransform());
 }
 
-PassRefPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
+PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGSVGElement::createSVGRect()
 {
     return SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
+PassRefPtrWillBeRawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransform()
 {
     return SVGTransformTearOff::create(SVGTransform::create(SVG_TRANSFORM_MATRIX), 0, PropertyIsNotAnimVal);
 }
 
-PassRefPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff> matrix)
+PassRefPtrWillBeRawPtr<SVGTransformTearOff> SVGSVGElement::createSVGTransformFromMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> matrix)
 {
     return SVGTransformTearOff::create(SVGTransform::create(matrix->value()), 0, PropertyIsNotAnimVal);
 }
@@ -658,7 +658,7 @@ AffineTransform SVGSVGElement::viewBoxToViewTransform(float viewWidth, float vie
         return SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
 
     AffineTransform ctm = SVGFitToViewBox::viewBoxToViewTransform(currentViewBoxRect(), m_viewSpec->preserveAspectRatio()->currentValue(), viewWidth, viewHeight);
-    RefPtr<SVGTransformList> transformList = m_viewSpec->transform();
+    RefPtrWillBeRawPtr<SVGTransformList> transformList = m_viewSpec->transform();
     if (transformList->isEmpty())
         return ctm;
 
@@ -758,9 +758,15 @@ void SVGSVGElement::finishParsingChildren()
 
 void SVGSVGElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    visitor->trace(m_translation);
     visitor->trace(m_timeContainer);
     visitor->trace(m_viewSpec);
     SVGGraphicsElement::trace(visitor);
+    SVGFitToViewBox::trace(visitor);
 }
 
 } // namespace blink

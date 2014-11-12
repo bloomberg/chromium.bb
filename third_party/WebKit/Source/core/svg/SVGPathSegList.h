@@ -49,11 +49,15 @@ public:
     typedef SVGPathSegListTearOff TearOffType;
     typedef SVGListPropertyHelper<SVGPathSegList, SVGPathSeg> Base;
 
-    static PassRefPtr<SVGPathSegList> create(SVGPathElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGPathSegList> create(SVGPathElement* contextElement)
     {
-        return adoptRef(new SVGPathSegList(contextElement));
+        return adoptRefWillBeNoop(new SVGPathSegList(contextElement));
     }
-    static PassRefPtr<SVGPathSegList> create() { ASSERT_NOT_REACHED(); return nullptr; }
+    static PassRefPtrWillBeRawPtr<SVGPathSegList> create()
+    {
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
 
     virtual ~SVGPathSegList();
 
@@ -88,67 +92,69 @@ public:
         Base::clear();
     }
 
-    void append(PassRefPtr<ItemPropertyType> passNewItem)
+    void append(PassRefPtrWillBeRawPtr<ItemPropertyType> passNewItem)
     {
         updateListFromByteStream();
         clearByteStream();
         Base::append(passNewItem);
     }
 
-    PassRefPtr<ItemPropertyType> initialize(PassRefPtr<ItemPropertyType> passItem)
+    PassRefPtrWillBeRawPtr<ItemPropertyType> initialize(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem)
     {
         clearByteStream();
         return Base::initialize(passItem);
     }
 
-    PassRefPtr<ItemPropertyType> getItem(size_t index, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<ItemPropertyType> getItem(size_t index, ExceptionState& exceptionState)
     {
         updateListFromByteStream();
         return Base::getItem(index, exceptionState);
     }
 
-    PassRefPtr<ItemPropertyType> insertItemBefore(PassRefPtr<ItemPropertyType> passItem, size_t index)
+    PassRefPtrWillBeRawPtr<ItemPropertyType> insertItemBefore(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem, size_t index)
     {
         updateListFromByteStream();
         clearByteStream();
         return Base::insertItemBefore(passItem, index);
     }
 
-    PassRefPtr<ItemPropertyType> replaceItem(PassRefPtr<ItemPropertyType> passItem, size_t index, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<ItemPropertyType> replaceItem(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem, size_t index, ExceptionState& exceptionState)
     {
         updateListFromByteStream();
         clearByteStream();
         return Base::replaceItem(passItem, index, exceptionState);
     }
 
-    PassRefPtr<ItemPropertyType> removeItem(size_t index, ExceptionState& exceptionState)
+    PassRefPtrWillBeRawPtr<ItemPropertyType> removeItem(size_t index, ExceptionState& exceptionState)
     {
         updateListFromByteStream();
         clearByteStream();
         return Base::removeItem(index, exceptionState);
     }
 
-    PassRefPtr<ItemPropertyType> appendItem(PassRefPtr<ItemPropertyType> passItem);
+    PassRefPtrWillBeRawPtr<ItemPropertyType> appendItem(PassRefPtrWillBeRawPtr<ItemPropertyType> passItem);
 
     // SVGPropertyBase:
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
-    virtual PassRefPtr<SVGPathSegList> clone() override;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual PassRefPtrWillBeRawPtr<SVGPathSegList> clone() override;
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedPath; }
 
+    virtual void trace(Visitor*) override;
+
 private:
-    SVGPathSegList(SVGPathElement*);
+    explicit SVGPathSegList(SVGPathElement*);
     SVGPathSegList(SVGPathElement*, PassOwnPtr<SVGPathByteStream>);
 
     friend class SVGPathSegListBuilder;
     // This is only to be called from SVGPathSegListBuilder.
-    void appendWithoutByteStreamSync(PassRefPtr<ItemPropertyType> passNewItem)
+    void appendWithoutByteStreamSync(PassRefPtrWillBeRawPtr<ItemPropertyType> passNewItem)
     {
         Base::append(passNewItem);
     }
@@ -157,19 +163,18 @@ private:
     void invalidateList();
 
     // FIXME: This pointer should be removed after SVGPathSeg has a tear-off.
-    // FIXME: oilpan: This is raw-ptr to avoid reference cycles.
-    //        SVGPathSegList is either owned by SVGAnimatedPath or
-    //        SVGPathSegListTearOff. Both keep |contextElement| alive,
-    //        so this ptr is always valid.
-    SVGPathElement* m_contextElement;
+    //
+    // SVGPathSegList is either owned by SVGAnimatedPath or SVGPathSegListTearOff.
+    // Both keep |contextElement| alive, so this ptr is always valid.
+    RawPtrWillBeMember<SVGPathElement> m_contextElement;
 
     mutable OwnPtr<SVGPathByteStream> m_byteStream;
     bool m_listSyncedToByteStream;
 };
 
-inline PassRefPtr<SVGPathSegList> toSVGPathSegList(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGPathSegList> toSVGPathSegList(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGPathSegList::classType());
     return static_pointer_cast<SVGPathSegList>(base.release());
 }

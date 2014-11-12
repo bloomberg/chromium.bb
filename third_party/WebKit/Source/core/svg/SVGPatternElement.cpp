@@ -53,6 +53,21 @@ inline SVGPatternElement::SVGPatternElement(Document& document)
     addToPropertyMap(m_patternContentUnits);
 }
 
+void SVGPatternElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    visitor->trace(m_patternTransform);
+    visitor->trace(m_patternUnits);
+    visitor->trace(m_patternContentUnits);
+    SVGElement::trace(visitor);
+    SVGURIReference::trace(visitor);
+    SVGTests::trace(visitor);
+    SVGFitToViewBox::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGPatternElement)
 
 bool SVGPatternElement::isSupportedAttribute(const QualifiedName& attrName)

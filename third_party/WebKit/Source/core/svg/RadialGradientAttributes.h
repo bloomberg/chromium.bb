@@ -23,7 +23,9 @@
 #include "core/svg/GradientAttributes.h"
 
 namespace blink {
-struct RadialGradientAttributes : GradientAttributes {
+struct RadialGradientAttributes final : GradientAttributes {
+    DISALLOW_ALLOCATION();
+public:
     RadialGradientAttributes()
         : m_cx(SVGLength::create(LengthModeWidth))
         , m_cy(SVGLength::create(LengthModeHeight))
@@ -50,12 +52,12 @@ struct RadialGradientAttributes : GradientAttributes {
     SVGLength* fy() const { return m_fy.get(); }
     SVGLength* fr() const { return m_fr.get(); }
 
-    void setCx(PassRefPtr<SVGLength> value) { m_cx = value; m_cxSet = true; }
-    void setCy(PassRefPtr<SVGLength> value) { m_cy = value; m_cySet = true; }
-    void setR(PassRefPtr<SVGLength> value) { m_r = value; m_rSet = true; }
-    void setFx(PassRefPtr<SVGLength> value) { m_fx = value; m_fxSet = true; }
-    void setFy(PassRefPtr<SVGLength> value) { m_fy = value; m_fySet = true; }
-    void setFr(PassRefPtr<SVGLength> value) { m_fr = value; m_frSet = true; }
+    void setCx(PassRefPtrWillBeRawPtr<SVGLength> value) { m_cx = value; m_cxSet = true; }
+    void setCy(PassRefPtrWillBeRawPtr<SVGLength> value) { m_cy = value; m_cySet = true; }
+    void setR(PassRefPtrWillBeRawPtr<SVGLength> value) { m_r = value; m_rSet = true; }
+    void setFx(PassRefPtrWillBeRawPtr<SVGLength> value) { m_fx = value; m_fxSet = true; }
+    void setFy(PassRefPtrWillBeRawPtr<SVGLength> value) { m_fy = value; m_fySet = true; }
+    void setFr(PassRefPtrWillBeRawPtr<SVGLength> value) { m_fr = value; m_frSet = true; }
 
     bool hasCx() const { return m_cxSet; }
     bool hasCy() const { return m_cySet; }
@@ -64,14 +66,24 @@ struct RadialGradientAttributes : GradientAttributes {
     bool hasFy() const { return m_fySet; }
     bool hasFr() const { return m_frSet; }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_cx);
+        visitor->trace(m_cy);
+        visitor->trace(m_r);
+        visitor->trace(m_fx);
+        visitor->trace(m_fy);
+        visitor->trace(m_fr);
+    }
+
 private:
     // Properties
-    RefPtr<SVGLength> m_cx;
-    RefPtr<SVGLength> m_cy;
-    RefPtr<SVGLength> m_r;
-    RefPtr<SVGLength> m_fx;
-    RefPtr<SVGLength> m_fy;
-    RefPtr<SVGLength> m_fr;
+    RefPtrWillBeMember<SVGLength> m_cx;
+    RefPtrWillBeMember<SVGLength> m_cy;
+    RefPtrWillBeMember<SVGLength> m_r;
+    RefPtrWillBeMember<SVGLength> m_fx;
+    RefPtrWillBeMember<SVGLength> m_fy;
+    RefPtrWillBeMember<SVGLength> m_fr;
 
     // Property states
     bool m_cxSet : 1;

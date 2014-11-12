@@ -28,9 +28,9 @@
 
 namespace blink {
 
-inline PassRefPtr<SVGLengthList> toSVGLengthList(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGLengthList> toSVGLengthList(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGLengthList::classType());
     return static_pointer_cast<SVGLengthList>(base.release());
 }
@@ -44,16 +44,16 @@ SVGLengthList::~SVGLengthList()
 {
 }
 
-PassRefPtr<SVGLengthList> SVGLengthList::clone()
+PassRefPtrWillBeRawPtr<SVGLengthList> SVGLengthList::clone()
 {
-    RefPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
+    RefPtrWillBeRawPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
     ret->deepCopy(this);
     return ret.release();
 }
 
-PassRefPtr<SVGPropertyBase> SVGLengthList::cloneForAnimation(const String& value) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthList::cloneForAnimation(const String& value) const
 {
-    RefPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
+    RefPtrWillBeRawPtr<SVGLengthList> ret = SVGLengthList::create(m_mode);
     ret->setValueAsString(value, IGNORE_EXCEPTION);
     return ret.release();
 }
@@ -88,7 +88,7 @@ void SVGLengthList::parseInternal(const CharType*& ptr, const CharType* end, Exc
         if (ptr == start)
             break;
 
-        RefPtr<SVGLength> length = SVGLength::create(m_mode);
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(m_mode);
         String valueString(start, ptr - start);
         if (valueString.isEmpty())
             return;
@@ -119,7 +119,7 @@ void SVGLengthList::setValueAsString(const String& value, ExceptionState& except
 
 void SVGLengthList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
-    RefPtr<SVGLengthList> otherList = toSVGLengthList(other);
+    RefPtrWillBeRawPtr<SVGLengthList> otherList = toSVGLengthList(other);
 
     if (length() != otherList->length())
         return;
@@ -129,16 +129,16 @@ void SVGLengthList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElemen
         at(i)->setValue(at(i)->value(lengthContext) + otherList->at(i)->value(lengthContext), lengthContext, ASSERT_NO_EXCEPTION);
 }
 
-PassRefPtr<SVGLength> SVGLengthList::createPaddingItem() const
+PassRefPtrWillBeRawPtr<SVGLength> SVGLengthList::createPaddingItem() const
 {
     return SVGLength::create(m_mode);
 }
 
-void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
-    RefPtr<SVGLengthList> fromList = toSVGLengthList(fromValue);
-    RefPtr<SVGLengthList> toList = toSVGLengthList(toValue);
-    RefPtr<SVGLengthList> toAtEndOfDurationList = toSVGLengthList(toAtEndOfDurationValue);
+    RefPtrWillBeRawPtr<SVGLengthList> fromList = toSVGLengthList(fromValue);
+    RefPtrWillBeRawPtr<SVGLengthList> toList = toSVGLengthList(toValue);
+    RefPtrWillBeRawPtr<SVGLengthList> toAtEndOfDurationList = toSVGLengthList(toAtEndOfDurationValue);
 
     SVGLengthContext lengthContext(contextElement);
     ASSERT(m_mode == SVGLength::lengthModeForAnimatedLengthAttribute(animationElement->attributeName()));
@@ -168,7 +168,7 @@ void SVGLengthList::calculateAnimatedValue(SVGAnimationElement* animationElement
     }
 }
 
-float SVGLengthList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
+float SVGLengthList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGLengthList right now. We need the distance for every single value.
     return -1;

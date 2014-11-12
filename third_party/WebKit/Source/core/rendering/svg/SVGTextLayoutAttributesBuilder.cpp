@@ -179,11 +179,11 @@ static inline void updateCharacterData(unsigned i, float& lastRotation, SVGChara
 
 void SVGTextLayoutAttributesBuilder::fillCharacterDataMap(const TextPosition& position)
 {
-    RefPtr<SVGLengthList> xList = position.element->x()->currentValue();
-    RefPtr<SVGLengthList> yList = position.element->y()->currentValue();
-    RefPtr<SVGLengthList> dxList = position.element->dx()->currentValue();
-    RefPtr<SVGLengthList> dyList = position.element->dy()->currentValue();
-    RefPtr<SVGNumberList> rotateList = position.element->rotate()->currentValue();
+    RefPtrWillBeRawPtr<SVGLengthList> xList = position.element->x()->currentValue();
+    RefPtrWillBeRawPtr<SVGLengthList> yList = position.element->y()->currentValue();
+    RefPtrWillBeRawPtr<SVGLengthList> dxList = position.element->dx()->currentValue();
+    RefPtrWillBeRawPtr<SVGLengthList> dyList = position.element->dy()->currentValue();
+    RefPtrWillBeRawPtr<SVGNumberList> rotateList = position.element->rotate()->currentValue();
 
     unsigned xListSize = xList->length();
     unsigned yListSize = yList->length();

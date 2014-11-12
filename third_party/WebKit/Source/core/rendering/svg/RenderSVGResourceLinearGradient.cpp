@@ -35,6 +35,12 @@ RenderSVGResourceLinearGradient::~RenderSVGResourceLinearGradient()
 {
 }
 
+void RenderSVGResourceLinearGradient::trace(Visitor* visitor)
+{
+    visitor->trace(m_attributes);
+    RenderSVGResourceGradient::trace(visitor);
+}
+
 bool RenderSVGResourceLinearGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
     m_attributes = LinearGradientAttributes();

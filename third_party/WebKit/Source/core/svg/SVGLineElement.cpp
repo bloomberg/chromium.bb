@@ -39,6 +39,15 @@ inline SVGLineElement::SVGLineElement(Document& document)
     addToPropertyMap(m_y2);
 }
 
+void SVGLineElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x1);
+    visitor->trace(m_y1);
+    visitor->trace(m_x2);
+    visitor->trace(m_y2);
+    SVGGeometryElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGLineElement)
 
 bool SVGLineElement::isSupportedAttribute(const QualifiedName& attrName)

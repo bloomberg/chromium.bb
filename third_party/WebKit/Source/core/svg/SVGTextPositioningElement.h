@@ -25,6 +25,7 @@
 #include "core/svg/SVGAnimatedLengthList.h"
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGTextContentElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ public:
     SVGAnimatedLengthList* dy() { return m_dy.get(); }
     SVGAnimatedNumberList* rotate() { return m_rotate.get(); }
 
+    virtual void trace(Visitor*) override;
+
 protected:
     SVGTextPositioningElement(const QualifiedName&, Document&);
 
@@ -47,11 +50,11 @@ protected:
     virtual void svgAttributeChanged(const QualifiedName&) override final;
     virtual bool isTextPositioning() const override final { return true; }
 
-    RefPtr<SVGAnimatedLengthList> m_x;
-    RefPtr<SVGAnimatedLengthList> m_y;
-    RefPtr<SVGAnimatedLengthList> m_dx;
-    RefPtr<SVGAnimatedLengthList> m_dy;
-    RefPtr<SVGAnimatedNumberList> m_rotate;
+    RefPtrWillBeMember<SVGAnimatedLengthList> m_x;
+    RefPtrWillBeMember<SVGAnimatedLengthList> m_y;
+    RefPtrWillBeMember<SVGAnimatedLengthList> m_dx;
+    RefPtrWillBeMember<SVGAnimatedLengthList> m_dy;
+    RefPtrWillBeMember<SVGAnimatedNumberList> m_rotate;
 };
 
 inline bool isSVGTextPositioningElement(const SVGElement& element)

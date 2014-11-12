@@ -45,9 +45,9 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<EdgeModeTyp
 
 class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
 public:
-    static PassRefPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedOrder> create(SVGElement* contextElement)
     {
-        return adoptRef(new SVGAnimatedOrder(contextElement));
+        return adoptRefWillBeNoop(new SVGAnimatedOrder(contextElement));
     }
 
     void setBaseValueAsString(const String&, SVGParsingError&) override;
@@ -94,6 +94,21 @@ inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document
     addToPropertyMap(m_order);
     addToPropertyMap(m_targetX);
     addToPropertyMap(m_targetY);
+}
+
+void SVGFEConvolveMatrixElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_bias);
+    visitor->trace(m_divisor);
+    visitor->trace(m_in1);
+    visitor->trace(m_edgeMode);
+    visitor->trace(m_kernelMatrix);
+    visitor->trace(m_kernelUnitLength);
+    visitor->trace(m_order);
+    visitor->trace(m_preserveAlpha);
+    visitor->trace(m_targetX);
+    visitor->trace(m_targetY);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
 }
 
 DEFINE_NODE_FACTORY(SVGFEConvolveMatrixElement)
@@ -173,7 +188,7 @@ void SVGFEConvolveMatrixElement::svgAttributeChanged(const QualifiedName& attrNa
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
@@ -189,7 +204,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
     // Spec says order must be > 0. Bail if it is not.
     if (orderXValue < 1 || orderYValue < 1)
         return nullptr;
-    RefPtr<SVGNumberList> kernelMatrix = this->m_kernelMatrix->currentValue();
+    RefPtrWillBeRawPtr<SVGNumberList> kernelMatrix = this->m_kernelMatrix->currentValue();
     size_t kernelMatrixSize = kernelMatrix->length();
     // The spec says this is a requirement, and should bail out if fails
     if (orderXValue * orderYValue != static_cast<int>(kernelMatrixSize))
@@ -229,7 +244,7 @@ PassRefPtr<FilterEffect> SVGFEConvolveMatrixElement::build(SVGFilterBuilder* fil
             divisorValue = 1;
     }
 
-    RefPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEConvolveMatrix::create(filter,
                     IntSize(orderXValue, orderYValue), divisorValue,
                     m_bias->currentValue()->value(), IntPoint(targetXValue, targetYValue), m_edgeMode->currentValue()->enumValue(),
                     FloatPoint(kernelUnitLengthXValue, kernelUnitLengthYValue), m_preserveAlpha->currentValue()->value(), m_kernelMatrix->currentValue()->toFloatVector());

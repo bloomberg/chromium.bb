@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FETile : public FilterEffect {
 public:
-    static PassRefPtr<FETile> create(Filter* filter);
+    static PassRefPtrWillBeRawPtr<FETile> create(Filter*);
 
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 

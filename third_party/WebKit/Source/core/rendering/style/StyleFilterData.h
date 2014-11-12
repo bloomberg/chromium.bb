@@ -27,15 +27,26 @@
 #define StyleFilterData_h
 
 #include "platform/graphics/filters/FilterOperations.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class StyleFilterData : public RefCounted<StyleFilterData> {
+// FIXME: Oilpan: resorting to RefCountedGarbageCollected<> here so as to support
+// DataRef<StyleFilterData> uses. Once/if DataRef<> is able to move away from
+// relying on RefPtr<>, switch to GarbageCollected<>.
+class StyleFilterData final : public RefCountedWillBeRefCountedGarbageCollected<StyleFilterData> {
 public:
-    static PassRefPtr<StyleFilterData> create() { return adoptRef(new StyleFilterData); }
-    PassRefPtr<StyleFilterData> copy() const { return adoptRef(new StyleFilterData(*this)); }
+    static PassRefPtrWillBeRawPtr<StyleFilterData> create()
+    {
+        return adoptRefWillBeNoop(new StyleFilterData);
+    }
+
+    PassRefPtrWillBeRawPtr<StyleFilterData> copy() const
+    {
+        return adoptRefWillBeNoop(new StyleFilterData(*this));
+    }
 
     bool operator==(const StyleFilterData&) const;
     bool operator!=(const StyleFilterData& o) const
@@ -43,11 +54,16 @@ public:
         return !(*this == o);
     }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_operations);
+    }
+
     FilterOperations m_operations;
 
 private:
     StyleFilterData();
-    StyleFilterData(const StyleFilterData&);
+    explicit StyleFilterData(const StyleFilterData&);
 };
 
 } // namespace blink

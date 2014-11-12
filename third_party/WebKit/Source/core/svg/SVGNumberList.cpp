@@ -28,9 +28,9 @@
 
 namespace blink {
 
-inline PassRefPtr<SVGNumberList> toSVGNumberList(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGNumberList> toSVGNumberList(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGNumberList::classType());
     return static_pointer_cast<SVGNumberList>(base.release());
 }
@@ -104,7 +104,7 @@ void SVGNumberList::setValueAsString(const String& value, ExceptionState& except
 
 void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)
 {
-    RefPtr<SVGNumberList> otherList = toSVGNumberList(other);
+    RefPtrWillBeRawPtr<SVGNumberList> otherList = toSVGNumberList(other);
 
     if (length() != otherList->length())
         return;
@@ -113,11 +113,11 @@ void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElemen
         at(i)->setValue(at(i)->value() + otherList->at(i)->value());
 }
 
-void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
+void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement)
 {
-    RefPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
-    RefPtr<SVGNumberList> toList = toSVGNumberList(toValue);
-    RefPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
+    RefPtrWillBeRawPtr<SVGNumberList> fromList = toSVGNumberList(fromValue);
+    RefPtrWillBeRawPtr<SVGNumberList> toList = toSVGNumberList(toValue);
+    RefPtrWillBeRawPtr<SVGNumberList> toAtEndOfDurationList = toSVGNumberList(toAtEndOfDurationValue);
 
     size_t fromListSize = fromList->length();
     size_t toListSize = toList->length();
@@ -137,7 +137,7 @@ void SVGNumberList::calculateAnimatedValue(SVGAnimationElement* animationElement
     }
 }
 
-float SVGNumberList::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*)
+float SVGNumberList::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*)
 {
     // FIXME: Distance calculation is not possible for SVGNumberList right now. We need the distance for every single value.
     return -1;

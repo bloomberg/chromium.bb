@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceGraphic : public FilterEffect {
 public:
-    static PassRefPtr<SourceGraphic> create(Filter*);
+    static PassRefPtrWillBeRawPtr<SourceGraphic> create(Filter*);
 
     static const AtomicString& effectName();
 

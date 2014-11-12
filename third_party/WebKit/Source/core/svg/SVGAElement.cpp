@@ -62,6 +62,13 @@ inline SVGAElement::SVGAElement(Document& document)
     addToPropertyMap(m_svgTarget);
 }
 
+void SVGAElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_svgTarget);
+    SVGGraphicsElement::trace(visitor);
+    SVGURIReference::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGAElement)
 
 String SVGAElement::title() const

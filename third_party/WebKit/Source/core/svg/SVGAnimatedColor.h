@@ -42,17 +42,17 @@ class SVGAnimationElement;
 // FIXME: WebAnimations: Replacable with AnimatableColor once SMIL animations are implemented in WebAnimations.
 class SVGColorProperty final : public SVGPropertyBase {
 public:
-    static PassRefPtr<SVGColorProperty> create(StyleColor styleColor)
+    static PassRefPtrWillBeRawPtr<SVGColorProperty> create(StyleColor styleColor)
     {
-        return adoptRef(new SVGColorProperty(styleColor));
+        return adoptRefWillBeNoop(new SVGColorProperty(styleColor));
     }
 
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
     virtual String valueAsString() const override;
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedColor; }
 
@@ -66,13 +66,13 @@ private:
     StyleColor m_styleColor;
 };
 
-inline PassRefPtr<SVGColorProperty> toSVGColorProperty(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGColorProperty> toSVGColorProperty(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGColorProperty::classType());
     return static_pointer_cast<SVGColorProperty>(base.release());
 }
 
 } // namespace blink
 
-#endif
+#endif // SVGAnimatedColor_h

@@ -46,10 +46,12 @@ public:
     FloatPoint startPoint(const LinearGradientAttributes&) const;
     FloatPoint endPoint(const LinearGradientAttributes&) const;
 
+    virtual void trace(Visitor*) override;
+
 private:
     LinearGradientAttributes m_attributes;
 };
 
-}
+} // namespace blink
 
-#endif
+#endif // RenderSVGResourceLinearGradient_h

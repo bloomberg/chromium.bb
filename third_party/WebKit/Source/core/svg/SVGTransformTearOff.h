@@ -35,6 +35,7 @@
 #include "core/svg/SVGMatrixTearOff.h"
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -51,9 +52,9 @@ public:
         SVG_TRANSFORM_SKEWY = blink::SVG_TRANSFORM_SKEWY,
     };
 
-    static PassRefPtr<SVGTransformTearOff> create(PassRefPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static PassRefPtrWillBeRawPtr<SVGTransformTearOff> create(PassRefPtrWillBeRawPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRef(new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return adoptRefWillBeNoop(new SVGTransformTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
     virtual ~SVGTransformTearOff();
@@ -62,17 +63,19 @@ public:
     SVGMatrixTearOff* matrix();
     float angle() { return target()->angle(); }
 
-    void setMatrix(PassRefPtr<SVGMatrixTearOff>, ExceptionState&);
+    void setMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>, ExceptionState&);
     void setTranslate(float tx, float ty, ExceptionState&);
     void setScale(float sx, float sy, ExceptionState&);
     void setRotate(float angle, float cx, float cy, ExceptionState&);
     void setSkewX(float, ExceptionState&);
     void setSkewY(float, ExceptionState&);
 
-private:
-    SVGTransformTearOff(PassRefPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
+    virtual void trace(Visitor*) override;
 
-    RefPtr<SVGMatrixTearOff> m_matrixTearoff;
+private:
+    SVGTransformTearOff(PassRefPtrWillBeRawPtr<SVGTransform>, SVGElement* contextElement, PropertyIsAnimValType, const QualifiedName& attributeName);
+
+    RefPtrWillBeMember<SVGMatrixTearOff> m_matrixTearoff;
 };
 
 } // namespace blink

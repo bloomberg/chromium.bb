@@ -24,6 +24,7 @@
 #include "core/svg/SVGPathSegList.h"
 #include "core/svg/SVGPathSource.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -32,6 +33,8 @@ namespace blink {
 class SVGPathSegListSource final : public SVGPathSource {
 public:
     SVGPathSegListSource(SVGPathSegList::ConstIterator, SVGPathSegList::ConstIterator);
+
+    virtual void trace(Visitor*) override;
 
 private:
     virtual bool hasMoreData() const override;
@@ -49,7 +52,7 @@ private:
     virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) override;
     virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) override;
 
-    RefPtr<SVGPathSeg> m_segment;
+    RefPtrWillBeMember<SVGPathSeg> m_segment;
     SVGPathSegList::ConstIterator m_itCurrent;
     SVGPathSegList::ConstIterator m_itEnd;
 };

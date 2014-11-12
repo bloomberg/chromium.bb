@@ -76,10 +76,10 @@ public:
     static PassRefPtr<ShapeValue> convertShapeValue(StyleResolverState&, CSSValue*);
     static float convertSpacing(StyleResolverState&, CSSValue*);
     template <CSSValueID IdForNone> static AtomicString convertString(StyleResolverState&, CSSValue*);
-    static PassRefPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
+    static PassRefPtrWillBeRawPtr<SVGLengthList> convertStrokeDasharray(StyleResolverState&, CSSValue*);
     static StyleColor convertStyleColor(StyleResolverState&, CSSValue*, bool forVisitedLink = false);
     static Color convertSVGColor(StyleResolverState&, CSSValue*);
-    static PassRefPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
+    static PassRefPtrWillBeRawPtr<SVGLength> convertSVGLength(StyleResolverState&, CSSValue*);
     static float convertTextStrokeWidth(StyleResolverState&, CSSValue*);
     static TransformOrigin convertTransformOrigin(StyleResolverState&, CSSValue*);
 

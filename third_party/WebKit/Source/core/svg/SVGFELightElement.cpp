@@ -55,6 +55,21 @@ SVGFELightElement::SVGFELightElement(const QualifiedName& tagName, Document& doc
     addToPropertyMap(m_limitingConeAngle);
 }
 
+void SVGFELightElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_azimuth);
+    visitor->trace(m_elevation);
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_z);
+    visitor->trace(m_pointsAtX);
+    visitor->trace(m_pointsAtY);
+    visitor->trace(m_pointsAtZ);
+    visitor->trace(m_specularExponent);
+    visitor->trace(m_limitingConeAngle);
+    SVGElement::trace(visitor);
+}
+
 SVGFELightElement* SVGFELightElement::findLightElement(const SVGElement& svgElement)
 {
     return Traversal<SVGFELightElement>::firstChild(svgElement);

@@ -50,9 +50,9 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, Elem
     if (!renderStyle->hasFilter() || elementStyleResources.pendingSVGDocuments().isEmpty())
         return;
 
-    Vector<RefPtr<FilterOperation> >& filterOperations = renderStyle->mutableFilter().operations();
+    FilterOperations::FilterOperationVector& filterOperations = renderStyle->mutableFilter().operations();
     for (unsigned i = 0; i < filterOperations.size(); ++i) {
-        RefPtr<FilterOperation> filterOperation = filterOperations.at(i);
+        RefPtrWillBeRawPtr<FilterOperation> filterOperation = filterOperations.at(i);
         if (filterOperation->type() == FilterOperation::REFERENCE) {
             ReferenceFilterOperation* referenceFilter = toReferenceFilterOperation(filterOperation.get());
 

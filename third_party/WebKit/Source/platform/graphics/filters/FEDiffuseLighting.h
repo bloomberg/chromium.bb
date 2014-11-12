@@ -31,7 +31,7 @@ class LightSource;
 
 class PLATFORM_EXPORT FEDiffuseLighting : public FELighting {
 public:
-    static PassRefPtr<FEDiffuseLighting> create(Filter*, const Color&, float, float,
+    static PassRefPtrWillBeRawPtr<FEDiffuseLighting> create(Filter*, const Color&, float, float,
         float, float, PassRefPtr<LightSource>);
     virtual ~FEDiffuseLighting();
 

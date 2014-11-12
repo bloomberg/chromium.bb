@@ -38,13 +38,13 @@ namespace blink {
 
 class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio> {
 public:
-    static PassRefPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> initialValue)
     {
-        return adoptRef(new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue));
+        return adoptRefWillBeNoop(new SVGAnimatedPreserveAspectRatio(contextElement, attributeName, initialValue));
     }
 
 protected:
-    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGPreserveAspectRatio> initialValue)
+    SVGAnimatedPreserveAspectRatio(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> initialValue)
         : SVGAnimatedProperty<SVGPreserveAspectRatio>(contextElement, attributeName, initialValue)
     {
     }

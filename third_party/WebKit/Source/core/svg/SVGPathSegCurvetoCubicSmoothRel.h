@@ -29,9 +29,9 @@ namespace blink {
 class SVGPathSegCurvetoCubicSmoothRel final : public SVGPathSegCurvetoCubicSmooth {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegCurvetoCubicSmoothRel> create(SVGPathElement* element, float x, float y, float x2, float y2)
+    static PassRefPtrWillBeRawPtr<SVGPathSegCurvetoCubicSmoothRel> create(SVGPathElement* element, float x, float y, float x2, float y2)
     {
-        return adoptRef(new SVGPathSegCurvetoCubicSmoothRel(element, x, y, x2, y2));
+        return adoptRefWillBeNoop(new SVGPathSegCurvetoCubicSmoothRel(element, x, y, x2, y2));
     }
 
 private:

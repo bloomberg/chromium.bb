@@ -34,6 +34,12 @@ inline SVGClipPathElement::SVGClipPathElement(Document& document)
     addToPropertyMap(m_clipPathUnits);
 }
 
+void SVGClipPathElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_clipPathUnits);
+    SVGGraphicsElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGClipPathElement)
 
 void SVGClipPathElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

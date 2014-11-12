@@ -41,19 +41,19 @@ public:
     typedef void TearOffType;
     typedef bool PrimitiveType;
 
-    static PassRefPtr<SVGBoolean> create(bool value = false)
+    static PassRefPtrWillBeRawPtr<SVGBoolean> create(bool value = false)
     {
-        return adoptRef(new SVGBoolean(value));
+        return adoptRefWillBeNoop(new SVGBoolean(value));
     }
 
-    PassRefPtr<SVGBoolean> clone() const { return create(m_value); }
+    PassRefPtrWillBeRawPtr<SVGBoolean> clone() const { return create(m_value); }
 
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     bool value() const { return m_value; }
     void setValue(bool value) { m_value = value; }
@@ -69,9 +69,9 @@ private:
     bool m_value;
 };
 
-inline PassRefPtr<SVGBoolean> toSVGBoolean(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGBoolean> toSVGBoolean(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGBoolean::classType());
     return static_pointer_cast<SVGBoolean>(base.release());
 }

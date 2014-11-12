@@ -40,7 +40,7 @@ class AnimatableSVGLength final : public AnimatableValue {
 public:
     virtual ~AnimatableSVGLength() { }
 
-    static PassRefPtrWillBeRawPtr<AnimatableSVGLength> create(PassRefPtr<SVGLength> length)
+    static PassRefPtrWillBeRawPtr<AnimatableSVGLength> create(PassRefPtrWillBeRawPtr<SVGLength> length)
     {
         return adoptRefWillBeNoop(new AnimatableSVGLength(length));
     }
@@ -50,13 +50,13 @@ public:
         return m_length.get();
     }
 
-    virtual void trace(Visitor* visitor) override { AnimatableValue::trace(visitor); }
+    virtual void trace(Visitor*) override;
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
 
 private:
-    AnimatableSVGLength(PassRefPtr<SVGLength> length)
+    explicit AnimatableSVGLength(PassRefPtrWillBeRawPtr<SVGLength> length)
         : m_length(length)
     {
     }
@@ -64,7 +64,7 @@ private:
     virtual AnimatableType type() const override { return TypeSVGLength; }
     virtual bool equalTo(const AnimatableValue*) const override;
 
-    RefPtr<SVGLength> m_length;
+    RefPtrWillBeMember<SVGLength> m_length;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableSVGLength, isSVGLength());

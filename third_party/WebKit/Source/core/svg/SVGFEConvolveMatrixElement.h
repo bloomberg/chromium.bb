@@ -29,6 +29,7 @@
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEConvolveMatrix.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -52,6 +53,8 @@ public:
     SVGAnimatedInteger* targetX() { return m_targetX.get(); }
     SVGAnimatedInteger* targetY() { return m_targetY.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEConvolveMatrixElement(Document&);
 
@@ -59,18 +62,18 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumber> m_bias;
-    RefPtr<SVGAnimatedNumber> m_divisor;
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedEnumeration<EdgeModeType> > m_edgeMode;
-    RefPtr<SVGAnimatedNumberList> m_kernelMatrix;
-    RefPtr<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
-    RefPtr<SVGAnimatedIntegerOptionalInteger> m_order;
-    RefPtr<SVGAnimatedBoolean> m_preserveAlpha;
-    RefPtr<SVGAnimatedInteger> m_targetX;
-    RefPtr<SVGAnimatedInteger> m_targetY;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_bias;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_divisor;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<EdgeModeType> > m_edgeMode;
+    RefPtrWillBeMember<SVGAnimatedNumberList> m_kernelMatrix;
+    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_kernelUnitLength;
+    RefPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_order;
+    RefPtrWillBeMember<SVGAnimatedBoolean> m_preserveAlpha;
+    RefPtrWillBeMember<SVGAnimatedInteger> m_targetX;
+    RefPtrWillBeMember<SVGAnimatedInteger> m_targetY;
 };
 
 } // namespace blink

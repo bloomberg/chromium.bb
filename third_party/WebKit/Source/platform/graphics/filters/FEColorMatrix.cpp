@@ -38,9 +38,9 @@ FEColorMatrix::FEColorMatrix(Filter* filter, ColorMatrixType type, const Vector<
 {
 }
 
-PassRefPtr<FEColorMatrix> FEColorMatrix::create(Filter* filter, ColorMatrixType type, const Vector<float>& values)
+PassRefPtrWillBeRawPtr<FEColorMatrix> FEColorMatrix::create(Filter* filter, ColorMatrixType type, const Vector<float>& values)
 {
-    return adoptRef(new FEColorMatrix(filter, type, values));
+    return adoptRefWillBeNoop(new FEColorMatrix(filter, type, values));
 }
 
 ColorMatrixType FEColorMatrix::type() const

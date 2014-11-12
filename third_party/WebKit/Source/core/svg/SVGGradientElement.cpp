@@ -57,6 +57,15 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName, Document& d
     addToPropertyMap(m_gradientUnits);
 }
 
+void SVGGradientElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_gradientTransform);
+    visitor->trace(m_spreadMethod);
+    visitor->trace(m_gradientUnits);
+    SVGElement::trace(visitor);
+    SVGURIReference::trace(visitor);
+}
+
 bool SVGGradientElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

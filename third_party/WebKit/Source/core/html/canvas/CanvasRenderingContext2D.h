@@ -122,11 +122,11 @@ public:
     void save() { ++m_stateStack.last()->m_unrealizedSaveCount; }
     void restore();
 
-    PassRefPtr<SVGMatrixTearOff> currentTransform() const
+    PassRefPtrWillBeRawPtr<SVGMatrixTearOff> currentTransform() const
     {
         return SVGMatrixTearOff::create(state().m_transform);
     }
-    void setCurrentTransform(PassRefPtr<SVGMatrixTearOff>);
+    void setCurrentTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>);
 
     void scale(float sx, float sy);
     void rotate(float angleInRadians);

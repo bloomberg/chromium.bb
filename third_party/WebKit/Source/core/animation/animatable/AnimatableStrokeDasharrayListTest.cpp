@@ -39,9 +39,9 @@ using namespace blink;
 
 namespace {
 
-PassRefPtr<SVGLengthList> createSVGLengthList(size_t length)
+PassRefPtrWillBeRawPtr<SVGLengthList> createSVGLengthList(size_t length)
 {
-    RefPtr<SVGLengthList> list = SVGLengthList::create();
+    RefPtrWillBeRawPtr<SVGLengthList> list = SVGLengthList::create();
     for (size_t i = 0; i < length; ++i)
         list->append(SVGLength::create());
     return list.release();
@@ -49,8 +49,8 @@ PassRefPtr<SVGLengthList> createSVGLengthList(size_t length)
 
 TEST(AnimationAnimatableStrokeDasharrayListTest, EqualTo)
 {
-    RefPtr<SVGLengthList> svgListA = createSVGLengthList(4);
-    RefPtr<SVGLengthList> svgListB = createSVGLengthList(4);
+    RefPtrWillBeRawPtr<SVGLengthList> svgListA = createSVGLengthList(4);
+    RefPtrWillBeRawPtr<SVGLengthList> svgListB = createSVGLengthList(4);
     RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listA = AnimatableStrokeDasharrayList::create(svgListA);
     RefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> listB = AnimatableStrokeDasharrayList::create(svgListB);
     EXPECT_TRUE(listA->equals(listB.get()));

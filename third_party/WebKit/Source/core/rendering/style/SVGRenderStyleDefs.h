@@ -140,8 +140,15 @@ namespace blink {
 
     class StyleStrokeData : public RefCounted<StyleStrokeData> {
     public:
-        static PassRefPtr<StyleStrokeData> create() { return adoptRef(new StyleStrokeData); }
-        PassRefPtr<StyleStrokeData> copy() const { return adoptRef(new StyleStrokeData(*this)); }
+        static PassRefPtr<StyleStrokeData> create()
+        {
+            return adoptRef(new StyleStrokeData);
+        }
+
+        PassRefPtr<StyleStrokeData> copy() const
+        {
+            return adoptRef(new StyleStrokeData(*this));
+        }
 
         bool operator==(const StyleStrokeData&) const;
         bool operator!=(const StyleStrokeData& other) const
@@ -152,9 +159,9 @@ namespace blink {
         float opacity;
         float miterLimit;
 
-        RefPtr<SVGLength> width;
-        RefPtr<SVGLength> dashOffset;
-        RefPtr<SVGLengthList> dashArray;
+        RefPtrWillBePersistent<SVGLength> width;
+        RefPtrWillBePersistent<SVGLength> dashOffset;
+        RefPtrWillBePersistent<SVGLengthList> dashArray;
 
         SVGPaintType paintType;
         Color paintColor;
@@ -203,7 +210,7 @@ namespace blink {
         float floodOpacity;
         Color lightingColor;
 
-        RefPtr<SVGLength> baselineShiftValue;
+        RefPtrWillBePersistent<SVGLength> baselineShiftValue;
 
     private:
         StyleMiscData();

@@ -54,7 +54,7 @@ PassRefPtrWillBeRawPtr<AnimatableValue> AnimatableFilterOperations::interpolateT
     for (size_t i = 0; i < size; i++) {
         FilterOperation* from = (i < fromSize) ? m_operations.operations()[i].get() : 0;
         FilterOperation* to = (i < toSize) ? target->m_operations.operations()[i].get() : 0;
-        RefPtr<FilterOperation> blendedOp = FilterOperation::blend(from, to, fraction);
+        RefPtrWillBeRawPtr<FilterOperation> blendedOp = FilterOperation::blend(from, to, fraction);
         if (blendedOp)
             result.operations().append(blendedOp);
         else
@@ -68,4 +68,10 @@ bool AnimatableFilterOperations::equalTo(const AnimatableValue* value) const
     return operations() == toAnimatableFilterOperations(value)->operations();
 }
 
+void AnimatableFilterOperations::trace(Visitor* visitor)
+{
+    visitor->trace(m_operations);
+    AnimatableValue::trace(visitor);
 }
+
+} // namespace blink

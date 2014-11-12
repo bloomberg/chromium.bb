@@ -45,4 +45,10 @@ bool AnimatableSVGLength::equalTo(const AnimatableValue* value) const
     return *m_length == *toAnimatableSVGLength(value)->m_length;
 }
 
+void AnimatableSVGLength::trace(Visitor* visitor)
+{
+    visitor->trace(m_length);
+    AnimatableValue::trace(visitor);
+}
+
 } // namespace blink

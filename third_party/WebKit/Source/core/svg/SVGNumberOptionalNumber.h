@@ -32,6 +32,7 @@
 #define SVGNumberOptionalNumber_h
 
 #include "core/svg/SVGAnimatedNumber.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -41,36 +42,38 @@ public:
     typedef void TearOffType;
     typedef void PrimitiveType;
 
-    static PassRefPtr<SVGNumberOptionalNumber> create(PassRefPtr<SVGNumber> firstNumber, PassRefPtr<SVGNumber> secondNumber)
+    static PassRefPtrWillBeRawPtr<SVGNumberOptionalNumber> create(PassRefPtrWillBeRawPtr<SVGNumber> firstNumber, PassRefPtrWillBeRawPtr<SVGNumber> secondNumber)
     {
-        return adoptRef(new SVGNumberOptionalNumber(firstNumber, secondNumber));
+        return adoptRefWillBeNoop(new SVGNumberOptionalNumber(firstNumber, secondNumber));
     }
 
-    PassRefPtr<SVGNumberOptionalNumber> clone() const;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    PassRefPtrWillBeRawPtr<SVGNumberOptionalNumber> clone() const;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedNumberOptionalNumber; }
 
-    PassRefPtr<SVGNumber> firstNumber() { return m_firstNumber; }
-    PassRefPtr<SVGNumber> secondNumber() { return m_secondNumber; }
+    PassRefPtrWillBeRawPtr<SVGNumber> firstNumber() { return m_firstNumber; }
+    PassRefPtrWillBeRawPtr<SVGNumber> secondNumber() { return m_secondNumber; }
+
+    virtual void trace(Visitor*) override;
 
 protected:
-    SVGNumberOptionalNumber(PassRefPtr<SVGNumber> firstNumber, PassRefPtr<SVGNumber> secondNumber);
+    SVGNumberOptionalNumber(PassRefPtrWillBeRawPtr<SVGNumber> firstNumber, PassRefPtrWillBeRawPtr<SVGNumber> secondNumber);
 
-    RefPtr<SVGNumber> m_firstNumber;
-    RefPtr<SVGNumber> m_secondNumber;
+    RefPtrWillBeMember<SVGNumber> m_firstNumber;
+    RefPtrWillBeMember<SVGNumber> m_secondNumber;
 };
 
-inline PassRefPtr<SVGNumberOptionalNumber> toSVGNumberOptionalNumber(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGNumberOptionalNumber> toSVGNumberOptionalNumber(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGNumberOptionalNumber::classType());
     return static_pointer_cast<SVGNumberOptionalNumber>(base.release());
 }

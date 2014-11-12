@@ -44,7 +44,14 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
+void SVGGraphicsElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_transform);
+    SVGElement::trace(visitor);
+    SVGTests::trace(visitor);
+}
+
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& exceptionState)
 {
     AffineTransform ctm = getCTM(AllowStyleUpdate);
 
@@ -112,12 +119,12 @@ AffineTransform SVGGraphicsElement::getScreenCTM(StyleUpdateStrategy styleUpdate
     return computeCTM(ScreenScope, styleUpdateStrategy);
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getCTMFromJavascript()
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getCTMFromJavascript()
 {
     return SVGMatrixTearOff::create(getCTM());
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGGraphicsElement::getScreenCTMFromJavascript()
 {
     return SVGMatrixTearOff::create(getScreenCTM());
 }
@@ -254,7 +261,7 @@ FloatRect SVGGraphicsElement::getBBox()
     return renderer()->objectBoundingBox();
 }
 
-PassRefPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
+PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGGraphicsElement::getBBoxFromJavascript()
 {
     return SVGRectTearOff::create(SVGRect::create(getBBox()), 0, PropertyIsNotAnimVal);
 }

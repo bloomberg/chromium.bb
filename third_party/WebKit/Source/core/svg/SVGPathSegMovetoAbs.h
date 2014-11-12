@@ -29,9 +29,9 @@ namespace blink {
 class SVGPathSegMovetoAbs final : public SVGPathSegSingleCoordinate {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, float x, float y)
+    static PassRefPtrWillBeRawPtr<SVGPathSegMovetoAbs> create(SVGPathElement* element, float x, float y)
     {
-        return adoptRef(new SVGPathSegMovetoAbs(element, x, y));
+        return adoptRefWillBeNoop(new SVGPathSegMovetoAbs(element, x, y));
     }
 
 private:

@@ -33,6 +33,7 @@
 
 #include "core/svg/SVGInteger.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -41,9 +42,9 @@ class SVGAnimatedIntegerOptionalInteger;
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedInteger
 class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger> {
 public:
-    static PassRefPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)
     {
-        return adoptRef(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
+        return adoptRefWillBeNoop(new SVGAnimatedInteger(contextElement, attributeName, initialValue));
     }
 
     virtual void synchronizeAttribute() override;
@@ -53,15 +54,16 @@ public:
         m_parentIntegerOptionalInteger = numberOptionalInteger;
     }
 
+    virtual void trace(Visitor*) override;
+
 protected:
-    SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtr<SVGInteger> initialValue)
+    SVGAnimatedInteger(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)
         : SVGAnimatedProperty<SVGInteger>(contextElement, attributeName, initialValue)
-        , m_parentIntegerOptionalInteger(0)
+        , m_parentIntegerOptionalInteger(nullptr)
     {
     }
 
-    // FIXME: oilpan: This is kept as raw ptr as this is a back ptr. Change this to Member<> in oilpan.
-    SVGAnimatedIntegerOptionalInteger* m_parentIntegerOptionalInteger;
+    RawPtrWillBeMember<SVGAnimatedIntegerOptionalInteger> m_parentIntegerOptionalInteger;
 };
 
 } // namespace blink

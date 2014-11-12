@@ -55,6 +55,18 @@ inline SVGMaskElement::SVGMaskElement(Document& document)
     addToPropertyMap(m_maskContentUnits);
 }
 
+void SVGMaskElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    visitor->trace(m_maskUnits);
+    visitor->trace(m_maskContentUnits);
+    SVGElement::trace(visitor);
+    SVGTests::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGMaskElement)
 
 bool SVGMaskElement::isSupportedAttribute(const QualifiedName& attrName)

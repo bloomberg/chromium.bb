@@ -48,7 +48,7 @@ SVGRect::SVGRect(const FloatRect& rect)
 {
 }
 
-PassRefPtr<SVGRect> SVGRect::clone() const
+PassRefPtrWillBeRawPtr<SVGRect> SVGRect::clone() const
 {
     return SVGRect::create(m_value);
 }
@@ -125,12 +125,12 @@ void SVGRect::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
     m_value += toSVGRect(other)->value();
 }
 
-void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
+void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*)
 {
     ASSERT(animationElement);
-    RefPtr<SVGRect> fromRect = animationElement->animationMode() == ToAnimation ? this : toSVGRect(fromValue);
-    RefPtr<SVGRect> toRect = toSVGRect(toValue);
-    RefPtr<SVGRect> toAtEndOfDurationRect = toSVGRect(toAtEndOfDurationValue);
+    RefPtrWillBeRawPtr<SVGRect> fromRect = animationElement->animationMode() == ToAnimation ? PassRefPtrWillBeRawPtr<SVGRect>(this) : toSVGRect(fromValue);
+    RefPtrWillBeRawPtr<SVGRect> toRect = toSVGRect(toValue);
+    RefPtrWillBeRawPtr<SVGRect> toAtEndOfDurationRect = toSVGRect(toAtEndOfDurationValue);
 
     float animatedX = x();
     float animatedY = y();
@@ -144,7 +144,7 @@ void SVGRect::calculateAnimatedValue(SVGAnimationElement* animationElement, floa
     m_value = FloatRect(animatedX, animatedY, animatedWidth, animatedHeight);
 }
 
-float SVGRect::calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement)
+float SVGRect::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement)
 {
     // FIXME: Distance calculation is not possible for SVGRect right now. We need the distance for every single value.
     return -1;

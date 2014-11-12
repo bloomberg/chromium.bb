@@ -47,6 +47,13 @@ SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
     // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to an element.
 }
 
+void SVGViewSpec::trace(Visitor* visitor)
+{
+    visitor->trace(m_contextElement);
+    visitor->trace(m_transform);
+    SVGFitToViewBox::trace(visitor);
+}
+
 bool SVGViewSpec::parseViewSpec(const String& spec)
 {
     if (spec.isEmpty() || !m_contextElement)
@@ -208,11 +215,6 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
         return false;
 
     return true;
-}
-
-void SVGViewSpec::trace(Visitor* visitor)
-{
-    visitor->trace(m_contextElement);
 }
 
 }

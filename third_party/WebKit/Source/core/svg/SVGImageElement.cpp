@@ -52,8 +52,14 @@ DEFINE_NODE_FACTORY(SVGImageElement)
 
 void SVGImageElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    visitor->trace(m_preserveAspectRatio);
     visitor->trace(m_imageLoader);
     SVGGraphicsElement::trace(visitor);
+    SVGURIReference::trace(visitor);
 }
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const

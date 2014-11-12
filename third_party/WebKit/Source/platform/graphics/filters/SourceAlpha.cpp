@@ -32,9 +32,9 @@
 
 namespace blink {
 
-PassRefPtr<SourceAlpha> SourceAlpha::create(Filter* filter)
+PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(Filter* filter)
 {
-    return adoptRef(new SourceAlpha(filter));
+    return adoptRefWillBeNoop(new SourceAlpha(filter));
 }
 
 const AtomicString& SourceAlpha::effectName()

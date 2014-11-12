@@ -56,6 +56,17 @@ inline SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
     addToPropertyMap(m_fr);
 }
 
+void SVGRadialGradientElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_cx);
+    visitor->trace(m_cy);
+    visitor->trace(m_r);
+    visitor->trace(m_fx);
+    visitor->trace(m_fy);
+    visitor->trace(m_fr);
+    SVGGradientElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGRadialGradientElement)
 
 bool SVGRadialGradientElement::isSupportedAttribute(const QualifiedName& attrName)

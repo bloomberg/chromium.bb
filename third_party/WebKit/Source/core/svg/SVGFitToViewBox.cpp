@@ -35,9 +35,9 @@ namespace blink {
 
 class SVGAnimatedViewBoxRect : public SVGAnimatedRect {
 public:
-    static PassRefPtr<SVGAnimatedRect> create(SVGElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedRect> create(SVGElement* contextElement)
     {
-        return adoptRef(new SVGAnimatedViewBoxRect(contextElement));
+        return adoptRefWillBeNoop(new SVGAnimatedViewBoxRect(contextElement));
     }
 
     void setBaseValueAsString(const String&, SVGParsingError&) override;
@@ -77,7 +77,13 @@ SVGFitToViewBox::SVGFitToViewBox(SVGElement* element, PropertyMapPolicy property
     }
 }
 
-AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
+void SVGFitToViewBox::trace(Visitor* visitor)
+{
+    visitor->trace(m_viewBox);
+    visitor->trace(m_preserveAspectRatio);
+}
+
+AffineTransform SVGFitToViewBox::viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatio, float viewWidth, float viewHeight)
 {
     if (!viewBoxRect.width() || !viewBoxRect.height() || !viewWidth || !viewHeight)
         return AffineTransform();

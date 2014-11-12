@@ -24,6 +24,7 @@
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEMorphology.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ public:
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedEnumeration<MorphologyOperatorType>* svgOperator() { return m_svgOperator.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEMorphologyElement(Document&);
 
@@ -46,11 +49,11 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumberOptionalNumber> m_radius;
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedEnumeration<MorphologyOperatorType> > m_svgOperator;
+    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_radius;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<MorphologyOperatorType> > m_svgOperator;
 };
 
 } // namespace blink

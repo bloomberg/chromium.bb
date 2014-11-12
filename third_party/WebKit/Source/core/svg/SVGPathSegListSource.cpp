@@ -21,6 +21,7 @@
 
 #include "core/svg/SVGPathSegListSource.h"
 
+#include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathSegArc.h"
 #include "core/svg/SVGPathSegCurvetoCubic.h"
 #include "core/svg/SVGPathSegCurvetoCubicSmooth.h"
@@ -34,6 +35,12 @@ SVGPathSegListSource::SVGPathSegListSource(SVGPathSegList::ConstIterator itBegin
     : m_itCurrent(itBegin)
     , m_itEnd(itEnd)
 {
+}
+
+void SVGPathSegListSource::trace(Visitor* visitor)
+{
+    visitor->trace(m_segment);
+    SVGPathSource::trace(visitor);
 }
 
 bool SVGPathSegListSource::hasMoreData() const

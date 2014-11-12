@@ -29,7 +29,7 @@ void SVGString::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
     ASSERT_NOT_REACHED();
 }
 
-void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
@@ -39,7 +39,7 @@ void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement, fl
     animationElement->animateDiscreteType<String>(percentage, fromString, toString, m_value);
 }
 
-float SVGString::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
+float SVGString::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for strings.
     return -1;

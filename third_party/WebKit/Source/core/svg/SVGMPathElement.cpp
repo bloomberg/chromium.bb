@@ -35,6 +35,12 @@ inline SVGMPathElement::SVGMPathElement(Document& document)
 {
 }
 
+void SVGMPathElement::trace(Visitor* visitor)
+{
+    SVGElement::trace(visitor);
+    SVGURIReference::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGMPathElement)
 
 SVGMPathElement::~SVGMPathElement()

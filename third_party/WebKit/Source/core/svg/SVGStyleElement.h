@@ -24,6 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/dom/StyleElement.h"
 #include "core/svg/SVGElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 

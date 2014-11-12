@@ -36,6 +36,12 @@ RenderSVGResourceRadialGradient::~RenderSVGResourceRadialGradient()
 {
 }
 
+void RenderSVGResourceRadialGradient::trace(Visitor* visitor)
+{
+    visitor->trace(m_attributes);
+    RenderSVGResourceGradient::trace(visitor);
+}
+
 bool RenderSVGResourceRadialGradient::collectGradientAttributes(SVGGradientElement* gradientElement)
 {
     m_attributes = RadialGradientAttributes();

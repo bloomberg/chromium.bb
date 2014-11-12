@@ -34,11 +34,12 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGMatrixTearOff.h"
 
 namespace blink {
 
-SVGPointTearOff::SVGPointTearOff(PassRefPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGPointTearOff::SVGPointTearOff(PassRefPtrWillBeRawPtr<SVGPoint> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGPoint>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }
@@ -65,7 +66,7 @@ void SVGPointTearOff::setY(float f, ExceptionState& exceptionState)
     commitChange();
 }
 
-PassRefPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(PassRefPtr<SVGMatrixTearOff> matrix)
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGPointTearOff::matrixTransform(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> matrix)
 {
     FloatPoint point = target()->matrixTransform(matrix->value());
     return SVGPointTearOff::create(SVGPoint::create(point), 0, PropertyIsNotAnimVal);

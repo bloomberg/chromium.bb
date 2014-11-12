@@ -74,20 +74,26 @@ FilterEffectRenderer::~FilterEffectRenderer()
 {
 }
 
+void FilterEffectRenderer::trace(Visitor* visitor)
+{
+    visitor->trace(m_lastEffect);
+    visitor->trace(m_referenceFilters);
+}
+
 bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations& operations)
 {
     const RenderStyle* style = renderer->style();
     float zoom = style ? style->effectiveZoom() : 1.0f;
 
     // Create a parent filter for shorthand filters. These have already been scaled by the CSS code for page zoom, so scale is 1.0 here.
-    RefPtr<ReferenceFilter> parentFilter = ReferenceFilter::create(1.0f);
-    RefPtr<FilterEffect> previousEffect = SourceGraphic::create(parentFilter.get());
+    RefPtrWillBeRawPtr<ReferenceFilter> parentFilter = ReferenceFilter::create(1.0f);
+    RefPtrWillBeRawPtr<FilterEffect> previousEffect = SourceGraphic::create(parentFilter.get());
     for (size_t i = 0; i < operations.operations().size(); ++i) {
-        RefPtr<FilterEffect> effect;
+        RefPtrWillBeRawPtr<FilterEffect> effect = nullptr;
         FilterOperation* filterOperation = operations.operations().at(i).get();
         switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
-            RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(zoom);
+            RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(zoom);
             effect = ReferenceFilterBuilder::build(referenceFilter.get(), renderer, previousEffect.get(), toReferenceFilterOperation(filterOperation));
             referenceFilter->setLastEffect(effect);
             m_referenceFilters.append(referenceFilter);

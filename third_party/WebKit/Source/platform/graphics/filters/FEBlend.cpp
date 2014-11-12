@@ -38,9 +38,9 @@ FEBlend::FEBlend(Filter* filter, WebBlendMode mode)
 {
 }
 
-PassRefPtr<FEBlend> FEBlend::create(Filter* filter, WebBlendMode mode)
+PassRefPtrWillBeRawPtr<FEBlend> FEBlend::create(Filter* filter, WebBlendMode mode)
 {
-    return adoptRef(new FEBlend(filter, mode));
+    return adoptRefWillBeNoop(new FEBlend(filter, mode));
 }
 
 WebBlendMode FEBlend::blendMode() const

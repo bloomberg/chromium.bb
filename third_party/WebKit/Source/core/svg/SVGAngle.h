@@ -24,6 +24,7 @@
 
 #include "core/svg/SVGEnumeration.h"
 #include "core/svg/properties/SVGPropertyHelper.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -41,24 +42,25 @@ template<> unsigned short getMaxExposedEnumValue<SVGMarkerOrientType>();
 
 class SVGMarkerOrientEnumeration : public SVGEnumeration<SVGMarkerOrientType> {
 public:
-    static PassRefPtr<SVGMarkerOrientEnumeration> create(SVGAngle* angle)
+    static PassRefPtrWillBeRawPtr<SVGMarkerOrientEnumeration> create(SVGAngle* angle)
     {
-        return adoptRef(new SVGMarkerOrientEnumeration(angle));
+        return adoptRefWillBeNoop(new SVGMarkerOrientEnumeration(angle));
     }
 
     virtual ~SVGMarkerOrientEnumeration();
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, PassRefPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float, unsigned, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
+
+    virtual void trace(Visitor*) override;
 
 private:
     SVGMarkerOrientEnumeration(SVGAngle*);
 
     virtual void notifyChange() override;
 
-    // FIXME: oilpan: This is kept as raw-ptr to avoid reference cycles. Should be Member in oilpan.
-    SVGAngle* m_angle;
+    RawPtrWillBeMember<SVGAngle> m_angle;
 };
 
 class SVGAngle : public SVGPropertyHelper<SVGAngle> {
@@ -74,9 +76,9 @@ public:
         SVG_ANGLETYPE_TURN = 5
     };
 
-    static PassRefPtr<SVGAngle> create()
+    static PassRefPtrWillBeRawPtr<SVGAngle> create()
     {
-        return adoptRef(new SVGAngle());
+        return adoptRefWillBeNoop(new SVGAngle());
     }
 
     virtual ~SVGAngle();
@@ -98,16 +100,18 @@ public:
 
     // SVGPropertyBase:
 
-    PassRefPtr<SVGAngle> clone() const;
+    PassRefPtrWillBeRawPtr<SVGAngle> clone() const;
 
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedAngle; }
+
+    virtual void trace(Visitor*) override;
 
 private:
     SVGAngle();
@@ -117,12 +121,12 @@ private:
 
     SVGAngleType m_unitType;
     float m_valueInSpecifiedUnits;
-    RefPtr<SVGMarkerOrientEnumeration> m_orientType;
+    RefPtrWillBeMember<SVGMarkerOrientEnumeration> m_orientType;
 };
 
-inline PassRefPtr<SVGAngle> toSVGAngle(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGAngle> toSVGAngle(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGAngle::classType());
     return static_pointer_cast<SVGAngle>(base.release());
 }

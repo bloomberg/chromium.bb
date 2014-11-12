@@ -53,12 +53,12 @@ public:
 
     typedef SVGPreserveAspectRatioTearOff TearOffType;
 
-    static PassRefPtr<SVGPreserveAspectRatio> create()
+    static PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> create()
     {
-        return adoptRef(new SVGPreserveAspectRatio());
+        return adoptRefWillBeNoop(new SVGPreserveAspectRatio());
     }
 
-    virtual PassRefPtr<SVGPreserveAspectRatio> clone() const;
+    virtual PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> clone() const;
 
     bool operator==(const SVGPreserveAspectRatio&) const;
     bool operator!=(const SVGPreserveAspectRatio& other) const { return !operator==(other); }
@@ -81,8 +81,8 @@ public:
     bool parse(const LChar*& ptr, const LChar* end, bool validate);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     static AnimatedPropertyType classType() { return AnimatedPreserveAspectRatio; }
 
@@ -97,9 +97,9 @@ private:
     SVGMeetOrSliceType m_meetOrSlice;
 };
 
-inline PassRefPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> toSVGPreserveAspectRatio(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGPreserveAspectRatio::classType());
     return static_pointer_cast<SVGPreserveAspectRatio>(base.release());
 }

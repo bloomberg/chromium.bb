@@ -50,9 +50,16 @@
 namespace blink {
 
 SVGPathSegListBuilder::SVGPathSegListBuilder()
-    : m_pathElement(0)
+    : m_pathElement(nullptr)
     , m_pathSegList(nullptr)
 {
+}
+
+void SVGPathSegListBuilder::trace(Visitor* visitor)
+{
+    visitor->trace(m_pathElement);
+    visitor->trace(m_pathSegList);
+    SVGPathConsumer::trace(visitor);
 }
 
 void SVGPathSegListBuilder::moveTo(const FloatPoint& targetPoint, bool, PathCoordinateMode mode)

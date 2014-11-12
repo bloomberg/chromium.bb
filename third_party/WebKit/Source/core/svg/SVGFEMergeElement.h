@@ -34,7 +34,7 @@ public:
 private:
     explicit SVGFEMergeElement(Document&);
 
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 };
 
 } // namespace blink

@@ -26,6 +26,7 @@
     TypeChecking=Interface,
     MeasureAs=SVG1DOM,
     RuntimeEnabled=SVG1DOM,
+    WillBeGarbageCollected,
 ] interface SVGLength {
     // Length Unit Types
     const unsigned short SVG_LENGTHTYPE_UNKNOWN    = 0;

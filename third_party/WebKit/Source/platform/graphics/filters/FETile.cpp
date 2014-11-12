@@ -35,9 +35,9 @@ FETile::FETile(Filter* filter)
 {
 }
 
-PassRefPtr<FETile> FETile::create(Filter* filter)
+PassRefPtrWillBeRawPtr<FETile> FETile::create(Filter* filter)
 {
-    return adoptRef(new FETile(filter));
+    return adoptRefWillBeNoop(new FETile(filter));
 }
 
 FloatRect FETile::mapPaintRect(const FloatRect& rect, bool forward)

@@ -1366,6 +1366,7 @@ void SVGSMILElement::trace(Visitor* visitor)
     visitor->trace(m_syncBaseDependents);
 #endif
     SVGElement::trace(visitor);
+    SVGTests::trace(visitor);
 }
 
-}
+} // namespace blink

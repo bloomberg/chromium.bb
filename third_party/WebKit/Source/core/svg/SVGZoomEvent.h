@@ -25,6 +25,7 @@
 #include "core/events/UIEvent.h"
 #include "core/svg/SVGPoint.h"
 #include "core/svg/SVGRect.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -37,15 +38,15 @@ public:
     }
 
     // 'SVGZoomEvent' functions
-    PassRefPtr<SVGRectTearOff> zoomRectScreen() const;
+    PassRefPtrWillBeRawPtr<SVGRectTearOff> zoomRectScreen() const;
 
     float previousScale() const;
 
-    PassRefPtr<SVGPointTearOff> previousTranslate() const;
+    PassRefPtrWillBeRawPtr<SVGPointTearOff> previousTranslate() const;
 
     float newScale() const;
 
-    PassRefPtr<SVGPointTearOff> newTranslate() const;
+    PassRefPtrWillBeRawPtr<SVGPointTearOff> newTranslate() const;
 
     virtual const AtomicString& interfaceName() const override;
 

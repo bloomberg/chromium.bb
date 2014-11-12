@@ -23,6 +23,7 @@
 
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -57,6 +58,8 @@ public:
     SVGAnimatedString* in2() { return m_in2.get(); }
     SVGAnimatedEnumeration<Mode>* mode() { return m_mode.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEBlendElement(Document&);
 
@@ -64,11 +67,11 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedString> m_in2;
-    RefPtr<SVGAnimatedEnumeration<Mode> > m_mode;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedString> m_in2;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<Mode> > m_mode;
 };
 
 template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGFEBlendElement::Mode>();

@@ -31,7 +31,9 @@
 #include "config.h"
 
 #include "core/svg/SVGAnimatedNumber.h"
+
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
@@ -45,4 +47,10 @@ void SVGAnimatedNumber::synchronizeAttribute()
     SVGAnimatedProperty<SVGNumber>::synchronizeAttribute();
 }
 
+void SVGAnimatedNumber::trace(Visitor* visitor)
+{
+    visitor->trace(m_parentNumberOptionalNumber);
+    SVGAnimatedProperty<SVGNumber>::trace(visitor);
 }
+
+} // namespace blink

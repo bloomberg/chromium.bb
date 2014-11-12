@@ -30,8 +30,11 @@ namespace blink {
 class SVGSymbolElement final : public SVGElement,
                                public SVGFitToViewBox {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGSymbolElement);
 public:
     DECLARE_NODE_FACTORY(SVGSymbolElement);
+
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SVGSymbolElement(Document&);

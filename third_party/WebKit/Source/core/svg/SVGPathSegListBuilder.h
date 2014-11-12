@@ -27,6 +27,7 @@
 #include "core/svg/SVGPathConsumer.h"
 #include "core/svg/SVGPathSegList.h"
 #include "platform/geometry/FloatPoint.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -37,14 +38,16 @@ public:
     SVGPathSegListBuilder();
 
     void setCurrentSVGPathElement(SVGPathElement* pathElement) { m_pathElement = pathElement; }
-    void setCurrentSVGPathSegList(PassRefPtr<SVGPathSegList> pathSegList) { m_pathSegList = pathSegList; }
+    void setCurrentSVGPathSegList(PassRefPtrWillBeRawPtr<SVGPathSegList> pathSegList) { m_pathSegList = pathSegList; }
+
+    virtual void trace(Visitor*) override;
 
 private:
     virtual void incrementPathSegmentCount() override { }
     virtual bool continueConsuming() override { return true; }
     virtual void cleanup() override
     {
-        m_pathElement = 0;
+        m_pathElement = nullptr;
         m_pathSegList = nullptr;
     }
 
@@ -62,8 +65,8 @@ private:
     virtual void curveToQuadraticSmooth(const FloatPoint&, PathCoordinateMode) override;
     virtual void arcTo(float, float, float, bool largeArcFlag, bool sweepFlag, const FloatPoint&, PathCoordinateMode) override;
 
-    SVGPathElement* m_pathElement;
-    RefPtr<SVGPathSegList> m_pathSegList;
+    RawPtrWillBeMember<SVGPathElement> m_pathElement;
+    RefPtrWillBeMember<SVGPathSegList> m_pathSegList;
 };
 
 } // namespace blink

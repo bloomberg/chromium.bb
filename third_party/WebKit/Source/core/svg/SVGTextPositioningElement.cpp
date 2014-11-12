@@ -44,6 +44,16 @@ SVGTextPositioningElement::SVGTextPositioningElement(const QualifiedName& tagNam
     addToPropertyMap(m_rotate);
 }
 
+void SVGTextPositioningElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_dx);
+    visitor->trace(m_dy);
+    visitor->trace(m_rotate);
+    SVGTextContentElement::trace(visitor);
+}
+
 bool SVGTextPositioningElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

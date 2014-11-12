@@ -22,6 +22,7 @@
 #include "config.h"
 #include "core/svg/SVGZoomEvent.h"
 
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGPointTearOff.h"
 #include "core/svg/SVGRectTearOff.h"
 
@@ -33,9 +34,9 @@ SVGZoomEvent::SVGZoomEvent()
 {
 }
 
-PassRefPtr<SVGRectTearOff> SVGZoomEvent::zoomRectScreen() const
+PassRefPtrWillBeRawPtr<SVGRectTearOff> SVGZoomEvent::zoomRectScreen() const
 {
-    RefPtr<SVGRectTearOff> rectTearOff = SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
+    RefPtrWillBeRawPtr<SVGRectTearOff> rectTearOff = SVGRectTearOff::create(SVGRect::create(), 0, PropertyIsNotAnimVal);
     rectTearOff->setIsReadOnlyProperty();
     return rectTearOff.release();
 }
@@ -45,9 +46,9 @@ float SVGZoomEvent::previousScale() const
     return m_previousScale;
 }
 
-PassRefPtr<SVGPointTearOff> SVGZoomEvent::previousTranslate() const
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGZoomEvent::previousTranslate() const
 {
-    RefPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_previousTranslate), 0, PropertyIsNotAnimVal);
+    RefPtrWillBeRawPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_previousTranslate), 0, PropertyIsNotAnimVal);
     pointTearOff->setIsReadOnlyProperty();
     return pointTearOff.release();
 }
@@ -57,9 +58,9 @@ float SVGZoomEvent::newScale() const
     return m_newScale;
 }
 
-PassRefPtr<SVGPointTearOff> SVGZoomEvent::newTranslate() const
+PassRefPtrWillBeRawPtr<SVGPointTearOff> SVGZoomEvent::newTranslate() const
 {
-    RefPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_newTranslate), 0, PropertyIsNotAnimVal);
+    RefPtrWillBeRawPtr<SVGPointTearOff> pointTearOff = SVGPointTearOff::create(SVGPoint::create(m_newTranslate), 0, PropertyIsNotAnimVal);
     pointTearOff->setIsReadOnlyProperty();
     return pointTearOff.release();
 }

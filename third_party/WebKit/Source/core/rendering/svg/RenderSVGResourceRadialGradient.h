@@ -48,6 +48,8 @@ public:
     float radius(const RadialGradientAttributes&) const;
     float focalRadius(const RadialGradientAttributes&) const;
 
+    virtual void trace(Visitor*) override;
+
 private:
     RadialGradientAttributes m_attributes;
 };

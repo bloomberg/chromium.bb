@@ -29,9 +29,9 @@ namespace blink {
 class SVGPathSegLinetoHorizontalAbs final : public SVGPathSegLinetoHorizontal {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, float x)
+    static PassRefPtrWillBeRawPtr<SVGPathSegLinetoHorizontalAbs> create(SVGPathElement* element, float x)
     {
-        return adoptRef(new SVGPathSegLinetoHorizontalAbs(element, x));
+        return adoptRefWillBeNoop(new SVGPathSegLinetoHorizontalAbs(element, x));
     }
 
 private:

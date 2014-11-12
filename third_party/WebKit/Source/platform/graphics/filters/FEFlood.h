@@ -30,7 +30,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEFlood : public FilterEffect {
 public:
-    static PassRefPtr<FEFlood> create(Filter* filter, const Color&, float);
+    static PassRefPtrWillBeRawPtr<FEFlood> create(Filter*, const Color&, float);
 
     Color floodColor() const;
     bool setFloodColor(const Color &);

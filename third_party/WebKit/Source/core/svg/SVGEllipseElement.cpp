@@ -39,6 +39,15 @@ inline SVGEllipseElement::SVGEllipseElement(Document& document)
     addToPropertyMap(m_ry);
 }
 
+void SVGEllipseElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_cx);
+    visitor->trace(m_cy);
+    visitor->trace(m_rx);
+    visitor->trace(m_ry);
+    SVGGeometryElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGEllipseElement)
 
 bool SVGEllipseElement::isSupportedAttribute(const QualifiedName& attrName)

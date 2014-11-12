@@ -25,6 +25,7 @@
 #include "core/svg/SVGAnimatedNumberList.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEColorMatrix.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ public:
     SVGAnimatedString* in1() { return m_in1.get(); }
     SVGAnimatedEnumeration<ColorMatrixType>* type() { return m_type.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEColorMatrixElement(Document&);
 
@@ -46,11 +49,11 @@ private:
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumberList> m_values;
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedEnumeration<ColorMatrixType> > m_type;
+    RefPtrWillBeMember<SVGAnimatedNumberList> m_values;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ColorMatrixType> > m_type;
 };
 
 } // namespace blink

@@ -39,9 +39,9 @@
 
 namespace blink {
 
-inline PassRefPtr<SVGEnumerationBase> toSVGEnumerationBase(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGEnumerationBase> toSVGEnumerationBase(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGEnumerationBase::classType());
     return static_pointer_cast<SVGEnumerationBase>(base.release());
 }
@@ -50,9 +50,9 @@ SVGEnumerationBase::~SVGEnumerationBase()
 {
 }
 
-PassRefPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(const String& value) const
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGEnumerationBase::cloneForAnimation(const String& value) const
 {
-    RefPtr<SVGEnumerationBase> svgEnumeration = clone();
+    RefPtrWillBeRawPtr<SVGEnumerationBase> svgEnumeration = clone();
     svgEnumeration->setValueAsString(value, IGNORE_EXCEPTION);
     return svgEnumeration.release();
 }
@@ -109,7 +109,7 @@ void SVGEnumerationBase::add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement
     ASSERT_NOT_REACHED();
 }
 
-void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
     unsigned short fromEnumeration = animationElement->animationMode() == ToAnimation ? m_value : toSVGEnumerationBase(from)->value();
@@ -118,7 +118,7 @@ void SVGEnumerationBase::calculateAnimatedValue(SVGAnimationElement* animationEl
     animationElement->animateDiscreteType<unsigned short>(percentage, fromEnumeration, toEnumeration, m_value);
 }
 
-float SVGEnumerationBase::calculateDistance(PassRefPtr<SVGPropertyBase>, SVGElement*)
+float SVGEnumerationBase::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     // No paced animations for boolean.
     return -1;

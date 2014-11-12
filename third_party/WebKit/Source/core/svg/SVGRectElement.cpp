@@ -43,6 +43,17 @@ inline SVGRectElement::SVGRectElement(Document& document)
     addToPropertyMap(m_ry);
 }
 
+void SVGRectElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    visitor->trace(m_rx);
+    visitor->trace(m_ry);
+    SVGGeometryElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGRectElement)
 
 bool SVGRectElement::isSupportedAttribute(const QualifiedName& attrName)

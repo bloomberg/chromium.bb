@@ -47,12 +47,12 @@ SVGLengthContext::SVGLengthContext(const SVGElement* context, const FloatRect& v
 {
 }
 
-FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, PassRefPtr<SVGLength> passX, PassRefPtr<SVGLength> passY, PassRefPtr<SVGLength> passWidth, PassRefPtr<SVGLength> passHeight)
+FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitTypes::SVGUnitType type, const FloatRect& viewport, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY, PassRefPtrWillBeRawPtr<SVGLength> passWidth, PassRefPtrWillBeRawPtr<SVGLength> passHeight)
 {
-    RefPtr<SVGLength> x = passX;
-    RefPtr<SVGLength> y = passY;
-    RefPtr<SVGLength> width = passWidth;
-    RefPtr<SVGLength> height = passHeight;
+    RefPtrWillBeRawPtr<SVGLength> x = passX;
+    RefPtrWillBeRawPtr<SVGLength> y = passY;
+    RefPtrWillBeRawPtr<SVGLength> width = passWidth;
+    RefPtrWillBeRawPtr<SVGLength> height = passHeight;
 
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
@@ -68,10 +68,10 @@ FloatRect SVGLengthContext::resolveRectangle(const SVGElement* context, SVGUnitT
         height->value(lengthContext));
 }
 
-FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtr<SVGLength> passX, PassRefPtr<SVGLength> passY)
+FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtrWillBeRawPtr<SVGLength> passX, PassRefPtrWillBeRawPtr<SVGLength> passY)
 {
-    RefPtr<SVGLength> x = passX;
-    RefPtr<SVGLength> y = passY;
+    RefPtrWillBeRawPtr<SVGLength> x = passX;
+    RefPtrWillBeRawPtr<SVGLength> y = passY;
 
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {
@@ -83,9 +83,9 @@ FloatPoint SVGLengthContext::resolvePoint(const SVGElement* context, SVGUnitType
     return FloatPoint(x->valueAsPercentage(), y->valueAsPercentage());
 }
 
-float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtr<SVGLength> passX)
+float SVGLengthContext::resolveLength(const SVGElement* context, SVGUnitTypes::SVGUnitType type, PassRefPtrWillBeRawPtr<SVGLength> passX)
 {
-    RefPtr<SVGLength> x = passX;
+    RefPtrWillBeRawPtr<SVGLength> x = passX;
 
     ASSERT(type != SVGUnitTypes::SVG_UNIT_TYPE_UNKNOWN);
     if (type == SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE) {

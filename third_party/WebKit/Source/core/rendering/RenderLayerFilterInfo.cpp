@@ -96,7 +96,7 @@ RenderLayerFilterInfo::~RenderLayerFilterInfo()
     removeReferenceFilterClients();
 }
 
-void RenderLayerFilterInfo::setRenderer(PassRefPtr<FilterEffectRenderer> renderer)
+void RenderLayerFilterInfo::setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer> renderer)
 {
     m_renderer = renderer;
 }
@@ -116,7 +116,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
 {
     removeReferenceFilterClients();
     for (size_t i = 0; i < operations.size(); ++i) {
-        RefPtr<FilterOperation> filterOperation = operations.operations().at(i);
+        RefPtrWillBeRawPtr<FilterOperation> filterOperation = operations.operations().at(i);
         if (filterOperation->type() != FilterOperation::REFERENCE)
             continue;
         ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());

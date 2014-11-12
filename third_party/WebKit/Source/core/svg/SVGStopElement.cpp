@@ -32,6 +32,12 @@ inline SVGStopElement::SVGStopElement(Document& document)
     addToPropertyMap(m_offset);
 }
 
+void SVGStopElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_offset);
+    SVGElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGStopElement)
 
 void SVGStopElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

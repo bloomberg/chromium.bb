@@ -23,6 +23,7 @@
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FETile.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -32,14 +33,16 @@ public:
     DECLARE_NODE_FACTORY(SVGFETileElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFETileElement(Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

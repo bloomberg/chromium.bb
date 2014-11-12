@@ -25,6 +25,7 @@
 #include "core/svg/SVGPathBuilder.h"
 #include "core/svg/SVGPathByteStreamBuilder.h"
 #include "core/svg/SVGPathByteStreamSource.h"
+#include "core/svg/SVGPathElement.h"
 #include "core/svg/SVGPathParser.h"
 #include "core/svg/SVGPathSegListBuilder.h"
 #include "core/svg/SVGPathSegListSource.h"
@@ -37,62 +38,44 @@ namespace blink {
 
 static SVGPathBuilder* globalSVGPathBuilder(Path& result)
 {
-    static SVGPathBuilder* s_builder = 0;
-    if (!s_builder)
-        s_builder = new SVGPathBuilder;
-
-    s_builder->setCurrentPath(&result);
-    return s_builder;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathBuilder())));
+    pathBuilder->setCurrentPath(&result);
+    return pathBuilder.get();
 }
 
 static SVGPathByteStreamBuilder* globalSVGPathByteStreamBuilder(SVGPathByteStream* result)
 {
-    static SVGPathByteStreamBuilder* s_builder = 0;
-    if (!s_builder)
-        s_builder = new SVGPathByteStreamBuilder;
-
-    s_builder->setCurrentByteStream(result);
-    return s_builder;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathByteStreamBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathByteStreamBuilder())));
+    pathBuilder->setCurrentByteStream(result);
+    return pathBuilder.get();
 }
 
 static SVGPathStringBuilder* globalSVGPathStringBuilder()
 {
-    static SVGPathStringBuilder* s_builder = 0;
-    if (!s_builder)
-        s_builder = new SVGPathStringBuilder;
-
-    return s_builder;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathStringBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathStringBuilder())));
+    return pathBuilder.get();
 }
 
 static SVGPathTraversalStateBuilder* globalSVGPathTraversalStateBuilder(PathTraversalState& traversalState, float length)
 {
-    static SVGPathTraversalStateBuilder* s_builder = 0;
-    if (!s_builder)
-        s_builder = new SVGPathTraversalStateBuilder;
-
-    s_builder->setCurrentTraversalState(&traversalState);
-    s_builder->setDesiredLength(length);
-    return s_builder;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathTraversalStateBuilder>, pathBuilder, (adoptPtrWillBeNoop(new SVGPathTraversalStateBuilder())));
+    pathBuilder->setCurrentTraversalState(&traversalState);
+    pathBuilder->setDesiredLength(length);
+    return pathBuilder.get();
 }
 
 static SVGPathParser* globalSVGPathParser(SVGPathSource* source, SVGPathConsumer* consumer)
 {
-    static SVGPathParser* s_parser = 0;
-    if (!s_parser)
-        s_parser = new SVGPathParser;
-
-    s_parser->setCurrentSource(source);
-    s_parser->setCurrentConsumer(consumer);
-    return s_parser;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathParser>, pathParser, (adoptPtrWillBeNoop(new SVGPathParser())));
+    pathParser->setCurrentSource(source);
+    pathParser->setCurrentConsumer(consumer);
+    return pathParser.get();
 }
 
 static SVGPathBlender* globalSVGPathBlender()
 {
-    static SVGPathBlender* s_blender = 0;
-    if (!s_blender)
-        s_blender = new SVGPathBlender;
-
-    return s_blender;
+    DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<SVGPathBlender>, pathBlender, (adoptPtrWillBeNoop(new SVGPathBlender())));
+    return pathBlender.get();
 }
 
 bool buildPathFromString(const String& d, Path& result)
@@ -102,7 +85,7 @@ bool buildPathFromString(const String& d, Path& result)
 
     SVGPathBuilder* builder = globalSVGPathBuilder(result);
 
-    OwnPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
+    OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
     SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
     bool ok = parser->parsePathDataFromSource(NormalizedParsing);
     parser->cleanup();
@@ -152,7 +135,7 @@ bool buildSVGPathByteStreamFromString(const String& d, SVGPathByteStream* result
 
     SVGPathByteStreamBuilder* builder = globalSVGPathByteStreamBuilder(result);
 
-    OwnPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
+    OwnPtrWillBeRawPtr<SVGPathStringSource> source = SVGPathStringSource::create(d);
     SVGPathParser* parser = globalSVGPathParser(source.get(), builder);
     bool ok = parser->parsePathDataFromSource(parsingMode);
     parser->cleanup();

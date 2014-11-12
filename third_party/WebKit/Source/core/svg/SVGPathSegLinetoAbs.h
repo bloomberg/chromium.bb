@@ -29,9 +29,9 @@ namespace blink {
 class SVGPathSegLinetoAbs final : public SVGPathSegSingleCoordinate {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGPathSegLinetoAbs> create(SVGPathElement* element, float x, float y)
+    static PassRefPtrWillBeRawPtr<SVGPathSegLinetoAbs> create(SVGPathElement* element, float x, float y)
     {
-        return adoptRef(new SVGPathSegLinetoAbs(element, x, y));
+        return adoptRefWillBeNoop(new SVGPathSegLinetoAbs(element, x, y));
     }
 
 private:

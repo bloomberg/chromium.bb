@@ -36,20 +36,20 @@
 
 namespace blink {
 
-AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtr<SVGLengthList> passLengths)
+AnimatableStrokeDasharrayList::AnimatableStrokeDasharrayList(PassRefPtrWillBeRawPtr<SVGLengthList> passLengths)
 {
-    RefPtr<SVGLengthList> lengths = passLengths;
+    RefPtrWillBeRawPtr<SVGLengthList> lengths = passLengths;
     SVGLengthList::ConstIterator it = lengths->begin();
     SVGLengthList::ConstIterator itEnd = lengths->end();
     for (; it != itEnd; ++it)
         m_values.append(AnimatableSVGLength::create(*it));
 }
 
-PassRefPtr<SVGLengthList> AnimatableStrokeDasharrayList::toSVGLengthList() const
+PassRefPtrWillBeRawPtr<SVGLengthList> AnimatableStrokeDasharrayList::toSVGLengthList() const
 {
-    RefPtr<SVGLengthList> lengths = SVGLengthList::create();
+    RefPtrWillBeRawPtr<SVGLengthList> lengths = SVGLengthList::create();
     for (size_t i = 0; i < m_values.size(); ++i) {
-        RefPtr<SVGLength> length = toAnimatableSVGLength(m_values[i].get())->toSVGLength()->clone();
+        RefPtrWillBeRawPtr<SVGLength> length = toAnimatableSVGLength(m_values[i].get())->toSVGLength()->clone();
         if (length->valueInSpecifiedUnits() < 0)
             length->setValueInSpecifiedUnits(0);
         lengths->append(length);

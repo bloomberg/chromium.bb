@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEGaussianBlur : public FilterEffect {
 public:
-    static PassRefPtr<FEGaussianBlur> create(Filter*, float, float);
+    static PassRefPtrWillBeRawPtr<FEGaussianBlur> create(Filter*, float, float);
 
     float stdDeviationX() const;
     void setStdDeviationX(float);

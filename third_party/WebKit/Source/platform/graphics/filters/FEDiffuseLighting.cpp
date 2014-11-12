@@ -34,11 +34,11 @@ FEDiffuseLighting::FEDiffuseLighting(Filter* filter, const Color& lightingColor,
 {
 }
 
-PassRefPtr<FEDiffuseLighting> FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
+PassRefPtrWillBeRawPtr<FEDiffuseLighting> FEDiffuseLighting::create(Filter* filter, const Color& lightingColor,
     float surfaceScale, float diffuseConstant, float kernelUnitLengthX,
     float kernelUnitLengthY, PassRefPtr<LightSource> lightSource)
 {
-    return adoptRef(new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, kernelUnitLengthX, kernelUnitLengthY, lightSource));
+    return adoptRefWillBeNoop(new FEDiffuseLighting(filter, lightingColor, surfaceScale, diffuseConstant, kernelUnitLengthX, kernelUnitLengthY, lightSource));
 }
 
 FEDiffuseLighting::~FEDiffuseLighting()

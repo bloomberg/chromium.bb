@@ -33,6 +33,14 @@
 
 namespace blink {
 
+void FilterData::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(filter);
+    visitor->trace(builder);
+#endif
+}
+
 RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
     : RenderSVGResourceContainer(node)
 {
@@ -40,6 +48,14 @@ RenderSVGResourceFilter::RenderSVGResourceFilter(SVGFilterElement* node)
 
 RenderSVGResourceFilter::~RenderSVGResourceFilter()
 {
+}
+
+void RenderSVGResourceFilter::trace(Visitor* visitor)
+{
+#if ENABLE(OILPAN)
+    visitor->trace(m_filter);
+#endif
+    RenderSVGResourceContainer::trace(visitor);
 }
 
 void RenderSVGResourceFilter::destroy()
@@ -68,19 +84,19 @@ void RenderSVGResourceFilter::removeClientFromCache(RenderObject* client, bool m
     markClientForInvalidation(client, markForInvalidation ? BoundariesInvalidation : ParentOnlyInvalidation);
 }
 
-PassRefPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter* filter)
+PassRefPtrWillBeRawPtr<SVGFilterBuilder> RenderSVGResourceFilter::buildPrimitives(SVGFilter* filter)
 {
     SVGFilterElement* filterElement = toSVGFilterElement(element());
     FloatRect targetBoundingBox = filter->targetBoundingBox();
 
     // Add effects to the builder
-    RefPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(SourceGraphic::create(filter), SourceAlpha::create(filter));
+    RefPtrWillBeRawPtr<SVGFilterBuilder> builder = SVGFilterBuilder::create(SourceGraphic::create(filter), SourceAlpha::create(filter));
     for (SVGElement* element = Traversal<SVGElement>::firstChild(*filterElement); element; element = Traversal<SVGElement>::nextSibling(*element)) {
         if (!element->isFilterEffect() || !element->renderer())
             continue;
 
         SVGFilterPrimitiveStandardAttributes* effectElement = static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
-        RefPtr<FilterEffect> effect = effectElement->build(builder.get(), filter);
+        RefPtrWillBeRawPtr<FilterEffect> effect = effectElement->build(builder.get(), filter);
         if (!effect) {
             builder->clearEffects();
             return nullptr;
@@ -192,7 +208,7 @@ bool RenderSVGResourceFilter::prepareEffect(RenderObject* object, GraphicsContex
         return false; // Already built, or we're in a cycle. Regardless, just do nothing more now.
     }
 
-    OwnPtr<FilterData> filterData(adoptPtr(new FilterData));
+    OwnPtrWillBeRawPtr<FilterData> filterData = FilterData::create();
     FloatRect targetBoundingBox = object->objectBoundingBox();
 
     SVGFilterElement* filterElement = toSVGFilterElement(element());

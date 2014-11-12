@@ -34,7 +34,7 @@ namespace blink {
 
 class SVGFilter final : public Filter {
 public:
-    static PassRefPtr<SVGFilter> create(const IntRect&, const FloatRect&, const FloatRect&, bool);
+    static PassRefPtrWillBeRawPtr<SVGFilter> create(const IntRect&, const FloatRect&, const FloatRect&, bool);
 
     virtual float applyHorizontalScale(float value) const override;
     virtual float applyVerticalScale(float value) const override;

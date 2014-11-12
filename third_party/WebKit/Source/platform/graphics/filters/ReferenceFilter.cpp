@@ -43,13 +43,20 @@ ReferenceFilter::ReferenceFilter(float scale)
 {
 }
 
-void ReferenceFilter::setLastEffect(PassRefPtr<FilterEffect> effect)
-{
-    m_lastEffect = effect;
-}
-
 ReferenceFilter::~ReferenceFilter()
 {
+}
+
+void ReferenceFilter::trace(Visitor* visitor)
+{
+    visitor->trace(m_sourceGraphic);
+    visitor->trace(m_lastEffect);
+    Filter::trace(visitor);
+}
+
+void ReferenceFilter::setLastEffect(PassRefPtrWillBeRawPtr<FilterEffect> effect)
+{
+    m_lastEffect = effect;
 }
 
 } // namespace blink

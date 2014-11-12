@@ -27,6 +27,7 @@
 #define FilterEffectRenderer_h
 
 #include "platform/graphics/filters/FilterEffect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -40,32 +41,32 @@ class GraphicsContext;
 class ReferenceFilter;
 class RenderObject;
 
-class FilterEffectRenderer final : public RefCounted<FilterEffectRenderer>
-{
-    WTF_MAKE_FAST_ALLOCATED;
+class FilterEffectRenderer final : public RefCountedWillBeGarbageCollectedFinalized<FilterEffectRenderer> {
+    WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
-    virtual ~FilterEffectRenderer();
-    static PassRefPtr<FilterEffectRenderer> create()
+    static PassRefPtrWillBeRawPtr<FilterEffectRenderer> create()
     {
-        return adoptRef(new FilterEffectRenderer());
+        return adoptRefWillBeNoop(new FilterEffectRenderer());
     }
+
+    virtual ~FilterEffectRenderer();
+    void trace(Visitor*);
 
     bool build(RenderObject* renderer, const FilterOperations&);
     void clearIntermediateResults();
 
-    PassRefPtr<FilterEffect> lastEffect() const
+    PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
     {
         return m_lastEffect;
     }
-private:
 
+private:
     FilterEffectRenderer();
 
-    RefPtr<FilterEffect> m_lastEffect;
-    Vector<RefPtr<ReferenceFilter> > m_referenceFilters;
+    RefPtrWillBeMember<FilterEffect> m_lastEffect;
+    WillBeHeapVector<RefPtrWillBeMember<ReferenceFilter> > m_referenceFilters;
 };
 
 } // namespace blink
-
 
 #endif // FilterEffectRenderer_h

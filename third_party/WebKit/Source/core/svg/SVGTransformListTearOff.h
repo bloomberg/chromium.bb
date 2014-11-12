@@ -42,18 +42,18 @@ class SVGTransformListTearOff final
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtr<SVGTransformListTearOff> create(PassRefPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    static PassRefPtrWillBeRawPtr<SVGTransformListTearOff> create(PassRefPtrWillBeRawPtr<SVGTransformList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
     {
-        return adoptRef(new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
+        return adoptRefWillBeNoop(new SVGTransformListTearOff(target, contextElement, propertyIsAnimVal, attributeName));
     }
 
     virtual ~SVGTransformListTearOff();
 
-    PassRefPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtr<SVGMatrixTearOff>) const;
-    PassRefPtr<SVGTransformTearOff> consolidate(ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGTransformTearOff> createSVGTransformFromMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff>) const;
+    PassRefPtrWillBeRawPtr<SVGTransformTearOff> consolidate(ExceptionState&);
 
 private:
-    SVGTransformListTearOff(PassRefPtr<SVGTransformList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
+    SVGTransformListTearOff(PassRefPtrWillBeRawPtr<SVGTransformList>, SVGElement*, PropertyIsAnimValType, const QualifiedName&);
 };
 
 } // namespace blink

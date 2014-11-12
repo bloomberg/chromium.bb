@@ -32,6 +32,8 @@
 
 #include "core/svg/SVGAnimatedLength.h"
 
+#include "core/svg/SVGElement.h"
+
 namespace blink {
 
 void SVGAnimatedLength::setDefaultValueAsString(const String& value)

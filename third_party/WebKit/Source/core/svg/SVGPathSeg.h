@@ -22,6 +22,7 @@
 #define SVGPathSeg_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
@@ -62,7 +63,7 @@ class SVGPropertyBase;
 class SVGPathElement;
 class SVGElement;
 
-class SVGPathSeg : public RefCounted<SVGPathSeg>, public ScriptWrappable {
+class SVGPathSeg : public RefCountedWillBeGarbageCollectedFinalized<SVGPathSeg>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     // SVGPathSeg itself is used as a tear-off type.
@@ -118,16 +119,17 @@ public:
         m_contextElement = contextElement;
     }
 
-    static PassRefPtr<SVGPathSeg> create() { ASSERT_NOT_REACHED(); return nullptr; }
-    PassRefPtr<SVGPathSeg> clone() { ASSERT_NOT_REACHED(); return nullptr; }
+    static PassRefPtrWillBeRawPtr<SVGPathSeg> create() { ASSERT_NOT_REACHED(); return nullptr; }
+    PassRefPtrWillBeRawPtr<SVGPathSeg> clone() { ASSERT_NOT_REACHED(); return nullptr; }
+
+    virtual void trace(Visitor*);
 
 protected:
     void commitChange();
 
 private:
-    // FIXME: oilpan: These are kept as raw ptrs to break reference cycle. Should be Member in oilpan.
-    SVGPropertyBase* m_ownerList;
-    SVGElement* m_contextElement;
+    RawPtrWillBeMember<SVGPropertyBase> m_ownerList;
+    RawPtrWillBeMember<SVGElement> m_contextElement;
 };
 
 } // namespace blink

@@ -33,6 +33,12 @@ inline SVGSymbolElement::SVGSymbolElement(Document& document)
 {
 }
 
+void SVGSymbolElement::trace(Visitor* visitor)
+{
+    SVGElement::trace(visitor);
+    SVGFitToViewBox::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGSymbolElement)
 
 void SVGSymbolElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

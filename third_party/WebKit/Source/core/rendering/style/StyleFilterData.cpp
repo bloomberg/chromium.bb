@@ -34,8 +34,7 @@ StyleFilterData::StyleFilterData()
 }
 
 StyleFilterData::StyleFilterData(const StyleFilterData& o)
-    : RefCounted<StyleFilterData>()
-    , m_operations(o.m_operations)
+    : m_operations(o.m_operations)
 {
 }
 

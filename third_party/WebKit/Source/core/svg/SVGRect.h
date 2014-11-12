@@ -33,22 +33,22 @@ public:
 
     struct InvalidSVGRectTag { };
 
-    static PassRefPtr<SVGRect> create()
+    static PassRefPtrWillBeRawPtr<SVGRect> create()
     {
-        return adoptRef(new SVGRect());
+        return adoptRefWillBeNoop(new SVGRect());
     }
 
-    static PassRefPtr<SVGRect> create(InvalidSVGRectTag)
+    static PassRefPtrWillBeRawPtr<SVGRect> create(InvalidSVGRectTag)
     {
-        return adoptRef(new SVGRect(InvalidSVGRectTag()));
+        return adoptRefWillBeNoop(new SVGRect(InvalidSVGRectTag()));
     }
 
-    static PassRefPtr<SVGRect> create(const FloatRect& rect)
+    static PassRefPtrWillBeRawPtr<SVGRect> create(const FloatRect& rect)
     {
-        return adoptRef(new SVGRect(rect));
+        return adoptRefWillBeNoop(new SVGRect(rect));
     }
 
-    PassRefPtr<SVGRect> clone() const;
+    PassRefPtrWillBeRawPtr<SVGRect> clone() const;
 
     const FloatRect& value() const { return m_value; }
     void setValue(const FloatRect& v) { m_value = v; }
@@ -66,8 +66,8 @@ public:
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement* contextElement) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement* contextElement) override;
 
     bool isValid() const { return m_isValid; }
     void setInvalid();
@@ -86,9 +86,9 @@ private:
     FloatRect m_value;
 };
 
-inline PassRefPtr<SVGRect> toSVGRect(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGRect> toSVGRect(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGRect::classType());
     return static_pointer_cast<SVGRect>(base.release());
 }

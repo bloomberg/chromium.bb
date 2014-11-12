@@ -33,8 +33,15 @@ static const float gOneOverThree = 1 / 3.f;
 namespace blink {
 
 SVGPathParser::SVGPathParser()
-    : m_consumer(0)
+    : m_source(nullptr)
+    , m_consumer(nullptr)
 {
+}
+
+void SVGPathParser::trace(Visitor* visitor)
+{
+    visitor->trace(m_source);
+    visitor->trace(m_consumer);
 }
 
 void SVGPathParser::parseClosePathSegment()
@@ -402,8 +409,8 @@ void SVGPathParser::cleanup()
     ASSERT(m_consumer);
 
     m_consumer->cleanup();
-    m_source = 0;
-    m_consumer = 0;
+    m_source = nullptr;
+    m_consumer = nullptr;
 }
 
 // This works by converting the SVG arc to "simple" beziers.

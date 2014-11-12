@@ -28,6 +28,7 @@
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "platform/Timer.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 
@@ -92,7 +93,7 @@ public:
 
     virtual void svgAttributeChanged(const QualifiedName&);
 
-    PassRefPtr<SVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
+    PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> propertyFromAttribute(const QualifiedName& attributeName);
     static AnimatedPropertyType animatedPropertyTypeForCSSAttribute(const QualifiedName& attributeName);
 
     void sendSVGLoadEventToSelfAndAncestorChainIfPossible();
@@ -147,7 +148,7 @@ public:
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
-    void addToPropertyMap(PassRefPtr<SVGAnimatedPropertyBase>);
+    void addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase>);
 
     SVGAnimatedString* className() { return m_className.get(); }
 
@@ -238,7 +239,7 @@ private:
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_elementsWithRelativeLengths;
 
-    typedef HashMap<QualifiedName, RefPtr<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
+    typedef WillBeHeapHashMap<QualifiedName, RefPtrWillBeMember<SVGAnimatedPropertyBase> > AttributeToPropertyMap;
     AttributeToPropertyMap m_attributeToPropertyMap;
 
 #if ENABLE(ASSERT)
@@ -246,7 +247,7 @@ private:
 #endif
 
     OwnPtrWillBeMember<SVGElementRareData> m_SVGRareData;
-    RefPtr<SVGAnimatedString> m_className;
+    RefPtrWillBeMember<SVGAnimatedString> m_className;
 };
 
 struct SVGAttributeHashTranslator {
@@ -278,8 +279,8 @@ inline bool Node::hasTagName(const SVGQualifiedName& name) const
     inline bool is##thisType(const SVGElement* element) { return element && is##thisType(*element); } \
     inline bool is##thisType(const Node& node) { return node.isSVGElement() ? is##thisType(toSVGElement(node)) : false; } \
     inline bool is##thisType(const Node* node) { return node && is##thisType(*node); } \
-    template<typename T> inline bool is##thisType(const PassRefPtr<T>& node) { return is##thisType(node.get()); } \
-    template<typename T> inline bool is##thisType(const RefPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const PassRefPtrWillBeRawPtr<T>& node) { return is##thisType(node.get()); } \
+    template<typename T> inline bool is##thisType(const RefPtrWillBeMember<T>& node) { return is##thisType(node.get()); } \
     template <> inline bool isElementOfType<const thisType>(const SVGElement& element) { return is##thisType(element); } \
     DEFINE_ELEMENT_TYPE_CASTS_WITH_FUNCTION(thisType)
 

@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEOffset : public FilterEffect {
 public:
-    static PassRefPtr<FEOffset> create(Filter*, float dx, float dy);
+    static PassRefPtrWillBeRawPtr<FEOffset> create(Filter*, float dx, float dy);
 
     float dx() const;
     void setDx(float);

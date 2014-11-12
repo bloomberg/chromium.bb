@@ -44,9 +44,9 @@ void SVGPreserveAspectRatio::setDefault()
     m_meetOrSlice = SVG_MEETORSLICE_MEET;
 }
 
-PassRefPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
+PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() const
 {
-    RefPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
+    RefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatio = create();
 
     preserveAspectRatio->m_align = m_align;
     preserveAspectRatio->m_meetOrSlice = m_meetOrSlice;
@@ -397,20 +397,20 @@ void SVGPreserveAspectRatio::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, 
     ASSERT_NOT_REACHED();
 }
 
-void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> fromValue, PassRefPtr<SVGPropertyBase> toValue, PassRefPtr<SVGPropertyBase>, SVGElement*)
+void SVGPreserveAspectRatio::calculateAnimatedValue(SVGAnimationElement* animationElement, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> fromValue, PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*)
 {
     ASSERT(animationElement);
 
     bool useToValue;
     animationElement->animateDiscreteType(percentage, false, true, useToValue);
 
-    RefPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
+    RefPtrWillBeRawPtr<SVGPreserveAspectRatio> preserveAspectRatioToUse = useToValue ? toSVGPreserveAspectRatio(toValue) : toSVGPreserveAspectRatio(fromValue);
 
     m_align = preserveAspectRatioToUse->m_align;
     m_meetOrSlice = preserveAspectRatioToUse->m_meetOrSlice;
 }
 
-float SVGPreserveAspectRatio::calculateDistance(PassRefPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
+float SVGPreserveAspectRatio::calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> toValue, SVGElement* contextElement)
 {
     // No paced animations for SVGPreserveAspectRatio.
     return -1;

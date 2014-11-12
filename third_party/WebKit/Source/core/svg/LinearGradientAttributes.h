@@ -21,9 +21,13 @@
 #define LinearGradientAttributes_h
 
 #include "core/svg/GradientAttributes.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
+
 struct LinearGradientAttributes : GradientAttributes {
+    DISALLOW_ALLOCATION();
+public:
     LinearGradientAttributes()
         : m_x1(SVGLength::create(LengthModeWidth))
         , m_y1(SVGLength::create(LengthModeWidth))
@@ -42,22 +46,30 @@ struct LinearGradientAttributes : GradientAttributes {
     SVGLength* x2() const { return m_x2.get(); }
     SVGLength* y2() const { return m_y2.get(); }
 
-    void setX1(PassRefPtr<SVGLength> value) { m_x1 = value; m_x1Set = true; }
-    void setY1(PassRefPtr<SVGLength> value) { m_y1 = value; m_y1Set = true; }
-    void setX2(PassRefPtr<SVGLength> value) { m_x2 = value; m_x2Set = true; }
-    void setY2(PassRefPtr<SVGLength> value) { m_y2 = value; m_y2Set = true; }
+    void setX1(PassRefPtrWillBeRawPtr<SVGLength> value) { m_x1 = value; m_x1Set = true; }
+    void setY1(PassRefPtrWillBeRawPtr<SVGLength> value) { m_y1 = value; m_y1Set = true; }
+    void setX2(PassRefPtrWillBeRawPtr<SVGLength> value) { m_x2 = value; m_x2Set = true; }
+    void setY2(PassRefPtrWillBeRawPtr<SVGLength> value) { m_y2 = value; m_y2Set = true; }
 
     bool hasX1() const { return m_x1Set; }
     bool hasY1() const { return m_y1Set; }
     bool hasX2() const { return m_x2Set; }
     bool hasY2() const { return m_y2Set; }
 
+    void trace(Visitor* visitor)
+    {
+        visitor->trace(m_x1);
+        visitor->trace(m_y1);
+        visitor->trace(m_x2);
+        visitor->trace(m_y2);
+    }
+
 private:
     // Properties
-    RefPtr<SVGLength> m_x1;
-    RefPtr<SVGLength> m_y1;
-    RefPtr<SVGLength> m_x2;
-    RefPtr<SVGLength> m_y2;
+    RefPtrWillBeMember<SVGLength> m_x1;
+    RefPtrWillBeMember<SVGLength> m_y1;
+    RefPtrWillBeMember<SVGLength> m_x2;
+    RefPtrWillBeMember<SVGLength> m_y2;
 
     // Property states
     bool m_x1Set : 1;

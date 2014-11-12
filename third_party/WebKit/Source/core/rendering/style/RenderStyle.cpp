@@ -1654,6 +1654,14 @@ Color RenderStyle::initialTapHighlightColor()
     return RenderTheme::tapHighlightColor();
 }
 
+#if ENABLE(OILPAN)
+const FilterOperations& RenderStyle::initialFilter()
+{
+    DEFINE_STATIC_LOCAL(Persistent<FilterOperationsWrapper>, ops, (FilterOperationsWrapper::create()));
+    return ops->operations();
+}
+#endif
+
 LayoutBoxExtent RenderStyle::imageOutsets(const NinePieceImage& image) const
 {
     return LayoutBoxExtent(NinePieceImage::computeOutset(image.outset().top(), borderTopWidth()),

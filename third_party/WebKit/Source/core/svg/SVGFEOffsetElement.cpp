@@ -39,6 +39,14 @@ inline SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
     addToPropertyMap(m_in1);
 }
 
+void SVGFEOffsetElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_dx);
+    visitor->trace(m_dy);
+    visitor->trace(m_in1);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFEOffsetElement)
 
 bool SVGFEOffsetElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -68,14 +76,14 @@ void SVGFEOffsetElement::svgAttributeChanged(const QualifiedName& attrName)
     invalidate();
 }
 
-PassRefPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEOffsetElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
     if (!input1)
         return nullptr;
 
-    RefPtr<FilterEffect> effect = FEOffset::create(filter, m_dx->currentValue()->value(), m_dy->currentValue()->value());
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEOffset::create(filter, m_dx->currentValue()->value(), m_dy->currentValue()->value());
     effect->inputEffects().append(input1);
     return effect.release();
 }

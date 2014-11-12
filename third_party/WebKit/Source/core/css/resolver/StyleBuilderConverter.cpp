@@ -760,15 +760,14 @@ float StyleBuilderConverter::convertSpacing(StyleResolverState& state, CSSValue*
     return primitiveValue->computeLength<float>(state.cssToLengthConversionData());
 }
 
-PassRefPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState&, CSSValue* value)
+PassRefPtrWillBeRawPtr<SVGLengthList> StyleBuilderConverter::convertStrokeDasharray(StyleResolverState&, CSSValue* value)
 {
-    if (!value->isValueList()) {
+    if (!value->isValueList())
         return SVGRenderStyle::initialStrokeDashArray();
-    }
 
     CSSValueList* dashes = toCSSValueList(value);
 
-    RefPtr<SVGLengthList> array = SVGLengthList::create();
+    RefPtrWillBeRawPtr<SVGLengthList> array = SVGLengthList::create();
     size_t length = dashes->length();
     for (size_t i = 0; i < length; ++i) {
         CSSValue* currValue = dashes->item(i);
@@ -799,7 +798,7 @@ Color StyleBuilderConverter::convertSVGColor(StyleResolverState& state, CSSValue
     return state.style()->color();
 }
 
-PassRefPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
+PassRefPtrWillBeRawPtr<SVGLength> StyleBuilderConverter::convertSVGLength(StyleResolverState&, CSSValue* value)
 {
     return SVGLength::fromCSSPrimitiveValue(toCSSPrimitiveValue(value));
 }

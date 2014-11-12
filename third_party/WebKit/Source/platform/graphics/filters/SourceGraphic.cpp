@@ -28,9 +28,9 @@
 
 namespace blink {
 
-PassRefPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
+PassRefPtrWillBeRawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
 {
-    return adoptRef(new SourceGraphic(filter));
+    return adoptRefWillBeNoop(new SourceGraphic(filter));
 }
 
 const AtomicString& SourceGraphic::effectName()

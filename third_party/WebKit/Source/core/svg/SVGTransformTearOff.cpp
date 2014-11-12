@@ -33,16 +33,23 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
-SVGTransformTearOff::SVGTransformTearOff(PassRefPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGTransformTearOff::SVGTransformTearOff(PassRefPtrWillBeRawPtr<SVGTransform> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGTransform>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }
 
 SVGTransformTearOff::~SVGTransformTearOff()
 {
+}
+
+void SVGTransformTearOff::trace(Visitor* visitor)
+{
+    visitor->trace(m_matrixTearoff);
+    SVGPropertyTearOff<SVGTransform>::trace(visitor);
 }
 
 SVGMatrixTearOff* SVGTransformTearOff::matrix()
@@ -54,7 +61,7 @@ SVGMatrixTearOff* SVGTransformTearOff::matrix()
     return m_matrixTearoff.get();
 }
 
-void SVGTransformTearOff::setMatrix(PassRefPtr<SVGMatrixTearOff> matrix, ExceptionState& exceptionState)
+void SVGTransformTearOff::setMatrix(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> matrix, ExceptionState& exceptionState)
 {
     if (isImmutable()) {
         exceptionState.throwDOMException(NoModificationAllowedError, "The attribute is read-only.");

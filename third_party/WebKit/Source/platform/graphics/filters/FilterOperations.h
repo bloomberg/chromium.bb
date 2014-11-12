@@ -37,7 +37,11 @@ namespace blink {
 typedef IntRectExtent FilterOutsets;
 
 class PLATFORM_EXPORT FilterOperations {
+#if ENABLE(OILPAN)
+    DISALLOW_ALLOCATION();
+#else
     WTF_MAKE_FAST_ALLOCATED;
+#endif
 public:
     FilterOperations();
     FilterOperations(const FilterOperations& other) { *this = other; }
@@ -55,8 +59,10 @@ public:
         m_operations.clear();
     }
 
-    Vector<RefPtr<FilterOperation> >& operations() { return m_operations; }
-    const Vector<RefPtr<FilterOperation> >& operations() const { return m_operations; }
+    typedef WillBeHeapVector<RefPtrWillBeMember<FilterOperation> > FilterOperationVector;
+
+    FilterOperationVector& operations() { return m_operations; }
+    const FilterOperationVector& operations() const { return m_operations; }
 
     bool isEmpty() const { return !m_operations.size(); }
     size_t size() const { return m_operations.size(); }
@@ -71,9 +77,34 @@ public:
     bool hasFilterThatMovesPixels() const;
 
     bool hasReferenceFilter() const;
+
+    void trace(Visitor*);
+
 private:
-    Vector<RefPtr<FilterOperation> > m_operations;
+    FilterOperationVector m_operations;
 };
+
+#if ENABLE(OILPAN)
+// Wrapper object for the FilterOperations part object.
+class FilterOperationsWrapper : public GarbageCollected<FilterOperationsWrapper> {
+public:
+    static FilterOperationsWrapper* create()
+    {
+        return new FilterOperationsWrapper();
+    }
+
+    const FilterOperations& operations() const { return m_operations; }
+
+    void trace(Visitor* visitor) { visitor->trace(m_operations); }
+
+private:
+    FilterOperationsWrapper()
+    {
+    }
+
+    FilterOperations m_operations;
+};
+#endif
 
 } // namespace blink
 

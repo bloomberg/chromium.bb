@@ -44,17 +44,17 @@ public:
     }
     ~SVGAnimatedTypeAnimator();
 
-    PassRefPtr<SVGPropertyBase> constructFromString(const String&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> constructFromString(const String&);
 
-    PassRefPtr<SVGPropertyBase> startAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> startAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
     void stopAnimValAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
-    PassRefPtr<SVGPropertyBase> resetAnimValToBaseVal(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimValToBaseVal(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
 
     void calculateAnimatedValue(float percentage, unsigned repeatCount, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*, SVGPropertyBase*);
     float calculateDistance(const String& fromString, const String& toString);
 
-    void calculateFromAndToValues(RefPtr<SVGPropertyBase>& from, RefPtr<SVGPropertyBase>& to, const String& fromString, const String& toString);
-    void calculateFromAndByValues(RefPtr<SVGPropertyBase>& from, RefPtr<SVGPropertyBase>& to, const String& fromString, const String& byString);
+    void calculateFromAndToValues(RefPtrWillBeMember<SVGPropertyBase>& from, RefPtrWillBeMember<SVGPropertyBase>& to, const String& fromString, const String& toString);
+    void calculateFromAndByValues(RefPtrWillBeMember<SVGPropertyBase>& from, RefPtrWillBeMember<SVGPropertyBase>& to, const String& fromString, const String& byString);
 
     void setContextElement(SVGElement* contextElement) { m_contextElement = contextElement; }
     AnimatedPropertyType type() const { return m_type; }
@@ -68,13 +68,13 @@ private:
     SVGAnimatedTypeAnimator(SVGAnimationElement*, SVGElement*);
 
     friend class ParsePropertyFromString;
-    PassRefPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
-    PassRefPtr<SVGPropertyBase> resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> createPropertyForAnimation(const String&);
+    PassRefPtrWillBeRawPtr<SVGPropertyBase> resetAnimation(const WillBeHeapVector<RawPtrWillBeMember<SVGElement> >&);
 
     AnimatedPropertyType m_type;
     RawPtrWillBeMember<SVGAnimationElement> m_animationElement;
     RawPtrWillBeMember<SVGElement> m_contextElement;
-    RefPtr<SVGAnimatedPropertyBase> m_animatedProperty;
+    RefPtrWillBeMember<SVGAnimatedPropertyBase> m_animatedProperty;
 };
 
 } // namespace blink

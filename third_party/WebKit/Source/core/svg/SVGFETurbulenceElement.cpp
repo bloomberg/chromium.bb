@@ -62,6 +62,16 @@ inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
     addToPropertyMap(m_numOctaves);
 }
 
+void SVGFETurbulenceElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_baseFrequency);
+    visitor->trace(m_seed);
+    visitor->trace(m_stitchTiles);
+    visitor->trace(m_type);
+    visitor->trace(m_numOctaves);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFETurbulenceElement)
 
 bool SVGFETurbulenceElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -124,7 +134,7 @@ void SVGFETurbulenceElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
-PassRefPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFETurbulenceElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (baseFrequencyX()->currentValue()->value() < 0 || baseFrequencyY()->currentValue()->value() < 0)
         return nullptr;

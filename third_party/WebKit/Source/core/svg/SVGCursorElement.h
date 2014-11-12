@@ -26,6 +26,7 @@
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGTests.h"
 #include "core/svg/SVGURIReference.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -33,6 +34,7 @@ class SVGCursorElement final : public SVGElement,
                                public SVGTests,
                                public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGCursorElement);
 public:
     DECLARE_NODE_FACTORY(SVGCursorElement);
 
@@ -60,8 +62,8 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
-    RefPtr<SVGAnimatedLength> m_x;
-    RefPtr<SVGAnimatedLength> m_y;
+    RefPtrWillBeMember<SVGAnimatedLength> m_x;
+    RefPtrWillBeMember<SVGAnimatedLength> m_y;
 
     WillBeHeapHashSet<RawPtrWillBeWeakMember<SVGElement> > m_clients;
 };

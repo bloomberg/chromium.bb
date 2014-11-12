@@ -62,6 +62,18 @@ inline SVGMarkerElement::SVGMarkerElement(Document& document)
     addToPropertyMap(m_markerUnits);
 }
 
+void SVGMarkerElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_refX);
+    visitor->trace(m_refY);
+    visitor->trace(m_markerWidth);
+    visitor->trace(m_markerHeight);
+    visitor->trace(m_orientAngle);
+    visitor->trace(m_markerUnits);
+    SVGElement::trace(visitor);
+    SVGFitToViewBox::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGMarkerElement)
 
 AffineTransform SVGMarkerElement::viewBoxToViewTransform(float viewWidth, float viewHeight) const
@@ -127,10 +139,10 @@ void SVGMarkerElement::setOrientToAuto()
     svgAttributeChanged(SVGNames::orientAttr);
 }
 
-void SVGMarkerElement::setOrientToAngle(PassRefPtr<SVGAngleTearOff> angle)
+void SVGMarkerElement::setOrientToAngle(PassRefPtrWillBeRawPtr<SVGAngleTearOff> angle)
 {
     ASSERT(angle);
-    RefPtr<SVGAngle> target = angle->target();
+    RefPtrWillBeRawPtr<SVGAngle> target = angle->target();
     m_orientAngle->baseValue()->newValueSpecifiedUnits(target->unitType(), target->valueInSpecifiedUnits());
     invalidateSVGAttributes();
     svgAttributeChanged(SVGNames::orientAttr);

@@ -43,18 +43,18 @@ public:
     typedef void TearOffType;
     typedef String PrimitiveType;
 
-    static PassRefPtr<SVGString> create()
+    static PassRefPtrWillBeRawPtr<SVGString> create()
     {
-        return adoptRef(new SVGString());
+        return adoptRefWillBeNoop(new SVGString());
     }
 
-    static PassRefPtr<SVGString> create(const String& value)
+    static PassRefPtrWillBeRawPtr<SVGString> create(const String& value)
     {
-        return adoptRef(new SVGString(value));
+        return adoptRefWillBeNoop(new SVGString(value));
     }
 
-    PassRefPtr<SVGString> clone() const { return create(m_value); }
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String& value) const override
+    PassRefPtrWillBeRawPtr<SVGString> clone() const { return create(m_value); }
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const override
     {
         return create(value);
     }
@@ -63,8 +63,8 @@ public:
     void setValueAsString(const String& value, ExceptionState&) { m_value = value; }
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     const String& value() const { return m_value; }
     void setValue(const String& value) { m_value = value; }
@@ -86,9 +86,9 @@ private:
     String m_value;
 };
 
-inline PassRefPtr<SVGString> toSVGString(PassRefPtr<SVGPropertyBase> passBase)
+inline PassRefPtrWillBeRawPtr<SVGString> toSVGString(PassRefPtrWillBeRawPtr<SVGPropertyBase> passBase)
 {
-    RefPtr<SVGPropertyBase> base = passBase;
+    RefPtrWillBeRawPtr<SVGPropertyBase> base = passBase;
     ASSERT(base->type() == SVGString::classType());
     return static_pointer_cast<SVGString>(base.release());
 }

@@ -27,7 +27,7 @@ namespace blink {
 
 class PLATFORM_EXPORT SourceAlpha : public FilterEffect {
 public:
-    static PassRefPtr<SourceAlpha> create(Filter*);
+    static PassRefPtrWillBeRawPtr<SourceAlpha> create(Filter*);
 
     static const AtomicString& effectName();
 

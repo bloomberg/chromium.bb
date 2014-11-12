@@ -28,13 +28,20 @@
 namespace blink {
 
 SVGPathBlender::SVGPathBlender()
-    : m_fromSource(0)
-    , m_toSource(0)
-    , m_consumer(0)
+    : m_fromSource(nullptr)
+    , m_toSource(nullptr)
+    , m_consumer(nullptr)
     , m_progress(0)
     , m_addTypesCount(0)
     , m_isInFirstHalfOfAnimation(false)
 {
+}
+
+void SVGPathBlender::trace(Visitor* visitor)
+{
+    visitor->trace(m_fromSource);
+    visitor->trace(m_toSource);
+    visitor->trace(m_consumer);
 }
 
 // Helper functions
@@ -399,9 +406,9 @@ void SVGPathBlender::cleanup()
     ASSERT(m_consumer);
 
     m_consumer->cleanup();
-    m_toSource = 0;
-    m_fromSource = 0;
-    m_consumer = 0;
+    m_toSource = nullptr;
+    m_fromSource = nullptr;
+    m_consumer = nullptr;
     m_fromCurrentPoint = FloatPoint();
     m_toCurrentPoint = FloatPoint();
 }

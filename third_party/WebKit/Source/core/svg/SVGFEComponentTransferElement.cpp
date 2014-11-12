@@ -40,6 +40,12 @@ inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& do
     addToPropertyMap(m_in1);
 }
 
+void SVGFEComponentTransferElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_in1);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGFEComponentTransferElement)
 
 bool SVGFEComponentTransferElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -55,7 +61,7 @@ void SVGFEComponentTransferElement::parseAttribute(const QualifiedName& name, co
     parseAttributeNew(name, value);
 }
 
-PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)
 {
     FilterEffect* input1 = filterBuilder->getEffectById(AtomicString(m_in1->currentValue()->value()));
 
@@ -78,7 +84,7 @@ PassRefPtr<FilterEffect> SVGFEComponentTransferElement::build(SVGFilterBuilder* 
             alpha = toSVGFEFuncAElement(*element).transferFunction();
     }
 
-    RefPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
+    RefPtrWillBeRawPtr<FilterEffect> effect = FEComponentTransfer::create(filter, red, green, blue, alpha);
     effect->inputEffects().append(input1);
     return effect.release();
 }

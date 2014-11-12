@@ -71,8 +71,8 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(const_cast<AnimatableValue*>(AnimatableValue::neutralValue())),
         testing::StartsWith("AnimatableNeutral@"));
 
-    RefPtr<SVGLength> length1cm = SVGLength::create(LengthModeOther);
-    RefPtr<SVGLength> length2cm = SVGLength::create(LengthModeOther);
+    RefPtrWillBeRawPtr<SVGLength> length1cm = SVGLength::create(LengthModeOther);
+    RefPtrWillBeRawPtr<SVGLength> length2cm = SVGLength::create(LengthModeOther);
     length1cm->setValueAsString("1cm", ASSERT_NO_EXCEPTION);
     length2cm->setValueAsString("2cm", ASSERT_NO_EXCEPTION);
 
@@ -84,7 +84,7 @@ TEST_F(AnimationAnimatableValueTestHelperTest, PrintTo)
         PrintToString(AnimatableShapeValue::create(ShapeValue::createShapeValue(BasicShapeCircle::create().get(), ContentBox).get())),
         testing::StartsWith("AnimatableShapeValue@"));
 
-    RefPtr<SVGLengthList> l2 = SVGLengthList::create();
+    RefPtrWillBeRawPtr<SVGLengthList> l2 = SVGLengthList::create();
     l2->append(length1cm);
     l2->append(length2cm);
     EXPECT_EQ(

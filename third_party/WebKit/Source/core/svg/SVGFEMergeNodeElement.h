@@ -24,6 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -33,6 +34,8 @@ public:
     DECLARE_NODE_FACTORY(SVGFEMergeNodeElement);
     SVGAnimatedString* in1() { return m_in1.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEMergeNodeElement(Document&);
 
@@ -41,7 +44,7 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
-    RefPtr<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

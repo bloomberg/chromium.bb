@@ -182,6 +182,7 @@ void SVGScriptElement::trace(Visitor* visitor)
 {
     visitor->trace(m_loader);
     SVGElement::trace(visitor);
+    SVGURIReference::trace(visitor);
 }
 
 } // namespace blink

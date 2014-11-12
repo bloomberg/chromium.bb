@@ -38,14 +38,15 @@ namespace blink {
 
 class AnimatableFilterOperations final : public AnimatableValue {
 public:
-    virtual ~AnimatableFilterOperations() { }
     static PassRefPtrWillBeRawPtr<AnimatableFilterOperations> create(const FilterOperations& operations)
     {
         return adoptRefWillBeNoop(new AnimatableFilterOperations(operations));
     }
-    const FilterOperations& operations() const { return m_operations; }
 
-    virtual void trace(Visitor* visitor) override { AnimatableValue::trace(visitor); }
+    virtual ~AnimatableFilterOperations() { }
+    virtual void trace(Visitor*) override;
+
+    const FilterOperations& operations() const { return m_operations; }
 
 protected:
     virtual PassRefPtrWillBeRawPtr<AnimatableValue> interpolateTo(const AnimatableValue*, double fraction) const override;
@@ -56,6 +57,7 @@ private:
         : m_operations(operations)
     {
     }
+
     virtual bool equalTo(const AnimatableValue*) const override;
     virtual AnimatableType type() const override { return TypeFilterOperations; }
 

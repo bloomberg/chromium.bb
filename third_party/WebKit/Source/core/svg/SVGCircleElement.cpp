@@ -37,6 +37,14 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
     addToPropertyMap(m_r);
 }
 
+void SVGCircleElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_cx);
+    visitor->trace(m_cy);
+    visitor->trace(m_r);
+    SVGGeometryElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGCircleElement)
 
 bool SVGCircleElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -26,8 +26,8 @@ namespace blink {
 
 class FloatPoint;
 
-class SVGPathSource {
-    WTF_MAKE_NONCOPYABLE(SVGPathSource); WTF_MAKE_FAST_ALLOCATED;
+class SVGPathSource : public NoBaseWillBeGarbageCollectedFinalized<SVGPathSource> {
+    WTF_MAKE_NONCOPYABLE(SVGPathSource); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     SVGPathSource() { }
     virtual ~SVGPathSource() { }
@@ -46,6 +46,8 @@ public:
     virtual bool parseCurveToQuadraticSegment(FloatPoint&, FloatPoint&) = 0;
     virtual bool parseCurveToQuadraticSmoothSegment(FloatPoint&) = 0;
     virtual bool parseArcToSegment(float&, float&, float&, bool&, bool&, FloatPoint&) = 0;
+
+    virtual void trace(Visitor*) { }
 };
 
 } // namespace blink

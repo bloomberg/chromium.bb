@@ -26,6 +26,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedTypeAnimator.h"
 #include "core/svg/SVGAnimationElement.h"
+#include "platform/heap/Handle.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -66,10 +67,10 @@ private:
 
     virtual bool hasValidAttributeType() override;
 
-    RefPtr<SVGPropertyBase> m_fromProperty;
-    RefPtr<SVGPropertyBase> m_toProperty;
-    RefPtr<SVGPropertyBase> m_toAtEndOfDurationProperty;
-    RefPtr<SVGPropertyBase> m_animatedProperty;
+    RefPtrWillBeMember<SVGPropertyBase> m_fromProperty;
+    RefPtrWillBeMember<SVGPropertyBase> m_toProperty;
+    RefPtrWillBeMember<SVGPropertyBase> m_toAtEndOfDurationProperty;
+    RefPtrWillBeMember<SVGPropertyBase> m_animatedProperty;
 
     OwnPtrWillBeMember<SVGAnimatedTypeAnimator> m_animator;
 };

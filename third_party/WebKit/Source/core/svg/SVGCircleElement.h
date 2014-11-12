@@ -25,6 +25,7 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGeometryElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -37,6 +38,8 @@ public:
     SVGAnimatedLength* cy() const { return m_cy.get(); }
     SVGAnimatedLength* r() const { return m_r.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGCircleElement(Document&);
 
@@ -48,9 +51,9 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    RefPtr<SVGAnimatedLength> m_cx;
-    RefPtr<SVGAnimatedLength> m_cy;
-    RefPtr<SVGAnimatedLength> m_r;
+    RefPtrWillBeMember<SVGAnimatedLength> m_cx;
+    RefPtrWillBeMember<SVGAnimatedLength> m_cy;
+    RefPtrWillBeMember<SVGAnimatedLength> m_r;
 };
 
 } // namespace blink

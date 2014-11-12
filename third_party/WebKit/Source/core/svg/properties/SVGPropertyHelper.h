@@ -18,14 +18,14 @@ public:
     {
     }
 
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String& value) const
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String& value) const
     {
-        RefPtr<Derived> property = Derived::create();
+        RefPtrWillBeRawPtr<Derived> property = Derived::create();
         property->setValueAsString(value, IGNORE_EXCEPTION);
         return property.release();
     }
 };
 
-}
+} // namespace blink
 
 #endif // SVGPropertyHelper_h

@@ -45,9 +45,9 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> glyphOrientationToCSSPrimitiveV
     }
 }
 
-static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtr<SVGLengthList> passDashes)
+static PassRefPtrWillBeRawPtr<CSSValue> strokeDashArrayToCSSValueList(PassRefPtrWillBeRawPtr<SVGLengthList> passDashes)
 {
-    RefPtr<SVGLengthList> dashes = passDashes;
+    RefPtrWillBeRawPtr<SVGLengthList> dashes = passDashes;
 
     if (dashes->isEmpty())
         return CSSPrimitiveValue::createIdentifier(CSSValueNone);

@@ -54,7 +54,7 @@ public:
     static void removeFilterInfoForRenderLayer(RenderLayer*);
 
     FilterEffectRenderer* renderer() const { return m_renderer.get(); }
-    void setRenderer(PassRefPtr<FilterEffectRenderer>);
+    void setRenderer(PassRefPtrWillBeRawPtr<FilterEffectRenderer>);
 
     void updateReferenceFilterClients(const FilterOperations&);
     virtual void notifyFinished(Resource*) override;
@@ -66,7 +66,7 @@ private:
 
     RenderLayer* m_layer;
 
-    RefPtr<FilterEffectRenderer> m_renderer;
+    RefPtrWillBePersistent<FilterEffectRenderer> m_renderer;
 
     static RenderLayerFilterInfoMap* s_filterMap;
     WillBePersistentHeapVector<RefPtrWillBeMember<Element> > m_internalSVGReferences;

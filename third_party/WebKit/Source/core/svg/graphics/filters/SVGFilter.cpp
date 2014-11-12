@@ -57,9 +57,9 @@ FloatPoint3D SVGFilter::resolve3dPoint(const FloatPoint3D& point) const
         point.z() * sqrtf(m_targetBoundingBox.size().diagonalLengthSquared() / 2));
 }
 
-PassRefPtr<SVGFilter> SVGFilter::create(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
+PassRefPtrWillBeRawPtr<SVGFilter> SVGFilter::create(const IntRect& absoluteSourceDrawingRegion, const FloatRect& targetBoundingBox, const FloatRect& filterRegion, bool effectBBoxMode)
 {
-    return adoptRef(new SVGFilter(absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));
+    return adoptRefWillBeNoop(new SVGFilter(absoluteSourceDrawingRegion, targetBoundingBox, filterRegion, effectBBoxMode));
 }
 
 } // namespace blink

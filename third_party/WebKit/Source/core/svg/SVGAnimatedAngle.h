@@ -33,6 +33,7 @@
 
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -40,9 +41,9 @@ class SVGMarkerElement;
 
 class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle> {
 public:
-    static PassRefPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
     {
-        return adoptRef(new SVGAnimatedAngle(contextElement));
+        return adoptRefWillBeNoop(new SVGAnimatedAngle(contextElement));
     }
 
     virtual ~SVGAnimatedAngle();
@@ -53,14 +54,16 @@ public:
 
     virtual void synchronizeAttribute() override;
 
-    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) override;
+    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
     virtual void animationEnded() override;
 
+    virtual void trace(Visitor*) override;
+
 protected:
-    SVGAnimatedAngle(SVGMarkerElement* contextElement);
+    explicit SVGAnimatedAngle(SVGMarkerElement* contextElement);
 
 private:
-    RefPtr<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGMarkerOrientType> > m_orientType;
 };
 
 } // namespace blink

@@ -33,6 +33,7 @@
 
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGNumberOptionalNumber.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,23 +44,25 @@ namespace blink {
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedNumberOptionalNumber : public SVGAnimatedPropertyCommon<SVGNumberOptionalNumber> {
 public:
-    static PassRefPtr<SVGAnimatedNumberOptionalNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedNumberOptionalNumber> create(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue = 0, float initialSecondValue = 0)
     {
-        return adoptRef(new SVGAnimatedNumberOptionalNumber(contextElement, attributeName, initialFirstValue, initialSecondValue));
+        return adoptRefWillBeNoop(new SVGAnimatedNumberOptionalNumber(contextElement, attributeName, initialFirstValue, initialSecondValue));
     }
 
-    virtual void setAnimatedValue(PassRefPtr<SVGPropertyBase>) override;
+    virtual void setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase>) override;
     virtual bool needsSynchronizeAttribute() override;
     virtual void animationEnded() override;
 
     SVGAnimatedNumber* firstNumber() { return m_firstNumber.get(); }
     SVGAnimatedNumber* secondNumber() { return m_secondNumber.get(); }
 
+    virtual void trace(Visitor*) override;
+
 protected:
     SVGAnimatedNumberOptionalNumber(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue);
 
-    RefPtr<SVGAnimatedNumber> m_firstNumber;
-    RefPtr<SVGAnimatedNumber> m_secondNumber;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_firstNumber;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_secondNumber;
 };
 
 } // namespace blink

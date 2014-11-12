@@ -32,6 +32,8 @@
 
 #include "core/svg/SVGAnimatedIntegerOptionalInteger.h"
 
+#include "core/svg/SVGElement.h"
+
 namespace blink {
 
 SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement* contextElement, const QualifiedName& attributeName, float initialFirstValue, float initialSecondValue)
@@ -44,7 +46,14 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(SVGElement*
     m_secondInteger->setParentOptionalInteger(this);
 }
 
-void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(PassRefPtr<SVGPropertyBase> value)
+void SVGAnimatedIntegerOptionalInteger::trace(Visitor* visitor)
+{
+    visitor->trace(m_firstInteger);
+    visitor->trace(m_secondInteger);
+    SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::trace(visitor);
+}
+
+void SVGAnimatedIntegerOptionalInteger::setAnimatedValue(PassRefPtrWillBeRawPtr<SVGPropertyBase> value)
 {
     SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::setAnimatedValue(value);
     m_firstInteger->setAnimatedValue(currentValue()->firstInteger());

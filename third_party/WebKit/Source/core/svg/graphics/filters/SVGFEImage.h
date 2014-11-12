@@ -35,8 +35,8 @@ class RenderObject;
 
 class FEImage final : public FilterEffect {
 public:
-    static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
-    static PassRefPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
+    static PassRefPtrWillBeRawPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
+    static PassRefPtrWillBeRawPtr<FEImage> createWithIRIReference(Filter*, TreeScope&, const String&, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
 
     virtual FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
@@ -45,10 +45,12 @@ public:
     virtual TextStream& externalRepresentation(TextStream&, int indention) const override;
     virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) override;
 
+    virtual void trace(Visitor*) override;
+
 private:
     virtual ~FEImage() { }
-    FEImage(Filter*, PassRefPtr<Image>, PassRefPtr<SVGPreserveAspectRatio>);
-    FEImage(Filter*, TreeScope&, const String&, PassRefPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, PassRefPtr<Image>, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
+    FEImage(Filter*, TreeScope&, const String&, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>);
     RenderObject* referencedRenderer() const;
 
     PassRefPtr<SkImageFilter> createImageFilterForRenderer(RenderObject* rendererer, SkiaImageFilterBuilder*);
@@ -56,9 +58,10 @@ private:
     RefPtr<Image> m_image;
 
     // m_treeScope will never be a dangling reference. See https://bugs.webkit.org/show_bug.cgi?id=99243
+    // FIXME: Oilpan: turn into a (weak) member?
     TreeScope* m_treeScope;
     String m_href;
-    PassRefPtr<SVGPreserveAspectRatio> m_preserveAspectRatio;
+    RefPtrWillBeMember<SVGPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace blink

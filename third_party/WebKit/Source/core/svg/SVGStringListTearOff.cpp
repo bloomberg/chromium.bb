@@ -31,9 +31,11 @@
 #include "config.h"
 #include "core/svg/SVGStringListTearOff.h"
 
+#include "core/svg/SVGElement.h"
+
 namespace blink {
 
-SVGStringListTearOff::SVGStringListTearOff(PassRefPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGStringListTearOff::SVGStringListTearOff(PassRefPtrWillBeRawPtr<SVGStringList> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGStringList>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }

@@ -52,15 +52,15 @@ public:
     void setValue(unsigned short, ExceptionState&);
 
     // SVGPropertyBase:
-    virtual PassRefPtr<SVGEnumerationBase> clone() const = 0;
-    virtual PassRefPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
+    virtual PassRefPtrWillBeRawPtr<SVGEnumerationBase> clone() const = 0;
+    virtual PassRefPtrWillBeRawPtr<SVGPropertyBase> cloneForAnimation(const String&) const override;
 
     virtual String valueAsString() const override;
     void setValueAsString(const String&, ExceptionState&);
 
     virtual void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;
-    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtr<SVGPropertyBase> from, PassRefPtr<SVGPropertyBase> to, PassRefPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
-    virtual float calculateDistance(PassRefPtr<SVGPropertyBase> to, SVGElement*) override;
+    virtual void calculateAnimatedValue(SVGAnimationElement*, float percentage, unsigned repeatCount, PassRefPtrWillBeRawPtr<SVGPropertyBase> from, PassRefPtrWillBeRawPtr<SVGPropertyBase> to, PassRefPtrWillBeRawPtr<SVGPropertyBase> toAtEndOfDurationValue, SVGElement*) override;
+    virtual float calculateDistance(PassRefPtrWillBeRawPtr<SVGPropertyBase> to, SVGElement*) override;
 
     static AnimatedPropertyType classType() { return AnimatedEnumeration; }
 
@@ -103,16 +103,16 @@ template<typename Enum> unsigned short getMaxExposedEnumValue()
 template<typename Enum>
 class SVGEnumeration : public SVGEnumerationBase {
 public:
-    static PassRefPtr<SVGEnumeration<Enum> > create(Enum newValue)
+    static PassRefPtrWillBeRawPtr<SVGEnumeration<Enum> > create(Enum newValue)
     {
-        return adoptRef(new SVGEnumeration<Enum>(newValue));
+        return adoptRefWillBeNoop(new SVGEnumeration<Enum>(newValue));
     }
 
     virtual ~SVGEnumeration()
     {
     }
 
-    virtual PassRefPtr<SVGEnumerationBase> clone() const override
+    virtual PassRefPtrWillBeRawPtr<SVGEnumerationBase> clone() const override
     {
         return create(enumValue());
     }

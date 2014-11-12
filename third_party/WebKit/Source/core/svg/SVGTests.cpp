@@ -42,6 +42,13 @@ SVGTests::SVGTests(SVGElement* contextElement)
     contextElement->addToPropertyMap(m_systemLanguage);
 }
 
+void SVGTests::trace(Visitor* visitor)
+{
+    visitor->trace(m_requiredFeatures);
+    visitor->trace(m_requiredExtensions);
+    visitor->trace(m_systemLanguage);
+}
+
 bool SVGTests::hasExtension(const String&)
 {
     // FIXME: Implement me!

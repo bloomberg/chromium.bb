@@ -31,9 +31,12 @@ namespace blink {
 class SVGAElement final : public SVGGraphicsElement,
                           public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGAElement);
 public:
     DECLARE_NODE_FACTORY(SVGAElement);
     SVGAnimatedString* svgTarget() { return m_svgTarget.get(); }
+
+    virtual void trace(Visitor*) override;
 
 private:
     explicit SVGAElement(Document&);
@@ -60,7 +63,7 @@ private:
 
     virtual bool willRespondToMouseClickEvents() override;
 
-    RefPtr<SVGAnimatedString> m_svgTarget;
+    RefPtrWillBeMember<SVGAnimatedString> m_svgTarget;
     bool m_wasFocusedByMouse;
 };
 

@@ -44,6 +44,15 @@ inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
     UseCounter::count(document, UseCounter::SVGForeignObjectElement);
 }
 
+void SVGForeignObjectElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x);
+    visitor->trace(m_y);
+    visitor->trace(m_width);
+    visitor->trace(m_height);
+    SVGGraphicsElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGForeignObjectElement)
 
 bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -73,7 +82,7 @@ bool SVGForeignObjectElement::isPresentationAttribute(const QualifiedName& name)
 void SVGForeignObjectElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     if (name == SVGNames::widthAttr || name == SVGNames::heightAttr) {
-        RefPtr<SVGLength> length = SVGLength::create(LengthModeOther);
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(LengthModeOther);
         TrackExceptionState exceptionState;
         length->setValueAsString(value, exceptionState);
         if (!exceptionState.hadException()) {

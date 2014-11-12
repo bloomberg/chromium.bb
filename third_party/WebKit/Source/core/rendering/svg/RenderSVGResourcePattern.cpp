@@ -44,6 +44,12 @@ RenderSVGResourcePattern::RenderSVGResourcePattern(SVGPatternElement* node)
 {
 }
 
+void RenderSVGResourcePattern::trace(Visitor* visitor)
+{
+    visitor->trace(m_attributes);
+    RenderSVGResourcePaintServer::trace(visitor);
+}
+
 void RenderSVGResourcePattern::removeAllClientsFromCache(bool markForInvalidation)
 {
     m_patternMap.clear();

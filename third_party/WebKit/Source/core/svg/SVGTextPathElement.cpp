@@ -68,6 +68,15 @@ SVGTextPathElement::~SVGTextPathElement()
 #endif
 }
 
+void SVGTextPathElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_startOffset);
+    visitor->trace(m_method);
+    visitor->trace(m_spacing);
+    SVGTextContentElement::trace(visitor);
+    SVGURIReference::trace(visitor);
+}
+
 void SVGTextPathElement::clearResourceReferences()
 {
     removeAllOutgoingReferences();

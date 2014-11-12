@@ -75,7 +75,7 @@ public:
     static SVGPaintType initialStrokePaintType() { return SVG_PAINTTYPE_NONE; }
     static Color initialStrokePaintColor() { return Color(); }
     static String initialStrokePaintUri() { return String(); }
-    static PassRefPtr<SVGLengthList> initialStrokeDashArray() { return SVGLengthList::create(); }
+    static PassRefPtrWillBeRawPtr<SVGLengthList> initialStrokeDashArray() { return SVGLengthList::create(); }
     static float initialStrokeMiterLimit() { return 4; }
     static float initialStopOpacity() { return 1; }
     static Color initialStopColor() { return Color(0, 0, 0); }
@@ -91,23 +91,23 @@ public:
     static EMaskType initialMaskType() { return MT_LUMINANCE; }
     static EPaintOrder initialPaintOrder() { return PO_NORMAL; }
 
-    static PassRefPtr<SVGLength> initialBaselineShiftValue()
+    static PassRefPtrWillBeRawPtr<SVGLength> initialBaselineShiftValue()
     {
-        RefPtr<SVGLength> length = SVGLength::create();
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
         length->newValueSpecifiedUnits(LengthTypeNumber, 0);
         return length.release();
     }
 
-    static PassRefPtr<SVGLength> initialStrokeDashOffset()
+    static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeDashOffset()
     {
-        RefPtr<SVGLength> length = SVGLength::create();
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
         length->newValueSpecifiedUnits(LengthTypeNumber, 0);
         return length.release();
     }
 
-    static PassRefPtr<SVGLength> initialStrokeWidth()
+    static PassRefPtrWillBeRawPtr<SVGLength> initialStrokeWidth()
     {
-        RefPtr<SVGLength> length = SVGLength::create();
+        RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create();
         length->newValueSpecifiedUnits(LengthTypeNumber, 1);
         return length.release();
     }
@@ -185,7 +185,7 @@ public:
         }
     }
 
-    void setStrokeDashArray(PassRefPtr<SVGLengthList> obj)
+    void setStrokeDashArray(PassRefPtrWillBeRawPtr<SVGLengthList> obj)
     {
         if (!(stroke->dashArray == obj))
             stroke.access()->dashArray = obj;
@@ -197,13 +197,13 @@ public:
             stroke.access()->miterLimit = obj;
     }
 
-    void setStrokeWidth(PassRefPtr<SVGLength> obj)
+    void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> obj)
     {
         if (!(stroke->width == obj))
             stroke.access()->width = obj;
     }
 
-    void setStrokeDashOffset(PassRefPtr<SVGLength> obj)
+    void setStrokeDashOffset(PassRefPtrWillBeRawPtr<SVGLength> obj)
     {
         if (!(stroke->dashOffset == obj))
             stroke.access()->dashOffset = obj;
@@ -239,7 +239,7 @@ public:
             misc.access()->lightingColor = obj;
     }
 
-    void setBaselineShiftValue(PassRefPtr<SVGLength> obj)
+    void setBaselineShiftValue(PassRefPtrWillBeRawPtr<SVGLength> obj)
     {
         if (!(misc->baselineShiftValue == obj))
             misc.access()->baselineShiftValue = obj;

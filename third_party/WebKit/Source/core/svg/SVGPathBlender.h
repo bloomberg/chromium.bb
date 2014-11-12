@@ -21,6 +21,7 @@
 #define SVGPathBlender_h
 
 #include "core/svg/SVGPathConsumer.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -31,14 +32,16 @@ enum FloatBlendMode {
 
 class SVGPathSource;
 
-class SVGPathBlender {
-    WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED;
+class SVGPathBlender : public NoBaseWillBeGarbageCollectedFinalized<SVGPathBlender> {
+    WTF_MAKE_NONCOPYABLE(SVGPathBlender); WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
     SVGPathBlender();
 
     bool addAnimatedPath(SVGPathSource*, SVGPathSource*, SVGPathConsumer*, unsigned repeatCount);
     bool blendAnimatedPath(float, SVGPathSource*, SVGPathSource*, SVGPathConsumer*);
     void cleanup();
+
+    void trace(Visitor*);
 
 private:
     bool blendMoveToSegment();
@@ -54,9 +57,9 @@ private:
     float blendAnimatedDimensonalFloat(float, float, FloatBlendMode);
     FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);
 
-    SVGPathSource* m_fromSource;
-    SVGPathSource* m_toSource;
-    SVGPathConsumer* m_consumer;
+    RawPtrWillBeMember<SVGPathSource> m_fromSource;
+    RawPtrWillBeMember<SVGPathSource> m_toSource;
+    RawPtrWillBeMember<SVGPathConsumer> m_consumer;
 
     FloatPoint m_fromCurrentPoint;
     FloatPoint m_toCurrentPoint;

@@ -31,6 +31,7 @@ namespace blink {
 
 class SVGViewSpec final : public RefCountedWillBeGarbageCollectedFinalized<SVGViewSpec>, public ScriptWrappable, public SVGZoomAndPan, public SVGFitToViewBox {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
 public:
 #if !ENABLE(OILPAN)
     using RefCounted<SVGViewSpec>::ref;
@@ -48,7 +49,7 @@ public:
 
     // JS API
     SVGTransformList* transform() { return m_transform ? m_transform->baseValue() : 0; }
-    PassRefPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
+    PassRefPtrWillBeRawPtr<SVGTransformListTearOff> transformFromJavascript() { return m_transform ? m_transform->baseVal() : 0; }
     SVGElement* viewTarget() const;
     String viewBoxString() const;
     String preserveAspectRatioString() const;
@@ -58,7 +59,7 @@ public:
     void setZoomAndPan(unsigned short value) { } // read only
     void setZoomAndPan(unsigned short value, ExceptionState&);
 
-    void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
     SVGSVGElement* contextElement() { return m_contextElement.get(); }
 
@@ -69,7 +70,7 @@ private:
     bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
     RawPtrWillBeMember<SVGSVGElement> m_contextElement;
-    RefPtr<SVGAnimatedTransformList> m_transform;
+    RefPtrWillBeMember<SVGAnimatedTransformList> m_transform;
     String m_viewTargetString;
 };
 

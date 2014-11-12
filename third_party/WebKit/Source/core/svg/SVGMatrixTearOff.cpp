@@ -33,13 +33,14 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 #include "core/svg/SVGTransformTearOff.h"
 
 namespace blink {
 
 SVGMatrixTearOff::SVGMatrixTearOff(const AffineTransform& staticValue)
     : m_staticValue(staticValue)
-    , m_contextTransform(0)
+    , m_contextTransform(nullptr)
 {
 }
 
@@ -51,6 +52,11 @@ SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
 
 SVGMatrixTearOff::~SVGMatrixTearOff()
 {
+}
+
+void SVGMatrixTearOff::trace(Visitor* visitor)
+{
+    visitor->trace(m_contextTransform);
 }
 
 const AffineTransform& SVGMatrixTearOff::value() const
@@ -92,70 +98,70 @@ DEFINE_SETTER(F);
 
 #undef DEFINE_SETTER
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::translate(double tx, double ty)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::translate(double tx, double ty)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->translate(tx, ty);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::scale(double s)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::scale(double s)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->scale(s, s);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::scaleNonUniform(double sx, double sy)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::scaleNonUniform(double sx, double sy)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->scale(sx, sy);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::rotate(double d)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::rotate(double d)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->rotate(d);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::flipX()
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::flipX()
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->flipX();
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::flipY()
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::flipY()
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->flipY();
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::skewX(double angle)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::skewX(double angle)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->skewX(angle);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::skewY(double angle)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::skewY(double angle)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     matrix->mutableValue()->skewY(angle);
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::multiply(PassRefPtr<SVGMatrixTearOff> other)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::multiply(PassRefPtrWillBeRawPtr<SVGMatrixTearOff> other)
 {
-    RefPtr<SVGMatrixTearOff> matrix = create(value());
+    RefPtrWillBeRawPtr<SVGMatrixTearOff> matrix = create(value());
     *matrix->mutableValue() *= other->value();
     return matrix.release();
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::inverse(ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::inverse(ExceptionState& exceptionState)
 {
     AffineTransform transform = value().inverse();
     if (!value().isInvertible())
@@ -164,7 +170,7 @@ PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::inverse(ExceptionState& exception
     return create(transform);
 }
 
-PassRefPtr<SVGMatrixTearOff> SVGMatrixTearOff::rotateFromVector(double x, double y, ExceptionState& exceptionState)
+PassRefPtrWillBeRawPtr<SVGMatrixTearOff> SVGMatrixTearOff::rotateFromVector(double x, double y, ExceptionState& exceptionState)
 {
     if (!x || !y)
         exceptionState.throwDOMException(InvalidAccessError, "Arguments cannot be zero.");

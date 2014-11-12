@@ -28,6 +28,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/ColorSpace.h"
+#include "platform/heap/Handle.h"
 
 #include "third_party/skia/include/core/SkImageFilter.h"
 
@@ -45,7 +46,7 @@ class TextStream;
 
 class SkiaImageFilterBuilder;
 
-typedef Vector<RefPtr<FilterEffect> > FilterEffectVector;
+typedef WillBeHeapVector<RefPtrWillBeMember<FilterEffect> > FilterEffectVector;
 
 enum FilterEffectType {
     FilterEffectTypeUnknown,
@@ -62,9 +63,10 @@ enum DetermineSubregionFlag {
 
 typedef int DetermineSubregionFlags;
 
-class PLATFORM_EXPORT FilterEffect : public RefCounted<FilterEffect> {
+class PLATFORM_EXPORT FilterEffect : public RefCountedWillBeGarbageCollectedFinalized<FilterEffect> {
 public:
     virtual ~FilterEffect();
+    virtual void trace(Visitor*);
 
     static bool isFilterSizeValid(const FloatRect&);
     static float maxFilterArea();

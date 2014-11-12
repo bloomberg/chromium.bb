@@ -26,6 +26,7 @@
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGPointTearOff.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -51,11 +52,11 @@ public:
     unsigned getNumberOfChars();
     float getComputedTextLength();
     float getSubStringLength(unsigned charnum, unsigned nchars, ExceptionState&);
-    PassRefPtr<SVGPointTearOff> getStartPositionOfChar(unsigned charnum, ExceptionState&);
-    PassRefPtr<SVGPointTearOff> getEndPositionOfChar(unsigned charnum, ExceptionState&);
-    PassRefPtr<SVGRectTearOff> getExtentOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGPointTearOff> getStartPositionOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGPointTearOff> getEndPositionOfChar(unsigned charnum, ExceptionState&);
+    PassRefPtrWillBeRawPtr<SVGRectTearOff> getExtentOfChar(unsigned charnum, ExceptionState&);
     float getRotationOfChar(unsigned charnum, ExceptionState&);
-    int getCharNumAtPosition(PassRefPtr<SVGPointTearOff>, ExceptionState&);
+    int getCharNumAtPosition(PassRefPtrWillBeRawPtr<SVGPointTearOff>, ExceptionState&);
     void selectSubString(unsigned charnum, unsigned nchars, ExceptionState&);
 
     static SVGTextContentElement* elementFromRenderer(RenderObject*);
@@ -63,6 +64,8 @@ public:
     SVGAnimatedLength* textLength() { return m_textLength.get(); }
     bool textLengthIsSpecifiedByUser() { return m_textLengthIsSpecifiedByUser; }
     SVGAnimatedEnumeration<SVGLengthAdjustType>* lengthAdjust() { return m_lengthAdjust.get(); }
+
+    virtual void trace(Visitor*) override;
 
 protected:
     SVGTextContentElement(const QualifiedName&, Document&);
@@ -78,9 +81,9 @@ protected:
 private:
     virtual bool isTextContent() const override final { return true; }
 
-    RefPtr<SVGAnimatedLength> m_textLength;
+    RefPtrWillBeMember<SVGAnimatedLength> m_textLength;
     bool m_textLengthIsSpecifiedByUser;
-    RefPtr<SVGAnimatedEnumeration<SVGLengthAdjustType> > m_lengthAdjust;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGLengthAdjustType> > m_lengthAdjust;
 };
 
 inline bool isSVGTextContentElement(const SVGElement& element)

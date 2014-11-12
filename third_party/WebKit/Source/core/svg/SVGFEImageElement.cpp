@@ -55,6 +55,13 @@ SVGFEImageElement::~SVGFEImageElement()
 #endif
 }
 
+void SVGFEImageElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_preserveAspectRatio);
+    SVGFilterPrimitiveStandardAttributes::trace(visitor);
+    SVGURIReference::trace(visitor);
+}
+
 bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const
 {
     if (m_cachedImage && m_cachedImage->image())
@@ -172,7 +179,7 @@ void SVGFEImageElement::notifyFinished(Resource*)
         markForLayoutAndParentResourceInvalidation(renderer);
 }
 
-PassRefPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
+PassRefPtrWillBeRawPtr<FilterEffect> SVGFEImageElement::build(SVGFilterBuilder*, Filter* filter)
 {
     if (m_cachedImage)
         return FEImage::createWithImage(filter, m_cachedImage->imageForRenderer(renderer()), m_preserveAspectRatio->currentValue());

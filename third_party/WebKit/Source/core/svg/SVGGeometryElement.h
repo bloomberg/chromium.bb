@@ -40,8 +40,8 @@ class SVGPointTearOff;
 class SVGGeometryElement : public SVGGraphicsElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    bool isPointInFill(PassRefPtr<SVGPointTearOff>) const;
-    bool isPointInStroke(PassRefPtr<SVGPointTearOff>) const;
+    bool isPointInFill(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
+    bool isPointInStroke(PassRefPtrWillBeRawPtr<SVGPointTearOff>) const;
 
 protected:
     SVGGeometryElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);

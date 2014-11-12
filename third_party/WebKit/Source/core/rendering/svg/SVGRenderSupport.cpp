@@ -352,7 +352,7 @@ void SVGRenderSupport::applyStrokeStyleToContext(GraphicsContext* context, const
     context->setLineJoin(svgStyle.joinStyle());
     context->setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
+    RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     if (dashes->isEmpty())
         return;
 
@@ -381,7 +381,7 @@ void SVGRenderSupport::applyStrokeStyleToStrokeData(StrokeData* strokeData, cons
     strokeData->setLineJoin(svgStyle.joinStyle());
     strokeData->setMiterLimit(svgStyle.strokeMiterLimit());
 
-    RefPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
+    RefPtrWillBeRawPtr<SVGLengthList> dashes = svgStyle.strokeDashArray();
     if (dashes->isEmpty())
         return;
 

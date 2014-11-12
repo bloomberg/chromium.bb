@@ -61,6 +61,18 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(const Q
     addToPropertyMap(m_type);
 }
 
+void SVGComponentTransferFunctionElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_tableValues);
+    visitor->trace(m_slope);
+    visitor->trace(m_intercept);
+    visitor->trace(m_amplitude);
+    visitor->trace(m_exponent);
+    visitor->trace(m_offset);
+    visitor->trace(m_type);
+    SVGElement::trace(visitor);
+}
+
 bool SVGComponentTransferFunctionElement::isSupportedAttribute(const QualifiedName& attrName)
 {
     DEFINE_STATIC_LOCAL(HashSet<QualifiedName>, supportedAttributes, ());

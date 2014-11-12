@@ -30,7 +30,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FEBlend : public FilterEffect {
 public:
-    static PassRefPtr<FEBlend> create(Filter*, WebBlendMode);
+    static PassRefPtrWillBeRawPtr<FEBlend> create(Filter*, WebBlendMode);
 
     WebBlendMode blendMode() const;
     bool setBlendMode(WebBlendMode);

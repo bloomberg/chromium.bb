@@ -46,9 +46,9 @@ FETurbulence::FETurbulence(Filter* filter, TurbulenceType type, float baseFreque
 {
 }
 
-PassRefPtr<FETurbulence> FETurbulence::create(Filter* filter, TurbulenceType type, float baseFrequencyX, float baseFrequencyY, int numOctaves, float seed, bool stitchTiles)
+PassRefPtrWillBeRawPtr<FETurbulence> FETurbulence::create(Filter* filter, TurbulenceType type, float baseFrequencyX, float baseFrequencyY, int numOctaves, float seed, bool stitchTiles)
 {
-    return adoptRef(new FETurbulence(filter, type, baseFrequencyX, baseFrequencyY, numOctaves, seed, stitchTiles));
+    return adoptRefWillBeNoop(new FETurbulence(filter, type, baseFrequencyX, baseFrequencyY, numOctaves, seed, stitchTiles));
 }
 
 TurbulenceType FETurbulence::type() const

@@ -24,6 +24,7 @@
 #include "core/svg/SVGAnimatedNumberOptionalNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEGaussianBlur.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -38,16 +39,18 @@ public:
     SVGAnimatedNumber* stdDeviationY() { return m_stdDeviation->secondNumber(); }
     SVGAnimatedString* in1() { return m_in1.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGFEGaussianBlurElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
-    RefPtr<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedNumberOptionalNumber> m_stdDeviation;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
 };
 
 } // namespace blink

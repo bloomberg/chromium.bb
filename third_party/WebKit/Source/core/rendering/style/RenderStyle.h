@@ -1419,11 +1419,11 @@ public:
     float strokeOpacity() const { return svgStyle().strokeOpacity(); }
     void setStrokeOpacity(float f) { accessSVGStyle().setStrokeOpacity(f); }
     SVGLength* strokeWidth() const { return svgStyle().strokeWidth(); }
-    void setStrokeWidth(PassRefPtr<SVGLength> w) { accessSVGStyle().setStrokeWidth(w); }
+    void setStrokeWidth(PassRefPtrWillBeRawPtr<SVGLength> w) { accessSVGStyle().setStrokeWidth(w); }
     SVGLengthList* strokeDashArray() const { return svgStyle().strokeDashArray(); }
-    void setStrokeDashArray(PassRefPtr<SVGLengthList> array) { accessSVGStyle().setStrokeDashArray(array); }
+    void setStrokeDashArray(PassRefPtrWillBeRawPtr<SVGLengthList> array) { accessSVGStyle().setStrokeDashArray(array); }
     SVGLength* strokeDashOffset() const { return svgStyle().strokeDashOffset(); }
-    void setStrokeDashOffset(PassRefPtr<SVGLength> d) { accessSVGStyle().setStrokeDashOffset(d); }
+    void setStrokeDashOffset(PassRefPtrWillBeRawPtr<SVGLength> d) { accessSVGStyle().setStrokeDashOffset(d); }
     float strokeMiterLimit() const { return svgStyle().strokeMiterLimit(); }
     void setStrokeMiterLimit(float f) { accessSVGStyle().setStrokeMiterLimit(f); }
 
@@ -1438,7 +1438,7 @@ public:
     void setLightingColor(const Color& c) { accessSVGStyle().setLightingColor(c); }
 
     SVGLength* baselineShiftValue() const { return svgStyle().baselineShiftValue(); }
-    void setBaselineShiftValue(PassRefPtr<SVGLength> s) { accessSVGStyle().setBaselineShiftValue(s); }
+    void setBaselineShiftValue(PassRefPtrWillBeRawPtr<SVGLength> s) { accessSVGStyle().setBaselineShiftValue(s); }
 
     void setShapeOutside(PassRefPtr<ShapeValue> value)
     {
@@ -1712,7 +1712,11 @@ public:
     static LineClampValue initialLineClamp() { return LineClampValue(); }
     static ETextSecurity initialTextSecurity() { return TSNONE; }
     static Color initialTapHighlightColor();
+#if ENABLE(OILPAN)
+    static const FilterOperations& initialFilter();
+#else
     static const FilterOperations& initialFilter() { DEFINE_STATIC_LOCAL(FilterOperations, ops, ()); return ops; }
+#endif
     static WebBlendMode initialBlendMode() { return WebBlendModeNormal; }
     static EIsolation initialIsolation() { return IsolationAuto; }
 private:

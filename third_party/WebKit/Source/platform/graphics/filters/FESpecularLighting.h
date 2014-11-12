@@ -29,7 +29,7 @@ namespace blink {
 
 class PLATFORM_EXPORT FESpecularLighting : public FELighting {
 public:
-    static PassRefPtr<FESpecularLighting> create(Filter*, const Color&, float, float,
+    static PassRefPtrWillBeRawPtr<FESpecularLighting> create(Filter*, const Color&, float, float,
         float, float, float, PassRefPtr<LightSource>);
     virtual ~FESpecularLighting();
 

@@ -29,6 +29,7 @@
 #include "core/svg/SVGURIReference.h"
 #include "core/svg/SVGUnitTypes.h"
 #include "platform/graphics/Gradient.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,6 +44,7 @@ template<> const SVGEnumerationStringEntries& getStaticStringEntries<SVGSpreadMe
 class SVGGradientElement : public SVGElement,
                            public SVGURIReference {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGGradientElement);
 public:
     enum {
         SVG_SPREADMETHOD_UNKNOWN = SVGSpreadMethodUnknown,
@@ -57,6 +59,8 @@ public:
     SVGAnimatedEnumeration<SVGSpreadMethodType>* spreadMethod() { return m_spreadMethod.get(); }
     SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType>* gradientUnits() { return m_gradientUnits.get(); }
 
+    virtual void trace(Visitor*) override;
+
 protected:
     SVGGradientElement(const QualifiedName&, Document&);
 
@@ -69,9 +73,9 @@ private:
 
     virtual void childrenChanged(const ChildrenChange&) override final;
 
-    RefPtr<SVGAnimatedTransformList> m_gradientTransform;
-    RefPtr<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
-    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
+    RefPtrWillBeMember<SVGAnimatedTransformList> m_gradientTransform;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGSpreadMethodType> > m_spreadMethod;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_gradientUnits;
 };
 
 inline bool isSVGGradientElement(const SVGElement& element)

@@ -602,7 +602,7 @@ void SVGElement::parseAttribute(const QualifiedName& name, const AtomicString& v
 
 void SVGElement::parseAttributeNew(const QualifiedName& name, const AtomicString& value)
 {
-    RefPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = propertyFromAttribute(name);
     if (property) {
         SVGParsingError parseError = NoError;
         property->setBaseValueAsString(value, parseError);
@@ -690,14 +690,14 @@ AnimatedPropertyType SVGElement::animatedPropertyTypeForCSSAttribute(const Quali
     return AnimatedUnknown;
 }
 
-void SVGElement::addToPropertyMap(PassRefPtr<SVGAnimatedPropertyBase> passProperty)
+void SVGElement::addToPropertyMap(PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> passProperty)
 {
-    RefPtr<SVGAnimatedPropertyBase> property(passProperty);
+    RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property(passProperty);
     QualifiedName attributeName = property->attributeName();
     m_attributeToPropertyMap.set(attributeName, property.release());
 }
 
-PassRefPtr<SVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
+PassRefPtrWillBeRawPtr<SVGAnimatedPropertyBase> SVGElement::propertyFromAttribute(const QualifiedName& attributeName)
 {
     AttributeToPropertyMap::iterator it = m_attributeToPropertyMap.find<SVGAttributeHashTranslator>(attributeName);
     if (it == m_attributeToPropertyMap.end())
@@ -902,7 +902,7 @@ void SVGElement::synchronizeAnimatedSVGAttribute(const QualifiedName& name) cons
 
         elementData()->m_animatedSVGAttributesAreDirty = false;
     } else {
-        RefPtr<SVGAnimatedPropertyBase> property = m_attributeToPropertyMap.get(name);
+        RefPtrWillBeRawPtr<SVGAnimatedPropertyBase> property = m_attributeToPropertyMap.get(name);
         if (property && property->needsSynchronizeAttribute())
             property->synchronizeAttribute();
     }
@@ -1186,7 +1186,9 @@ void SVGElement::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_elementsWithRelativeLengths);
+    visitor->trace(m_attributeToPropertyMap);
     visitor->trace(m_SVGRareData);
+    visitor->trace(m_className);
 #endif
     Element::trace(visitor);
 }

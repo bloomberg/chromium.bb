@@ -28,6 +28,7 @@
     SetWrapperReferenceTo(SVGElement contextElement),
     RuntimeEnabled=SVG1DOM,
     MeasureAs=SVG1DOM,
+    WillBeGarbageCollected,
 ] interface SVGAnimatedAngle {
     readonly attribute SVGAngle baseVal;
     readonly attribute SVGAngle animVal;

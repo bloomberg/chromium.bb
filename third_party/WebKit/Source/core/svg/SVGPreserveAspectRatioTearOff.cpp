@@ -34,6 +34,7 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGElement.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ void SVGPreserveAspectRatioTearOff::setMeetOrSlice(unsigned short meetOrSlice, E
     target()->setMeetOrSlice(static_cast<SVGPreserveAspectRatio::SVGMeetOrSliceType>(meetOrSlice));
 }
 
-SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(PassRefPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
+SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName)
     : SVGPropertyTearOff<SVGPreserveAspectRatio>(target, contextElement, propertyIsAnimVal, attributeName)
 {
 }

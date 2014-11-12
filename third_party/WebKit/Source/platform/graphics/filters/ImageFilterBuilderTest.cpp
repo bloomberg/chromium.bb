@@ -42,20 +42,20 @@ protected:
     void colorSpaceTest()
     {
         // Build filter tree
-        RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(1.0f);
+        RefPtrWillBeRawPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create(1.0f);
 
         // Add a dummy source graphic input
-        RefPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();
+        RefPtrWillBeRawPtr<FilterEffect> sourceEffect = referenceFilter->sourceGraphic();
         sourceEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
 
         // Add a blur effect (with input : source)
-        RefPtr<FilterEffect> blurEffect =
+        RefPtrWillBeRawPtr<FilterEffect> blurEffect =
             FEGaussianBlur::create(referenceFilter.get(), 3.0f, 3.0f);
         blurEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
         blurEffect->inputEffects().append(sourceEffect);
 
         // Add a blend effect (with inputs : blur, source)
-        RefPtr<FilterEffect> blendEffect =
+        RefPtrWillBeRawPtr<FilterEffect> blendEffect =
             FEBlend::create(referenceFilter.get(), WebBlendModeNormal);
         blendEffect->setOperatingColorSpace(ColorSpaceDeviceRGB);
         FilterEffectVector& blendInputs = blendEffect->inputEffects();
@@ -64,7 +64,7 @@ protected:
         blendInputs.append(blurEffect);
 
         // Add a merge effect (with inputs : blur, blend)
-        RefPtr<FilterEffect> mergeEffect = FEMerge::create(referenceFilter.get());
+        RefPtrWillBeRawPtr<FilterEffect> mergeEffect = FEMerge::create(referenceFilter.get());
         mergeEffect->setOperatingColorSpace(ColorSpaceLinearRGB);
         FilterEffectVector& mergeInputs = mergeEffect->inputEffects();
         mergeInputs.reserveCapacity(2);

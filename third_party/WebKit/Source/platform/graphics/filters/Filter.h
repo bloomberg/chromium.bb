@@ -25,15 +25,15 @@
 #include "platform/geometry/FloatPoint3D.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class PLATFORM_EXPORT Filter : public RefCounted<Filter> {
+class PLATFORM_EXPORT Filter : public RefCountedWillBeGarbageCollectedFinalized<Filter> {
 public:
-    Filter(float scale)
-    : m_scale(scale) { }
     virtual ~Filter() { }
+    virtual void trace(Visitor*) { }
 
     float scale() const { return m_scale; }
     FloatRect mapLocalRectToAbsoluteRect(const FloatRect& rect) const { FloatRect result(rect); result.scale(m_scale); return result; }
@@ -53,6 +53,12 @@ public:
         m_filterRegion = rect;
         m_absoluteFilterRegion = rect;
         m_absoluteFilterRegion.scale(m_scale);
+    }
+
+protected:
+    explicit Filter(float scale)
+        : m_scale(scale)
+    {
     }
 
 private:

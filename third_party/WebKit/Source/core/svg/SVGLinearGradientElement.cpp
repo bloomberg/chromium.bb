@@ -48,6 +48,15 @@ inline SVGLinearGradientElement::SVGLinearGradientElement(Document& document)
     addToPropertyMap(m_y2);
 }
 
+void SVGLinearGradientElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_x1);
+    visitor->trace(m_y1);
+    visitor->trace(m_x2);
+    visitor->trace(m_y2);
+    SVGGradientElement::trace(visitor);
+}
+
 DEFINE_NODE_FACTORY(SVGLinearGradientElement)
 
 bool SVGLinearGradientElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -46,29 +46,30 @@ private:
 
 // SVGRenderingContext
 class SVGRenderingContext {
+    STACK_ALLOCATED();
 public:
     // Does not start rendering.
     SVGRenderingContext()
         : m_renderingFlags(0)
-        , m_object(0)
-        , m_paintInfo(0)
-        , m_savedContext(0)
-        , m_filter(0)
-        , m_clipper(0)
+        , m_object(nullptr)
+        , m_paintInfo(nullptr)
+        , m_savedContext(nullptr)
+        , m_filter(nullptr)
+        , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
-        , m_masker(0)
+        , m_masker(nullptr)
     {
     }
 
     SVGRenderingContext(RenderObject* object, PaintInfo& paintinfo)
         : m_renderingFlags(0)
-        , m_object(0)
-        , m_paintInfo(0)
-        , m_savedContext(0)
-        , m_filter(0)
-        , m_clipper(0)
+        , m_object(nullptr)
+        , m_paintInfo(nullptr)
+        , m_savedContext(nullptr)
+        , m_filter(nullptr)
+        , m_clipper(nullptr)
         , m_clipperState(RenderSVGResourceClipper::ClipperNotApplied)
-        , m_masker(0)
+        , m_masker(nullptr)
     {
         prepareToRenderSVGContent(object, paintinfo);
     }
@@ -98,14 +99,14 @@ private:
     const static int ActionsNeeded = RestoreGraphicsContext | EndOpacityLayer | PostApplyResources;
 
     int m_renderingFlags;
-    RenderObject* m_object;
+    RawPtrWillBeMember<RenderObject> m_object;
     PaintInfo* m_paintInfo;
     GraphicsContext* m_savedContext;
     IntRect m_savedPaintRect;
-    RenderSVGResourceFilter* m_filter;
-    RenderSVGResourceClipper* m_clipper;
+    RawPtrWillBeMember<RenderSVGResourceFilter> m_filter;
+    RawPtrWillBeMember<RenderSVGResourceClipper> m_clipper;
     RenderSVGResourceClipper::ClipperState m_clipperState;
-    RenderSVGResourceMasker* m_masker;
+    RawPtrWillBeMember<RenderSVGResourceMasker> m_masker;
 };
 
 } // namespace blink

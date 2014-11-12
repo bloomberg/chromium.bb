@@ -41,14 +41,14 @@ class FilterOperation;
 class StyleImage;
 class TextLinkColors;
 
-typedef WillBeHeapHashMap<FilterOperation*, RefPtrWillBeMember<CSSSVGDocumentValue> > PendingSVGDocumentMap;
+typedef WillBeHeapHashMap<RawPtrWillBeMember<FilterOperation>, RefPtrWillBeMember<CSSSVGDocumentValue> > PendingSVGDocumentMap;
 typedef WillBeHeapHashMap<CSSPropertyID, RefPtrWillBeMember<CSSValue> > PendingImagePropertyMap;
 
 // Holds information about resources, requested by stylesheets.
 // Lifetime: per-element style resolve.
 class ElementStyleResources {
-STACK_ALLOCATED();
-WTF_MAKE_NONCOPYABLE(ElementStyleResources);
+    STACK_ALLOCATED();
+    WTF_MAKE_NONCOPYABLE(ElementStyleResources);
 public:
     ElementStyleResources();
 

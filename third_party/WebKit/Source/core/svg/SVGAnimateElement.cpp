@@ -396,6 +396,10 @@ SVGAnimatedTypeAnimator* SVGAnimateElement::ensureAnimator()
 
 void SVGAnimateElement::trace(Visitor* visitor)
 {
+    visitor->trace(m_fromProperty);
+    visitor->trace(m_toProperty);
+    visitor->trace(m_toAtEndOfDurationProperty);
+    visitor->trace(m_animatedProperty);
     visitor->trace(m_animator);
     SVGAnimationElement::trace(visitor);
 }

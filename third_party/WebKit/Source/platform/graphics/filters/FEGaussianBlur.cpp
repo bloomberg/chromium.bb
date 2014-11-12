@@ -49,9 +49,9 @@ FEGaussianBlur::FEGaussianBlur(Filter* filter, float x, float y)
 {
 }
 
-PassRefPtr<FEGaussianBlur> FEGaussianBlur::create(Filter* filter, float x, float y)
+PassRefPtrWillBeRawPtr<FEGaussianBlur> FEGaussianBlur::create(Filter* filter, float x, float y)
 {
-    return adoptRef(new FEGaussianBlur(filter, x, y));
+    return adoptRefWillBeNoop(new FEGaussianBlur(filter, x, y));
 }
 
 float FEGaussianBlur::stdDeviationX() const

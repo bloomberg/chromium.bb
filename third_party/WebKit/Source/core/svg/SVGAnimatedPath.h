@@ -42,9 +42,9 @@ class SVGAnimatedPath : public SVGAnimatedProperty<SVGPathSegList> {
 public:
     virtual ~SVGAnimatedPath();
 
-    static PassRefPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
+    static PassRefPtrWillBeRawPtr<SVGAnimatedPath> create(SVGPathElement* contextElement, const QualifiedName& attributeName)
     {
-        return adoptRef(new SVGAnimatedPath(contextElement, attributeName));
+        return adoptRefWillBeNoop(new SVGAnimatedPath(contextElement, attributeName));
     }
 
 protected:

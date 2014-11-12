@@ -24,6 +24,7 @@
 #include "core/SVGNames.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGGradientElement.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -43,6 +44,8 @@ public:
     SVGAnimatedLength* fy() const { return m_fy.get(); }
     SVGAnimatedLength* fr() const { return m_fr.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGRadialGradientElement(Document&);
 
@@ -54,12 +57,12 @@ private:
 
     virtual bool selfHasRelativeLengths() const override;
 
-    RefPtr<SVGAnimatedLength> m_cx;
-    RefPtr<SVGAnimatedLength> m_cy;
-    RefPtr<SVGAnimatedLength> m_r;
-    RefPtr<SVGAnimatedLength> m_fx;
-    RefPtr<SVGAnimatedLength> m_fy;
-    RefPtr<SVGAnimatedLength> m_fr;
+    RefPtrWillBeMember<SVGAnimatedLength> m_cx;
+    RefPtrWillBeMember<SVGAnimatedLength> m_cy;
+    RefPtrWillBeMember<SVGAnimatedLength> m_r;
+    RefPtrWillBeMember<SVGAnimatedLength> m_fx;
+    RefPtrWillBeMember<SVGAnimatedLength> m_fy;
+    RefPtrWillBeMember<SVGAnimatedLength> m_fr;
 };
 
 } // namespace blink

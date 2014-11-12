@@ -33,6 +33,7 @@
 
 #include "core/dom/QualifiedName.h"
 #include "core/svg/properties/SVGProperty.h"
+#include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -42,7 +43,7 @@ enum PropertyIsAnimValType {
     PropertyIsAnimVal
 };
 
-class SVGPropertyTearOffBase : public RefCounted<SVGPropertyTearOffBase> {
+class SVGPropertyTearOffBase : public RefCountedWillBeGarbageCollectedFinalized<SVGPropertyTearOffBase> {
 public:
     virtual ~SVGPropertyTearOffBase() { }
 
@@ -94,6 +95,11 @@ public:
 
     virtual AnimatedPropertyType type() const = 0;
 
+    virtual void trace(Visitor* visitor)
+    {
+        visitor->trace(m_contextElement);
+    }
+
 protected:
     SVGPropertyTearOffBase(SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : m_contextElement(contextElement)
@@ -105,7 +111,7 @@ protected:
 
 private:
     // These references are kept alive from V8 wrapper to prevent reference cycles
-    SVGElement* m_contextElement;
+    RawPtrWillBeMember<SVGElement> m_contextElement;
 
     PropertyIsAnimValType m_propertyIsAnimVal;
     bool m_isReadOnlyProperty;
@@ -120,7 +126,7 @@ public:
         return m_target.get();
     }
 
-    void setTarget(PassRefPtr<Property> target)
+    void setTarget(PassRefPtrWillBeRawPtr<Property> target)
     {
         m_target = target;
     }
@@ -130,8 +136,14 @@ public:
         return Property::classType();
     }
 
+    virtual void trace(Visitor* visitor) override
+    {
+        visitor->trace(m_target);
+        SVGPropertyTearOffBase::trace(visitor);
+    }
+
 protected:
-    SVGPropertyTearOff(PassRefPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
+    SVGPropertyTearOff(PassRefPtrWillBeRawPtr<Property> target, SVGElement* contextElement, PropertyIsAnimValType propertyIsAnimVal, const QualifiedName& attributeName = QualifiedName::null())
         : SVGPropertyTearOffBase(contextElement, propertyIsAnimVal, attributeName)
         , m_target(target)
     {
@@ -139,7 +151,7 @@ protected:
     }
 
 private:
-    RefPtr<Property> m_target;
+    RefPtrWillBeMember<Property> m_target;
 };
 
 }

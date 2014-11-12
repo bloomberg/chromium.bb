@@ -24,6 +24,7 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/FEDisplacementMap.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -42,20 +43,22 @@ public:
     SVGAnimatedEnumeration<ChannelSelectorType>* xChannelSelector() { return m_xChannelSelector.get(); }
     SVGAnimatedEnumeration<ChannelSelectorType>* yChannelSelector() { return m_yChannelSelector.get(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
-    SVGFEDisplacementMapElement(Document&);
+    explicit SVGFEDisplacementMapElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) override;
     virtual bool setFilterEffectAttribute(FilterEffect*, const QualifiedName& attrName) override;
     virtual void svgAttributeChanged(const QualifiedName&) override;
-    virtual PassRefPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
+    virtual PassRefPtrWillBeRawPtr<FilterEffect> build(SVGFilterBuilder*, Filter*) override;
 
-    RefPtr<SVGAnimatedNumber> m_scale;
-    RefPtr<SVGAnimatedString> m_in1;
-    RefPtr<SVGAnimatedString> m_in2;
-    RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_xChannelSelector;
-    RefPtr<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_scale;
+    RefPtrWillBeMember<SVGAnimatedString> m_in1;
+    RefPtrWillBeMember<SVGAnimatedString> m_in2;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType> > m_xChannelSelector;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<ChannelSelectorType> > m_yChannelSelector;
 };
 
 } // namespace blink

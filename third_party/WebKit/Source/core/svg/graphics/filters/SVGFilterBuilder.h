@@ -22,6 +22,7 @@
 #define SVGFilterBuilder_h
 
 #include "platform/graphics/filters/FilterEffect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -32,18 +33,21 @@ namespace blink {
 
 class RenderObject;
 
-class SVGFilterBuilder : public RefCounted<SVGFilterBuilder> {
+class SVGFilterBuilder final : public RefCountedWillBeGarbageCollectedFinalized<SVGFilterBuilder> {
 public:
-    typedef HashSet<FilterEffect*> FilterEffectSet;
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<FilterEffect> > FilterEffectSet;
 
-    static PassRefPtr<SVGFilterBuilder> create(PassRefPtr<FilterEffect> sourceGraphic, PassRefPtr<FilterEffect> sourceAlpha) { return adoptRef(new SVGFilterBuilder(sourceGraphic, sourceAlpha)); }
+    static PassRefPtrWillBeRawPtr<SVGFilterBuilder> create(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha)
+    {
+        return adoptRefWillBeNoop(new SVGFilterBuilder(sourceGraphic, sourceAlpha));
+    }
 
-    void add(const AtomicString& id, PassRefPtr<FilterEffect>);
+    void add(const AtomicString& id, PassRefPtrWillBeRawPtr<FilterEffect>);
 
     FilterEffect* getEffectById(const AtomicString& id) const;
     FilterEffect* lastEffect() const { return m_lastEffect.get(); }
 
-    void appendEffectToEffectReferences(PassRefPtr<FilterEffect>, RenderObject*);
+    void appendEffectToEffectReferences(PassRefPtrWillBeRawPtr<FilterEffect>, RenderObject*);
 
     inline FilterEffectSet& effectReferences(FilterEffect* effect)
     {
@@ -58,24 +62,28 @@ public:
     void clearEffects();
     void clearResultsRecursive(FilterEffect*);
 
+    void trace(Visitor*);
+
 private:
-    SVGFilterBuilder(PassRefPtr<FilterEffect> sourceGraphic, PassRefPtr<FilterEffect> sourceAlpha);
+    SVGFilterBuilder(PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic, PassRefPtrWillBeRawPtr<FilterEffect> sourceAlpha);
 
     inline void addBuiltinEffects()
     {
-        HashMap<AtomicString, RefPtr<FilterEffect> >::iterator end = m_builtinEffects.end();
-        for (HashMap<AtomicString, RefPtr<FilterEffect> >::iterator iterator = m_builtinEffects.begin(); iterator != end; ++iterator)
+        NamedFilterEffectMap::iterator end = m_builtinEffects.end();
+        for (NamedFilterEffectMap::iterator iterator = m_builtinEffects.begin(); iterator != end; ++iterator)
              m_effectReferences.add(iterator->value, FilterEffectSet());
     }
 
-    HashMap<AtomicString, RefPtr<FilterEffect> > m_builtinEffects;
-    HashMap<AtomicString, RefPtr<FilterEffect> > m_namedEffects;
+    typedef WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<FilterEffect> > NamedFilterEffectMap;
+
+    NamedFilterEffectMap m_builtinEffects;
+    NamedFilterEffectMap m_namedEffects;
     // The value is a list, which contains those filter effects,
     // which depends on the key filter effect.
-    HashMap<RefPtr<FilterEffect>, FilterEffectSet> m_effectReferences;
-    HashMap<RenderObject*, FilterEffect*> m_effectRenderer;
+    WillBeHeapHashMap<RefPtrWillBeMember<FilterEffect>, FilterEffectSet> m_effectReferences;
+    WillBeHeapHashMap<RenderObject*, RawPtrWillBeMember<FilterEffect> > m_effectRenderer;
 
-    RefPtr<FilterEffect> m_lastEffect;
+    RefPtrWillBeMember<FilterEffect> m_lastEffect;
 };
 
 } // namespace blink

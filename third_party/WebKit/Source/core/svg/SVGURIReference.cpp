@@ -34,6 +34,11 @@ SVGURIReference::SVGURIReference(SVGElement* element)
     element->addToPropertyMap(m_href);
 }
 
+void SVGURIReference::trace(Visitor* visitor)
+{
+    visitor->trace(m_href);
+}
+
 bool SVGURIReference::isKnownAttribute(const QualifiedName& attrName)
 {
     return attrName.matches(XLinkNames::hrefAttr);

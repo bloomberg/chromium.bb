@@ -29,12 +29,12 @@ class AffineTransform;
 class SVGTransformDistance {
 public:
     SVGTransformDistance();
-    SVGTransformDistance(PassRefPtr<SVGTransform> fromTransform, PassRefPtr<SVGTransform> toTransform);
+    SVGTransformDistance(PassRefPtrWillBeRawPtr<SVGTransform> fromTransform, PassRefPtrWillBeRawPtr<SVGTransform> toTransform);
 
     SVGTransformDistance scaledDistance(float scaleFactor) const;
-    PassRefPtr<SVGTransform> addToSVGTransform(PassRefPtr<SVGTransform>) const;
+    PassRefPtrWillBeRawPtr<SVGTransform> addToSVGTransform(PassRefPtrWillBeRawPtr<SVGTransform>) const;
 
-    static PassRefPtr<SVGTransform> addSVGTransforms(PassRefPtr<SVGTransform>, PassRefPtr<SVGTransform>, unsigned repeatCount = 1);
+    static PassRefPtrWillBeRawPtr<SVGTransform> addSVGTransforms(PassRefPtrWillBeRawPtr<SVGTransform>, PassRefPtrWillBeRawPtr<SVGTransform>, unsigned repeatCount = 1);
 
     float distance() const;
 

@@ -27,6 +27,7 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGStaticStringList.h"
 #include "core/svg/SVGZoomAndPan.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -34,6 +35,7 @@ class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGViewElement);
 public:
     DECLARE_NODE_FACTORY(SVGViewElement);
 
@@ -44,6 +46,8 @@ public:
 
     SVGStringListTearOff* viewTarget() { return m_viewTarget->tearOff(); }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGViewElement(Document&);
 
@@ -51,7 +55,7 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
-    RefPtr<SVGStaticStringList> m_viewTarget;
+    RefPtrWillBeMember<SVGStaticStringList> m_viewTarget;
 };
 
 } // namespace blink

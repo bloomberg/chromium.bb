@@ -26,6 +26,7 @@
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
 #include "platform/graphics/filters/LightSource.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -60,6 +61,8 @@ public:
     SVGAnimatedNumber* limitingConeAngle() { return m_limitingConeAngle.get(); }
     const SVGAnimatedNumber* limitingConeAngle() const { return m_limitingConeAngle.get(); }
 
+    virtual void trace(Visitor*) override;
+
 protected:
     SVGFELightElement(const QualifiedName&, Document&);
 
@@ -71,16 +74,16 @@ private:
 
     virtual bool rendererIsNeeded(const RenderStyle&) override { return false; }
 
-    RefPtr<SVGAnimatedNumber> m_azimuth;
-    RefPtr<SVGAnimatedNumber> m_elevation;
-    RefPtr<SVGAnimatedNumber> m_x;
-    RefPtr<SVGAnimatedNumber> m_y;
-    RefPtr<SVGAnimatedNumber> m_z;
-    RefPtr<SVGAnimatedNumber> m_pointsAtX;
-    RefPtr<SVGAnimatedNumber> m_pointsAtY;
-    RefPtr<SVGAnimatedNumber> m_pointsAtZ;
-    RefPtr<SVGAnimatedNumber> m_specularExponent;
-    RefPtr<SVGAnimatedNumber> m_limitingConeAngle;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_azimuth;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_elevation;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_x;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_y;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_z;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_pointsAtX;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_pointsAtY;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_pointsAtZ;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_specularExponent;
+    RefPtrWillBeMember<SVGAnimatedNumber> m_limitingConeAngle;
 };
 
 inline bool isSVGFELightElement(const SVGElement& element)

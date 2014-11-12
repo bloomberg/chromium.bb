@@ -26,6 +26,7 @@
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGGraphicsElement.h"
 #include "core/svg/SVGUnitTypes.h"
+#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -39,6 +40,8 @@ public:
 
     virtual bool supportsFocus() const override { return false; }
 
+    virtual void trace(Visitor*) override;
+
 private:
     explicit SVGClipPathElement(Document&);
 
@@ -50,7 +53,7 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*) override;
 
-    RefPtr<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
+    RefPtrWillBeMember<SVGAnimatedEnumeration<SVGUnitTypes::SVGUnitType> > m_clipPathUnits;
 };
 
 } // namespace blink

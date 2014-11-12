@@ -105,9 +105,13 @@ void SVGCursorElement::svgAttributeChanged(const QualifiedName& attrName)
 void SVGCursorElement::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
+    visitor->trace(m_x);
+    visitor->trace(m_y);
     visitor->trace(m_clients);
 #endif
     SVGElement::trace(visitor);
+    SVGTests::trace(visitor);
+    SVGURIReference::trace(visitor);
 }
 
 } // namespace blink

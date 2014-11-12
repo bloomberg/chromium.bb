@@ -31,6 +31,7 @@
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/SVGPreserveAspectRatio.h"
 #include "core/svg/SVGRect.h"
+#include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 
 namespace blink {
@@ -38,14 +39,14 @@ namespace blink {
 class AffineTransform;
 class Document;
 
-class SVGFitToViewBox {
+class SVGFitToViewBox : public WillBeGarbageCollectedMixin {
 public:
     enum PropertyMapPolicy {
         PropertyMapPolicyAdd,
         PropertyMapPolicySkip,
     };
 
-    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
+    static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio>, float viewWidth, float viewHeight);
 
     static bool isKnownAttribute(const QualifiedName&);
     static void addSupportedAttributes(HashSet<QualifiedName>&);
@@ -69,6 +70,8 @@ public:
     SVGAnimatedRect* viewBox() const { return m_viewBox.get(); }
     SVGAnimatedPreserveAspectRatio* preserveAspectRatio() const { return m_preserveAspectRatio.get(); }
 
+    virtual void trace(Visitor*);
+
 protected:
     explicit SVGFitToViewBox(SVGElement*, PropertyMapPolicy = PropertyMapPolicyAdd);
     void updateViewBox(const FloatRect&);
@@ -76,8 +79,8 @@ protected:
     void clearPreserveAspectRatio() { m_preserveAspectRatio = nullptr; }
 
 private:
-    RefPtr<SVGAnimatedRect> m_viewBox;
-    RefPtr<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
+    RefPtrWillBeMember<SVGAnimatedRect> m_viewBox;
+    RefPtrWillBeMember<SVGAnimatedPreserveAspectRatio> m_preserveAspectRatio;
 };
 
 } // namespace blink

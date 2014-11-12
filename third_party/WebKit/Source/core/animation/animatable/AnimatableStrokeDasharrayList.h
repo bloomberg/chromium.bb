@@ -40,12 +40,12 @@ class AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
 public:
     virtual ~AnimatableStrokeDasharrayList() { }
 
-    static PassRefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> create(PassRefPtr<SVGLengthList> lengths)
+    static PassRefPtrWillBeRawPtr<AnimatableStrokeDasharrayList> create(PassRefPtrWillBeRawPtr<SVGLengthList> lengths)
     {
         return adoptRefWillBeNoop(new AnimatableStrokeDasharrayList(lengths));
     }
 
-    PassRefPtr<SVGLengthList> toSVGLengthList() const;
+    PassRefPtrWillBeRawPtr<SVGLengthList> toSVGLengthList() const;
 
     virtual void trace(Visitor*) override;
 
@@ -54,7 +54,7 @@ protected:
     virtual bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
 private:
-    AnimatableStrokeDasharrayList(PassRefPtr<SVGLengthList>);
+    explicit AnimatableStrokeDasharrayList(PassRefPtrWillBeRawPtr<SVGLengthList>);
     // This will consume the vector passed into it.
     AnimatableStrokeDasharrayList(WillBeHeapVector<RefPtrWillBeMember<AnimatableValue> >& values)
         : AnimatableRepeatable(values)

@@ -34,6 +34,12 @@ SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
     addToPropertyMap(m_points);
 }
 
+void SVGPolyElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_points);
+    SVGGeometryElement::trace(visitor);
+}
+
 void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     parseAttributeNew(name, value);
