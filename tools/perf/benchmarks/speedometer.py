@@ -72,6 +72,8 @@ class SpeedometerMeasurement(page_test.PageTest):
               suite_times;
               """ % suite_name), important=False))
 
+
+@benchmark.Disabled  #crbug.com/406422
 class Speedometer(benchmark.Benchmark):
   test = SpeedometerMeasurement
 
