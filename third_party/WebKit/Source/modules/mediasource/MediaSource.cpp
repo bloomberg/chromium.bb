@@ -361,6 +361,29 @@ PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::buffered() const
     return intersectionRanges.release();
 }
 
+PassRefPtrWillBeRawPtr<TimeRanges> MediaSource::seekable() const
+{
+    // Implements MediaSource algorithm for HTMLMediaElement.seekable.
+    // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#htmlmediaelement-extensions
+
+    double sourceDuration = duration();
+    // 1. If duration equals NaN then return an empty TimeRanges object.
+    if (std::isnan(sourceDuration))
+        return TimeRanges::create();
+
+    // 2. If duration equals positive Infinity, then return a single range with a start time of 0 and an end time equal to the
+    // highest end time reported by the HTMLMediaElement.buffered attribute.
+    if (sourceDuration == std::numeric_limits<double>::infinity()) {
+        RefPtrWillBeRawPtr<TimeRanges> buffered = m_attachedElement->buffered();
+        if (buffered->length() == 0)
+            return TimeRanges::create();
+        return TimeRanges::create(0, buffered->end(buffered->length() - 1, ASSERT_NO_EXCEPTION));
+    }
+
+    // 3. Otherwise, return a single range with a start time of 0 and an end time equal to duration.
+    return TimeRanges::create(0, sourceDuration);
+}
+
 void MediaSource::setDuration(double duration, ExceptionState& exceptionState)
 {
     // 2.1 http://www.w3.org/TR/media-source/#widl-MediaSource-duration
