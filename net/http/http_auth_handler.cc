@@ -96,8 +96,8 @@ bool HttpAuthHandler::AllowsExplicitCredentials() {
 void HttpAuthHandler::OnGenerateAuthTokenComplete(int rv) {
   CompletionCallback callback = callback_;
   FinishGenerateAuthToken();
-  if (!callback.is_null())
-    callback.Run(rv);
+  DCHECK(!callback.is_null());
+  callback.Run(rv);
 }
 
 void HttpAuthHandler::FinishGenerateAuthToken() {
