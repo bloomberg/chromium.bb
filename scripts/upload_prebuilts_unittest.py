@@ -122,7 +122,9 @@ class TestPrebuilt(cros_test_lib.MockTestCase):
     self.PatchObject(prebuilt.os.path, 'exists', return_true=True)
     pkgs = [{ 'CPV': 'public1' }]
     result = prebuilt.GenerateUploadDict(base_local_path, gs_bucket_path, pkgs)
-    expected = { local_path: gs_bucket_path + '/public1.tbz2' }
+    expected = { local_path: gs_bucket_path + '/public1.tbz2',
+                local_path.replace('tbz2','debug.tbz2'): gs_bucket_path +
+                                   '/public1.debug.tbz2'}
     self.assertEqual(result, expected)
 
   def testDeterminePrebuiltConfHost(self):
