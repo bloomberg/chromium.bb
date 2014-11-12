@@ -138,6 +138,9 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoInRange:
     case CSSSelector::PseudoOutOfRange:
     case CSSSelector::PseudoWebKitCustomElement:
+    case CSSSelector::PseudoCue:
+    case CSSSelector::PseudoFutureCue:
+    case CSSSelector::PseudoPastCue:
     case CSSSelector::PseudoUnresolved:
     case CSSSelector::PseudoContent:
     case CSSSelector::PseudoHost:
@@ -171,9 +174,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
-    case CSSSelector::PseudoCue:
-    case CSSSelector::PseudoFutureCue:
-    case CSSSelector::PseudoPastCue:
     case CSSSelector::PseudoSpatialNavigationFocus:
         // FIXME: Most pseudo classes/elements above can be supported and moved
         // to assertSupportedPseudo(). Move on a case-by-case basis. If they
@@ -200,6 +200,14 @@ void RuleFeature::trace(Visitor* visitor)
     visitor->trace(rule);
 }
 
+static bool supportsInvalidationWithSelectorList(CSSSelector::PseudoType pseudo)
+{
+    return pseudo == CSSSelector::PseudoAny
+        || pseudo == CSSSelector::PseudoCue
+        || pseudo == CSSSelector::PseudoHost
+        || pseudo == CSSSelector::PseudoNot;
+}
+
 // This method is somewhat conservative in what it accepts.
 RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelector(const CSSSelector& selector)
 {
@@ -214,9 +222,7 @@ RuleFeatureSet::InvalidationSetMode RuleFeatureSet::invalidationSetModeForSelect
                 // We have found an invalidation set feature in the rightmost compound selector.
                 foundIdent = true;
             }
-        } else if (component->pseudoType() == CSSSelector::PseudoNot
-            || component->pseudoType() == CSSSelector::PseudoHost
-            || component->pseudoType() == CSSSelector::PseudoAny) {
+        } else if (supportsInvalidationWithSelectorList(component->pseudoType())) {
             if (const CSSSelectorList* selectorList = component->selectorList()) {
                 // Features inside :not() are not added to the feature set, so consider it a universal selector.
                 bool foundUniversal = component->pseudoType() == CSSSelector::PseudoNot;
@@ -343,7 +349,7 @@ const CSSSelector* RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelec
             extractInvalidationSetFeature(*current, features);
         // Initialize the entry in the invalidation set map, if supported.
         invalidationSetForSelector(*current);
-        if (current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny || current->pseudoType() == CSSSelector::PseudoNot) {
+        if (supportsInvalidationWithSelectorList(current->pseudoType())) {
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     extractInvalidationSetFeatures(*selector, features, current->pseudoType() == CSSSelector::PseudoNot);
@@ -405,7 +411,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector& selector, 
             if (current->isInsertionPointCrossing())
                 features.insertionPointCrossing = true;
             if (const CSSSelectorList* selectorList = current->selectorList()) {
-                ASSERT(current->pseudoType() == CSSSelector::PseudoHost || current->pseudoType() == CSSSelector::PseudoAny || current->pseudoType() == CSSSelector::PseudoNot);
+                ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
                 for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(*selector))
                     addFeaturesToInvalidationSets(*selector, features);
             }
