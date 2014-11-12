@@ -301,12 +301,13 @@ bool EasyUnlockService::GetPersistedHardlockState(
 }
 
 void EasyUnlockService::ShowInitialUserState() {
+  if (!GetScreenlockStateHandler())
+    return;
+
   EasyUnlockScreenlockStateHandler::HardlockState state;
   bool has_persisted_state = GetPersistedHardlockState(&state);
   if (!has_persisted_state)
     return;
-
-  GetScreenlockStateHandler();
 
   if (state == EasyUnlockScreenlockStateHandler::NO_HARDLOCK) {
     // Show connecting icon early when there is a persisted non hardlock state.
