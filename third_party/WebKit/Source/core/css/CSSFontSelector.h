@@ -76,7 +76,7 @@ public:
     const GenericFontFamilySettings& genericFontFamilySettings() const { return m_genericFontFamilySettings; }
     void updateGenericFontFamilySettings(Document&);
 
-    virtual void trace(Visitor*);
+    virtual void trace(Visitor*) override;
 
 private:
     explicit CSSFontSelector(Document*);

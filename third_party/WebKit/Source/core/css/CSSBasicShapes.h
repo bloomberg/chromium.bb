@@ -66,7 +66,6 @@ class CSSBasicShapeCircle final : public CSSBasicShape {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeCircle> create() { return adoptRefWillBeNoop(new CSSBasicShapeCircle); }
 
-    virtual Type type() const override { return CSSBasicShapeCircleType; }
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
@@ -83,6 +82,8 @@ public:
 private:
     CSSBasicShapeCircle() { }
 
+    virtual Type type() const override { return CSSBasicShapeCircleType; }
+
     RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
     RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
     RefPtrWillBeMember<CSSPrimitiveValue> m_radius;
@@ -92,7 +93,6 @@ class CSSBasicShapeEllipse final : public CSSBasicShape {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeEllipse> create() { return adoptRefWillBeNoop(new CSSBasicShapeEllipse); }
 
-    virtual Type type() const override { return CSSBasicShapeEllipseType; }
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
@@ -110,6 +110,8 @@ public:
 
 private:
     CSSBasicShapeEllipse() { }
+
+    virtual Type type() const override { return CSSBasicShapeEllipseType; }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_centerX;
     RefPtrWillBeMember<CSSPrimitiveValue> m_centerY;
@@ -134,7 +136,6 @@ public:
     void setWindRule(WindRule w) { m_windRule = w; }
     WindRule windRule() const { return m_windRule; }
 
-    virtual Type type() const override { return CSSBasicShapePolygonType; }
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
@@ -146,11 +147,13 @@ private:
     {
     }
 
+    virtual Type type() const override { return CSSBasicShapePolygonType; }
+
     WillBeHeapVector<RefPtrWillBeMember<CSSPrimitiveValue> > m_values;
     WindRule m_windRule;
 };
 
-class CSSBasicShapeInset : public CSSBasicShape {
+class CSSBasicShapeInset final : public CSSBasicShape {
 public:
     static PassRefPtrWillBeRawPtr<CSSBasicShapeInset> create() { return adoptRefWillBeNoop(new CSSBasicShapeInset); }
 
@@ -198,7 +201,6 @@ public:
     void setBottomRightRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomRightRadius = radius; }
     void setBottomLeftRadius(PassRefPtrWillBeRawPtr<CSSPrimitiveValue> radius) { m_bottomLeftRadius = radius; }
 
-    virtual Type type() const override { return CSSBasicShapeInsetType; }
     virtual String cssText() const override;
     virtual bool equals(const CSSBasicShape&) const override;
 
@@ -206,6 +208,8 @@ public:
 
 private:
     CSSBasicShapeInset() { }
+
+    virtual Type type() const override { return CSSBasicShapeInsetType; }
 
     RefPtrWillBeMember<CSSPrimitiveValue> m_top;
     RefPtrWillBeMember<CSSPrimitiveValue> m_right;

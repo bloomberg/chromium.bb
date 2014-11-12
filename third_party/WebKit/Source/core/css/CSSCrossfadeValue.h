@@ -39,7 +39,7 @@ class ImageResource;
 class CrossfadeSubimageObserverProxy;
 class RenderObject;
 
-class CSSCrossfadeValue : public CSSImageGeneratorValue {
+class CSSCrossfadeValue final : public CSSImageGeneratorValue {
     friend class CrossfadeSubimageObserverProxy;
 public:
     static PassRefPtrWillBeRawPtr<CSSCrossfadeValue> create(PassRefPtrWillBeRawPtr<CSSValue> fromValue, PassRefPtrWillBeRawPtr<CSSValue> toValue)
@@ -84,7 +84,7 @@ private:
         , m_ready(false) { }
 
         virtual ~CrossfadeSubimageObserverProxy() { }
-        virtual void imageChanged(ImageResource*, const IntRect* = 0) override;
+        virtual void imageChanged(ImageResource*, const IntRect* = nullptr) override;
         void setReady(bool ready) { m_ready = ready; }
     private:
         CSSCrossfadeValue* m_ownerValue;

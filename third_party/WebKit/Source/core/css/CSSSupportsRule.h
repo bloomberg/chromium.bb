@@ -45,7 +45,6 @@ public:
 
     virtual ~CSSSupportsRule() { }
 
-    virtual CSSRule::Type type() const override { return SUPPORTS_RULE; }
     virtual String cssText() const override;
 
     String conditionText() const;
@@ -54,6 +53,8 @@ public:
 
 private:
     CSSSupportsRule(StyleRuleSupports*, CSSStyleSheet*);
+
+    virtual CSSRule::Type type() const override { return SUPPORTS_RULE; }
 };
 
 DEFINE_CSS_RULE_TYPE_CASTS(CSSSupportsRule, SUPPORTS_RULE);

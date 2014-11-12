@@ -13,7 +13,7 @@ namespace blink {
 
 class FontLoader;
 
-class RemoteFontFaceSource : public CSSFontFaceSource, public FontResourceClient {
+class RemoteFontFaceSource final : public CSSFontFaceSource, public FontResourceClient {
 public:
     explicit RemoteFontFaceSource(FontResource*, PassRefPtrWillBeRawPtr<FontLoader>);
     virtual ~RemoteFontFaceSource();

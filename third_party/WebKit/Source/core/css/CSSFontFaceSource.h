@@ -45,7 +45,7 @@ public:
     virtual bool isLoaded() const { return true; }
     virtual bool isValid() const { return true; }
 
-    virtual FontResource* resource() { return 0; }
+    virtual FontResource* resource() { return nullptr; }
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
     PassRefPtr<SimpleFontData> getFontData(const FontDescription&);

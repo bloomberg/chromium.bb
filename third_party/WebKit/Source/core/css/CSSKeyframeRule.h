@@ -79,7 +79,6 @@ class CSSKeyframeRule final : public CSSRule {
 public:
     virtual ~CSSKeyframeRule();
 
-    virtual CSSRule::Type type() const override { return KEYFRAME_RULE; }
     virtual String cssText() const override { return m_keyframe->cssText(); }
     virtual void reattach(StyleRuleBase*) override;
 
@@ -92,6 +91,8 @@ public:
 
 private:
     CSSKeyframeRule(StyleKeyframe*, CSSKeyframesRule* parent);
+
+    virtual CSSRule::Type type() const override { return KEYFRAME_RULE; }
 
     RefPtrWillBeMember<StyleKeyframe> m_keyframe;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

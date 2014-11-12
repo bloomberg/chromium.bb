@@ -37,7 +37,7 @@ namespace blink {
 
 class LocalFrame;
 
-class StyleMedia : public RefCountedWillBeGarbageCollected<StyleMedia>, public DOMWindowProperty, public ScriptWrappable {
+class StyleMedia final : public RefCountedWillBeGarbageCollected<StyleMedia>, public DOMWindowProperty, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StyleMedia);
 public:

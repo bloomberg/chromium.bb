@@ -49,7 +49,6 @@ public:
 
     virtual ~CSSFilterRule();
 
-    virtual CSSRule::Type type() const override { return WEBKIT_FILTER_RULE; }
     virtual String cssText() const override;
     virtual void reattach(StyleRuleBase*) override;
 
@@ -59,6 +58,8 @@ public:
 
 private:
     CSSFilterRule(StyleRuleFilter*, CSSStyleSheet* parent);
+
+    virtual CSSRule::Type type() const override { return WEBKIT_FILTER_RULE; }
 
     RefPtrWillBeMember<StyleRuleFilter> m_filterRule;
     mutable RefPtrWillBeMember<StyleRuleCSSStyleDeclaration> m_propertiesCSSOMWrapper;

@@ -40,7 +40,6 @@ public:
 
     virtual ~CSSMediaRule();
 
-    virtual CSSRule::Type type() const override { return MEDIA_RULE; }
     virtual void reattach(StyleRuleBase*) override;
     virtual String cssText() const override;
 
@@ -50,6 +49,8 @@ public:
 
 private:
     CSSMediaRule(StyleRuleMedia*, CSSStyleSheet*);
+
+    virtual CSSRule::Type type() const override { return MEDIA_RULE; }
 
     MediaQuerySet* mediaQueries() const;
 
