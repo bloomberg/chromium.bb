@@ -4,6 +4,7 @@
 
 static_library("browser") {
   sources = [
+    "history_backend_notifier.h",
     "history_backend_observer.h",
     "history_client.cc",
     "history_client.h",

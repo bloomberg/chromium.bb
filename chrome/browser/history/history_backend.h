@@ -22,6 +22,7 @@
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"
+#include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/visitedlink/browser/visitedlink_delegate.h"
@@ -100,7 +101,7 @@ class QueuedHistoryDBTask {
 // functions in the history service. These functions are not documented
 // here, see the history service for behavior.
 class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
-                       public ExpireHistoryBackendDelegate {
+                       public HistoryBackendNotifier {
  public:
   // Interface implemented by the owner of the HistoryBackend object. Normally,
   // the history service implements this to send stuff back to the main thread.
@@ -520,13 +521,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
  protected:
   ~HistoryBackend() override;
 
-  // Notify HistoryBackendObserver that |transition| to |row| occurred at
-  // |visit_time| following |redirects| (empty if there is no redirects).
-  void NotifyURLVisited(ui::PageTransition transition,
-                        const URLRow& row,
-                        const RedirectList& redirects,
-                        base::Time visit_time);
-
  private:
   friend class base::RefCountedThreadSafe<HistoryBackend>;
   friend class CommitLaterTask;  // The commit task needs to call Commit().
@@ -801,7 +795,12 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // running.
   void BroadcastNotifications(int type, scoped_ptr<HistoryDetails> details);
 
-  // ExpireHistoryBackendDelegate:
+  // HistoryBackendNotifier:
+  void NotifyFaviconChanged(const std::set<GURL>& urls) override;
+  void NotifyURLVisited(ui::PageTransition transition,
+                        const URLRow& row,
+                        const RedirectList& redirects,
+                        base::Time visit_time) override;
   void NotifyURLsModified(const URLRows& rows) override;
   void NotifyURLsDeleted(bool all_history,
                          bool expired,

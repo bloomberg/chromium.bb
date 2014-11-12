@@ -700,7 +700,7 @@ void HistoryBackend::InitImpl(const std::string& languages) {
                                    db_.get(),
                                    thumbnail_db_.get(),
                                    history_client_,
-                                   delegate_.get()));
+                                   this));
   }
 #endif
 
@@ -1889,9 +1889,9 @@ void HistoryBackend::SetImportedFavicons(
     }
   }
 
-  if (!favicons_changed.empty() && delegate_) {
+  if (!favicons_changed.empty()) {
     // Send the notification about the changed favicon URLs.
-    delegate_->NotifyFaviconChanged(favicons_changed);
+    NotifyFaviconChanged(favicons_changed);
   }
 }
 
@@ -2230,9 +2230,9 @@ void HistoryBackend::SendFaviconChangedNotificationForPageAndRedirects(
     const GURL& page_url) {
   history::RedirectList redirect_list;
   GetCachedRecentRedirects(page_url, &redirect_list);
-  if (!redirect_list.empty() && delegate_) {
+  if (!redirect_list.empty()) {
     std::set<GURL> favicons_changed(redirect_list.begin(), redirect_list.end());
-    delegate_->NotifyFaviconChanged(favicons_changed);
+    NotifyFaviconChanged(favicons_changed);
   }
 }
 
@@ -2510,6 +2510,11 @@ void HistoryBackend::BroadcastNotifications(
   // HistoryService -> HistoryBackend::Closing().
   if (delegate_)
     delegate_->BroadcastNotifications(type, details.Pass());
+}
+
+void HistoryBackend::NotifyFaviconChanged(const std::set<GURL>& urls) {
+  if (delegate_)
+    delegate_->NotifyFaviconChanged(urls);
 }
 
 void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,

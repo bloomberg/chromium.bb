@@ -16,6 +16,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/thumbnail_database.h"
+#include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_client.h"
 
 namespace history {
@@ -125,13 +126,14 @@ ExpireHistoryBackend::DeleteEffects::~DeleteEffects() {
 // ExpireHistoryBackend -------------------------------------------------------
 
 ExpireHistoryBackend::ExpireHistoryBackend(
-    ExpireHistoryBackendDelegate* delegate,
+    HistoryBackendNotifier* notifier,
     HistoryClient* history_client)
-    : delegate_(delegate),
+    : notifier_(notifier),
       main_db_(NULL),
       thumb_db_(NULL),
       history_client_(history_client),
       weak_factory_(this) {
+  DCHECK(notifier_);
 }
 
 ExpireHistoryBackend::~ExpireHistoryBackend() {
@@ -315,10 +317,10 @@ void ExpireHistoryBackend::DeleteFaviconsIfPossible(DeleteEffects* effects) {
 void ExpireHistoryBackend::BroadcastNotifications(DeleteEffects* effects,
                                                   DeletionType type) {
   if (!effects->modified_urls.empty()) {
-    delegate_->NotifyURLsModified(effects->modified_urls);
+    notifier_->NotifyURLsModified(effects->modified_urls);
   }
   if (!effects->deleted_urls.empty()) {
-    delegate_->NotifyURLsDeleted(false,
+    notifier_->NotifyURLsDeleted(false,
                                  type == DELETION_EXPIRED,
                                  effects->deleted_urls,
                                  effects->deleted_favicons);

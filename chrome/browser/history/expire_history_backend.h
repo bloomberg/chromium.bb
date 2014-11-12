@@ -21,23 +21,10 @@ class TestingProfile;
 
 namespace history {
 
+class HistoryBackendNotifier;
 class HistoryClient;
 class HistoryDatabase;
 class ThumbnailDatabase;
-
-// Delegate used to broadcast notifications to the main thread.
-class ExpireHistoryBackendDelegate {
- public:
-  // Tells typed url sync code to handle URL modifications or deletions.
-  virtual void NotifyURLsModified(const URLRows& rows) = 0;
-  virtual void NotifyURLsDeleted(bool all_history,
-                                 bool expired,
-                                 const URLRows& rows,
-                                 const std::set<GURL>& favicon_urls) = 0;
-
- protected:
-  virtual ~ExpireHistoryBackendDelegate() {}
-};
 
 // Encapsulates visit expiration criteria and type of visits to expire.
 class ExpiringVisitsReader {
@@ -62,7 +49,7 @@ class ExpireHistoryBackend {
   // HistoryClient may be NULL. The HistoryClient is used when expiring URLS so
   // that we don't remove any URLs or favicons that are bookmarked (visits are
   // removed though).
-  ExpireHistoryBackend(ExpireHistoryBackendDelegate* delegate,
+  ExpireHistoryBackend(HistoryBackendNotifier* notifier,
                        HistoryClient* history_client);
   ~ExpireHistoryBackend();
 
@@ -242,7 +229,7 @@ class ExpireHistoryBackend {
   const ExpiringVisitsReader* GetAutoSubframeVisitsReader();
 
   // Non-owning pointer to the notification delegate (guaranteed non-NULL).
-  ExpireHistoryBackendDelegate* delegate_;
+  HistoryBackendNotifier* notifier_;
 
   // Non-owning pointers to the databases we deal with (MAY BE NULL).
   HistoryDatabase* main_db_;       // Main history database.

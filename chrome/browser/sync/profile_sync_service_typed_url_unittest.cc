@@ -44,6 +44,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/invalidation/invalidation_service.h"
 #include "components/invalidation/profile_invalidation_provider.h"
@@ -66,6 +67,7 @@ using browser_sync::TypedUrlChangeProcessor;
 using browser_sync::TypedUrlDataTypeController;
 using browser_sync::TypedUrlModelAssociator;
 using history::HistoryBackend;
+using history::HistoryBackendNotifier;
 using history::URLID;
 using history::URLRow;
 using syncer::syncable::WriteTransaction;
@@ -341,7 +343,7 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
     base::Time visit_time;
     history::RedirectList redirects;
     SendNotification(
-        base::Bind(&HistoryBackendMock::NotifyURLVisited,
+        base::Bind(&HistoryBackendNotifier::NotifyURLVisited,
                    base::Unretained(history_backend_.get()),
                    transition,
                    row,

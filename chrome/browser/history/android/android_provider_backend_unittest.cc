@@ -84,25 +84,27 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
       int type,
       scoped_ptr<HistoryDetails> details) override {
     switch (type) {
-      case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
-        deleted_details_.reset(
+      case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
+        scoped_ptr<URLsDeletedDetails> urls_deleted_details(
             static_cast<URLsDeletedDetails*>(details.release()));
+        deleted_details_.reset(new history::URLRows(
+            urls_deleted_details->rows));
         break;
-      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
-        modified_details_.reset(
+      }
+      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED: {
+        scoped_ptr<URLsModifiedDetails> urls_modified_details(
             static_cast<URLsModifiedDetails*>(details.release()));
+        modified_details_.reset(new history::URLRows(
+            urls_modified_details->changed_urls));
         break;
+      }
     }
   }
   virtual void DBLoaded() override {}
 
-  URLsDeletedDetails* deleted_details() const {
-    return deleted_details_.get();
-  }
+  history::URLRows* deleted_details() const { return deleted_details_.get(); }
 
-  URLsModifiedDetails* modified_details() const {
-    return modified_details_.get();
-  }
+  history::URLRows* modified_details() const { return modified_details_.get(); }
 
   std::set<GURL>* favicon_changed() const { return favicon_changed_.get(); }
 
@@ -113,11 +115,53 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
   }
 
  private:
-  scoped_ptr<URLsDeletedDetails> deleted_details_;
-  scoped_ptr<URLsModifiedDetails> modified_details_;
-  scoped_ptr<std::set<GURL> > favicon_changed_;
+  scoped_ptr<history::URLRows> deleted_details_;
+  scoped_ptr<history::URLRows> modified_details_;
+  scoped_ptr<std::set<GURL>> favicon_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendDelegate);
+};
+
+class AndroidProviderBackendNotifier : public HistoryBackendNotifier {
+ public:
+  AndroidProviderBackendNotifier() {}
+
+  // HistoryBackendNotifier:
+  void NotifyFaviconChanged(const std::set<GURL>& url) override {
+    favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
+  }
+  void NotifyURLVisited(ui::PageTransition,
+                        const history::URLRow& row,
+                        const history::RedirectList& redirects,
+                        base::Time visit_time) override {}
+  void NotifyURLsModified(const history::URLRows& rows) override {
+    modified_details_.reset(new history::URLRows(rows));
+  }
+  void NotifyURLsDeleted(bool all_history,
+                         bool expired,
+                         const history::URLRows& rows,
+                         const std::set<GURL>& favicon_urls) override {
+    deleted_details_.reset(new history::URLRows(rows));
+  }
+
+  history::URLRows* deleted_details() const { return deleted_details_.get(); }
+
+  history::URLRows* modified_details() const { return modified_details_.get(); }
+
+  std::set<GURL>* favicon_changed() const { return favicon_changed_.get(); }
+
+  void ResetDetails() {
+    deleted_details_.reset();
+    modified_details_.reset();
+    favicon_changed_.reset();
+  }
+
+ private:
+  scoped_ptr<history::URLRows> deleted_details_;
+  scoped_ptr<history::URLRows> modified_details_;
+  scoped_ptr<std::set<GURL>> favicon_changed_;
+
+  DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackendNotifier);
 };
 
 class AndroidProviderBackendTest : public testing::Test {
@@ -202,7 +246,7 @@ class AndroidProviderBackendTest : public testing::Test {
     return true;
   }
 
-  AndroidProviderBackendDelegate delegate_;
+  AndroidProviderBackendNotifier notifier_;
   scoped_refptr<HistoryBackend> history_backend_;
   HistoryDatabase history_db_;
   ThumbnailDatabase thumbnail_db_;
@@ -283,7 +327,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   ASSERT_TRUE(backend->EnsureInitializedAndUpdated());
 
@@ -422,7 +466,7 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
 
@@ -511,20 +555,20 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
-  EXPECT_EQ(row1.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
+  EXPECT_EQ(row1.url(), (*notifier_.modified_details())[0].url());
   EXPECT_EQ(row1.last_visit_time(),
-            delegate_.modified_details()->changed_urls[0].last_visit());
+            (*notifier_.modified_details())[0].last_visit());
   EXPECT_EQ(row1.visit_count(),
-            delegate_.modified_details()->changed_urls[0].visit_count());
+            (*notifier_.modified_details())[0].visit_count());
   EXPECT_EQ(row1.title(),
-            delegate_.modified_details()->changed_urls[0].title());
-  EXPECT_FALSE(delegate_.favicon_changed());
+            (*notifier_.modified_details())[0].title());
+  EXPECT_FALSE(notifier_.favicon_changed());
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
@@ -532,20 +576,20 @@ TEST_F(AndroidProviderBackendTest, InsertHistoryAndBookmark) {
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
 
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
-  EXPECT_EQ(row2.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
+  EXPECT_EQ(row2.url(), (*notifier_.modified_details())[0].url());
   EXPECT_EQ(row2.last_visit_time(),
-            delegate_.modified_details()->changed_urls[0].last_visit());
+            (*notifier_.modified_details())[0].last_visit());
   EXPECT_EQ(row2.title(),
-            delegate_.modified_details()->changed_urls[0].title());
-  ASSERT_TRUE(delegate_.favicon_changed());
-  ASSERT_EQ(1u, delegate_.favicon_changed()->size());
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(row2.url()));
+            (*notifier_.modified_details())[0].title());
+  ASSERT_TRUE(notifier_.favicon_changed());
+  ASSERT_EQ(1u, notifier_.favicon_changed()->size());
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(row2.url()));
 
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
   projections.push_back(HistoryAndBookmarkRow::ID);
@@ -623,7 +667,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
@@ -638,7 +682,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   // Delete the row1.
   std::vector<base::string16> args;
   int deleted_count = 0;
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("Favicon IS NULL", args,
                                                  &deleted_count));
   EXPECT_EQ(1, deleted_count);
@@ -647,15 +691,15 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
   ASSERT_EQ(0, bookmark_model_->mobile_node()->child_count());
 
   // Verify notifications
-  ASSERT_TRUE(delegate_.deleted_details());
-  EXPECT_FALSE(delegate_.modified_details());
-  EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
-  EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
+  ASSERT_TRUE(notifier_.deleted_details());
+  EXPECT_FALSE(notifier_.modified_details());
+  EXPECT_EQ(1u, notifier_.deleted_details()->size());
+  EXPECT_EQ(row1.url(), (*notifier_.deleted_details())[0].url());
   EXPECT_EQ(row1.last_visit_time(),
-            delegate_.deleted_details()->rows[0].last_visit());
+            (*notifier_.deleted_details())[0].last_visit());
   EXPECT_EQ(row1.title(),
-            delegate_.deleted_details()->rows[0].title());
-  EXPECT_FALSE(delegate_.favicon_changed());
+            (*notifier_.deleted_details())[0].title());
+  EXPECT_FALSE(notifier_.favicon_changed());
 
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
   projections.push_back(HistoryAndBookmarkRow::ID);
@@ -690,22 +734,22 @@ TEST_F(AndroidProviderBackendTest, DeleteHistoryAndBookmarks) {
 
   deleted_count = 0;
   // Delete row2.
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("bookmark = 0",
                   std::vector<base::string16>(), &deleted_count));
   // Verify notifications
-  ASSERT_TRUE(delegate_.deleted_details());
-  EXPECT_FALSE(delegate_.modified_details());
-  EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
-  EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
+  ASSERT_TRUE(notifier_.deleted_details());
+  EXPECT_FALSE(notifier_.modified_details());
+  EXPECT_EQ(1u, notifier_.deleted_details()->size());
+  EXPECT_EQ(row2.url(), (*notifier_.deleted_details())[0].url());
   EXPECT_EQ(row2.last_visit_time(),
-            delegate_.deleted_details()->rows[0].last_visit());
+            (*notifier_.deleted_details())[0].last_visit());
   EXPECT_EQ(row2.title(),
-            delegate_.deleted_details()->rows[0].title());
-  ASSERT_TRUE(delegate_.favicon_changed());
-  ASSERT_EQ(1u, delegate_.favicon_changed()->size());
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(row2.url()));
+            (*notifier_.deleted_details())[0].title());
+  ASSERT_TRUE(notifier_.favicon_changed());
+  ASSERT_EQ(1u, notifier_.favicon_changed()->size());
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(row2.url()));
 
   ASSERT_EQ(1, deleted_count);
   scoped_ptr<AndroidStatement> statement1(backend->QueryHistoryAndBookmarks(
@@ -722,7 +766,7 @@ TEST_F(AndroidProviderBackendTest, IsValidHistoryAndBookmarkRow) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   // The created time and last visit time are too close to have required visit
   // count.
@@ -815,7 +859,7 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
@@ -857,27 +901,27 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
   // Only update one URL.
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications, Update involves insert and delete URLS.
-  ASSERT_TRUE(delegate_.deleted_details());
-  EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
-  EXPECT_EQ(row1.url(), delegate_.deleted_details()->rows[0].url());
+  ASSERT_TRUE(notifier_.deleted_details());
+  EXPECT_EQ(1u, notifier_.deleted_details()->size());
+  EXPECT_EQ(row1.url(), (*notifier_.deleted_details())[0].url());
   EXPECT_EQ(row1.last_visit_time(),
-            delegate_.deleted_details()->rows[0].last_visit());
+            (*notifier_.deleted_details())[0].last_visit());
   EXPECT_EQ(row1.title(),
-            delegate_.deleted_details()->rows[0].title());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+            (*notifier_.deleted_details())[0].title());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
   EXPECT_EQ(update_row1.url(),
-            delegate_.modified_details()->changed_urls[0].url());
+            (*notifier_.modified_details())[0].url());
   EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
             ToDatabaseTime(
-                delegate_.modified_details()->changed_urls[0].last_visit()));
+                (*notifier_.modified_details())[0].last_visit()));
   EXPECT_EQ(row1.title(),
-            delegate_.modified_details()->changed_urls[0].title());
-  EXPECT_FALSE(delegate_.favicon_changed());
+            (*notifier_.modified_details())[0].title());
+  EXPECT_FALSE(notifier_.favicon_changed());
 
   EXPECT_EQ(1, update_count);
   // We shouldn't find orignal url anymore.
@@ -917,32 +961,32 @@ TEST_F(AndroidProviderBackendTest, UpdateURL) {
 
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row2.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row2, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications, Update involves insert and delete URLS.
-  ASSERT_TRUE(delegate_.deleted_details());
-  EXPECT_EQ(1u, delegate_.deleted_details()->rows.size());
-  EXPECT_EQ(row2.url(), delegate_.deleted_details()->rows[0].url());
+  ASSERT_TRUE(notifier_.deleted_details());
+  EXPECT_EQ(1u, notifier_.deleted_details()->size());
+  EXPECT_EQ(row2.url(), (*notifier_.deleted_details())[0].url());
   EXPECT_EQ(row2.last_visit_time(),
-            delegate_.deleted_details()->rows[0].last_visit());
+            (*notifier_.deleted_details())[0].last_visit());
   EXPECT_EQ(row2.title(),
-            delegate_.deleted_details()->rows[0].title());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+            (*notifier_.deleted_details())[0].title());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
   EXPECT_EQ(update_row2.url(),
-            delegate_.modified_details()->changed_urls[0].url());
+            (*notifier_.modified_details())[0].url());
   EXPECT_EQ(ToDatabaseTime(update_row2.last_visit_time()),
             ToDatabaseTime(
-                delegate_.modified_details()->changed_urls[0].last_visit()));
+                (*notifier_.modified_details())[0].last_visit()));
   EXPECT_EQ(update_row2.visit_count(),
-            delegate_.modified_details()->changed_urls[0].visit_count());
-  ASSERT_TRUE(delegate_.favicon_changed());
-  ASSERT_EQ(2u, delegate_.favicon_changed()->size());
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(row2.url()));
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(update_row2.url()));
+            (*notifier_.modified_details())[0].visit_count());
+  ASSERT_TRUE(notifier_.favicon_changed());
+  ASSERT_EQ(2u, notifier_.favicon_changed()->size());
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(row2.url()));
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(update_row2.url()));
 
   EXPECT_EQ(1, update_count);
   // We shouldn't find orignal url anymore.
@@ -997,7 +1041,7 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
@@ -1010,21 +1054,21 @@ TEST_F(AndroidProviderBackendTest, UpdateVisitCount) {
   HistoryAndBookmarkRow update_row1;
   update_row1.set_visit_count(5);
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications, Update involves modified URL.
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
   EXPECT_EQ(row1.url(),
-            delegate_.modified_details()->changed_urls[0].url());
+            (*notifier_.modified_details())[0].url());
   EXPECT_EQ(ToDatabaseTime(row1.last_visit_time()),
             ToDatabaseTime(
-                delegate_.modified_details()->changed_urls[0].last_visit()));
+                (*notifier_.modified_details())[0].last_visit()));
   EXPECT_EQ(update_row1.visit_count(),
-            delegate_.modified_details()->changed_urls[0].visit_count());
-  EXPECT_FALSE(delegate_.favicon_changed());
+            (*notifier_.modified_details())[0].visit_count());
+  EXPECT_FALSE(notifier_.favicon_changed());
 
   // All visits should be removed, and 5 new visit insertted.
   URLRow new_row1;
@@ -1080,7 +1124,7 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
@@ -1093,19 +1137,19 @@ TEST_F(AndroidProviderBackendTest, UpdateLastVisitTime) {
   HistoryAndBookmarkRow update_row1;
   update_row1.set_last_visit_time(Time::Now());
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications, Update involves modified URL.
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
   EXPECT_EQ(row1.url(),
-            delegate_.modified_details()->changed_urls[0].url());
+            (*notifier_.modified_details())[0].url());
   EXPECT_EQ(ToDatabaseTime(update_row1.last_visit_time()),
             ToDatabaseTime(
-                delegate_.modified_details()->changed_urls[0].last_visit()));
-  EXPECT_FALSE(delegate_.favicon_changed());
+                (*notifier_.modified_details())[0].last_visit()));
+  EXPECT_FALSE(notifier_.favicon_changed());
 
   URLRow new_row1;
   ASSERT_TRUE(history_db_.GetRowForURL(row1.url(), &new_row1));
@@ -1144,7 +1188,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
@@ -1159,16 +1203,16 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   data.push_back('1');
   update_row1.set_favicon(base::RefCountedBytes::TakeVector(&data));
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications.
-  EXPECT_FALSE(delegate_.deleted_details());
-  EXPECT_FALSE(delegate_.modified_details());
-  ASSERT_TRUE(delegate_.favicon_changed());
-  ASSERT_EQ(1u, delegate_.favicon_changed()->size());
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(row1.url()));
+  EXPECT_FALSE(notifier_.deleted_details());
+  EXPECT_FALSE(notifier_.modified_details());
+  ASSERT_TRUE(notifier_.favicon_changed());
+  ASSERT_EQ(1u, notifier_.favicon_changed()->size());
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(row1.url()));
 
   std::vector<IconMapping> icon_mappings;
   EXPECT_TRUE(thumbnail_db_.GetIconMappingsForPageURL(
@@ -1189,16 +1233,16 @@ TEST_F(AndroidProviderBackendTest, UpdateFavicon) {
   update_row1.set_favicon(new base::RefCountedBytes());
   update_args.clear();
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications.
-  EXPECT_FALSE(delegate_.deleted_details());
-  EXPECT_FALSE(delegate_.modified_details());
-  ASSERT_TRUE(delegate_.favicon_changed());
-  ASSERT_EQ(1u, delegate_.favicon_changed()->size());
-  ASSERT_TRUE(delegate_.favicon_changed()->end() !=
-              delegate_.favicon_changed()->find(row1.url()));
+  EXPECT_FALSE(notifier_.deleted_details());
+  EXPECT_FALSE(notifier_.modified_details());
+  ASSERT_TRUE(notifier_.favicon_changed());
+  ASSERT_EQ(1u, notifier_.favicon_changed()->size());
+  ASSERT_TRUE(notifier_.favicon_changed()->end() !=
+              notifier_.favicon_changed()->find(row1.url()));
 
   EXPECT_FALSE(thumbnail_db_.GetIconMappingsForPageURL(
       row1.url(), favicon_base::FAVICON, NULL));
@@ -1212,7 +1256,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTermTable) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   // Insert a keyword search item to verify if the update succeeds.
   HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
@@ -1293,7 +1337,7 @@ TEST_F(AndroidProviderBackendTest, QuerySearchTerms) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   // Insert a keyword search item to verify if we can find it.
   HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
@@ -1330,7 +1374,7 @@ TEST_F(AndroidProviderBackendTest, UpdateSearchTerms) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   // Insert a keyword.
   HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
@@ -1437,7 +1481,7 @@ TEST_F(AndroidProviderBackendTest, DeleteSearchTerms) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   // Insert a keyword.
   HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
@@ -1546,7 +1590,7 @@ TEST_F(AndroidProviderBackendTest, InsertSearchTerm) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   SearchRow search_row;
   search_row.set_search_term(UTF8ToUTF16("google"));
   search_row.set_url(GURL("http://google.com"));
@@ -1603,7 +1647,7 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
   ASSERT_TRUE(id1);
@@ -1642,13 +1686,13 @@ TEST_F(AndroidProviderBackendTest, DeleteHistory) {
   EXPECT_EQ(row1.url(), child1->url());
 
   // Verify notification
-  ASSERT_TRUE(delegate_.deleted_details());
-  ASSERT_EQ(2u, delegate_.deleted_details()->rows.size());
+  ASSERT_TRUE(notifier_.deleted_details());
+  ASSERT_EQ(2u, notifier_.deleted_details()->size());
   EXPECT_EQ(row1.url(),
-            delegate_.modified_details()->changed_urls[0].url());
+            (*notifier_.modified_details())[0].url());
   EXPECT_EQ(Time::UnixEpoch(),
-            delegate_.modified_details()->changed_urls[0].last_visit());
-  EXPECT_EQ(1u, delegate_.favicon_changed()->size());
+            (*notifier_.modified_details())[0].last_visit());
+  EXPECT_EQ(1u, notifier_.favicon_changed()->size());
 }
 
 TEST_F(AndroidProviderBackendTest, TestMultipleNestingTransaction) {
@@ -1659,7 +1703,7 @@ TEST_F(AndroidProviderBackendTest, TestMultipleNestingTransaction) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   // Create the nested transactions.
   history_db_.BeginTransaction();
@@ -1712,7 +1756,7 @@ TEST_F(AndroidProviderBackendTest, TestAndroidCTSComplianceForZeroVisitCount) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   URLRow url_row(GURL("http://www.google.com"));
   url_row.set_last_visit(Time::Now());
   url_row.set_visit_count(0);
@@ -1752,7 +1796,7 @@ TEST_F(AndroidProviderBackendTest, AndroidCTSComplianceFolderColumnExists) {
                                  &history_db_,
                                  &thumbnail_db_,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
   HistoryAndBookmarkRow row1;
   row1.set_raw_url("cnn.com");
   row1.set_url(GURL("http://cnn.com"));
@@ -1860,7 +1904,7 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
                                  &history_db_,
                                  NULL,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
 
@@ -1933,20 +1977,20 @@ TEST_F(AndroidProviderBackendTest, InsertWithoutThumbnailDB) {
                                  &history_db_,
                                  NULL,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
-  EXPECT_EQ(row1.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
+  EXPECT_EQ(row1.url(), (*notifier_.modified_details())[0].url());
   EXPECT_EQ(row1.last_visit_time(),
-            delegate_.modified_details()->changed_urls[0].last_visit());
+            (*notifier_.modified_details())[0].last_visit());
   EXPECT_EQ(row1.visit_count(),
-            delegate_.modified_details()->changed_urls[0].visit_count());
+            (*notifier_.modified_details())[0].visit_count());
   EXPECT_EQ(row1.title(),
-            delegate_.modified_details()->changed_urls[0].title());
-  EXPECT_FALSE(delegate_.favicon_changed());
+            (*notifier_.modified_details())[0].title());
+  EXPECT_FALSE(notifier_.favicon_changed());
   content::RunAllPendingInMessageLoop();
   ASSERT_EQ(1, bookmark_model_->mobile_node()->child_count());
   const BookmarkNode* child = bookmark_model_->mobile_node()->GetChild(0);
@@ -1954,19 +1998,19 @@ TEST_F(AndroidProviderBackendTest, InsertWithoutThumbnailDB) {
   EXPECT_EQ(row1.title(), child->GetTitle());
   EXPECT_EQ(row1.url(), child->url());
 
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
-  EXPECT_EQ(row2.url(), delegate_.modified_details()->changed_urls[0].url());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
+  EXPECT_EQ(row2.url(), (*notifier_.modified_details())[0].url());
   EXPECT_EQ(row2.last_visit_time(),
-            delegate_.modified_details()->changed_urls[0].last_visit());
+            (*notifier_.modified_details())[0].last_visit());
   EXPECT_EQ(row2.title(),
-            delegate_.modified_details()->changed_urls[0].title());
+            (*notifier_.modified_details())[0].title());
   // Favicon details is still false because thumbnail database wasn't
   // initialized, we ignore any changes of favicon.
-  ASSERT_FALSE(delegate_.favicon_changed());
+  ASSERT_FALSE(notifier_.favicon_changed());
 }
 
 TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
@@ -2000,7 +2044,7 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
                                    &history_db,
                                    &thumbnail_db,
                                    history_client_,
-                                   &delegate_));
+                                   &notifier_));
 
     ASSERT_TRUE(backend->InsertHistoryAndBookmark(row1));
     ASSERT_TRUE(backend->InsertHistoryAndBookmark(row2));
@@ -2018,12 +2062,12 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
                                  &history_db_,
                                  NULL,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   // Delete all rows.
   std::vector<base::string16> args;
   int deleted_count = 0;
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->DeleteHistoryAndBookmarks("Favicon IS NULL", args,
                                                  &deleted_count));
   // All rows were deleted.
@@ -2033,11 +2077,11 @@ TEST_F(AndroidProviderBackendTest, DeleteWithoutThumbnailDB) {
   ASSERT_EQ(0, bookmark_model_->mobile_node()->child_count());
 
   // Verify notifications
-  ASSERT_TRUE(delegate_.deleted_details());
-  EXPECT_FALSE(delegate_.modified_details());
-  EXPECT_EQ(2u, delegate_.deleted_details()->rows.size());
+  ASSERT_TRUE(notifier_.deleted_details());
+  EXPECT_FALSE(notifier_.modified_details());
+  EXPECT_EQ(2u, notifier_.deleted_details()->size());
   // No favicon has been deleted.
-  EXPECT_FALSE(delegate_.favicon_changed());
+  EXPECT_FALSE(notifier_.favicon_changed());
 
   // No row exists.
   std::vector<HistoryAndBookmarkRow::ColumnID> projections;
@@ -2076,7 +2120,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
                                    &history_db,
                                    &thumbnail_db,
                                    history_client_,
-                                   &delegate_));
+                                   &notifier_));
 
     AndroidURLID id1 = backend->InsertHistoryAndBookmark(row1);
     ASSERT_TRUE(id1);
@@ -2088,7 +2132,7 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
                                  &history_db_,
                                  NULL,
                                  history_client_,
-                                 &delegate_));
+                                 &notifier_));
 
   int update_count;
   std::vector<base::string16> update_args;
@@ -2102,15 +2146,15 @@ TEST_F(AndroidProviderBackendTest, UpdateFaviconWithoutThumbnail) {
   data.push_back('1');
   update_row1.set_favicon(base::RefCountedBytes::TakeVector(&data));
   update_args.push_back(UTF8ToUTF16(row1.raw_url()));
-  delegate_.ResetDetails();
+  notifier_.ResetDetails();
   ASSERT_TRUE(backend->UpdateHistoryAndBookmarks(update_row1, "url = ?",
                                                  update_args, &update_count));
   // Verify notifications.
-  EXPECT_FALSE(delegate_.deleted_details());
-  ASSERT_TRUE(delegate_.modified_details());
-  ASSERT_EQ(1u, delegate_.modified_details()->changed_urls.size());
+  EXPECT_FALSE(notifier_.deleted_details());
+  ASSERT_TRUE(notifier_.modified_details());
+  ASSERT_EQ(1u, notifier_.modified_details()->size());
   // No favicon will be updated as thumbnail database is missing.
-  EXPECT_FALSE(delegate_.favicon_changed());
+  EXPECT_FALSE(notifier_.favicon_changed());
 }
 
 }  // namespace history

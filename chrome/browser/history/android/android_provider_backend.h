@@ -16,7 +16,6 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/history/android/android_cache_database.h"
 #include "chrome/browser/history/android/sql_handler.h"
-#include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/history/history_notifications.h"
 #include "components/history/core/android/android_history_types.h"
 #include "sql/statement.h"
@@ -26,6 +25,7 @@ namespace history {
 
 class AndroidProviderBackend;
 class AndroidURLsSQLHandler;
+class HistoryBackendNotifier;
 class HistoryClient;
 class HistoryDatabase;
 class ThumbnailDatabase;
@@ -49,8 +49,8 @@ class AndroidProviderBackend {
   AndroidProviderBackend(const base::FilePath& cache_db_name,
                          HistoryDatabase* history_db,
                          ThumbnailDatabase* thumbnail_db,
-                         HistoryClient* history_client_,
-                         HistoryBackend::Delegate* delegate);
+                         HistoryClient* history_client,
+                         HistoryBackendNotifier* nofifier);
 
   ~AndroidProviderBackend();
 
@@ -340,7 +340,7 @@ class AndroidProviderBackend {
   // Whether AndroidProviderBackend has been initialized.
   bool initialized_;
 
-  HistoryBackend::Delegate* delegate_;
+  HistoryBackendNotifier* notifier_;
 
   DISALLOW_COPY_AND_ASSIGN(AndroidProviderBackend);
 };
