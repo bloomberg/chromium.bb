@@ -2178,5 +2178,29 @@ TEST(PictureLayerTilingTest, RecycledTilesClearedOnReset) {
   EXPECT_FALSE(recycle_tiling->TileAt(0, 0));
 }
 
+TEST_F(PictureLayerTilingIteratorTest, ResizeTilesAndUpdateToCurrent) {
+  // The tiling has four rows and three columns.
+  Initialize(gfx::Size(150, 100), 1, gfx::Size(250, 150));
+  tiling_->CreateAllTilesForTesting();
+  EXPECT_EQ(150, tiling_->TilingDataForTesting().max_texture_size().width());
+  EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
+  EXPECT_EQ(4u, tiling_->AllRefTilesForTesting().size());
+
+  client_.SetTileSize(gfx::Size(250, 200));
+  client_.set_tree(PENDING_TREE);
+
+  // Tile size in the tiling should still be 150x100.
+  EXPECT_EQ(150, tiling_->TilingDataForTesting().max_texture_size().width());
+  EXPECT_EQ(100, tiling_->TilingDataForTesting().max_texture_size().height());
+
+  Region invalidation;
+  tiling_->UpdateTilesToCurrentRasterSource(invalidation, gfx::Size(250, 150));
+
+  // Tile size in the tiling should be resized to 250x200.
+  EXPECT_EQ(250, tiling_->TilingDataForTesting().max_texture_size().width());
+  EXPECT_EQ(200, tiling_->TilingDataForTesting().max_texture_size().height());
+  EXPECT_EQ(0u, tiling_->AllRefTilesForTesting().size());
+}
+
 }  // namespace
 }  // namespace cc

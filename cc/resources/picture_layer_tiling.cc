@@ -172,13 +172,11 @@ void PictureLayerTiling::UpdateTilesToCurrentRasterSource(
     const gfx::Size& new_layer_bounds) {
   DCHECK(!new_layer_bounds.IsEmpty());
 
-  gfx::Size tile_size = tiling_data_.max_texture_size();
+  gfx::Size content_bounds =
+      gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
+  gfx::Size tile_size = client_->CalculateTileSize(content_bounds);
 
   if (new_layer_bounds != layer_bounds_) {
-    gfx::Size content_bounds =
-        gfx::ToCeiledSize(gfx::ScaleSize(new_layer_bounds, contents_scale_));
-
-    tile_size = client_->CalculateTileSize(content_bounds);
     if (tile_size.IsEmpty()) {
       layer_bounds_ = gfx::Size();
       content_bounds = gfx::Size();
