@@ -7,9 +7,11 @@ import os
 import re
 
 from pylib import pexpect
+from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import base_test_runner
 from pylib.device import device_errors
+from pylib.local import local_test_server_spawner
 from pylib.perf import perf_control
 
 
@@ -52,6 +54,13 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self._timeout = timeout * self.tool.GetTimeoutScale()
     if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
       self._perf_controller = perf_control.PerfControl(self.device)
+
+    if _TestSuiteRequiresMockTestServer(self.test_package.suite_name):
+      self._servers = [
+          local_test_server_spawner.LocalTestServerSpawner(
+              ports.AllocateTestServerPort(), self.device, self.tool)]
+    else:
+      self._servers = []
 
   #override
   def InstallTestPackage(self):
@@ -149,7 +158,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
       test_results = self._ParseTestOutput(
           self.test_package.SpawnTestProcess(self.device))
     finally:
-      self.CleanupSpawningServerState()
+      for s in self._servers:
+        s.Reset()
     # Calculate unknown test results.
     all_tests = set(test.split(':'))
     all_tests_ran = set([t.GetName() for t in test_results.GetAll()])
@@ -164,8 +174,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
   def SetUp(self):
     """Sets up necessary test enviroment for the test suite."""
     super(TestRunner, self).SetUp()
-    if _TestSuiteRequiresMockTestServer(self.test_package.suite_name):
-      self.LaunchChromeTestServerSpawner()
+    for s in self._servers:
+      s.SetUp()
     if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
       self._perf_controller.SetHighPerfMode()
     self.tool.SetupEnvironment()
@@ -173,6 +183,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
   #override
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
+    for s in self._servers:
+      s.TearDown()
     if _TestSuiteRequiresHighPerfMode(self.test_package.suite_name):
       self._perf_controller.SetDefaultPerfMode()
     self.test_package.ClearApplicationState(self.device)
