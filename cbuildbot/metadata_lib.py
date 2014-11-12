@@ -827,18 +827,16 @@ def GetMetadataURLsSince(target, start_date, end_date):
     # Sort by timestamp.
     urls = sorted(urls, key=lambda x: x.creation_time, reverse=True)
 
+    # Add relevant URLs to our list.
+    ret.extend([x.url for x in urls
+                if (x.creation_time.date() >= start_date and
+                    x.creation_time.date() <= end_date)])
+
     # See if we have gone far enough back by checking datetime of oldest URL
     # in the current batch.
     if urls[-1].creation_time.date() < start_date:
-      # We want a subset of these URLs, then we are done.
-      ret.extend([x.url for x in urls
-                  if (x.creation_time.date() >= start_date and
-                      x.creation_time.date() <= end_date)])
       break
-
     else:
-      # Accept all these URLs, then continue on to the next milestone.
-      ret.extend([x.url for x in urls])
       milestone -= 1
       cros_build_lib.Info('Continuing on to R%d.', milestone)
 
