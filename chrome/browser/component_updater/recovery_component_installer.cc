@@ -120,6 +120,11 @@ bool RecoveryComponentInstaller::Install(const base::DictionaryValue& manifest,
   base::FilePath path;
   if (!PathService::Get(DIR_RECOVERY_BASE, &path))
     return false;
+  if (!base::PathExists(path)) {
+    if (!base::CreateDirectory(path)) {
+      return false;
+    }
+  }
   path = path.AppendASCII(version.GetString());
   if (base::PathExists(path) && !base::DeleteFile(path, true))
     return false;
