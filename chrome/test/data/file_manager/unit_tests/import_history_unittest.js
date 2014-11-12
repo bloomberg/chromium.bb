@@ -26,10 +26,10 @@ var testFileSystem;
 /** @type {!MockFileEntry|undefined} */
 var testFileEntry;
 
-/** @type {!RecordStorage|undefined} */
+/** @type {!importer.RecordStorage|undefined} */
 var storage;
 
-/** @type {!Promise.<ImportHistory>|undefined} */
+/** @type {!Promise.<importer.ImportHistory>|undefined} */
 var historyProvider;
 
 // Set up the test components.
@@ -44,7 +44,7 @@ function setUp() {
 
   storage = new TestRecordStorage();
 
-  var history = new ImportHistory(storage);
+  var history = new importer.ImportHistory(storage);
   historyProvider = history.refresh();
 }
 
@@ -118,7 +118,7 @@ function testHistoryLoaderIntegration(callback) {
   /** @type {!HistoryLoader|undefined} */
   var loader;
 
-  /** @type {!ImportHistory|undefined} */
+  /** @type {!importer.ImportHistory|undefined} */
   var history;
 
   /** @type {!TestSyncFileEntryProvider|undefined} */
@@ -128,14 +128,14 @@ function testHistoryLoaderIntegration(callback) {
       .then(
           /**
            * @param  {!FileEntry} fileEntry
-           * @return {!Promise.<!<Array.<!ImportHistory>>}
+           * @return {!Promise.<!<Array.<!importer.ImportHistory>>}
            */
           function(fileEntry) {
             syncFileProvider = new TestSyncFileEntryProvider(fileEntry);
-            loader = new SynchronizedHistoryLoader(syncFileProvider);
+            loader = new importer.SynchronizedHistoryLoader(syncFileProvider);
             // Used to write new data to the "sync" file...data to be
             // refreshed by the the non-remote history instance.
-            var remoteLoader = new SynchronizedHistoryLoader(
+            var remoteLoader = new importer.SynchronizedHistoryLoader(
                 new TestSyncFileEntryProvider(fileEntry));
 
             var promises = [];
@@ -145,7 +145,7 @@ function testHistoryLoaderIntegration(callback) {
           })
       .then(
           /**
-           * @param {!<Array.<!ImportHistory>}
+           * @param {!<Array.<!importer.ImportHistory>} histories
            * @return {!Promise.<?>}
            */
           function(histories) {
@@ -194,7 +194,7 @@ function createRealStorage(fileName) {
   return createFileEntry(fileName)
       .then(
           function(fileEntry) {
-            return new FileEntryRecordStorage(fileEntry);
+            return new importer.FileEntryRecordStorage(fileEntry);
           });
 }
 
@@ -230,7 +230,7 @@ function createFileEntry(fileName) {
  * In-memory test implementation of {@code RecordStorage}.
  *
  * @constructor
- * @implements {RecordStorage}
+ * @implements {importer.RecordStorage}
  * @struct
  */
 var TestRecordStorage = function() {
@@ -264,7 +264,7 @@ var TestRecordStorage = function() {
  * Test implementation of SyncFileEntryProvider.
  *
  * @constructor
- * @implements {SyncFileEntryProvider}
+ * @implements {importer.SyncFileEntryProvider}
  * @final
  * @struct
  *

@@ -50,7 +50,7 @@ function FileBrowserBackground() {
    * in some views and integral to local dedupling files during the
    * cloud import process.
    *
-   * @type {HistoryLoader}
+   * @type {importer.HistoryLoader}
    */
   this.historyLoader = null;
 
@@ -62,8 +62,8 @@ function FileBrowserBackground() {
        */
       function(enabled) {
         if (enabled) {
-          this.historyLoader = new SynchronizedHistoryLoader(
-              new ChromeSyncFileEntryProvider());
+          this.historyLoader = new importer.SynchronizedHistoryLoader(
+              new importer.ChromeSyncFileEntryProvider());
         }
       }.bind(this));
 

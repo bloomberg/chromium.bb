@@ -2,33 +2,39 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Namespace
+var importer = {};
+
 /**
+ * A persistent data store for Cloud Import history information.
+ *
  * @constructor
  * @struct
  *
- * @param {!RecordStorage} storage
+ * @param {!importer.RecordStorage} storage
  */
-function ImportHistory(storage) {
+importer.ImportHistory = function(storage) {
 
-  /** @private {!RecordStorage} */
+  /** @private {!importer.RecordStorage} */
   this.storage_ = storage;
 
   /** @private {!Object.<string, !Array.<string>>} */
   this.entries_ = {};
 
-  /** @private {!Promise.<!ImportHistory>} */
+  /** @private {!Promise.<!importer.ImportHistory>} */
   this.whenReady_ = this.refresh_();
-}
+};
 
 /**
- * Loads history from disk and merges in any previously existing entries
+ * Loads history from storage and merges in any previously existing entries
  * that are not present in the newly loaded data. Should be called
- * when the file is changed by an external source.
+ * when the storage is externally changed.
  *
- * @return {!Promise.<!ImportHistory>} Resolves when history has been refreshed.
+ * @return {!Promise.<!importer.ImportHistory>} Resolves when history has been
+ *     refreshed.
  * @private
  */
-ImportHistory.prototype.refresh_ = function() {
+importer.ImportHistory.prototype.refresh_ = function() {
   var oldEntries = this.entries_;
   this.entries_ = {};
   return this.storage_.readAll()
@@ -36,8 +42,8 @@ ImportHistory.prototype.refresh_ = function() {
       .then(this.mergeEntries_.bind(this, oldEntries))
       .then(
           /**
-           * @return {!ImportHistory}
-           * @this {ImportHistory}
+           * @return {!importer.ImportHistory}
+           * @this {importer.ImportHistory}
            */
           function() {
             return this;
@@ -51,18 +57,18 @@ ImportHistory.prototype.refresh_ = function() {
  * @return {!Promise.<?>} Resolves once all updates are completed.
  * @private
  */
-ImportHistory.prototype.mergeEntries_ = function(entries) {
+importer.ImportHistory.prototype.mergeEntries_ = function(entries) {
   var promises = [];
   Object.keys(entries).forEach(
       /**
        * @param {string} key
-       * @this {ImportHistory}
+       * @this {importer.ImportHistory}
        */
       function(key) {
         entries[key].forEach(
             /**
              * @param {string} key
-             * @this {ImportHistory}
+             * @this {importer.ImportHistory}
              */
             function(destination) {
               if (this.getDestinations_(key).indexOf(destination) >= 0) {
@@ -78,17 +84,18 @@ ImportHistory.prototype.mergeEntries_ = function(entries) {
  * Reloads history from disk. Should be called when the file
  * is changed by an external source.
  *
- * @return {!Promise.<!ImportHistory>} Resolves when history has been refreshed.
+ * @return {!Promise.<!importer.ImportHistory>} Resolves when
+ *     history has been refreshed.
  */
-ImportHistory.prototype.refresh = function() {
+importer.ImportHistory.prototype.refresh = function() {
   this.whenReady_ = this.refresh_();
   return this.whenReady_;
 };
 
 /**
- * @return {!Promise.<!ImportHistory>}
+ * @return {!Promise.<!importer.ImportHistory>}
  */
-ImportHistory.prototype.whenReady = function() {
+importer.ImportHistory.prototype.whenReady = function() {
   return this.whenReady_;
 };
 
@@ -97,11 +104,11 @@ ImportHistory.prototype.whenReady = function() {
  * @param {!Array.<!Array.<*>>} records
  * @private
  */
-ImportHistory.prototype.updateHistoryRecords_ = function(records) {
+importer.ImportHistory.prototype.updateHistoryRecords_ = function(records) {
   records.forEach(
       /**
        * @param {!Array.<*>} entry
-       * @this {ImportHistory}
+       * @this {importer.ImportHistory}
        */
       function(record) {
         this.updateHistoryRecord_(record[0], record[1]);
@@ -114,7 +121,8 @@ ImportHistory.prototype.updateHistoryRecords_ = function(records) {
  * @param {string} destination
  * @private
  */
-ImportHistory.prototype.updateHistoryRecord_ = function(key, destination) {
+importer.ImportHistory.prototype.updateHistoryRecord_ =
+    function(key, destination) {
   if (key in this.entries_) {
     this.entries_[key].push(destination);
   } else {
@@ -128,14 +136,14 @@ ImportHistory.prototype.updateHistoryRecord_ = function(key, destination) {
  * @return {!Promise.<boolean>} Resolves with true if the FileEntry
  *     was previously imported to the specified destination.
  */
-ImportHistory.prototype.wasImported = function(entry, destination) {
+importer.ImportHistory.prototype.wasImported = function(entry, destination) {
   return this.whenReady_
       .then(this.createKey_.bind(this, entry))
       .then(
           /**
            * @param {string} key
            * @return {!Promise.<boolean>}
-           * @this {ImportHistory}
+           * @this {importer.ImportHistory}
            */
           function(key) {
             return this.getDestinations_(key).indexOf(destination) >= 0;
@@ -147,14 +155,14 @@ ImportHistory.prototype.wasImported = function(entry, destination) {
  * @param {string} destination
  * @return {!Promise.<?>} Resolves when the operation is completed.
  */
-ImportHistory.prototype.markImported = function(entry, destination) {
+importer.ImportHistory.prototype.markImported = function(entry, destination) {
   return this.whenReady_
       .then(this.createKey_.bind(this, entry))
       .then(
           /**
            * @param {string} key
            * @return {!Promise.<?>}
-           * @this {ImportHistory}
+           * @this {importer.ImportHistory}
            */
           function(key) {
             return this.addDestination_(destination, key);
@@ -167,7 +175,7 @@ ImportHistory.prototype.markImported = function(entry, destination) {
  * @return {!Promise.<?>} Resolves once the write has been completed.
  * @private
  */
-ImportHistory.prototype.addDestination_ = function(destination, key) {
+importer.ImportHistory.prototype.addDestination_ = function(destination, key) {
   this.updateHistoryRecord_(key, destination);
   return this.storage_.write([key, destination]);
 };
@@ -178,7 +186,7 @@ ImportHistory.prototype.addDestination_ = function(destination, key) {
  *     destinations, or an empty array, if none.
  * @private
  */
-ImportHistory.prototype.getDestinations_ = function(key) {
+importer.ImportHistory.prototype.getDestinations_ = function(key) {
   return key in this.entries_ ? this.entries_[key] : [];
 };
 
@@ -187,13 +195,13 @@ ImportHistory.prototype.getDestinations_ = function(key) {
  * @return {!Promise.<string>} Resolves with a the key is available.
  * @private
  */
-ImportHistory.prototype.createKey_ = function(fileEntry) {
-  var entry = new PromisaryFileEntry(fileEntry);
+importer.ImportHistory.prototype.createKey_ = function(fileEntry) {
+  var entry = new importer.PromisingFileEntry(fileEntry);
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {ImportHistory}
+       * @this {importer.ImportHistory}
        */
       function(resolve, reject) {
         entry.getMetadata()
@@ -201,7 +209,7 @@ ImportHistory.prototype.createKey_ = function(fileEntry) {
                 /**
                  * @param {!Object} metadata
                  * @return {!Promise.<string>}
-                 * @this {ImportHistory}
+                 * @this {importer.ImportHistory}
                  */
                 function(metadata) {
                   if (!('modificationTime' in metadata)) {
@@ -217,45 +225,46 @@ ImportHistory.prototype.createKey_ = function(fileEntry) {
 };
 
 /**
- * Provider of lazy loaded ImportHistory. This is the main
- * access point for a fully prepared {@code ImportHistory} object.
+ * Provider of lazy loaded importer.ImportHistory. This is the main
+ * access point for a fully prepared {@code importer.ImportHistory} object.
  *
  * @interface
  */
-function HistoryLoader() {}
+importer.HistoryLoader = function() {};
 
 /**
- * Instantiates an {@code ImportHistory} object and manages any
+ * Instantiates an {@code importer.ImportHistory} object and manages any
  * necessary ongoing maintenance of the object with respect to
  * its external dependencies.
  *
- * @see SynchronizedHistoryLoader for an example.
+ * @see importer.SynchronizedHistoryLoader for an example.
  *
- * @return {!Promise.<!ImportHistory>} Resolves when history instance is ready.
+ * @return {!Promise.<!importer.ImportHistory>} Resolves when history instance
+ *     is ready.
  */
-HistoryLoader.prototype.loadHistory;
+importer.HistoryLoader.prototype.loadHistory;
 
 /**
- * Class responsible for lazy loading of {@code ImportHistory},
+ * Class responsible for lazy loading of {@code importer.ImportHistory},
  * and reloading when the underlying data is updated (via sync).
  *
  * @constructor
- * @implements {HistoryLoader}
+ * @implements {importer.HistoryLoader}
  * @struct
  *
- * @param {!SyncFileEntryProvider} fileProvider
+ * @param {!importer.SyncFileEntryProvider} fileProvider
  */
-function SynchronizedHistoryLoader(fileProvider) {
+importer.SynchronizedHistoryLoader = function(fileProvider) {
 
-  /** @private {!SyncFileEntryProvider} */
+  /** @private {!importer.SyncFileEntryProvider} */
   this.fileProvider_ = fileProvider;
 
-  /** @private {!ImportHistory|undefined} */
+  /** @private {!importer.ImportHistory|undefined} */
   this.history_;
-}
+};
 
 /** @override */
-SynchronizedHistoryLoader.prototype.loadHistory = function() {
+importer.SynchronizedHistoryLoader.prototype.loadHistory = function() {
   if (this.history_) {
     return this.history_.whenReady();
   }
@@ -267,16 +276,16 @@ SynchronizedHistoryLoader.prototype.loadHistory = function() {
       .then(
           /**
            * @param {!FileEntry} fileEntry
-           * @return {!Promise.<!ImportHistory>}
-           * @this {SynchronizedHistoryLoader}
+           * @return {!Promise.<!importer.ImportHistory>}
+           * @this {importer.SynchronizedHistoryLoader}
            */
           function(fileEntry) {
-            var storage = new FileEntryRecordStorage(fileEntry);
-            var history = new ImportHistory(storage);
+            var storage = new importer.FileEntryRecordStorage(fileEntry);
+            var history = new importer.ImportHistory(storage);
             return history.refresh().then(
                 /**
-                 * @return {!ImportHistory}
-                 * @this {SynchronizedHistoryLoader}
+                 * @return {!importer.ImportHistory}
+                 * @this {importer.SynchronizedHistoryLoader}
                  */
                 function() {
                   this.history_ = history;
@@ -292,7 +301,8 @@ SynchronizedHistoryLoader.prototype.loadHistory = function() {
  *
  * @private
  */
-SynchronizedHistoryLoader.prototype.onSyncedDataChanged_ = function() {
+importer.SynchronizedHistoryLoader.prototype.onSyncedDataChanged_ =
+    function() {
   if (this.history_) {
     this.history_.refresh();  // Reload history entries.
   }
@@ -304,7 +314,7 @@ SynchronizedHistoryLoader.prototype.onSyncedDataChanged_ = function() {
  *
  * @interface
  */
-function SyncFileEntryProvider() {}
+importer.SyncFileEntryProvider = function() {};
 
 /**
  * Adds a listener to be notified when the the FileEntry owned/managed
@@ -312,53 +322,55 @@ function SyncFileEntryProvider() {}
  *
  * @param {function()} syncListener
  */
-SyncFileEntryProvider.prototype.addSyncListener;
+importer.SyncFileEntryProvider.prototype.addSyncListener;
 
 /**
  * Provides accsess to the sync FileEntry owned/managed by this class.
  *
  * @return {!Promise.<!FileEntry>}
  */
-SyncFileEntryProvider.prototype.getSyncFileEntry;
+importer.SyncFileEntryProvider.prototype.getSyncFileEntry;
 
 /**
  * Factory for synchronized files based on chrome.syncFileSystem.
  *
  * @constructor
- * @implements {SyncFileEntryProvider}
+ * @implements {importer.SyncFileEntryProvider}
  * @struct
  */
-function ChromeSyncFileEntryProvider() {
+importer.ChromeSyncFileEntryProvider = function() {
 
   /** @private {!Array.<function()>} */
   this.syncListeners_ = [];
 
   /** @private {!Promise.<!FileEntry>|undefined} */
   this.fileEntryPromise_;
-}
+};
 
 /** @private @const {string} */
-ChromeSyncFileEntryProvider.FILE_NAME_ = 'import-history.data';
+importer.ChromeSyncFileEntryProvider.FILE_NAME_ = 'import-history.data';
 
 /**
  * Wraps chrome.syncFileSystem.onFileStatusChanged
  * so that we can report to our listeners when our file has changed.
  * @private
  */
-ChromeSyncFileEntryProvider.prototype.monitorSyncEvents_ = function() {
+importer.ChromeSyncFileEntryProvider.prototype.monitorSyncEvents_ =
+    function() {
   chrome.syncFileSystem.onFileStatusChanged.addListener(
       this.handleSyncEvent_.bind(this));
 };
 
 /** @override */
-ChromeSyncFileEntryProvider.prototype.addSyncListener = function(listener) {
+importer.ChromeSyncFileEntryProvider.prototype.addSyncListener =
+    function(listener) {
   if (this.syncListeners_.indexOf(listener) === -1) {
     this.syncListeners_.push(listener);
   }
 };
 
 /** @override */
-ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
+importer.ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
   if (this.fileEntryPromise_) {
     return this.fileEntryPromise_;
   };
@@ -368,7 +380,7 @@ ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
           /**
            * @param {!FileSystem} fileSystem
            * @return {!Promise.<!FileEntry>}
-           * @this {ChromeSyncFileEntryProvider}
+           * @this {importer.ChromeSyncFileEntryProvider}
            */
           function(fileSystem) {
             return this.getFileEntry_(fileSystem);
@@ -383,18 +395,18 @@ ChromeSyncFileEntryProvider.prototype.getSyncFileEntry = function() {
  * @return {!Promise.<!FileSystem>}
  * @private
  */
-ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
+importer.ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {ChromeSyncFileEntryProvider}
+       * @this {importer.ChromeSyncFileEntryProvider}
        */
       function(resolve, reject) {
         chrome.syncFileSystem.requestFileSystem(
             /**
               * @param {FileSystem} fileSystem
-              * @this {ChromeSyncFileEntryProvider}
+              * @this {importer.ChromeSyncFileEntryProvider}
               */
             function(fileSystem) {
               if (chrome.runtime.lastError) {
@@ -411,16 +423,17 @@ ChromeSyncFileEntryProvider.prototype.getFileSystem_ = function() {
  * @return {!Promise.<!FileEntry>}
  * @private
  */
-ChromeSyncFileEntryProvider.prototype.getFileEntry_ = function(fileSystem) {
+importer.ChromeSyncFileEntryProvider.prototype.getFileEntry_ =
+    function(fileSystem) {
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {ChromeSyncFileEntryProvider}
+       * @this {importer.ChromeSyncFileEntryProvider}
        */
       function(resolve, reject) {
         fileSystem.root.getFile(
-            ChromeSyncFileEntryProvider.FILE_NAME_,
+            importer.ChromeSyncFileEntryProvider.FILE_NAME_,
             {
               create: true,
               exclusive: false
@@ -445,7 +458,8 @@ ChromeSyncFileEntryProvider.prototype.getFileEntry_ = function(fileSystem) {
  *
  * @private
  */
-ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ = function(event) {
+importer.ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ =
+    function(event) {
   if (!this.fileEntryPromise_) {
     return;
   }
@@ -453,7 +467,7 @@ ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ = function(event) {
   this.fileEntryPromise_.then(
       /**
        * @param {!FileEntry} fileEntry
-       * @this {ChromeSyncFileEntryProvider}
+       * @this {importer.ChromeSyncFileEntryProvider}
        */
       function(fileEntry) {
         if (event['fileEntry'].fullPath !== fileEntry.fullPath) {
@@ -473,7 +487,7 @@ ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ = function(event) {
         this.syncListeners_.forEach(
             /**
              * @param {function()} listener
-             * @this {ChromeSyncFileEntryProvider}
+             * @this {importer.ChromeSyncFileEntryProvider}
              */
             function(listener) {
               // Notify by way of a promise so that it is fully asynchronous
@@ -488,7 +502,7 @@ ChromeSyncFileEntryProvider.prototype.handleSyncEvent_ = function(event) {
  *
  * @interface
  */
-function RecordStorage() {}
+importer.RecordStorage = function() {};
 
 /**
  * Adds a new record.
@@ -496,14 +510,14 @@ function RecordStorage() {}
  * @param {!Array.<*>} record
  * @return {!Promise.<?>} Resolves when record is added.
  */
-RecordStorage.prototype.write;
+importer.RecordStorage.prototype.write;
 
 /**
  * Reads all records.
  *
  * @return {!Promise.<!Array.<!Array.<*>>>}
  */
-RecordStorage.prototype.readAll;
+importer.RecordStorage.prototype.readAll;
 
 /**
  * A {@code RecordStore} that persists data in a {@code FileEntry}.
@@ -511,16 +525,16 @@ RecordStorage.prototype.readAll;
  * @param {!FileEntry} fileEntry
  *
  * @constructor
- * @implements {RecordStorage}
+ * @implements {importer.RecordStorage}
  * @struct
  */
-function FileEntryRecordStorage(fileEntry) {
-  /** @private {!PromisaryFileEntry} */
-  this.fileEntry_ = new PromisaryFileEntry(fileEntry);
-}
+importer.FileEntryRecordStorage = function(fileEntry) {
+  /** @private {!importer.PromisingFileEntry} */
+  this.fileEntry_ = new importer.PromisingFileEntry(fileEntry);
+};
 
 /** @override */
-FileEntryRecordStorage.prototype.write = function(record) {
+importer.FileEntryRecordStorage.prototype.write = function(record) {
   // TODO(smckay): should we make an effort to reuse a file writer?
   return this.fileEntry_.createWriter()
       .then(this.writeRecord_.bind(this, record));
@@ -534,12 +548,13 @@ FileEntryRecordStorage.prototype.write = function(record) {
  * @return {!Promise.<?>} Resolves when write is complete.
  * @private
  */
-FileEntryRecordStorage.prototype.writeRecord_ = function(record, writer) {
+importer.FileEntryRecordStorage.prototype.writeRecord_ =
+    function(record, writer) {
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {FileEntryRecordStorage}
+       * @this {importer.FileEntryRecordStorage}
        */
       function(resolve, reject) {
         var blob = new Blob(
@@ -555,13 +570,13 @@ FileEntryRecordStorage.prototype.writeRecord_ = function(record, writer) {
 };
 
 /** @override */
-FileEntryRecordStorage.prototype.readAll = function() {
+importer.FileEntryRecordStorage.prototype.readAll = function() {
   return this.fileEntry_.file()
       .then(
           this.readFileAsText_.bind(this),
           /**
            * @return {string}
-           * @this {FileEntryRecordStorage}
+           * @this {importer.FileEntryRecordStorage}
            */
           function() {
             console.error('Unable to read from history file.');
@@ -570,7 +585,7 @@ FileEntryRecordStorage.prototype.readAll = function() {
       .then(
           /**
            * @param {string} fileContents
-           * @this {FileEntryRecordStorage}
+           * @this {importer.FileEntryRecordStorage}
            */
           function(fileContents) {
             return this.parse_(fileContents);
@@ -584,12 +599,12 @@ FileEntryRecordStorage.prototype.readAll = function() {
  * @return {!Promise.<string>}
  * @private
  */
-FileEntryRecordStorage.prototype.readFileAsText_ = function(file) {
+importer.FileEntryRecordStorage.prototype.readFileAsText_ = function(file) {
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {FileEntryRecordStorage}
+       * @this {importer.FileEntryRecordStorage}
        */
       function(resolve, reject) {
         var reader = new FileReader();
@@ -619,12 +634,12 @@ FileEntryRecordStorage.prototype.readFileAsText_ = function(file) {
  * @return {!Promise.<!Array.<!Array.<*>>>}
  * @private
  */
-FileEntryRecordStorage.prototype.parse_ = function(text) {
+importer.FileEntryRecordStorage.prototype.parse_ = function(text) {
   return new Promise(
       /**
        * @param {function()} resolve
        * @param {function()} reject
-       * @this {FileEntryRecordStorage}
+       * @this {importer.FileEntryRecordStorage}
        */
       function(resolve, reject) {
         if (text.length === 0) {
@@ -651,16 +666,16 @@ FileEntryRecordStorage.prototype.parse_ = function(text) {
  * @constructor
  * @struct
  */
-function PromisaryFileEntry(fileEntry) {
+importer.PromisingFileEntry = function(fileEntry) {
   /** @private {!FileEntry} */
   this.fileEntry_ = fileEntry;
-}
+};
 
 /**
  * A "Promisary" wrapper around entry.getWriter.
  * @return {!Promise.<!FileWriter>}
  */
-PromisaryFileEntry.prototype.createWriter = function() {
+importer.PromisingFileEntry.prototype.createWriter = function() {
   return new Promise(this.fileEntry_.createWriter.bind(this.fileEntry_));
 };
 
@@ -668,13 +683,13 @@ PromisaryFileEntry.prototype.createWriter = function() {
  * A "Promisary" wrapper around entry.file.
  * @return {!Promise.<!File>}
  */
-PromisaryFileEntry.prototype.file = function() {
+importer.PromisingFileEntry.prototype.file = function() {
   return new Promise(this.fileEntry_.file.bind(this.fileEntry_));
 };
 
 /**
  * @return {!Promise.<!Object>}
  */
-PromisaryFileEntry.prototype.getMetadata = function() {
+importer.PromisingFileEntry.prototype.getMetadata = function() {
   return new Promise(this.fileEntry_.getMetadata.bind(this.fileEntry_));
 };
