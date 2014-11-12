@@ -1110,7 +1110,10 @@ void DevToolsWindow::OnLoadCompleted() {
         SessionTabHelper::FromWebContents(inspected_web_contents);
     if (session_tab_helper) {
       base::FundamentalValue tabId(session_tab_helper->session_id().id());
-      bindings_->CallClientFunction("WebInspector.setInspectedTabId",
+      // TODO(dgozman): remove |WebInspector.setInspectedTabId| call in M45.
+      bindings_->CallClientFunction(
+          "(InspectorFrontendAPI.setInspectedTabId ||"
+              "WebInspector.setInspectedTabId)",
           &tabId, NULL, NULL);
     }
   }
