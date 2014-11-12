@@ -64,6 +64,11 @@ def AddCommonOptions(option_parser):
   group.add_option('--build-directory', dest='build_directory',
                    help=('Path to the directory in which build files are'
                          ' located (should not include build type)'))
+  group.add_option('--output-directory', dest='output_directory',
+                   help=('Path to the directory in which build files are'
+                         ' located (must include build type). This will take'
+                         ' precedence over --debug, --release and'
+                         ' --build-directory'))
   group.add_option('--num_retries', dest='num_retries', type='int',
                    default=2,
                    help=('Number of retries for a test before '
@@ -95,6 +100,8 @@ def ProcessCommonOptions(options, error_func):
   constants.SetBuildType(options.build_type)
   if options.build_directory:
     constants.SetBuildDirectory(options.build_directory)
+  if options.output_directory:
+    constants.SetOutputDirectort(options.output_directory)
   if options.environment not in constants.VALID_ENVIRONMENTS:
     error_func('--environment must be one of: %s' %
                ', '.join(constants.VALID_ENVIRONMENTS))
