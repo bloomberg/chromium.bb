@@ -32,7 +32,6 @@ def DefaultConfigVariables():
     'component': 'static_library',
     'fastbuild': '0',
     'icu_use_data_file_flag': '1',
-    'libpeer_target_type': 'static_library',
     'lsan': '0',
     # TODO(maruel): This may not always be true.
     'target_arch': 'arm',

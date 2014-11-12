@@ -326,10 +326,15 @@ void EnableTypingDetection(AudioProcessing* audio_processing,
 void StartEchoCancellationDump(AudioProcessing* audio_processing,
                                base::File aec_dump_file) {
   DCHECK(aec_dump_file.IsValid());
-  if (audio_processing->StartDebugRecordingForPlatformFile(
-      aec_dump_file.TakePlatformFile())) {
-    DLOG(ERROR) << "Fail to start AEC debug recording";
+
+  FILE* stream = base::FileToFILE(aec_dump_file.Pass(), "w");
+  if (!stream) {
+    LOG(ERROR) << "Failed to open AEC dump file";
+    return;
   }
+
+  if (audio_processing->StartDebugRecording(stream))
+    DLOG(ERROR) << "Fail to start AEC debug recording";
 }
 
 void StopEchoCancellationDump(AudioProcessing* audio_processing) {
