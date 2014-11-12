@@ -14,10 +14,11 @@ layer at (0,0) size 800x600
             text run at (556,0) width 31: " Bug"
         RenderText {#text} at (586,0) size 5x17
           text run at (586,0) width 5: "."
-      RenderBlock {P} at (0,34) size 784x18
-        RenderText {#text} at (0,0) size 580x17
-          text run at (0,0) width 580: "There should be four empty squares with black borders. WebKit should not hang or assert."
-      RenderBlock {DIV} at (8,68) size 106x106 [border: (3px solid #000000)]
-      RenderBlock {DIV} at (8,182) size 106x106 [border: (3px solid #000000)]
-      RenderBlock {DIV} at (8,296) size 106x106 [border: (3px solid #000000)]
-      RenderBlock {DIV} at (8,410) size 106x106 [border: (3px solid #000000)]
+      RenderBlock {P} at (0,34) size 784x36
+        RenderText {#text} at (0,0) size 784x35
+          text run at (0,0) width 784: "There should be three empty squares with black borders and the last one should have blue background. WebKit should not"
+          text run at (0,18) width 93: "hang or assert."
+      RenderBlock {DIV} at (8,86) size 106x106 [border: (3px solid #000000)]
+      RenderBlock {DIV} at (8,200) size 106x106 [border: (3px solid #000000)]
+      RenderBlock {DIV} at (8,314) size 106x106 [border: (3px solid #000000)]
+      RenderBlock {DIV} at (8,428) size 106x106 [border: (3px solid #000000)]

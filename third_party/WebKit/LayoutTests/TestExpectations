@@ -279,8 +279,6 @@ crbug.com/316147 [ Win ] http/tests/history/back-to-post.html [ Failure Pass ]
 
 crbug.com/341435 http/tests/images/image-with-origin-header.html [ Pass Timeout ]
 
-crbug.com/424048 [ Win Android Mac ] fast/backgrounds/size/zero.html [ NeedsRebaseline ]
-
 crbug.com/248938 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 [ Linux Win ] virtual/threaded/animations/animation-border-overflow.html [ Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/animation-direction-normal.html [ Pass ImageOnlyFailure Timeout ]
