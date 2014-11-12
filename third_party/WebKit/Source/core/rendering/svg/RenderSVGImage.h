@@ -63,7 +63,7 @@ private:
     virtual void layout() override;
     virtual void paint(PaintInfo&, const LayoutPoint&) override;
 
-    bool forceNonUniformScaling(SVGImageElement*) const;
+    FloatSize computeImageViewportSize(ImageResource&) const;
 
     virtual bool nodeAtFloatPoint(const HitTestRequest&, HitTestResult&, const FloatPoint& pointInParent, HitTestAction) override;
 

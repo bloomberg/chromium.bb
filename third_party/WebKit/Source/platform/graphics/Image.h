@@ -84,6 +84,10 @@ public:
     virtual bool usesContainerSize() const { return false; }
     virtual bool hasRelativeWidth() const { return false; }
     virtual bool hasRelativeHeight() const { return false; }
+
+    // Computes (extracts) the intrinsic dimensions and ratio from the Image. The intrinsic ratio
+    // will be the 'viewport' of the image. (Same as the dimensions for a raster image. For SVG
+    // images it can be the dimensions defined by the 'viewBox'.)
     virtual void computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio);
 
     virtual IntSize size() const = 0;
