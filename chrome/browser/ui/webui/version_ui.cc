@@ -36,11 +36,13 @@
 #include "chrome/browser/ui/webui/version_handler_chromeos.h"
 #endif
 
+using content::WebUIDataSource;
+
 namespace {
 
-content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
-  content::WebUIDataSource* html_source =
-      content::WebUIDataSource::Create(chrome::kChromeUIVersionHost);
+WebUIDataSource* CreateVersionUIDataSource() {
+  WebUIDataSource* html_source =
+      WebUIDataSource::Create(chrome::kChromeUIVersionHost);
 
   // Localized and data strings.
   html_source->AddLocalizedString("title", IDS_ABOUT_VERSION_TITLE);
@@ -140,7 +142,7 @@ VersionUI::VersionUI(content::WebUI* web_ui)
   content::URLDataSource::Add(profile, theme);
 #endif
 
-  content::WebUIDataSource::Add(profile, CreateVersionUIDataSource(profile));
+  WebUIDataSource::Add(profile, CreateVersionUIDataSource());
 }
 
 VersionUI::~VersionUI() {
