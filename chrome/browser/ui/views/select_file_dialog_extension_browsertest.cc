@@ -138,8 +138,7 @@ class SelectFileDialogExtensionBrowserTest : public ExtensionBrowserTest {
                   const std::string& additional_message) {
     // Spawn a dialog to open a file.  The dialog will signal that it is ready
     // via chrome.test.sendMessage() in the extension JavaScript.
-    ExtensionTestMessageListener init_listener("worker-initialized",
-                                               false /* will_reply */);
+    ExtensionTestMessageListener init_listener("ready", false /* will_reply */);
 
     scoped_ptr<ExtensionTestMessageListener> additional_listener;
     if (!additional_message.empty()) {
@@ -278,8 +277,6 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // Spawn a dialog to open a file.  Provide the path to the file so the dialog
   // will automatically select it.  Ensure that the OK button is enabled by
   // waiting for chrome.test.sendMessage('selection-change-complete').
-  // The extension starts a Web Worker to read file metadata, so it may send
-  // 'selection-change-complete' before 'worker-initialized'.  This is OK.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_OPEN_FILE,
                                      test_file, owning_window,
                                      "selection-change-complete"));
@@ -306,8 +303,6 @@ IN_PROC_BROWSER_TEST_F(SelectFileDialogExtensionBrowserTest,
   // Spawn a dialog to save a file, providing a suggested path.
   // Ensure "Save" button is enabled by waiting for notification from
   // chrome.test.sendMessage().
-  // The extension starts a Web Worker to read file metadata, so it may send
-  // 'directory-change-complete' before 'worker-initialized'.  This is OK.
   ASSERT_NO_FATAL_FAILURE(OpenDialog(ui::SelectFileDialog::SELECT_SAVEAS_FILE,
                                      test_file, owning_window,
                                      "directory-change-complete"));
