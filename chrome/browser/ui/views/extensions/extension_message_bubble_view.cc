@@ -11,7 +11,6 @@
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/proxy_overridden_bubble_controller.h"
 #include "chrome/browser/extensions/settings_api_bubble_controller.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"

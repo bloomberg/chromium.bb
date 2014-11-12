@@ -50,14 +50,8 @@ const std::string& ExtensionActionViewController::GetId() const {
 
 void ExtensionActionViewController::SetDelegate(
     ToolbarActionViewDelegate* delegate) {
-  DCHECK((delegate == nullptr) ^ (view_delegate_ == nullptr));
-  if (delegate) {
-    view_delegate_ = delegate;
-    platform_delegate_->OnDelegateSet();
-  } else {
-    platform_delegate_.reset();
-    view_delegate_ = nullptr;
-  }
+  view_delegate_ = delegate;
+  platform_delegate_->OnDelegateSet();
 }
 
 gfx::Image ExtensionActionViewController::GetIcon(
@@ -122,10 +116,6 @@ bool ExtensionActionViewController::CanDrag() const {
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user) {
   return ExecuteAction(SHOW_POPUP, by_user);
-}
-
-void ExtensionActionViewController::UpdateState() {
-  view_delegate_->UpdateState();
 }
 
 bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,

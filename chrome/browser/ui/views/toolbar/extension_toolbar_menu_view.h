@@ -42,9 +42,6 @@ class ExtensionToolbarMenuView : public views::View,
   // Closes the |wrench_menu_|.
   void CloseWrenchMenu();
 
-  // Returns the padding before the BrowserActionsContainer in the menu.
-  int start_padding() const;
-
   // The associated browser.
   Browser* browser_;
 

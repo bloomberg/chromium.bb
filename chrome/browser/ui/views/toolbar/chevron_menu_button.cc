@@ -276,8 +276,8 @@ bool ChevronMenuButton::MenuController::AreDropTypesRequired(
 
 bool ChevronMenuButton::MenuController::CanDrop(
     views::MenuItemView* menu, const OSExchangeData& data) {
-  return BrowserActionDragData::CanDrop(
-      data, browser_actions_container_->browser()->profile());
+  return BrowserActionDragData::CanDrop(data,
+                                        browser_actions_container_->profile());
 }
 
 int ChevronMenuButton::MenuController::GetDropOperation(
@@ -316,12 +316,16 @@ int ChevronMenuButton::MenuController::OnPerformDrop(
       drop_data.index() < browser_actions_container_->VisibleBrowserActions())
     --drop_index;
 
-  ToolbarActionsBar::DragType drag_type =
-      drop_data.index() < browser_actions_container_->VisibleBrowserActions() ?
-          ToolbarActionsBar::DRAG_TO_OVERFLOW :
-          ToolbarActionsBar::DRAG_TO_SAME;
-  browser_actions_container_->toolbar_actions_bar()->OnDragDrop(
-      drop_data.index(), drop_index, drag_type);
+  Profile* profile = browser_actions_container_->profile();
+  // Move the extension in the model.
+  extensions::ExtensionToolbarModel* toolbar_model =
+      extensions::ExtensionToolbarModel::Get(profile);
+  toolbar_model->MoveExtensionIcon(drop_data.id(), drop_index);
+
+  // If the extension was moved to the overflow menu from the main bar, notify
+  // the owner.
+  if (drop_data.index() < browser_actions_container_->VisibleBrowserActions())
+    browser_actions_container_->NotifyActionMovedToOverflow();
 
   if (for_drop_)
     owner_->MenuDone();
@@ -337,7 +341,7 @@ void ChevronMenuButton::MenuController::WriteDragData(
   size_t drag_index = IndexForId(sender->GetCommand());
   BrowserActionDragData drag_data(
       browser_actions_container_->GetIdAt(drag_index), drag_index);
-  drag_data.Write(browser_actions_container_->browser()->profile(), data);
+  drag_data.Write(browser_actions_container_->profile(), data);
 }
 
 int ChevronMenuButton::MenuController::GetDragOperations(
@@ -388,7 +392,7 @@ bool ChevronMenuButton::AreDropTypesRequired() {
 
 bool ChevronMenuButton::CanDrop(const OSExchangeData& data) {
   return BrowserActionDragData::CanDrop(
-      data, browser_actions_container_->browser()->profile());
+      data, browser_actions_container_->profile());
 }
 
 void ChevronMenuButton::OnDragEntered(const ui::DropTargetEvent& event) {

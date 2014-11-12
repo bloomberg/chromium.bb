@@ -47,7 +47,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, DragBrowserActions) {
   // Drag extension A from index 0...
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  ToolbarActionView* view = container->GetViewForId(extension_b()->id());
+  ToolbarActionView* view = container->GetViewForExtension(extension_b());
   // ...to the right of extension B.
   gfx::Point location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsBarBrowserTest, MultipleWindows) {
   // Drag extension A from index 0...
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  ToolbarActionView* view = first->GetViewForId(extension_b()->id());
+  ToolbarActionView* view = first->GetViewForExtension(extension_b());
   // ...to the right of extension B.
   gfx::Point location(view->x() + view->width(), view->y());
   ui::DropTargetEvent target_event(
@@ -499,7 +499,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   ui::OSExchangeData drop_data;
   BrowserActionDragData browser_action_drag_data(extension_a()->id(), 0u);
   browser_action_drag_data.Write(profile(), &drop_data);
-  ToolbarActionView* view = overflow_bar()->GetViewForId(extension_c()->id());
+  ToolbarActionView* view = overflow_bar()->GetViewForExtension(extension_c());
   gfx::Point location(view->x(), view->y());
   ui::DropTargetEvent target_event(
       drop_data, location, location, ui::DragDropTypes::DRAG_MOVE);
@@ -518,7 +518,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerOverflowTest,
   ui::OSExchangeData drop_data2;
   BrowserActionDragData browser_action_drag_data2(extension_a()->id(), 1u);
   browser_action_drag_data2.Write(profile(), &drop_data2);
-  view = main_bar()->GetViewForId(extension_b()->id());
+  view = main_bar()->GetViewForExtension(extension_b());
   location = gfx::Point(view->x(), view->y());
   ui::DropTargetEvent target_event2(
       drop_data2, location, location, ui::DragDropTypes::DRAG_MOVE);

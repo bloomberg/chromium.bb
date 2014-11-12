@@ -65,7 +65,7 @@ class ToolbarActionView : public views::MenuButton,
     ~Delegate() override {}
   };
 
-  ToolbarActionView(ToolbarActionViewController* view_controller,
+  ToolbarActionView(scoped_ptr<ToolbarActionViewController> view_controller,
                     Browser* browser,
                     Delegate* delegate);
   ~ToolbarActionView() override;
@@ -99,7 +99,7 @@ class ToolbarActionView : public views::MenuButton,
   content::WebContents* GetCurrentWebContents() const override;
 
   ToolbarActionViewController* view_controller() {
-    return view_controller_;
+    return view_controller_.get();
   }
   Browser* browser() { return browser_; }
 
@@ -128,10 +128,13 @@ class ToolbarActionView : public views::MenuButton,
   void CleanupPopup() override;
 
   // A lock to keep the MenuButton pressed when a menu or popup is visible.
+  // This needs to be destroyed after |view_controller_|, because
+  // |view_controller_|'s destructor can call CleanupPopup(), which uses this
+  // object.
   scoped_ptr<views::MenuButton::PressedLock> pressed_lock_;
 
   // The controller for this toolbar action view.
-  ToolbarActionViewController* view_controller_;
+  scoped_ptr<ToolbarActionViewController> view_controller_;
 
   // The associated browser.
   Browser* browser_;
