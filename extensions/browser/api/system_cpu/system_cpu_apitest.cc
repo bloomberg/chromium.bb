@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/browser/api/system_cpu/cpu_info_provider.h"
+#include "extensions/shell/test/shell_apitest.h"
 
 namespace extensions {
 
@@ -36,13 +36,13 @@ class MockCpuInfoProviderImpl : public CpuInfoProvider {
   ~MockCpuInfoProviderImpl() override {}
 };
 
-class SystemCpuApiTest: public ExtensionApiTest {
+class SystemCpuApiTest : public ShellApiTest {
  public:
   SystemCpuApiTest() {}
   ~SystemCpuApiTest() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    ShellApiTest::SetUpInProcessBrowserTestFixture();
   }
 };
 
@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(SystemCpuApiTest, Cpu) {
   CpuInfoProvider* provider = new MockCpuInfoProviderImpl();
   // The provider is owned by the single CpuInfoProvider instance.
   CpuInfoProvider::InitializeForTesting(provider);
-  ASSERT_TRUE(RunExtensionTest("system/cpu")) << message_;
+  ASSERT_TRUE(RunAppTest("system/cpu")) << message_;
 }
 
 }  // namespace extensions

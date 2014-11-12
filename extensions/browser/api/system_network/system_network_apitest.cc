@@ -4,31 +4,25 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/browser/api/system_network/system_network_api.h"
+#include "extensions/browser/api_test_utils.h"
 #include "extensions/common/test_util.h"
+#include "extensions/shell/test/shell_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 using extensions::Extension;
+using extensions::api_test_utils::RunFunctionAndReturnSingleResult;
 using extensions::core_api::SystemNetworkGetNetworkInterfacesFunction;
 using extensions::core_api::system_network::NetworkInterface;
 
-namespace utils = extension_function_test_utils;
-
 namespace {
 
-class SystemNetworkApiTest : public ExtensionApiTest {
-};
+class SystemNetworkApiTest : public extensions::ShellApiTest {};
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, SystemNetworkExtension) {
-  ASSERT_TRUE(RunExtensionTest("system/network")) << message_;
+  ASSERT_TRUE(RunAppTest("system/network")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
@@ -40,17 +34,17 @@ IN_PROC_BROWSER_TEST_F(SystemNetworkApiTest, GetNetworkInterfaces) {
   socket_function->set_extension(empty_extension.get());
   socket_function->set_has_callback(true);
 
-  scoped_ptr<base::Value> result(utils::RunFunctionAndReturnSingleResult(
-      socket_function.get(), "[]", browser(), utils::NONE));
+  scoped_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
+      socket_function.get(), "[]", browser_context()));
   ASSERT_EQ(base::Value::TYPE_LIST, result->GetType());
 
   // All we can confirm is that we have at least one address, but not what it
   // is.
-  base::ListValue *value = static_cast<base::ListValue*>(result.get());
+  base::ListValue* value = static_cast<base::ListValue*>(result.get());
   ASSERT_TRUE(value->GetSize() > 0);
 
-  for (base::ListValue::const_iterator it = value->begin();
-      it != value->end(); ++it) {
+  for (base::ListValue::const_iterator it = value->begin(); it != value->end();
+       ++it) {
     base::Value* network_interface_value = *it;
 
     NetworkInterface network_interface;
