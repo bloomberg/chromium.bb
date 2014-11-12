@@ -15,6 +15,9 @@ namespace pulse {
 
 namespace {
 
+static const std::string kGoogleChromeDisplayName = "google-chrome";
+static const std::string kChromiumBrowserDisplayName = "chromium-browser";
+
 pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
   switch (channel) {
     // PulseAudio does not differentiate between left/right and
@@ -46,6 +49,18 @@ pa_channel_position ChromiumToPAChannelPosition(Channels channel) {
       return PA_CHANNEL_POSITION_INVALID;
   }
 }
+
+class ScopedPropertyList {
+ public:
+  ScopedPropertyList() : property_list_(pa_proplist_new()) {}
+  ~ScopedPropertyList() { pa_proplist_free(property_list_); }
+
+  pa_proplist* get() const { return property_list_; }
+
+ private:
+  pa_proplist* property_list_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedPropertyList);
+};
 
 }  // namespace
 
@@ -157,8 +172,18 @@ bool CreateInputStream(pa_threaded_mainloop* mainloop,
   pa_channel_map* map = (source_channel_map.channels != 0) ?
       &source_channel_map : NULL;
 
-  // Create a new recording stream.
-  *stream = pa_stream_new(context, "RecordStream", &sample_specifications, map);
+  // Create a new recording stream and
+  // tells PulseAudio what the stream icon should be.
+  ScopedPropertyList property_list;
+  pa_proplist_sets(property_list.get(), PA_PROP_APPLICATION_ICON_NAME,
+#if defined(GOOGLE_CHROME_BUILD)
+                   kGoogleChromeDisplayName.c_str());
+#else
+                   kChromiumBrowserDisplayName.c_str());
+#endif
+  *stream = pa_stream_new_with_proplist(context, "RecordStream",
+                                        &sample_specifications, map,
+                                        property_list.get());
   RETURN_ON_FAILURE(*stream, "failed to create PA recording stream");
 
   pa_stream_set_state_callback(*stream, stream_callback, user_data);
@@ -250,7 +275,7 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
   sample_specifications.rate = params.sample_rate();
   sample_specifications.channels = params.channels();
 
-  // Get channel mapping and open playback stream.
+  // Get channel mapping.
   pa_channel_map* map = NULL;
   pa_channel_map source_channel_map = ChannelLayoutToPAChannelMap(
       params.channel_layout());
@@ -259,7 +284,18 @@ bool CreateOutputStream(pa_threaded_mainloop** mainloop,
     // than the default channel map (NULL).
     map = &source_channel_map;
   }
-  *stream = pa_stream_new(*context, "Playback", &sample_specifications, map);
+
+  // Open playback stream and
+  // tell PulseAudio what the stream icon should be.
+  ScopedPropertyList property_list;
+  pa_proplist_sets(property_list.get(), PA_PROP_APPLICATION_ICON_NAME,
+#if defined(GOOGLE_CHROME_BUILD)
+                   kGoogleChromeDisplayName.c_str());
+#else
+                   kChromiumBrowserDisplayName.c_str());
+#endif
+  *stream = pa_stream_new_with_proplist(
+      *context, "Playback", &sample_specifications, map, property_list.get());
   RETURN_ON_FAILURE(*stream, "failed to create PA playback stream");
 
   pa_stream_set_state_callback(*stream, stream_callback, user_data);
