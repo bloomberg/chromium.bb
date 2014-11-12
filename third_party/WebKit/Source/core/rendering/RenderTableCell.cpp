@@ -102,8 +102,6 @@ void RenderTableCell::colSpanOrRowSpanChanged()
 
     updateColAndRowSpanFlags();
 
-    // FIXME: I suspect that we could return early here if !m_hasColSpan && !m_hasRowSpan.
-
     setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation();
     if (parent() && section())
         section()->setNeedsCellRecalc();
