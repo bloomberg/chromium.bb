@@ -22,8 +22,8 @@ TransformAnimationCurveAdapter::TransformAnimationCurveAdapter(
 TransformAnimationCurveAdapter::~TransformAnimationCurveAdapter() {
 }
 
-double TransformAnimationCurveAdapter::Duration() const {
-  return duration_.InSecondsF();
+base::TimeDelta TransformAnimationCurveAdapter::Duration() const {
+  return duration_;
 }
 
 scoped_ptr<cc::AnimationCurve> TransformAnimationCurveAdapter::Clone() const {
@@ -86,8 +86,8 @@ InverseTransformCurveAdapter::InverseTransformCurveAdapter(
 InverseTransformCurveAdapter::~InverseTransformCurveAdapter() {
 }
 
-double InverseTransformCurveAdapter::Duration() const {
-  return duration_.InSeconds();
+base::TimeDelta InverseTransformCurveAdapter::Duration() const {
+  return duration_;
 }
 
 scoped_ptr<cc::AnimationCurve> InverseTransformCurveAdapter::Clone() const {

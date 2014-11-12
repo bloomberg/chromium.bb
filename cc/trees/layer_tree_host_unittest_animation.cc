@@ -504,10 +504,10 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
     const FloatAnimationCurve* curve =
         animation->curve()->ToFloatAnimationCurve();
     float start_opacity = curve->GetValue(0.0);
-    float end_opacity = curve->GetValue(curve->Duration());
+    float end_opacity = curve->GetValue(curve->Duration().InSecondsF());
     float linearly_interpolated_opacity =
         0.25f * end_opacity + 0.75f * start_opacity;
-    double time = curve->Duration() * 0.25;
+    double time = curve->Duration().InSecondsF() * 0.25;
     // If the linear timing function associated with this animation was not
     // picked up, then the linearly interpolated opacity would be different
     // because of the default ease timing function.

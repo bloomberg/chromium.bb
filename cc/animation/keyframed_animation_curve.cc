@@ -205,8 +205,9 @@ void KeyframedColorAnimationCurve::AddKeyframe(
   InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
-double KeyframedColorAnimationCurve::Duration() const {
-  return keyframes_.back()->Time() - keyframes_.front()->Time();
+base::TimeDelta KeyframedColorAnimationCurve::Duration() const {
+  return base::TimeDelta::FromSecondsD(keyframes_.back()->Time() -
+                                       keyframes_.front()->Time());
 }
 
 scoped_ptr<AnimationCurve> KeyframedColorAnimationCurve::Clone() const {
@@ -252,8 +253,9 @@ void KeyframedFloatAnimationCurve::AddKeyframe(
   InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
-double KeyframedFloatAnimationCurve::Duration() const {
-  return keyframes_.back()->Time() - keyframes_.front()->Time();
+base::TimeDelta KeyframedFloatAnimationCurve::Duration() const {
+  return base::TimeDelta::FromSecondsD(keyframes_.back()->Time() -
+                                       keyframes_.front()->Time());
 }
 
 scoped_ptr<AnimationCurve> KeyframedFloatAnimationCurve::Clone() const {
@@ -297,8 +299,9 @@ void KeyframedTransformAnimationCurve::AddKeyframe(
   InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
-double KeyframedTransformAnimationCurve::Duration() const {
-  return keyframes_.back()->Time() - keyframes_.front()->Time();
+base::TimeDelta KeyframedTransformAnimationCurve::Duration() const {
+  return base::TimeDelta::FromSecondsD(keyframes_.back()->Time() -
+                                       keyframes_.front()->Time());
 }
 
 scoped_ptr<AnimationCurve> KeyframedTransformAnimationCurve::Clone() const {
@@ -408,8 +411,9 @@ void KeyframedFilterAnimationCurve::AddKeyframe(
   InsertKeyframe(keyframe.Pass(), &keyframes_);
 }
 
-double KeyframedFilterAnimationCurve::Duration() const {
-  return keyframes_.back()->Time() - keyframes_.front()->Time();
+base::TimeDelta KeyframedFilterAnimationCurve::Duration() const {
+  return base::TimeDelta::FromSecondsD(keyframes_.back()->Time() -
+                                       keyframes_.front()->Time());
 }
 
 scoped_ptr<AnimationCurve> KeyframedFilterAnimationCurve::Clone() const {

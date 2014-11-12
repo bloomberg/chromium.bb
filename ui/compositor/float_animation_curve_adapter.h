@@ -21,7 +21,7 @@ class FloatAnimationCurveAdapter : public cc::FloatAnimationCurve {
   ~FloatAnimationCurveAdapter() override {}
 
   // FloatAnimationCurve implementation.
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   scoped_ptr<cc::AnimationCurve> Clone() const override;
   float GetValue(double t) const override;
 

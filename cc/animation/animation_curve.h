@@ -6,6 +6,7 @@
 #define CC_ANIMATION_ANIMATION_CURVE_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/transform.h"
@@ -30,7 +31,7 @@ class CC_EXPORT AnimationCurve {
 
   virtual ~AnimationCurve() {}
 
-  virtual double Duration() const = 0;
+  virtual base::TimeDelta Duration() const = 0;
   virtual CurveType Type() const = 0;
   virtual scoped_ptr<AnimationCurve> Clone() const = 0;
 

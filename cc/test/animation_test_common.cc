@@ -124,14 +124,16 @@ int AddAnimatedFilter(Target* target,
 }
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve()
-    : duration_(1.0) {}
+    : duration_(base::TimeDelta::FromSecondsD(1.0)) {
+}
 
 FakeFloatAnimationCurve::FakeFloatAnimationCurve(double duration)
-    : duration_(duration) {}
+    : duration_(base::TimeDelta::FromSecondsD(duration)) {
+}
 
 FakeFloatAnimationCurve::~FakeFloatAnimationCurve() {}
 
-double FakeFloatAnimationCurve::Duration() const {
+base::TimeDelta FakeFloatAnimationCurve::Duration() const {
   return duration_;
 }
 
@@ -144,11 +146,12 @@ scoped_ptr<AnimationCurve> FakeFloatAnimationCurve::Clone() const {
 }
 
 FakeTransformTransition::FakeTransformTransition(double duration)
-    : duration_(duration) {}
+    : duration_(base::TimeDelta::FromSecondsD(duration)) {
+}
 
 FakeTransformTransition::~FakeTransformTransition() {}
 
-double FakeTransformTransition::Duration() const {
+base::TimeDelta FakeTransformTransition::Duration() const {
   return duration_;
 }
 
@@ -175,18 +178,18 @@ scoped_ptr<AnimationCurve> FakeTransformTransition::Clone() const {
   return make_scoped_ptr(new FakeTransformTransition(*this));
 }
 
-
 FakeFloatTransition::FakeFloatTransition(double duration, float from, float to)
-    : duration_(duration), from_(from), to_(to) {}
+    : duration_(base::TimeDelta::FromSecondsD(duration)), from_(from), to_(to) {
+}
 
 FakeFloatTransition::~FakeFloatTransition() {}
 
-double FakeFloatTransition::Duration() const {
+base::TimeDelta FakeFloatTransition::Duration() const {
   return duration_;
 }
 
 float FakeFloatTransition::GetValue(double time) const {
-  time /= duration_;
+  time /= duration_.InSecondsF();
   if (time >= 1.0)
     time = 1.0;
   return (1.0 - time) * from_ + time * to_;

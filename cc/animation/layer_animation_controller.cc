@@ -148,7 +148,8 @@ void LayerAnimationController::AccumulatePropertyUpdates(
     if (!animation->InEffect(monotonic_time))
       continue;
 
-    double trimmed = animation->TrimTimeToCurrentIteration(monotonic_time);
+    double trimmed =
+        animation->TrimTimeToCurrentIteration(monotonic_time).InSecondsF();
     switch (animation->target_property()) {
       case Animation::Opacity: {
         AnimationEvent event(AnimationEvent::PropertyUpdate,
@@ -860,8 +861,9 @@ void LayerAnimationController::TickAnimations(base::TimeTicks monotonic_time) {
       if (!animations_[i]->InEffect(monotonic_time))
         continue;
 
-      double trimmed =
-          animations_[i]->TrimTimeToCurrentIteration(monotonic_time);
+      double trimmed = animations_[i]
+                           ->TrimTimeToCurrentIteration(monotonic_time)
+                           .InSecondsF();
 
       switch (animations_[i]->target_property()) {
         case Animation::Transform: {

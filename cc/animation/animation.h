@@ -142,7 +142,8 @@ class CC_EXPORT Animation {
 
   // Takes the given absolute time, and using the start time and the number
   // of iterations, returns the relative time in the current iteration.
-  double TrimTimeToCurrentIteration(base::TimeTicks monotonic_time) const;
+  base::TimeDelta TrimTimeToCurrentIteration(
+      base::TimeTicks monotonic_time) const;
 
   scoped_ptr<Animation> CloneAndInitialize(RunState initial_run_state) const;
 
@@ -169,7 +170,7 @@ class CC_EXPORT Animation {
             int group_id,
             TargetProperty target_property);
 
-  double ConvertToActiveTime(base::TimeTicks monotonic_time) const;
+  base::TimeDelta ConvertToActiveTime(base::TimeTicks monotonic_time) const;
 
   scoped_ptr<AnimationCurve> curve_;
 

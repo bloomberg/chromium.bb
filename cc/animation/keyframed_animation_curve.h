@@ -5,6 +5,7 @@
 #ifndef CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_
 #define CC_ANIMATION_KEYFRAMED_ANIMATION_CURVE_H_
 
+#include "base/time/time.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/timing_function.h"
 #include "cc/animation/transform_operations.h"
@@ -126,7 +127,7 @@ class CC_EXPORT KeyframedColorAnimationCurve : public ColorAnimationCurve {
   }
 
   // AnimationCurve implementation
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // BackgrounColorAnimationCurve implementation
@@ -156,7 +157,7 @@ class CC_EXPORT KeyframedFloatAnimationCurve : public FloatAnimationCurve {
   }
 
   // AnimationCurve implementation
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // FloatAnimationCurve implementation
@@ -187,7 +188,7 @@ class CC_EXPORT KeyframedTransformAnimationCurve
   }
 
   // AnimationCurve implementation
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // TransformAnimationCurve implementation
@@ -224,7 +225,7 @@ class CC_EXPORT KeyframedFilterAnimationCurve
   }
 
   // AnimationCurve implementation
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
 
   // FilterAnimationCurve implementation

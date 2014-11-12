@@ -29,7 +29,7 @@ class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
   void UpdateTarget(double t, const gfx::ScrollOffset& new_target);
 
   // AnimationCurve implementation
-  double Duration() const override;
+  base::TimeDelta Duration() const override;
   CurveType Type() const override;
   scoped_ptr<AnimationCurve> Clone() const override;
 

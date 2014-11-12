@@ -17,8 +17,8 @@ FloatAnimationCurveAdapter::FloatAnimationCurveAdapter(
       duration_(duration) {
 }
 
-double FloatAnimationCurveAdapter::Duration() const {
-  return duration_.InSecondsF();
+base::TimeDelta FloatAnimationCurveAdapter::Duration() const {
+  return duration_;
 }
 
 scoped_ptr<cc::AnimationCurve> FloatAnimationCurveAdapter::Clone() const {

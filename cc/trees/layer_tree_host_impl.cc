@@ -2369,9 +2369,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     new_target.SetToMax(gfx::ScrollOffset());
     new_target.SetToMin(layer_impl->MaxScrollOffset());
 
-    curve->UpdateTarget(animation->TrimTimeToCurrentIteration(
-                            CurrentBeginFrameArgs().frame_time),
-                        new_target);
+    curve->UpdateTarget(
+        animation->TrimTimeToCurrentIteration(
+                       CurrentBeginFrameArgs().frame_time).InSecondsF(),
+        new_target);
 
     return ScrollStarted;
   }

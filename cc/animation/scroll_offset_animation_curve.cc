@@ -83,8 +83,8 @@ gfx::ScrollOffset ScrollOffsetAnimationCurve::GetValue(double t) const {
           progress, initial_value_.y(), target_value_.y()));
 }
 
-double ScrollOffsetAnimationCurve::Duration() const {
-  return total_animation_duration_.InSecondsF();
+base::TimeDelta ScrollOffsetAnimationCurve::Duration() const {
+  return total_animation_duration_;
 }
 
 AnimationCurve::CurveType ScrollOffsetAnimationCurve::Type() const {

@@ -64,6 +64,7 @@ component("cc") {
     "base/switches.h",
     "base/tiling_data.cc",
     "base/tiling_data.h",
+    "base/time_util.h",
     "base/unique_notifier.cc",
     "base/unique_notifier.h",
     "base/util.h",

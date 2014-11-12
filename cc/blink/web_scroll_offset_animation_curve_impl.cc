@@ -39,7 +39,7 @@ WebFloatPoint WebScrollOffsetAnimationCurveImpl::getValue(double time) const {
 }
 
 double WebScrollOffsetAnimationCurveImpl::duration() const {
-  return curve_->Duration();
+  return curve_->Duration().InSecondsF();
 }
 
 scoped_ptr<cc::AnimationCurve>

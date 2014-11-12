@@ -673,14 +673,11 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
-  double duration_in_seconds =
-      controller_impl->GetAnimation(Animation::ScrollOffset)
-          ->curve()
-          ->Duration();
-  TimeDelta duration = TimeDelta::FromMicroseconds(
-      duration_in_seconds * base::Time::kMicrosecondsPerSecond);
+  TimeDelta duration = controller_impl->GetAnimation(Animation::ScrollOffset)
+                           ->curve()
+                           ->Duration();
   EXPECT_EQ(
-      duration_in_seconds,
+      duration,
       controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
 
   controller->Animate(kInitialTickTime);
@@ -755,12 +752,11 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   controller->PushAnimationUpdatesTo(controller_impl.get());
   controller_impl->ActivateAnimations();
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::ScrollOffset));
-  double duration_in_seconds =
-      controller_impl->GetAnimation(Animation::ScrollOffset)
-          ->curve()
-          ->Duration();
+  TimeDelta duration = controller_impl->GetAnimation(Animation::ScrollOffset)
+                           ->curve()
+                           ->Duration();
   EXPECT_EQ(
-      duration_in_seconds,
+      duration,
       controller->GetAnimation(Animation::ScrollOffset)->curve()->Duration());
 
   controller->Animate(kInitialTickTime);
@@ -776,8 +772,6 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
-  TimeDelta duration = TimeDelta::FromMicroseconds(
-      duration_in_seconds * base::Time::kMicrosecondsPerSecond);
 
   controller->NotifyAnimationStarted((*events)[0]);
   controller->Animate(kInitialTickTime + duration / 2);
@@ -820,7 +814,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
           target_value,
           EaseInOutTimingFunction::Create().Pass()));
   curve->SetInitialValue(initial_value);
-  double duration_in_seconds = curve->Duration();
+  double duration_in_seconds = curve->Duration().InSecondsF();
 
   scoped_ptr<Animation> animation(
       Animation::Create(curve.Pass(), 1, 0, Animation::ScrollOffset));

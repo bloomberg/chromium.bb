@@ -9,6 +9,7 @@
 #include "base/debug/trace_event.h"
 #include "base/strings/string_util.h"
 #include "cc/animation/animation_curve.h"
+#include "cc/base/time_util.h"
 
 namespace {
 
@@ -154,17 +155,18 @@ bool Animation::IsFinishedAt(base::TimeTicks monotonic_time) const {
     return false;
 
   return run_state_ == Running && iterations_ >= 0 &&
-         iterations_ * curve_->Duration() / std::abs(playback_rate_) <=
-             (monotonic_time + time_offset_ - start_time_ - total_paused_time_)
-                 .InSecondsF();
+         TimeUtil::Scale(curve_->Duration(),
+                         iterations_ / std::abs(playback_rate_)) <=
+             (monotonic_time + time_offset_ - start_time_ - total_paused_time_);
 }
 
 bool Animation::InEffect(base::TimeTicks monotonic_time) const {
-  return ConvertToActiveTime(monotonic_time) >= 0 ||
+  return ConvertToActiveTime(monotonic_time) >= base::TimeDelta() ||
          (fill_mode_ == FillModeBoth || fill_mode_ == FillModeBackwards);
 }
 
-double Animation::ConvertToActiveTime(base::TimeTicks monotonic_time) const {
+base::TimeDelta Animation::ConvertToActiveTime(
+    base::TimeTicks monotonic_time) const {
   base::TimeTicks trimmed = monotonic_time + time_offset_;
 
   // If we're paused, time is 'stuck' at the pause time.
@@ -181,56 +183,60 @@ double Animation::ConvertToActiveTime(base::TimeTicks monotonic_time) const {
       needs_synchronized_start_time())
     trimmed = base::TimeTicks() + time_offset_;
 
-  return (trimmed - base::TimeTicks()).InSecondsF();
+  return (trimmed - base::TimeTicks());
 }
 
-double Animation::TrimTimeToCurrentIteration(
+base::TimeDelta Animation::TrimTimeToCurrentIteration(
     base::TimeTicks monotonic_time) const {
   // Check for valid parameters
   DCHECK(playback_rate_);
   DCHECK_GE(iteration_start_, 0);
 
-  double active_time = ConvertToActiveTime(monotonic_time);
-  double start_offset = iteration_start_ * curve_->Duration();
+  base::TimeDelta active_time = ConvertToActiveTime(monotonic_time);
+  base::TimeDelta start_offset =
+      TimeUtil::Scale(curve_->Duration(), iteration_start_);
 
   // Return start offset if we are before the start of the animation
-  if (active_time < 0)
+  if (active_time < base::TimeDelta())
     return start_offset;
-
   // Always return zero if we have no iterations.
   if (!iterations_)
-    return 0;
+    return base::TimeDelta();
 
   // Don't attempt to trim if we have no duration.
-  if (curve_->Duration() <= 0)
-    return 0;
+  if (curve_->Duration() <= base::TimeDelta())
+    return base::TimeDelta();
 
-  double repeated_duration = iterations_ * curve_->Duration();
-  double active_duration = repeated_duration / std::abs(playback_rate_);
+  base::TimeDelta repeated_duration =
+      TimeUtil::Scale(curve_->Duration(), iterations_);
+  base::TimeDelta active_duration =
+      TimeUtil::Scale(repeated_duration, 1.0 / std::abs(playback_rate_));
 
   // Check if we are past active duration
   if (iterations_ > 0 && active_time >= active_duration)
     active_time = active_duration;
 
   // Calculate the scaled active time
-  double scaled_active_time;
+  base::TimeDelta scaled_active_time;
   if (playback_rate_ < 0)
     scaled_active_time =
-        (active_time - active_duration) * playback_rate_ + start_offset;
+        TimeUtil::Scale((active_time - active_duration), playback_rate_) +
+        start_offset;
   else
-    scaled_active_time = active_time * playback_rate_ + start_offset;
+    scaled_active_time =
+        TimeUtil::Scale(active_time, playback_rate_) + start_offset;
 
   // Calculate the iteration time
-  double iteration_time;
+  base::TimeDelta iteration_time;
   if (scaled_active_time - start_offset == repeated_duration &&
       fmod(iterations_ + iteration_start_, 1) == 0)
     iteration_time = curve_->Duration();
   else
-    iteration_time = fmod(scaled_active_time, curve_->Duration());
+    iteration_time = TimeUtil::Mod(scaled_active_time, curve_->Duration());
 
   // Calculate the current iteration
   int iteration;
-  if (scaled_active_time <= 0)
+  if (scaled_active_time <= base::TimeDelta())
     iteration = 0;
   else if (iteration_time == curve_->Duration())
     iteration = ceil(iteration_start_ + iterations_ - 1);
