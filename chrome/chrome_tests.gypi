@@ -43,6 +43,7 @@
       '../extensions/browser/api/usb/usb_manual_apitest.cc',
       '../extensions/browser/app_window/app_window_browsertest.cc',
       '../extensions/browser/guest_view/extension_options/extension_options_apitest.cc',
+      '../extensions/renderer/console_apitest.cc',
       '../extensions/renderer/script_context_browsertest.cc',
       'app/chrome_command_ids.h',
       'app/chrome_dll.rc',

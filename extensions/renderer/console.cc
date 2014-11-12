@@ -39,9 +39,11 @@ class ByContextFinder : public content::RenderViewVisitor {
 
   bool Visit(content::RenderView* render_view) override {
     ExtensionHelper* helper = ExtensionHelper::Get(render_view);
-    if (helper &&
-        helper->dispatcher()->script_context_set().GetByV8Context(context_)) {
-      found_ = render_view;
+    if (helper) {
+      ScriptContext* script_context =
+          helper->dispatcher()->script_context_set().GetByV8Context(context_);
+      if (script_context && script_context->GetRenderView() == render_view)
+        found_ = render_view;
     }
     return !found_;
   }
