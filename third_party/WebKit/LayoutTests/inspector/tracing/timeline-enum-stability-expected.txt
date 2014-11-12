@@ -37,6 +37,7 @@ Applications outside of WebKit depend on the stability of the mapping of these t
     PaintImage : "PaintImage"
     PaintInvalidationTracking : "PaintInvalidationTracking"
     PaintSetup : "PaintSetup"
+    ParseAuthorStyleSheet : "ParseAuthorStyleSheet"
     ParseHTML : "ParseHTML"
     PictureSnapshot : "cc::Picture"
     Program : "Program"

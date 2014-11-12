@@ -11,6 +11,7 @@
 #include "core/css/invalidation/DescendantInvalidationSet.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/events/Event.h"
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/inspector/IdentifiersFactory.h"
@@ -454,6 +455,13 @@ PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseHtmlEvent::beginD
     RefPtr<TracedValue> value = TracedValue::create();
     value->setInteger("startLine", startLine);
     value->setString("frame", toHexString(document->frame()));
+    return value.release();
+}
+
+PassRefPtr<TraceEvent::ConvertableToTraceFormat> InspectorParseAuthorStyleSheetEvent::data(const CSSStyleSheetResource* cachedStyleSheet)
+{
+    RefPtr<TracedValue> value = TracedValue::create();
+    value->setString("styleSheetUrl", cachedStyleSheet->url().string());
     return value.release();
 }
 

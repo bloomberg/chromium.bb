@@ -32,6 +32,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/frame/UseCounter.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
@@ -319,6 +320,7 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
 void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
     TRACE_EVENT0("blink", "StyleSheetContents::parseAuthorStyleSheet");
+    TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "ParseAuthorStyleSheet", "data", InspectorParseAuthorStyleSheetEvent::data(cachedStyleSheet));
 
     bool quirksMode = isQuirksModeBehavior(m_parserContext.mode());
 

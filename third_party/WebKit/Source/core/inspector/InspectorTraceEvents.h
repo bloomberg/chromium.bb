@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class CSSStyleSheetResource;
 class DescendantInvalidationSet;
 class Document;
 class Element;
@@ -167,6 +168,11 @@ public:
 class InspectorParseHtmlEvent {
 public:
     static PassRefPtr<TraceEvent::ConvertableToTraceFormat> beginData(Document*, unsigned startLine);
+};
+
+class InspectorParseAuthorStyleSheetEvent {
+public:
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const CSSStyleSheetResource*);
 };
 
 class InspectorXhrReadyStateChangeEvent {
