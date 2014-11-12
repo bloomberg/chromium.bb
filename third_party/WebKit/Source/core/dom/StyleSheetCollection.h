@@ -38,7 +38,8 @@ namespace blink {
 class CSSStyleSheet;
 class StyleSheet;
 
-class StyleSheetCollection : public NoBaseWillBeGarbageCollectedFinalized<StyleSheetCollection> {
+class StyleSheetCollection : public NoBaseWillBeGarbageCollected<StyleSheetCollection> {
+    DECLARE_EMPTY_VIRTUAL_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetCollection);
     WTF_MAKE_NONCOPYABLE(StyleSheetCollection);
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:
@@ -46,7 +47,6 @@ public:
     friend class ImportedDocumentStyleSheetCollector;
 
     StyleSheetCollection();
-    virtual ~StyleSheetCollection();
 
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
     WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
@@ -66,7 +66,6 @@ protected:
     WillBeHeapVector<RefPtrWillBeMember<CSSStyleSheet> > m_activeAuthorStyleSheets;
 };
 
-}
+} // namespace blink
 
-#endif
-
+#endif // StyleSheetCollection_h

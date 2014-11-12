@@ -35,9 +35,7 @@ StyleSheetCollection::StyleSheetCollection()
 {
 }
 
-StyleSheetCollection::~StyleSheetCollection()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetCollection);
 
 void StyleSheetCollection::swap(StyleSheetCollection& other)
 {

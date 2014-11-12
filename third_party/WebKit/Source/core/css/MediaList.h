@@ -70,19 +70,19 @@ private:
     WillBeHeapVector<OwnPtrWillBeMember<MediaQuery> > m_queries;
 };
 
-class MediaList : public RefCountedWillBeGarbageCollectedFinalized<MediaList>, public ScriptWrappable {
+class MediaList final : public RefCountedWillBeGarbageCollected<MediaList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
+    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaList);
 public:
     static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSStyleSheet* parentSheet)
     {
         return adoptRefWillBeNoop(new MediaList(mediaQueries, parentSheet));
     }
+
     static PassRefPtrWillBeRawPtr<MediaList> create(MediaQuerySet* mediaQueries, CSSRule* parentRule)
     {
         return adoptRefWillBeNoop(new MediaList(mediaQueries, parentRule));
     }
-
-    ~MediaList();
 
     unsigned length() const { return m_mediaQueries->queryVector().size(); }
     String item(unsigned index) const;

@@ -27,8 +27,6 @@ MediaQueryListListener::MediaQueryListListener()
     // only for use by subclasses
 }
 
-MediaQueryListListener::~MediaQueryListListener()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQueryListListener);
 
 }

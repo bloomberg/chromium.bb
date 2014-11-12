@@ -51,9 +51,7 @@ ScriptedAnimationController::ScriptedAnimationController(Document* document)
 {
 }
 
-ScriptedAnimationController::~ScriptedAnimationController()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(ScriptedAnimationController);
 
 void ScriptedAnimationController::trace(Visitor* visitor)
 {

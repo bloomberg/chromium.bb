@@ -101,6 +101,7 @@ PassRefPtrWillBeRawPtr<Range> Range::create(Document& ownerDocument, const Posit
     return adoptRefWillBeNoop(new Range(ownerDocument, start.containerNode(), start.computeOffsetInContainerNode(), end.containerNode(), end.computeOffsetInContainerNode()));
 }
 
+#if !ENABLE(OILPAN) || !defined(NDEBUG)
 Range::~Range()
 {
 #if !ENABLE(OILPAN)
@@ -112,6 +113,7 @@ Range::~Range()
     rangeCounter.decrement();
 #endif
 }
+#endif
 
 void Range::setDocument(Document& document)
 {

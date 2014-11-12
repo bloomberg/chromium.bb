@@ -64,7 +64,7 @@ MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
         m_queries[i] = o.m_queries[i]->copy();
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet)
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaQuerySet);
 
 PassRefPtrWillBeRawPtr<MediaQuerySet> MediaQuerySet::create(const String& mediaString)
 {
@@ -187,9 +187,7 @@ MediaList::MediaList(MediaQuerySet* mediaQueries, CSSRule* parentRule)
 {
 }
 
-MediaList::~MediaList()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(MediaList);
 
 void MediaList::setMediaText(const String& value)
 {

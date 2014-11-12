@@ -36,9 +36,7 @@ StyleSheetList::StyleSheetList(TreeScope* treeScope)
 {
 }
 
-StyleSheetList::~StyleSheetList()
-{
-}
+DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(StyleSheetList);
 
 inline const WillBeHeapVector<RefPtrWillBeMember<StyleSheet> >& StyleSheetList::styleSheets()
 {

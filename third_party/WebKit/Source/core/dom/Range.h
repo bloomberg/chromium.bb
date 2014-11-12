@@ -47,13 +47,21 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class Range final : public RefCountedWillBeGarbageCollectedFinalized<Range>, public ScriptWrappable {
+class Range final
+#ifndef NDEBUG
+    : public RefCountedWillBeGarbageCollectedFinalized<Range>
+#else
+    : public RefCountedWillBeGarbageCollected<Range>
+#endif
+    , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<Range> create(Document&);
     static PassRefPtrWillBeRawPtr<Range> create(Document&, Node* startContainer, int startOffset, Node* endContainer, int endOffset);
     static PassRefPtrWillBeRawPtr<Range> create(Document&, const Position&, const Position&);
+#if !ENABLE(OILPAN) || !defined(NDEBUG)
     ~Range();
+#endif
 
     Document& ownerDocument() const { ASSERT(m_ownerDocument); return *m_ownerDocument.get(); }
     Node* startContainer() const { return m_start.container(); }
