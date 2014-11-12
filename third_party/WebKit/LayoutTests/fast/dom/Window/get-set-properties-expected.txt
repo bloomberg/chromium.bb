@@ -7,8 +7,6 @@ PASS: canGet('Attr') should be 'true' and is.
 PASS: canSet('Attr') should be 'true' and is.
 PASS: canGet('CDATASection') should be 'true' and is.
 PASS: canSet('CDATASection') should be 'true' and is.
-PASS: canGet('CSSPrimitiveValue') should be 'true' and is.
-PASS: canSet('CSSPrimitiveValue') should be 'true' and is.
 PASS: canGet('CSSRule') should be 'true' and is.
 PASS: canSet('CSSRule') should be 'true' and is.
 PASS: canGet('CSSStyleDeclaration') should be 'true' and is.
