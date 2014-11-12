@@ -353,20 +353,25 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       (type == ManagedState::MANAGED_TYPE_NETWORK)
       ? observed_networks_ : observed_devices_;
   ShillPropertyObserverMap new_observed;
-  for (base::ListValue::const_iterator iter1 = entries.begin();
-       iter1 != entries.end(); ++iter1) {
+  for (auto* entry: entries) {
     std::string path;
-    (*iter1)->GetAsString(&path);
+    entry->GetAsString(&path);
     if (path.empty())
       continue;
-    ShillPropertyObserverMap::iterator iter2 = observer_map.find(path);
-    if (iter2 != observer_map.end()) {
-      new_observed[path] = iter2->second;
+    auto iter = observer_map.find(path);
+    ShillPropertyObserver* observer;
+    if (iter != observer_map.end()) {
+      observer = iter->second;
     } else {
       // Create an observer for future updates.
-      new_observed[path] = new ShillPropertyObserver(
+      observer = new ShillPropertyObserver(
           type, path, base::Bind(
               &ShillPropertyHandler::PropertyChangedCallback, AsWeakPtr()));
+    }
+    auto result = new_observed.insert(std::make_pair(path, observer));
+    if (!result.second) {
+      LOG(ERROR) << path << " is duplicated in the list.";
+      delete observer;
     }
     observer_map.erase(path);
     // Limit the number of observed services.
@@ -374,9 +379,8 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       break;
   }
   // Delete network service observers still in observer_map.
-  for (ShillPropertyObserverMap::iterator iter =  observer_map.begin();
-       iter != observer_map.end(); ++iter) {
-    delete iter->second;
+  for (auto& observer: observer_map) {
+    delete observer.second;
   }
   observer_map.swap(new_observed);
 }
