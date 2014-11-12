@@ -236,7 +236,7 @@ def main():
   sys.stderr.write('%d tasks\n' % len(tasks))
 
   pool = multiprocessing.Pool()
-  results = pool.imap(Worker, tasks)
+  results = pool.imap_unordered(Worker, tasks)
 
   total = 0
   num_valid = 0
