@@ -172,8 +172,8 @@ function test()
 
         function removeNodeAndCheckPseudoElementsUnbound(next)
         {
-            var inspectedBefore = inspectedNode.pseudoElements()["before"];
-            var inspectedAfter = inspectedNode.pseudoElements()["after"];
+            var inspectedBefore = inspectedNode.beforePseudoElement();
+            var inspectedAfter = inspectedNode.afterPseudoElement();
 
             executeAndDumpTree("removeNode()", WebInspector.DOMModel.Events.NodeRemoved, callback);
             function callback()

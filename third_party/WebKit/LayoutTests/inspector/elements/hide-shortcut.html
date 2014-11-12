@@ -89,22 +89,22 @@ function test()
 
         function testToggleHideBeforePseudoShortcutOn(next)
         {
-            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.Before, next);
+            testPseudoToggle(parentNode.beforePseudoElement(), next);
         },
 
         function testToggleHideAfterPseudoShortcutOn(next)
         {
-            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.After, next);
+            testPseudoToggle(parentNode.afterPseudoElement(), next);
         },
 
         function testToggleHideBeforePseudoShortcutOff(next)
         {
-            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.Before, next);
+            testPseudoToggle(parentNode.beforePseudoElement(), next);
         },
 
         function testToggleHideAfterPseudoShortcutOff(next)
         {
-            testPseudoToggle(WebInspector.DOMNode.PseudoElementNames.After, next);
+            testPseudoToggle(parentNode.afterPseudoElement(), next);
         },
 
         function testToggleHideShortcutOnInFrame(next)
@@ -126,9 +126,8 @@ function test()
         }
     ]);
 
-    function testPseudoToggle(pseudoType, next)
+    function testPseudoToggle(pseudoNode, next)
     {
-        var pseudoNode = parentNode.pseudoElements()[pseudoType];
         treeOutline._toggleHideShortcut(pseudoNode, callback);
 
         function callback()
@@ -138,7 +137,7 @@ function test()
 
         function callback2(style)
         {
-            InspectorTest.addResult("::" + pseudoType + " node visibility: '" + style.getLiveProperty("visibility").value + "'");
+            InspectorTest.addResult("::" + pseudoNode.pseudoType() + " node visibility: '" + style.getLiveProperty("visibility").value + "'");
             next();
         }
     }

@@ -21,7 +21,9 @@ InspectorTest.findNode = function(matchFunction, callback)
             if (result)
                 return;
 
-            var children = (node.children() || []).concat(node.shadowRoots()).concat(Object.values(node.pseudoElements() || {}));
+            var pseudoElementsMap = node.pseudoElements();
+            var pseudoElements = pseudoElementsMap ? pseudoElementsMap.valuesArray() : [];
+            var children = (node.children() || []).concat(node.shadowRoots()).concat(pseudoElements);
             if (node.templateContent())
                 children.push(node.templateContent());
             else if (node.importedDocument())
