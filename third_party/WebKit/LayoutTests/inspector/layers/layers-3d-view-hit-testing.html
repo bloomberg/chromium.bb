@@ -5,6 +5,7 @@
 <script>
 function test()
 {
+    setTimeout(InspectorTest.completeTest.bind(InspectorTest), 4000);
     var contentRoot;
     var layers;
     var rootOffsetXInPixels, rootOffsetYInPixels, rootHeightInPixels, rootWidthInPixels;
@@ -53,7 +54,7 @@ function test()
         function checkLayer(layerInfo)
         {
             var l3dview = WebInspector.panels.layers._layers3DView;
-            if (l3dview._lastActiveObject[type] && layerInfo.layer.id() === l3dview._lastActiveObject[type].layer.id())
+            if (l3dview._lastSelection[type] && layerInfo.layer.id() === l3dview._lastSelection[type].layer.id())
                 outlined = layerInfo.name;
         }
 
