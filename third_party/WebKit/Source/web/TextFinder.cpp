@@ -32,7 +32,6 @@
 #include "config.h"
 #include "web/TextFinder.h"
 
-#include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -44,6 +43,7 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderObject.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/Timer.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAXObject.h"

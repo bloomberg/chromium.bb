@@ -34,7 +34,6 @@
 #include "config.h"
 
 #include "bindings/core/v8/SerializedScriptValue.h"
-#include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/DocumentMarker.h"
 #include "core/dom/ExceptionCode.h"
@@ -54,6 +53,7 @@
 #include "core/page/PageVisibilityState.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "modules/accessibility/AXObject.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
 #include "modules/indexeddb/IDBKey.h"

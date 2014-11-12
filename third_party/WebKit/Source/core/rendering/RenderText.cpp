@@ -28,6 +28,7 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/parser/TextResourceDecoder.h"

@@ -26,11 +26,12 @@
 #ifndef AXObjectCache_h
 #define AXObjectCache_h
 
-#include "core/accessibility/AXObject.h"
 #include "core/dom/Document.h"
 
-namespace blink {
+typedef unsigned AXID;
 
+namespace blink {
+class AXObject;
 class AbstractInlineTextBox;
 class FrameView;
 class Page;

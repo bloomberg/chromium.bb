@@ -53,6 +53,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebAXObject.h"

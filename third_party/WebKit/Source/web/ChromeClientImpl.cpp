@@ -34,7 +34,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 #include "core/HTMLNames.h"
-#include "core/accessibility/AXObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
@@ -54,6 +53,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/compositing/CompositedSelectionBound.h"
+#include "modules/accessibility/AXObject.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/PlatformScreen.h"
