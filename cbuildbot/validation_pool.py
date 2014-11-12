@@ -1458,9 +1458,11 @@ class ValidationPool(object):
     for change in changes:
       if change.GetCheckout(manifest, strict=False):
         changes_in_manifest.append(change)
-      else:
+      elif change.IsCommitReady():
+        logging.info('Found non-manifest change %s', change)
         changes_not_in_manifest.append(change)
-        logging.info('Filtered change %s', change)
+      else:
+        logging.info('Non-manifest change %s is not commit ready yet', change)
 
     return changes_in_manifest, changes_not_in_manifest
 

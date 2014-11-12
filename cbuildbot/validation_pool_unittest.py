@@ -993,7 +993,7 @@ class TestCoreLogic(MoxBase):
     This test should filter out the tacos/chromite project as its not real.
     """
     base_func = itertools.cycle(['chromiumos', 'chromeos']).next
-    patches = self.GetPatches(8)
+    patches = self.GetPatches(10)
     for patch in patches:
       patch.project = '%s/%i' % (base_func(), _GetNumber())
       patch.tracking_branch = str(_GetNumber())
@@ -1021,6 +1021,13 @@ class TestCoreLogic(MoxBase):
       patch.GetCheckout = lambda *_args, **_kwargs: True
     for patch in filtered_patches:
       patch.GetCheckout = lambda *_args, **_kwargs: False
+
+    # Mark the last two patches as not commit ready.
+    for p in patches[-2:]:
+      p.IsCommitReady = lambda *_args, **_kwargs: False
+
+    # Non-manifest patches that aren't commit ready should be skipped.
+    filtered_patches = filtered_patches[:-1]
 
     self.mox.ReplayAll()
     results = validation_pool.ValidationPool._FilterNonCrosProjects(
