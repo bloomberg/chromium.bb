@@ -579,10 +579,13 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
 
   // Use the native hardware buffer size in non peer connection mode when the
   // platform is using a native buffer size smaller than the PeerConnection
-  // buffer size.
+  // buffer size and audio processing is off.
   int hardware_buffer_size = device_info_.device.input.frames_per_buffer;
   if (!peer_connection_mode_ && hardware_buffer_size &&
-      hardware_buffer_size <= peer_connection_buffer_size) {
+      hardware_buffer_size <= peer_connection_buffer_size &&
+      !audio_processor_->has_audio_processing()) {
+    DVLOG(1) << "WebRtcAudioCapturer is using hardware buffer size "
+             << hardware_buffer_size;
     return hardware_buffer_size;
   }
 
