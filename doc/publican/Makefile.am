@@ -82,7 +82,7 @@ en-US/ProtocolInterfaces.xml: $(top_srcdir)/protocol/wayland.xml $(srcdir)/proto
 #   move it out of the way first.
 # * use doxygen's combine.xslt to merge the xml files into one single file
 # * move wayland-<foo>_8h.xml back to its original location
-en-US/%API.xml.tmp:
+en-US/%API.xml.tmp: $(top_builddir)/doc/doxygen/xml/%/index.xml
 	$(AM_V_GEN)mv $(top_builddir)/doc/doxygen/xml/$*/wayland-$*_8h.xml \
 		$(top_builddir)/doc/doxygen/xml/
 	$(AM_V_GEN)$(XSLTPROC) $(top_builddir)/doc/doxygen/xml/$*/combine.xslt \
