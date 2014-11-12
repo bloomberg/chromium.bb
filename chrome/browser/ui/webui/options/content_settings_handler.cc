@@ -490,12 +490,15 @@ void ContentSettingsHandler::InitializeHandler() {
           &ContentSettingsHandler::UpdateProtectedContentExceptionsButton,
           base::Unretained(this)));
 
-  content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(context);
+  // Here we only subscribe to the HostZoomMap for the default storage partition
+  // since we don't allow the user to manage the zoom levels for apps.
+  // We're only interested in zoom-levels that are persisted, since the user
+  // is given the opportunity to view/delete these in the content-settings page.
   host_zoom_map_subscription_ =
-      host_zoom_map->AddZoomLevelChangedCallback(
-          base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
-                     base::Unretained(this)));
+      content::HostZoomMap::GetDefaultForBrowserContext(context)
+          ->AddZoomLevelChangedCallback(
+              base::Bind(&ContentSettingsHandler::OnZoomLevelChanged,
+                         base::Unretained(this)));
 
   flash_settings_manager_.reset(new PepperFlashSettingsManager(this, context));
 

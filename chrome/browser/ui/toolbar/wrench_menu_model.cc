@@ -283,6 +283,9 @@ WrenchMenuModel::WrenchMenuModel(ui::AcceleratorProvider* provider,
   Build();
   UpdateZoomControls();
 
+  // By asking for the HostZoomMap via the BrowserContext, we get the map
+  // associated with the default storage partition, and not the one related
+  // to any specialized storage partitions, e.g. those used by WebViewGuests.
   content_zoom_subscription_ =
       content::HostZoomMap::GetDefaultForBrowserContext(browser->profile())
           ->AddZoomLevelChangedCallback(base::Bind(

@@ -95,6 +95,11 @@ void ShellBrowserContext::InitWhileIOAllowed() {
     base::CreateDirectory(path_);
 }
 
+scoped_ptr<ZoomLevelDelegate> ShellBrowserContext::CreateZoomLevelDelegate(
+    const base::FilePath&) {
+  return scoped_ptr<ZoomLevelDelegate>();
+}
+
 base::FilePath ShellBrowserContext::GetPath() const {
   return path_;
 }

@@ -34,51 +34,24 @@ std::string GetHash(
 namespace chrome {
 
 ChromeZoomLevelPrefs::ChromeZoomLevelPrefs(PrefService* pref_service,
-                                           const base::FilePath& profile_path)
+                                           const base::FilePath& profile_path,
+                                           const base::FilePath& partition_path)
     : pref_service_(pref_service),
-      profile_path_(profile_path),
       host_zoom_map_(nullptr) {
   DCHECK(pref_service_);
-}
 
-ChromeZoomLevelPrefs::~ChromeZoomLevelPrefs() {
-}
-
-void ChromeZoomLevelPrefs::InitPrefsAndCopyToHostZoomMap(
-    const base::FilePath& partition_path,
-    content::HostZoomMap* host_zoom_map) {
   DCHECK(!partition_path.empty());
-  DCHECK((partition_path == profile_path_) ||
-         profile_path_.IsParent(partition_path));
-  // This init function must be called only once.
-  DCHECK(!host_zoom_map_);
-  DCHECK(host_zoom_map);
-  host_zoom_map_ = host_zoom_map;
-
+  DCHECK((partition_path == profile_path) ||
+         profile_path.IsParent(partition_path));
   // Create a partition_key string with no '.'s in it. For the default
   // StoragePartition, this string will always be "0".
   base::FilePath partition_relative_path;
-  profile_path_.AppendRelativePath(partition_path, &partition_relative_path);
+  profile_path.AppendRelativePath(partition_path, &partition_relative_path);
   partition_key_ = GetHash(partition_relative_path);
 
-  // Initialize the default zoom level.
-  host_zoom_map_->SetDefaultZoomLevel(GetDefaultZoomLevelPref());
+}
 
-  // Initialize the HostZoomMap with per-host zoom levels from the persisted
-  // zoom-level preference values.
-  const base::DictionaryValue* host_zoom_dictionaries =
-      pref_service_->GetDictionary(prefs::kPartitionPerHostZoomLevels);
-  const base::DictionaryValue* host_zoom_dictionary = nullptr;
-  if (host_zoom_dictionaries->GetDictionary(partition_key_,
-                                            &host_zoom_dictionary)) {
-    // Since we're calling this before setting up zoom_subscription_ below we
-    // don't need to worry that host_zoom_dictionary is indirectly affected
-    // by calls to HostZoomMap::SetZoomLevelForHost().
-    ExtractPerHostZoomLevels(host_zoom_dictionary,
-                             true /* sanitize_partition_host_zoom_levels */);
-  }
-  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(base::Bind(
-      &ChromeZoomLevelPrefs::OnZoomLevelChanged, base::Unretained(this)));
+ChromeZoomLevelPrefs::~ChromeZoomLevelPrefs() {
 }
 
 std::string ChromeZoomLevelPrefs::GetHashForTesting(
@@ -194,6 +167,33 @@ void ChromeZoomLevelPrefs::ExtractPerHostZoomLevels(
     for (const std::string& s : keys_to_remove)
       host_zoom_dictionary->RemoveWithoutPathExpansion(s, nullptr);
   }
+}
+
+void ChromeZoomLevelPrefs::InitHostZoomMap(
+    content::HostZoomMap* host_zoom_map) {
+  // This init function must be called only once.
+  DCHECK(!host_zoom_map_);
+  DCHECK(host_zoom_map);
+  host_zoom_map_ = host_zoom_map;
+
+  // Initialize the default zoom level.
+  host_zoom_map_->SetDefaultZoomLevel(GetDefaultZoomLevelPref());
+
+  // Initialize the HostZoomMap with per-host zoom levels from the persisted
+  // zoom-level preference values.
+  const base::DictionaryValue* host_zoom_dictionaries =
+      pref_service_->GetDictionary(prefs::kPartitionPerHostZoomLevels);
+  const base::DictionaryValue* host_zoom_dictionary = nullptr;
+  if (host_zoom_dictionaries->GetDictionary(partition_key_,
+                                            &host_zoom_dictionary)) {
+    // Since we're calling this before setting up zoom_subscription_ below we
+    // don't need to worry that host_zoom_dictionary is indirectly affected
+    // by calls to HostZoomMap::SetZoomLevelForHost().
+    ExtractPerHostZoomLevels(host_zoom_dictionary,
+                             true /* sanitize_partition_host_zoom_levels */);
+  }
+  zoom_subscription_ = host_zoom_map_->AddZoomLevelChangedCallback(base::Bind(
+      &ChromeZoomLevelPrefs::OnZoomLevelChanged, base::Unretained(this)));
 }
 
 }  // namespace chrome

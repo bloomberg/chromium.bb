@@ -22,6 +22,7 @@ namespace content {
 class DownloadManagerDelegate;
 class ResourceContext;
 class SSLHostStateDelegate;
+class ZoomLevelDelegate;
 }
 
 class FakeProfile : public Profile {
@@ -33,6 +34,8 @@ class FakeProfile : public Profile {
   std::string GetProfileName() override;
   ProfileType GetProfileType() const override;
   base::FilePath GetPath() const override;
+  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+      const base::FilePath& partition_path) override;
   bool IsOffTheRecord() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;
   net::URLRequestContextGetter* GetRequestContextForRenderProcess(

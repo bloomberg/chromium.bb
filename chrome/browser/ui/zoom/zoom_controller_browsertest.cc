@@ -20,8 +20,6 @@
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-typedef InProcessBrowserTest ZoomControllerBrowserTest;
-
 bool operator==(const ZoomController::ZoomChangedEventData& lhs,
                 const ZoomController::ZoomChangedEventData& rhs) {
   return lhs.web_contents == rhs.web_contents &&
@@ -59,7 +57,17 @@ class ZoomChangedWatcher : public ZoomObserver {
   DISALLOW_COPY_AND_ASSIGN(ZoomChangedWatcher);
 };
 
-// TODO(wjmaclean): Enable this on Android when we can kill the process there.
+class TestZoomObserver : public ZoomObserver {
+ public:
+  MOCK_METHOD1(OnZoomChanged,
+               void(const ZoomController::ZoomChangedEventData&));
+};
+
+class ZoomControllerBrowserTest: public InProcessBrowserTest {
+ protected:
+  TestZoomObserver zoom_observer_;
+};
+
 #if defined(OS_ANDROID)
 #define MAYBE_CrashedTabsDoNotChangeZoom DISABLED_CrashedTabsDoNotChangeZoom
 #else
@@ -132,4 +140,29 @@ IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, ErrorPagesCanZoom) {
   // fail.
   zoom_controller->SetZoomLevel(new_zoom_level);
   EXPECT_FLOAT_EQ(new_zoom_level, zoom_controller->GetZoomLevel());
+}
+
+IN_PROC_BROWSER_TEST_F(ZoomControllerBrowserTest, Observe) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ZoomController* zoom_controller =
+      ZoomController::FromWebContents(web_contents);
+  zoom_controller->AddObserver(&zoom_observer_);
+
+  double new_zoom_level = 1.0;
+  // When the event is initiated from HostZoomMap, the old zoom level is not
+  // available.
+  ZoomController::ZoomChangedEventData zoom_change_data(
+      web_contents,
+      new_zoom_level,
+      new_zoom_level,
+      ZoomController::ZOOM_MODE_DEFAULT,
+      true);  // We have a non-empty host, so this will be 'true'.
+  EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data)).Times(1);
+
+  content::HostZoomMap* host_zoom_map =
+      content::HostZoomMap::GetDefaultForBrowserContext(
+          web_contents->GetBrowserContext());
+
+  host_zoom_map->SetZoomLevelForHost("about:blank", new_zoom_level);
 }

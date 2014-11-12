@@ -28,6 +28,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
+#include "content/public/browser/zoom_level_delegate.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
@@ -52,6 +53,16 @@ ACTION_TEMPLATE(RunCallback,
                 AND_1_VALUE_PARAMS(p0)) {
   return ::std::tr1::get<k>(args).Run(p0);
 }
+
+// Create a specialization so we can mock an override for
+// scoped_ptr<content::ZoomLevelDelegate>
+// BrowserContext::CreateZoomLevelDelegate(const base::FilePath&).
+template<>
+class scoped_ptr<content::ZoomLevelDelegate> {
+ public:
+  scoped_ptr() {}
+  ~scoped_ptr() {}
+};
 
 namespace content {
 class ByteStreamReader;
@@ -401,6 +412,8 @@ class MockBrowserContext : public BrowserContext {
   ~MockBrowserContext() {}
 
   MOCK_CONST_METHOD0(GetPath, base::FilePath());
+  MOCK_METHOD1(CreateZoomLevelDelegate,
+               scoped_ptr<ZoomLevelDelegate>(const base::FilePath&));
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD0(GetRequestContext, net::URLRequestContextGetter*());
   MOCK_METHOD1(GetRequestContextForRenderProcess,

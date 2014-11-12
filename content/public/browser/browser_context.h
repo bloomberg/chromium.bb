@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/zoom_level_delegate.h"
 #include "content/public/common/push_messaging_status.h"
 
 class GURL;
@@ -110,6 +111,11 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
   static void SaveSessionState(BrowserContext* browser_context);
 
   ~BrowserContext() override;
+
+  // Creates a delegate to initialize a HostZoomMap and persist its information.
+  // This is called during creation of each StoragePartition.
+  virtual scoped_ptr<ZoomLevelDelegate> CreateZoomLevelDelegate(
+      const base::FilePath& partition_path) = 0;
 
   // Returns the path of the directory where this context's data is stored.
   virtual base::FilePath GetPath() const = 0;

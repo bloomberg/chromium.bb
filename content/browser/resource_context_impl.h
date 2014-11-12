@@ -12,7 +12,6 @@ namespace content {
 class ChromeBlobStorageContext;
 class StreamContext;
 class BrowserContext;
-class HostZoomMap;
 class URLDataManagerBackend;
 
 // Getters for objects that are part of BrowserContext which are also used on
@@ -24,8 +23,6 @@ ChromeBlobStorageContext* GetChromeBlobStorageContextForResourceContext(
 
 StreamContext* GetStreamContextForResourceContext(
     ResourceContext* resource_context);
-
-HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context);
 
 URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context);

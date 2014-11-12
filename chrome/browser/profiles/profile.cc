@@ -17,8 +17,10 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync_driver/sync_prefs.h"
+#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 
@@ -266,4 +268,10 @@ bool ProfileCompare::operator()(Profile* a, Profile* b) const {
   if (a->IsSameProfile(b))
     return false;
   return a->GetOriginalProfile() < b->GetOriginalProfile();
+}
+
+double Profile::GetDefaultZoomLevelForProfile() {
+  return GetDefaultStoragePartition(this)
+      ->GetHostZoomMap()
+      ->GetDefaultZoomLevel();
 }

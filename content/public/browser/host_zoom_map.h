@@ -20,6 +20,7 @@ namespace content {
 class NavigationEntry;
 class BrowserContext;
 class ResourceContext;
+class SiteInstance;
 class WebContents;
 
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
@@ -60,6 +61,17 @@ class HostZoomMap {
 
   CONTENT_EXPORT static HostZoomMap* GetDefaultForBrowserContext(
       BrowserContext* browser_context);
+
+  // Returns the HostZoomMap associated with this SiteInstance. The SiteInstance
+  // may serve multiple WebContents, and the HostZoomMap is the same for all of
+  // these WebContents.
+  CONTENT_EXPORT static HostZoomMap* Get(SiteInstance* instance);
+
+  // Returns the HostZoomMap associated with this WebContent's main frame. If
+  // multiple WebContents share the same SiteInstance, then they share a single
+  // HostZoomMap.
+  CONTENT_EXPORT static HostZoomMap* GetForWebContents(
+      const WebContents* contents);
 
   // Returns the current zoom level for the specified WebContents. May be
   // temporary or host-specific.

@@ -395,6 +395,10 @@ class Profile : public content::BrowserContext {
   // Creates an OffTheRecordProfile which points to this Profile.
   Profile* CreateOffTheRecordProfile();
 
+  // Convenience method to retrieve the default zoom level for the default
+  // storage partition.
+  double GetDefaultZoomLevelForProfile();
+
  private:
   bool restored_last_session_;
 

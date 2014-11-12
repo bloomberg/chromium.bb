@@ -239,6 +239,7 @@
       'public/browser/web_ui_message_handler.h',
       'public/browser/worker_service.h',
       'public/browser/worker_service_observer.h',
+      'public/browser/zoom_level_delegate.h',
       'public/browser/zygote_host_linux.h',
     ],
     'private_browser_sources': [
@@ -743,6 +744,8 @@
       'browser/histogram_subscriber.h',
       'browser/histogram_synchronizer.cc',
       'browser/histogram_synchronizer.h',
+      'browser/host_zoom_level_context.cc',
+      'browser/host_zoom_level_context.h',
       'browser/host_zoom_map_impl.cc',
       'browser/host_zoom_map_impl.h',
       'browser/indexed_db/indexed_db.h',

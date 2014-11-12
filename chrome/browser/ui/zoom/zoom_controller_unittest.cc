@@ -70,25 +70,6 @@ TEST_F(ZoomControllerTest, DidNavigateMainFrame) {
                                          content::FrameNavigateParams());
 }
 
-TEST_F(ZoomControllerTest, Observe) {
-  double new_zoom_level = 110.0;
-  // When the event is initiated from HostZoomMap, the old zoom level is not
-  // available.
-  ZoomController::ZoomChangedEventData zoom_change_data(
-      web_contents(),
-      new_zoom_level,
-      new_zoom_level,
-      ZoomController::ZOOM_MODE_DEFAULT,
-      false);
-  EXPECT_CALL(zoom_observer_, OnZoomChanged(zoom_change_data)).Times(1);
-
-  content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(
-          web_contents()->GetBrowserContext());
-
-  host_zoom_map->SetZoomLevelForHost(std::string(), new_zoom_level);
-}
-
 TEST_F(ZoomControllerTest, Observe_ZoomController) {
   double old_zoom_level = zoom_controller_->GetZoomLevel();
   double new_zoom_level = 110.0;

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
-#include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/streams/stream_context.h"
@@ -24,18 +23,8 @@ namespace {
 
 // Key names on ResourceContext.
 const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
-const char kHostZoomMapKeyName[] = "content_host_zoom_map";
 const char kStreamContextKeyName[] = "content_stream_context";
 const char kURLDataManagerBackendKeyName[] = "url_data_manager_backend";
-
-class NonOwningZoomData : public base::SupportsUserData::Data {
- public:
-  explicit NonOwningZoomData(HostZoomMap* hzm) : host_zoom_map_(hzm) {}
-  HostZoomMap* host_zoom_map() { return host_zoom_map_; }
-
- private:
-  HostZoomMap* host_zoom_map_;
-};
 
 // Used by the default implementation of GetMediaDeviceIDSalt, below.
 std::string ReturnEmptySalt() {
@@ -92,15 +81,6 @@ StreamContext* GetStreamContextForResourceContext(
       resource_context, kStreamContextKeyName);
 }
 
-HostZoomMap* GetHostZoomMapForResourceContext(ResourceContext* context) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  NonOwningZoomData* result = static_cast<NonOwningZoomData*>(
-      context->GetUserData(kHostZoomMapKeyName));
-  if (!result)
-    return NULL;
-  return result->host_zoom_map();
-}
-
 URLDataManagerBackend* GetURLDataManagerForResourceContext(
     ResourceContext* context) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -114,7 +94,6 @@ URLDataManagerBackend* GetURLDataManagerForResourceContext(
 
 void InitializeResourceContext(BrowserContext* browser_context) {
   ResourceContext* resource_context = browser_context->GetResourceContext();
-  DCHECK(!resource_context->GetUserData(kHostZoomMapKeyName));
 
   resource_context->SetUserData(
       kBlobStorageContextKeyName,
@@ -125,13 +104,6 @@ void InitializeResourceContext(BrowserContext* browser_context) {
       kStreamContextKeyName,
       new UserDataAdapter<StreamContext>(
           StreamContext::GetFor(browser_context)));
-
-  // This object is owned by the BrowserContext and not ResourceContext, so
-  // store a non-owning pointer here.
-  resource_context->SetUserData(
-      kHostZoomMapKeyName,
-      new NonOwningZoomData(
-          HostZoomMap::GetDefaultForBrowserContext(browser_context)));
 
   resource_context->DetachUserDataThread();
 }

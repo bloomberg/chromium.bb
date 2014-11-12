@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/supports_user_data.h"
 #include "base/synchronization/lock.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
@@ -24,8 +23,7 @@ class WebContentsImpl;
 // HostZoomMap needs to be deleted on the UI thread because it listens
 // to notifications on there (and holds a NotificationRegistrar).
 class CONTENT_EXPORT HostZoomMapImpl : public NON_EXPORTED_BASE(HostZoomMap),
-                                       public NotificationObserver,
-                                       public base::SupportsUserData::Data {
+                                       public NotificationObserver {
  public:
   HostZoomMapImpl();
   ~HostZoomMapImpl() override;

@@ -634,6 +634,11 @@ base::FilePath TestingProfile::GetPath() const {
   return profile_path_;
 }
 
+scoped_ptr<content::ZoomLevelDelegate> TestingProfile::CreateZoomLevelDelegate(
+    const base::FilePath& partition_path) {
+  return nullptr;
+}
+
 scoped_refptr<base::SequencedTaskRunner> TestingProfile::GetIOTaskRunner() {
   return base::MessageLoop::current()->message_loop_proxy();
 }

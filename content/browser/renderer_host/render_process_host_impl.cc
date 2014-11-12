@@ -716,6 +716,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       ChromeBlobStorageContext::GetFor(browser_context),
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
+      storage_partition_impl_->GetHostZoomLevelContext(),
       get_contexts_callback);
 
   AddFilter(resource_message_filter);

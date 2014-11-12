@@ -59,6 +59,11 @@ base::FilePath TestBrowserContext::GetPath() const {
   return browser_context_dir_.path();
 }
 
+scoped_ptr<ZoomLevelDelegate> TestBrowserContext::CreateZoomLevelDelegate(
+    const base::FilePath& partition_path) {
+  return scoped_ptr<ZoomLevelDelegate>();
+}
+
 bool TestBrowserContext::IsOffTheRecord() const {
   return false;
 }

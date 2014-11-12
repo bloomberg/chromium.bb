@@ -193,8 +193,7 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
 
-  HostZoomMap* host_zoom_map =
-      GetHostZoomMapForResourceContext(info->GetContext());
+  const HostZoomMap* host_zoom_map = info->filter()->GetHostZoomMap();
 
   if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME && host_zoom_map) {
     const GURL& request_url = request()->url();

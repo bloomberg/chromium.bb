@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -34,6 +35,8 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
+
+using content::HostZoomMap;
 
 namespace {
 
@@ -341,3 +344,58 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapMigrationBrowserTest,
   EXPECT_EQ(0.0, profile_prefs->GetDouble(prefs::kDefaultZoomLevelDeprecated));
 }
 
+// Test four things:
+//  1. Host zoom maps of parent profile and child profile are different.
+//  2. Child host zoom map inherits zoom level at construction.
+//  3. Change of zoom level doesn't propagate from child to parent.
+//  4. Change of zoom level propagates from parent to child.
+IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
+                       OffTheRecordProfileHostZoomMap) {
+  // Constants for test case.
+  const std::string host("example.com");
+  const double zoom_level_25 = 2.5;
+  const double zoom_level_30 = 3.0;
+  const double zoom_level_40 = 4.0;
+
+  Profile* parent_profile = browser()->profile();
+  Profile* child_profile =
+      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+  HostZoomMap* parent_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(parent_profile);
+  ASSERT_TRUE(parent_zoom_map);
+
+  parent_zoom_map->SetZoomLevelForHost(host, zoom_level_25);
+  ASSERT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_25);
+
+  // Prepare child host zoom map.
+  HostZoomMap* child_zoom_map =
+      HostZoomMap::GetDefaultForBrowserContext(child_profile);
+  ASSERT_TRUE(child_zoom_map);
+
+  // Verify.
+  EXPECT_NE(parent_zoom_map, child_zoom_map);
+
+  EXPECT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
+                "Child must inherit from parent.";
+
+  child_zoom_map->SetZoomLevelForHost(host, zoom_level_30);
+  ASSERT_EQ(
+      child_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_30);
+
+  EXPECT_NE(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
+                "Child change must not propagate to parent.";
+
+  parent_zoom_map->SetZoomLevelForHost(host, zoom_level_40);
+  ASSERT_EQ(
+      parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+      zoom_level_40);
+
+  EXPECT_EQ(parent_zoom_map->GetZoomLevelForHostAndScheme("http", host),
+            child_zoom_map->GetZoomLevelForHostAndScheme("http", host)) <<
+                "Parent change should propagate to child.";
+  base::RunLoop().RunUntilIdle();
+}

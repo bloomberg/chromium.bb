@@ -27,10 +27,8 @@ ZoomController::ZoomController(content::WebContents* web_contents)
       zoom_mode_(ZOOM_MODE_DEFAULT),
       zoom_level_(1.0),
       browser_context_(web_contents->GetBrowserContext()) {
-  // TODO(wjmaclean) Make calls to HostZoomMap::GetDefaultForBrowserContext()
-  // refer to the webcontents-specific HostZoomMap when that becomes available.
   content::HostZoomMap* host_zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(browser_context_);
+      content::HostZoomMap::GetForWebContents(web_contents);
   zoom_level_ = host_zoom_map->GetDefaultZoomLevel();
 
   zoom_subscription_ = host_zoom_map->AddZoomLevelChangedCallback(
@@ -118,7 +116,7 @@ bool ZoomController::SetZoomLevelByExtension(
   }
 
   content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(browser_context_);
+      content::HostZoomMap::GetForWebContents(web_contents());
   DCHECK(zoom_map);
   DCHECK(!event_data_);
   event_data_.reset(new ZoomChangedEventData(web_contents(),
@@ -152,7 +150,7 @@ void ZoomController::SetZoomMode(ZoomMode new_mode) {
     return;
 
   content::HostZoomMap* zoom_map =
-      content::HostZoomMap::GetDefaultForBrowserContext(browser_context_);
+      content::HostZoomMap::GetForWebContents(web_contents());
   DCHECK(zoom_map);
   int render_process_id = web_contents()->GetRenderProcessHost()->GetID();
   int render_view_id = web_contents()->GetRenderViewHost()->GetRoutingID();

@@ -61,7 +61,6 @@
 #include "ui/views/widget/widget.h"
 
 using base::UserMetricsAction;
-using content::HostZoomMap;
 using content::WebContents;
 using ui::MenuModel;
 using views::CustomButton;
@@ -494,10 +493,12 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
         decrement_button_(NULL),
         fullscreen_button_(NULL),
         zoom_label_width_(0) {
-    content_zoom_subscription_ = HostZoomMap::GetDefaultForBrowserContext(
-        menu->browser_->profile())->AddZoomLevelChangedCallback(
-            base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
-                       base::Unretained(this)));
+    content_zoom_subscription_ =
+        content::HostZoomMap::GetDefaultForBrowserContext(
+            menu->browser_->profile())
+            ->AddZoomLevelChangedCallback(
+                base::Bind(&WrenchMenu::ZoomView::OnZoomLevelChanged,
+                           base::Unretained(this)));
 
     browser_zoom_subscription_ = ZoomEventManager::GetForBrowserContext(
         menu->browser_->profile())->AddZoomLevelChangedCallback(
@@ -634,7 +635,7 @@ class WrenchMenu::ZoomView : public WrenchMenuView {
   void WrenchMenuDestroyed() override { WrenchMenuView::WrenchMenuDestroyed(); }
 
  private:
-  void OnZoomLevelChanged(const HostZoomMap::ZoomLevelChange& change) {
+  void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change) {
     UpdateZoomControls();
   }
 

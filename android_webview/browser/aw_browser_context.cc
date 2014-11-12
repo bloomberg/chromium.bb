@@ -222,6 +222,12 @@ void AwBrowserContext::CreateUserPrefServiceIfNecessary() {
   }
 }
 
+scoped_ptr<content::ZoomLevelDelegate>
+AwBrowserContext::CreateZoomLevelDelegate(
+    const base::FilePath& partition_path) {
+  return nullptr;
+}
+
 base::FilePath AwBrowserContext::GetPath() const {
   return context_storage_path_;
 }

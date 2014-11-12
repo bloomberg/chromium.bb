@@ -210,7 +210,7 @@ class TestFilter : public ResourceMessageFilter {
   explicit TestFilter(ResourceContext* resource_context)
       : ResourceMessageFilter(
             ChildProcessHostImpl::GenerateChildProcessUniqueId(),
-            PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL,
+            PROCESS_TYPE_RENDERER, NULL, NULL, NULL, NULL, NULL,
             base::Bind(&TestFilter::GetContexts, base::Unretained(this))),
         resource_context_(resource_context),
         canceled_(false),

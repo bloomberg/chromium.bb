@@ -152,6 +152,12 @@ class TestStoragePartition : public StoragePartition {
   }
   content::GeofencingManager* GetGeofencingManager() override { return NULL; }
 
+  content::HostZoomMap* GetHostZoomMap() override { return NULL; }
+  content::HostZoomLevelContext* GetHostZoomLevelContext() override {
+    return NULL;
+  }
+  content::ZoomLevelDelegate* GetZoomLevelDelegate() override { return NULL; }
+
   void ClearDataForOrigin(uint32 remove_mask,
                           uint32 quota_storage_remove_mask,
                           const GURL& storage_origin,

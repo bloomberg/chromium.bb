@@ -17,6 +17,7 @@
 namespace content {
 class MockResourceContext;
 class SSLHostStateDelegate;
+class ZoomLevelDelegate;
 }
 
 namespace history {
@@ -221,6 +222,8 @@ class TestingProfile : public Profile {
 
   // content::BrowserContext
   base::FilePath GetPath() const override;
+  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+      const base::FilePath& partition_path) override;
   scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner() override;
   bool IsOffTheRecord() const override;
   content::DownloadManagerDelegate* GetDownloadManagerDelegate() override;

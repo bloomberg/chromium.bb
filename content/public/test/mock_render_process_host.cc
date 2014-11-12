@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/child_process_host_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/storage_partition.h"
@@ -100,7 +101,7 @@ bool MockRenderProcessHost::IsIsolatedGuest() const {
 }
 
 StoragePartition* MockRenderProcessHost::GetStoragePartition() const {
-  return NULL;
+  return BrowserContext::GetDefaultStoragePartition(browser_context_);
 }
 
 void MockRenderProcessHost::AddWord(const base::string16& word) {

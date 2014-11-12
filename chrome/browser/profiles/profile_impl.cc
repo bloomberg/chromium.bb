@@ -95,7 +95,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/dom_storage_context.h"
-#include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -156,7 +155,6 @@ using base::TimeDelta;
 using base::UserMetricsAction;
 using content::BrowserThread;
 using content::DownloadManagerDelegate;
-using content::HostZoomMap;
 
 namespace {
 
@@ -632,8 +630,6 @@ void ProfileImpl::DoFinalInit() {
     session_cookie_mode = content::CookieStoreConfig::RESTORED_SESSION_COOKIES;
   }
 
-  InitHostZoomMap();
-
   base::Callback<void(bool)> data_reduction_proxy_unavailable;
   scoped_ptr<data_reduction_proxy::DataReductionProxyParams>
       data_reduction_proxy_params;
@@ -716,6 +712,9 @@ void ProfileImpl::DoFinalInit() {
   content::BrowserContext::GetDefaultStoragePartition(this)->
       GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
 
+  // TODO(wjmaclean): Remove this. crbug.com/420643
+  chrome::MigrateProfileZoomLevelPrefs(this);
+
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
   RegisterDomDistillerViewerSource(this);
@@ -755,17 +754,6 @@ void ProfileImpl::DoFinalInit() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS) && !defined(OS_IOS)
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
-}
-
-void ProfileImpl::InitHostZoomMap() {
-  HostZoomMap* host_zoom_map = HostZoomMap::GetDefaultForBrowserContext(this);
-  DCHECK(!zoom_level_prefs_);
-  zoom_level_prefs_.reset(
-      new chrome::ChromeZoomLevelPrefs(prefs_.get(), GetPath()));
-  zoom_level_prefs_->InitPrefsAndCopyToHostZoomMap(GetPath(), host_zoom_map);
-
-  // TODO(wjmaclean): Remove this. crbug.com/420643
-  chrome::MigrateProfileZoomLevelPrefs(this);
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {
@@ -828,6 +816,12 @@ std::string ProfileImpl::GetProfileName() {
 
 Profile::ProfileType ProfileImpl::GetProfileType() const {
   return REGULAR_PROFILE;
+}
+
+scoped_ptr<content::ZoomLevelDelegate>
+ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
+  return make_scoped_ptr(
+      new chrome::ChromeZoomLevelPrefs(GetPrefs(), GetPath(), partition_path));
 }
 
 base::FilePath ProfileImpl::GetPath() const {
@@ -987,7 +981,8 @@ PrefService* ProfileImpl::GetPrefs() {
 }
 
 chrome::ChromeZoomLevelPrefs* ProfileImpl::GetZoomLevelPrefs() {
-  return zoom_level_prefs_.get();
+  return static_cast<chrome::ChromeZoomLevelPrefs*>(
+      GetDefaultStoragePartition(this)->GetZoomLevelDelegate());
 }
 
 PrefService* ProfileImpl::GetOffTheRecordPrefs() {

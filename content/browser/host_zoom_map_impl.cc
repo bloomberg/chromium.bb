@@ -20,6 +20,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/site_instance.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
@@ -27,8 +29,6 @@
 namespace content {
 
 namespace {
-
-const char kHostZoomMapKeyName[] = "content_host_zoom_map";
 
 std::string GetHostFromProcessView(int render_process_id, int render_view_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -61,29 +61,39 @@ GURL HostZoomMap::GetURLFromEntry(const NavigationEntry* entry) {
 }
 
 HostZoomMap* HostZoomMap::GetDefaultForBrowserContext(BrowserContext* context) {
-  HostZoomMapImpl* rv = static_cast<HostZoomMapImpl*>(
-      context->GetUserData(kHostZoomMapKeyName));
-  if (!rv) {
-    rv = new HostZoomMapImpl();
-    context->SetUserData(kHostZoomMapKeyName, rv);
-  }
-  return rv;
+  StoragePartition* partition =
+      BrowserContext::GetDefaultStoragePartition(context);
+  DCHECK(partition);
+  return partition->GetHostZoomMap();
+}
+
+HostZoomMap* HostZoomMap::Get(SiteInstance* instance) {
+  StoragePartition* partition = BrowserContext::GetStoragePartition(
+      instance->GetBrowserContext(), instance);
+  DCHECK(partition);
+  return partition->GetHostZoomMap();
+}
+
+HostZoomMap* HostZoomMap::GetForWebContents(const WebContents* contents) {
+  StoragePartition* partition =
+      BrowserContext::GetStoragePartition(contents->GetBrowserContext(),
+                                          contents->GetSiteInstance());
+  DCHECK(partition);
+  return partition->GetHostZoomMap();
 }
 
 // Helper function for setting/getting zoom levels for WebContents without
 // having to import HostZoomMapImpl everywhere.
 double HostZoomMap::GetZoomLevel(const WebContents* web_contents) {
-  HostZoomMapImpl* host_zoom_map =
-      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
-          web_contents->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetForWebContents(web_contents));
   return host_zoom_map->GetZoomLevelForWebContents(
       *static_cast<const WebContentsImpl*>(web_contents));
 }
 
 void HostZoomMap::SetZoomLevel(const WebContents* web_contents, double level) {
-  HostZoomMapImpl* host_zoom_map =
-      static_cast<HostZoomMapImpl*>(HostZoomMap::GetDefaultForBrowserContext(
-          web_contents->GetBrowserContext()));
+  HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
+      HostZoomMap::GetForWebContents(web_contents));
   host_zoom_map->SetZoomLevelForWebContents(
       *static_cast<const WebContentsImpl*>(web_contents), level);
 }
@@ -243,10 +253,12 @@ void HostZoomMapImpl::SetZoomLevelForHostAndScheme(const std::string& scheme,
 }
 
 double HostZoomMapImpl::GetDefaultZoomLevel() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return default_zoom_level_;
 }
 
 void HostZoomMapImpl::SetDefaultZoomLevel(double level) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   default_zoom_level_ = level;
 }
 
@@ -396,8 +408,10 @@ void HostZoomMapImpl::SendZoomLevelChange(const std::string& scheme,
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
-    if (HostZoomMap::GetDefaultForBrowserContext(
-            render_process_host->GetBrowserContext()) == this) {
+    // TODO(wjmaclean) This will need to be cleaned up when
+    // RenderProcessHost::GetStoragePartition() goes away. Perhaps have
+    // RenderProcessHost expose a GetHostZoomMap() function?
+    if (render_process_host->GetStoragePartition()->GetHostZoomMap() == this) {
       render_process_host->Send(
           new ViewMsg_SetZoomLevelForCurrentURL(scheme, host, level));
     }
@@ -413,6 +427,7 @@ void HostZoomMapImpl::SendErrorPageZoomLevelRefresh() {
 }
 
 HostZoomMapImpl::~HostZoomMapImpl() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 }  // namespace content

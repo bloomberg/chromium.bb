@@ -26,6 +26,8 @@ class URLRequestContext;
 namespace content {
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
+class HostZoomLevelContext;
+class HostZoomMap;
 class ResourceContext;
 class ServiceWorkerContextWrapper;
 
@@ -48,6 +50,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
                         ChromeBlobStorageContext* blob_storage_context,
                         storage::FileSystemContext* file_system_context,
                         ServiceWorkerContextWrapper* service_worker_context,
+                        HostZoomLevelContext* host_zoom_level_context,
                         const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
@@ -77,6 +80,10 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
     return service_worker_context_.get();
   }
 
+  // Returns a raw pointer to the HostZoomLevelContext's associated HostZoomMap,
+  // or NULL if no context is present.
+  const HostZoomMap* GetHostZoomMap() const;
+
   int child_id() const { return child_id_; }
   int process_type() const { return process_type_; }
 
@@ -96,6 +103,7 @@ class CONTENT_EXPORT ResourceMessageFilter : public BrowserMessageFilter {
   scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
+  scoped_refptr<HostZoomLevelContext> host_zoom_level_context_;
 
   GetContextsCallback get_contexts_callback_;
 

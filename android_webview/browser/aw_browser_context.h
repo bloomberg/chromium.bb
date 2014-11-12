@@ -93,6 +93,8 @@ class AwBrowserContext : public content::BrowserContext,
   void CreateUserPrefServiceIfNecessary();
 
   // content::BrowserContext implementation.
+  scoped_ptr<content::ZoomLevelDelegate> CreateZoomLevelDelegate(
+      const base::FilePath& partition_path) override;
   virtual base::FilePath GetPath() const override;
   virtual bool IsOffTheRecord() const override;
   virtual net::URLRequestContextGetter* GetRequestContext() override;
