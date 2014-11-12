@@ -15,6 +15,7 @@
 #include "cc/debug/rasterize_and_record_benchmark_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/resources/picture_pile.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "ui/gfx/geometry/rect.h"
@@ -106,7 +107,7 @@ void RasterizeAndRecordBenchmark::RunOnLayer(PictureLayer* layer) {
   gfx::Size tile_grid_size = host_->settings().default_tile_size;
 
   SkTileGridFactory::TileGridInfo tile_grid_info;
-  PicturePileBase::ComputeTileGridInfo(tile_grid_size, &tile_grid_info);
+  PicturePile::ComputeTileGridInfo(tile_grid_size, &tile_grid_info);
 
   gfx::Rect visible_content_rect = gfx::ScaleToEnclosingRect(
       layer->visible_content_rect(), 1.f / layer->contents_scale_x());

@@ -14,9 +14,7 @@
 
 namespace cc {
 class ContentLayerClient;
-class PicturePileImpl;
 class Region;
-class RenderingStatsInstrumentation;
 class RasterSource;
 
 class CC_EXPORT RecordingSource {
@@ -43,7 +41,6 @@ class CC_EXPORT RecordingSource {
   virtual void SetMinContentsScale(float min_contents_scale) = 0;
   virtual void SetTileGridSize(const gfx::Size& tile_grid_size) = 0;
   virtual void SetSlowdownRasterScaleFactor(int factor) = 0;
-  virtual void SetShowDebugPictureBorders(bool show) = 0;
   virtual void SetIsMask(bool is_mask) = 0;
   virtual bool IsSuitableForGpuRasterization() const = 0;
 

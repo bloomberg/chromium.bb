@@ -9,12 +9,12 @@
 #include "cc/debug/devtools_instrumentation.h"
 #include "cc/debug/micro_benchmark_controller.h"
 #include "cc/layers/layer.h"
-#include "cc/resources/picture_pile.h"
 #include "cc/trees/occlusion_tracker.h"
 
 namespace cc {
 
 class ContentLayerClient;
+class RecordingSource;
 class ResourceUpdateQueue;
 
 class CC_EXPORT PictureLayer : public Layer {

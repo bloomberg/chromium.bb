@@ -84,7 +84,7 @@ class FakePicturePileImpl : public PicturePileImpl {
 
  protected:
   FakePicturePileImpl();
-  explicit FakePicturePileImpl(const PicturePileBase* other);
+  explicit FakePicturePileImpl(const PicturePile* other);
   ~FakePicturePileImpl() override;
 
   FakeContentLayerClient client_;

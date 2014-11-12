@@ -20,8 +20,8 @@ scoped_refptr<PicturePileImpl> PicturePileImpl::Create() {
   return make_scoped_refptr(new PicturePileImpl);
 }
 
-scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromOther(
-    const PicturePileBase* other) {
+scoped_refptr<PicturePileImpl> PicturePileImpl::CreateFromPicturePile(
+    const PicturePile* other) {
   return make_scoped_refptr(new PicturePileImpl(other));
 }
 
@@ -39,7 +39,7 @@ PicturePileImpl::PicturePileImpl()
       should_attempt_to_use_distance_field_text_(false) {
 }
 
-PicturePileImpl::PicturePileImpl(const PicturePileBase* other)
+PicturePileImpl::PicturePileImpl(const PicturePile* other)
     : picture_map_(other->picture_map_),
       tiling_(other->tiling_),
       background_color_(other->background_color_),

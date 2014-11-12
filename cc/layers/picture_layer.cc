@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/resources/picture_pile.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -40,17 +41,18 @@ void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   gfx::Size impl_bounds = layer_impl->bounds();
   gfx::Size recording_source_bounds = recording_source_->GetSize();
 
-  // If update called, then pile size must match bounds pushed to impl layer.
+  // If update called, then recording source size must match bounds pushed to
+  // impl layer.
   DCHECK_IMPLIES(update_source_frame_number_ == source_frame_number,
                  impl_bounds == recording_source_bounds)
-      << " bounds " << impl_bounds.ToString() << " pile "
+      << " bounds " << impl_bounds.ToString() << " recording source "
       << recording_source_bounds.ToString();
 
   if (update_source_frame_number_ != source_frame_number &&
       recording_source_bounds != impl_bounds) {
     // Update may not get called for the layer (if it's not in the viewport
-    // for example, even though it has resized making the pile no longer
-    // valid. In this case just destroy the pile.
+    // for example, even though it has resized making the recording source no
+    // longer valid. In this case just destroy the recording source.
     recording_source_->SetEmptyBounds();
   }
 
@@ -136,8 +138,8 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
   if (updated) {
     SetNeedsPushProperties();
   } else {
-    // If this invalidation did not affect the pile, then it can be cleared as
-    // an optimization.
+    // If this invalidation did not affect the recording source, then it can be
+    // cleared as an optimization.
     recording_invalidation_.Clear();
   }
 
@@ -162,7 +164,7 @@ void PictureLayer::UpdateCanUseLCDText() {
 }
 
 skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
-  // We could either flatten the PicturePile into a single SkPicture,
+  // We could either flatten the RecordingSource into a single SkPicture,
   // or paint a fresh one depending on what we intend to do with the
   // picture. For now we just paint a fresh one to get consistent results.
   if (!DrawsContent())

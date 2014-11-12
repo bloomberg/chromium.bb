@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/scoped_ptr_algorithm.h"

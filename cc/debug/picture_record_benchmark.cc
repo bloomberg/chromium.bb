@@ -10,8 +10,10 @@
 #include "base/values.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/resources/picture.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_common.h"
+#include "third_party/skia/include/core/SkBBHFactory.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "cc/resources/picture_pile.h"
+#include "cc/test/fake_picture_pile.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,7 +17,7 @@ namespace cc {
 
 FakePicturePileImpl::FakePicturePileImpl() {}
 
-FakePicturePileImpl::FakePicturePileImpl(const PicturePileBase* other)
+FakePicturePileImpl::FakePicturePileImpl(const PicturePile* other)
     : PicturePileImpl(other),
       tile_grid_info_(other->GetTileGridInfoForTesting()) {
 }
@@ -26,12 +27,12 @@ FakePicturePileImpl::~FakePicturePileImpl() {}
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  PicturePile pile;
+  FakePicturePile pile;
   pile.tiling().SetTilingSize(layer_bounds);
   pile.tiling().SetMaxTextureSize(tile_size);
   pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
-  pile.SetRecordedViewportForTesting(gfx::Rect(layer_bounds));
-  pile.SetHasAnyRecordingsForTesting(true);
+  pile.SetRecordedViewport(gfx::Rect(layer_bounds));
+  pile.SetHasAnyRecordings(true);
 
   auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile));
   for (int x = 0; x < pile_impl->tiling().num_tiles_x(); ++x) {
@@ -44,12 +45,12 @@ scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateFilledPile(
 scoped_refptr<FakePicturePileImpl> FakePicturePileImpl::CreateEmptyPile(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  PicturePile pile;
+  FakePicturePile pile;
   pile.tiling().SetTilingSize(layer_bounds);
   pile.tiling().SetMaxTextureSize(tile_size);
   pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
-  pile.SetRecordedViewportForTesting(gfx::Rect());
-  pile.SetHasAnyRecordingsForTesting(false);
+  pile.SetRecordedViewport(gfx::Rect());
+  pile.SetHasAnyRecordings(false);
   return make_scoped_refptr(new FakePicturePileImpl(&pile));
 }
 
@@ -57,26 +58,26 @@ scoped_refptr<FakePicturePileImpl>
 FakePicturePileImpl::CreateEmptyPileThatThinksItHasRecordings(
     const gfx::Size& tile_size,
     const gfx::Size& layer_bounds) {
-  PicturePile pile;
+  FakePicturePile pile;
   pile.tiling().SetTilingSize(layer_bounds);
   pile.tiling().SetMaxTextureSize(tile_size);
   pile.SetTileGridSize(ImplSidePaintingSettings().default_tile_grid_size);
   // This simulates a false positive for this flag.
-  pile.SetRecordedViewportForTesting(gfx::Rect());
-  pile.SetHasAnyRecordingsForTesting(true);
+  pile.SetRecordedViewport(gfx::Rect());
+  pile.SetHasAnyRecordings(true);
   return make_scoped_refptr(new FakePicturePileImpl(&pile));
 }
 
 scoped_refptr<FakePicturePileImpl>
 FakePicturePileImpl::CreateInfiniteFilledPile() {
-  PicturePile pile;
+  FakePicturePile pile;
   gfx::Size size(std::numeric_limits<int>::max(),
                  std::numeric_limits<int>::max());
   pile.tiling().SetTilingSize(size);
   pile.tiling().SetMaxTextureSize(size);
   pile.SetTileGridSize(size);
-  pile.SetRecordedViewportForTesting(gfx::Rect(size));
-  pile.SetHasAnyRecordingsForTesting(true);
+  pile.SetRecordedViewport(gfx::Rect(size));
+  pile.SetHasAnyRecordings(true);
 
   auto pile_impl = make_scoped_refptr(new FakePicturePileImpl(&pile));
   pile_impl->AddRecordingAt(0, 0);

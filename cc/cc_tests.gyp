@@ -170,6 +170,7 @@
       'test/fake_picture_layer_impl.h',
       'test/fake_picture_layer_tiling_client.cc',
       'test/fake_picture_layer_tiling_client.h',
+      'test/fake_picture_pile.h',
       'test/fake_picture_pile_impl.cc',
       'test/fake_picture_pile_impl.h',
       'test/fake_proxy.cc',

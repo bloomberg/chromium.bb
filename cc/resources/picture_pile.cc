@@ -22,6 +22,24 @@ const int kPixelDistanceToRecord = 8000;
 // operations.
 const int kOpCountThatIsOkToAnalyze = 10;
 
+// Dimensions of the tiles in this picture pile as well as the dimensions of
+// the base picture in each tile.
+const int kBasePictureSize = 512;
+const int kTileGridBorderPixels = 1;
+#ifdef NDEBUG
+const bool kDefaultClearCanvasSetting = false;
+#else
+const bool kDefaultClearCanvasSetting = true;
+#endif
+
+// Invalidation frequency settings. kInvalidationFrequencyThreshold is a value
+// between 0 and 1 meaning invalidation frequency between 0% and 100% that
+// indicates when to stop invalidating offscreen regions.
+// kFrequentInvalidationDistanceThreshold defines what it means to be
+// "offscreen" in terms of distance to visible in css pixels.
+const float kInvalidationFrequencyThreshold = 0.75f;
+const int kFrequentInvalidationDistanceThreshold = 512;
+
 // TODO(humper): The density threshold here is somewhat arbitrary; need a
 // way to set // this from the command line so we can write a benchmark
 // script and find a sweet spot.
@@ -149,8 +167,21 @@ float ClusterTiles(const std::vector<gfx::Rect>& invalid_tiles,
 namespace cc {
 
 PicturePile::PicturePile()
-    : is_suitable_for_gpu_rasterization_(true),
-      pixel_record_distance_(kPixelDistanceToRecord) {
+    : min_contents_scale_(0),
+      slow_down_raster_scale_factor_for_debug_(0),
+      contents_opaque_(false),
+      contents_fill_bounds_completely_(false),
+      clear_canvas_with_debug_color_(kDefaultClearCanvasSetting),
+      has_any_recordings_(false),
+      is_mask_(false),
+      is_solid_color_(false),
+      solid_color_(SK_ColorTRANSPARENT),
+      pixel_record_distance_(kPixelDistanceToRecord),
+      is_suitable_for_gpu_rasterization_(true) {
+  tiling_.SetMaxTextureSize(gfx::Size(kBasePictureSize, kBasePictureSize));
+  tile_grid_info_.fTileInterval.setEmpty();
+  tile_grid_info_.fMargin.setEmpty();
+  tile_grid_info_.fOffset.setZero();
 }
 
 PicturePile::~PicturePile() {
@@ -173,7 +204,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
   bool updated = false;
 
   Region resize_invalidation;
-  gfx::Size old_tiling_size = tiling_size();
+  gfx::Size old_tiling_size = GetSize();
   if (old_tiling_size != layer_size) {
     tiling_.SetTilingSize(layer_size);
     updated = true;
@@ -182,17 +213,17 @@ bool PicturePile::UpdateAndExpandInvalidation(
   gfx::Rect interest_rect = visible_layer_rect;
   interest_rect.Inset(-pixel_record_distance_, -pixel_record_distance_);
   recorded_viewport_ = interest_rect;
-  recorded_viewport_.Intersect(gfx::Rect(tiling_size()));
+  recorded_viewport_.Intersect(gfx::Rect(GetSize()));
 
   gfx::Rect interest_rect_over_tiles =
       tiling_.ExpandRectToTileBounds(interest_rect);
 
   gfx::Size min_tiling_size(
-      std::min(tiling_size().width(), old_tiling_size.width()),
-      std::min(tiling_size().height(), old_tiling_size.height()));
+      std::min(GetSize().width(), old_tiling_size.width()),
+      std::min(GetSize().height(), old_tiling_size.height()));
   gfx::Size max_tiling_size(
-      std::max(tiling_size().width(), old_tiling_size.width()),
-      std::max(tiling_size().height(), old_tiling_size.height()));
+      std::max(GetSize().width(), old_tiling_size.width()),
+      std::max(GetSize().height(), old_tiling_size.height()));
 
   if (old_tiling_size != layer_size) {
     has_any_recordings_ = false;
@@ -388,7 +419,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
   // Detect cases where the full pile is invalidated, in this situation we
   // can just drop/invalidate everything.
   if (invalidation->Contains(gfx::Rect(old_tiling_size)) ||
-      invalidation->Contains(gfx::Rect(tiling_size()))) {
+      invalidation->Contains(gfx::Rect(GetSize()))) {
     for (auto& it : picture_map_)
       updated = it.second.Invalidate(frame_number) || updated;
   } else {
@@ -539,7 +570,7 @@ bool PicturePile::UpdateAndExpandInvalidation(
 }
 
 gfx::Size PicturePile::GetSize() const {
-  return tiling_size();
+  return tiling_.tiling_size();
 }
 
 void PicturePile::SetEmptyBounds() {
@@ -548,23 +579,51 @@ void PicturePile::SetEmptyBounds() {
 }
 
 void PicturePile::SetMinContentsScale(float min_contents_scale) {
-  PicturePileBase::SetMinContentsScale(min_contents_scale);
+  DCHECK(min_contents_scale);
+  if (min_contents_scale_ == min_contents_scale)
+    return;
+
+  // Picture contents are played back scaled. When the final contents scale is
+  // less than 1 (i.e. low res), then multiple recorded pixels will be used
+  // to raster one final pixel.  To avoid splitting a final pixel across
+  // pictures (which would result in incorrect rasterization due to blending), a
+  // buffer margin is added so that any picture can be snapped to integral
+  // final pixels.
+  //
+  // For example, if a 1/4 contents scale is used, then that would be 3 buffer
+  // pixels, since that's the minimum number of pixels to add so that resulting
+  // content can be snapped to a four pixel aligned grid.
+  int buffer_pixels = static_cast<int>(ceil(1 / min_contents_scale) - 1);
+  buffer_pixels = std::max(0, buffer_pixels);
+  SetBufferPixels(buffer_pixels);
+  min_contents_scale_ = min_contents_scale;
+}
+
+// static
+void PicturePile::ComputeTileGridInfo(const gfx::Size& tile_grid_size,
+                                      SkTileGridFactory::TileGridInfo* info) {
+  DCHECK(info);
+  info->fTileInterval.set(tile_grid_size.width() - 2 * kTileGridBorderPixels,
+                          tile_grid_size.height() - 2 * kTileGridBorderPixels);
+  DCHECK_GT(info->fTileInterval.width(), 0);
+  DCHECK_GT(info->fTileInterval.height(), 0);
+  info->fMargin.set(kTileGridBorderPixels, kTileGridBorderPixels);
+  // Offset the tile grid coordinate space to take into account the fact
+  // that the top-most and left-most tiles do not have top and left borders
+  // respectively.
+  info->fOffset.set(-kTileGridBorderPixels, -kTileGridBorderPixels);
 }
 
 void PicturePile::SetTileGridSize(const gfx::Size& tile_grid_size) {
-  PicturePileBase::SetTileGridSize(tile_grid_size);
+  ComputeTileGridInfo(tile_grid_size, &tile_grid_info_);
 }
 
 void PicturePile::SetSlowdownRasterScaleFactor(int factor) {
   slow_down_raster_scale_factor_for_debug_ = factor;
 }
 
-void PicturePile::SetShowDebugPictureBorders(bool show) {
-  show_debug_picture_borders_ = show;
-}
-
 void PicturePile::SetIsMask(bool is_mask) {
-  set_is_mask(is_mask);
+  is_mask_ = is_mask;
 }
 
 void PicturePile::SetUnsuitableForGpuRasterizationForTesting() {
@@ -576,11 +635,12 @@ bool PicturePile::IsSuitableForGpuRasterization() const {
 }
 
 scoped_refptr<RasterSource> PicturePile::CreateRasterSource() const {
-  return PicturePileImpl::CreateFromOther(this);
+  return scoped_refptr<RasterSource>(
+      PicturePileImpl::CreateFromPicturePile(this));
 }
 
 SkTileGridFactory::TileGridInfo PicturePile::GetTileGridInfoForTesting() const {
-  return PicturePileBase::GetTileGridInfoForTesting();
+  return tile_grid_info_;
 }
 
 bool PicturePile::CanRasterSlowTileCheck(const gfx::Rect& layer_rect) const {
@@ -626,6 +686,83 @@ void PicturePile::DetermineIfSolidColor() {
   canvas.translate(-recorded_viewport_.x(), -recorded_viewport_.y());
   picture->Raster(&canvas, nullptr, Region(), 1.0f);
   is_solid_color_ = canvas.GetColorIfSolid(&solid_color_);
+}
+
+gfx::Rect PicturePile::PaddedRect(const PictureMapKey& key) const {
+  gfx::Rect tile = tiling_.TileBounds(key.first, key.second);
+  return PadRect(tile);
+}
+
+gfx::Rect PicturePile::PadRect(const gfx::Rect& rect) const {
+  gfx::Rect padded_rect = rect;
+  padded_rect.Inset(-buffer_pixels(), -buffer_pixels(), -buffer_pixels(),
+                    -buffer_pixels());
+  return padded_rect;
+}
+
+void PicturePile::Clear() {
+  picture_map_.clear();
+  recorded_viewport_ = gfx::Rect();
+  has_any_recordings_ = false;
+  is_solid_color_ = false;
+}
+
+PicturePile::PictureInfo::PictureInfo() : last_frame_number_(0) {
+}
+
+PicturePile::PictureInfo::~PictureInfo() {
+}
+
+void PicturePile::PictureInfo::AdvanceInvalidationHistory(int frame_number) {
+  DCHECK_GE(frame_number, last_frame_number_);
+  if (frame_number == last_frame_number_)
+    return;
+
+  invalidation_history_ <<= (frame_number - last_frame_number_);
+  last_frame_number_ = frame_number;
+}
+
+bool PicturePile::PictureInfo::Invalidate(int frame_number) {
+  AdvanceInvalidationHistory(frame_number);
+  invalidation_history_.set(0);
+
+  bool did_invalidate = !!picture_.get();
+  picture_ = NULL;
+  return did_invalidate;
+}
+
+bool PicturePile::PictureInfo::NeedsRecording(int frame_number,
+                                              int distance_to_visible) {
+  AdvanceInvalidationHistory(frame_number);
+
+  // We only need recording if we don't have a picture. Furthermore, we only
+  // need a recording if we're within frequent invalidation distance threshold
+  // or the invalidation is not frequent enough (below invalidation frequency
+  // threshold).
+  return !picture_.get() &&
+         ((distance_to_visible <= kFrequentInvalidationDistanceThreshold) ||
+          (GetInvalidationFrequency() < kInvalidationFrequencyThreshold));
+}
+
+void PicturePile::SetBufferPixels(int new_buffer_pixels) {
+  if (new_buffer_pixels == buffer_pixels())
+    return;
+
+  Clear();
+  tiling_.SetBorderTexels(new_buffer_pixels);
+}
+
+void PicturePile::PictureInfo::SetPicture(scoped_refptr<Picture> picture) {
+  picture_ = picture;
+}
+
+const Picture* PicturePile::PictureInfo::GetPicture() const {
+  return picture_.get();
+}
+
+float PicturePile::PictureInfo::GetInvalidationFrequency() const {
+  return invalidation_history_.count() /
+         static_cast<float>(INVALIDATION_FRAMES_TRACKED);
 }
 
 }  // namespace cc

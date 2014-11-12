@@ -383,8 +383,6 @@
         'resources/picture_layer_tiling_set.h',
         'resources/picture_pile.cc',
         'resources/picture_pile.h',
-        'resources/picture_pile_base.cc',
-        'resources/picture_pile_base.h',
         'resources/picture_pile_impl.cc',
         'resources/picture_pile_impl.h',
         'resources/pixel_buffer_raster_worker_pool.cc',

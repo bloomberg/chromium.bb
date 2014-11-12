@@ -13,7 +13,7 @@
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
-#include "cc/resources/picture_pile_base.h"
+#include "cc/resources/picture_pile.h"
 #include "cc/resources/raster_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "skia/ext/refptr.h"
@@ -21,12 +21,11 @@
 
 namespace cc {
 
-// TODO(vmpstr): Clean up PicturePileBase and make it a member.
 class CC_EXPORT PicturePileImpl : public RasterSource {
  public:
   static scoped_refptr<PicturePileImpl> Create();
-  static scoped_refptr<PicturePileImpl> CreateFromOther(
-      const PicturePileBase* other);
+  static scoped_refptr<PicturePileImpl> CreateFromPicturePile(
+      const PicturePile* other);
 
   // RasterSource overrides. See RasterSource header for full description.
   // When slow-down-raster-scale-factor is set to a value greater than 1, the
@@ -88,14 +87,13 @@ class CC_EXPORT PicturePileImpl : public RasterSource {
   friend class PicturePile;
   friend class PixelRefIterator;
 
-  // TODO(vmpstr): Change this when pictures are split from invalidation info,
-  // and when PicturePileBase goes away.
-  using PictureMapKey = PicturePileBase::PictureMapKey;
-  using PictureMap = PicturePileBase::PictureMap;
-  using PictureInfo = PicturePileBase::PictureInfo;
+  // TODO(vmpstr): Change this when pictures are split from invalidation info.
+  using PictureMapKey = PicturePile::PictureMapKey;
+  using PictureMap = PicturePile::PictureMap;
+  using PictureInfo = PicturePile::PictureInfo;
 
   PicturePileImpl();
-  explicit PicturePileImpl(const PicturePileBase* other);
+  explicit PicturePileImpl(const PicturePile* other);
   ~PicturePileImpl() override;
 
   int buffer_pixels() const { return tiling_.border_texels(); }
