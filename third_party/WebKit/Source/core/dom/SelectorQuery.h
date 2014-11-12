@@ -47,6 +47,7 @@ class SelectorDataList {
 public:
     void initialize(const CSSSelectorList&);
     bool matches(Element&) const;
+    Element* closest(Element&) const;
     PassRefPtrWillBeRawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
     PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 
@@ -89,6 +90,7 @@ public:
     static PassOwnPtr<SelectorQuery> adopt(CSSSelectorList&);
 
     bool matches(Element&) const;
+    Element* closest(Element&) const;
     PassRefPtrWillBeRawPtr<StaticElementList> queryAll(ContainerNode& rootNode) const;
     PassRefPtrWillBeRawPtr<Element> queryFirst(ContainerNode& rootNode) const;
 private:

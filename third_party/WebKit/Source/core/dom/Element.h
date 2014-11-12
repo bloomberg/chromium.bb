@@ -411,6 +411,7 @@ public:
     virtual bool matchesReadWritePseudoClass() const { return false; }
     virtual bool matchesValidityPseudoClasses() const { return false; }
     bool matches(const String& selectors, ExceptionState&);
+    Element* closest(const String& selectors, ExceptionState&);
     virtual bool shouldAppearIndeterminate() const { return false; }
 
     DOMTokenList& classList();

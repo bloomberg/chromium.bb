@@ -136,6 +136,18 @@ bool SelectorDataList::matches(Element& targetElement) const
     return false;
 }
 
+Element* SelectorDataList::closest(Element& targetElement) const
+{
+    unsigned selectorCount = m_selectors.size();
+    for (Element* currentElement = &targetElement; currentElement; currentElement = currentElement->parentElement()) {
+        for (unsigned i = 0; i < selectorCount; ++i) {
+            if (selectorMatches(*m_selectors[i], *currentElement, targetElement))
+                return currentElement;
+        }
+    }
+    return nullptr;
+}
+
 PassRefPtrWillBeRawPtr<StaticElementList> SelectorDataList::queryAll(ContainerNode& rootNode) const
 {
     WillBeHeapVector<RefPtrWillBeMember<Element> > result;
@@ -479,6 +491,11 @@ SelectorQuery::SelectorQuery(CSSSelectorList& selectorList)
 bool SelectorQuery::matches(Element& element) const
 {
     return m_selectors.matches(element);
+}
+
+Element* SelectorQuery::closest(Element& element) const
+{
+    return m_selectors.closest(element);
 }
 
 PassRefPtrWillBeRawPtr<StaticElementList> SelectorQuery::queryAll(ContainerNode& rootNode) const

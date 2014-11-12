@@ -2533,6 +2533,14 @@ bool Element::matches(const String& selectors, ExceptionState& exceptionState)
     return selectorQuery->matches(*this);
 }
 
+Element* Element::closest(const String& selectors, ExceptionState& exceptionState)
+{
+    SelectorQuery* selectorQuery = document().selectorQueryCache().add(AtomicString(selectors), document(), exceptionState);
+    if (!selectorQuery)
+        return nullptr;
+    return selectorQuery->closest(*this);
+}
+
 DOMTokenList& Element::classList()
 {
     ElementRareData& rareData = ensureElementRareData();
