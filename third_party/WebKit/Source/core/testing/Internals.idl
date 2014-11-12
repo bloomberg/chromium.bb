@@ -155,7 +155,6 @@
     [TypeChecking=Interface] boolean isPageBoxVisible(Document document, long pageNumber);
 
     readonly attribute InternalSettings settings;
-    readonly attribute InternalProfilers profilers;
     readonly attribute InternalRuntimeFlags runtimeFlags;
     readonly attribute unsigned long workerThreadCount;
 

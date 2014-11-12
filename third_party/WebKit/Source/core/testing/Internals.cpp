@@ -119,7 +119,6 @@
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/testing/DictionaryTest.h"
 #include "core/testing/GCObservation.h"
-#include "core/testing/InternalProfilers.h"
 #include "core/testing/InternalSettings.h"
 #include "core/testing/LayerRect.h"
 #include "core/testing/LayerRectList.h"
@@ -272,13 +271,6 @@ InternalSettings* Internals::settings() const
 InternalRuntimeFlags* Internals::runtimeFlags() const
 {
     return m_runtimeFlags.get();
-}
-
-InternalProfilers* Internals::profilers()
-{
-    if (!m_profilers)
-        m_profilers = InternalProfilers::create();
-    return m_profilers.get();
 }
 
 unsigned Internals::workerThreadCount() const
@@ -2195,7 +2187,6 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* scriptState, Location
 void Internals::trace(Visitor* visitor)
 {
     visitor->trace(m_runtimeFlags);
-    visitor->trace(m_profilers);
 }
 
 void Internals::setValueForUser(Element* element, const String& value)

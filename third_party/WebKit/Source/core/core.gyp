@@ -771,8 +771,6 @@
         '<(bindings_core_v8_output_dir)/V8UnionTypesTest.h',
         '<(bindings_core_v8_output_dir)/V8Internals.cpp',
         '<(bindings_core_v8_output_dir)/V8Internals.h',
-        '<(bindings_core_v8_output_dir)/V8InternalProfilers.cpp',
-        '<(bindings_core_v8_output_dir)/V8InternalProfilers.h',
         '<(bindings_core_v8_output_dir)/V8InternalSettings.cpp',
         '<(bindings_core_v8_output_dir)/V8InternalSettings.h',
         '<(bindings_core_v8_output_dir)/V8InternalSettingsGenerated.cpp',

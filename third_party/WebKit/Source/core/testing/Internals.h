@@ -57,7 +57,6 @@ class ExecutionContext;
 class GCObservation;
 class HTMLElement;
 class HTMLMediaElement;
-class InternalProfilers;
 class InternalRuntimeFlags;
 class InternalSettings;
 class Iterator;
@@ -208,7 +207,6 @@ public:
 
     InternalSettings* settings() const;
     InternalRuntimeFlags* runtimeFlags() const;
-    InternalProfilers* profilers();
     unsigned workerThreadCount() const;
 
     void setDeviceProximity(Document*, const String& eventType, double value, double min, double max, ExceptionState&);
@@ -347,7 +345,6 @@ private:
 
     DocumentMarker* markerAt(Node*, const String& markerType, unsigned index, ExceptionState&);
     Member<InternalRuntimeFlags> m_runtimeFlags;
-    Member<InternalProfilers> m_profilers;
 };
 
 } // namespace blink

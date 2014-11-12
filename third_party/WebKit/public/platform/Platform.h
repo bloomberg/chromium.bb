@@ -277,15 +277,6 @@ public:
     // discardable.
     virtual WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) { return 0; }
 
-    // A wrapper for tcmalloc's HeapProfilerStart();
-    virtual void startHeapProfiling(const WebString& /*prefix*/) { }
-    // A wrapper for tcmalloc's HeapProfilerStop();
-    virtual void stopHeapProfiling() { }
-    // A wrapper for tcmalloc's HeapProfilerDump()
-    virtual void dumpHeapProfiling(const WebString& /*reason*/) { }
-    // A wrapper for tcmalloc's GetHeapProfile()
-    virtual WebString getHeapProfile() { return WebString(); }
-
     static const size_t noDecodedImageByteLimit = static_cast<size_t>(-1);
 
     // Returns the maximum amount of memory a decoded image should be allowed.
