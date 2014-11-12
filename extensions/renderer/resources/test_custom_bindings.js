@@ -198,12 +198,8 @@ binding.registerCustomHook(function(api) {
       error_msg += ": " + message;
     if (typeof(expected) == 'object') {
       if (!chromeTest.checkDeepEq(expected, actual)) {
-        // Note: these JSON.stringify calls may fail in tests that explicitly
-        // override JSON.stringfy, so surround in try-catch.
-        try {
-          error_msg += "\nActual: " + JSON.stringify(actual) +
-                       "\nExpected: " + JSON.stringify(expected);
-        } catch (e) {}
+        error_msg += "\nActual: " + $JSON.stringify(actual) +
+                     "\nExpected: " + $JSON.stringify(expected);
         chromeTest.fail(error_msg);
       }
       return;
