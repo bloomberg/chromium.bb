@@ -92,7 +92,7 @@ source_set("cld2_data") {
 # As in the corresponding gyp file, this just builds the core interfaces for
 # CLD2. You must still declare a dependency on a specific data set, either
 # cld2_dynamic or cld2_static. 
-static_library("cld_2") {
+source_set("cld_2") {
   sources = core_files
   include_dirs = [
     "src/internal",
@@ -108,7 +108,7 @@ static_library("cld_2") {
 }
 
 
-static_library("cld2_platform_impl") {
+source_set("cld2_platform_impl") {
   # TODO: Make this something that can be overridden
   deps = [ ":cld2_static" ]
 }
