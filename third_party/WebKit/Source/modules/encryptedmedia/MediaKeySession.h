@@ -98,8 +98,8 @@ public:
 
 private:
     class PendingAction;
-    friend class NewSessionResult;
-    friend class LoadSessionResult;
+    friend class NewSessionResultPromise;
+    friend class LoadSessionResultPromise;
 
     MediaKeySession(ScriptState*, MediaKeys*, const String& sessionType);
 

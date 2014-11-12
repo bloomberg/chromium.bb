@@ -33,7 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/encryptedmedia/MediaKeySession.h"
-#include "modules/encryptedmedia/SimpleContentDecryptionModuleResult.h"
+#include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
 #include "platform/MIMETypeRegistry.h"
@@ -165,7 +165,7 @@ ScriptPromise MediaKeys::setServerCertificateInternal(ScriptState* scriptState, 
     //    (Done in caller.)
 
     // 4. Let promise be a new promise.
-    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 5. Run the following steps asynchronously (documented in timerFired()).

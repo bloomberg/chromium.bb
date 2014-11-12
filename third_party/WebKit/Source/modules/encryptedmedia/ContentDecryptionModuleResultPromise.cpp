@@ -3,14 +3,11 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "modules/encryptedmedia/SimpleContentDecryptionModuleResult.h"
+#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
-#include "bindings/core/v8/V8Binding.h"
 #include "core/dom/DOMException.h"
-#include "platform/Logging.h"
 #include "public/platform/WebString.h"
 #include "wtf/Assertions.h"
 
@@ -41,41 +38,51 @@ ExceptionCode WebCdmExceptionToExceptionCode(WebContentDecryptionModuleException
     return UnknownError;
 }
 
-SimpleContentDecryptionModuleResult::SimpleContentDecryptionModuleResult(ScriptState* scriptState)
+ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(ScriptState* scriptState)
     : m_resolver(ScriptPromiseResolver::create(scriptState))
 {
 }
 
-SimpleContentDecryptionModuleResult::~SimpleContentDecryptionModuleResult()
+ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise()
 {
 }
 
-void SimpleContentDecryptionModuleResult::complete()
-{
-    m_resolver->resolve(V8UndefinedType());
-    m_resolver.clear();
-}
-
-void SimpleContentDecryptionModuleResult::completeWithSession(WebContentDecryptionModuleResult::SessionStatus status)
+void ContentDecryptionModuleResultPromise::complete()
 {
     ASSERT_NOT_REACHED();
-    completeWithDOMException(InvalidStateError, "Unexpected completion.");
+    reject(InvalidStateError, "Unexpected completion.");
 }
 
-void SimpleContentDecryptionModuleResult::completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage)
+void ContentDecryptionModuleResultPromise::completeWithSession(WebContentDecryptionModuleResult::SessionStatus status)
 {
-    completeWithDOMException(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
+    ASSERT_NOT_REACHED();
+    reject(InvalidStateError, "Unexpected completion.");
 }
 
-ScriptPromise SimpleContentDecryptionModuleResult::promise()
+void ContentDecryptionModuleResultPromise::completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage)
+{
+    reject(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
+}
+
+ScriptPromise ContentDecryptionModuleResultPromise::promise()
 {
     return m_resolver->promise();
 }
 
-void SimpleContentDecryptionModuleResult::completeWithDOMException(ExceptionCode code, const String& errorMessage)
+void ContentDecryptionModuleResultPromise::reject(ExceptionCode code, const String& errorMessage)
 {
     m_resolver->reject(DOMException::create(code, errorMessage));
     m_resolver.clear();
+}
+
+ExecutionContext* ContentDecryptionModuleResultPromise::executionContext() const
+{
+    return m_resolver->executionContext();
+}
+
+void ContentDecryptionModuleResultPromise::trace(Visitor* visitor)
+{
+    ContentDecryptionModuleResult::trace(visitor);
 }
 
 } // namespace blink

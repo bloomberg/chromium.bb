@@ -36,9 +36,10 @@
 #include "core/events/Event.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/MediaKeyError.h"
+#include "modules/encryptedmedia/ContentDecryptionModuleResultPromise.h"
 #include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 #include "modules/encryptedmedia/MediaKeys.h"
-#include "modules/encryptedmedia/SimpleContentDecryptionModuleResult.h"
+#include "modules/encryptedmedia/SimpleContentDecryptionModuleResultPromise.h"
 #include "platform/ContentDecryptionModuleResult.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
@@ -201,62 +202,37 @@ private:
 // completeWithSession() will resolve the promise with void, while
 // completeWithError() will reject the promise with an exception. complete()
 // is not expected to be called, and will reject the promise.
-class NewSessionResult : public ContentDecryptionModuleResult {
+class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
 public:
-    NewSessionResult(ScriptState* scriptState, MediaKeySession* session)
-        : m_resolver(ScriptPromiseResolver::create(scriptState))
+    NewSessionResultPromise(ScriptState* scriptState, MediaKeySession* session)
+        : ContentDecryptionModuleResultPromise(scriptState)
         , m_session(session)
     {
-        WTF_LOG(Media, "NewSessionResult(%p)", this);
     }
 
-    virtual ~NewSessionResult()
+    virtual ~NewSessionResultPromise()
     {
-        WTF_LOG(Media, "~NewSessionResult(%p)", this);
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() override
-    {
-        ASSERT_NOT_REACHED();
-        completeWithDOMException(InvalidStateError, "Unexpected completion.");
-    }
-
     virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         if (status != WebContentDecryptionModuleResult::NewSession) {
             ASSERT_NOT_REACHED();
-            completeWithDOMException(InvalidStateError, "Unexpected completion.");
+            reject(InvalidStateError, "Unexpected completion.");
         }
 
         m_session->finishGenerateRequest();
-        m_resolver->resolve();
-        m_resolver.clear();
+        resolve();
     }
-
-    virtual void completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage) override
-    {
-        completeWithDOMException(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
-    }
-
-    // It is only valid to call this before completion.
-    ScriptPromise promise() { return m_resolver->promise(); }
 
     void trace(Visitor* visitor)
     {
         visitor->trace(m_session);
-        ContentDecryptionModuleResult::trace(visitor);
+        ContentDecryptionModuleResultPromise::trace(visitor);
     }
 
 private:
-    // Reject the promise with a DOMException.
-    void completeWithDOMException(ExceptionCode code, const String& errorMessage)
-    {
-        m_resolver->reject(DOMException::create(code, errorMessage));
-        m_resolver.clear();
-    }
-
-    RefPtr<ScriptPromiseResolver> m_resolver;
     Member<MediaKeySession> m_session;
 };
 
@@ -265,27 +241,19 @@ private:
 // completeWithSession() will resolve the promise with true/false, while
 // completeWithError() will reject the promise with an exception. complete()
 // is not expected to be called, and will reject the promise.
-class LoadSessionResult : public ContentDecryptionModuleResult {
+class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
 public:
-    LoadSessionResult(ScriptState* scriptState, MediaKeySession* session)
-        : m_resolver(ScriptPromiseResolver::create(scriptState))
+    LoadSessionResultPromise(ScriptState* scriptState, MediaKeySession* session)
+        : ContentDecryptionModuleResultPromise(scriptState)
         , m_session(session)
     {
-        WTF_LOG(Media, "LoadSessionResult(%p)", this);
     }
 
-    virtual ~LoadSessionResult()
+    virtual ~LoadSessionResultPromise()
     {
-        WTF_LOG(Media, "~LoadSessionResult(%p)", this);
     }
 
     // ContentDecryptionModuleResult implementation.
-    virtual void complete() override
-    {
-        ASSERT_NOT_REACHED();
-        completeWithDOMException(InvalidStateError, "Unexpected completion.");
-    }
-
     virtual void completeWithSession(WebContentDecryptionModuleResult::SessionStatus status) override
     {
         bool result = false;
@@ -300,38 +268,21 @@ public:
 
         case WebContentDecryptionModuleResult::SessionAlreadyExists:
             ASSERT_NOT_REACHED();
-            completeWithDOMException(InvalidStateError, "Unexpected completion.");
+            reject(InvalidStateError, "Unexpected completion.");
             return;
         }
 
         m_session->finishLoad();
-        m_resolver->resolve(result);
-        m_resolver.clear();
+        resolve(result);
     }
-
-    virtual void completeWithError(WebContentDecryptionModuleException exceptionCode, unsigned long systemCode, const WebString& errorMessage) override
-    {
-        completeWithDOMException(WebCdmExceptionToExceptionCode(exceptionCode), errorMessage);
-    }
-
-    // It is only valid to call this before completion.
-    ScriptPromise promise() { return m_resolver->promise(); }
 
     void trace(Visitor* visitor)
     {
         visitor->trace(m_session);
-        ContentDecryptionModuleResult::trace(visitor);
+        ContentDecryptionModuleResultPromise::trace(visitor);
     }
 
 private:
-    // Reject the promise with a DOMException.
-    void completeWithDOMException(ExceptionCode code, const String& errorMessage)
-    {
-        m_resolver->reject(DOMException::create(code, errorMessage));
-        m_resolver.clear();
-    }
-
-    RefPtr<ScriptPromiseResolver> m_resolver;
     Member<MediaKeySession> m_session;
 };
 
@@ -480,7 +431,7 @@ ScriptPromise MediaKeySession::generateRequestInternal(ScriptState* scriptState,
     //    (Done in constructor.)
 
     // 9. Let promise be a new promise.
-    NewSessionResult* result = new NewSessionResult(scriptState, this);
+    NewSessionResultPromise* result = new NewSessionResultPromise(scriptState, this);
     ScriptPromise promise = result->promise();
 
     // 10. Run the following steps asynchronously (documented in
@@ -536,7 +487,7 @@ ScriptPromise MediaKeySession::load(ScriptState* scriptState, const String& sess
     //    (Done by CDM.)
 
     // 7. Let promise be a new promise.
-    LoadSessionResult* result = new LoadSessionResult(scriptState, this);
+    LoadSessionResultPromise* result = new LoadSessionResultPromise(scriptState, this);
     ScriptPromise promise = result->promise();
 
     // 8. Run the following steps asynchronously (documented in
@@ -582,7 +533,7 @@ ScriptPromise MediaKeySession::updateInternal(ScriptState* scriptState, PassRefP
     //    (Copied in the caller.)
 
     // 3. Let promise be a new promise.
-    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 4. Run the following steps asynchronously (documented in
@@ -619,7 +570,7 @@ ScriptPromise MediaKeySession::close(ScriptState* scriptState)
         return ScriptPromise::cast(scriptState, ScriptValue());
 
     // 3. Let promise be a new promise.
-    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 4. Run the following steps asynchronously (documented in
@@ -663,7 +614,7 @@ ScriptPromise MediaKeySession::remove(ScriptState* scriptState)
     }
 
     // 4. Let promise be a new promise.
-    SimpleContentDecryptionModuleResult* result = new SimpleContentDecryptionModuleResult(scriptState);
+    SimpleContentDecryptionModuleResultPromise* result = new SimpleContentDecryptionModuleResultPromise(scriptState);
     ScriptPromise promise = result->promise();
 
     // 5. Run the following steps asynchronously (documented in
