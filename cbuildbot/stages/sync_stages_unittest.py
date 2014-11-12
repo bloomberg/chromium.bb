@@ -138,6 +138,10 @@ class MockPatch(mock.MagicMock):
     else:
       return flag_value == allowed
 
+  def IsCommitReady(self):
+    """Check whether this patch is commit ready."""
+    return self.HasApproval('COMR', ('1', '2'))
+
 
 class BaseCQTestCase(generic_stages_unittest.StageTest):
   """Helper class for testing the CommitQueueSync stage"""

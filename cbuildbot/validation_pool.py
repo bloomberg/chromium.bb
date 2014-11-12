@@ -1493,11 +1493,16 @@ class ValidationPool(object):
     results = []
     for error in errors:
       results.append(error)
-      if reject_timestamp < error.patch.approval_timestamp:
+      speculative = not error.patch.IsCommitReady()
+      if speculative or reject_timestamp < error.patch.approval_timestamp:
         while error is not None:
           if isinstance(error, cros_patch.DependencyError):
-            logging.info('Ignoring dependency errors for %s due to grace '
-                         'period', error.patch)
+            if speculative:
+              logging.info('Ignoring dependency errors for %s until it is '
+                           'marked commit ready', error.patch)
+            else:
+              logging.info('Ignoring dependency errors for %s due to grace '
+                           'period', error.patch)
             results.pop()
             break
           error = getattr(error, 'error', None)

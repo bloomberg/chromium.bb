@@ -1212,8 +1212,7 @@ class PreCQLauncherStage(SyncStage):
 
     # We don't know for sure they were initially part of a speculative PreCQ
     # run. It might just be someone turned off the flag, mid-run.
-    speculative = set(c for c in changes
-                      if not c.HasApproval('COMR', ('1', '2')))
+    speculative = set(c for c in changes if not c.IsCommitReady())
 
     # Changes that can be submitted, if their dependencies can be too. Only
     # include changes that have not already been marked as passed.

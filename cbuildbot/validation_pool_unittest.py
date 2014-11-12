@@ -976,6 +976,17 @@ class TestCoreLogic(MoxBase):
     self.assertEquals(set(failures[:-1]), set(result))
     self.mox.VerifyAll()
 
+  def testFilterSpeculativeErrors(self):
+    """Filter out dependency errors for speculative patches."""
+    failures = [cros_patch.ApplyPatchException(x) for x in self.GetPatches(2)]
+    failures += [cros_patch.DependencyError(x, y) for x, y in
+                 zip(self.GetPatches(2), failures)]
+    self.PatchObject(failures[-1].patch, 'IsCommitReady', return_value=False)
+    self.mox.ReplayAll()
+    result = validation_pool.ValidationPool._FilterDependencyErrors(failures)
+    self.assertEquals(set(failures[:-1]), set(result))
+    self.mox.VerifyAll()
+
   def testFilterNonCrosProjects(self):
     """Runs through a filter of own manifest and fake changes.
 

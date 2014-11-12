@@ -1497,6 +1497,10 @@ class GerritPatch(GerritFetchOnlyPatch):
     return all(self.HasApproval(field, value)
                for field, value in flags.iteritems())
 
+  def IsCommitReady(self):
+    """Return whether this patch has been marked commit ready."""
+    return self.HasApproval('COMR', ('1', '2'))
+
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
 
