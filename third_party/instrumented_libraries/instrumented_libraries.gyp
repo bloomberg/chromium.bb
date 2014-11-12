@@ -424,6 +424,9 @@
         ['"<(_ubuntu_release)"=="precise"', {
           'patch': 'patches/pulseaudio.precise.diff',
           'jobs': 1,
+        }, {
+          # New location of libpulsecommon.
+          'package_ldflags': [ '-Wl,-R,XORIGIN/pulseaudio/.' ],
         }],
       ],
       'extra_configure_flags': [
