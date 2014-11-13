@@ -28,7 +28,7 @@ Request* Request::createRequestWithRequestData(ExecutionContext* context, FetchR
     if (init.mode == "same-origin") {
         request->setMode(WebURLRequest::FetchRequestModeSameOrigin);
     } else if (init.mode == "no-cors") {
-        request->setMode(mode = WebURLRequest::FetchRequestModeNoCORS);
+        request->setMode(WebURLRequest::FetchRequestModeNoCORS);
     } else if (init.mode == "cors") {
         request->setMode(WebURLRequest::FetchRequestModeCORS);
     } else {
