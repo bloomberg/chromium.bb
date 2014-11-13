@@ -153,7 +153,7 @@ void ProfileSigninConfirmationDialogViews::OnClosed() {
 }
 
 ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {
-  return ui::MODAL_TYPE_CHILD;
+  return ui::MODAL_TYPE_WINDOW;
 }
 
 void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
