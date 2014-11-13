@@ -270,6 +270,7 @@
       'webapp/base/resources/open_sans.css',
       'webapp/base/resources/open_sans.woff',
       'webapp/base/resources/spinner.gif',
+      'webapp/crd/html/butter_bar.css',
       'webapp/crd/html/toolbar.css',
       'webapp/crd/html/menu_button.css',
       'webapp/crd/html/window_frame.css',
@@ -295,7 +296,7 @@
     'remoting_webapp_template_files': [
       'webapp/base/html/client_plugin.html',
       'webapp/base/html/dialog_auth.html',
-      'webapp/crd/html/butterbar.html',
+      'webapp/crd/html/butter_bar.html',
       'webapp/crd/html/dialog_client_connect_failed.html',
       'webapp/crd/html/dialog_client_connecting.html',
       'webapp/crd/html/dialog_client_host_needs_upgrade.html',
