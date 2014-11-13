@@ -175,16 +175,6 @@ function FileManager() {
   this.bannersController_ = null;
 
   // --------------------------------------------------------------------------
-  // Menus.
-
-  /**
-   * Context menu for texts.
-   * @type {cr.ui.Menu}
-   * @private
-   */
-  this.textContextMenu_ = null;
-
-  // --------------------------------------------------------------------------
   // DOM elements.
 
   /**
@@ -579,7 +569,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       listBeingUpdated = null;
     });
 
-    this.initContextMenus_();
+    this.initGearMenu_();
     this.initCommands_();
     assert(this.directoryModel_);
     assert(this.spinnerController_);
@@ -727,52 +717,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * One-time initialization of context menus.
+   * One-time initialization for the gear menu.
    * @private
    */
-  FileManager.prototype.initContextMenus_ = function() {
-    assert(this.ui_.listContainer.grid);
-    assert(this.ui_.listContainer.table);
-    assert(this.document_);
-    assert(this.dialogDom_);
-
-    // Set up the context menu for the file list.
-    var fileContextMenu = queryRequiredElement(
-        this.dialogDom_, '#file-context-menu');
-    cr.ui.Menu.decorate(fileContextMenu);
-    fileContextMenu = /** @type {!cr.ui.Menu} */ (fileContextMenu);
-
-    cr.ui.contextMenuHandler.setContextMenu(
-        this.ui_.listContainer.grid, fileContextMenu);
-    cr.ui.contextMenuHandler.setContextMenu(
-        this.ui_.listContainer.table.list, fileContextMenu);
-    cr.ui.contextMenuHandler.setContextMenu(
-        queryRequiredElement(this.document_, '.drive-welcome.page'),
-        fileContextMenu);
-
-    // Set up the context menu for the volume/shortcut items in directory tree.
-    var rootsContextMenu = queryRequiredElement(
-        this.dialogDom_, '#roots-context-menu');
-    cr.ui.Menu.decorate(rootsContextMenu);
-    rootsContextMenu = /** @type {!cr.ui.Menu} */ (rootsContextMenu);
-
-    this.ui_.directoryTree.contextMenuForRootItems = rootsContextMenu;
-
-    // Set up the context menu for the folder items in directory tree.
-    var directoryTreeContextMenu = queryRequiredElement(
-        this.dialogDom_, '#directory-tree-context-menu');
-    cr.ui.Menu.decorate(directoryTreeContextMenu);
-    directoryTreeContextMenu =
-        /** @type {!cr.ui.Menu} */ (directoryTreeContextMenu);
-
-    this.ui_.directoryTree.contextMenuForSubitems = directoryTreeContextMenu;
-
-    // Set up the context menu for the text editing.
-    var textContextMenu = queryRequiredElement(
-        this.dialogDom_, '#text-context-menu');
-    cr.ui.Menu.decorate(textContextMenu);
-    this.textContextMenu_ = /** @type {!cr.ui.Menu} */ (textContextMenu);
-
+  FileManager.prototype.initGearMenu_ = function() {
     this.ui_.gearButton.addEventListener(
         'menushow', this.onShowGearMenu_.bind(this));
     this.dialogDom_.querySelector('#gear-menu').menuItemSelector =
@@ -780,14 +728,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     this.syncButton.checkable = true;
     this.hostedButton.checkable = true;
-
-    if (util.runningInBrowser()) {
-      // Suppresses the default context menu.
-      this.dialogDom_.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-      });
-    }
   };
 
   FileManager.prototype.onShowGearMenu_ = function() {
@@ -817,7 +757,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.initCommands_ = function() {
-    assert(this.textContextMenu_);
+    assert(this.ui_.textContextMenu);
 
     this.commandHandler = new CommandHandler(this);
 
@@ -829,12 +769,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     var inputs = this.dialogDom_.querySelectorAll(
         'input[type=text], input[type=search], textarea');
     for (var i = 0; i < inputs.length; i++) {
-      cr.ui.contextMenuHandler.setContextMenu(inputs[i], this.textContextMenu_);
+      cr.ui.contextMenuHandler.setContextMenu(
+          inputs[i], this.ui_.textContextMenu);
       this.registerInputCommands_(inputs[i]);
     }
 
     cr.ui.contextMenuHandler.setContextMenu(this.ui_.listContainer.renameInput,
-                                            this.textContextMenu_);
+                                            this.ui_.textContextMenu);
     this.registerInputCommands_(this.ui_.listContainer.renameInput);
     this.document_.addEventListener(
         'command',

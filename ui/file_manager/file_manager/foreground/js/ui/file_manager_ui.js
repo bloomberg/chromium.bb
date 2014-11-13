@@ -107,6 +107,14 @@ function FileManagerUI(element, launchParam) {
   this.conflictDialog = new ConflictDialog(this.element_);
 
   /**
+   * Context menu for texts.
+   * @type {!cr.ui.Menu}
+   * @const
+   */
+  this.textContextMenu = FileManagerUI.queryDecoratedElement_(
+      '#text-context-menu', cr.ui.Menu);
+
+  /**
    * Location line.
    * @type {LocationLine}
    */
@@ -185,6 +193,14 @@ function FileManagerUI(element, launchParam) {
   this.element_.addEventListener('drop', function(e) {
     e.preventDefault();
   });
+
+  // Suppresses the default context menu.
+  if (util.runningInBrowser()) {
+    this.element_.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
 }
 
 /**
@@ -247,6 +263,15 @@ FileManagerUI.prototype.initAdditionalUI = function(
   // Location line.
   this.locationLine = locationLine;
 
+  // Init context menus.
+  var fileContextMenu = FileManagerUI.queryDecoratedElement_(
+      '#file-context-menu', cr.ui.Menu);
+  cr.ui.contextMenuHandler.setContextMenu(grid, fileContextMenu);
+  cr.ui.contextMenuHandler.setContextMenu(table.list, fileContextMenu);
+  cr.ui.contextMenuHandler.setContextMenu(
+      queryRequiredElement(document, '.drive-welcome.page'),
+      fileContextMenu);
+
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));
 };
@@ -257,6 +282,14 @@ FileManagerUI.prototype.initAdditionalUI = function(
  */
 FileManagerUI.prototype.initDirectoryTree = function(directoryTree) {
   this.directoryTree = directoryTree;
+
+  // Set up the context menu for the volume/shortcut items in directory tree.
+  this.directoryTree.contextMenuForRootItems =
+      FileManagerUI.queryDecoratedElement_('#roots-context-menu', cr.ui.Menu);
+  this.directoryTree.contextMenuForSubitems =
+      FileManagerUI.queryDecoratedElement_(
+          '#directory-tree-context-menu', cr.ui.Menu);
+
   // Visible height of the directory tree depends on the size of progress
   // center panel. When the size of progress center panel changes, directory
   // tree has to be notified to adjust its components (e.g. progress bar).
