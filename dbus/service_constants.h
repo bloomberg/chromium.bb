@@ -1898,7 +1898,9 @@ namespace apmanager {
 const char kServiceName[] = "org.chromium.apmanager";
 const char kManagerInterface[] = "org.chromium.apmanager.Manager";
 const char kManagerPath[] = "/manager";
+const char kManagerError[] = "org.chromium.apmanager.Manager.Error";
 const char kServiceInterface[] = "org.chromium.apmanager.Service";
+const char kServiceError[] = "org.chromium.apmanager.Service.Error";
 const char kConfigInterface[] = "org.chromium.apmanager.Config";
 const char kConfigError[] = "org.chromium.apmanager.Config.Error";
 const char kClientInterface[] = "org.chromium.apmanager.Client";
