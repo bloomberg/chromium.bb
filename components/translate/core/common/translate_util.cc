@@ -62,12 +62,30 @@ const LanguageCodePair kLanguageCodeSynonyms[] = {
   {"jw", "jv"},
 };
 
+// Some Chinese language codes are compatible with zh-TW or zh-CN in terms of
+// Translate.
+//
+// If this table is updated, please sync this with the synonym table in
+// chrome/browser/resources/options/language_options.js
+const LanguageCodePair kLanguageCodeChineseCompatiblePairs[] = {
+  {"zh-TW", "zh-HK"},
+  {"zh-TW", "zh-MO"},
+  {"zh-CN", "zh-SG"},
+};
+
 const char kSecurityOrigin[] = "https://translate.googleapis.com/";
 
 void ToTranslateLanguageSynonym(std::string* language) {
   for (size_t i = 0; i < arraysize(kLanguageCodeSimilitudes); ++i) {
     if (*language == kLanguageCodeSimilitudes[i].chrome_language) {
       *language = kLanguageCodeSimilitudes[i].translate_language;
+      return;
+    }
+  }
+
+  for (size_t i = 0; i < arraysize(kLanguageCodeChineseCompatiblePairs); ++i) {
+    if (*language == kLanguageCodeChineseCompatiblePairs[i].chrome_language) {
+      *language = kLanguageCodeChineseCompatiblePairs[i].translate_language;
       return;
     }
   }
@@ -85,7 +103,12 @@ void ToTranslateLanguageSynonym(std::string* language) {
     }
   }
 
-  *language = main_part + tail_part;
+  if (main_part == "zh") {
+    *language = main_part + tail_part;
+    return;
+  }
+
+  *language = main_part;
 }
 
 void ToChromeLanguageSynonym(std::string* language) {

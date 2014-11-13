@@ -115,12 +115,6 @@ class TranslatePrefs {
   static void MigrateUserPrefs(PrefService* user_prefs,
                                const char* accept_languages_pref);
 
-  // Converts the language code for Translate. This removes the sub code (like
-  // -US) except for Chinese, and converts the synonyms.
-  // The same logic exists at language_options.js, and please keep consistency
-  // with the JavaScript file.
-  static std::string ConvertLangCodeForTranslation(const std::string& lang);
-
  private:
   friend class TranslatePrefsTest;
   FRIEND_TEST_ALL_PREFIXES(TranslatePrefsTest, CreateBlockedLanguages);

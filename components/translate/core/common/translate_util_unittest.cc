@@ -19,27 +19,18 @@ TEST_F(TranslateUtilTest, ToTranslateLanguageSynonym) {
   translate::ToTranslateLanguageSynonym(&language);
   EXPECT_EQ("no", language);
 
-  language = std::string("he");
+  language = std::string("zh-HK");
+  translate::ToTranslateLanguageSynonym(&language);
+  EXPECT_EQ("zh-TW", language);
+
+  // A sub code is not preserved (except for Chinese).
+  language = std::string("he-IL");
   translate::ToTranslateLanguageSynonym(&language);
   EXPECT_EQ("iw", language);
 
-  language = std::string("jv");
+  language = std::string("zh-JP");
   translate::ToTranslateLanguageSynonym(&language);
-  EXPECT_EQ("jw", language);
-
-  language = std::string("fil");
-  translate::ToTranslateLanguageSynonym(&language);
-  EXPECT_EQ("tl", language);
-
-  // Preserve a sub code if the language has a synonym.
-  language = std::string("he-IL");
-  translate::ToTranslateLanguageSynonym(&language);
-  EXPECT_EQ("iw-IL", language);
-
-  // Don't preserve a sub code if the language has just a similitude.
-  language = std::string("nb-NO");
-  translate::ToTranslateLanguageSynonym(&language);
-  EXPECT_EQ("nb-NO", language);
+  EXPECT_EQ("zh-JP", language);
 
   // Preserve the argument if it doesn't have its synonym.
   language = std::string("en");
@@ -55,27 +46,10 @@ TEST_F(TranslateUtilTest, ToChromeLanguageSynonym) {
   translate::ToChromeLanguageSynonym(&language);
   EXPECT_EQ("nb", language);
 
-  language = std::string("iw");
-  translate::ToChromeLanguageSynonym(&language);
-  EXPECT_EQ("he", language);
-
-  language = std::string("jw");
-  translate::ToChromeLanguageSynonym(&language);
-  EXPECT_EQ("jv", language);
-
-  language = std::string("tl");
-  translate::ToChromeLanguageSynonym(&language);
-  EXPECT_EQ("fil", language);
-
-  // Preserve a sub code if the language has a synonym.
+  // Preserve a sub code
   language = std::string("iw-IL");
   translate::ToChromeLanguageSynonym(&language);
   EXPECT_EQ("he-IL", language);
-
-  // Don't preserve a sub code if the language has just a similitude.
-  language = std::string("no-NO");
-  translate::ToChromeLanguageSynonym(&language);
-  EXPECT_EQ("no-NO", language);
 
   // Preserve the argument if it doesn't have its synonym.
   language = std::string("en");

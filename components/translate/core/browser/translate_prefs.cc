@@ -492,36 +492,19 @@ void TranslatePrefs::CreateBlockedLanguages(
 
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
        it != accept_languages.end(); ++it) {
-    std::string converted_lang = ConvertLangCodeForTranslation(*it);
+    std::string lang = *it;
+    translate::ToTranslateLanguageSynonym(&lang);
 
     // Regarding http://crbug.com/36182, even though English exists in Accept
     // language list, English could be translated on non-English locale.
-    if (converted_lang == "en" && !is_ui_english)
+    if (lang == "en" && !is_ui_english)
       continue;
 
-    result.insert(converted_lang);
+    result.insert(lang);
   }
 
   blocked_languages->insert(
       blocked_languages->begin(), result.begin(), result.end());
-}
-
-// static
-std::string TranslatePrefs::ConvertLangCodeForTranslation(
-    const std::string& lang) {
-  std::vector<std::string> tokens;
-  base::SplitString(lang, '-', &tokens);
-  if (tokens.size() < 1)
-    return lang;
-
-  std::string main_part = tokens[0];
-
-  // Translate doesn't support General Chinese and the sub code is necessary.
-  if (main_part == "zh")
-    return lang;
-
-  translate::ToTranslateLanguageSynonym(&main_part);
-  return main_part;
 }
 
 bool TranslatePrefs::IsValueInList(const base::ListValue* list,

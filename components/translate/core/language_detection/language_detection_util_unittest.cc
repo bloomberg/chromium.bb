@@ -126,7 +126,7 @@ TEST_F(LanguageDetectionUtilTest, CLDAgreeWithLanguageCodeHavingCountryCode) {
                                                           contents,
                                                           &cld_language,
                                                           &is_cld_reliable);
-  EXPECT_EQ("en-US", language);
+  EXPECT_EQ("en", language);
   EXPECT_EQ("en", cld_language);
   EXPECT_TRUE(is_cld_reliable);
 }

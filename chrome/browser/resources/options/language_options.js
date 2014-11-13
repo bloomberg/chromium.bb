@@ -1316,12 +1316,15 @@ cr.define('options', function() {
       var tokens = languageCode.split('-');
       var main = tokens[0];
 
-      // See also: chrome/renderer/translate/translate_helper.cc.
+      // See also: components/translate/core/browser/common/translate_util.cc
       var synonyms = {
         'nb': 'no',
         'he': 'iw',
         'jv': 'jw',
         'fil': 'tl',
+        'zh-HK': 'zh-TW',
+        'zh-MO': 'zh-TW',
+        'zh-SG': 'zh-CN',
       };
 
       if (main in synonyms) {

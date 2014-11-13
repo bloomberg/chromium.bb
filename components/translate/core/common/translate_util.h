@@ -15,6 +15,9 @@ namespace translate {
 extern const char kSecurityOrigin[];
 
 // Converts language code synonym to use at Translate server.
+//
+// The same logic exists at language_options.js, and please keep consistency
+// with the JavaScript file.
 void ToTranslateLanguageSynonym(std::string* language);
 
 // Converts language code synonym to use at Chrome internal.

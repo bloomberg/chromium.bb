@@ -424,7 +424,16 @@ TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
   ChromeViewHostMsg_TranslateLanguageDetermined::Param params;
   ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
-  EXPECT_EQ("en-US", params.a.adopted_language);
+  EXPECT_EQ("en", params.a.adopted_language);
+  render_thread_->sink().ClearMessages();
+
+  LoadHTML("<html><head><meta http-equiv='Content-Language' content='ZH_tw'>"
+           "</head><body>A random page with random content.</body></html>");
+  message = render_thread_->sink().GetUniqueMessageMatching(
+      ChromeViewHostMsg_TranslateLanguageDetermined::ID);
+  ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
+  ChromeViewHostMsg_TranslateLanguageDetermined::Read(message, &params);
+  EXPECT_EQ("zh-TW", params.a.adopted_language);
   render_thread_->sink().ClearMessages();
 }
 
