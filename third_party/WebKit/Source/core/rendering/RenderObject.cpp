@@ -85,7 +85,6 @@
 #include "platform/TracedValue.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsContext.h"
-#include "platform/graphics/paint/DisplayItemList.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -1122,10 +1121,8 @@ LayoutRect RenderObject::computePaintInvalidationRect(const RenderLayerModelObje
 
 void RenderObject::invalidatePaintUsingContainer(const RenderLayerModelObject* paintInvalidationContainer, const LayoutRect& r, PaintInvalidationReason invalidationReason) const
 {
-    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        if (RenderLayer* container = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
-            container->graphicsLayerBacking()->displayItemList().invalidate(displayItemClient());
-    }
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled())
+        view()->viewDisplayList().invalidate(this);
 
     if (r.isEmpty())
         return;

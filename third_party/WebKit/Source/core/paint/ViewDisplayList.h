@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DisplayItem_h
-#define DisplayItem_h
+#ifndef ViewDisplayList_h
+#define ViewDisplayList_h
 
-#include "platform/PlatformExport.h"
-
-#ifndef NDEBUG
-#include "wtf/text/WTFString.h"
-#endif
+#include "core/rendering/PaintPhase.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace blink {
 
 class GraphicsContext;
+class RenderObject;
 
-typedef void* DisplayItemClient;
-
-class PLATFORM_EXPORT DisplayItem {
+class DisplayItem {
 public:
     enum Type {
         // DisplayItem types must be kept in sync with PaintPhase.
@@ -55,39 +53,58 @@ public:
 
     virtual void replay(GraphicsContext*) = 0;
 
-    DisplayItemClient client() const { return m_id.client; }
+    const RenderObject* renderer() const { return m_id.renderer; }
     Type type() const { return m_id.type; }
-    bool idsEqual(const DisplayItem& other) const { return m_id.client == other.m_id.client && m_id.type == other.m_id.type; }
+    bool idsEqual(const DisplayItem& other) const { return m_id.renderer == other.m_id.renderer && m_id.type == other.m_id.type; }
 
 #ifndef NDEBUG
     static WTF::String typeAsDebugString(DisplayItem::Type);
-
-    void setClientDebugString(const WTF::String& clientDebugString) { m_clientDebugString = clientDebugString; }
-    const WTF::String& clientDebugString() const { return m_clientDebugString; }
-
+    static WTF::String rendererDebugString(const RenderObject*);
     virtual WTF::String asDebugString() const;
 #endif
 
 protected:
-    DisplayItem(DisplayItemClient client, Type type)
-        : m_id(client, type)
+    DisplayItem(const RenderObject* renderer, Type type)
+        : m_id(renderer, type)
     { }
 
 private:
     struct Id {
-        Id(DisplayItemClient c, Type t)
-            : client(c)
+        Id(const RenderObject* r, Type t)
+            : renderer(r)
             , type(t)
         { }
 
-        const DisplayItemClient client;
+        const RenderObject* renderer;
         const Type type;
     } m_id;
-#ifndef NDEBUG
-    WTF::String m_clientDebugString;
-#endif
 };
 
-}
+typedef Vector<OwnPtr<DisplayItem> > PaintList;
 
-#endif // DisplayItem_h
+class ViewDisplayList {
+public:
+    ViewDisplayList() { };
+
+    const PaintList& paintList();
+    void add(WTF::PassOwnPtr<DisplayItem>);
+    void invalidate(const RenderObject*);
+
+#ifndef NDEBUG
+    void showDebugData() const;
+#endif
+
+private:
+    PaintList::iterator findDisplayItem(PaintList::iterator, const DisplayItem&);
+    bool wasInvalidated(const DisplayItem&) const;
+    void updatePaintList();
+
+    PaintList m_paintList;
+    HashSet<const RenderObject*> m_paintListRenderers;
+    HashSet<const RenderObject*> m_invalidated;
+    PaintList m_newPaints;
+};
+
+} // namespace blink
+
+#endif // ViewDisplayList_h

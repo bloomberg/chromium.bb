@@ -47,7 +47,6 @@
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/CompositingReasons.h"
 #include "platform/graphics/PaintInvalidationReason.h"
-#include "platform/graphics/paint/DisplayItem.h"
 #include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
@@ -1055,8 +1054,6 @@ public:
     void markContainingBlocksForOverflowRecalc();
 
     virtual LayoutRect viewRect() const;
-
-    DisplayItemClient displayItemClient() const { return (void*)this; }
 
 protected:
     enum RenderObjectType {

@@ -5,13 +5,29 @@
 #ifndef DrawingRecorder_h
 #define DrawingRecorder_h
 
-#include "core/rendering/PaintPhase.h"
-#include "platform/geometry/FloatRect.h"
+#include "core/paint/ViewDisplayList.h"
+#include "platform/graphics/DisplayList.h"
 
 namespace blink {
 
-class GraphicsContext;
-class RenderObject;
+class DrawingDisplayItem : public DisplayItem {
+public:
+    DrawingDisplayItem(PassRefPtr<SkPicture> picture, const FloatPoint& location, PaintPhase phase, const RenderObject* renderer)
+        : DisplayItem(renderer, (Type)phase), m_picture(picture), m_location(location) { }
+
+    PassRefPtr<SkPicture> picture() const { return m_picture; }
+    const FloatPoint& location() const { return m_location; }
+
+private:
+    virtual void replay(GraphicsContext*);
+
+    RefPtr<SkPicture> m_picture;
+    const FloatPoint m_location;
+#ifndef NDEBUG
+    virtual WTF::String asDebugString() const override;
+#endif
+};
+
 
 class DrawingRecorder {
 public:

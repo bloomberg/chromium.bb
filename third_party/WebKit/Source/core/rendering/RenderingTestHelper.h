@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderingTestHelper_h
-#define RenderingTestHelper_h
-
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -17,27 +14,27 @@ namespace blink {
 
 class RenderingTest : public testing::Test {
 protected:
-    virtual void SetUp() override;
+    virtual void SetUp()
+    {
+        m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+
+        document().settings()->setRegionBasedColumnsEnabled(true);
+
+        // This ensures that the minimal DOM tree gets attached
+        // correctly for tests that don't call setBodyInnerHTML.
+        document().view()->updateLayoutAndStyleIfNeededRecursive();
+    }
 
     Document& document() const { return m_pageHolder->document(); }
 
     void setBodyInnerHTML(const String& htmlContent)
     {
         document().body()->setInnerHTML(htmlContent, ASSERT_NO_EXCEPTION);
-        document().view()->updateLayoutAndStyleForPainting();
-    }
-
-    void enableCompositing()
-    {
-        m_pageHolder->page().settings().setAcceleratedCompositingEnabled(true);
-        document().view()->updateLayoutAndStyleForPainting();
+        document().view()->updateLayoutAndStyleIfNeededRecursive();
     }
 
 private:
-    Page::PageClients m_pageClients;
     OwnPtr<DummyPageHolder> m_pageHolder;
 };
 
 } // namespace blink
-
-#endif // RenderingTestHelper_h
