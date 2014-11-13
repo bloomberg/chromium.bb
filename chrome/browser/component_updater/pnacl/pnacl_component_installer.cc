@@ -28,11 +28,11 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/nacl/common/nacl_switches.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 namespace component_updater {
 

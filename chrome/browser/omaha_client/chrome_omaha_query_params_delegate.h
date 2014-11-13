@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_OMAHA_QUERY_PARAMS_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_
-#define CHROME_BROWSER_OMAHA_QUERY_PARAMS_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#ifndef CHROME_BROWSER_OMAHA_CLIENT_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#define CHROME_BROWSER_OMAHA_CLIENT_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_
 
-#include "components/omaha_query_params/omaha_query_params_delegate.h"
+#include "components/omaha_client/omaha_query_params_delegate.h"
 
 class ChromeOmahaQueryParamsDelegate
-    : public omaha_query_params::OmahaQueryParamsDelegate {
+    : public omaha_client::OmahaQueryParamsDelegate {
  public:
   ChromeOmahaQueryParamsDelegate();
   ~ChromeOmahaQueryParamsDelegate() override;
@@ -16,7 +16,7 @@ class ChromeOmahaQueryParamsDelegate
   // Gets the LazyInstance for ChromeOmahaQueryParamsDelegate.
   static ChromeOmahaQueryParamsDelegate* GetInstance();
 
-  // omaha_query_params::OmahaQueryParamsDelegate:
+  // omaha_client::OmahaQueryParamsDelegate:
   std::string GetExtraParams() override;
 
   // Returns the value we use for the "updaterchannel=" and "prodchannel="
@@ -32,4 +32,4 @@ class ChromeOmahaQueryParamsDelegate
   DISALLOW_COPY_AND_ASSIGN(ChromeOmahaQueryParamsDelegate);
 };
 
-#endif  // CHROME_BROWSER_OMAHA_QUERY_PARAMS_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#endif  // CHROME_BROWSER_OMAHA_CLIENT_CHROME_OMAHA_QUERY_PARAMS_DELEGATE_H_

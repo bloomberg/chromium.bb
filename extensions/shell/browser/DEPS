@@ -3,7 +3,7 @@ include_rules = [
   "+components/keyed_service",
   "+components/nacl/browser",
   "+components/nacl/common",
-  "+components/omaha_query_params",
+  "+components/omaha_client",
   "+components/pref_registry",
   "+components/user_prefs",
   "+components/web_modal",

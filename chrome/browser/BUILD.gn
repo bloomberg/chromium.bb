@@ -91,7 +91,7 @@ static_library("browser") {
     "//components/metrics/proto:proto",
     "//components/navigation_metrics",
     "//components/network_time",
-    "//components/omaha_query_params",
+    "//components/omaha_client",
     "//components/omnibox",
     "//components/os_crypt",
     "//components/password_manager/core/browser",

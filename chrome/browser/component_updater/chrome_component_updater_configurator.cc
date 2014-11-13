@@ -17,7 +17,7 @@
 #endif  // OS_WIN
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
-#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
 #include "chrome/common/chrome_version_info.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_switches.h"

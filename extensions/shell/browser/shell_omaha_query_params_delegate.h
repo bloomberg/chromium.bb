@@ -5,12 +5,12 @@
 #ifndef EXTENSIONS_SHELL_BROWSER_SHELL_OMAHA_QUERY_PARAMS_DELEGATE_H_
 #define EXTENSIONS_SHELL_BROWSER_SHELL_OMAHA_QUERY_PARAMS_DELEGATE_H_
 
-#include "components/omaha_query_params/omaha_query_params_delegate.h"
+#include "components/omaha_client/omaha_query_params_delegate.h"
 
 namespace extensions {
 
 class ShellOmahaQueryParamsDelegate
-    : public omaha_query_params::OmahaQueryParamsDelegate {
+    : public omaha_client::OmahaQueryParamsDelegate {
  public:
   ShellOmahaQueryParamsDelegate();
   ~ShellOmahaQueryParamsDelegate() override;

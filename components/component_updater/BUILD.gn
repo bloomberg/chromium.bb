@@ -43,7 +43,7 @@ source_set("component_updater") {
   deps = [
     "//base",
     "//components/crx_file",
-    "//components/omaha_query_params",
+    "//components/omaha_client",
     "//courgette:courgette_lib",
     "//crypto",
     "//third_party/libxml",

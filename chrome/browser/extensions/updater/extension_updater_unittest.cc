@@ -36,7 +36,7 @@
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -76,7 +76,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 using testing::DoAll;
 using testing::Invoke;
 using testing::InvokeWithoutArgs;

@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/strings/stringprintf.h"
-#include "components/omaha_query_params/omaha_query_params.h"
-#include "components/omaha_query_params/omaha_query_params_delegate.h"
+#include "components/omaha_client/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
 
-namespace omaha_query_params {
+namespace omaha_client {
 
 namespace {
 
@@ -52,4 +52,4 @@ TEST(OmahaQueryParamsTest, GetParams) {
   TestParams(OmahaQueryParams::CHROME, true);
 }
 
-}  // namespace omaha_query_params
+}  // namespace omaha_client

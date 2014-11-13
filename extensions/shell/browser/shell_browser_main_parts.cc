@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/context_factory.h"
@@ -147,7 +147,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 
   omaha_query_params_delegate_.reset(new ShellOmahaQueryParamsDelegate);
-  omaha_query_params::OmahaQueryParams::SetDelegate(
+  omaha_client::OmahaQueryParams::SetDelegate(
       omaha_query_params_delegate_.get());
 
   // Create our custom ExtensionSystem first because other

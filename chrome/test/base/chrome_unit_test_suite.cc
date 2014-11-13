@@ -8,13 +8,13 @@
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/utility/chrome_content_utility_client.h"
 #include "components/component_updater/component_updater_paths.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/cld_data_source.h"
 #include "content/public/common/content_paths.h"
@@ -149,7 +149,7 @@ void ChromeUnitTestSuite::InitializeProviders() {
 
   gfx::GLSurface::InitializeOneOffForTests();
 
-  omaha_query_params::OmahaQueryParams::SetDelegate(
+  omaha_client::OmahaQueryParams::SetDelegate(
       ChromeOmahaQueryParamsDelegate::GetInstance());
 #endif
 }

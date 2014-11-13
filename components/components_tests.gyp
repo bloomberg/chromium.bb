@@ -165,7 +165,7 @@
             'metrics/profiler/profiler_metrics_provider_unittest.cc',
             'navigation_interception/intercept_navigation_resource_throttle_unittest.cc',
             'network_time/network_time_tracker_unittest.cc',
-            'omaha_query_params/omaha_query_params_unittest.cc',
+            'omaha_client/omaha_query_params_unittest.cc',
             'omnibox/answers_cache_unittest.cc',
             'omnibox/base_search_provider_unittest.cc',
             'omnibox/autocomplete_input_unittest.cc',
@@ -400,8 +400,8 @@
             # Dependencies of network_time
             'components.gyp:network_time',
 
-            # Dependencies of omaha_query_params
-            'components.gyp:omaha_query_params',
+            # Dependencies of omaha_client
+            'components.gyp:omaha_client',
 
             # Dependencies of omnibox
             'components.gyp:omnibox',

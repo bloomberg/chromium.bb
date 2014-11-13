@@ -6,14 +6,14 @@
 
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/webstore_installer.h"
-#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
 #include "components/crx_file/id_util.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "net/base/escape.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPrintf;
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 namespace extensions {
 

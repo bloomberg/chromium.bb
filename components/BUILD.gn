@@ -56,7 +56,7 @@ group("all_components") {
     "//components/navigation_interception",
     "//components/navigation_metrics",
     "//components/network_time",
-    "//components/omaha_query_params",
+    "//components/omaha_client",
     "//components/omnibox",
     "//components/onc",
     "//components/os_crypt",

@@ -51,7 +51,7 @@ static_library("ui") {
     "//components/dom_distiller/webui",
     "//components/feedback/proto",
     "//components/invalidation",
-    "//components/omaha_query_params",
+    "//components/omaha_client",
     "//components/onc",
     "//components/password_manager/core/browser",
     "//components/resources",

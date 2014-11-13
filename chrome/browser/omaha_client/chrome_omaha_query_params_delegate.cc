@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/omaha_query_params/chrome_omaha_query_params_delegate.h"
+#include "chrome/browser/omaha_client/chrome_omaha_query_params_delegate.h"
 
 #include "base/lazy_instance.h"
 #include "base/strings/stringprintf.h"

@@ -27,8 +27,7 @@ namespace {
 using FakeResponse = std::pair<std::string, net::HttpStatusCode>;
 
 // TODO(rockot): In general there's enough mock-Omaha-noise that this might be
-// better placed into some test library code in //components/omaha_client (which
-// would be renamed from omaha_query_params).
+// better placed into some test library code in //components/omaha_client.
 FakeResponse CreateFakeOmahaResponse(const std::string& id, size_t crx_length) {
   std::string response_text = base::StringPrintf(
       "<gupdate xmlns=\"http://www.google.com/update2/response\" "

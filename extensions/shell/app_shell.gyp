@@ -14,7 +14,7 @@
         'app_shell_version_header',
         '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_prefs_test_support',
-        '<(DEPTH)/components/components.gyp:omaha_query_params',
+        '<(DEPTH)/components/components.gyp:omaha_client',
         '<(DEPTH)/components/components.gyp:pref_registry',
         '<(DEPTH)/components/components.gyp:user_prefs',
         '<(DEPTH)/components/components.gyp:web_cache_renderer',

@@ -19,7 +19,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/pref_names.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -191,7 +191,7 @@ void StartPageHandler::HandleInitialize(const base::ListValue* args) {
           base::Version(kOldHotwordExtensionVersionString)) <= 0) {
     web_ui()->CallJavascriptFunction(
         "appList.startPage.setNaclArch",
-        base::StringValue(omaha_query_params::OmahaQueryParams::GetNaclArch()));
+        base::StringValue(omaha_client::OmahaQueryParams::GetNaclArch()));
   }
 #endif
 

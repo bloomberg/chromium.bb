@@ -5,13 +5,13 @@
 #include "extensions/browser/updater/update_service.h"
 
 #include "base/message_loop/message_loop.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/update_service_factory.h"
 #include "extensions/common/extension_urls.h"
 
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 namespace extensions {
 

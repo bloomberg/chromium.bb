@@ -38,7 +38,7 @@
     'metrics.gypi',
     'navigation_metrics.gypi',
     'network_time.gypi',
-    'omaha_query_params.gypi',
+    'omaha_client.gypi',
     'onc.gypi',
     'os_crypt.gypi',
     'ownership.gypi',

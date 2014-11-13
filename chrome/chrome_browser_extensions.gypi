@@ -917,7 +917,7 @@
         'installer_util',
         'safe_browsing_proto',
         '../components/components.gyp:copresence',
-        '../components/components.gyp:omaha_query_params',
+        '../components/components.gyp:omaha_client',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:proximity_auth',
         '../components/components.gyp:url_matcher',

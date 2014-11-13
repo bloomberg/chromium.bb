@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
-#include "components/omaha_query_params/omaha_query_params_delegate.h"
+#include "components/omaha_client/omaha_query_params_delegate.h"
 
-namespace omaha_query_params {
+namespace omaha_client {
 
 namespace {
 
@@ -131,4 +131,4 @@ void OmahaQueryParams::SetDelegate(OmahaQueryParamsDelegate* delegate) {
   g_delegate = delegate;
 }
 
-}  // namespace omaha_query_params
+}  // namespace omaha_client

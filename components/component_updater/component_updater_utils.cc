@@ -19,13 +19,13 @@
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/crx_update_item.h"
 #include "components/crx_file/id_util.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 namespace component_updater {
 

@@ -22,7 +22,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -44,7 +44,7 @@ using base::TimeDelta;
 using content::BrowserThread;
 using extensions::Extension;
 using extensions::ExtensionSet;
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 typedef extensions::ExtensionDownloaderDelegate::Error Error;
 typedef extensions::ExtensionDownloaderDelegate::PingResult PingResult;

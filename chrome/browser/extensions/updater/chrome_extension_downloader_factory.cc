@@ -11,14 +11,14 @@
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "components/omaha_query_params/omaha_query_params.h"
+#include "components/omaha_client/omaha_query_params.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "google_apis/gaia/identity_provider.h"
 
 using extensions::ExtensionDownloader;
 using extensions::ExtensionDownloaderDelegate;
-using omaha_query_params::OmahaQueryParams;
+using omaha_client::OmahaQueryParams;
 
 scoped_ptr<ExtensionDownloader>
 ChromeExtensionDownloaderFactory::CreateForRequestContext(

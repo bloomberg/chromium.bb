@@ -17,7 +17,7 @@
         '../net/net.gyp:net',
         '../ui/base/ui_base.gyp:ui_base',
         'crx_file',
-        'omaha_query_params',
+        'omaha_client',
       ],
       'include_dirs': [
         '..',

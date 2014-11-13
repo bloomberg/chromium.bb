@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_DELEGATE_H_
-#define COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#ifndef COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#define COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 
-namespace omaha_query_params {
+namespace omaha_client {
 
 // Embedders can specify an OmahaQueryParamsDelegate to provide additional
 // custom parameters. If not specified (Set is never called), no additional
@@ -27,6 +27,6 @@ class OmahaQueryParamsDelegate {
   DISALLOW_COPY_AND_ASSIGN(OmahaQueryParamsDelegate);
 };
 
-}  // namespace omaha_query_params
+}  // namespace omaha_client
 
-#endif  // COMPONENTS_OMAHA_QUERY_PARAMS_OMAHA_QUERY_PARAMS_DELEGATE_H_
+#endif  // COMPONENTS_OMAHA_CLIENT_OMAHA_QUERY_PARAMS_DELEGATE_H_
