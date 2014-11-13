@@ -36,7 +36,7 @@ InspectorTest.timelinePropertyFormatters = {
 
 InspectorTest.switchTimelineToWaterfallMode = function()
 {
-    if (WebInspector.panels.timeline._flameChartToggleButton.toggled)
+    if (WebInspector.panels.timeline._flameChartToggleButton.toggled())
         WebInspector.panels.timeline._flameChartToggleButton.element.click();
 }
 

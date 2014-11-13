@@ -55,8 +55,8 @@ function test()
         var searchableView = WebInspector.panels.sources.sourcesView().searchableView();
         searchableView.showSearchField();
 
-        searchableView._caseSensitiveButton.toggled = searchConfig.caseSensitive;
-        searchableView._regexButton.toggled = searchConfig.isRegex;
+        searchableView._caseSensitiveButton.setToggled(searchConfig.caseSensitive);
+        searchableView._regexButton.setToggled(searchConfig.isRegex);
         searchableView._searchInputElement.value = searchConfig.query;
         searchableView._replaceCheckboxElement.checked = true;
         searchableView._updateSecondRowVisibility();
