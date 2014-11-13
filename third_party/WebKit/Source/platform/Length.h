@@ -144,6 +144,7 @@ public:
         return *this;
     }
 
+    // FIXME: Make this private (if possible) or at least rename it (http://crbug.com/432707).
     inline float value() const
     {
         return getFloatValue();

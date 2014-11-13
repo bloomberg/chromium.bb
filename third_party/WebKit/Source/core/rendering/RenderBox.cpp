@@ -2699,9 +2699,9 @@ static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRigh
             } else if (curr->isInline()) {
                 if (curr->isRelPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
-                        staticPosition += curr->style()->logicalLeft().value();
+                        staticPosition += valueForLength(curr->style()->logicalLeft(), curr->containingBlock()->availableWidth());
                     else
-                        staticPosition -= curr->style()->logicalRight().value();
+                        staticPosition -= valueForLength(curr->style()->logicalRight(), curr->containingBlock()->availableWidth());
                 }
             }
         }
@@ -2721,9 +2721,9 @@ static void computeInlineStaticDistance(Length& logicalLeft, Length& logicalRigh
             } else if (curr->isInline()) {
                 if (curr->isRelPositioned()) {
                     if (!curr->style()->logicalLeft().isAuto())
-                        staticPosition -= curr->style()->logicalLeft().value();
+                        staticPosition -= valueForLength(curr->style()->logicalLeft(), curr->containingBlock()->availableWidth());
                     else
-                        staticPosition += curr->style()->logicalRight().value();
+                        staticPosition += valueForLength(curr->style()->logicalRight(), curr->containingBlock()->availableWidth());
                 }
             }
             if (curr == containerBlock)
