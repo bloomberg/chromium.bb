@@ -835,7 +835,8 @@ class NSSInitSingleton {
       base::CPU cpu;
 
       if (cpu.has_avx_hardware() && !cpu.has_avx()) {
-        base::Environment::Create()->SetVar("NSS_DISABLE_HW_AES", "1");
+        scoped_ptr<base::Environment> env(base::Environment::Create());
+        env->SetVar("NSS_DISABLE_HW_AES", "1");
       }
     }
   }
