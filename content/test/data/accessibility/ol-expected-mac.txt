@@ -1,21 +1,21 @@
 AXWebArea
     AXList
-        AXGroup
+        AXGroup AXTitle='Chrome'
             AXListMarker AXValue='1'
             AXStaticText AXValue='Chrome'
-        AXGroup
+        AXGroup AXTitle='Safari'
             AXListMarker AXValue='2'
             AXStaticText AXValue='Safari'
-        AXGroup
+        AXGroup AXTitle='IE'
             AXListMarker AXValue='3'
             AXStaticText AXValue='IE'
     AXList
-        AXGroup
+        AXGroup AXTitle='Android'
             AXListMarker AXValue='10'
             AXStaticText AXValue='Android'
-        AXGroup
+        AXGroup AXTitle='Mac'
             AXListMarker AXValue='11'
             AXStaticText AXValue='Mac'
-        AXGroup
+        AXGroup AXTitle='Windows'
             AXListMarker AXValue='12'
             AXStaticText AXValue='Windows'

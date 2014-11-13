@@ -441,10 +441,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaLevel) {
   RunTest(FILE_PATH_LITERAL("aria-level.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityAriaList) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaList) {
   RunTest(FILE_PATH_LITERAL("aria-list.html"));
 }
 
@@ -700,10 +697,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityDt) {
   RunTest(FILE_PATH_LITERAL("dt.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityContenteditableDescendants) {
+                       AccessibilityContenteditableDescendants) {
   RunTest(FILE_PATH_LITERAL("contenteditable-descendants.html"));
 }
 
@@ -907,16 +902,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityLink) {
   RunTest(FILE_PATH_LITERAL("link.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityList) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityList) {
   RunTest(FILE_PATH_LITERAL("list.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityListMarkers) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunTest(FILE_PATH_LITERAL("list-markers.html"));
 }
 
@@ -978,9 +968,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityNoscript) {
   RunTest(FILE_PATH_LITERAL("noscript.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityOl) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityOl) {
   RunTest(FILE_PATH_LITERAL("ol.html"));
 }
 
@@ -1095,9 +1083,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityTransition) {
   RunTest(FILE_PATH_LITERAL("transition.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/696953002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityUl) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityUl) {
   RunTest(FILE_PATH_LITERAL("ul.html"));
 }
 

@@ -1,1 +1,22 @@
-#<skip>
+AXWebArea
+    AXGroup
+        AXGroup
+            AXStaticText AXValue='Contentditable with '
+            AXLink AXTitle='link'
+                AXStaticText AXValue='link'
+            AXStaticText AXValue=' and '
+            AXImage
+            AXStaticText AXValue=' and '
+            AXButton AXTitle='button'
+        AXTable
+            AXRow
+                AXCell
+                    AXStaticText AXValue='Always expose editable tables as tables'
+            AXColumn
+            AXGroup
+        AXList
+            AXGroup AXTitle='Editable list item'
+                AXListMarker AXValue='1'
+                AXStaticText AXValue='Editable list item'
+    AXGroup
+        AXStaticText AXValue='Keep the role, just change the state'

@@ -1,16 +1,16 @@
 AXWebArea
     AXList AXSubrole=AXContentList
-        AXGroup
+        AXGroup AXTitle='First item properly groups itself despite bolded text.'
             AXListMarker AXValue='•'
             AXStaticText AXValue='First item properly groups itself despite '
             AXStaticText AXValue='bolded'
             AXStaticText AXValue=' text.'
-        AXGroup
+        AXGroup AXTitle='This should also be seen as a group.'
             AXListMarker AXValue='•'
             AXStaticText AXValue='This should also be '
             AXStaticText AXValue='seen'
             AXStaticText AXValue=' as a group.'
-        AXGroup
+        AXGroup AXTitle='Some more text.'
             AXListMarker AXValue='•'
             AXStaticText AXValue='Some '
             AXStaticText AXValue='more'

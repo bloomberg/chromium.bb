@@ -1,11 +1,11 @@
 AXWebArea
     AXList AXSubrole=AXContentList
-        AXGroup
+        AXGroup AXTitle='Item 1'
             AXListMarker AXValue='•'
             AXStaticText AXValue='Item 1'
-        AXGroup
+        AXGroup AXTitle='Item 2'
             AXListMarker AXValue='•'
             AXStaticText AXValue='Item 2'
-        AXGroup
+        AXGroup AXTitle='Item 3'
             AXListMarker AXValue='•'
             AXStaticText AXValue='Item 3'
