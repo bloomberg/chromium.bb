@@ -235,6 +235,12 @@ class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase):
     self.assertRaises(commands.BoardNotAvailable, commands.RunHWTestSuite,
                       self._build, self._suite, self._board, debug=False)
 
+  def testRunHWTestTestWarning(self):
+    """Test RunHWTestSuite when WARNING is returned."""
+    self.rc.SetDefaultCmdResult(returncode=2)
+    self.assertRaises(commands.TestWarning, commands.RunHWTestSuite,
+                      self._build, self._suite, self._board, debug=False)
+
 
 class CBuildBotTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   """Test general cbuildbot command methods."""

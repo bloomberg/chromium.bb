@@ -253,7 +253,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('payloads_generated', pretty_name='payloads'):
-      cros_build_lib.PrintBuildbotStepText('missing payloads')
+      cros_build_lib.PrintBuildbotStepWarnings('missing payloads')
       cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
                              'failed. See UploadTestArtifacts for details.')
       return
@@ -268,15 +268,15 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
     commands.RunHWTestSuite(build,
                             self.suite_config.suite,
                             self._current_board,
-                            self.suite_config.pool,
-                            self.suite_config.num,
-                            self.suite_config.file_bugs,
-                            self.wait_for_results,
-                            self.suite_config.priority,
-                            self.suite_config.timeout_mins,
-                            self.suite_config.retry,
-                            self.suite_config.minimum_duts,
-                            debug)
+                            pool=self.suite_config.pool,
+                            num=self.suite_config.num,
+                            file_bugs=self.suite_config.file_bugs,
+                            wait_for_results=self.wait_for_results,
+                            priority=self.suite_config.priority,
+                            timeout_mins=self.suite_config.timeout_mins,
+                            retry=self.suite_config.retry,
+                            minimum_duts=self.suite_config.minimum_duts,
+                            debug=debug)
 
 
 class AUTestStage(HWTestStage):
@@ -287,7 +287,7 @@ class AUTestStage(HWTestStage):
     # Wait for UploadHWTestArtifacts to generate the payloads.
     if not self.GetParallel('delta_payloads_generated',
                             pretty_name='delta payloads'):
-      cros_build_lib.PrintBuildbotStepText('missing delta payloads')
+      cros_build_lib.PrintBuildbotStepWarnings('missing delta payloads')
       cros_build_lib.Warning('Cannot run HWTest because UploadTestArtifacts '
                              'failed. See UploadTestArtifacts for details.')
       return
