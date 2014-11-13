@@ -70,3 +70,8 @@ IN_PROC_BROWSER_TEST_F(FileManagerJsTest, VolumeManagerTest) {
   RunTest(base::FilePath(
       FILE_PATH_LITERAL("volume_manager_unittest.html")));
 }
+
+IN_PROC_BROWSER_TEST_F(FileManagerJsTest, DirectoryTreeTest) {
+  RunTest(base::FilePath(
+      FILE_PATH_LITERAL("directory_tree_unittest.html")));
+}

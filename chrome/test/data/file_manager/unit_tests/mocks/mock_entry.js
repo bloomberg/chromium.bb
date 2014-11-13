@@ -10,7 +10,7 @@
  */
 function joinPath(a, b) {
   return a.replace(/\/+$/, '') + '/' + b.replace(/^\/+/, '');
-};
+}
 
 /**
  * Mock class for DOMFileSystem.
@@ -23,7 +23,7 @@ function MockFileSystem(volumeId, rootURL) {
   this.name = volumeId;
   this.entries = {};
   this.rootURL = rootURL;
-};
+}
 
 MockFileSystem.prototype = {
   get root() { return this.entries['/']; }
@@ -33,7 +33,7 @@ MockFileSystem.prototype = {
  * Base class of mock entries.
  *
  * @param {TestFileSystem} filesystem File system where the entry is localed.
- * @param {string} fullpath Full path of the entry.
+ * @param {string} fullPath Full path of the entry.
  * @constructor
  */
 function MockEntry(filesystem, fullPath) {
@@ -217,10 +217,11 @@ MockDirectoryEntry.prototype.getDirectory =
 
 /**
  * Creates a MockDirectoryReader for the entry.
+ * @return {DirectoryReader} A directory reader.
  */
 MockDirectoryEntry.prototype.createReader = function() {
   return new MockDirectoryReader();
-}
+};
 
 /**
  * Mock class for DirectoryReader.
@@ -229,8 +230,11 @@ function MockDirectoryReader() {}
 
 /**
  * Reads entries.
- * Current implementation just calls success callback.
+ * Current implementation just calls success callback with an empty list.
+ *
+ * @param {function(Array)} success Success callback.
+ * @param {function} error Error callback.
  */
 MockDirectoryReader.prototype.readEntries = function(success, error) {
-  success();
-}
+  success([]);
+};

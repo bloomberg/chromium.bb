@@ -10,9 +10,11 @@ function MockVolumeManager() {
   this.volumeInfoList = new cr.ui.ArrayDataModel([]);
 
   this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.DRIVE, 'drive'));
+      VolumeManagerCommon.VolumeType.DRIVE, 'drive',
+      str('DRIVE_DIRECTORY_LABEL')));
   this.volumeInfoList.push(MockVolumeManager.createMockVolumeInfo(
-      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloads'));
+      VolumeManagerCommon.VolumeType.DOWNLOADS, 'downloads',
+      str('DOWNLOADS_DIRECTORY_LABEL')));
 }
 
 /**
@@ -30,14 +32,38 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
 };
 
 /**
+ * Obtains location information from an entry.
+ * Current implementation can handle only fake entries.
+ *
+ * @param {Entry} entry A fake entry.
+ * @return {EntryLocation} Location information.
+ */
+MockVolumeManager.prototype.getLocationInfo = function(entry) {
+  if (util.isFakeEntry(entry)) {
+    return new EntryLocation(this.volumeInfoList.item(0), entry.rootType, true,
+        true);
+  }
+
+  if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
+    var volumeInfo = this.volumeInfoList.item(0);
+    var isRootEntry = entry.fullPath === '/root';
+    return new EntryLocation(volumeInfo, VolumeManagerCommon.RootType.DRIVE,
+        isRootEntry, true);
+  }
+
+  throw new Error('Not implemented exception.');
+};
+
+/**
  * Utility function to create a mock VolumeInfo.
  * @param {VolumeType} type Volume type.
- * @param {string} path Volume path.
+ * @param {string} volumeId Volume id.
+ * @param {string} label Label.
  * @return {VolumeInfo} Created mock VolumeInfo.
  */
-MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
+MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
-  fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '/');
+  fileSystem.entries['/'] = new MockDirectoryEntry(fileSystem, '');
 
   var volumeInfo = new VolumeInfo(
       type,
@@ -48,7 +74,7 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId) {
       '',     // devicePath
       false,  // isReadonly
       {isCurrentProfile: true, displayName: ''},  // profile
-      '');    // label
+      label);    // label
 
   return volumeInfo;
 };
