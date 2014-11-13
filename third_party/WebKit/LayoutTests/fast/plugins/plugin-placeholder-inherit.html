@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+
+<!-- These properties should not propagate into the placeholder. -->
+<style>
+body {
+    color: red;
+    text-decoration: underline;
+    text-transform: uppercase;
+}
+</style>
+
+<!-- The message inserted below should be shown with some suitable style. -->
+<embed type="application/x-fake-plugin"></embed>
+
+<script>
+var plugin = document.querySelector("embed");
+internals.forcePluginPlaceholder(plugin, { message: "This test fails if this text is red, underlined, or uppercase." });
+</script>
