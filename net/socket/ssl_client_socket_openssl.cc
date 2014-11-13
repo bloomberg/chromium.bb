@@ -1611,6 +1611,8 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
   DVLOG(3) << "OpenSSL ClientCertRequestCallback called";
   DCHECK(ssl == ssl_);
 
+  net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_REQUESTED);
+
   // Clear any currently configured certificates.
   SSL_certs_clear(ssl_);
 
@@ -1688,11 +1690,17 @@ int SSLClientSocketOpenSSL::ClientCertRequestCallback(SSL* ssl) {
       LOG(WARNING) << "Failed to set client certificate";
       return -1;
     }
+
+    int cert_count = 1 + sk_X509_num(chain.get());
+    net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
+                      NetLog::IntegerCallback("cert_count", cert_count));
     return 1;
   }
 #endif  // defined(OS_IOS)
 
   // Send no client certificate.
+  net_log_.AddEvent(NetLog::TYPE_SSL_CLIENT_CERT_PROVIDED,
+                    NetLog::IntegerCallback("cert_count", 0));
   return 1;
 }
 
