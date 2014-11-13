@@ -98,12 +98,11 @@ class OmniboxFieldTrial {
   // This method may be called multiple times.
   static void ActivateDynamicTrials();
 
+  // ---------------------------------------------------------
+  // For any experiment that's part of the bundled omnibox field trial.
+
   // Returns a bitmap containing AutocompleteProvider::Type values
   // that should be disabled in AutocompleteController.
-  // This method simply goes over all autocomplete dynamic field trial groups
-  // and looks for group names like "ProvidersDisabled_NNN" where NNN is
-  // an integer corresponding to a bitmap mask.  All extracted bitmaps
-  // are OR-ed together and returned as the final result.
   static int GetDisabledProviderTypes();
 
   // Returns whether the user is in any dynamic field trial where the
@@ -300,6 +299,7 @@ class OmniboxFieldTrial {
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
+  static const char kDisableProvidersRule[];
   static const char kShortcutsScoringMaxRelevanceRule[];
   static const char kSearchHistoryRule[];
   static const char kDemoteByTypeRule[];

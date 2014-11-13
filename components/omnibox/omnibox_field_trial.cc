@@ -114,26 +114,14 @@ void OmniboxFieldTrial::ActivateDynamicTrials() {
 }
 
 int OmniboxFieldTrial::GetDisabledProviderTypes() {
-  // Make sure that Autocomplete dynamic field trials are activated.  It's OK to
-  // call this method multiple times.
-  ActivateDynamicTrials();
-
-  // Look for group names in form of "DisabledProviders_<mask>" where "mask"
-  // is a bitmap of disabled provider types (AutocompleteProvider::Type).
-  int provider_types = 0;
-  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
-    std::string group_name = base::FieldTrialList::FindFullName(
-        DynamicFieldTrialName(i));
-    const char kDisabledProviders[] = "DisabledProviders_";
-    if (!StartsWithASCII(group_name, kDisabledProviders, true))
-      continue;
-    int types = 0;
-    if (!base::StringToInt(base::StringPiece(
-            group_name.substr(strlen(kDisabledProviders))), &types))
-      continue;
-    provider_types |= types;
+  const std::string& types_string = variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      kDisableProvidersRule);
+  int types = 0;
+  if (types_string.empty() || !base::StringToInt(types_string, &types)) {
+    return 0;
   }
-  return provider_types;
+  return types;
 }
 
 void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
@@ -367,6 +355,7 @@ void OmniboxFieldTrial::GetSuggestPollingStrategy(bool* from_last_keystroke,
 
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
+const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
 const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
     "ShortcutsScoringMaxRelevance";
 const char OmniboxFieldTrial::kSearchHistoryRule[] = "SearchHistory";

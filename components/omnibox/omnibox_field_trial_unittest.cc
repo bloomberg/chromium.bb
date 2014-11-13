@@ -138,32 +138,56 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
   EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
 
   {
-    SCOPED_TRACE("Invalid groups");
-    CreateTestTrial("AutocompleteDynamicTrial_0", "DisabledProviders_");
-    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_1", "DisabledProviders_XXX");
-    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
-    ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_1", "DisabledProviders_12abc");
+    SCOPED_TRACE("Outside the bundled field trial.");
+    CreateTestTrial("AutocompleteDynamicTrial_0", "DisabledProviders_123");
     EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 
   {
-    SCOPED_TRACE("Valid group name, unsupported trial name.");
+    SCOPED_TRACE("Valid field trial, missing param.");
     ResetFieldTrialList();
-    CreateTestTrial("UnsupportedTrialName", "DisabledProviders_20");
+    std::map<std::string, std::string> params;
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
     EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 
   {
-    SCOPED_TRACE("Valid field and group name.");
+    SCOPED_TRACE("Valid field trial, empty param value.");
     ResetFieldTrialList();
-    CreateTestTrial("AutocompleteDynamicTrial_2", "DisabledProviders_3");
-    EXPECT_EQ(3, OmniboxFieldTrial::GetDisabledProviderTypes());
-    // Two groups should be OR-ed together.
-    CreateTestTrial("AutocompleteDynamicTrial_3", "DisabledProviders_6");
-    EXPECT_EQ(7, OmniboxFieldTrial::GetDisabledProviderTypes());
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDisableProvidersRule)] = "";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
+  }
+
+  {
+    SCOPED_TRACE("Valid field trial, invalid param value.");
+    ResetFieldTrialList();
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDisableProvidersRule)] = "aaa";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
+  }
+
+  {
+    SCOPED_TRACE("Valid field trial and param.");
+    ResetFieldTrialList();
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDisableProvidersRule)] = "12321";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+    base::FieldTrialList::CreateFieldTrial(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+    EXPECT_EQ(12321, OmniboxFieldTrial::GetDisabledProviderTypes());
   }
 }
 
