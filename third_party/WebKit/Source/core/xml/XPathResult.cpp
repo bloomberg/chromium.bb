@@ -173,7 +173,7 @@ bool XPathResult::invalidIteratorState() const
     return m_document->domTreeVersion() != m_domTreeVersion;
 }
 
-unsigned long XPathResult::snapshotLength(ExceptionState& exceptionState) const
+unsigned XPathResult::snapshotLength(ExceptionState& exceptionState) const
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
         exceptionState.throwTypeError("The result type is not a snapshot.");
@@ -205,7 +205,7 @@ Node* XPathResult::iterateNext(ExceptionState& exceptionState)
     return node;
 }
 
-Node* XPathResult::snapshotItem(unsigned long index, ExceptionState& exceptionState)
+Node* XPathResult::snapshotItem(unsigned index, ExceptionState& exceptionState)
 {
     if (resultType() != UNORDERED_NODE_SNAPSHOT_TYPE && resultType() != ORDERED_NODE_SNAPSHOT_TYPE) {
         exceptionState.throwTypeError("The result type is not a snapshot.");

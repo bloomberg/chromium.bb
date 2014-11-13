@@ -75,9 +75,9 @@ public:
     Node* singleNodeValue(ExceptionState&) const;
 
     bool invalidIteratorState() const;
-    unsigned long snapshotLength(ExceptionState&) const;
+    unsigned snapshotLength(ExceptionState&) const;
     Node* iterateNext(ExceptionState&);
-    Node* snapshotItem(unsigned long index, ExceptionState&);
+    Node* snapshotItem(unsigned index, ExceptionState&);
 
     const XPath::Value& value() const { return m_value; }
 
