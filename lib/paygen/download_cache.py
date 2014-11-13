@@ -344,7 +344,7 @@ class DownloadCache(object):
       the underlying download mechanism.
     """
     with self.GetFileObject(uri) as src:
-      with open(filepath, 'wb+') as dest:
+      with open(filepath, 'w+b') as dest:
         shutil.copyfileobj(src, dest)
 
   def GetFileInTempFile(self, uri):

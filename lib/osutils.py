@@ -995,7 +995,7 @@ def IterateMountPoints(proc_file='/proc/mounts'):
   Returns:
     A generator that yields MountInfo objects.
   """
-  with open(proc_file, 'rt') as f:
+  with open(proc_file) as f:
     for line in f:
       # Escape any \xxx to a char.
       source, destination, filesystem, options, _, _ = [
