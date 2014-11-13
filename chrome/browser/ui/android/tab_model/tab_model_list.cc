@@ -52,8 +52,7 @@ TabModel* TabModelList::GetTabModelForWebContents(
       i != TabModelList::end(); ++i) {
     TabModel* model = *i;
     for (int index = 0; index < model->GetTabCount(); index++) {
-      TabAndroid* tab = model->GetTabAt(index);
-      if (web_contents == tab->web_contents())
+      if (web_contents == model->GetWebContentsAt(index))
         return model;
     }
   }

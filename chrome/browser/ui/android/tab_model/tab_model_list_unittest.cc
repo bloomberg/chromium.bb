@@ -1,0 +1,56 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/web_contents.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+class TabModelListTest : public ChromeRenderViewHostTestHarness {};
+}  // namespace
+
+class TestTabModel : public TabModel {
+ public:
+  explicit TestTabModel(Profile* profile) : TabModel(profile), tab_count_(0) {}
+
+  virtual int GetTabCount() const override { return tab_count_; }
+  virtual int GetActiveIndex() const override { return 0; }
+  virtual content::WebContents* GetWebContentsAt(int index) const override {
+    return nullptr;
+  }
+  virtual void CreateTab(content::WebContents* web_contents,
+                         int parent_tab_id) override {}
+  virtual content::WebContents* CreateNewTabForDevTools(
+      const GURL& url) override {
+    return nullptr;
+  }
+  virtual bool IsSessionRestoreInProgress() const override { return false; }
+  virtual TabAndroid* GetTabAt(int index) const override { return nullptr; }
+  virtual void SetActiveIndex(int index) override {}
+  virtual void CloseTabAt(int index) override {}
+
+  // A fake value for the current number of tabs.
+  int tab_count_;
+};
+
+// Regression test for http://crbug.com/432685.
+TEST_F(TabModelListTest, TestGetTabModelForWebContents) {
+  TestTabModel tab_model(profile());
+  TabModelList::AddTabModel(&tab_model);
+
+  scoped_ptr<content::WebContents> contents(CreateTestWebContents());
+
+  // Should not crash when there are no tabs.
+  EXPECT_EQ(NULL, TabModelList::GetTabModelForWebContents(contents.get()));
+
+  // Should not crash when there is an uninitialized tab, i.e. when
+  // TabModel::GetTabAt returns NULL.
+  tab_model.tab_count_ = 1;
+  EXPECT_EQ(NULL, TabModelList::GetTabModelForWebContents(contents.get()));
+
+  TabModelList::RemoveTabModel(&tab_model);
+}

@@ -874,6 +874,7 @@
       'browser/thumbnails/thumbnail_service_unittest.cc',
       'browser/translate/translate_manager_render_view_host_unittest.cc',
       'browser/translate/translate_service_unittest.cc',
+      'browser/ui/android/tab_model/tab_model_list_unittest.cc',
       'browser/ui/android/tab_model/tab_model_unittest.cc',
       'browser/ui/app_list/app_list_positioner_unittest.cc',
       'browser/ui/app_list/app_list_service_mac_unittest.mm',
