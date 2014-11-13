@@ -264,7 +264,7 @@ class GitPushTest(cros_test_lib.MockTestCase):
        'error: failed to push some refs to \'https://localhost/repo.git\'\n'),
 
       # Hook error when pushing branch.
-      ('remote: Processing changes: (\)To https://localhost/repo.git\n'
+      ('remote: Processing changes: (\\)To https://localhost/repo.git\n'
        '! [remote rejected] temp_auto_checkin_branch -> '
        'master (error in hook)\n'
        'error: failed to push some refs to \'https://localhost/repo.git\'\n'),

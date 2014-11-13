@@ -91,7 +91,7 @@ def CheckLabStatus(board=None):
   # Lab is 'status' [boards not to be ran] (comment). Example:
   # Lab is Open [stumpy, kiev, x86-alex] (power_resume rtc causing duts to go
   # down)
-  boards_are_disabled = re.search('\[(.*)\]', lab_status['message'])
+  boards_are_disabled = re.search(r'\[(.*)\]', lab_status['message'])
   if board and boards_are_disabled:
     if board in boards_are_disabled.group(1):
       raise BoardIsDisabledException('Chromium OS Lab is '

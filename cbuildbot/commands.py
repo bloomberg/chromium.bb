@@ -1585,7 +1585,7 @@ def BuildAUTestTarball(buildroot, board, work_dir, version, archive_url):
   os.makedirs(autotest_dir)
 
   # Get basic version without R*.
-  basic_version = re.search('R[0-9]+-([0-9][\w.]+)', version).group(1)
+  basic_version = re.search(r'R[0-9]+-([0-9][\w.]+)', version).group(1)
 
   # Pass in the python paths to the libs full release test needs.
   env_dict = dict(

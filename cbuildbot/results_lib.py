@@ -68,7 +68,7 @@ class _Results(object):
   SKIPPED = "Stage was skipped"
   NON_FAILURE_TYPES = (SUCCESS, FORGIVEN, SKIPPED)
 
-  SPLIT_TOKEN = "\_O_/"
+  SPLIT_TOKEN = r'\_O_/'
 
   def __init__(self):
     # List of results for all stages that's built up as we run. Members are of

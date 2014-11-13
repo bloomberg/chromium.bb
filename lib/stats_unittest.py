@@ -150,7 +150,7 @@ class UploadTest(cros_test_lib.MockLoggingTestCase):
       # Make sure no error messages are output in the normal case.
       self.AssertLogsContain(logs, stats.StatsUploader.ENVIRONMENT_ERROR,
                              inverted=True)
-      timeout_regex = stats.StatsUploader.TIMEOUT_ERROR % '\d+'
+      timeout_regex = stats.StatsUploader.TIMEOUT_ERROR % r'\d+'
       self.AssertLogsMatch(logs, timeout_regex, inverted=True)
 
   def CheckSuppressException(self, e, msg):

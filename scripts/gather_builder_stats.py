@@ -968,12 +968,12 @@ class CLStats(StatsManager):
     # followed by optional slash and optional comma.
     general_regex = r'^.*(%s).*?([0-9]+)/?,?$'
 
-    crbug = general_regex % 'crbug.com|code.google.com'
+    crbug = general_regex % r'crbug.com|code.google.com'
     internal_review = (general_regex %
-        'chrome-internal-review.googlesource.com|crosreview.com/i')
+        r'chrome-internal-review.googlesource.com|crosreview.com/i')
     external_review = (general_regex %
-        'crosreview.com|chromium-review.googlesource.com')
-    guts = (general_regex % 't/|gutsv\d.corp.google.com/#ticket/')
+        r'crosreview.com|chromium-review.googlesource.com')
+    guts = (general_regex % r't/|gutsv\d.corp.google.com/#ticket/')
 
     # Buganizer regex is different, as buganizer urls do not end with the bug
     # number.

@@ -1265,7 +1265,7 @@ class GerritTestCase(MockTempDirTestCase):
       if match:
         sha1 = match.group(1)
         continue
-      match = re.match('^\s+Change-Id:\s*(\S+)$', line)
+      match = re.match(r'^\s+Change-Id:\s*(\S+)$', line)
       if match:
         change_id = match.group(1)
         continue

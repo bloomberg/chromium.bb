@@ -159,7 +159,7 @@ def SetupBuildbotEnvironment():
               os.path.join(bot_constants.BUILDBOT_DIR, 'build', 'site-config')])
   # Update the environment variable.
   depot_tools_path = os.path.join(bot_constants.BUILDBOT_DIR, 'depot_tools')
-  RunCommand(['bash', '-c', 'echo export PATH=\$PATH:%s >> ~/.bashrc'
+  RunCommand(['bash', '-c', r'echo export PATH=\$PATH:%s >> ~/.bashrc'
               % depot_tools_path])
   # host_file_path = os.path.join(BUILDBOT_DIR, 'build/slave/info/host')
   # run('hostname -s > %s' % host_file_path)

@@ -290,7 +290,7 @@ class TableTest(cros_test_lib.TestCase):
              'a,"""b, c"", d",e': ['a', '"b, c", d', 'e'],
 
              # Following not real Google Spreadsheet cases.
-             'a,b\,c,d':          ['a', 'b,c', 'd'],
+             r'a,b\,c,d':         ['a', 'b,c', 'd'],
              'a,",c':             ['a', '",c'],
              'a,"",c':            ['a', '', 'c'],
              }

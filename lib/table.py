@@ -29,7 +29,7 @@ class Table(object):
 
   @staticmethod
   def _SplitCSVLine(line):
-    '''Split a single CSV line into separate values.
+    r'''Split a single CSV line into separate values.
 
     Behavior illustrated by the following examples, with all but
     the last example taken from Google Docs spreadsheet behavior:

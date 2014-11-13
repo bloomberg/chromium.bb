@@ -555,9 +555,9 @@ class ChromeosReleases(object):
 
     # Handle FULL payload URIs.
     full_exp = (r'^gs://(?P<bucket>.*)/(?P<channel>.*)/(?P<board>.*)/'
-                 '(?P<version>.*)/payloads/chromeos_(?P<image_version>[^_]+)_'
-                 '(?P=board)_(?P<image_channel>[^_]+)_full_(?P<key>[^_]+)\.bin'
-                 '-[0-9A-Fa-f]+\.signed$')
+                r'(?P<version>.*)/payloads/chromeos_(?P<image_version>[^_]+)_'
+                r'(?P=board)_(?P<image_channel>[^_]+)_full_(?P<key>[^_]+)\.bin'
+                r'-[0-9A-Fa-f]+\.signed$')
 
     m = re.match(full_exp, payload_uri)
 
@@ -573,10 +573,10 @@ class ChromeosReleases(object):
 
     # Handle DELTA payload URIs.
     delta_exp = (r'^gs://(?P<bucket>.*)/(?P<channel>.*)/(?P<board>.*)/'
-                  '(?P<version>.*)/payloads/chromeos_(?P<src_version>[^_]+)-'
-                  '(?P<image_version>[^_]+)_(?P=board)_'
-                  '(?P<image_channel>[^_]+)_delta_(?P<key>[^_]+)\.bin'
-                  '-[0-9A-Fa-f]+\.signed$')
+                 r'(?P<version>.*)/payloads/chromeos_(?P<src_version>[^_]+)-'
+                 r'(?P<image_version>[^_]+)_(?P=board)_'
+                 r'(?P<image_channel>[^_]+)_delta_(?P<key>[^_]+)\.bin'
+                 r'-[0-9A-Fa-f]+\.signed$')
 
     m = re.match(delta_exp, payload_uri)
 

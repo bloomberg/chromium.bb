@@ -81,10 +81,10 @@ def BotifyInstance(instance, project, zone):
   # Set the credential files/directories to the correct mode.
   gcctx.SSH(
       instance,
-      cmd='sudo find %s -type d -exec chmod 700 {} \;' % dest_path)
+      cmd=r'sudo find %s -type d -exec chmod 700 {} \;' % dest_path)
   gcctx.SSH(
       instance,
-      cmd='sudo find %s -type f -exec chmod 600 {} \;' % dest_path)
+      cmd=r'sudo find %s -type f -exec chmod 600 {} \;' % dest_path)
 
   # Install git to clone chromite.
   base_dir = '/tmp'
