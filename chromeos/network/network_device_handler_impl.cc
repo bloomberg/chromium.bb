@@ -252,7 +252,8 @@ void CallPerformTDLSOperation(
 }  // namespace
 
 NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
-  network_state_handler_->RemoveObserver(this, FROM_HERE);
+  if (network_state_handler_)
+    network_state_handler_->RemoveObserver(this, FROM_HERE);
 }
 
 void NetworkDeviceHandlerImpl::GetDeviceProperties(

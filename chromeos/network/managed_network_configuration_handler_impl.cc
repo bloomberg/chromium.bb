@@ -648,7 +648,8 @@ ManagedNetworkConfigurationHandlerImpl::ManagedNetworkConfigurationHandlerImpl()
 
 ManagedNetworkConfigurationHandlerImpl::
     ~ManagedNetworkConfigurationHandlerImpl() {
-  network_profile_handler_->RemoveObserver(this);
+  if (network_profile_handler_)
+    network_profile_handler_->RemoveObserver(this);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::Init(

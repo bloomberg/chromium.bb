@@ -185,6 +185,8 @@ std::string LogEntry::GetHtmlText(bool show_desc) const {
 }
 
 void LogEntry::SendToVLogOrErrorLog() const {
+  if (log_level != LOG_LEVEL_ERROR && !VLOG_IS_ON(1))
+    return;
   const bool show_time = true;
   const bool show_file = true;
   const bool show_level = false;
