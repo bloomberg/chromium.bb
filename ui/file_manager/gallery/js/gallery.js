@@ -833,6 +833,10 @@ Gallery.prototype.onKeyDown_ = function(event) {
     case 'U+0044':  // 'd'
       this.delete_();
       break;
+
+    case 'U+001B':  // Escape
+      close();
+      break;
   }
 };
 
