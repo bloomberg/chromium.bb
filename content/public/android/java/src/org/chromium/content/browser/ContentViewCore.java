@@ -1315,11 +1315,26 @@ public class ContentViewCore
     private void hidePopupsAndClearSelection() {
         mUnselectAllOnActionModeDismiss = true;
         hidePopups();
+        // Clear the selection. The selection is cleared on destroying IME
+        // and also here since we may receive destroy first, for example
+        // when focus is lost in webview.
+        clearUserSelection();
     }
 
     private void hidePopupsAndPreserveSelection() {
         mUnselectAllOnActionModeDismiss = false;
         hidePopups();
+    }
+
+    private void clearUserSelection() {
+        if (isSelectionEditable()) {
+            if (mInputConnection != null) {
+                int selectionEnd = Selection.getSelectionEnd(mEditable);
+                mInputConnection.setSelection(selectionEnd, selectionEnd);
+            }
+        } else if (mImeAdapter != null) {
+            mImeAdapter.unselect();
+        }
     }
 
     private void hidePopups() {
@@ -1927,12 +1942,7 @@ public class ContentViewCore
                     mActionMode = null;
                     if (mUnselectAllOnActionModeDismiss) {
                         hideTextHandles();
-                        if (isSelectionEditable()) {
-                            int selectionEnd = Selection.getSelectionEnd(mEditable);
-                            mInputConnection.setSelection(selectionEnd, selectionEnd);
-                        } else {
-                            mImeAdapter.unselect();
-                        }
+                        clearUserSelection();
                     }
                     getContentViewClient().onContextualActionBarHidden();
                 }
