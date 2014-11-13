@@ -6,9 +6,9 @@ import shutil
 import tempfile
 
 from measurements import skpicture_printer
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import page_test_test_case
-from telemetry.unittest import test
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import page_test_test_case
+from telemetry.unittest_util import test
 
 
 class SkpicturePrinterUnitTest(page_test_test_case.PageTestTestCase):

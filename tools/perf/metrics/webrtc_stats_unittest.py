@@ -5,7 +5,7 @@
 import unittest
 
 from metrics import webrtc_stats
-from telemetry.unittest import simple_mock
+from telemetry.unittest_util import simple_mock
 
 
 SAMPLE_JSON = '''

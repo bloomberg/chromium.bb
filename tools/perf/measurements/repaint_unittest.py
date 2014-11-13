@@ -5,9 +5,9 @@
 from measurements import repaint
 from telemetry.core import wpr_modes
 from telemetry.page import page as page_module
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import page_test_test_case
-from telemetry.unittest import test
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import page_test_test_case
+from telemetry.unittest_util import test
 
 
 class TestRepaintPage(page_module.Page):

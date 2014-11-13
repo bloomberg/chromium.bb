@@ -4,7 +4,7 @@
 
 import os
 
-from telemetry.unittest import page_set_smoke_test
+from telemetry.unittest_util import page_set_smoke_test
 
 
 class PageSetUnitTest(page_set_smoke_test.PageSetSmokeTest):

@@ -8,8 +8,8 @@ import tempfile
 
 from measurements import screenshot
 from telemetry import benchmark
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import page_test_test_case
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import page_test_test_case
 
 
 class ScreenshotUnitTest(page_test_test_case.PageTestTestCase):

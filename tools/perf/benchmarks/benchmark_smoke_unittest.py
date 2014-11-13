@@ -15,8 +15,8 @@ import unittest
 from telemetry import benchmark as benchmark_module
 from telemetry.core import discover
 from telemetry.page import page_test
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import progress_reporter
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import progress_reporter
 
 
 def SmokeTestGenerator(benchmark):

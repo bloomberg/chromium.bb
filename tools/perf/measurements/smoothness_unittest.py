@@ -9,9 +9,9 @@ from telemetry.core import exceptions
 from telemetry.core import wpr_modes
 from telemetry.page import page
 from telemetry.page import page_test
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import page_test_test_case
-from telemetry.unittest import test
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import page_test_test_case
+from telemetry.unittest_util import test
 
 class FakeTracingController(object):
   def __init__(self):

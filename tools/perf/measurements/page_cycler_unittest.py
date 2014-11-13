@@ -7,7 +7,7 @@ import unittest
 from telemetry.core import browser_options
 from telemetry.page import page_runner
 from telemetry.results import page_test_results
-from telemetry.unittest import simple_mock
+from telemetry.unittest_util import simple_mock
 
 from measurements import page_cycler
 

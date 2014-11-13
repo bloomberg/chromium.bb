@@ -4,9 +4,9 @@
 
 from measurements import record_per_area
 from telemetry.core import wpr_modes
-from telemetry.unittest import options_for_unittests
-from telemetry.unittest import page_test_test_case
-from telemetry.unittest import test
+from telemetry.unittest_util import options_for_unittests
+from telemetry.unittest_util import page_test_test_case
+from telemetry.unittest_util import test
 
 
 class RecordPerAreaUnitTest(page_test_test_case.PageTestTestCase):
