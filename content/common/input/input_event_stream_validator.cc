@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -27,7 +28,9 @@ void InputEventStreamValidator::Validate(const WebInputEvent& event) {
   if (!enabled_)
     return;
 
-  DCHECK(ValidateImpl(event, &error_msg_)) << error_msg_;
+  DCHECK(ValidateImpl(event, &error_msg_))
+      << error_msg_
+      << "\nInvalid Event: " << WebInputEventTraits::ToString(event);
 }
 
 bool InputEventStreamValidator::ValidateImpl(const blink::WebInputEvent& event,

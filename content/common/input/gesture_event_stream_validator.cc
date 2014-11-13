@@ -59,7 +59,7 @@ bool GestureEventStreamValidator::Validate(const blink::WebGestureEvent& event,
       break;
     case WebInputEvent::GestureTapDown:
       if (waiting_for_tap_end_)
-        error_msg->append("Missing tap end event\n");
+        error_msg->append("Missing tap ending event before TapDown\n");
       waiting_for_tap_end_ = true;
       break;
     case WebInputEvent::GestureTapUnconfirmed:
