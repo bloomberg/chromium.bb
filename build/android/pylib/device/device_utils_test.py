@@ -67,19 +67,6 @@ class DeviceUtilsTest(unittest.TestCase):
     self.assertIsNone(d.old_interface.GetDevice())
 
 
-class MockTempFile(object):
-
-  def __init__(self, name='/tmp/some/file'):
-    self.file = mock.MagicMock(spec=file)
-    self.file.name = name
-
-  def __enter__(self):
-    return self.file
-
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    pass
-
-
 class _PatchedFunction(object):
   def __init__(self, patched=None, mocked=None):
     self.patched = patched
@@ -627,7 +614,7 @@ class DeviceUtilsRunShellCommandTest(DeviceUtilsNewImplTest):
   def testRunShellCommand_withSu(self):
     with self.assertCalls(
         (self.call.device.NeedsSU(), True),
-        (self.call.adb.Shell("su -c sh -c 'setprop service.adb.root 0'"), '')):
+        (self.call.adb.Shell('su -c setprop service.adb.root 0'), '')):
       self.device.RunShellCommand('setprop service.adb.root 0', as_root=True)
 
   def testRunShellCommand_manyLines(self):
@@ -727,7 +714,7 @@ class DeviceUtilsKillAllTest(DeviceUtilsNewImplTest):
          'USER   PID   PPID  VSIZE  RSS   WCHAN    PC       NAME\n'
          'u0_a1  1234  174   123456 54321 ffffffff 456789ab some.process\n'),
         (self.call.device.NeedsSU(), True),
-        (self.call.adb.Shell("su -c sh -c 'kill -9 1234'"), '')):
+        (self.call.adb.Shell('su -c kill -9 1234'), '')):
       self.assertEquals(1,
           self.device.KillAll('some.process', as_root=True))
 
@@ -1203,67 +1190,134 @@ class DeviceUtilsReadFileTest(DeviceUtilsOldImplTest):
                            as_root=True)
 
 
-class DeviceUtilsWriteFileTest(DeviceUtilsNewImplTest):
+class DeviceUtilsWriteFileTest(DeviceUtilsOldImplTest):
 
-  def testWriteFile_withPush(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
-    with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
-        self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file')):
-      self.device.WriteFile('/path/to/device/file', contents)
-      tmp_host.file.write.assert_called_once_with(contents)
+  def testWriteFile_basic(self):
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertCalls(
+          'adb -s 0123456789abcdef push '
+              '/tmp/file/to.be.pushed /test/file/written.to.device',
+          '100 B/s (100 bytes in 1.000s)\r\n'):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents')
+    mock_file.write.assert_called_once_with('new test file contents')
 
-  def testWriteFile_withPushForced(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'tiny contents'
-    with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
-        self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file')):
-      self.device.WriteFile('/path/to/device/file', contents, force_push=True)
-      tmp_host.file.write.assert_called_once_with(contents)
+  def testWriteFile_asRoot_withRoot(self):
+    self.device.old_interface._external_storage = '/fake/storage/path'
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommand)
+    self.device.old_interface._protected_file_access_method_initialized = True
 
-  def testWriteFile_withPushAndSU(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertCallsSequence(
+          cmd_ret=[
+              # Create temporary contents file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Create temporary script file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Set contents file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Set script file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Call script
+              (r"adb -s 0123456789abcdef shell "
+                  "'sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              # Remove device temporaries
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+          comp=re.match):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents', as_root=True)
+
+  def testWriteFile_asRoot_withSu(self):
+    self.device.old_interface._external_storage = '/fake/storage/path'
+    self.device.old_interface._privileged_command_runner = (
+        self.device.old_interface.RunShellCommandWithSU)
+    self.device.old_interface._protected_file_access_method_initialized = True
+
+    mock_file = mock.MagicMock(spec=file)
+    mock_file.name = '/tmp/file/to.be.pushed'
+    mock_file.__enter__.return_value = mock_file
+    with mock.patch('tempfile.NamedTemporaryFile',
+                    return_value=mock_file):
+      with self.assertCallsSequence(
+          cmd_ret=[
+              # Create temporary contents file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Create temporary script file
+              (r"adb -s 0123456789abcdef shell "
+                  "'test -e \"/fake/storage/path/temp_file-\d+-\d+\.sh\"; "
+                  "echo \$\?'",
+               '1\r\n'),
+              # Set contents file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Set script file
+              (r'adb -s 0123456789abcdef push /tmp/file/to\.be\.pushed '
+                  '/fake/storage/path/temp_file-\d+\d+',
+               '100 B/s (100 bytes in 1.000s)\r\n'),
+              # Call script
+              (r"adb -s 0123456789abcdef shell "
+                  "'su -c sh /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              # Remove device temporaries
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+\.sh'", ''),
+              (r"adb -s 0123456789abcdef shell "
+                  "'rm /fake/storage/path/temp_file-\d+-\d+'", '')],
+          comp=re.match):
+        self.device.WriteFile('/test/file/written.to.device',
+                              'new test file contents', as_root=True)
+
+  def testWriteFile_asRoot_rejected(self):
+    self.device.old_interface._privileged_command_runner = None
+    self.device.old_interface._protected_file_access_method_initialized = True
+    with self.assertRaises(device_errors.CommandFailedError):
+      self.device.WriteFile('/test/file/no.permissions.to.write',
+                            'new test file contents', as_root=True)
+
+
+class DeviceUtilsWriteTextFileTest(DeviceUtilsNewImplTest):
+
+  def testWriteTextFileTest_basic(self):
+    with self.assertCall(
+        self.call.adb.Shell('echo some.string > /test/file/to.write'), ''):
+      self.device.WriteTextFile('/test/file/to.write', 'some.string')
+
+  def testWriteTextFileTest_quoted(self):
+    with self.assertCall(
+        self.call.adb.Shell("echo 'some other string' > '/test/file/to write'"),
+        ''):
+      self.device.WriteTextFile('/test/file/to write', 'some other string')
+
+  def testWriteTextFileTest_withSU(self):
     with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
         (self.call.device.NeedsSU(), True),
-        (mock.call.pylib.utils.device_temp_file.DeviceTempFile(self.device),
-         MockTempFile('/external/path/tmp/on.device')),
-        self.call.adb.Push('/tmp/file/on.host', '/external/path/tmp/on.device'),
-        self.call.device.RunShellCommand(
-            ['cp', '/external/path/tmp/on.device', '/path/to/device/file'],
-            as_root=True, check_return=True)):
-      self.device.WriteFile('/path/to/device/file', contents, as_root=True)
-      tmp_host.file.write.assert_called_once_with(contents)
-
-  def testWriteFile_withPush_rejected(self):
-    tmp_host = MockTempFile('/tmp/file/on.host')
-    contents = 'some large contents ' * 26 # 20 * 26 = 520 chars
-    with self.assertCalls(
-        (mock.call.tempfile.NamedTemporaryFile(), tmp_host),
-        (self.call.adb.Push('/tmp/file/on.host', '/path/to/device/file'),
-         self.CommandError())):
-      with self.assertRaises(device_errors.CommandFailedError):
-        self.device.WriteFile('/path/to/device/file', contents)
-
-  def testWriteFile_withEcho(self):
-    with self.assertCall(self.call.adb.Shell(
-        "echo -n the.contents > /test/file/to.write"), ''):
-      self.device.WriteFile('/test/file/to.write', 'the.contents')
-
-  def testWriteFile_withEchoAndQuotes(self):
-    with self.assertCall(self.call.adb.Shell(
-        "echo -n 'the contents' > '/test/file/to write'"), ''):
-      self.device.WriteFile('/test/file/to write', 'the contents')
-
-  def testWriteFile_withEchoAndSU(self):
-    with self.assertCalls(
-        (self.call.device.NeedsSU(), True),
-        (self.call.adb.Shell("su -c sh -c 'echo -n contents > /test/file'"),
-         '')):
-      self.device.WriteFile('/test/file', 'contents', as_root=True)
+        (self.call.adb.Shell('su -c echo string > /test/file'), '')):
+      self.device.WriteTextFile('/test/file', 'string', as_root=True)
 
 
 class DeviceUtilsLsTest(DeviceUtilsOldImplTest):
