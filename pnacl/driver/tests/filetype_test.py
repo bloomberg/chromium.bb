@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import subprocess
+import re
 import unittest
 
 from driver_env import env
@@ -82,8 +82,13 @@ int foo(int a, int b) {
     self.assertFalse(filetype.IsLLVMBitcode(bc.name))
     self.assertTrue(filetype.IsPNaClBitcode(bc.name))
     self.assertTrue(filetype.FileType(bc.name) == 'pexe')
-    _, stdout, _ = driver_tools.Run(
-        '"${LLVM_NM}" --bitcode-format=pnacl %s' % bc.name,
-        redirect_stdout=subprocess.PIPE)
-    self.assertTrue('T baz' in stdout)
-    self.assertTrue('T foo' in stdout)
+    # Use pnacl-dis instead of llvm-nm, since llvm-nm won't know how to
+    # handle finalized bitcode for now:
+    # https://code.google.com/p/nativeclient/issues/detail?id=3993
+    with self.getTemp(suffix='.ll') as temp_ll:
+      driver_tools.RunDriver(
+        'pnacl-dis', [bc.name, '-o', temp_ll.name])
+      with open(temp_ll.name, 'r') as dis_file:
+        file_contents = dis_file.read()
+        self.assertTrue(re.search(r'define .*@baz', file_contents))
+        self.assertTrue(re.search(r'define .*@foo', file_contents))

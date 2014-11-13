@@ -10,7 +10,6 @@ which has not been pruned down.
 """
 
 import glob
-import os
 import re
 import subprocess
 import sys
@@ -61,23 +60,15 @@ def merge_symbols(sdict1, sdict2):
 
 class TestTranslatorPruned(unittest.TestCase):
 
-  did_setup = False
   pruned_symbols = {}
   unpruned_symbols = {}
 
-  def my_check_output(self, cmd):
-    # Local version of check_output() for compatibility
-    # with python 2.6 (used by build bots).
-    p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
-    stdout, _ = p.communicate()
-    if p.returncode != 0:
-      raise subprocess.CalledProcessError(p.returncode, cmd, stdout)
-    return stdout
-
-  def get_symbol_info(self, bin_name):
+  @classmethod
+  def get_symbol_info(cls, nm_tool, bin_name):
     results = {}
-    nm_cmd = [self.nm_tool, '--size-sort', '--demangle', bin_name]
-    for line in iter(self.my_check_output(nm_cmd).splitlines()):
+    nm_cmd = [nm_tool, '--size-sort', '--demangle', bin_name]
+    print 'Getting symbols and sizes by running:\n' + ' '.join(nm_cmd)
+    for line in iter(subprocess.check_output(nm_cmd).splitlines()):
       (hex_size, t, sym_name) = line.split(' ', 2)
       # Only track defined and non-BSS symbols.
       if t != 'U' and t.upper() != 'B':
@@ -96,27 +87,21 @@ class TestTranslatorPruned(unittest.TestCase):
           results[key] = info
     return results
 
-  def setUp(self):
-    # This expensive setup should just be in setUpClass(), but that
-    # is only available in python 2.7+.
-    if not TestTranslatorPruned.did_setup:
-      self.nm_tool = sys.argv[1]
-      self.host_binaries = glob.glob(sys.argv[2])
-      self.target_binary = sys.argv[3]
-      print 'Getting symbol info from %s (host) and %s (target)' % (
-          sys.argv[2], sys.argv[3])
-      assert self.host_binaries, ('Did not glob any binaries from: ' %
-                                  sys.argv[2])
-      for b in self.host_binaries:
-        TestTranslatorPruned.unpruned_symbols = merge_symbols(
-            TestTranslatorPruned.unpruned_symbols,
-            self.get_symbol_info(b))
-      TestTranslatorPruned.pruned_symbols = self.get_symbol_info(
-          self.target_binary)
-      # Do an early check that these aren't stripped binaries.
-      assert TestTranslatorPruned.unpruned_symbols, 'No symbols from host?'
-      assert TestTranslatorPruned.pruned_symbols, 'No symbols from target?'
-      TestTranslatorPruned.did_setup = True
+  @classmethod
+  def setUpClass(cls):
+    nm_tool = sys.argv[1]
+    host_binaries = glob.glob(sys.argv[2])
+    target_binary = sys.argv[3]
+    print 'Getting symbol info from %s (host) and %s (target)' % (
+        sys.argv[2], sys.argv[3])
+    assert host_binaries, ('Did not glob any binaries from: ' % sys.argv[2])
+    for b in host_binaries:
+      cls.unpruned_symbols = merge_symbols(cls.unpruned_symbols,
+                                           cls.get_symbol_info(nm_tool, b))
+    cls.pruned_symbols = cls.get_symbol_info(nm_tool, target_binary)
+    # Do an early check that these aren't stripped binaries.
+    assert cls.unpruned_symbols, 'No symbols from host?'
+    assert cls.pruned_symbols, 'No symbols from target?'
 
   def size_of_matching_syms(self, sym_regex, sym_infos):
     # Check if a given sym_infos has symbols matching sym_regex, and
@@ -164,7 +149,7 @@ class TestTranslatorPruned(unittest.TestCase):
         '.*MachObjectWriter', 'TargetLoweringObjectFileMachO',
         'MCMachOStreamer', '.*MCAsmInfoDarwin',
         '.*COFFObjectWriter', 'TargetLoweringObjectFileCOFF',
-        '.*COFFStreamer', '.*COFFMachineModuleInfo', '.*AsmInfoGNUCOFF',
+        '.*COFFStreamer', '.*AsmInfoGNUCOFF',
         # This is not pruned out: 'MCSectionMachO', 'MCSectionCOFF',
         # 'MachineModuleInfoMachO', ...
         ]

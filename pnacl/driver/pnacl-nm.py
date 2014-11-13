@@ -35,9 +35,11 @@ def main(argv):
 
     # For frozen PNaCl bitcode, use 'llvm-nm -bitcode-format=pnacl'. For all
     # other formats, use the binutils nm with our gold plugin.
+    # Update: llvm-nm -bitcode-format=pnacl is currently disabled.
     if filetype.IsPNaClBitcode(infile):
-      env.set('TOOLNAME', '${LLVM_NM}')
-      env.append('FLAGS', '-bitcode-format=pnacl')
+      Log.Fatal(
+          'nm on finalized bitcode is currently disabled.\n'
+          'See: https://code.google.com/p/nativeclient/issues/detail?id=3993')
     else:
       env.set('TOOLNAME', '${NM}')
       env.append('FLAGS', '--plugin=${GOLD_PLUGIN_SO}')
