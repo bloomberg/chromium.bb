@@ -90,6 +90,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailedAndEmpty(false)
     , m_decodeCount(0)
+    , m_frameCount(0)
 {
     setData(data.get(), allDataReceived);
 }
@@ -204,6 +205,9 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
 
     if (!decoder)
         return SkBitmap();
+    if (index >= m_frameComplete.size())
+        m_frameComplete.resize(index + 1);
+    m_frameComplete[index] = complete;
 
     // If we are not resuming decoding that means the decoder is freshly
     // created and we have ownership. If we are resuming decoding then
@@ -223,13 +227,26 @@ SkBitmap ImageFrameGenerator::tryToResumeDecode(const SkISize& scaledSize, size_
     }
 
     // If the image generated is complete then there is no need to keep
-    // the decoder. The exception is multi-frame decoder which can generate
-    // multiple complete frames.
-    const bool removeDecoder = complete && !m_isMultiFrame;
+    // the decoder. For multi-frame images, if all frames in the image are
+    // decoded, we remove the decoder.
+    bool removeDecoder;
+
+    if (m_isMultiFrame) {
+        size_t decodedFrameCount = 0;
+        for (Vector<bool>::iterator it = m_frameComplete.begin(); it != m_frameComplete.end(); ++it) {
+            if (*it)
+                decodedFrameCount++;
+        }
+        removeDecoder = m_frameCount && (decodedFrameCount == m_frameCount);
+    } else {
+        removeDecoder = complete;
+    }
 
     if (resumeDecoding) {
-        if (removeDecoder)
+        if (removeDecoder) {
             ImageDecodingStore::instance()->removeDecoder(this, decoder);
+            m_frameComplete.clear();
+        }
         else
             ImageDecodingStore::instance()->unlockDecoder(this, decoder);
     } else if (!removeDecoder) {
@@ -282,6 +299,13 @@ bool ImageFrameGenerator::decode(size_t index, ImageDecoder** decoder, SkBitmap*
     (*decoder)->setData(data, allDataReceived);
 
     ImageFrame* frame = (*decoder)->frameBufferAtIndex(index);
+    // For multi-frame image decoders, we need to know how many frames are
+    // in that image in order to release the decoder when all frames are
+    // decoded. frameCount() is reliable only if all data is received and set in
+    // decoder, particularly with GIF.
+    if (allDataReceived)
+        m_frameCount = (*decoder)->frameCount();
+
     (*decoder)->setData(0, false); // Unref SharedBuffer from ImageDecoder.
     (*decoder)->clearCacheExceptFrame(index);
     (*decoder)->setMemoryAllocator(0);

@@ -74,6 +74,7 @@ public:
         ImageDecodingStore::instance()->setCacheLimitInBytes(1024 * 1024);
         DeferredImageDecoder::setEnabled(true);
         m_data = SharedBuffer::create(whitePNG, sizeof(whitePNG));
+        m_frameCount = 1;
         OwnPtr<MockImageDecoder> decoder = MockImageDecoder::create(this);
         m_actualDecoder = decoder.get();
         m_actualDecoder->setSize(1, 1);
@@ -81,7 +82,6 @@ public:
         m_canvas.reset(SkCanvas::NewRasterN32(100, 100));
         ASSERT_TRUE(m_canvas.get());
         m_frameBufferRequestCount = 0;
-        m_frameCount = 1;
         m_repetitionCount = cAnimationNone;
         m_status = ImageFrame::FrameComplete;
         m_frameDuration = 0;

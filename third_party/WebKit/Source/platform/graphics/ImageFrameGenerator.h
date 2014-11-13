@@ -109,6 +109,8 @@ private:
     bool m_decodeFailedAndEmpty;
     Vector<bool> m_hasAlpha;
     int m_decodeCount;
+    Vector<bool> m_frameComplete;
+    size_t m_frameCount;
     OwnPtr<ExternalMemoryAllocator> m_externalAllocator;
 
     OwnPtr<ImageDecoderFactory> m_imageDecoderFactory;

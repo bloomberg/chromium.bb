@@ -69,8 +69,9 @@ public:
     virtual bool setSize(unsigned width, unsigned height) override
     {
         ImageDecoder::setSize(width, height);
-        m_frameBufferCache.resize(1);
-        m_frameBufferCache[0].setSize(width, height);
+        m_frameBufferCache.resize(m_client->frameCount());
+        for (size_t index = 0; index < m_client->frameCount(); ++index)
+            m_frameBufferCache[index].setSize(width, height);
         return true;
     }
 
@@ -89,12 +90,12 @@ public:
         return m_client->repetitionCount();
     }
 
-    virtual ImageFrame* frameBufferAtIndex(size_t) override
+    virtual ImageFrame* frameBufferAtIndex(size_t index) override
     {
         m_client->frameBufferRequested();
 
-        m_frameBufferCache[0].setStatus(m_client->status());
-        return &m_frameBufferCache[0];
+        m_frameBufferCache[index].setStatus(m_client->status());
+        return &m_frameBufferCache[index];
     }
 
     virtual bool frameIsCompleteAtIndex(size_t) const override
@@ -107,7 +108,13 @@ public:
         return m_client->frameDuration();
     }
 
-    void setFrameHasAlpha(bool hasAlpha) { m_frameBufferCache[0].setHasAlpha(hasAlpha); }
+    void setFrameHasAlpha(bool hasAlpha)
+    {
+        for (size_t index = 0; index < m_client->frameCount(); ++index)
+            m_frameBufferCache[index].setHasAlpha(hasAlpha);
+    }
+
+    virtual size_t clearCacheExceptFrame(size_t) override { return 0; }
 
 private:
     MockImageDecoderClient* m_client;
