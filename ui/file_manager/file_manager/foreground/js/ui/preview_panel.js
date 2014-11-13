@@ -385,7 +385,7 @@ PreviewPanel.Thumbnails = function(element, metadataCache, volumeManager) {
   this.element_ = element;
   this.metadataCache_ = metadataCache;
   this.volumeManager_ = volumeManager;
-  this.sequence_ = 0;
+  this.lastEntriesHash_ = '';
   Object.seal(this);
 };
 
@@ -413,8 +413,15 @@ PreviewPanel.Thumbnails.prototype = {
    * @param {FileSelection} value Entries.
    */
   set selection(value) {
-    this.sequence_++;
-    this.loadThumbnails_(value);
+    // Create hash for the selection.
+    var hash = value.entries.slice(
+        0, PreviewPanel.Thumbnails.MAX_THUMBNAIL_COUNT).map(function(entry) {
+      return entry.toURL();
+    }).sort().join('\n');
+    if (hash !== this.lastEntriesHash_) {
+      this.lastEntriesHash_ = hash;
+      this.loadThumbnails_(value);
+    }
   },
 
   /**
@@ -454,7 +461,7 @@ PreviewPanel.Thumbnails.prototype.loadThumbnails_ = function(selection) {
           this.volumeManager_,
           ThumbnailLoader.FillMode.FILL,
           FileGrid.ThumbnailQuality.LOW,
-          /* animation */ false,
+          /* animation */ true,
           i == 0 && length == 1 ? this.setZoomedImage_.bind(this) : undefined);
     }
 
