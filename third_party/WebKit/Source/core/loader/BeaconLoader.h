@@ -31,7 +31,7 @@ public:
     static bool sendBeacon(LocalFrame*, int, const KURL&, const String&, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtr<WTF::ArrayBufferView>, int&);
     static bool sendBeacon(LocalFrame*, int, const KURL&, Blob*, int&);
-    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtrWillBeRawPtr<DOMFormData>&, int&);
+    static bool sendBeacon(LocalFrame*, int, const KURL&, PassRefPtrWillBeRawPtr<DOMFormData>, int&);
 
 private:
     static void prepareRequest(LocalFrame*, ResourceRequest&);

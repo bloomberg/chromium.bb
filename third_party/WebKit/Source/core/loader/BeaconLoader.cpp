@@ -105,7 +105,7 @@ bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beac
     return true;
 }
 
-bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtrWillBeRawPtr<DOMFormData>& data, int& payloadLength)
+bool BeaconLoader::sendBeacon(LocalFrame* frame, int allowance, const KURL& beaconURL, PassRefPtrWillBeRawPtr<DOMFormData> data, int& payloadLength)
 {
     ASSERT(data);
     ResourceRequest request(beaconURL);
