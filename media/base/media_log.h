@@ -40,7 +40,7 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
  public:
   // Convert various enums to strings.
   static const char* EventTypeToString(MediaLogEvent::Type type);
-  static const char* PipelineStatusToString(PipelineStatus);
+  static const char* PipelineStatusToString(PipelineStatus status);
 
   MediaLog();
 

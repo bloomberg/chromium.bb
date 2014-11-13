@@ -12441,6 +12441,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Media.PipelineStatus" enum="PipelineStatus">
+  <owner>prabhur@chromium.org</owner>
+  <owner>dalecurtis@chromium.org</owner>
+  <summary>
+    Status of the media pipeline at the end of its lifecycle suffixed by stream
+    and video decoder type.
+  </summary>
+</histogram>
+
 <histogram name="Media.PlayMovies.DelayedAndDroppedFramesPer5Sec"
     units="frames/5s">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
@@ -57347,6 +57356,24 @@ To add a new entry, add it with any value and run test to compute valid value.
       label="Measures the time taken for DoPlay(). Technically only the
              worker method AudioOutputController::PollAndStartIfDataReady()."/>
   <affected-histogram name="Media.AudioOutputController"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="MediaPipelineStatusForStreams" separator=".">
+  <suffix name="AudioVideo" label="PipelineStatus for AV streams."/>
+  <suffix name="AudioVideo.VP8"
+      label="PipelineStatus for AV streams with VP8 decoder."/>
+  <suffix name="AudioVideo.VP9"
+      label="PipelineStatus for AV streams with VP9 decoder."/>
+  <suffix name="AudioVideo.HW.H264"
+      label="PipelineStatus for hardware decoded AV streams with H264
+             decoder."/>
+  <suffix name="AudioVideo.SW.H264"
+      label="PipelineStatus for software decoded AV streams with H264
+             decoder."/>
+  <suffix name="Audio" label="PipelineStatus for Audio-only streams."/>
+  <suffix name="Video" label="PipelineStatus for Video-only streams."/>
+  <suffix name="Unsupported" label="PipelineStatus for unsupported streams."/>
+  <affected-histogram name="Media.PipelineStatus"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MediaVideoCaptureManagerTime" separator=".">

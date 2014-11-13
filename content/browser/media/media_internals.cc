@@ -4,13 +4,18 @@
 
 #include "content/browser/media/media_internals.h"
 
+#include "base/metrics/histogram.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_ui.h"
 #include "media/audio/audio_parameters.h"
-#include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
 namespace {
@@ -170,19 +175,193 @@ void AudioLogImpl::StoreComponentMetadata(int component_id,
   dict->SetInteger("component_type", component_);
 }
 
+class MediaInternals::MediaInternalsUMAHandler : public NotificationObserver {
+ public:
+  MediaInternalsUMAHandler();
+
+  // NotificationObserver implementation.
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override;
+
+  // Reports the pipeline status to UMA for every player
+  // associated with the renderer process and then deletes the player state.
+  void LogAndClearPlayersInRenderer(int render_process_id);
+
+  // Helper function to save the event payload to RendererPlayerMap.
+  void SavePlayerState(const media::MediaLogEvent& event,
+                       int render_process_id);
+
+ private:
+  struct PipelineInfo {
+    media::PipelineStatus last_pipeline_status;
+    bool has_audio;
+    bool has_video;
+    std::string audio_codec_name;
+    std::string video_codec_name;
+    std::string video_decoder;
+    PipelineInfo()
+        : last_pipeline_status(media::PIPELINE_OK),
+          has_audio(false),
+          has_video(false) {}
+  };
+
+  // Helper function to report PipelineStatus associated with a player to UMA.
+  void ReportUMAForPipelineStatus(const PipelineInfo& player_info);
+
+  // Key is playerid
+  typedef std::map<int, PipelineInfo> PlayerInfoMap;
+
+  // Key is renderer id
+  typedef std::map<int, PlayerInfoMap> RendererPlayerMap;
+
+  // Stores player information per renderer
+  RendererPlayerMap renderer_info_;
+
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaInternalsUMAHandler);
+};
+
+MediaInternals::MediaInternalsUMAHandler::MediaInternalsUMAHandler() {
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_TERMINATED,
+                 NotificationService::AllBrowserContextsAndSources());
+}
+
+void MediaInternals::MediaInternalsUMAHandler::Observe(
+    int type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_EQ(type, NOTIFICATION_RENDERER_PROCESS_TERMINATED);
+  RenderProcessHost* process = Source<RenderProcessHost>(source).ptr();
+
+  // Post the task to the IO thread to avoid race in updating renderer_info_ map
+  // by both SavePlayerState & LogAndClearPlayersInRenderer from different
+  // threads.
+  // Using base::Unretained() on MediaInternalsUMAHandler is safe since
+  // it is owned by MediaInternals and share the same lifetime
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&MediaInternalsUMAHandler::LogAndClearPlayersInRenderer,
+                 base::Unretained(this), process->GetID()));
+}
+
+void MediaInternals::MediaInternalsUMAHandler::SavePlayerState(
+    const media::MediaLogEvent& event,
+    int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  PlayerInfoMap& player_info = renderer_info_[render_process_id];
+  switch (event.type) {
+    case media::MediaLogEvent::WEBMEDIAPLAYER_CREATED: {
+      // Nothing to do here
+      break;
+    }
+    case media::MediaLogEvent::PIPELINE_ERROR: {
+      int status;
+      event.params.GetInteger("pipeline_error", &status);
+      player_info[event.id].last_pipeline_status =
+          static_cast<media::PipelineStatus>(status);
+      break;
+    }
+    case media::MediaLogEvent::PROPERTY_CHANGE:
+      if (event.params.HasKey("found_audio_stream")) {
+        event.params.GetBoolean("found_audio_stream",
+                                &player_info[event.id].has_audio);
+      }
+      if (event.params.HasKey("found_video_stream")) {
+        event.params.GetBoolean("found_video_stream",
+                                &player_info[event.id].has_video);
+      }
+      if (event.params.HasKey("audio_codec_name")) {
+        event.params.GetString("audio_codec_name",
+                               &player_info[event.id].audio_codec_name);
+      }
+      if (event.params.HasKey("video_codec_name")) {
+        event.params.GetString("video_codec_name",
+                               &player_info[event.id].video_codec_name);
+      }
+      if (event.params.HasKey("video_decoder")) {
+        event.params.GetString("video_decoder",
+                               &player_info[event.id].video_decoder);
+      }
+      break;
+    default:
+      break;
+  }
+  return;
+}
+
+void MediaInternals::MediaInternalsUMAHandler::ReportUMAForPipelineStatus(
+    const PipelineInfo& player_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (player_info.has_video && player_info.has_audio) {
+    if (player_info.video_codec_name == "vp8") {
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP8",
+                                player_info.last_pipeline_status,
+                                media::PIPELINE_STATUS_MAX + 1);
+    } else if (player_info.video_codec_name == "vp9") {
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.VP9",
+                                player_info.last_pipeline_status,
+                                media::PIPELINE_STATUS_MAX + 1);
+    } else if (player_info.video_codec_name == "h264") {
+      if (player_info.video_decoder == "gpu") {
+        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.HW.H264",
+                                  player_info.last_pipeline_status,
+                                  media::PIPELINE_STATUS_MAX + 1);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo.SW.H264",
+                                  player_info.last_pipeline_status,
+                                  media::PIPELINE_STATUS_MAX + 1);
+      }
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.AudioVideo",
+                                player_info.last_pipeline_status,
+                                media::PIPELINE_STATUS_MAX + 1);
+    }
+  } else if (player_info.has_audio) {
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Audio",
+                              player_info.last_pipeline_status,
+                              media::PIPELINE_STATUS_MAX + 1);
+  } else if (player_info.has_video) {
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Video",
+                              player_info.last_pipeline_status,
+                              media::PIPELINE_STATUS_MAX + 1);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Media.PipelineStatus.Unsupported",
+                              player_info.last_pipeline_status,
+                              media::PIPELINE_STATUS_MAX + 1);
+  }
+}
+
+void MediaInternals::MediaInternalsUMAHandler::LogAndClearPlayersInRenderer(
+    int render_process_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  auto players_it = renderer_info_.find(render_process_id);
+  if (players_it == renderer_info_.end())
+    return;
+  auto it = players_it->second.begin();
+  while (it != players_it->second.end()) {
+    ReportUMAForPipelineStatus(it->second);
+    players_it->second.erase(it++);
+  }
+}
+
 MediaInternals* MediaInternals::GetInstance() {
   return g_media_internals.Pointer();
 }
 
-MediaInternals::MediaInternals() : owner_ids_() {}
+MediaInternals::MediaInternals()
+    : owner_ids_(), uma_handler_(new MediaInternalsUMAHandler()) {
+}
+
 MediaInternals::~MediaInternals() {}
 
 void MediaInternals::OnMediaEvents(
     int render_process_id, const std::vector<media::MediaLogEvent>& events) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Notify observers that |event| has occurred.
-  for (std::vector<media::MediaLogEvent>::const_iterator event = events.begin();
-       event != events.end(); ++event) {
+  for (auto event = events.begin(); event != events.end(); ++event) {
     base::DictionaryValue dict;
     dict.SetInteger("renderer", render_process_id);
     dict.SetInteger("player", event->id);
@@ -193,8 +372,20 @@ void MediaInternals::OnMediaEvents(
     const double ticks = event->time.ToInternalValue();
     const double ticks_millis = ticks / base::Time::kMicrosecondsPerMillisecond;
     dict.SetDouble("ticksMillis", ticks_millis);
-    dict.Set("params", event->params.DeepCopy());
+
+    // Convert PipelineStatus to human readable string
+    if (event->type == media::MediaLogEvent::PIPELINE_ERROR) {
+      int status;
+      event->params.GetInteger("pipeline_error", &status);
+      media::PipelineStatus error = static_cast<media::PipelineStatus>(status);
+      dict.SetString("params.pipeline_error",
+                     media::MediaLog::PipelineStatusToString(error));
+    } else {
+      dict.Set("params", event->params.DeepCopy());
+    }
+
     SendUpdate(SerializeUpdate("media.onMediaEvent", &dict));
+    uma_handler_->SavePlayerState(*event, render_process_id);
   }
 }
 

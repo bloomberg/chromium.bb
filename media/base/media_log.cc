@@ -88,7 +88,7 @@ const char* MediaLog::PipelineStatusToString(PipelineStatus status) {
     case DEMUXER_ERROR_COULD_NOT_OPEN:
       return "demuxer: could not open";
     case DEMUXER_ERROR_COULD_NOT_PARSE:
-      return "dumuxer: could not parse";
+      return "demuxer: could not parse";
     case DEMUXER_ERROR_NO_SUPPORTED_STREAMS:
       return "demuxer: no supported streams";
     case DECODER_ERROR_NOT_SUPPORTED:
@@ -167,7 +167,7 @@ scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineStateChangedEvent(
 scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineErrorEvent(
     PipelineStatus error) {
   scoped_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::PIPELINE_ERROR));
-  event->params.SetString("pipeline_error", PipelineStatusToString(error));
+  event->params.SetInteger("pipeline_error", error);
   return event.Pass();
 }
 

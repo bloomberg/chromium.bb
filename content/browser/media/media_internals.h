@@ -16,6 +16,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_logging.h"
+#include "media/base/media_log.h"
 #include "media/video/capture/video_capture_device_info.h"
 
 namespace media {
@@ -59,6 +60,9 @@ class CONTENT_EXPORT MediaInternals
   scoped_ptr<media::AudioLog> CreateAudioLog(AudioComponent component) override;
 
  private:
+  // Inner class to handle reporting pipelinestatus to UMA
+  class MediaInternalsUMAHandler;
+
   friend class AudioLogImpl;
   friend class MediaInternalsTest;
   friend struct base::DefaultLazyInstanceTraits<MediaInternals>;
@@ -88,10 +92,11 @@ class CONTENT_EXPORT MediaInternals
   base::Lock lock_;
   base::DictionaryValue audio_streams_cached_data_;
   int owner_ids_[AUDIO_COMPONENT_MAX];
+  scoped_ptr<MediaInternalsUMAHandler> uma_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInternals);
 };
 
-} // namespace content
+}  // namespace content
 
 #endif  // CONTENT_BROWSER_MEDIA_MEDIA_INTERNALS_H_
