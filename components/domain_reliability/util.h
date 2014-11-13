@@ -13,8 +13,10 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "components/domain_reliability/uploader.h"
 #include "net/base/backoff_entry.h"
 #include "net/http/http_response_info.h"
+#include "net/url_request/url_request_status.h"
 
 namespace domain_reliability {
 
@@ -32,6 +34,19 @@ bool GetDomainReliabilityBeaconStatus(
 std::string GetDomainReliabilityProtocol(
     net::HttpResponseInfo::ConnectionInfo connection_info,
     bool ssl_info_populated);
+
+// Converts a URLRequestStatus into a network error. Returns the error code for
+// FAILED; maps SUCCESS and CANCELED to OK and ERR_ABORTED, respectively; and
+// returns ERR_ABORTED for any other status.
+int GetNetErrorFromURLRequestStatus(const net::URLRequestStatus& status);
+
+// Based on the network error code, HTTP response code, and Retry-After value,
+// fills |status| with the result of a report upload.
+void GetUploadResultFromResponseDetails(
+    int net_error,
+    int http_response_code,
+    base::TimeDelta retry_after,
+    DomainReliabilityUploader::UploadResult* result);
 
 // Mockable wrapper around TimeTicks::Now and Timer. Mock version is in
 // test_util.h.

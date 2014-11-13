@@ -244,13 +244,15 @@ void DomainReliabilityContext::StartUpload() {
   }
 }
 
-void DomainReliabilityContext::OnUploadComplete(bool success) {
-  if (success)
+void DomainReliabilityContext::OnUploadComplete(
+    const DomainReliabilityUploader::UploadResult& result) {
+  if (result.is_success())
     CommitUpload();
   else
     RollbackUpload();
-  scheduler_.OnUploadComplete(success);
-  UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadSuccess", success);
+  scheduler_.OnUploadComplete(result);
+  UMA_HISTOGRAM_BOOLEAN("DomainReliability.UploadSuccess",
+      result.is_success());
   DCHECK(!upload_time_.is_null());
   UMA_HISTOGRAM_MEDIUM_TIMES("DomainReliability.UploadDuration",
                              time_->NowTicks() - upload_time_);

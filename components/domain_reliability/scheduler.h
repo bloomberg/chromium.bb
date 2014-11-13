@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
+#include "components/domain_reliability/uploader.h"
 #include "net/base/backoff_entry.h"
 
 namespace base {
@@ -67,9 +68,9 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityScheduler {
   size_t OnUploadStart();
 
   // Updates the scheduler state based on the result of an upload. Must be
-  // called exactly once after |OnUploadStart|. |success| should be true if the
-  // upload was successful, and false otherwise.
-  void OnUploadComplete(bool success);
+  // called exactly once after |OnUploadStart|. |result| should be the result
+  // passed to the upload callback by the Uploader.
+  void OnUploadComplete(const DomainReliabilityUploader::UploadResult& result);
 
   base::Value* GetWebUIData() const;
 

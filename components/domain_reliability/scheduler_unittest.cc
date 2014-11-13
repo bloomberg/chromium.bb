@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/test_util.h"
+#include "components/domain_reliability/uploader.h"
 #include "components/domain_reliability/util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,6 +37,25 @@ class DomainReliabilitySchedulerTest : public testing::Test {
         base::Bind(&DomainReliabilitySchedulerTest::ScheduleUploadCallback,
                    base::Unretained(this))));
     scheduler_->MakeDeterministicForTesting();
+  }
+
+  void NotifySuccessfulUpload() {
+    DomainReliabilityUploader::UploadResult result;
+    result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+    scheduler_->OnUploadComplete(result);
+  }
+
+  void NotifyFailedUpload() {
+    DomainReliabilityUploader::UploadResult result;
+    result.status = DomainReliabilityUploader::UploadResult::FAILURE;
+    scheduler_->OnUploadComplete(result);
+  }
+
+  void NotifyRetryAfterUpload(base::TimeDelta retry_after) {
+    DomainReliabilityUploader::UploadResult result;
+    result.status = DomainReliabilityUploader::UploadResult::RETRY_AFTER;
+    result.retry_after = retry_after;
+    scheduler_->OnUploadComplete(result);
   }
 
   ::testing::AssertionResult CheckNoPendingUpload() {
@@ -127,13 +147,31 @@ TEST_F(DomainReliabilitySchedulerTest, SuccessfulUploads) {
   ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
   time_.Advance(min_delay());
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
 
   scheduler_->OnBeaconAdded();
   ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
   time_.Advance(min_delay());
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
+}
+
+TEST_F(DomainReliabilitySchedulerTest, RetryAfter) {
+  CreateScheduler(1);
+
+  base::TimeDelta retry_after_interval = base::TimeDelta::FromMinutes(30);
+
+  scheduler_->OnBeaconAdded();
+  ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
+  time_.Advance(min_delay());
+  ASSERT_TRUE(CheckStartingUpload(0));
+  NotifyRetryAfterUpload(retry_after_interval);
+
+  scheduler_->OnBeaconAdded();
+  ASSERT_TRUE(CheckPendingUpload(retry_after_interval, retry_after_interval));
+  time_.Advance(retry_after_interval);
+  ASSERT_TRUE(CheckStartingUpload(0));
+  NotifySuccessfulUpload();
 }
 
 TEST_F(DomainReliabilitySchedulerTest, Failover) {
@@ -143,13 +181,13 @@ TEST_F(DomainReliabilitySchedulerTest, Failover) {
   ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
   time_.Advance(min_delay());
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 
   scheduler_->OnBeaconAdded();
   ASSERT_TRUE(CheckPendingUpload(zero_delta(), max_delay() - min_delay()));
   // Don't need to advance; should retry immediately.
   ASSERT_TRUE(CheckStartingUpload(1));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
 }
 
 TEST_F(DomainReliabilitySchedulerTest, FailedAllCollectors) {
@@ -162,25 +200,25 @@ TEST_F(DomainReliabilitySchedulerTest, FailedAllCollectors) {
 
   // T = min_delay
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 
   ASSERT_TRUE(CheckPendingUpload(zero_delta(), max_delay() - min_delay()));
   // Don't need to advance; should retry immediately.
   ASSERT_TRUE(CheckStartingUpload(1));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 
   ASSERT_TRUE(CheckPendingUpload(retry_interval(), max_delay() - min_delay()));
   time_.Advance(retry_interval());
 
   // T = min_delay + retry_interval
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 
   ASSERT_TRUE(CheckPendingUpload(
       zero_delta(),
       max_delay() - min_delay() - retry_interval()));
   ASSERT_TRUE(CheckStartingUpload(1));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 }
 
 // Make sure that the scheduler uses the first available collector at upload
@@ -195,14 +233,14 @@ TEST_F(DomainReliabilitySchedulerTest, DetermineCollectorAtUpload) {
 
   // T = min_delay
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(false);
+  NotifyFailedUpload();
 
   ASSERT_TRUE(CheckPendingUpload(zero_delta(), max_delay() - min_delay()));
   time_.Advance(retry_interval());
 
   // T = min_delay + retry_interval; collector 0 should be active again.
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
 }
 
 TEST_F(DomainReliabilitySchedulerTest, BeaconWhilePending) {
@@ -218,7 +256,7 @@ TEST_F(DomainReliabilitySchedulerTest, BeaconWhilePending) {
 
   // No pending upload after beacon.
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
   ASSERT_TRUE(CheckNoPendingUpload());
 }
 
@@ -232,12 +270,12 @@ TEST_F(DomainReliabilitySchedulerTest, BeaconWhileUploading) {
   // If a beacon arrives during the upload, a new upload should be pending.
   ASSERT_TRUE(CheckStartingUpload(0));
   scheduler_->OnBeaconAdded();
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
   ASSERT_TRUE(CheckPendingUpload(min_delay(), max_delay()));
 
   time_.Advance(min_delay());
   ASSERT_TRUE(CheckStartingUpload(0));
-  scheduler_->OnUploadComplete(true);
+  NotifySuccessfulUpload();
   ASSERT_TRUE(CheckNoPendingUpload());
 }
 

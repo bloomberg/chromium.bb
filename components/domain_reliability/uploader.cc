@@ -10,8 +10,11 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/supports_user_data.h"
+#include "components/domain_reliability/util.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
+#include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -42,9 +45,12 @@ const void* UploadUserData::kUserDataKey =
 class DomainReliabilityUploaderImpl
     : public DomainReliabilityUploader, net::URLFetcherDelegate {
  public:
-  DomainReliabilityUploaderImpl(const scoped_refptr<
-      net::URLRequestContextGetter>& url_request_context_getter)
-      : url_request_context_getter_(url_request_context_getter),
+  DomainReliabilityUploaderImpl(
+      MockableTime* time,
+      const scoped_refptr<
+          net::URLRequestContextGetter>& url_request_context_getter)
+      : time_(time),
+        url_request_context_getter_(url_request_context_getter),
         discard_uploads_(true) {}
 
   ~DomainReliabilityUploaderImpl() override {
@@ -63,7 +69,9 @@ class DomainReliabilityUploaderImpl
 
     if (discard_uploads_) {
       VLOG(1) << "Discarding report instead of uploading.";
-      callback.Run(true);
+      UploadResult result;
+      result.status = UploadResult::SUCCESS;
+      callback.Run(result);
       return;
     }
 
@@ -94,36 +102,35 @@ class DomainReliabilityUploaderImpl
     UploadCallbackMap::iterator callback_it = upload_callbacks_.find(fetcher);
     DCHECK(callback_it != upload_callbacks_.end());
 
-    int net_error;
+    int net_error = GetNetErrorFromURLRequestStatus(fetcher->GetStatus());
+    int http_response_code = fetcher->GetResponseCode();
+    base::TimeDelta retry_after;
     {
-      const net::URLRequestStatus& status = fetcher->GetStatus();
-      switch (status.status()) {
-        case net::URLRequestStatus::SUCCESS:
-          net_error = net::OK;
-          break;
-        case net::URLRequestStatus::CANCELED:
-          net_error = net::ERR_ABORTED;
-          break;
-        case net::URLRequestStatus::FAILED:
-          net_error = status.error();
-          break;
-        default:
-          NOTREACHED();
-          net_error = net::ERR_FAILED;
-          break;
+      std::string retry_after_string;
+      if (fetcher->GetResponseHeaders()->EnumerateHeader(NULL,
+                                                         "Retry-After",
+                                                         &retry_after_string)) {
+        net::HttpUtil::ParseRetryAfterHeader(retry_after_string,
+                                             time_->Now(),
+                                             &retry_after);
       }
     }
-    int http_response_code = fetcher->GetResponseCode();
 
-    VLOG(1) << "Upload finished with net error " << net_error <<
-               " and HTTP response code " << http_response_code;
+    VLOG(1) << "Upload finished with net error " << net_error
+            << ", response code " << http_response_code
+            << ", retry after " << retry_after;
 
     UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadResponseCode",
                                 http_response_code);
     UMA_HISTOGRAM_SPARSE_SLOWLY("DomainReliability.UploadNetError",
                                 -net_error);
 
-    callback_it->second.Run(http_response_code == 200);
+    UploadResult result;
+    GetUploadResultFromResponseDetails(net_error,
+                                       http_response_code,
+                                       retry_after,
+                                       &result);
+    callback_it->second.Run(result);
 
     delete callback_it->first;
     upload_callbacks_.erase(callback_it);
@@ -133,6 +140,7 @@ class DomainReliabilityUploaderImpl
   using DomainReliabilityUploader::UploadCallback;
   typedef std::map<const net::URLFetcher*, UploadCallback> UploadCallbackMap;
 
+  MockableTime* time_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   UploadCallbackMap upload_callbacks_;
   bool discard_uploads_;
@@ -145,10 +153,11 @@ DomainReliabilityUploader::~DomainReliabilityUploader() {}
 
 // static
 scoped_ptr<DomainReliabilityUploader> DomainReliabilityUploader::Create(
+    MockableTime* time,
     const scoped_refptr<net::URLRequestContextGetter>&
         url_request_context_getter) {
   return scoped_ptr<DomainReliabilityUploader>(
-      new DomainReliabilityUploaderImpl(url_request_context_getter));
+      new DomainReliabilityUploaderImpl(time, url_request_context_getter));
 }
 
 // static

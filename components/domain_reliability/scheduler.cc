@@ -125,19 +125,23 @@ size_t DomainReliabilityScheduler::OnUploadStart() {
   return collector_index_;
 }
 
-void DomainReliabilityScheduler::OnUploadComplete(bool success) {
+void DomainReliabilityScheduler::OnUploadComplete(
+    const DomainReliabilityUploader::UploadResult& result) {
   DCHECK(upload_running_);
   DCHECK_NE(kInvalidCollectorIndex, collector_index_);
   upload_running_ = false;
 
   VLOG(1) << "Upload to collector " << collector_index_
-          << (success ? " succeeded." : " failed.");
+          << (result.is_success() ? " succeeded." : " failed.");
 
   net::BackoffEntry* backoff = collectors_[collector_index_];
   collector_index_ = kInvalidCollectorIndex;
-  backoff->InformOfRequest(success);
 
-  if (!success) {
+  backoff->InformOfRequest(result.is_success());
+  if (result.is_retry_after())
+    backoff->SetCustomReleaseTime(time_->NowTicks() + result.retry_after);
+
+  if (!result.is_success()) {
     // Restore upload_pending_ and first_beacon_time_ to pre-upload state,
     // since upload failed.
     upload_pending_ = true;
@@ -145,7 +149,7 @@ void DomainReliabilityScheduler::OnUploadComplete(bool success) {
   }
 
   last_upload_end_time_ = time_->NowTicks();
-  last_upload_success_ = success;
+  last_upload_success_ = result.is_success();
   last_upload_finished_ = true;
 
   MaybeScheduleUpload();

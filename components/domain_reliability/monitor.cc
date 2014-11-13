@@ -93,7 +93,8 @@ void DomainReliabilityMonitor::InitURLRequestContext(
   DCHECK(url_request_context_getter->GetNetworkTaskRunner()->
          RunsTasksOnCurrentThread());
 
-  uploader_ = DomainReliabilityUploader::Create(url_request_context_getter);
+  uploader_ = DomainReliabilityUploader::Create(time_.get(),
+                                                url_request_context_getter);
 }
 
 void DomainReliabilityMonitor::AddBakedInConfigs() {

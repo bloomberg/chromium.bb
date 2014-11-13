@@ -14,6 +14,7 @@
 #include "components/domain_reliability/dispatcher.h"
 #include "components/domain_reliability/scheduler.h"
 #include "components/domain_reliability/test_util.h"
+#include "components/domain_reliability/uploader.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -76,9 +77,9 @@ class DomainReliabilityContextTest : public testing::Test {
     return upload_url_;
   }
 
-  void CallUploadCallback(bool success) {
+  void CallUploadCallback(DomainReliabilityUploader::UploadResult result) {
     DCHECK(upload_pending_);
-    upload_callback_.Run(success);
+    upload_callback_.Run(result);
     upload_pending_ = false;
   }
 
@@ -187,7 +188,10 @@ TEST_F(DomainReliabilityContextTest, ReportUpload) {
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
-  CallUploadCallback(true);
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
 
   EXPECT_TRUE(CheckNoBeacons());
   EXPECT_TRUE(CheckCounts(0, 0, 0));
@@ -224,7 +228,10 @@ TEST_F(DomainReliabilityContextTest, ReportUpload_NetworkChanged) {
   EXPECT_TRUE(upload_pending());
   EXPECT_EQ(kExpectedReport, upload_report());
   EXPECT_EQ(GURL("https://exampleuploader/upload"), upload_url());
-  CallUploadCallback(true);
+
+  DomainReliabilityUploader::UploadResult result;
+  result.status = DomainReliabilityUploader::UploadResult::SUCCESS;
+  CallUploadCallback(result);
 
   EXPECT_TRUE(CheckNoBeacons());
   EXPECT_TRUE(CheckCounts(0, 0, 0));

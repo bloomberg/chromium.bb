@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
+#include "base/time/time.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "url/gurl.h"
 
@@ -20,10 +21,27 @@ class URLRequestContextGetter;
 
 namespace domain_reliability {
 
+class MockableTime;
+
 // Uploads Domain Reliability reports to collectors.
 class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
  public:
-  typedef base::Callback<void(bool success)> UploadCallback;
+  struct UploadResult {
+    enum UploadStatus {
+      FAILURE,
+      SUCCESS,
+      RETRY_AFTER,
+    };
+
+    bool is_success() const { return status == SUCCESS; }
+    bool is_failure() const { return status == FAILURE; }
+    bool is_retry_after() const { return status == RETRY_AFTER; }
+
+    UploadStatus status;
+    base::TimeDelta retry_after;
+  };
+
+  typedef base::Callback<void(const UploadResult& result)> UploadCallback;
 
   DomainReliabilityUploader();
 
@@ -32,8 +50,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
   // Creates an uploader that uses the given |url_request_context_getter| to
   // get a URLRequestContext to use for uploads. (See test_util.h for a mock
   // version.)
-  static scoped_ptr<DomainReliabilityUploader> Create(const scoped_refptr<
-      net::URLRequestContextGetter>& url_request_context_getter);
+  static scoped_ptr<DomainReliabilityUploader> Create(
+      MockableTime* time,
+      const scoped_refptr<
+          net::URLRequestContextGetter>& url_request_context_getter);
 
   // Uploads |report_json| to |upload_url| and calls |callback| when the upload
   // has either completed or failed.

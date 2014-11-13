@@ -15,6 +15,7 @@
 #include "components/domain_reliability/config.h"
 #include "components/domain_reliability/domain_reliability_export.h"
 #include "components/domain_reliability/scheduler.h"
+#include "components/domain_reliability/uploader.h"
 
 class GURL;
 
@@ -78,7 +79,7 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityContext {
   void InitializeResourceStates();
   void ScheduleUpload(base::TimeDelta min_delay, base::TimeDelta max_delay);
   void StartUpload();
-  void OnUploadComplete(bool success);
+  void OnUploadComplete(const DomainReliabilityUploader::UploadResult& result);
 
   scoped_ptr<const base::Value> CreateReport(base::TimeTicks upload_time) const;
 
