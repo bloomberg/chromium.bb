@@ -1,0 +1,14 @@
+Ensures that elements within a plugin placeholder can be keyboard focused.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+PASS document.activeElement is input1
+PASS shadowRoot1.activeElement is null
+PASS document.activeElement is plugin1
+PASS shadowRoot1.activeElement is non-null.
+PASS document.activeElement is input1
+PASS shadowRoot1.activeElement is null
+PASS successfullyParsed is true
+
+TEST COMPLETE
+ 
