@@ -100,7 +100,6 @@ enum AccessibilityRole {
     ImageMapLinkRole,
     ImageMapRole,
     ImageRole,
-    IncrementorRole,
     InlineTextBoxRole,
     LabelRole,
     LegendRole,
