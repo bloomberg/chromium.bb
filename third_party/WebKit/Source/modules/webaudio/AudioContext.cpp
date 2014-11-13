@@ -240,7 +240,7 @@ void AudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallbac
             "invalid ArrayBuffer for audioData.");
         return;
     }
-    m_audioDecoder.decodeAsync(audioData->buffer(), sampleRate(), successCallback, errorCallback);
+    m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
 }
 
 AudioBufferSourceNode* AudioContext::createBufferSource()

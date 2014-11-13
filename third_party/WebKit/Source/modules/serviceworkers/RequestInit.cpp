@@ -15,7 +15,6 @@
 #include "modules/serviceworkers/Headers.h"
 #include "platform/blob/BlobData.h"
 #include "platform/network/FormData.h"
-#include "wtf/ArrayBuffer.h"
 
 namespace blink {
 

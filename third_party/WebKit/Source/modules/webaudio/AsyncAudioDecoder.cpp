@@ -28,13 +28,13 @@
 
 #include "modules/webaudio/AsyncAudioDecoder.h"
 
+#include "core/dom/DOMArrayBuffer.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioFileReader.h"
 #include "public/platform/Platform.h"
-#include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -49,7 +49,7 @@ AsyncAudioDecoder::~AsyncAudioDecoder()
 {
 }
 
-void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
+void AsyncAudioDecoder::decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
 {
     ASSERT(isMainThread());
     ASSERT(audioData);
@@ -57,13 +57,13 @@ void AsyncAudioDecoder::decodeAsync(ArrayBuffer* audioData, float sampleRate, Au
         return;
 
     // Add a ref to keep audioData alive until completion of decoding.
-    RefPtr<ArrayBuffer> audioDataRef(audioData);
+    RefPtr<DOMArrayBuffer> audioDataRef(audioData);
 
     // The leak references to successCallback and errorCallback are picked up on notifyComplete.
     m_thread->postTask(new Task(WTF::bind(&AsyncAudioDecoder::decode, audioDataRef.release().leakRef(), sampleRate, successCallback, errorCallback)));
 }
 
-void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
+void AsyncAudioDecoder::decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
 {
     RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(audioData->data(), audioData->byteLength(), false, sampleRate);
 
@@ -72,10 +72,10 @@ void AsyncAudioDecoder::decode(ArrayBuffer* audioData, float sampleRate, AudioBu
     callOnMainThread(WTF::bind(&AsyncAudioDecoder::notifyComplete, audioData, successCallback, errorCallback, bus.release().leakRef()));
 }
 
-void AsyncAudioDecoder::notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus)
+void AsyncAudioDecoder::notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus* audioBus)
 {
     // Adopt references, so everything gets correctly dereffed.
-    RefPtr<ArrayBuffer> audioDataRef = adoptRef(audioData);
+    RefPtr<DOMArrayBuffer> audioDataRef = adoptRef(audioData);
     RefPtr<AudioBus> audioBusRef = adoptRef(audioBus);
 
     AudioBuffer* audioBuffer = AudioBuffer::createFromAudioBus(audioBus);

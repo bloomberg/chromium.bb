@@ -27,7 +27,6 @@
 
 #include "platform/heap/Handle.h"
 #include "public/platform/WebThread.h"
-#include "wtf/Forward.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -35,8 +34,9 @@ namespace blink {
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBus;
+class DOMArrayBuffer;
 
-// AsyncAudioDecoder asynchronously decodes audio file data from an ArrayBuffer in a worker thread.
+// AsyncAudioDecoder asynchronously decodes audio file data from a DOMArrayBuffer in a worker thread.
 // Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
 
 class AsyncAudioDecoder {
@@ -46,12 +46,12 @@ public:
     ~AsyncAudioDecoder();
 
     // Must be called on the main thread.
-    void decodeAsync(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
+    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decode(ArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
-    static void notifyComplete(ArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*);
+    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
+    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*);
 
     OwnPtr<WebThread> m_thread;
 };
