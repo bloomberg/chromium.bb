@@ -194,6 +194,7 @@ private:
     void ariaLabeledByText(Vector<AccessibilityText>&) const;
     void changeValueByPercent(float percentChange);
     float stepValueForRange() const;
+    AXObject* findChildWithTagName(const HTMLQualifiedName&) const;
 };
 
 DEFINE_AX_OBJECT_TYPE_CASTS(AXNodeObject, isAXNodeObject());

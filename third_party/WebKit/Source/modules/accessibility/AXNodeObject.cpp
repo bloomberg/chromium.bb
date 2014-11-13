@@ -1188,6 +1188,16 @@ String AXNodeObject::textUnderElement() const
     return builder.toString();
 }
 
+AXObject* AXNodeObject::findChildWithTagName(const HTMLQualifiedName& tagName) const
+{
+    for (AXObject* child = firstChild(); child; child = child->nextSibling()) {
+        Node* childNode = child->node();
+        if (childNode && childNode->hasTagName(tagName))
+            return child;
+    }
+    return 0;
+}
+
 String AXNodeObject::accessibilityDescription() const
 {
     // Static text should not have a description, it should only have a stringValue.
@@ -1212,6 +1222,12 @@ String AXNodeObject::accessibilityDescription() const
     // The title attribute is normally used as help text (because it is a tooltip), but if there is nothing else available, this should be used (according to ARIA).
     if (title().isEmpty())
         return getAttribute(titleAttr);
+
+    if (roleValue() == FigureRole) {
+        AXObject* figcaption = findChildWithTagName(figcaptionTag);
+        if (figcaption)
+            return figcaption->accessibilityDescription();
+    }
 
     return String();
 }
@@ -1259,6 +1275,11 @@ String AXNodeObject::title() const
     // SVGRoots should not use the text under itself as a title. That could include the text of objects like <text>.
     case SVGRootRole:
         return String();
+    case FigureRole: {
+        AXObject* figcaption = findChildWithTagName(figcaptionTag);
+        if (figcaption)
+            return figcaption->textUnderElement();
+    }
     default:
         break;
     }
