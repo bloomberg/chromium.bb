@@ -37,7 +37,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderQuote.h"
-#include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/compositing/CompositedLayerMapping.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -438,35 +437,43 @@ static RenderObject* rendererAfterPosition(RenderObject* object, unsigned offset
     return child ? child : object->nextInPreOrderAfterChildren();
 }
 
+static LayoutRect selectionRectForRenderer(const RenderObject* object)
+{
+    if (!object->isRooted())
+        return LayoutRect();
+
+    if (!object->canUpdateSelectionOnRootLineBoxes())
+        return LayoutRect();
+
+    return object->selectionRectForPaintInvalidation(object->containerForPaintInvalidation());
+}
+
 IntRect RenderView::selectionBounds() const
 {
-    typedef WillBeHeapHashMap<RawPtrWillBeMember<RenderObject>, OwnPtrWillBeMember<RenderSelectionInfo> > SelectionMap;
-    SelectionMap selectedObjects;
+    // Now create a single bounding box rect that encloses the whole selection.
+    LayoutRect selRect;
+
+    typedef WillBeHeapHashSet<RawPtrWillBeMember<const RenderBlock> > VisitedContainingBlockSet;
+    VisitedContainingBlockSet visitedContainingBlocks;
 
     RenderObject* os = m_selectionStart;
     RenderObject* stop = rendererAfterPosition(m_selectionEnd, m_selectionEndPos);
     while (os && os != stop) {
         if ((os->canBeSelectionLeaf() || os == m_selectionStart || os == m_selectionEnd) && os->selectionState() != SelectionNone) {
             // Blocks are responsible for painting line gaps and margin gaps. They must be examined as well.
-            selectedObjects.set(os, adoptPtrWillBeNoop(new RenderSelectionInfo(os)));
-            RenderBlock* cb = os->containingBlock();
+            selRect.unite(selectionRectForRenderer(os));
+            const RenderBlock* cb = os->containingBlock();
             while (cb && !cb->isRenderView()) {
-                OwnPtrWillBeMember<RenderSelectionInfo>& blockInfo = selectedObjects.add(cb, nullptr).storedValue->value;
-                if (blockInfo)
+                selRect.unite(selectionRectForRenderer(cb));
+                VisitedContainingBlockSet::AddResult addResult = visitedContainingBlocks.add(cb);
+                if (!addResult.isNewEntry)
                     break;
-                blockInfo = adoptPtrWillBeNoop(new RenderSelectionInfo(cb));
                 cb = cb->containingBlock();
             }
         }
 
         os = os->nextInPreOrder();
     }
-
-    // Now create a single bounding box rect that encloses the whole selection.
-    LayoutRect selRect;
-    SelectionMap::iterator end = selectedObjects.end();
-    for (SelectionMap::iterator i = selectedObjects.begin(); i != end; ++i)
-        selRect.unite(i->value->absoluteSelectionRect());
 
     return pixelSnappedIntRect(selRect);
 }

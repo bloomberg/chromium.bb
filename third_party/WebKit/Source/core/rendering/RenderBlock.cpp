@@ -242,6 +242,14 @@ void RenderBlock::destroy()
 #endif
 }
 
+LayoutRect RenderBlock::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+{
+    LayoutRect rect = selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
+    // FIXME: groupedMapping() leaks the squashing abstraction.
+    if (paintInvalidationContainer->layer()->groupedMapping())
+        RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+    return rect;
+}
 void RenderBlock::willBeDestroyed()
 {
     // Mark as being destroyed to avoid trouble with merges in removeChild().

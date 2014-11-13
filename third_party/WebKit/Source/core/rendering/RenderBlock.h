@@ -254,6 +254,8 @@ public:
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
 
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override final;
+
 protected:
     virtual void willBeDestroyed() override;
 
@@ -390,10 +392,6 @@ private:
     virtual void updateDragState(bool dragOn) override final;
     virtual void childBecameNonInline(RenderObject* child) override final;
 
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override final
-    {
-        return selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
-    }
     bool isSelectionRoot() const;
     GapRects blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
                                 LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;

@@ -1236,9 +1236,6 @@ void RenderObject::invalidateSelectionIfNeeded(const RenderLayerModelObject& pai
 
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
     LayoutRect previousSelectionRectForPaintInvalidation = selectionRectForPaintInvalidation(&paintInvalidationContainer);
-    // FIXME: groupedMapping() leaks the squashing abstraction.
-    if (paintInvalidationContainer.layer()->groupedMapping())
-        RenderLayer::mapRectToPaintBackingCoordinates(&paintInvalidationContainer, previousSelectionRectForPaintInvalidation);
     setPreviousSelectionRectForPaintInvalidation(previousSelectionRectForPaintInvalidation);
 
     if (view()->doingFullPaintInvalidation() || isFullPaintInvalidationReason(invalidationReason))
@@ -2980,12 +2977,12 @@ CursorDirective RenderObject::getCursor(const LayoutPoint&, Cursor&) const
     return SetCursorBasedOnStyle;
 }
 
-bool RenderObject::canUpdateSelectionOnRootLineBoxes()
+bool RenderObject::canUpdateSelectionOnRootLineBoxes() const
 {
     if (needsLayout())
         return false;
 
-    RenderBlock* containingBlock = this->containingBlock();
+    const RenderBlock* containingBlock = this->containingBlock();
     return containingBlock ? !containingBlock->needsLayout() : false;
 }
 
