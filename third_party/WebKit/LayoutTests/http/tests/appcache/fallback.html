@@ -120,11 +120,18 @@ function test4()
 
     var ifr = document.createElement("iframe");
     ifr.setAttribute("src", nonexistentURL);
+    ifr.setAttribute("onload", "test5()");
     document.body.appendChild(ifr);
 }
 
+var test5_calls = 0;
+
 function test5()
 {
+    test5_calls++;
+    if (test5_calls == 1) {
+        return;
+    }
     if (!/Hello, World/.test(window.frames[0].document.documentElement.innerHTML)) {
         log("FAIL: Fallback URL was not honored for main resource");
         hadError = true;
