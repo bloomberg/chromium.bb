@@ -1510,9 +1510,6 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
  * or not. For dispatching main queue events without blocking, see \ref
  * wl_display_dispatch_pending().
  *
- * \note Calling this will release the display file descriptor if this
- * thread acquired it using wl_display_acquire_fd().
- *
  * \sa wl_display_dispatch_pending(), wl_display_dispatch_queue()
  *
  * \memberof wl_display
