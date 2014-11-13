@@ -41,8 +41,8 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
   EXPECT_TRUE(SUCCEEDED(unk.CreateInstance(CLSID_ShellLink)));
   ScopedComPtr<IUnknown> unk2;
   unk2.Attach(unk.Detach());
-  EXPECT_TRUE(unk == NULL);
-  EXPECT_TRUE(unk2 != NULL);
+  EXPECT_TRUE(unk.get() == NULL);
+  EXPECT_TRUE(unk2.get() != NULL);
 
   ScopedComPtr<IMalloc> mem_alloc;
   EXPECT_TRUE(SUCCEEDED(CoGetMalloc(1, mem_alloc.Receive())));
@@ -55,26 +55,26 @@ TEST(ScopedComPtrTest, ScopedComPtr) {
 
   // test ScopedComPtr& constructor
   ScopedComPtr<IMalloc> copy1(mem_alloc);
-  EXPECT_TRUE(copy1.IsSameObject(mem_alloc));
-  EXPECT_FALSE(copy1.IsSameObject(unk2));  // unk2 is valid but different
-  EXPECT_FALSE(copy1.IsSameObject(unk));  // unk is NULL
+  EXPECT_TRUE(copy1.IsSameObject(mem_alloc.get()));
+  EXPECT_FALSE(copy1.IsSameObject(unk2.get()));  // unk2 is valid but different
+  EXPECT_FALSE(copy1.IsSameObject(unk.get()));  // unk is NULL
 
   IMalloc* naked_copy = copy1.Detach();
   copy1 = naked_copy;  // Test the =(T*) operator.
   naked_copy->Release();
 
   copy1.Release();
-  EXPECT_FALSE(copy1.IsSameObject(unk2));  // unk2 is valid, copy1 is not
+  EXPECT_FALSE(copy1.IsSameObject(unk2.get()));  // unk2 is valid, copy1 is not
 
   // test Interface* constructor
-  ScopedComPtr<IMalloc> copy2(static_cast<IMalloc*>(mem_alloc));
-  EXPECT_TRUE(copy2.IsSameObject(mem_alloc));
+  ScopedComPtr<IMalloc> copy2(static_cast<IMalloc*>(mem_alloc.get()));
+  EXPECT_TRUE(copy2.IsSameObject(mem_alloc.get()));
 
-  EXPECT_TRUE(SUCCEEDED(unk.QueryFrom(mem_alloc)));
-  EXPECT_TRUE(unk != NULL);
+  EXPECT_TRUE(SUCCEEDED(unk.QueryFrom(mem_alloc.get())));
+  EXPECT_TRUE(unk.get() != NULL);
   unk.Release();
-  EXPECT_TRUE(unk == NULL);
-  EXPECT_TRUE(unk.IsSameObject(copy1));  // both are NULL
+  EXPECT_TRUE(unk.get() == NULL);
+  EXPECT_TRUE(unk.IsSameObject(copy1.get()));  // both are NULL
 }
 
 TEST(ScopedComPtrTest, ScopedComPtrVector) {
@@ -98,7 +98,7 @@ TEST(ScopedComPtrTest, ScopedComPtrVector) {
     bleh.push_back(p2);
     EXPECT_EQ(p->adds, 4);
     EXPECT_EQ(p->releases, 1);
-    EXPECT_EQ(bleh[0], p.get());
+    EXPECT_EQ(bleh[0].get(), p.get());
     bleh.pop_back();
     EXPECT_EQ(p->adds, 4);
     EXPECT_EQ(p->releases, 2);
