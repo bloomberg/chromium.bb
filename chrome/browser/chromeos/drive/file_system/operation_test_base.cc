@@ -35,6 +35,7 @@ void OperationTestBase::LoggingDelegate::OnFileChangedByOperation(
 }
 
 void OperationTestBase::LoggingDelegate::OnEntryUpdatedByOperation(
+    const ClientContext& /* client_context */,
     const std::string& local_id) {
   updated_local_ids_.insert(local_id);
 }

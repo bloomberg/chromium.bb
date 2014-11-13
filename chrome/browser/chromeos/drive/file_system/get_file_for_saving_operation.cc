@@ -193,7 +193,7 @@ void GetFileForSavingOperation::OnWriteEvent(
   logger_->Log(logging::LOG_INFO, "Detected modification to %s.",
                local_id.c_str());
 
-  delegate_->OnEntryUpdatedByOperation(local_id);
+  delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED), local_id);
 
   // Clients may have enlarged the file. By FreeDiskpSpaceIfNeededFor(0),
   // we try to ensure (0 + the-minimum-safe-margin = 512MB as of now) space.

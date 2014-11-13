@@ -139,7 +139,7 @@ void TruncateOperation::TruncateAfterTruncateOnBlockingPool(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  delegate_->OnEntryUpdatedByOperation(local_id);
+  delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED), local_id);
 
   callback.Run(error);
 }

@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
@@ -131,7 +132,9 @@ void CreateFileOperation::CreateFileAfterUpdateLocalState(
     changed_file.Update(
         file_path, FileChange::FILE_TYPE_FILE, FileChange::ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
-    delegate_->OnEntryUpdatedByOperation(entry->local_id());
+    // Synchronize in the background.
+    delegate_->OnEntryUpdatedByOperation(ClientContext(BACKGROUND),
+                                         entry->local_id());
   }
   callback.Run(error);
 }

@@ -28,7 +28,7 @@ class ResourceEntry;
 }  // namespace google_apis
 
 namespace drive {
-
+struct ClientContext;
 class DriveServiceInterface;
 class EventLogger;
 class FileCacheEntry;
@@ -164,7 +164,8 @@ class FileSystem : public FileSystemInterface,
   // file_system::OperationDelegate overrides.
   virtual void OnFileChangedByOperation(
       const FileChange& changed_files) override;
-  virtual void OnEntryUpdatedByOperation(const std::string& local_id) override;
+  virtual void OnEntryUpdatedByOperation(const ClientContext& context,
+                                         const std::string& local_id) override;
   virtual void OnDriveSyncError(file_system::DriveSyncErrorType type,
                                 const std::string& local_id) override;
   virtual bool WaitForSyncComplete(

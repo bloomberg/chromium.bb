@@ -23,7 +23,7 @@ class SequencedTaskRunner;
 }  // namespace base
 
 namespace drive {
-
+struct ClientContext;
 class EventLogger;
 class FakeDriveService;
 class FakeFreeDiskSpaceGetter;
@@ -59,6 +59,7 @@ class OperationTestBase : public testing::Test {
     virtual void OnFileChangedByOperation(
         const FileChange& changed_files) override;
     virtual void OnEntryUpdatedByOperation(
+        const ClientContext& context,
         const std::string& local_id) override;
     virtual void OnDriveSyncError(DriveSyncErrorType type,
                                   const std::string& local_id) override;

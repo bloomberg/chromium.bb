@@ -331,8 +331,11 @@ void CopyOperation::CopyAfterTryToCopyLocally(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params->callback.is_null());
 
-  for (size_t i = 0; i < updated_local_ids->size(); ++i)
-    delegate_->OnEntryUpdatedByOperation((*updated_local_ids)[i]);
+  for (const auto& id : *updated_local_ids) {
+    // Syncing for copy should be done in background, so pass the BACKGROUND
+    // context. See: crbug.com/420278.
+    delegate_->OnEntryUpdatedByOperation(ClientContext(BACKGROUND), id);
+  }
 
   if (*directory_changed) {
     FileChange changed_file;
@@ -503,7 +506,10 @@ void CopyOperation::TransferJsonGdocFileAfterLocalWork(
     // This reparenting is already done in LocalWorkForTransferJsonGdocFile().
     case IS_ORPHAN: {
       DCHECK(!params->changed_path.empty());
-      delegate_->OnEntryUpdatedByOperation(params->local_id);
+      // Syncing for copy should be done in background, so pass the BACKGROUND
+      // context. See: crbug.com/420278.
+      delegate_->OnEntryUpdatedByOperation(ClientContext(BACKGROUND),
+                                           params->local_id);
 
       FileChange changed_file;
       changed_file.Update(
@@ -661,7 +667,9 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
     FileChange changed_file;
     changed_file.Update(remote_dest_path, *entry, FileChange::ADD_OR_UPDATE);
     delegate_->OnFileChangedByOperation(changed_file);
-    delegate_->OnEntryUpdatedByOperation(*local_id);
+    // Syncing for copy should be done in background, so pass the BACKGROUND
+    // context. See: crbug.com/420278.
+    delegate_->OnEntryUpdatedByOperation(ClientContext(BACKGROUND), *local_id);
   }
   callback.Run(error);
 }

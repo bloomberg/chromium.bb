@@ -12,6 +12,8 @@ class FilePath;
 }
 
 namespace drive {
+
+struct ClientContext;
 class FileChange;
 
 namespace file_system {
@@ -35,8 +37,10 @@ class OperationDelegate {
   // changed directory.
   virtual void OnFileChangedByOperation(const FileChange& changed_files) {}
 
-  // Sent when an entry is updated and sync is needed.
-  virtual void OnEntryUpdatedByOperation(const std::string& local_id) {}
+  // Sent when an entry is updated and sync is needed. The passed |context| is
+  // used for syncing.
+  virtual void OnEntryUpdatedByOperation(const ClientContext& context,
+                                         const std::string& local_id) {}
 
   // Sent when a specific drive sync error occurred.
   // |local_id| is the local ID of the resource entry.

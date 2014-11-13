@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/drive/file_change.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_delegate.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -170,9 +171,9 @@ void CreateDirectoryOperation::CreateDirectoryAfterUpdateLocalState(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  for (std::set<std::string>::const_iterator it = updated_local_ids->begin();
-       it != updated_local_ids->end(); ++it)
-    delegate_->OnEntryUpdatedByOperation(*it);
+  for (const auto& id : *updated_local_ids) {
+    delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED), id);
+  }
 
   delegate_->OnFileChangedByOperation(*changed_files);
 

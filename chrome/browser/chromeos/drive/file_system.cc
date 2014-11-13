@@ -182,7 +182,7 @@ FileError ResetOnBlockingPool(internal::ResourceMetadata* resource_metadata,
   FileError error = resource_metadata->Reset();
   if (error != FILE_ERROR_OK)
     return error;
- return cache->ClearAll() ? FILE_ERROR_OK : FILE_ERROR_FAILED;
+  return cache->ClearAll() ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 // Part of GetPathFromResourceId().
@@ -791,8 +791,9 @@ void FileSystem::OnFileChangedByOperation(const FileChange& changed_files) {
       FileSystemObserver, observers_, OnFileChanged(changed_files));
 }
 
-void FileSystem::OnEntryUpdatedByOperation(const std::string& local_id) {
-  sync_client_->AddUpdateTask(ClientContext(USER_INITIATED), local_id);
+void FileSystem::OnEntryUpdatedByOperation(const ClientContext& context,
+                                           const std::string& local_id) {
+  sync_client_->AddUpdateTask(context, local_id);
 }
 
 void FileSystem::OnDriveSyncError(file_system::DriveSyncErrorType type,
