@@ -137,6 +137,8 @@ void WebPluginContainerImpl::invalidateRect(const IntRect& rect)
         return;
 
     RenderBox* renderer = toRenderBox(m_element->renderer());
+    if (!renderer)
+        return;
 
     IntRect dirtyRect = rect;
     dirtyRect.move(renderer->borderLeft() + renderer->paddingLeft(),
