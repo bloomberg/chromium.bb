@@ -1647,22 +1647,34 @@
             'net_javatests',
             'net_unittests',
           ],
+          'conditions': [
+            ['v8_use_external_startup_data==1', {
+              'dependencies': [
+                '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
+              ],
+              'copies': [
+                {
+                'destination': '<(asset_location)',
+                  'files': [
+                    '<(PRODUCT_DIR)/natives_blob.bin',
+                    '<(PRODUCT_DIR)/snapshot_blob.bin',
+                  ],
+                },
+              ],
+            }],
+          ],
           'variables': {
             'test_suite_name': 'net_unittests',
             'conditions': [
               ['v8_use_external_startup_data==1', {
+                'asset_location': '<(PRODUCT_DIR)/net_unittests_apk/assets',
                 'additional_input_paths': [
+                  '<(PRODUCT_DIR)/net_unittests_apk/assets/natives_blob.bin',
+                  '<(PRODUCT_DIR)/net_unittests_apk/assets/snapshot_blob.bin',
+                ],
+                'inputs': [
                   '<(PRODUCT_DIR)/natives_blob.bin',
                   '<(PRODUCT_DIR)/snapshot_blob.bin',
-                ],
-                'copies': [
-                  {
-                  'destination': '<(PRODUCT_DIR)/net_unittests_apk/assets',
-                    'files': [
-                      '<(PRODUCT_DIR)/natives_blob.bin',
-                      '<(PRODUCT_DIR)/snapshot_blob.bin',
-                    ],
-                  },
                 ],
               }],
             ],
