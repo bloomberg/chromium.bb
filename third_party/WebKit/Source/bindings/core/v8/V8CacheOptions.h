@@ -36,7 +36,8 @@ namespace blink {
 enum V8CacheOptions {
     V8CacheOptionsOff,
     V8CacheOptionsParse,
-    V8CacheOptionsCode
+    V8CacheOptionsCode,
+    V8CacheOptionsCodeCompressed
 };
 
 } // namespace blink

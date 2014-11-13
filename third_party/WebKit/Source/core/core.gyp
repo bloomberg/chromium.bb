@@ -187,6 +187,7 @@
         '<(DEPTH)/third_party/libxslt/libxslt.gyp:libxslt',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
         '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+        '<(DEPTH)/third_party/snappy/snappy.gyp:snappy',
         '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',
         '<(DEPTH)/url/url.gyp:url_lib',
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
