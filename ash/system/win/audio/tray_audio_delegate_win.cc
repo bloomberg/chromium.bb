@@ -36,7 +36,7 @@ int TrayAudioDelegateWin::GetOutputDefaultVolumeMuteLevel() {
 int TrayAudioDelegateWin::GetOutputVolumeLevel() {
   ScopedComPtr<ISimpleAudioVolume> volume_control =
       CreateDefaultVolumeControl();
-  if (!volume_control)
+  if (!volume_control.get())
     return 0;
 
   float level = 0.0f;
@@ -61,7 +61,7 @@ bool TrayAudioDelegateWin::IsOutputAudioMuted() {
   ScopedComPtr<ISimpleAudioVolume> volume_control =
       CreateDefaultVolumeControl();
 
-  if (!volume_control)
+  if (!volume_control.get())
     return false;
 
   BOOL mute = FALSE;
@@ -75,7 +75,7 @@ void TrayAudioDelegateWin::SetOutputAudioIsMuted(bool is_muted) {
   ScopedComPtr<ISimpleAudioVolume> volume_control =
       CreateDefaultVolumeControl();
 
-  if (!volume_control)
+  if (!volume_control.get())
     return;
 
   volume_control->SetMute(is_muted, NULL);
@@ -85,7 +85,7 @@ void TrayAudioDelegateWin::SetOutputVolumeLevel(int level) {
   ScopedComPtr<ISimpleAudioVolume> volume_control =
       CreateDefaultVolumeControl();
 
-  if (!volume_control)
+  if (!volume_control.get())
     return;
 
   float volume_level = static_cast<float>(level) / 100.0f;
@@ -103,9 +103,9 @@ TrayAudioDelegateWin::CreateDefaultVolumeControl() {
 
   ScopedComPtr<IMMDevice> device =
       media::CoreAudioUtil::CreateDefaultDevice(eRender, eConsole);
-  if (!device ||
+  if (!device.get() ||
       FAILED(device->Activate(__uuidof(IAudioSessionManager), CLSCTX_ALL, NULL,
-             session_manager.ReceiveVoid()))) {
+                              session_manager.ReceiveVoid()))) {
     return volume_control;
   }
 
