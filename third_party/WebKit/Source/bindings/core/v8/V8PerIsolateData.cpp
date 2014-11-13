@@ -259,7 +259,7 @@ void V8PerIsolateData::runEndOfScopeTasks()
     Vector<OwnPtr<EndOfScopeTask>> tasks;
     tasks.swap(m_endOfScopeTasks);
     for (const auto& task : tasks)
-        task->Run();
+        task->run();
     ASSERT(m_endOfScopeTasks.isEmpty());
 }
 

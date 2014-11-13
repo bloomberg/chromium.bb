@@ -68,7 +68,7 @@ public:
         return adoptPtr(new DeactivateTransactionTask(transaction));
     }
 
-    void Run() override
+    void run() override
     {
         m_transaction->setActive(false);
         m_transaction.clear();

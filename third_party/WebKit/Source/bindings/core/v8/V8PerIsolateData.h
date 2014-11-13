@@ -50,7 +50,7 @@ public:
     class EndOfScopeTask {
     public:
         virtual ~EndOfScopeTask() { }
-        virtual void Run() = 0;
+        virtual void run() = 0;
     };
 
     static v8::Isolate* initialize();
