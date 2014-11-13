@@ -182,4 +182,7 @@ public interface TabObserver {
      * @param color the new color in ARGB format.
      */
     public void onDidChangeThemeColor(int color);
+
+    public void webContentsCreated(Tab tab, long sourceWebContents, long openerRenderFrameId,
+            String frameName, String targetUrl, long newWebContents);
 }

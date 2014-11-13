@@ -252,6 +252,15 @@ public class Tab {
         public void visibleSSLStateChanged() {
             for (TabObserver observer : mObservers) observer.onSSLStateUpdated(Tab.this);
         }
+
+        @Override
+        public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, long newWebContents) {
+            for (TabObserver observer : mObservers) {
+                observer.webContentsCreated(Tab.this, sourceWebContents, openerRenderFrameId,
+                        frameName, targetUrl, newWebContents);
+            }
+        }
     }
 
     private class TabContextMenuPopulator extends ContextMenuPopulatorWrapper {

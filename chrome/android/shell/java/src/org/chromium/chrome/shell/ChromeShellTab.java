@@ -147,5 +147,11 @@ public class ChromeShellTab extends Tab {
         public boolean isFullscreenForTabOrPending() {
             return mIsFullscreen;
         }
+
+        @Override
+        public void webContentsCreated(long sourceWebContents, long openerRenderFrameId,
+                String frameName, String targetUrl, long newWebContents) {
+            mTabManager.createTab(targetUrl, TabLaunchType.FROM_LINK);
+        }
     }
 }
