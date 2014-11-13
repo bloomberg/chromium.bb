@@ -368,6 +368,9 @@ AccessibilityRole AXRenderObject::determineAccessibilityRole()
     if (node && node->hasTagName(dtTag))
         return DescriptionListTermRole;
 
+    if (node && (node->nodeName() == "math"))
+        return MathRole;
+
     if (node && (node->hasTagName(rpTag) || node->hasTagName(rtTag)))
         return AnnotationRole;
 
@@ -734,6 +737,9 @@ bool AXRenderObject::computeAccessibilityIsIgnored() const
         return false;
 
     if (roleValue() == DetailsRole)
+        return false;
+
+    if (roleValue() == MathRole)
         return false;
 
     if (roleValue() == MeterRole)
