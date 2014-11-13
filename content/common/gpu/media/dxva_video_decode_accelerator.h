@@ -39,11 +39,13 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
       NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
   enum State {
-    kUninitialized,   // un-initialized.
-    kNormal,          // normal playing state.
-    kResetting,       // upon received Reset(), before ResetDone()
-    kStopped,         // upon output EOS received.
-    kFlushing,        // upon flush request received.
+    kUninitialized,               // un-initialized.
+    kNormal,                      // normal playing state.
+    kResetting,                   // upon received Reset(), before ResetDone()
+    kStopped,                     // upon output EOS received.
+    kFlushing,                    // upon flush request received.
+    kFlushingPendingInputBuffers, // pending flush request for unprocessed
+                                  // input buffers.
   };
 
   // Does not take ownership of |client| which must outlive |*this|.

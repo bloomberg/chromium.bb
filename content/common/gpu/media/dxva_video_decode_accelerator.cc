@@ -507,7 +507,7 @@ void DXVAVideoDecodeAccelerator::Decode(
 
   RETURN_AND_NOTIFY_ON_FAILURE((state_ == kNormal || state_ == kStopped ||
                                 state_ == kFlushing),
-      "Invalid state: " << state_, ILLEGAL_STATE,);
+           "Invalid state: " << state_, ILLEGAL_STATE,);
 
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateSampleFromInputBuffer(bitstream_buffer,
@@ -822,9 +822,10 @@ bool DXVAVideoDecodeAccelerator::GetStreamsInfoAndBufferReqs() {
 void DXVAVideoDecodeAccelerator::DoDecode() {
   // This function is also called from FlushInternal in a loop which could
   // result in the state transitioning to kStopped due to no decoded output.
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kNormal || state_ == kFlushing ||
-                                state_ == kStopped),
-      "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE,);
+  RETURN_AND_NOTIFY_ON_FAILURE(
+      (state_ == kNormal || state_ == kFlushing ||
+       state_ == kStopped || state_ == kFlushingPendingInputBuffers),
+          "DoDecode: not in normal/flushing/stopped state", ILLEGAL_STATE,);
 
   MFT_OUTPUT_DATA_BUFFER output_data_buffer = {0};
   DWORD status = 0;
@@ -855,7 +856,8 @@ void DXVAVideoDecodeAccelerator::DoDecode() {
       return;
     } else if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT) {
       // No more output from the decoder. Stop playback.
-      state_ = kStopped;
+      if (state_ != kFlushingPendingInputBuffers)
+        state_ = kStopped;
       return;
     } else {
       NOTREACHED() << "Unhandled error in DoDecode()";
@@ -1076,6 +1078,22 @@ void DXVAVideoDecodeAccelerator::DecodePendingInputBuffers() {
        it != pending_input_buffers_copy.end(); ++it) {
     DecodeInternal(*it);
   }
+
+  if (state_ != kFlushingPendingInputBuffers)
+    return;
+
+  // If we are scheduled during a flush operation then mark the flush as
+  // complete if we have no pending input and pending output frames.
+  // If we don't have available output slots then this function will be
+  // scheduled again by the ProcessPendingSamples function once slots become
+  // available.
+  if (pending_input_buffers_.empty() && pending_output_samples_.empty()) {
+    state_ = kNormal;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::NotifyFlushDone,
+                    weak_this_factory_.GetWeakPtr()));
+  }
 }
 
 void DXVAVideoDecodeAccelerator::FlushInternal() {
@@ -1088,6 +1106,20 @@ void DXVAVideoDecodeAccelerator::FlushInternal() {
     DoDecode();
     if (!pending_output_samples_.empty())
       return;
+  }
+
+  // TODO(ananta)
+  // Look into whether we can simplify this function by combining the while
+  // above and the code below into a single block which achieves both. The Flush
+  // transitions in the decoder are a touch intertwined with other portions of
+  // the code like AssignPictureBuffers, ReusePictureBuffers etc.
+  if (!pending_input_buffers_.empty()) {
+    state_ = kFlushingPendingInputBuffers;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                    weak_this_factory_.GetWeakPtr()));
+    return;
   }
 
   base::MessageLoop::current()->PostTask(
@@ -1156,7 +1188,8 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
 
   DoDecode();
 
-  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal),
+  RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal ||
+                                state_ == kFlushingPendingInputBuffers),
       "Failed to process output. Unexpected decoder state: " << state_,
       ILLEGAL_STATE,);
 
