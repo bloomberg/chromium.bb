@@ -37,8 +37,8 @@ class SpeechRecognitionResult final : public GarbageCollected<SpeechRecognitionR
 public:
     static SpeechRecognitionResult* create(const HeapVector<Member<SpeechRecognitionAlternative> >&, bool final);
 
-    unsigned long length() { return m_alternatives.size(); }
-    SpeechRecognitionAlternative* item(unsigned long index);
+    unsigned length() { return m_alternatives.size(); }
+    SpeechRecognitionAlternative* item(unsigned index);
     bool isFinal() { return m_final; }
 
     void trace(Visitor*);

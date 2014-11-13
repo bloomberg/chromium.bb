@@ -33,7 +33,7 @@ PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create()
     return adoptRefWillBeNoop(new SpeechSynthesisEvent);
 }
 
-PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
+PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> SpeechSynthesisEvent::create(const AtomicString& type, unsigned charIndex, float elapsedTime, const String& name)
 {
     return adoptRefWillBeNoop(new SpeechSynthesisEvent(type, charIndex, elapsedTime, name));
 }
@@ -42,7 +42,7 @@ SpeechSynthesisEvent::SpeechSynthesisEvent()
 {
 }
 
-SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name)
+SpeechSynthesisEvent::SpeechSynthesisEvent(const AtomicString& type, unsigned charIndex, float elapsedTime, const String& name)
     : Event(type, false, false)
     , m_charIndex(charIndex)
     , m_elapsedTime(elapsedTime)

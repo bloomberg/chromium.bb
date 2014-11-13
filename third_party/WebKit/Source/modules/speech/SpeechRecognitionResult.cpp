@@ -34,7 +34,7 @@ SpeechRecognitionResult* SpeechRecognitionResult::create(const HeapVector<Member
     return new SpeechRecognitionResult(alternatives, final);
 }
 
-SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned long index)
+SpeechRecognitionAlternative* SpeechRecognitionResult::item(unsigned index)
 {
     if (index >= m_alternatives.size())
         return 0;

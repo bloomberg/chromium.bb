@@ -39,8 +39,8 @@ class SpeechGrammarList final : public GarbageCollected<SpeechGrammarList>, publ
 public:
     static SpeechGrammarList* create();
 
-    unsigned long length() const { return m_grammars.size(); }
-    SpeechGrammar* item(unsigned long) const;
+    unsigned length() const { return m_grammars.size(); }
+    SpeechGrammar* item(unsigned) const;
 
     void addFromUri(ExecutionContext*, const String& src, double weight = 1.0);
     void addFromString(const String&, double weight = 1.0);

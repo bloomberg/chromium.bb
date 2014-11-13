@@ -108,7 +108,7 @@ void SpeechRecognition::didEndAudio()
 
 void SpeechRecognition::didReceiveResults(const HeapVector<Member<SpeechRecognitionResult> >& newFinalResults, const HeapVector<Member<SpeechRecognitionResult> >& currentInterimResults)
 {
-    unsigned long resultIndex = m_finalResults.size();
+    size_t resultIndex = m_finalResults.size();
 
     for (size_t i = 0; i < newFinalResults.size(); ++i)
         m_finalResults.append(newFinalResults[i]);

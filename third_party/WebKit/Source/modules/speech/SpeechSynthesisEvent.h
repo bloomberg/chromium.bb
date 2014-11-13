@@ -34,9 +34,9 @@ class SpeechSynthesisEvent final : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create();
-    static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name);
+    static PassRefPtrWillBeRawPtr<SpeechSynthesisEvent> create(const AtomicString& type, unsigned charIndex, float elapsedTime, const String& name);
 
-    unsigned long charIndex() const { return m_charIndex; }
+    unsigned charIndex() const { return m_charIndex; }
     float elapsedTime() const { return m_elapsedTime; }
     const String& name() const { return m_name; }
 
@@ -49,9 +49,9 @@ public:
 
 private:
     SpeechSynthesisEvent();
-    SpeechSynthesisEvent(const AtomicString& type, unsigned long charIndex, float elapsedTime, const String& name);
+    SpeechSynthesisEvent(const AtomicString& type, unsigned charIndex, float elapsedTime, const String& name);
 
-    unsigned long m_charIndex;
+    unsigned m_charIndex;
     float m_elapsedTime;
     String m_name;
 };

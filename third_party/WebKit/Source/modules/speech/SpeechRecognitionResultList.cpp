@@ -34,7 +34,7 @@ SpeechRecognitionResultList* SpeechRecognitionResultList::create(const HeapVecto
     return new SpeechRecognitionResultList(results);
 }
 
-SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned long index)
+SpeechRecognitionResult* SpeechRecognitionResultList::item(unsigned index)
 {
     if (index >= m_results.size())
         return 0;

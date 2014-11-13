@@ -60,8 +60,8 @@ public:
     void setContinuous(bool continuous) { m_continuous = continuous; }
     bool interimResults() { return m_interimResults; }
     void setInterimResults(bool interimResults) { m_interimResults = interimResults; }
-    unsigned long maxAlternatives() { return m_maxAlternatives; }
-    void setMaxAlternatives(unsigned long maxAlternatives) { m_maxAlternatives = maxAlternatives; }
+    unsigned maxAlternatives() { return m_maxAlternatives; }
+    void setMaxAlternatives(unsigned maxAlternatives) { m_maxAlternatives = maxAlternatives; }
     MediaStreamTrack* audioTrack() { return m_audioTrack; }
     void setAudioTrack(MediaStreamTrack* audioTrack) { m_audioTrack = audioTrack; }
 

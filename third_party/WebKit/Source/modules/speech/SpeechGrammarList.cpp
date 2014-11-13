@@ -36,7 +36,7 @@ SpeechGrammarList* SpeechGrammarList::create()
     return new SpeechGrammarList;
 }
 
-SpeechGrammar* SpeechGrammarList::item(unsigned long index) const
+SpeechGrammar* SpeechGrammarList::item(unsigned index) const
 {
     if (index >= m_grammars.size())
         return 0;

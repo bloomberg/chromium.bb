@@ -37,8 +37,8 @@ class SpeechRecognitionResultList : public GarbageCollected<SpeechRecognitionRes
 public:
     static SpeechRecognitionResultList* create(const HeapVector<Member<SpeechRecognitionResult> >&);
 
-    unsigned long length() { return m_results.size(); }
-    SpeechRecognitionResult* item(unsigned long index);
+    unsigned length() { return m_results.size(); }
+    SpeechRecognitionResult* item(unsigned index);
 
     void trace(Visitor*);
 
