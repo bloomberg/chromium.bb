@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Notifications: ServiceWorkerRegistration.showNotification().</title>
+    <script src="../resources/testharness.js"></script>
+    <script src="../resources/testharnessreport.js"></script>
+    <script src="../serviceworker/resources/test-helpers.js"></script>
+  </head>
+  <body>
+    <script>
+      // Tests that the showNotification() function is exposed on the ServiceWorkerRegistration
+      // object. As of right now, this is only exposed in documents.
+      async_test(function (test) {
+          var scope = 'resources/scope/serviceworkerregistration-show-notification',
+              worker_url = 'resources/empty-worker.js';
+
+          service_worker_unregister_and_register(test, worker_url, scope).then(function (registration) {
+              assert_inherits(registration, 'showNotification', 'showNotification() must be exposed.');
+              registration.showNotification('Title', {
+                  body: 'Hello, world!',
+                  icon: '/icon.png'
+              }).then(function() {
+                  assert_unreached('showNotification() is expected to reject.');
+              }).catch(test.step_func_done());
+
+          }).catch(unreached_rejection(test));
+
+      }, 'showNotification() must be exposed on the Document-based ServiceWorkerRegistration.');
+    </script>
+  </body>
+</html>
