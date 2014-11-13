@@ -977,6 +977,7 @@
     'streams': ['zork+watch@chromium.org'],
     'sync': ['tim+watch@chromium.org',
              'maniscalco+watch@chromium.org',
+             'maxbogue+watch@chromium.org',
              'pvalenzuela+watch@chromium.org',
              'zea+watch@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
