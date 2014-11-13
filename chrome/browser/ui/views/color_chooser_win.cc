@@ -66,7 +66,7 @@ ColorChooserWin::ColorChooserWin(content::WebContents* web_contents,
 
 ColorChooserWin::~ColorChooserWin() {
   // Always call End() before destroying.
-  DCHECK(!color_chooser_dialog_);
+  DCHECK(!color_chooser_dialog_.get());
 }
 
 void ColorChooserWin::End() {

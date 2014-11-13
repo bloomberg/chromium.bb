@@ -419,7 +419,7 @@ BrowserView::~BrowserView() {
 
   // Terminate the jumplist (must be called before browser_->profile() is
   // destroyed.
-  if (jumplist_) {
+  if (jumplist_.get()) {
     jumplist_->Terminate();
   }
 #endif
@@ -2020,7 +2020,7 @@ void BrowserView::LoadingAnimationCallback() {
 
 void BrowserView::OnLoadCompleted() {
 #if defined(OS_WIN)
-  DCHECK(!jumplist_);
+  DCHECK(!jumplist_.get());
   jumplist_ = new JumpList(browser_->profile());
 #endif
 }

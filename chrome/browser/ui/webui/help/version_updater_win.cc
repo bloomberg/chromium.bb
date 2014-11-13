@@ -143,7 +143,7 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback) {
         (base::win::OSInfo::GetInstance()->service_pack().major == 0) &&
         !base::win::UserAccountControlIsEnabled())) {
     // This could happen if the page got refreshed after results were returned.
-    if (!google_updater_)
+    if (!google_updater_.get())
       CreateGoogleUpdater();
     UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR,
                  base::string16());
@@ -259,7 +259,7 @@ void VersionUpdaterWin::CreateGoogleUpdater() {
 }
 
 void VersionUpdaterWin::ClearGoogleUpdater() {
-  if (google_updater_) {
+  if (google_updater_.get()) {
     google_updater_->set_status_listener(NULL);
     google_updater_ = NULL;
   }
