@@ -73,7 +73,6 @@ svn diff "${LLVM_DIR}/projects/libcxxabi" 2>&1 | tee -a buildlog.txt
 echo "Starting build" | tee -a buildlog.txt
 
 set -exu
-set -o pipefail
 
 # Do a clobber build.
 rm -rf "${LLVM_BOOTSTRAP_DIR}"
