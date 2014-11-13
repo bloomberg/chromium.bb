@@ -3,6 +3,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+"""Top level script for running all python unittests in the NaCl SDK
+"""
+
+import argparse
 import os
 import subprocess
 import sys
@@ -60,7 +64,11 @@ def ExtractToolchains():
                            '--dest-dir', TOOLCHAIN_OUT,
                            'extract'])
 
-def main():
+def main(args):
+  parser = argparse.ArgumentParser(description=__doc__)
+  parser.add_argument('-v', '--verbose', action='store_true')
+  options = parser.parse_args(args)
+
   # Some of the unit tests use parts of toolchains. Extract to TOOLCHAIN_OUT.
   ExtractToolchains()
 
@@ -69,8 +77,12 @@ def main():
     module = __import__(module_name)
     suite.addTests(unittest.defaultTestLoader.loadTestsFromModule(module))
 
-  result = unittest.TextTestRunner(verbosity=2).run(suite)
+  if options.verbose:
+    verbosity = 2
+  else:
+    verbosity = 1
+  result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
   return int(not result.wasSuccessful())
 
 if __name__ == '__main__':
-  sys.exit(main())
+  sys.exit(main(sys.argv[1:]))

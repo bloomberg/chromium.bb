@@ -300,6 +300,10 @@ class TestUpdateManifest(unittest.TestCase):
     self.uploaded_manifest = None
     self.manifest = None
 
+    logging.basicConfig(level=logging.CRITICAL)
+    # Uncomment the following line to enable more debugging info.
+    # logging.getLogger('update_nacl_manifest').setLevel(logging.INFO)
+
   def _MakeDelegate(self):
     self.delegate = TestDelegate(self.manifest, self.history.history,
         self.files)
@@ -721,8 +725,4 @@ class TestUpdateVitals(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  logging.basicConfig(level=logging.CRITICAL)
-  # Uncomment the following line to enable more debugging info.
-  # logging.getLogger('update_nacl_manifest').setLevel(logging.INFO)
-
-  sys.exit(unittest.main())
+  unittest.main()

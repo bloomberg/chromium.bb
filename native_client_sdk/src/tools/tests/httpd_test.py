@@ -12,19 +12,25 @@ import unittest
 import urllib2
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PARENT_DIR = os.path.dirname(SCRIPT_DIR)
+TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
+CHROME_SRC = os.path.dirname(os.path.dirname(os.path.dirname(TOOLS_DIR)))
+MOCK_DIR = os.path.join(CHROME_SRC, "third_party", "pymock")
 
-sys.path.append(PARENT_DIR)
+sys.path.append(TOOLS_DIR)
+sys.path.append(MOCK_DIR)
 
 import httpd
+from mock import patch
 
 
 class HTTPDTest(unittest.TestCase):
   def setUp(self):
-    self.server = httpd.LocalHTTPServer('.', 0)
+    patcher = patch('BaseHTTPServer.BaseHTTPRequestHandler.log_message')
+    patcher.start()
+    self.addCleanup(patcher.stop)
 
-  def tearDown(self):
-    self.server.Shutdown()
+    self.server = httpd.LocalHTTPServer('.', 0)
+    self.addCleanup(self.server.Shutdown)
 
   def testQuit(self):
     urllib2.urlopen(self.server.GetURL('?quit=1'))
@@ -47,8 +53,8 @@ class RunTest(unittest.TestCase):
 
   def _Run(self, args=None, timeout=None):
     args = args or []
-    run_py = os.path.join(PARENT_DIR, 'run.py')
-    cmd = [sys.executable, run_py]
+    run_py = os.path.join(TOOLS_DIR, 'run.py')
+    cmd = [sys.executable, run_py, '--port=5555']
     cmd.extend(args)
     self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)

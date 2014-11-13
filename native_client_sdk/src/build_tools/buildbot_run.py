@@ -44,7 +44,7 @@ def StepRunUnittests():
   if 'http_proxy' in env:
     del env['http_proxy']
 
-  Run([sys.executable, 'test_all.py'], env=env, cwd=SDK_SRC_DIR)
+  Run([sys.executable, 'test_all.py', '-v'], env=env, cwd=SDK_SRC_DIR)
 
 
 def StepBuildSDK():
