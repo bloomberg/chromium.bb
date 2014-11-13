@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=218707
+CLANG_REVISION=220284
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
@@ -233,11 +233,21 @@ echo Reverting previously patched files
 for i in \
       "${CLANG_DIR}/test/Index/crash-recovery-modules.m" \
       "${CLANG_DIR}/unittests/libclang/LibclangTest.cpp" \
+      "${LLVM_DIR}/include/llvm/IR/IRBuilder.h" \
+      "${LLVM_DIR}/include/llvm/IR/InstrTypes.h" \
+      "${LLVM_DIR}/lib/Analysis/Loads.cpp" \
+      "${LLVM_DIR}/lib/IR/Instructions.cpp" \
+      "${LLVM_DIR}/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp" \
+      "${LLVM_DIR}/lib/Transforms/Scalar/JumpThreading.cpp" \
+      "${LLVM_DIR}/test/Transforms/InstCombine/select.ll" \
+      "${LLVM_DIR}/test/Bindings/Go/go.test" \
       "${COMPILER_RT_DIR}/lib/asan/asan_rtl.cc" \
       "${COMPILER_RT_DIR}/test/asan/TestCases/Linux/new_array_cookie_test.cc" \
       "${LLVM_DIR}/test/DebugInfo/gmlt.ll" \
       "${LLVM_DIR}/lib/CodeGen/SpillPlacement.cpp" \
       "${LLVM_DIR}/lib/CodeGen/SpillPlacement.h" \
+      "${CLANG_DIR}/lib/Basic/SanitizerBlacklist.cpp" \
+      "${CLANG_DIR}/test/CodeGen/address-safety-attr.cpp" \
       ; do
   if [[ -e "${i}" ]]; then
     svn revert "${i}"
@@ -317,175 +327,415 @@ EOF
 patch -p0
 popd
 
-# Apply r218742: test: XFAIL the non-darwin gmlt test on darwin
-# Back-ported becase the test was renamed.
+# This Go bindings test doesn't work after the bootstrap build on Linux. (PR21552)
 pushd "${LLVM_DIR}"
 cat << 'EOF' |
---- a/test/DebugInfo/gmlt.ll
-+++ b/test/DebugInfo/gmlt.ll
-@@ -1,2 +1,5 @@
- ; REQUIRES: object-emission
- ; RUN: %llc_dwarf -O0 -filetype=obj < %S/Inputs/gmlt.ll | llvm-dwarfdump - | FileCheck %S/Inputs/gmlt.ll
-+
-+; There's a darwin specific test in X86/gmlt, so it's okay to XFAIL this here.
-+; XFAIL: darwin
+Index: test/Bindings/Go/go.test
+===================================================================
+--- test/Bindings/Go/go.test    (revision 220284)
++++ test/Bindings/Go/go.test    (working copy)
+@@ -1,8 +1,9 @@
+-; RUN: cd %S/../../../bindings/go/llvm && \
+-; RUN: env CGO_CPPFLAGS="$(llvm-config --cppflags)" \
+-; RUN:     CGO_CXXFLAGS=-std=c++11 \
+-; RUN:     CGO_LDFLAGS="$(llvm-config --ldflags --libs --system-libs \
+-; RUN:                                $(../build.sh --print-components)) $CGO_LDFLAGS" \
+-; RUN:     %go test -tags byollvm .
++; X: cd %S/../../../bindings/go/llvm && \
++; X: env CGO_CPPFLAGS="$(llvm-config --cppflags)" \
++; X:     CGO_CXXFLAGS=-std=c++11 \
++; X:     CGO_LDFLAGS="$(llvm-config --ldflags --libs --system-libs \
++; X:                                $(../build.sh --print-components)) $CGO_LDFLAGS" \
++; X:     %go test -tags byollvm .
++; RUN: true
+ 
+ ; REQUIRES: shell
+EOF
+patch -p0
+popd
+
+# Apply 220340: Revert "Teach the load analysis to allow finding available values which require" (r220277)
+pushd "${LLVM_DIR}"
+cat << 'EOF' |
+--- a/include/llvm/IR/IRBuilder.h
++++ b/include/llvm/IR/IRBuilder.h
+@@ -1246,18 +1246,6 @@ public:
+       return Insert(Folder.CreateIntCast(VC, DestTy, isSigned), Name);
+     return Insert(CastInst::CreateIntegerCast(V, DestTy, isSigned), Name);
+   }
+-
+-  Value *CreateBitOrPointerCast(Value *V, Type *DestTy,
+-                                const Twine &Name = "") {
+-    if (V->getType() == DestTy)
+-      return V;
+-    if (V->getType()->isPointerTy() && DestTy->isIntegerTy())
+-      return CreatePtrToInt(V, DestTy, Name);
+-    if (V->getType()->isIntegerTy() && DestTy->isPointerTy())
+-      return CreateIntToPtr(V, DestTy, Name);
+-
+-    return CreateBitCast(V, DestTy, Name);
+-  }
+ private:
+   // \brief Provided to resolve 'CreateIntCast(Ptr, Ptr, "...")', giving a
+   // compile time error, instead of converting the string to bool for the
+diff --git a/include/llvm/IR/InstrTypes.h b/include/llvm/IR/InstrTypes.h
+index 1186857..7e98fe1 100644
+--- a/include/llvm/IR/InstrTypes.h
++++ b/include/llvm/IR/InstrTypes.h
+@@ -490,19 +490,6 @@ public:
+     Instruction *InsertBefore = 0 ///< Place to insert the instruction
+   );
+ 
+-  /// @brief Create a BitCast, a PtrToInt, or an IntToPTr cast instruction.
+-  ///
+-  /// If the value is a pointer type and the destination an integer type,
+-  /// creates a PtrToInt cast. If the value is an integer type and the
+-  /// destination a pointer type, creates an IntToPtr cast. Otherwise, creates
+-  /// a bitcast.
+-  static CastInst *CreateBitOrPointerCast(
+-    Value *S,                ///< The pointer value to be casted (operand 0)
+-    Type *Ty,          ///< The type to which cast should be made
+-    const Twine &Name = "", ///< Name for the instruction
+-    Instruction *InsertBefore = 0 ///< Place to insert the instruction
+-  );
+-
+   /// @brief Create a ZExt, BitCast, or Trunc for int -> int casts.
+   static CastInst *CreateIntegerCast(
+     Value *S,                ///< The pointer value to be casted (operand 0)
+@@ -565,17 +552,6 @@ public:
+     Type *DestTy ///< The Type to which the value should be cast.
+   );
+ 
+-  /// @brief Check whether a bitcast, inttoptr, or ptrtoint cast between these
+-  /// types is valid and a no-op.
+-  ///
+-  /// This ensures that any pointer<->integer cast has enough bits in the
+-  /// integer and any other cast is a bitcast.
+-  static bool isBitOrNoopPointerCastable(
+-    Type *SrcTy, ///< The Type from which the value should be cast.
+-    Type *DestTy, ///< The Type to which the value should be cast.
+-    const DataLayout *Layout = 0 ///< Optional DataLayout.
+-  );
+-
+   /// Returns the opcode necessary to cast Val into Ty using usual casting
+   /// rules.
+   /// @brief Infer the opcode for cast operand and type
+diff --git a/lib/Analysis/Loads.cpp b/lib/Analysis/Loads.cpp
+index 5042eb9..bb0d60e 100644
+--- a/lib/Analysis/Loads.cpp
++++ b/lib/Analysis/Loads.cpp
+@@ -176,13 +176,8 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
+ 
+   Type *AccessTy = cast<PointerType>(Ptr->getType())->getElementType();
+ 
+-  // Try to get the DataLayout for this module. This may be null, in which case
+-  // the optimizations will be limited.
+-  const DataLayout *DL = ScanBB->getDataLayout();
+-
+-  // Try to get the store size for the type.
+-  uint64_t AccessSize = DL ? DL->getTypeStoreSize(AccessTy)
+-                           : AA ? AA->getTypeStoreSize(AccessTy) : 0;
++  // If we're using alias analysis to disambiguate get the size of *Ptr.
++  uint64_t AccessSize = AA ? AA->getTypeStoreSize(AccessTy) : 0;
+ 
+   Value *StrippedPtr = Ptr->stripPointerCasts();
+ 
+@@ -207,7 +202,7 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
+     if (LoadInst *LI = dyn_cast<LoadInst>(Inst))
+       if (AreEquivalentAddressValues(
+               LI->getPointerOperand()->stripPointerCasts(), StrippedPtr) &&
+-          CastInst::isBitOrNoopPointerCastable(LI->getType(), AccessTy, DL)) {
++          CastInst::isBitCastable(LI->getType(), AccessTy)) {
+         if (AATags)
+           LI->getAAMetadata(*AATags);
+         return LI;
+@@ -219,8 +214,7 @@ Value *llvm::FindAvailableLoadedValue(Value *Ptr, BasicBlock *ScanBB,
+       // (This is true even if the store is volatile or atomic, although
+       // those cases are unlikely.)
+       if (AreEquivalentAddressValues(StorePtr, StrippedPtr) &&
+-          CastInst::isBitOrNoopPointerCastable(SI->getValueOperand()->getType(),
+-                                               AccessTy, DL)) {
++          CastInst::isBitCastable(SI->getValueOperand()->getType(), AccessTy)) {
+         if (AATags)
+           SI->getAAMetadata(*AATags);
+         return SI->getOperand(0);
+diff --git a/lib/IR/Instructions.cpp b/lib/IR/Instructions.cpp
+index 9da0eb4..1497aa8 100644
+--- a/lib/IR/Instructions.cpp
++++ b/lib/IR/Instructions.cpp
+@@ -2559,17 +2559,6 @@ CastInst *CastInst::CreatePointerBitCastOrAddrSpaceCast(
+   return Create(Instruction::BitCast, S, Ty, Name, InsertBefore);
+ }
+ 
+-CastInst *CastInst::CreateBitOrPointerCast(Value *S, Type *Ty,
+-                                           const Twine &Name,
+-                                           Instruction *InsertBefore) {
+-  if (S->getType()->isPointerTy() && Ty->isIntegerTy())
+-    return Create(Instruction::PtrToInt, S, Ty, Name, InsertBefore);
+-  if (S->getType()->isIntegerTy() && Ty->isPointerTy())
+-    return Create(Instruction::IntToPtr, S, Ty, Name, InsertBefore);
+-
+-  return Create(Instruction::BitCast, S, Ty, Name, InsertBefore);
+-}
+-
+ CastInst *CastInst::CreateIntegerCast(Value *C, Type *Ty,
+                                       bool isSigned, const Twine &Name,
+                                       Instruction *InsertBefore) {
+@@ -2727,18 +2716,6 @@ bool CastInst::isBitCastable(Type *SrcTy, Type *DestTy) {
+   return true;
+ }
+ 
+-bool CastInst::isBitOrNoopPointerCastable(Type *SrcTy, Type *DestTy,
+-                                          const DataLayout *DL) {
+-  if (auto *PtrTy = dyn_cast<PointerType>(SrcTy))
+-    if (auto *IntTy = dyn_cast<IntegerType>(DestTy))
+-      return DL && IntTy->getBitWidth() >= DL->getPointerTypeSizeInBits(PtrTy);
+-  if (auto *PtrTy = dyn_cast<PointerType>(DestTy))
+-    if (auto *IntTy = dyn_cast<IntegerType>(SrcTy))
+-      return DL && IntTy->getBitWidth() >= DL->getPointerTypeSizeInBits(PtrTy);
+-
+-  return isBitCastable(SrcTy, DestTy);
+-}
+-
+ // Provide a way to get a "cast" where the cast opcode is inferred from the
+ // types and size of the operand. This, basically, is a parallel of the
+ // logic in the castIsValid function below.  This axiom should hold:
+diff --git a/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp b/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
+index c0df914..f3ac44c 100644
+--- a/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
++++ b/lib/Transforms/InstCombine/InstCombineLoadStoreAlloca.cpp
+@@ -418,8 +418,7 @@ Instruction *InstCombiner::visitLoadInst(LoadInst &LI) {
+   BasicBlock::iterator BBI = &LI;
+   if (Value *AvailableVal = FindAvailableLoadedValue(Op, LI.getParent(), BBI,6))
+     return ReplaceInstUsesWith(
+-        LI, Builder->CreateBitOrPointerCast(AvailableVal, LI.getType(),
+-                                            LI.getName() + ".cast"));
++        LI, Builder->CreateBitCast(AvailableVal, LI.getType()));
+ 
+   // load(gep null, ...) -> unreachable
+   if (GetElementPtrInst *GEPI = dyn_cast<GetElementPtrInst>(Op)) {
+diff --git a/lib/Transforms/Scalar/JumpThreading.cpp b/lib/Transforms/Scalar/JumpThreading.cpp
+index c37a4c9..25a8b0c 100644
+--- a/lib/Transforms/Scalar/JumpThreading.cpp
++++ b/lib/Transforms/Scalar/JumpThreading.cpp
+@@ -902,8 +902,8 @@ bool JumpThreading::SimplifyPartiallyRedundantLoad(LoadInst *LI) {
+     // only happen in dead loops.
+     if (AvailableVal == LI) AvailableVal = UndefValue::get(LI->getType());
+     if (AvailableVal->getType() != LI->getType())
+-      AvailableVal =
+-          CastInst::CreateBitOrPointerCast(AvailableVal, LI->getType(), "", LI);
++      AvailableVal = CastInst::Create(CastInst::BitCast, AvailableVal,
++                                      LI->getType(), "", LI);
+     LI->replaceAllUsesWith(AvailableVal);
+     LI->eraseFromParent();
+     return true;
+@@ -1040,8 +1040,8 @@ bool JumpThreading::SimplifyPartiallyRedundantLoad(LoadInst *LI) {
+     // predecessor use the same bitcast.
+     Value *&PredV = I->second;
+     if (PredV->getType() != LI->getType())
+-      PredV = CastInst::CreateBitOrPointerCast(PredV, LI->getType(), "",
+-                                               P->getTerminator());
++      PredV = CastInst::Create(CastInst::BitCast, PredV, LI->getType(), "",
++                               P->getTerminator());
+ 
+     PN->addIncoming(PredV, I->first);
+   }
+diff --git a/test/Transforms/InstCombine/select.ll b/test/Transforms/InstCombine/select.ll
+index 9c8286b..6cf9f0f 100644
+--- a/test/Transforms/InstCombine/select.ll
++++ b/test/Transforms/InstCombine/select.ll
+@@ -1256,7 +1256,7 @@ define i32 @test76(i1 %flag, i32* %x) {
+   ret i32 %v
+ }
+ 
+-declare void @scribble_on_i32(i32*)
++declare void @scribble_on_memory(i32*)
+ 
+ define i32 @test77(i1 %flag, i32* %x) {
+ ; The load here must not be speculated around the select. One side of the
+@@ -1264,13 +1264,13 @@ define i32 @test77(i1 %flag, i32* %x) {
+ ; load does.
+ ; CHECK-LABEL: @test77(
+ ; CHECK: %[[A:.*]] = alloca i32, align 1
+-; CHECK: call void @scribble_on_i32(i32* %[[A]])
++; CHECK: call void @scribble_on_memory(i32* %[[A]])
+ ; CHECK: store i32 0, i32* %x
+ ; CHECK: %[[P:.*]] = select i1 %flag, i32* %[[A]], i32* %x
+ ; CHECK: load i32* %[[P]]
+ 
+   %under_aligned = alloca i32, align 1
+-  call void @scribble_on_i32(i32* %under_aligned)
++  call void @scribble_on_memory(i32* %under_aligned)
+   store i32 0, i32* %x
+   %p = select i1 %flag, i32* %under_aligned, i32* %x
+   %v = load i32* %p
+@@ -1327,8 +1327,8 @@ define i32 @test80(i1 %flag) {
+ entry:
+   %x = alloca i32
+   %y = alloca i32
+-  call void @scribble_on_i32(i32* %x)
+-  call void @scribble_on_i32(i32* %y)
++  call void @scribble_on_memory(i32* %x)
++  call void @scribble_on_memory(i32* %y)
+   %tmp = load i32* %x
+   store i32 %tmp, i32* %y
+   %p = select i1 %flag, i32* %x, i32* %y
+@@ -1351,8 +1351,8 @@ entry:
+   %y = alloca i32
+   %x1 = bitcast float* %x to i32*
+   %y1 = bitcast i32* %y to float*
+-  call void @scribble_on_i32(i32* %x1)
+-  call void @scribble_on_i32(i32* %y)
++  call void @scribble_on_memory(i32* %x1)
++  call void @scribble_on_memory(i32* %y)
+   %tmp = load i32* %x1
+   store i32 %tmp, i32* %y
+   %p = select i1 %flag, float* %x, float* %y1
+@@ -1377,63 +1377,11 @@ entry:
+   %y = alloca i32
+   %x1 = bitcast float* %x to i32*
+   %y1 = bitcast i32* %y to float*
+-  call void @scribble_on_i32(i32* %x1)
+-  call void @scribble_on_i32(i32* %y)
++  call void @scribble_on_memory(i32* %x1)
++  call void @scribble_on_memory(i32* %y)
+   %tmp = load float* %x
+   store float %tmp, float* %y1
+   %p = select i1 %flag, i32* %x1, i32* %y
+   %v = load i32* %p
+   ret i32 %v
+ }
+-
+-declare void @scribble_on_i64(i64*)
+-
+-define i8* @test83(i1 %flag) {
+-; Test that we can speculate the load around the select even though they use
+-; differently typed pointers and requires inttoptr casts.
+-; CHECK-LABEL: @test83(
+-; CHECK:         %[[X:.*]] = alloca i8*
+-; CHECK-NEXT:    %[[Y:.*]] = alloca i8*
+-; CHECK:         %[[V:.*]] = load i64* %[[X]]
+-; CHECK-NEXT:    %[[C1:.*]] = inttoptr i64 %[[V]] to i8*
+-; CHECK-NEXT:    store i8* %[[C1]], i8** %[[Y]]
+-; CHECK-NEXT:    %[[C2:.*]] = inttoptr i64 %[[V]] to i8*
+-; CHECK-NEXT:    %[[S:.*]] = select i1 %flag, i8* %[[C2]], i8* %[[C1]]
+-; CHECK-NEXT:    ret i8* %[[S]]
+-entry:
+-  %x = alloca i8*
+-  %y = alloca i64
+-  %x1 = bitcast i8** %x to i64*
+-  %y1 = bitcast i64* %y to i8**
+-  call void @scribble_on_i64(i64* %x1)
+-  call void @scribble_on_i64(i64* %y)
+-  %tmp = load i64* %x1
+-  store i64 %tmp, i64* %y
+-  %p = select i1 %flag, i8** %x, i8** %y1
+-  %v = load i8** %p
+-  ret i8* %v
+-}
+-
+-define i64 @test84(i1 %flag) {
+-; Test that we can speculate the load around the select even though they use
+-; differently typed pointers and requires a ptrtoint cast.
+-; CHECK-LABEL: @test84(
+-; CHECK:         %[[X:.*]] = alloca i8*
+-; CHECK-NEXT:    %[[Y:.*]] = alloca i8*
+-; CHECK:         %[[V:.*]] = load i8** %[[X]]
+-; CHECK-NEXT:    store i8* %[[V]], i8** %[[Y]]
+-; CHECK-NEXT:    %[[C:.*]] = ptrtoint i8* %[[V]] to i64
+-; CHECK-NEXT:    ret i64 %[[C]]
+-entry:
+-  %x = alloca i8*
+-  %y = alloca i64
+-  %x1 = bitcast i8** %x to i64*
+-  %y1 = bitcast i64* %y to i8**
+-  call void @scribble_on_i64(i64* %x1)
+-  call void @scribble_on_i64(i64* %y)
+-  %tmp = load i8** %x
+-  store i8* %tmp, i8** %y1
+-  %p = select i1 %flag, i64* %x1, i64* %y
+-  %v = load i64* %p
+-  ret i64 %v
+-}
 EOF
 patch -p1
 popd
 
-# Apply r218921; fixes spill placement compile-time regression.
-pushd "${LLVM_DIR}"
+
+# Apply 220403: SanitizerBlacklist: Use spelling location for blacklisting purposes.
+pushd "${CLANG_DIR}"
 cat << 'EOF' |
---- a/lib/CodeGen/SpillPlacement.cpp
-+++ b/lib/CodeGen/SpillPlacement.cpp
-@@ -61,27 +61,6 @@ void SpillPlacement::getAnalysisUsage(AnalysisUsage &AU) const {
-   MachineFunctionPass::getAnalysisUsage(AU);
+--- a/lib/Basic/SanitizerBlacklist.cpp
++++ b/lib/Basic/SanitizerBlacklist.cpp
+@@ -40,6 +40,7 @@ bool SanitizerBlacklist::isBlacklistedFile(StringRef FileName,
+ 
+ bool SanitizerBlacklist::isBlacklistedLocation(SourceLocation Loc,
+                                                StringRef Category) const {
+-  return !Loc.isInvalid() && isBlacklistedFile(SM.getFilename(Loc), Category);
++  return !Loc.isInvalid() &&
++         isBlacklistedFile(SM.getFilename(SM.getSpellingLoc(Loc)), Category);
  }
+
+--- a/test/CodeGen/address-safety-attr.cpp
++++ b/test/CodeGen/address-safety-attr.cpp
+@@ -64,6 +64,15 @@ int AddressSafetyOk(int *a) { return *a; }
+ // ASAN:  BlacklistedFunction{{.*}}) [[WITH]]
+ int BlacklistedFunction(int *a) { return *a; }
  
--namespace {
--static ManagedStatic<BlockFrequency> Threshold;
--}
--
--/// Decision threshold. A node gets the output value 0 if the weighted sum of
--/// its inputs falls in the open interval (-Threshold;Threshold).
--static BlockFrequency getThreshold() { return *Threshold; }
--
--/// \brief Set the threshold for a given entry frequency.
--///
--/// Set the threshold relative to \c Entry.  Since the threshold is used as a
--/// bound on the open interval (-Threshold;Threshold), 1 is the minimum
--/// threshold.
--static void setThreshold(const BlockFrequency &Entry) {
--  // Apparently 2 is a good threshold when Entry==2^14, but we need to scale
--  // it.  Divide by 2^13, rounding as appropriate.
--  uint64_t Freq = Entry.getFrequency();
--  uint64_t Scaled = (Freq >> 13) + bool(Freq & (1 << 12));
--  *Threshold = std::max(UINT64_C(1), Scaled);
--}
--
- /// Node - Each edge bundle corresponds to a Hopfield node.
- ///
- /// The node contains precomputed frequency data that only depends on the CFG,
-@@ -127,9 +106,9 @@ struct SpillPlacement::Node {
- 
-   /// clear - Reset per-query data, but preserve frequencies that only depend on
-   // the CFG.
--  void clear() {
-+  void clear(const BlockFrequency &Threshold) {
-     BiasN = BiasP = Value = 0;
--    SumLinkWeights = getThreshold();
-+    SumLinkWeights = Threshold;
-     Links.clear();
-   }
- 
-@@ -167,7 +146,7 @@ struct SpillPlacement::Node {
- 
-   /// update - Recompute Value from Bias and Links. Return true when node
-   /// preference changes.
--  bool update(const Node nodes[]) {
-+  bool update(const Node nodes[], const BlockFrequency &Threshold) {
-     // Compute the weighted sum of inputs.
-     BlockFrequency SumN = BiasN;
-     BlockFrequency SumP = BiasP;
-@@ -187,9 +166,9 @@ struct SpillPlacement::Node {
-     //  2. It helps tame rounding errors when the links nominally sum to 0.
-     //
-     bool Before = preferReg();
--    if (SumN >= SumP + getThreshold())
-+    if (SumN >= SumP + Threshold)
-       Value = -1;
--    else if (SumP >= SumN + getThreshold())
-+    else if (SumP >= SumN + Threshold)
-       Value = 1;
-     else
-       Value = 0;
-@@ -228,7 +207,7 @@ void SpillPlacement::activate(unsigned n) {
-   if (ActiveNodes->test(n))
-     return;
-   ActiveNodes->set(n);
--  nodes[n].clear();
-+  nodes[n].clear(Threshold);
- 
-   // Very large bundles usually come from big switches, indirect branches,
-   // landing pads, or loops with many 'continue' statements. It is difficult to
-@@ -245,6 +224,18 @@ void SpillPlacement::activate(unsigned n) {
-   }
- }
- 
-+/// \brief Set the threshold for a given entry frequency.
-+///
-+/// Set the threshold relative to \c Entry.  Since the threshold is used as a
-+/// bound on the open interval (-Threshold;Threshold), 1 is the minimum
-+/// threshold.
-+void SpillPlacement::setThreshold(const BlockFrequency &Entry) {
-+  // Apparently 2 is a good threshold when Entry==2^14, but we need to scale
-+  // it.  Divide by 2^13, rounding as appropriate.
-+  uint64_t Freq = Entry.getFrequency();
-+  uint64_t Scaled = (Freq >> 13) + bool(Freq & (1 << 12));
-+  Threshold = std::max(UINT64_C(1), Scaled);
-+}
- 
- /// addConstraints - Compute node biases and weights from a set of constraints.
- /// Set a bit in NodeMask for each active node.
-@@ -311,7 +302,7 @@ bool SpillPlacement::scanActiveBundles() {
-   Linked.clear();
-   RecentPositive.clear();
-   for (int n = ActiveNodes->find_first(); n>=0; n = ActiveNodes->find_next(n)) {
--    nodes[n].update(nodes);
-+    nodes[n].update(nodes, Threshold);
-     // A node that must spill, or a node without any links is not going to
-     // change its value ever again, so exclude it from iterations.
-     if (nodes[n].mustSpill())
-@@ -331,7 +322,7 @@ void SpillPlacement::iterate() {
-   // First update the recently positive nodes. They have likely received new
-   // negative bias that will turn them off.
-   while (!RecentPositive.empty())
--    nodes[RecentPositive.pop_back_val()].update(nodes);
-+    nodes[RecentPositive.pop_back_val()].update(nodes, Threshold);
- 
-   if (Linked.empty())
-     return;
-@@ -350,7 +341,7 @@ void SpillPlacement::iterate() {
-            iteration == 0 ? Linked.rbegin() : std::next(Linked.rbegin()),
-            E = Linked.rend(); I != E; ++I) {
-       unsigned n = *I;
--      if (nodes[n].update(nodes)) {
-+      if (nodes[n].update(nodes, Threshold)) {
-         Changed = true;
-         if (nodes[n].preferReg())
-           RecentPositive.push_back(n);
-@@ -364,7 +355,7 @@ void SpillPlacement::iterate() {
-     for (SmallVectorImpl<unsigned>::const_iterator I =
-            std::next(Linked.begin()), E = Linked.end(); I != E; ++I) {
-       unsigned n = *I;
--      if (nodes[n].update(nodes)) {
-+      if (nodes[n].update(nodes, Threshold)) {
-         Changed = true;
-         if (nodes[n].preferReg())
-           RecentPositive.push_back(n);
-diff --git a/lib/CodeGen/SpillPlacement.h b/lib/CodeGen/SpillPlacement.h
-index 03cf5cd..622361e 100644
---- a/lib/CodeGen/SpillPlacement.h
-+++ b/lib/CodeGen/SpillPlacement.h
-@@ -62,6 +62,10 @@ class SpillPlacement : public MachineFunctionPass {
-   // Block frequencies are computed once. Indexed by block number.
-   SmallVector<BlockFrequency, 8> BlockFrequencies;
- 
-+  /// Decision threshold. A node gets the output value 0 if the weighted sum of
-+  /// its inputs falls in the open interval (-Threshold;Threshold).
-+  BlockFrequency Threshold;
++#define GENERATE_FUNC(name) \
++    int name(int *a) { return *a; }
 +
- public:
-   static char ID; // Pass identification, replacement for typeid.
++// WITHOUT: GeneratedFunction{{.*}}) [[NOATTR]]
++// BLFILE:  GeneratedFunction{{.*}}) [[NOATTR]]
++// BLFUNC:  GeneratedFunction{{.*}}) [[WITH]]
++// ASAN:    GeneratedFunction{{.*}}) [[WITH]]
++GENERATE_FUNC(GeneratedFunction)
++
+ // WITHOUT:  TemplateAddressSafetyOk{{.*}}) [[NOATTR]]
+ // BLFILE:  TemplateAddressSafetyOk{{.*}}) [[NOATTR]]
+ // BLFUNC:  TemplateAddressSafetyOk{{.*}}) [[WITH]]
+EOF
+patch -p1
+popd
+
+# Apply 220407: Fixup for r220403: Use getFileLoc() instead of getSpellingLoc() in SanitizerBlacklist.
+pushd "${CLANG_DIR}"
+cat << 'EOF' |
+--- a/lib/Basic/SanitizerBlacklist.cpp
++++ b/lib/Basic/SanitizerBlacklist.cpp
+@@ -41,6 +41,6 @@ bool SanitizerBlacklist::isBlacklistedFile(StringRef FileName,
+ bool SanitizerBlacklist::isBlacklistedLocation(SourceLocation Loc,
+                                                StringRef Category) const {
+   return !Loc.isInvalid() &&
+-         isBlacklistedFile(SM.getFilename(SM.getSpellingLoc(Loc)), Category);
++         isBlacklistedFile(SM.getFilename(SM.getFileLoc(Loc)), Category);
+ }
  
-@@ -152,6 +156,7 @@ private:
-   void releaseMemory() override;
+diff --git a/test/CodeGen/address-safety-attr.cpp b/test/CodeGen/address-safety-attr.cpp
+index 0d585c7..031d013 100644
+--- a/test/CodeGen/address-safety-attr.cpp
++++ b/test/CodeGen/address-safety-attr.cpp
+@@ -66,13 +66,19 @@ int BlacklistedFunction(int *a) { return *a; }
  
-   void activate(unsigned);
-+  void setThreshold(const BlockFrequency &Entry);
- };
+ #define GENERATE_FUNC(name) \
+     int name(int *a) { return *a; }
+-
+ // WITHOUT: GeneratedFunction{{.*}}) [[NOATTR]]
+ // BLFILE:  GeneratedFunction{{.*}}) [[NOATTR]]
+ // BLFUNC:  GeneratedFunction{{.*}}) [[WITH]]
+ // ASAN:    GeneratedFunction{{.*}}) [[WITH]]
+ GENERATE_FUNC(GeneratedFunction)
  
- } // end namespace llvm
++#define GENERATE_NAME(name) name##_generated
++// WITHOUT: Function_generated{{.*}}) [[NOATTR]]
++// BLFILE:  Function_generated{{.*}}) [[NOATTR]]
++// BLFUNC:  Function_generated{{.*}}) [[WITH]]
++// ASAN:    Function_generated{{.*}}) [[WITH]]
++int GENERATE_NAME(Function)(int *a) { return *a; }
++
+ // WITHOUT:  TemplateAddressSafetyOk{{.*}}) [[NOATTR]]
+ // BLFILE:  TemplateAddressSafetyOk{{.*}}) [[NOATTR]]
+ // BLFUNC:  TemplateAddressSafetyOk{{.*}}) [[WITH]]
 EOF
 patch -p1
 popd
@@ -704,7 +954,8 @@ if [[ -n "${with_android}" ]]; then
       --platform=android-14 \
       --install-dir="${LLVM_BUILD_DIR}/android-toolchain" \
       --system=linux-x86_64 \
-      --stl=stlport
+      --stl=stlport \
+      --toolchain=arm-linux-androideabi-4.8 \
 
   # Android NDK r9d copies a broken unwind.h into the toolchain, see
   # http://crbug.com/357890
