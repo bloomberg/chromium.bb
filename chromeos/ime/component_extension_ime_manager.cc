@@ -59,6 +59,27 @@ const char* kLoginLayoutWhitelist[] = {
   "us(intl)"
 };
 
+// Gets the input method category according to the given input method id.
+// This is used for sorting a list of input methods.
+int GetInputMethodCategory(const std::string& id) {
+  const std::string engine_id =
+      chromeos::extension_ime_util::GetComponentIDByInputMethodID(id);
+  if (StartsWithASCII(engine_id, "xkb:", true))
+    return 0;
+  if (StartsWithASCII(engine_id, "vkd_", true))
+    return 1;
+  if (engine_id.find("-t-i0-") != std::string::npos &&
+      !StartsWithASCII(engine_id, "zh-", true)) {
+    return 2;
+  }
+  return 3;
+}
+
+bool InputMethodCompare(const input_method::InputMethodDescriptor& im1,
+                        const input_method::InputMethodDescriptor& im2) {
+  return GetInputMethodCategory(im1.id()) < GetInputMethodCategory(im2.id());
+}
+
 } // namespace
 
 ComponentExtensionEngine::ComponentExtensionEngine() {
@@ -173,6 +194,7 @@ input_method::InputMethodDescriptors
               ime.input_view_url));
     }
   }
+  std::stable_sort(result.begin(), result.end(), InputMethodCompare);
   return result;
 }
 

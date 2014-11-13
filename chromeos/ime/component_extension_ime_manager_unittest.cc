@@ -28,24 +28,24 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     ext1.path = base::FilePath("ext1_file_path");
 
     ComponentExtensionEngine ext1_engine1;
-    ext1_engine1.engine_id = "ext1_engine1_engine_id";
+    ext1_engine1.engine_id = "zh-t-i0-pinyin";
     ext1_engine1.display_name = "ext1_engine_1_display_name";
-    ext1_engine1.language_codes.push_back("en");
+    ext1_engine1.language_codes.push_back("zh-CN");
     ext1_engine1.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine1);
 
     ComponentExtensionEngine ext1_engine2;
-    ext1_engine2.engine_id = "ext1_engine2_engine_id";
+    ext1_engine2.engine_id = "mozc_us";
     ext1_engine2.display_name = "ext1_engine2_display_name";
-    ext1_engine2.language_codes.push_back("en");
+    ext1_engine2.language_codes.push_back("jp");
     ext1_engine2.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine2);
 
     ComponentExtensionEngine ext1_engine3;
-    ext1_engine3.engine_id = "ext1_engine3_engine_id";
+    ext1_engine3.engine_id = "xkb:ru::rus";
     ext1_engine3.display_name = "ext1_engine3_display_name";
-    ext1_engine3.language_codes.push_back("ja");
-    ext1_engine3.layouts.push_back("us");
+    ext1_engine3.language_codes.push_back("ru");
+    ext1_engine3.layouts.push_back("ru");
     ext1.engines.push_back(ext1_engine3);
 
     ime_list_.push_back(ext1);
@@ -56,24 +56,24 @@ class ComponentExtensionIMEManagerTest : public testing::Test {
     ext2.path = base::FilePath("ext2_file_path");
 
     ComponentExtensionEngine ext2_engine1;
-    ext2_engine1.engine_id = "ext2_engine1_engine_id";
+    ext2_engine1.engine_id = "vkd_ru_phone_aatseel";
     ext2_engine1.display_name = "ext2_engine_1_display_name";
-    ext2_engine1.language_codes.push_back("en");
+    ext2_engine1.language_codes.push_back("ru");
     ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
 
     ComponentExtensionEngine ext2_engine2;
-    ext2_engine2.engine_id = "ext2_engine2_engine_id";
+    ext2_engine2.engine_id = "vkd_vi_telex";
     ext2_engine2.display_name = "ext2_engine2_display_name";
     ext2_engine2.language_codes.push_back("hi");
     ext2_engine2.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine2);
 
     ComponentExtensionEngine ext2_engine3;
-    ext2_engine3.engine_id = "ext2_engine3_engine_id";
+    ext2_engine3.engine_id = "xkb:us::eng";
     ext2_engine3.display_name = "ext2_engine3_display_name";
-    ext2_engine3.language_codes.push_back("ja");
-    ext2_engine3.layouts.push_back("jp");
+    ext2_engine3.language_codes.push_back("us");
+    ext2_engine3.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine3);
 
     ime_list_.push_back(ext2);
@@ -191,6 +191,16 @@ TEST_F(ComponentExtensionIMEManagerTest, GetAllIMEAsInputMethodDescriptor) {
     total_ime_size += ime_list_[i].engines.size();
   }
   EXPECT_EQ(total_ime_size, descriptors.size());
+
+  // Verify order
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    const input_method::InputMethodDescriptor& d = descriptors[i];
+    if (i < 2) {
+      EXPECT_TRUE(d.id().find("xkb:") != std::string::npos);
+    } else if (i >= 2 && i < 4) {
+      EXPECT_TRUE(d.id().find("vkd_") != std::string::npos);
+    }
+  }
 }
 
 }  // namespace
