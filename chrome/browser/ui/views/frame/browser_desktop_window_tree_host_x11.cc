@@ -73,6 +73,9 @@ BrowserDesktopWindowTreeHostX11::BrowserDesktopWindowTreeHostX11(
       new DesktopThemeProvider(ThemeServiceFactory::GetForProfile(
                                    browser_view->browser()->profile())));
   browser_frame->SetThemeProvider(theme_provider.Pass());
+  browser_frame->set_frame_type(
+      browser_frame->UseCustomFrame() ? views::Widget::FRAME_TYPE_FORCE_CUSTOM
+                                      : views::Widget::FRAME_TYPE_FORCE_NATIVE);
 }
 
 BrowserDesktopWindowTreeHostX11::~BrowserDesktopWindowTreeHostX11() {

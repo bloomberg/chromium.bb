@@ -6,19 +6,20 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_COMMAND_HANDLER_X11_H_
 
 #include "ui/events/event_handler.h"
+#include "ui/gfx/native_widget_types.h"
 
-class Browser;
+class BrowserView;
 
 class BrowserCommandHandlerX11 : public ui::EventHandler {
  public:
-  explicit BrowserCommandHandlerX11(Browser* browser);
+  explicit BrowserCommandHandlerX11(BrowserView* browser_view);
   ~BrowserCommandHandlerX11() override;
 
  private:
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
 
-  Browser* browser_;
+  BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserCommandHandlerX11);
 };

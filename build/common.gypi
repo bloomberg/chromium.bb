@@ -1486,6 +1486,9 @@
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
 
+    # Whether the browser is non-native (using Views Toolkit) on Mac.
+    'mac_views_browser%': 0,
+
     # Experiment: http://crbug.com/426914
     'envoy%': 0,
 

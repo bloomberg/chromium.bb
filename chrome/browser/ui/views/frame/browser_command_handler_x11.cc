@@ -8,15 +8,26 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
-BrowserCommandHandlerX11::BrowserCommandHandlerX11(Browser* browser)
-    : browser_(browser) {}
+BrowserCommandHandlerX11::BrowserCommandHandlerX11(BrowserView* browser_view)
+    : browser_view_(browser_view) {
+  aura::Window* window = browser_view_->frame()->GetNativeWindow();
+  DCHECK(window);
+  if (window)
+    window->AddPreTargetHandler(this);
+}
 
-BrowserCommandHandlerX11::~BrowserCommandHandlerX11() {}
+BrowserCommandHandlerX11::~BrowserCommandHandlerX11() {
+  aura::Window* window = browser_view_->frame()->GetNativeWindow();
+  if (window)
+    window->RemovePreTargetHandler(this);
+}
 
 void BrowserCommandHandlerX11::OnMouseEvent(ui::MouseEvent* event) {
   if (event->type() != ui::ET_MOUSE_PRESSED)
@@ -32,7 +43,7 @@ void BrowserCommandHandlerX11::OnMouseEvent(ui::MouseEvent* event) {
   const int kForwardMouseButton = 9;
   if (button == kBackMouseButton || button == kForwardMouseButton) {
     content::WebContents* contents =
-        browser_->tab_strip_model()->GetActiveWebContents();
+        browser_view_->browser()->tab_strip_model()->GetActiveWebContents();
     if (!contents)
       return;
     content::NavigationController& controller = contents->GetController();

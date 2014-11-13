@@ -4,14 +4,11 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 
-#include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/debug/leak_annotations.h"
 #include "base/i18n/rtl.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
-#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
@@ -23,11 +20,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/theme_provider.h"
 #include "ui/events/event_handler.h"
@@ -36,12 +29,9 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/native_widget.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-#include "chrome/browser/shell_integration_linux.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "ash/session/session_state_delegate.h"
+#include "ash/shell.h"
 #endif
 
 #if defined(USE_X11)
@@ -62,16 +52,9 @@ BrowserFrame::BrowserFrame(BrowserView* browser_view)
   set_is_secondary_widget(false);
   // Don't focus anything on creation, selecting a tab will set the focus.
   set_focus_on_creation(false);
-
-#if defined(USE_X11)
-  browser_command_handler_.reset(
-      new BrowserCommandHandlerX11(browser_view_->browser()));
-#endif
 }
 
 BrowserFrame::~BrowserFrame() {
-  if (browser_command_handler_ && GetNativeView())
-    GetNativeView()->RemovePreTargetHandler(browser_command_handler_.get());
 }
 
 // static
@@ -90,9 +73,8 @@ void BrowserFrame::InitBrowserFrame() {
 
   native_browser_frame_ =
       NativeBrowserFrameFactory::CreateNativeBrowserFrame(this, browser_view_);
-  views::Widget::InitParams params;
+  views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.delegate = browser_view_;
-  params.native_widget = native_browser_frame_->AsNativeWidget();
   if (browser_view_->browser()->is_type_tabbed()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
@@ -100,47 +82,6 @@ void BrowserFrame::InitBrowserFrame() {
                                              &params.bounds,
                                              &params.show_state);
   }
-
-  if (browser_view_->browser()->host_desktop_type() ==
-      chrome::HOST_DESKTOP_TYPE_ASH || chrome::ShouldOpenAshOnStartup()) {
-    params.context = ash::Shell::GetPrimaryRootWindow();
-#if defined(OS_WIN)
-    // If this window is under ASH on Windows, we need it to be translucent.
-    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-#endif
-  }
-
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // Set up a custom WM_CLASS for some sorts of window types. This allows
-  // task switchers in X11 environments to distinguish between main browser
-  // windows and e.g app windows.
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  const Browser& browser = *browser_view_->browser();
-  params.wm_class_class = shell_integration_linux::GetProgramClassName();
-  params.wm_class_name = params.wm_class_class;
-  if (browser.is_app() && !browser.is_devtools()) {
-    // This window is a hosted app or v1 packaged app.
-    // NOTE: v2 packaged app windows are created by ChromeNativeAppWindowViews.
-    params.wm_class_name = web_app::GetWMClassFromAppName(browser.app_name());
-  } else if (command_line.HasSwitch(switches::kUserDataDir)) {
-    // Set the class name to e.g. "Chrome (/tmp/my-user-data)".  The
-    // class name will show up in the alt-tab list in gnome-shell if
-    // you're running a binary that doesn't have a matching .desktop
-    // file.
-    const std::string user_data_dir =
-        command_line.GetSwitchValueNative(switches::kUserDataDir);
-    params.wm_class_name += " (" + user_data_dir + ")";
-  }
-  const char kX11WindowRoleBrowser[] = "browser";
-  const char kX11WindowRolePopup[] = "pop-up";
-  params.wm_role_name = browser_view_->browser()->is_type_tabbed() ?
-      std::string(kX11WindowRoleBrowser) : std::string(kX11WindowRolePopup);
-
-  params.remove_standard_frame = UseCustomFrame();
-  set_frame_type(UseCustomFrame() ? Widget::FRAME_TYPE_FORCE_CUSTOM
-                                  : Widget::FRAME_TYPE_FORCE_NATIVE);
-#endif  // defined(OS_LINUX)
-
   Init(params);
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {
@@ -148,8 +89,9 @@ void BrowserFrame::InitBrowserFrame() {
     non_client_view()->set_context_menu_controller(this);
   }
 
-  if (browser_command_handler_)
-    GetNativeWindow()->AddPreTargetHandler(browser_command_handler_.get());
+#if defined(USE_X11)
+  browser_command_handler_.reset(new BrowserCommandHandlerX11(browser_view_));
+#endif
 }
 
 void BrowserFrame::SetThemeProvider(scoped_ptr<ui::ThemeProvider> provider) {

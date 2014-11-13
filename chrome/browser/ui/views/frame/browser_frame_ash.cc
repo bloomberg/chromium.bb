@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
 
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -16,8 +17,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/view.h"
-
-using aura::Window;
 
 namespace {
 
@@ -127,12 +126,17 @@ void BrowserFrameAsh::GetWindowPlacement(
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserFrameAsh, NativeBrowserFrame implementation:
 
-views::NativeWidget* BrowserFrameAsh::AsNativeWidget() {
-  return this;
-}
+views::Widget::InitParams BrowserFrameAsh::GetWidgetParams() {
+  views::Widget::InitParams params;
+  params.native_widget = this;
 
-const views::NativeWidget* BrowserFrameAsh::AsNativeWidget() const {
-  return this;
+  params.context = ash::Shell::GetPrimaryRootWindow();
+#if defined(OS_WIN)
+  // If this window is under ASH on Windows, we need it to be translucent.
+  params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+#endif
+
+  return params;
 }
 
 bool BrowserFrameAsh::UsesNativeSystemMenu() const {

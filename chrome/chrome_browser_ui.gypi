@@ -295,7 +295,7 @@
       'browser/ui/cocoa/browser_window_layout.mm',
       'browser/ui/cocoa/browser_window_controller_private.h',
       'browser/ui/cocoa/browser_window_controller_private.mm',
-      'browser/ui/cocoa/browser_window_factory.mm',
+      'browser/ui/cocoa/browser_window_factory_cocoa.mm',
       'browser/ui/cocoa/browser_window_utils.h',
       'browser/ui/cocoa/browser_window_utils.mm',
       'browser/ui/cocoa/bubble_combobox.h',
@@ -2006,9 +2006,11 @@
       'browser/ui/views/first_run_bubble.cc',
       'browser/ui/views/first_run_bubble.h',
       'browser/ui/views/frame/browser_frame.cc',
+      'browser/ui/views/frame/browser_frame.h',
       'browser/ui/views/frame/browser_frame_common_win.cc',
       'browser/ui/views/frame/browser_frame_common_win.h',
-      'browser/ui/views/frame/browser_frame.h',
+      'browser/ui/views/frame/browser_frame_mac.h',
+      'browser/ui/views/frame/browser_frame_mac.mm',
       'browser/ui/views/frame/browser_non_client_frame_view.cc',
       'browser/ui/views/frame/browser_non_client_frame_view_factory_aura.cc',
       'browser/ui/views/frame/browser_non_client_frame_view.h',
@@ -2021,6 +2023,7 @@
       'browser/ui/views/frame/browser_view_layout.cc',
       'browser/ui/views/frame/browser_view_layout_delegate.h',
       'browser/ui/views/frame/browser_view_layout.h',
+      'browser/ui/views/frame/browser_window_factory.cc',
       'browser/ui/views/frame/browser_window_property_manager_win.cc',
       'browser/ui/views/frame/browser_window_property_manager_win.h',
       'browser/ui/views/frame/contents_layout_manager.cc',
@@ -2028,7 +2031,8 @@
       'browser/ui/views/frame/contents_web_view.cc',
       'browser/ui/views/frame/contents_web_view.h',
       'browser/ui/views/frame/immersive_mode_controller.cc',
-      'browser/ui/views/frame/immersive_mode_controller_factory.cc',
+      'browser/ui/views/frame/immersive_mode_controller_factory_ash.cc',
+      'browser/ui/views/frame/immersive_mode_controller_factory_mac.cc',
       'browser/ui/views/frame/immersive_mode_controller.h',
       'browser/ui/views/frame/immersive_mode_controller_stub.cc',
       'browser/ui/views/frame/immersive_mode_controller_stub.h',
@@ -2037,6 +2041,7 @@
       'browser/ui/views/frame/native_browser_frame_factory.cc',
       'browser/ui/views/frame/native_browser_frame_factory.h',
       'browser/ui/views/frame/native_browser_frame_factory_chromeos.cc',
+      'browser/ui/views/frame/native_browser_frame_factory_mac.cc',
       'browser/ui/views/frame/native_browser_frame.h',
       'browser/ui/views/frame/opaque_browser_frame_view_layout.cc',
       'browser/ui/views/frame/opaque_browser_frame_view_layout_delegate.h',
@@ -2797,7 +2802,15 @@
             ['use_ash == 1', {
               'sources': [ '<@(chrome_browser_ui_ash_views_sources)' ],
             }],
-            ['OS!="mac"', {
+            ['OS=="mac"', {
+              'conditions': [
+                ['mac_views_browser==1', {
+                  'sources!': [ 'browser/ui/cocoa/browser_window_factory_cocoa.mm', ],
+                }, {
+                  'sources!': [ 'browser/ui/views/frame/browser_window_factory.cc', ],
+                }],
+              ],
+            }, {
               'sources': [ '<@(chrome_browser_ui_views_non_mac_sources)' ],
               'dependencies': [
                 '<(DEPTH)/extensions/components/extensions_components.gyp:native_app_window',
