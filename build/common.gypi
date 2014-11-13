@@ -505,7 +505,6 @@
       # tool explicitly.
       # See third_party/cld_2/cld_2.gyp for more information.
       #   0: Small tables, lower accuracy
-      #   1: Medium tables, medium accuracy
       #   2: Large tables, high accuracy
       'cld2_table_size%': 2,
 
