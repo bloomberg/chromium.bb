@@ -66,6 +66,7 @@
 #include "net/cert/x509_certificate.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/size.h"
 
@@ -724,10 +725,15 @@ base::android::ScopedJavaLocalRef<jbyteArray>
       reinterpret_cast<const uint8*>(der_string.data()), der_string.length());
 }
 
-void AwContents::RequestNewHitTestDataAt(JNIEnv* env, jobject obj,
-                                         jint x, jint y) {
+void AwContents::RequestNewHitTestDataAt(JNIEnv* env,
+                                         jobject obj,
+                                         jfloat x,
+                                         jfloat y,
+                                         jfloat touch_major) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  render_view_host_ext_->RequestNewHitTestDataAt(x, y);
+  gfx::PointF touch_center(x, y);
+  gfx::SizeF touch_area(touch_major, touch_major);
+  render_view_host_ext_->RequestNewHitTestDataAt(touch_center, touch_area);
 }
 
 void AwContents::UpdateLastHitTestData(JNIEnv* env, jobject obj) {

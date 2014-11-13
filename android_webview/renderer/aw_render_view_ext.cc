@@ -265,13 +265,15 @@ void AwRenderViewExt::FocusedNodeChanged(const blink::WebNode& node) {
   Send(new AwViewHostMsg_UpdateHitTestData(routing_id(), data));
 }
 
-void AwRenderViewExt::OnDoHitTest(int view_x, int view_y) {
+void AwRenderViewExt::OnDoHitTest(const gfx::PointF& touch_center,
+                                  const gfx::SizeF& touch_area) {
   if (!render_view() || !render_view()->GetWebView())
     return;
 
   const blink::WebHitTestResult result =
-      render_view()->GetWebView()->hitTestResultAt(
-          blink::WebPoint(view_x, view_y));
+      render_view()->GetWebView()->hitTestResultForTap(
+          blink::WebPoint(touch_center.x(), touch_center.y()),
+          blink::WebSize(touch_area.width(), touch_area.height()));
   AwHitTestData data;
 
   if (!result.urlElement().isNull()) {

@@ -11,6 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/threading/non_thread_safe.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/size.h"
 
 class GURL;
@@ -53,9 +55,10 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
   void ClearCache();
 
   // Do a hit test at the view port coordinates and asynchronously update
-  // |last_hit_test_data_|. |view_x| and |view_y| are in density independent
-  // pixels used by blink::WebView.
-  void RequestNewHitTestDataAt(int view_x, int view_y);
+  // |last_hit_test_data_|. Width and height in |touch_area| are in density
+  // independent pixels used by blink::WebView.
+  void RequestNewHitTestDataAt(const gfx::PointF& touch_center,
+                               const gfx::SizeF& touch_area);
 
   // Optimization to avoid unnecessary Java object creation on hit test.
   bool HasNewHitTestData() const;

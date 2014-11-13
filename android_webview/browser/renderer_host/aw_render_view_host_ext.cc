@@ -57,11 +57,12 @@ void AwRenderViewHostExt::MarkHitTestDataRead() {
   has_new_hit_test_data_ = false;
 }
 
-void AwRenderViewHostExt::RequestNewHitTestDataAt(int view_x, int view_y) {
+void AwRenderViewHostExt::RequestNewHitTestDataAt(
+    const gfx::PointF& touch_center,
+    const gfx::SizeF& touch_area) {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_DoHitTest(web_contents()->GetRoutingID(),
-                               view_x,
-                               view_y));
+  Send(new AwViewMsg_DoHitTest(web_contents()->GetRoutingID(), touch_center,
+                               touch_area));
 }
 
 const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {

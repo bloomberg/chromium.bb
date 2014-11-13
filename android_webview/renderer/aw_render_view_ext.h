@@ -10,6 +10,8 @@
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/size.h"
 
 namespace blink {
@@ -41,7 +43,8 @@ class AwRenderViewExt : public content::RenderViewObserver {
 
   void OnDocumentHasImagesRequest(int id);
 
-  void OnDoHitTest(int view_x, int view_y);
+  void OnDoHitTest(const gfx::PointF& touch_center,
+                   const gfx::SizeF& touch_area);
 
   void OnSetTextZoomFactor(float zoom_factor);
 

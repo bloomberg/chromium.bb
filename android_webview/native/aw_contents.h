@@ -97,7 +97,11 @@ class AwContents : public FindHelper::Listener,
   void AddVisitedLinks(JNIEnv* env, jobject obj, jobjectArray jvisited_links);
   base::android::ScopedJavaLocalRef<jbyteArray> GetCertificate(
       JNIEnv* env, jobject obj);
-  void RequestNewHitTestDataAt(JNIEnv* env, jobject obj, jint x, jint y);
+  void RequestNewHitTestDataAt(JNIEnv* env,
+                               jobject obj,
+                               jfloat x,
+                               jfloat y,
+                               jfloat touch_major);
   void UpdateLastHitTestData(JNIEnv* env, jobject obj);
   void OnSizeChanged(JNIEnv* env, jobject obj, int w, int h, int ow, int oh);
   void SetViewVisibility(JNIEnv* env, jobject obj, bool visible);

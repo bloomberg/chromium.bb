@@ -2383,13 +2383,12 @@ public class AwContents implements SmartClipProvider {
             mScrollOffsetManager.setProcessingTouchEvent(false);
 
             if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                int actionIndex = event.getActionIndex();
-
                 // Note this will trigger IPC back to browser even if nothing is
                 // hit.
                 nativeRequestNewHitTestDataAt(mNativeAwContents,
-                        (int) Math.round(event.getX(actionIndex) / mDIPScale),
-                        (int) Math.round(event.getY(actionIndex) / mDIPScale));
+                        event.getX() / (float) mDIPScale,
+                        event.getY() / (float) mDIPScale,
+                        event.getTouchMajor() / (float) mDIPScale);
             }
 
             if (mOverScrollGlow != null) {
@@ -2603,7 +2602,8 @@ public class AwContents implements SmartClipProvider {
     private native byte[] nativeGetCertificate(long nativeAwContents);
 
     // Coordinates in desity independent pixels.
-    private native void nativeRequestNewHitTestDataAt(long nativeAwContents, int x, int y);
+    private native void nativeRequestNewHitTestDataAt(long nativeAwContents, float x, float y,
+            float touchMajor);
     private native void nativeUpdateLastHitTestData(long nativeAwContents);
 
     private native void nativeOnSizeChanged(long nativeAwContents, int w, int h, int ow, int oh);
