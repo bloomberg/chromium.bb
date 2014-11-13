@@ -38,7 +38,7 @@ namespace blink {
 class KURL;
 class SecurityOriginCache;
 
-class PLATFORM_EXPORT SecurityOrigin : public ThreadSafeRefCounted<SecurityOrigin> {
+class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
 public:
     enum Policy {
         AlwaysDeny = 0,
