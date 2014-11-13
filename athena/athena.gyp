@@ -100,6 +100,8 @@
         'system/time_view.h',
         'system/public/system_ui.h',
         'system/system_ui_impl.cc',
+        'util/athena_constants.cc',
+        'util/athena_constants.h',
         'util/container_priorities.h',
         'util/drag_handle.cc',
         'util/drag_handle.h',

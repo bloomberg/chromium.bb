@@ -10,13 +10,19 @@
 #include "athena/system/shutdown_dialog.h"
 #include "athena/system/status_icon_container_view.h"
 #include "athena/system/time_view.h"
+#include "athena/util/athena_constants.h"
 #include "athena/util/container_priorities.h"
 #include "athena/util/fill_layout_manager.h"
+#include "athena/wm/public/window_manager.h"
+#include "athena/wm/public/window_manager_observer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
+#include "ui/wm/core/visibility_controller.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace athena {
 namespace {
@@ -69,15 +75,19 @@ class SystemInfoView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(SystemInfoView);
 };
 
-class SystemUIImpl : public SystemUI {
+class SystemUIImpl : public SystemUI, public WindowManagerObserver {
  public:
   SystemUIImpl(scoped_refptr<base::TaskRunner> blocking_task_runner)
       : orientation_controller_(new OrientationController()),
-        background_container_(nullptr) {
+        background_container_(nullptr),
+        system_info_widget_(nullptr) {
     orientation_controller_->InitWith(blocking_task_runner);
+    WindowManager::Get()->AddObserver(this);
   }
 
   ~SystemUIImpl() override {
+    WindowManager::Get()->RemoveObserver(this);
+
     // Stops file watching now if exists. Waiting until message loop shutdon
     // leads to FilePathWatcher crash.
     orientation_controller_->Shutdown();
@@ -97,13 +107,49 @@ class SystemUIImpl : public SystemUI {
 
  private:
   // SystemUI:
-  virtual void SetBackgroundImage(const gfx::ImageSkia& image) override {
+  void SetBackgroundImage(const gfx::ImageSkia& image) override {
     background_controller_->SetImage(image);
   }
 
-  virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) override {
-    return new SystemInfoView(color_scheme);
+  // WindowManagerObserver:
+  void OnOverviewModeEnter() override {
+    DCHECK(!system_info_widget_);
+
+    ScreenManager* screen_manager = ScreenManager::Get();
+    aura::Window* container = screen_manager->CreateContainer(
+        ScreenManager::ContainerParams("SystemInfo", CP_SYSTEM_INFO));
+    wm::SetChildWindowVisibilityChangesAnimated(container);
+
+    system_info_widget_ = new views::Widget();
+    views::Widget::InitParams widget_params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    widget_params.parent = container;
+    widget_params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    widget_params.bounds =
+        gfx::Rect(0, 0, container->bounds().width(), kSystemUIHeight);
+    system_info_widget_->Init(widget_params);
+    system_info_widget_->SetContentsView(
+        new SystemInfoView(SystemUI::COLOR_SCHEME_LIGHT));
+
+    wm::SetWindowVisibilityAnimationType(
+        system_info_widget_->GetNativeWindow(),
+        wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
+    wm::SetWindowVisibilityAnimationVerticalPosition(
+        system_info_widget_->GetNativeWindow(), -kSystemUIHeight);
+
+    system_info_widget_->Show();
   }
+
+  void OnOverviewModeExit() override {
+    // Deleting the container deletes its child windows which deletes
+    // |system_info_widget_|.
+    delete system_info_widget_->GetNativeWindow()->parent();
+    system_info_widget_ = nullptr;
+  }
+
+  void OnSplitViewModeEnter() override {}
+
+  void OnSplitViewModeExit() override {}
 
   scoped_ptr<OrientationController> orientation_controller_;
   scoped_ptr<ShutdownDialog> shutdown_dialog_;
@@ -112,12 +158,7 @@ class SystemUIImpl : public SystemUI {
   // The parent container for the background.
   aura::Window* background_container_;
 
-  // The parent container used by system modal dialogs.
-  aura::Window* system_modal_container_;
-
-  // The parent container used by system modal dialogs when the login screen is
-  // visible.
-  aura::Window* login_screen_system_modal_container_;
+  views::Widget* system_info_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemUIImpl);
 };

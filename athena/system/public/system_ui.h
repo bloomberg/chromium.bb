@@ -38,10 +38,6 @@ class ATHENA_EXPORT SystemUI {
 
   // Sets the background image.
   virtual void SetBackgroundImage(const gfx::ImageSkia& image) = 0;
-
-  // Creates a view which displays the time, status icons, and debug
-  // information.
-  virtual views::View* CreateSystemInfoView(ColorScheme color_scheme) = 0;
 };
 
 }  // namespace athena

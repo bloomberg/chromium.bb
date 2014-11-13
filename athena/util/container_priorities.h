@@ -15,6 +15,7 @@ enum ContainerPriorities {
   // TODO(oshima): rename LOGIN_xxx to something more generic.
   CP_LOGIN_SCREEN,
   CP_LOGIN_SCREEN_SYSTEM_MODAL,
+  CP_SYSTEM_INFO,
   CP_VIRTUAL_KEYBOARD,
   CP_END,
 };

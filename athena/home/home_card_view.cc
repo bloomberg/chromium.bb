@@ -5,6 +5,7 @@
 #include "athena/home/home_card_view.h"
 
 #include "athena/home/home_card_constants.h"
+#include "athena/util/athena_constants.h"
 #include "athena/wm/public/window_manager.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/views/app_list_main_view.h"

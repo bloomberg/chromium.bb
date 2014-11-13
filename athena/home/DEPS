@@ -4,7 +4,6 @@ include_rules = [
   "+athena/input/public",
   "+athena/screen/public",
   "+athena/strings/grit/athena_strings.h",
-  "+athena/system/public",
   "+athena/wm/public",
   "+third_party/skia/include",
   "+ui/aura",

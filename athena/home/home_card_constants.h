@@ -24,9 +24,6 @@ ATHENA_EXPORT extern const int kHomeCardDragIndicatorMarginHeight;
 // The height of the home card of MINIMIZED state.
 ATHENA_EXPORT extern const int kHomeCardMinimizedHeight;
 
-// The height of the system UI area.
-ATHENA_EXPORT extern const int kSystemUIHeight;
-
 // The view ID for the seach box in the home card.
 ATHENA_EXPORT extern const int kHomeCardSearchBoxId;
 

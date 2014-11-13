@@ -225,10 +225,9 @@ TEST_F(HomeCardTest, Gestures) {
   EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
 
   // Swipe down to the bottom state.
-  generator.GestureScrollSequence(gfx::Point(x, 10),
+  generator.GestureScrollSequence(gfx::Point(x, 50),
                                   gfx::Point(x, bottom - 120),
-                                  base::TimeDelta::FromSeconds(1),
-                                  10);
+                                  base::TimeDelta::FromSeconds(1), 10);
   EXPECT_EQ(HomeCard::VISIBLE_BOTTOM, HomeCard::Get()->GetState());
   EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
 
@@ -240,10 +239,8 @@ TEST_F(HomeCardTest, Gestures) {
   EXPECT_TRUE(WindowManager::Get()->IsOverviewModeActive());
 
   // Swipe down to the minimized state.
-  generator.GestureScrollSequence(gfx::Point(x, 10),
-                                  gfx::Point(x, bottom - 1),
-                                  base::TimeDelta::FromSeconds(1),
-                                  10);
+  generator.GestureScrollSequence(gfx::Point(x, 50), gfx::Point(x, bottom - 1),
+                                  base::TimeDelta::FromSeconds(1), 10);
   EXPECT_EQ(HomeCard::VISIBLE_MINIMIZED, HomeCard::Get()->GetState());
   EXPECT_FALSE(WindowManager::Get()->IsOverviewModeActive());
 }

@@ -7,6 +7,7 @@
 #include <complex>
 #include <vector>
 
+#include "athena/util/athena_constants.h"
 #include "athena/wm/overview_toolbar.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_list_provider_observer.h"
@@ -363,7 +364,8 @@ class WindowOverviewModeImpl : public WindowOverviewMode,
     const int kGapBetweenWindowsBottom = 10;
     const int kGapBetweenWindowsTop = 5;
 
-    int top = (window_count - index - 1) * kGapBetweenWindowsTop;
+    int top =
+        (window_count - index - 1) * kGapBetweenWindowsTop + kSystemUIHeight;
     int bottom = GetScrollableHeight() - (index * kGapBetweenWindowsBottom);
 
     WindowOverviewState* state = window->GetProperty(kWindowOverviewState);
