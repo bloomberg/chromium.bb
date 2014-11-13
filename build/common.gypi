@@ -1466,7 +1466,6 @@
     # IPC fuzzer is disabled by default.
     'enable_ipc_fuzzer%': 0,
 
-
     # Force disable libstdc++ debug mode.
     'disable_glibcxx_debug%': 0,
 
@@ -1486,6 +1485,9 @@
     'ozone_platform_gbm%': 0,
     'ozone_platform_ozonex%': 0,
     'ozone_platform_test%': 0,
+
+    # Experiment: http://crbug.com/426914
+    'envoy%': 0,
 
     'conditions': [
       ['buildtype=="Official"', {

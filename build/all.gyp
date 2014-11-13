@@ -276,6 +276,11 @@
             '../athena/main/athena_main.gyp:*',
           ],
         }],
+        ['envoy==1', {
+          'dependencies': [
+            '../envoy/envoy.gyp:*',
+          ],
+        }],
       ],
     }, # target_name: All
     {
