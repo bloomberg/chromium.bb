@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/native_window_tracker.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -163,6 +164,8 @@ EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
       parent_window_(parent_window),
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))) {
+   if (parent_window_)
+     parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
 }
 
 EphemeralAppLauncher::EphemeralAppLauncher(const std::string& webstore_item_id,
@@ -353,7 +356,14 @@ void EphemeralAppLauncher::InitInstallData(
 }
 
 bool EphemeralAppLauncher::CheckRequestorAlive() const {
-  return dummy_web_contents_.get() != NULL || web_contents() != NULL;
+  if (!parent_window_) {
+    // Assume the requestor is always alive if |parent_window_| is null.
+    return true;
+  }
+
+  return (web_contents() != nullptr ||
+          (parent_window_tracker_ &&
+              !parent_window_tracker_->WasNativeWindowClosed()));
 }
 
 const GURL& EphemeralAppLauncher::GetRequestorURL() const {

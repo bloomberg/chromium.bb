@@ -34,7 +34,8 @@ WebstoreInstallWithPrompt::WebstoreInstallWithPrompt(
       dummy_web_contents_(
           WebContents::Create(WebContents::CreateParams(profile))),
       parent_window_(parent_window) {
-  DCHECK(parent_window);
+  if (parent_window_)
+    parent_window_tracker_ = NativeWindowTracker::Create(parent_window);
   set_install_source(WebstoreInstaller::INSTALL_SOURCE_OTHER);
 }
 
@@ -42,8 +43,11 @@ WebstoreInstallWithPrompt::~WebstoreInstallWithPrompt() {
 }
 
 bool WebstoreInstallWithPrompt::CheckRequestorAlive() const {
-  // Assume the requestor is always alive.
-  return true;
+  if (!parent_window_) {
+    // Assume the requestor is always alive if |parent_window_| is null.
+    return true;
+  }
+  return !parent_window_tracker_->WasNativeWindowClosed();
 }
 
 const GURL& WebstoreInstallWithPrompt::GetRequestorURL() const {

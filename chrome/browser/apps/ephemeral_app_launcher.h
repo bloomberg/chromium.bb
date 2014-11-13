@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class ExtensionEnableFlow;
+class NativeWindowTracker;
 class Profile;
 
 namespace content {
@@ -143,6 +144,7 @@ class EphemeralAppLauncher : public extensions::WebstoreStandaloneInstaller,
   LaunchCallback launch_callback_;
 
   gfx::NativeWindow parent_window_;
+  scoped_ptr<NativeWindowTracker> parent_window_tracker_;
   scoped_ptr<content::WebContents> dummy_web_contents_;
 
   scoped_ptr<ExtensionEnableFlow> extension_enable_flow_;
