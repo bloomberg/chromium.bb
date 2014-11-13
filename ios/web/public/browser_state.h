@@ -18,7 +18,7 @@ namespace web {
 // thread.
 class BrowserState : public base::SupportsUserData {
  public:
-  virtual ~BrowserState();
+  ~BrowserState() override;
 
   // Return whether this BrowserState is incognito. Default is false.
   virtual bool IsOffTheRecord() const = 0;
