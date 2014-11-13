@@ -31,7 +31,6 @@ public:
 
     enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
     static void applyRoundedRectClips(RenderLayer&, const LayerPaintingInfo&, GraphicsContext*, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
-    static void beginTransparencyLayers(GraphicsContext*, RenderLayer&, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
 private:
     enum ClipState { HasNotClipped, HasClipped };
@@ -45,9 +44,9 @@ private:
     bool atLeastOneFragmentIntersectsDamageRect(LayerFragments&, const LayerPaintingInfo&, PaintLayerFlags, const LayoutPoint& offsetFromRoot);
     void paintFragmentWithPhase(PaintPhase, const LayerFragment&, GraphicsContext*, const ClipRect&, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
     void paintBackgroundForFragments(const LayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
+        const LayoutRect& transparencyPaintDirtyRect, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
     void paintForegroundForFragments(const LayerFragments&, GraphicsContext*,
-        const LayoutRect& transparencyPaintDirtyRect, bool haveTransparency, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer,
+        const LayoutRect& transparencyPaintDirtyRect, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer,
         bool selectionOnly, PaintLayerFlags);
     void paintForegroundForFragmentsWithPhase(PaintPhase, const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags, ClipState);
     void paintOutlineForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, PaintBehavior, RenderObject* paintingRootForRenderer, PaintLayerFlags);
@@ -55,12 +54,14 @@ private:
     void paintMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer, PaintLayerFlags);
     void paintChildClippingMaskForFragments(const LayerFragments&, GraphicsContext*, const LayerPaintingInfo&, RenderObject* paintingRootForRenderer, PaintLayerFlags);
     void paintTransformedLayerIntoFragments(GraphicsContext*, const LayerPaintingInfo&, PaintLayerFlags);
+    void beginTransparencyLayers(GraphicsContext*, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior);
 
     static bool needsToClip(const LayerPaintingInfo& localPaintingInfo, const ClipRect&);
 
     // Returns whether this layer should be painted during sofware painting (i.e., not via calls from CompositedLayerMapping to draw into composited
     // layers).
     bool shouldPaintLayerInSoftwareMode(const LayerPaintingInfo&, PaintLayerFlags paintFlags);
+    bool shouldCreateTransparencyLayerForBlendMode();
 
     RenderLayer& m_renderLayer;
 };

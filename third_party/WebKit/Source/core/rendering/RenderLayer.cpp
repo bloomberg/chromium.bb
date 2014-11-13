@@ -1075,20 +1075,6 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
     return false;
 }
 
-RenderLayer* RenderLayer::transparentPaintingAncestor()
-{
-    if (hasCompositedLayerMapping())
-        return 0;
-
-    for (RenderLayer* curr = parent(); curr; curr = curr->parent()) {
-        if (curr->hasCompositedLayerMapping())
-            return 0;
-        if (curr->isTransparent())
-            return curr;
-    }
-    return 0;
-}
-
 static void expandClipRectForDescendantsAndReflection(LayoutRect& clipRect, const RenderLayer* layer, const RenderLayer* rootLayer,
     RenderLayer::TransparencyClipBoxBehavior transparencyBehavior, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
 {

@@ -36,12 +36,6 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
         rootRelativeBoundsComputed = true;
     }
 
-    // Do transparency and clipping before starting filter processing.
-    if (paintFlags & PaintLayerHaveTransparency) {
-        // If we have a filter and transparency, we have to eagerly start a transparency layer here, rather than risk a child layer lazily starts one after filter processing.
-        LayerPainter::beginTransparencyLayers(context, renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
-    }
-
     // We'll handle clipping to the dirty rect before filter rasterization.
     // Filter processing will automatically expand the clip rect and the offscreen to accommodate any filter outsets.
     // FIXME: It is incorrect to just clip to the damageRect here once multiple fragments are involved.
