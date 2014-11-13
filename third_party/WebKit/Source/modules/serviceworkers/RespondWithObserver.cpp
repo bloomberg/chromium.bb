@@ -87,7 +87,7 @@ void RespondWithObserver::respondWith(ScriptState* scriptState, const ScriptValu
 {
     ASSERT(RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled());
     if (m_state != Initial) {
-        exceptionState.throwDOMException(InvalidStateError, "respondWith is already called.");
+        exceptionState.throwDOMException(InvalidStateError, "The fetch event has already been responded to.");
         return;
     }
 
