@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/dom_operation_notification_details.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
@@ -269,7 +270,7 @@ GURL GetFileUrlWithQuery(const base::FilePath& path,
   return url;
 }
 
-void WaitForLoadStop(WebContents* web_contents) {
+void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents) {
   // In many cases, the load may have finished before we get here.  Only wait if
   // the tab still has a pending navigation.
   if (web_contents->IsLoading()) {
@@ -278,6 +279,20 @@ void WaitForLoadStop(WebContents* web_contents) {
         Source<NavigationController>(&web_contents->GetController()));
     load_stop_observer.Wait();
   }
+}
+
+bool WaitForLoadStop(WebContents* web_contents) {
+  WaitForLoadStopWithoutSuccessCheck(web_contents);
+  return IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL);
+}
+
+bool IsLastCommittedEntryOfPageType(WebContents* web_contents,
+                                    content::PageType page_type) {
+  NavigationEntry* last_entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  if (!last_entry)
+    return false;
+  return last_entry->GetPageType() == page_type;
 }
 
 void CrashTab(WebContents* web_contents) {

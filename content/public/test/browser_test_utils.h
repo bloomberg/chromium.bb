@@ -19,6 +19,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/page_type.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "url/gurl.h"
@@ -59,9 +60,25 @@ class WebContents;
 GURL GetFileUrlWithQuery(const base::FilePath& path,
                          const std::string& query_string);
 
+// Checks whether the page type of the last committed navigation entry matches
+// |page_type|.
+bool IsLastCommittedEntryOfPageType(WebContents* web_contents,
+                                    content::PageType page_type);
+
 // Waits for a load stop for the specified |web_contents|'s controller, if the
-// tab is currently web_contents.  Otherwise returns immediately.
-void WaitForLoadStop(WebContents* web_contents);
+// tab is currently web_contents.  Otherwise returns immediately.  Tests should
+// use WaitForLoadStop instead and check that last navigation succeeds, and
+// this function should only be used if the navigation leads to web_contents
+// being destroyed.
+void WaitForLoadStopWithoutSuccessCheck(WebContents* web_contents);
+
+// Waits for a load stop for the specified |web_contents|'s controller, if the
+// tab is currently web_contents.  Otherwise returns immediately.  Returns true
+// if the last navigation succeeded (resulted in a committed navigation entry
+// of type PAGE_TYPE_NORMAL).
+// TODO(alexmos): tests that use this function to wait for successful
+// navigations should be refactored to do EXPECT_TRUE(WaitForLoadStop()).
+bool WaitForLoadStop(WebContents* web_contents);
 
 #if defined(USE_AURA)
 // If WebContent's view is currently being resized, this will wait for the ack

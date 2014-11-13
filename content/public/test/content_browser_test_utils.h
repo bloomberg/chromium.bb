@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/common/page_type.h"
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -42,21 +43,30 @@ base::FilePath GetTestFilePath(const char* dir, const char* file);
 // The returned path is GURL format.
 GURL GetTestUrl(const char* dir, const char* file);
 
-// Navigates the selected tab of |window| to |url|, blocking until the
-// navigation finishes.
-void NavigateToURL(Shell* window, const GURL& url);
+// Navigates |window| to |url|, blocking until the navigation finishes.
+// Returns true if the page was loaded successfully and the last committed
+// URL matches |url|.
+// TODO(alexmos): any tests that use this function and expect successful
+// navigations should do EXPECT_TRUE(NavigateToURL()).
+bool NavigateToURL(Shell* window, const GURL& url);
+
 void LoadDataWithBaseURL(Shell* window,
                          const GURL& url,
                          const std::string data,
                          const GURL& base_url);
 
-// Navigates the selected tab of |window| to |url|, blocking until the given
-// number of navigations finishes.
+// Navigates |window| to |url|, blocking until the given number of navigations
+// finishes.
 void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
                                                 const GURL& url,
                                                 int number_of_navigations);
-// Reloads the selected tab of |window|, blocking until the given number of
-// navigations finishes.
+
+// Navigates |window| to |url|, blocks until the navigation finishes, and
+// checks that the navigation did not commit (e.g., due to a crash or
+// download).
+bool NavigateToURLAndExpectNoCommit(Shell* window, const GURL& url);
+
+// Reloads |window|, blocking until the given number of navigations finishes.
 void ReloadBlockUntilNavigationsComplete(Shell* window,
                                          int number_of_navigations);
 

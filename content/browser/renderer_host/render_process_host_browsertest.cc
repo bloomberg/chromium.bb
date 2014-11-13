@@ -178,7 +178,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   rph->AddObserver(&observer_logger);
 
   // This will crash the render process, and start all the callbacks.
-  NavigateToURL(shell(), GURL(kChromeUICrashURL));
+  // We can't use NavigateToURL here since it accesses the shell() after
+  // navigating, which the shell_closer deletes.
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(), GURL(kChromeUICrashURL), 1);
 
   // The key here is that all the RenderProcessExited callbacks precede all the
   // RenderProcessHostDestroyed callbacks.

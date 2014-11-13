@@ -283,24 +283,31 @@ void InProcessBrowserTest::TearDown() {
   BrowserTestBase::TearDown();
 }
 
+// TODO(alexmos): This function should expose success of the underlying
+// navigation to tests, which should make sure navigations succeed when
+// appropriate. See https://crbug.com/425335
 void InProcessBrowserTest::AddTabAtIndexToBrowser(
     Browser* browser,
     int index,
     const GURL& url,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool check_navigation_success) {
   chrome::NavigateParams params(browser, url, transition);
   params.tabstrip_index = index;
   params.disposition = NEW_FOREGROUND_TAB;
   chrome::Navigate(&params);
 
-  content::WaitForLoadStop(params.target_contents);
+  if (check_navigation_success)
+    content::WaitForLoadStop(params.target_contents);
+  else
+    content::WaitForLoadStopWithoutSuccessCheck(params.target_contents);
 }
 
 void InProcessBrowserTest::AddTabAtIndex(
     int index,
     const GURL& url,
     ui::PageTransition transition) {
-  AddTabAtIndexToBrowser(browser(), index, url, transition);
+  AddTabAtIndexToBrowser(browser(), index, url, transition, true);
 }
 
 bool InProcessBrowserTest::SetUpUserDataDirectory() {

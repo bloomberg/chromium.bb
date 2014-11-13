@@ -196,7 +196,14 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     page_url_ = extension->GetResourceURL("page.html");
     delegate_.set_id(id_);
     ContentVerifyJob::SetDelegateForTests(&delegate_);
-    AddTabAtIndex(1, page_url_, ui::PAGE_TRANSITION_LINK);
+
+    // This call passes false for |check_navigation_success|, because checking
+    // for navigation success needs the WebContents to still exist after the
+    // navigation, whereas this navigation triggers an unload which destroys
+    // the WebContents.
+    AddTabAtIndexToBrowser(browser(), 1, page_url_, ui::PAGE_TRANSITION_LINK,
+                           false);
+
     unload_observer_->WaitForUnload(id_);
     ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
     int reasons = prefs->GetDisableReasons(id_);

@@ -111,8 +111,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   void AddTabAtIndexToBrowser(Browser* browser,
                               int index,
                               const GURL& url,
-                              ui::PageTransition transition);
-  void AddTabAtIndex(int index, const GURL& url,
+                              ui::PageTransition transition,
+                              bool check_navigation_success);
+  void AddTabAtIndex(int index,
+                     const GURL& url,
                      ui::PageTransition transition);
 
   // Initializes the contents of the user data directory. Called by SetUp()
