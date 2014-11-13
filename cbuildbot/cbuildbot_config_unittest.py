@@ -438,7 +438,7 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
   def testNoDuplicateSlavePrebuilts(self):
     """Test that no two same-board paladin slaves upload prebuilts."""
     for cfg in cbuildbot_config.config.values():
-      if (cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']):
+      if cfg['build_type'] == constants.PALADIN_TYPE and cfg['master']:
         slaves = cbuildbot_config.GetSlavesForMaster(cfg)
         prebuilt_slaves = [s for s in slaves if s['prebuilts']]
         # Dictionary from board name to builder name that uploads prebuilt

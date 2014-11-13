@@ -245,7 +245,7 @@ class DependencyError(PatchException):
 
   def ShortExplanation(self):
     link = self.error.patch.PatchLink()
-    return ('depends on %s, which %s' % (link, self.error.ShortExplanation()))
+    return 'depends on %s, which %s' % (link, self.error.ShortExplanation())
 
 
 class BrokenCQDepends(PatchException):

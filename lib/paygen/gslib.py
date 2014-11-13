@@ -251,7 +251,7 @@ def RunGsutilCommand(args,
     raise failed_exception('%r failed' % cmd if headers else e)
 
   if headers is not None and result is not None:
-    assert (redirect_stdout if get_headers_from_stdout else redirect_stderr)
+    assert redirect_stdout if get_headers_from_stdout else redirect_stderr
     # Parse headers that look like this:
     # header: x-goog-generation: 1359148994758000
     # header: x-goog-metageneration: 1

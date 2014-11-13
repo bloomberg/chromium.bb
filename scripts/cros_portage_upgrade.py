@@ -1947,7 +1947,7 @@ def main(argv):
 
   # Check that all boards have been setup first.
   for board in boards:
-    if (board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board)):
+    if board != Upgrader.HOST_BOARD and not _BoardIsSetUp(board):
       parser.print_usage()
       oper.Die('You must setup the %s board first.' % board)
 

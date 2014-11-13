@@ -2019,7 +2019,7 @@ class RunBoardTest(CpuTestBase):
     upgrade_mode = cpu.Upgrader._IsInUpgradeMode(mocked_upgrader)
     mocked_upgrader._IsInUpgradeMode().AndReturn(upgrade_mode)
     mocked_upgrader._AnyChangesStaged().AndReturn(staged_changes)
-    if (staged_changes):
+    if staged_changes:
       mocked_upgrader._StashChanges()
 
     mocked_upgrader._ResolveAndVerifyArgs(targetlist,

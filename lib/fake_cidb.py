@@ -84,7 +84,7 @@ class FakeCIDBConnection(object):
       clauses.add((int(change.gerrit_number), change_source))
     values = []
     for item, action_id in zip(self.clActionTable, itertools.count()):
-      if ((item['change_number'], item['change_source']) in clauses):
+      if (item['change_number'], item['change_source']) in clauses:
         row = (
             action_id,
             item['build_id'],

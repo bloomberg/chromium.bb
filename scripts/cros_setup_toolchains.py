@@ -205,8 +205,8 @@ def GetPortagePackage(target, package):
   # Portage package:
   pn = conf[package + '_pn']
   # Final package name:
-  assert(category)
-  assert(pn)
+  assert category
+  assert pn
   return '%s/%s' % (category, pn)
 
 

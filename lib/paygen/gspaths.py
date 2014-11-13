@@ -143,7 +143,7 @@ class Payload(utils.RestrictedAttrDict):
     if self.uri:
       return self.uri.split('/')[-1]
     else:
-      return ('%s -> %s (no uri)' % (self.src_image or 'any', self.tgt_image))
+      return '%s -> %s (no uri)' % (self.src_image or 'any', self.tgt_image)
 
 
 class ChromeosReleases(object):
@@ -265,8 +265,7 @@ class ChromeosReleases(object):
       The url for the specified build's payloads. Should be of the form:
       gs://chromeos-releases/blah-channel/board-name/1.2.3/payloads/SKIP_FLAG
     """
-
-    assert(flag in ChromeosReleases.FLAGS)
+    assert flag in ChromeosReleases.FLAGS
     return os.path.join(ChromeosReleases.BuildPayloadsUri(channel,
                                                           board,
                                                           version,

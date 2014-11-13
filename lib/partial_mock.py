@@ -296,8 +296,8 @@ class MockedCallResults(object):
       raise AssertionError("%s: %r not mocked!" % (self.name, params))
 
     if side_effect:
-      assert(hook_args is not None)
-      assert(hook_kwargs is not None)
+      assert hook_args is not None
+      assert hook_kwargs is not None
       hook_result = side_effect(*hook_args, **hook_kwargs)
       if hook_result is not None:
         return hook_result

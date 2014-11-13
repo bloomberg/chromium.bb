@@ -638,7 +638,7 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
     """Override: Creates an LKGMManager rather than a ManifestManager."""
     self._InitializeRepo()
     self.RegisterManifestManager(self._GetInitializedManager(self.internal))
-    if (self._run.config.master and self._GetSlaveConfigs()):
+    if self._run.config.master and self._GetSlaveConfigs():
       assert self.internal, 'Unified masters must use an internal checkout.'
       MasterSlaveLKGMSyncStage.sub_manager = self._GetInitializedManager(False)
 

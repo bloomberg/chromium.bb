@@ -1513,7 +1513,7 @@ def main(argv):
   parser = GetParser()
   options = parser.parse_args(argv)
 
-  if not (_CheckOptions(options)):
+  if not _CheckOptions(options):
     sys.exit(1)
 
   if options.end_date:
