@@ -19,6 +19,7 @@
 namespace content {
 
 class InputHandlerProxyClient;
+class InputScrollElasticityController;
 
 // This class is a proxy between the content input event filtering and the
 // compositor's input handling logic. InputHandlerProxy instances live entirely
@@ -133,6 +134,9 @@ class CONTENT_EXPORT InputHandlerProxy
 
   // Non-zero only within the scope of |scrollBy|.
   gfx::Vector2dF current_fling_velocity_;
+
+  // Used to animate rubber-band over-scroll effect on Mac.
+  scoped_ptr<InputScrollElasticityController> scroll_elasticity_controller_;
 
   bool smooth_scroll_enabled_;
 

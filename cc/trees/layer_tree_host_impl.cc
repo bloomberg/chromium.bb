@@ -29,6 +29,7 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/input/page_scale_animation.h"
+#include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/top_controls_manager.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
@@ -280,6 +281,8 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
     input_handler_client_->WillShutdown();
     input_handler_client_ = NULL;
   }
+  if (scroll_elasticity_helper_)
+    scroll_elasticity_helper_.reset();
 
   // The layer trees must be destroyed before the layer tree host. We've
   // made a contract with our animation controllers that the registrar
@@ -447,6 +450,12 @@ LayerTreeHostImpl::CreateLatencyInfoSwapPromiseMonitor(
     ui::LatencyInfo* latency) {
   return make_scoped_ptr(
       new LatencyInfoSwapPromiseMonitor(latency, NULL, this));
+}
+
+ScrollElasticityHelper* LayerTreeHostImpl::CreateScrollElasticityHelper() {
+  DCHECK(!scroll_elasticity_helper_);
+  scroll_elasticity_helper_.reset(new ScrollElasticityHelper(this));
+  return scroll_elasticity_helper_.get();
 }
 
 void LayerTreeHostImpl::QueueSwapPromiseForMainThreadScrollUpdate(

@@ -24,6 +24,7 @@ namespace ui { struct LatencyInfo; }
 namespace cc {
 
 class LayerScrollOffsetDelegate;
+class ScrollElasticityHelper;
 
 struct CC_EXPORT InputHandlerScrollResult {
   InputHandlerScrollResult();
@@ -149,6 +150,8 @@ class CC_EXPORT InputHandler {
   // into a LatencyInfoSwapPromise.
   virtual scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) = 0;
+
+  virtual ScrollElasticityHelper* CreateScrollElasticityHelper() = 0;
 
  protected:
   InputHandler() {}

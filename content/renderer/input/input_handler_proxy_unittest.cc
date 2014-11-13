@@ -104,6 +104,10 @@ class MockInputHandler : public cc::InputHandler {
       return scoped_ptr<cc::SwapPromiseMonitor>();
   }
 
+  cc::ScrollElasticityHelper* CreateScrollElasticityHelper() override {
+    return NULL;
+  }
+
   virtual void BindToClient(cc::InputHandlerClient* client) override {}
 
   virtual void MouseMoveAt(const gfx::Point& mouse_position) override {}

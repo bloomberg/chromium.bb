@@ -54,6 +54,7 @@ class RasterWorkerPool;
 class RenderPassDrawQuad;
 class RenderingStatsInstrumentation;
 class ResourcePool;
+class ScrollElasticityHelper;
 class ScrollbarLayerImplBase;
 class TextureMailboxDeleter;
 class TopControlsManager;
@@ -152,6 +153,7 @@ class CC_EXPORT LayerTreeHostImpl
   bool HaveTouchEventHandlersAt(const gfx::Point& viewport_port) override;
   scoped_ptr<SwapPromiseMonitor> CreateLatencyInfoSwapPromiseMonitor(
       ui::LatencyInfo* latency) override;
+  ScrollElasticityHelper* CreateScrollElasticityHelper() override;
 
   // TopControlsManagerClient implementation.
   void SetControlsTopOffset(float offset) override;
@@ -620,6 +622,10 @@ class CC_EXPORT LayerTreeHostImpl
   bool scroll_affects_scroll_handler_;
   int scroll_layer_id_when_mouse_over_scrollbar_;
   ScopedPtrVector<SwapPromise> swap_promises_for_main_thread_scroll_update_;
+
+  // An object to implement the ScrollElasticityHelper interface and
+  // hold all state related to elasticity. May be NULL if never requested.
+  scoped_ptr<ScrollElasticityHelper> scroll_elasticity_helper_;
 
   bool tile_priorities_dirty_;
 

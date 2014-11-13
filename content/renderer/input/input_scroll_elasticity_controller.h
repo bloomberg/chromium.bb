@@ -6,11 +6,11 @@
 #define CONTENT_RENDERER_INPUT_INPUT_SCROLL_ELASTICITY_CONTROLLER_H_
 
 #include "base/macros.h"
-#include "base/time/time.h"
+#include "base/memory/weak_ptr.h"
+#include "cc/input/scroll_elasticity_helper.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "ui/gfx/geometry/vector2d_f.h"
 
-// ScrollElasticityController and ScrollElasticityControllerClient are based on
+// InputScrollElasticityController is based on
 // WebKit/Source/platform/mac/ScrollElasticityController.h
 /*
  * Copyright (C) 2011 Apple Inc. All rights reserved.
@@ -37,41 +37,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+namespace cc {
+struct InputHandlerScrollResult;
+}  // namespace cc
+
 namespace content {
 
-class ScrollElasticityControllerClient {
- protected:
-  virtual ~ScrollElasticityControllerClient() {}
-
+class InputScrollElasticityController {
  public:
-  virtual bool AllowsHorizontalStretching() = 0;
-  virtual bool AllowsVerticalStretching() = 0;
-  // The amount that the view is stretched past the normal allowable bounds.
-  // The "overhang" amount.
-  virtual gfx::Vector2dF StretchAmount() = 0;
-  virtual bool PinnedInDirection(const gfx::Vector2dF& direction) = 0;
-  virtual bool CanScrollHorizontally() = 0;
-  virtual bool CanScrollVertically() = 0;
+  explicit InputScrollElasticityController(cc::ScrollElasticityHelper* helper);
+  virtual ~InputScrollElasticityController();
 
-  // Return the absolute scroll position, not relative to the scroll origin.
-  virtual gfx::Vector2dF AbsoluteScrollPosition() = 0;
+  base::WeakPtr<InputScrollElasticityController> GetWeakPtr();
+  void ObserveWheelEventAndResult(
+      const blink::WebMouseWheelEvent& wheel_event,
+      const cc::InputHandlerScrollResult& scroll_result);
 
-  virtual void ImmediateScrollBy(const gfx::Vector2dF& scroll) = 0;
-  virtual void ImmediateScrollByWithoutContentEdgeConstraints(
-      const gfx::Vector2dF& scroll) = 0;
-  virtual void StartSnapRubberbandTimer() = 0;
-  virtual void StopSnapRubberbandTimer() = 0;
+  void Animate(base::TimeTicks time);
 
-  // If the current scroll position is within the overhang area, this function
-  // will cause
-  // the page to scroll to the nearest boundary point.
-  virtual void AdjustScrollPositionToBoundsIfNecessary() = 0;
-};
-
-class ScrollElasticityController {
- public:
-  explicit ScrollElasticityController(ScrollElasticityControllerClient*);
-
+ private:
   // This method is responsible for both scrolling and rubber-banding.
   //
   // Events are passed by IPC from the embedder. Events on Mac are grouped
@@ -89,7 +73,6 @@ class ScrollElasticityController {
 
   bool IsRubberbandInProgress() const;
 
- private:
   void StopSnapRubberbandTimer();
   void SnapRubberband();
 
@@ -102,12 +85,12 @@ class ScrollElasticityController {
   // + No previous events in this gesture have caused any scrolling or rubber
   // banding.
   // + The event contains a horizontal component.
-  // + The client's view is pinned in the horizontal direction of the event.
+  // + The helper's view is pinned in the horizontal direction of the event.
   // + The wheel event disallows rubber banding in the horizontal direction
   // of the event.
   bool ShouldHandleEvent(const blink::WebMouseWheelEvent& wheel_event);
 
-  ScrollElasticityControllerClient* client_;
+  cc::ScrollElasticityHelper* helper_;
 
   // There is an active scroll gesture event. This parameter only gets set to
   // false after the rubber band has been snapped, and before a new gesture
@@ -135,7 +118,8 @@ class ScrollElasticityController {
 
   bool snap_rubberband_timer_is_active_;
 
-  DISALLOW_COPY_AND_ASSIGN(ScrollElasticityController);
+  base::WeakPtrFactory<InputScrollElasticityController> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(InputScrollElasticityController);
 };
 
 }  // namespace content

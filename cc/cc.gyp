@@ -147,6 +147,8 @@
         'input/page_scale_animation.h',
         'input/layer_selection_bound.cc',
         'input/layer_selection_bound.h',
+        'input/scroll_elasticity_helper.cc',
+        'input/scroll_elasticity_helper.h',
         'input/selection_bound_type.h',
         'input/top_controls_manager.cc',
         'input/top_controls_manager.h',

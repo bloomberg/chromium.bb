@@ -18,6 +18,8 @@ base/i18n/icu_string_conversions.cc
 base/logging.h
 # Copyright Ron Rivest, public domain.
 base/md5.cc
+# Copyright Apple Inc; BSD license. Moved from third_party/WebKit/.
+cc/input/scroll_elasticity_helper.h
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. This third-party code is taken from Mozilla, the license for which
 # we already pick up from third_party/npapi/.

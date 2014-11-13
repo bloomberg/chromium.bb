@@ -13,6 +13,7 @@
 #include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/input/input_handler_proxy_client.h"
+#include "content/renderer/input/input_scroll_elasticity_controller.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/latency_info.h"
@@ -161,11 +162,20 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
   input_handler_->BindToClient(this);
   smooth_scroll_enabled_ = CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableSmoothScrolling);
+
+#if defined(OS_MACOSX)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableThreadedEventHandlingMac)) {
+    scroll_elasticity_controller_.reset(new InputScrollElasticityController(
+        input_handler_->CreateScrollElasticityHelper()));
+  }
+#endif
 }
 
 InputHandlerProxy::~InputHandlerProxy() {}
 
 void InputHandlerProxy::WillShutdown() {
+  scroll_elasticity_controller_.reset();
   input_handler_ = NULL;
   client_->WillShutdown();
 }
@@ -276,64 +286,81 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     const WebMouseWheelEvent& wheel_event) {
+  InputHandlerProxy::EventDisposition result = DID_NOT_HANDLE;
+  cc::InputHandlerScrollResult scroll_result;
+
   if (wheel_event.scrollByPage) {
     // TODO(jamesr): We don't properly handle scroll by page in the compositor
     // thread, so punt it to the main thread. http://crbug.com/236639
-    return DID_NOT_HANDLE;
-  }
-  if (wheel_event.modifiers & WebInputEvent::ControlKey) {
+    result = DID_NOT_HANDLE;
+  } else if (wheel_event.modifiers & WebInputEvent::ControlKey) {
     // Wheel events involving the control key never trigger scrolling, only
     // event handlers.  Forward to the main thread.
-    return DID_NOT_HANDLE;
-  }
-  if (smooth_scroll_enabled_) {
+    result = DID_NOT_HANDLE;
+  } else if (smooth_scroll_enabled_) {
     cc::InputHandler::ScrollStatus scroll_status =
         input_handler_->ScrollAnimated(
             gfx::Point(wheel_event.x, wheel_event.y),
             gfx::Vector2dF(-wheel_event.deltaX, -wheel_event.deltaY));
     switch (scroll_status) {
       case cc::InputHandler::ScrollStarted:
-        return DID_HANDLE;
+        result = DID_HANDLE;
+        break;
       case cc::InputHandler::ScrollIgnored:
-        return DROP_EVENT;
+        result = DROP_EVENT;
       default:
-        return DID_NOT_HANDLE;
+        result = DID_NOT_HANDLE;
+        break;
+    }
+  } else {
+    cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
+        gfx::Point(wheel_event.x, wheel_event.y), cc::InputHandler::Wheel);
+    switch (scroll_status) {
+      case cc::InputHandler::ScrollStarted: {
+        TRACE_EVENT_INSTANT2(
+            "input", "InputHandlerProxy::handle_input wheel scroll",
+            TRACE_EVENT_SCOPE_THREAD, "deltaX", -wheel_event.deltaX, "deltaY",
+            -wheel_event.deltaY);
+        gfx::Point scroll_point(wheel_event.x, wheel_event.y);
+        gfx::Vector2dF scroll_delta(-wheel_event.deltaX, -wheel_event.deltaY);
+        scroll_result = input_handler_->ScrollBy(scroll_point, scroll_delta);
+        HandleOverscroll(scroll_point, scroll_result);
+        input_handler_->ScrollEnd();
+        result = scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
+        break;
+      }
+      case cc::InputHandler::ScrollIgnored:
+        // TODO(jamesr): This should be DROP_EVENT, but in cases where we fail
+        // to properly sync scrollability it's safer to send the event to the
+        // main thread. Change back to DROP_EVENT once we have synchronization
+        // bugs sorted out.
+        result = DID_NOT_HANDLE;
+        break;
+      case cc::InputHandler::ScrollUnknown:
+      case cc::InputHandler::ScrollOnMainThread:
+        result = DID_NOT_HANDLE;
+        break;
+      case cc::InputHandler::ScrollStatusCount:
+        NOTREACHED();
+        break;
     }
   }
-  cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
-      gfx::Point(wheel_event.x, wheel_event.y), cc::InputHandler::Wheel);
-  switch (scroll_status) {
-    case cc::InputHandler::ScrollStarted: {
-      TRACE_EVENT_INSTANT2(
-          "input",
-          "InputHandlerProxy::handle_input wheel scroll",
-          TRACE_EVENT_SCOPE_THREAD,
-          "deltaX",
-          -wheel_event.deltaX,
-          "deltaY",
-          -wheel_event.deltaY);
-      gfx::Point scroll_point(wheel_event.x, wheel_event.y);
-      gfx::Vector2dF scroll_delta(-wheel_event.deltaX, -wheel_event.deltaY);
-      cc::InputHandlerScrollResult scroll_result = input_handler_->ScrollBy(
-          scroll_point, scroll_delta);
-      HandleOverscroll(scroll_point, scroll_result);
-      input_handler_->ScrollEnd();
-      return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
-    }
-    case cc::InputHandler::ScrollIgnored:
-      // TODO(jamesr): This should be DROP_EVENT, but in cases where we fail
-      // to properly sync scrollability it's safer to send the event to the
-      // main thread. Change back to DROP_EVENT once we have synchronization
-      // bugs sorted out.
-      return DID_NOT_HANDLE;
-    case cc::InputHandler::ScrollUnknown:
-    case cc::InputHandler::ScrollOnMainThread:
-      return DID_NOT_HANDLE;
-    case cc::InputHandler::ScrollStatusCount:
-      NOTREACHED();
-      break;
+
+  // Send the event and its disposition to the elasticity controller to update
+  // the over-scroll animation. If the event is to be handled on the main
+  // thread, the event and its disposition will be sent to the elasticity
+  // controller after being handled on the main thread.
+  if (scroll_elasticity_controller_ && result != DID_NOT_HANDLE) {
+    // Note that the call to the elasticity controller is made asynchronously,
+    // to minimize divergence between main thread and impl thread event
+    // handling paths.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&InputScrollElasticityController::ObserveWheelEventAndResult,
+                   scroll_elasticity_controller_->GetWeakPtr(), wheel_event,
+                   scroll_result));
   }
-  return DID_NOT_HANDLE;
+  return result;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
@@ -639,6 +666,9 @@ void InputHandlerProxy::ExtendBoostedFlingTimeout(
 }
 
 void InputHandlerProxy::Animate(base::TimeTicks time) {
+  if (scroll_elasticity_controller_)
+    scroll_elasticity_controller_->Animate(time);
+
   if (!fling_curve_)
     return;
 
