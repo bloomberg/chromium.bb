@@ -4,6 +4,7 @@
 
 #include "chromeos/network/network_state.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -117,6 +118,13 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetStringValue(key, value, &guid_);
   } else if (key == shill::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
+  } else if (key == shill::kWifiHexSsid) {
+    std::string ssid_hex;
+    if (!GetStringValue(key, value, &ssid_hex)) {
+      return false;
+    }
+    raw_ssid_.clear();
+    return base::HexStringToBytes(ssid_hex, &raw_ssid_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
   } else if (key == shill::kProxyConfigProperty) {

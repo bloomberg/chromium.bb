@@ -5,6 +5,8 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_STATE_H_
 #define CHROMEOS_NETWORK_NETWORK_STATE_H_
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -79,6 +81,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   // Wifi property accessors
   const std::string& eap_method() const { return eap_method_; }
+  const std::vector<uint8_t>& raw_ssid() const { return raw_ssid_; }
 
   // Cellular property accessors
   const std::string& network_technology() const {
@@ -143,6 +146,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string guid_;
   std::string connection_state_;
   std::string profile_path_;
+  std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
   bool connectable_;
 
   // Reflects the current Shill Service.Error property. This might get cleared

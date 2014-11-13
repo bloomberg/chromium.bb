@@ -5,6 +5,7 @@
 #include "chromeos/network/network_state.h"
 
 #include "base/basictypes.h"
+#include "base/i18n/streaming_utf8_validator.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -126,7 +127,7 @@ TEST_F(NetworkStateTest, SsidLatin) {
   std::string wifi_latin1_hex =
       base::HexEncode(wifi_latin1.c_str(), wifi_latin1.length());
   std::string wifi_latin1_result = "latin-1 \u00c0\u00cb\u00cc\u00d6\u00fb";
-  EXPECT_FALSE(SetStringProperty(shill::kWifiHexSsid, wifi_latin1_hex));
+  EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_latin1_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_latin1_result);
 }
@@ -138,9 +139,37 @@ TEST_F(NetworkStateTest, SsidHex) {
   std::string wifi_hex_result = "This is HEX SSID!";
   std::string wifi_hex =
       base::HexEncode(wifi_hex_result.c_str(), wifi_hex_result.length());
-  EXPECT_FALSE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
+  EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
   EXPECT_TRUE(SignalInitialPropertiesReceived());
   EXPECT_EQ(network_state_.name(), wifi_hex_result);
+}
+
+// Non-UTF-8 SSID should be preserved in |raw_ssid_| field.
+TEST_F(NetworkStateTest, SsidNonUtf8) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
+
+  std::string non_utf8_ssid = "\xc0";
+  ASSERT_FALSE(base::StreamingUtf8Validator::Validate(non_utf8_ssid));
+
+  std::vector<uint8_t> non_utf8_ssid_bytes;
+  non_utf8_ssid_bytes.push_back(static_cast<uint8_t>(non_utf8_ssid.data()[0]));
+
+  std::string wifi_hex =
+      base::HexEncode(non_utf8_ssid.data(), non_utf8_ssid.size());
+  EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
+  EXPECT_TRUE(SignalInitialPropertiesReceived());
+  EXPECT_EQ(network_state_.raw_ssid(), non_utf8_ssid_bytes);
+}
+
+// Multiple updates for Hex SSID should work fine.
+TEST_F(NetworkStateTest, SsidHexMultipleUpdates) {
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeWifi));
+
+  std::string wifi_hex_result = "This is HEX SSID!";
+  std::string wifi_hex =
+      base::HexEncode(wifi_hex_result.c_str(), wifi_hex_result.length());
+  EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
+  EXPECT_TRUE(SetStringProperty(shill::kWifiHexSsid, wifi_hex));
 }
 
 }  // namespace chromeos
