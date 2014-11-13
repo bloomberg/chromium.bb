@@ -21,7 +21,7 @@ if (window.testRunner && window.accessibilityController) {
     document.getElementById('container').focus();
     var axContainer = accessibilityController.focusedElement;
 
-    shouldBe('axContainer.childAtIndex(0).role', '"AXRole: AXHorizontalRule"');
+    shouldBe('axContainer.childAtIndex(0).role', '"AXRole: AXSplitter"');
     shouldBe('axContainer.childAtIndex(1).role', '"AXRole: AXParagraph"');
     shouldBe('axContainer.childAtIndex(2).role', '"AXRole: AXLabel"');
     shouldBe('axContainer.childAtIndex(3).role', '"AXRole: AXForm"');

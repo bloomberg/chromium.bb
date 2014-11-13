@@ -1374,7 +1374,6 @@ crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/soft-hyphen-4.html [
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/splitText-dirty-lines.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/text-combine-shrink-to-fit.html [ Failure ]
 
-crbug.com/384723 accessibility/chromium-only-roles.html [ Failure ]
 crbug.com/385014 accessibility/canvas-fallback-content-2.html [ Failure ]
 
 crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html  [ Failure ]
