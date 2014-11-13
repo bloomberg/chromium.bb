@@ -54,12 +54,17 @@ def _GetFilesFromGit(paths = None):
   Args:
     paths: Prefix filter for the returned paths. May contain multiple entries.
   """
-  args = ['git', 'ls-files']
+  args = []
+  if sys.platform == 'win32':
+    args.append('git.bat')
+  else:
+    args.append('git')
+  args.append('ls-files')
   if paths:
     args.extend(paths)
   command = subprocess.Popen(args, stdout=subprocess.PIPE)
   output, _ = command.communicate()
-  return output.splitlines()
+  return [os.path.realpath(p) for p in output.splitlines()]
 
 
 def _ExtractEditsFromStdout(build_directory, stdout):
@@ -81,11 +86,10 @@ def _ExtractEditsFromStdout(build_directory, stdout):
   edits = collections.defaultdict(list)
   for line in lines[start_index + 1:end_index]:
     try:
-      edit_type, path, offset, length, replacement = line.split(':', 4)
+      edit_type, path, offset, length, replacement = line.split(':::', 4)
       replacement = replacement.replace("\0", "\n");
-      # Normalize the file path emitted by the clang tool to be relative to the
-      # current working directory.
-      path = os.path.relpath(os.path.join(build_directory, path))
+      # Normalize the file path emitted by the clang tool.
+      path = os.path.realpath(os.path.join(build_directory, path))
       edits[path].append(Edit(edit_type, int(offset), int(length), replacement))
     except ValueError:
       print 'Unable to parse edit: %s' % line
@@ -140,6 +144,7 @@ class _CompilerDispatcher(object):
     self.__filenames = filenames
     self.__success_count = 0
     self.__failed_count = 0
+    self.__edit_count = 0
     self.__edits = collections.defaultdict(list)
 
   @property
@@ -172,6 +177,7 @@ class _CompilerDispatcher(object):
       self.__success_count += 1
       for k, v in result['edits'].iteritems():
         self.__edits[k].extend(v)
+        self.__edit_count += len(v)
     else:
       self.__failed_count += 1
       sys.stdout.write('\nFailed to process %s\n' % result['filename'])
@@ -180,8 +186,9 @@ class _CompilerDispatcher(object):
     percentage = (
         float(self.__success_count + self.__failed_count) /
         len(self.__filenames)) * 100
-    sys.stdout.write('Succeeded: %d, Failed: %d [%.2f%%]\r' % (
-        self.__success_count, self.__failed_count, percentage))
+    sys.stdout.write('Succeeded: %d, Failed: %d, Edits: %d [%.2f%%]\r' % (
+        self.__success_count, self.__failed_count, self.__edit_count,
+        percentage))
     sys.stdout.flush()
 
 
@@ -283,7 +290,9 @@ def main(argv):
       '../../../third_party/llvm/tools/clang/tools/clang-format',
       'clang-format-diff.py')
   # TODO(dcheng): Allow this to be controlled with a flag as well.
-  if not os.path.isfile(clang_format_diff_path):
+  # TODO(dcheng): Shell escaping of args to git diff to clang-format is broken
+  # on Windows.
+  if not os.path.isfile(clang_format_diff_path) or sys.platform == 'win32':
     clang_format_diff_path = None
 
   filenames = frozenset(_GetFilesFromGit(argv[2:]))
@@ -297,7 +306,7 @@ def main(argv):
   # useful to modify files that aren't under source control--typically, these
   # are generated files or files in a git submodule that's not part of Chromium.
   _ApplyEdits({k : v for k, v in dispatcher.edits.iteritems()
-                    if k in filenames},
+                    if os.path.realpath(k) in filenames},
               clang_format_diff_path)
   if dispatcher.failed_count != 0:
     return 2

@@ -20,7 +20,7 @@ def _GenerateCompileCommands(files, include_paths):
   include_path_flags = ' '.join('-I %s' % include_path
                                for include_path in include_paths)
   return json.dumps([{'directory': '.',
-                      'command': 'clang++ -fsyntax-only %s -c %s' % (
+                      'command': 'clang++ -std=c++11 -fsyntax-only %s -c %s' % (
                           include_path_flags, f),
                       'file': f} for f in files], indent=2)
 

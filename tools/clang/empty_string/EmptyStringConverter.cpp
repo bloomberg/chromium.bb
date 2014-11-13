@@ -196,8 +196,8 @@ int main(int argc, const char* argv[]) {
   // tools.
   llvm::outs() << "==== BEGIN EDITS ====\n";
   for (const auto& r : replacements) {
-    llvm::outs() << "r:" << r.getFilePath() << ":" << r.getOffset() << ":"
-                 << r.getLength() << ":" << r.getReplacementText() << "\n";
+    llvm::outs() << "r:::" << r.getFilePath() << ":::" << r.getOffset() << ":::"
+                 << r.getLength() << ":::" << r.getReplacementText() << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 

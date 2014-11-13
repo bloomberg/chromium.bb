@@ -419,8 +419,8 @@ int main(int argc, const char* argv[]) {
   for (const auto& r : replacements) {
     std::string replacement_text = r.getReplacementText().str();
     std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
-    llvm::outs() << "r:" << r.getFilePath() << ":" << r.getOffset() << ":"
-                 << r.getLength() << ":" << replacement_text << "\n";
+    llvm::outs() << "r:::" << r.getFilePath() << ":::" << r.getOffset() << ":::"
+                 << r.getLength() << ":::" << replacement_text << "\n";
   }
   llvm::outs() << "==== END EDITS ====\n";
 
