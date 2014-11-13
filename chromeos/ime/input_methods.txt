@@ -121,6 +121,7 @@ xkb:am:phonetic:arm   am             hy        AM
 xkb:ge::geo           ge             ka        GE
 xkb:mn::mon           mn             mn        MN
 xkb:ie::ga            ie             ga        GA login
+xkb:mt::mlt           mt             mt        MT login
 
 # TODO(yusukes): Support xkb:latam:deadtilde:spa and/or xkb:latam:nodeadkeys:spa
 # if necessary.
