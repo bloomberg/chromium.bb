@@ -51,6 +51,7 @@ class ExtensionActionViewController
   bool IsMenuRunning() const override;
   bool CanDrag() const override;
   bool ExecuteAction(bool by_user) override;
+  void UpdateState() override;
   void PaintExtra(gfx::Canvas* canvas,
                   const gfx::Rect& bounds,
                   content::WebContents* web_contents) const override;

@@ -535,7 +535,7 @@ bool ExtensionInstalledBubbleView::MaybeShowNow() {
     if (container->animating())
       return false;
 
-    reference_view = container->GetViewForExtension(bubble_.extension());
+    reference_view = container->GetViewForId(bubble_.extension()->id());
     // If the view is not visible then it is in the chevron, so point the
     // install bubble to the chevron instead. If this is an incognito window,
     // both could be invisible.
