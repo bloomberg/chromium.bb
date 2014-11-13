@@ -14,8 +14,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'telemetry'))
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'perf'))
 
-from telemetry.unittest import gtest_progress_reporter
-from telemetry.unittest import run_tests
+from telemetry.unittest_util import gtest_progress_reporter
+from telemetry.unittest_util import run_tests
 
 
 if __name__ == '__main__':
