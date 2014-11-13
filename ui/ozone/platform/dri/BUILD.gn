@@ -51,6 +51,8 @@ source_set("dri_common") {
     "hardware_display_controller.h",
     "native_display_delegate_dri.cc",
     "native_display_delegate_dri.h",
+    "native_display_delegate_proxy.cc",
+    "native_display_delegate_proxy.h",
     "overlay_plane.cc",
     "overlay_plane.h",
     "scoped_drm_types.cc",
@@ -128,8 +130,6 @@ if (ozone_platform_gbm) {
       "gbm_surfaceless.h",
       "gbm_surface_factory.cc",
       "gbm_surface_factory.h",
-      "native_display_delegate_proxy.cc",
-      "native_display_delegate_proxy.h",
       "ozone_platform_gbm.cc",
       "ozone_platform_gbm.h",
     ]

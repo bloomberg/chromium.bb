@@ -40,8 +40,6 @@
         'gbm_surfaceless.h',
         'gbm_surface_factory.cc',
         'gbm_surface_factory.h',
-        'native_display_delegate_proxy.cc',
-        'native_display_delegate_proxy.h',
         'ozone_platform_gbm.cc',
         'ozone_platform_gbm.h',
       ],

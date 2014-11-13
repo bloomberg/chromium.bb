@@ -75,6 +75,8 @@
         'hardware_display_controller.h',
         'native_display_delegate_dri.cc',
         'native_display_delegate_dri.h',
+        'native_display_delegate_proxy.cc',
+        'native_display_delegate_proxy.h',
         'overlay_plane.cc',
         'overlay_plane.h',
         'ozone_platform_dri.cc',

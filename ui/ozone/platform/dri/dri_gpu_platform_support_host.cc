@@ -25,6 +25,9 @@ bool DriGpuPlatformSupportHost::IsConnected() const {
 void DriGpuPlatformSupportHost::RegisterHandler(
     GpuPlatformSupportHost* handler) {
   handlers_.push_back(handler);
+
+  if (sender_)
+    handler->OnChannelEstablished(host_id_, sender_);
 }
 
 void DriGpuPlatformSupportHost::UnregisterHandler(

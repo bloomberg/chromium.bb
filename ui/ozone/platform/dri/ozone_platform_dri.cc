@@ -20,6 +20,7 @@
 #include "ui/ozone/platform/dri/dri_window_manager.h"
 #include "ui/ozone/platform/dri/dri_wrapper.h"
 #include "ui/ozone/platform/dri/native_display_delegate_dri.h"
+#include "ui/ozone/platform/dri/native_display_delegate_proxy.h"
 #include "ui/ozone/platform/dri/screen_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ui_thread_gpu.h"
@@ -69,8 +70,8 @@ class OzonePlatformDri : public OzonePlatform {
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
-    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateDri(
-        dri_.get(), screen_manager_.get(), device_manager_.get()));
+    return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
+        gpu_platform_support_host_.get(), device_manager_.get()));
   }
   void InitializeUI() override {
     dri_->Initialize();
@@ -78,7 +79,9 @@ class OzonePlatformDri : public OzonePlatform {
         dri_.get(), screen_manager_.get(), &window_delegate_manager_));
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
         surface_factory_ozone_.get(), &window_delegate_manager_,
-        screen_manager_.get(), scoped_ptr<NativeDisplayDelegateDri>()));
+        screen_manager_.get(),
+        scoped_ptr<NativeDisplayDelegateDri>(new NativeDisplayDelegateDri(
+            dri_.get(), screen_manager_.get(), NULL))));
     gpu_platform_support_host_.reset(new DriGpuPlatformSupportHost());
     cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
     window_manager_.reset(new DriWindowManager(surface_factory_ozone_.get()));
