@@ -4272,6 +4272,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="DirectWrite.Fonts.BuildCache.File.Size" units="KB">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Reports size of font cache file. This is reported every time we rebuild font
+    cache.
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.BuildCache.Ignored">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Reports the total number of fonts that will be ignored while building static
+    font cache due to size limitation. During cache building phase if our logic
+    suggests that we need to put more than 70% of font file contents into cache
+    file then we don't cache that particular font file. These ignored font files
+    are directly picked up from system fonts folder during Direct Write cache
+    building process. Our end goal is to minimize costly open and close
+    operations on font files in system folder.
+  </summary>
+</histogram>
+
 <histogram name="DirectWrite.Fonts.Ignored">
   <owner>shrikant@chromium.org</owner>
   <summary>
@@ -4293,9 +4314,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 <histogram name="DirectWrite.Fonts.LoadTime" units="milliseconds">
   <owner>shrikant@chromium.org</owner>
   <summary>
-    Measures the total time spent in loading a custom font collection. We load
-    system fonts as a custom font collection to avoid any interaction with font
-    cache service from sandboxed renderer process.
+    Measures the total time spent in loading a custom font collection in
+    non-cache-file mode. We load system fonts as a custom font collection to
+    avoid any interaction with windows font cache service from sandboxed
+    renderer process. Please note that windows font cache services is different
+    from our cache file approach (later referred here as cache-file mode).
+  </summary>
+</histogram>
+
+<histogram name="DirectWrite.Fonts.LoadTime.Cached" units="milliseconds">
+  <owner>shrikant@chromium.org</owner>
+  <summary>
+    Measures the total time spent in loading a custom font collection in
+    cache-file mode. We load system fonts as a custom font collection to avoid
+    any interaction with windows font cache service from sandboxed renderer
+    process. Please note that windows font cache services is different from our
+    cache file approach (later referred here as cache-file mode)
   </summary>
 </histogram>
 

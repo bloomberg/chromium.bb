@@ -251,7 +251,9 @@ base::win::ScopedHandle g_shared_font_cache;
 // tracking various cache region requests by direct write.
 class FontCacheWriter {
  public:
-  FontCacheWriter() : cookie_counter_(0) {
+  FontCacheWriter()
+      : cookie_counter_(0),
+        count_font_entries_ignored_(0) {
   }
 
   ~FontCacheWriter() {
@@ -303,6 +305,13 @@ class FontCacheWriter {
           reinterpret_cast<const char*>(&header),
           sizeof(header));
       DCHECK(bytes_written != -1);
+
+      UMA_HISTOGRAM_MEMORY_KB("DirectWrite.Fonts.BuildCache.File.Size",
+                              static_cache_->GetLength() / 1024);
+
+      UMA_HISTOGRAM_COUNTS("DirectWrite.Fonts.BuildCache.Ignored",
+                           count_font_entries_ignored_);
+
       static_cache_->Close();
       static_cache_.reset(NULL);
     }
@@ -407,6 +416,7 @@ class FontCacheWriter {
     double percentile = static_cast<double>(total_merged_cache_in_bytes) /
         font_entry->file_size;
     if (percentile > kMaxPercentileOfFontFileSizeToCache) {
+      count_font_entries_ignored_++;
       return false;
     }
 
@@ -433,6 +443,9 @@ class FontCacheWriter {
   }
 
  private:
+  // This is the count of font entries that we reject based on size to be
+  // cached.
+  unsigned int count_font_entries_ignored_;
   scoped_ptr<base::File> static_cache_;
   std::map<UINT, scoped_ptr<FontEntryInternal>> cookie_map_;
   UINT cookie_counter_;
@@ -998,7 +1011,7 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
 
   FontCollectionLoader::Initialize(factory);
 
-  g_font_loader->LoadCacheFile();
+  bool cache_file_loaded = g_font_loader->LoadCacheFile();
 
   // We try here to put arbitrary limit on max number of fonts that could
   // be loaded, otherwise we fallback to restricted set of fonts.
@@ -1030,7 +1043,10 @@ IDWriteFontCollection* GetCustomFontCollection(IDWriteFactory* factory) {
   CHECK(SUCCEEDED(hr));
   CHECK(g_font_collection.Get() != NULL);
 
-  UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.LoadTime", time_delta);
+  if (cache_file_loaded)
+    UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.LoadTime.Cached", time_delta);
+  else
+    UMA_HISTOGRAM_TIMES("DirectWrite.Fonts.LoadTime", time_delta);
 
   base::debug::ClearCrashKey(kFontKeyName);
 
