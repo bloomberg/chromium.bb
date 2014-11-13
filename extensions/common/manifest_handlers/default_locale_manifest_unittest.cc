@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
-#include "chrome/common/extensions/manifest_tests/chrome_manifest_test.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/default_locale_handler.h"
+#include "extensions/common/manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-class DefaultLocaleManifestTest : public ChromeManifestTest {
-};
+using DefaultLocaleManifestTest = ManifestTest;
 
 TEST_F(DefaultLocaleManifestTest, DefaultLocale) {
   LoadAndExpectError("default_locale_invalid.json",

@@ -22,9 +22,9 @@
 #include "content/public/browser/render_process_host.h"
 
 #if defined(ENABLE_EXTENSIONS)
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
+#include "extensions/common/manifest_handlers/default_locale_handler.h"
 #endif
 
 #if defined(ENABLE_TASK_MANAGER)

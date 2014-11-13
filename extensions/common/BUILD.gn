@@ -122,6 +122,8 @@ source_set("common") {
     "manifest_handlers/background_info.h",
     "manifest_handlers/csp_info.cc",
     "manifest_handlers/csp_info.h",
+    "manifest_handlers/default_locale_handler.cc",
+    "manifest_handlers/default_locale_handler.h",
     "manifest_handlers/externally_connectable.cc",
     "manifest_handlers/externally_connectable.h",
     "manifest_handlers/file_handler_info.cc",

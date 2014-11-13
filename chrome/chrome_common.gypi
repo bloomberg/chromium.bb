@@ -133,8 +133,6 @@
       'common/extensions/api/extension_action/action_info.h',
       'common/extensions/api/file_browser_handlers/file_browser_handler.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler.h',
-      'common/extensions/api/i18n/default_locale_handler.cc',
-      'common/extensions/api/i18n/default_locale_handler.h',
       'common/extensions/api/input_ime/input_components_handler.cc',
       'common/extensions/api/input_ime/input_components_handler.h',
       'common/extensions/api/notifications/notification_style.cc',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
+#include "extensions/common/manifest_handlers/default_locale_handler.h"
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"

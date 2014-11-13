@@ -1265,7 +1265,6 @@
       'common/extensions/api/extension_action/browser_action_manifest_unittest.cc',
       'common/extensions/api/extension_action/page_action_manifest_unittest.cc',
       'common/extensions/api/file_browser_handlers/file_browser_handler_manifest_unittest.cc',
-      'common/extensions/api/i18n/default_locale_manifest_unittest.cc',
       'common/extensions/api/storage/storage_schema_manifest_handler_unittest.cc',
       'common/extensions/command_unittest.cc',
       'common/extensions/extension_file_util_unittest.cc',

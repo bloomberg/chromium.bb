@@ -93,6 +93,14 @@
     // app.content_security_policy whitelist).
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "current_locale": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
+  "default_locale": {
+    "channel": "stable",
+    "extension_types": "all"
+  },
   "description": {
     "channel": "stable",
     "extension_types": "all"

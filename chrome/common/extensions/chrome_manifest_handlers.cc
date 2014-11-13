@@ -6,7 +6,6 @@
 
 #include "chrome/common/extensions/api/commands/commands_handler.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
-#include "chrome/common/extensions/api/i18n/default_locale_handler.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/common/extensions/api/input_ime/input_components_handler.h"
@@ -43,7 +42,6 @@ void RegisterChromeManifestHandlers() {
   (new AutomationHandler)->Register();
   (new CommandsHandler)->Register();
   (new ContentScriptsHandler)->Register();
-  (new DefaultLocaleHandler)->Register();
   (new DevToolsPageHandler)->Register();
   (new ExtensionActionHandler)->Register();
   (new FileBrowserHandlerParser)->Register();

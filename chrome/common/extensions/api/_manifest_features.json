@@ -84,14 +84,6 @@
     ],
     "no_doc": true
   },
-  "current_locale": {
-    "channel": "stable",
-    "extension_types": "all"
-  },
-  "default_locale": {
-    "channel": "stable",
-    "extension_types": "all"
-  },
   "devtools_page": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
