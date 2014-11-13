@@ -12,7 +12,7 @@ if not env.Bit('nonsfi_nacl'):
 if env.Bit('target_x86_32'):
   env.Append(CCFLAGS=['--target=i686-unknown-nacl'])
 elif env.Bit('target_arm'):
-  env.Append(CCFLAGS=['--target=arm-unknown-nacl', '-mfloat-abi=hard'])
+  env.Append(CCFLAGS=['--target=armv7a-unknown-nacl-gnueabihf', '-mfloat-abi=hard'])
 else:
   raise Exception('Unsupported architecture')
 env.ComponentLibrary('libnacl_sys_private', ['linux_sys_private.c',

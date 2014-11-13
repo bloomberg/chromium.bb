@@ -3043,7 +3043,7 @@ def AllowInlineAssembly(env):
     elif env.Bit('target_x86_64'):
       env.AppendUnique(CCFLAGS=['--target=x86_64-unknown-nacl'])
     elif env.Bit('target_arm'):
-      env.AppendUnique(CCFLAGS=['--target=arm-unknown-nacl',
+      env.AppendUnique(CCFLAGS=['--target=armv7a-unknown-nacl-gnueabihf',
                                 '-mfloat-abi=hard'])
   return True
 
