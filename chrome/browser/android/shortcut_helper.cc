@@ -21,6 +21,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/web_application_info.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -56,7 +57,8 @@ ShortcutHelper::ShortcutHelper(JNIEnv* env,
                                content::WebContents* web_contents)
     : WebContentsObserver(web_contents),
       java_ref_(env, obj),
-      url_(web_contents->GetURL()),
+      url_(dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+          web_contents->GetURL())),
       display_(content::Manifest::DISPLAY_MODE_BROWSER),
       orientation_(blink::WebScreenOrientationLockDefault),
       add_shortcut_requested_(false),
