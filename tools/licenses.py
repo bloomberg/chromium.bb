@@ -229,6 +229,14 @@ SPECIAL_CASES = {
         "License File" : "/v8/third_party/fdlibm/LICENSE",
         "License Android Compatible" : "yes",
     },
+    os.path.join('third_party', 'khronos_glcts'): {
+        # These sources are not shipped, are not public, and it isn't
+        # clear why they're tripping the license check.
+        "Name": "khronos_glcts",
+        "URL": "http://no-public-url",
+        "License": "Khronos",
+        "License File": "NOT_SHIPPED",
+    },
 }
 
 # Special value for 'License File' field used to indicate that the license file
