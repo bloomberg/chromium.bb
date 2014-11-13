@@ -531,6 +531,22 @@ class DeviceUtils(object):
         raise device_errors.CommandFailedError(l, device=str(self))
 
   @decorators.WithTimeoutAndRetriesFromInstance()
+  def StartInstrumentation(self, component, finish=True, raw=False,
+                           extras=None, timeout=None, retries=None):
+    if extras is None:
+      extras = {}
+
+    cmd = ['am', 'instrument']
+    if finish:
+      cmd.append('-w')
+    if raw:
+      cmd.append('-r')
+    for k, v in extras.iteritems():
+      cmd.extend(['-e', k, v])
+    cmd.append(component)
+    return self.RunShellCommand(cmd, check_return=True)
+
+  @decorators.WithTimeoutAndRetriesFromInstance()
   def BroadcastIntent(self, intent, timeout=None, retries=None):
     """Send a broadcast intent.
 

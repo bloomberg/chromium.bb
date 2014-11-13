@@ -906,6 +906,48 @@ class DeviceUtilsStartActivityTest(DeviceUtilsOldImplTest):
       self.device.StartActivity(test_intent)
 
 
+class DeviceUtilsStartInstrumentationTest(DeviceUtilsNewImplTest):
+
+  def testStartInstrumentation_nothing(self):
+    with self.assertCalls(
+        self.call.device.RunShellCommand(
+            ['am', 'instrument', 'test.package/.TestInstrumentation'],
+            check_return=True)):
+      self.device.StartInstrumentation(
+          'test.package/.TestInstrumentation',
+          finish=False, raw=False, extras=None)
+
+  def testStartInstrumentation_finish(self):
+    with self.assertCalls(
+        (self.call.device.RunShellCommand(
+            ['am', 'instrument', '-w', 'test.package/.TestInstrumentation'],
+            check_return=True),
+         ['OK (1 test)'])):
+      output = self.device.StartInstrumentation(
+          'test.package/.TestInstrumentation',
+          finish=True, raw=False, extras=None)
+      self.assertEquals(['OK (1 test)'], output)
+
+  def testStartInstrumentation_raw(self):
+    with self.assertCalls(
+        self.call.device.RunShellCommand(
+            ['am', 'instrument', '-r', 'test.package/.TestInstrumentation'],
+            check_return=True)):
+      self.device.StartInstrumentation(
+          'test.package/.TestInstrumentation',
+          finish=False, raw=True, extras=None)
+
+  def testStartInstrumentation_extras(self):
+    with self.assertCalls(
+        self.call.device.RunShellCommand(
+            ['am', 'instrument', '-e', 'foo', 'Foo', '-e', 'bar', 'Bar',
+             'test.package/.TestInstrumentation'],
+            check_return=True)):
+      self.device.StartInstrumentation(
+          'test.package/.TestInstrumentation',
+          finish=False, raw=False, extras={'foo': 'Foo', 'bar': 'Bar'})
+
+
 class DeviceUtilsBroadcastIntentTest(DeviceUtilsOldImplTest):
 
   def testBroadcastIntent_noExtras(self):

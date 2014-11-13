@@ -253,17 +253,18 @@ class InstrumentationTestRunnerTest(unittest.TestCase):
 
   def test_RunTest_verifyAdbShellCommand(self):
     self.instance.options.test_runner = 'MyTestRunner'
-    self.instance.device.RunShellCommand = mock.Mock()
+    self.instance.device.StartInstrumentation = mock.Mock()
     self.instance.test_pkg.GetPackageName = mock.Mock(
         return_value='test.package')
     self.instance._GetInstrumentationArgs = mock.Mock(
         return_value={'test_arg_key': 'test_arg_value'})
     self.instance._RunTest('test.package.TestClass#testMethod', 100)
-    self.instance.device.RunShellCommand.assert_called_with(
-        ['am', 'instrument', '-r',
-         '-e', 'test_arg_key', 'test_arg_value',
-         '-e', 'class', 'test.package.TestClass#testMethod',
-         '-w', 'test.package/MyTestRunner'],
+    self.instance.device.StartInstrumentation.assert_called_with(
+        'test.package/MyTestRunner', raw=True,
+        extras={
+            'test_arg_key': 'test_arg_value',
+            'class': 'test.package.TestClass#testMethod'
+        },
         timeout=100, retries=0)
 
 if __name__ == '__main__':
