@@ -9,10 +9,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/ui/views/apps/app_info_dialog/app_info_footer_panel.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -123,12 +125,12 @@ class AppInfoDialogViewsTest : public ash::test::AshTestBase,
   scoped_ptr<TestingProfile> profile_;
   views::Widget* widget_;
   bool widget_destroyed_;
+  AppInfoDialog* dialog_;  // Owned by widget_ through views heirarchy.
 
  private:
   CommandLine command_line_;
 
   scoped_refptr<const extensions::Extension> app_;
-  AppInfoDialog* dialog_;  // Owned by widget_ through views heirarchy.
 
 #if defined OS_CHROMEOS
   // Set up a user manager so these tests will run on ChromeOS. These member
@@ -194,4 +196,28 @@ TEST_F(AppInfoDialogViewsTest, DestroyedOtherProfileDoesNotCloseDialog) {
   other_profile.reset();
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(widget_destroyed_);
+}
+
+// Tests that the pin/unpin button is focused after unpinning/pinning. This is
+// to verify regression in crbug.com/428704 is fixed.
+TEST_F(AppInfoDialogViewsTest, PinButtonsAreFocusedAfterPinUnpin) {
+  AppInfoFooterPanel* dialog_footer =
+      static_cast<AppInfoFooterPanel*>(dialog_->dialog_footer_);
+  views::View* pin_button = dialog_footer->pin_to_shelf_button_;
+  views::View* unpin_button = dialog_footer->unpin_from_shelf_button_;
+
+  pin_button->RequestFocus();
+  EXPECT_TRUE(pin_button->visible());
+  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->HasFocus());
+
+  dialog_footer->SetPinnedToShelf(true);
+  EXPECT_FALSE(pin_button->visible());
+  EXPECT_TRUE(unpin_button->visible());
+  EXPECT_TRUE(unpin_button->HasFocus());
+
+  dialog_footer->SetPinnedToShelf(false);
+  EXPECT_TRUE(pin_button->visible());
+  EXPECT_FALSE(unpin_button->visible());
+  EXPECT_TRUE(pin_button->HasFocus());
 }

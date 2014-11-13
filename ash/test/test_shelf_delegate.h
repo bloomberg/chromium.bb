@@ -50,6 +50,8 @@ class TestShelfDelegate : public ShelfDelegate, public aura::WindowObserver {
 
   ShelfModel* model_;
 
+  std::set<std::string> pinned_apps_;
+
   DISALLOW_COPY_AND_ASSIGN(TestShelfDelegate);
 };
 

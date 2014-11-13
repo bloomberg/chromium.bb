@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_DIALOG_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_DIALOG_VIEWS_H_
 
+#include "base/gtest_prod_util.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/view.h"
@@ -33,6 +34,9 @@ class AppInfoDialog : public views::View,
   ~AppInfoDialog() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogViewsTest,
+                           PinButtonsAreFocusedAfterPinUnpin);
+
   // Closes the dialog.
   void Close();
 

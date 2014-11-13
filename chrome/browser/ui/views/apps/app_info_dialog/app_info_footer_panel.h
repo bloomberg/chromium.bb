@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_FOOTER_PANEL_H_
 #define CHROME_BROWSER_UI_VIEWS_APPS_APP_INFO_DIALOG_APP_INFO_FOOTER_PANEL_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
@@ -40,6 +41,9 @@ class AppInfoFooterPanel
   ~AppInfoFooterPanel() override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AppInfoDialogViewsTest,
+                           PinButtonsAreFocusedAfterPinUnpin);
+
   void CreateButtons();
   void LayoutButtons();
 

@@ -90,6 +90,7 @@ const std::string& TestShelfDelegate::GetAppIDForShelfID(ShelfID id) {
 }
 
 void TestShelfDelegate::PinAppWithID(const std::string& app_id) {
+  pinned_apps_.insert(app_id);
 }
 
 bool TestShelfDelegate::CanPin() const {
@@ -97,10 +98,11 @@ bool TestShelfDelegate::CanPin() const {
 }
 
 bool TestShelfDelegate::IsAppPinned(const std::string& app_id) {
-  return false;
+  return pinned_apps_.find(app_id) != pinned_apps_.end();
 }
 
 void TestShelfDelegate::UnpinAppWithID(const std::string& app_id) {
+  pinned_apps_.erase(app_id);
 }
 
 }  // namespace test
