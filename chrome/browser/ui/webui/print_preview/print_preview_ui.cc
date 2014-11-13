@@ -266,6 +266,8 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                              IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL);
   source->AddLocalizedString("dpiLabel", IDS_PRINT_PREVIEW_DPI_LABEL);
   source->AddLocalizedString("dpiItemLabel", IDS_PRINT_PREVIEW_DPI_ITEM_LABEL);
+  source->AddLocalizedString("nonIsotropicDpiItemLabel",
+                             IDS_PRINT_PREVIEW_NON_ISOTROPIC_DPI_ITEM_LABEL);
   source->AddLocalizedString("destinationSearchTitle",
                              IDS_PRINT_PREVIEW_DESTINATION_SEARCH_TITLE);
   source->AddLocalizedString("accountSelectTitle",

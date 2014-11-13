@@ -21,7 +21,11 @@ cr.define('print_preview', function() {
 
     /** @override */
     getDefaultDisplayName_: function(option) {
-      return loadTimeData.getStringF('dpiItemLabel', option.horizontal_dpi);
+      var hDpi = option.horizontal_dpi || 0;
+      var vDpi = option.vertical_dpi || 0;
+      if (hDpi > 0 && vDpi > 0 && hDpi != vDpi)
+        return loadTimeData.getStringF('nonIsotropicDpiItemLabel', hDpi, vDpi);
+      return loadTimeData.getStringF('dpiItemLabel', hDpi || vDpi);
     }
   };
 
