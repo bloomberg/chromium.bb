@@ -191,7 +191,6 @@ bool TextFinder::find(int identifier, const WebString& searchText, const WebFind
         if (selectionRect) {
             *selectionRect = ownerFrame().frameView()->contentsToWindow(m_activeMatch->boundingBox());
             reportFindInPageSelection(*selectionRect, m_activeMatchIndexInCurrentFrame + 1, identifier);
-            reportFindInPageResultToAccessibility(identifier);
         }
     }
 
@@ -449,6 +448,10 @@ void TextFinder::reportFindInPageSelection(const WebRect& selectionRect, int act
     // Update the UI with the latest selection rect.
     if (ownerFrame().client())
         ownerFrame().client()->reportFindInPageSelection(identifier, ordinalOfFirstMatch() + activeMatchOrdinal, selectionRect);
+
+    // Update accessibility too, so if the user commits to this query
+    // we can move accessibility focus to this result.
+    reportFindInPageResultToAccessibility(identifier);
 }
 
 void TextFinder::resetMatchCount()
