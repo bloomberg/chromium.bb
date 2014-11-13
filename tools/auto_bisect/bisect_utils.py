@@ -94,8 +94,7 @@ DEPOT_DEPS_NAME = {
         'recurse': True,
         'depends': None,
         'from': ['android-chrome'],
-        'viewvc':
-            'http://src.chromium.org/viewvc/chrome?view=revision&revision=',
+        'viewvc': 'https://chromium.googlesource.com/chromium/src/+/',
         'deps_var': 'chromium_rev'
     },
     'webkit': {
@@ -103,8 +102,7 @@ DEPOT_DEPS_NAME = {
         'recurse': True,
         'depends': None,
         'from': ['chromium'],
-        'viewvc':
-            'http://src.chromium.org/viewvc/blink?view=revision&revision=',
+        'viewvc': 'https://chromium.googlesource.com/chromium/blink/+/',
         'deps_var': 'webkit_revision'
     },
     'angle': {
@@ -114,6 +112,7 @@ DEPOT_DEPS_NAME = {
         'depends': None,
         'from': ['chromium'],
         'platform': 'nt',
+        'viewvc': 'https://chromium.googlesource.com/angle/angle/+/',
         'deps_var': 'angle_revision'
     },
     'v8': {
@@ -122,7 +121,7 @@ DEPOT_DEPS_NAME = {
         'depends': None,
         'from': ['chromium'],
         'custom_deps': GCLIENT_CUSTOM_DEPS_V8,
-        'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
+        'viewvc': 'https://chromium.googlesource.com/v8/v8.git/+/',
         'deps_var': 'v8_revision'
     },
     'v8_bleeding_edge': {
@@ -131,7 +130,7 @@ DEPOT_DEPS_NAME = {
         'depends': None,
         'svn': 'https://v8.googlecode.com/svn/branches/bleeding_edge',
         'from': ['v8'],
-        'viewvc': 'https://code.google.com/p/v8/source/detail?r=',
+        'viewvc': 'https://chromium.googlesource.com/v8/v8.git/+/',
         'deps_var': 'v8_revision'
     },
     'skia/src': {
@@ -140,7 +139,7 @@ DEPOT_DEPS_NAME = {
         'svn': 'http://skia.googlecode.com/svn/trunk/src',
         'depends': ['skia/include', 'skia/gyp'],
         'from': ['chromium'],
-        'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+        'viewvc': 'https://chromium.googlesource.com/skia/+/',
         'deps_var': 'skia_revision'
     },
     'skia/include': {
@@ -149,7 +148,7 @@ DEPOT_DEPS_NAME = {
         'svn': 'http://skia.googlecode.com/svn/trunk/include',
         'depends': None,
         'from': ['chromium'],
-        'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+        'viewvc': 'https://chromium.googlesource.com/skia/+/',
         'deps_var': 'None'
     },
     'skia/gyp': {
@@ -158,7 +157,7 @@ DEPOT_DEPS_NAME = {
         'svn': 'http://skia.googlecode.com/svn/trunk/gyp',
         'depends': None,
         'from': ['chromium'],
-        'viewvc': 'https://code.google.com/p/skia/source/detail?r=',
+        'viewvc': 'https://chromium.googlesource.com/skia/+/',
         'deps_var': 'None'
     }
 }

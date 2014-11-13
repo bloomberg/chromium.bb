@@ -198,32 +198,23 @@ class BisectPrinter(object):
     print 'Average test time  : %s' % datetime.timedelta(
         seconds=int(step_perf_time_avg))
 
-  def _GetViewVCLinkFromDepotAndHash(self, revision_id, depot):
+  @staticmethod
+  def _GetViewVCLinkFromDepotAndHash(git_revision, depot):
     """Gets link to the repository browser."""
-    info = source_control.QueryRevisionInfo(revision_id,
-        self.depot_registry.GetDepotDir(depot))
     if depot and bisect_utils.DEPOT_DEPS_NAME[depot].has_key('viewvc'):
-      try:
-        # Format is "git-svn-id: svn://....@123456 <other data>"
-        svn_line = [i for i in info['body'].splitlines() if 'git-svn-id:' in i]
-        svn_revision = svn_line[0].split('@')
-        svn_revision = svn_revision[1].split(' ')[0]
-        return bisect_utils.DEPOT_DEPS_NAME[depot]['viewvc'] + svn_revision
-      except IndexError:
-        return ''
+      return bisect_utils.DEPOT_DEPS_NAME[depot]['viewvc'] + git_revision
     return ''
 
   def _PrintRevisionInfo(self, cl, info, depot=None):
     commit_link = self._GetViewVCLinkFromDepotAndHash(cl, depot)
     if commit_link:
-      commit_info = '\nLink    : %s' % commit_link
+      commit_link = '\nLink    : %s' % commit_link
     else:
-      commit_info = ('\nFailed to parse SVN revision from body:\n%s' %
-                     info['body'])
+      commit_link = ('\Description:\n%s' % info['body'])
     print RESULTS_REVISION_INFO % {
         'subject': info['subject'],
         'author': info['email'],
-        'commit_info': commit_info,
+        'commit_info': commit_link,
         'cl': cl,
         'cl_date': info['date']
     }
@@ -315,18 +306,15 @@ class BisectPrinter(object):
         if not confidence:
           state_str = ''
         state_str = state_str.center(13, ' ')
-
-        cl_link = self._GetViewVCLinkFromDepotAndHash(revision_state.revision,
-                                                      revision_state.depot)
-        if not cl_link:
-          cl_link = revision_state.revision
         commit_position = source_control.GetCommitPosition(
             revision_state.revision,
             self.depot_registry.GetDepotDir(revision_state.depot))
-        commit_position = str(commit_position)
-        if not commit_position:
-          commit_position = ''
-        self._PrintTestedCommitsEntry(revision_state, commit_position, cl_link,
+        display_commit_pos = ''
+        if commit_position:
+          display_commit_pos = str(commit_position)
+        self._PrintTestedCommitsEntry(revision_state,
+                                      display_commit_pos,
+                                      revision_state.revision,
                                       state_str)
 
   def _PrintReproSteps(self):
@@ -351,27 +339,14 @@ class BisectPrinter(object):
     """Prints a section of the results about other potential regressions."""
     print
     print 'Other regressions may have occurred:'
-    print '  %8s  %70s  %10s' % ('Depot'.center(8, ' '),
-        'Range'.center(70, ' '), 'Confidence'.center(10, ' '))
+    self._PrintTableRow([8, 70, 10], ['Depot', 'Range', 'Confidence'])
     for regression in other_regressions:
       current_rev_state, prev_rev_state, confidence = regression
-
-      current_link = self._GetViewVCLinkFromDepotAndHash(
-          current_rev_state.revision,
-          current_rev_state.depot)
-      previous_link = self._GetViewVCLinkFromDepotAndHash(
-          prev_rev_state.revision,
-          prev_rev_state.depot)
-
-      # If we can't map it to a viewable URL, at least show the original hash.
-      if not current_link:
-        current_link = current_rev_state.revision
-      if not previous_link:
-        previous_link = prev_rev_state.revision
-
-      print '  %8s  %70s %s' % (current_rev_state.depot, current_link,
-                                ('%d%%' % confidence).center(10, ' '))
-      print '  %8s  %70s' % (prev_rev_state.depot, previous_link)
+      self._PrintTableRow(
+          [8, 70, 10],
+          [current_rev_state.depot, current_rev_state.revision, confidence])
+      self._PrintTableRow(
+          [8, 70], [prev_rev_state.depot, prev_rev_state.revision])
       print
 
   @staticmethod
