@@ -18,7 +18,6 @@
     'resource_dir': 'src/chromium/res',
     'R_package': 'com.android.webview.chromium',
     'R_package_relpath': 'com/android/webview/chromium',
-    'shared_resources': 1,
     'extensions_to_not_compress': 'pak',
     'asset_location': '<(PRODUCT_DIR)/android_webview_assets',
     # TODO: crbug.com/405035 Find a better solution for WebView .pak files.

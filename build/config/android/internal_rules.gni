@@ -260,6 +260,7 @@ template("create_apk") {
 
   _resource_packaged_apk_path = _base_apk_path + ".ap_"
   _packaged_apk_path = _base_apk_path + ".unfinished.apk"
+  _shared_resources = defined(invoker.shared_resources) && invoker.shared_resources
 
 
   _configuration_name = "Release"
@@ -295,6 +296,10 @@ template("create_apk") {
 
         "--apk-path", rebase_path(_resource_packaged_apk_path, root_build_dir),
       ]
+
+    if (_shared_resources) {
+      args += ["--shared-resources"]
+    }
   }
 
   action("${target_name}__package") {

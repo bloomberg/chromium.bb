@@ -831,9 +831,15 @@
       'action_name': 'package_resources',
       'message': 'packaging resources for <(_target_name)',
       'variables': {
+        'package_resources_options': [],
         'package_resource_zip_input_paths': [
           '<(resource_zip_path)',
           '>@(dependencies_res_zip_paths)',
+        ],
+        'conditions': [
+          ['shared_resources == 1', {
+            'package_resources_options+': ['--shared-resources']
+          }],
         ],
       },
       'conditions': [
@@ -874,6 +880,8 @@
         '--no-compress', '<(extensions_to_not_compress)',
 
         '--apk-path', '<(resource_packaged_apk_path)',
+
+        '<@(package_resources_options)',
       ],
     },
     {
