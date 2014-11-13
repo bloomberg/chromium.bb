@@ -46,7 +46,7 @@ BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
 }
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
-  if (task_manager_) {
+  if (task_manager_.get()) {
     task_manager_->RemoveObserver(this);
     task_manager_->Shutdown();
   }
