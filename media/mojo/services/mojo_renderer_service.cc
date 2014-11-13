@@ -89,7 +89,6 @@ MojoRendererService::MojoRendererService()
                            task_runner,
                            base::Bind(&LogMediaSourceError, media_log)).Pass(),
       SetDecryptorReadyCB(),
-      base::Bind(&PaintNothing),
       true,
       media_log));
 
@@ -149,9 +148,10 @@ void MojoRendererService::OnStreamReady(const mojo::Closure& callback) {
       base::Bind(
           &MojoRendererService::OnRendererInitializeDone, weak_this_, callback),
       base::Bind(&MojoRendererService::OnUpdateStatistics, weak_this_),
+      base::Bind(&MojoRendererService::OnBufferingStateChanged, weak_this_),
+      base::Bind(&PaintNothing),
       base::Bind(&MojoRendererService::OnRendererEnded, weak_this_),
-      base::Bind(&MojoRendererService::OnError, weak_this_),
-      base::Bind(&MojoRendererService::OnBufferingStateChanged, weak_this_));
+      base::Bind(&MojoRendererService::OnError, weak_this_));
 }
 
 void MojoRendererService::OnRendererInitializeDone(

@@ -120,7 +120,6 @@ void InitPipeline(
       new media::VideoRendererImpl(task_runner,
                                    video_decoders.Pass(),
                                    media::SetDecryptorReadyCB(),
-                                   paint_cb,
                                    true,
                                    new media::MediaLog()));
 
@@ -156,6 +155,7 @@ void InitPipeline(
                   base::Bind(&SaveStatusAndSignal, &event, &status),
                   base::Bind(&OnMetadata),
                   base::Bind(&OnBufferingStateChanged),
+                  paint_cb,
                   base::Bind(&DoNothing),
                   base::Bind(&OnAddTextTrack));
 

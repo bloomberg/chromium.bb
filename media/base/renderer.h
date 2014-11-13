@@ -6,6 +6,7 @@
 #define MEDIA_BASE_RENDERER_H_
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/buffering_state.h"
 #include "media/base/media_export.h"
@@ -13,11 +14,13 @@
 
 namespace media {
 
-class MediaKeys;
 class DemuxerStreamProvider;
+class MediaKeys;
+class VideoFrame;
 
 class MEDIA_EXPORT Renderer {
  public:
+  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
   typedef base::Callback<base::TimeDelta()> TimeDeltaCB;
 
   Renderer();
@@ -32,15 +35,19 @@ class MEDIA_EXPORT Renderer {
   //
   // Permanent callbacks:
   // - |statistics_cb|: Executed periodically with rendering statistics.
-  // - |time_cb|: Executed whenever time has advanced through rendering.
+  // - |buffering_state_cb|: Executed when buffering state is changed.
+  // - |paint_cb|: Executed when there is a VideoFrame ready to paint.  Can be
+  //               ignored if the Renderer handles the painting by itself. Can
+  //               be called from any thread.
   // - |ended_cb|: Executed when rendering has reached the end of stream.
   // - |error_cb|: Executed if any error was encountered during rendering.
   virtual void Initialize(DemuxerStreamProvider* demuxer_stream_provider,
                           const base::Closure& init_cb,
                           const StatisticsCB& statistics_cb,
+                          const BufferingStateCB& buffering_state_cb,
+                          const PaintCB& paint_cb,
                           const base::Closure& ended_cb,
-                          const PipelineStatusCB& error_cb,
-                          const BufferingStateCB& buffering_state_cb) = 0;
+                          const PipelineStatusCB& error_cb) = 0;
 
   // The following functions must be called after Initialize().
 

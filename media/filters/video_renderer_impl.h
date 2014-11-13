@@ -37,12 +37,8 @@ class MEDIA_EXPORT VideoRendererImpl
     : public VideoRenderer,
       public base::PlatformThread::Delegate {
  public:
-  typedef base::Callback<void(const scoped_refptr<VideoFrame>&)> PaintCB;
-
   // |decoders| contains the VideoDecoders to use when initializing.
   //
-  // |paint_cb| is executed on the video frame timing thread whenever a new
-  // frame is available for painting.
   //
   // Implementors should avoid doing any sort of heavy work in this method and
   // instead post a task to a common/worker thread to handle rendering.  Slowing
@@ -53,7 +49,6 @@ class MEDIA_EXPORT VideoRendererImpl
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       ScopedVector<VideoDecoder> decoders,
       const SetDecryptorReadyCB& set_decryptor_ready_cb,
-      const PaintCB& paint_cb,
       bool drop_frames,
       const scoped_refptr<MediaLog>& media_log);
   ~VideoRendererImpl() override;
@@ -64,6 +59,7 @@ class MEDIA_EXPORT VideoRendererImpl
                   const PipelineStatusCB& init_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,
+                  const PaintCB& paint_cb,
                   const base::Closure& ended_cb,
                   const PipelineStatusCB& error_cb,
                   const TimeDeltaCB& get_time_cb) override;

@@ -23,7 +23,6 @@ VideoRendererImpl::VideoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     ScopedVector<VideoDecoder> decoders,
     const SetDecryptorReadyCB& set_decryptor_ready_cb,
-    const PaintCB& paint_cb,
     bool drop_frames,
     const scoped_refptr<MediaLog>& media_log)
     : task_runner_(task_runner),
@@ -40,14 +39,12 @@ VideoRendererImpl::VideoRendererImpl(
       pending_read_(false),
       drop_frames_(drop_frames),
       buffering_state_(BUFFERING_HAVE_NOTHING),
-      paint_cb_(paint_cb),
       last_timestamp_(kNoTimestamp()),
       last_painted_timestamp_(kNoTimestamp()),
       frames_decoded_(0),
       frames_dropped_(0),
       is_shutting_down_(false),
       weak_factory_(this) {
-  DCHECK(!paint_cb_.is_null());
 }
 
 VideoRendererImpl::~VideoRendererImpl() {
@@ -111,6 +108,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const BufferingStateCB& buffering_state_cb,
+                                   const PaintCB& paint_cb,
                                    const base::Closure& ended_cb,
                                    const PipelineStatusCB& error_cb,
                                    const TimeDeltaCB& get_time_cb) {
@@ -121,6 +119,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
+  DCHECK(!paint_cb.is_null());
   DCHECK(!ended_cb.is_null());
   DCHECK(!get_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
@@ -133,6 +132,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
 
   statistics_cb_ = statistics_cb;
   buffering_state_cb_ = buffering_state_cb;
+  paint_cb_ = paint_cb,
   ended_cb_ = ended_cb;
   error_cb_ = error_cb;
   get_time_cb_ = get_time_cb;

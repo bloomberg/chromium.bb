@@ -136,7 +136,7 @@ class PipelineIntegrationTestBase {
 
   void SetDecryptor(Decryptor* decryptor,
                     const DecryptorReadyCB& decryptor_ready_cb);
-  void OnVideoRendererPaint(const scoped_refptr<VideoFrame>& frame);
+  void OnVideoFramePaint(const scoped_refptr<VideoFrame>& frame);
 
   MOCK_METHOD1(OnMetadata, void(PipelineMetadata));
   MOCK_METHOD1(OnBufferingStateChanged, void(BufferingState));

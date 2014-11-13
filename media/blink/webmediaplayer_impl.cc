@@ -875,7 +875,6 @@ scoped_ptr<Renderer> WebMediaPlayerImpl::CreateRenderer() {
       media_task_runner_,
       video_decoders.Pass(),
       set_decryptor_ready_cb,
-      base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
       true,
       media_log_));
 
@@ -932,6 +931,7 @@ void WebMediaPlayerImpl::StartPipeline() {
       BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked, false),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineMetadata),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingStateChanged),
+      base::Bind(&WebMediaPlayerImpl::FrameReady, base::Unretained(this)),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChanged),
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnAddTextTrack));
 }

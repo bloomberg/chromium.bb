@@ -568,6 +568,8 @@ class PipelineIntegrationTest
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
                    base::Unretained(this)),
+        base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
+                   base::Unretained(this)),
         base::Closure(),
         base::Bind(&PipelineIntegrationTest::OnAddTextTrack,
                    base::Unretained(this)));
@@ -598,6 +600,8 @@ class PipelineIntegrationTest
         base::Bind(&PipelineIntegrationTest::OnMetadata,
                    base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnBufferingStateChanged,
+                   base::Unretained(this)),
+        base::Bind(&PipelineIntegrationTest::OnVideoFramePaint,
                    base::Unretained(this)),
         base::Closure(),
         base::Bind(&PipelineIntegrationTest::OnAddTextTrack,

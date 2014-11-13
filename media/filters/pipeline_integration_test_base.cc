@@ -116,8 +116,7 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       .Times(AtMost(1));
   CreateDemuxer(file_path);
   pipeline_->Start(
-      demuxer_.get(),
-      CreateRenderer(NULL),
+      demuxer_.get(), CreateRenderer(NULL),
       base::Bind(&PipelineIntegrationTestBase::OnEnded, base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnError, base::Unretained(this)),
       QuitOnStatusCB(expected_status),
@@ -125,9 +124,10 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
                  base::Unretained(this)),
-      base::Closure(),
-      base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
-                 base::Unretained(this)));
+      base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
+                 base::Unretained(this)),
+      base::Closure(), base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
+                                  base::Unretained(this)));
   message_loop_.Run();
   return (pipeline_status_ == PIPELINE_OK);
 }
@@ -163,6 +163,8 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
       base::Bind(&PipelineIntegrationTestBase::OnMetadata,
                  base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::OnBufferingStateChanged,
+                 base::Unretained(this)),
+      base::Bind(&PipelineIntegrationTestBase::OnVideoFramePaint,
                  base::Unretained(this)),
       base::Closure(),
       base::Bind(&PipelineIntegrationTestBase::OnAddTextTrack,
@@ -261,8 +263,6 @@ scoped_ptr<Renderer> PipelineIntegrationTestBase::CreateRenderer(
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
                  decryptor),
-      base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
-                 base::Unretained(this)),
       false,
       new MediaLog()));
 
@@ -324,7 +324,7 @@ void PipelineIntegrationTestBase::SetDecryptor(
   EXPECT_CALL(*this, DecryptorAttached(true));
 }
 
-void PipelineIntegrationTestBase::OnVideoRendererPaint(
+void PipelineIntegrationTestBase::OnVideoFramePaint(
     const scoped_refptr<VideoFrame>& frame) {
   last_video_frame_format_ = frame->format();
   if (!hashing_enabled_)

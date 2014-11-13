@@ -150,8 +150,9 @@ TEST_F(MojoRendererTest, BasicInitialize) {
   PipelineStatus expected_error(PIPELINE_OK);
   mojo_renderer_impl.Initialize(
       stream_provider(), base::MessageLoop::current()->QuitClosure(),
-      media::StatisticsCB(), base::Closure(),
-      base::Bind(&ErrorCallback, &expected_error), media::BufferingStateCB());
+      media::StatisticsCB(), media::BufferingStateCB(),
+      media::Renderer::PaintCB(), base::Closure(),
+      base::Bind(&ErrorCallback, &expected_error));
   base::MessageLoop::current()->Run();
 
   // We expect an error during initialization because MojoRendererService

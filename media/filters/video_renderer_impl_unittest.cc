@@ -54,7 +54,6 @@ class VideoRendererImplTest : public ::testing::Test {
         message_loop_.message_loop_proxy(),
         decoders.Pass(),
         media::SetDecryptorReadyCB(),
-        base::Bind(&StrictMock<MockCB>::Display, base::Unretained(&mock_cb_)),
         true,
         new MediaLog()));
 
@@ -104,6 +103,7 @@ class VideoRendererImplTest : public ::testing::Test {
                    base::Unretained(this)),
         base::Bind(&StrictMock<MockCB>::BufferingStateChange,
                    base::Unretained(&mock_cb_)),
+        base::Bind(&StrictMock<MockCB>::Display, base::Unretained(&mock_cb_)),
         ended_event_.GetClosure(),
         error_event_.GetPipelineStatusCB(),
         base::Bind(&VideoRendererImplTest::GetTime, base::Unretained(this)));

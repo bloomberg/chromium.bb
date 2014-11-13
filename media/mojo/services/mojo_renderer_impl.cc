@@ -35,13 +35,15 @@ MojoRendererImpl::~MojoRendererImpl() {
   // Connection to |remote_audio_renderer_| will error-out here.
 }
 
+// TODO(xhwang): Support |paint_cb| if needed.
 void MojoRendererImpl::Initialize(
     DemuxerStreamProvider* demuxer_stream_provider,
     const base::Closure& init_cb,
     const StatisticsCB& statistics_cb,
+    const BufferingStateCB& buffering_state_cb,
+    const PaintCB& /* paint_cb */,
     const base::Closure& ended_cb,
-    const PipelineStatusCB& error_cb,
-    const BufferingStateCB& buffering_state_cb) {
+    const PipelineStatusCB& error_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
