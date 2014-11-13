@@ -46,6 +46,20 @@
     long launchMode;
   };
 
+  dictionary LogDetails {
+    // Number of audio channels. i.e. 1 = mono, 2 = stereo
+    long channels;
+
+    // Bytes per sample per channel.
+    long bytes_per_sample;
+
+    // Sample rate. Usually 32000 or 44100, but may be any integer.
+    long sample_rate;
+
+    // Array containing audio data. Length is
+    // (channels * bytes_per_sample * sample_rate * <seconds of log>).
+    ArrayBuffer buffer;
+  };
 
   // The type of the recognized hotword. Right now it only has 'search' but
   // could be expanded to other types of actions in the future.
@@ -87,6 +101,7 @@
     // Notifies that a hotword has been recognized in the browser-requested
     // hotword session.
     static void notifyHotwordRecognition(HotwordType type,
+                                         optional LogDetails log,
                                          optional GenericDoneCallback callback);
 
     // Retrieves the state that the Hotword Audio Verification app was

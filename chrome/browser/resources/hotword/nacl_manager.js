@@ -62,6 +62,12 @@ function NaClManager(loggingEnabled) {
    * @private {boolean}
    */
   this.loggingEnabled_ = loggingEnabled;
+
+  /**
+   * Audio log of X seconds before hotword triggered.
+   * @private {?Object}
+   */
+  this.preambleLog_ = null;
 };
 
 /**
@@ -148,6 +154,7 @@ NaClManager.prototype.clearTimeout_ = function() {
  */
 NaClManager.prototype.startRecognizer = function() {
   if (this.recognizerState_ == ManagerState_.STOPPED) {
+    this.preambleLog_ = null;
     this.recognizerState_ = ManagerState_.STARTING;
     this.sendDataToPlugin_(hotword.constants.NaClPlugin.RESTART);
     this.waitForMessage_(hotword.constants.TimeoutMs.LONG,
@@ -442,7 +449,9 @@ NaClManager.prototype.handleHotwordDetected_ = function() {
   this.recognizerState_ = ManagerState_.STOPPING;
   this.waitForMessage_(hotword.constants.TimeoutMs.NORMAL,
                        hotword.constants.NaClPlugin.STOPPED);
-  this.dispatchEvent(new Event(hotword.constants.Event.TRIGGER));
+  var event = new Event(hotword.constants.Event.TRIGGER);
+  event.log = this.preambleLog_;
+  this.dispatchEvent(event);
 };
 
 /**
@@ -466,6 +475,12 @@ NaClManager.prototype.handleStopped_ = function() {
  */
 NaClManager.prototype.handlePluginMessage_ = function(msg) {
   if (msg['data']) {
+    if (typeof(msg['data']) == 'object') {
+      // Save the preamble for delivery to the trigger handler when the trigger
+      // message arrives.
+      this.preambleLog_ = msg['data'];
+      return;
+    }
     this.receivedMessage_(msg['data']);
     switch (msg['data']) {
       case hotword.constants.NaClPlugin.REQUEST_MODEL:

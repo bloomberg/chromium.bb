@@ -378,9 +378,10 @@ cr.define('hotword', function() {
 
     /**
      * Handle hotword triggering.
+     * @param {!Event} event Event containing audio log data.
      * @private
      */
-    onTrigger_: function() {
+    onTrigger_: function(event) {
       hotword.debug('Hotword triggered!');
       chrome.metricsPrivate.recordUserAction(
           hotword.constants.UmaMetrics.TRIGGER);
@@ -396,7 +397,7 @@ cr.define('hotword', function() {
       if (this.sessions_.length) {
         var session = this.sessions_.pop();
         if (session.triggerCb_)
-          session.triggerCb_();
+          session.triggerCb_(event.log);
       }
     },
 

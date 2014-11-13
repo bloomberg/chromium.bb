@@ -83,11 +83,14 @@ cr.define('hotword', function() {
 
     /**
      * Handles a hotword triggered event.
+     * @param {?Object} log Audio log data, if audio logging is enabled.
      * @protected
      */
-    handleHotwordTrigger: function() {
-      hotword.debug('Hotword triggered: ' + this.sessionSource_);
-      chrome.hotwordPrivate.notifyHotwordRecognition('search', function() {});
+    handleHotwordTrigger: function(log) {
+      hotword.debug('Hotword triggered: ' + this.sessionSource_, log);
+      chrome.hotwordPrivate.notifyHotwordRecognition('search',
+                                                     log,
+                                                     function() {});
     },
 
     /**
