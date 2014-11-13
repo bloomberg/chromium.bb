@@ -74,6 +74,9 @@ public class DropdownPopupWindow extends ListPopupWindow {
         });
 
         setAnchorView(mAnchorView);
+        Rect originalPadding = new Rect();
+        getBackground().getPadding(originalPadding);
+        setVerticalOffset(-originalPadding.top);
     }
 
     /**
@@ -111,8 +114,8 @@ public class DropdownPopupWindow extends ListPopupWindow {
         setInputMethodMode(INPUT_METHOD_NEEDED);
 
         int contentWidth = measureContentWidth();
-        float contentWidthInDip = contentWidth /
-                mContext.getResources().getDisplayMetrics().density;
+        float contentWidthInDip = contentWidth
+                / mContext.getResources().getDisplayMetrics().density;
         if (contentWidthInDip > mAnchorWidth) {
             setContentWidth(contentWidth);
             final Rect displayFrame = new Rect();
