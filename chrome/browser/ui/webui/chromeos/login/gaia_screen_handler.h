@@ -116,6 +116,8 @@ class GaiaScreenHandler : public BaseScreenHandler {
 
   void HandleGaiaUIReady();
 
+  void HandleSwitchToFullTab();
+
   // This is called when ConsumerManagementService::SetOwner() returns.
   void OnSetOwnerDone(const std::string& gaia_id,
                       const std::string& typed_email,

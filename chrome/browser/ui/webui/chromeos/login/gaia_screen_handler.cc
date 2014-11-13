@@ -212,8 +212,12 @@ void GaiaScreenHandler::LoadGaia(const GaiaContext& context) {
           : GaiaUrls::GetInstance()->gaia_url();
   params.SetString("gaiaUrl", gaia_url.spec());
 
-  if (context.embedded_signin_enabled)
+  if (context.embedded_signin_enabled) {
     params.SetBoolean("useEmbedded", true);
+    // We set 'constrained' here to switch troubleshooting page on embedded
+    // signin to full tab.
+    params.SetInteger("constrained", 1);
+  }
 
   frame_state_ = FRAME_STATE_LOADING;
   CallJS("loadAuthExtension", params);
@@ -300,6 +304,7 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("scrapedPasswordVerificationFailed",
               &GaiaScreenHandler::HandleScrapedPasswordVerificationFailed);
   AddCallback("loginWebuiReady", &GaiaScreenHandler::HandleGaiaUIReady);
+  AddCallback("switchToFullTab", &GaiaScreenHandler::HandleSwitchToFullTab);
 }
 
 void GaiaScreenHandler::HandleFrameLoadingCompleted(int status) {
@@ -389,6 +394,10 @@ void GaiaScreenHandler::HandleScrapedPasswordCount(int password_count) {
 
 void GaiaScreenHandler::HandleScrapedPasswordVerificationFailed() {
   RecordSAMLScrapingVerificationResultInHistogram(false);
+}
+
+void GaiaScreenHandler::HandleSwitchToFullTab() {
+  CallJS("switchToFullTab");
 }
 
 void GaiaScreenHandler::HandleGaiaUIReady() {

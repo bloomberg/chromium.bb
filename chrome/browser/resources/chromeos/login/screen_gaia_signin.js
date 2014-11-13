@@ -24,7 +24,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       'updateAuthExtension',
       'doReload',
       'onFrameError',
-      'updateCancelButtonState'
+      'updateCancelButtonState',
+      'switchToFullTab'
     ],
 
     /**
@@ -252,7 +253,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.email = '';
 
       // Reset SAML
-      this.classList.toggle('saml', false);
+      this.classList.toggle('full-width', false);
       this.samlPasswordConfirmAttempt_ = 0;
 
       this.updateAuthExtension(data);
@@ -334,6 +335,7 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
                          $('createSupervisedUserPane').hidden &&
                          $('consumerManagementEnrollment').hidden;
       this.classList.toggle('no-right-panel', noRightPanel);
+      this.classList.toggle('full-width', false);
       if (Oobe.getInstance().currentScreen === this)
         Oobe.getInstance().updateScreenSize(this);
     },
@@ -345,6 +347,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
     updateCancelButtonState: function() {
       this.cancelAllowed_ = this.isShowUsers_ && $('pod-row').pods.length;
       $('login-header-bar').allowCancel = this.cancelAllowed_;
+    },
+
+    switchToFullTab: function() {
+      this.classList.toggle('no-right-panel', true);
+      this.classList.toggle('full-width', true);
     },
 
     /**
@@ -368,7 +375,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
             this.gaiaAuthHost_.authDomain);
       }
 
-      this.classList.toggle('saml', isSAML);
+      this.classList.toggle('no-right-panel', isSAML);
+      this.classList.toggle('full-width', isSAML);
       $('saml-notice-container').hidden = !isSAML;
 
       if (Oobe.getInstance().currentScreen === this) {

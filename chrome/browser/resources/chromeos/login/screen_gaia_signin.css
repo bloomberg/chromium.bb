@@ -9,11 +9,11 @@
   width: 722px; /* Should be the same as #user-image.loading width. */
 }
 
-#gaia-signin:not(.saml).no-right-panel {
+#gaia-signin:not(.full-width).no-right-panel {
   width: 522px;
 }
 
-#gaia-signin.saml {
+#gaia-signin.full-width {
   padding: 75px 0 0;
 }
 
@@ -37,8 +37,7 @@
   }
 }
 
-.no-right-panel #signin-right,
-.saml #signin-right {
+.no-right-panel #signin-right {
   display: none;
 }
 
@@ -64,8 +63,8 @@
   height: 100%;
 }
 
-.saml #gaia-signin-form-container,
-.saml #signin-frame {
+.full-width #signin-frame,
+.full-width #gaia-signin-form-container {
   width: 100%;
 }
 
@@ -79,8 +78,7 @@
   width: 1px;
 }
 
-.no-right-panel #gaia-signin-divider,
-.saml #gaia-signin-divider {
+.no-right-panel #gaia-signin-divider {
   display: none;
 }
 
@@ -92,8 +90,7 @@
 }
 
 /* Simpler alignment if no right panel. */
-.no-right-panel #signin-frame,
-.saml #signin-frame {
+.no-right-panel #signin-frame {
   margin-left: 0;
 }
 

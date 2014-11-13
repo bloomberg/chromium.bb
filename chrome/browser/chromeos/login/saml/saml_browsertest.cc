@@ -443,7 +443,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   StartSamlAndWaitForIdpPageLoad(kFirstSAMLUserEmail);
 
   // Saml flow UI expectations.
-  JsExpect("$('gaia-signin').classList.contains('saml')");
+  JsExpect("$('gaia-signin').classList.contains('full-width')");
   JsExpect("!$('cancel-add-user-button').hidden");
 
   // Click on 'cancel'.
@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
   } while (message != "\"GaiaLoaded\"");
 
   // Saml flow is gone.
-  JsExpect("!$('gaia-signin').classList.contains('saml')");
+  JsExpect("!$('gaia-signin').classList.contains('full-width')");
 }
 
 // Tests the sign-in flow when the credentials passing API is used.
