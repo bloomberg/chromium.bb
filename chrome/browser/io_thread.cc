@@ -842,7 +842,7 @@ void IOThread::ConfigureSpdyFromTrial(base::StringPiece spdy_trial_group,
     globals->use_alternate_protocols.set(true);
   } else if (spdy_trial_group.starts_with(
                  kSpdyFieldTrialSpdy31GroupNamePrefix)) {
-    globals->next_protos = net::NextProtosSpdy4Http2();
+    globals->next_protos = net::NextProtosSpdy31();
     globals->use_alternate_protocols.set(true);
   } else if (spdy_trial_group.starts_with(
                  kSpdyFieldTrialSpdy4GroupNamePrefix)) {
