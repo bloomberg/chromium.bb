@@ -11,14 +11,11 @@ import datetime
 import itertools
 import logging
 import os
-import signal
-import socket
 import subprocess
 import tempfile
 import threading
 import time
 import traceback
-from xml.etree import ElementTree
 from contextlib import contextmanager
 
 
@@ -29,9 +26,6 @@ TMP = next(d for d in TMPS if os.path.exists(d))
 ONE_GIG = 2 ** 30      # One gig in bytes
 TWO_GIGS = ONE_GIG * 2 # Two gigs in bytes
 
-YES = 'yes'
-NO = 'no'
-
 
 class CommandFailedException(Exception):
   """Exception gets thrown for a command that fails to execute."""
@@ -39,10 +33,6 @@ class CommandFailedException(Exception):
 
 class UnableToCreateTmpDir(Exception):
   """Raised if we are unable to find a suitable tmp area."""
-
-
-class KilledException(Exception):
-  """Raised if a kill signal was caught."""
 
 
 class Timer(object):
@@ -60,21 +50,6 @@ class Timer(object):
     return self.__finish - self.__start
 
 
-class AutoDict(dict):
-  """Implementation of Perl's autovivification feature.
-
-     If the key is not present in the dictionary create it automatically.
-     and set the initial value to a dict.
-  """
-
-  def __getitem__(self, item):
-    try:
-      return dict.__getitem__(self, item)
-    except KeyError:
-      value = self[item] = type(self)()
-      return value
-
-
 class CommandResult(object):
   """An object to store various attributes of a child process."""
 
@@ -89,26 +64,6 @@ class CommandResult(object):
     """Return self.cmd as space-separated string."""
     if self.cmd:
       return ' '.join(self.cmd)
-
-
-def RegisterKillHandler(signums=(signal.SIGTERM,)):
-  """Register a handler for the given signals that raises an exception.
-
-  After calling this function, whenever one of the given signals is received
-  a KilledException will be raised.
-
-  Args:
-    signums: List of signal numbers from signal module.  The default is
-      usually what you want.
-  """
-  def handler(signum=None, _frame=None):
-    """Raise KilledException."""
-    logging.error('Caught signal %r.', signum)
-    raise KilledException('Caught signal %r' % signum)
-
-  for signum in signums:
-    logging.debug('Registering kill handler for signal: %s', signum)
-    signal.signal(signum, handler)
 
 
 def CreateTmpDir(prefix='cros-rel', tmps=TMPS, minimum_size=0):
@@ -218,141 +173,6 @@ def RunCommand(cmd, error_ok=False, redirect_stdout=False,
   return cmd_result.output
 
 
-def FileSearchReplace(filename, search_pat, replace_pat):
-  """Search for a pattern and replace every occurrence in a file.
-
-  Args:
-    filename: file to operate on
-    search_pat: pattern to search
-    replace_pat: pattern to replace
-  """
-  file_obj = open(filename, 'r+')
-
-  text = file_obj.read()
-
-  file_obj.seek(0)
-  file_obj.write(text.replace(search_pat, replace_pat))
-  file_obj.truncate()
-  file_obj.close()
-
-
-def FindLineInFile(filename, keyword):
-  """Find a line in a file and return it.
-
-  This function returns only the first line it finds with the keyword.
-
-  Args:
-    filename: The path to the file to open.
-    keyword: a keyword in the line that you want to return.
-
-  Returns:
-    a line that contains the specified keyword.
-  """
-  with open(filename) as file_buffer:
-    for line in file_buffer:
-      if keyword in line:
-        return line
-
-
-def GetProjectsFromManifest(manifest_file):
-  """Given a manifest file, returns the list of projects.
-
-  Args:
-    manifest_file: location of the manifest file (from repo tool) to load
-
-  Returns:
-    A dict where keys are the 'path' values for each project, and the values
-      are dicts with the following keys from the project entry in manifest file:
-      'name', 'path', 'revision', and 'review_server'.
-  """
-  tree = ElementTree.ElementTree()
-  tree.parse(manifest_file)
-  projects = tree.findall('./project')
-  base_projects = {}
-
-  # Read <default> tag.
-  defaults = tree.findall('./default')
-  if not defaults:
-    default_remote = 'cros'
-    default_revision = None
-  else:
-    default_remote = defaults[0].get('remote', 'cros')
-    default_revision = defaults[0].get('revision')
-
-  # Gather a list of all manifest DOMs (this one and all included).
-  manifests = [tree]
-  for include in tree.findall('./include'):
-    name = include.attrib.get('name')
-    if not name:
-      continue
-    path = os.path.join(os.path.dirname(manifest_file), name)
-    if os.path.exists(path):
-      included_manifest = ElementTree.ElementTree()
-      included_manifest.parse(path)
-      manifests.append(included_manifest)
-
-  # Read remotes from this manifest and all included manifests.
-  remotes = {}
-  for manifest in manifests:
-    for item in manifest.findall('./remote'):
-      name = item.attrib.get('name')
-      remotes[name] = item.attrib
-
-  for project in projects:
-    name = project.attrib.get('name')
-    path = project.attrib.get('path')
-
-    if not path:
-      path = name
-    revision = project.attrib.get('revision', default_revision)
-    remote = project.attrib.get('remote', default_remote)
-    review_server = remotes[remote].get('review')
-    git_repo = {'name': name, 'path': path, 'revision': revision,
-                'review_server': review_server}
-
-    if not path in base_projects:
-      base_projects[path] = git_repo
-
-  return base_projects
-
-
-def ValidateSudo():
-  """Validate the user has a sudo token that hasn't expired or prompt."""
-
-  # Check to see if we can use sudo to run a command without a password
-  # prompt.
-  cmd = ['sudo', '-n', 'true']
-  result = RunCommand(cmd,
-                      error_ok=True, redirect_stdout=True, redirect_stderr=True,
-                      return_result=True)
-
-  # If not, prompt the user to enter a password and update their tty-ticket
-  if result.returncode != 0:
-    os.system('sudo -v')
-
-
-def GetHostName(fully_qualified=False):
-  """Return hostname of current machine, with domain if requested.
-
-  Args:
-    fully_qualified: If True include full path in hostname.
-
-  Returns:
-    Hostname
-  """
-  hostname = socket.gethostbyaddr(socket.gethostname())[0]
-
-  if fully_qualified:
-    return hostname
-  else:
-    return hostname.partition('.')[0]
-
-
-def GetPID():
-  """Return pid of current process."""
-  return os.getpid()
-
-
 def GetFreeSpace(path):
   """Return the available free space in bytes.
 
@@ -368,56 +188,6 @@ def GetFreeSpace(path):
 
   stats = os.statvfs(path)
   return stats.f_bavail * stats.f_frsize
-
-
-def GetInput(prompt):
-  """Helper function to grab input from a user.   Makes testing easier."""
-  return raw_input(prompt)
-
-
-def YesNoPrompt(default, prompt="Do you want to continue", full=False):
-  """Helper function for processing yes/no inputs from user.
-
-  Args:
-    default: Answer selected if the user hits "enter" without typing anything.
-    prompt: The question to present to the user.
-    full: If True, user has to type "yes" or "no", otherwise "y" or "n" is OK.
-
-  Returns:
-    What the user entered, normalized to "yes" or "no".
-  """
-  if full:
-    if default == NO:
-      # ('yes', 'No')
-      yes, no = YES, NO[0].upper() + NO[1:]
-    else:
-      # ('Yes', 'no')
-      yes, no = YES[0].upper() + YES[1:], NO
-
-    expy = [YES]
-    expn = [NO]
-  else:
-    if default == NO:
-      # ('y', 'N')
-      yes, no = YES[0].lower(), NO[0].upper()
-    else:
-      # ('Y', 'n')
-      yes, no = YES[0].upper(), NO[0].lower()
-
-    # expy = ['y', 'ye', 'yes'], expn = ['n', 'no']
-    expy = [YES[0:i + 1] for i in xrange(len(YES))]
-    expn = [NO[0:i + 1] for i in xrange(len(NO))]
-
-  prompt = ('\n%s (%s/%s)? ' % (prompt, yes, no))
-  while True:
-    response = GetInput(prompt).lower()
-    if not response:
-      response = default
-
-    if response in expy:
-      return YES
-    elif response in expn:
-      return NO
 
 
 def CreateTempFileWithContents(contents):

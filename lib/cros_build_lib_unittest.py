@@ -841,13 +841,6 @@ class HelperMethodSimpleTests(cros_test_lib.TestCase):
     self.assertEqual(contents[-1], '\n')
 
 
-class YNInteraction():
-  """Class to hold a list of responses and expected reault of YN prompt."""
-  def __init__(self, responses, expected_result):
-    self.responses = responses
-    self.expected_result = expected_result
-
-
 class TestInput(cros_test_lib.MockOutputTestCase):
   """Tests of input gathering functionality."""
 

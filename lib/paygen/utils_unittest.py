@@ -10,7 +10,6 @@ from __future__ import print_function
 import datetime
 import operator
 import os
-import __builtin__
 
 import fixup_path
 fixup_path.FixupPath()
@@ -157,105 +156,6 @@ class TestUtils(unittest_lib.MoxTestCase):
     self.assertEquals(
         utils.TimeDeltaToString(c, force_seconds=True, subsecond_precision=7),
         '5d3h15m33.012037s')
-
-
-class YNInteraction():
-  """Class to hold a list of responses and expected reault of YN prompt."""
-  def __init__(self, responses, expected_result):
-    self.responses = responses
-    self.expected_result = expected_result
-
-
-class InputTest(unittest_lib.MoxTestCase):
-  """Test cases for utils interactive user input."""
-
-  def testGetInput(self):
-    self.mox.StubOutWithMock(__builtin__, 'raw_input')
-
-    prompt = 'Some prompt'
-    response = 'Some response'
-    __builtin__.raw_input(prompt).AndReturn(response)
-    self.mox.ReplayAll()
-
-    self.assertEquals(response, utils.GetInput(prompt))
-    self.mox.VerifyAll()
-
-  def _TestYesNoPrompt(self, interactions, prompt_suffix, default, full):
-    self.mox.StubOutWithMock(__builtin__, 'raw_input')
-
-    prompt = 'Continue' # Not important
-    actual_prompt = '\n%s %s? ' % (prompt, prompt_suffix)
-
-    for interaction in interactions:
-      for response in interaction.responses:
-        __builtin__.raw_input(actual_prompt).AndReturn(response)
-    self.mox.ReplayAll()
-
-    for interaction in interactions:
-      retval = utils.YesNoPrompt(default, prompt=prompt, full=full)
-      msg = ('A %s prompt with %r responses expected result %r, but got %r' %
-             (prompt_suffix, interaction.responses,
-              interaction.expected_result, retval))
-      self.assertEquals(interaction.expected_result, retval, msg=msg)
-    self.mox.VerifyAll()
-
-  def testYesNoDefaultNo(self):
-    tests = [YNInteraction([''], utils.NO),
-             YNInteraction(['n'], utils.NO),
-             YNInteraction(['no'], utils.NO),
-             YNInteraction(['foo', ''], utils.NO),
-             YNInteraction(['foo', 'no'], utils.NO),
-             YNInteraction(['y'], utils.YES),
-             YNInteraction(['ye'], utils.YES),
-             YNInteraction(['yes'], utils.YES),
-             YNInteraction(['foo', 'yes'], utils.YES),
-             YNInteraction(['foo', 'bar', 'x', 'y'], utils.YES),
-             ]
-    self._TestYesNoPrompt(tests, '(y/N)', utils.NO, False)
-
-  def testYesNoDefaultYes(self):
-    tests = [YNInteraction([''], utils.YES),
-             YNInteraction(['n'], utils.NO),
-             YNInteraction(['no'], utils.NO),
-             YNInteraction(['foo', ''], utils.YES),
-             YNInteraction(['foo', 'no'], utils.NO),
-             YNInteraction(['y'], utils.YES),
-             YNInteraction(['ye'], utils.YES),
-             YNInteraction(['yes'], utils.YES),
-             YNInteraction(['foo', 'yes'], utils.YES),
-             YNInteraction(['foo', 'bar', 'x', 'y'], utils.YES),
-             ]
-    self._TestYesNoPrompt(tests, '(Y/n)', utils.YES, False)
-
-  def testYesNoDefaultNoFull(self):
-    tests = [YNInteraction([''], utils.NO),
-             YNInteraction(['n', ''], utils.NO),
-             YNInteraction(['no'], utils.NO),
-             YNInteraction(['foo', ''], utils.NO),
-             YNInteraction(['foo', 'no'], utils.NO),
-             YNInteraction(['y', 'yes'], utils.YES),
-             YNInteraction(['ye', ''], utils.NO),
-             YNInteraction(['yes'], utils.YES),
-             YNInteraction(['foo', 'yes'], utils.YES),
-             YNInteraction(['foo', 'bar', 'y', ''], utils.NO),
-             YNInteraction(['n', 'y', 'no'], utils.NO),
-            ]
-    self._TestYesNoPrompt(tests, '(yes/No)', utils.NO, True)
-
-  def testYesNoDefaultYesFull(self):
-    tests = [YNInteraction([''], utils.YES),
-             YNInteraction(['n', ''], utils.YES),
-             YNInteraction(['no'], utils.NO),
-             YNInteraction(['foo', ''], utils.YES),
-             YNInteraction(['foo', 'no'], utils.NO),
-             YNInteraction(['y', 'yes'], utils.YES),
-             YNInteraction(['n', ''], utils.YES),
-             YNInteraction(['yes'], utils.YES),
-             YNInteraction(['foo', 'yes'], utils.YES),
-             YNInteraction(['foo', 'bar', 'n', ''], utils.YES),
-             YNInteraction(['n', 'y', 'no'], utils.NO),
-            ]
-    self._TestYesNoPrompt(tests, '(Yes/no)', utils.YES, True)
 
 
 if __name__ == '__main__':
