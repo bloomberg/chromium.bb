@@ -508,6 +508,8 @@ public:
 
     virtual void setTopControlsLayoutHeight(float) override;
 
+    virtual void forceNextWebGLContextCreationToFail() override;
+
 private:
     void didUpdateTopControls();
     void setTopControlsContentOffset(float);

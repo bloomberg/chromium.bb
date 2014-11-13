@@ -61,6 +61,8 @@
 
 namespace blink {
 
+static bool shouldFailContextCreationForTesting = false;
+
 PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTMLCanvasElement* canvas, WebGLContextAttributes* attrs)
 {
     Document& document = canvas->document();
@@ -87,7 +89,8 @@ PassOwnPtrWillBeRawPtr<WebGLRenderingContext> WebGLRenderingContext::create(HTML
     blink::WebGraphicsContext3D::Attributes attributes = attrs->attributes(document.topDocument().url().string(), settings, 1);
     blink::WebGLInfo glInfo;
     OwnPtr<blink::WebGraphicsContext3D> context = adoptPtr(blink::Platform::current()->createOffscreenGraphicsContext3D(attributes, 0, &glInfo));
-    if (!context) {
+    if (!context || shouldFailContextCreationForTesting) {
+        shouldFailContextCreationForTesting = false;
         String statusMessage("Could not create a WebGL context for VendorInfo = ");
         statusMessage.append(glInfo.vendorInfo);
         statusMessage.append(", RendererInfo = ");
@@ -180,6 +183,11 @@ void WebGLRenderingContext::trace(Visitor* visitor)
     visitor->trace(m_webglCompressedTextureS3TC);
     visitor->trace(m_webglDepthTexture);
     WebGLRenderingContextBase::trace(visitor);
+}
+
+void WebGLRenderingContext::forceNextWebGLContextCreationToFail()
+{
+    shouldFailContextCreationForTesting = true;
 }
 
 } // namespace blink

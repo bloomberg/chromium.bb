@@ -493,6 +493,10 @@ public:
 
     // Testing functionality for TestRunner ---------------------------------
 
+    // Force the webgl context to fail so that webglcontextcreationerror
+    // event gets generated/tested.
+    virtual void forceNextWebGLContextCreationToFail() = 0;
+
 protected:
     ~WebView() {}
 };

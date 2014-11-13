@@ -61,6 +61,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTextAreaElement.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/html/ime/InputMethodContext.h"
 #include "core/inspector/InspectorController.h"
 #include "core/loader/DocumentLoader.h"
@@ -4498,6 +4499,11 @@ bool WebViewImpl::shouldDisableDesktopWorkarounds()
 
     return mainFrameImpl()->frameView()->layoutSize().width() == m_size.width
         || (constraints.minimumScale == constraints.maximumScale && constraints.minimumScale != -1);
+}
+
+void WebViewImpl::forceNextWebGLContextCreationToFail()
+{
+    WebGLRenderingContext::forceNextWebGLContextCreationToFail();
 }
 
 } // namespace blink
