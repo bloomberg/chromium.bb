@@ -24,12 +24,12 @@ class KeyMobileSitesPage(page_module.Page):
     action_runner.RepaintContinuously(seconds=5)
 
 
-class Page2(KeyMobileSitesPage):
+class CapitolVolkswagenPage(KeyMobileSitesPage):
 
   """ Why: Typical mobile business site """
 
   def __init__(self, page_set):
-    super(Page2, self).__init__(
+    super(CapitolVolkswagenPage, self).__init__(
       url=('http://iphone.capitolvolkswagen.com/index.htm'
            '#new-inventory_p_2Fsb-new_p_2Ehtm_p_3Freset_p_3DInventoryListing'),
       page_set=page_set)
@@ -42,12 +42,12 @@ class Page2(KeyMobileSitesPage):
 
 
 
-class Page4(KeyMobileSitesPage):
+class TheVergePage(KeyMobileSitesPage):
 
   """ Why: Top tech blog """
 
   def __init__(self, page_set):
-    super(Page4, self).__init__(
+    super(TheVergePage, self).__init__(
       # pylint: disable=C0301
       url='http://www.theverge.com/2012/10/28/3568746/amazon-7-inch-fire-hd-ipad-mini-ad-ballsy',
       page_set=page_set)
@@ -62,12 +62,12 @@ class Page4(KeyMobileSitesPage):
         ' window.Chorus.Comments.Json.load_comments())')
 
 
-class Page5(KeyMobileSitesPage):
+class CnnPage(KeyMobileSitesPage):
 
   """ Why: Top news site """
 
   def __init__(self, page_set):
-    super(Page5, self).__init__(
+    super(CnnPage, self).__init__(
       # pylint: disable=C0301
       url='http://www.cnn.com/2012/10/03/politics/michelle-obama-debate/index.html',
       page_set=page_set)
@@ -78,12 +78,12 @@ class Page5(KeyMobileSitesPage):
 
 
 
-class Page7(KeyMobileSitesPage):
+class FacebookPage(KeyMobileSitesPage):
 
   """ Why: #1 (Alexa global) """
 
   def __init__(self, page_set):
-    super(Page7, self).__init__(
+    super(FacebookPage, self).__init__(
       url='https://facebook.com/barackobama',
       page_set=page_set)
 
@@ -94,12 +94,12 @@ class Page7(KeyMobileSitesPage):
         'document.body.scrollHeight > window.innerHeight')
 
 
-class Page8(KeyMobileSitesPage):
+class YoutubeMobilePage(KeyMobileSitesPage):
 
   """ Why: #3 (Alexa global) """
 
   def __init__(self, page_set):
-    super(Page8, self).__init__(
+    super(YoutubeMobilePage, self).__init__(
       url='http://m.youtube.com/watch?v=9hBpF_Zj4OA',
       page_set=page_set)
 
@@ -109,12 +109,12 @@ class Page8(KeyMobileSitesPage):
         'document.getElementById("paginatortarget") !== null')
 
 
-class Page11(KeyMobileSitesPage):
+class LinkedInPage(KeyMobileSitesPage):
 
   """ Why: #12 (Alexa global),Public profile """
 
   def __init__(self, page_set):
-    super(Page11, self).__init__(
+    super(LinkedInPage, self).__init__(
       url='https://www.linkedin.com/in/linustorvalds',
       page_set=page_set,
       name='LinkedIn')
@@ -126,12 +126,12 @@ class Page11(KeyMobileSitesPage):
 
 
 
-class Page16(KeyMobileSitesPage):
+class YahooAnswersPage(KeyMobileSitesPage):
 
   """ Why: #1 Alexa reference """
 
   def __init__(self, page_set):
-    super(Page16, self).__init__(
+    super(YahooAnswersPage, self).__init__(
       # pylint: disable=C0301
       url='http://answers.yahoo.com/question/index?qid=20110117024343AAopj8f',
       page_set=page_set)
@@ -142,12 +142,12 @@ class Page16(KeyMobileSitesPage):
     action_runner.ClickElement(text='Other Answers (1 - 20 of 149)')
 
 
-class Page17(KeyMobileSitesPage):
+class GmailPage(KeyMobileSitesPage):
 
   """ Why: productivity, top google properties """
 
   def __init__(self, page_set):
-    super(Page17, self).__init__(
+    super(GmailPage, self).__init__(
       url='https://mail.google.com/mail/',
       page_set=page_set)
 
@@ -175,12 +175,12 @@ class Page17(KeyMobileSitesPage):
 
 
 
-class Page21(KeyMobileSitesPage):
+class GroupClonedPage(KeyMobileSitesPage):
 
   """ Why: crbug.com/172906 """
 
   def __init__(self, page_set):
-    super(Page21, self).__init__(
+    super(GroupClonedPage, self).__init__(
       url='http://groupcloned.com',
       page_set=page_set)
 
@@ -209,12 +209,12 @@ class Page21(KeyMobileSitesPage):
     interaction.End()
 
 
-class Page22(KeyMobileSitesPage):
+class GroupClonedListImagesPage(KeyMobileSitesPage):
 
   """ Why: crbug.com/172906 """
 
   def __init__(self, page_set):
-    super(Page22, self).__init__(
+    super(GroupClonedListImagesPage, self).__init__(
       url='http://groupcloned.com/test/list-images-variable/index.html',
       page_set=page_set)
 
@@ -236,12 +236,12 @@ class Page22(KeyMobileSitesPage):
 
 
 
-class Page24(KeyMobileSitesPage):
+class GoogleNewsMobilePage(KeyMobileSitesPage):
 
   """ Why: Google News: accelerated scrolling version """
 
   def __init__(self, page_set):
-    super(Page24, self).__init__(
+    super(GoogleNewsMobilePage, self).__init__(
       url='http://mobile-news.sandbox.google.com/news/pt1',
       page_set=page_set)
 
@@ -252,14 +252,14 @@ class Page24(KeyMobileSitesPage):
         'NEWS_telemetryReady == true')
 
 
-class Page25(KeyMobileSitesPage):
+class GoogleNewsMobile2Page(KeyMobileSitesPage):
 
   """
   Why: Google News: this iOS version is slower than accelerated scrolling
   """
 
   def __init__(self, page_set):
-    super(Page25, self).__init__(
+    super(GoogleNewsMobile2Page, self).__init__(
       url='http://mobile-news.sandbox.google.com/news/pt0',
       page_set=page_set)
 
@@ -281,14 +281,14 @@ class Page25(KeyMobileSitesPage):
     interaction.End()
 
 
-class Page26(KeyMobileSitesPage):
+class AmazonNicolasCagePage(KeyMobileSitesPage):
 
   """
   Why: #1 world commerce website by visits; #3 commerce in the US by time spent
   """
 
   def __init__(self, page_set):
-    super(Page26, self).__init__(
+    super(AmazonNicolasCagePage, self).__init__(
       url='http://www.amazon.com/gp/aw/s/ref=is_box_?k=nicolas+cage',
       page_set=page_set)
 
@@ -311,27 +311,32 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       archive_data_file='data/key_mobile_sites.json',
       bucket=page_set_module.PARTNER_BUCKET)
 
+
+    self.AddPage(CapitolVolkswagenPage(self))
+    self.AddPage(TheVergePage(self))
+    self.AddPage(CnnPage(self))
+    self.AddPage(FacebookPage(self))
+    self.AddPage(YoutubeMobilePage(self))
+    self.AddPage(LinkedInPage(self))
+    self.AddPage(YahooAnswersPage(self))
+    self.AddPage(GmailPage(self))
+    # Page behaves non-deterministically, replaced with test version for now.
+    # self.AddPage(GroupClonedPage(self))
+    # mean_input_event_latency cannot be tracked correctly for
+    # GroupClonedListImagesPage.
+    # See crbug.com/409086.
+    # self.AddPage(GroupClonedListImagesPage(self))
+    self.AddPage(GoogleNewsMobilePage(self))
+    self.AddPage(GoogleNewsMobile2Page(self))
+    self.AddPage(AmazonNicolasCagePage(self))
+
     # Why: Top news site.
     self.AddPage(KeyMobileSitesPage(
       url='http://nytimes.com/', page_set=self, labels=['fastpath']))
 
-    self.AddPage(Page2(self))
-
     # Why: Image-heavy site.
     self.AddPage(KeyMobileSitesPage(
       url='http://cuteoverload.com', page_set=self, labels=['fastpath']))
-
-    self.AddPage(Page4(self))
-    self.AddPage(Page5(self))
-
-    # Why: Social; top Google property; Public profile; infinite scrolls.
-    self.AddPage(KeyMobileSitesPage(
-       # pylint: disable=C0301
-      url='https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
-      page_set=self))
-
-    self.AddPage(Page7(self))
-    self.AddPage(Page8(self))
 
     # Why: #11 (Alexa global), google property; some blogger layouts
     # have infinite scroll but more interesting.
@@ -346,14 +351,12 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
       page_set=self,
       name='Wordpress'))
 
-
-    self.AddPage(Page11(self))
-
    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
     self.AddPage(KeyMobileSitesPage(
       url='http://en.wikipedia.org/wiki/Wikipedia',
       page_set=self,
       name='Wikipedia (1 tab)'))
+
 
     # Why: #8 (Alexa global), picked an interesting page
     # Forbidden (Rate Limit Exceeded)
@@ -370,11 +373,9 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
     # Fails often; crbug.com/249722'
     # self.AddPage(KeyMobileSitesPage(
     # url='http://espn.go.com', page_set=self, name='ESPN'))
-
-
-    self.AddPage(Page16(self))
-    self.AddPage(Page17(self))
-
+    # Why: crbug.com/231413
+    # Doesn't scroll; crbug.com/249736
+    # self.AddPage(KeyMobileSitesPage(url='http://forecast.io', page_set=self))
     # Why: crbug.com/169827
     self.AddPage(KeyMobileSitesPage(
       url='http://slashdot.org/', page_set=self, labels=['fastpath']))
@@ -389,22 +390,10 @@ class KeyMobileSitesPageSet(page_set_module.PageSet):
     self.AddPage(KeyMobileSitesPage(
       url='http://www.boingboing.net', page_set=self, labels=['fastpath']))
 
-    # Page behaves non-deterministically, replaced with test version for now.
-    # self.AddPage(Page21(self))
-    # mean_input_event_latency cannot be tracked correctly for Page22.
-    # See crbug.com/409086.
-    # self.AddPage(Page22(self))
-
-
-    # Why: crbug.com/231413
-    # Doesn't scroll; crbug.com/249736
-    # self.AddPage(KeyMobileSitesPage(url='http://forecast.io', page_set=self))
-
-    self.AddPage(Page24(self))
-    self.AddPage(Page25(self))
-    self.AddPage(Page26(self))
-
     urls_list = [
+      # Why: Social; top Google property; Public profile; infinite scrolls.
+      # pylint: disable=C0301
+      'https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
       # Why: crbug.com/242544
       ('http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-'
        'lg-optimus-g-nexus-is-coming-along-with-a-nexus-phone-certification-'
