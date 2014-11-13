@@ -204,7 +204,7 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 return R.drawable.permission_location;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_MEDIASTREAM:
                 return R.drawable.permission_media;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
                 return R.drawable.permission_push_notification;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
                 return R.drawable.permission_popups;

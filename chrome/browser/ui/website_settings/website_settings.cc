@@ -81,6 +81,9 @@ ContentSettingsType kPermissionType[] = {
   CONTENT_SETTINGS_TYPE_MEDIASTREAM,
   CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
   CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+#if defined(OS_ANDROID)
+  CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
+#endif
 };
 
 bool CertificateTransparencyStatusMatch(
@@ -256,6 +259,7 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
     case CONTENT_SETTINGS_TYPE_FULLSCREEN:
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:
       primary_pattern = ContentSettingsPattern::FromURL(site_url_);
       secondary_pattern = ContentSettingsPattern::Wildcard();
       break;
