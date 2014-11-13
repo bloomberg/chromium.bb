@@ -1278,8 +1278,6 @@ crbug.com/404494 [ Win ] http/tests/xmlhttprequest/xmlhttprequest-allowed-with-d
 
 crbug.com/421283 fast/html/marquee-scrollamount.html [ Pass Failure ]
 
-crbug.com/407416 editing/selection/replaced-boundaries-2.html [ NeedsRebaseline ]
-
 # Disabled until the test plugin is fixed.
 crbug.com/363099 [ Win ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
