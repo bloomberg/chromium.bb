@@ -101,4 +101,40 @@ TEST(WebDocumentTest, BeginExitTransition)
     ASSERT_EQ(Color(0, 128, 0), bodyStyle->visitedDependentColor(CSSPropertyColor));
 }
 
+
+TEST(WebDocumentTest, HideAndShowTransitionElements)
+{
+    std::string baseURL = "http://www.test.com:0/";
+    const char* htmlURL = "transition_hide_and_show.html";
+    URLTestHelpers::registerMockedURLLoad(toKURL(baseURL + htmlURL), WebString::fromUTF8(htmlURL));
+
+    WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad(baseURL + htmlURL);
+
+    WebFrame* frame = webViewHelper.webView()->mainFrame();
+    Document* coreDoc = toLocalFrame(webViewHelper.webViewImpl()->page()->mainFrame())->document();
+    Element* transitionElement = coreDoc->getElementById("foo");
+    ASSERT(transitionElement);
+
+    RenderStyle* transitionStyle = transitionElement->renderStyle();
+    ASSERT(transitionStyle);
+    EXPECT_EQ(transitionStyle->opacity(), 1);
+
+    // Hide transition elements
+    frame->document().hideTransitionElements("#foo");
+    FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
+    coreDoc->updateRenderTreeIfNeeded();
+    transitionStyle = transitionElement->renderStyle();
+    ASSERT_TRUE(transitionStyle);
+    EXPECT_EQ(transitionStyle->opacity(), 0);
+
+    // Show transition elements
+    frame->document().showTransitionElements("#foo");
+    FrameTestHelpers::pumpPendingRequestsDoNotUse(frame);
+    coreDoc->updateRenderTreeIfNeeded();
+    transitionStyle = transitionElement->renderStyle();
+    ASSERT_TRUE(transitionStyle);
+    EXPECT_EQ(transitionStyle->opacity(), 1);
+}
+
 }

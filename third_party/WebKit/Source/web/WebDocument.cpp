@@ -306,7 +306,7 @@ void WebDocument::hideTransitionElements(const WebString& cssSelector)
 void WebDocument::showTransitionElements(const WebString& cssSelector)
 {
     RefPtrWillBeRawPtr<Document> document = unwrap<Document>();
-    document->hideTransitionElements(cssSelector);
+    document->showTransitionElements(cssSelector);
 }
 
 WebAXObject WebDocument::accessibilityObject() const
