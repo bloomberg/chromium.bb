@@ -41,6 +41,8 @@ class TestExtensionsClient : public ExtensionsClient {
   std::string GetWebstoreBaseURL() const override;
   std::string GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
+  std::set<base::FilePath> GetBrowserImagePaths(
+      const Extension* extension) override;
 
   // A whitelist of extensions that can script anywhere. Do not add to this
   // list (except in tests) without consulting the Extensions team first.

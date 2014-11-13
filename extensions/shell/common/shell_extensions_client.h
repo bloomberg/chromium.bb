@@ -44,6 +44,8 @@ class ShellExtensionsClient : public ExtensionsClient {
   std::string GetWebstoreBaseURL() const override;
   std::string GetWebstoreUpdateURL() const override;
   bool IsBlacklistUpdateURL(const GURL& url) const override;
+  std::set<base::FilePath> GetBrowserImagePaths(
+      const Extension* extension) override;
 
  private:
   const ExtensionsAPIPermissions extensions_api_permissions_;

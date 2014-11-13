@@ -35,7 +35,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -56,6 +55,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_url_handlers.h"
 #include "net/base/escape.h"
@@ -205,7 +205,7 @@ class ContentVerifierDelegateImpl : public ContentVerifierDelegate {
 
   std::set<base::FilePath> GetBrowserImagePaths(
       const extensions::Extension* extension) override {
-    return extension_file_util::GetBrowserImagePaths(extension);
+    return ExtensionsClient::Get()->GetBrowserImagePaths(extension);
   }
 
   void VerifyFailed(const std::string& extension_id,

@@ -5,14 +5,18 @@
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/strings/string_util.h"
+#include "base/values.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
+#include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/api/generated_schemas.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/chrome_channel_feature_filter.h"
 #include "chrome/common/extensions/features/feature_channel.h"
+#include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/common_resources.h"
@@ -21,8 +25,10 @@
 #include "content/public/common/url_constants.h"
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/common_manifest_handlers.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
+#include "extensions/common/extension_icon_set.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/api_feature.h"
 #include "extensions/common/features/base_feature_provider.h"
@@ -33,6 +39,7 @@
 #include "extensions/common/features/simple_feature.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -60,6 +67,17 @@ SimpleFeature* CreateFeature() {
   feature->AddFilter(
       scoped_ptr<SimpleFeatureFilter>(new ChromeChannelFeatureFilter(feature)));
   return feature;
+}
+
+// Add the image paths contained in the |icon_set| to |image_paths|.
+void AddPathsFromIconSet(const ExtensionIconSet& icon_set,
+                         std::set<base::FilePath>* image_paths) {
+  // TODO(viettrungluu): These |FilePath::FromUTF8Unsafe()| indicate that we're
+  // doing something wrong.
+  for (ExtensionIconSet::IconMap::const_iterator iter = icon_set.map().begin();
+       iter != icon_set.map().end(); ++iter) {
+    image_paths->insert(base::FilePath::FromUTF8Unsafe(iter->second));
+  }
 }
 
 }  // namespace
@@ -301,6 +319,37 @@ bool ChromeExtensionsClient::IsBlacklistUpdateURL(const GURL& url) const {
   // http://www.gstatic.com/chrome/extensions/blacklist/l_0_0_0_7.txt
   return StartsWithASCII(url.spec(), kExtensionBlocklistUrlPrefix, true) ||
          StartsWithASCII(url.spec(), kExtensionBlocklistHttpsUrlPrefix, true);
+}
+
+std::set<base::FilePath> ChromeExtensionsClient::GetBrowserImagePaths(
+    const Extension* extension) {
+  std::set<base::FilePath> image_paths;
+
+  AddPathsFromIconSet(extensions::IconsInfo::GetIcons(extension), &image_paths);
+
+  // Theme images
+  const base::DictionaryValue* theme_images =
+      extensions::ThemeInfo::GetImages(extension);
+  if (theme_images) {
+    for (base::DictionaryValue::Iterator it(*theme_images); !it.IsAtEnd();
+         it.Advance()) {
+      base::FilePath::StringType path;
+      if (it.value().GetAsString(&path))
+        image_paths.insert(base::FilePath(path));
+    }
+  }
+
+  const extensions::ActionInfo* page_action =
+      extensions::ActionInfo::GetPageActionInfo(extension);
+  if (page_action && !page_action->default_icon.empty())
+    AddPathsFromIconSet(page_action->default_icon, &image_paths);
+
+  const extensions::ActionInfo* browser_action =
+      extensions::ActionInfo::GetBrowserActionInfo(extension);
+  if (browser_action && !browser_action->default_icon.empty())
+    AddPathsFromIconSet(browser_action->default_icon, &image_paths);
+
+  return image_paths;
 }
 
 // static

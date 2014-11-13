@@ -17,13 +17,13 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/child/image_decoder_utils.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
@@ -210,7 +210,7 @@ bool Unpacker::Run() {
 
   // Decode any images that the browser needs to display.
   std::set<base::FilePath> image_paths =
-      extension_file_util::GetBrowserImagePaths(extension.get());
+      ExtensionsClient::Get()->GetBrowserImagePaths(extension.get());
   for (std::set<base::FilePath>::iterator it = image_paths.begin();
        it != image_paths.end();
        ++it) {

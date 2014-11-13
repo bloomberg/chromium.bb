@@ -14,6 +14,10 @@
 
 class GURL;
 
+namespace base {
+class FilePath;
+}
+
 namespace extensions {
 
 class APIPermissionSet;
@@ -106,6 +110,14 @@ class ExtensionsClient {
   // Returns a flag indicating whether or not a given URL is a valid
   // extension blacklist URL.
   virtual bool IsBlacklistUpdateURL(const GURL& url) const = 0;
+
+  // Returns the set of file paths corresponding to any images within an
+  // extension's contents that may be displayed directly within the browser UI
+  // or WebUI, such as icons or theme images. This set of paths is used by the
+  // extension unpacker to determine which assets should be transcoded safely
+  // within the utility sandbox.
+  virtual std::set<base::FilePath> GetBrowserImagePaths(
+      const Extension* extension) = 0;
 
   // Return the extensions client.
   static ExtensionsClient* Get();

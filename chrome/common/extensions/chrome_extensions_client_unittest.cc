@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/extension_file_util.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 
 #include <set>
 #include <string>
@@ -16,10 +16,19 @@
 
 namespace extensions {
 
-typedef testing::Test ExtensionFileUtilTest;
+class ChromeExtensionsClientTest : public testing::Test {
+ public:
+  void SetUp() {
+    extensions_client_.reset(new ChromeExtensionsClient());
+    ExtensionsClient::Set(extensions_client_.get());
+  }
+
+ private:
+  scoped_ptr<ChromeExtensionsClient> extensions_client_;
+};
 
 // Test that a browser action extension returns a path to an icon.
-TEST_F(ExtensionFileUtilTest, GetBrowserImagePaths) {
+TEST_F(ChromeExtensionsClientTest, GetBrowserImagePaths) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
   install_dir = install_dir.AppendASCII("extensions")
@@ -34,13 +43,13 @@ TEST_F(ExtensionFileUtilTest, GetBrowserImagePaths) {
 
   // The extension contains one icon.
   std::set<base::FilePath> paths =
-      extension_file_util::GetBrowserImagePaths(extension.get());
+      ExtensionsClient::Get()->GetBrowserImagePaths(extension.get());
   ASSERT_EQ(1u, paths.size());
   EXPECT_EQ("icon.png", paths.begin()->BaseName().AsUTF8Unsafe());
 }
 
 // Test that extensions with zero-length action icons will not load.
-TEST_F(ExtensionFileUtilTest, CheckZeroLengthActionIconFiles) {
+TEST_F(ChromeExtensionsClientTest, CheckZeroLengthActionIconFiles) {
   base::FilePath install_dir;
   ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &install_dir));
 

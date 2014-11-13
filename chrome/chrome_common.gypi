@@ -167,8 +167,6 @@
       'common/extensions/command.h',
       'common/extensions/extension_constants.cc',
       'common/extensions/extension_constants.h',
-      'common/extensions/extension_file_util.cc',
-      'common/extensions/extension_file_util.h',
       'common/extensions/extension_process_policy.cc',
       'common/extensions/extension_process_policy.h',
       'common/extensions/features/chrome_channel_feature_filter.cc',

@@ -25,7 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_utility_extensions_messages.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/crx_file/constants.h"
 #include "components/crx_file/crx_file.h"
@@ -37,6 +36,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
+#include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
@@ -662,7 +662,7 @@ bool SandboxedUnpacker::RewriteImageFiles(SkBitmap* install_icon) {
   // out our own versions of the parsed images, and we want to make sure the
   // originals are gone for good.
   std::set<base::FilePath> image_paths =
-      extension_file_util::GetBrowserImagePaths(extension_.get());
+      ExtensionsClient::Get()->GetBrowserImagePaths(extension_.get());
   if (image_paths.size() != images.size()) {
     // Decoded images don't match what's in the manifest.
     ReportFailure(
