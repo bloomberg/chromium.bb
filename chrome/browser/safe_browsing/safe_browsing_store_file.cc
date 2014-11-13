@@ -618,10 +618,8 @@ bool SafeBrowsingStoreFile::CheckValidity() {
   return true;
 }
 
-void SafeBrowsingStoreFile::Init(
-    const base::FilePath& filename,
-    const base::Closure& corruption_callback
-) {
+void SafeBrowsingStoreFile::Init(const base::FilePath& filename,
+                                 const base::Closure& corruption_callback) {
   filename_ = filename;
   corruption_callback_ = corruption_callback;
 }

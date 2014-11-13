@@ -101,6 +101,7 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
     SBThreatType threat_type) const {
   DCHECK(threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
          threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
@@ -113,6 +114,9 @@ GURL SafeBrowsingPingManager::SafeBrowsingHitUrl(
       break;
     case SB_THREAT_TYPE_URL_PHISHING:
       threat_list = "phishblhit";
+      break;
+    case SB_THREAT_TYPE_URL_UNWANTED:
+      threat_list = "uwsblhit";
       break;
     case SB_THREAT_TYPE_BINARY_MALWARE_URL:
       threat_list = "binurlhit";

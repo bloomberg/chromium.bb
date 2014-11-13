@@ -42,7 +42,9 @@ class SafeBrowsingDatabaseFactory {
       bool enable_download_whitelist,
       bool enable_extension_blacklist,
       bool enable_side_effect_free_whitelist,
-      bool enable_ip_blacklist) = 0;
+      bool enable_ip_blacklist,
+      bool enable_unwanted_software_list) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingDatabaseFactory);
 };
@@ -71,12 +73,15 @@ class SafeBrowsingDatabase {
   // database feature.
   // |enable_ip_blacklist| is used to control the csd malware IP blacklist
   // database feature.
+  // |enable_unwanted_software_list| is used to control the unwanted software
+  // list database feature.
   static SafeBrowsingDatabase* Create(bool enable_download_protection,
                                       bool enable_client_side_whitelist,
                                       bool enable_download_whitelist,
                                       bool enable_extension_blacklist,
                                       bool side_effect_free_whitelist,
-                                      bool enable_ip_blacklist);
+                                      bool enable_ip_blacklist,
+                                      bool enable_unwanted_software_list);
 
   // Makes the passed |factory| the factory used to instantiate
   // a SafeBrowsingDatabase. This is used for tests.
@@ -93,10 +98,22 @@ class SafeBrowsingDatabase {
   virtual bool ResetDatabase() = 0;
 
   // Returns false if |url| is not in the browse database or already was cached
-  // as a miss.  If it returns true, |prefix_hits| contains matching hash
-  // prefixes which had no cached results and |cache_hits| contains any matching
-  // cached gethash results.  This function is safe to call from any thread.
+  // as a miss.  If it returns true, |prefix_hits| contains sorted unique
+  // matching hash prefixes which had no cached results and |cache_hits|
+  // contains any matching cached gethash results.  This function is safe to
+  // call from any thread.
   virtual bool ContainsBrowseUrl(
+      const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) = 0;
+
+  // Returns true iff the given url is on the unwanted software blacklist.
+  // Returns false if |url| is not in the browse database or already was cached
+  // as a miss.  If it returns true, |prefix_hits| contains sorted unique
+  // matching hash prefixes which had no cached results and |cache_hits|
+  // contains any matching cached gethash results.  This function is safe to
+  // call from any thread.
+  virtual bool ContainsUnwantedSoftwareUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) = 0;
@@ -218,6 +235,10 @@ class SafeBrowsingDatabase {
   static base::FilePath IpBlacklistDBFilename(
       const base::FilePath& ip_blacklist_base_filename);
 
+  // Filename for the unwanted software blacklist database.
+  static base::FilePath UnwantedSoftwareDBFilename(
+      const base::FilePath& db_filename);
+
   // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
   // ORDERING OF THESE VALUES.
   enum FailureType {
@@ -235,7 +256,6 @@ class SafeBrowsingDatabase {
     FAILURE_DOWNLOAD_DATABASE_UPDATE_FINISH,
     FAILURE_WHITELIST_DATABASE_UPDATE_BEGIN,
     FAILURE_WHITELIST_DATABASE_UPDATE_FINISH,
-    FAILURE_BROWSE_PREFIX_SET_MISSING,
     FAILURE_BROWSE_PREFIX_SET_READ,
     FAILURE_BROWSE_PREFIX_SET_WRITE,
     FAILURE_BROWSE_PREFIX_SET_DELETE,
@@ -252,6 +272,11 @@ class SafeBrowsingDatabase {
     FAILURE_IP_BLACKLIST_UPDATE_FINISH,
     FAILURE_IP_BLACKLIST_UPDATE_INVALID,
     FAILURE_IP_BLACKLIST_DELETE,
+    FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_BEGIN,
+    FAILURE_UNWANTED_SOFTWARE_DATABASE_UPDATE_FINISH,
+    FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_READ,
+    FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_WRITE,
+    FAILURE_UNWANTED_SOFTWARE_PREFIX_SET_DELETE,
 
     // Memory space for histograms is determined by the max.  ALWAYS
     // ADD NEW VALUES BEFORE THIS ONE.
@@ -281,7 +306,8 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                           SafeBrowsingStore* download_whitelist_store,
                           SafeBrowsingStore* extension_blacklist_store,
                           SafeBrowsingStore* side_effect_free_whitelist_store,
-                          SafeBrowsingStore* ip_blacklist_store);
+                          SafeBrowsingStore* ip_blacklist_store,
+                          SafeBrowsingStore* unwanted_software_store);
 
   // Create a database with a browse store. This is a legacy interface that
   // useds Sqlite.
@@ -295,6 +321,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsBrowseUrl(const GURL& url,
                          std::vector<SBPrefix>* prefix_hits,
                          std::vector<SBFullHashResult>* cache_hits) override;
+  bool ContainsUnwantedSoftwareUrl(
+      const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) override;
   bool ContainsDownloadUrl(const std::vector<GURL>& urls,
                            std::vector<SBPrefix>* prefix_hits) override;
   bool ContainsCsdWhitelistedUrl(const GURL& url) override;
@@ -338,10 +368,24 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // IPv6 IP prefix using SHA-1.
   typedef std::map<std::string, base::hash_set<std::string> > IPBlacklist;
 
-  // Helper for ContainsBrowseUrl, exposed for testing.
-  bool ContainsBrowseUrlHashes(const std::vector<SBFullHash>& full_hashes,
-                               std::vector<SBPrefix>* prefix_hits,
-                               std::vector<SBFullHashResult>* cache_hits);
+  bool PrefixSetContainsUrl(
+      const GURL& url,
+      scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits);
+
+  // Exposed for testing of PrefixSetContainsUrlHashes() on the
+  // PrefixSet backing kMalwareList.
+  bool ContainsBrowseUrlHashesForTesting(
+      const std::vector<SBFullHash>& full_hashes,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits);
+
+  bool PrefixSetContainsUrlHashes(
+      const std::vector<SBFullHash>& full_hashes,
+      scoped_ptr<safe_browsing::PrefixSet>* prefix_set_getter,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits);
 
   // Returns true if the whitelist is disabled or if any of the given hashes
   // matches the whitelist.
@@ -355,11 +399,19 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Deletes the files on disk.
   bool Delete();
 
-  // Load the prefix set off disk, if available.
-  void LoadPrefixSet();
+  // Load the prefix set in "|db_filename| Prefix Set" off disk, if available,
+  // and stores it in |prefix_set|.  |read_failure_type| provides a
+  // caller-specific error code to be used on failure.
+  void LoadPrefixSet(const base::FilePath& db_filename,
+                     scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+                     FailureType read_failure_type);
 
-  // Writes the current prefix set to disk.
-  void WritePrefixSet();
+  // Writes the current prefix set "|db_filename| Prefix Set" on disk.
+  // |write_failure_type| provides a caller-specific error code to be used on
+  // failure.
+  void WritePrefixSet(const base::FilePath& db_filename,
+                      safe_browsing::PrefixSet* prefix_set,
+                      FailureType write_failure_type);
 
   // Loads the given full-length hashes to the given whitelist.  If the number
   // of hashes is too large or if the kill switch URL is on the whitelist
@@ -396,7 +448,20 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   int64 UpdateHashPrefixStore(const base::FilePath& store_filename,
                                SafeBrowsingStore* store,
                                FailureType failure_type);
-  void UpdateBrowseStore();
+
+  // Updates a PrefixStore store for URLs (|url_store|) which is backed on disk
+  // by a "|db_filename| Prefix Set" file. Specific failure types are provided
+  // to highlight the specific store who made the initial request on failure.
+  void UpdatePrefixSetUrlStore(const base::FilePath& db_filename,
+                               SafeBrowsingStore* url_store,
+                               scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+                               FailureType finish_failure_type,
+                               FailureType write_failure_type);
+
+  void UpdateUrlStore(SafeBrowsingStore* url_store,
+                      scoped_ptr<safe_browsing::PrefixSet>* prefix_set,
+                      FailureType failure_type);
+
   void UpdateSideEffectFreeWhitelistStore();
   void UpdateWhitelistStore(const base::FilePath& store_filename,
                             SafeBrowsingStore* store,
@@ -406,10 +471,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Used to verify that various calls are made from the thread the
   // object was created on.
   base::MessageLoop* creation_loop_;
-
-  // Lock for protecting access to variables that may be used on the IO thread.
-  // This includes |prefix_set_|, |browse_gethash_cache_|, |csd_whitelist_|.
-  base::Lock lookup_lock_;
 
   // The base filename passed to Init(), used to generate the store and prefix
   // set filenames used to store data on disk.
@@ -439,6 +500,14 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // For IP blacklist.
   scoped_ptr<SafeBrowsingStore> ip_blacklist_store_;
 
+  // For unwanted software list.
+  scoped_ptr<SafeBrowsingStore> unwanted_software_store_;
+
+  // Lock for protecting access to variables that may be used on the IO thread.
+  // This includes |(browse|unwanted_software)_prefix_set_|,
+  // |prefix_gethash_cache_|, |csd_whitelist_|.
+  base::Lock lookup_lock_;
+
   SBWhitelist csd_whitelist_;
   SBWhitelist download_whitelist_;
   SBWhitelist extension_blacklist_;
@@ -446,10 +515,10 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // The IP blacklist should be small.  At most a couple hundred IPs.
   IPBlacklist ip_blacklist_;
 
-  // Cache of gethash results for browse store. Entries should not be used if
+  // Cache of gethash results for prefix stores. Entries should not be used if
   // they are older than their expire_after field.  Cached misses will have
   // empty full_hashes field.  Cleared on each update.
-  std::map<SBPrefix, SBCachedFullHashResult> browse_gethash_cache_;
+  std::map<SBPrefix, SBCachedFullHashResult> prefix_gethash_cache_;
 
   // Set if corruption is detected during the course of an update.
   // Causes the update functions to fail with no side effects, until
@@ -463,8 +532,11 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   // Used to check if a prefix was in the browse database.
   scoped_ptr<safe_browsing::PrefixSet> browse_prefix_set_;
 
-  // Used to check if a prefix was in the browse database.
+  // Used to check if a prefix was in the side-effect free whitelist database.
   scoped_ptr<safe_browsing::PrefixSet> side_effect_free_whitelist_prefix_set_;
+
+  // Used to check if a prexfix was in the unwanted software database.
+  scoped_ptr<safe_browsing::PrefixSet> unwanted_software_prefix_set_;
 
   // Used to schedule resetting the database because of corruption.
   base::WeakPtrFactory<SafeBrowsingDatabaseNew> reset_factory_;

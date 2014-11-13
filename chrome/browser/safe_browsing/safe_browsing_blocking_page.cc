@@ -172,7 +172,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
       malware = true;
-    } else if (threat_type == SB_THREAT_TYPE_URL_HARMFUL) {
+    } else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
       harmful = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
@@ -377,9 +377,11 @@ void SafeBrowsingBlockingPage::CommandReceived(const std::string& cmd) {
     diagnostic_url = google_util::AppendGoogleLocaleParam(
         diagnostic_url, g_browser_process->GetApplicationLocale());
     DCHECK(unsafe_resources_[element_index].threat_type ==
-           SB_THREAT_TYPE_URL_MALWARE ||
+               SB_THREAT_TYPE_URL_MALWARE ||
            unsafe_resources_[element_index].threat_type ==
-           SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL);
+               SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
+           unsafe_resources_[element_index].threat_type ==
+               SB_THREAT_TYPE_URL_UNWANTED);
     OpenURLParams params(
         diagnostic_url, Referrer(), CURRENT_TAB, ui::PAGE_TRANSITION_LINK,
         false);
