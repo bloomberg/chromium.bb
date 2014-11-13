@@ -152,4 +152,15 @@ TEST(SavePasswordProgressLoggerTest, LogMessage) {
   EXPECT_TRUE(logger.LogsContainSubstring(kTestString));
 }
 
+// Test that none of the strings associated to string IDs contain the '.'
+// character.
+TEST(SavePasswordProgressLoggerTest, NoFullStops) {
+  for (int id = 0; id < SavePasswordProgressLogger::STRING_MAX; ++id) {
+    TestLogger logger;
+    logger.LogMessage(static_cast<SavePasswordProgressLogger::StringID>(id));
+    EXPECT_FALSE(logger.LogsContainSubstring("."))
+        << "Log string = [" << logger.accumulated_log() << "]";
+  }
+}
+
 }  // namespace autofill

@@ -30,7 +30,9 @@ namespace {
 // compile-time, that all IDs get a string assigned. The expected frequency of
 // calls is low enough (in particular, zero if password manager internals page
 // is not open), that optimizing for code robustness is preferred against speed.
-// Note 2: The messages can be used as dictionary keys. Do not use '.' in them.
+// Note 2: Do not use '.' in the message strings -- the ending of the log items
+// should be controlled by the logger. Also, some of the messages below can be
+// used as dictionary keys.
 std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
   switch (id) {
     case SavePasswordProgressLogger::STRING_DECISION_ASK:
@@ -88,9 +90,9 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
     case SavePasswordProgressLogger::STRING_SECURITY_ORIGIN:
       return "Security origin";
     case SavePasswordProgressLogger::STRING_SECURITY_ORIGIN_FAILURE:
-      return "Security origin cannot access password manager.";
+      return "Security origin cannot access password manager";
     case SavePasswordProgressLogger::STRING_WEBPAGE_EMPTY:
-      return "Webpage is empty.";
+      return "Webpage is empty";
     case SavePasswordProgressLogger::STRING_NUMBER_OF_ALL_FORMS:
       return "Number of all forms";
     case SavePasswordProgressLogger::STRING_FORM_FOUND_ON_PAGE:
@@ -106,7 +108,7 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
     case SavePasswordProgressLogger::STRING_CREATED_PASSWORD_FORM:
       return "Created PasswordForm";
     case SavePasswordProgressLogger::STRING_SUBMITTED_PASSWORD_REPLACED:
-      return "Submitted password replaced with the provisionally saved one.";
+      return "Submitted password replaced with the provisionally saved one";
     case SavePasswordProgressLogger::STRING_DID_START_PROVISIONAL_LOAD_METHOD:
       return "PasswordAutofillAgent::DidStartProvisionalLoad";
     case SavePasswordProgressLogger::STRING_FORM_FRAME_EQ_FRAME:
@@ -124,17 +126,17 @@ std::string GetStringFromID(SavePasswordProgressLogger::StringID id) {
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
       return "Empty password";
     case SavePasswordProgressLogger::STRING_EXACT_MATCH:
-      return "Form manager found, exact match.";
+      return "Form manager found, exact match";
     case SavePasswordProgressLogger::STRING_MATCH_WITHOUT_ACTION:
-      return "Form manager found, match except for action.";
+      return "Form manager found, match except for action";
     case SavePasswordProgressLogger::STRING_MATCHING_NOT_COMPLETE:
-      return "No form manager has completed matching.";
+      return "No form manager has completed matching";
     case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
-      return "Form blacklisted.";
+      return "Form blacklisted";
     case SavePasswordProgressLogger::STRING_INVALID_FORM:
-      return "Invalid form.";
+      return "Invalid form";
     case SavePasswordProgressLogger::STRING_SYNC_CREDENTIAL:
-      return "Credential is used for syncing passwords.";
+      return "Credential is used for syncing passwords";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:
       return "provisionally_saved_form";
     case SavePasswordProgressLogger::STRING_IGNORE_POSSIBLE_USERNAMES:
