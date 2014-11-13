@@ -123,6 +123,7 @@ public:
     virtual void startScreencast(ErrorString*, const String* format, const int* quality, const int* maxWidth, const int* maxHeight) override;
     virtual void stopScreencast(ErrorString*) override;
     virtual void setShowViewportSizeOnResize(ErrorString*, bool show, const bool* showGrid) override;
+    virtual void setAnimationsPlaybackRate(ErrorString*, double playbackRate) override;
 
     // InspectorInstrumentation API
     void didClearDocumentOfWindowObject(LocalFrame*);

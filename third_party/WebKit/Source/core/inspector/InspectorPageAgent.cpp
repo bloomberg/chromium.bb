@@ -36,6 +36,7 @@
 #include "bindings/core/v8/ScriptRegexp.h"
 #include "core/HTMLNames.h"
 #include "core/UserAgentStyleSheets.h"
+#include "core/animation/AnimationTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -1473,6 +1474,14 @@ void InspectorPageAgent::setShowViewportSizeOnResize(ErrorString*, bool show, co
 {
     m_state->setBoolean(PageAgentState::showSizeOnResize, show);
     m_state->setBoolean(PageAgentState::showGridOnResize, asBool(showGrid));
+}
+
+void InspectorPageAgent::setAnimationsPlaybackRate(ErrorString*, double playbackRate)
+{
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (frame->isLocalFrame())
+            toLocalFrame(frame)->document()->timeline().setPlaybackRate(playbackRate);
+    }
 }
 
 void InspectorPageAgent::clearEditedResourcesContent()

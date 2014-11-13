@@ -91,6 +91,9 @@ public:
     void setOutdatedAnimationPlayer(AnimationPlayer*);
     bool hasOutdatedAnimationPlayer() const;
 
+    void setPlaybackRate(double);
+    double playbackRate() const;
+
     Document* document() { return m_document.get(); }
 #if !ENABLE(OILPAN)
     void detachFromDocument();
@@ -109,6 +112,10 @@ private:
     // i.e. current, in effect, or had timing changed
     WillBeHeapHashSet<RefPtrWillBeMember<AnimationPlayer>> m_playersNeedingUpdate;
     WillBeHeapHashSet<RawPtrWillBeWeakMember<AnimationPlayer>> m_players;
+
+    double m_currentTimeSnapshot;
+    double m_rawCurrentTimeSnapshot;
+    double m_playbackRate;
 
     friend class SMILTimeContainer;
     static const double s_minimumDelay;

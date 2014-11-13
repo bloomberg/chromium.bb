@@ -63,6 +63,9 @@ PassRefPtrWillBeRawPtr<AnimationTimeline> AnimationTimeline::create(Document* do
 AnimationTimeline::AnimationTimeline(Document* document, PassOwnPtrWillBeRawPtr<PlatformTiming> timing)
     : m_document(document)
     , m_zeroTime(0)
+    , m_currentTimeSnapshot(0)
+    , m_rawCurrentTimeSnapshot(0)
+    , m_playbackRate(1)
 {
     if (!timing)
         m_timing = adoptPtrWillBeNoop(new AnimationTimelineTiming(this));
@@ -184,7 +187,8 @@ double AnimationTimeline::currentTimeInternal(bool& isNull)
         isNull = true;
         return std::numeric_limits<double>::quiet_NaN();
     }
-    double result = m_document->animationClock().currentTime() - zeroTime();
+    // New currentTime = currentTime when the playback rate was last changed + time delta since then * playback rate
+    double result = m_currentTimeSnapshot + (m_document->animationClock().currentTime() - m_rawCurrentTimeSnapshot - zeroTime()) * playbackRate();
     isNull = std::isnan(result);
     return result;
 }
@@ -228,6 +232,19 @@ void AnimationTimeline::setOutdatedAnimationPlayer(AnimationPlayer* player)
     m_playersNeedingUpdate.add(player);
     if (m_document && m_document->page() && !m_document->page()->animator().isServicingAnimations())
         m_timing->serviceOnNextFrame();
+}
+
+void AnimationTimeline::setPlaybackRate(double playbackRate)
+{
+    // FIXME: need to invalidate compositor animations
+    m_currentTimeSnapshot = currentTimeInternal();
+    m_rawCurrentTimeSnapshot = m_document->animationClock().currentTime() - zeroTime();
+    m_playbackRate = playbackRate;
+}
+
+double AnimationTimeline::playbackRate() const
+{
+    return m_playbackRate;
 }
 
 #if !ENABLE(OILPAN)
