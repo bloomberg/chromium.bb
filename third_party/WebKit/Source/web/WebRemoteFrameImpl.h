@@ -145,7 +145,6 @@ public:
     virtual float getPrintPageShrink(int page) override;
     virtual void printEnd() override;
     virtual bool isPrintScalingDisabledForPlugin(const WebNode&) override;
-    virtual int getPrintCopiesForPlugin(const WebNode&) override;
     virtual bool hasCustomPageSizeStyle(int pageIndex) override;
     virtual bool isPageBoxVisible(int pageIndex) override;
     virtual void pageSizeAndMarginsInPixels(

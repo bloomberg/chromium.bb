@@ -189,6 +189,7 @@
 #include "public/web/WebPerformance.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPrintParams.h"
+#include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSecurityOrigin.h"
@@ -1341,14 +1342,14 @@ bool WebLocalFrameImpl::isPrintScalingDisabledForPlugin(const WebNode& node)
     return pluginContainer->isPrintScalingDisabled();
 }
 
-int WebLocalFrameImpl::getPrintCopiesForPlugin(const WebNode& node)
+bool WebLocalFrameImpl::getPrintPresetOptionsForPlugin(const WebNode& node, WebPrintPresetOptions* presetOptions)
 {
     WebPluginContainerImpl* pluginContainer = node.isNull() ? pluginContainerFromFrame(frame()) : toWebPluginContainerImpl(node.pluginContainer());
 
     if (!pluginContainer || !pluginContainer->supportsPaginatedPrint())
-        return 1;
+        return false;
 
-    return pluginContainer->getCopiesToPrint();
+    return pluginContainer->getPrintPresetOptionsFromDocument(presetOptions);
 }
 
 bool WebLocalFrameImpl::hasCustomPageSizeStyle(int pageIndex)

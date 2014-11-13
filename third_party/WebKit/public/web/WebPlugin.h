@@ -54,6 +54,7 @@ struct WebCompositionUnderline;
 struct WebCursorInfo;
 struct WebPluginParams;
 struct WebPrintParams;
+struct WebPrintPresetOptions;
 struct WebPoint;
 struct WebRect;
 struct WebTextInputInfo;
@@ -121,8 +122,8 @@ public:
     // Returns true if the printed content should not be scaled to
     // the printer's printable area.
     virtual bool isPrintScalingDisabled() { return false; }
-    // Returns number of copies to be printed.
-    virtual int getCopiesToPrint() { return 1; }
+    // Returns true on success and sets the out parameter to the print preset options for the document.
+    virtual bool getPrintPresetOptionsFromDocument(WebPrintPresetOptions*) { return false; }
 
     // Sets up printing with the specified printParams. Returns the number of
     // pages to be printed at these settings.

@@ -85,6 +85,7 @@
 #include "public/web/WebInputEvent.h"
 #include "public/web/WebPlugin.h"
 #include "public/web/WebPrintParams.h"
+#include "public/web/WebPrintPresetOptions.h"
 #include "public/web/WebViewClient.h"
 #include "web/ChromeClientImpl.h"
 #include "web/ScrollbarGroup.h"
@@ -322,9 +323,9 @@ bool WebPluginContainerImpl::isPrintScalingDisabled() const
     return m_webPlugin->isPrintScalingDisabled();
 }
 
-int WebPluginContainerImpl::getCopiesToPrint() const
+bool WebPluginContainerImpl::getPrintPresetOptionsFromDocument(WebPrintPresetOptions* presetOptions) const
 {
-    return m_webPlugin->getCopiesToPrint();
+    return m_webPlugin->getPrintPresetOptionsFromDocument(presetOptions);
 }
 
 int WebPluginContainerImpl::printBegin(const WebPrintParams& printParams) const

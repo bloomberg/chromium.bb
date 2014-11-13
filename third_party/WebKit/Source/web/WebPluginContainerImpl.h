@@ -60,6 +60,7 @@ class WebPluginLoadObserver;
 class WheelEvent;
 class Widget;
 struct WebPrintParams;
+struct WebPrintPresetOptions;
 
 class WebPluginContainerImpl final : public PluginView, public WebPluginContainer, public FrameDestructionObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WebPluginContainerImpl);
@@ -131,8 +132,8 @@ public:
     // If the plugin content should not be scaled to the printable area of
     // the page, then this method should return true.
     bool isPrintScalingDisabled() const;
-    // Returns number of copies to be printed.
-    int getCopiesToPrint() const;
+    // Returns true on success and sets the out parameter to the print preset options for the document.
+    bool getPrintPresetOptionsFromDocument(WebPrintPresetOptions*) const;
     // Sets up printing at the specified WebPrintParams. Returns the number of pages to be printed at these settings.
     int printBegin(const WebPrintParams&) const;
     // Prints the page specified by pageNumber (0-based index) into the supplied canvas.
