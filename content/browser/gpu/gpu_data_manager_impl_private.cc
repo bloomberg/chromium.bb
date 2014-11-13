@@ -756,14 +756,16 @@ void GpuDataManagerImplPrivate::GetBlacklistReasons(
     gpu_driver_bug_list_->GetReasons(reasons, "workarounds");
 }
 
-void GpuDataManagerImplPrivate::GetDriverBugWorkarounds(
-    base::ListValue* workarounds) const {
+std::vector<std::string>
+GpuDataManagerImplPrivate::GetDriverBugWorkarounds() const {
+  std::vector<std::string> workarounds;
   for (std::set<int>::const_iterator it = gpu_driver_bugs_.begin();
        it != gpu_driver_bugs_.end(); ++it) {
-    workarounds->AppendString(
+    workarounds.push_back(
         gpu::GpuDriverBugWorkaroundTypeToString(
             static_cast<gpu::GpuDriverBugWorkaroundType>(*it)));
   }
+  return workarounds;
 }
 
 void GpuDataManagerImplPrivate::AddLogMessage(

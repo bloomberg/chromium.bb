@@ -397,13 +397,16 @@ void GpuMessageHandler::OnGpuInfoUpdate() {
   // Get GPU Info.
   scoped_ptr<base::DictionaryValue> gpu_info_val(GpuInfoAsDictionaryValue());
 
+
   // Add in blacklisting features
   base::DictionaryValue* feature_status = new base::DictionaryValue;
   feature_status->Set("featureStatus", GetFeatureStatus());
   feature_status->Set("problems", GetProblems());
-  feature_status->Set("workarounds", GetDriverBugWorkarounds());
-  if (feature_status)
-    gpu_info_val->Set("featureStatus", feature_status);
+  base::ListValue* workarounds = new base::ListValue();
+  for (const std::string& workaround : GetDriverBugWorkarounds())
+    workarounds->AppendString(workaround);
+  feature_status->Set("workarounds", workarounds);
+  gpu_info_val->Set("featureStatus", feature_status);
 
   // Send GPU Info to javascript.
   web_ui()->CallJavascriptFunction("browserBridge.onGpuInfoUpdate",
