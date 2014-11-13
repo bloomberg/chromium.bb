@@ -153,6 +153,11 @@ void MaximizeModeController::SetRotationLocked(bool rotation_locked) {
                     OnRotationLockChanged(rotation_locked_));
 }
 
+void MaximizeModeController::LockRotation(gfx::Display::Rotation rotation) {
+  SetRotationLocked(true);
+  SetDisplayRotation(Shell::GetInstance()->display_manager(), rotation);
+}
+
 void MaximizeModeController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

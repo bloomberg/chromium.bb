@@ -25,13 +25,14 @@ class CONTENT_EXPORT ScreenOrientationDelegate {
   virtual bool FullScreenRequired(WebContents* web_contents) = 0;
 
   // Lock display to the given orientation.
-  virtual void Lock(blink::WebScreenOrientationLockType lock_orientation) = 0;
+  virtual void Lock(WebContents* web_contents,
+                    blink::WebScreenOrientationLockType lock_orientation) = 0;
 
   // Are ScreenOrientationProvider requests currently supported by the platform.
   virtual bool ScreenOrientationProviderSupported() = 0;
 
   // Unlocks the display, allowing hardware rotation to resume.
-  virtual void Unlock() = 0;
+  virtual void Unlock(WebContents* web_contents) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScreenOrientationDelegate);

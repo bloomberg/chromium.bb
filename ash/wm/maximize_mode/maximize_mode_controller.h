@@ -76,6 +76,11 @@ class ASH_EXPORT MaximizeModeController
   // change the display rotation.
   void SetRotationLocked(bool rotation_locked);
 
+  // Sets the display rotation to |rotation| and prevents future calls to
+  // OnAccelerometerUpdated from changing the rotation. SetRotationLocked(false)
+  // removes the rotation lock.
+  void LockRotation(gfx::Display::Rotation rotation);
+
   // Add/Remove observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
