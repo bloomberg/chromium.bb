@@ -5019,6 +5019,10 @@ TEST(MapRstStreamStatusToProtocolError, MapsValues) {
            MapRstStreamStatusToProtocolError(RST_STREAM_FRAME_SIZE_ERROR));
   CHECK_EQ(STATUS_CODE_ENHANCE_YOUR_CALM,
            MapRstStreamStatusToProtocolError(RST_STREAM_ENHANCE_YOUR_CALM));
+  CHECK_EQ(STATUS_CODE_INADEQUATE_SECURITY,
+           MapRstStreamStatusToProtocolError(RST_STREAM_INADEQUATE_SECURITY));
+  CHECK_EQ(STATUS_CODE_HTTP_1_1_REQUIRED,
+           MapRstStreamStatusToProtocolError(RST_STREAM_HTTP_1_1_REQUIRED));
 }
 
 TEST(MapNetErrorToGoAwayStatus, MapsValue) {

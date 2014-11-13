@@ -480,6 +480,10 @@ const char* SpdyFramer::StatusCodeToString(int status_code) {
       return "CONNECT_ERROR";
     case RST_STREAM_ENHANCE_YOUR_CALM:
       return "ENHANCE_YOUR_CALM";
+    case RST_STREAM_INADEQUATE_SECURITY:
+      return "INADEQUATE_SECURITY";
+    case RST_STREAM_HTTP_1_1_REQUIRED:
+      return "HTTP_1_1_REQUIRED";
   }
   return "UNKNOWN_STATUS";
 }

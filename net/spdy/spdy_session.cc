@@ -398,6 +398,10 @@ SpdyProtocolErrorDetails MapRstStreamStatusToProtocolError(
       return STATUS_CODE_CONNECT_ERROR;
     case RST_STREAM_ENHANCE_YOUR_CALM:
       return STATUS_CODE_ENHANCE_YOUR_CALM;
+    case RST_STREAM_INADEQUATE_SECURITY:
+      return STATUS_CODE_INADEQUATE_SECURITY;
+    case RST_STREAM_HTTP_1_1_REQUIRED:
+      return STATUS_CODE_HTTP_1_1_REQUIRED;
     default:
       NOTREACHED();
       return static_cast<SpdyProtocolErrorDetails>(-1);

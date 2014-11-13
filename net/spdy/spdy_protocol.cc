@@ -372,9 +372,9 @@ bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
       }
       */
 
-      // ENHANCE_YOUR_CALM is the last valid status code.
+      // HTTP_1_1_REQUIRED is the last valid status code.
       if (rst_stream_status_field >
-          SerializeRstStreamStatus(version, RST_STREAM_ENHANCE_YOUR_CALM)) {
+          SerializeRstStreamStatus(version, RST_STREAM_HTTP_1_1_REQUIRED)) {
         return false;
       }
 
@@ -436,6 +436,10 @@ SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
           return RST_STREAM_CONNECT_ERROR;
         case 11:
           return RST_STREAM_ENHANCE_YOUR_CALM;
+        case 12:
+          return RST_STREAM_INADEQUATE_SECURITY;
+        case 13:
+          return RST_STREAM_HTTP_1_1_REQUIRED;
       }
       break;
   }
@@ -499,6 +503,10 @@ int SpdyConstants::SerializeRstStreamStatus(
           return 10;
         case RST_STREAM_ENHANCE_YOUR_CALM:
           return 11;
+        case RST_STREAM_INADEQUATE_SECURITY:
+          return 12;
+        case RST_STREAM_HTTP_1_1_REQUIRED:
+          return 13;
         default:
           LOG(DFATAL) << "Unhandled RST_STREAM status "
                       << rst_stream_status;
@@ -589,6 +597,8 @@ SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion version,
           return GOAWAY_ENHANCE_YOUR_CALM;
         case 12:
           return GOAWAY_INADEQUATE_SECURITY;
+        case 13:
+          return GOAWAY_HTTP_1_1_REQUIRED;
       }
       break;
   }
@@ -666,6 +676,7 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
         case GOAWAY_CONNECT_ERROR:
         case GOAWAY_ENHANCE_YOUR_CALM:
         case GOAWAY_INADEQUATE_SECURITY:
+        case GOAWAY_HTTP_1_1_REQUIRED:
           return 1;  // PROTOCOL_ERROR.
         default:
           LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
@@ -700,6 +711,8 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion version,
           return 11;
         case GOAWAY_INADEQUATE_SECURITY:
           return 12;
+        case GOAWAY_HTTP_1_1_REQUIRED:
+          return 13;
         default:
           LOG(DFATAL) << "Serializing unhandled GOAWAY status " << status;
           return -1;

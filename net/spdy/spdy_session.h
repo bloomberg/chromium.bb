@@ -105,6 +105,8 @@ enum SpdyProtocolErrorDetails {
   STATUS_CODE_SETTINGS_TIMEOUT = 32,
   STATUS_CODE_CONNECT_ERROR = 33,
   STATUS_CODE_ENHANCE_YOUR_CALM = 34,
+  STATUS_CODE_INADEQUATE_SECURITY = 35,
+  STATUS_CODE_HTTP_1_1_REQUIRED = 36,
 
   // SpdySession errors
   PROTOCOL_ERROR_UNEXPECTED_PING = 22,
@@ -116,7 +118,7 @@ enum SpdyProtocolErrorDetails {
   PROTOCOL_ERROR_RECEIVE_WINDOW_VIOLATION = 28,
 
   // Next free value.
-  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 35,
+  NUM_SPDY_PROTOCOL_ERROR_DETAILS = 37,
 };
 SpdyProtocolErrorDetails NET_EXPORT_PRIVATE
     MapFramerErrorToProtocolError(SpdyFramer::SpdyError error);
@@ -129,7 +131,7 @@ SpdyGoAwayStatus NET_EXPORT_PRIVATE MapNetErrorToGoAwayStatus(Error err);
 // to be updated with new values, as do the mapping functions above.
 COMPILE_ASSERT(12 == SpdyFramer::LAST_ERROR,
                SpdyProtocolErrorDetails_SpdyErrors_mismatch);
-COMPILE_ASSERT(15 == RST_STREAM_NUM_STATUS_CODES,
+COMPILE_ASSERT(17 == RST_STREAM_NUM_STATUS_CODES,
                SpdyProtocolErrorDetails_RstStreamStatus_mismatch);
 
 // Splits pushed |headers| into request and response parts. Request headers are
