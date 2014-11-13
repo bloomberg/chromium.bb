@@ -1283,7 +1283,7 @@ bool StyleResolver::isPropertyForPass(CSSPropertyID property)
 // This method expands the 'all' shorthand property to longhand properties
 // and applies the expanded longhand properties.
 template <StyleResolver::StyleApplicationPass pass>
-void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue)
+void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allValue, bool inheritedOnly)
 {
     bool isUnsetValue = !allValue->isInitialValue() && !allValue->isInheritedValue();
     unsigned startCSSProperty = firstCSSPropertyId<pass>();
@@ -1303,6 +1303,11 @@ void StyleResolver::applyAllProperty(StyleResolverState& state, CSSValue* allVal
         // We skip applyProperty when a given property is unicode-bidi or
         // direction.
         if (!CSSProperty::isAffectedByAllProperty(propertyId))
+            continue;
+
+        // When hitting matched properties' cache, only inherited properties will be
+        // applied.
+        if (inheritedOnly && !CSSPropertyMetadata::isInheritedProperty(propertyId))
             continue;
 
         CSSValue* value;
@@ -1329,7 +1334,7 @@ void StyleResolver::applyProperties(StyleResolverState& state, const StyleProper
 
         CSSPropertyID property = current.id();
         if (property == CSSPropertyAll) {
-            applyAllProperty<pass>(state, current.value());
+            applyAllProperty<pass>(state, current.value(), inheritedOnly);
             continue;
         }
 
