@@ -94,6 +94,14 @@ cr.define('hotword', function() {
      */
     this.isLocked_ = false;
 
+    /**
+     * Current state of audio logging.
+     * This is tracked separately from hotwordStatus_ because we need to restart
+     * the hotword detector when this value changes.
+     * @private {boolean}
+     */
+    this.loggingEnabled_ = false;
+
     // Get the initial status.
     chrome.hotwordPrivate.getStatus(this.handleStatus_.bind(this));
 
@@ -205,6 +213,12 @@ cr.define('hotword', function() {
       if (this.hotwordStatus_.enabled ||
           this.hotwordStatus_.alwaysOnEnabled ||
           this.hotwordStatus_.trainingEnabled) {
+        // Detect changes to audio logging and kill the detector if that setting
+        // has changed.
+        if (this.hotwordStatus_.audioLoggingEnabled != this.loggingEnabled_)
+          this.shutdownDetector_();
+        this.loggingEnabled_ = this.hotwordStatus_.audioLoggingEnabled;
+
         // Start the detector if there's a session and the user is unlocked, and
         // stops it otherwise.
         if (this.sessions_.length && !this.isLocked_)
@@ -239,7 +253,7 @@ cr.define('hotword', function() {
 
       if (!this.pluginManager_) {
         this.state_ = State_.STARTING;
-        this.pluginManager_ = new hotword.NaClManager();
+        this.pluginManager_ = new hotword.NaClManager(this.loggingEnabled_);
         this.pluginManager_.addEventListener(hotword.constants.Event.READY,
                                              this.onReady_.bind(this));
         this.pluginManager_.addEventListener(hotword.constants.Event.ERROR,

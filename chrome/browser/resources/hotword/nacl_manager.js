@@ -10,10 +10,11 @@ cr.define('hotword', function() {
  * control of the NaCl plugin, including creation, start, stop, trigger, and
  * shutdown.
  *
+ * @param {boolean} loggingEnabled Whether audio logging is enabled.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function NaClManager() {
+function NaClManager(loggingEnabled) {
   /**
    * Current state of this manager.
    * @private {hotword.NaClManager.ManagerState_}
@@ -55,6 +56,12 @@ function NaClManager() {
    * @private {?MediaStream}
    */
   this.stream_ = null;
+
+  /**
+   * Whether audio logging is enabled.
+   * @private {boolean}
+   */
+  this.loggingEnabled_ = loggingEnabled;
 };
 
 /**
@@ -371,6 +378,14 @@ NaClManager.prototype.handleRequestModel_ = function() {
       hotword.constants.NaClPlugin.MODEL_PREFIX + this.modelUrl_);
   this.waitForMessage_(hotword.constants.TimeoutMs.LONG,
                        hotword.constants.NaClPlugin.MODEL_LOADED);
+
+  // Configure logging in the plugin. This can be configured any time before
+  // starting the recognizer, and now is as good a time as any.
+  if (this.loggingEnabled_) {
+    this.sendDataToPlugin_(
+        hotword.constants.NaClPlugin.LOG + ':' +
+        hotword.constants.AUDIO_LOG_SECONDS);
+  }
 };
 
 /**

@@ -6,6 +6,12 @@ cr.define('hotword.constants', function() {
 'use strict';
 
 /**
+ * Number of seconds of audio to record when logging is enabled.
+ * @const {number}
+ */
+var AUDIO_LOG_SECONDS = 2;
+
+/**
  * Hotword data shared module extension's ID.
  * @const {string}
  */
@@ -76,6 +82,7 @@ var NaClPlugin = {
   SAMPLE_RATE_PREFIX: 'h',
   MODEL_PREFIX: 'm',
   STOP: 's',
+  LOG: 'l',
   REQUEST_MODEL: 'model',
   MODEL_LOADED: 'model_loaded',
   READY_FOR_AUDIO: 'audio',
@@ -195,6 +202,7 @@ var UI_LANGUAGE = (chrome.i18n && chrome.i18n.getUILanguage) ?
       chrome.i18n.getUILanguage() : '';
 
 return {
+  AUDIO_LOG_SECONDS: AUDIO_LOG_SECONDS,
   CLIENT_PORT_NAME: CLIENT_PORT_NAME,
   COMMAND_FIELD_NAME: COMMAND_FIELD_NAME,
   SHARED_MODULE_ID: SHARED_MODULE_ID,
