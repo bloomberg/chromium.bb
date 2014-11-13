@@ -79,7 +79,7 @@ ToolbarActionsBar::ToolbarActionsBar(ToolbarActionsBarDelegate* delegate,
       platform_settings_(in_overflow_mode),
       model_observer_(this),
       suppress_layout_(false),
-      suppress_animation_(false) {
+      suppress_animation_(!model_ || !model_->extensions_initialized()) {
   if (model_)  // |model_| can be null in unittests.
     model_observer_.Add(model_);
 }
@@ -426,6 +426,12 @@ void ToolbarActionsBar::ToolbarHighlightModeChanged(bool is_highlighting) {
   delegate_->ResizeAndAnimate(gfx::Tween::LINEAR,
                               GetPreferredSize().width(),
                               true);  // suppress chevron
+}
+
+void ToolbarActionsBar::OnToolbarModelInitialized() {
+  ToolbarVisibleCountChanged();  // We may not have resized since the start.
+  delegate_->Redraw(false);  // Order didn't change.
+  suppress_animation_ = false;
 }
 
 void ToolbarActionsBar::OnToolbarReorderNecessary(

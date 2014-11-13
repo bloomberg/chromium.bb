@@ -85,6 +85,11 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     virtual void OnToolbarReorderNecessary(
         content::WebContents* web_contents) = 0;
 
+    // Signals that the toolbar model has been initialized, so that if any
+    // observers were postponing animation during the initialization stage, they
+    // can catch up.
+    virtual void OnToolbarModelInitialized() = 0;
+
     // Returns the browser associated with the Observer.
     virtual Browser* GetBrowser() = 0;
 

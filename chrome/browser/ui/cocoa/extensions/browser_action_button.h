@@ -26,11 +26,11 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   // Used to move the button and query whether a button is currently animating.
   base::scoped_nsobject<NSViewAnimation> moveAnimation_;
 
+  // The controller that handles most non-view logic.
+  ToolbarActionViewController* viewController_;
+
   // The bridge between the view controller and this object.
   scoped_ptr<ToolbarActionViewDelegateBridge> viewControllerDelegate_;
-
-  // The controller that handles most non-view logic.
-  scoped_ptr<ToolbarActionViewController> viewController_;
 
   // The controller for the browser actions bar that owns this button. Weak.
   BrowserActionsController* browserActionsController_;
@@ -48,15 +48,18 @@ extern NSString* const kBrowserActionButtonDragEndNotification;
   NSPoint dragStartPoint_;
 }
 
-// Init the button with the frame. Takes ownership of |viewController|, but
-// does not own |controller|.
+// Init the button with the frame. Does not own either |view_controller| or
+// |controller|.
 - (id)initWithFrame:(NSRect)frame
-     viewController:(scoped_ptr<ToolbarActionViewController>)viewController
+     viewController:(ToolbarActionViewController*)viewController
          controller:(BrowserActionsController*)controller;
 
 - (void)setFrame:(NSRect)frameRect animate:(BOOL)animate;
 
 - (void)updateState;
+
+// Called when the button is removed from the toolbar and will soon be deleted.
+- (void)onRemoved;
 
 - (BOOL)isAnimating;
 

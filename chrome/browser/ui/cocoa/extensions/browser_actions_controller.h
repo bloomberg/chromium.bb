@@ -13,15 +13,10 @@
 class Browser;
 @class BrowserActionButton;
 @class BrowserActionsContainerView;
-@class ExtensionPopupController;
-class ExtensionServiceObserverBridge;
 @class MenuButton;
 class Profile;
-
-namespace extensions {
-class Extension;
-class ExtensionToolbarModel;
-}
+class ToolbarActionsBar;
+class ToolbarActionsBarDelegate;
 
 namespace content {
 class WebContents;
@@ -43,19 +38,22 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
   // The current profile. Weak.
   Profile* profile_;
 
-  // The model that tracks the order of the toolbar icons. Weak.
-  extensions::ExtensionToolbarModel* toolbarModel_;
-
-  // The observer for the ExtensionService we're getting events from.
-  scoped_ptr<ExtensionServiceObserverBridge> observer_;
-
-  // A dictionary of Extension ID -> BrowserActionButton pairs representing the
-  // buttons present in the container view. The ID is a string unique to each
-  // extension.
-  base::scoped_nsobject<NSMutableDictionary> buttons_;
+  // Array of toolbar action buttons in the correct order for them to be
+  // displayed (includes both hidden and visible buttons).
+  base::scoped_nsobject<NSMutableArray> buttons_;
 
   // Array of hidden buttons in the correct order in which the user specified.
   base::scoped_nsobject<NSMutableArray> hiddenButtons_;
+
+  // The delegate for the ToolbarActionsBar.
+  scoped_ptr<ToolbarActionsBarDelegate> toolbarActionsBarBridge_;
+
+  // The controlling ToolbarActionsBar.
+  scoped_ptr<ToolbarActionsBar> toolbarActionsBar_;
+
+  // True if we should supppress the chevron (we do this during drag
+  // animations).
+  BOOL suppressChevron_;
 
   // The currently running chevron animation (fade in/out).
   base::scoped_nsobject<NSViewAnimation> chevronAnimation_;
@@ -102,9 +100,6 @@ extern NSString* const kBrowserActionVisibilityChangedNotification;
 // being hidden (fading out). Will return NO if it is not hidden or is in the
 // process of fading in.
 - (BOOL)chevronIsHidden;
-
-// Activates the browser action for the extension that has the given id.
-- (void)activateBrowserAction:(const std::string&)extension_id;
 
 // Returns the currently-active web contents.
 - (content::WebContents*)currentWebContents;

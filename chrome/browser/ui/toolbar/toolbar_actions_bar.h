@@ -136,6 +136,7 @@ class ToolbarActionsBar : public extensions::ExtensionToolbarModel::Observer {
                                 bool grant_active_tab) override;
   void ToolbarVisibleCountChanged() override;
   void ToolbarHighlightModeChanged(bool is_highlighting) override;
+  void OnToolbarModelInitialized() override;
   void OnToolbarReorderNecessary(content::WebContents* web_contents) override;
   Browser* GetBrowser() override;
 

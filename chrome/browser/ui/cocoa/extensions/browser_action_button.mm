@@ -37,7 +37,8 @@ static const CGFloat kMinimumDragDistance = 5;
 class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
  public:
   ToolbarActionViewDelegateBridge(BrowserActionButton* owner,
-                                  BrowserActionsController* controller);
+                                  BrowserActionsController* controller,
+                                  ToolbarActionViewController* viewController);
   ~ToolbarActionViewDelegateBridge();
 
   ExtensionActionContextMenuController* menuController() {
@@ -59,6 +60,9 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
   // The BrowserActionsController that owns the button. Weak.
   BrowserActionsController* controller_;
 
+  // The ToolbarActionViewController for which this is the delegate. Weak.
+  ToolbarActionViewController* viewController_;
+
   // The context menu controller. Weak.
   ExtensionActionContextMenuController* menuController_;
 
@@ -67,18 +71,22 @@ class ToolbarActionViewDelegateBridge : public ToolbarActionViewDelegateCocoa {
 
 ToolbarActionViewDelegateBridge::ToolbarActionViewDelegateBridge(
     BrowserActionButton* owner,
-    BrowserActionsController* controller)
+    BrowserActionsController* controller,
+    ToolbarActionViewController* viewController)
     : owner_(owner),
       controller_(controller),
+      viewController_(viewController),
       menuController_(nil) {
+  viewController_->SetDelegate(this);
 }
 
 ToolbarActionViewDelegateBridge::~ToolbarActionViewDelegateBridge() {
+  viewController_->SetDelegate(nullptr);
 }
 
 ToolbarActionViewController*
 ToolbarActionViewDelegateBridge::GetPreferredPopupViewController() {
-  return [owner_ viewController];
+  return viewController_;
 }
 
 content::WebContents* ToolbarActionViewDelegateBridge::GetCurrentWebContents()
@@ -117,7 +125,7 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
 }
 
 - (id)initWithFrame:(NSRect)frame
-     viewController:(scoped_ptr<ToolbarActionViewController>)viewController
+     viewController:(ToolbarActionViewController*)viewController
          controller:(BrowserActionsController*)controller {
   if ((self = [super initWithFrame:frame])) {
     BrowserActionCell* cell = [[[BrowserActionCell alloc] init] autorelease];
@@ -129,13 +137,12 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
     [self setCell:cell];
 
     browserActionsController_ = controller;
+    viewController_ = viewController;
     viewControllerDelegate_.reset(
-        new ToolbarActionViewDelegateBridge(self, controller));
-    viewController_ = viewController.Pass();
-    viewController_->SetDelegate(viewControllerDelegate_.get());
+        new ToolbarActionViewDelegateBridge(self, controller, viewController));
 
     [cell setBrowserActionsController:controller];
-    [cell setViewController:viewController_.get()];
+    [cell setViewController:viewController_];
     [cell
         accessibilitySetOverrideValue:base::SysUTF16ToNSString(
             viewController_->GetAccessibleName([controller currentWebContents]))
@@ -275,12 +282,20 @@ void ToolbarActionViewDelegateBridge::SetContextMenuController(
   [self setNeedsDisplay:YES];
 }
 
+- (void)onRemoved {
+  // The button is being removed from the toolbar, and the backing controller
+  // will also be removed. Destroy the delegate.
+  // We only need to do this because in cocoa's memory management, removing the
+  // button from the toolbar doesn't synchronously dealloc it.
+  viewControllerDelegate_.reset();
+}
+
 - (BOOL)isAnimating {
   return [moveAnimation_ isAnimating];
 }
 
 - (ToolbarActionViewController*)viewController {
-  return viewController_.get();
+  return viewController_;
 }
 
 - (NSImage*)compositedImage {

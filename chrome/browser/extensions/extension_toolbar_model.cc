@@ -420,7 +420,7 @@ void ExtensionToolbarModel::InitializeExtensionList() {
 
   extensions_initialized_ = true;
   MaybeUpdateVisibilityPrefs();
-  FOR_EACH_OBSERVER(Observer, observers_, ToolbarVisibleCountChanged());
+  FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
 }
 
 void ExtensionToolbarModel::Populate(const ExtensionIdList& positions) {

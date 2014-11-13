@@ -194,6 +194,8 @@ class ExtensionToolbarModelTestObserver
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
 
+  void OnToolbarModelInitialized() override {}
+
   void OnToolbarReorderNecessary(content::WebContents* web_contents) override {
     ++reorder_count_;
   }
