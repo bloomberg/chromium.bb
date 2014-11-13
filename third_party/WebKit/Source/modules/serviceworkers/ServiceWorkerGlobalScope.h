@@ -67,9 +67,7 @@ public:
 
     CacheStorage* caches(ExecutionContext*);
 
-    ScriptPromise fetch(ScriptState*, Request*);
     ScriptPromise fetch(ScriptState*, Request*, const Dictionary&);
-    ScriptPromise fetch(ScriptState*, const String&);
     ScriptPromise fetch(ScriptState*, const String&, const Dictionary&);
 
     void close(ExceptionState&);
