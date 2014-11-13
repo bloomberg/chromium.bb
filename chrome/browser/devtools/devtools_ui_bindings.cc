@@ -239,8 +239,8 @@ class DevToolsUIBindings::FrontendWebContentsObserver
  private:
   // contents::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;
-  void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) override;
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;
   void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -277,11 +277,13 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
   devtools_bindings_->delegate_->RenderProcessGone(crashed);
 }
 
-void DevToolsUIBindings::FrontendWebContentsObserver::AboutToNavigateRenderView(
-    content::RenderViewHost* render_view_host) {
+void DevToolsUIBindings::FrontendWebContentsObserver::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  // TODO(creis): Create should be refactored to operate on RenderFrameHosts.
   devtools_bindings_->frontend_host_.reset(
       content::DevToolsFrontendHost::Create(
-          render_view_host, devtools_bindings_));
+          new_host->GetRenderViewHost(), devtools_bindings_));
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::

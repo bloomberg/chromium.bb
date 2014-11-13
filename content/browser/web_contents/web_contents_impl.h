@@ -170,7 +170,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // A redirect was received while requesting a resource.
   void DidGetRedirectForResourceRequest(
-      RenderViewHost* render_view_host,
+      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details);
 
   WebContentsView* GetView() const;

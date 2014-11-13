@@ -6,6 +6,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -27,6 +28,10 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 using content::WebContents;
+
+namespace content {
+struct FrameNavigateParams;
+}
 
 namespace extensions {
 
@@ -73,10 +78,12 @@ class GuestViewBase::EmbedderLifetimeObserver : public WebContentsObserver {
     Destroy();
   }
 
-  void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) override {
-    // If the embedder navigates then destroy the guest.
-    Destroy();
+  void DidNavigateMainFrame(
+      const content::LoadCommittedDetails& details,
+      const content::FrameNavigateParams& params) override {
+    // If the embedder navigates to a different page then destroy the guest.
+    if (details.is_navigation_to_different_page())
+      Destroy();
   }
 
   void RenderProcessGone(base::TerminationStatus status) override {

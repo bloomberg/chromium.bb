@@ -260,23 +260,27 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
     g_instances.Get().erase(it);
 }
 
-void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
-    RenderViewHost* dest_rvh) {
+// TODO(creis): Consider removing this in favor of RenderFrameHostChanged.
+void RenderViewDevToolsAgentHost::AboutToNavigateRenderFrame(
+    RenderFrameHost* render_frame_host) {
   if (!render_view_host_)
     return;
 
-  if (render_view_host_ == dest_rvh &&
+  // TODO(creis): This will need to be updated for --site-per-process, since
+  // RenderViewHost is going away and navigations could happen in any frame.
+  if (render_view_host_ == render_frame_host->GetRenderViewHost() &&
           render_view_host_->render_view_termination_status() ==
               base::TERMINATION_STATUS_STILL_RUNNING)
     return;
-  ReattachToRenderViewHost(dest_rvh);
+  ReattachToRenderViewHost(render_frame_host->GetRenderViewHost());
 }
 
+// TODO(creis): Move to RenderFrameHostChanged.
 void RenderViewDevToolsAgentHost::RenderViewHostChanged(
     RenderViewHost* old_host,
     RenderViewHost* new_host) {
   if (new_host != render_view_host_) {
-    // AboutToNavigateRenderView was not called for renderer-initiated
+    // AboutToNavigateRenderFrame was not called for renderer-initiated
     // navigation.
     ReattachToRenderViewHost(new_host);
   }
@@ -335,7 +339,7 @@ void RenderViewDevToolsAgentHost::DidAttachInterstitialPage() {
 
   if (!render_view_host_)
     return;
-  // The rvh set in AboutToNavigateRenderView turned out to be interstitial.
+  // The rvh set in AboutToNavigateRenderFrame turned out to be interstitial.
   // Connect back to the real one.
   WebContents* web_contents =
     WebContents::FromRenderViewHost(render_view_host_);

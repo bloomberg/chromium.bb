@@ -2296,14 +2296,14 @@ void WebContentsImpl::DidGetResourceResponseStart(
 }
 
 void WebContentsImpl::DidGetRedirectForResourceRequest(
-  RenderViewHost* render_view_host,
+  RenderFrameHost* render_frame_host,
   const ResourceRedirectDetails& details) {
   controller_.ssl_manager()->DidReceiveResourceRedirect(details);
 
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      DidGetRedirectForResourceRequest(render_view_host, details));
+      DidGetRedirectForResourceRequest(render_frame_host, details));
 
   // TODO(avi): Remove. http://crbug.com/170921
   NotificationService::current()->Notify(
@@ -2508,12 +2508,11 @@ void WebContentsImpl::NotifyChangedNavigationState(
 
 void WebContentsImpl::AboutToNavigateRenderFrame(
       RenderFrameHostImpl* render_frame_host) {
-  // Notify observers that we will navigate in this RenderView.
-  RenderViewHost* render_view_host = render_frame_host->render_view_host();
+  // Notify observers that we will navigate in this RenderFrame.
   FOR_EACH_OBSERVER(
       WebContentsObserver,
       observers_,
-      AboutToNavigateRenderView(render_view_host));
+      AboutToNavigateRenderFrame(render_frame_host));
 }
 
 void WebContentsImpl::DidStartNavigationToPendingEntry(
@@ -2529,18 +2528,17 @@ void WebContentsImpl::DidStartNavigationToPendingEntry(
 
 void WebContentsImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
                                      const OpenURLParams& params) {
-  int source_render_frame_id = render_frame_host->GetRoutingID();
   WebContents* new_contents = OpenURL(params);
 
   if (new_contents) {
     // Notify observers.
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidOpenRequestedURL(new_contents,
+                                          render_frame_host,
                                           params.url,
                                           params.referrer,
                                           params.disposition,
-                                          params.transition,
-                                          source_render_frame_id));
+                                          params.transition));
   }
 }
 

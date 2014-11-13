@@ -100,10 +100,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void RenderFrameHostChanged(RenderFrameHost* old_host,
                                       RenderFrameHost* new_host) {}
 
-  // This method is invoked after the WebContents decided which RenderViewHost
-  // to use for the next navigation, but before the navigation starts.
-  virtual void AboutToNavigateRenderView(
-      RenderViewHost* render_view_host) {}
+  // This method is invoked after the WebContents decides which RenderFrameHost
+  // to use for the next browser-initiated navigation, but before the navigation
+  // starts.  It is not called for most renderer-initiated navigations, and it
+  // does not guarantee that the navigation will commit (e.g., 204s, downloads).
+  //
+  // DEPRECATED.  This method is difficult to use correctly and should be
+  // removed.  TODO(creis): Remove in http://crbug.com/424641.
+  virtual void AboutToNavigateRenderFrame(RenderFrameHost* render_frame_host) {}
 
   // This method is invoked after the browser process starts a navigation to a
   // pending NavigationEntry. It is not called for renderer-initiated
@@ -201,7 +205,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // This method is invoked when a redirect was received while requesting a
   // resource.
   virtual void DidGetRedirectForResourceRequest(
-      RenderViewHost* render_view_host,
+      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
@@ -213,14 +217,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
 
   // This method is invoked when a new WebContents was created in response to
   // an action in the observed WebContents, e.g. a link with target=_blank was
-  // clicked. The |source_frame_id| indicates in which frame the action took
-  // place.
+  // clicked. The |source_render_frame_host| is the frame in which the action
+  // took place.
   virtual void DidOpenRequestedURL(WebContents* new_contents,
+                                   RenderFrameHost* source_render_frame_host,
                                    const GURL& url,
                                    const Referrer& referrer,
                                    WindowOpenDisposition disposition,
-                                   ui::PageTransition transition,
-                                   int64 source_frame_id) {}
+                                   ui::PageTransition transition) {}
 
   virtual void FrameDetached(RenderFrameHost* render_frame_host) {}
 

@@ -54,8 +54,8 @@ class WebNavigationTabObserver
   // content::WebContentsObserver implementation.
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void RenderViewDeleted(content::RenderViewHost* render_view_host) override;
-  void AboutToNavigateRenderView(
-      content::RenderViewHost* render_view_host) override;
+  void AboutToNavigateRenderFrame(
+      content::RenderFrameHost* render_frame_host) override;
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
@@ -78,14 +78,14 @@ class WebNavigationTabObserver
                    int error_code,
                    const base::string16& error_description) override;
   void DidGetRedirectForResourceRequest(
-      content::RenderViewHost* render_view_host,
+      content::RenderFrameHost* render_frame_host,
       const content::ResourceRedirectDetails& details) override;
   void DidOpenRequestedURL(content::WebContents* new_contents,
+                           content::RenderFrameHost* source_render_frame_host,
                            const GURL& url,
                            const content::Referrer& referrer,
                            WindowOpenDisposition disposition,
-                           ui::PageTransition transition,
-                           int64 source_frame_num) override;
+                           ui::PageTransition transition) override;
   void WebContentsDestroyed() override;
 
  private:

@@ -61,8 +61,9 @@ DownloadRequestLimiter::TabDownloadState::~TabDownloadState() {
   DCHECK(!factory_.HasWeakPtrs());
 }
 
-void DownloadRequestLimiter::TabDownloadState::AboutToNavigateRenderView(
-    content::RenderViewHost* render_view_host) {
+void DownloadRequestLimiter::TabDownloadState::DidNavigateMainFrame(
+    const content::LoadCommittedDetails& details,
+    const content::FrameNavigateParams& params) {
   switch (status_) {
     case ALLOW_ONE_DOWNLOAD:
     case PROMPT_BEFORE_DOWNLOAD:

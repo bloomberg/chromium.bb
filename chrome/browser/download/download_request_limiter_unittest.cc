@@ -13,7 +13,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::WebContents;
@@ -141,12 +143,14 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
       state->DidGetUserGesture();
   }
 
-  void AboutToNavigateRenderView() {
+  void DidNavigateMainFrame() {
     view_->Close();
     DownloadRequestLimiter::TabDownloadState* state =
         download_request_limiter_->GetDownloadState(
             web_contents(), NULL, false);
-    state->AboutToNavigateRenderView(NULL);
+    content::LoadCommittedDetails details;
+    content::FrameNavigateParams params;
+    state->DidNavigateMainFrame(details, params);
   }
 
   void ExpectAndResetCounts(
@@ -365,7 +369,7 @@ TEST_F(DownloadRequestLimiterTest,
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  AboutToNavigateRenderView();
+  DidNavigateMainFrame();
   base::RunLoop().RunUntilIdle();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
   ASSERT_EQ(DownloadRequestLimiter::ALLOW_ONE_DOWNLOAD,
@@ -382,7 +386,7 @@ TEST_F(DownloadRequestLimiterTest,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   ExpectAndResetCounts(0, 1, 1, __LINE__);
 
-  AboutToNavigateRenderView();
+  DidNavigateMainFrame();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,
             download_request_limiter_->GetDownloadStatus(web_contents()));

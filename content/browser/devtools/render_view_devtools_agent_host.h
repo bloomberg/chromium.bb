@@ -73,7 +73,7 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClientDetached() override;
 
   // WebContentsObserver overrides.
-  void AboutToNavigateRenderView(RenderViewHost* dest_rvh) override;
+  void AboutToNavigateRenderFrame(RenderFrameHost* render_frame_host) override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
   void RenderViewDeleted(RenderViewHost* rvh) override;

@@ -102,8 +102,9 @@ class DownloadRequestLimiter
     }
 
     // content::WebContentsObserver overrides.
-    void AboutToNavigateRenderView(
-        content::RenderViewHost* render_view_host) override;
+    void DidNavigateMainFrame(
+        const content::LoadCommittedDetails& details,
+        const content::FrameNavigateParams& params) override;
     // Invoked when a user gesture occurs (mouse click, enter or space). This
     // may result in invoking Remove on DownloadRequestLimiter.
     void DidGetUserGesture() override;

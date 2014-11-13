@@ -323,8 +323,10 @@ void WebNavigationTabObserver::RenderViewDeleted(
   SendErrorEvents(web_contents(), render_view_host, NULL);
 }
 
-void WebNavigationTabObserver::AboutToNavigateRenderView(
-    content::RenderViewHost* render_view_host) {
+void WebNavigationTabObserver::AboutToNavigateRenderFrame(
+    content::RenderFrameHost* render_frame_host) {
+  content::RenderViewHost* render_view_host =
+      render_frame_host->GetRenderViewHost();
   if (!render_view_host_) {
     render_view_host_ = render_view_host;
   } else if (render_view_host != render_view_host_) {
@@ -558,29 +560,23 @@ void WebNavigationTabObserver::DidFailLoad(
 }
 
 void WebNavigationTabObserver::DidGetRedirectForResourceRequest(
-    content::RenderViewHost* render_view_host,
+    content::RenderFrameHost* render_frame_host,
     const content::ResourceRedirectDetails& details) {
   if (details.resource_type != content::RESOURCE_TYPE_MAIN_FRAME &&
       details.resource_type != content::RESOURCE_TYPE_SUB_FRAME) {
     return;
   }
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_view_host->GetProcess()->GetID(),
-                                       details.render_frame_id);
   navigation_state_.SetIsServerRedirected(render_frame_host);
 }
 
 void WebNavigationTabObserver::DidOpenRequestedURL(
     content::WebContents* new_contents,
+    content::RenderFrameHost* source_render_frame_host,
     const GURL& url,
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
-    ui::PageTransition transition,
-    int64 source_frame_num) {
-  content::RenderFrameHost* render_frame_host =
-      content::RenderFrameHost::FromID(render_view_host_->GetProcess()->GetID(),
-                                       source_frame_num);
-  if (!navigation_state_.CanSendEvents(render_frame_host))
+    ui::PageTransition transition) {
+  if (!navigation_state_.CanSendEvents(source_render_frame_host))
     return;
 
   // We only send the onCreatedNavigationTarget if we end up creating a new
@@ -595,7 +591,7 @@ void WebNavigationTabObserver::DidOpenRequestedURL(
 
   helpers::DispatchOnCreatedNavigationTarget(web_contents(),
                                              new_contents->GetBrowserContext(),
-                                             render_frame_host,
+                                             source_render_frame_host,
                                              new_contents,
                                              url);
 }

@@ -52,7 +52,7 @@ class PrerenderTabHelper
 
   // content::WebContentsObserver implementation.
   void DidGetRedirectForResourceRequest(
-      content::RenderViewHost* render_view_host,
+      content::RenderFrameHost* render_frame_host,
       const content::ResourceRedirectDetails& details) override;
   void DidStopLoading(content::RenderViewHost* render_view_host) override;
   void DidStartProvisionalLoadForFrame(

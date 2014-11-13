@@ -26,7 +26,7 @@ class NavigationObserver: public WebContentsObserver {
   }
 
   void DidGetRedirectForResourceRequest(
-      RenderViewHost* render_view_host,
+      RenderFrameHost* render_frame_host,
       const ResourceRedirectDetails& details) override {
     redirect_url_ = details.new_url;
   }
