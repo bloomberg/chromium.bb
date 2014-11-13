@@ -132,9 +132,12 @@ class TouchEventConverterEvdevTest : public testing::Test {
     events_in_ = evdev_io[0];
     events_out_ = evdev_io[1];
 
-    loop_ = new base::MessageLoopForUI;
+    // Device creation happens on a worker thread since it may involve blocking
+    // operations. Simulate that by creating it before creating a UI message
+    // loop.
     device_ = new ui::MockTouchEventConverterEvdev(
         events_in_, base::FilePath(kTestDevicePath));
+    loop_ = new base::MessageLoopForUI;
   }
 
   void TearDown() override {
