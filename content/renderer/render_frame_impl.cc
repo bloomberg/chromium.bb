@@ -2562,22 +2562,8 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
 void RenderFrameImpl::addNavigationTransitionData(
     const blink::WebString& allowed_destination_host_pattern,
     const blink::WebString& selector,
-    const blink::WebString& markup) {
-  FrameHostMsg_AddNavigationTransitionData_Params params;
-  params.render_frame_id = routing_id_;
-  params.allowed_destination_host_pattern =
-      allowed_destination_host_pattern.utf8();
-  params.selector = selector.utf8();
-  params.markup = markup.utf8();
-
-  Send(new FrameHostMsg_AddNavigationTransitionData(params));
-}
-
-void RenderFrameImpl::addNavigationTransitionData(
-    const blink::WebString& allowed_destination_host_pattern,
-    const blink::WebString& selector,
     const blink::WebString& markup,
-    const blink::WebVector<blink::WebString>& web_names,
+    const blink::WebVector<blink::WebString>& web_ids,
     const blink::WebVector<blink::WebRect>& web_rects) {
   FrameHostMsg_AddNavigationTransitionData_Params params;
   params.render_frame_id = routing_id_;
@@ -2585,10 +2571,27 @@ void RenderFrameImpl::addNavigationTransitionData(
       allowed_destination_host_pattern.utf8();
   params.selector = selector.utf8();
   params.markup = markup.utf8();
-  params.elements.resize(web_names.size());
-  for (size_t i = 0; i < web_names.size(); i++) {
-    params.elements[i].name = web_names[i].utf8();
+  params.elements.resize(web_ids.size());
+  for (size_t i = 0; i < web_ids.size(); i++) {
+    params.elements[i].id = web_ids[i].utf8();
     params.elements[i].rect = gfx::Rect(web_rects[i]);
+  }
+
+  Send(new FrameHostMsg_AddNavigationTransitionData(params));
+}
+
+void RenderFrameImpl::addNavigationTransitionData(
+    const blink::WebTransitionElementData& data) {
+  FrameHostMsg_AddNavigationTransitionData_Params params;
+  params.render_frame_id = routing_id_;
+  params.allowed_destination_host_pattern =
+      data.scope.utf8();
+  params.selector = data.selector.utf8();
+  params.markup = data.markup.utf8();
+  params.elements.resize(data.elements.size());
+  for (size_t i = 0; i < data.elements.size(); i++) {
+    params.elements[i].id = data.elements[i].id.utf8();
+    params.elements[i].rect = gfx::Rect(data.elements[i].rect);
   }
 
   Send(new FrameHostMsg_AddNavigationTransitionData(params));

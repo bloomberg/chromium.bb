@@ -28,6 +28,7 @@
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
 #include "third_party/WebKit/public/web/WebHistoryCommitType.h"
+#include "third_party/WebKit/public/web/WebTransitionElementData.h"
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_ANDROID)
@@ -51,6 +52,7 @@ class WebSecurityOrigin;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
+struct WebTransitionElementData;
 }
 
 namespace gfx {
@@ -380,15 +382,13 @@ class CONTENT_EXPORT RenderFrameImpl
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void addNavigationTransitionData(
-        const blink::WebString& allowedDestinationOrigin,
-        const blink::WebString& selector,
-        const blink::WebString& markup);
-  virtual void addNavigationTransitionData(
       const blink::WebString& allowedDestinationOrigin,
       const blink::WebString& selector,
       const blink::WebString& markup,
-      const blink::WebVector<blink::WebString>& web_names,
+      const blink::WebVector<blink::WebString>& web_ids,
       const blink::WebVector<blink::WebRect>& web_rects);
+  virtual void addNavigationTransitionData(
+      const blink::WebTransitionElementData& data);
   virtual void didChangeThemeColor();
   virtual void requestNotificationPermission(
       const blink::WebSecurityOrigin& origin,

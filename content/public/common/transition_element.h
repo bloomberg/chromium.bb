@@ -14,7 +14,7 @@ namespace content {
 
 // This struct stores the information of one transition element.
 struct CONTENT_EXPORT TransitionElement {
-  std::string name;
+  std::string id;
   gfx::Rect rect;
 };
 
