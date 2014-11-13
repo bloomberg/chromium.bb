@@ -270,10 +270,6 @@ class Port(object):
 
     def default_child_processes(self):
         """Return the number of drivers to use for this port."""
-        if self.get_option('enable_sanitizer'):
-            # ASAN/MSAN/TSAN are more cpu- and memory- intensive than regular
-            # content_shell, and so we need to run fewer of them in parallel.
-            return max(int(self._executive.cpu_count() * 0.75), 1)
         return self._executive.cpu_count()
 
     def default_max_locked_shards(self):
