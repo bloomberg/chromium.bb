@@ -129,11 +129,14 @@ class ChromeTests:
       # TODO(timurrrr): also check TSan and MSan?
       # `nm` might not be available, so use try-except.
       try:
-        nm_output = subprocess.check_output(["nm", exe_path])
-        if nm_output.find("__asan_init") != -1:
-          raise BadBinary("You're trying to run an executable instrumented "
-                          "with AddressSanitizer under %s. Please provide "
-                          "an uninstrumented executable." % tool_name)
+        # Do not perform this check on OS X, as 'nm' on 10.6 can't handle
+        # binaries built with Clang 3.5+.
+        if not common.IsMac():
+          nm_output = subprocess.check_output(["nm", exe_path])
+          if nm_output.find("__asan_init") != -1:
+            raise BadBinary("You're trying to run an executable instrumented "
+                            "with AddressSanitizer under %s. Please provide "
+                            "an uninstrumented executable." % tool_name)
       except OSError:
         pass
 
