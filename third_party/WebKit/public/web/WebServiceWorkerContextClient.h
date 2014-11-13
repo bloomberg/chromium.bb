@@ -111,16 +111,22 @@ public:
     // ServiceWorker specific method.
     virtual void didHandleActivateEvent(int eventID, WebServiceWorkerEventResult result) { }
 
-    // ServiceWorker specific method. Called after InstallEvent (dispatched
-    // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
-    // script context.
-    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result) { }
-
     // ServiceWorker specific methods. Called after FetchEvent is handled by the
     // ServiceWorker's script context. When no response is provided, the browser
     // should fallback to native fetch.
     virtual void didHandleFetchEvent(int fetchEventID) { }
     virtual void didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& response) { }
+
+    // ServiceWorker specific method. Called after InstallEvent (dispatched
+    // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's
+    // script context.
+    virtual void didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result) { }
+
+    // ServiceWorker specific method. Called after NotificationClickEvent and
+    // NotificationErrorEvent (dispatched via WebServiceWorkerContextProxy) are
+    // handled by the ServiceWorker's script context.
+    virtual void didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult result) { }
+    virtual void didHandleNotificationErrorEvent(int eventID, WebServiceWorkerEventResult result) { }
 
     // ServiceWorker specific method. Called after PushEvent (dispatched via
     // WebServiceWorkerContextProxy) is handled by the ServiceWorker's script

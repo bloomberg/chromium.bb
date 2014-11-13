@@ -68,11 +68,6 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(int eventID, Web
     m_client.didHandleActivateEvent(eventID, result);
 }
 
-void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)
-{
-    m_client.didHandleInstallEvent(installEventID, result);
-}
-
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID)
 {
     m_client.didHandleFetchEvent(fetchEventID);
@@ -81,6 +76,21 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID)
 void ServiceWorkerGlobalScopeClientImpl::didHandleFetchEvent(int fetchEventID, const WebServiceWorkerResponse& webResponse)
 {
     m_client.didHandleFetchEvent(fetchEventID, webResponse);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleInstallEvent(int installEventID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandleInstallEvent(installEventID, result);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleNotificationClickEvent(int eventID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandleNotificationClickEvent(eventID, result);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleNotificationErrorEvent(int eventID, WebServiceWorkerEventResult result)
+{
+    m_client.didHandleNotificationErrorEvent(eventID, result);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::didHandlePushEvent(int pushEventID, WebServiceWorkerEventResult result)

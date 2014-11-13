@@ -133,6 +133,8 @@ mousewheel
 mute
 negotiationneeded
 nomatch
+notificationclick
+notificationerror
 noupdate
 obsolete
 offline

@@ -124,6 +124,12 @@ void WaitUntilObserver::decrementPendingActivity()
     case Install:
         client->didHandleInstallEvent(m_eventID, result);
         break;
+    case NotificationClick:
+        client->didHandleNotificationClickEvent(m_eventID, result);
+        break;
+    case NotificationError:
+        client->didHandleNotificationErrorEvent(m_eventID, result);
+        break;
     }
     observeContext(0);
 }

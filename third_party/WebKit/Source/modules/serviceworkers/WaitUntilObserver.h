@@ -21,7 +21,9 @@ class WaitUntilObserver final : public GarbageCollectedFinalized<WaitUntilObserv
 public:
     enum EventType {
         Activate,
-        Install
+        Install,
+        NotificationClick,
+        NotificationError
     };
 
     static WaitUntilObserver* create(ExecutionContext*, EventType, int eventID);

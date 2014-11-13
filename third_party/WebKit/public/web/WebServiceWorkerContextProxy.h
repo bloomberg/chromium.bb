@@ -37,6 +37,7 @@
 namespace blink {
 
 struct WebCircularGeofencingRegion;
+struct WebNotificationData;
 class WebServiceWorkerRequest;
 class WebString;
 
@@ -54,6 +55,9 @@ public:
     virtual void dispatchGeofencingEvent(int eventId, WebGeofencingEventType, const WebString& regionId, const WebCircularGeofencingRegion&) = 0;
 
     virtual void dispatchMessageEvent(const WebString& message, const WebMessagePortChannelArray& channels) = 0;
+
+    virtual void dispatchNotificationClickEvent(int eventID, const WebNotificationData&) = 0;
+    virtual void dispatchNotificationErrorEvent(int eventID, const WebNotificationData&) = 0;
 
     virtual void dispatchPushEvent(int eventID, const WebString& data) = 0;
 
