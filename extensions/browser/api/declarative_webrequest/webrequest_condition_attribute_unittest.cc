@@ -102,11 +102,13 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_ok.get(),
       content::RESOURCE_TYPE_SUB_FRAME,
-      NULL,
-      -1,
-      -1,
-      -1,
-      false);
+      NULL,    // context
+      -1,      // render_process_id
+      -1,      // render_view_id
+      -1,      // render_frame_id
+      false,   // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
   EXPECT_TRUE(attribute->IsFulfilled(WebRequestData(url_request_ok.get(),
                                                     ON_BEFORE_REQUEST)));
 
@@ -115,11 +117,13 @@ TEST(WebRequestConditionAttributeTest, ResourceType) {
   content::ResourceRequestInfo::AllocateForTesting(
       url_request_fail.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,
-      -1,
-      -1,
-      -1,
-      false);
+      NULL,    // context
+      -1,      // render_process_id
+      -1,      // render_view_id
+      -1,      // render_frame_id
+      true,    // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
   EXPECT_FALSE(attribute->IsFulfilled(WebRequestData(url_request_fail.get(),
                                                      ON_BEFORE_REQUEST)));
 }

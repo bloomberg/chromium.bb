@@ -226,13 +226,16 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectResume) {
       net::DEFAULT_PRIORITY,
       &delegate,
       NULL));
-  content::ResourceRequestInfo::AllocateForTesting(request.get(),
-                                                   content::RESOURCE_TYPE_IMAGE,
-                                                   NULL,
-                                                   kDefaultChildId,
-                                                   kDefaultRouteId,
-                                                   MSG_ROUTING_NONE,
-                                                   true);
+  content::ResourceRequestInfo::AllocateForTesting(
+      request.get(),
+      content::RESOURCE_TYPE_IMAGE,
+      NULL,
+      kDefaultChildId,
+      kDefaultRouteId,
+      MSG_ROUTING_NONE,
+      false,  // is_main_frame
+      false,  // parent_is_main_frame
+      true);  // is_async
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());
@@ -276,7 +279,9 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectMainFrame) {
       kDefaultChildId,
       kDefaultRouteId,
       MSG_ROUTING_NONE,
-      true);
+      true,   // is_main_frame
+      false,  // parent_is_main_frame
+      true);  // is_async
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());
@@ -311,13 +316,16 @@ TEST_F(PrerenderTrackerTest, PrerenderThrottledRedirectSyncXHR) {
       net::DEFAULT_PRIORITY,
       &delegate,
       NULL));
-  content::ResourceRequestInfo::AllocateForTesting(request.get(),
-                                                   content::RESOURCE_TYPE_XHR,
-                                                   NULL,
-                                                   kDefaultChildId,
-                                                   kDefaultRouteId,
-                                                   MSG_ROUTING_NONE,
-                                                   false);
+  content::ResourceRequestInfo::AllocateForTesting(
+      request.get(),
+      content::RESOURCE_TYPE_XHR,
+      NULL,
+      kDefaultChildId,
+      kDefaultRouteId,
+      MSG_ROUTING_NONE,
+      false,   // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
 
   // Install a prerender throttle.
   PrerenderResourceThrottle throttle(request.get());

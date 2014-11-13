@@ -89,11 +89,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,
-      -1,
-      -1,
-      -1,
-      false);
+      NULL,    // context
+      -1,      // render_process_id
+      -1,      // render_view_id
+      -1,      // render_frame_id
+      true,    // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
   EXPECT_TRUE(result->IsFulfilled(request_data));
 
   const GURL https_url("https://www.example.com");
@@ -106,11 +108,13 @@ TEST(WebRequestConditionTest, CreateCondition) {
   content::ResourceRequestInfo::AllocateForTesting(
       wrong_resource_type.get(),
       content::RESOURCE_TYPE_SUB_FRAME,
-      NULL,
-      -1,
-      -1,
-      -1,
-      false);
+      NULL,    // context
+      -1,      // render_process_id
+      -1,      // render_view_id
+      -1,      // render_frame_id
+      false,   // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
   EXPECT_FALSE(result->IsFulfilled(request_data));
 }
 
@@ -152,11 +156,13 @@ TEST(WebRequestConditionTest, CreateConditionFirstPartyForCookies) {
   content::ResourceRequestInfo::AllocateForTesting(
       match_request.get(),
       content::RESOURCE_TYPE_MAIN_FRAME,
-      NULL,
-      -1,
-      -1,
-      -1,
-      false);
+      NULL,    // context
+      -1,      // render_process_id
+      -1,      // render_view_id
+      -1,      // render_frame_id
+      true,    // is_main_frame
+      false,   // parent_is_main_frame
+      false);  // is_async
   EXPECT_TRUE(result->IsFulfilled(request_data));
 }
 

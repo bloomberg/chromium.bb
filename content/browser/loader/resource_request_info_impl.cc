@@ -29,7 +29,17 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
                                              int render_process_id,
                                              int render_view_id,
                                              int render_frame_id,
+                                             bool is_main_frame,
+                                             bool parent_is_main_frame,
                                              bool is_async) {
+  // Make sure both |is_main_frame| and |parent_is_main_frame| aren't set at the
+  // same time.
+  DCHECK(!(is_main_frame && parent_is_main_frame));
+
+  // Make sure RESOURCE_TYPE_MAIN_FRAME is declared as being fetched as part of
+  // the main frame.
+  DCHECK(resource_type != RESOURCE_TYPE_MAIN_FRAME || is_main_frame);
+
   ResourceRequestInfoImpl* info =
       new ResourceRequestInfoImpl(
           PROCESS_TYPE_RENDERER,             // process_type
@@ -38,8 +48,8 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
           0,                                 // origin_pid
           0,                                 // request_id
           render_frame_id,                   // render_frame_id
-          resource_type == RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
-          false,                             // parent_is_main_frame
+          is_main_frame,                     // is_main_frame
+          parent_is_main_frame,              // parent_is_main_frame
           0,                                 // parent_render_frame_id
           resource_type,                     // resource_type
           ui::PAGE_TRANSITION_LINK,          // transition_type

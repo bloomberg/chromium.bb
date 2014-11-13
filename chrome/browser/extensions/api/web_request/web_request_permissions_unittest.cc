@@ -136,7 +136,9 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             process_id,
                                             view_id,
                                             MSG_ROUTING_NONE,
-                                            false);
+                                            false,   // is_main_frame
+                                            false,   // parent_is_main_frame
+                                            false);  // is_async
     extension_info_map_->RegisterExtensionProcess(
         extensions::kWebStoreAppId, process_id, site_instance_id);
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
@@ -154,7 +156,9 @@ TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {
                                             process_id,
                                             view_id,
                                             MSG_ROUTING_NONE,
-                                            false);
+                                            false,   // is_main_frame
+                                            false,   // parent_is_main_frame
+                                            false);  // is_async
     EXPECT_TRUE(WebRequestPermissions::HideRequest(
         extension_info_map_.get(), sensitive_request.get()));
   }

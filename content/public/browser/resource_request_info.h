@@ -36,6 +36,8 @@ class ResourceRequestInfo {
                                                 int render_process_id,
                                                 int render_view_id,
                                                 int render_frame_id,
+                                                bool is_main_frame,
+                                                bool parent_is_main_frame,
                                                 bool is_async);
 
   // Returns the associated RenderFrame for a given process. Returns false, if

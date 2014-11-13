@@ -129,7 +129,9 @@ class TestIOThreadState {
           render_process_id,
           MSG_ROUTING_NONE,
           render_frame_id,
-          false);
+          true,    // is_main_frame
+          false,   // parent_is_main_frame
+          false);  // is_async
     }
     throttle_.reset(new InterceptNavigationResourceThrottle(
         request_.get(),

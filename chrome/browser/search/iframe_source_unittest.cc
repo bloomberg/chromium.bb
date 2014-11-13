@@ -108,7 +108,9 @@ class IframeSourceTest : public testing::Test {
           render_process_id,
           render_frame_id,
           MSG_ROUTING_NONE,
-          false);
+          false,   // is_main_frame
+          false,   // parent_is_main_frame
+          false);  // is_async
     }
     return request.Pass();
   }

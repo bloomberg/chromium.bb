@@ -323,7 +323,9 @@ class ResourceLoaderTest : public testing::Test,
                                             kRenderProcessId,
                                             kRenderViewId,
                                             MSG_ROUTING_NONE,
-                                            false);
+                                            true,    // is_main_frame
+                                            false,   // parent_is_main_frame
+                                            false);  // is_async
     scoped_ptr<ResourceHandlerStub> resource_handler(
         new ResourceHandlerStub(request.get()));
     raw_ptr_resource_handler_ = resource_handler.get();

@@ -127,13 +127,16 @@ class ExtensionProtocolTest : public testing::Test {
 
   void StartRequest(net::URLRequest* request,
                     ResourceType resource_type) {
-    content::ResourceRequestInfo::AllocateForTesting(request,
-                                                     resource_type,
-                                                     &resource_context_,
-                                                     -1,
-                                                     -1,
-                                                     -1,
-                                                     false);
+    content::ResourceRequestInfo::AllocateForTesting(
+        request,
+        resource_type,
+        &resource_context_,
+        -1,      // render_process_id
+        -1,      // render_view_id
+        -1,      // render_frame_id
+        resource_type == content::RESOURCE_TYPE_MAIN_FRAME,  // is_main_frame
+        false,   // parent_is_main_frame
+        false);  // is_async
     request->Start();
     base::MessageLoop::current()->Run();
   }
