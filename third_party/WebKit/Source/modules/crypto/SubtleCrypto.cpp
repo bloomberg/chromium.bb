@@ -179,7 +179,7 @@ static bool copyJwkDictionaryToJson(const Dictionary& dict, CString& jsonUtf8, C
     if (DictionaryHelper::get(dict, "ext", ext))
         jsonObject->setBoolean("ext", ext);
 
-    const char* const propertyNames[] = { "d", "n", "e", "p", "q", "dp", "dq", "qi", "k" };
+    const char* const propertyNames[] = { "d", "n", "e", "p", "q", "dp", "dq", "qi", "k", "crv", "x", "y" };
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(propertyNames); ++i)
         copyStringProperty(propertyNames[i], dict, jsonObject.get());
 

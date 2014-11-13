@@ -53,7 +53,8 @@ enum WebCryptoKeyAlgorithmParamsType {
     WebCryptoKeyAlgorithmParamsTypeNone,
     WebCryptoKeyAlgorithmParamsTypeHmac,
     WebCryptoKeyAlgorithmParamsTypeAes,
-    WebCryptoKeyAlgorithmParamsTypeRsaHashed
+    WebCryptoKeyAlgorithmParamsTypeRsaHashed,
+    WebCryptoKeyAlgorithmParamsTypeEc,
 };
 
 class WebCryptoKeyAlgorithmParams {
@@ -167,6 +168,42 @@ private:
     unsigned m_modulusLengthBits;
     WebVector<unsigned char> m_publicExponent;
     WebCryptoAlgorithm m_hash;
+};
+
+class WebCryptoEcKeyAlgorithmParams : public WebCryptoKeyAlgorithmParams {
+public:
+    explicit WebCryptoEcKeyAlgorithmParams(WebCryptoNamedCurve namedCurve)
+        : m_namedCurve(namedCurve)
+    {
+    }
+
+    WebCryptoNamedCurve namedCurve() const
+    {
+        return m_namedCurve;
+    }
+
+    virtual WebCryptoKeyAlgorithmParamsType type() const
+    {
+        return WebCryptoKeyAlgorithmParamsTypeEc;
+    }
+
+    virtual void writeToDictionary(WebCryptoKeyAlgorithmDictionary* dict) const
+    {
+        switch (m_namedCurve) {
+        case WebCryptoNamedCurveP256:
+            dict->setString("namedCurve", "P-256");
+            break;
+        case WebCryptoNamedCurveP384:
+            dict->setString("namedCurve", "P-384");
+            break;
+        case WebCryptoNamedCurveP521:
+            dict->setString("namedCurve", "P-521");
+            break;
+        }
+    }
+
+private:
+    const WebCryptoNamedCurve m_namedCurve;
 };
 
 } // namespace blink

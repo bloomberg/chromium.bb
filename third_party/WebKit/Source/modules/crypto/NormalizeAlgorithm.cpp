@@ -61,6 +61,7 @@ struct AlgorithmNameMapping {
 const AlgorithmNameMapping algorithmNameMappings[] = {
     {"HMAC", 4, WebCryptoAlgorithmIdHmac},
     {"SHA-1", 5, WebCryptoAlgorithmIdSha1},
+    {"ECDSA", 5, WebCryptoAlgorithmIdEcdsa},
     {"AES-KW", 6, WebCryptoAlgorithmIdAesKw},
     {"SHA-512", 7, WebCryptoAlgorithmIdSha512},
     {"SHA-384", 7, WebCryptoAlgorithmIdSha384},
@@ -621,6 +622,84 @@ bool parseRsaPssParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& 
     return true;
 }
 
+// Defined by the WebCrypto spec as:
+//
+//     dictionary EcdsaParams : Algorithm {
+//       required HashAlgorithmIdentifier hash;
+//     };
+bool parseEcdsaParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoEcdsaParams(hash));
+    return true;
+}
+
+struct CurveNameMapping {
+    const char* const name;
+    WebCryptoNamedCurve value;
+};
+
+const CurveNameMapping curveNameMappings[] = {
+    { "P-256", WebCryptoNamedCurveP256 },
+    { "P-384", WebCryptoNamedCurveP384 },
+    { "P-521", WebCryptoNamedCurveP521 }
+};
+
+// Reminder to update curveNameMappings when adding a new curve.
+COMPILE_ASSERT(WebCryptoNamedCurveLast + 1 == WTF_ARRAY_LENGTH(curveNameMappings), UPDATE_curveNameMappings);
+
+bool parseNamedCurve(const Dictionary& raw, WebCryptoNamedCurve& namedCurve, ErrorContext context, AlgorithmError* error)
+{
+    String namedCurveString;
+    if (!DictionaryHelper::get(raw, "namedCurve", namedCurveString)) {
+        setSyntaxError(context.toString("namedCurve", "Missing or not a string"), error);
+        return false;
+    }
+
+    for (size_t i = 0; i < WTF_ARRAY_LENGTH(curveNameMappings); ++i) {
+        if (curveNameMappings[i].name == namedCurveString) {
+            namedCurve = curveNameMappings[i].value;
+            return true;
+        }
+    }
+
+    setNotSupportedError(context.toString("Unrecognized namedCurve"), error);
+    return false;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//     dictionary EcKeyGenParams : Algorithm {
+//       required NamedCurve namedCurve;
+//     };
+bool parseEcKeyGenParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    WebCryptoNamedCurve namedCurve;
+    if (!parseNamedCurve(raw, namedCurve, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoEcKeyGenParams(namedCurve));
+    return true;
+}
+
+// Defined by the WebCrypto spec as:
+//
+//     dictionary EcKeyImportParams : Algorithm {
+//       required NamedCurve namedCurve;
+//     };
+bool parseEcKeyImportParams(const Dictionary& raw, OwnPtr<WebCryptoAlgorithmParams>& params, const ErrorContext& context, AlgorithmError* error)
+{
+    WebCryptoNamedCurve namedCurve;
+    if (!parseNamedCurve(raw, namedCurve, context, error))
+        return false;
+
+    params = adoptPtr(new WebCryptoEcKeyImportParams(namedCurve));
+    return true;
+}
+
 bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType type, OwnPtr<WebCryptoAlgorithmParams>& params, ErrorContext& context, AlgorithmError* error)
 {
     switch (type) {
@@ -656,6 +735,15 @@ bool parseAlgorithmParams(const Dictionary& raw, WebCryptoAlgorithmParamsType ty
     case WebCryptoAlgorithmParamsTypeRsaPssParams:
         context.add("RsaPssParams");
         return parseRsaPssParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcdsaParams:
+        context.add("EcdsaParams");
+        return parseEcdsaParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcKeyGenParams:
+        context.add("EcKeyGenParams");
+        return parseEcKeyGenParams(raw, params, context, error);
+    case WebCryptoAlgorithmParamsTypeEcKeyImportParams:
+        context.add("EcKeyImportParams");
+        return parseEcKeyImportParams(raw, params, context, error);
     }
     ASSERT_NOT_REACHED();
     return false;

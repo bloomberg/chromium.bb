@@ -62,6 +62,7 @@ public:
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createAes(WebCryptoAlgorithmId, unsigned short keyLengthBits);
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createHmac(WebCryptoAlgorithmId hash, unsigned keyLengthBits);
     BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createRsaHashed(WebCryptoAlgorithmId, unsigned modulusLengthBits, const unsigned char* publicExponent, unsigned publicExponentSize, WebCryptoAlgorithmId hash);
+    BLINK_PLATFORM_EXPORT static WebCryptoKeyAlgorithm createEc(WebCryptoAlgorithmId, WebCryptoNamedCurve);
 
     ~WebCryptoKeyAlgorithm() { reset(); }
 
@@ -84,6 +85,7 @@ public:
     BLINK_PLATFORM_EXPORT WebCryptoAesKeyAlgorithmParams* aesParams() const;
     BLINK_PLATFORM_EXPORT WebCryptoHmacKeyAlgorithmParams* hmacParams() const;
     BLINK_PLATFORM_EXPORT WebCryptoRsaHashedKeyAlgorithmParams* rsaHashedParams() const;
+    BLINK_PLATFORM_EXPORT WebCryptoEcKeyAlgorithmParams* ecParams() const;
 
     // Write the algorithm parameters to a dictionary.
     BLINK_PLATFORM_EXPORT void writeToDictionary(WebCryptoKeyAlgorithmDictionary*) const;

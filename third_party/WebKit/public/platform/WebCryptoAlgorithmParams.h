@@ -247,6 +247,46 @@ private:
     const unsigned m_saltLengthBytes;
 };
 
+class WebCryptoEcdsaParams : public WebCryptoAlgorithmParamsWithHash {
+public:
+    explicit WebCryptoEcdsaParams(const WebCryptoAlgorithm& hash)
+        : WebCryptoAlgorithmParamsWithHash(hash)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeEcdsaParams; }
+};
+
+class WebCryptoEcKeyGenParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoEcKeyGenParams(WebCryptoNamedCurve namedCurve)
+        : m_namedCurve(namedCurve)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeEcKeyGenParams; }
+
+    WebCryptoNamedCurve namedCurve() const { return m_namedCurve; }
+
+private:
+    const WebCryptoNamedCurve m_namedCurve;
+};
+
+class WebCryptoEcKeyImportParams : public WebCryptoAlgorithmParams {
+public:
+    explicit WebCryptoEcKeyImportParams(WebCryptoNamedCurve namedCurve)
+        : m_namedCurve(namedCurve)
+    {
+    }
+
+    virtual WebCryptoAlgorithmParamsType type() const { return WebCryptoAlgorithmParamsTypeEcKeyImportParams; }
+
+    WebCryptoNamedCurve namedCurve() const { return m_namedCurve; }
+
+private:
+    const WebCryptoNamedCurve m_namedCurve;
+};
+
 } // namespace blink
 
 #endif

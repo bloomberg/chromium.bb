@@ -211,6 +211,20 @@ const WebCryptoAlgorithmInfo algorithmIdToInfo[] = {
             WebCryptoAlgorithmParamsTypeNone, // WrapKey
             WebCryptoAlgorithmParamsTypeNone // UnwrapKey
         }
+    }, { // Index 12
+        "ECDSA", {
+            WebCryptoAlgorithmInfo::Undefined, // Encrypt
+            WebCryptoAlgorithmInfo::Undefined, // Decrypt
+            WebCryptoAlgorithmParamsTypeEcdsaParams, // Sign
+            WebCryptoAlgorithmParamsTypeEcdsaParams, // Verify
+            WebCryptoAlgorithmInfo::Undefined, // Digest
+            WebCryptoAlgorithmParamsTypeEcKeyGenParams, // GenerateKey
+            WebCryptoAlgorithmParamsTypeEcKeyImportParams, // ImportKey
+            WebCryptoAlgorithmInfo::Undefined, // DeriveKey
+            WebCryptoAlgorithmInfo::Undefined, // DeriveBits
+            WebCryptoAlgorithmParamsTypeNone, // WrapKey
+            WebCryptoAlgorithmParamsTypeNone // UnwrapKey
+        }
     },
 };
 
@@ -229,7 +243,8 @@ COMPILE_ASSERT(WebCryptoAlgorithmIdRsaOaep == 8, RsaOaep_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdAesCtr == 9, AesCtr_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdAesKw == 10, AesKw_idDoesntMatch);
 COMPILE_ASSERT(WebCryptoAlgorithmIdRsaPss == 11, RsaPss_idDoesntMatch);
-COMPILE_ASSERT(WebCryptoAlgorithmIdLast == 11, Last_idDoesntMatch);
+COMPILE_ASSERT(WebCryptoAlgorithmIdEcdsa == 12, Ecdsa_idDoesntMatch);
+COMPILE_ASSERT(WebCryptoAlgorithmIdLast == 12, Last_idDoesntMatch);
 COMPILE_ASSERT(10 == WebCryptoOperationLast, UpdateParamsMapping);
 
 } // namespace
@@ -367,6 +382,30 @@ const WebCryptoRsaPssParams* WebCryptoAlgorithm::rsaPssParams() const
     return 0;
 }
 
+const WebCryptoEcdsaParams* WebCryptoAlgorithm::ecdsaParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeEcdsaParams)
+        return static_cast<WebCryptoEcdsaParams*>(m_private->params.get());
+    return 0;
+}
+
+const WebCryptoEcKeyGenParams* WebCryptoAlgorithm::ecKeyGenParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeEcKeyGenParams)
+        return static_cast<WebCryptoEcKeyGenParams*>(m_private->params.get());
+    return 0;
+}
+
+const WebCryptoEcKeyImportParams* WebCryptoAlgorithm::ecKeyImportParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoAlgorithmParamsTypeEcKeyImportParams)
+        return static_cast<WebCryptoEcKeyImportParams*>(m_private->params.get());
+    return 0;
+}
+
 bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
 {
     switch (id) {
@@ -383,6 +422,7 @@ bool WebCryptoAlgorithm::isHash(WebCryptoAlgorithmId id)
     case WebCryptoAlgorithmIdAesCtr:
     case WebCryptoAlgorithmIdAesKw:
     case WebCryptoAlgorithmIdRsaPss:
+    case WebCryptoAlgorithmIdEcdsa:
         break;
     }
     return false;

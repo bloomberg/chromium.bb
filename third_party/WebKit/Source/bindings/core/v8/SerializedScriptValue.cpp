@@ -223,6 +223,8 @@ enum SerializationTag {
                         //       props = keyLengthBytes:uint32_t, hashId:uint32_t
                         //   If subtag=RsaHashedKeyTag:
                         //       props = algorithmId:uint32_t, type:uint32_t, modulusLengthBits:uint32_t, publicExponentLength:uint32_t, publicExponent:byte[publicExponentLength], hashId:uint32_t
+                        //   If subtag=EcKeyTag:
+                        //       props = algorithmId:uint32_t, type:uint32_t, namedCurve:uint32_t
     ObjectReferenceTag = '^', // ref:uint32_t -> reference table[ref]
     GenerateFreshObjectTag = 'o', // -> empty object allocated an object ID and pushed onto the open stack (ref)
     GenerateFreshSparseArrayTag = 'a', // length:uint32_t -> empty array[length] allocated an object ID and pushed onto the open stack (ref)
@@ -253,6 +255,7 @@ enum CryptoKeySubTag {
     HmacKeyTag = 2,
     // ID 3 was used by RsaKeyTag, while still behind experimental flag.
     RsaHashedKeyTag = 4,
+    EcKeyTag = 5,
     // Maximum allowed value is 255
 };
 
@@ -276,7 +279,14 @@ enum CryptoKeyAlgorithmTag {
     AesCtrTag = 11,
     AesKwTag = 12,
     RsaPssTag = 13,
+    EcdsaTag = 14,
     // Maximum allowed value is 2^32-1
+};
+
+enum NamedCurveTag {
+    P256Tag = 1,
+    P384Tag = 2,
+    P521Tag = 3,
 };
 
 enum CryptoKeyUsage {
@@ -519,6 +529,9 @@ public:
         case WebCryptoKeyAlgorithmParamsTypeRsaHashed:
             doWriteRsaHashedKey(key);
             break;
+        case WebCryptoKeyAlgorithmParamsTypeEc:
+            doWriteEcKey(key);
+            break;
         case WebCryptoKeyAlgorithmParamsTypeNone:
             ASSERT_NOT_REACHED();
             return false;
@@ -736,23 +749,23 @@ private:
         append(static_cast<uint8_t>(RsaHashedKeyTag));
 
         doWriteAlgorithmId(key.algorithm().id());
-
-        switch (key.type()) {
-        case WebCryptoKeyTypePublic:
-            doWriteUint32(PublicKeyType);
-            break;
-        case WebCryptoKeyTypePrivate:
-            doWriteUint32(PrivateKeyType);
-            break;
-        case WebCryptoKeyTypeSecret:
-            ASSERT_NOT_REACHED();
-        }
+        doWriteAsymmetricKeyType(key.type());
 
         const WebCryptoRsaHashedKeyAlgorithmParams* params = key.algorithm().rsaHashedParams();
         doWriteUint32(params->modulusLengthBits());
         doWriteUint32(params->publicExponent().size());
         append(params->publicExponent().data(), params->publicExponent().size());
-        doWriteAlgorithmId(key.algorithm().rsaHashedParams()->hash().id());
+        doWriteAlgorithmId(params->hash().id());
+    }
+
+    void doWriteEcKey(const WebCryptoKey& key)
+    {
+        ASSERT(key.algorithm().ecParams());
+        append(static_cast<uint8_t>(EcKeyTag));
+
+        doWriteAlgorithmId(key.algorithm().id());
+        doWriteAsymmetricKeyType(key.type());
+        doWriteNamedCurve(key.algorithm().ecParams()->namedCurve());
     }
 
     void doWriteAlgorithmId(WebCryptoAlgorithmId id)
@@ -782,6 +795,35 @@ private:
             return doWriteUint32(AesKwTag);
         case WebCryptoAlgorithmIdRsaPss:
             return doWriteUint32(RsaPssTag);
+        case WebCryptoAlgorithmIdEcdsa:
+            return doWriteUint32(EcdsaTag);
+        }
+        ASSERT_NOT_REACHED();
+    }
+
+    void doWriteAsymmetricKeyType(WebCryptoKeyType keyType)
+    {
+        switch (keyType) {
+        case WebCryptoKeyTypePublic:
+            doWriteUint32(PublicKeyType);
+            break;
+        case WebCryptoKeyTypePrivate:
+            doWriteUint32(PrivateKeyType);
+            break;
+        case WebCryptoKeyTypeSecret:
+            ASSERT_NOT_REACHED();
+        }
+    }
+
+    void doWriteNamedCurve(WebCryptoNamedCurve namedCurve)
+    {
+        switch (namedCurve) {
+        case WebCryptoNamedCurveP256:
+            return doWriteUint32(P256Tag);
+        case WebCryptoNamedCurveP384:
+            return doWriteUint32(P384Tag);
+        case WebCryptoNamedCurveP521:
+            return doWriteUint32(P521Tag);
         }
         ASSERT_NOT_REACHED();
     }
@@ -2259,6 +2301,10 @@ private:
             if (!doReadRsaHashedKey(algorithm, type))
                 return false;
             break;
+        case EcKeyTag:
+            if (!doReadEcKey(algorithm, type))
+                return false;
+            break;
         default:
             return false;
         }
@@ -2426,20 +2472,8 @@ private:
         if (!doReadAlgorithmId(id))
             return false;
 
-        uint32_t rawType;
-        if (!doReadUint32(&rawType))
+        if (!doReadAsymmetricKeyType(type))
             return false;
-
-        switch (static_cast<AssymetricCryptoKeyType>(rawType)) {
-        case PublicKeyType:
-            type = WebCryptoKeyTypePublic;
-            break;
-        case PrivateKeyType:
-            type = WebCryptoKeyTypePrivate;
-            break;
-        default:
-            return false;
-        }
 
         uint32_t modulusLengthBits;
         if (!doReadUint32(&modulusLengthBits))
@@ -2460,6 +2494,23 @@ private:
             return false;
         algorithm = WebCryptoKeyAlgorithm::createRsaHashed(id, modulusLengthBits, publicExponent, publicExponentSize, hash);
 
+        return !algorithm.isNull();
+    }
+
+    bool doReadEcKey(WebCryptoKeyAlgorithm& algorithm, WebCryptoKeyType& type)
+    {
+        WebCryptoAlgorithmId id;
+        if (!doReadAlgorithmId(id))
+            return false;
+
+        if (!doReadAsymmetricKeyType(type))
+            return false;
+
+        WebCryptoNamedCurve namedCurve;
+        if (!doReadNamedCurve(namedCurve))
+            return false;
+
+        algorithm = WebCryptoKeyAlgorithm::createEc(id, namedCurve);
         return !algorithm.isNull();
     }
 
@@ -2505,6 +2556,48 @@ private:
             return true;
         case RsaPssTag:
             id = WebCryptoAlgorithmIdRsaPss;
+            return true;
+        case EcdsaTag:
+            id = WebCryptoAlgorithmIdEcdsa;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool doReadAsymmetricKeyType(WebCryptoKeyType& type)
+    {
+        uint32_t rawType;
+        if (!doReadUint32(&rawType))
+            return false;
+
+        switch (static_cast<AssymetricCryptoKeyType>(rawType)) {
+        case PublicKeyType:
+            type = WebCryptoKeyTypePublic;
+            return true;
+        case PrivateKeyType:
+            type = WebCryptoKeyTypePrivate;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool doReadNamedCurve(WebCryptoNamedCurve& namedCurve)
+    {
+        uint32_t rawName;
+        if (!doReadUint32(&rawName))
+            return false;
+
+        switch (static_cast<NamedCurveTag>(rawName)) {
+        case P256Tag:
+            namedCurve = WebCryptoNamedCurveP256;
+            return true;
+        case P384Tag:
+            namedCurve = WebCryptoNamedCurveP384;
+            return true;
+        case P521Tag:
+            namedCurve = WebCryptoNamedCurveP521;
             return true;
         }
 

@@ -88,6 +88,11 @@ WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createRsaHashed(WebCryptoAlgorithmI
     return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoRsaHashedKeyAlgorithmParams(modulusLengthBits, publicExponent, publicExponentSize, createHash(hash))));
 }
 
+WebCryptoKeyAlgorithm WebCryptoKeyAlgorithm::createEc(WebCryptoAlgorithmId id, WebCryptoNamedCurve namedCurve)
+{
+    return WebCryptoKeyAlgorithm(id, adoptPtr(new WebCryptoEcKeyAlgorithmParams(namedCurve)));
+}
+
 bool WebCryptoKeyAlgorithm::isNull() const
 {
     return m_private.isNull();
@@ -128,6 +133,14 @@ WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::rsaHashedParams() c
     ASSERT(!isNull());
     if (paramsType() == WebCryptoKeyAlgorithmParamsTypeRsaHashed)
         return static_cast<WebCryptoRsaHashedKeyAlgorithmParams*>(m_private->params.get());
+    return 0;
+}
+
+WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::ecParams() const
+{
+    ASSERT(!isNull());
+    if (paramsType() == WebCryptoKeyAlgorithmParamsTypeEc)
+        return static_cast<WebCryptoEcKeyAlgorithmParams*>(m_private->params.get());
     return 0;
 }
 
