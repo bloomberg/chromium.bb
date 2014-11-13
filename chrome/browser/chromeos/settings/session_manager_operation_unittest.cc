@@ -14,6 +14,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/login/users/fake_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -43,6 +45,8 @@ class SessionManagerOperationTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
+        user_manager_(new FakeUserManager()),
+        user_manager_enabler_(user_manager_),
         validated_(false) {
     OwnerSettingsServiceChromeOSFactory::GetInstance()
         ->SetOwnerKeyUtilForTesting(owner_key_util_);
@@ -85,6 +89,9 @@ class SessionManagerOperationTest : public testing::Test {
   policy::DevicePolicyBuilder policy_;
   DeviceSettingsTestHelper device_settings_test_helper_;
   scoped_refptr<ownership::MockOwnerKeyUtil> owner_key_util_;
+
+  FakeUserManager* user_manager_;
+  ScopedUserManagerEnabler user_manager_enabler_;
 
   scoped_ptr<TestingProfile> profile_;
   OwnerSettingsServiceChromeOS* service_;

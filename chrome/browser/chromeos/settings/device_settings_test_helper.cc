@@ -252,6 +252,8 @@ void DeviceSettingsTestBase::InitOwner(const std::string& user_id,
 
     ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
                                                             profile_.get());
+    ProfileHelper::Get()->SetProfileToUserMappingForTesting(
+        const_cast<user_manager::User*>(user));
   }
   OwnerSettingsServiceChromeOS* service =
       OwnerSettingsServiceChromeOSFactory::GetForProfile(profile_.get());

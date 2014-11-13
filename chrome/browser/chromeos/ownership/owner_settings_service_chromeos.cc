@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/session_manager_operation.h"
@@ -22,6 +23,7 @@
 #include "chromeos/tpm_token_loader.h"
 #include "components/ownership/owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -564,7 +566,10 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
 void OwnerSettingsServiceChromeOS::OnPostKeypairLoadedActions() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  user_id_ = profile_->GetProfileName();
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile_);
+  user_id_ = user ? user->GetUserID() : std::string();
+
   const bool is_owner = IsOwner() || IsOwnerInTests(user_id_);
   if (is_owner && device_settings_service_)
     device_settings_service_->InitOwner(user_id_, weak_factory_.GetWeakPtr());
@@ -590,7 +595,7 @@ void OwnerSettingsServiceChromeOS::ReloadKeypairImpl(const base::Callback<
 
 void OwnerSettingsServiceChromeOS::StorePendingChanges() {
   if (!has_pending_changes() || store_settings_factory_.HasWeakPtrs() ||
-      !device_settings_service_) {
+      !device_settings_service_ || user_id_.empty()) {
     return;
   }
 
