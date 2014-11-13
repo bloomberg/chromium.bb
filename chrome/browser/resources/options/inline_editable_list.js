@@ -31,6 +31,12 @@ cr.define('options', function() {
     __proto__: DeletableItem.prototype,
 
     /**
+     * Index of currently focused column, or -1 for none.
+     * @type {number}
+     */
+    focusedColumnIndex: -1,
+
+    /**
      * Whether or not this item can be edited.
      * @type {boolean}
      * @private
@@ -74,7 +80,7 @@ cr.define('options', function() {
       this.editFields_ = [];
       this.addEventListener('mousedown', this.handleMouseDown_);
       this.addEventListener('keydown', this.handleKeyDown_);
-      this.addEventListener('leadChange', this.handleLeadChange_);
+      this.addEventListener('focusin', this.handleFocusIn_);
     },
 
     /** @override */
@@ -85,9 +91,8 @@ cr.define('options', function() {
     /**
      * Called when this element gains or loses 'lead' status. Updates editing
      * mode accordingly.
-     * @private
      */
-    handleLeadChange_: function() {
+    updateLeadState: function() {
       // Add focusability before call to updateEditState.
       if (this.lead) {
         this.setEditableValuesFocusable(true);
@@ -133,8 +138,7 @@ cr.define('options', function() {
 
         cr.dispatchSimpleEvent(this, 'edit', true);
 
-        var focusElement = this.editClickTarget_ || this.initialFocusElement;
-        this.editClickTarget_ = null;
+        var focusElement = this.getEditFocusElement_();
         if (focusElement)
           this.focusAndMaybeSelect_(focusElement);
       } else {
@@ -150,6 +154,42 @@ cr.define('options', function() {
           cr.dispatchSimpleEvent(this, 'canceledit', true);
         }
       }
+    },
+
+    /**
+     * Return editable element that should be focused, or null for none.
+     * @private
+     */
+    getEditFocusElement_: function() {
+      // If an edit field was clicked on then use the clicked element.
+      if (this.editClickTarget_) {
+        var result = this.editClickTarget_;
+        this.editClickTarget_ = null;
+        return result;
+      }
+
+      // If focusedColumnIndex is valid then use the element in that column.
+      if (this.focusedColumnIndex != -1) {
+        var nearestColumn =
+            this.getNearestColumnByIndex_(this.focusedColumnIndex);
+        if (nearestColumn)
+          return nearestColumn;
+      }
+
+      // It's possible that focusedColumnIndex hasn't been updated yet.
+      // Check getFocusedColumnIndex_ directly.
+      // This can't completely replace the above focusedColumnIndex check
+      // because InlineEditableItemList may have set focusedColumnIndex to a
+      // different value.
+      var columnIndex = this.getFocusedColumnIndex_();
+      if (columnIndex != -1) {
+        var nearestColumn = this.getNearestColumnByIndex_(columnIndex);
+        if (nearestColumn)
+          return nearestColumn;
+      }
+
+      // Everything else failed so return the default.
+      return this.initialFocusElement;
     },
 
     /**
@@ -340,6 +380,25 @@ cr.define('options', function() {
     },
 
     /**
+     * Set the column index for a child element of this InlineEditableItem.
+     * Only elements with a column index will be keyboard focusable, e.g. by
+     * pressing the tab key.
+     * @param {Element} element Element whose column index to set. Method does
+     *     nothing if element is null.
+     * @param {number} columnIndex The new column index to set on the element.
+     *     -1 removes the column index.
+     */
+    setFocusableColumnIndex: function(element, columnIndex) {
+      if (!element)
+        return;
+
+      if (columnIndex >= 0)
+        element.setAttribute('inlineeditable-column', columnIndex);
+      else
+        element.removeAttribute('inlineeditable-column');
+    },
+
+    /**
      * Resets the editable version of any controls created by createEditable*
      * to match the static text.
      * @private
@@ -378,6 +437,39 @@ cr.define('options', function() {
           staticLabel.textContent = editFields[i].value;
         // Add more tag types here as new createEditable* methods are added.
       }
+    },
+
+    /**
+     * Returns the index of the column that currently has focus, or -1 if no
+     * column has focus.
+     * @return {number}
+     * @private
+     */
+    getFocusedColumnIndex_: function() {
+      var element = document.activeElement.editableVersion ||
+                    document.activeElement;
+
+      if (element.hasAttribute('inlineeditable-column'))
+        return parseInt(element.getAttribute('inlineeditable-column'), 10);
+      return -1;
+    },
+
+    /**
+     * Returns the element from the column that has the largest index where:
+     * where:
+     *   + index <= startIndex, and
+     *   + the element exists, and
+     *   + the element is not disabled
+     * @return {Element}
+     * @private
+     */
+    getNearestColumnByIndex_: function(startIndex) {
+      for (var i = startIndex; i >= 0; --i) {
+        var el = this.querySelector('[inlineeditable-column="' + i + '"]');
+        if (el && !el.disabled)
+          return el;
+      }
+      return null;
     },
 
     /**
@@ -448,6 +540,19 @@ cr.define('options', function() {
       if (editClickTarget && !editClickTarget.disabled)
         this.editClickTarget_ = editClickTarget;
     },
+
+    /**
+     * Called when this InlineEditableItem or any of its children are given
+     * focus. Updates focusedColumnIndex with the index of the newly focused
+     * column, or -1 if the focused element does not have a column index.
+     * @param {Event} e The focusin event.
+     * @private
+     */
+    handleFocusIn_: function(e) {
+      var target = e.target.editableVersion || e.target;
+      this.focusedColumnIndex = target.hasAttribute('inlineeditable-column') ?
+          parseInt(target.getAttribute('inlineeditable-column'), 10) : -1;
+    },
   };
 
   /**
@@ -504,6 +609,7 @@ cr.define('options', function() {
           // Add focusability before making other changes.
           leadItem.setEditableValuesFocusable(true);
           leadItem.setCloseButtonFocusable(true);
+          leadItem.focusedColumnIndex = -1;
           leadItem.updateEditState();
           // Remove focusability after making other changes.
           leadItem.setStaticValuesFocusable(false);
@@ -519,10 +625,29 @@ cr.define('options', function() {
       }
     },
 
-    /**
-     * Called after the DataModel for the list has been set.
-     * @override
-     */
+    /** @override */
+    handleLeadChange: function(e) {
+      DeletableItemList.prototype.handleLeadChange.call(this, e);
+
+      var focusedColumnIndex = -1;
+      if (e.oldValue != -1) {
+        var element = this.getListItemByIndex(e.oldValue);
+        if (element) {
+          focusedColumnIndex = element.focusedColumnIndex;
+          element.updateLeadState();
+        }
+      }
+
+      if (e.newValue != -1) {
+        var element = this.getListItemByIndex(e.newValue);
+        if (element) {
+          element.focusedColumnIndex = focusedColumnIndex;
+          element.updateLeadState();
+        }
+      }
+    },
+
+    /** @override */
     onSetDataModelComplete: function() {
       DeletableItemList.prototype.onSetDataModelComplete.call(this);
 
