@@ -291,7 +291,8 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                 schemeColorId = getSchemeColorId(securityLevel);
             }
 
-            sb.append(parsedUrl.toString());
+            String parsedUrlString = parsedUrl.toString();
+            sb.append(parsedUrlString);
             final ForegroundColorSpan schemeColorSpan = new ForegroundColorSpan(
                     mContext.getResources().getColor(schemeColorId));
             sb.setSpan(schemeColorSpan, 0, parsedUrl.getScheme().length(),
@@ -301,12 +302,26 @@ public class WebsiteSettingsPopup implements OnClickListener, OnItemSelectedList
                         Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             }
 
-            // The domain is everything after the scheme until the end of the origin.
+            // The domain does not include the '://'.
+            String originToDisplay = UrlUtilities.getOriginForDisplay(parsedUrl, false);
+            int originBegin = parsedUrlString.indexOf(originToDisplay,
+                    parsedUrl.getScheme().length());
+            int originEnd = originBegin + originToDisplay.length();
+
+            // In some cases (e.g. 'about:blank') UrlUtilities.getOriginForDisplay will return the
+            // entire URL. In these cases originBegin will now be -1.
+            if (originBegin < 0) {
+                originBegin = parsedUrl.getScheme().length();
+                // Don't include the ':' in the origin for highlighting if present (it should always
+                // be there but check to be sure).
+                if (originBegin < parsedUrlString.length()) originBegin++;
+
+                originEnd = parsedUrlString.length();
+            }
+
             final ForegroundColorSpan domainColorSpan = new ForegroundColorSpan(
                     mContext.getResources().getColor(R.color.website_settings_popup_url_domain));
-            sb.setSpan(domainColorSpan, parsedUrl.getScheme().length(),
-                    UrlUtilities.getOriginForDisplay(parsedUrl, true).length(),
-                    Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+            sb.setSpan(domainColorSpan, originBegin, originEnd, Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
             mUrlTitle.setText(sb);
         } else {
