@@ -34,6 +34,7 @@
 #include <gtest/gtest.h>
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLDocument.h"

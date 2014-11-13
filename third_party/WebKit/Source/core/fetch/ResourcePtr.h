@@ -32,27 +32,25 @@ namespace blink {
 
 class ResourcePtrBase {
 public:
-    ~ResourcePtrBase();
-
     Resource* get() const { return m_resource; }
     bool operator!() const { return !m_resource; }
-    void clear() { setResource(0); }
+    void clear() { setResource(nullptr); }
 
     // This conversion operator allows implicit conversion to bool but not to other integer types.
     typedef Resource* ResourcePtrBase::*UnspecifiedBoolType;
-    operator UnspecifiedBoolType() const { return m_resource ? &ResourcePtrBase::m_resource : 0; }
+    operator UnspecifiedBoolType() const { return m_resource ? &ResourcePtrBase::m_resource : nullptr; }
 
 protected:
-    ResourcePtrBase() : m_resource(0) { }
-    ResourcePtrBase(Resource*);
-    ResourcePtrBase(const ResourcePtrBase&);
+    ResourcePtrBase() : m_resource(nullptr) { }
+    explicit ResourcePtrBase(Resource*);
+    explicit ResourcePtrBase(const ResourcePtrBase&);
+    ~ResourcePtrBase();
 
     void setResource(Resource*);
 
 private:
-    ResourcePtrBase& operator=(const ResourcePtrBase&) { return *this; }
-
     friend class Resource;
+    ResourcePtrBase& operator=(const ResourcePtrBase&) = delete;
 
     Resource* m_resource;
 };
@@ -77,22 +75,24 @@ inline ResourcePtrBase::ResourcePtrBase(const ResourcePtrBase& o)
         m_resource->registerHandle(this);
 }
 
-template <class R> class ResourcePtr : public ResourcePtrBase {
+template <class R> class ResourcePtr final : public ResourcePtrBase {
 public:
     ResourcePtr() { }
     ResourcePtr(R* res) : ResourcePtrBase(res) { }
     ResourcePtr(const ResourcePtr<R>& o) : ResourcePtrBase(o) { }
-    template<typename U> ResourcePtr(const ResourcePtr<U>& o) : ResourcePtrBase(o.get()) { }
+    template<typename U> ResourcePtr(const ResourcePtr<U>& o) : ResourcePtrBase(cast(o.get())) { }
 
-    R* get() const { return reinterpret_cast<R*>(ResourcePtrBase::get()); }
+    R* get() const { return static_cast<R*>(ResourcePtrBase::get()); }
     R* operator->() const { return get(); }
 
     ResourcePtr& operator=(R* res) { setResource(res); return *this; }
     ResourcePtr& operator=(const ResourcePtr& o) { setResource(o.get()); return *this; }
-    template<typename U> ResourcePtr& operator=(const ResourcePtr<U>& o) { setResource(o.get()); return *this; }
+    template<typename U> ResourcePtr& operator=(const ResourcePtr<U>& o) { setResource(cast(o.get())); return *this; }
 
     bool operator==(const ResourcePtrBase& o) const { return get() == o.get(); }
     bool operator!=(const ResourcePtrBase& o) const { return get() != o.get(); }
+private:
+    template<typename U> static R* cast(U* u) { return u; }
 };
 
 template <class R, class RR> bool operator==(const ResourcePtr<R>& h, const RR* res)

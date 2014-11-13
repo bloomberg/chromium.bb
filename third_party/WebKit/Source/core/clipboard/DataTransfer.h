@@ -26,6 +26,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/clipboard/DataTransferAccessPolicy.h"
+#include "core/fetch/ImageResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
@@ -44,7 +45,6 @@ class Element;
 class ExceptionState;
 class FileList;
 class LocalFrame;
-class ImageResource;
 class Node;
 class Range;
 
