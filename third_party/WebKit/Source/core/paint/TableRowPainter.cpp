@@ -6,6 +6,7 @@
 #include "core/paint/TableRowPainter.h"
 
 #include "core/paint/ObjectPainter.h"
+#include "core/paint/TableCellPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"
@@ -22,7 +23,7 @@ void TableRowPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset
     for (RenderTableCell* cell = m_renderTableRow.firstCell(); cell; cell = cell->nextCell()) {
         // Paint the row background behind the cell.
         if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground)
-            cell->paintBackgroundsBehindCell(paintInfo, paintOffset, &m_renderTableRow);
+            TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfo, paintOffset, &m_renderTableRow);
         if (!cell->hasSelfPaintingLayer())
             cell->paint(paintInfo, paintOffset);
     }

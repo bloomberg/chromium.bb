@@ -1508,6 +1508,8 @@
             'paint/SVGShapePainter.h',
             'paint/SVGTextPainter.cpp',
             'paint/SVGTextPainter.h',
+            'paint/TableCellPainter.cpp',
+            'paint/TableCellPainter.h',
             'paint/TablePainter.cpp',
             'paint/TablePainter.h',
             'paint/TableRowPainter.cpp',
