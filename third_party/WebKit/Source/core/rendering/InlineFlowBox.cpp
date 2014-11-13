@@ -254,7 +254,7 @@ void InlineFlowBox::attachLineBoxToRenderObject()
     rendererLineBoxes()->attachLineBox(this);
 }
 
-void InlineFlowBox::adjustPosition(float dx, float dy)
+void InlineFlowBox::adjustPosition(FloatWillBeLayoutUnit dx, FloatWillBeLayoutUnit dy)
 {
     InlineBox::adjustPosition(dx, dy);
     for (InlineBox* child = firstChild(); child; child = child->nextOnLine())
@@ -359,16 +359,16 @@ void InlineFlowBox::determineSpacingForFlowBoxes(bool lastLine, bool isLogically
     }
 }
 
-float InlineFlowBox::placeBoxesInInlineDirection(float logicalLeft, bool& needsWordSpacing)
+FloatWillBeLayoutUnit InlineFlowBox::placeBoxesInInlineDirection(FloatWillBeLayoutUnit logicalLeft, bool& needsWordSpacing)
 {
     // Set our x position.
     beginPlacingBoxRangesInInlineDirection(logicalLeft);
 
-    float startLogicalLeft = logicalLeft;
+    FloatWillBeLayoutUnit startLogicalLeft = logicalLeft;
     logicalLeft += borderLogicalLeft() + paddingLogicalLeft();
 
-    float minLogicalLeft = startLogicalLeft;
-    float maxLogicalRight = logicalLeft;
+    FloatWillBeLayoutUnit minLogicalLeft = startLogicalLeft;
+    FloatWillBeLayoutUnit maxLogicalRight = logicalLeft;
 
     placeBoxRangeInInlineDirection(firstChild(), 0, logicalLeft, minLogicalLeft, maxLogicalRight, needsWordSpacing);
 
@@ -377,14 +377,14 @@ float InlineFlowBox::placeBoxesInInlineDirection(float logicalLeft, bool& needsW
     return logicalLeft;
 }
 
-float InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
-    float& logicalLeft, float& minLogicalLeft, float& maxLogicalRight, bool& needsWordSpacing)
+FloatWillBeLayoutUnit InlineFlowBox::placeBoxRangeInInlineDirection(InlineBox* firstChild, InlineBox* lastChild,
+    FloatWillBeLayoutUnit& logicalLeft, FloatWillBeLayoutUnit& minLogicalLeft, FloatWillBeLayoutUnit& maxLogicalRight, bool& needsWordSpacing)
 {
     for (InlineBox* curr = firstChild; curr && curr != lastChild; curr = curr->nextOnLine()) {
         if (curr->renderer().isText()) {
             InlineTextBox* text = toInlineTextBox(curr);
             RenderText& rt = text->renderer();
-            float space = 0;
+            FloatWillBeLayoutUnit space = 0;
             if (rt.textLength()) {
                 if (needsWordSpacing && isSpaceOrNewline(rt.characterAt(text->start())))
                     space = rt.style(isFirstLineStyle())->font().fontDescription().wordSpacing();
@@ -743,7 +743,7 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
     }
 }
 
-void InlineFlowBox::computeMaxLogicalTop(float& maxLogicalTop) const
+void InlineFlowBox::computeMaxLogicalTop(FloatWillBeLayoutUnit& maxLogicalTop) const
 {
     for (InlineBox* curr = firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->renderer().isOutOfFlowPositioned())
@@ -752,11 +752,11 @@ void InlineFlowBox::computeMaxLogicalTop(float& maxLogicalTop) const
         if (descendantsHaveSameLineHeightAndBaseline())
             continue;
 
-        maxLogicalTop = std::max<float>(maxLogicalTop, curr->y());
-        float localMaxLogicalTop = 0;
+        maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, curr->y());
+        FloatWillBeLayoutUnit localMaxLogicalTop = 0;
         if (curr->isInlineFlowBox())
             toInlineFlowBox(curr)->computeMaxLogicalTop(localMaxLogicalTop);
-        maxLogicalTop = std::max<float>(maxLogicalTop, localMaxLogicalTop);
+        maxLogicalTop = std::max<FloatWillBeLayoutUnit>(maxLogicalTop, localMaxLogicalTop);
     }
 }
 
@@ -1141,9 +1141,9 @@ bool InlineFlowBox::canAccommodateEllipsis(bool ltr, int blockEdge, int ellipsis
     return true;
 }
 
-float InlineFlowBox::placeEllipsisBox(bool ltr, float blockLeftEdge, float blockRightEdge, float ellipsisWidth, float &truncatedWidth, bool& foundBox)
+FloatWillBeLayoutUnit InlineFlowBox::placeEllipsisBox(bool ltr, FloatWillBeLayoutUnit blockLeftEdge, FloatWillBeLayoutUnit blockRightEdge, FloatWillBeLayoutUnit ellipsisWidth, FloatWillBeLayoutUnit &truncatedWidth, bool& foundBox)
 {
-    float result = -1;
+    FloatWillBeLayoutUnit result = -1;
     // We iterate over all children, the foundBox variable tells us when we've found the
     // box containing the ellipsis.  All boxes after that one in the flow are hidden.
     // If our flow is ltr then iterate over the boxes from left to right, otherwise iterate

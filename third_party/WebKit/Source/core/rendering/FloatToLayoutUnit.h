@@ -5,46 +5,66 @@
 #ifndef FloatToLayoutUnit_h
 #define FloatToLayoutUnit_h
 
+#include "platform/LayoutUnit.h"
+
 namespace blink {
 
-#if ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
-
+class FloatPoint;
+class FloatRect;
+class FloatSize;
 class LayoutUnit;
 class LayoutPoint;
 class LayoutRect;
 class LayoutSize;
 
-using FloatWillBeLayoutUnit = LayoutUnit;
-using FloatPointWillBeLayoutPoint = LayoutPoint;
-using FloatRectWillBeLayoutRect = LayoutRect;
-using FloatSizeWillBeLayoutSize = LayoutSize;
+class FloatLineLayoutUnit {
+public:
+    FloatLineLayoutUnit() : m_value(0) { }
+    FloatLineLayoutUnit(float f) : m_value(f) { }
 
-#define ZERO_LAYOUT_UNIT LayoutUnit(0)
-#define MINUS_ONE_LAYOUT_UNIT LayoutUnit(-1)
+    float toFloat() const
+    {
+        return m_value;
+    }
 
-#define LAYOUT_UNIT_TO_FLOAT(layoutUnit) (layoutUnit)
-#define LAYOUT_UNIT_CEIL(layoutUnit) (layoutUnit.ceil())
-#define INT_TO_LAYOUT_UNIT(i) (LayoutUnit(i))
+    LayoutUnit toLayoutUnit() const
+    {
+        return LayoutUnit(m_value);
+    }
 
+public:
+    float m_value;
+};
+
+class LayoutUnitLineLayoutUnit {
+public:
+    LayoutUnitLineLayoutUnit() { }
+    LayoutUnitLineLayoutUnit(LayoutUnit f) : m_value(f) { }
+
+    float toFloat() const
+    {
+        return m_value.toFloat();
+    }
+
+    LayoutUnit toLayoutUnit() const
+    {
+        return m_value;
+    }
+
+public:
+    LayoutUnit m_value;
+};
+
+#if ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
+using LineLayoutUnit = LayoutUnitLineLayoutUnit;
 #else // ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
-
-class FloatPoint;
-class FloatRect;
-class FloatSize;
+using LineLayoutUnit = FloatLineLayoutUnit;
+#endif // ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
 
 using FloatWillBeLayoutUnit = float;
 using FloatPointWillBeLayoutPoint = FloatPoint;
 using FloatRectWillBeLayoutRect = FloatRect;
 using FloatSizeWillBeLayoutSize = FloatSize;
-
-#define ZERO_LAYOUT_UNIT 0
-#define MINUS_ONE_LAYOUT_UNIT -1
-
-#define LAYOUT_UNIT_TO_FLOAT(layoutUnit) (layoutUnit.toFloat())
-#define LAYOUT_UNIT_CEIL(layoutUnit) (ceilf(layoutUnit))
-#define INT_TO_LAYOUT_UNIT(i) (i)
-
-#endif // ENABLE(LAYOUT_UNIT_IN_INLINE_BOXES)
 
 } // namespace blink
 

@@ -123,9 +123,9 @@ FloatWillBeLayoutUnit InlineBox::logicalHeight() const
         return virtualLogicalHeight();
 
     if (renderer().isText())
-        return m_bitfields.isText() ? INT_TO_LAYOUT_UNIT(renderer().style(isFirstLineStyle())->fontMetrics().height()) : ZERO_LAYOUT_UNIT;
+        return m_bitfields.isText() ? renderer().style(isFirstLineStyle())->fontMetrics().height() : 0;
     if (renderer().isBox() && parent())
-        return isHorizontal() ? LAYOUT_UNIT_TO_FLOAT(toRenderBox(renderer()).height()) : LAYOUT_UNIT_TO_FLOAT(toRenderBox(renderer()).width());
+        return isHorizontal() ? toRenderBox(renderer()).height().toFloat() : toRenderBox(renderer()).width().toFloat();
 
     ASSERT(isInlineFlowBox());
     RenderBoxModelObject* flowObject = boxModelObject();
@@ -296,7 +296,7 @@ FloatWillBeLayoutUnit InlineBox::placeEllipsisBox(bool, FloatWillBeLayoutUnit, F
 {
     // Use -1 to mean "we didn't set the position."
     truncatedWidth += logicalWidth();
-    return MINUS_ONE_LAYOUT_UNIT;
+    return -1;
 }
 
 void InlineBox::clearKnownToHaveNoOverflow()

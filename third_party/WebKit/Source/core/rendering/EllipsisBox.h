@@ -20,6 +20,7 @@
 #ifndef EllipsisBox_h
 #define EllipsisBox_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/InlineBox.h"
 
 namespace blink {
@@ -31,7 +32,7 @@ class EllipsisBox final : public InlineBox {
 public:
     EllipsisBox(RenderObject& obj, const AtomicString& ellipsisStr, InlineFlowBox* parent,
         int width, int height, int x, int y, bool firstLine, bool isVertical, InlineBox* markupBox)
-        : InlineBox(obj, FloatPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
+        : InlineBox(obj, FloatPointWillBeLayoutPoint(x, y), width, firstLine, true, false, false, isVertical, 0, 0, parent)
         , m_shouldPaintMarkupBox(markupBox)
         , m_height(height)
         , m_str(ellipsisStr)
@@ -45,7 +46,7 @@ public:
     void setSelectionState(RenderObject::SelectionState s) { m_selectionState = s; }
     IntRect selectionRect();
 
-    virtual float virtualLogicalHeight() const override { return m_height; }
+    virtual FloatWillBeLayoutUnit virtualLogicalHeight() const override { return m_height; }
     virtual RenderObject::SelectionState selectionState() const override { return m_selectionState; }
     const AtomicString& ellipsisStr() { return m_str; }
     InlineBox* markupBox() const;

@@ -23,6 +23,7 @@
 #ifndef InlineTextBox_h
 #define InlineTextBox_h
 
+#include "core/rendering/FloatToLayoutUnit.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
 #include "platform/fonts/TextBlob.h"
@@ -97,19 +98,19 @@ public:
 #endif
 
     enum RotationDirection { Counterclockwise, Clockwise };
-    static AffineTransform rotation(const FloatRect& boxRect, RotationDirection);
+    static AffineTransform rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection);
 
 public:
     TextRun constructTextRunForInspector(RenderStyle*, const Font&) const;
-    virtual FloatRect calculateBoundaries() const override { return FloatRect(x(), y(), width(), height()); }
+    virtual FloatRectWillBeLayoutRect calculateBoundaries() const override { return FloatRectWillBeLayoutRect(x(), y(), width(), height()); }
 
     virtual LayoutRect localSelectionRect(int startPos, int endPos);
     bool isSelected(int startPos, int endPos) const;
     void selectionStartEnd(int& sPos, int& ePos) const;
 
     // These functions both paint markers and update the DocumentMarker's renderedRect.
-    virtual void paintDocumentMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
-    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
+    virtual void paintDocumentMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&, bool grammar);
+    virtual void paintTextMatchMarker(GraphicsContext*, const FloatPointWillBeLayoutPoint& boxOrigin, DocumentMarker*, RenderStyle*, const Font&);
 
 protected:
     virtual void paint(PaintInfo&, const LayoutPoint&, LayoutUnit lineTop, LayoutUnit lineBottom) override;
@@ -125,7 +126,7 @@ public:
 
 private:
     virtual void clearTruncation() override final { m_truncation = cNoTruncation; }
-    virtual float placeEllipsisBox(bool flowIsLTR, float visibleLeftEdge, float visibleRightEdge, float ellipsisWidth, float &truncatedWidth, bool& foundBox) override final;
+    virtual FloatWillBeLayoutUnit placeEllipsisBox(bool flowIsLTR, FloatWillBeLayoutUnit visibleLeftEdge, FloatWillBeLayoutUnit visibleRightEdge, FloatWillBeLayoutUnit ellipsisWidth, FloatWillBeLayoutUnit &truncatedWidth, bool& foundBox) override final;
 
 public:
     virtual bool isLineBreak() const override final;
@@ -144,16 +145,16 @@ public:
     virtual int caretMinOffset() const override final;
     virtual int caretMaxOffset() const override final;
 
-    float textPos() const; // returns the x position relative to the left start of the text line.
+    FloatWillBeLayoutUnit textPos() const; // returns the x position relative to the left start of the text line.
 
 public:
-    virtual int offsetForPosition(float x, bool includePartialGlyphs = true) const;
-    virtual float positionForOffset(int offset) const;
+    virtual int offsetForPosition(FloatWillBeLayoutUnit x, bool includePartialGlyphs = true) const;
+    virtual FloatWillBeLayoutUnit positionForOffset(int offset) const;
 
     bool containsCaretOffset(int offset) const; // false for offset after line break
 
     // Fills a vector with the pixel width of each character.
-    void characterWidths(Vector<float>&) const;
+    void characterWidths(Vector<FloatWillBeLayoutUnit>&) const;
 
 private:
     InlineTextBox* m_prevTextBox; // The previous box that also uses our RenderObject
@@ -175,9 +176,9 @@ private:
 
 DEFINE_INLINE_BOX_TYPE_CASTS(InlineTextBox);
 
-void alignSelectionRectToDevicePixels(FloatRect&);
+void alignSelectionRectToDevicePixels(FloatRectWillBeLayoutRect&);
 
-inline AffineTransform InlineTextBox::rotation(const FloatRect& boxRect, RotationDirection rotationDirection)
+inline AffineTransform InlineTextBox::rotation(const FloatRectWillBeLayoutRect& boxRect, RotationDirection rotationDirection)
 {
     return rotationDirection == Clockwise ? AffineTransform(0, 1, -1, 0, boxRect.x() + boxRect.maxY(), boxRect.maxY() - boxRect.x())
         : AffineTransform(0, -1, 1, 0, boxRect.x() - boxRect.maxY(), boxRect.x() + boxRect.maxY());
