@@ -90,7 +90,6 @@ source_set("prerequisites") {
     "//third_party/npapi",
     "//third_party/ots",
     "//third_party/qcms",
-    "//third_party/snappy",
     "//third_party/sqlite",
     "//third_party/zlib",
     "//url",

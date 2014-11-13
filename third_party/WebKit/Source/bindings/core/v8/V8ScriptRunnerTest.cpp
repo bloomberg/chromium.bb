@@ -138,17 +138,6 @@ TEST_F(V8ScriptRunnerTest, codeOptions)
 
     // FIXME: Code caching is presently still disabled.
     //        Enable EXPECT when code caching lands.
-    // EXPECT_TRUE(m_resource->cachedMetadata(tagForCodeCache(false)));
-}
-
-TEST_F(V8ScriptRunnerTest, codeCompressedOptions)
-{
-    setResource();
-    EXPECT_TRUE(compileScript(V8CacheOptionsCodeCompressed));
-    EXPECT_FALSE(m_resource->cachedMetadata(tagForParserCache()));
-
-    // FIXME: Code caching is presently still disabled.
-    //        Enable EXPECT when code caching lands.
     // EXPECT_TRUE(m_resource->cachedMetadata(tagForCodeCache()));
 }
 

@@ -7,7 +7,6 @@ include_rules = [
     "-modules",
     "+platform",
     "+public/platform",
-    "+third_party/snappy",
     "-web",
 
     # TODO(tasak): Get this list to zero.
