@@ -122,7 +122,7 @@ IDBRequest* IDBCursor::update(ScriptState* scriptState, const ScriptValue& value
     return objectStore->put(scriptState, WebIDBPutModeCursorUpdate, IDBAny::create(this), value, m_primaryKey, exceptionState);
 }
 
-void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
+void IDBCursor::advance(unsigned count, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::advance");
     if (!count) {
