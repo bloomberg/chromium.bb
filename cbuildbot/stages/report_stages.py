@@ -456,18 +456,19 @@ class ReportStage(generic_stages.BuilderStage,
         get_statuses_from_slaves, config, stage, final_status, sync_instance,
         completion_instance, child_configs_list)
 
-  def PerformStage(self):
+  def ArchiveResults(self, final_status):
+    """Archive our build results.
+
+    Args:
+      final_status: constants.FINAL_STATUS_PASSED or
+                    constants.FINAL_STATUS_FAILED
+
+    Returns:
+      A dictionary with the aggregated _UploadArchiveIndex results.
+    """
     # Make sure local archive directory is prepared, if it was not already.
-    # TODO(mtennant): It is not clear how this happens, but a CQ master run
-    # that never sees an open tree somehow reaches Report stage without a
-    # set up archive directory.
     if not os.path.exists(self.archive_path):
       self.archive.SetupArchivePath()
-
-    if results_lib.Results.BuildSucceededSoFar():
-      final_status = constants.FINAL_STATUS_PASSED
-    else:
-      final_status = constants.FINAL_STATUS_FAILED
 
     # Upload metadata, and update the pass/fail streak counter for the main
     # run only. These aren't needed for the child builder runs.
@@ -504,9 +505,33 @@ class ReportStage(generic_stages.BuilderStage,
                                         builder_run.debug,
                                         upload_urls=upload_urls)
 
-    version = getattr(self._run.attrs, 'release_tag', '')
+    return archive_urls
+
+  def PerformStage(self):
+    """Perform the actual work for this stage.
+
+    This includes final metadata archival, and update CIDB with our final status
+    as well as producting a logged build result summary.
+    """
+    if results_lib.Results.BuildSucceededSoFar():
+      final_status = constants.FINAL_STATUS_PASSED
+    else:
+      final_status = constants.FINAL_STATUS_FAILED
+
+    release_tag = getattr(self._run.attrs, 'release_tag', None)
+
+    # Because we use the release_tag as part of the archive path, we
+    # can't archive if we didn't get far enough to learn what it is.
+    if release_tag is None:
+      cros_build_lib.Warning('Build results not archived, no release_tag.')
+      archive_urls = None
+      metadata_url = None
+    else:
+      archive_urls = self.ArchiveResults(final_status)
+      metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
+
     results_lib.Results.Report(sys.stdout, archive_urls=archive_urls,
-                               current_version=version)
+                               current_version=release_tag)
 
     retry_stats.ReportStats(sys.stdout)
 
@@ -532,9 +557,7 @@ class ReportStage(generic_stages.BuilderStage,
       # the metadata.json file. One alternative is _GetUploadUrls(...)[0].
       # Today it seems that element 0 of its return list is the primary upload
       # url, but there is no guarantee or unit test coverage of that.
-      metadata_url = os.path.join(self.upload_url, constants.METADATA_JSON)
-      db.FinishBuild(build_id, status=status_for_db,
-                     metadata_url=metadata_url)
+      db.FinishBuild(build_id, status=status_for_db, metadata_url=metadata_url)
 
 
 class RefreshPackageStatusStage(generic_stages.BuilderStage):

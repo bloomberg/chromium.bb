@@ -98,17 +98,15 @@ class BuildStartStageTest(generic_stages_unittest.AbstractStageTest):
     return report_stages.BuildStartStage(self._run)
 
 
-# pylint: disable=R0901,W0212
-class ReportStageTest(generic_stages_unittest.AbstractStageTest):
-  """Test the Report stage."""
-
-  RELEASE_TAG = ''
+class AbstractReportStageTest(generic_stages_unittest.AbstractStageTest):
+  """Base class for testing the Report stage."""
 
   def setUp(self):
     for cmd in ((osutils, 'WriteFile'),
                 (commands, 'UploadArchivedFile'),
                 (alerts, 'SendEmail')):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
+    retry_stats.SetupStats()
 
     self.StartPatcher(BuilderRunMock())
     self.sync_stage = None
@@ -134,6 +132,13 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
 
   def ConstructStage(self):
     return report_stages.ReportStage(self._run, self.sync_stage, None)
+
+
+# pylint: disable=R0901,W0212
+class ReportStageTest(AbstractReportStageTest):
+  """Test the Report stage."""
+
+  RELEASE_TAG = ''
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
@@ -216,6 +221,21 @@ class ReportStageTest(generic_stages_unittest.AbstractStageTest):
     child_config_list = report_stages.GetChildConfigListMetadata(child_configs,
         config_status_map)
     self.assertEqual(expected, child_config_list)
+
+
+# pylint: disable=R0901,W0212
+class ReportStageNoSyncTest(AbstractReportStageTest):
+  """Test the Report stage if SyncStage didn't complete.
+
+  If SyncStage doesn't complete, we don't know the release tag, and can't
+  archive results.
+  """
+  RELEASE_TAG = None
+
+  def testCommitQueueResults(self):
+    """Check that we can run with a RELEASE_TAG of None."""
+    self._SetupUpdateStreakCounter()
+    self.RunStage()
 
 
 if __name__ == '__main__':
