@@ -53,8 +53,7 @@ public class Shell extends LinearLayout {
     private EditText mUrlTextView;
     private ImageButton mPrevButton;
     private ImageButton mNextButton;
-    private ImageButton mStopButton;
-    private ImageButton mReloadButton;
+    private ImageButton mStopReloadButton;
 
     private ClipDrawable mProgressDrawable;
 
@@ -166,6 +165,7 @@ public class Shell extends LinearLayout {
                 setKeyboardVisibilityForUrl(hasFocus);
                 mNextButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 mPrevButton.setVisibility(hasFocus ? GONE : VISIBLE);
+                mStopReloadButton.setVisibility(hasFocus ? GONE : VISIBLE);
                 if (!hasFocus) {
                     mUrlTextView.setText(mWebContents.getUrl());
                 }
@@ -230,18 +230,12 @@ public class Shell extends LinearLayout {
                 if (mNavigationController.canGoForward()) mNavigationController.goForward();
             }
         });
-        mStopButton = (ImageButton) findViewById(R.id.stop);
-        mStopButton.setOnClickListener(new OnClickListener() {
+        mStopReloadButton = (ImageButton) findViewById(R.id.stop_reload_button);
+        mStopReloadButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mLoading) mWebContents.stop();
-            }
-        });
-        mReloadButton = (ImageButton) findViewById(R.id.reload);
-        mReloadButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mNavigationController.reload(true);
+                else mNavigationController.reload(true);
             }
         });
     }
@@ -276,6 +270,12 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void setIsLoading(boolean loading) {
         mLoading = loading;
+        if (mLoading) {
+            mStopReloadButton
+                    .setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        } else {
+            mStopReloadButton.setImageResource(R.drawable.ic_refresh);
+        }
     }
 
     /**
@@ -314,10 +314,6 @@ public class Shell extends LinearLayout {
     private void enableUiControl(int controlId, boolean enabled) {
         if (controlId == 0) mPrevButton.setEnabled(enabled);
         else if (controlId == 1) mNextButton.setEnabled(enabled);
-        else if (controlId == 2) {
-            mStopButton.setVisibility(enabled ? VISIBLE : GONE);
-            mReloadButton.setVisibility(enabled ? GONE : VISIBLE);
-        }
     }
 
     /**
