@@ -324,7 +324,7 @@ int TCPSocketWin::AdoptConnectedSocket(SOCKET socket,
                                        const IPEndPoint& peer_address) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(socket_, INVALID_SOCKET);
-  DCHECK(!core_);
+  DCHECK(!core_.get());
 
   socket_ = socket;
 
@@ -436,7 +436,7 @@ int TCPSocketWin::Connect(const IPEndPoint& address,
   // again after a connection attempt failed on Windows, it results in
   // unspecified behavior according to POSIX. Therefore, we make it behave in
   // the same way as TCPSocketLibevent.
-  DCHECK(!peer_address_ && !core_);
+  DCHECK(!peer_address_ && !core_.get());
 
   if (!logging_multiple_connect_attempts_)
     LogConnectBegin(AddressList(address));
@@ -504,7 +504,7 @@ int TCPSocketWin::Read(IOBuffer* buf,
   DCHECK_NE(socket_, INVALID_SOCKET);
   DCHECK(!waiting_read_);
   CHECK(read_callback_.is_null());
-  DCHECK(!core_->read_iobuffer_);
+  DCHECK(!core_->read_iobuffer_.get());
 
   return DoRead(buf, buf_len, callback);
 }
@@ -517,7 +517,7 @@ int TCPSocketWin::Write(IOBuffer* buf,
   DCHECK(!waiting_write_);
   CHECK(write_callback_.is_null());
   DCHECK_GT(buf_len, 0);
-  DCHECK(!core_->write_iobuffer_);
+  DCHECK(!core_->write_iobuffer_.get());
 
   base::StatsCounter writes("tcp.writes");
   writes.Increment();
@@ -689,7 +689,7 @@ void TCPSocketWin::Close() {
     accept_event_ = WSA_INVALID_EVENT;
   }
 
-  if (core_) {
+  if (core_.get()) {
     if (waiting_connect_) {
       // We closed the socket, so this notification will never come.
       // From MSDN' WSAEventSelect documentation:
@@ -796,7 +796,7 @@ void TCPSocketWin::OnObjectSignaled(HANDLE object) {
 
 int TCPSocketWin::DoConnect() {
   DCHECK_EQ(connect_os_error_, 0);
-  DCHECK(!core_);
+  DCHECK(!core_.get());
 
   net_log_.BeginEvent(NetLog::TYPE_TCP_CONNECT_ATTEMPT,
                       CreateNetLogIPEndPointCallback(peer_address_.get()));
@@ -1018,7 +1018,7 @@ void TCPSocketWin::DidSignalRead() {
     // DoRead() because recv() reports a more accurate error code
     // (WSAECONNRESET vs. WSAECONNABORTED) when the connection was
     // reset.
-    rv = DoRead(core_->read_iobuffer_, core_->read_buffer_length_,
+    rv = DoRead(core_->read_iobuffer_.get(), core_->read_buffer_length_,
                 read_callback_);
     if (rv == ERR_IO_PENDING)
       return;

@@ -86,7 +86,7 @@ class MockDhcpProxyScriptAdapterFetcher
     dhcp_query_ = new DelayingDhcpQuery();
     dhcp_query_->dhcp_delay_ = dhcp_delay_;
     dhcp_query_->configured_url_ = configured_url_;
-    return dhcp_query_;
+    return dhcp_query_.get();
   }
 
   // Use a shorter timeout so tests can finish more quickly.
@@ -116,7 +116,7 @@ class MockDhcpProxyScriptAdapterFetcher
   }
 
   void FinishTest() {
-    DCHECK(dhcp_query_);
+    DCHECK(dhcp_query_.get());
     dhcp_query_->test_finished_event_.Signal();
   }
 

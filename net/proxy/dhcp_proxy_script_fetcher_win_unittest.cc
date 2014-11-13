@@ -330,7 +330,7 @@ class MockDhcpProxyScriptFetcherWin : public DhcpProxyScriptFetcherWin {
   }
 
   virtual AdapterQuery* ImplCreateAdapterQuery() override {
-    DCHECK(adapter_query_);
+    DCHECK(adapter_query_.get());
     return adapter_query_.get();
   }
 

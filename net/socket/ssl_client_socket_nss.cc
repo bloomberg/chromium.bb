@@ -1290,7 +1290,7 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
   core->client_auth_cert_needed_ = !core->ssl_config_.send_client_cert;
 #if defined(OS_WIN)
   if (core->ssl_config_.send_client_cert) {
-    if (core->ssl_config_.client_cert) {
+    if (core->ssl_config_.client_cert.get()) {
       PCCERT_CONTEXT cert_context =
           core->ssl_config_.client_cert->os_cert_handle();
 
@@ -1685,7 +1685,7 @@ int SSLClientSocketNSS::Core::HandleNSSError(PRErrorCode nss_error) {
   // re-insert the smart card if not.
   if ((net_error == ERR_SSL_CLIENT_AUTH_CERT_NO_PRIVATE_KEY ||
        net_error == ERR_SSL_CLIENT_AUTH_SIGNATURE_FAILED) &&
-      ssl_config_.send_client_cert && ssl_config_.client_cert) {
+      ssl_config_.send_client_cert && ssl_config_.client_cert.get()) {
     CertSetCertificateContextProperty(
         ssl_config_.client_cert->os_cert_handle(),
         CERT_KEY_PROV_HANDLE_PROP_ID, 0, NULL);
@@ -2436,7 +2436,7 @@ void SSLClientSocketNSS::Core::UpdateStapledOCSPResponse() {
 
   if (IsOCSPStaplingSupported()) {
   #if defined(OS_WIN)
-    if (nss_handshake_state_.server_cert) {
+    if (nss_handshake_state_.server_cert.get()) {
       CRYPT_DATA_BLOB ocsp_response_blob;
       ocsp_response_blob.cbData = ocsp_responses->items[0].len;
       ocsp_response_blob.pbData = ocsp_responses->items[0].data;

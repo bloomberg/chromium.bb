@@ -630,7 +630,7 @@ void UDPSocketWin::LogWrite(int result,
 
 int UDPSocketWin::InternalRecvFrom(IOBuffer* buf, int buf_len,
                                    IPEndPoint* address) {
-  DCHECK(!core_->read_iobuffer_);
+  DCHECK(!core_->read_iobuffer_.get());
   SockaddrStorage& storage = core_->recv_addr_storage_;
   storage.addr_len = sizeof(storage.addr_storage);
 
@@ -670,7 +670,7 @@ int UDPSocketWin::InternalRecvFrom(IOBuffer* buf, int buf_len,
 
 int UDPSocketWin::InternalSendTo(IOBuffer* buf, int buf_len,
                                  const IPEndPoint* address) {
-  DCHECK(!core_->write_iobuffer_);
+  DCHECK(!core_->write_iobuffer_.get());
   SockaddrStorage storage;
   struct sockaddr* addr = storage.addr;
   // Convert address.

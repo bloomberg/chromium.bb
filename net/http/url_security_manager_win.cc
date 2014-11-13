@@ -111,11 +111,11 @@ bool URLSecurityManagerWin::CanDelegate(const GURL& auth_origin) const {
 }
 
 bool URLSecurityManagerWin::EnsureSystemSecurityManager() {
-  if (!security_manager_) {
+  if (!security_manager_.get()) {
     HRESULT hr = CoInternetCreateSecurityManager(NULL,
                                                  security_manager_.Receive(),
                                                  NULL);
-    if (FAILED(hr) || !security_manager_) {
+    if (FAILED(hr) || !security_manager_.get()) {
       LOG(ERROR) << "Unable to create the Windows Security Manager instance";
       return false;
     }
