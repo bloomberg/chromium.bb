@@ -466,10 +466,47 @@ void FrameLoaderClientImpl::dispatchDidChangeThemeColor()
         m_webFrame->client()->didChangeThemeColor();
 }
 
+static bool allowCreatingBackgroundTabs()
+{
+    const WebInputEvent* inputEvent = WebViewImpl::currentInputEvent();
+    if (!inputEvent || inputEvent->type != WebInputEvent::MouseUp)
+        return false;
+
+    const WebMouseEvent* mouseEvent = static_cast<const WebMouseEvent*>(inputEvent);
+
+    unsigned short buttonNumber;
+    switch (mouseEvent->button) {
+    case WebMouseEvent::ButtonLeft:
+        buttonNumber = 0;
+        break;
+    case WebMouseEvent::ButtonMiddle:
+        buttonNumber = 1;
+        break;
+    case WebMouseEvent::ButtonRight:
+        buttonNumber = 2;
+        break;
+    default:
+        return false;
+    }
+    bool ctrl = mouseEvent->modifiers & WebMouseEvent::ControlKey;
+    bool shift = mouseEvent->modifiers & WebMouseEvent::ShiftKey;
+    bool alt = mouseEvent->modifiers & WebMouseEvent::AltKey;
+    bool meta = mouseEvent->modifiers & WebMouseEvent::MetaKey;
+
+    NavigationPolicy userPolicy;
+    if (!navigationPolicyFromMouseEvent(buttonNumber, ctrl, shift, alt, meta, &userPolicy))
+        return false;
+    return userPolicy == NavigationPolicyNewBackgroundTab;
+}
+
 NavigationPolicy FrameLoaderClientImpl::decidePolicyForNavigation(const ResourceRequest& request, DocumentLoader* loader, NavigationPolicy policy, bool isTransitionNavigation)
 {
     if (!m_webFrame->client())
         return NavigationPolicyIgnore;
+
+    if (policy == NavigationPolicyNewBackgroundTab && !allowCreatingBackgroundTabs())
+        policy = NavigationPolicyNewForegroundTab;
+
     WebDataSourceImpl* ds = WebDataSourceImpl::fromDocumentLoader(loader);
 
     WrappedResourceRequest wrappedResourceRequest(request);
