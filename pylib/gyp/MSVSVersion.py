@@ -165,8 +165,33 @@ def _RegistryQuery(key, value=None):
   return text
 
 
+def _RegistryGetValueUsingWinReg(key, value):
+  """Use the _winreg module to obtain the value of a registry key.
+
+  Args:
+    key: The registry key.
+    value: The particular registry value to read.
+  Return:
+    contents of the registry key's value, or None on failure.  Throws
+    ImportError if _winreg is unavailable.
+  """
+  import _winreg
+  try:
+    root, subkey = key.split('\\', 1)
+    assert root == 'HKLM'  # Only need HKLM for now.
+    with _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, subkey) as hkey:
+      return _winreg.QueryValueEx(hkey, value)[0]
+  except WindowsError:
+    return None
+
+
 def _RegistryGetValue(key, value):
-  """Use reg.exe to obtain the value of a registry key.
+  """Use _winreg or reg.exe to obtain the value of a registry key.
+
+  Using _winreg is preferable because it solves an issue on some corporate
+  environments where access to reg.exe is locked down. However, we still need
+  to fallback to reg.exe for the case where the _winreg module is not available
+  (for example in cygwin python).
 
   Args:
     key: The registry key.
@@ -174,6 +199,12 @@ def _RegistryGetValue(key, value):
   Return:
     contents of the registry key's value, or None on failure.
   """
+  try:
+    return _RegistryGetValueUsingWinReg(key, value)
+  except ImportError:
+    pass
+
+  # Fallback to reg.exe if we fail to import _winreg.
   text = _RegistryQuery(key, value)
   if not text:
     return None
@@ -182,19 +213,6 @@ def _RegistryGetValue(key, value):
   if not match:
     return None
   return match.group(1)
-
-
-def _RegistryKeyExists(key):
-  """Use reg.exe to see if a key exists.
-
-  Args:
-    key: The registry key to check.
-  Return:
-    True if the key exists
-  """
-  if not _RegistryQuery(key):
-    return False
-  return True
 
 
 def _CreateVersion(name, path, sdk_based=False):
