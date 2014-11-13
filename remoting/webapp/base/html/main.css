@@ -673,11 +673,9 @@ html.apps-v2.scrollable {
 #session-client-plugin {
   box-shadow: 0 0 8px 0 black;
   -webkit-user-select: none;
-}
-
-#session-client-plugin {
   display: block;
   flex-shrink: 0;
+  z-index: 2;  /* Show above the dialog screen so that click-to-play works. */
 }
 
 .session-client-inactive {
