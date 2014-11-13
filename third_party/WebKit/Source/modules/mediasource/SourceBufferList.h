@@ -51,8 +51,8 @@ public:
     }
     virtual ~SourceBufferList();
 
-    unsigned long length() const { return m_list.size(); }
-    SourceBuffer* item(unsigned long index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
+    unsigned length() const { return m_list.size(); }
+    SourceBuffer* item(unsigned index) const { return (index < m_list.size()) ? m_list[index].get() : 0; }
 
     void add(SourceBuffer*);
     void insert(size_t position, SourceBuffer*);
