@@ -250,7 +250,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
-  void HideTextHandles();
+  void DismissTextHandles();
+  void SetTextHandlesTemporarilyHidden(bool hidden);
   void OnShowingPastePopup(const gfx::PointF& point);
 
   void SynchronousFrameMetadata(

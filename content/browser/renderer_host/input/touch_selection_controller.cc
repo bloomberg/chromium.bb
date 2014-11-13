@@ -160,6 +160,20 @@ void TouchSelectionController::HideAndDisallowShowingAutomatically() {
   activate_selection_automatically_ = false;
 }
 
+void TouchSelectionController::SetTemporarilyHidden(bool hidden) {
+  if (temporarily_hidden_ == hidden)
+    return;
+  temporarily_hidden_ = hidden;
+
+  TouchHandle::AnimationStyle animation_style = GetAnimationStyle(true);
+  if (is_selection_active_) {
+    start_selection_handle_->SetVisible(GetStartVisible(), animation_style);
+    end_selection_handle_->SetVisible(GetEndVisible(), animation_style);
+  }
+  if (is_insertion_active_)
+    insertion_handle_->SetVisible(GetStartVisible(), animation_style);
+}
+
 void TouchSelectionController::OnSelectionEditable(bool editable) {
   if (selection_editable_ == editable)
     return;

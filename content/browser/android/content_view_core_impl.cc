@@ -1086,15 +1086,23 @@ void ContentViewCoreImpl::SelectBetweenCoordinates(JNIEnv* env, jobject obj,
 
 void ContentViewCoreImpl::MoveCaret(JNIEnv* env, jobject obj,
                                     jfloat x, jfloat y) {
-  if (GetRenderWidgetHostViewAndroid()) {
-    GetRenderWidgetHostViewAndroid()->MoveCaret(
-        gfx::Point(x / dpi_scale_, y / dpi_scale_));
-  }
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->MoveCaret(gfx::Point(x / dpi_scale_, y / dpi_scale_));
 }
 
-void ContentViewCoreImpl::HideTextHandles(JNIEnv* env, jobject obj) {
-  if (GetRenderWidgetHostViewAndroid())
-    GetRenderWidgetHostViewAndroid()->HideTextHandles();
+void ContentViewCoreImpl::DismissTextHandles(JNIEnv* env, jobject obj) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->DismissTextHandles();
+}
+
+void ContentViewCoreImpl::SetTextHandlesTemporarilyHidden(JNIEnv* env,
+                                                          jobject obj,
+                                                          jboolean hidden) {
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
+  if (rwhv)
+    rwhv->SetTextHandlesTemporarilyHidden(hidden);
 }
 
 void ContentViewCoreImpl::ResetGestureDetection(JNIEnv* env, jobject obj) {

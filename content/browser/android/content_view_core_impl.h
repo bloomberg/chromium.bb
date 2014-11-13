@@ -143,7 +143,10 @@ class ContentViewCoreImpl : public ContentViewCore,
                                 jfloat x1, jfloat y1,
                                 jfloat x2, jfloat y2);
   void MoveCaret(JNIEnv* env, jobject obj, jfloat x, jfloat y);
-  void HideTextHandles(JNIEnv* env, jobject obj);
+  void DismissTextHandles(JNIEnv* env, jobject obj);
+  void SetTextHandlesTemporarilyHidden(JNIEnv* env,
+                                       jobject obj,
+                                       jboolean hidden);
 
   void ResetGestureDetection(JNIEnv* env, jobject obj);
   void SetDoubleTapSupportEnabled(JNIEnv* env, jobject obj, jboolean enabled);
