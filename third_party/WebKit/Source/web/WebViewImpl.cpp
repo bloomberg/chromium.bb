@@ -3210,6 +3210,24 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
     setUserAgentPageScaleConstraints(constraints);
 }
 
+IntSize WebViewImpl::mainFrameSize()
+{
+    if (!pinchVirtualViewportEnabled() || !localFrameRootTemporary())
+        return m_size;
+
+    FrameView* view = localFrameRootTemporary()->frameView();
+
+    if (!view)
+        return m_size;
+
+    int contentAndScrollbarWidth = contentsSize().width();
+
+    if (view && view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
+        contentAndScrollbarWidth += view->verticalScrollbar()->width();
+
+    return m_pageScaleConstraintsSet.mainFrameSize(contentAndScrollbarWidth);
+}
+
 void WebViewImpl::refreshPageScaleFactorAfterLayout()
 {
     if (!mainFrame() || !page() || !page()->mainFrame() || !page()->mainFrame()->isLocalFrame() || !page()->deprecatedLocalMainFrame()->view())
@@ -3226,13 +3244,8 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
         m_pageScaleConstraintsSet.adjustFinalConstraintsToContentsSize(contentsSize(), verticalScrollbarWidth);
     }
 
-    if (pinchVirtualViewportEnabled()) {
-        int contentAndScrollbarWidth = contentsSize().width();
-        if (view->verticalScrollbar() && !view->verticalScrollbar()->isOverlayScrollbar())
-            contentAndScrollbarWidth += view->verticalScrollbar()->width();
-
-        view->resize(m_pageScaleConstraintsSet.mainFrameSize(contentAndScrollbarWidth));
-    }
+    if (pinchVirtualViewportEnabled())
+        view->resize(mainFrameSize());
 
     float newPageScaleFactor = pageScaleFactor();
     if (m_pageScaleConstraintsSet.needsReset() && m_pageScaleConstraintsSet.finalConstraints().initialScale != -1) {

@@ -1209,5 +1209,23 @@ TEST_F(PinchViewportTest, TestTopControlHidingResizeDoesntClampMainFrame)
     EXPECT_EQ(500, frameView.scrollPositionDouble().y());
 }
 
+// Tests that when a new frame is created, it is created with the intended
+// size (i.e. the contentWidth).
+TEST_F(PinchViewportTest, TestMainFrameInitializationSizing)
+{
+    initializeWithAndroidSettings();
+
+    webViewImpl()->setPageScaleFactorLimits(0.5, 2.0);
+    webViewImpl()->resize(IntSize(100, 200));
+
+    registerMockedHttpURLLoad("content-width-1000.html");
+    navigateTo(m_baseURL + "content-width-1000.html");
+
+    WebLocalFrameImpl* localFrame = webViewImpl()->mainFrameImpl();
+    FrameView& frameView = *localFrame->frameView();
+    localFrame->createFrameView();
+
+    EXPECT_SIZE_EQ(IntSize(200, 400), frameView.frameRect().size());
+}
 
 } // namespace

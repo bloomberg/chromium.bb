@@ -510,6 +510,8 @@ public:
 
     virtual void forceNextWebGLContextCreationToFail() override;
 
+    IntSize mainFrameSize();
+
 private:
     void didUpdateTopControls();
     void setTopControlsContentOffset(float);
