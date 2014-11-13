@@ -10,6 +10,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -222,6 +223,11 @@ void AboutSigninInternals::Shutdown() {
 }
 
 void AboutSigninInternals::NotifyObservers() {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::NotifyObservers"));
+
   scoped_ptr<base::DictionaryValue> signin_status_value =
       signin_status_.ToValue(client_->GetProductVersion());
   FOR_EACH_OBSERVER(AboutSigninInternals::Observer,
@@ -237,6 +243,11 @@ void AboutSigninInternals::OnAccessTokenRequested(
     const std::string& account_id,
     const std::string& consumer_id,
     const OAuth2TokenService::ScopeSet& scopes) {
+  // TODO(vadimt): Remove ScopedTracker below once crbug.com/422460 is fixed.
+  tracked_objects::ScopedTracker tracking_profile(
+      FROM_HERE_WITH_EXPLICIT_FUNCTION(
+          "422460 AboutSigninInternals::OnAccessTokenRequested"));
+
   TokenInfo* token = signin_status_.FindToken(account_id, consumer_id, scopes);
   if (token) {
     *token = TokenInfo(consumer_id, scopes);
