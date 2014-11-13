@@ -83,7 +83,7 @@ class CleanUpStage(generic_stages.BuilderStage):
     # Only try to clean up previous HWTests if this is really running on one of
     # our builders in a non-trybot build.
     debug = (self._run.options.remote_trybot or
-             (not self._run.optinos.buildbot) or
+             (not self._run.options.buildbot) or
              self._run.options.debug)
     _, db = self._run.GetCIDBHandle()
     if db:
