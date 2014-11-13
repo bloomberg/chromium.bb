@@ -552,6 +552,12 @@ static_library("browser") {
   if (is_win) {
     sources += rebase_path(gypi_values.chrome_browser_win_sources,
                            ".", "//chrome")
+    if (!is_chrome_branded) {
+      sources -= [
+        "google/did_run_updater_win.cc",
+        "google/did_run_updater_win.h",
+      ]
+    }
     public_deps += [
       "//ui/views",
       "//ui/views/controls/webview",
