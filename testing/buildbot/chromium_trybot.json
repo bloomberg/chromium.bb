@@ -4,6 +4,10 @@
   ],
   "gtest_tests": [
     "accessibility_unittests",
+    {
+      "test": "app_installer_unittests",
+      "platforms": ["win"]
+    },
     "app_list_unittests",
     {
       "test": "ash_unittests",

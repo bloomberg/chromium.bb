@@ -209,6 +209,7 @@
   },
   "Win7 Tests (1)": {
     "gtest_tests": [
+      "app_installer_unittests",
       "accessibility_unittests",
       {
         "test": "ash_unittests",

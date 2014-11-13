@@ -6,11 +6,9 @@
   'conditions': [
     ['OS=="win"', {
       'targets': [
-        # TODO(jackhou): Add a version resource (using
-        # version_resource_rules.gypi).
         {
-          'target_name': 'app_installer',
-          'type': 'executable',
+          'target_name': 'app_installer_util',
+          'type': 'static_library',
           'dependencies': [
             'installer_util',
             'installer_util_strings',
@@ -24,12 +22,54 @@
             '<(INTERMEDIATE_DIR)',
           ],
           'sources': [
+            'win/app_installer_util.cc',
+            'win/app_installer_util.h',
+          ],
+        },
+        # TODO(jackhou): Add a version resource (using
+        # version_resource_rules.gypi).
+        {
+          'target_name': 'app_installer',
+          'type': 'executable',
+          'dependencies': [
+            'app_installer_util',
+            '../base/base.gyp:base',
+          ],
+          'include_dirs': [
+            '..',
+            '<(INTERMEDIATE_DIR)',
+          ],
+          'sources': [
             'win/app_installer_main.cc',
           ],
           'msvs_settings': {
             'VCLinkerTool': {
               'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
             },
+            'VCManifestTool': {
+              'AdditionalManifestFiles': [
+                'app_installer/win/app_installer.exe.manifest',
+              ],
+            },
+          },
+        },
+        {
+          'target_name': 'app_installer_unittests',
+          'type': 'executable',
+          'dependencies': [
+            'app_installer_util',
+            '../base/base.gyp:base',
+            '../base/base.gyp:run_all_unittests',
+            '../testing/gtest.gyp:gtest',
+          ],
+          'include_dirs': [
+            '..',
+            '<(INTERMEDIATE_DIR)',
+          ],
+          'sources': [
+            'win/app_installer_util_unittest.cc',
+          ],
+          'msvs_settings': {
             'VCManifestTool': {
               'AdditionalManifestFiles': [
                 'app_installer/win/app_installer.exe.manifest',
