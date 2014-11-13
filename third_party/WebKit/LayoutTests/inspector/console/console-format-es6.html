@@ -19,9 +19,8 @@ function onload()
     var obj = {
         get getter() {}
     };
-    obj[Symbol()] = 1;
-    obj[smb2] = 2;
     obj["a"] = smb1;
+    obj[smb2] = 2;
 
     var map = new Map();
     var weakMap = new WeakMap();

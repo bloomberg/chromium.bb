@@ -63,11 +63,10 @@ console-format-es6.html:12 [Symbol(a)]
     __proto__: Array[0]
 globals[2]
 Symbol(a)
-console-format-es6.html:11 Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}
+console-format-es6.html:11 Object {getter: (...), a: Symbol(), Symbol(a): 2}
     a: Symbol()
     getter: (...)
     get getter: function getter() {}
-    Symbol(): 1
     Symbol(a): 2
     __proto__: Object
 console-format-es6.html:12 [Object]
@@ -75,14 +74,13 @@ console-format-es6.html:12 [Object]
     length: 1
     __proto__: Array[0]
 globals[3]
-Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}
+Object {getter: (...), a: Symbol(), Symbol(a): 2}
     a: Symbol()
     getter: (...)
     get getter: function getter() {}
-    Symbol(): 1
     Symbol(a): 2
     __proto__: Object
-console-format-es6.html:11 Map {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+console-format-es6.html:11 Map {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
     <entries>
@@ -91,11 +89,11 @@ console-format-es6.html:12 [Map]
     length: 1
     __proto__: Array[0]
 globals[4]
-Map {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+Map {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     size: (...)
     __proto__: Map
     <entries>
-console-format-es6.html:11 WeakMap {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+console-format-es6.html:11 WeakMap {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
     <entries>
 console-format-es6.html:12 [WeakMap]
@@ -103,10 +101,10 @@ console-format-es6.html:12 [WeakMap]
     length: 1
     __proto__: Array[0]
 globals[5]
-WeakMap {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2} => Object {foo: 1}}
+WeakMap {Object {getter: (...), a: Symbol(), Symbol(a): 2} => Object {foo: 1}}
     __proto__: WeakMap
     <entries>
-console-format-es6.html:11 Set {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+console-format-es6.html:11 Set {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
     <entries>
@@ -115,11 +113,11 @@ console-format-es6.html:12 [Set]
     length: 1
     __proto__: Array[0]
 globals[6]
-Set {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+Set {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     size: (...)
     __proto__: Set
     <entries>
-console-format-es6.html:11 WeakSet {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+console-format-es6.html:11 WeakSet {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
     <entries>
 console-format-es6.html:12 [WeakSet]
@@ -127,7 +125,7 @@ console-format-es6.html:12 [WeakSet]
     length: 1
     __proto__: Array[0]
 globals[7]
-WeakSet {Object {getter: (...), a: Symbol(), Symbol(): 1, Symbol(a): 2}}
+WeakSet {Object {getter: (...), a: Symbol(), Symbol(a): 2}}
     __proto__: WeakSet
     <entries>
 console-format-es6.html:11 Map {Map {} => WeakMap {}}
