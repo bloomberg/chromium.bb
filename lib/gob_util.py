@@ -109,11 +109,11 @@ def CreateHttpConn(host, path, reqtype='GET', headers=None, body=None):
     body = json.JSONEncoder().encode(body)
     headers.setdefault('Content-Type', 'application/json')
   if LOGGER.isEnabledFor(logging.DEBUG):
-    LOGGER.debug('%s https://%s/a/%s' % (reqtype, host, path))
+    LOGGER.debug('%s https://%s/a/%s', reqtype, host, path)
     for key, val in headers.iteritems():
       if key.lower() in ('authorization', 'cookie'):
         val = 'HIDDEN'
-      LOGGER.debug('%s: %s' % (key, val))
+      LOGGER.debug('%s: %s', key, val)
     if body:
       LOGGER.debug(body)
   conn = httplib.HTTPSConnection(host)

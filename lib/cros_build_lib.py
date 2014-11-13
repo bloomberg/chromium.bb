@@ -588,9 +588,9 @@ def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
 
     if log_output:
       if cmd_result.output:
-        logger.log(debug_level, '(stdout):\n%s' % cmd_result.output)
+        logger.log(debug_level, '(stdout):\n%s', cmd_result.output)
       if cmd_result.error:
-        logger.log(debug_level, '(stderr):\n%s' % cmd_result.error)
+        logger.log(debug_level, '(stderr):\n%s', cmd_result.error)
 
     if not error_code_ok and proc.returncode:
       msg = ('Failed command "%s", cwd=%s, extra env=%r'

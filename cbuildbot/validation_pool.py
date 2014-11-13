@@ -2536,7 +2536,7 @@ class ValidationPool(object):
                                      constants.CL_ACTION_IRRELEVANT_TO_SLAVE)
 
 
-class PaladinMessage():
+class PaladinMessage(object):
   """An object that is used to send messages to developers about their changes.
   """
   # URL where Paladin documentation is stored.

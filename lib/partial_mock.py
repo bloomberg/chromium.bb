@@ -21,7 +21,7 @@ class Comparator(object):
 
   def Match(self, arg):
     """Match the comparator against an argument."""
-    raise NotImplementedError, 'method must be implemented by a subclass.'
+    raise NotImplementedError('method must be implemented by a subclass.')
 
   def Equals(self, rhs):
     """Returns whether rhs compares the same thing."""
