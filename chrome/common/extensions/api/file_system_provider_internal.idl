@@ -4,8 +4,7 @@
 
 // Internal, used by fileSystemProvider's custom bindings. These functions are
 // called when events' callbacks are invoked.
-[platforms=("chromeos"),
- implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h", nodoc]
+[implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h", nodoc]
 namespace fileSystemProviderInternal {
   interface Functions {
     // Internal. Success callback of the <code>onUnmountRequested</code>

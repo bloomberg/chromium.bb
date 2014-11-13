@@ -8,8 +8,7 @@ namespace extensions {
 
 class FileSystemProviderApiTest : public ExtensionApiTest {
  public:
-  FileSystemProviderApiTest()
-      : current_channel_(chrome::VersionInfo::CHANNEL_DEV) {}
+  FileSystemProviderApiTest() {}
 
   // Loads a helper testing extension.
   virtual void SetUpOnMainThread() override {
@@ -19,9 +18,6 @@ class FileSystemProviderApiTest : public ExtensionApiTest {
         kFlagEnableIncognito);
     ASSERT_TRUE(extension);
   }
-
- private:
-  extensions::ScopedCurrentChannel current_channel_;
 };
 
 IN_PROC_BROWSER_TEST_F(FileSystemProviderApiTest, Mount) {

@@ -478,7 +478,7 @@
     ]
   }],
   "fileSystemProvider": {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["extension", "platform_app"],
     "platforms": ["chromeos"]
   },
