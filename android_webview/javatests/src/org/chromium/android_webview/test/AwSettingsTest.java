@@ -1462,7 +1462,7 @@ public class AwSettingsTest extends AwTestBase {
 
         private String getData() {
             return "<html><head>"
-                    + "<meta name='viewport' content='width=3000' />"
+                    + "<meta name='viewport' content='width=3000, minimum-scale=1' />"
                     + "  <script type='text/javascript'> "
                     + "    window.addEventListener('load', function(event) { "
                     + "       document.title = document.documentElement.clientWidth; "
