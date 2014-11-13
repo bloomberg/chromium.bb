@@ -7,24 +7,13 @@
 
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 
 namespace blink {
-
-void ClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->save();
-    context->clip(m_clipRect);
-    for (RoundedRect roundedRect : m_roundedRectClips)
-        context->clipRoundedRect(roundedRect);
-}
-
-void EndClipDisplayItem::replay(GraphicsContext* context)
-{
-    context->restore();
-}
 
 ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect)
     : m_graphicsContext(graphicsContext)
@@ -35,8 +24,12 @@ ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsCo
         graphicsContext->save();
         graphicsContext->clip(snappedClipRect);
     } else {
-        m_clipDisplayItem = new ClipDisplayItem(0, renderLayer, clipType, snappedClipRect);
-        m_renderLayer->renderer()->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
+        m_clipDisplayItem = new ClipDisplayItem(nullptr, clipType, snappedClipRect);
+#ifndef NDEBUG
+        m_clipDisplayItem->setClientDebugString("nullptr");
+#endif
+        if (RenderLayer* container = m_renderLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(adoptPtr(m_clipDisplayItem));
     }
 }
 
@@ -52,19 +45,11 @@ ClipRecorder::~ClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem);
-        m_renderLayer->renderer()->view()->viewDisplayList().add(endClip.release());
+        if (RenderLayer* container = m_renderLayer->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
+            container->graphicsLayerBacking()->displayItemList().add(endClip.release());
     } else {
         m_graphicsContext->restore();
     }
 }
-
-#ifndef NDEBUG
-WTF::String ClipDisplayItem::asDebugString() const
-{
-    return String::format("{%s, type: \"%s\", clipRect: [%d,%d,%d,%d]}",
-        rendererDebugString(renderer()).utf8().data(), typeAsDebugString(type()).utf8().data(),
-        m_clipRect.x(), m_clipRect.y(), m_clipRect.width(), m_clipRect.height());
-}
-#endif
 
 } // namespace blink

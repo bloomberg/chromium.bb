@@ -28,13 +28,16 @@
 
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/FirstPaintInvalidationTracking.h"
+#include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayerFactory.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/skia/NativeImageSkia.h"
 #include "platform/scroll/ScrollableArea.h"
 #include "platform/text/TextStream.h"
@@ -271,6 +274,20 @@ void GraphicsLayer::paintGraphicsLayerContents(GraphicsContext& context, const I
         m_debugInfo.clearAnnotatedInvalidateRects();
     incrementPaintCount();
     m_client->paintContents(this, context, m_paintingPhase, clip);
+
+    if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
+
+#ifndef NDEBUG
+        context.fillRect(clip, Color(0xFF, 0, 0));
+#endif
+        // FIXME: This is incorrect for squashed layers.
+        // We should do proper translation in CompositedLayerMapping once transform paint item is implemented.
+        context.translate(-m_offsetFromRenderer.width(), -m_offsetFromRenderer.height());
+        const PaintList& paintList = displayItemList().paintList();
+        for (PaintList::const_iterator it = paintList.begin(); it != paintList.end(); ++it)
+            (*it)->replay(&context);
+        context.translate(m_offsetFromRenderer.width(), m_offsetFromRenderer.height());
+    }
 }
 
 void GraphicsLayer::updateChildList()
@@ -1053,6 +1070,14 @@ void GraphicsLayer::didScroll()
         // FIXME: Remove the toFloatPoint(). crbug.com/414283.
         m_scrollableArea->scrollToOffsetWithoutAnimation(toFloatPoint(newPosition));
     }
+}
+
+DisplayItemList& GraphicsLayer::displayItemList()
+{
+    ASSERT(RuntimeEnabledFeatures::slimmingPaintEnabled());
+    if (!m_displayItemList)
+        m_displayItemList = adoptPtr(new DisplayItemList());
+    return *m_displayItemList;
 }
 
 } // namespace blink
