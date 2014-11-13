@@ -423,8 +423,8 @@ bool EnumerateAttachedDevicesOnBlockingThread(
 
   for (DWORD index = 0; index < pnp_device_count; ++index) {
     PortableDeviceWatcherWin::DeviceDetails device_details;
-    if (GetDeviceInfoOnBlockingThread(
-        portable_device_mgr, pnp_device_ids[index], &device_details))
+    if (GetDeviceInfoOnBlockingThread(portable_device_mgr.get(),
+                                      pnp_device_ids[index], &device_details))
       devices->push_back(device_details);
     CoTaskMemFree(pnp_device_ids[index]);
   }
@@ -446,7 +446,7 @@ bool HandleDeviceAttachedEventOnBlockingThread(
   // Sometimes, portable device manager doesn't have the new device details.
   // Refresh the manager device list to update its details.
   portable_device_mgr->RefreshDeviceList();
-  return GetDeviceInfoOnBlockingThread(portable_device_mgr, pnp_device_id,
+  return GetDeviceInfoOnBlockingThread(portable_device_mgr.get(), pnp_device_id,
                                        device_details);
 }
 
@@ -576,8 +576,7 @@ void PortableDeviceWatcherWin::EnumerateAttachedDevices() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   Devices* devices = new Devices;
   base::PostTaskAndReplyWithResult(
-      media_task_runner_,
-      FROM_HERE,
+      media_task_runner_.get(), FROM_HERE,
       base::Bind(&EnumerateAttachedDevicesOnBlockingThread, devices),
       base::Bind(&PortableDeviceWatcherWin::OnDidEnumerateAttachedDevices,
                  weak_ptr_factory_.GetWeakPtr(), base::Owned(devices)));
@@ -601,8 +600,7 @@ void PortableDeviceWatcherWin::HandleDeviceAttachEvent(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DeviceDetails* device_details = new DeviceDetails;
   base::PostTaskAndReplyWithResult(
-      media_task_runner_,
-      FROM_HERE,
+      media_task_runner_.get(), FROM_HERE,
       base::Bind(&HandleDeviceAttachedEventOnBlockingThread, pnp_device_id,
                  device_details),
       base::Bind(&PortableDeviceWatcherWin::OnDidHandleDeviceAttachEvent,
