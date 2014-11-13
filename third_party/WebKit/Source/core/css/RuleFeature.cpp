@@ -145,6 +145,7 @@ static bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoContent:
     case CSSSelector::PseudoHost:
     case CSSSelector::PseudoShadow:
+    case CSSSelector::PseudoSpatialNavigationFocus:
     case CSSSelector::PseudoListBox:
         return true;
     case CSSSelector::PseudoNotParsed:
@@ -174,7 +175,6 @@ static bool requiresSubtreeInvalidation(const CSSSelector& selector)
     switch (selector.pseudoType()) {
     case CSSSelector::PseudoFirstLine:
     case CSSSelector::PseudoFirstLetter:
-    case CSSSelector::PseudoSpatialNavigationFocus:
         // FIXME: Most pseudo classes/elements above can be supported and moved
         // to assertSupportedPseudo(). Move on a case-by-case basis. If they
         // require subtree invalidation, document why.
