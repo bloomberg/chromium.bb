@@ -1490,53 +1490,6 @@ class BisectPerformanceMetrics(object):
       print
     return (values, success_code, output_of_all_runs)
 
-  def _FindAllRevisionsToSync(self, revision, depot):
-    """Finds all dependent revisions and depots that need to be synced.
-
-    For example skia is broken up into 3 git mirrors over skia/src,
-    skia/gyp, and skia/include. To sync skia/src properly, one has to find
-    the proper revisions in skia/gyp and skia/include.
-
-    This is only useful in the git workflow, as an SVN depot may be split into
-    multiple mirrors.
-
-    Args:
-      revision: The revision to sync to.
-      depot: The depot in use at the moment (probably skia).
-
-    Returns:
-      A list of [depot, revision] pairs that need to be synced.
-    """
-    revisions_to_sync = [[depot, revision]]
-
-    is_base = ((depot == 'chromium') or (depot == 'android-chrome'))
-
-    # Some SVN depots were split into multiple git depots, so we need to
-    # figure out for each mirror which git revision to grab. There's no
-    # guarantee that the SVN revision will exist for each of the dependent
-    # depots, so we have to grep the git logs and grab the next earlier one.
-    if not is_base and bisect_utils.DEPOT_DEPS_NAME[depot]['depends']:
-      commit_position = source_control.GetCommitPosition(revision)
-
-      for d in bisect_utils.DEPOT_DEPS_NAME[depot]['depends']:
-        self.depot_registry.ChangeToDepotDir(d)
-
-        dependant_rev = source_control.ResolveToRevision(
-            commit_position, d, bisect_utils.DEPOT_DEPS_NAME, -1000)
-
-        if dependant_rev:
-          revisions_to_sync.append([d, dependant_rev])
-
-      num_resolved = len(revisions_to_sync)
-      num_needed = len(bisect_utils.DEPOT_DEPS_NAME[depot]['depends'])
-
-      self.depot_registry.ChangeToDepotDir(depot)
-
-      if not (num_resolved - 1) == num_needed:
-        return None
-
-    return revisions_to_sync
-
   def PerformPreBuildCleanup(self):
     """Performs cleanup between runs."""
     print 'Cleaning up between runs.'
@@ -1610,14 +1563,9 @@ class BisectPerformanceMetrics(object):
     if depot == 'chromium' or depot == 'android-chrome':
       sync_client = 'gclient'
 
-    # Decide what depots will need to be synced to what revisions.
-    revisions_to_sync = self._FindAllRevisionsToSync(revision, depot)
-    if not revisions_to_sync:
-      return ('Failed to resolve dependent depots.', BUILD_RESULT_FAIL)
-
     # Do the syncing for all depots.
     if not self.opts.debug_ignore_sync:
-      if not self._SyncAllRevisions(revisions_to_sync, sync_client):
+      if not self._SyncRevision(depot, revision, sync_client):
         return ('Failed to sync: [%s]' % str(revision), BUILD_RESULT_FAIL)
 
     # Try to do any post-sync steps. This may include "gclient runhooks".
@@ -1664,34 +1612,30 @@ class BisectPerformanceMetrics(object):
       return ('Failed to parse DEPS file for external revisions.',
                BUILD_RESULT_FAIL)
 
-  def _SyncAllRevisions(self, revisions_to_sync, sync_client):
-    """Syncs multiple depots to particular revisions.
+  def _SyncRevision(self, depot, revision, sync_client):
+    """Syncs depot to particular revision.
 
     Args:
-      revisions_to_sync: A list of (depot, revision) pairs to be synced.
+      depot: The depot that's being used at the moment (src, webkit, etc.)
+      revision: The revision to sync to.
       sync_client: Program used to sync, e.g. "gclient". Can be None.
 
     Returns:
       True if successful, False otherwise.
     """
-    for depot, revision in revisions_to_sync:
-      self.depot_registry.ChangeToDepotDir(depot)
+    self.depot_registry.ChangeToDepotDir(depot)
 
-      if sync_client:
-        self.PerformPreBuildCleanup()
+    if sync_client:
+      self.PerformPreBuildCleanup()
 
-      # When using gclient to sync, you need to specify the depot you
-      # want so that all the dependencies sync properly as well.
-      # i.e. gclient sync src@<SHA1>
-      if sync_client == 'gclient':
-        revision = '%s@%s' % (bisect_utils.DEPOT_DEPS_NAME[depot]['src'],
-                              revision)
+    # When using gclient to sync, you need to specify the depot you
+    # want so that all the dependencies sync properly as well.
+    # i.e. gclient sync src@<SHA1>
+    if sync_client == 'gclient':
+      revision = '%s@%s' % (bisect_utils.DEPOT_DEPS_NAME[depot]['src'],
+          revision)
 
-      sync_success = source_control.SyncToRevision(revision, sync_client)
-      if not sync_success:
-        return False
-
-    return True
+    return source_control.SyncToRevision(revision, sync_client)
 
   def _CheckIfRunPassed(self, current_value, known_good_value, known_bad_value):
     """Given known good and bad values, decide if the current_value passed

@@ -79,10 +79,6 @@ HIGH_CONFIDENCE = 95
 # Each depot information dictionary may contain:
 #   src: Path to the working directory.
 #   recurse: True if this repository will get bisected.
-#   depends: A list of other repositories that are actually part of the same
-#       repository in svn. If the repository has any dependent repositories
-#       (e.g. skia/src needs skia/include and skia/gyp to be updated), then
-#       they are specified here.
 #   svn: URL of SVN repository. Needed for git workflow to resolve hashes to
 #       SVN revisions.
 #   from: Parent depot that must be bisected before this is bisected.
@@ -92,7 +88,6 @@ DEPOT_DEPS_NAME = {
     'chromium': {
         'src': 'src',
         'recurse': True,
-        'depends': None,
         'from': ['android-chrome'],
         'viewvc': 'https://chromium.googlesource.com/chromium/src/+/',
         'deps_var': 'chromium_rev'
@@ -100,7 +95,6 @@ DEPOT_DEPS_NAME = {
     'webkit': {
         'src': 'src/third_party/WebKit',
         'recurse': True,
-        'depends': None,
         'from': ['chromium'],
         'viewvc': 'https://chromium.googlesource.com/chromium/blink/+/',
         'deps_var': 'webkit_revision'
@@ -109,7 +103,6 @@ DEPOT_DEPS_NAME = {
         'src': 'src/third_party/angle',
         'src_old': 'src/third_party/angle_dx11',
         'recurse': True,
-        'depends': None,
         'from': ['chromium'],
         'platform': 'nt',
         'viewvc': 'https://chromium.googlesource.com/angle/angle/+/',
@@ -118,7 +111,6 @@ DEPOT_DEPS_NAME = {
     'v8': {
         'src': 'src/v8',
         'recurse': True,
-        'depends': None,
         'from': ['chromium'],
         'custom_deps': GCLIENT_CUSTOM_DEPS_V8,
         'viewvc': 'https://chromium.googlesource.com/v8/v8.git/+/',
@@ -127,7 +119,6 @@ DEPOT_DEPS_NAME = {
     'v8_bleeding_edge': {
         'src': 'src/v8_bleeding_edge',
         'recurse': True,
-        'depends': None,
         'svn': 'https://v8.googlecode.com/svn/branches/bleeding_edge',
         'from': ['v8'],
         'viewvc': 'https://chromium.googlesource.com/v8/v8.git/+/',
@@ -136,29 +127,9 @@ DEPOT_DEPS_NAME = {
     'skia/src': {
         'src': 'src/third_party/skia/src',
         'recurse': True,
-        'svn': 'http://skia.googlecode.com/svn/trunk/src',
-        'depends': ['skia/include', 'skia/gyp'],
         'from': ['chromium'],
         'viewvc': 'https://chromium.googlesource.com/skia/+/',
         'deps_var': 'skia_revision'
-    },
-    'skia/include': {
-        'src': 'src/third_party/skia/include',
-        'recurse': False,
-        'svn': 'http://skia.googlecode.com/svn/trunk/include',
-        'depends': None,
-        'from': ['chromium'],
-        'viewvc': 'https://chromium.googlesource.com/skia/+/',
-        'deps_var': 'None'
-    },
-    'skia/gyp': {
-        'src': 'src/third_party/skia/gyp',
-        'recurse': False,
-        'svn': 'http://skia.googlecode.com/svn/trunk/gyp',
-        'depends': None,
-        'from': ['chromium'],
-        'viewvc': 'https://chromium.googlesource.com/skia/+/',
-        'deps_var': 'None'
     }
 }
 

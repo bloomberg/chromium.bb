@@ -137,9 +137,10 @@ def GetCommitPosition(git_revision, cwd=None):
   Returns:
     Git commit position as integer or None.
   """
-  # Angle repository is pure git based, unlike other repositories it doesn't
-  # have commit position.
-  if cwd and 'angle' in cwd:
+  # Some of the respositories are pure git based, unlike other repositories
+  # they doesn't have commit position. e.g., skia, angle.
+  no_commit_position_repos = ['angle', 'skia']
+  if cwd and any(repo in cwd for repo in no_commit_position_repos):
     return None
 
   cmd = ['footers', '--position-num', git_revision]
