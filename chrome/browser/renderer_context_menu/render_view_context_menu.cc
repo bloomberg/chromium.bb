@@ -1155,7 +1155,10 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
-      return true;
+      // Currently, a media element can be opened in a new tab iff it can
+      // be saved. So rather than duplicating the MediaCanSave flag, we rely
+      // on that here.
+      return !!(params_.media_flags & WebContextMenuData::MediaCanSave);
 
     case IDC_SAVE_PAGE: {
       CoreTabHelper* core_tab_helper =
