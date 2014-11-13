@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import ConfigParser
+import glob
 import logging
 import os
 import pprint
@@ -16,6 +17,7 @@ from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import portage_util
 
@@ -68,6 +70,46 @@ def GetAffectedOverlays(change, manifest, all_overlays):
     # If all of the subdirs are overlays, return them.
     if subdirs.issubset(all_overlays):
       return subdirs
+
+
+def GetAffectedPackagesForOverlayChange(change, manifest, overlays):
+  """Get the set of packages affected by the overlay |change|.
+
+  Args:
+    change: The GerritPatch instance that modifies an overlay.
+    manifest: A ManifestCheckout instance representing our build directory.
+    overlays: List of overlay paths.
+
+  Returns:
+    The set of packages affected by the specified |change|. E.g.
+    {'chromeos-base/chromite-0.0.1-r1258'}. If the change affects
+    something other than packages, return None.
+  """
+  checkout = change.GetCheckout(manifest, strict=False)
+  if checkout:
+    git_repo = checkout.GetPath(absolute=True)
+
+  packages = set()
+  for path in change.GetDiffStatus(git_repo):
+    # Determine if path is in a package directory by walking up
+    # directories and see if there is an ebuild in the directory.
+    start_path = os.path.join(git_repo, path)
+    ebuild_path = osutils.FindInPathParents(
+        '*.ebuild', start_path, test_func=glob.glob, end_path=git_repo)
+    if ebuild_path:
+      # Convert git_repo/../*.ebuild to the real ebuild path.
+      ebuild_path = glob.glob(ebuild_path)[0]
+      # Double check that the ebuild is two-levels deep in an overlay
+      # directory.
+      if os.path.sep.join(ebuild_path.split(os.path.sep)[:-3]) in overlays:
+        category, pkg_name, _ = portage_util.SplitEbuildPath(ebuild_path)
+        packages.add('%s/%s' % (category, pkg_name))
+        continue
+
+    # If |change| affects anything other than packages, return None.
+    return None
+
+  return packages
 
 
 def _GetOptionFromConfigFile(config_path, section, option):
@@ -145,7 +187,8 @@ class CategorizeChanges(object):
   """
 
   @classmethod
-  def ClassifyOverlayChanges(cls, changes, config, build_root, manifest):
+  def ClassifyOverlayChanges(cls, changes, config, build_root, manifest,
+                             packages_under_test):
     """Classifies overlay changes in |changes|.
 
     Args:
@@ -153,6 +196,9 @@ class CategorizeChanges(object):
       config: The cbuildbot config.
       build_root: Path to the build root.
       manifest: A ManifestCheckout instance representing our build directory.
+      packages_under_test: A list of packages names included in the build
+        without version/revision (e.g. ['chromeos-base/chromite']). If None,
+        don't try to map overlay changes to packages.
 
     Returns:
       A (overlay_changes, irrelevant_overlay_changes) tuple; overlay_changes
@@ -176,6 +222,19 @@ class CategorizeChanges(object):
         if not any(x in relevant_overlays for x in affected_overlays):
           # The change touched an irrelevant overlay.
           irrelevant_overlay_changes.add(change)
+          continue
+
+        if packages_under_test:
+          # If the change modifies packages that are not part of this
+          # build, they are considered irrelevant too.
+          packages = GetAffectedPackagesForOverlayChange(
+              change, manifest, visible_overlays)
+          if packages:
+            logging.info('%s affects packages %s',
+                         cros_patch.GetChangesAsString([change]),
+                         ', '.join(packages))
+            if not any(x in packages_under_test for x in packages):
+              irrelevant_overlay_changes.add(change)
 
     return overlay_changes, irrelevant_overlay_changes
 
@@ -201,24 +260,20 @@ class CategorizeChanges(object):
     workon_changes = set()
     irrelevant_workon_changes = set()
 
-    # Strip the version of the package in packages_under_test
-    cpv_list = [portage_util.SplitCPV(x) for x in packages_under_test]
-    cp_under_test = ['%s/%s' % (x.category, x.package) for x in cpv_list]
-
     workon_dict = portage_util.BuildFullWorkonPackageDictionary(
         build_root, config.overlays, manifest)
 
     pp = pprint.PrettyPrinter(indent=2)
     logging.info('(project, branch) to workon package mapping:\n %s',
                  pp.pformat(workon_dict))
-    logging.info('packages under test\n: %s', pp.pformat(cp_under_test))
+    logging.info('packages under test\n: %s', pp.pformat(packages_under_test))
 
     for change in changes:
       packages = workon_dict.get((change.project, change.tracking_branch))
       if packages:
         # The CL modifies a workon package.
         workon_changes.add(change)
-        if all(x not in cp_under_test for x in packages):
+        if all(x not in packages_under_test for x in packages):
           irrelevant_workon_changes.add(change)
 
     return workon_changes, irrelevant_workon_changes
@@ -285,6 +340,12 @@ class CategorizeChanges(object):
     # Changes that modify projects used in building are always relevant.
     untriaged_changes -= cls.GetChangesToBuildTools(changes, manifest)
 
+    if packages_under_test is not None:
+      # Strip the version of the package in packages_under_test.
+      cpv_list = [portage_util.SplitCPV(x) for x in packages_under_test]
+      packages_under_test = ['%s/%s' % (x.category, x.package) for x in
+                             cpv_list]
+
     # Handles overlay changes.
     # ClassifyOverlayChanges only handles overlays visible to this
     # build. For example, an external build may not be able to view
@@ -292,7 +353,7 @@ class CategorizeChanges(object):
     # have already been filtered out in CommitQueueSyncStage, and are
     # not included in |changes|.
     overlay_changes, irrelevant_overlay_changes = cls.ClassifyOverlayChanges(
-        untriaged_changes, config, build_root, manifest)
+        untriaged_changes, config, build_root, manifest, packages_under_test)
     untriaged_changes -= overlay_changes
     irrelevant_changes |= irrelevant_overlay_changes
 

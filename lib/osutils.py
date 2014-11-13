@@ -289,7 +289,7 @@ def IteratePathParents(start_path):
     yield path
 
 
-def FindInPathParents(path_to_find, start_path, test_func=None):
+def FindInPathParents(path_to_find, start_path, test_func=None, end_path=None):
   """Look for a relative path, ascending through parent directories.
 
   Ascend through parent directories of current path looking for a relative
@@ -316,10 +316,15 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
       os.path.exists.  The function will be passed one argument - the target
       path to test.  A True return value will cause AscendingLookup to return
       the target.
+    end_path: The path to stop searching.
   """
+  if end_path is not None:
+    end_path = os.path.abspath(end_path)
   if test_func is None:
     test_func = os.path.exists
   for path in IteratePathParents(start_path):
+    if path == end_path:
+      return None
     target = os.path.join(path, path_to_find)
     if test_func(target):
       return target
