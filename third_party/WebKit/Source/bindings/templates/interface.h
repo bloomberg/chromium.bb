@@ -202,46 +202,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
      v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
-{% elif has_custom_wrap %}
-v8::Handle<v8::Object> wrapCustom({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-
-inline v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-
-    return wrapCustom(impl, creationContext, isolate);
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-    if (UNLIKELY(!impl)) {
-        v8SetReturnValueNull(callbackInfo);
-        return;
-    }
-    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
-        return;
-    v8::Handle<v8::Object> wrapper = wrapCustom(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-    v8SetReturnValue(callbackInfo, wrapper);
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
-    return v8SetReturnValue(callbackInfo, impl);
-}
-
-template<typename CallbackInfo, typename Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable*)
-{
-    return v8SetReturnValue(callbackInfo, impl);
-}
-
 {% elif not is_script_wrappable %}
 inline v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

@@ -34,8 +34,7 @@
 // The more *minor* extended attribute should be put in this file.
 
 [
-    Constructor, // Test interaction with [Custom=Wrap]
-    Custom=Wrap, // Conflicts with and [Custom=ToV8], respectively
+    Constructor,
     DependentLifetime, // Covered by [ActiveDOMObject]
     SetWrapperReferenceFrom=ownerNode, // Conflicts with [SetWrapperReferenceTo]
 ] interface TestInterface2 {
