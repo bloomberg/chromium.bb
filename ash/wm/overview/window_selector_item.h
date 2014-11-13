@@ -32,10 +32,6 @@ class WindowSelectorItem : public views::ButtonListener,
   WindowSelectorItem();
   ~WindowSelectorItem() override;
 
-  // The time for the close buttons and labels to fade in when initially shown
-  // on entering overview mode.
-  static const int kFadeInMilliseconds;
-
   // Returns the root window on which this item is shown.
   virtual aura::Window* GetRootWindow() = 0;
 

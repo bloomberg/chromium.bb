@@ -6,6 +6,7 @@
 
 #include "ash/screen_util.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_window_copy.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/window_state.h"
@@ -23,31 +24,14 @@ namespace ash {
 
 namespace {
 
-// The animation settings used for window selector animations.
-class WindowSelectorAnimationSettings
-    : public ui::ScopedLayerAnimationSettings {
- public:
-  WindowSelectorAnimationSettings(aura::Window* window) :
-      ui::ScopedLayerAnimationSettings(window->layer()->GetAnimator()) {
-    SetPreemptionStrategy(
-        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        ScopedTransformOverviewWindow::kTransitionMilliseconds));
-    SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
-  }
-
-  ~WindowSelectorAnimationSettings() override {}
-};
-
 void SetTransformOnWindow(aura::Window* window,
                           const gfx::Transform& transform,
                           bool animate) {
-  if (animate) {
-    WindowSelectorAnimationSettings animation_settings(window);
-    window->SetTransform(transform);
-  } else {
-    window->SetTransform(transform);
-  }
+  ScopedOverviewAnimationSettings animation_settings(animate ?
+          OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
+          OverviewAnimationType::OVERVIEW_ANIMATION_NONE,
+      window);
+  window->SetTransform(transform);
 }
 
 gfx::Transform TranslateTransformOrigin(const gfx::Vector2d& new_origin,
@@ -94,7 +78,7 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
     : window_(window),
       minimized_(window->GetProperty(aura::client::kShowStateKey) ==
                  ui::SHOW_STATE_MINIMIZED),
-      ignored_by_shelf_(ash::wm::GetWindowState(window)->ignored_by_shelf()),
+      ignored_by_shelf_(wm::GetWindowState(window)->ignored_by_shelf()),
       overview_started_(false),
       original_transform_(window->layer()->GetTargetTransform()),
       opacity_(window->layer()->GetTargetOpacity()) {
@@ -102,7 +86,9 @@ ScopedTransformOverviewWindow::ScopedTransformOverviewWindow(
 
 ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
   if (window_) {
-    WindowSelectorAnimationSettings animation_settings(window_);
+    ScopedOverviewAnimationSettings animation_settings(
+        OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS,
+        window_);
     gfx::Transform transform;
     SetTransformOnWindowAndTransientChildren(original_transform_, true);
     if (minimized_ && window_->GetProperty(aura::client::kShowStateKey) !=
@@ -118,7 +104,7 @@ ScopedTransformOverviewWindow::~ScopedTransformOverviewWindow() {
       window_->SetProperty(aura::client::kShowStateKey,
                            ui::SHOW_STATE_MINIMIZED);
     }
-    ash::wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
+    wm::GetWindowState(window_)->set_ignored_by_shelf(ignored_by_shelf_);
     window_->layer()->SetOpacity(opacity_);
   }
 }
@@ -266,7 +252,7 @@ void ScopedTransformOverviewWindow::SetTransformOnWindowAndTransientChildren(
 void ScopedTransformOverviewWindow::PrepareForOverview() {
   DCHECK(!overview_started_);
   overview_started_ = true;
-  ash::wm::GetWindowState(window_)->set_ignored_by_shelf(true);
+  wm::GetWindowState(window_)->set_ignored_by_shelf(true);
   RestoreWindow();
 }
 

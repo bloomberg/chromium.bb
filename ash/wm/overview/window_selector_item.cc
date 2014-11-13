@@ -7,13 +7,13 @@
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "ash/wm/overview/transparent_activate_window_button.h"
 #include "base/auto_reset.h"
 #include "grit/ash_resources.h"
 #include "ui/aura/window.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -30,8 +30,8 @@ views::Widget* CreateCloseWindowButton(aura::Window* root_window,
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window, ash::kShellWindowId_OverlayContainer);
+  params.parent = Shell::GetContainer(root_window,
+                                      kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
   widget->Init(params);
   views::ImageButton* button = new views::ImageButton(listener);
@@ -72,8 +72,6 @@ static const int kVerticalShadowOffset = 1;
 
 // Amount of blur applied to the label shadow
 static const int kShadowBlur = 10;
-
-const int WindowSelectorItem::kFadeInMilliseconds = 80;
 
 // Opacity for dimmed items.
 static const float kDimmedItemOpacity = 0.5f;
@@ -191,30 +189,18 @@ void WindowSelectorItem::UpdateCloseButtonBounds(aura::Window* root_window,
     ui::Layer* layer = close_button_->GetNativeWindow()->layer();
     layer->SetOpacity(0);
     layer->GetAnimator()->StopAnimating();
-    layer->GetAnimator()->SchedulePauseForProperties(
-        base::TimeDelta::FromMilliseconds(
-            ScopedTransformOverviewWindow::kTransitionMilliseconds),
-        ui::LayerAnimationElement::OPACITY);
     {
-      ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-      settings.SetPreemptionStrategy(
-          ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-          WindowSelectorItem::kFadeInMilliseconds));
+      ScopedOverviewAnimationSettings animation_settings(
+          OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+          close_button_->GetNativeWindow());
       layer->SetOpacity(1);
     }
   } else {
-    if (animate) {
-      ui::ScopedLayerAnimationSettings settings(
-          close_button_->GetNativeWindow()->layer()->GetAnimator());
-      settings.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-          ScopedTransformOverviewWindow::kTransitionMilliseconds));
-      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
-    } else {
-      close_button_->GetNativeWindow()->SetTransform(close_button_transform);
-    }
+    ScopedOverviewAnimationSettings animation_settings(animate ?
+            OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
+            OverviewAnimationType::OVERVIEW_ANIMATION_NONE,
+        close_button_->GetNativeWindow());
+    close_button_->GetNativeWindow()->SetTransform(close_button_transform);
   }
 }
 
@@ -251,33 +237,22 @@ void WindowSelectorItem::UpdateWindowLabels(const gfx::Rect& window_bounds,
     layer->SetOpacity(0);
     layer->GetAnimator()->StopAnimating();
 
-    layer->GetAnimator()->SchedulePauseForProperties(
-        base::TimeDelta::FromMilliseconds(
-            ScopedTransformOverviewWindow::kTransitionMilliseconds),
-        ui::LayerAnimationElement::OPACITY);
-
-    ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
-    settings.SetPreemptionStrategy(
-        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kFadeInMilliseconds));
+    ScopedOverviewAnimationSettings animation_settings(
+        OverviewAnimationType::OVERVIEW_ANIMATION_ENTER_OVERVIEW_MODE_FADE_IN,
+        window_label_->GetNativeWindow());
     layer->SetOpacity(1);
   } else {
     label_bounds.set_height(window_label_->
                                 GetContentsView()->GetPreferredSize().height());
     label_bounds.set_y(label_bounds.y() - window_label_->
                            GetContentsView()->GetPreferredSize().height());
-    if (animate) {
-      ui::ScopedLayerAnimationSettings settings(
-          window_label_->GetNativeWindow()->layer()->GetAnimator());
-      settings.SetPreemptionStrategy(
-          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-      settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-          ScopedTransformOverviewWindow::kTransitionMilliseconds));
-      window_label_->GetNativeWindow()->SetBounds(label_bounds);
-    } else {
-      window_label_->GetNativeWindow()->SetBounds(label_bounds);
-    }
+
+    ScopedOverviewAnimationSettings animation_settings(animate ?
+            OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS :
+            OverviewAnimationType::OVERVIEW_ANIMATION_NONE,
+        window_label_->GetNativeWindow());
+
+    window_label_->GetNativeWindow()->SetBounds(label_bounds);
   }
 }
 
@@ -287,8 +262,8 @@ void WindowSelectorItem::CreateWindowLabel(const base::string16& title) {
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
-  params.parent =
-      Shell::GetContainer(root_window_, ash::kShellWindowId_OverlayContainer);
+  params.parent = Shell::GetContainer(root_window_,
+                                      kShellWindowId_OverlayContainer);
   params.accept_events = false;
   params.visible_on_all_workspaces = true;
   window_label_->set_focus_on_creation(false);

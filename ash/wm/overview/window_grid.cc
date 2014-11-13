@@ -395,7 +395,7 @@ void WindowGrid::InitSelectionWidget(WindowSelector::Direction direction) {
   ::wm::SetWindowVisibilityAnimationTransition(
       selection_widget_->GetNativeWindow(), ::wm::ANIMATE_NONE);
   // The selection widget should not activate the shelf when passing under it.
-  ash::wm::GetWindowState(selection_widget_->GetNativeWindow())->
+  wm::GetWindowState(selection_widget_->GetNativeWindow())->
       set_ignored_by_shelf(true);
 
   views::View* content_view = new views::View;

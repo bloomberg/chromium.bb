@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/window_selector_controller.h"
 
+#include <vector>
+
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_state_delegate.h"

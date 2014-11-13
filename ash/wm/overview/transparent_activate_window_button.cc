@@ -57,7 +57,7 @@ views::Widget* InitEventHandler(aura::Window* root_window) {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.accept_events = true;
   params.parent = Shell::GetContainer(root_window,
-                                      ash::kShellWindowId_OverlayContainer);
+                                      kShellWindowId_OverlayContainer);
   widget->set_focus_on_creation(false);
   widget->Init(params);
   widget->Show();
