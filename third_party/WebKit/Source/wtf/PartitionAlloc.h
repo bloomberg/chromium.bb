@@ -184,6 +184,13 @@ static const size_t kBitsPerSizet = sizeof(void*) * CHAR_BIT;
 // Constants for the memory reclaim logic.
 static const size_t kMaxFreeableSpans = 16;
 
+// If the total size in bytes of allocated but not committed pages exceeds this
+// value (probably it is a "out of virtual address space" crash),
+// a special crash stack trace is generated at |partitionOutOfMemory|.
+// This is to distinguish "out of virtual address space" from
+// "out of physical memory" in crash reports.
+static const size_t kReasonableSizeOfUnusedPages = 1024 * 1024 * 1024; // 1GiB
+
 #if ENABLE(ASSERT)
 // These two byte values match tcmalloc.
 static const unsigned char kUninitializedByte = 0xAB;
@@ -250,6 +257,8 @@ struct PartitionSuperPageExtentEntry {
 struct WTF_EXPORT PartitionRootBase {
     size_t totalSizeOfCommittedPages;
     size_t totalSizeOfSuperPages;
+    size_t totalSizeOfDirectMappedPages;
+    // Invariant: totalSizeOfCommittedPages <= totalSizeOfSuperPages + totalSizeOfDirectMappedPages.
     unsigned numBuckets;
     unsigned maxAllocation;
     bool initialized;
