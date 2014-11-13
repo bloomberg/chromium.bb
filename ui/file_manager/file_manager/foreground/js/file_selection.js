@@ -179,27 +179,29 @@ function FileSelectionHandler(fileManager) {
 }
 
 /**
- * Create the temporary disabled action menu item.
+ * Create the temporary disabled action item.
  * @return {Object} Created disabled item.
  * @private
  */
-FileSelectionHandler.createTemporaryDisabledActionMenuItem_ = function() {
-  if (!FileSelectionHandler.cachedDisabledActionMenuItem_) {
-    FileSelectionHandler.cachedDisabledActionMenuItem_ = {
-      label: str('ACTION_OPEN'),
-      disabled: true
+FileSelectionHandler.createTemporaryDisabledActionItem_ = function() {
+  if (!FileSelectionHandler.cachedDisabledActionItem_) {
+    FileSelectionHandler.cachedDisabledActionItem_ = {
+      title: str('ACTION_OPEN'),
+      disabled: true,
+      taskId: null
     };
   }
 
-  return FileSelectionHandler.cachedDisabledActionMenuItem_;
+  return FileSelectionHandler.cachedDisabledActionItem_;
 };
 
 /**
- * Cached the temporary disabled action menu item. Used inside
- * FileSelectionHandler.createTemporaryDisabledActionMenuItem_().
+ * Cached the temporary disabled action item. Used inside
+ * FileSelectionHandler.createTemporaryDisabledActionItem_().
+ * @type {Object}
  * @private
  */
-FileSelectionHandler.cachedDisabledActionMenuItem_ = null;
+FileSelectionHandler.cachedDisabledActionItem_ = null;
 
 /**
  * FileSelectionHandler extends cr.EventTarget.
@@ -256,10 +258,10 @@ FileSelectionHandler.prototype.onFileSelectionChanged = function() {
     // Show disabled items for position calculation of the menu. They will be
     // overridden in this.updateFileSelectionAsync().
     this.fileManager_.updateContextMenuActionItems(
-        FileSelectionHandler.createTemporaryDisabledActionMenuItem_());
+        [FileSelectionHandler.createTemporaryDisabledActionItem_()]);
   } else {
     // Update context menu.
-    this.fileManager_.updateContextMenuActionItems(null);
+    this.fileManager_.updateContextMenuActionItems();
   }
 
   this.selectionUpdateTimer_ = setTimeout(function() {
