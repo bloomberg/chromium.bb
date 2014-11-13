@@ -17,6 +17,7 @@
 #include "chrome/test/nacl/nacl_browsertest_util.h"
 #include "chrome/test/ppapi/ppapi_test.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/nacl/common/nacl_switches.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/javascript_test_observer.h"
@@ -1338,8 +1339,8 @@ TEST_PPAPI_OUT_OF_PROCESS(OutputProtectionPrivate)
 
 class PackagedAppTest : public ExtensionBrowserTest {
  public:
-  virtual void SetUpOnMainThread() override {
-  }
+  explicit PackagedAppTest(const std::string& toolchain)
+      : toolchain_(toolchain) { }
 
   void LaunchTestingApp() {
     base::FilePath data_dir;
@@ -1348,7 +1349,7 @@ class PackagedAppTest : public ExtensionBrowserTest {
                                      .AppendASCII("tests")
                                      .AppendASCII("extensions")
                                      .AppendASCII("packaged_app")
-                                     .AppendASCII("newlib");
+                                     .AppendASCII(toolchain_);
 
     const extensions::Extension* extension = LoadExtension(app_dir);
     ASSERT_TRUE(extension);
@@ -1360,12 +1361,38 @@ class PackagedAppTest : public ExtensionBrowserTest {
     params.command_line = *CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }
+
+  void RunTests() {
+    ExtensionTestMessageListener listener("hello", true);
+    LaunchTestingApp();
+    EXPECT_TRUE(listener.WaitUntilSatisfied());
+  }
+ protected:
+  std::string toolchain_;
+};
+
+class NewlibPackagedAppTest : public PackagedAppTest {
+ public:
+  NewlibPackagedAppTest() : PackagedAppTest("newlib") { }
+};
+
+class NonSfiPackagedAppTest : public PackagedAppTest {
+ public:
+  NonSfiPackagedAppTest() : PackagedAppTest("nonsfi") { }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PackagedAppTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(switches::kEnableNaClNonSfiMode);
+  }
 };
 
 // Load a packaged app, and wait for it to successfully post a "hello" message
 // back.
-IN_PROC_BROWSER_TEST_F(PackagedAppTest, SuccessfulLoad) {
-  ExtensionTestMessageListener listener("hello", true);
-  LaunchTestingApp();
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
+IN_PROC_BROWSER_TEST_F(NewlibPackagedAppTest, SuccessfulLoad) {
+  RunTests();
+}
+
+IN_PROC_BROWSER_TEST_F(NonSfiPackagedAppTest,
+                       MAYBE_PNACL_NONSFI(SuccessfulLoad)) {
+  RunTests();
 }
