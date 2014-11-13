@@ -114,8 +114,6 @@ std::string RoleToString(blink::WebAXRole role)
       return result.append("ImageMap");
     case blink::WebAXRoleImage:
       return result.append("Image");
-    case blink::WebAXRoleIncrementor:
-      return result.append("Incrementor");
     case blink::WebAXRoleInlineTextBox:
       return result.append("InlineTextBox");
     case blink::WebAXRoleLabel:

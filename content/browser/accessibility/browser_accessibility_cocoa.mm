@@ -849,6 +849,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     return [NSNumber numberWithInt:value];
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
              [role isEqualToString:NSAccessibilitySliderRole] ||
+             [role isEqualToString:NSAccessibilityIncrementorRole] ||
              [role isEqualToString:NSAccessibilityScrollBarRole]) {
     float floatValue;
     if (browserAccessibility_->GetFloatAttribute(
@@ -1269,6 +1270,7 @@ NSDictionary* attributeToMethodNameMap = nil;
     [ret addObject:NSAccessibilityTabsAttribute];
   } else if ([role isEqualToString:NSAccessibilityProgressIndicatorRole] ||
              [role isEqualToString:NSAccessibilitySliderRole] ||
+             [role isEqualToString:NSAccessibilityIncrementorRole] ||
              [role isEqualToString:NSAccessibilityScrollBarRole]) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityMaxValueAttribute,

@@ -2,4 +2,4 @@ AXWebArea
     AXProgressIndicator AXMinValue='1'
     AXScrollBar AXMinValue='2'
     AXSlider AXMinValue='3'
-    AXSlider AXMinValue='4'
+    AXIncrementor AXMinValue='4'

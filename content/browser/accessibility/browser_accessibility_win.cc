@@ -3824,7 +3824,6 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     case ui::AX_ROLE_DRAWER:
     case ui::AX_ROLE_HELP_TAG:
     case ui::AX_ROLE_IGNORED:
-    case ui::AX_ROLE_INCREMENTOR:
     case ui::AX_ROLE_LOG:
     case ui::AX_ROLE_MATTE:
     case ui::AX_ROLE_NONE:

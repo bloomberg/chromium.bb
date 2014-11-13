@@ -2,4 +2,4 @@ AXWebArea
     AXProgressIndicator AXValue='51' AXMaxValue='101'
     AXScrollBar AXValue='52' AXMaxValue='102'
     AXSlider AXValue='53' AXMaxValue='103'
-    AXSlider AXValue='54' AXMaxValue='104'
+    AXIncrementor AXValue='54' AXMaxValue='104'

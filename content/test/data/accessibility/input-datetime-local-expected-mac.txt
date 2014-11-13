@@ -3,16 +3,16 @@ AXWebArea
         AXUnknown
             AXGroup
                 AXGroup
-                    AXSlider AXValue='0'
+                    AXIncrementor AXValue='0'
                     AXStaticText AXValue='/'
-                    AXSlider AXValue='0'
+                    AXIncrementor AXValue='0'
                     AXStaticText AXValue='/'
-                    AXSlider AXValue='0'
-                    AXSlider AXValue='0'
+                    AXIncrementor AXValue='0'
+                    AXIncrementor AXValue='0'
                     AXStaticText AXValue=':'
-                    AXSlider AXValue='0'
-                    AXSlider AXValue='0'
+                    AXIncrementor AXValue='0'
+                    AXIncrementor AXValue='0'
             AXPopUpButton
-            AXSlider AXValue='0'
+            AXIncrementor AXValue='0'
                 AXButton
                 AXButton

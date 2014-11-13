@@ -180,8 +180,6 @@ ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
       return ui::AX_ROLE_IMAGE_MAP;
     case blink::WebAXRoleImageMapLink:
       return ui::AX_ROLE_IMAGE_MAP_LINK;
-    case blink::WebAXRoleIncrementor:
-      return ui::AX_ROLE_INCREMENTOR;
     case blink::WebAXRoleInlineTextBox:
       return ui::AX_ROLE_INLINE_TEXT_BOX;
     case blink::WebAXRoleLabel:
