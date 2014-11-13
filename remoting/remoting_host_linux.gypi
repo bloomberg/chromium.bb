@@ -4,7 +4,7 @@
 
 {
   'conditions': [
-    ['OS=="linux" and branding=="Chrome" and enable_remoting_host==1 and chromeos==0', {
+    ['OS=="linux" and ( (branding=="Chrome" and enable_remoting_host==1 and chromeos==0) or (archive_chromoting_tests==1) )', {
       'variables': {
         'build_deb_script': 'host/installer/linux/build-deb.sh',
         'deb_filename': 'host/installer/<!(["<(build_deb_script)", "-p", "-s", "<(DEPTH)"])',

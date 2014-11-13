@@ -20,6 +20,13 @@
           'sources': [
             'chromoting_integration_tests.isolate',
           ],
+          'conditions': [
+            ['OS=="linux"', {
+              'dependencies': [
+                '../../remoting/remoting.gyp:remoting_me2me_host_archive',
+              ],
+            }],  # OS=="linux"
+          ],          
         },
       ],
     }],
