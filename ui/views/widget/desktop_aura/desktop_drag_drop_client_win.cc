@@ -37,10 +37,8 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   drag_source_ = new ui::DragSourceWin;
   DWORD effect;
   HRESULT result = DoDragDrop(
-      ui::OSExchangeDataProviderWin::GetIDataObject(data),
-      drag_source_,
-      ui::DragDropTypes::DragOperationToDropEffect(operation),
-      &effect);
+      ui::OSExchangeDataProviderWin::GetIDataObject(data), drag_source_.get(),
+      ui::DragDropTypes::DragOperationToDropEffect(operation), &effect);
 
   drag_drop_in_progress_ = false;
 

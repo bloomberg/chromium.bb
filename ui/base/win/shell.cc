@@ -75,7 +75,7 @@ bool PreventWindowFromPinning(HWND hwnd) {
     return false;
 
   return base::win::SetBooleanValueForPropertyStore(
-             pps, PKEY_AppUserModel_PreventPinning, true);
+      pps.get(), PKEY_AppUserModel_PreventPinning, true);
 }
 
 // TODO(calamity): investigate moving this out of the UI thread as COM
@@ -95,18 +95,19 @@ void SetAppDetailsForWindow(const base::string16& app_id,
       hwnd, __uuidof(*pps), reinterpret_cast<void**>(pps.Receive()));
   if (S_OK == result) {
     if (!app_id.empty())
-      base::win::SetAppIdForPropertyStore(pps, app_id.c_str());
+      base::win::SetAppIdForPropertyStore(pps.get(), app_id.c_str());
     if (!app_icon.empty()) {
       base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchIconResource, app_icon.c_str());
+          pps.get(), PKEY_AppUserModel_RelaunchIconResource, app_icon.c_str());
     }
     if (!relaunch_command.empty()) {
       base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchCommand, relaunch_command.c_str());
+          pps.get(), PKEY_AppUserModel_RelaunchCommand,
+          relaunch_command.c_str());
     }
     if (!relaunch_display_name.empty()) {
       base::win::SetStringValueForPropertyStore(
-          pps, PKEY_AppUserModel_RelaunchDisplayNameResource,
+          pps.get(), PKEY_AppUserModel_RelaunchDisplayNameResource,
           relaunch_display_name.c_str());
     }
   }

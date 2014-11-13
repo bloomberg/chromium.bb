@@ -49,7 +49,8 @@ HRESULT DropTargetWin::DragEnter(IDataObject* data_object,
 
   current_data_object_ = data_object;
   POINT screen_pt = { cursor_position.x, cursor_position.y };
-  *effect = OnDragEnter(current_data_object_, key_state, screen_pt, *effect);
+  *effect =
+      OnDragEnter(current_data_object_.get(), key_state, screen_pt, *effect);
   return S_OK;
 }
 
@@ -62,7 +63,8 @@ HRESULT DropTargetWin::DragOver(DWORD key_state,
     drop_helper->DragOver(reinterpret_cast<POINT*>(&cursor_position), *effect);
 
   POINT screen_pt = { cursor_position.x, cursor_position.y };
-  *effect = OnDragOver(current_data_object_, key_state, screen_pt, *effect);
+  *effect =
+      OnDragOver(current_data_object_.get(), key_state, screen_pt, *effect);
   return S_OK;
 }
 
@@ -72,7 +74,7 @@ HRESULT DropTargetWin::DragLeave() {
   if (drop_helper)
     drop_helper->DragLeave();
 
-  OnDragLeave(current_data_object_);
+  OnDragLeave(current_data_object_.get());
 
   current_data_object_ = NULL;
   return S_OK;
@@ -85,12 +87,12 @@ HRESULT DropTargetWin::Drop(IDataObject* data_object,
   // Tell the helper that we dropped onto it so it can update the drag image.
   IDropTargetHelper* drop_helper = DropHelper();
   if (drop_helper) {
-    drop_helper->Drop(current_data_object_,
+    drop_helper->Drop(current_data_object_.get(),
                       reinterpret_cast<POINT*>(&cursor_position), *effect);
   }
 
   POINT screen_pt = { cursor_position.x, cursor_position.y };
-  *effect = OnDrop(current_data_object_, key_state, screen_pt, *effect);
+  *effect = OnDrop(current_data_object_.get(), key_state, screen_pt, *effect);
   return S_OK;
 }
 

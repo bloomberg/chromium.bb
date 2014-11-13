@@ -46,9 +46,10 @@ void AppsGridViewTestApi::PressItemAt(int index) {
 
 void AppsGridViewTestApi::DisableSynchronousDrag() {
 #if defined(OS_WIN)
-  DCHECK(view_->synchronous_drag_ == NULL) << "DisableSynchronousDrag needs to "
-                                              "be called before "
-                                              "synchronous_drag_ is set up.";
+  DCHECK(view_->synchronous_drag_.get() == NULL)
+      << "DisableSynchronousDrag needs to "
+         "be called before "
+         "synchronous_drag_ is set up.";
   view_->use_synchronous_drag_ = false;
 #endif
 }

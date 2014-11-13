@@ -537,7 +537,7 @@ void AppsGridView::StartSettingUpSynchronousDrag() {
 
 bool AppsGridView::RunSynchronousDrag() {
 #if defined(OS_WIN)
-  if (!synchronous_drag_)
+  if (!synchronous_drag_.get())
     return false;
 
   if (synchronous_drag_->CanRun()) {
@@ -558,7 +558,7 @@ bool AppsGridView::RunSynchronousDrag() {
 
 void AppsGridView::CleanUpSynchronousDrag() {
 #if defined(OS_WIN)
-  if (synchronous_drag_)
+  if (synchronous_drag_.get())
     synchronous_drag_->EndDragExternally();
 
   synchronous_drag_ = NULL;
@@ -1478,7 +1478,7 @@ void AppsGridView::OnFolderItemReparentTimer() {
   if (drag_out_of_folder_container_ && drag_view_) {
     bool has_native_drag = drag_and_drop_host_ != nullptr;
 #if defined(OS_WIN)
-    has_native_drag = has_native_drag || synchronous_drag_;
+    has_native_drag = has_native_drag || synchronous_drag_.get();
 #endif
     folder_delegate_->ReparentItem(
         drag_view_, last_drag_point_, has_native_drag);

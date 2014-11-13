@@ -401,7 +401,7 @@ void OSExchangeDataProviderWin::SetHtml(const base::string16& html,
 }
 
 bool OSExchangeDataProviderWin::GetString(base::string16* data) const {
-  return ClipboardUtil::GetPlainText(source_object_, data);
+  return ClipboardUtil::GetPlainText(source_object_.get(), data);
 }
 
 bool OSExchangeDataProviderWin::GetURLAndTitle(
@@ -410,14 +410,12 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(
     base::string16* title) const {
   base::string16 url_str;
   bool success = ClipboardUtil::GetUrl(
-      source_object_,
-      url,
-      title,
+      source_object_.get(), url, title,
       policy == OSExchangeData::CONVERT_FILENAMES ? true : false);
   if (success) {
     DCHECK(url->is_valid());
     return true;
-  } else if (GetPlainTextURL(source_object_, url)) {
+  } else if (GetPlainTextURL(source_object_.get(), url)) {
     if (url->is_valid())
       *title = net::GetSuggestedFilename(*url, "", "", "", "", std::string());
     else
@@ -429,7 +427,7 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(
 
 bool OSExchangeDataProviderWin::GetFilename(base::FilePath* path) const {
   std::vector<base::string16> filenames;
-  bool success = ClipboardUtil::GetFilenames(source_object_, &filenames);
+  bool success = ClipboardUtil::GetFilenames(source_object_.get(), &filenames);
   if (success)
     *path = base::FilePath(filenames[0]);
   return success;
@@ -438,7 +436,8 @@ bool OSExchangeDataProviderWin::GetFilename(base::FilePath* path) const {
 bool OSExchangeDataProviderWin::GetFilenames(
     std::vector<FileInfo>* filenames) const {
   std::vector<base::string16> filenames_local;
-  bool success = ClipboardUtil::GetFilenames(source_object_, &filenames_local);
+  bool success =
+      ClipboardUtil::GetFilenames(source_object_.get(), &filenames_local);
   if (success) {
     for (size_t i = 0; i < filenames_local.size(); ++i)
       filenames->push_back(
@@ -470,7 +469,7 @@ bool OSExchangeDataProviderWin::GetFileContents(
     base::FilePath* filename,
     std::string* file_contents) const {
   base::string16 filename_str;
-  if (!ClipboardUtil::GetFileContents(source_object_, &filename_str,
+  if (!ClipboardUtil::GetFileContents(source_object_.get(), &filename_str,
                                       file_contents)) {
     return false;
   }
@@ -481,34 +480,34 @@ bool OSExchangeDataProviderWin::GetFileContents(
 bool OSExchangeDataProviderWin::GetHtml(base::string16* html,
                                         GURL* base_url) const {
   std::string url;
-  bool success = ClipboardUtil::GetHtml(source_object_, html, &url);
+  bool success = ClipboardUtil::GetHtml(source_object_.get(), html, &url);
   if (success)
     *base_url = GURL(url);
   return success;
 }
 
 bool OSExchangeDataProviderWin::HasString() const {
-  return ClipboardUtil::HasPlainText(source_object_);
+  return ClipboardUtil::HasPlainText(source_object_.get());
 }
 
 bool OSExchangeDataProviderWin::HasURL(
     OSExchangeData::FilenameToURLPolicy policy) const {
   return (ClipboardUtil::HasUrl(
-              source_object_,
+              source_object_.get(),
               policy == OSExchangeData::CONVERT_FILENAMES ? true : false) ||
-          HasPlainTextURL(source_object_));
+          HasPlainTextURL(source_object_.get()));
 }
 
 bool OSExchangeDataProviderWin::HasFile() const {
-  return ClipboardUtil::HasFilenames(source_object_);
+  return ClipboardUtil::HasFilenames(source_object_.get());
 }
 
 bool OSExchangeDataProviderWin::HasFileContents() const {
-  return ClipboardUtil::HasFileContents(source_object_);
+  return ClipboardUtil::HasFileContents(source_object_.get());
 }
 
 bool OSExchangeDataProviderWin::HasHtml() const {
-  return ClipboardUtil::HasHtml(source_object_);
+  return ClipboardUtil::HasHtml(source_object_.get());
 }
 
 bool OSExchangeDataProviderWin::HasCustomFormat(
