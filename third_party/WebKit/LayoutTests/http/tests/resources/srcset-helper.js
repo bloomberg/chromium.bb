@@ -13,7 +13,11 @@ function runTest() {
     if (sessionStorage.pageReloaded && sessionStorage.scaleFactorIsSet) {
         delete sessionStorage.pageReloaded;
         delete sessionStorage.scaleFactorIsSet;
-        testRunner.notifyDone();
+        if (!window.manualNotifyDone) {
+            setTimeout(function() {
+                testRunner.notifyDone();
+            }, 0);
+        }
     } else {
         // Right now there is a bug that srcset does not properly deal with dynamic changes to the scale factor,
         // so to work around that, we must reload the page to get the new image.

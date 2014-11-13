@@ -10,6 +10,16 @@
   <!--=  All Rights Reserved.                                              =-->
   <!--=  See http://www.w3.org/Consortium/Legal/.                          =-->
   <!--======================================================================-->
+  <script xlink:href="../../resources/run-after-display.js"></script>
+  <script>
+    if (window.testRunner)
+      testRunner.waitUntilDone();
+
+    runAfterDisplay(function() {
+      if (window.testRunner)
+        testRunner.notifyDone();
+    });
+  </script>
   <d:SVGTestCase xmlns:d="http://www.w3.org/2000/02/svg/testsuite/description/"
     template-version="1.4" reviewer="SVGWG" author="Jon Ferraiolo" status="accepted"
     version="$Revision: 1.6 $" testname="$RCSfile: text-intro-09-b.svg,v $">
