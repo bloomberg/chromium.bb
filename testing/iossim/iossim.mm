@@ -504,13 +504,22 @@ void PrintSupportedDevices() {
           [NSCharacterSet newlineCharacterSet]];
       NSString* simulatedAppPID =
           [NSString stringWithFormat:@"%d", session.simulatedApplicationPID];
+      NSArray* kErrorStrings = @[
+        @"Service exited with abnormal code:",
+        @"Service exited due to signal:",
+      ];
       for (NSString* line in lines) {
-        NSString* const kErrorString = @"Service exited with abnormal code:";
-        if ([line rangeOfString:kErrorString].location != NSNotFound &&
-            [line rangeOfString:simulatedAppPID].location != NSNotFound) {
-          LogWarning(@"Console message: %@", line);
-          badEntryFound = YES;
-          break;
+        if ([line rangeOfString:simulatedAppPID].location != NSNotFound) {
+          for (NSString* errorString in kErrorStrings) {
+            if ([line rangeOfString:errorString].location != NSNotFound) {
+              LogWarning(@"Console message: %@", line);
+              badEntryFound = YES;
+              break;
+            }
+          }
+          if (badEntryFound) {
+            break;
+          }
         }
       }
       // Remove the log file so subsequent invocations of iossim won't be
