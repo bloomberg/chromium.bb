@@ -102,7 +102,7 @@ void ServiceDiscoverySharedClient::GetInstanceWithoutAlert(
   // to do with firewall for user-level installs. crbug.com/366408
   scoped_refptr<ServiceDiscoverySharedClient> result =
       g_service_discovery_client;
-  if (result)
+  if (result.get())
     return callback.Run(result);
 
   if (!g_is_firewall_state_reported) {

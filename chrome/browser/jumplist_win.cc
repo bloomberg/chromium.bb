@@ -421,7 +421,7 @@ void JumpList::OnFaviconDataAvailable(
     // Attach the received data to the ShellLinkItem object.
     // This data will be decoded by the RunUpdate method.
     if (!image_result.image.IsEmpty()) {
-      if (!icon_urls_.empty() && icon_urls_.front().second)
+      if (!icon_urls_.empty() && icon_urls_.front().second.get())
         icon_urls_.front().second->set_icon_data(image_result.image.AsBitmap());
     }
 

@@ -266,7 +266,7 @@ base::File::Error GetFileStreamOnBlockingPoolThread(
 
   DCHECK(file_info.size == 0 || optimal_transfer_size > 0U);
   file_details->set_file_info(file_info);
-  file_details->set_device_file_stream(file_stream);
+  file_details->set_device_file_stream(file_stream.get());
   file_details->set_optimal_transfer_size(optimal_transfer_size);
   return error;
 }
@@ -475,9 +475,8 @@ void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
   if ((init_state_ == INITIALIZED) && !task_in_progress_) {
     DCHECK(pending_tasks_.empty());
     DCHECK(!current_snapshot_details_.get());
-    base::PostTaskAndReplyWithResult(media_task_runner_,
-                                     task_info.location,
-                                     task_info.task,
+    base::PostTaskAndReplyWithResult(media_task_runner_.get(),
+                                     task_info.location, task_info.task,
                                      task_info.reply);
     task_in_progress_ = true;
     return;
@@ -487,8 +486,7 @@ void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
   if (init_state_ == UNINITIALIZED) {
     init_state_ = PENDING_INIT;
     base::PostTaskAndReplyWithResult(
-        media_task_runner_,
-        FROM_HERE,
+        media_task_runner_.get(), FROM_HERE,
         base::Bind(&OpenDeviceOnBlockingPoolThread,
                    storage_device_info_.pnp_device_id,
                    storage_device_info_.registered_device_path),
@@ -501,8 +499,7 @@ void MTPDeviceDelegateImplWin::EnsureInitAndRunTask(
 void MTPDeviceDelegateImplWin::WriteDataChunkIntoSnapshotFile() {
   DCHECK(current_snapshot_details_.get());
   base::PostTaskAndReplyWithResult(
-      media_task_runner_,
-      FROM_HERE,
+      media_task_runner_.get(), FROM_HERE,
       base::Bind(&WriteDataChunkIntoSnapshotFileOnBlockingPoolThread,
                  *current_snapshot_details_),
       base::Bind(&MTPDeviceDelegateImplWin::OnWroteDataChunkIntoSnapshotFile,
@@ -516,10 +513,8 @@ void MTPDeviceDelegateImplWin::ProcessNextPendingRequest() {
     return;
   const PendingTaskInfo& task_info = pending_tasks_.front();
   task_in_progress_ = true;
-  base::PostTaskAndReplyWithResult(media_task_runner_,
-                                   task_info.location,
-                                   task_info.task,
-                                   task_info.reply);
+  base::PostTaskAndReplyWithResult(media_task_runner_.get(), task_info.location,
+                                   task_info.task, task_info.reply);
   pending_tasks_.pop();
 }
 

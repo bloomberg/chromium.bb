@@ -134,7 +134,7 @@ class PasswordStoreWinTest : public testing::Test {
   }
 
   virtual void TearDown() {
-    if (store_)
+    if (store_.get())
       store_->Shutdown();
     wds_->ShutdownOnUIThread();
     wdbs_->ShutdownDatabase();

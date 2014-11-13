@@ -166,7 +166,7 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
   if (FAILED(result))
     return false;
   base::win::ScopedComPtr<IPersistFile> persist_file;
-  result = persist_file.QueryFrom(locator);
+  result = persist_file.QueryFrom(locator.get());
   if (FAILED(result))
     return false;
   result = locator->SetURL(url.c_str(), 0);
@@ -176,7 +176,7 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
   // Write favicon url if specified.
   if (!favicon_url.empty()) {
     base::win::ScopedComPtr<IPropertySetStorage> property_set_storage;
-    if (FAILED(property_set_storage.QueryFrom(locator)))
+    if (FAILED(property_set_storage.QueryFrom(locator.get())))
       return false;
     base::win::ScopedComPtr<IPropertyStorage> property_storage;
     if (FAILED(property_set_storage->Open(FMTID_Intshcut,

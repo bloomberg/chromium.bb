@@ -838,7 +838,7 @@ void EnumerateModulesModel::ScanNow() {
 
   // Instruct the ModuleEnumerator class to load this on the File thread.
   // ScanNow does not block.
-  if (!module_enumerator_)
+  if (!module_enumerator_.get())
     module_enumerator_ = new ModuleEnumerator(this);
   module_enumerator_->ScanNow(&enumerated_modules_, limited_mode_);
 }

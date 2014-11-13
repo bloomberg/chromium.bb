@@ -1160,9 +1160,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   // visible.
   ExtensionList tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(no_action(), tab_order[1]);
-  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(no_action(), tab_order[1].get());
+  EXPECT_EQ(page_action(), tab_order[2].get());
   EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   // And we should have no notifications to reorder the toolbar.
   EXPECT_EQ(0u, observer()->reorder_count());
@@ -1184,9 +1184,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   // - The visible count should increase by one (so page action is visible).
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(page_action(), tab_order[1]);
-  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(page_action(), tab_order[1].get());
+  EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   // We should also have been told to reorder the toolbar.
   EXPECT_EQ(1u, observer()->reorder_count());
@@ -1195,9 +1195,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   // the original order and visible count.
   tab_order = toolbar_model()->GetItemOrderForTab(second_web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(no_action(), tab_order[1]);
-  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(no_action(), tab_order[1].get());
+  EXPECT_EQ(page_action(), tab_order[2].get());
   EXPECT_EQ(1u,
             toolbar_model()->GetVisibleIconCountForTab(second_web_contents));
 
@@ -1209,9 +1209,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   // action", "no action", "page action".
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(no_action(), tab_order[1]);
-  EXPECT_EQ(page_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(no_action(), tab_order[1].get());
+  EXPECT_EQ(page_action(), tab_order[2].get());
   EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   // This should also result in a reorder.
   EXPECT_EQ(2u, observer()->reorder_count());
@@ -1226,9 +1226,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   // action", "no action".
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(page_action(), tab_order[0]);
-  EXPECT_EQ(browser_action(), tab_order[1]);
-  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(page_action(), tab_order[0].get());
+  EXPECT_EQ(browser_action(), tab_order[1].get());
+  EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
 
   // We should still be able to increase the size of the model, and to move the
@@ -1237,9 +1237,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   toolbar_model()->MoveExtensionIcon(page_action()->id(), 1u);
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(page_action(), tab_order[1]);
-  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(page_action(), tab_order[1].get());
+  EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
 
   // Neither of the above operations should have precipitated a reorder.
@@ -1251,9 +1251,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   extension_action_api->NotifyChange(action, web_contents, profile());
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(browser_action(), tab_order[0]);
-  EXPECT_EQ(page_action(), tab_order[1]);
-  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(browser_action(), tab_order[0].get());
+  EXPECT_EQ(page_action(), tab_order[1].get());
+  EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(2u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   // The above change should *not* require a reorder, because the extension is
   // in a new, visible spot and doesn't need to change its position.
@@ -1266,9 +1266,9 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   extension_action_api->NotifyChange(action, web_contents, profile());
   tab_order = toolbar_model()->GetItemOrderForTab(web_contents);
   ASSERT_EQ(3u, tab_order.size());
-  EXPECT_EQ(page_action(), tab_order[0]);
-  EXPECT_EQ(browser_action(), tab_order[1]);
-  EXPECT_EQ(no_action(), tab_order[2]);
+  EXPECT_EQ(page_action(), tab_order[0].get());
+  EXPECT_EQ(browser_action(), tab_order[1].get());
+  EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   EXPECT_EQ(3u, observer()->reorder_count());
 }

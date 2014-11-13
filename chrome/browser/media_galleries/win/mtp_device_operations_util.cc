@@ -73,7 +73,7 @@ base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> GetDeviceObjectEnumerator(
   DCHECK(!parent_id.empty());
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content)
+  if (!content.get())
     return base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs>();
 
   base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids;
@@ -178,7 +178,7 @@ bool GetObjectDetails(IPortableDevice* device,
   DCHECK(last_modified_time);
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content)
+  if (!content.get())
     return false;
 
   base::win::ScopedComPtr<IPortableDeviceProperties> properties;
@@ -266,7 +266,7 @@ bool GetMTPDeviceObjectEntries(IPortableDevice* device,
   DCHECK(object_entries);
   base::win::ScopedComPtr<IEnumPortableDeviceObjectIDs> enum_object_ids =
       GetDeviceObjectEnumerator(device, directory_object_id);
-  if (!enum_object_ids)
+  if (!enum_object_ids.get())
     return false;
 
   // Loop calling Next() while S_OK is being returned.
@@ -356,7 +356,7 @@ HRESULT GetFileStreamForObject(IPortableDevice* device,
   DCHECK(!file_object_id.empty());
   base::win::ScopedComPtr<IPortableDeviceContent> content =
       GetDeviceContent(device);
-  if (!content)
+  if (!content.get())
     return E_FAIL;
 
   base::win::ScopedComPtr<IPortableDeviceResources> resources;
