@@ -504,9 +504,7 @@ void MediaPlayerBridge::OnTimeUpdateTimerFired() {
 }
 
 bool MediaPlayerBridge::RegisterMediaPlayerBridge(JNIEnv* env) {
-  bool ret = RegisterNativesImpl(env);
-  DCHECK(g_MediaPlayerBridge_clazz);
-  return ret;
+  return RegisterNativesImpl(env);
 }
 
 bool MediaPlayerBridge::CanPause() {

@@ -94,9 +94,7 @@ void MediaPlayerListener::OnMediaInterrupted(
 }
 
 bool MediaPlayerListener::RegisterMediaPlayerListener(JNIEnv* env) {
-  bool ret = RegisterNativesImpl(env);
-  DCHECK(g_MediaPlayerListener_clazz);
-  return ret;
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace media
