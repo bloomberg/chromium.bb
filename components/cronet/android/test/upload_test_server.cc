@@ -22,6 +22,7 @@ namespace {
 
 const char echo_body_path[] = "/echo_body";
 const char echo_header_path[] = "/echo_header";
+const char echo_all_headers_path[] = "/echo_all_headers";
 const char echo_method_path[] = "/echo_method";
 const char redirect_to_echo_body_path[] = "/redirect_to_echo_body";
 
@@ -51,6 +52,11 @@ scoped_ptr<net::test_server::HttpResponse> UploadServerRequestHandler(
     } else {
       response->set_content("Header not found. :(");
     }
+    return response.Pass();
+  }
+
+  if (request.relative_url == echo_all_headers_path) {
+    response->set_content(request.all_headers);
     return response.Pass();
   }
 
@@ -101,6 +107,12 @@ jstring GetEchoHeaderURL(JNIEnv* env, jclass jcaller, jstring jheader) {
   std::string header = base::android::ConvertJavaStringToUTF8(env, jheader);
   replacements.SetQueryStr(header.c_str());
   url = url.ReplaceComponents(replacements);
+  return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
+}
+
+jstring GetEchoAllHeadersURL(JNIEnv* env, jclass jcaller) {
+  DCHECK(g_test_server);
+  GURL url = g_test_server->GetURL(echo_all_headers_path);
   return base::android::ConvertUTF8ToJavaString(env, url.spec()).Release();
 }
 

@@ -28,6 +28,10 @@ public final class UploadTestServer {
         return nativeGetEchoHeaderURL(header);
     }
 
+    public static String getEchoAllHeadersURL() {
+        return nativeGetEchoAllHeadersURL();
+    }
+
     public static String getEchoMethodURL() {
         return nativeGetEchoMethodURL();
     }
@@ -40,6 +44,7 @@ public final class UploadTestServer {
     private static native void nativeShutdownUploadTestServer();
     private static native String nativeGetEchoBodyURL();
     private static native String nativeGetEchoHeaderURL(String header);
+    private static native String nativeGetEchoAllHeadersURL();
     private static native String nativeGetEchoMethodURL();
     private static native String nativeGetRedirectToEchoBody();
 }

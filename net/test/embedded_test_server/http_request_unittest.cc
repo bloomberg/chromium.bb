@@ -44,6 +44,14 @@ TEST(HttpRequestTest, ParseRequest) {
     EXPECT_EQ(1u, request->headers.count("Multi-line-header"));
     EXPECT_EQ(1u, request->headers.count("Content-Length"));
 
+    const char kExpectedAllHeaders[] =
+        "POST /foobar.html HTTP/1.1\r\n"
+        "Host: localhost:1234\r\n"
+        "Multi-line-header: abcd\r\n"
+        " efgh\r\n"
+        " ijkl\r\n"
+        "Content-Length: 10\r\n";
+    EXPECT_EQ(kExpectedAllHeaders, request->all_headers);
     EXPECT_EQ("localhost:1234", request->headers["Host"]);
     EXPECT_EQ("abcd efgh ijkl", request->headers["Multi-line-header"]);
     EXPECT_EQ("10", request->headers["Content-Length"]);

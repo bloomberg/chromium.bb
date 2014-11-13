@@ -83,8 +83,10 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
 
   // Parse request's the first header line.
   // Request main main header, eg. GET /foobar.html HTTP/1.1
+  std::string request_headers;
   {
     const std::string header_line = ShiftLine();
+    http_request_->all_headers += header_line + "\r\n";
     std::vector<std::string> header_line_tokens;
     base::SplitString(header_line, ' ', &header_line_tokens);
     DCHECK_EQ(3u, header_line_tokens.size());
@@ -111,6 +113,7 @@ HttpRequestParser::ParseResult HttpRequestParser::ParseHeaders() {
       if (header_line.empty())
         break;
 
+      http_request_->all_headers += header_line + "\r\n";
       if (header_line[0] == ' ' || header_line[0] == '\t') {
         // Continuation of the previous multi-line header.
         std::string header_value =

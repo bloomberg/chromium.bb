@@ -12,8 +12,10 @@ import org.chromium.cronet_test_apk.TestUrlRequestListener.ResponseStep;
 import org.chromium.net.ResponseInfo;
 import org.chromium.net.UrlRequest;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -210,16 +212,22 @@ public class CronetUrlRequestTest extends CronetTestBase {
         String headerValue1 = "header-value1";
         String headerValue2 = "header-value2";
         UrlRequest urlRequest = mActivity.mUrlRequestContext.createRequest(
-                UploadTestServer.getEchoHeaderURL(headerName), listener,
+                UploadTestServer.getEchoAllHeadersURL(), listener,
                 listener.getExecutor());
         urlRequest.addHeader(headerName, headerValue1);
         urlRequest.addHeader(headerName, headerValue2);
         urlRequest.start();
         listener.blockForDone();
         assertEquals(200, listener.mResponseInfo.getHttpStatusCode());
-        // TODO(mef): Fix embedded test server to correctly return combination
-        // of headerValue1 +  headerValue2.
-        assertEquals(headerValue2, listener.mResponseAsString);
+        String headers = listener.mResponseAsString;
+        Pattern pattern = Pattern.compile(headerName + ":\\s(.*)\\r\\n");
+        Matcher matcher = pattern.matcher(headers);
+        List<String> actualValues = new ArrayList<String>();
+        while (matcher.find()) {
+            actualValues.add(matcher.group(1));
+        }
+        assertEquals(1, actualValues.size());
+        assertEquals("header-value2", actualValues.get(0));
     }
 
     @SmallTest
