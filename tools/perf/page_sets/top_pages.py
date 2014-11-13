@@ -174,7 +174,7 @@ class FacebookPage(TopPages):
 
   def RunNavigateSteps(self, action_runner):
     action_runner.NavigateToPage(self)
-    action_runner.WaitForElement(text='About')
+    action_runner.WaitForElement(text='Chat')
 
 
 class LinkedinPage(TopPages):
