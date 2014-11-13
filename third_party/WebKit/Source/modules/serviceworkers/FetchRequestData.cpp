@@ -21,16 +21,6 @@ FetchRequestData* FetchRequestData::create()
     return new FetchRequestData();
 }
 
-FetchRequestData* FetchRequestData::create(ExecutionContext* context)
-{
-    FetchRequestData* request = FetchRequestData::create();
-    if (context->isDocument())
-        request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
-    else
-        request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), ReferrerPolicyDefault));
-    return request;
-}
-
 FetchRequestData* FetchRequestData::create(const WebServiceWorkerRequest& webRequest)
 {
     FetchRequestData* request = FetchRequestData::create();
@@ -60,10 +50,7 @@ FetchRequestData* FetchRequestData::createRestrictedCopy(ExecutionContext* conte
     request->m_headerList = m_headerList->createCopy();
     request->m_blobDataHandle = m_blobDataHandle;
     request->m_origin = origin;
-    if (context->isDocument())
-        request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
-    else
-        request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), ReferrerPolicyDefault));
+    request->m_referrer.setClient();
     request->m_context = WebURLRequest::RequestContextFetch;
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;

@@ -142,7 +142,7 @@ Request* Request::create(ExecutionContext* context, const String& input, const D
 {
     // "2. Let |request| be |input|'s associated request, if |input| is a
     // Request object, and a new request otherwise."
-    FetchRequestData* request(FetchRequestData::create(context));
+    FetchRequestData* request(FetchRequestData::create());
     // "3. Set |request| to a restricted copy of itself."
     request = request->createRestrictedCopy(context, SecurityOrigin::create(context->url()));
     // "6. If |input| is a string, run these substeps:"
@@ -254,8 +254,12 @@ String Request::url() const
 String Request::referrer() const
 {
     // "The referrer attribute's getter must return the empty string if
-    // request's referrer is none, and request's referrer, serialized,
-    // otherwise."
+    // request's referrer is no referrer, "about:client" if request's referrer
+    // is client and request's referrer, serialized, otherwise."
+    if (m_request->referrer().isNoReferrer())
+        return String();
+    if (m_request->referrer().isClient())
+        return String("about:client");
     return m_request->referrer().referrer().referrer;
 }
 

@@ -30,17 +30,17 @@ public:
     class Referrer final {
     public:
         Referrer() : m_type(ClientReferrer) { }
-        bool isNone() const { return m_type == NoneReferrer; }
+        bool isNoReferrer() const { return m_type == NoReferrer; }
         bool isClient() const { return m_type == ClientReferrer; }
         bool isURL() const { return m_type == URLReferrer; }
-        void setNone()
+        void setNoReferrer()
         {
             m_referrer = blink::Referrer();
-            m_type = NoneReferrer;
+            m_type = NoReferrer;
         }
-        void setClient(const blink::Referrer& referrer)
+        void setClient()
         {
-            m_referrer = referrer;
+            m_referrer = blink::Referrer();
             m_type = ClientReferrer;
         }
         void setURL(const blink::Referrer& referrer)
@@ -50,12 +50,12 @@ public:
         }
         blink::Referrer referrer() const { return m_referrer; }
     private:
-        enum Type { NoneReferrer, ClientReferrer, URLReferrer };
+        enum Type { NoReferrer, ClientReferrer, URLReferrer };
         Type m_type;
         blink::Referrer m_referrer;
     };
 
-    static FetchRequestData* create(ExecutionContext*);
+    static FetchRequestData* create();
     static FetchRequestData* create(const blink::WebServiceWorkerRequest&);
     FetchRequestData* createRestrictedCopy(ExecutionContext*, PassRefPtr<SecurityOrigin>) const;
     FetchRequestData* createCopy() const;
@@ -83,8 +83,6 @@ public:
 
 private:
     FetchRequestData();
-
-    static FetchRequestData* create();
 
     AtomicString m_method;
     KURL m_url;

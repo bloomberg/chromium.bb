@@ -22,8 +22,8 @@ test(function() {
 
     assert_equals(request.url, URL, 'Request.url should match');
     assert_equals(request.method, 'GET', 'Request.method should match');
-    assert_equals(request.referrer, location.href,
-                  'Request.referrer should match');
+    assert_equals(request.referrer, 'about:client',
+                  'Request.referrer should be about:client');
     assert_true(request.headers instanceof Headers,
                 'Request.headers should be Headers');
 

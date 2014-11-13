@@ -45,6 +45,8 @@ t.step(function() {
             'request.url should be passed to onfetch event.');
         assert_equals(event.data.method, 'GET',
                       'request.method should be passed to onfetch event.');
+        assert_equals(event.data.referrer, location.href,
+                      'request.referrer should be passed to onfetch event.');
         assert_equals(event.data.headers['user-agent'], navigator.userAgent,
                       'User-Agent header should be passed to onfetch event.')
         service_worker_unregister_and_done(t, scope);

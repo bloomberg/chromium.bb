@@ -16,6 +16,7 @@ onfetch = function(e) {
   port.postMessage({
       url: e.request.url,
       method: e.request.method,
+      referrer: e.request.referrer,
       headers: headers,
       headerSize: e.request.headers.size
     });
