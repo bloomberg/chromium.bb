@@ -9494,10 +9494,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <message name="IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT" desc="The text of the connection section when the connection is encrypted.">
-        Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted with <ph name="BIT_COUNT">$2<ex>128</ex></ph>-bit encryption.
+        Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted with modern cryptography.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT" desc="The text of the connection section when the connection uses weak encryption.">
-        Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted with weak encryption.
+        Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is encrypted with obsolete cryptography.
       </message>
       <message name="IDS_PAGE_INFO_SECURITY_TAB_NOT_ENCRYPTED_CONNECTION_TEXT" desc="The text of the connection section when the connection is not encrypted.">
         Your connection to <ph name="DOMAIN">$1<ex>www.google.com</ex></ph> is not encrypted.

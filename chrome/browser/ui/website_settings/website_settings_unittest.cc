@@ -342,7 +342,7 @@ TEST_F(WebsiteSettingsTest, HTTPSConnectionError) {
   ssl_.security_style = content::SECURITY_STYLE_AUTHENTICATED;
   ssl_.cert_id = cert_id();
   ssl_.cert_status = 0;
-  ssl_.security_bits = 1;
+  ssl_.security_bits = -1;
   int status = 0;
   status = SetSSLVersion(status, net::SSL_CONNECTION_VERSION_TLS1);
   status = SetSSLCipherSuite(status, CR_TLS_RSA_WITH_AES_256_CBC_SHA256);
