@@ -5,16 +5,22 @@
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "native_client/src/include/elf_auxv.h"
+
+#if defined(OS_NACL_NONSFI)
+#include "native_client/src/public/nonsfi/elf_loader.h"
+#include "ppapi/nacl_irt/irt_ppapi.h"
+#else
+#include "base/memory/scoped_ptr.h"
 #include "components/nacl/loader/nonsfi/elf_loader.h"
 #include "components/nacl/loader/nonsfi/irt_interfaces.h"
-#include "native_client/src/include/elf_auxv.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/desc/nacl_desc_io.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
+#endif
 
 namespace nacl {
 namespace nonsfi {
@@ -43,7 +49,11 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
       0,  // Null terminate for argv.
       0,  // Null terminate for envv.
       AT_SYSINFO,
+#if defined(OS_NACL_NONSFI)
+      reinterpret_cast<uintptr_t>(&chrome_irt_query),
+#else
       reinterpret_cast<uintptr_t>(&NaClIrtInterface),
+#endif
       AT_NULL,
       0,  // Null terminate for auxv.
     };
@@ -57,15 +67,21 @@ class PluginMainDelegate : public base::PlatformThread::Delegate {
 // Default stack size of the plugin main thread. We heuristically chose 16M.
 const size_t kStackSize = (16 << 20);
 
+#if !defined(OS_NACL_NONSFI)
 struct NaClDescUnrefer {
   void operator()(struct NaClDesc* desc) const {
     NaClDescUnref(desc);
   }
 };
+#endif
 
 }  // namespace
 
 void MainStart(int nexe_file) {
+#if defined(OS_NACL_NONSFI)
+  EntryPointType entry_point =
+      reinterpret_cast<EntryPointType>(NaClLoadElfFile(nexe_file));
+#else
   ::scoped_ptr<struct NaClDesc, NaClDescUnrefer> desc(
        NaClDescIoDescFromDescAllocCtor(nexe_file, NACL_ABI_O_RDONLY));
   ElfImage image;
@@ -81,6 +97,7 @@ void MainStart(int nexe_file) {
 
   EntryPointType entry_point =
       reinterpret_cast<EntryPointType>(image.entry_point());
+#endif
   if (!base::PlatformThread::CreateNonJoinable(
           kStackSize, new PluginMainDelegate(entry_point))) {
     LOG(ERROR) << "LoadModuleRpc: Failed to create plugin main thread.";

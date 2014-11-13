@@ -6,16 +6,8 @@
 
 #include "components/nacl/loader/nacl_helper_linux.h"
 
-// Exclude most of code in this file for nacl_helper_nonsfi temporarily.
-// TODO(hidehiko): Enable this code path as dependencies become ready.
-// Note that the code path is still used for nacl_helper in Non-SFI mode
-// until switching (crbug.com/358465), since __native_client_nonsfi__ is
-// the macro defined only in PNaCl toolchain for Non-SFI bias.
-#if !defined(__native_client_nonsfi__)
-
 #include <errno.h>
 #include <fcntl.h>
-#include <link.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +33,6 @@
 #include "base/rand_util.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_listener.h"
-#include "components/nacl/loader/nonsfi/irt_exception_handling.h"
 #include "components/nacl/loader/nonsfi/nonsfi_listener.h"
 #include "components/nacl/loader/sandbox_linux/nacl_sandbox_linux.h"
 #include "content/public/common/content_descriptors.h"
@@ -51,6 +42,13 @@
 #include "ipc/ipc_descriptors.h"
 #include "ipc/ipc_switches.h"
 #include "sandbox/linux/services/libc_urandom_override.h"
+
+#if defined(OS_NACL_NONSFI)
+#include "native_client/src/public/nonsfi/irt_exception_handling.h"
+#else
+#include <link.h>
+#include "components/nacl/loader/nonsfi/irt_exception_handling.h"
+#endif
 
 namespace {
 
@@ -77,7 +75,11 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
                       const NaClLoaderSystemInfo& system_info,
                       bool uses_nonsfi_mode,
                       nacl::NaClSandbox* nacl_sandbox) {
+#if !defined(OS_NACL_NONSFI)
+  // Currently sandbox is disabled for nacl_helper_nonsfi.
+  // TODO(hidehiko): Enable sandbox.
   DCHECK(nacl_sandbox);
+#endif
   VLOG(1) << "NaCl loader: setting up IPC descriptor";
   // Close or shutdown IPC channels that we don't need anymore.
   PCHECK(0 == IGNORE_EINTR(close(kNaClZygoteDescriptor)));
@@ -96,7 +98,11 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
     ReplaceFDWithDummy(sandbox_ipc_channel);
 
     // Install crash signal handlers before disallowing system calls.
+#if defined(OS_NACL_NONSFI)
+    nonsfi_initialize_signal_handler();
+#else
     nacl::nonsfi::InitializeSignalHandler();
+#endif
   }
 
   // Always ignore SIGPIPE, for consistency with other Chrome processes and
@@ -104,16 +110,27 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   // We do this before seccomp-bpf is initialized.
   PCHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
 
+#if !defined(OS_NACL_NONSFI)
+  // Currently sandbox is disabled for nacl_helper_nonsfi.
+  // TODO(hidehiko): Enable sandbox.
   // Finish layer-1 sandbox initialization and initialize the layer-2 sandbox.
   CHECK(!nacl_sandbox->HasOpenDirectory());
   nacl_sandbox->InitializeLayerTwoSandbox(uses_nonsfi_mode);
   nacl_sandbox->SealLayerOneSandbox();
   nacl_sandbox->CheckSandboxingStateWithPolicy();
+#endif
 
   base::GlobalDescriptors::GetInstance()->Set(kPrimaryIPCChannel,
                                               browser_fd.release());
 
   base::MessageLoopForIO main_message_loop;
+#if defined(OS_NACL_NONSFI)
+  CHECK(uses_nonsfi_mode);
+  nacl::nonsfi::NonSfiListener listener;
+  listener.Listen();
+#else
+  // TODO(hidehiko): Drop Non-SFI supporting from nacl_helper after the
+  // nacl_helper_nonsfi switching is done.
   if (uses_nonsfi_mode) {
     nacl::nonsfi::NonSfiListener listener;
     listener.Listen();
@@ -123,6 +140,7 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
     listener.set_number_of_cores(system_info.number_of_cores);
     listener.Listen();
   }
+#endif
   _exit(0);
 }
 
@@ -283,6 +301,9 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
   char buf[kNaClMaxIPCMessageLength];
   const ssize_t msglen = UnixDomainSocket::RecvMsg(zygote_ipc_fd,
       &buf, sizeof(buf), &fds);
+#if !defined(OS_NACL_NONSFI)
+  // Currently sandbox is disabled for nacl_helper_nonsfi.
+  // TODO(hidehiko): Enable sandbox.
   // If the Zygote has started handling requests, we should be sandboxed via
   // the setuid sandbox.
   if (!nacl_sandbox->layer_one_enabled()) {
@@ -290,6 +311,7 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
       << "Most likely you need to configure your SUID sandbox "
       << "correctly";
   }
+#endif
   if (msglen == 0 || (msglen == -1 && errno == ECONNRESET)) {
     // EOF from the browser. Goodbye!
     _exit(0);
@@ -314,6 +336,7 @@ bool HandleZygoteRequest(int zygote_ipc_fd,
                               &read_iter);
 }
 
+#if !defined(OS_NACL_NONSFI)
 static const char kNaClHelperReservedAtZero[] = "reserved_at_zero";
 static const char kNaClHelperRDebug[] = "r_debug";
 
@@ -334,6 +357,9 @@ static const char kNaClHelperRDebug[] = "r_debug";
 // dynamic linker's structure into the address provided by the option.
 // Hereafter, if someone attaches a debugger (or examines a core dump),
 // the debugger will find all the symbols in the normal way.
+//
+// Non-SFI mode does not use nacl_helper_bootstrap, so it doesn't need to
+// process the --r_debug option.
 static void CheckRDebug(char* argv0) {
   std::string r_debug_switch_value =
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kNaClHelperRDebug);
@@ -380,6 +406,7 @@ static size_t CheckReservedAtZero() {
   }
   return prereserved_sandbox_size;
 }
+#endif
 
 }  // namespace
 
@@ -401,14 +428,14 @@ const char* __asan_default_options() {
   return kAsanDefaultOptionsNaCl;
 }
 #endif
-#endif  // !defined(__native_client_nonsfi__)
 
 int main(int argc, char* argv[]) {
-  // Now do nothing in main for nacl_helper_nonsfi.
-#if !defined(__native_client_nonsfi__)
   CommandLine::Init(argc, argv);
   base::AtExitManager exit_manager;
   base::RandUint64();  // acquire /dev/urandom fd before sandbox is raised
+
+#if !defined(OS_NACL_NONSFI)
+  // NSS is only needed for SFI NaCl.
   // Allows NSS to fopen() /dev/urandom.
   sandbox::InitLibcUrandomOverrides();
 #if defined(USE_NSS)
@@ -423,14 +450,25 @@ int main(int argc, char* argv[]) {
   // Load shared libraries before sandbox is raised.
   // NSS is needed to perform hashing for validation caching.
   crypto::LoadNSSLibraries();
-#endif
+#endif  // defined(USE_NSS)
+#endif  // defined(OS_NACL_NONSFI)
   const NaClLoaderSystemInfo system_info = {
+#if !defined(OS_NACL_NONSFI)
+    // These are not used by nacl_helper_nonsfi.
     CheckReservedAtZero(),
     sysconf(_SC_NPROCESSORS_ONLN)
+#endif
   };
 
+#if !defined(OS_NACL_NONSFI)
   CheckRDebug(argv[0]);
+#endif
 
+#if defined(OS_NACL_NONSFI)
+  // Currently sandbox is disabled for nacl_helper_nonsfi.
+  // TODO(hidehiko): Enable sandbox.
+  scoped_ptr<nacl::NaClSandbox> nacl_sandbox;
+#else
   scoped_ptr<nacl::NaClSandbox> nacl_sandbox(new nacl::NaClSandbox);
   // Make sure that the early initialization did not start any spurious
   // threads.
@@ -441,6 +479,7 @@ int main(int argc, char* argv[]) {
   const bool is_init_process = 1 == getpid();
   nacl_sandbox->InitializeLayerOneSandbox();
   CHECK_EQ(is_init_process, nacl_sandbox->layer_one_enabled());
+#endif  // defined(OS_NACL_NONSFI)
 
   const std::vector<int> empty;
   // Send the zygote a message to let it know we are ready to help
@@ -459,5 +498,4 @@ int main(int argc, char* argv[]) {
     DCHECK(request_handled);
   }
   NOTREACHED();
-#endif  // !defined(__native_client_nonsfi__)
 }

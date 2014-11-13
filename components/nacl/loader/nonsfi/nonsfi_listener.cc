@@ -20,7 +20,13 @@
 #include "ipc/ipc_sync_channel.h"
 #include "ppapi/nacl_irt/plugin_startup.h"
 
-#if !defined(OS_LINUX)
+#if defined(OS_NACL_NONSFI)
+#include "native_client/src/public/nonsfi/irt_random.h"
+#else
+#include "components/nacl/loader/nonsfi/irt_random.h"
+#endif
+
+#if !defined(OS_LINUX) && !defined(OS_NACL_NONSFI)
 # error "non-SFI mode is supported only on linux."
 #endif
 
@@ -64,7 +70,11 @@ bool NonSfiListener::OnMessageReceived(const IPC::Message& msg) {
 
 void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   // Random number source initialization.
+#if defined(OS_NACL_NONSFI)
+  nonsfi_set_urandom_fd(base::GetUrandomFD());
+#else
   SetUrandomFd(base::GetUrandomFD());
+#endif
 
   IPC::ChannelHandle browser_handle;
   IPC::ChannelHandle ppapi_renderer_handle;
