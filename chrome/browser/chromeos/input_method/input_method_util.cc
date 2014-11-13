@@ -58,17 +58,19 @@ const size_t kMappingImeIdToMediumLenNameResourceIdLen =
 // GetFirstLogingInputMethodIds may miss component extension IMEs. To enable
 // component extension IME as the first loging input method, we have to prepare
 // component extension IME IDs.
+// Note: empty layout means the rule applies for all layouts.
 const struct {
   const char* locale;
   const char* layout;
   const char* engine_id;
 } kDefaultInputMethodRecommendation[] = {
-  { "ja", "us", "nacl_mozc_us" },
   { "ja", "jp", "nacl_mozc_jp" },
-  { "zh-CN", "us", "zh-t-i0-pinyin" },
-  { "zh-TW", "us", "zh-hant-t-i0-und" },
-  { "th", "us", "vkd_th" },
-  { "vi", "us", "vkd_vi_tcvn" },
+  { "ja", "", "nacl_mozc_us" },
+  { "zh-CN", "", "zh-t-i0-pinyin" },
+  { "zh-TW", "", "zh-hant-t-i0-und" },
+  { "th", "", "vkd_th" },
+  { "vi", "", "vkd_vi_tcvn" },
+  { "ru", "", "xkb:ru::rus" },
 };
 
 // The engine ID map for migration. This migration is for input method IDs from
@@ -387,8 +389,9 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
       = current_input_method.GetPreferredKeyboardLayout();
   for (size_t i = 0; i < arraysize(kDefaultInputMethodRecommendation);
        ++i) {
-    if (kDefaultInputMethodRecommendation[i].locale == language_code &&
-        kDefaultInputMethodRecommendation[i].layout == current_layout) {
+    if (kDefaultInputMethodRecommendation[i].locale == language_code && (
+        !kDefaultInputMethodRecommendation[i].layout[0] ||
+        kDefaultInputMethodRecommendation[i].layout == current_layout)) {
       out_input_method_ids->push_back(
           extension_ime_util::GetInputMethodIDByEngineID(
               kDefaultInputMethodRecommendation[i].engine_id));
