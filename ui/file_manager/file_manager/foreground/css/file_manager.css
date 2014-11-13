@@ -1258,14 +1258,12 @@ div.shade[fadein] {
   top: 0;
 }
 
-body[drive='mounting'] .dialog-container #unmounted-panel,
 body[drive='error'] .dialog-container #unmounted-panel,
 body[unformatted] .dialog-container #format-panel {
   display: block;
 }
 
 body[drive='unmounted'] .dialog-container .filelist-panel,
-body[drive='mounting'] .dialog-container .filelist-panel,
 body[drive='error'] .dialog-container .filelist-panel,
 body[unformatted] .dialog-container .filelist-panel {
   /* Hide file list when Drive is not mounted.
@@ -1283,20 +1281,7 @@ body[unformatted] .dialog-container .filelist-panel {
   margin-bottom: 10px;
 }
 
-#unmounted-panel > .loading {
-  position: relative;
-}
-
-#unmounted-panel > .loading > .spinner-box {
-  bottom: 0;
-  position: absolute;
-  right: 100%;
-  top: 0;
-  width: 40px;
-}
-
 body[unformatted] #format-panel > .error,
-body[drive='mounting'] #unmounted-panel > .loading,
 body[drive='error'] #unmounted-panel > .error,
 #format-panel > #format-button,
 #unmounted-panel.retry-enabled > .learn-more {

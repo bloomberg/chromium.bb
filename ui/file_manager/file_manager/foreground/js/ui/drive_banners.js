@@ -618,9 +618,6 @@ FileListBannerController.prototype.ensureDriveUnmountedPanelInitialized_ =
     return div;
   };
 
-  var loading = create(panel, 'div', 'loading', str('DRIVE_LOADING'));
-  var spinnerBox = create(loading, 'div', 'spinner-box');
-  create(spinnerBox, 'div', 'spinner');
   create(panel, 'div', 'error', str('DRIVE_CANNOT_REACH'));
 
   var learnMore = create(panel, 'a', 'learn-more plain-link',
@@ -644,8 +641,7 @@ FileListBannerController.prototype.onVolumeInfoListSplice_ = function(event) {
 
 /**
  * Shows the panel when current directory is DRIVE and it's unmounted.
- * Hides it otherwise. The panel shows spinner if DRIVE is mounting or
- * an error message if it failed.
+ * Hides it otherwise. The panel shows an error message if it failed.
  * @private
  */
 FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
@@ -653,13 +649,18 @@ FileListBannerController.prototype.updateDriveUnmountedPanel_ = function() {
   if (this.isOnCurrentProfileDrive()) {
     var driveVolume = this.volumeManager_.getCurrentProfileVolumeInfo(
         VolumeManagerCommon.VolumeType.DRIVE);
-    if (driveVolume && driveVolume.error) {
-      this.ensureDriveUnmountedPanelInitialized_();
-      this.unmountedPanel_.classList.add('retry-enabled');
+    if (driveVolume) {
+      if (driveVolume.error) {
+        this.ensureDriveUnmountedPanelInitialized_();
+        this.unmountedPanel_.classList.add('retry-enabled');
+        node.setAttribute('drive', 'error');
+      } else {
+        node.setAttribute('drive', 'mounted');
+      }
     } else {
       this.unmountedPanel_.classList.remove('retry-enabled');
+      node.setAttribute('drive', 'unmounted');
     }
-    node.setAttribute('drive', status);
   } else {
     node.removeAttribute('drive');
   }
