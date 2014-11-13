@@ -629,6 +629,40 @@ scoped_ptr<PacketPipe> EvilNetwork() {
   return pipe.Pass();
 }
 
+scoped_ptr<InterruptedPoissonProcess> DefaultInterruptedPoissonProcess() {
+  // The following values are taken from a session reported from a user.
+  // They are experimentally tested to demonstrate challenging network
+  // conditions. The average bitrate is about 2mbits/s.
+
+  // Each element in this vector is the average number of packets sent
+  // per millisecond. The average changes and rotates every second.
+  std::vector<double> average_rates;
+  average_rates.push_back(0.609);
+  average_rates.push_back(0.495);
+  average_rates.push_back(0.561);
+  average_rates.push_back(0.458);
+  average_rates.push_back(0.538);
+  average_rates.push_back(0.513);
+  average_rates.push_back(0.585);
+  average_rates.push_back(0.592);
+  average_rates.push_back(0.658);
+  average_rates.push_back(0.556);
+  average_rates.push_back(0.371);
+  average_rates.push_back(0.595);
+  average_rates.push_back(0.490);
+  average_rates.push_back(0.980);
+  average_rates.push_back(0.781);
+  average_rates.push_back(0.463);
+
+  const double burstiness = 0.609;
+  const double variance = 4.1;
+
+  scoped_ptr<InterruptedPoissonProcess> ipp(
+      new InterruptedPoissonProcess(
+          average_rates, burstiness, variance, 0));
+  return ipp.Pass();
+}
+
 class UDPProxyImpl : public UDPProxy {
  public:
   UDPProxyImpl(const net::IPEndPoint& local_port,

@@ -180,6 +180,11 @@ scoped_ptr<PacketPipe> BadNetwork();
 // 300ms drouputs every ~2 seconds.
 scoped_ptr<PacketPipe> EvilNetwork();
 
+// Builds an Interrupted Poisson Process network simulator with default
+// settings. It simulates a challenging interference-heavy WiFi environment
+// of roughly 2mbits/s.
+scoped_ptr<InterruptedPoissonProcess> DefaultInterruptedPoissonProcess();
+
 }  // namespace test
 }  // namespace cast
 }  // namespace media

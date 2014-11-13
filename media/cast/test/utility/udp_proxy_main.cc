@@ -120,7 +120,7 @@ int main(int argc, char** argv) {
             "Usage: udp_proxy <localport> <remotehost> <remoteport> <type>\n"
             "or:\n"
             "       udp_proxy <localport> <type>\n"
-            "Where type is one of: perfect, wifi, bad, evil\n");
+            "Where type is one of: perfect, wifi, bad, evil, poisson-wifi\n");
     exit(1);
   }
 
@@ -147,6 +147,8 @@ int main(int argc, char** argv) {
   net::IPEndPoint remote_endpoint(remote_ip_number, remote_port);
   net::IPEndPoint local_endpoint(local_ip_number, local_port);
   scoped_ptr<media::cast::test::PacketPipe> in_pipe, out_pipe;
+  scoped_ptr<media::cast::test::InterruptedPoissonProcess> ipp(
+      media::cast::test::DefaultInterruptedPoissonProcess());
 
   if (network_type == "perfect") {
     // No action needed.
@@ -159,6 +161,9 @@ int main(int argc, char** argv) {
   } else if (network_type == "evil") {
     in_pipe = media::cast::test::EvilNetwork().Pass();
     out_pipe = media::cast::test::EvilNetwork().Pass();
+  } else if (network_type == "poisson-wifi") {
+    in_pipe = ipp->NewBuffer(128 * 1024).Pass();
+    out_pipe = ipp->NewBuffer(128 * 1024).Pass();
   } else {
     fprintf(stderr, "Unknown network type.\n");
     exit(1);
