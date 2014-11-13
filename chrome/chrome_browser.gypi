@@ -2350,11 +2350,13 @@
       'browser/supervised_user/supervised_user_sync_service_factory.cc',
       'browser/supervised_user/supervised_user_sync_service_factory.h',
       'browser/supervised_user/supervised_user_sync_service_observer.h',
-      'browser/supervised_user/supervised_user_theme.cc',
-      'browser/supervised_user/supervised_user_theme.h',
       'browser/supervised_user/supervised_user_url_filter.cc',
       'browser/supervised_user/supervised_user_url_filter.h',
       'browser/supervised_user/supervised_users.h',
+    ],
+    'chrome_browser_supervised_user_and_themes_sources': [
+      'browser/supervised_user/supervised_user_theme.cc',
+      'browser/supervised_user/supervised_user_theme.h',
     ],
     'chrome_browser_undo_sources': [
       'browser/undo/bookmark_undo_service.cc',
@@ -3435,6 +3437,9 @@
         }],
         ['enable_managed_users==1', {
           'sources': [ '<@(chrome_browser_supervised_user_sources)' ],
+        }],
+        ['enable_managed_users==1 and enable_themes==1', {
+          'sources': [ '<@(chrome_browser_supervised_user_and_themes_sources)' ],
         }],
         ['enable_webrtc==1', {
           'sources': [ '<@(chrome_browser_webrtc_sources)' ]

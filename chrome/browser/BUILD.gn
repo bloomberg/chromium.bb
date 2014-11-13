@@ -629,6 +629,11 @@ static_library("browser") {
         gypi_values.chrome_browser_supervised_user_sources,
         ".", "//chrome")
   }
+  if (enable_managed_users && enable_themes) {
+    sources += rebase_path(
+        gypi_values.chrome_browser_supervised_user_and_themes_sources,
+        ".", "//chrome")
+  }
   if (enable_webrtc) {
     sources += rebase_path(
         gypi_values.chrome_browser_webrtc_sources,
