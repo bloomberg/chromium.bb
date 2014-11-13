@@ -1244,6 +1244,8 @@ chrome.automation.AutomationNode.prototype.indexInParent;
  * @type {{
  *     name: string,
  *     value: string,
+ *     textSelStart: number,
+ *     textSelEnd: number,
  *     wordStarts: Array.<number>,
  *     wordEnds: Array.<number>
  * }}

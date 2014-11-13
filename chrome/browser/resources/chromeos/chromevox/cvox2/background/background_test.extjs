@@ -84,26 +84,26 @@ TEST_F('BackgroundTest', 'DesktopFocus', function() {
 
 /** Tests feedback once a page loads. */
 TEST_F('BackgroundTest', 'InitialFeedback', function() {
+  cvox.ChromeVox.tts.expectSpeech('start', function() {
+    global.backgroundObj.onGotCommand('nextLine');
+  }, true);
+  cvox.ChromeVox.tts.expectSpeech('end', testDone, true);
+
   this.runWithDocument(function() {/*!
     <p>start
     <p>end
   */},
-  function() {
-    cvox.ChromeVox.tts.expectSpeech('start', function() {
-      global.backgroundObj.onGotCommand('nextLine');
-    });
-    cvox.ChromeVox.tts.expectSpeech('end', testDone);
-  }.bind(this));
+  function() {});
 });
 
 /** Tests consistency of navigating forward and backward. */
 TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
   this.runWithDocument(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-      cvox.ChromeVox.tts.expectSpeech('start');
       expectAfter('alpha', doCmd('nextLink'));
       expectAfter('beta', doCmd('nextLink'));
       expectAfter('delta', doCmd('nextLink'));
@@ -129,12 +129,12 @@ TEST_F('BackgroundTest', 'ForwardBackwardNavigation', function() {
 });
 
 TEST_F('BackgroundTest', 'CaretNavigation', function() {
+  cvox.ChromeVox.tts.expectSpeech('start', null, true);
   this.runWithDocument(this.linksAndHeadingsDoc, function() {
       var doCmd = this.doCmd.bind(this);
       var expectAfter =
           cvox.ChromeVox.tts.expectSpeechAfter.bind(cvox.ChromeVox.tts);
 
-      cvox.ChromeVox.tts.expectSpeech('start');
       expectAfter('t', doCmd('nextCharacter'), true);
       expectAfter('a', doCmd('nextCharacter'), true);
       expectAfter('Link alpha', doCmd('nextWord'), true);

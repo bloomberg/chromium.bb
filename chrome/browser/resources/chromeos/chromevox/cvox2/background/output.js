@@ -105,6 +105,12 @@ Output.RULES = {
     staticText: {
       speak: '$value'
     },
+    textBox: {
+      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
+    },
+    textField: {
+      speak: '$name $value $earcon(EDITABLE_TEXT, @input_type_text)'
+    },
     window: {
       enter: '$name $role= $earcon(OBJECT_OPEN)'
       // TODO(dtseng): A leave event is not reliable because views does not fire
@@ -169,6 +175,9 @@ Output.prototype = {
    */
   handleSpeech: function() {
     var buff = this.buffer_;
+    if (!buff.toString())
+      return;
+
     cvox.ChromeVox.tts.speak(buff.toString(), cvox.QueueMode.FLUSH);
     var actions = buff.getSpansInstanceOf(
         /** @type {function()} */(new Output.Action(
@@ -416,7 +425,6 @@ Output.prototype = {
   node_: function(node, prevNode, type, buff) {
     // Navigate is the default event.
     var eventBlock = Output.RULES[type] || Output.RULES['navigate'];
-
     var roleBlock = eventBlock[node.role] || eventBlock['default'];
     var speakFormat = roleBlock.speak || eventBlock['default'].speak;
     this.format_(node, speakFormat, buff);

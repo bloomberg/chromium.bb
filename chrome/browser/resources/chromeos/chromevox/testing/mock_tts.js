@@ -37,11 +37,12 @@ MockTts.prototype = {
    * |opt_callback| is called.
    * @param {string} expectedText
    * @param {function() : void=} opt_callback
+   * @param {boolean=} opt_exact Expect an exact match; defaults to false.
    */
-  expectSpeech: function(expectedText, opt_callback) {
+  expectSpeech: function(expectedText, opt_callback, opt_exact) {
     var expectation = {};
     expectation.endCallback = opt_callback;
-    this.addExpectation_(expectedText, expectation);
+    this.addExpectation_(expectedText, expectation, opt_exact);
   },
 
   /**

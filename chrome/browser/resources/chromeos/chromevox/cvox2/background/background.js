@@ -15,7 +15,17 @@ goog.require('AutomationUtil');
 goog.require('Output');
 goog.require('Output.EventType');
 goog.require('cursors.Cursor');
+goog.require('cvox.ChromeVoxEditableTextBase');
 goog.require('cvox.TabsApiHandler');
+
+// Define types here due to editable_text.js's implicit dependency with
+// ChromeVoxEventWatcher.
+/** @type {Object} */
+cvox.ChromeVoxEventWatcher;
+/** @type {function(boolean)} */
+cvox.ChromeVoxEventWatcher.handleTextChanged;
+/** @type {function()} */
+cvox.ChromeVoxEventWatcher.setUpTextHandler;
 
 goog.scope(function() {
 var AutomationNode = chrome.automation.AutomationNode;
@@ -78,7 +88,8 @@ Background = function() {
     focus: this.onEventDefault,
     menuStart: this.onEventDefault,
     menuEnd: this.onEventDefault,
-    loadComplete: this.onLoadComplete
+    loadComplete: this.onLoadComplete,
+    textSelectionChanged: this.onTextSelectionChanged
   };
 
   // Register listeners for ...
@@ -236,9 +247,6 @@ Background.prototype = {
    * @param {Object} evt
    */
   onLoadComplete: function(evt) {
-    if (this.currentRange_)
-      return;
-
     var node = AutomationUtil.findNodePost(evt.target,
         Dir.FORWARD,
         AutomationPredicate.leaf);
@@ -247,6 +255,33 @@ Background.prototype = {
 
     if (this.currentRange_)
       new Output(this.currentRange_, null, evt.type);
+  },
+
+  /**
+   * Provides all feedback once a text selection change event fires.
+   * @param {Object} evt
+   */
+  onTextSelectionChanged: function(evt) {
+    if (!this.currentRange_)
+      this.currentRange_ = cursors.Range.fromNode(evt.target);
+
+    var textChangeEvent = new cvox.TextChangeEvent(
+        evt.target.attributes.value,
+        evt.target.attributes.textSelStart,
+        evt.target.attributes.textSelEnd,
+        true);  // triggered by user
+    if (!this.editableTextHandler ||
+        evt.target != this.currentRange_.getStart().getNode()) {
+      this.editableTextHandler =
+          new cvox.ChromeVoxEditableTextBase(
+              textChangeEvent.value,
+              textChangeEvent.start,
+              textChangeEvent.end,
+              evt.target.state['protected'],
+              cvox.ChromeVox.tts);
+    }
+
+    this.editableTextHandler.changed(textChangeEvent);
   },
 
   /**
