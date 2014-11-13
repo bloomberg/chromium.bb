@@ -8,7 +8,6 @@
 #include <list>
 
 #include "base/files/file_path.h"
-#include "base/i18n/time_formatting.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -18,50 +17,45 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "net/base/escape.h"
-#include "third_party/icu/source/i18n/unicode/datefmt.h"
-#include "third_party/icu/source/i18n/unicode/dtptngen.h"
-#include "third_party/icu/source/i18n/unicode/smpdtfmt.h"
 
 namespace chromeos {
 namespace network_event_log {
 
 namespace {
 
-std::string IcuFormattedString(const base::Time& time,
-                               const std::string& format) {
-  UErrorCode status = U_ZERO_ERROR;
-  scoped_ptr<icu::DateTimePatternGenerator> generator(
-      icu::DateTimePatternGenerator::createInstance(status));
-  DCHECK(U_SUCCESS(status));
-  icu::UnicodeString generated_pattern =
-      generator->getBestPattern(icu::UnicodeString(format.c_str()), status);
-  DCHECK(U_SUCCESS(status));
-  icu::SimpleDateFormat formatter(generated_pattern, status);
-  DCHECK(U_SUCCESS(status));
-  icu::UnicodeString formatted;
-  formatter.format(static_cast<UDate>(time.ToDoubleT() * 1000), formatted);
-  base::string16 formatted16(formatted.getBuffer(),
-                             static_cast<size_t>(formatted.length()));
-  return base::UTF16ToUTF8(formatted16);
-}
-
 std::string DateAndTimeWithMicroseconds(const base::Time& time) {
-  std::string formatted = IcuFormattedString(time, "yyMMddHHmmss");
-  // icu only supports milliseconds, but sometimes we need microseconds, so
-  // append '.' + usecs to the end of the formatted string.
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+  // base::Time::Exploded does not include microseconds, but sometimes we need
+  // microseconds, so append '.' + usecs to the end of the formatted string.
   int usecs = static_cast<int>(fmod(time.ToDoubleT() * 1000000, 1000000));
-  return base::StringPrintf("%s.%06d", formatted.c_str(), usecs);
+  return base::StringPrintf("%04d/%02d/%02d %02d:%02d:%02d.%06d",
+                            exploded.year,
+                            exploded.month,
+                            exploded.day_of_month,
+                            exploded.hour,
+                            exploded.minute,
+                            exploded.second,
+                            usecs);
 }
 
 std::string TimeWithSeconds(const base::Time& time) {
-  return IcuFormattedString(time, "HHmmss");
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+  return base::StringPrintf("%02d:%02d:%02d",
+                            exploded.hour,
+                            exploded.minute,
+                            exploded.second);
 }
 
 std::string TimeWithMillieconds(const base::Time& time) {
-  std::string formatted = IcuFormattedString(time, "HHmmss");
-  // icu doesn't support milliseconds combined with other formatting.
-  int msecs = static_cast<int>(fmod(time.ToDoubleT() * 1000, 1000));
-  return base::StringPrintf("%s.%03d", formatted.c_str(), msecs);
+  base::Time::Exploded exploded;
+  time.LocalExplode(&exploded);
+  return base::StringPrintf("%02d:%02d:%02d.%03d",
+                            exploded.hour,
+                            exploded.minute,
+                            exploded.second,
+                            exploded.millisecond);
 }
 
 class NetworkEventLog;
