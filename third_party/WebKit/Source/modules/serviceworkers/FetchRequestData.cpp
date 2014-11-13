@@ -64,7 +64,7 @@ FetchRequestData* FetchRequestData::createRestrictedCopy(ExecutionContext* conte
         request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), toDocument(context)->referrerPolicy()));
     else
         request->m_referrer.setClient(blink::Referrer(context->url().strippedForUseAsReferrer(), ReferrerPolicyDefault));
-    request->m_context = ConnectContext;
+    request->m_context = WebURLRequest::RequestContextFetch;
     request->m_mode = m_mode;
     request->m_credentials = m_credentials;
     // "2. Return |r|."
@@ -97,7 +97,7 @@ FetchRequestData::FetchRequestData()
     : m_method("GET")
     , m_headerList(FetchHeaderList::create())
     , m_unsafeRequestFlag(false)
-    , m_context(NullContext)
+    , m_context(WebURLRequest::RequestContextUnspecified)
     , m_sameOriginDataURLFlag(false)
     , m_mode(WebURLRequest::FetchRequestModeNoCORS)
     , m_credentials(WebURLRequest::FetchCredentialsModeOmit)

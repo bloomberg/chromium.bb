@@ -25,7 +25,6 @@ class WebServiceWorkerRequest;
 class FetchRequestData final : public GarbageCollectedFinalized<FetchRequestData> {
     WTF_MAKE_NONCOPYABLE(FetchRequestData);
 public:
-    enum Context { ChildContext, ConnectContext, DownloadContext, FontContext, FormContext, ImageContext, ManifestContext, MediaContext, NavigateContext, ObjectContext, PingContext, PopupContext, PrefetchContext, ScriptContext, ServiceWorkerContext, SharedWorkerContext, StyleContext, WorkerContext, NullContext };
     enum Tainting { BasicTainting, CORSTainting, OpaqueTainting };
 
     class Referrer final {
@@ -93,7 +92,7 @@ private:
     RefPtr<BlobDataHandle> m_blobDataHandle;
     bool m_unsafeRequestFlag;
     // FIXME: Support m_skipServiceWorkerFlag;
-    Context m_context;
+    WebURLRequest::RequestContext m_context;
     RefPtr<SecurityOrigin> m_origin;
     // FIXME: Support m_forceOriginHeaderFlag;
     bool m_sameOriginDataURLFlag;
