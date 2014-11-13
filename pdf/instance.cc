@@ -41,6 +41,7 @@
 #include "ppapi/cpp/resource.h"
 #include "ppapi/cpp/url_request_info.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -319,6 +320,17 @@ Instance::~Instance() {
 }
 
 bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  v8::StartupData natives;
+  v8::StartupData snapshot;
+  pp::PDF::GetV8ExternalSnapshotData(&natives.data, &natives.raw_size,
+                                     &snapshot.data, &snapshot.raw_size);
+  if (natives.data) {
+    natives.compressed_size = natives.raw_size;
+    snapshot.compressed_size = snapshot.raw_size;
+    v8::V8::SetNativesDataBlob(&natives);
+    v8::V8::SetSnapshotDataBlob(&snapshot);
+  }
+
   // For now, we hide HiDPI support behind a flag.
   if (pp::PDF::IsFeatureEnabled(this, PP_PDFFEATURE_HIDPI))
     hidpi_enabled_ = true;

@@ -38,6 +38,7 @@
     'type': 'static_library',
     'dependencies': [
       '<(DEPTH)/content/content.gyp:content_renderer',
+      '<(DEPTH)/gin/gin.gyp:gin',
       '<(DEPTH)/ppapi/ppapi_internal.gyp:ppapi_shared',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',

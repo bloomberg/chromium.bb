@@ -20,6 +20,7 @@ static_library("renderer") {
     "//components/resources:components_resources",
     "//components/strings",
     "//content/public/renderer",
+    "//gin",
     "//ppapi:ppapi_shared",
     "//third_party/icu",
     "//v8",

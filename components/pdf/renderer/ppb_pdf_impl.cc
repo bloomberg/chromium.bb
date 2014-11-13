@@ -16,6 +16,7 @@
 #include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "gin/public/isolate_holder.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/trusted/ppb_browser_font_trusted.h"
@@ -329,6 +330,14 @@ void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
   instance->SetLinkUnderCursor(url);
 }
 
+void GetV8ExternalSnapshotData(const char** natives_data_out,
+                               int* natives_size_out,
+                               const char** snapshot_data_out,
+                               int* snapshot_size_out) {
+  gin::IsolateHolder::GetV8ExternalSnapshotData(natives_data_out,
+      natives_size_out, snapshot_data_out, snapshot_size_out);
+}
+
 const PPB_PDF ppb_pdf = {                      //
     &GetLocalizedString,                       //
     &GetResourceImage,                         //
@@ -349,6 +358,7 @@ const PPB_PDF ppb_pdf = {                      //
     &IsOutOfProcess,                           //
     &SetSelectedText,                          //
     &SetLinkUnderCursor,                       //
+    &GetV8ExternalSnapshotData,                //
 };
 
 }  // namespace

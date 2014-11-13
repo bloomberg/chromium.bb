@@ -52,11 +52,13 @@ class GIN_EXPORT IsolateHolder {
   void RemoveRunMicrotasksObserver();
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#ifdef OS_ANDROID
   static bool LoadV8SnapshotFD(int natives_fd, int snapshot_fd);
-#endif
   static bool LoadV8Snapshot();
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
+  static void GetV8ExternalSnapshotData(const char** natives_data_out,
+                                        int* natives_size_out,
+                                        const char** snapshot_data_out,
+                                        int* snapshot_size_out);
 
  private:
   v8::Isolate* isolate_;

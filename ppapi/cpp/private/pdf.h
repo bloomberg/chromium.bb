@@ -63,6 +63,10 @@ class PDF {
                               const char* selected_text);
   static void SetLinkUnderCursor(const InstanceHandle& instance,
                                  const char* url);
+  static void GetV8ExternalSnapshotData(const char** natives_data_out,
+                                        int* natives_size_out,
+                                        const char** snapshot_data_out,
+                                        int* snapshot_size_out);
 };
 
 }  // namespace pp

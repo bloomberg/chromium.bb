@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/files/memory_mapped_file.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
@@ -19,7 +20,6 @@
 #include "gin/run_microtasks_observer.h"
 
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
-#include "base/files/memory_mapped_file.h"
 #include "base/path_service.h"
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
 
@@ -34,10 +34,10 @@ bool GenerateEntropy(unsigned char* buffer, size_t amount) {
   return true;
 }
 
-#ifdef V8_USE_EXTERNAL_STARTUP_DATA
 base::MemoryMappedFile* g_mapped_natives = NULL;
 base::MemoryMappedFile* g_mapped_snapshot = NULL;
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
 bool MapV8Files(base::FilePath* natives_path, base::FilePath* snapshot_path,
                 int natives_fd = -1, int snapshot_fd = -1) {
   int flags = base::File::FLAG_OPEN | base::File::FLAG_READ;
@@ -80,7 +80,13 @@ bool IsolateHolder::LoadV8Snapshot() {
     return true;
 
   base::FilePath data_path;
-  PathService::Get(base::DIR_ANDROID_APP_DATA, &data_path);
+  PathService::Get(
+#if defined(OS_ANDROID)
+    base::DIR_ANDROID_APP_DATA,
+#elif defined(OS_POSIX)
+    base::DIR_EXE,
+#endif
+    &data_path);
   DCHECK(!data_path.empty());
 
   base::FilePath natives_path = data_path.AppendASCII("natives_blob.bin");
@@ -97,6 +103,22 @@ bool IsolateHolder::LoadV8SnapshotFD(int natives_fd, int snapshot_fd) {
   return MapV8Files(NULL, NULL, natives_fd, snapshot_fd);
 }
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
+
+//static
+void IsolateHolder::GetV8ExternalSnapshotData(const char** natives_data_out,
+                                              int* natives_size_out,
+                                              const char** snapshot_data_out,
+                                              int* snapshot_size_out) {
+  if (!g_mapped_natives || !g_mapped_snapshot) {
+    *natives_data_out = *snapshot_data_out = NULL;
+    *natives_size_out = *snapshot_size_out = 0;
+    return;
+  }
+  *natives_data_out = reinterpret_cast<const char*>(g_mapped_natives->data());
+  *snapshot_data_out = reinterpret_cast<const char*>(g_mapped_snapshot->data());
+  *natives_size_out = static_cast<int>(g_mapped_natives->length());
+  *snapshot_size_out = static_cast<int>(g_mapped_snapshot->length());
+}
 
 IsolateHolder::IsolateHolder() {
   CHECK(g_array_buffer_allocator)
@@ -158,14 +180,14 @@ void IsolateHolder::Initialize(ScriptMode mode,
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
   v8::StartupData natives;
   natives.data = reinterpret_cast<const char*>(g_mapped_natives->data());
-  natives.raw_size = g_mapped_natives->length();
-  natives.compressed_size = g_mapped_natives->length();
+  natives.raw_size = static_cast<int>(g_mapped_natives->length());
+  natives.compressed_size = static_cast<int>(g_mapped_natives->length());
   v8::V8::SetNativesDataBlob(&natives);
 
   v8::StartupData snapshot;
   snapshot.data = reinterpret_cast<const char*>(g_mapped_snapshot->data());
-  snapshot.raw_size = g_mapped_snapshot->length();
-  snapshot.compressed_size = g_mapped_snapshot->length();
+  snapshot.raw_size = static_cast<int>(g_mapped_snapshot->length());
+  snapshot.compressed_size = static_cast<int>(g_mapped_snapshot->length());
   v8::V8::SetSnapshotDataBlob(&snapshot);
 #endif  // V8_USE_EXTERNAL_STARTUP_DATA
   v8::V8::Initialize();
