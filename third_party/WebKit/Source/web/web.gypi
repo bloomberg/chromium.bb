@@ -78,8 +78,6 @@
       'PopupMenuChromium.h',
       'PrerendererClientImpl.cpp',
       'PrerendererClientImpl.h',
-      'PushPermissionClientImpl.cpp',
-      'PushPermissionClientImpl.h',
       'RemoteFrameClientImpl.cpp',
       'RemoteFrameClientImpl.h',
       'ScrollbarGroup.cpp',
