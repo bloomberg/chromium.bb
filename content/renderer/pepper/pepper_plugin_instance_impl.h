@@ -687,9 +687,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                  int pending_host_id,
                                  const ppapi::URLResponseInfoData& data);
 
-  void SetPluginThrottled(bool throttled);
-  void DisablePowerSaverByRetroactiveWhitelist();
-
   RenderFrameImpl* render_frame_;
   base::Closure instance_deleted_callback_;
   scoped_refptr<PluginModule> module_;
@@ -712,24 +709,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Plugin URL.
   GURL plugin_url_;
-
-  // Set to true first time plugin is clicked. Used to collect metrics.
-  bool has_been_clicked_;
-
-  // Indicates whether this plugin may be throttled to reduce power consumption.
-  // |power_saver_enabled_| implies |is_peripheral_content_|.
-  bool power_saver_enabled_;
-
-  // Indicates whether this plugin was found to be peripheral content.
-  // This is separately tracked from |power_saver_enabled_| to collect UMAs.
-  // Always true if |power_saver_enabled_| is true.
-  bool is_peripheral_content_;
-
-  // Indicates if the plugin is currently throttled.
-  bool plugin_throttled_;
-
-  // Fake view data used by the Power Saver feature to throttle plugins.
-  const ppapi::ViewData empty_view_data_;
 
   // Responsible for turning on throttling if Power Saver is on.
   scoped_ptr<PepperPluginInstanceThrottler> throttler_;

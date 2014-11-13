@@ -33,18 +33,19 @@ class CONTENT_EXPORT PluginPowerSaverHelper : public RenderFrameObserver {
   //  - Same-origin:   a.com -> b.com/iframe-to-a.html -> a.com/plugin.swf
   //
   // |cross_origin| may not be NULL.
-  bool ShouldThrottleContent(const GURL& content_origin,
-                             int width,
-                             int height,
-                             bool* cross_origin) const;
+  virtual bool ShouldThrottleContent(const GURL& content_origin,
+                                     int width,
+                                     int height,
+                                     bool* cross_origin) const;
 
   // Registers a plugin that has been marked peripheral. If the origin
   // whitelist is later updated and includes |content_origin|, then
   // |unthrottle_callback| will be called.
-  void RegisterPeripheralPlugin(const GURL& content_origin,
-                                const base::Closure& unthrottle_callback);
+  virtual void RegisterPeripheralPlugin(
+      const GURL& content_origin,
+      const base::Closure& unthrottle_callback);
 
-  void WhitelistContentOrigin(const GURL& content_origin);
+  virtual void WhitelistContentOrigin(const GURL& content_origin);
 
  private:
   struct PeripheralPlugin {

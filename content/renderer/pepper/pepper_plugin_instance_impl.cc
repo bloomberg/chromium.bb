@@ -6,13 +6,10 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/histogram.h"
-#include "base/metrics/sparse_histogram.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_offset_string_conversions.h"
@@ -26,7 +23,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/public/common/content_constants.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
@@ -48,7 +44,6 @@
 #include "content/renderer/pepper/pepper_url_loader_host.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/plugin_object.h"
-#include "content/renderer/pepper/plugin_power_saver_helper.h"
 #include "content/renderer/pepper/ppapi_preferences_builder.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
@@ -113,7 +108,6 @@
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
-#include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
@@ -186,13 +180,6 @@ using blink::WebView;
 namespace content {
 
 namespace {
-
-static const int kInfiniteRatio = 99999;
-
-#define UMA_HISTOGRAM_ASPECT_RATIO(name, width, height) \
-    UMA_HISTOGRAM_SPARSE_SLOWLY( \
-        name, \
-        (height) ? ((width) * 100) / (height) : kInfiniteRatio);
 
 // Check PP_TextInput_Type and ui::TextInputType are kept in sync.
 COMPILE_ASSERT(int(ui::TEXT_INPUT_TYPE_NONE) == int(PP_TEXTINPUT_TYPE_NONE),
@@ -399,77 +386,6 @@ void InitLatencyInfo(ui::LatencyInfo* new_latency,
   }
 }
 
-// Histogram tracking prevalence of tiny Flash instances. Units in pixels.
-enum PluginFlashTinyContentSize {
-  TINY_CONTENT_SIZE_1_1 = 0,
-  TINY_CONTENT_SIZE_5_5 = 1,
-  TINY_CONTENT_SIZE_10_10 = 2,
-  TINY_CONTENT_SIZE_LARGE = 3,
-  TINY_CONTENT_SIZE_NUM_ITEMS
-};
-
-// How the throttled power saver is unthrottled, if ever.
-// These numeric values are used in UMA logs; do not change them.
-enum PowerSaverUnthrottleMethod {
-  UNTHROTTLE_METHOD_NEVER = 0,
-  UNTHROTTLE_METHOD_BY_CLICK = 1,
-  UNTHROTTLE_METHOD_BY_WHITELIST = 2,
-  UNTHROTTLE_METHOD_NUM_ITEMS
-};
-
-const char kFlashClickSizeAspectRatioHistogram[] =
-    "Plugin.Flash.ClickSize.AspectRatio";
-const char kFlashClickSizeHeightHistogram[] = "Plugin.Flash.ClickSize.Height";
-const char kFlashClickSizeWidthHistogram[] = "Plugin.Flash.ClickSize.Width";
-const char kFlashTinyContentSizeHistogram[] = "Plugin.Flash.TinyContentSize";
-const char kPowerSaverUnthrottleHistogram[] = "Plugin.PowerSaver.Unthrottle";
-
-// Record size metrics for all Flash instances.
-void RecordFlashSizeMetric(int width, int height) {
-  PluginFlashTinyContentSize size = TINY_CONTENT_SIZE_LARGE;
-
-  if (width <= 1 && height <= 1)
-    size = TINY_CONTENT_SIZE_1_1;
-  else if (width <= 5 && height <= 5)
-    size = TINY_CONTENT_SIZE_5_5;
-  else if (width <= 10 && height <= 10)
-    size = TINY_CONTENT_SIZE_10_10;
-
-  UMA_HISTOGRAM_ENUMERATION(kFlashTinyContentSizeHistogram, size,
-                            TINY_CONTENT_SIZE_NUM_ITEMS);
-}
-
-// Records size metrics for Flash instances that are clicked.
-void RecordFlashClickSizeMetric(int width, int height) {
-  base::HistogramBase* width_histogram = base::LinearHistogram::FactoryGet(
-      kFlashClickSizeWidthHistogram,
-      0,    // minimum width
-      500,  // maximum width
-      100,  // number of buckets.
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  width_histogram->Add(width);
-
-  base::HistogramBase* height_histogram = base::LinearHistogram::FactoryGet(
-      kFlashClickSizeHeightHistogram,
-      0,    // minimum height
-      400,  // maximum height
-      100,  // number of buckets.
-      base::HistogramBase::kUmaTargetedHistogramFlag);
-  height_histogram->Add(height);
-
-  UMA_HISTOGRAM_ASPECT_RATIO(kFlashClickSizeAspectRatioHistogram, width,
-                             height);
-}
-
-void RecordUnthrottleMethodMetric(PowerSaverUnthrottleMethod method) {
-  UMA_HISTOGRAM_ENUMERATION(kPowerSaverUnthrottleHistogram, method,
-                            UNTHROTTLE_METHOD_NUM_ITEMS);
-}
-
-bool IsFlashPlugin(PluginModule* module) {
-  return module->name() == kFlashPluginName;
-}
-
 }  // namespace
 
 // static
@@ -570,10 +486,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       layer_bound_to_fullscreen_(false),
       layer_is_hardware_(false),
       plugin_url_(plugin_url),
-      has_been_clicked_(false),
-      power_saver_enabled_(false),
-      is_peripheral_content_(false),
-      plugin_throttled_(false),
       full_frame_(false),
       sent_initial_did_change_view_(false),
       bound_graphics_2d_platform_(NULL),
@@ -670,9 +582,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
 
 PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   DCHECK(!fullscreen_container_);
-
-  if (plugin_throttled_)
-    RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_NEVER);
 
   // Notify all the plugin objects of deletion. This will prevent blink from
   // calling into the plugin any more.
@@ -926,43 +835,11 @@ bool PepperPluginInstanceImpl::Initialize(
   if (!render_frame_)
     return false;
 
-  blink::WebRect bounds = container_->element().boundsInViewportSpace();
-  if (IsFlashPlugin(module_.get())) {
-    RenderThread::Get()->RecordAction(
-        base::UserMetricsAction("Flash.PluginInstanceCreated"));
-    RecordFlashSizeMetric(bounds.width, bounds.height);
-  }
-
-  PluginPowerSaverHelper* power_saver_helper =
-      render_frame_->plugin_power_saver_helper();
-  GURL content_origin = plugin_url_.GetOrigin();
-
-  bool cross_origin = false;
-  is_peripheral_content_ =
-      IsFlashPlugin(module_.get()) &&
-      power_saver_helper->ShouldThrottleContent(content_origin, bounds.width,
-                                                bounds.height, &cross_origin);
-
-  power_saver_enabled_ = is_peripheral_content_ &&
-                         base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kEnablePluginPowerSaver);
-
-  if (is_peripheral_content_) {
-    // To collect UMAs, register peripheral content even if we don't throttle.
-    power_saver_helper->RegisterPeripheralPlugin(
-        content_origin,
-        base::Bind(
-            &PepperPluginInstanceImpl::DisablePowerSaverByRetroactiveWhitelist,
-            weak_factory_.GetWeakPtr()));
-
-    if (power_saver_enabled_) {
-      throttler_.reset(new PepperPluginInstanceThrottler(
-          base::Bind(&PepperPluginInstanceImpl::SetPluginThrottled,
-                     weak_factory_.GetWeakPtr(), true /* throttled */)));
-    }
-  } else if (cross_origin) {
-    power_saver_helper->WhitelistContentOrigin(content_origin);
-  }
+  throttler_.reset(new PepperPluginInstanceThrottler(
+      render_frame()->plugin_power_saver_helper(),
+      container()->element().boundsInViewportSpace(), module()->name(),
+      plugin_url_, base::Bind(&PepperPluginInstanceImpl::SendDidChangeView,
+                              weak_factory_.GetWeakPtr())));
 
   message_channel_ = MessageChannel::Create(this, &message_channel_object_);
 
@@ -1219,24 +1096,8 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     WebCursorInfo* cursor_info) {
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::HandleInputEvent");
 
-  if (event.type == blink::WebInputEvent::MouseDown && !has_been_clicked_ &&
-      IsFlashPlugin(module_.get())) {
-    has_been_clicked_ = true;
-    blink::WebRect bounds = container_->element().boundsInViewportSpace();
-    RecordFlashClickSizeMetric(bounds.width, bounds.height);
-  }
-
-  if (event.type == blink::WebInputEvent::MouseUp && is_peripheral_content_) {
-    is_peripheral_content_ = false;
-    power_saver_enabled_ = false;
-
-    RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_CLICK);
-
-    if (plugin_throttled_) {
-      SetPluginThrottled(false /* throttled */);
-      return true;
-    }
-  }
+  if (throttler_->ConsumeInputEvent(event))
+    return true;
 
   if (!render_frame_)
     return false;
@@ -1789,8 +1650,9 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     return;
 
   // When plugin is throttled, send ViewData indicating it's in the background.
-  const ppapi::ViewData& view_data =
-      plugin_throttled_ ? empty_view_data_ : view_data_;
+  const ppapi::ViewData& view_data = throttler_->is_throttled()
+                                         ? throttler_->throttled_view_data()
+                                         : view_data_;
 
   if (view_change_weak_ptr_factory_.HasWeakPtrs() ||
       (sent_initial_did_change_view_ &&
@@ -3418,26 +3280,6 @@ void PepperPluginInstanceImpl::DidDataFromWebURLResponse(
     dispatcher->Send(new PpapiMsg_PPPInstance_HandleDocumentLoad(
         ppapi::API_ID_PPP_INSTANCE, pp_instance(), pending_host_id, data));
   }
-}
-
-void PepperPluginInstanceImpl::SetPluginThrottled(bool throttled) {
-  // Do not throttle if we've already disabled power saver.
-  if (!power_saver_enabled_ && throttled)
-    return;
-
-  plugin_throttled_ = throttled;
-  SendDidChangeView();
-}
-
-void PepperPluginInstanceImpl::DisablePowerSaverByRetroactiveWhitelist() {
-  if (!is_peripheral_content_)
-    return;
-
-  is_peripheral_content_ = false;
-  power_saver_enabled_ = false;
-  SetPluginThrottled(false);
-
-  RecordUnthrottleMethodMetric(UNTHROTTLE_METHOD_BY_WHITELIST);
 }
 
 }  // namespace content
