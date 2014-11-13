@@ -1679,6 +1679,19 @@ non_testable_pre_cq.add_config('storm-pre-cq', brillo,
 non_testable_pre_cq.add_config('whirlwind-pre-cq', brillo,
                                boards=['whirlwind'])
 
+non_testable_pre_cq.add_config('rush-pre-cq',
+                               boards=['rush'],
+                               usepkg_toolchain=False)
+
+non_testable_pre_cq.add_config('rush_ryu-pre-cq',
+                               boards=['rush_ryu'],
+                               usepkg_toolchain=False)
+
+non_testable_pre_cq.add_config('urara-pre-cq',
+                               boards=['urara'],
+                               usepkg_toolchain=False)
+
+
 def _AddPreCQConfigs():
   for board in _all_release_boards:
     if board in _x86_release_boards:
