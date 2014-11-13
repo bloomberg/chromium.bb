@@ -432,6 +432,9 @@ class MsvsSettings(object):
     cl('OmitFramePointers', map={'false': '-', 'true': ''}, prefix='/Oy')
     cl('EnableIntrinsicFunctions', map={'false': '-', 'true': ''}, prefix='/Oi')
     cl('FavorSizeOrSpeed', map={'1': 't', '2': 's'}, prefix='/O')
+    cl('FloatingPointModel',
+        map={'0': 'precise', '1': 'strict', '2': 'fast'}, prefix='/fp:',
+        default='0')
     cl('WholeProgramOptimization', map={'true': '/GL'})
     cl('WarningLevel', prefix='/W')
     cl('WarnAsError', map={'true': '/WX'})
