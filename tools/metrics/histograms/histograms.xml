@@ -9809,6 +9809,14 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="GPU.D3DShaderModel" enum="ShaderModel">
+  <owner>jmadill@chromium.org</owner>
+  <summary>
+    ANGLE's currently active D3D shader model version. Logged once every startup
+    of the GPU process, on Windows only.
+  </summary>
+</histogram>
+
 <histogram name="GPU.InitializeOneOffTime" units="microseconds">
   <owner>vangelis@chromium.org</owner>
   <summary>
@@ -53693,6 +53701,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Expires between Jun 1, 2016 and Jan 1, 2017"/>
   <int value="3" label="Expires between Jan 1, 2016 and Jun 1, 2016"/>
   <int value="4" label="Expires before Jan 1, 2016"/>
+</enum>
+
+<enum name="ShaderModel" type="int">
+  <summary>The GPU's Direct3D shader model version.</summary>
+  <int value="0" label="SHADER_MODEL_UNKNOWN"/>
+  <int value="1" label="SHADER_MODEL_2_0"/>
+  <int value="2" label="SHADER_MODEL_3_0"/>
+  <int value="3" label="SHADER_MODEL_4_0"/>
+  <int value="4" label="SHADER_MODEL_4_1"/>
+  <int value="5" label="SHADER_MODEL_5_0"/>
 </enum>
 
 <enum name="ShelfAlignmentValue" type="int">
