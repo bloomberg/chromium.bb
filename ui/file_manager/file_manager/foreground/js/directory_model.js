@@ -128,6 +128,16 @@ DirectoryModel.prototype.isSearching = function() {
 };
 
 /**
+ * @return {boolean}
+ */
+DirectoryModel.prototype.isOnDrive = function() {
+  var rootType = this.getCurrentRootType();
+  return rootType != null &&
+      VolumeManagerCommon.getVolumeTypeFromRootType(rootType) ==
+      VolumeManagerCommon.VolumeType.DRIVE;
+};
+
+/**
  * Updates the selection by using the updateFunc and publish the change event.
  * If updateFunc returns true, it force to dispatch the change event even if the
  * selection index is not changed.

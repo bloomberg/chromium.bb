@@ -10,8 +10,10 @@
  * @param {!DialogFooter} dialogFooter Dialog footer.
  * @param {!DirectoryModel} directoryModel Directory model.
  * @param {!MetadataCache} metadataCache Metadata cache.
+ * @param {!VolumeManagerWrapper} volumeManager Volume manager.
  * @param {!FileFilter} fileFilter File filter model.
  * @param {!NamingController} namingController Naming controller.
+ * @param {!FileSelectionHandler} fileSelectionHandler Initial file selection.
  * @param {!LaunchParam} launchParam Whether the dialog should return local
  *     path or not.
  * @constructor
@@ -22,8 +24,10 @@ function DialogActionController(
     dialogFooter,
     directoryModel,
     metadataCache,
+    volumeManager,
     fileFilter,
     namingController,
+    fileSelectionHandler,
     launchParam) {
   /**
    * @type {!DialogType}
@@ -54,6 +58,13 @@ function DialogActionController(
   this.metadataCache_ = metadataCache;
 
   /**
+   * @type {!VolumeManagerWrapper}
+   * @const
+   * @private
+   */
+  this.volumeManager_ = volumeManager;
+
+  /**
    * @type {!FileFilter}
    * @const
    * @private
@@ -68,8 +79,16 @@ function DialogActionController(
   this.namingController_ = namingController;
 
   /**
+   * @type {!FileSelectionHandler}
+   * @private
+   * @const
+   */
+  this.fileSelectionHandler_ = fileSelectionHandler;
+
+  /**
    * List of acceptable file types for open dialog.
    * @type {!Array.<Object>}
+   * @const
    * @private
    */
   this.fileTypes_ = launchParam.typeList || [];
@@ -94,6 +113,11 @@ function DialogActionController(
       'click', this.onCancelBound_);
   dialogFooter.fileTypeSelector.addEventListener(
       'change', this.onFileTypeFilterChanged_.bind(this));
+  dialogFooter.filenameInput.addEventListener(
+      'input', this.updateOkButton_.bind(this));
+  fileSelectionHandler.addEventListener(
+      'change', this.onFileSelectionChanged_.bind(this));
+
   dialogFooter.initFileTypeFilter(
       this.fileTypes_, launchParam.includeAllFiles);
   this.onFileTypeFilterChanged_();
@@ -133,7 +157,7 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
  * @private
  */
 DialogActionController.prototype.processOKAction_ = function() {
-  if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+  if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
     this.processOKActionForSaveDialog_();
     return;
   }
@@ -143,7 +167,7 @@ DialogActionController.prototype.processOKAction_ = function() {
       this.directoryModel_.getFileListSelection().selectedIndexes;
 
   if (DialogType.isFolderDialog(this.dialogType_) &&
-      selectedIndexes.length == 0) {
+      selectedIndexes.length === 0) {
     var url = this.directoryModel_.getCurrentDirEntry().toURL();
     var singleSelection = {
       urls: [url],
@@ -172,7 +196,7 @@ DialogActionController.prototype.processOKAction_ = function() {
   }
 
   // Multi-file selection has no other restrictions.
-  if (this.dialogType_ == DialogType.SELECT_OPEN_MULTI_FILE) {
+  if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
     var multipleSelection = {
       urls: files,
       multiple: true
@@ -190,7 +214,7 @@ DialogActionController.prototype.processOKAction_ = function() {
   if (DialogType.isFolderDialog(this.dialogType_)) {
     if (!selectedEntry.isDirectory)
       throw new Error('Selected entry is not a folder!');
-  } else if (this.dialogType_ == DialogType.SELECT_OPEN_FILE) {
+  } else if (this.dialogType_ === DialogType.SELECT_OPEN_FILE) {
     if (!selectedEntry.isFile)
       throw new Error('Selected entry is not a file!');
   }
@@ -237,17 +261,17 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
       chrome.fileManagerPrivate.selectFile(
           selection.urls[0],
           selection.filterIndex,
-          this.dialogType_ != DialogType.SELECT_SAVEAS_FILE /* for opening */,
+          this.dialogType_ !== DialogType.SELECT_SAVEAS_FILE /* for opening */,
           this.shouldReturnLocalPath_,
           onFileSelected);
     }
   }.bind(this);
 
   var currentRootType = this.directoryModel_.getCurrentRootType();
-  var currentVolumeType = currentRootType != null ?
+  var currentVolumeType = currentRootType !== null ?
       VolumeManagerCommon.getVolumeTypeFromRootType(currentRootType) : null;
-  if (currentRootType != VolumeManagerCommon.VolumeType.DRIVE ||
-      this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+  if (currentRootType !== VolumeManagerCommon.VolumeType.DRIVE ||
+      this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
     callSelectFilesApiAndClose(function() {});
     return;
   }
@@ -272,11 +296,11 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
   var onFileTransfersUpdated = function(status) {
     if (!(status.fileUrl in progressMap))
       return;
-    if (status.total == -1)
+    if (status.total === -1)
       return;
 
     var old = progressMap[status.fileUrl];
-    if (old == -1) {
+    if (old === -1) {
       // -1 means we don't know file size yet.
       bytesTotal += status.total;
       filesStarted++;
@@ -285,7 +309,7 @@ DialogActionController.prototype.selectFilesAndClose_ = function(selection) {
     bytesDone += status.processed - old;
     progressMap[status.fileUrl] = status.processed;
 
-    var percent = bytesTotal == 0 ? 0 : bytesDone / bytesTotal;
+    var percent = bytesTotal === 0 ? 0 : bytesDone / bytesTotal;
     // For files we don't have information about, assume the progress is zero.
     percent = percent * filesStarted / filesTotal * 100;
     // Do not decrease the progress. This may happen, if first downloaded
@@ -369,4 +393,78 @@ DialogActionController.prototype.onFileTypeFilterChanged_ = function() {
       }
     }
   }
+};
+
+/**
+ * Handles selection change.
+ *
+ * @private
+ */
+DialogActionController.prototype.onFileSelectionChanged_ = function() {
+  // If this is a save-as dialog, copy the selected file into the filename
+  // input text box.
+  var selection = this.fileSelectionHandler_.selection;
+  if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE &&
+      selection.totalCount === 1 &&
+      selection.entries[0].isFile &&
+      this.dialogFooter_.filenameInput.value !== selection.entries[0].name) {
+    this.dialogFooter_.filenameInput.value = selection.entries[0].name;
+  }
+
+  this.updateOkButton_();
+};
+
+/**
+ * Updates the Ok button enabled state.
+ * @private
+ */
+DialogActionController.prototype.updateOkButton_ = function() {
+  var selection = this.fileSelectionHandler_.selection;
+
+  if (this.dialogType_ === DialogType.FULL_PAGE) {
+    // No "select" buttons on the full page UI.
+    this.dialogFooter_.okButton.disabled = false;
+    return;
+  }
+
+  if (DialogType.isFolderDialog(this.dialogType_)) {
+    // In SELECT_FOLDER mode, we allow to select current directory
+    // when nothing is selected.
+    this.dialogFooter_.okButton.disabled =
+        selection.directoryCount > 1 || selection.fileCount !== 0;
+    return;
+  }
+
+  if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
+    this.dialogFooter_.okButton.disabled =
+        this.directoryModel_.isReadOnly() ||
+        !this.dialogFooter_.filenameInput.value;
+    return;
+  }
+
+  var isDriveOffline =
+      this.volumeManager_.getDriveConnectionState().type ===
+      VolumeManagerCommon.DriveConnectionType.OFFLINE;
+  var filesAvailable =
+      !this.directoryModel_.isOnDrive() ||
+      !isDriveOffline ||
+      selection.allDriveFilesPresent;
+
+  if (this.dialogType_ === DialogType.SELECT_OPEN_FILE) {
+    this.dialogFooter_.okButton.disabled =
+        !filesAvailable ||
+        selection.directoryCount !== 0 ||
+        selection.fileCount !== 1;
+    return;
+  }
+
+  if (this.dialogType_ === DialogType.SELECT_OPEN_MULTI_FILE) {
+    this.dialogFooter_.okButton.disabled =
+        !filesAvailable ||
+        selection.directoryCount !== 0 ||
+        selection.fileCount === 0;
+    return;
+  }
+
+  assertNotReached('Unknown dialog type.');
 };

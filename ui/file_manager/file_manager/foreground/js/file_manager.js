@@ -1075,12 +1075,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'pathclick', this.onBreadcrumbClick_.bind(this));
     this.backgroundPage_.background.progressCenter.addPanel(
         this.ui_.progressCenterPanel);
-    this.ui_.dialogFooter.filenameInput.addEventListener(
-        'input', this.onFilenameInputInput_.bind(this));
-    this.ui_.dialogFooter.filenameInput.addEventListener(
-        'keydown', this.onFilenameInputKeyDown_.bind(this));
-    this.ui_.dialogFooter.filenameInput.addEventListener(
-        'focus', this.onFilenameInputFocus_.bind(this));
     this.ui_.toggleViewButton.addEventListener('click',
         this.onToggleViewButtonClick_.bind(this));
 
@@ -1093,7 +1087,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.hostedButton = /** @type {!HTMLMenuItemElement} */
         (queryRequiredElement(this.dialogDom_,
                              '#gear-menu-drive-hosted-settings'));
-
 
     this.ui_.taskMenuButton.showMenu = function(shouldSetFocus) {
       // Prevent the empty menu from opening.
@@ -1154,6 +1147,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         'watcher-metadata-changed',
         this.onWatcherMetadataChanged_.bind(this));
 
+    assert(this.volumeManager_);
     this.directoryModel_ = new DirectoryModel(
         singleSelection,
         this.fileFilter_,
@@ -1250,8 +1244,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.ui_.dialogFooter,
         this.directoryModel_,
         this.metadataCache_,
+        this.volumeManager_,
         this.fileFilter_,
         this.namingController_,
+        this.selectionHandler_,
         this.launchParams_);
 
     // Update metadata to change 'Today' and 'Yesterday' dates.
@@ -1712,10 +1708,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    *     Drive.
    */
   FileManager.prototype.isOnDrive = function() {
-    var rootType = this.directoryModel_.getCurrentRootType();
-    return rootType != null &&
-        VolumeManagerCommon.getVolumeTypeFromRootType(rootType) ==
-            VolumeManagerCommon.VolumeType.DRIVE;
+    return this.directoryModel_.isOnDrive();
   };
 
   /**
@@ -2267,43 +2260,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     window.closing = true;
     if (this.backgroundPage_)
       this.backgroundPage_.background.tryClose();
-  };
-
-  /**
-   * @private
-   */
-  FileManager.prototype.onFilenameInputInput_ = function() {
-    this.selectionHandler_.updateOkButton();
-  };
-
-  /**
-   * @param {Event} event Key event.
-   * @private
-   */
-  FileManager.prototype.onFilenameInputKeyDown_ = function(event) {
-    if ((util.getKeyModifiers(event) + event.keyCode) === '13' /* Enter */)
-      this.ui_.dialogFooter.okButton.click();
-  };
-
-  /**
-   * @param {Event} event Focus event.
-   * @private
-   */
-  FileManager.prototype.onFilenameInputFocus_ = function(event) {
-    var input = this.ui_.dialogFooter.filenameInput;
-
-    // On focus we want to select everything but the extension, but
-    // Chrome will select-all after the focus event completes.  We
-    // schedule a timeout to alter the focus after that happens.
-    setTimeout(function() {
-      var selectionEnd = input.value.lastIndexOf('.');
-      if (selectionEnd == -1) {
-        input.select();
-      } else {
-        input.selectionStart = 0;
-        input.selectionEnd = selectionEnd;
-      }
-    }, 0);
   };
 
   FileManager.prototype.createNewFolder = function() {
