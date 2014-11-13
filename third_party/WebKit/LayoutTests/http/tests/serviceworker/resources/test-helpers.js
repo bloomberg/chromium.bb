@@ -247,7 +247,7 @@ function base_path() {
   return location.pathname.replace(/\/[^\/]*$/, '/');
 }
 
-function test_login(test, origin, username, password) {
+function test_login(test, origin, username, password, cookie) {
   return new Promise(function(resolve, reject) {
       with_iframe(
         origin + base_path() +
@@ -259,7 +259,7 @@ function test_login(test, origin, username, password) {
                 resolve();
               });
             frame.contentWindow.postMessage(
-              {username: username, password: password},
+              {username: username, password: password, cookie: cookie},
               [channel.port2], origin);
           }));
     });

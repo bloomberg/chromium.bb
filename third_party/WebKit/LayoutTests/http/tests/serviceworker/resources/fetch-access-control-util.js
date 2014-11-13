@@ -85,7 +85,7 @@ var checkJsonpMethod = function(method, url, data) {
                 method,
                 'Method must match url:' + url);
 };
-var checkJsonpAuth = function(username, password, url, data) {
+var checkJsonpAuth = function(username, password, cookie, url, data) {
   assert_equals(data.jsonpResult,
                 'success',
                 url + ' jsonpResult must be success');
@@ -96,7 +96,7 @@ var checkJsonpAuth = function(username, password, url, data) {
                 password,
                 'Password must match. url: ' + url);
   assert_equals(data.cookie,
-                username,
+                cookie,
                 'Cookie must match. url: ' + url);
 };
 var checkJsonpError = checkJsonpResult.bind(this, 'error');
@@ -109,16 +109,19 @@ var methodIsGET = checkJsonpMethod.bind(this, 'GET');
 var methodIsPOST = checkJsonpMethod.bind(this, 'POST');
 var methodIsPUT = checkJsonpMethod.bind(this, 'PUT');
 var methodIsXXX = checkJsonpMethod.bind(this, 'XXX');
-var authCheckNone = checkJsonpAuth.bind(this, 'undefined', 'undefined');
-var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1');
-var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2');
+var authCheckNone =
+  checkJsonpAuth.bind(this, 'undefined', 'undefined', 'undefined');
+var authCheck1 = checkJsonpAuth.bind(this, 'username1', 'password1', 'cookie1');
+var authCheck2 = checkJsonpAuth.bind(this, 'username2', 'password2', 'cookie2');
 
 function executeTests(test, test_targets) {
   test.step(function() {
       var login1 =
-        test_login(test, 'http://127.0.0.1:8000', 'username1', 'password1');
+        test_login(test, 'http://127.0.0.1:8000',
+                   'username1', 'password1', 'cookie1');
       var login2 =
-        test_login(test, 'http://localhost:8000', 'username2', 'password2');
+        test_login(test, 'http://localhost:8000',
+                   'username2', 'password2', 'cookie2');
       var workerScript = 'resources/fetch-access-control-worker.js';
       var worker = undefined;
       var frameWindow = {};

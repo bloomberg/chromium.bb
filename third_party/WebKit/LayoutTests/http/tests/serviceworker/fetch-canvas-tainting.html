@@ -7,9 +7,11 @@
 <script>
 async_test(function(t) {
     var login1 =
-      test_login(t, 'http://127.0.0.1:8000', 'username1', 'password1');
+      test_login(t, 'http://127.0.0.1:8000',
+                 'username1', 'password1', 'cookie1');
     var login2 =
-      test_login(t, 'http://localhost:8000', 'username2', 'password2');
+      test_login(t, 'http://localhost:8000',
+                 'username2', 'password2', 'cookie2');
     var SCOPE = 'resources/fetch-canvas-tainting-iframe.html';
     var SCRIPT = 'resources/fetch-rewrite-worker.js';
     var host_info = get_host_info();
