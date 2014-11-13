@@ -8,6 +8,7 @@
 import argparse
 import os
 import platform
+import re
 import shlex
 import shutil
 import subprocess
@@ -169,6 +170,14 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
   # pciutils doesn't have a configure script
   # This build script follows debian/rules.
 
+  # Find out the package version. We'll use this when creating symlinks.
+  dir_name = os.path.split(os.getcwd())[-1]
+  match = re.match('pciutils-(\d+\.\d+\.\d+)', dir_name)
+  if match is None:
+    raise Exception(
+        'Unable to guess libpci3 version from directory name: %s' %  dir_name)
+  version = match.group(1)
+
   # `make install' will create a "$(DESTDIR)-udeb" directory alongside destdir.
   # We don't want that in our product dir, so we use an intermediate directory.
   destdir = '%s/debian/pciutils' % os.getcwd()
@@ -176,6 +185,10 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
       '%s="%s"' % (name, environment[name])
       for name in['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
   make_args.append('SHARED=yes')
+  # pciutils-3.2.1 (Trusty) fails to build due to unresolved libkmod symbols.
+  # The binary package has no dependencies on libkmod, so it looks like it was
+  # actually built without libkmod support.
+  make_args.append('LIBKMOD=no')
   paths = [
       'LIBDIR=/lib/',
       'PREFIX=/usr',
@@ -194,7 +207,7 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
   run_shell_commands([
       'cp %s/* %s/ -rd' % (destdir, install_prefix),
       'install -m 644 lib/libpci.so* %s/lib/' % install_prefix,
-      'ln -sf libpci.so.3.1.8 %s/lib/libpci.so.3' % install_prefix],
+      'ln -sf libpci.so.%s %s/lib/libpci.so.3' % (version, install_prefix)],
                      parsed_arguments.verbose, environment)
 
 
