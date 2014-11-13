@@ -326,7 +326,7 @@ DaemonControllerDelegateWin::GetUsageStatsConsent() {
 }
 
 HRESULT DaemonControllerDelegateWin::ActivateController() {
-  if (!control_) {
+  if (!control_.get()) {
     CLSID class_id;
     HRESULT hr = CLSIDFromProgID(kDaemonController, &class_id);
     if (FAILED(hr)) {
@@ -362,7 +362,7 @@ HRESULT DaemonControllerDelegateWin::ActivateElevatedController() {
   if (!control_is_elevated_)
     ReleaseController();
 
-  if (!control_) {
+  if (!control_.get()) {
     BIND_OPTS3 bind_options;
     memset(&bind_options, 0, sizeof(bind_options));
     bind_options.cbStruct = sizeof(bind_options);
@@ -423,7 +423,7 @@ void DaemonControllerDelegateWin::StartHostWithConfig(
   }
 
   // Record the user's consent.
-  if (control2_) {
+  if (control2_.get()) {
     hr = control2_->SetUsageStatsConsent(consent);
     if (FAILED(hr)) {
       InvokeCompletionCallback(done, hr);

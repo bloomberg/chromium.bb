@@ -27,7 +27,7 @@ AuthCodeGetter::~AuthCodeGetter() {
 
 void AuthCodeGetter::GetAuthCode(
     base::Callback<void(const std::string&)> on_auth_code) {
-  if (browser_) {
+  if (browser_.get()) {
     on_auth_code.Run("");
     return;
   }
@@ -67,7 +67,7 @@ void AuthCodeGetter::OnTimer() {
 
 bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
   *auth_code = "";
-  if (!browser_) {
+  if (!browser_.get()) {
     return true;
   }
   base::win::ScopedBstr url;
@@ -86,7 +86,7 @@ bool AuthCodeGetter::TestBrowserUrl(std::string* auth_code) {
 }
 
 void AuthCodeGetter::KillBrowser() {
-  if (browser_) {
+  if (browser_.get()) {
     browser_->Quit();
     browser_.Release();
   }

@@ -206,7 +206,7 @@ void HostService::CreateLauncher(
   scoped_refptr<AutoThreadTaskRunner> io_task_runner =
       AutoThread::CreateWithType(
           kIoThreadName, task_runner, base::MessageLoop::TYPE_IO);
-  if (!io_task_runner) {
+  if (!io_task_runner.get()) {
     LOG(FATAL) << "Failed to start the I/O thread";
     return;
   }
