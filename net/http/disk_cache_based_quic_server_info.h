@@ -85,7 +85,8 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
     READY_TO_PERSIST_FAILURE = 7,
     PERSIST_NO_BACKEND_FAILURE = 8,
     WRITE_FAILURE = 9,
-    NUM_OF_FAILURES = 10,
+    NO_FAILURE = 10,
+    NUM_OF_FAILURES = 11,
   };
 
   ~DiskCacheBasedQuicServerInfo() override;
@@ -126,8 +127,12 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   void RecordQuicServerInfoStatus(QuicServerInfoAPICall call);
 
   // Tracks in a histogram the failure reasons to read/load/write of
-  // QuicServerInfo to and from disk cache.
+  // QuicServerInfo to and from disk cache. It also saves the |failure| in
+  // |last_failure_|.
   void RecordQuicServerInfoFailure(FailureReason failure);
+
+  // Tracks in a histogram if |last_failure_| is not NO_FAILURE.
+  void RecordLastFailure();
 
   CacheOperationDataShim* data_shim_;  // Owned by |io_callback_|.
   CompletionCallback io_callback_;
@@ -140,13 +145,16 @@ class NET_EXPORT_PRIVATE DiskCacheBasedQuicServerInfo
   HttpCache* const http_cache_;
   disk_cache::Backend* backend_;
   disk_cache::Entry* entry_;
-  CompletionCallback user_callback_;
+  CompletionCallback wait_for_ready_callback_;
   scoped_refptr<IOBuffer> read_buffer_;
   scoped_refptr<IOBuffer> write_buffer_;
   std::string data_;
   base::TimeTicks load_start_time_;
+  FailureReason last_failure_;
 
   base::WeakPtrFactory<DiskCacheBasedQuicServerInfo> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DiskCacheBasedQuicServerInfo);
 };
 
 }  // namespace net

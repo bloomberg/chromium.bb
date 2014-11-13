@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "net/base/completion_callback.h"
@@ -56,6 +57,7 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
       http_cache_(http_cache),
       backend_(NULL),
       entry_(NULL),
+      last_failure_(NO_FAILURE),
       weak_factory_(this) {
       io_callback_ =
           base::Bind(&DiskCacheBasedQuicServerInfo::OnIOComplete,
@@ -66,6 +68,7 @@ DiskCacheBasedQuicServerInfo::DiskCacheBasedQuicServerInfo(
 void DiskCacheBasedQuicServerInfo::Start() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(GET_BACKEND, state_);
+  DCHECK_EQ(last_failure_, NO_FAILURE);
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_START);
   load_start_time_ = base::TimeTicks::Now();
   DoLoop(OK);
@@ -77,18 +80,19 @@ int DiskCacheBasedQuicServerInfo::WaitForDataReady(
   DCHECK_NE(GET_BACKEND, state_);
 
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_WAIT_FOR_DATA_READY);
-  if (ready_)
+  if (ready_) {
+    RecordLastFailure();
     return OK;
+  }
 
   if (!callback.is_null()) {
     // Prevent a new callback for WaitForDataReady overwriting an existing
-    // pending callback (|user_callback_|).
-    // TODO(rtenneti): Rename user_callback_ as wait_for_ready_callback_.
-    if (!user_callback_.is_null()) {
+    // pending callback (|wait_for_ready_callback_|).
+    if (!wait_for_ready_callback_.is_null()) {
       RecordQuicServerInfoFailure(WAIT_FOR_DATA_READY_INVALID_ARGUMENT_FAILURE);
       return ERR_INVALID_ARGUMENT;
     }
-    user_callback_ = callback;
+    wait_for_ready_callback_ = callback;
   }
 
   return ERR_IO_PENDING;
@@ -98,8 +102,10 @@ void DiskCacheBasedQuicServerInfo::CancelWaitForDataReadyCallback() {
   DCHECK(CalledOnValidThread());
 
   RecordQuicServerInfoStatus(QUIC_SERVER_INFO_WAIT_FOR_DATA_READY_CANCEL);
-  if (!user_callback_.is_null())
-    user_callback_.Reset();
+  if (!wait_for_ready_callback_.is_null()) {
+    RecordLastFailure();
+    wait_for_ready_callback_.Reset();
+  }
 }
 
 bool DiskCacheBasedQuicServerInfo::IsDataReady() {
@@ -131,10 +137,10 @@ void DiskCacheBasedQuicServerInfo::Persist() {
 void DiskCacheBasedQuicServerInfo::PersistInternal() {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(GET_BACKEND, state_);
-
   DCHECK(new_data_.empty());
   CHECK(ready_);
-  DCHECK(user_callback_.is_null());
+  DCHECK(wait_for_ready_callback_.is_null());
+
   if (pending_write_data_.empty()) {
     new_data_ = Serialize();
   } else {
@@ -166,7 +172,7 @@ void DiskCacheBasedQuicServerInfo::OnExternalCacheHit() {
 }
 
 DiskCacheBasedQuicServerInfo::~DiskCacheBasedQuicServerInfo() {
-  DCHECK(user_callback_.is_null());
+  DCHECK(wait_for_ready_callback_.is_null());
   if (entry_)
     entry_->Close();
 }
@@ -181,10 +187,9 @@ void DiskCacheBasedQuicServerInfo::OnIOComplete(CacheOperationDataShim* unused,
   rv = DoLoop(rv);
   if (rv == ERR_IO_PENDING)
     return;
-  if (!user_callback_.is_null()) {
-    CompletionCallback callback = user_callback_;
-    user_callback_.Reset();
-    callback.Run(rv);
+  if (!wait_for_ready_callback_.is_null()) {
+    RecordLastFailure();
+    base::ResetAndReturn(&wait_for_ready_callback_).Run(rv);
   }
   if (ready_ && !pending_write_data_.empty()) {
     DCHECK_EQ(NONE, state_);
@@ -390,8 +395,19 @@ void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoStatus(
   }
 }
 
+void DiskCacheBasedQuicServerInfo::RecordLastFailure() {
+  if (last_failure_ != NO_FAILURE) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Net.QuicDiskCache.FailureReason.WaitForDataReady",
+        last_failure_, NUM_OF_FAILURES);
+  }
+  last_failure_ = NO_FAILURE;
+}
+
 void DiskCacheBasedQuicServerInfo::RecordQuicServerInfoFailure(
     FailureReason failure) {
+  last_failure_ = failure;
+
   if (!backend_) {
     UMA_HISTOGRAM_ENUMERATION("Net.QuicDiskCache.FailureReason.NoBackend",
                               failure, NUM_OF_FAILURES);

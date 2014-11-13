@@ -58733,6 +58733,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="NoBackend" label="DiskCache didn't have a backend"/>
   <suffix name="DiskCache" label="DiskCache backend is using disk cache."/>
   <suffix name="MemoryCache" label="DiskCache backend is using memory cache."/>
+  <suffix name="WaitForDataReady"
+      label="Tracks the last failure reason until WaitForDataReady or its
+             callback is executed. This is recorded when data is ready in
+             WaitForDataReady or when the callback is executed"/>
   <affected-histogram name="Net.QuicDiskCache.APICall"/>
   <affected-histogram name="Net.QuicDiskCache.FailureReason"/>
 </histogram_suffixes>
