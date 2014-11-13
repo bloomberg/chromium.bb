@@ -10,20 +10,17 @@
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/views/search_result_container_view.h"
-
-namespace views {
-class View;
-}
+#include "ui/views/view.h"
 
 namespace app_list {
 
 class AppListMainView;
 class AppListViewDelegate;
 class SearchResultListView;
-class SearchResultTileItemView;
+class SearchResultTileItemListView;
 
 // The start page for the experimental app list.
-class APP_LIST_EXPORT SearchResultPageView : public SearchResultContainerView {
+class APP_LIST_EXPORT SearchResultPageView : public views::View {
  public:
   SearchResultPageView(AppListMainView* app_list_main_view,
                        AppListViewDelegate* view_delegate);
@@ -31,17 +28,11 @@ class APP_LIST_EXPORT SearchResultPageView : public SearchResultContainerView {
 
   // Overridden from views::View:
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-
-  // Overridden from SearchResultContainerView:
-  void Update() override;
+  void ChildPreferredSizeChanged(views::View* child) override;
 
  private:
-  void InitTilesContainer();
-
   SearchResultListView* results_view_;  // Owned by views hierarchy.
-  views::View* tiles_container_;        // Owned by views hierarchy.
-
-  std::vector<SearchResultTileItemView*> tile_views_;
+  SearchResultTileItemListView* tiles_view_;  // Owned by views hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultPageView);
 };

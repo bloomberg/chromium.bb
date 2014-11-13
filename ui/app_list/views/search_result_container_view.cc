@@ -27,7 +27,7 @@ void SearchResultContainerView::SetResults(
   if (results_)
     results_->AddObserver(this);
 
-  Update();
+  DoUpdate();
 }
 
 void SearchResultContainerView::ScheduleUpdate() {
@@ -60,6 +60,8 @@ void SearchResultContainerView::ListItemsChanged(size_t start, size_t count) {
 
 void SearchResultContainerView::DoUpdate() {
   Update();
+  Layout();
+  PreferredSizeChanged();
   update_factory_.InvalidateWeakPtrs();
 }
 

@@ -179,7 +179,6 @@ void SearchResultListView::Update() {
   if (selected_index_ > last_visible_index_)
     SetSelectedIndex(last_visible_index_);
 
-  Layout();
   UpdateAutoLaunchState();
 }
 
