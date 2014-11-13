@@ -71,7 +71,7 @@ class PinEnumerator final
   }
 
   STDMETHOD(Clone)(IEnumPins** clone) {
-    PinEnumerator* pin_enum = new PinEnumerator(filter_);
+    PinEnumerator* pin_enum = new PinEnumerator(filter_.get());
     pin_enum->AddRef();
     pin_enum->index_ = index_;
     *clone = pin_enum;
@@ -100,7 +100,7 @@ STDMETHODIMP FilterBase::FindPin(LPCWSTR id, IPin** pin) {
 }
 
 STDMETHODIMP FilterBase::QueryFilterInfo(FILTER_INFO* info) {
-  info->pGraph = owning_graph_;
+  info->pGraph = owning_graph_.get();
   info->achName[0] = L'\0';
   if (info->pGraph)
     info->pGraph->AddRef();

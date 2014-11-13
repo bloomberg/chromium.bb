@@ -168,7 +168,7 @@ void WASAPIAudioInputStream::Start(AudioInputCallback* callback) {
   HRESULT hr = audio_client_->Start();
   DLOG_IF(ERROR, FAILED(hr)) << "Failed to start input streaming.";
 
-  if (SUCCEEDED(hr) && audio_render_client_for_loopback_)
+  if (SUCCEEDED(hr) && audio_render_client_for_loopback_.get())
     hr = audio_render_client_for_loopback_->Start();
 
   started_ = SUCCEEDED(hr);
@@ -333,8 +333,10 @@ HRESULT WASAPIAudioInputStream::GetMixFormat(const std::string& device_id,
   if (FAILED(hr))
     return hr;
 
-  *effects = IsDefaultCommunicationDevice(enumerator, endpoint_device) ?
-      AudioParameters::DUCKING : AudioParameters::NO_EFFECTS;
+  *effects =
+      IsDefaultCommunicationDevice(enumerator.get(), endpoint_device.get())
+          ? AudioParameters::DUCKING
+          : AudioParameters::NO_EFFECTS;
 
   ScopedComPtr<IAudioClient> audio_client;
   hr = endpoint_device->Activate(__uuidof(IAudioClient),
@@ -504,7 +506,7 @@ void WASAPIAudioInputStream::HandleError(HRESULT err) {
 }
 
 HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
-  DCHECK(!endpoint_device_);
+  DCHECK(!endpoint_device_.get());
 
   ScopedComPtr<IMMDeviceEnumerator> enumerator;
   HRESULT hr = enumerator.CreateInstance(__uuidof(MMDeviceEnumerator),
@@ -523,7 +525,8 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
     // to be valid matches.
     hr = enumerator->GetDefaultAudioEndpoint(eCapture, eCommunications,
                                              endpoint_device_.Receive());
-    if (endpoint_device_ && device_id_ != AudioManagerBase::kDefaultDeviceId) {
+    if (endpoint_device_.get() &&
+        device_id_ != AudioManagerBase::kDefaultDeviceId) {
       base::win::ScopedCoMem<WCHAR> communications_id;
       endpoint_device_->GetId(&communications_id);
       if (device_id_ !=
@@ -540,7 +543,7 @@ HRESULT WASAPIAudioInputStream::SetCaptureDevice() {
     }
   }
 
-  if (!endpoint_device_) {
+  if (!endpoint_device_.get()) {
     if (device_id_ == AudioManagerBase::kDefaultDeviceId) {
       // Retrieve the default capture audio endpoint for the specified role.
       // Note that, in Windows Vista, the MMDevice API supports device roles

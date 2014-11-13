@@ -34,7 +34,7 @@ static std::string GetDeviceId(EDataFlow flow,
                                ERole role) {
   ScopedComPtr<IMMDevice> device =
       CoreAudioUtil::CreateDefaultDevice(flow, role);
-  if (!device) {
+  if (!device.get()) {
     // Most probable reason for ending up here is that all audio devices are
     // disabled or unplugged.
     DVLOG(1) << "CoreAudioUtil::CreateDefaultDevice failed. No device?";
@@ -42,7 +42,7 @@ static std::string GetDeviceId(EDataFlow flow,
   }
 
   AudioDeviceName device_name;
-  HRESULT hr = CoreAudioUtil::GetDeviceName(device, &device_name);
+  HRESULT hr = CoreAudioUtil::GetDeviceName(device.get(), &device_name);
   if (FAILED(hr)) {
     DVLOG(1) << "Failed to retrieve the device id: " << std::hex << hr;
     return std::string();
@@ -57,7 +57,7 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 
   ScopedComPtr<IMMDeviceEnumerator> device_enumerator(
       CoreAudioUtil::CreateDeviceEnumerator());
-  if (!device_enumerator)
+  if (!device_enumerator.get())
     return;
 
   HRESULT hr = device_enumerator->RegisterEndpointNotificationCallback(this);
@@ -79,7 +79,7 @@ AudioDeviceListenerWin::AudioDeviceListenerWin(const base::Closure& listener_cb)
 
 AudioDeviceListenerWin::~AudioDeviceListenerWin() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (device_enumerator_) {
+  if (device_enumerator_.get()) {
     HRESULT hr =
         device_enumerator_->UnregisterEndpointNotificationCallback(this);
     LOG_IF(ERROR, FAILED(hr)) << "UnregisterEndpointNotificationCallback() "

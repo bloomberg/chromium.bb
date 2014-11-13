@@ -123,7 +123,7 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
   ScopedComPtr<IPin> pin;
   ScopedComPtr<IEnumPins> pin_enum;
   HRESULT hr = filter->EnumPins(pin_enum.Receive());
-  if (pin_enum == NULL)
+  if (pin_enum.get() == NULL)
     return pin;
 
   // Get first unconnected pin.
@@ -132,15 +132,16 @@ ScopedComPtr<IPin> VideoCaptureDeviceWin::GetPin(IBaseFilter* filter,
     PIN_DIRECTION this_pin_dir = static_cast<PIN_DIRECTION>(-1);
     hr = pin->QueryDirection(&this_pin_dir);
     if (pin_dir == this_pin_dir) {
-      if ((category == GUID_NULL || PinMatchesCategory(pin, category)) &&
-          (major_type == GUID_NULL || PinMatchesMajorType(pin, major_type))) {
+      if ((category == GUID_NULL || PinMatchesCategory(pin.get(), category)) &&
+          (major_type == GUID_NULL ||
+           PinMatchesMajorType(pin.get(), major_type))) {
         return pin;
       }
     }
     pin.Release();
   }
 
-  DCHECK(!pin);
+  DCHECK(!pin.get());
   return pin;
 }
 
@@ -219,23 +220,23 @@ VideoCaptureDeviceWin::VideoCaptureDeviceWin(const Name& device_name)
 
 VideoCaptureDeviceWin::~VideoCaptureDeviceWin() {
   DCHECK(CalledOnValidThread());
-  if (media_control_)
+  if (media_control_.get())
     media_control_->Stop();
 
-  if (graph_builder_) {
-    if (sink_filter_) {
-      graph_builder_->RemoveFilter(sink_filter_);
+  if (graph_builder_.get()) {
+    if (sink_filter_.get()) {
+      graph_builder_->RemoveFilter(sink_filter_.get());
       sink_filter_ = NULL;
     }
 
-    if (capture_filter_)
-      graph_builder_->RemoveFilter(capture_filter_);
+    if (capture_filter_.get())
+      graph_builder_->RemoveFilter(capture_filter_.get());
 
-    if (mjpg_filter_)
-      graph_builder_->RemoveFilter(mjpg_filter_);
+    if (mjpg_filter_.get())
+      graph_builder_->RemoveFilter(mjpg_filter_.get());
 
-    if (crossbar_filter_)
-      graph_builder_->RemoveFilter(crossbar_filter_);
+    if (crossbar_filter_.get())
+      graph_builder_->RemoveFilter(crossbar_filter_.get());
   }
 }
 
@@ -249,22 +250,22 @@ bool VideoCaptureDeviceWin::Init() {
     hr = GetDeviceFilter(device_name_.id(), CLSID_VideoInputDeviceCategory,
                          capture_filter_.Receive());
   }
-  if (!capture_filter_) {
+  if (!capture_filter_.get()) {
     DLOG(ERROR) << "Failed to create capture filter: "
                 << logging::SystemErrorCodeToString(hr);
     return false;
   }
 
-  output_capture_pin_ =
-      GetPin(capture_filter_, PINDIR_OUTPUT, PIN_CATEGORY_CAPTURE, GUID_NULL);
-  if (!output_capture_pin_) {
+  output_capture_pin_ = GetPin(capture_filter_.get(), PINDIR_OUTPUT,
+                               PIN_CATEGORY_CAPTURE, GUID_NULL);
+  if (!output_capture_pin_.get()) {
     DLOG(ERROR) << "Failed to get capture output pin";
     return false;
   }
 
   // Create the sink filter used for receiving Captured frames.
   sink_filter_ = new SinkFilter(this);
-  if (sink_filter_ == NULL) {
+  if (sink_filter_.get() == NULL) {
     DLOG(ERROR) << "Failed to create send filter";
     return false;
   }
@@ -286,7 +287,7 @@ bool VideoCaptureDeviceWin::Init() {
     return false;
   }
 
-  hr = graph_builder_->AddFilter(capture_filter_, NULL);
+  hr = graph_builder_->AddFilter(capture_filter_.get(), NULL);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to add the capture device to the graph: "
                 << logging::SystemErrorCodeToString(hr);
@@ -299,7 +300,7 @@ bool VideoCaptureDeviceWin::Init() {
     return false;
   }
 
-  hr = graph_builder_->AddFilter(sink_filter_, NULL);
+  hr = graph_builder_->AddFilter(sink_filter_.get(), NULL);
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to add the send filter to the graph: "
                 << logging::SystemErrorCodeToString(hr);
@@ -376,11 +377,11 @@ void VideoCaptureDeviceWin::AllocateAndStart(
     hr = mjpg_filter_.CreateInstance(CLSID_MjpegDec, NULL, CLSCTX_INPROC);
 
     if (SUCCEEDED(hr)) {
-      input_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_INPUT, GUID_NULL,
-                               GUID_NULL);
-      output_mjpg_pin_ = GetPin(mjpg_filter_, PINDIR_OUTPUT, GUID_NULL,
-                                GUID_NULL);
-      hr = graph_builder_->AddFilter(mjpg_filter_, NULL);
+      input_mjpg_pin_ =
+          GetPin(mjpg_filter_.get(), PINDIR_INPUT, GUID_NULL, GUID_NULL);
+      output_mjpg_pin_ =
+          GetPin(mjpg_filter_.get(), PINDIR_OUTPUT, GUID_NULL, GUID_NULL);
+      hr = graph_builder_->AddFilter(mjpg_filter_.get(), NULL);
     }
 
     if (FAILED(hr)) {
@@ -394,18 +395,19 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 
   if (format.pixel_format == PIXEL_FORMAT_MJPEG && mjpg_filter_.get()) {
     // Connect the camera to the MJPEG decoder.
-    hr = graph_builder_->ConnectDirect(output_capture_pin_, input_mjpg_pin_,
-                                       NULL);
+    hr = graph_builder_->ConnectDirect(output_capture_pin_.get(),
+                                       input_mjpg_pin_.get(), NULL);
     // Connect the MJPEG filter to the Capture filter.
-    hr += graph_builder_->ConnectDirect(output_mjpg_pin_, input_sink_pin_,
-                                        NULL);
+    hr += graph_builder_->ConnectDirect(output_mjpg_pin_.get(),
+                                        input_sink_pin_.get(), NULL);
   } else if (media_type->subtype == kMediaSubTypeHDYC) {
     // HDYC pixel format, used by the DeckLink capture card, needs an AVI
     // decompressor filter after source, let |graph_builder_| add it.
-    hr = graph_builder_->Connect(output_capture_pin_, input_sink_pin_);
+    hr = graph_builder_->Connect(output_capture_pin_.get(),
+                                 input_sink_pin_.get());
   } else {
-    hr = graph_builder_->ConnectDirect(output_capture_pin_, input_sink_pin_,
-                                       NULL);
+    hr = graph_builder_->ConnectDirect(output_capture_pin_.get(),
+                                       input_sink_pin_.get(), NULL);
   }
 
   if (FAILED(hr)) {
@@ -445,17 +447,17 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
     return;
   }
 
-  graph_builder_->Disconnect(output_capture_pin_);
-  graph_builder_->Disconnect(input_sink_pin_);
+  graph_builder_->Disconnect(output_capture_pin_.get());
+  graph_builder_->Disconnect(input_sink_pin_.get());
 
   // If the _mjpg filter exist disconnect it even if it has not been used.
-  if (mjpg_filter_) {
-    graph_builder_->Disconnect(input_mjpg_pin_);
-    graph_builder_->Disconnect(output_mjpg_pin_);
+  if (mjpg_filter_.get()) {
+    graph_builder_->Disconnect(input_mjpg_pin_.get());
+    graph_builder_->Disconnect(output_mjpg_pin_.get());
   }
-  if (crossbar_filter_) {
-    graph_builder_->Disconnect(analog_video_input_pin_);
-    graph_builder_->Disconnect(crossbar_video_output_pin_);
+  if (crossbar_filter_.get()) {
+    graph_builder_->Disconnect(analog_video_input_pin_.get());
+    graph_builder_->Disconnect(crossbar_video_output_pin_.get());
   }
 
   if (FAILED(hr)) {
@@ -525,13 +527,14 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       // Try to get a better |time_per_frame| from IAMVideoControl. If not, use
       // the value from VIDEOINFOHEADER.
       REFERENCE_TIME time_per_frame = h->AvgTimePerFrame;
-      if (video_control) {
+      if (video_control.get()) {
         ScopedCoMem<LONGLONG> max_fps;
         LONG list_size = 0;
         const SIZE size = {format.frame_size.width(),
                            format.frame_size.height()};
-        hr = video_control->GetFrameRateList(
-            output_capture_pin_, stream_index, size, &list_size, &max_fps);
+        hr = video_control->GetFrameRateList(output_capture_pin_.get(),
+                                             stream_index, size, &list_size,
+                                             &max_fps);
         // Can't assume the first value will return the max fps.
         // Sometimes |list_size| will be > 0, but max_fps will be NULL. Some
         // drivers may return an HRESULT of S_FALSE which SUCCEEDED() translates
@@ -564,9 +567,11 @@ void VideoCaptureDeviceWin::SetAntiFlickerInCaptureFilter() {
   ScopedComPtr<IKsPropertySet> ks_propset;
   DWORD type_support = 0;
   HRESULT hr;
-  if (SUCCEEDED(hr = ks_propset.QueryFrom(capture_filter_)) &&
-      SUCCEEDED(hr = ks_propset->QuerySupported(PROPSETID_VIDCAP_VIDEOPROCAMP,
-          KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY, &type_support)) &&
+  if (SUCCEEDED(hr = ks_propset.QueryFrom(capture_filter_.get())) &&
+      SUCCEEDED(hr = ks_propset->QuerySupported(
+                    PROPSETID_VIDCAP_VIDEOPROCAMP,
+                    KSPROPERTY_VIDEOPROCAMP_POWERLINE_FREQUENCY,
+                    &type_support)) &&
       (type_support & KSPROPERTY_SUPPORT_SET)) {
     KSPROPERTY_VIDEOPROCAMP_S data = {};
     data.Property.Set = PROPSETID_VIDCAP_VIDEOPROCAMP;
@@ -596,15 +601,15 @@ HRESULT VideoCaptureDeviceWin::InstantiateWDMFiltersAndPins() {
       AM_KSCATEGORY_CROSSBAR,
       crossbar_filter_.Receive());
   DPLOG_IF(ERROR, FAILED(hr)) << "Failed to bind WDM Crossbar filter";
-  if (FAILED(hr) || !crossbar_filter_)
+  if (FAILED(hr) || !crossbar_filter_.get())
     return E_FAIL;
 
   // Find Crossbar Video Output Pin: This is usually the first output pin.
-  crossbar_video_output_pin_ = GetPin(crossbar_filter_, PINDIR_OUTPUT,
+  crossbar_video_output_pin_ = GetPin(crossbar_filter_.get(), PINDIR_OUTPUT,
                                       GUID_NULL, MEDIATYPE_AnalogVideo);
-  DLOG_IF(ERROR, !crossbar_video_output_pin_)
+  DLOG_IF(ERROR, !crossbar_video_output_pin_.get())
       << "Failed to find Crossbar Video Output pin";
-  if (!crossbar_video_output_pin_)
+  if (!crossbar_video_output_pin_.get())
     return E_FAIL;
 
   // Use the WDM capture filter associated to the WDM Crossbar filter.
@@ -612,15 +617,16 @@ HRESULT VideoCaptureDeviceWin::InstantiateWDMFiltersAndPins() {
                                               AM_KSCATEGORY_CAPTURE,
                                               capture_filter_.Receive());
   DPLOG_IF(ERROR, FAILED(hr)) << "Failed to bind WDM Capture filter";
-  if (FAILED(hr) || !capture_filter_)
+  if (FAILED(hr) || !capture_filter_.get())
     return E_FAIL;
 
   // Find the WDM Capture Filter's Analog Video input Pin: usually the first
   // input pin.
-  analog_video_input_pin_ = GetPin(capture_filter_, PINDIR_INPUT, GUID_NULL,
-                                   MEDIATYPE_AnalogVideo);
-  DLOG_IF(ERROR, !analog_video_input_pin_) << "Failed to find WDM Video Input";
-  if (!analog_video_input_pin_)
+  analog_video_input_pin_ = GetPin(capture_filter_.get(), PINDIR_INPUT,
+                                   GUID_NULL, MEDIATYPE_AnalogVideo);
+  DLOG_IF(ERROR, !analog_video_input_pin_.get())
+      << "Failed to find WDM Video Input";
+  if (!analog_video_input_pin_.get())
     return E_FAIL;
   return S_OK;
 }
@@ -628,13 +634,13 @@ HRESULT VideoCaptureDeviceWin::InstantiateWDMFiltersAndPins() {
 // Add the WDM Crossbar filter to the Graph and connect the pins previously
 // found.
 HRESULT VideoCaptureDeviceWin::AddWDMCrossbarFilterToGraphAndConnect() {
-  HRESULT hr = graph_builder_->AddFilter(crossbar_filter_, NULL);
+  HRESULT hr = graph_builder_->AddFilter(crossbar_filter_.get(), NULL);
   DPLOG_IF(ERROR, FAILED(hr)) << "Failed to add Crossbar filter to the graph";
   if (FAILED(hr))
     return E_FAIL;
 
-  hr = graph_builder_->ConnectDirect(
-      crossbar_video_output_pin_, analog_video_input_pin_, NULL);
+  hr = graph_builder_->ConnectDirect(crossbar_video_output_pin_.get(),
+                                     analog_video_input_pin_.get(), NULL);
   DPLOG_IF(ERROR, FAILED(hr)) << "Failed to plug WDM filters to each other";
   if (FAILED(hr))
     return E_FAIL;
