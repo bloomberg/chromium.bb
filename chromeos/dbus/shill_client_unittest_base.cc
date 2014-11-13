@@ -140,12 +140,24 @@ void ShillClientUnittestBase::SetUp() {
            this, &ShillClientUnittestBase::OnCallMethodWithErrorCallback));
 
   // Set an expectation so mock_proxy's ConnectToSignal() will use
-  // OnConnectToSignal() to run the callback.
+  // OnConnectToPropertyChanged() to run the callback.
   EXPECT_CALL(
       *mock_proxy_.get(),
       ConnectToSignal(interface_name_, shill::kMonitorPropertyChanged, _, _))
       .WillRepeatedly(
-           Invoke(this, &ShillClientUnittestBase::OnConnectToSignal));
+           Invoke(this, &ShillClientUnittestBase::OnConnectToPropertyChanged));
+
+  EXPECT_CALL(
+      *mock_proxy_.get(),
+      ConnectToSignal(interface_name_, shill::kOnPlatformMessageFunction, _, _))
+      .WillRepeatedly(
+          Invoke(this, &ShillClientUnittestBase::OnConnectToPlatformMessage));
+
+  EXPECT_CALL(
+      *mock_proxy_.get(),
+      ConnectToSignal(interface_name_, shill::kOnPacketReceivedFunction, _, _))
+      .WillRepeatedly(
+          Invoke(this, &ShillClientUnittestBase::OnConnectToPacketReceived));
 
   // Set an expectation so mock_bus's GetObjectProxy() for the given
   // service name and the object path will return mock_proxy_.
@@ -175,6 +187,18 @@ void ShillClientUnittestBase::PrepareForMethodCall(
   response_ = response;
 }
 
+void ShillClientUnittestBase::SendPlatformMessageSignal(
+    dbus::Signal* signal) {
+  ASSERT_FALSE(platform_message_handler_.is_null());
+  platform_message_handler_.Run(signal);
+}
+
+void ShillClientUnittestBase::SendPacketReceievedSignal(
+    dbus::Signal* signal) {
+  ASSERT_FALSE(packet_receieved__handler_.is_null());
+  packet_receieved__handler_.Run(signal);
+}
+
 void ShillClientUnittestBase::SendPropertyChangedSignal(
     dbus::Signal* signal) {
   ASSERT_FALSE(property_changed_handler_.is_null());
@@ -193,6 +217,30 @@ void ShillClientUnittestBase::ExpectPropertyChanged(
 
 // static
 void ShillClientUnittestBase::ExpectNoArgument(dbus::MessageReader* reader) {
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// static
+void ShillClientUnittestBase::ExpectUint32Argument(
+    uint32_t expected_value,
+    dbus::MessageReader* reader) {
+  uint32_t value;
+  ASSERT_TRUE(reader->PopUint32(&value));
+  EXPECT_EQ(expected_value, value);
+  EXPECT_FALSE(reader->HasMoreData());
+}
+
+// static
+void ShillClientUnittestBase::ExpectArrayOfBytesArgument(
+    const std::string& expected_bytes,
+    dbus::MessageReader* reader) {
+  const uint8_t* bytes = nullptr;
+  size_t size = 0;
+  ASSERT_TRUE(reader->PopArrayOfBytes(&bytes, &size));
+  EXPECT_EQ(expected_bytes.size(), size);
+  for (size_t i = 0; i < size; ++i) {
+    EXPECT_EQ(expected_bytes[i], bytes[i]);
+  }
   EXPECT_FALSE(reader->HasMoreData());
 }
 
@@ -243,6 +291,7 @@ void ShillClientUnittestBase::ExpectStringAndValueArguments(
 // static
 void ShillClientUnittestBase::ExpectDictionaryValueArgument(
     const base::DictionaryValue* expected_dictionary,
+    bool string_valued,
     dbus::MessageReader* reader) {
   dbus::MessageReader array_reader(NULL);
   ASSERT_TRUE(reader->PopArray(&array_reader));
@@ -251,6 +300,15 @@ void ShillClientUnittestBase::ExpectDictionaryValueArgument(
     ASSERT_TRUE(array_reader.PopDictEntry(&entry_reader));
     std::string key;
     ASSERT_TRUE(entry_reader.PopString(&key));
+    if (string_valued) {
+      std::string value;
+      std::string expected_value;
+      ASSERT_TRUE(entry_reader.PopString(&value));
+      EXPECT_TRUE(expected_dictionary->GetStringWithoutPathExpansion(
+          key, &expected_value));
+      EXPECT_EQ(expected_value, value);
+      continue;
+    }
     dbus::MessageReader variant_reader(NULL);
     ASSERT_TRUE(entry_reader.PopVariant(&variant_reader));
     scoped_ptr<base::Value> value;
@@ -350,7 +408,35 @@ void ShillClientUnittestBase::ExpectDictionaryValueResult(
   ExpectDictionaryValueResultWithoutStatus(expected_result, result);
 }
 
-void ShillClientUnittestBase::OnConnectToSignal(
+void ShillClientUnittestBase::OnConnectToPlatformMessage(
+    const std::string& interface_name,
+    const std::string& signal_name,
+    const dbus::ObjectProxy::SignalCallback& signal_callback,
+    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+  platform_message_handler_ = signal_callback;
+  const bool success = true;
+  message_loop_.PostTask(FROM_HERE,
+                         base::Bind(on_connected_callback,
+                                    interface_name,
+                                    signal_name,
+                                    success));
+}
+
+void ShillClientUnittestBase::OnConnectToPacketReceived(
+    const std::string& interface_name,
+    const std::string& signal_name,
+    const dbus::ObjectProxy::SignalCallback& signal_callback,
+    const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback) {
+  packet_receieved__handler_ = signal_callback;
+  const bool success = true;
+  message_loop_.PostTask(FROM_HERE,
+                         base::Bind(on_connected_callback,
+                                    interface_name,
+                                    signal_name,
+                                    success));
+}
+
+void ShillClientUnittestBase::OnConnectToPropertyChanged(
     const std::string& interface_name,
     const std::string& signal_name,
     const dbus::ObjectProxy::SignalCallback& signal_callback,

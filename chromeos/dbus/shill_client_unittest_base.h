@@ -13,6 +13,7 @@
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/shill_client_helper.h"
 #include "chromeos/dbus/shill_property_changed_observer.h"
+#include "chromeos/dbus/shill_third_party_vpn_observer.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_object_proxy.h"
 #include "dbus/object_proxy.h"
@@ -114,6 +115,12 @@ class ShillClientUnittestBase : public testing::Test {
                             const ArgumentCheckCallback& argument_checker,
                             dbus::Response* response);
 
+  // Sends platform message signal to the tested client.
+  void SendPlatformMessageSignal(dbus::Signal* signal);
+
+  // Sends packet received signal to the tested client.
+  void SendPacketReceievedSignal(dbus::Signal* signal);
+
   // Sends property changed signal to the tested client.
   void SendPropertyChangedSignal(dbus::Signal* signal);
 
@@ -125,6 +132,15 @@ class ShillClientUnittestBase : public testing::Test {
 
   // Expects the reader to be empty.
   static void ExpectNoArgument(dbus::MessageReader* reader);
+
+  // Expects the reader to have a uint32_t
+  static void ExpectUint32Argument(uint32_t expected_value,
+                                   dbus::MessageReader* reader);
+
+  // Expects the reader to have an array of bytes
+  static void ExpectArrayOfBytesArgument(
+      const std::string& expected_bytes,
+      dbus::MessageReader* reader);
 
   // Expects the reader to have a string.
   static void ExpectStringArgument(const std::string& expected_string,
@@ -146,6 +162,7 @@ class ShillClientUnittestBase : public testing::Test {
   // Expects the reader to have a string-to-variant dictionary.
   static void ExpectDictionaryValueArgument(
       const base::DictionaryValue* expected_dictionary,
+      bool string_valued,
       dbus::MessageReader* reader);
 
   // Creates a DictionaryValue with example Service properties. The caller owns
@@ -191,7 +208,23 @@ class ShillClientUnittestBase : public testing::Test {
  private:
   // Checks the requested interface name and signal name.
   // Used to implement the mock proxy.
-  void OnConnectToSignal(
+  void OnConnectToPlatformMessage(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
+
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock proxy.
+  void OnConnectToPacketReceived(
+      const std::string& interface_name,
+      const std::string& signal_name,
+      const dbus::ObjectProxy::SignalCallback& signal_callback,
+      const dbus::ObjectProxy::OnConnectedCallback& on_connected_callback);
+
+  // Checks the requested interface name and signal name.
+  // Used to implement the mock proxy.
+  void OnConnectToPropertyChanged(
       const std::string& interface_name,
       const std::string& signal_name,
       const dbus::ObjectProxy::SignalCallback& signal_callback,
@@ -218,6 +251,10 @@ class ShillClientUnittestBase : public testing::Test {
   const dbus::ObjectPath object_path_;
   // The mock object proxy.
   scoped_refptr<dbus::MockObjectProxy> mock_proxy_;
+  // The PlatformMessage signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback platform_message_handler_;
+  // The PacketReceived signal handler given by the tested client.
+  dbus::ObjectProxy::SignalCallback packet_receieved__handler_;
   // The PropertyChanged signal handler given by the tested client.
   dbus::ObjectProxy::SignalCallback property_changed_handler_;
   // The name of the method which is expected to be called.

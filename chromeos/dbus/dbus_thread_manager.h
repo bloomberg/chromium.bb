@@ -61,6 +61,7 @@ class ShillIPConfigClient;
 class ShillManagerClient;
 class ShillProfileClient;
 class ShillServiceClient;
+class ShillThirdPartyVpnDriverClient;
 class SMSClient;
 class SystemClockClient;
 class UpdateEngineClient;
@@ -150,6 +151,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   ShillManagerClient* GetShillManagerClient();
   ShillServiceClient* GetShillServiceClient();
   ShillProfileClient* GetShillProfileClient();
+  ShillThirdPartyVpnDriverClient* GetShillThirdPartyVpnDriverClient();
   SMSClient* GetSMSClient();
   SystemClockClient* GetSystemClockClient();
   UpdateEngineClient* GetUpdateEngineClient();

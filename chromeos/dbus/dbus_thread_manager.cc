@@ -45,6 +45,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -212,6 +213,11 @@ DBusThreadManager::GetShillProfileClient() {
   return client_bundle_->shill_profile_client();
 }
 
+ShillThirdPartyVpnDriverClient*
+DBusThreadManager::GetShillThirdPartyVpnDriverClient() {
+  return client_bundle_->shill_third_party_vpn_driver_client();
+}
+
 GsmSMSClient* DBusThreadManager::GetGsmSMSClient() {
   return client_bundle_->gsm_sms_client();
 }
@@ -310,6 +316,7 @@ void DBusThreadManager::InitializeClients() {
   GetShillManagerClient()->Init(GetSystemBus());
   GetShillServiceClient()->Init(GetSystemBus());
   GetShillProfileClient()->Init(GetSystemBus());
+  GetShillThirdPartyVpnDriverClient()->Init(GetSystemBus());
   GetSMSClient()->Init(GetSystemBus());
   GetSystemClockClient()->Init(GetSystemBus());
   GetUpdateEngineClient()->Init(GetSystemBus());

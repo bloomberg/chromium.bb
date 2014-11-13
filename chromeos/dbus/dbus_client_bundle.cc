@@ -54,6 +54,7 @@
 #include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/fake_shill_profile_client.h"
 #include "chromeos/dbus/fake_shill_service_client.h"
+#include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/fake_sms_client.h"
 #include "chromeos/dbus/fake_system_clock_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
@@ -76,6 +77,7 @@
 #include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
 #include "chromeos/dbus/sms_client.h"
 #include "chromeos/dbus/system_clock_client.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -194,12 +196,16 @@ DBusClientBundle::DBusClientBundle(DBusClientTypeMask unstub_client_mask)
     shill_ipconfig_client_.reset(ShillIPConfigClient::Create());
     shill_service_client_.reset(ShillServiceClient::Create());
     shill_profile_client_.reset(ShillProfileClient::Create());
+    shill_third_party_vpn_driver_client_.reset(
+        ShillThirdPartyVpnDriverClient::Create());
   } else {
     shill_manager_client_.reset(new FakeShillManagerClient);
     shill_device_client_.reset(new FakeShillDeviceClient);
     shill_ipconfig_client_.reset(new FakeShillIPConfigClient);
     shill_service_client_.reset(new FakeShillServiceClient);
     shill_profile_client_.reset(new FakeShillProfileClient);
+    shill_third_party_vpn_driver_client_.reset(
+        new FakeShillThirdPartyVpnDriverClient);
   }
 
   if (!IsUsingStub(GSM_SMS)) {

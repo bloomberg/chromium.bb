@@ -31,6 +31,7 @@ class ShillIPConfigClient;
 class ShillManagerClient;
 class ShillServiceClient;
 class ShillProfileClient;
+class ShillThirdPartyVpnDriverClient;
 class GsmSMSClient;
 class ImageBurnerClient;
 class IntrospectableClient;
@@ -181,6 +182,10 @@ class CHROMEOS_EXPORT DBusClientBundle {
     return shill_profile_client_.get();
   }
 
+  ShillThirdPartyVpnDriverClient* shill_third_party_vpn_driver_client() {
+    return shill_third_party_vpn_driver_client_.get();
+  }
+
   GsmSMSClient* gsm_sms_client() {
     return gsm_sms_client_.get();
   }
@@ -275,6 +280,8 @@ class CHROMEOS_EXPORT DBusClientBundle {
   scoped_ptr<ShillManagerClient> shill_manager_client_;
   scoped_ptr<ShillServiceClient> shill_service_client_;
   scoped_ptr<ShillProfileClient> shill_profile_client_;
+  scoped_ptr<ShillThirdPartyVpnDriverClient>
+      shill_third_party_vpn_driver_client_;
   scoped_ptr<GsmSMSClient> gsm_sms_client_;
   scoped_ptr<ImageBurnerClient> image_burner_client_;
   scoped_ptr<IntrospectableClient> introspectable_client_;

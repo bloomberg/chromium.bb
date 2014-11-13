@@ -1,0 +1,183 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/bind.h"
+#include "chromeos/dbus/shill_client_unittest_base.h"
+#include "chromeos/dbus/shill_third_party_vpn_driver_client.h"
+#include "chromeos/dbus/shill_third_party_vpn_observer.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
+
+using testing::_;
+
+namespace chromeos {
+
+namespace {
+
+const char kExampleIPConfigPath[] = "/foo/bar";
+
+class MockShillThirdPartyVpnObserver : public ShillThirdPartyVpnObserver {
+ public:
+  MockShillThirdPartyVpnObserver() {}
+  ~MockShillThirdPartyVpnObserver() override {}
+  MOCK_METHOD2(OnPacketReceived, void(const uint8_t* data, size_t length));
+  MOCK_METHOD1(OnPlatformMessage, void(uint32_t message));
+};
+
+}  // namespace
+
+class ShillThirdPartyVpnDriverClientTest : public ShillClientUnittestBase {
+ public:
+  ShillThirdPartyVpnDriverClientTest()
+      : ShillClientUnittestBase(shill::kFlimflamThirdPartyVpnInterface,
+                                dbus::ObjectPath(kExampleIPConfigPath)) {}
+
+  void SetUp() override {
+    ShillClientUnittestBase::SetUp();
+
+    // Create a client with the mock bus.
+    client_.reset(ShillThirdPartyVpnDriverClient::Create());
+    client_->Init(mock_bus_.get());
+    // Run the message loop to run the signal connection result callback.
+    message_loop_.RunUntilIdle();
+  }
+
+  void TearDown() override { ShillClientUnittestBase::TearDown(); }
+
+  MOCK_METHOD0(MockSuccess, void());
+  static void Failure(const std::string& error_name,
+                      const std::string& error_message) {
+    ADD_FAILURE() << error_name << ": " << error_message;
+  }
+
+ protected:
+  scoped_ptr<ShillThirdPartyVpnDriverClient> client_;
+};
+
+TEST_F(ShillThirdPartyVpnDriverClientTest, PlatformSignal) {
+  uint32_t connected_state = 123456;
+  const int kPacketSize = 5;
+  uint8_t data[kPacketSize] = {};
+  dbus::Signal pmessage_signal(shill::kFlimflamThirdPartyVpnInterface,
+                               shill::kOnPlatformMessageFunction);
+  {
+    dbus::MessageWriter writer(&pmessage_signal);
+    writer.AppendUint32(connected_state);
+  }
+
+  dbus::Signal preceived_signal(shill::kFlimflamThirdPartyVpnInterface,
+                                shill::kOnPacketReceivedFunction);
+  {
+    dbus::MessageWriter writer(&preceived_signal);
+    writer.AppendArrayOfBytes(data, kPacketSize);
+  }
+
+  // Expect each signal to be triggered once.
+  MockShillThirdPartyVpnObserver observer;
+  EXPECT_CALL(observer, OnPlatformMessage(connected_state)).Times(1);
+  EXPECT_CALL(observer, OnPacketReceived(_, kPacketSize)).Times(1);
+
+  client_->AddShillThirdPartyVpnObserver(kExampleIPConfigPath, &observer);
+
+  // Run the signal callback.
+  SendPlatformMessageSignal(&pmessage_signal);
+  SendPacketReceievedSignal(&preceived_signal);
+
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  uint32_t connection_state = 2;
+
+  PrepareForMethodCall(shill::kUpdateConnectionStateFunction,
+                       base::Bind(&ExpectUint32Argument, connection_state),
+                       response.get());
+
+  EXPECT_CALL(*this, MockSuccess()).Times(0);
+  client_->UpdateConnectionState(
+      kExampleIPConfigPath, connection_state,
+      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                 base::Unretained(this)),
+      base::Bind(&Failure));
+
+  client_->RemoveShillThirdPartyVpnObserver(kExampleIPConfigPath);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  EXPECT_CALL(*this, MockSuccess()).Times(1);
+
+  // Check after removing the observer that there is no further signals.
+  EXPECT_CALL(observer, OnPlatformMessage(connected_state)).Times(0);
+  EXPECT_CALL(observer, OnPacketReceived(_, kPacketSize)).Times(0);
+
+  // Run the signal callback.
+  SendPlatformMessageSignal(&pmessage_signal);
+  SendPacketReceievedSignal(&preceived_signal);
+
+  testing::Mock::VerifyAndClearExpectations(&observer);
+
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillThirdPartyVpnDriverClientTest, SetParameters) {
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  base::DictionaryValue parameters;
+  const std::string kAddress("1.1.1.1");
+  parameters.SetStringWithoutPathExpansion(
+      shill::kAddressParameterThirdPartyVpn, kAddress);
+
+  EXPECT_CALL(*this, MockSuccess()).Times(1);
+
+  PrepareForMethodCall(
+      shill::kSetParametersFunction,
+      base::Bind(&ExpectDictionaryValueArgument, &parameters, true),
+      response.get());
+
+  client_->SetParameters(
+      kExampleIPConfigPath, parameters,
+      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                 base::Unretained(this)),
+      base::Bind(&Failure));
+
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillThirdPartyVpnDriverClientTest, UpdateConnectionState) {
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  uint32_t connection_state = 2;
+
+  EXPECT_CALL(*this, MockSuccess()).Times(1);
+
+  PrepareForMethodCall(shill::kUpdateConnectionStateFunction,
+                       base::Bind(&ExpectUint32Argument, connection_state),
+                       response.get());
+
+  client_->UpdateConnectionState(
+      kExampleIPConfigPath, connection_state,
+      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                 base::Unretained(this)),
+      base::Bind(&Failure));
+
+  message_loop_.RunUntilIdle();
+}
+
+TEST_F(ShillThirdPartyVpnDriverClientTest, SendPacket) {
+  scoped_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+
+  const std::string data(5, 0);
+
+  EXPECT_CALL(*this, MockSuccess()).Times(1);
+
+  PrepareForMethodCall(shill::kSendPacketFunction,
+                       base::Bind(&ExpectArrayOfBytesArgument, data),
+                       response.get());
+
+  client_->SendPacket(
+      kExampleIPConfigPath, data,
+      base::Bind(&ShillThirdPartyVpnDriverClientTest::MockSuccess,
+                 base::Unretained(this)),
+      base::Bind(&Failure));
+
+  message_loop_.RunUntilIdle();
+}
+
+}  // namespace chromeos

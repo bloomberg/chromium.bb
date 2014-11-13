@@ -144,9 +144,12 @@ TEST_F(ShillServiceClientTest, SetProperties) {
 
   // Set expectations.
   scoped_ptr<base::DictionaryValue> arg(CreateExampleServiceProperties());
-  PrepareForMethodCall(shill::kSetPropertiesFunction,
-                       base::Bind(&ExpectDictionaryValueArgument, arg.get()),
-                       response.get());
+  // Use a variant valued dictionary rather than a string valued one.
+  const bool string_valued = false;
+  PrepareForMethodCall(
+      shill::kSetPropertiesFunction,
+      base::Bind(&ExpectDictionaryValueArgument, arg.get(), string_valued),
+      response.get());
 
   // Call method.
   MockClosure mock_closure;
