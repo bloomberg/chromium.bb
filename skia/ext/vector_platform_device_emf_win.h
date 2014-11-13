@@ -79,8 +79,7 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
   void LoadClipRegion();
 
  protected:
-  virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) override;
+  virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info) override;
 
  private:
   // Applies the SkPaint's painting properties in the current GDI context, if

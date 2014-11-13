@@ -695,11 +695,11 @@ void VectorPlatformDeviceEmf::LoadClipRegion() {
   LoadClippingRegionToDC(hdc_, clip_region_, t);
 }
 
-SkBaseDevice* VectorPlatformDeviceEmf::onCreateDevice(const SkImageInfo& info,
-                                                      Usage /*usage*/) {
-  SkASSERT(info.colorType() == kN32_SkColorType);
+SkBaseDevice* VectorPlatformDeviceEmf::onCreateCompatibleDevice(
+                                                    const CreateInfo& info) {
+  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
   return VectorPlatformDeviceEmf::CreateDevice(
-      info.width(), info.height(), info.isOpaque(), NULL);
+      info.fInfo.width(), info.fInfo.height(), info.fInfo.isOpaque(), NULL);
 }
 
 bool VectorPlatformDeviceEmf::CreateBrush(bool use_brush, COLORREF color) {

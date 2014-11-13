@@ -270,11 +270,12 @@ const SkBitmap& BitmapPlatformDevice::onAccessBitmap() {
   return SkBitmapDevice::onAccessBitmap();
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
-                                                   Usage /*usage*/) {
-  SkASSERT(info.colorType() == kN32_SkColorType);
-  return BitmapPlatformDevice::CreateAndClear(info.width(), info.height(),
-                                              info.isOpaque());
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+                                                    const CreateInfo& info) {
+  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
+  return BitmapPlatformDevice::CreateAndClear(info.fInfo.width(),
+                                              info.fInfo.height(),
+                                              info.fInfo.isOpaque());
 }
 
 // PlatformCanvas impl

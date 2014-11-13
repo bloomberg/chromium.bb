@@ -47,8 +47,8 @@ class BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice {
                                    const PlatformRect* src_rect) override;
 
  protected:
-  virtual SkBaseDevice* onCreateDevice(const SkImageInfo& info,
-                                       Usage usage) override;
+  virtual SkBaseDevice* onCreateCompatibleDevice(const CreateInfo& info)
+    override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);

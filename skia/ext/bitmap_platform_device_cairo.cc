@@ -167,11 +167,11 @@ BitmapPlatformDevice::~BitmapPlatformDevice() {
   cairo_destroy(cairo_);
 }
 
-SkBaseDevice* BitmapPlatformDevice::onCreateDevice(const SkImageInfo& info,
-                                                   Usage /*usage*/) {
-  SkASSERT(info.colorType() == kN32_SkColorType);
-  return BitmapPlatformDevice::Create(info.width(), info.height(),
-                                      info.isOpaque());
+SkBaseDevice* BitmapPlatformDevice::onCreateCompatibleDevice(
+                                                     const CreateInfo& info) {
+  SkASSERT(info.fInfo.colorType() == kN32_SkColorType);
+  return BitmapPlatformDevice::Create(info.fInfo.width(), info.fInfo.height(),
+                                      info.fInfo.isOpaque());
 }
 
 cairo_t* BitmapPlatformDevice::BeginPlatformPaint() {
