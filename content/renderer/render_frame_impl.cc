@@ -1746,8 +1746,13 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       render_thread->compositor_message_loop_proxy(),
       base::Bind(&EncryptedMediaPlayerSupportImpl::Create),
       initial_cdm);
+
+  scoped_ptr<media::Renderer> media_renderer =
+      GetContentClient()->renderer()->CreateMediaRenderer(
+          this, render_thread->GetMediaThreadTaskRunner());
+
   return new media::WebMediaPlayerImpl(
-      frame, client, weak_factory_.GetWeakPtr(), nullptr, params);
+      frame, client, weak_factory_.GetWeakPtr(), media_renderer.Pass(), params);
 #endif  // defined(OS_ANDROID)
 }
 

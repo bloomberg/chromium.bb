@@ -4,6 +4,7 @@
 
 #include "content/public/renderer/content_renderer_client.h"
 
+#include "media/base/renderer.h"
 #include "third_party/WebKit/public/web/WebPluginPlaceholder.h"
 
 namespace content {
@@ -166,6 +167,12 @@ bool ContentRendererClient::AllowPepperMediaStreamAPI(const GURL& url) {
 
 void ContentRendererClient::AddKeySystems(
     std::vector<media::KeySystemInfo>* key_systems) {
+}
+
+scoped_ptr<media::Renderer> ContentRendererClient::CreateMediaRenderer(
+    RenderFrame* render_frame,
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+  return scoped_ptr<media::Renderer>();
 }
 
 bool ContentRendererClient::ShouldReportDetailedMessageForSource(

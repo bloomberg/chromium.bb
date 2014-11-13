@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -24,7 +25,7 @@ class SkBitmap;
 
 namespace base {
 class FilePath;
-class MessageLoop;
+class SingleThreadTaskRunner;
 }
 
 namespace blink {
@@ -52,6 +53,7 @@ struct WebURLError;
 }
 
 namespace media {
+class Renderer;
 struct KeySystemInfo;
 }
 
@@ -254,6 +256,12 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Returns true if the page at |url| can use Pepper MediaStream APIs.
   virtual bool AllowPepperMediaStreamAPI(const GURL& url);
+
+  // Allows an embedder to create a media::Renderer. The caller owns the
+  // returned renderer.
+  virtual scoped_ptr<media::Renderer> CreateMediaRenderer(
+      RenderFrame* render_frame,
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Gives the embedder a chance to register the key system(s) it supports by
   // populating |key_systems|.
