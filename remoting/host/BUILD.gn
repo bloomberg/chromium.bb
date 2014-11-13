@@ -30,6 +30,7 @@ static_library("host") {
     "//remoting/base",
     "//remoting/protocol",
     "//remoting/resources",
+    "//ui/events/platform",
     "//ui/events:dom4_keycode_converter",
   ]
 
@@ -43,7 +44,11 @@ static_library("host") {
       "//build/config/linux:x11",
     ]
   } else {
-    sources -= [ "clipboard_x11.cc" ]
+    sources -= [
+      "clipboard_x11.cc",
+      "linux/x_server_clipboard.cc",
+      "linux/x_server_clipboard.h",
+    ]
   }
 
   if (is_chromeos) {
@@ -63,18 +68,29 @@ static_library("host") {
       deps += [ "//ash" ]
     }
 
+    if (use_ozone) {
+      sources -= [
+        "input_injector_x11.cc",
+        "local_input_monitor_x11.cc",
+      ]
+    } else {
+      sources -= [
+        "chromeos/mouse_cursor_monitor_aura.cc",
+        "chromeos/mouse_cursor_monitor_aura.h",
+        "clipboard_x11.cc",
+        "input_injector_chromeos.cc",
+        "input_injector_chromeos.h",
+        "linux/x_server_clipboard.cc",
+        "linux/x_server_clipboard.h",
+        "local_input_monitor_chromeos.cc",
+      ]
+    }
+
     sources -= [
-      "clipboard_x11.cc",
       "continue_window_linux.cc",
       "disconnect_window_linux.cc",
       "policy_hack/policy_watcher_linux.cc",
       "remoting_me2me_host.cc",
-    ]
-
-  } else {
-    sources -= [
-      "clipboard_aura.cc",
-      "clipboard_aura.h",
     ]
   }
 
