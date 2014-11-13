@@ -634,8 +634,8 @@ class StatsManager(object):
     if starting_build_number:
       cros_build_lib.Info('Filtering to include builds after %s (inclusive).',
                           starting_build_number)
-      self.builds = filter(lambda b: b.build_number >= starting_build_number,
-                           self.builds)
+      self.builds = [b for b in self.builds
+                     if b.build_number >= starting_build_number]
 
   def CollectActions(self):
     """Collects the CL actions from the set of gathered builds.

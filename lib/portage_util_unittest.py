@@ -203,8 +203,8 @@ CROS_WORKON_SUBDIR=%s
     self.assertEquals(project, fake_projects)
     fake_path = ['%s/%s' % (fake_localname[i], fake_subdir[i])
                  for i in range(0, len(fake_projects))]
-    fake_path = map(lambda x: os.path.realpath(
-        os.path.join(self.tempdir, 'platform', x)), fake_path)
+    fake_path = [os.path.realpath(os.path.join(self.tempdir, 'platform', x))
+                 for x in fake_path]
     self.assertEquals(subdir, fake_path)
 
 

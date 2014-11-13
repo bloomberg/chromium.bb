@@ -96,7 +96,7 @@ class CrosMarkChromeAsStable(cros_test_lib.MockTempDirTestCase):
     unstable, stable_ebuilds = cros_mark_chrome_as_stable.FindChromeCandidates(
         self.mock_chrome_dir)
 
-    stable_ebuild_paths = map(lambda eb: eb.ebuild_path, stable_ebuilds)
+    stable_ebuild_paths = [x.ebuild_path for x in stable_ebuilds]
     self.assertEqual(unstable.ebuild_path, self.unstable)
     self.assertEqual(len(stable_ebuilds), 4)
     self.assertTrue(self.sticky in stable_ebuild_paths)
