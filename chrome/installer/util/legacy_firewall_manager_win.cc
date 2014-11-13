@@ -83,7 +83,7 @@ bool LegacyFirewallManager::SetAllowIncomingConnection(bool allow) {
       CreateChromeAuthorization(allow);
   if (!authorization.get())
     return false;
-  HRESULT hr = authorized_apps->Add(authorization);
+  HRESULT hr = authorized_apps->Add(authorization.get());
   DLOG_IF(ERROR, FAILED(hr)) << logging::SystemErrorCodeToString(hr);
   return SUCCEEDED(hr);
 }

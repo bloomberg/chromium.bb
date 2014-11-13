@@ -1490,7 +1490,7 @@ bool BatchShortcutAction(
   for (base::FilePath shortcut_path = enumerator.Next();
        !shortcut_path.empty();
        shortcut_path = enumerator.Next()) {
-    if (cancel && cancel->data.IsSet())
+    if (cancel.get() && cancel->data.IsSet())
       return false;
     if (base::win::ResolveShortcut(shortcut_path, &target_path, &args)) {
       if (shortcut_filter.Run(target_path, args) &&
