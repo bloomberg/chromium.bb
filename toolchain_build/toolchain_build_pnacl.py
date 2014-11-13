@@ -821,36 +821,41 @@ def GetUploadPackageTargets():
   This build can be built among many build bots, but eventually all things
   will be combined together. This package target dictionary describes the final
   output of the entire build.
+
+  For the pnacl toolchain build we want 2 versions of the toolchain:
+    1. pnacl_newlib_raw - The toolchain without core_sdk headers/libraries.
+    2. pnacl_newlib - The toolchain with all the core_sdk headers/libraries.
   """
   package_targets = {}
 
-  common_packages = ['metadata']
+  common_raw_packages = ['metadata']
+  common_complete_packages = []
 
   # Target translator libraries
   for arch in TRANSLATOR_ARCHES:
     legal_arch = pynacl.gsd_storage.LegalizeName(arch)
-    common_packages.append('libs_support_translator_%s' % legal_arch)
-    common_packages.append('compiler_rt_%s' % legal_arch)
+    common_raw_packages.append('libs_support_translator_%s' % legal_arch)
+    common_raw_packages.append('compiler_rt_%s' % legal_arch)
     if not 'nonsfi' in arch:
-      common_packages.append('libgcc_eh_%s' % legal_arch)
+      common_raw_packages.append('libgcc_eh_%s' % legal_arch)
 
   # Target libraries
   for bias in BITCODE_BIASES:
     legal_bias = pynacl.gsd_storage.LegalizeName(bias)
-    common_packages.append('newlib_%s' % legal_bias)
-    common_packages.append('libcxx_%s' % legal_bias)
-    common_packages.append('libstdcxx_%s' % legal_bias)
-    common_packages.append('libs_support_%s' % legal_bias)
+    common_raw_packages.append('newlib_%s' % legal_bias)
+    common_raw_packages.append('libcxx_%s' % legal_bias)
+    common_raw_packages.append('libstdcxx_%s' % legal_bias)
+    common_raw_packages.append('libs_support_%s' % legal_bias)
 
   # Portable core sdk libs. For now, no biased libs.
-  common_packages.append('core_sdk_libs_le32')
+  common_complete_packages.append('core_sdk_libs_le32')
 
   # Direct-to-nacl target libraries
   for arch in DIRECT_TO_NACL_ARCHES:
-    common_packages.append('newlib_%s' % arch)
-    common_packages.append('libcxx_%s' % arch)
-    common_packages.append('libs_support_%s' % arch)
-    common_packages.append('core_sdk_libs_%s' % arch)
+    common_raw_packages.append('newlib_%s' % arch)
+    common_raw_packages.append('libcxx_%s' % arch)
+    common_raw_packages.append('libs_support_%s' % arch)
+    common_complete_packages.append('core_sdk_libs_%s' % arch)
 
   # Host components
   host_packages = {}
@@ -875,9 +880,12 @@ def GetUploadPackageTargets():
   for os_name, os_packages in host_packages.iteritems():
     package_target = '%s_x86' % pynacl.platform.GetOS(os_name)
     package_targets[package_target] = {}
-    package_name = 'pnacl_newlib'
-    combined_packages = os_packages + common_packages
-    package_targets[package_target][package_name] = combined_packages
+
+    raw_packages = os_packages + common_raw_packages
+    package_targets[package_target]['pnacl_newlib_raw'] = raw_packages
+
+    complete_packages = raw_packages + common_complete_packages
+    package_targets[package_target]['pnacl_newlib'] = complete_packages
 
   return package_targets
 
