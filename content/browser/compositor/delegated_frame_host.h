@@ -268,6 +268,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   scoped_ptr<cc::SurfaceFactory> surface_factory_;
   cc::SurfaceId surface_id_;
   gfx::Size current_surface_size_;
+  float current_scale_factor_;
   cc::ReturnedResourceArray surface_returned_resources_;
 
   // This lock is the one waiting for a frame of the right size to come back

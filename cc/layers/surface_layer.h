@@ -30,7 +30,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
       const SatisfyCallback& satisfy_callback,
       const RequireCallback& require_callback);
 
-  void SetSurfaceId(SurfaceId surface_id, const gfx::Size& size);
+  void SetSurfaceId(SurfaceId surface_id, float scale, const gfx::Size& size);
 
   // Layer overrides.
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -53,6 +53,7 @@ class CC_EXPORT SurfaceLayer : public Layer {
 
   SurfaceId surface_id_;
   gfx::Size surface_size_;
+  float surface_scale_;
   SurfaceSequence destroy_sequence_;
   SatisfyCallback satisfy_callback_;
   RequireCallback require_callback_;

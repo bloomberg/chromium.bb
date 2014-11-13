@@ -575,12 +575,13 @@ void Layer::SetShowSurface(
     const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
     const cc::SurfaceLayer::RequireCallback& require_callback,
     gfx::Size surface_size,
+    float scale,
     gfx::Size frame_size_in_dip) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   scoped_refptr<cc::SurfaceLayer> new_layer =
       cc::SurfaceLayer::Create(satisfy_callback, require_callback);
-  new_layer->SetSurfaceId(surface_id, surface_size);
+  new_layer->SetSurfaceId(surface_id, scale, surface_size);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
 

@@ -284,6 +284,7 @@ class COMPOSITOR_EXPORT Layer
                       const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
                       const cc::SurfaceLayer::RequireCallback& require_callback,
                       gfx::Size surface_size,
+                      float scale,
                       gfx::Size frame_size_in_dip);
 
   bool has_external_content() {

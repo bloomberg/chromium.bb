@@ -65,7 +65,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer->SetSurfaceId(SurfaceId(1), gfx::Size(1, 1));
+  layer->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host_->set_surface_id_namespace(1);
   layer_tree_host_->SetRootLayer(layer);
 
@@ -74,7 +74,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer2->SetSurfaceId(SurfaceId(1), gfx::Size(1, 1));
+  layer2->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
   layer_tree_host2->set_surface_id_namespace(2);
   layer_tree_host2->SetRootLayer(layer2);
 
@@ -110,6 +110,14 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   EXPECT_EQ(2u, required_seq.size());
 }
 
+static void CalcDrawProps(FakeLayerTreeHost* host, float device_scale_factor) {
+  RenderSurfaceLayerList render_surface_layer_list;
+  LayerTreeHostCommon::CalcDrawPropsMainInputsForTesting inputs(
+      host->root_layer(), gfx::Size(500, 500), &render_surface_layer_list);
+  inputs.device_scale_factor = device_scale_factor;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+}
+
 // Check that setting content scale on the surface works.
 TEST_F(SurfaceLayerTest, ScaleSurface) {
   SurfaceSequence blank_change;
@@ -119,22 +127,17 @@ TEST_F(SurfaceLayerTest, ScaleSurface) {
       base::Bind(&SatisfyCallback, &blank_change),
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   gfx::Size surface_size(10, 15);
-  layer->SetSurfaceId(SurfaceId(1), surface_size);
+  layer->SetSurfaceId(SurfaceId(1), 2.f, surface_size);
   layer->SetBounds(gfx::Size(25, 45));
+  layer_tree_host_->SetRootLayer(layer);
 
-  float scale_x;
-  float scale_y;
-  gfx::Size bounds;
-  layer->CalculateContentsScale(2.f, &scale_x, &scale_y, &bounds);
-  EXPECT_EQ(10.f / 25.f, scale_x);
-  EXPECT_EQ(15.f / 45.f, scale_y);
-  EXPECT_EQ(surface_size.ToString(), bounds.ToString());
+  CalcDrawProps(layer_tree_host_.get(), 5.f);
+  EXPECT_EQ(2.f, layer->contents_scale_x());
+  EXPECT_EQ(2.f, layer->contents_scale_y());
+  EXPECT_EQ(surface_size.ToString(), layer->content_bounds().ToString());
 
-  layer->SetBounds(gfx::Size(0, 0));
-  layer->CalculateContentsScale(2.f, &scale_x, &scale_y, &bounds);
-  EXPECT_EQ(1.f, scale_x);
-  EXPECT_EQ(1.f, scale_y);
-  EXPECT_EQ(surface_size.ToString(), bounds.ToString());
+  layer_tree_host_->SetRootLayer(nullptr);
+  layer_tree_host_.reset();
 }
 
 // Check that SurfaceSequence is sent through swap promise.
@@ -148,7 +151,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
     layer_ = SurfaceLayer::Create(
         base::Bind(&SatisfyCallback, &satisfied_sequence_),
         base::Bind(&RequireCallback, &required_id_, &required_set_));
-    layer_->SetSurfaceId(SurfaceId(1), gfx::Size(1, 1));
+    layer_->SetSurfaceId(SurfaceId(1), 1.f, gfx::Size(1, 1));
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());

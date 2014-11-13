@@ -82,6 +82,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
+      current_scale_factor_(1.f),
       can_lock_compositor_(YES_CAN_LOCK),
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory::GetInstance()->AddObserver(this);
@@ -407,8 +408,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(
             surface_id_,
             base::Bind(&SatisfyCallback, base::Unretained(manager)),
             base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
-            frame_size_in_dip);
+            frame_device_scale_factor, frame_size_in_dip);
         current_surface_size_ = frame_size;
+        current_scale_factor_ = frame_device_scale_factor;
       }
       scoped_ptr<cc::CompositorFrame> compositor_frame =
           make_scoped_ptr(new cc::CompositorFrame());
@@ -1014,7 +1016,8 @@ void DelegatedFrameHost::OnLayerRecreated(ui::Layer* old_layer,
     new_layer->SetShowSurface(
         surface_id_, base::Bind(&SatisfyCallback, base::Unretained(manager)),
         base::Bind(&RequireCallback, base::Unretained(manager)),
-        current_surface_size_, current_frame_size_in_dip_);
+        current_surface_size_, current_scale_factor_,
+        current_frame_size_in_dip_);
   }
 }
 
