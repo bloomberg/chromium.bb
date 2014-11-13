@@ -431,7 +431,6 @@ class CONTENT_EXPORT RenderViewImpl
   virtual void unregisterProtocolHandler(const blink::WebString& scheme,
                                          const blink::WebURL& url);
   virtual blink::WebPageVisibilityState visibilityState() const;
-  virtual blink::WebPushClient* webPushClient();
   virtual void draggableRegionsChanged();
 
 #if defined(OS_ANDROID)

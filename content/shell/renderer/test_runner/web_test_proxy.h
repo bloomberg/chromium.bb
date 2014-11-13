@@ -399,9 +399,6 @@ class WebTestProxy : public Base, public WebTestProxyBase {
   virtual blink::WebString acceptLanguages() {
     return WebTestProxyBase::acceptLanguages();
   }
-  virtual blink::WebPushClient* webPushClient() {
-    return WebTestProxyBase::GetWebPushClient();
-  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebTestProxy);

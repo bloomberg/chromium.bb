@@ -3964,12 +3964,6 @@ blink::WebPageVisibilityState RenderViewImpl::visibilityState() const {
   return current_state;
 }
 
-blink::WebPushClient* RenderViewImpl::webPushClient() {
-  // TODO(mvanouwerkerk): Remove this method once the Push API code in Blink
-  // has also switched over to Frame.
-  return main_render_frame_->pushClient();
-}
-
 void RenderViewImpl::draggableRegionsChanged() {
   FOR_EACH_OBSERVER(
       RenderViewObserver,
