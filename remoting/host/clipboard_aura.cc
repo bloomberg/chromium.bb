@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/chromeos/clipboard_aura.h"
+#include "remoting/host/clipboard_aura.h"
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"

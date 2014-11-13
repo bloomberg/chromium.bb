@@ -229,6 +229,9 @@ static_library("extensions") {
     sources -= [
       "global_shortcut_listener_chromeos.cc",
     ]
+    deps -= [
+      "//remoting/host/it2me:common",
+    ]
   }
   if (!use_ozone) {
     sources -= [

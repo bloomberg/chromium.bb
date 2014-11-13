@@ -87,12 +87,12 @@ bool FindKeycodeForUnicode(Display* display,
 // From third_party/WebKit/Source/web/gtk/WebInputEventFactory.cpp .
 const float kWheelTicksPerPixel = 3.0f / 160.0f;
 
-// A class to generate events on X11.
-class InputInjectorX11 : public InputInjector {
+// A class to generate events on Linux.
+class InputInjectorLinux : public InputInjector {
  public:
-  explicit InputInjectorX11(
+  explicit InputInjectorLinux(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~InputInjectorX11() override;
+  ~InputInjectorLinux() override;
 
   bool Init();
 
@@ -108,7 +108,7 @@ class InputInjectorX11 : public InputInjector {
   void Start(scoped_ptr<protocol::ClipboardStub> client_clipboard) override;
 
  private:
-  // The actual implementation resides in InputInjectorX11::Core class.
+  // The actual implementation resides in InputInjectorLinux::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     explicit Core(scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -180,44 +180,44 @@ class InputInjectorX11 : public InputInjector {
 
   scoped_refptr<Core> core_;
 
-  DISALLOW_COPY_AND_ASSIGN(InputInjectorX11);
+  DISALLOW_COPY_AND_ASSIGN(InputInjectorLinux);
 };
 
-InputInjectorX11::InputInjectorX11(
+InputInjectorLinux::InputInjectorLinux(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   core_ = new Core(task_runner);
 }
 
-InputInjectorX11::~InputInjectorX11() {
+InputInjectorLinux::~InputInjectorLinux() {
   core_->Stop();
 }
 
-bool InputInjectorX11::Init() {
+bool InputInjectorLinux::Init() {
   return core_->Init();
 }
 
-void InputInjectorX11::InjectClipboardEvent(const ClipboardEvent& event) {
+void InputInjectorLinux::InjectClipboardEvent(const ClipboardEvent& event) {
   core_->InjectClipboardEvent(event);
 }
 
-void InputInjectorX11::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorLinux::InjectKeyEvent(const KeyEvent& event) {
   core_->InjectKeyEvent(event);
 }
 
-void InputInjectorX11::InjectTextEvent(const TextEvent& event) {
+void InputInjectorLinux::InjectTextEvent(const TextEvent& event) {
   core_->InjectTextEvent(event);
 }
 
-void InputInjectorX11::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorLinux::InjectMouseEvent(const MouseEvent& event) {
   core_->InjectMouseEvent(event);
 }
 
-void InputInjectorX11::Start(
+void InputInjectorLinux::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   core_->Start(client_clipboard.Pass());
 }
 
-InputInjectorX11::Core::Core(
+InputInjectorLinux::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : task_runner_(task_runner),
       latest_mouse_position_(-1, -1),
@@ -228,7 +228,7 @@ InputInjectorX11::Core::Core(
       saved_auto_repeat_enabled_(false) {
 }
 
-bool InputInjectorX11::Core::Init() {
+bool InputInjectorLinux::Core::Init() {
   CHECK(display_);
 
   if (!task_runner_->BelongsToCurrentThread())
@@ -252,7 +252,7 @@ bool InputInjectorX11::Core::Init() {
   return true;
 }
 
-void InputInjectorX11::Core::InjectClipboardEvent(
+void InputInjectorLinux::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -264,7 +264,7 @@ void InputInjectorX11::Core::InjectClipboardEvent(
   clipboard_->InjectClipboardEvent(event);
 }
 
-void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
+void InputInjectorLinux::Core::InjectKeyEvent(const KeyEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   if (!event.has_pressed() || !event.has_usb_keycode())
     return;
@@ -313,7 +313,7 @@ void InputInjectorX11::Core::InjectKeyEvent(const KeyEvent& event) {
   XFlush(display_);
 }
 
-void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
+void InputInjectorLinux::Core::InjectTextEvent(const TextEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Core::InjectTextEvent, this, event));
@@ -344,16 +344,16 @@ void InputInjectorX11::Core::InjectTextEvent(const TextEvent& event) {
   XFlush(display_);
 }
 
-InputInjectorX11::Core::~Core() {
+InputInjectorLinux::Core::~Core() {
   CHECK(pressed_keys_.empty());
 }
 
-void InputInjectorX11::Core::InitClipboard() {
+void InputInjectorLinux::Core::InitClipboard() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   clipboard_ = Clipboard::Create();
 }
 
-bool InputInjectorX11::Core::IsAutoRepeatEnabled() {
+bool InputInjectorLinux::Core::IsAutoRepeatEnabled() {
   XKeyboardState state;
   if (!XGetKeyboardControl(display_, &state)) {
     LOG(ERROR) << "Failed to get keyboard auto-repeat status, assuming ON.";
@@ -362,13 +362,13 @@ bool InputInjectorX11::Core::IsAutoRepeatEnabled() {
   return state.global_auto_repeat == AutoRepeatModeOn;
 }
 
-void InputInjectorX11::Core::SetAutoRepeatEnabled(bool mode) {
+void InputInjectorLinux::Core::SetAutoRepeatEnabled(bool mode) {
   XKeyboardControl control;
   control.auto_repeat_mode = mode ? AutoRepeatModeOn : AutoRepeatModeOff;
   XChangeKeyboardControl(display_, KBAutoRepeatMode, &control);
 }
 
-void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
+void InputInjectorLinux::Core::InjectScrollWheelClicks(int button, int count) {
   if (button < 0) {
     LOG(WARNING) << "Ignoring unmapped scroll wheel button";
     return;
@@ -380,7 +380,7 @@ void InputInjectorX11::Core::InjectScrollWheelClicks(int button, int count) {
   }
 }
 
-void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
+void InputInjectorLinux::Core::InjectMouseEvent(const MouseEvent& event) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&Core::InjectMouseEvent, this, event));
@@ -471,7 +471,7 @@ void InputInjectorX11::Core::InjectMouseEvent(const MouseEvent& event) {
   XFlush(display_);
 }
 
-void InputInjectorX11::Core::InitMouseButtonMap() {
+void InputInjectorLinux::Core::InitMouseButtonMap() {
   // TODO(rmsousa): Run this on global/device mapping change events.
 
   // Do not touch global pointer mapping, since this may affect the local user.
@@ -547,7 +547,7 @@ void InputInjectorX11::Core::InitMouseButtonMap() {
   XCloseDevice(display_, device);
 }
 
-int InputInjectorX11::Core::MouseButtonToX11ButtonNumber(
+int InputInjectorLinux::Core::MouseButtonToX11ButtonNumber(
     MouseEvent::MouseButton button) {
   switch (button) {
     case MouseEvent::BUTTON_LEFT:
@@ -565,17 +565,17 @@ int InputInjectorX11::Core::MouseButtonToX11ButtonNumber(
   }
 }
 
-int InputInjectorX11::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
+int InputInjectorLinux::Core::HorizontalScrollWheelToX11ButtonNumber(int dx) {
   return (dx > 0 ? pointer_button_map_[5] : pointer_button_map_[6]);
 }
 
-int InputInjectorX11::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
+int InputInjectorLinux::Core::VerticalScrollWheelToX11ButtonNumber(int dy) {
   // Positive y-values are wheel scroll-up events (button 4), negative y-values
   // are wheel scroll-down events (button 5).
   return (dy > 0 ? pointer_button_map_[3] : pointer_button_map_[4]);
 }
 
-void InputInjectorX11::Core::Start(
+void InputInjectorLinux::Core::Start(
     scoped_ptr<protocol::ClipboardStub> client_clipboard) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
@@ -589,7 +589,7 @@ void InputInjectorX11::Core::Start(
   clipboard_->Start(client_clipboard.Pass());
 }
 
-void InputInjectorX11::Core::Stop() {
+void InputInjectorLinux::Core::Stop() {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(FROM_HERE, base::Bind(&Core::Stop, this));
     return;
@@ -603,8 +603,8 @@ void InputInjectorX11::Core::Stop() {
 scoped_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
-  scoped_ptr<InputInjectorX11> injector(
-      new InputInjectorX11(main_task_runner));
+  scoped_ptr<InputInjectorLinux> injector(
+      new InputInjectorLinux(main_task_runner));
   if (!injector->Init())
     return nullptr;
   return injector.Pass();

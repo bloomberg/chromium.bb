@@ -23,8 +23,10 @@
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "net/url_request/url_request_context_getter.h"
+#if defined(USE_X11)
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/it2me/it2me_native_messaging_host.h"
+# endif  // defined(USE_X11)
 #include "ui/gfx/native_widget_types.h"
 #include "url/gurl.h"
 
@@ -95,6 +97,9 @@ struct BuiltInHost {
   scoped_ptr<NativeMessageHost>(*create_function)();
 };
 
+// Remote assistance currently only supports X11.
+// TODO(kelvinp): Migrate to ozone once it is ready (crbug.com/426716).
+#if defined(USE_X11)
 scoped_ptr<NativeMessageHost> CreateIt2MeHost() {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableRemoteAssistance)) {
@@ -125,16 +130,19 @@ const char* const kRemotingIt2MeOrigins[] = {
     "chrome-extension://dokpleeekgeeiehdhmdkeimnkmoifgdd/",
     "chrome-extension://ajoainacpilcemgiakehflpbkbfipojk/",
     "chrome-extension://hmboipgjngjoiaeicfdifdoeacilalgc/"};
+#endif  // defined(USE_X11)
 
 static const BuiltInHost kBuiltInHost[] = {
     {"com.google.chrome.test.echo", // ScopedTestNativeMessagingHost::kHostName
      kEchoHostOrigins,
      arraysize(kEchoHostOrigins),
      &EchoHost::Create},
+#if defined(USE_X11)
      {"com.google.chrome.remote_assistance",
      kRemotingIt2MeOrigins,
      arraysize(kRemotingIt2MeOrigins),
      &CreateIt2MeHost},
+#endif  // defined(USE_X11)
 };
 
 bool MatchesSecurityOrigin(const BuiltInHost& host,
