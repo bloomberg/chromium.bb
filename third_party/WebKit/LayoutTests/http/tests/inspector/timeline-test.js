@@ -104,7 +104,7 @@ InspectorTest.invokeAsyncWithTimeline = function(functionName, doneCallback)
 
     function step2()
     {
-       InspectorTest.stopTimeline(doneCallback);
+        InspectorTest.stopTimeline(InspectorTest.safeWrap(doneCallback));
     }
 }
 

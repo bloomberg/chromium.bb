@@ -1,8 +1,5 @@
 function initialize_LayerTreeTests()
 {
-
-    InspectorTest.preloadPanel("layers");
-
     InspectorTest.layerTreeModel = WebInspector.targetManager.mainTarget().layerTreeModel;
 
     InspectorTest.labelForLayer = function(layer)

@@ -1,6 +1,7 @@
 <html>
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
 <script src="../../http/tests/inspector/layers-test.js"></script>
 <script src="../tracing-test.js"></script>
 
@@ -20,36 +21,32 @@ function doActions(callback)
         callback();
         return;
     }
-    testRunner.displayAsyncThen(callback);
+    var pendingFrames = 3;
+    makeFrame();
+    function makeFrame()
+    {
+        if (!--pendingFrames) {
+            callback();
+            return;
+        }
+        testRunner.displayAsyncThen(requestAnimationFrame.bind(window, makeFrame));
+    }
 }
 
 function test()
 {
-    InspectorTest.invokeWithTracing("doActions", onTracingComplete);
+    WebInspector.panels.timeline._captureLayersAndPicturesSetting.set(true);
 
-    var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.mainTarget());
-    var layerTree = new WebInspector.TracingLayerTree(target);
-
-    function onTracingComplete()
+    InspectorTest.invokeAsyncWithTimeline("doActions", step1);
+    function step1()
     {
-        var events = InspectorTest.tracingTimelineModel().inspectedTargetEvents();
-        for (var i = events.length - 1; i >= 0; --i) {
-            if (events[i].phase === WebInspector.TracingModel.Phase.SnapshotObject && events[i].name === "cc::LayerTreeHostImpl") {
-                var rootLayer = events[i].args["snapshot"]["active_tree"]["root_layer"];
-                dumpLayerTreeSnapshot(rootLayer);
-                return;
-            }
-        }
-        InspectorTest.addResult("FAIL: cc::LayerTreeHostImpl snapshot not found");
-        InspectorTest.completeTest();
+        var frames = InspectorTest.timelineFrameModel().frames();
+        var lastFrame = InspectorTest.timelineFrameModel().frames().peekLast();
+        var deferredLayerTree = lastFrame.layerTree;
+        deferredLayerTree.resolve(InspectorTest.safeWrap(layerTreeResolved));
     }
 
-    function dumpLayerTreeSnapshot(rootLayer)
-    {
-        layerTree.setLayers(rootLayer, onLayersSet);
-    }
-
-    function onLayersSet()
+    function layerTreeResolved(layerTree)
     {
         InspectorTest.layerTreeModel.setLayerTree(layerTree);
         InspectorTest.dumpLayerTree();

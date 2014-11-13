@@ -212,14 +212,14 @@ function test()
         ]
     };
 
-    var frameModel = new WebInspector.TracingTimelineFrameModel(WebInspector.targetManager.mainTarget());
+    var frameModel = new WebInspector.TracingTimelineFrameModel();
 
     function loadEvents(events)
     {
         var tracingTimelineModel = InspectorTest.tracingTimelineModel();
         tracingTimelineModel.setEventsForTest(events);
         frameModel.reset();
-        frameModel.addTraceEvents(tracingTimelineModel.inspectedTargetEvents());
+        frameModel.addTraceEvents(WebInspector.targetManager.mainTarget(), tracingTimelineModel.inspectedTargetEvents());
     }
 
     for (var testName in testData) {

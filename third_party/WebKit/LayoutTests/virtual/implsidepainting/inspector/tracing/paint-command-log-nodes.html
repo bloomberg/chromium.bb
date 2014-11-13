@@ -21,7 +21,6 @@ function test()
 
     InspectorTest.invokeWithTracing("doActions", onTracingComplete, "disabled-by-default-blink.graphics_context_annotations");
 
-
     var inFlightPictures = 0;
     function onTracingComplete()
     {
@@ -33,7 +32,7 @@ function test()
             if (!event.picture)
                 continue;
             ++inFlightPictures;
-            new WebInspector.LayerPaintEvent(event).loadPicture(onSnapshotLoaded);
+            new WebInspector.LayerPaintEvent(event, InspectorTest.timelineModel().target()).loadPicture(onSnapshotLoaded);
         }
         if (!inFlightPictures)
             InspectorTest.completeTest();
