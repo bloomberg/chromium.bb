@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/touch/touch_enabled.h"
@@ -1132,14 +1133,14 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
 
   // Changing the window region is going to force a paint. Only change the
   // window region if the region really differs.
-  HRGN current_rgn = CreateRectRgn(0, 0, 0, 0);
+  base::win::ScopedRegion current_rgn(CreateRectRgn(0, 0, 0, 0));
   int current_rgn_result = GetWindowRgn(hwnd(), current_rgn);
 
   RECT window_rect;
   GetWindowRect(hwnd(), &window_rect);
-  HRGN new_region;
+  base::win::ScopedRegion new_region;
   if (custom_window_region_) {
-    new_region = ::CreateRectRgn(0, 0, 0, 0);
+    new_region.Set(::CreateRectRgn(0, 0, 0, 0));
     ::CombineRgn(new_region, custom_window_region_.Get(), NULL, RGN_COPY);
   } else if (IsMaximized()) {
     HMONITOR monitor = MonitorFromWindow(hwnd(), MONITOR_DEFAULTTONEAREST);
@@ -1148,23 +1149,23 @@ void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
     GetMonitorInfo(monitor, &mi);
     RECT work_rect = mi.rcWork;
     OffsetRect(&work_rect, -window_rect.left, -window_rect.top);
-    new_region = CreateRectRgnIndirect(&work_rect);
+    new_region.Set(CreateRectRgnIndirect(&work_rect));
   } else {
     gfx::Path window_mask;
     delegate_->GetWindowMask(gfx::Size(window_rect.right - window_rect.left,
                                        window_rect.bottom - window_rect.top),
                              &window_mask);
-    new_region = gfx::CreateHRGNFromSkPath(window_mask);
+    if (!window_mask.isEmpty())
+      new_region.Set(gfx::CreateHRGNFromSkPath(window_mask));
   }
 
-  if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
+  const bool has_current_region = current_rgn != 0;
+  const bool has_new_region = new_region != 0;
+  if (has_current_region != has_new_region ||
+      (has_current_region && !EqualRgn(current_rgn, new_region))) {
     // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
-    SetWindowRgn(hwnd(), new_region, redraw);
-  } else {
-    DeleteObject(new_region);
+    SetWindowRgn(hwnd(), new_region.release(), redraw);
   }
-
-  DeleteObject(current_rgn);
 }
 
 void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {

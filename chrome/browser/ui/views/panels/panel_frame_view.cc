@@ -355,10 +355,14 @@ void PanelFrameView::SetWindowCornerStyle(panel::CornerStyle corner_style) {
 
   gfx::Path window_mask;
   GetWindowMask(size(), &window_mask);
-  base::win::ScopedRegion new_region(gfx::CreateHRGNFromSkPath(window_mask));
+  base::win::ScopedRegion new_region;
+  if (!window_mask.isEmpty())
+    new_region.Set(gfx::CreateHRGNFromSkPath(window_mask));
 
-  if (current_region_result == ERROR ||
-      !::EqualRgn(current_region, new_region)) {
+  const bool has_current_region = current_region != NULL;
+  const bool has_new_region = new_region != NULL;
+  if (has_current_region != has_new_region ||
+      (has_current_region && !::EqualRgn(current_region, new_region))) {
     // SetWindowRgn takes ownership of the new_region.
     ::SetWindowRgn(native_window, new_region.release(), TRUE);
   }

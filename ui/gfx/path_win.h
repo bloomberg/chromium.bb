@@ -19,7 +19,7 @@ namespace gfx {
 GFX_EXPORT HRGN CreateHRGNFromSkRegion(const SkRegion& path);
 
 // Creates a new HRGN given |path|. The caller is responsible for destroying
-// the returned region.
+// the returned region. Returns empty region (not NULL) for empty path.
 GFX_EXPORT HRGN CreateHRGNFromSkPath(const SkPath& path);
 
 }  // namespace gfx

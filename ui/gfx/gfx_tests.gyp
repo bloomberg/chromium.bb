@@ -147,6 +147,7 @@
             'font_fallback_win_unittest.cc',
             'icon_util_unittest.cc',
             'icon_util_unittests.rc',
+            'path_win_unittest.cc',
             'platform_font_win_unittest.cc',
           ],
           'msvs_settings': {
