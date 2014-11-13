@@ -510,7 +510,7 @@ cache_test(function(cache) {
             response.url, request_url,
             '[https://fetch.spec.whatwg.org/#dom-response-url] ' +
             'Reponse.url should return the URL of the response.');
-          return cache.put(request, response);
+          return cache.put(request, response.clone());
         })
       .then(function() {
           return cache.match(request.url);
@@ -574,7 +574,8 @@ function prepopulated_cache_test(entries, test_function, description) {
       var hash = {};
       entries.forEach(function(entry) {
           p = p.then(function() {
-              return cache.put(entry.request, entry.response)
+              return cache.put(entry.request.clone(),
+                               entry.response.clone())
                 .catch(function(e) {
                     assert_unreached('Test setup failed for entry ' +
                                      entry.name + ': ' + e);

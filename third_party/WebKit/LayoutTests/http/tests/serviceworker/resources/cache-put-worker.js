@@ -2,11 +2,11 @@ importScripts('worker-testharness.js');
 importScripts('/resources/testharness-helpers.js');
 
 var test_url = 'https://example.com/foo';
-var test_response_body = 'Hello world!';
+var test_body = 'Hello world!';
 
 cache_test(function(cache) {
     var request = new Request(test_url);
-    var response = new Response(test_response_body);
+    var response = new Response(test_body);
     return cache.put(request, response)
       .then(function(result) {
           assert_equals(result, undefined,
@@ -39,18 +39,44 @@ cache_test(function(cache) {
   }, 'Cache.put called with Request and Response from fetch()');
 
 cache_test(function(cache) {
-    var request = new Request(test_url, {
-        method: 'GET',
-        body: 'Hello'
-      });
-    var response = new Response(test_response_body);
+    var request = new Request(test_url);
+    var response = new Response(test_body);
     assert_false(request.bodyUsed,
                  '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
                  'Request.bodyUsed should be initially false.');
     return cache.put(request, response)
       .then(function() {
-          assert_false(request.bodyUsed,
-                       'Cache.put should not consume Request body.');
+        assert_false(request.bodyUsed,
+                     'Cache.put should not mark empty request\'s body used');
+      });
+  }, 'Cache.put with Request without a body');
+
+cache_test(function(cache) {
+    var request = new Request(test_url);
+    var response = new Response();
+    assert_false(response.bodyUsed,
+                 '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
+                 'Response.bodyUsed should be initially false.');
+    return cache.put(request, response)
+      .then(function() {
+        assert_false(response.bodyUsed,
+                     'Cache.put should not mark empty response\'s body used');
+      });
+  }, 'Cache.put with Response without a body');
+
+cache_test(function(cache) {
+    var request = new Request(test_url, {
+        method: 'GET',
+        body: 'Hello'
+      });
+    var response = new Response(test_body);
+    assert_false(request.bodyUsed,
+                 '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
+                 'Request.bodyUsed should be initially false.');
+    return cache.put(request, response.clone())
+      .then(function() {
+          assert_true(request.bodyUsed,
+                       'Cache.put should consume Request body.');
         })
       .then(function() {
           return cache.match(request);
@@ -63,8 +89,8 @@ cache_test(function(cache) {
 
 cache_test(function(cache) {
     var request = new Request(test_url);
-    var response = new Response(test_response_body);
-    return cache.put(request, response)
+    var response = new Response(test_body);
+    return cache.put(request, response.clone())
       .then(function() {
           return cache.match(test_url);
         })
@@ -130,7 +156,7 @@ cache_test(function(cache) {
     return cache.put(new Request(test_url),
                      new Response('Old body', { statusText: 'Old status' }))
       .then(function() {
-          return cache.put(new Request(test_url), alternate_response);
+          return cache.put(new Request(test_url), alternate_response.clone());
         })
       .then(function() {
           return cache.match(test_url);
@@ -156,7 +182,7 @@ cache_test(function(cache) {
     return cache.put(new Request(first_url),
                      new Response('Old body', { statusText: 'Old status' }))
       .then(function() {
-          return cache.put(new Request(second_url), alternate_response);
+          return cache.put(new Request(second_url), alternate_response.clone());
         })
       .then(function() {
           return cache.match(test_url);
@@ -230,14 +256,14 @@ cache_test(function(cache) {
 cache_test(function(cache) {
     return assert_promise_rejects(
       cache.put(new Request('file:///etc/passwd'),
-                new Response(test_response_body)),
+                new Response(test_body)),
       new TypeError(),
       'Cache.put should reject non-HTTP/HTTPS requests with a TypeError.');
   }, 'Cache.put with a non-HTTP/HTTPS request');
 
 cache_test(function(cache) {
-    var response = new Response(test_response_body);
-    return cache.put(new Request('relative-url'), response)
+    var response = new Response(test_body);
+    return cache.put(new Request('relative-url'), response.clone())
       .then(function() {
           return cache.match(new URL('relative-url', location.href).href);
         })
@@ -251,7 +277,7 @@ cache_test(function(cache) {
 cache_test(function(cache) {
     var request = new Request('http://example.com/foo', { method: 'HEAD' });
     return assert_promise_rejects(
-      cache.put(request, new Response(test_response_body)),
+      cache.put(request, new Response(test_body)),
       new TypeError(),
       'Cache.put should throw a TypeError for non-GET requests.');
   }, 'Cache.put with a non-GET request');
@@ -260,5 +286,37 @@ cache_test(function(cache) {
     return assert_promise_rejects(
       cache.put(new Request(test_url), null),
       new TypeError(),
-      'Cache.put should throw a TypeError for an empty response.');
-  }, 'Cache.put with an empty response');
+      'Cache.put should throw a TypeError for a null response.');
+  }, 'Cache.put with a null response');
+
+cache_test(function(cache) {
+    var request = new Request(test_url, {body: test_body});
+    assert_false(request.bodyUsed,
+                 '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
+                 'Request.bodyUsed should be initially false.');
+    var copy = new Request(request);
+    assert_true(request.bodyUsed,
+                '[https://fetch.spec.whatwg.org/#dom-request] ' +
+                'Request constructor should set input\'s used flag.');
+    return assert_promise_rejects(
+      cache.put(request, new Response(test_body)),
+      new TypeError(),
+      'Cache.put should throw a TypeError for a request with used body.');
+  }, 'Cache.put with a used request body');
+
+cache_test(function(cache) {
+    var response = new Response(test_body);
+    assert_false(response.bodyUsed,
+                 '[https://fetch.spec.whatwg.org/#dom-body-bodyused] ' +
+                 'Response.bodyUsed should be initially false.');
+    response.text().then(function() {
+      assert_true(
+        response.bodyUsed,
+        '[https://fetch.spec.whatwg.org/#concept-body-consume-body] ' +
+          'The text() method should consume the body of the response.');
+      return assert_promise_rejects(
+        cache.put(new Request(test_url), response),
+        new TypeError(),
+        'Cache.put should throw a TypeError for a response with used body.');
+    });
+  }, 'Cache.put with a used response body');

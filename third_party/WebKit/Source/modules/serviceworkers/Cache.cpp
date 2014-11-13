@@ -303,13 +303,22 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState, const Request* request
     return promise;
 }
 
-ScriptPromise Cache::putImpl(ScriptState* scriptState, const Request* request, Response* response)
+ScriptPromise Cache::putImpl(ScriptState* scriptState, Request* request, Response* response)
 {
     KURL url(KURL(), request->url());
     if (!url.protocolIsInHTTPFamily())
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request scheme '" + url.protocol() + "' is unsupported"));
     if (request->method() != "GET")
         return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request method '" + request->method() + "' is unsupported"));
+    if (request->hasBody() && request->bodyUsed())
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Request body is already used"));
+    if (response->hasBody() && response->bodyUsed())
+        return ScriptPromise::reject(scriptState, V8ThrowException::createTypeError(scriptState->isolate(), "Response body is already used"));
+
+    if (request->hasBody())
+        request->setBodyUsed();
+    if (response->hasBody())
+        response->setBodyUsed();
 
     WebVector<WebServiceWorkerCache::BatchOperation> batchOperations(size_t(1));
     batchOperations[0].operationType = WebServiceWorkerCache::OperationTypePut;

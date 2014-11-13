@@ -412,7 +412,7 @@ TEST_F(ServiceWorkerCacheTest, BatchOperationArguments)
 
     request = newRequestFromUrl(url);
     ASSERT(request);
-    ScriptPromise putResult = cache->put(scriptState(), requestToRequestInfo(request), response, exceptionState());
+    ScriptPromise putResult = cache->put(scriptState(), requestToRequestInfo(request), response->clone(), exceptionState());
     EXPECT_EQ("dispatchBatch", testCache->getAndClearLastErrorWebCacheMethodCalled());
     EXPECT_EQ(kNotImplementedString, getRejectString(putResult));
 

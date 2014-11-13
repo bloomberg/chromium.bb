@@ -43,6 +43,9 @@ public:
     ScriptPromise json(ScriptState*);
     ScriptPromise text(ScriptState*);
 
+    // Sets the bodyUsed flag to true. This signifies that the contents of the
+    // body have been consumed and cannot be accessed again.
+    void setBodyUsed();
     bool bodyUsed() const;
 
     // ActiveDOMObject override.
@@ -54,10 +57,6 @@ public:
 protected:
     // Copy constructor for clone() implementations
     explicit Body(const Body&);
-
-    // Sets the bodyUsed flag to true. This signifies that the contents of the
-    // body have been consumed and cannot be accessed again.
-    void setBodyUsed();
 
 private:
     ScriptPromise readAsync(ScriptState*, ResponseType);

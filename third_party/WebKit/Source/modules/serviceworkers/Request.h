@@ -49,6 +49,7 @@ public:
     void populateWebServiceWorkerRequest(WebServiceWorkerRequest&) const;
 
     void setBodyBlobHandle(PassRefPtr<BlobDataHandle>);
+    bool hasBody() const { return m_request->blobDataHandle(); }
 
     virtual void trace(Visitor*)  override;
 

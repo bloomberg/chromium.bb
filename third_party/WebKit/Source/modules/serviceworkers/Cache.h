@@ -55,7 +55,7 @@ private:
     ScriptPromise addImpl(ScriptState*, const Request*);
     ScriptPromise addAllImpl(ScriptState*, const Vector<const Request*>);
     ScriptPromise deleteImpl(ScriptState*, const Request*, const CacheQueryOptions&);
-    ScriptPromise putImpl(ScriptState*, const Request*, Response*);
+    ScriptPromise putImpl(ScriptState*, Request*, Response*);
     ScriptPromise keysImpl(ScriptState*);
     ScriptPromise keysImpl(ScriptState*, const Request*, const CacheQueryOptions&);
 

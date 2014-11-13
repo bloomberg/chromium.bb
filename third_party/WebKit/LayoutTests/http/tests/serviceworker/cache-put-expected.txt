@@ -2,6 +2,8 @@ This is a testharness.js-based test.
 PASS Service Worker: Cache.put 
 PASS Cache.put called with simple Request and Response 
 PASS Cache.put called with Request and Response from fetch() 
+PASS Cache.put with Request without a body 
+PASS Cache.put with Response without a body 
 PASS Cache.put with Request containing a body 
 PASS Cache.put with a Response containing an empty URL 
 PASS Cache.put with an empty response body 
@@ -14,6 +16,8 @@ PASS Cache.put with an invalid response
 PASS Cache.put with a non-HTTP/HTTPS request 
 PASS Cache.put with a relative URL 
 PASS Cache.put with a non-GET request 
-PASS Cache.put with an empty response 
+PASS Cache.put with a null response 
+PASS Cache.put with a used request body 
+PASS Cache.put with a used response body 
 Harness: the test ran to completion.
 

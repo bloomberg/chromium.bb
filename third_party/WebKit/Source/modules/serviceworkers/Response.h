@@ -54,6 +54,8 @@ public:
 
     void populateWebServiceWorkerResponse(WebServiceWorkerResponse&);
 
+    bool hasBody() const { return m_response->blobDataHandle(); }
+
     virtual void trace(Visitor*) override;
 
 private:
