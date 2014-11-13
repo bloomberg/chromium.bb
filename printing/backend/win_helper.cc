@@ -410,13 +410,9 @@ scoped_ptr<DEVMODE, base::FreeDeleter> XpsTicketToDevMode(
     ULONG size = 0;
     DEVMODE* dm = NULL;
     // Use kPTJobScope, because kPTDocumentScope breaks duplex.
-    hr = printing::XPSModule::ConvertPrintTicketToDevMode(provider,
-                                                          pt_stream,
-                                                          kUserDefaultDevmode,
-                                                          kPTJobScope,
-                                                          &size,
-                                                          &dm,
-                                                          NULL);
+    hr = printing::XPSModule::ConvertPrintTicketToDevMode(
+        provider, pt_stream.get(), kUserDefaultDevmode, kPTJobScope, &size, &dm,
+        NULL);
     if (SUCCEEDED(hr)) {
       // Correct DEVMODE using DocumentProperties. See documentation for
       // PTConvertPrintTicketToDevMode.
