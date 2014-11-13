@@ -774,6 +774,7 @@ DeveloperPrivateReloadFunction::~DeveloperPrivateReloadFunction() {}
 // This is called when the user clicks "Revoke File Access."
 void DeveloperPrivateShowPermissionsDialogFunction::InstallUIProceed() {
   Profile* profile = GetProfile();
+  extensions::DevicePermissionsManager::Get(profile)->Clear(extension_id_);
   const Extension* extension = ExtensionRegistry::Get(
       profile)->GetExtensionById(extension_id_, ExtensionRegistry::EVERYTHING);
   apps::SavedFilesService::Get(profile)->ClearQueue(extension);
