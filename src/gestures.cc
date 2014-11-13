@@ -524,7 +524,6 @@ void GestureInterpreter::InitializeTouchpad(void) {
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
   temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
-  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
   temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
   temp = new T5R2CorrectingFilterInterpreter(prop_reg_.get(), temp,
                                              tracer_.get());
@@ -556,7 +555,6 @@ void GestureInterpreter::InitializeTouchpad2(void) {
   temp = new ScalingFilterInterpreter(prop_reg_.get(), temp, tracer_.get(),
                                       GESTURES_DEVCLASS_TOUCHPAD);
   temp = new FingerMergeFilterInterpreter(prop_reg_.get(), temp, tracer_.get());
-  temp = new IntegralGestureFilterInterpreter(temp, tracer_.get());
   temp = new StuckButtonInhibitorFilterInterpreter(temp, tracer_.get());
   temp = loggingFilter_ = new LoggingFilterInterpreter(prop_reg_.get(), temp,
                                                        tracer_.get());
