@@ -17380,6 +17380,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 
 <histogram name="Net.QuicClientHelloServerConfigState"
     enum="QuicServerConfigState">
+  <obsolete>
+    Deprecated as of 11/2014. Replaced by Net.QuicInchoateClientHelloReason.
+  </obsolete>
   <owner>rtenneti@chromium.org</owner>
   <summary>
     The reason (the state of the server config) for sending inchoate ClientHello
@@ -17445,6 +17448,15 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicInchoateClientHelloReason"
+    enum="QuicServerConfigState">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The reason (the state of the server config) for sending inchoate ClientHello
+    to the server.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicNumSentClientHellos">
   <owner>rch@chromium.org</owner>
   <summary>The number of client hello messages sent.</summary>
@@ -17494,11 +17506,30 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Time spent to load QUIC server information from disk cache.</summary>
 </histogram>
 
+<histogram name="Net.QuicServerInfo.DiskCacheState"
+    enum="QuicServerConfigState">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The state of the QUIC server information when it's loaded from the disk
+    cache.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicServerInfo.DiskCacheWaitForDataReadyTime"
     units="milliseconds">
   <owner>rtenneti@chromium.org</owner>
   <summary>
     Time spent waiting to load QUIC server information from disk cache.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicServerInfo.ExpectConfigMissingFromDiskCache"
+    enum="BooleanMissingFromDiskCache">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>
+    The number of times AlternateProtocolMap supports QUIC, but there is no QUIC
+    server information in the disk cache. This is recorded whenever QUIC server
+    information is loaded from the disk cache.
   </summary>
 </histogram>
 
@@ -41502,6 +41533,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="1" label="Migrated"/>
 </enum>
 
+<enum name="BooleanMissingFromDiskCache" type="int">
+  <int value="0" label="Has data in disk cache"/>
+  <int value="1" label="Missing data in disk cache"/>
+</enum>
+
 <enum name="BooleanOrphan" type="int">
   <int value="0" label="Non-orphan"/>
   <int value="1" label="Orphan"/>
@@ -52814,6 +52850,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="SERVER_CONFIG_CORRUPTED"/>
   <int value="3" label="SERVER_CONFIG_EXPIRED"/>
   <int value="4" label="SERVER_CONFIG_INVALID_EXPIRY"/>
+  <int value="5" label="SERVER_CONFIG_VALID"/>
 </enum>
 
 <enum name="QuicSessionErrorCodes" type="int">

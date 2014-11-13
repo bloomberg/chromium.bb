@@ -35,6 +35,24 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // over several connections to the same server.
   class NET_EXPORT_PRIVATE CachedState {
    public:
+    // Enum to track if the server config is valid or not. If it is not valid,
+    // it specifies why it is invalid.
+    enum ServerConfigState {
+      // WARNING: Do not change the numerical values of any of server config
+      // state. Do not remove deprecated server config states - just comment
+      // them as deprecated.
+      SERVER_CONFIG_EMPTY = 0,
+      SERVER_CONFIG_INVALID = 1,
+      SERVER_CONFIG_CORRUPTED = 2,
+      SERVER_CONFIG_EXPIRED = 3,
+      SERVER_CONFIG_INVALID_EXPIRY = 4,
+      SERVER_CONFIG_VALID = 5,
+      // NOTE: Add new server config states only immediately above this line.
+      // Make sure to update the QuicServerConfigState enum in
+      // tools/metrics/histograms/histograms.xml accordingly.
+      SERVER_CONFIG_COUNT
+    };
+
     CachedState();
     ~CachedState();
 
@@ -54,9 +72,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // SetServerConfig checks that |server_config| parses correctly and stores
     // it in |server_config_|. |now| is used to judge whether |server_config|
     // has expired.
-    QuicErrorCode SetServerConfig(base::StringPiece server_config,
-                                  QuicWallTime now,
-                                  std::string* error_details);
+    ServerConfigState SetServerConfig(base::StringPiece server_config,
+                                      QuicWallTime now,
+                                      std::string* error_details);
 
     // InvalidateServerConfig clears the cached server config (if any).
     void InvalidateServerConfig();

@@ -993,6 +993,8 @@ void QuicStreamFactory::ActivateSession(
 void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     const QuicServerId& server_id,
     const scoped_ptr<QuicServerInfo>& server_info) {
+  // |server_info| will be NULL, if a non-empty server config already exists in
+  // the memory cache. This is a minor optimization to avoid LookupOrCreate.
   if (!server_info)
     return;
 
@@ -1000,6 +1002,27 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
       crypto_config_.LookupOrCreate(server_id);
   if (!cached->IsEmpty())
     return;
+
+  if (http_server_properties_) {
+    if (quic_supported_servers_at_startup_.empty()) {
+      for (const std::pair<net::HostPortPair, net::AlternateProtocolInfo>&
+               key_value : http_server_properties_->alternate_protocol_map()) {
+        if (key_value.second.protocol == QUIC) {
+          quic_supported_servers_at_startup_.insert(key_value.first);
+        }
+      }
+    }
+
+    // TODO(rtenneti): Delete the following histogram after collecting stats.
+    // If the AlternateProtocolMap contained an entry for this host, check if
+    // the disk cache contained an entry for it.
+    if (ContainsKey(quic_supported_servers_at_startup_,
+                    server_id.host_port_pair())) {
+      UMA_HISTOGRAM_BOOLEAN(
+          "Net.QuicServerInfo.ExpectConfigMissingFromDiskCache",
+          server_info->state().server_config.empty());
+    }
+  }
 
   if (!cached->Initialize(server_info->state().server_config,
                           server_info->state().source_address_token,

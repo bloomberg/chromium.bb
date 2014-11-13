@@ -299,6 +299,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;
   bool check_persisted_supports_quic_;
+  std::set<HostPortPair> quic_supported_servers_at_startup_;
 
   base::TaskRunner* task_runner_;
 
