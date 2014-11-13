@@ -49,7 +49,7 @@ base::win::ScopedComPtr<IAccessible> GetAccessibleFromResultVariant(
       base::win::ScopedComPtr<IDispatch> dispatch;
       HRESULT hr = parent->get_accChild(*var, dispatch.Receive());
       EXPECT_TRUE(SUCCEEDED(hr));
-      if (dispatch)
+      if (dispatch.get())
         dispatch.QueryInterface(ptr.Receive());
       break;
     }
@@ -109,7 +109,7 @@ void RecursiveFindNodeInAccessibilityTree(IAccessible* node,
   for (int index = 0; index < obtained_count; index++) {
     base::win::ScopedComPtr<IAccessible> child_accessible(
         GetAccessibleFromResultVariant(node, &child_array.get()[index]));
-    if (child_accessible) {
+    if (child_accessible.get()) {
       RecursiveFindNodeInAccessibilityTree(
           child_accessible.get(), expected_role, expected_name, depth + 1,
           found);
@@ -380,7 +380,7 @@ void AccessibleChecker::CheckAccessibleChildren(IAccessible* parent) {
     base::win::ScopedComPtr<IAccessible> child_accessible(
         GetAccessibleFromResultVariant(parent, child));
     ASSERT_TRUE(child_accessible.get());
-    (*child_checker)->CheckAccessible(child_accessible);
+    (*child_checker)->CheckAccessible(child_accessible.get());
   }
 }
 
@@ -684,15 +684,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
   // Get the ISimpleDOM object for the document.
   base::win::ScopedComPtr<IServiceProvider> service_provider;
-  HRESULT hr = static_cast<IAccessible*>(document_accessible)->QueryInterface(
-      service_provider.Receive());
+  HRESULT hr = static_cast<IAccessible*>(document_accessible.get())
+                   ->QueryInterface(service_provider.Receive());
   ASSERT_EQ(S_OK, hr);
   const GUID refguid = {0x0c539790, 0x12e4, 0x11cf,
                         0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8};
   base::win::ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
-  hr = static_cast<IServiceProvider *>(service_provider)->QueryService(
-      refguid, IID_ISimpleDOMNode,
-      reinterpret_cast<void**>(document_isimpledomnode.Receive()));
+  hr = static_cast<IServiceProvider*>(service_provider.get())
+           ->QueryService(
+               refguid, IID_ISimpleDOMNode,
+               reinterpret_cast<void**>(document_isimpledomnode.Receive()));
   ASSERT_EQ(S_OK, hr);
 
   base::win::ScopedBstr node_name;

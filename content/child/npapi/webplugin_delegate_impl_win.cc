@@ -796,7 +796,7 @@ bool WebPluginDelegateImpl::WindowedReposition(
 }
 
 void WebPluginDelegateImpl::WindowedSetWindow() {
-  if (!instance_)
+  if (!instance_.get())
     return;
 
   if (!windowed_handle_) {

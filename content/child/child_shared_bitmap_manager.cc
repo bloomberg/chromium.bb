@@ -54,7 +54,7 @@ scoped_ptr<cc::SharedBitmap> ChildSharedBitmapManager::AllocateSharedBitmap(
   memory = make_scoped_ptr(new base::SharedMemory(handle, false));
   CHECK(memory->Map(memory_size));
 #else
-  memory.reset(ChildThread::AllocateSharedMemory(memory_size, sender_));
+  memory.reset(ChildThread::AllocateSharedMemory(memory_size, sender_.get()));
   CHECK(memory);
   base::SharedMemoryHandle handle_to_send = memory->handle();
   sender_->Send(new ChildProcessHostMsg_AllocatedSharedBitmap(

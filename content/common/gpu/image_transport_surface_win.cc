@@ -29,7 +29,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
   scoped_refptr<gfx::GLSurface> surface =
       gfx::GLSurface::CreateViewGLSurface(handle.handle);
-  if (!surface)
+  if (!surface.get())
     return surface;
   return scoped_refptr<gfx::GLSurface>(new PassThroughImageTransportSurface(
       manager, stub, surface.get()));

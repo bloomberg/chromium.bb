@@ -96,7 +96,7 @@ static IMFSample* CreateEmptySampleWithBuffer(int buffer_length, int align) {
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample", NULL);
 
-  hr = sample->AddBuffer(buffer);
+  hr = sample->AddBuffer(buffer.get());
   RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample", NULL);
 
   return sample.Detach();
@@ -114,7 +114,7 @@ static IMFSample* CreateInputSample(const uint8* stream, int size,
   base::win::ScopedComPtr<IMFSample> sample;
   sample.Attach(CreateEmptySampleWithBuffer(std::max(min_size, size),
                                             alignment));
-  RETURN_ON_FAILURE(sample, "Failed to create empty sample", NULL);
+  RETURN_ON_FAILURE(sample.get(), "Failed to create empty sample", NULL);
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
   HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
@@ -329,8 +329,8 @@ bool DXVAVideoDecodeAccelerator::DXVAPictureBuffer::
   hr = decoding_texture_->GetSurfaceLevel(0, d3d_surface.Receive());
   RETURN_ON_HR_FAILURE(hr, "Failed to get surface from texture", false);
 
-  hr = decoder.device_->StretchRect(
-      dest_surface, NULL, d3d_surface, NULL, D3DTEXF_NONE);
+  hr = decoder.device_->StretchRect(dest_surface, NULL, d3d_surface.get(), NULL,
+                                    D3DTEXF_NONE);
   RETURN_ON_HR_FAILURE(hr, "Colorspace conversion via StretchRect failed",
                         false);
 
@@ -410,7 +410,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
                                          device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "DXVA2CreateDirect3DDeviceManager9 failed", false);
 
-  hr = device_manager_->ResetDevice(device_, dev_manager_reset_token_);
+  hr = device_manager_->ResetDevice(device_.get(), dev_manager_reset_token_);
   RETURN_ON_HR_FAILURE(hr, "Failed to reset device", false);
 
   hr = device_->CreateQuery(D3DQUERYTYPE_EVENT, query_.Receive());
@@ -513,8 +513,8 @@ void DXVAVideoDecodeAccelerator::Decode(
   sample.Attach(CreateSampleFromInputBuffer(bitstream_buffer,
                                             input_stream_info_.cbSize,
                                             input_stream_info_.cbAlignment));
-  RETURN_AND_NOTIFY_ON_FAILURE(sample, "Failed to create input sample",
-                               PLATFORM_FAILURE,);
+  RETURN_AND_NOTIFY_ON_FAILURE(sample.get(), "Failed to create input sample",
+                               PLATFORM_FAILURE, );
 
   RETURN_AND_NOTIFY_ON_HR_FAILURE(sample->SetSampleTime(bitstream_buffer.id()),
       "Failed to associate input buffer id with sample", PLATFORM_FAILURE,);
@@ -753,7 +753,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
                              MFVideoInterlace_MixedInterlaceOrProgressive);
   RETURN_ON_HR_FAILURE(hr, "Failed to set interlace mode", false);
 
-  hr = decoder_->SetInputType(0, media_type, 0);  // No flags
+  hr = decoder_->SetInputType(0, media_type.get(), 0);  // No flags
   RETURN_ON_HR_FAILURE(hr, "Failed to set decoder input type", false);
   return true;
 }
@@ -771,7 +771,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     RETURN_ON_HR_FAILURE(hr, "Failed to get output major type", false);
 
     if (out_subtype == subtype) {
-      hr = decoder_->SetOutputType(0, out_media_type, 0);  // No flags
+      hr = decoder_->SetOutputType(0, out_media_type.get(), 0);  // No flags
       RETURN_ON_HR_FAILURE(hr, "Failed to set decoder output type", false);
       return true;
     }
@@ -881,7 +881,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(IMFSample* sample) {
   RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from output sample", false);
 
   base::win::ScopedComPtr<IDirect3DSurface9> surface;
-  hr = MFGetService(output_buffer, MR_BUFFER_SERVICE,
+  hr = MFGetService(output_buffer.get(), MR_BUFFER_SERVICE,
                     IID_PPV_ARGS(surface.Receive()));
   RETURN_ON_HR_FAILURE(hr, "Failed to get D3D surface from output sample",
                        false);
@@ -944,7 +944,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
           hr, "Failed to get buffer from output sample", PLATFORM_FAILURE,);
 
       base::win::ScopedComPtr<IDirect3DSurface9> surface;
-      hr = MFGetService(output_buffer, MR_BUFFER_SERVICE,
+      hr = MFGetService(output_buffer.get(), MR_BUFFER_SERVICE,
                         IID_PPV_ARGS(surface.Receive()));
       RETURN_AND_NOTIFY_ON_HR_FAILURE(
           hr, "Failed to get D3D surface from output sample",
@@ -964,9 +964,9 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
       }
 
       RETURN_AND_NOTIFY_ON_FAILURE(
-          index->second->CopyOutputSampleDataToPictureBuffer(*this, surface),
-          "Failed to copy output sample",
-          PLATFORM_FAILURE, );
+          index->second->CopyOutputSampleDataToPictureBuffer(*this,
+                                                             surface.get()),
+          "Failed to copy output sample", PLATFORM_FAILURE, );
 
       media::Picture output_picture(index->second->id(),
                                     sample_info.input_buffer_id,
@@ -1115,7 +1115,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
   }
   inputs_before_decode_++;
 
-  HRESULT hr = decoder_->ProcessInput(0, sample, 0);
+  HRESULT hr = decoder_->ProcessInput(0, sample.get(), 0);
   // As per msdn if the decoder returns MF_E_NOTACCEPTING then it means that it
   // has enough data to produce one or more output samples. In this case the
   // recommended options are to
@@ -1130,7 +1130,7 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
     RETURN_AND_NOTIFY_ON_FAILURE((state_ == kStopped || state_ == kNormal),
         "Failed to process output. Unexpected decoder state: " << state_,
         PLATFORM_FAILURE,);
-    hr = decoder_->ProcessInput(0, sample, 0);
+    hr = decoder_->ProcessInput(0, sample.get(), 0);
     // If we continue to get the MF_E_NOTACCEPTING error we do the following:-
     // 1. Add the input sample to the pending queue.
     // 2. If we don't have any output samples we post the
