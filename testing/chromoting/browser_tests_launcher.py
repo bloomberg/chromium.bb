@@ -14,14 +14,14 @@ def LaunchCommand(command):
 
   cmd_line = [command]
   try:
-    results = subprocess.check_output(
-        cmd_line, stderr=subprocess.STDOUT, shell=True)
+    p = subprocess.Popen(cmd_line, stdout=subprocess.PIPE, shell=True)
+    results, err = p.communicate()
+    if 'SUCCESS: all tests passed.' not in results:
+      raise Exception('Test failed\n%s\n%s' % (results, err))
   except subprocess.CalledProcessError, e:
     raise Exception('Exception %s running command %s' % (e, command))
   else:
     print results
-  finally:
-    pass
 
 
 def main():
