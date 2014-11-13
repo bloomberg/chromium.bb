@@ -191,7 +191,15 @@ input[type='range'] {
   color: gray;
 }
 
-.hotword-learn-more-link {
+.hotword-audio-history {
+  -webkit-margin-start: 1.8em;
+}
+
+#audio-history {
+  margin-top: 1.5em;
+}
+
+.hotword-link {
   -webkit-padding-start: 8px;
 }
 

@@ -6836,8 +6836,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HOTWORD_SEARCH_PREF_DESCRIPTION" desc="Description of the hotword search preference">
         When you say "Ok Google," Chrome will search for what you say next.
       </message>
-      <message name="IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX" desc="A checkbox on the Settings page that allows for sending audio of 'Ok, Google' plus a few seconds before back to Google to improve voice search.">
-        Enable audio history
+      <message name="IDS_HOTWORD_AUDIO_HISTORY_ENABLED" desc="Text to display when the user has audio history enabled.">
+        Audio History is enabled for <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_HOTWORD_ALWAYS_ON_AUDIO_HISTORY_DESCRIPTION" desc="Description for the audio history message when always-on is enabled.">
+        Audio History is required to use "Ok Google"
+      </message>
+      <message name="IDS_HOTWORD_AUDIO_HISTORY_MANAGE_LINK" desc="Text for link to manage audio history.">
+        Manage Audio History
       </message>
       <message name="IDS_HOTWORD_CONFIRM_BUBBLE_TITLE" desc="The title text for the bubble to enable the hotword voice search trigger.">
         Ok Google

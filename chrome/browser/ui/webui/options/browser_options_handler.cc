@@ -282,7 +282,9 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
-    { "hotwordAudioHistoryEnable", IDS_HOTWORD_AUDIO_HISTORY_PREF_CHKBOX },
+    { "hotwordAlwaysOnAudioHistoryDescription",
+      IDS_HOTWORD_ALWAYS_ON_AUDIO_HISTORY_DESCRIPTION },
+    { "hotwordAudioHistoryManage", IDS_HOTWORD_AUDIO_HISTORY_MANAGE_LINK },
     { "hotwordSearchEnable", IDS_HOTWORD_SEARCH_PREF_CHKBOX },
     { "hotwordConfirmEnable", IDS_HOTWORD_CONFIRM_BUBBLE_ENABLE },
     { "hotwordConfirmDisable", IDS_HOTWORD_CONFIRM_BUBBLE_DISABLE },
@@ -533,13 +535,15 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
   values->SetString("hotwordLearnMoreURL", chrome::kHotwordLearnMoreURL);
   RegisterTitle(values, "hotwordConfirmOverlay",
                 IDS_HOTWORD_CONFIRM_BUBBLE_TITLE);
+  values->SetString("hotwordManageAudioHistoryURL",
+                    chrome::kManageAudioHistoryURL);
 
-#if defined(OS_CHROMEOS)
   Profile* profile = Profile::FromWebUI(web_ui());
+#if defined(OS_CHROMEOS)
   std::string username = profile->GetProfileName();
   if (username.empty()) {
     user_manager::User* user =
-        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     if (user && (user->GetType() != user_manager::USER_TYPE_GUEST))
       username = user->email();
   }
@@ -548,6 +552,21 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
 
   values->SetString("username", username);
 #endif
+
+  base::string16 user_email;
+  // If the profile is a guest session, it will not be found in the cache.
+  // In that case, just set the value with an empty string for the email since
+  // it won't be displayed anyways for a guest profile.
+  if (!profile->IsGuestSession()) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    user_email = cache.GetUserNameOfProfileAtIndex(
+        cache.GetIndexOfProfileWithPath(profile->GetPath()));
+  }
+  values->SetString(
+      "hotwordAudioHistoryEnabled",
+      l10n_util::GetStringFUTF16(IDS_HOTWORD_AUDIO_HISTORY_ENABLED,
+                                 user_email));
 
   // Pass along sync status early so it will be available during page init.
   values->Set("syncData", GetSyncStateDictionary().release());
@@ -1647,10 +1666,11 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
     int error = HotwordServiceFactory::GetCurrentError(profile);
 
     std::string function_name;
+    bool always_on = false;
     if (HotwordService::IsExperimentalHotwordingEnabled()) {
       if (HotwordServiceFactory::IsHotwordHardwareAvailable()) {
         function_name = "BrowserOptions.showHotwordAlwaysOnSection";
-
+        always_on = true;
         // Show the retrain link if always-on is enabled.
         if (profile->GetPrefs()->GetBoolean(
                 prefs::kHotwordAlwaysOnSearchEnabled)) {
@@ -1663,6 +1683,15 @@ void BrowserOptionsHandler::HandleRequestHotwordAvailable(
       }
     } else {
       function_name = "BrowserOptions.showHotwordSection";
+    }
+
+    // Audio history should be displayed if it's enabled regardless of the
+    // hotword error state. An additional message is displayed if always-on
+    // hotwording is enabled.
+    if (profile->GetPrefs()->GetBoolean(prefs::kHotwordAudioHistoryEnabled) &&
+        HotwordService::IsExperimentalHotwordingEnabled()) {
+      web_ui()->CallJavascriptFunction("BrowserOptions.showAudioHistorySection",
+                                       base::FundamentalValue(always_on));
     }
 
     if (!error) {
@@ -1694,15 +1723,15 @@ void BrowserOptionsHandler::HandleLaunchHotwordAudioVerificationApp(
     DCHECK(profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
     DCHECK(profile->GetPrefs()->GetBoolean(
-        prefs::kHotwordAudioLoggingEnabled));
+        prefs::kHotwordAudioHistoryEnabled));
 
     launch_mode = HotwordService::RETRAIN;
   } else if (profile->GetPrefs()->GetBoolean(
-      prefs::kHotwordAudioLoggingEnabled)) {
+      prefs::kHotwordAudioHistoryEnabled)) {
     DCHECK(!profile->GetPrefs()->GetBoolean(
         prefs::kHotwordAlwaysOnSearchEnabled));
 
-    // TODO(kcarattini): Make sure the Chrome Audio Logging pref is synced
+    // TODO(kcarattini): Make sure the Chrome Audio History pref is synced
     // to the account-level Audio History setting from footprints.
     launch_mode = HotwordService::HOTWORD_ONLY;
   } else {

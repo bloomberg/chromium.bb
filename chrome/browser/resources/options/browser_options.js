@@ -1177,7 +1177,6 @@ cr.define('options', function() {
           'hotword-always-on-search',
           'hotword-always-on-search-setting-indicator',
           opt_error);
-      $('audio-logging').hidden = false;
     },
 
     /**
@@ -1210,6 +1209,16 @@ cr.define('options', function() {
      */
     onHotwordAlwaysOnChanged_: function(event) {
       this.setHotwordRetrainLinkVisible_(event.value.value);
+    },
+
+    /**
+     * Activates the Audio History section of the Settings page.
+     * @param {boolean} alwaysOn Whether always-on hotwording is available.
+     * @private
+     */
+    showAudioHistorySection_: function(alwaysOn) {
+      $('audio-history').hidden = false;
+      $('audio-history-always-on-description').hidden = !alwaysOn;
     },
 
     /**
@@ -2107,6 +2116,7 @@ cr.define('options', function() {
     'setVirtualKeyboardCheckboxState',
     'setupPageZoomSelector',
     'setupProxySettingsButton',
+    'showAudioHistorySection',
     'showBluetoothSettings',
     'showCreateProfileError',
     'showCreateProfileSuccess',

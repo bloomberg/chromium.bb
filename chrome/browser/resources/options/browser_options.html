@@ -164,7 +164,7 @@
                   pref="hotword.always_on_search_enabled" type="checkbox">
               <span i18n-content="hotwordSearchEnable"></span>
             </label>
-            <a target="_blank" class="hotword-learn-more-link"
+            <a target="_blank" class="hotword-link"
                 i18n-content="learnMore"
                 i18n-values="href:hotwordLearnMoreURL">
             </a>
@@ -187,7 +187,7 @@
                   pref="hotword.search_enabled_2" type="checkbox">
               <span i18n-content="hotwordSearchEnable"></span>
             </label>
-            <a target="_blank" class="hotword-learn-more-link"
+            <a target="_blank" class="hotword-link"
                 i18n-content="learnMore"
                 i18n-values="href:hotwordLearnMoreURL">
             </a>
@@ -200,12 +200,22 @@
             </div>
           </div>
         </div>
-        <div id="audio-logging" hidden>
-          <div class="checkbox controlled-setting-with-label">
-            <label>
-              <input pref="hotword.audio_history_enabled" type="checkbox">
-              <span i18n-content="hotwordAudioHistoryEnable"></span>
+        <div id="audio-history" hidden>
+          <div class="settings-row">
+            <label class="hotword-audio-history">
+              <span id="audio-history-label"
+                    i18n-content="hotwordAudioHistoryEnabled">
+              </span>
             </label>
+            <a target="_blank" class="hotword-link"
+               i18n-content="hotwordAudioHistoryManage"
+               i18n-values="href:hotwordManageAudioHistoryURL">
+            </a>
+          </div>
+          <div class="settings-row" id="audio-history-always-on-description">
+            <span class="hotword-description"
+                  i18n-content="hotwordAlwaysOnAudioHistoryDescription">
+            </span>
           </div>
         </div>
       </div>

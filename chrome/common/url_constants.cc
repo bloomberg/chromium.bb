@@ -503,6 +503,9 @@ const char kBlockedPluginLearnMoreURL[] =
 const char kHotwordLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_hotword_search";
 
+const char kManageAudioHistoryURL[] =
+    "https://history.google.com/history/audio";
+
 const char kLearnMoreRegisterProtocolHandlerURL[] =
     "https://support.google.com/chrome/?p=ib_protocol_handler";
 
