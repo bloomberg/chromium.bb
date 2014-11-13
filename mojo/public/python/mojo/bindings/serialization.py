@@ -8,7 +8,7 @@ import struct
 
 
 # Format of a header for a struct or an array.
-HEADER_STRUCT = struct.Struct("=II")
+HEADER_STRUCT = struct.Struct("<II")
 
 
 class SerializationException(Exception):
@@ -110,7 +110,7 @@ def _FilterGroups(groups, version):
 
 def _GetStruct(groups):
   index = 0
-  codes = [ '=' ]
+  codes = [ '<' ]
   for group in groups:
     code = group.GetTypeCode()
     size = group.GetByteSize()

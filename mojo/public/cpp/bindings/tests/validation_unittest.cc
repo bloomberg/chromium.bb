@@ -409,7 +409,7 @@ TEST_F(ValidationIntegrationTest, InterfaceImpl) {
   // |interface1_impl| will delete itself when the pipe is closed.
   IntegrationTestInterface1Impl* interface1_impl =
       BindToPipe(new IntegrationTestInterface1Impl(), testee_endpoint().Pass());
-  interface1_impl->internal_state()->router()->EnableTestingMode();
+  interface1_impl->internal_router()->EnableTestingMode();
 
   RunValidationTests("integration_", test_message_receiver());
 }

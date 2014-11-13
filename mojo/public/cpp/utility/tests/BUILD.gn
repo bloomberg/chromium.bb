@@ -13,8 +13,14 @@ test("mojo_public_utility_unittests") {
   ]
 
   sources = [
-    "mutex_unittest.cc",
     "run_loop_unittest.cc",
-    "thread_unittest.cc",
   ]
+
+  # crbug.com/342893
+  if (!is_win) {
+    sources += [
+      "mutex_unittest.cc",
+      "thread_unittest.cc",
+    ]
+  }
 }

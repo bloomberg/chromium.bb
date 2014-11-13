@@ -100,9 +100,7 @@ MojoResult MessagePipe::WriteMessage(
       GetPeerPort(port),
       make_scoped_ptr(new MessageInTransit(
           MessageInTransit::kTypeMessagePipeEndpoint,
-          MessageInTransit::kSubtypeMessagePipeEndpointData,
-          num_bytes,
-          bytes)),
+          MessageInTransit::kSubtypeMessagePipeEndpointData, num_bytes, bytes)),
       transports);
 }
 
@@ -117,8 +115,8 @@ MojoResult MessagePipe::ReadMessage(unsigned port,
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port]);
 
-  return endpoints_[port]->ReadMessage(
-      bytes, num_bytes, dispatchers, num_dispatchers, flags);
+  return endpoints_[port]->ReadMessage(bytes, num_bytes, dispatchers,
+                                       num_dispatchers, flags);
 }
 
 HandleSignalsState MessagePipe::GetHandleSignalsState(unsigned port) const {
@@ -165,10 +163,8 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   // send the already-queued messages.
   if (!endpoints_[GetPeerPort(port)]) {
     scoped_refptr<ChannelEndpoint> channel_endpoint(new ChannelEndpoint(
-        nullptr,
-        0,
-        static_cast<LocalMessagePipeEndpoint*>(endpoints_[port].get())
-            ->message_queue()));
+        nullptr, 0, static_cast<LocalMessagePipeEndpoint*>(
+                        endpoints_[port].get())->message_queue()));
     endpoints_[port]->Close();
     endpoints_[port].reset();
     return channel_endpoint;
@@ -177,18 +173,15 @@ scoped_refptr<ChannelEndpoint> MessagePipe::ConvertLocalToProxy(unsigned port) {
   // TODO(vtl): Allowing this case is a temporary hack. It'll set up a
   // |MessagePipe| with two proxy endpoints, which will then act as a proxy
   // (rather than trying to connect the two ends directly).
-  DLOG_IF(WARNING,
-          endpoints_[GetPeerPort(port)]->GetType() !=
-              MessagePipeEndpoint::kTypeLocal)
+  DLOG_IF(WARNING, endpoints_[GetPeerPort(port)]->GetType() !=
+                       MessagePipeEndpoint::kTypeLocal)
       << "Direct message pipe passing across multiple channels not yet "
          "implemented; will proxy";
 
   scoped_ptr<MessagePipeEndpoint> old_endpoint(endpoints_[port].Pass());
   scoped_refptr<ChannelEndpoint> channel_endpoint(new ChannelEndpoint(
-      this,
-      port,
-      static_cast<LocalMessagePipeEndpoint*>(old_endpoint.get())
-          ->message_queue()));
+      this, port, static_cast<LocalMessagePipeEndpoint*>(old_endpoint.get())
+                      ->message_queue()));
   endpoints_[port].reset(new ProxyMessagePipeEndpoint(channel_endpoint.get()));
   old_endpoint->Close();
 

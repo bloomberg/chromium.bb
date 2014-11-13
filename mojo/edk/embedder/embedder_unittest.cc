@@ -39,8 +39,7 @@ class ScopedTestChannel {
         did_create_channel_event_(true, false),
         channel_info_(nullptr) {
     bootstrap_message_pipe_ =
-        CreateChannel(platform_handle.Pass(),
-                      io_thread_task_runner_,
+        CreateChannel(platform_handle.Pass(), io_thread_task_runner_,
                       base::Bind(&ScopedTestChannel::DidCreateChannel,
                                  base::Unretained(this)),
                       nullptr)
@@ -53,8 +52,7 @@ class ScopedTestChannel {
   // the I/O thread must be alive and pumping messages.)
   ~ScopedTestChannel() {
     system::test::PostTaskAndWait(
-        io_thread_task_runner_,
-        FROM_HERE,
+        io_thread_task_runner_, FROM_HERE,
         base::Bind(&ScopedTestChannel::DestroyChannel, base::Unretained(this)));
   }
 
@@ -130,27 +128,18 @@ TEST_F(EmbedderTest, ChannelsBasic) {
     // We can write to a message pipe handle immediately.
     const char kHello[] = "hello";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp,
-                               kHello,
-                               static_cast<uint32_t>(sizeof(kHello)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(server_mp, kHello,
+                               static_cast<uint32_t>(sizeof(kHello)), nullptr,
+                               0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Now wait for the other side to become readable.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(
-            client_mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
 
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(sizeof(kHello), num_bytes);
     EXPECT_STREQ(kHello, buffer);
@@ -189,40 +178,28 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
 
     // Write a message to |h0| (attaching nothing).
     const char kHello[] = "hello";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h0,
-                               kHello,
-                               static_cast<uint32_t>(sizeof(kHello)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(h0, kHello, static_cast<uint32_t>(sizeof(kHello)),
+                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Write one message to |server_mp|, attaching |h1|.
     const char kWorld[] = "world!!!";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp,
-                               kWorld,
-                               static_cast<uint32_t>(sizeof(kWorld)),
-                               &h1,
-                               1,
+              MojoWriteMessage(server_mp, kWorld,
+                               static_cast<uint32_t>(sizeof(kWorld)), &h1, 1,
                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     h1 = MOJO_HANDLE_INVALID;
 
     // Write another message to |h0|.
     const char kFoo[] = "foo";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h0,
-                               kFoo,
-                               static_cast<uint32_t>(sizeof(kFoo)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(h0, kFoo, static_cast<uint32_t>(sizeof(kFoo)),
+                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Wait for |client_mp| to become readable.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(
-            client_mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |client_mp|.
     char buffer[1000] = {};
@@ -230,12 +207,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     MojoHandle handles[10] = {};
     uint32_t num_handles = arraysize(handles);
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp,
-                              buffer,
-                              &num_bytes,
-                              handles,
-                              &num_handles,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
+              MojoReadMessage(client_mp, buffer, &num_bytes, handles,
+                              &num_handles, MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(sizeof(kWorld), num_bytes);
     EXPECT_STREQ(kWorld, buffer);
     EXPECT_EQ(1u, num_handles);
@@ -243,9 +216,8 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     h1 = handles[0];
 
     // Wait for |h1| to become readable.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |h1|.
     memset(buffer, 0, sizeof(buffer));
@@ -253,58 +225,41 @@ TEST_F(EmbedderTest, ChannelsHandlePassing) {
     memset(handles, 0, sizeof(handles));
     num_handles = arraysize(handles);
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h1,
-                              buffer,
-                              &num_bytes,
-                              handles,
-                              &num_handles,
+              MojoReadMessage(h1, buffer, &num_bytes, handles, &num_handles,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(sizeof(kHello), num_bytes);
     EXPECT_STREQ(kHello, buffer);
     EXPECT_EQ(0u, num_handles);
 
     // Wait for |h1| to become readable (again).
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
 
     // Read the second message from |h1|.
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h1,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(h1, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(sizeof(kFoo), num_bytes);
     EXPECT_STREQ(kFoo, buffer);
 
     // Write a message to |h1|.
     const char kBarBaz[] = "barbaz";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(h1,
-                               kBarBaz,
-                               static_cast<uint32_t>(sizeof(kBarBaz)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-    // Wait for |h0| to become readable.
     EXPECT_EQ(
         MOJO_RESULT_OK,
-        MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+        MojoWriteMessage(h1, kBarBaz, static_cast<uint32_t>(sizeof(kBarBaz)),
+                         nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+    // Wait for |h0| to become readable.
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
 
     // Read a message from |h0|.
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(h0,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(h0, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(sizeof(kBarBaz), num_bytes);
     EXPECT_STREQ(kBarBaz, buffer);
@@ -354,29 +309,20 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
     // 1. Write a message to |server_mp| (attaching nothing).
     const char kHello[] = "hello";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp,
-                               kHello,
-                               static_cast<uint32_t>(sizeof(kHello)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(server_mp, kHello,
+                               static_cast<uint32_t>(sizeof(kHello)), nullptr,
+                               0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // TODO(vtl): If the scope were ended immediately here (maybe after closing
     // |server_mp|), we die with a fatal error in |Channel::HandleLocalError()|.
 
     // 2. Read a message from |server_mp|.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(
-            server_mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(server_mp,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(server_mp, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kWorld[] = "world!";
     EXPECT_EQ(sizeof(kWorld), num_bytes);
@@ -389,41 +335,29 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
     // 3. Write something to |mp0|.
     const char kFoo[] = "FOO";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp0,
-                               kFoo,
-                               static_cast<uint32_t>(sizeof(kFoo)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(mp0, kFoo, static_cast<uint32_t>(sizeof(kFoo)),
+                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // 4. Write a message to |server_mp|, attaching |mp1|.
     const char kBar[] = "Bar";
-    EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp,
-                               kBar,
-                               static_cast<uint32_t>(sizeof(kBar)),
-                               &mp1,
-                               1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(
+        MOJO_RESULT_OK,
+        MojoWriteMessage(server_mp, kBar, static_cast<uint32_t>(sizeof(kBar)),
+                         &mp1, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
     mp1 = MOJO_HANDLE_INVALID;
 
     // 5. Close |server_mp|.
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
 
     // 9. Read a message from |mp0|, which should have |mp2| attached.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(mp0, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp0, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     MojoHandle mp2 = MOJO_HANDLE_INVALID;
     uint32_t num_handles = 1;
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(mp0,
-                              buffer,
-                              &num_bytes,
-                              &mp2,
-                              &num_handles,
+              MojoReadMessage(mp0, buffer, &num_bytes, &mp2, &num_handles,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kQuux[] = "quux";
     EXPECT_EQ(sizeof(kQuux), num_bytes);
@@ -432,17 +366,12 @@ TEST_F(EmbedderTest, MultiprocessChannels) {
     EXPECT_NE(mp2, MOJO_HANDLE_INVALID);
 
     // 7. Read a message from |mp2|.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp2, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(mp2,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(mp2, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kBaz[] = "baz";
     EXPECT_EQ(sizeof(kBaz), num_bytes);
@@ -482,18 +411,12 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     CHECK(client_channel.channel_info() != nullptr);
 
     // 1. Read the first message from |client_mp|.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(
-            client_mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     char buffer[1000] = {};
     uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(client_mp, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kHello[] = "hello";
     EXPECT_EQ(sizeof(kHello), num_bytes);
@@ -502,18 +425,13 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     // 2. Write a message to |client_mp| (attaching nothing).
     const char kWorld[] = "world!";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(client_mp,
-                               kWorld,
-                               static_cast<uint32_t>(sizeof(kWorld)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(client_mp, kWorld,
+                               static_cast<uint32_t>(sizeof(kWorld)), nullptr,
+                               0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // 4. Read a message from |client_mp|, which should have |mp1| attached.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(
-            client_mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     // TODO(vtl): If the scope were to end here (and |client_mp| closed), we'd
     // die (again due to |Channel::HandleLocalError()|).
     memset(buffer, 0, sizeof(buffer));
@@ -521,11 +439,7 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     MojoHandle mp1 = MOJO_HANDLE_INVALID;
     uint32_t num_handles = 1;
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(client_mp,
-                              buffer,
-                              &num_bytes,
-                              &mp1,
-                              &num_handles,
+              MojoReadMessage(client_mp, buffer, &num_bytes, &mp1, &num_handles,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kBar[] = "Bar";
     EXPECT_EQ(sizeof(kBar), num_bytes);
@@ -546,12 +460,8 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     // 7. Write a message to |mp3|.
     const char kBaz[] = "baz";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp3,
-                               kBaz,
-                               static_cast<uint32_t>(sizeof(kBaz)),
-                               nullptr,
-                               0,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(mp3, kBaz, static_cast<uint32_t>(sizeof(kBaz)),
+                               nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // 8. Close |mp3|.
     EXPECT_EQ(MOJO_RESULT_OK, MojoClose(mp3));
@@ -559,26 +469,17 @@ MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessChannelsClient) {
     // 9. Write a message to |mp1|, attaching |mp2|.
     const char kQuux[] = "quux";
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(mp1,
-                               kQuux,
-                               static_cast<uint32_t>(sizeof(kQuux)),
-                               &mp2,
-                               1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              MojoWriteMessage(mp1, kQuux, static_cast<uint32_t>(sizeof(kQuux)),
+                               &mp2, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
     mp2 = MOJO_HANDLE_INVALID;
 
     // 3. Read a message from |mp1|.
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE));
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(mp1, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE));
     memset(buffer, 0, sizeof(buffer));
     num_bytes = static_cast<uint32_t>(sizeof(buffer));
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(mp1,
-                              buffer,
-                              &num_bytes,
-                              nullptr,
-                              nullptr,
+              MojoReadMessage(mp1, buffer, &num_bytes, nullptr, nullptr,
                               MOJO_READ_MESSAGE_FLAG_NONE));
     const char kFoo[] = "FOO";
     EXPECT_EQ(sizeof(kFoo), num_bytes);

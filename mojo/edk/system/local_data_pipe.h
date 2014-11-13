@@ -44,12 +44,11 @@ class MOJO_SYSTEM_IMPL_EXPORT LocalDataPipe : public DataPipe {
       uint32_t num_bytes_written) override;
   HandleSignalsState ProducerGetHandleSignalsStateImplNoLock() const override;
   void ConsumerCloseImplNoLock() override;
-  MojoResult ConsumerReadDataImplNoLock(
-      UserPointer<void> elements,
-      UserPointer<uint32_t> num_bytes,
-      uint32_t max_num_bytes_to_read,
-      uint32_t min_num_bytes_to_read,
-      bool peek) override;
+  MojoResult ConsumerReadDataImplNoLock(UserPointer<void> elements,
+                                        UserPointer<uint32_t> num_bytes,
+                                        uint32_t max_num_bytes_to_read,
+                                        uint32_t min_num_bytes_to_read,
+                                        bool peek) override;
   MojoResult ConsumerDiscardDataImplNoLock(
       UserPointer<uint32_t> num_bytes,
       uint32_t max_num_bytes_to_discard,

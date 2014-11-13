@@ -11,24 +11,26 @@ namespace device {
 // static
 void BatteryMonitorImpl::Create(
     mojo::InterfaceRequest<BatteryMonitor> request) {
-  BindToRequest(new BatteryMonitorImpl(), &request);
+  new BatteryMonitorImpl(request.Pass());
 }
 
-BatteryMonitorImpl::BatteryMonitorImpl() {
+BatteryMonitorImpl::BatteryMonitorImpl(
+    mojo::InterfaceRequest<BatteryMonitor> request)
+    : binding_(this, request.Pass()),
+      subscription_(BatteryStatusService::GetInstance()->AddCallback(
+          base::Bind(&BatteryMonitorImpl::DidChange, base::Unretained(this)))) {
 }
 
 BatteryMonitorImpl::~BatteryMonitorImpl() {
 }
 
-void BatteryMonitorImpl::OnConnectionEstablished() {
-  subscription_ = BatteryStatusService::GetInstance()->AddCallback(
-        base::Bind(&BatteryMonitorImpl::DidChange, base::Unretained(this)));
+void BatteryMonitorImpl::RegisterSubscription() {
 }
 
 void BatteryMonitorImpl::DidChange(const BatteryStatus& battery_status) {
   BatteryStatusPtr status(BatteryStatus::New());
   *status = battery_status;
-  client()->DidChange(status.Pass());
+  binding_.client()->DidChange(status.Pass());
 }
 
 }  // namespace device

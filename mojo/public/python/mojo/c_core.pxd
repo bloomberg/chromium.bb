@@ -126,6 +126,7 @@ cdef extern from "mojo/public/c/system/core.h" nogil:
   const MojoReadDataFlags MOJO_READ_DATA_FLAG_ALL_OR_NONE
   const MojoReadDataFlags MOJO_READ_DATA_FLAG_DISCARD
   const MojoReadDataFlags MOJO_READ_DATA_FLAG_QUERY
+  const MojoReadDataFlags MOJO_READ_DATA_FLAG_PEEK
 
   MojoResult MojoCreateDataPipe(
       const MojoCreateDataPipeOptions* options,

@@ -10,7 +10,7 @@ import "mojo/services/public/interfaces/input_events/input_events.mojom";
 [Client=WindowManagerClient]
 interface WindowManager {
   // Requests the WindowManager to embed the app for |url| at an appropriate
-  // View. See ViewManger::Embed() for details on |service_provider|.
+  // View. See ViewMangerService::Embed() for details on |service_provider|.
   Embed(string url, ServiceProvider&? service_provider);
 
   SetCapture(uint32 view_id) => (bool success);

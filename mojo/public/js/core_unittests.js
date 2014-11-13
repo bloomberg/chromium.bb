@@ -15,7 +15,6 @@ define([
   runWithDataPipe(testReadAndWriteDataPipe);
   runWithDataPipeWithOptions(testNop);
   runWithDataPipeWithOptions(testReadAndWriteDataPipe);
-  testHandleToString();
   gc.collectGarbage();  // should not crash
   this.result = "PASS";
 
@@ -105,6 +104,16 @@ define([
     expect(write.result).toBe(core.RESULT_OK);
     expect(write.numBytes).toBe(42);
 
+    var peeked = core.readData(
+         pipe.consumerHandle,
+         core.READ_DATA_FLAG_PEEK | core.READ_DATA_FLAG_ALL_OR_NONE);
+    expect(peeked.result).toBe(core.RESULT_OK);
+    expect(peeked.buffer.byteLength).toBe(42);
+
+    var peeked_memory = new Uint8Array(peeked.buffer);
+    for (var i = 0; i < peeked_memory.length; ++i)
+      expect(peeked_memory[i]).toBe((i * i) & 0xFF);
+
     var read = core.readData(
       pipe.consumerHandle, core.READ_DATA_FLAG_ALL_OR_NONE);
 
@@ -114,20 +123,6 @@ define([
     var memory = new Uint8Array(read.buffer);
     for (var i = 0; i < memory.length; ++i)
       expect(memory[i]).toBe((i * i) & 0xFF);
-  }
-
-  function testHandleToString() {
-    var pipe = core.createDataPipe();
-    expect(pipe.consumerHandle.toString).toBeDefined();
-
-    var openHandleRE = /^\[mojo\:\:Handle \d+\]$/ // e.g. "[mojo::Handle 123]"
-    var openHandleString = pipe.consumerHandle.toString();
-    expect(openHandleString.match(openHandleRE)[0]).toEqual(openHandleString);
-
-    expect(core.close(pipe.producerHandle)).toBe(core.RESULT_OK);
-    expect(core.close(pipe.consumerHandle)).toBe(core.RESULT_OK);
-
-    expect(pipe.consumerHandle.toString()).toEqual("[mojo::Handle null]");
   }
 
 });

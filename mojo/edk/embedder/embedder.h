@@ -12,15 +12,22 @@
 #include "mojo/edk/embedder/channel_info_forward.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
-#include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace embedder {
 
+struct Configuration;
 class PlatformSupport;
 
-// Must be called first to initialize the (global, singleton) system.
+// Must be called first, or just after setting configuration parameters,
+// to initialize the (global, singleton) system.
 MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
+
+// Returns the global configuration. In general there should be no need to
+// change the configuration, but if you do so this must be done before calling
+// |Init()|.
+MOJO_SYSTEM_IMPL_EXPORT Configuration* GetConfiguration();
 
 // A "channel" is a connection on top of an OS "pipe", on top of which Mojo
 // message pipes (etc.) can be multiplexed. It must "live" on some I/O thread.
@@ -64,8 +71,8 @@ MOJO_SYSTEM_IMPL_EXPORT void Init(scoped_ptr<PlatformSupport> platform_support);
 // |DestroyChannelOnIOThread()| (or |DestoryChannel()|) to tear down the
 // channel. Returns a handle to the bootstrap message pipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-    CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
-                            ChannelInfo** channel_info);
+CreateChannelOnIOThread(ScopedPlatformHandle platform_handle,
+                        ChannelInfo** channel_info);
 
 typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
 // Creates a channel asynchronously; may be called from any thread.
@@ -78,10 +85,10 @@ typedef base::Callback<void(ChannelInfo*)> DidCreateChannelCallback;
 // it will be called using |io_thread_task_runner|. Returns a handle to the
 // bootstrap message pipe.
 MOJO_SYSTEM_IMPL_EXPORT ScopedMessagePipeHandle
-    CreateChannel(ScopedPlatformHandle platform_handle,
-                  scoped_refptr<base::TaskRunner> io_thread_task_runner,
-                  DidCreateChannelCallback callback,
-                  scoped_refptr<base::TaskRunner> callback_thread_task_runner);
+CreateChannel(ScopedPlatformHandle platform_handle,
+              scoped_refptr<base::TaskRunner> io_thread_task_runner,
+              DidCreateChannelCallback callback,
+              scoped_refptr<base::TaskRunner> callback_thread_task_runner);
 
 // Destroys a channel that was created using either |CreateChannelOnIOThread()|
 // or |CreateChannel()|; must only be called from the I/O thread. |channel_info|
@@ -106,14 +113,14 @@ MOJO_SYSTEM_IMPL_EXPORT void WillDestroyChannelSoon(ChannelInfo* channel_info);
 // failure, which is different from what you'd expect from a Mojo API, but it
 // makes for a more convenient embedder API.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
-    CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
-                                MojoHandle* platform_handle_wrapper_handle);
+CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
+                            MojoHandle* platform_handle_wrapper_handle);
 // Retrieves the |PlatformHandle| that was wrapped into a |MojoHandle| (using
 // |CreatePlatformHandleWrapper()| above). Note that the |MojoHandle| must still
 // be closed separately.
 MOJO_SYSTEM_IMPL_EXPORT MojoResult
-    PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
-                              ScopedPlatformHandle* platform_handle);
+PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
+                          ScopedPlatformHandle* platform_handle);
 
 }  // namespace embedder
 }  // namespace mojo

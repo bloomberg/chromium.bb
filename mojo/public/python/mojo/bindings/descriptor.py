@@ -41,7 +41,7 @@ class SerializableType(Type):
   def __init__(self, typecode):
     Type.__init__(self)
     self.typecode = typecode
-    self.byte_size = struct.calcsize('=%s' % self.GetTypeCode())
+    self.byte_size = struct.calcsize('<%s' % self.GetTypeCode())
 
   def GetTypeCode(self):
     """

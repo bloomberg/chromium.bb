@@ -59,7 +59,7 @@ public class Encoder {
             this.core = core;
             byteBuffer = ByteBuffer.allocateDirect(
                     bufferSize > 0 ? bufferSize : INITIAL_BUFFER_SIZE);
-            byteBuffer.order(ByteOrder.nativeOrder());
+            byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
             dataEnd = 0;
         }
 
@@ -226,8 +226,8 @@ public class Encoder {
             encodeNullPointer(offset, nullable);
             return;
         }
-        final int arrayNullability = nullable ?
-                BindingsHelper.ARRAY_NULLABLE : BindingsHelper.NOTHING_NULLABLE;
+        final int arrayNullability = nullable
+                ? BindingsHelper.ARRAY_NULLABLE : BindingsHelper.NOTHING_NULLABLE;
         encode(v.getBytes(Charset.forName("utf8")), offset, arrayNullability,
                 BindingsHelper.UNSPECIFIED_ARRAY_LENGTH);
     }
@@ -303,8 +303,8 @@ public class Encoder {
             encodeNullPointer(offset, BindingsHelper.isArrayNullable(arrayNullability));
             return;
         }
-        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
-                expectedLength != v.length) {
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
+                && expectedLength != v.length) {
             throw new SerializationException("Trying to encode a fixed array of incorrect length.");
         }
         byte[] bytes = new byte[(v.length + 7) / BindingsHelper.ALIGNMENT];
@@ -327,8 +327,8 @@ public class Encoder {
             encodeNullPointer(offset, BindingsHelper.isArrayNullable(arrayNullability));
             return;
         }
-        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
-                expectedLength != v.length) {
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
+                && expectedLength != v.length) {
             throw new SerializationException("Trying to encode a fixed array of incorrect length.");
         }
         encodeByteArray(v, v.length, offset);
@@ -473,8 +473,8 @@ public class Encoder {
 
     private Encoder encoderForArray(
             int elementSizeInByte, int length, int offset, int expectedLength) {
-        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH &&
-                expectedLength != length) {
+        if (expectedLength != BindingsHelper.UNSPECIFIED_ARRAY_LENGTH
+                && expectedLength != length) {
             throw new SerializationException("Trying to encode a fixed array of incorrect length.");
         }
         return encoderForArrayByTotalSize(length * elementSizeInByte, length, offset);

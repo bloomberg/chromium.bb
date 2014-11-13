@@ -311,6 +311,10 @@ void View::Reorder(View* relative, OrderDirection direction) {
 }
 
 bool View::Contains(View* child) const {
+  if (!child)
+    return false;
+  if (child == this)
+    return true;
   if (manager_)
     CHECK_EQ(ViewPrivate(child).view_manager(), manager_);
   for (View* p = child->parent(); p; p = p->parent()) {

@@ -18,15 +18,14 @@ MOJO_SYSTEM_IMPL_EXPORT inline void CloseAllPlatformHandles(
     PlatformHandleContainer* platform_handles) {
   for (typename PlatformHandleContainer::iterator it =
            platform_handles->begin();
-       it != platform_handles->end();
-       ++it)
+       it != platform_handles->end(); ++it)
     it->CloseIfNecessary();
 }
 
 // Duplicates the given |PlatformHandle| (which must be valid). (Returns an
 // invalid |ScopedPlatformHandle| on failure.)
 MOJO_SYSTEM_IMPL_EXPORT ScopedPlatformHandle
-    DuplicatePlatformHandle(PlatformHandle platform_handle);
+DuplicatePlatformHandle(PlatformHandle platform_handle);
 
 }  // namespace embedder
 }  // namespace mojo

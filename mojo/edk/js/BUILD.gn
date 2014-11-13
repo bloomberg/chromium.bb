@@ -11,8 +11,12 @@ source_set("js") {
     "handle.cc",
     "handle.h",
     "handle_close_observer.h",
+    "mojo_runner_delegate.cc",
+    "mojo_runner_delegate.h",
     "support.cc",
     "support.h",
+    "threading.cc",
+    "threading.h",
     "waiting_callback.cc",
     "waiting_callback.h",
   ]
@@ -22,15 +26,24 @@ source_set("js") {
     "//gin",
     "//v8",
   ]
+
+  deps = [
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
+  ]
 }
 
 source_set("js_unittests") {
   testonly = true
-  deps = [
-    "//mojo/edk/test:test_support",
-  ]
-
   sources = [
     "handle_unittest.cc",
   ]
+
+  deps = [
+    "//mojo/edk/js",
+    "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/system",
+    "//testing/gtest",
+  ]
+
 }

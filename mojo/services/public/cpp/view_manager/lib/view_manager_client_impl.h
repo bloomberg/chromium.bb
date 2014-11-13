@@ -73,6 +73,8 @@ class ViewManagerClientImpl : public ViewManager,
   void AddView(View* view);
   void RemoveView(Id view_id);
 
+  void OnConnectionEstablished();
+
  private:
   friend class RootObserver;
 
@@ -82,9 +84,6 @@ class ViewManagerClientImpl : public ViewManager,
   const std::string& GetEmbedderURL() const override;
   const std::vector<View*>& GetRoots() const override;
   View* GetViewById(Id id) override;
-
-  // Overridden from InterfaceImpl:
-  void OnConnectionEstablished() override;
 
   // Overridden from ViewManagerClient:
   void OnEmbed(ConnectionSpecificId connection_id,

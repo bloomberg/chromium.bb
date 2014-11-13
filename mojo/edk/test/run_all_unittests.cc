@@ -21,7 +21,6 @@ int main(int argc, char** argv) {
   mojo::test::TestSupport::Init(new mojo::test::TestSupportImpl());
 
   return base::LaunchUnitTests(
-      argc,
-      argv,
+      argc, argv,
       base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite)));
 }

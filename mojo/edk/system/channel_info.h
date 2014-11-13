@@ -19,6 +19,8 @@ struct MOJO_SYSTEM_IMPL_EXPORT ChannelInfo {
               scoped_refptr<base::TaskRunner> channel_thread_task_runner);
   ~ChannelInfo();
 
+  void Swap(ChannelInfo* other);
+
   scoped_refptr<Channel> channel;
   // The task runner for |channel|'s creation thread (a.k.a. its I/O thread), on
   // which it must, e.g., be shut down.

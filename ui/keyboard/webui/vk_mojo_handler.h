@@ -6,22 +6,20 @@
 #define UI_KEYBOARD_WEBUI_VK_MOJO_HANDLER_H_
 
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/keyboard/webui/keyboard.mojom.h"
 
 namespace keyboard {
 
-class VKMojoHandler : public mojo::InterfaceImpl<KeyboardUIHandlerMojo>,
+class VKMojoHandler : public KeyboardUIHandlerMojo,
                       public ui::InputMethodObserver {
  public:
-  VKMojoHandler();
+  explicit VKMojoHandler(mojo::InterfaceRequest<KeyboardUIHandlerMojo> request);
   ~VKMojoHandler() override;
 
  private:
   ui::InputMethod* GetInputMethod();
-
-  // mojo::InterfaceImpl<>:
-  void OnConnectionEstablished() override;
 
   // KeyboardUIHandlerMojo:
   void SendKeyEvent(const mojo::String& event_type,
@@ -39,6 +37,8 @@ class VKMojoHandler : public mojo::InterfaceImpl<KeyboardUIHandlerMojo>,
   void OnTextInputStateChanged(const ui::TextInputClient* text_client) override;
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
   void OnShowImeIfNeeded() override;
+
+  mojo::Binding<KeyboardUIHandlerMojo> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(VKMojoHandler);
 };

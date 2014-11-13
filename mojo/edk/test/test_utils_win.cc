@@ -23,14 +23,11 @@ bool BlockingWrite(const embedder::PlatformHandle& handle,
   OVERLAPPED overlapped = {0};
   DWORD bytes_written_dword = 0;
 
-  if (!WriteFile(handle.handle,
-                 buffer,
-                 static_cast<DWORD>(bytes_to_write),
-                 &bytes_written_dword,
-                 &overlapped)) {
+  if (!WriteFile(handle.handle, buffer, static_cast<DWORD>(bytes_to_write),
+                 &bytes_written_dword, &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(
-            handle.handle, &overlapped, &bytes_written_dword, TRUE)) {
+        !GetOverlappedResult(handle.handle, &overlapped, &bytes_written_dword,
+                             TRUE)) {
       return false;
     }
   }
@@ -46,14 +43,11 @@ bool BlockingRead(const embedder::PlatformHandle& handle,
   OVERLAPPED overlapped = {0};
   DWORD bytes_read_dword = 0;
 
-  if (!ReadFile(handle.handle,
-                buffer,
-                static_cast<DWORD>(buffer_size),
-                &bytes_read_dword,
-                &overlapped)) {
+  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
+                &bytes_read_dword, &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING ||
-        !GetOverlappedResult(
-            handle.handle, &overlapped, &bytes_read_dword, TRUE)) {
+        !GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
+                             TRUE)) {
       return false;
     }
   }
@@ -69,18 +63,15 @@ bool NonBlockingRead(const embedder::PlatformHandle& handle,
   OVERLAPPED overlapped = {0};
   DWORD bytes_read_dword = 0;
 
-  if (!ReadFile(handle.handle,
-                buffer,
-                static_cast<DWORD>(buffer_size),
-                &bytes_read_dword,
-                &overlapped)) {
+  if (!ReadFile(handle.handle, buffer, static_cast<DWORD>(buffer_size),
+                &bytes_read_dword, &overlapped)) {
     if (GetLastError() != ERROR_IO_PENDING)
       return false;
 
     CancelIo(handle.handle);
 
-    if (!GetOverlappedResult(
-            handle.handle, &overlapped, &bytes_read_dword, TRUE)) {
+    if (!GetOverlappedResult(handle.handle, &overlapped, &bytes_read_dword,
+                             TRUE)) {
       *bytes_read = 0;
       return true;
     }
@@ -97,11 +88,7 @@ embedder::ScopedPlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp) {
   PCHECK(DuplicateHandle(
       GetCurrentProcess(),
       reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(fp.get()))),
-      GetCurrentProcess(),
-      &rv,
-      0,
-      TRUE,
-      DUPLICATE_SAME_ACCESS))
+      GetCurrentProcess(), &rv, 0, TRUE, DUPLICATE_SAME_ACCESS))
       << "DuplicateHandle";
   return embedder::ScopedPlatformHandle(embedder::PlatformHandle(rv));
 }

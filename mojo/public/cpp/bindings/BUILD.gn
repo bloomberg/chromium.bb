@@ -5,12 +5,14 @@
 source_set("bindings") {
   sources = [
     "array.h",
+    "binding.h",
     "error_handler.h",
     "interface_ptr.h",
     "map.h",
     "message.h",
     "message_filter.h",
     "no_interface.h",
+    "strong_binding.h",
     "string.h",
     "struct_ptr.h",
     "type_converter.h",

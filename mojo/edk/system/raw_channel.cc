@@ -133,9 +133,8 @@ void RawChannel::WriteBuffer::GetBuffers(std::vector<Buffer>* buffers) const {
   // attached.
 
   // Write from both buffers.
-  DCHECK_EQ(
-      bytes_to_write,
-      message->main_buffer_size() - data_offset_ + transport_data_buffer_size);
+  DCHECK_EQ(bytes_to_write, message->main_buffer_size() - data_offset_ +
+                                transport_data_buffer_size);
   Buffer buffer1 = {
       static_cast<const char*>(message->main_buffer()) + data_offset_,
       message->main_buffer_size() - data_offset_};
@@ -195,11 +194,9 @@ bool RawChannel::Init(Delegate* delegate) {
   if (io_result != IO_PENDING) {
     // This will notify the delegate about the read failure. Although we're on
     // the I/O thread, don't call it in the nested context.
-    message_loop_for_io_->PostTask(FROM_HERE,
-                                   base::Bind(&RawChannel::OnReadCompleted,
-                                              weak_ptr_factory_.GetWeakPtr(),
-                                              io_result,
-                                              0));
+    message_loop_for_io_->PostTask(
+        FROM_HERE, base::Bind(&RawChannel::OnReadCompleted,
+                              weak_ptr_factory_.GetWeakPtr(), io_result, 0));
   }
 
   // ScheduleRead() failure is treated as a read failure (by notifying the
@@ -246,15 +243,15 @@ bool RawChannel::WriteMessage(scoped_ptr<MessageInTransit> message) {
   if (io_result == IO_PENDING)
     return true;
 
-  bool result = OnWriteCompletedNoLock(
-      io_result, platform_handles_written, bytes_written);
+  bool result = OnWriteCompletedNoLock(io_result, platform_handles_written,
+                                       bytes_written);
   if (!result) {
     // Even if we're on the I/O thread, don't call |OnError()| in the nested
     // context.
-    message_loop_for_io_->PostTask(FROM_HERE,
-                                   base::Bind(&RawChannel::CallOnError,
-                                              weak_ptr_factory_.GetWeakPtr(),
-                                              Delegate::ERROR_WRITE));
+    message_loop_for_io_->PostTask(
+        FROM_HERE,
+        base::Bind(&RawChannel::CallOnError, weak_ptr_factory_.GetWeakPtr(),
+                   Delegate::ERROR_WRITE));
   }
 
   return result;
@@ -312,8 +309,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
     // TODO(vtl): Validate that |message_size| is sane.
     while (remaining_bytes > 0 && MessageInTransit::GetNextMessageSize(
                                       &read_buffer_->buffer_[read_buffer_start],
-                                      remaining_bytes,
-                                      &message_size) &&
+                                      remaining_bytes, &message_size) &&
            remaining_bytes >= message_size) {
       MessageInTransit::View message_view(
           message_size, &read_buffer_->buffer_[read_buffer_start]);
@@ -341,8 +337,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
           size_t num_platform_handles;
           const void* platform_handle_table;
           TransportData::GetPlatformHandleTable(
-              message_view.transport_data_buffer(),
-              &num_platform_handles,
+              message_view.transport_data_buffer(), &num_platform_handles,
               &platform_handle_table);
 
           if (num_platform_handles > 0) {
@@ -383,8 +378,7 @@ void RawChannel::OnReadCompleted(IOResult io_result, size_t bytes_read) {
       read_buffer_->num_valid_bytes_ = remaining_bytes;
       if (read_buffer_->num_valid_bytes_ > 0) {
         memmove(&read_buffer_->buffer_[0],
-                &read_buffer_->buffer_[read_buffer_start],
-                remaining_bytes);
+                &read_buffer_->buffer_[read_buffer_start], remaining_bytes);
       }
       read_buffer_start = 0;
     }
@@ -433,8 +427,8 @@ void RawChannel::OnWriteCompleted(IOResult io_result,
       return;
     }
 
-    did_fail = !OnWriteCompletedNoLock(
-                   io_result, platform_handles_written, bytes_written);
+    did_fail = !OnWriteCompletedNoLock(io_result, platform_handles_written,
+                                       bytes_written);
   }
 
   if (did_fail)

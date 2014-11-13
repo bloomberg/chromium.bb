@@ -46,10 +46,8 @@ void ChannelThread::Start(embedder::ScopedPlatformHandle platform_handle,
   test_io_thread_.Start();
   test_io_thread_.PostTaskAndWait(
       FROM_HERE,
-      base::Bind(&ChannelThread::InitChannelOnIOThread,
-                 base::Unretained(this),
-                 base::Passed(&platform_handle),
-                 channel_endpoint));
+      base::Bind(&ChannelThread::InitChannelOnIOThread, base::Unretained(this),
+                 base::Passed(&platform_handle), channel_endpoint));
 }
 
 void ChannelThread::Stop() {
@@ -61,9 +59,8 @@ void ChannelThread::Stop() {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(20));
 
     test_io_thread_.PostTaskAndWait(
-        FROM_HERE,
-        base::Bind(&ChannelThread::ShutdownChannelOnIOThread,
-                   base::Unretained(this)));
+        FROM_HERE, base::Bind(&ChannelThread::ShutdownChannelOnIOThread,
+                              base::Unretained(this)));
   }
   test_io_thread_.Stop();
 }

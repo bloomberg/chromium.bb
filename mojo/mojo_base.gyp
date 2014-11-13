@@ -71,9 +71,11 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
         '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         '../url/url.gyp:url_lib',
+        'edk/mojo_edk.gyp:mojo_system_impl',
         'edk/mojo_edk.gyp:mojo_common_test_support',
         'edk/mojo_edk.gyp:mojo_run_all_unittests',
         'mojo_common_lib',
@@ -85,14 +87,6 @@
         'common/common_type_converters_unittest.cc',
         'common/handle_watcher_unittest.cc',
         'common/message_pump_mojo_unittest.cc',
-        'edk/test/multiprocess_test_helper_unittest.cc',
-      ],
-      'conditions': [
-        ['OS=="ios"', {
-          'sources!': [
-            'edk/test/multiprocess_test_helper_unittest.cc',
-          ],
-        }],
       ],
     },
     {

@@ -31,9 +31,9 @@ class MessageHeader(object):
   """The header of a mojo message."""
 
   _SIMPLE_MESSAGE_NUM_FIELDS = 2
-  _SIMPLE_MESSAGE_STRUCT = struct.Struct("=IIII")
+  _SIMPLE_MESSAGE_STRUCT = struct.Struct("<IIII")
 
-  _REQUEST_ID_STRUCT = struct.Struct("=Q")
+  _REQUEST_ID_STRUCT = struct.Struct("<Q")
   _REQUEST_ID_OFFSET = _SIMPLE_MESSAGE_STRUCT.size
 
   _MESSAGE_WITH_REQUEST_ID_NUM_FIELDS = 3

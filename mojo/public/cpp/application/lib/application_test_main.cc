@@ -6,16 +6,18 @@
 #include "mojo/public/cpp/application/application_delegate.h"
 #include "mojo/public/cpp/application/application_impl.h"
 #include "mojo/public/cpp/application/application_test_base.h"
+#include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/environment/logging.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/public/cpp/utility/run_loop.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   // An Environment instance is needed to construct run loops.
   mojo::Environment environment;
 
   {
-    // This RunLoop is used for init, and then destroyed before running tests.
-    mojo::Environment::InstantiateDefaultRunLoop();
+    // This loop is used for init, and then destroyed before running tests.
+    mojo::RunLoop run_loop;
 
     // Construct an ApplicationImpl just for the GTEST commandline arguments.
     // GTEST command line arguments are supported amid application arguments:
@@ -38,7 +40,6 @@ MojoResult MojoMain(MojoHandle shell_handle) {
 
     testing::InitGoogleTest(&argc, const_cast<char**>(&(argv[0])));
     mojo::test::SetShellHandle(app.UnbindShell());
-    mojo::Environment::DestroyDefaultRunLoop();
   }
 
   int result = RUN_ALL_TESTS();

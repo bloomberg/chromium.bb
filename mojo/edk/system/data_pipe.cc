@@ -10,7 +10,7 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "mojo/edk/system/constants.h"
+#include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/edk/system/waiter_list.h"
@@ -19,11 +19,15 @@ namespace mojo {
 namespace system {
 
 // static
-const MojoCreateDataPipeOptions DataPipe::kDefaultCreateOptions = {
-    static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
-    MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
-    1u,
-    static_cast<uint32_t>(kDefaultDataPipeCapacityBytes)};
+MojoCreateDataPipeOptions DataPipe::GetDefaultCreateOptions() {
+  MojoCreateDataPipeOptions result = {
+      static_cast<uint32_t>(sizeof(MojoCreateDataPipeOptions)),
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
+      1u,
+      static_cast<uint32_t>(
+          GetConfiguration().default_data_pipe_capacity_bytes)};
+  return result;
+}
 
 // static
 MojoResult DataPipe::ValidateCreateOptions(
@@ -32,7 +36,7 @@ MojoResult DataPipe::ValidateCreateOptions(
   const MojoCreateDataPipeOptionsFlags kKnownFlags =
       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD;
 
-  *out_options = kDefaultCreateOptions;
+  *out_options = GetDefaultCreateOptions();
   if (in_options.IsNull())
     return MOJO_RESULT_OK;
 
@@ -48,28 +52,31 @@ MojoResult DataPipe::ValidateCreateOptions(
 
   // Checks for fields beyond |flags|:
 
-  if (!OPTIONS_STRUCT_HAS_MEMBER(
-          MojoCreateDataPipeOptions, element_num_bytes, reader))
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateDataPipeOptions, element_num_bytes,
+                                 reader))
     return MOJO_RESULT_OK;
   if (reader.options().element_num_bytes == 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
   out_options->element_num_bytes = reader.options().element_num_bytes;
 
-  if (!OPTIONS_STRUCT_HAS_MEMBER(
-          MojoCreateDataPipeOptions, capacity_num_bytes, reader) ||
+  if (!OPTIONS_STRUCT_HAS_MEMBER(MojoCreateDataPipeOptions, capacity_num_bytes,
+                                 reader) ||
       reader.options().capacity_num_bytes == 0) {
     // Round the default capacity down to a multiple of the element size (but at
     // least one element).
+    size_t default_data_pipe_capacity_bytes =
+        GetConfiguration().default_data_pipe_capacity_bytes;
     out_options->capacity_num_bytes =
-        std::max(static_cast<uint32_t>(kDefaultDataPipeCapacityBytes -
-                                       (kDefaultDataPipeCapacityBytes %
+        std::max(static_cast<uint32_t>(default_data_pipe_capacity_bytes -
+                                       (default_data_pipe_capacity_bytes %
                                         out_options->element_num_bytes)),
                  out_options->element_num_bytes);
     return MOJO_RESULT_OK;
   }
   if (reader.options().capacity_num_bytes % out_options->element_num_bytes != 0)
     return MOJO_RESULT_INVALID_ARGUMENT;
-  if (reader.options().capacity_num_bytes > kMaxDataPipeCapacityBytes)
+  if (reader.options().capacity_num_bytes >
+      GetConfiguration().max_data_pipe_capacity_bytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   out_options->capacity_num_bytes = reader.options().capacity_num_bytes;
 
@@ -148,8 +155,8 @@ MojoResult DataPipe::ProducerBeginWriteData(
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  MojoResult rv = ProducerBeginWriteDataImplNoLock(
-      buffer, buffer_num_bytes, min_num_bytes_to_write);
+  MojoResult rv = ProducerBeginWriteDataImplNoLock(buffer, buffer_num_bytes,
+                                                   min_num_bytes_to_write);
   if (rv != MOJO_RESULT_OK)
     return rv;
   // Note: No need to awake producer waiters, even though we're going from
@@ -345,8 +352,8 @@ MojoResult DataPipe::ConsumerBeginReadData(
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  MojoResult rv = ConsumerBeginReadDataImplNoLock(
-      buffer, buffer_num_bytes, min_num_bytes_to_read);
+  MojoResult rv = ConsumerBeginReadDataImplNoLock(buffer, buffer_num_bytes,
+                                                  min_num_bytes_to_read);
   if (rv != MOJO_RESULT_OK)
     return rv;
   DCHECK(consumer_in_two_phase_read_no_lock());

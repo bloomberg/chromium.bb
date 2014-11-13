@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_
-#define MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_
+#ifndef MOJO_EDK_JS_HANDLE_CLOSE_OBSERVER_H_
+#define MOJO_EDK_JS_HANDLE_CLOSE_OBSERVER_H_
 
 namespace mojo {
 namespace js {
@@ -19,4 +19,4 @@ class HandleCloseObserver {
 }  // namespace js
 }  // namespace mojo
 
-#endif  // MOJO_BINDINGS_JS_HANDLE_CLOSE_OBSERVER_H_
+#endif  // MOJO_EDK_JS_HANDLE_CLOSE_OBSERVER_H_

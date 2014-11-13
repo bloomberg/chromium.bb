@@ -130,7 +130,7 @@ interface ViewManagerService {
   // any services it provided are not broken and continue to be valid.
   Embed(string url,
         uint32 view_id,
-        ServiceProvider? service_provider) => (bool success);
+        ServiceProvider&? service_provider) => (bool success);
 };
 
 // Changes to views are not sent to the connection that originated the

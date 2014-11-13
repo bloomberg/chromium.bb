@@ -39,3 +39,17 @@ e.g. out/ReleaseX64/dart-sdk/bin to your path.
 4.) Run Dart tests.
 
   $ ./mojob.sh --release darttest
+
+
+These are instructions for adding a Dart VM source checkout to your client.
+
+1. Edit your .gclient file.
+
+  Replace "DEPS" with "DEPS.dart"
+
+2. Run:
+
+  $ gclient sync
+
+  You should now have a directory //src/dart
+
