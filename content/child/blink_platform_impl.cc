@@ -56,10 +56,6 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "ui/base/layout.h"
 
-#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
-#include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
-#endif
-
 using blink::WebData;
 using blink::WebFallbackThemeEngine;
 using blink::WebLocalizedString;
@@ -1151,38 +1147,6 @@ size_t BlinkPlatformImpl::virtualMemoryLimitMB() {
 
 size_t BlinkPlatformImpl::numberOfProcessors() {
   return static_cast<size_t>(base::SysInfo::NumberOfProcessors());
-}
-
-void BlinkPlatformImpl::startHeapProfiling(
-  const blink::WebString& prefix) {
-  // FIXME(morrita): Make this built on windows.
-#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
-  HeapProfilerStart(prefix.utf8().data());
-#endif
-}
-
-void BlinkPlatformImpl::stopHeapProfiling() {
-#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
-  HeapProfilerStop();
-#endif
-}
-
-void BlinkPlatformImpl::dumpHeapProfiling(
-  const blink::WebString& reason) {
-#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
-  HeapProfilerDump(reason.utf8().data());
-#endif
-}
-
-WebString BlinkPlatformImpl::getHeapProfile() {
-#if !defined(NO_TCMALLOC) && defined(USE_TCMALLOC) && !defined(OS_WIN)
-  char* data = GetHeapProfile();
-  WebString result = WebString::fromUTF8(std::string(data));
-  free(data);
-  return result;
-#else
-  return WebString();
-#endif
 }
 
 bool BlinkPlatformImpl::processMemorySizesInBytes(

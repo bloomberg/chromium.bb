@@ -67,11 +67,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   virtual size_t virtualMemoryLimitMB();
   virtual size_t numberOfProcessors();
 
-  virtual void startHeapProfiling(const blink::WebString& prefix);
-  virtual void stopHeapProfiling();
-  virtual void dumpHeapProfiling(const blink::WebString& reason);
-  virtual blink::WebString getHeapProfile();
-
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
                                          size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);
