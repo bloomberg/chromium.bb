@@ -450,6 +450,8 @@ interface TestObject {
     void overloadedMethodJ(TestDictionary testDictionaryArg);
     void overloadedMethodK(Function functionArg);
     void overloadedMethodK(DOMString stringArg);
+    void overloadedMethodL(long longArg, any... restArgs);
+    void overloadedMethodL(DOMString stringArg, any... restArgs);
 
     Promise promiseOverloadMethod();
     Promise promiseOverloadMethod(Window arg1, double arg2);

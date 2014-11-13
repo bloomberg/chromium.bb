@@ -636,8 +636,9 @@ def effective_overload_set(F):
         # if X’s argument at index i is a final, variadic argument, “optional”
         # if the argument is optional, and “required” otherwise.
         # (“optionality list”)
-        # (We’re just using a boolean for optional vs. required.)
-        o = tuple(argument['is_optional'] for argument in arguments)
+        # (We’re just using a boolean for optional/variadic vs. required.)
+        o = tuple(argument['is_optional'] or argument['is_variadic']
+                  for argument in arguments)
         # 4. Add to S the tuple <X, t0..n−1, o0..n−1>.
         S.append((X, t, o))
         # 5. If X is declared to be variadic, then:

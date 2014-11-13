@@ -235,6 +235,7 @@ def argument_context(interface, method, argument, index):
         'is_dictionary': idl_type.is_dictionary or idl_type.base_type == 'Dictionary',
         'is_nullable': idl_type.is_nullable,
         'is_optional': argument.is_optional,
+        'is_variadic': argument.is_variadic,
         'is_variadic_wrapper_type': is_variadic_wrapper_type,
         'is_wrapper_type': idl_type.is_wrapper_type,
         'name': argument.name,
