@@ -14,6 +14,7 @@ namespace switches {
 // or if it does not make sense when restarting a background instance to
 // pick up an automatic update, be sure to add it to this list.
 const char* const kSwitchesToRemoveOnAutorestart[] = {
+  switches::kActivateExistingProfileBrowser,
   switches::kApp,
   switches::kAppId,
   switches::kForceFirstRun,
@@ -21,6 +22,7 @@ const char* const kSwitchesToRemoveOnAutorestart[] = {
   switches::kNoStartupWindow,
   switches::kRestoreLastSession,
   switches::kShowAppList,
+  switches::kWinJumplistAction
 };
 
 void RemoveSwitchesForAutostart(

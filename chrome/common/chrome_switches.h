@@ -27,6 +27,7 @@ namespace switches {
 
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
+extern const char kActivateExistingProfileBrowser[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
 extern const char kAllowHttpScreenCapture[];
@@ -342,6 +343,7 @@ extern const char kVersion[];
 extern const char kWindowPosition[];
 extern const char kWindowSize[];
 extern const char kWinHttpProxyResolver[];
+extern const char kWinJumplistAction[];
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 extern const char kPluginsMetadataServerURL[];

@@ -10,6 +10,9 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
@@ -17,6 +20,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
@@ -285,6 +289,35 @@ SkBitmap GetAvatarIconAsSquare(const SkBitmap& source_bitmap,
     square_bitmap = source_bitmap;
   }
   return square_bitmap;
+}
+
+void GetTransparentBackgroundProfileAvatar(const base::FilePath& profile_path,
+                                           gfx::Image* image,
+                                           bool* is_rectangle) {
+  const ProfileInfoCache& cache =
+      g_browser_process->profile_manager()->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(profile_path);
+  if (index == std::string::npos) {
+    NOTREACHED();
+    return;
+  }
+
+  // If there is a Gaia image available, try to use that.
+  if (cache.IsUsingGAIAPictureOfProfileAtIndex(index)) {
+    const gfx::Image* gaia_image = cache.GetGAIAPictureOfProfileAtIndex(index);
+    if (gaia_image) {
+      *image = *gaia_image;
+      *is_rectangle = true;
+      return;
+    }
+  }
+
+  // Otherwise, use the default resource, not the downloaded high-res one.
+  const size_t icon_index = cache.GetAvatarIconIndexOfProfileAtIndex(index);
+  const int resource_id =
+      profiles::GetDefaultAvatarIconResourceIDAtIndex(icon_index);
+  *image = ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
+  *is_rectangle = false;
 }
 
 // Helper methods for accessing, transforming and drawing avatar icons.

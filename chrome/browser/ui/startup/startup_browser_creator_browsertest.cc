@@ -281,6 +281,28 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   ASSERT_EQ(1, new_browser->tab_strip_model()->count());
 }
 
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ActivateExistingBrowser) {
+  // Initially, there should only be one browser open.
+  ASSERT_TRUE(browser());
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+
+  // Add --activate-existing-profile-browser to the command line and
+  // start a new process.
+  CommandLine dummy(CommandLine::NO_PROGRAM);
+  dummy.AppendSwitch(switches::kActivateExistingProfileBrowser);
+
+  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
+      dummy, base::FilePath(), browser()->profile()->GetPath());
+
+  // This should not have created a new browser window, and should have
+  // activated the existing browser.
+  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
+                                        browser()->host_desktop_type()));
+}
+#endif
+
 // App shortcuts are not implemented on mac os.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutNoPref) {

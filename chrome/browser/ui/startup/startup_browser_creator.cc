@@ -87,6 +87,10 @@
 #include "chrome/browser/web_applications/web_app_mac.h"
 #endif
 
+#if defined(OS_WIN)
+#include "chrome/browser/metrics/jumplist_metrics_win.h"
+#endif
+
 #if defined(ENABLE_PRINT_PREVIEW)
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service.h"
 #include "chrome/browser/printing/cloud_print/cloud_print_proxy_service_factory.h"
@@ -626,6 +630,27 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     if (chrome::GetTotalBrowserCountForProfile(last_used_profile) != 0)
       return true;
   }
+
+#if defined(OS_WIN)
+  // Log whether this process was a result of an action in the Windows Jumplist.
+  if (command_line.HasSwitch(switches::kWinJumplistAction)) {
+    jumplist::LogJumplistActionFromSwitchValue(
+        command_line.GetSwitchValueASCII(switches::kWinJumplistAction));
+  }
+
+  // If the profile is loaded and the --activate-existing-profile-browser flag
+  // is used, activate one of the profile's browser windows, if one exists.
+  // Continuing to process the command line is not needed, since this will
+  // end up opening a new browser window.
+  if (command_line.HasSwitch(switches::kActivateExistingProfileBrowser)) {
+    Browser* browser = chrome::FindTabbedBrowser(
+        last_used_profile, false, chrome::HOST_DESKTOP_TYPE_NATIVE);
+    if (browser) {
+      browser->window()->Activate();
+      return true;
+    }
+  }
+#endif
 
   VLOG(2) << "ProcessCmdLineImpl: PLACE 5";
   chrome::startup::IsProcessStartup is_process_startup = process_startup ?

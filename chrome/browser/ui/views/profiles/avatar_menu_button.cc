@@ -110,9 +110,8 @@ void AvatarMenuButton::GetAvatarImages(Profile* profile,
 #if !defined(OS_CHROMEOS)
     bool is_badge_rectangle = false;
     // The taskbar badge should be the profile avatar, not the OTR avatar.
-    AvatarMenu::GetImageForMenuButton(profile,
-                                      taskbar_badge_avatar,
-                                      &is_badge_rectangle);
+    profiles::GetTransparentBackgroundProfileAvatar(
+        profile->GetPath(), taskbar_badge_avatar, &is_badge_rectangle);
 #endif
   } else if (AvatarMenu::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =
@@ -127,15 +126,15 @@ void AvatarMenuButton::GetAvatarImages(Profile* profile,
       // this function will only be called for badging the taskbar icon.  The
       // function can be renamed to something like GetAvatarImageForBadging()
       // and only needs to return the avatar from
-      // AvatarMenu::GetImageForMenuButton().
+      // profiles::GetTransparentBackgroundProfileAvatar.
 #if !defined(OS_CHROMEOS)
       bool is_badge_rectangle = false;
-      AvatarMenu::GetImageForMenuButton(profile,
-                                        taskbar_badge_avatar,
-                                        &is_badge_rectangle);
+      profiles::GetTransparentBackgroundProfileAvatar(
+          profile->GetPath(), taskbar_badge_avatar, &is_badge_rectangle);
 #endif
     } else {
-      AvatarMenu::GetImageForMenuButton(profile, avatar, is_rectangle);
+      profiles::GetTransparentBackgroundProfileAvatar(
+          profile->GetPath(), avatar, is_rectangle);
     }
   }
 }

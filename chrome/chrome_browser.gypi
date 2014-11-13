@@ -667,6 +667,8 @@
       'browser/metrics/field_trial_synchronizer.h',
       'browser/metrics/google_update_metrics_provider_win.cc',
       'browser/metrics/google_update_metrics_provider_win.h',
+      'browser/metrics/jumplist_metrics_win.cc',
+      'browser/metrics/jumplist_metrics_win.h',
       'browser/metrics/metrics_reporting_state.cc',
       'browser/metrics/metrics_reporting_state.h',
       'browser/metrics/metrics_service_accessor.cc',
@@ -2283,7 +2285,6 @@
     ],
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
-      'browser/profiles/avatar_menu_desktop.cc',
       'browser/profiles/avatar_menu_observer.h',
       'browser/profiles/avatar_menu_actions_desktop.cc',
       'browser/profiles/avatar_menu_actions_desktop.h',

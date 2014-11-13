@@ -40536,6 +40536,11 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <summary>Count of browser launches from a Windows tablet pc.</summary>
 </histogram>
 
+<histogram name="WinJumplist.Action" enum="WinJumplistCategory">
+  <owner>noms@chromium.org</owner>
+  <summary>The type of category clicked in the Windows Jumplist</summary>
+</histogram>
+
 <histogram name="WinTimeTicks.FailedToChangeCores" enum="WindowsVersion">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
@@ -56189,6 +56194,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Browser"/>
   <int value="2" label="Hosted App"/>
   <int value="3" label="Packaged App"/>
+</enum>
+
+<enum name="WinJumplistCategory" type="int">
+  <int value="0" label="Recently Closed"/>
+  <int value="1" label="Most Visited"/>
+  <int value="2" label="People"/>
 </enum>
 
 <enum name="XMLHttpRequestSendArrayBufferOrView" type="int">

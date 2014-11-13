@@ -21,6 +21,11 @@ namespace switches {
 // all work out.
 // -----------------------------------------------------------------------------
 
+// If set, Chrome will activate any existing browsers for a specific profile.
+// Used for example by the fast-user switcher in the Windows JumpList.
+const char kActivateExistingProfileBrowser[] =
+    "activate-existing-profile-browser";
+
 // Allows third-party content included on a page to prompt for a HTTP basic
 // auth username/password pair.
 const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
@@ -1230,6 +1235,10 @@ const char kWindowSize[]                    = "window-size";
 // Uses WinHTTP to fetch and evaluate PAC scripts. Otherwise the default is to
 // use Chromium's network stack to fetch, and V8 to evaluate.
 const char kWinHttpProxyResolver[]          = "winhttp-proxy-resolver";
+
+// Specifies which category option was clicked in the Windows Jumplist that
+// resulted in a browser startup.
+const char kWinJumplistAction[]             = "win-jumplist-action";
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 // Specifies a custom URL for fetching plug-ins metadata. Used for testing.

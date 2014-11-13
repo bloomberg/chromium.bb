@@ -8,17 +8,23 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/metrics/jumplist_metrics_win.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_info_cache.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -30,6 +36,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/page_usage_data.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -127,7 +134,9 @@ bool UpdateTaskCategory(
 bool UpdateJumpList(const wchar_t* app_id,
                     const ShellLinkItemList& most_visited_pages,
                     const ShellLinkItemList& recently_closed_pages,
-                    IncognitoModePrefs::Availability incognito_availability) {
+                    const ShellLinkItemList& profile_switcher,
+                    IncognitoModePrefs::Availability incognito_availability,
+                    bool use_profiles_category) {
   // JumpList is implemented only on Windows 7 or later.
   // So, we should return now when this function is called on earlier versions
   // of Windows.
@@ -138,29 +147,47 @@ bool UpdateJumpList(const wchar_t* app_id,
   if (!jumplist_updater.BeginUpdate())
     return false;
 
-  // We allocate 60% of the given JumpList slots to "most-visited" items
-  // and 40% to "recently-closed" items, respectively.
-  // Nevertheless, if there are not so many items in |recently_closed_pages|,
-  // we give the remaining slots to "most-visited" items.
-  const int kMostVisited = 60;
-  const int kRecentlyClosed = 40;
-  const int kTotal = kMostVisited + kRecentlyClosed;
-  size_t most_visited_items =
-      MulDiv(jumplist_updater.user_max_items(), kMostVisited, kTotal);
-  size_t recently_closed_items =
-      jumplist_updater.user_max_items() - most_visited_items;
-  if (recently_closed_pages.size() < recently_closed_items) {
-    most_visited_items += recently_closed_items - recently_closed_pages.size();
-    recently_closed_items = recently_closed_pages.size();
+  size_t recently_closed_items;
+  size_t profiles_or_most_visited_items;
+
+  // Depending on the experiment, we are either showing the "Most-Visited" or
+  // "People" categories.
+  if (use_profiles_category) {
+    // Show at most 8 profiles, and fill the rest of the slots with the
+    // "recently-closed" items.
+    const size_t kMaxProfiles = 8;
+    size_t max_displayed_items = std::min(kMaxProfiles,
+                                          jumplist_updater.user_max_items());
+    profiles_or_most_visited_items = std::min(max_displayed_items,
+                                              profile_switcher.size());
+    recently_closed_items =
+        jumplist_updater.user_max_items() - profiles_or_most_visited_items;
+  } else {
+    // We allocate 60% of the given JumpList slots to "most-visited" items
+    // and 40% to "recently-closed" items, respectively.
+    // Nevertheless, if there are not so many items in |recently_closed_pages|,
+    // we give the remaining slots to "most-visited" items.
+    const int kMostVisited = 60;
+    const int kRecentlyClosed = 40;
+    const int kTotal = kMostVisited + kRecentlyClosed;
+    profiles_or_most_visited_items =
+        MulDiv(jumplist_updater.user_max_items(), kMostVisited, kTotal);
+    recently_closed_items =
+        jumplist_updater.user_max_items() - profiles_or_most_visited_items;
+    if (recently_closed_pages.size() < recently_closed_items) {
+      profiles_or_most_visited_items +=
+          recently_closed_items - recently_closed_pages.size();
+      recently_closed_items = recently_closed_pages.size();
+    }
   }
 
-  // Update the "Most Visited" category of the JumpList.
+  // Update the "Most Visited" category of the JumpList if it exists.
   // This update request is applied into the JumpList when we commit this
   // transaction.
-  if (!jumplist_updater.AddCustomCategory(
+  if (!use_profiles_category && !jumplist_updater.AddCustomCategory(
           base::UTF16ToWide(
               l10n_util::GetStringUTF16(IDS_NEW_TAB_MOST_VISITED)),
-          most_visited_pages, most_visited_items)) {
+          most_visited_pages, profiles_or_most_visited_items)) {
     return false;
   }
 
@@ -169,6 +196,15 @@ bool UpdateJumpList(const wchar_t* app_id,
           base::UTF16ToWide(
               l10n_util::GetStringUTF16(IDS_NEW_TAB_RECENTLY_CLOSED)),
           recently_closed_pages, recently_closed_items)) {
+    return false;
+  }
+
+  // Update the "People" category of the JumpList if it exists. Only display it
+  // if there's more than one profile available.
+  if (use_profiles_category && profile_switcher.size() > 1 &&
+      !jumplist_updater.AddCustomCategory(
+          l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME),
+          profile_switcher, profiles_or_most_visited_items)) {
     return false;
   }
 
@@ -183,12 +219,21 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
+// Checks whether the experiment that replaces the Most Visited category
+// with a Profiles list exists.
+bool HasProfilesJumplistExperiment() {
+  const std::string group_name =
+      base::FieldTrialList::FindFullName("WindowsJumplistProfiles");
+  return group_name == "UseProfiles";
+}
+
 }  // namespace
 
 JumpList::JumpList(Profile* profile)
     : profile_(profile),
       task_id_(base::CancelableTaskTracker::kBadTaskId),
-      weak_ptr_factory_(this) {
+      weak_ptr_factory_(this),
+      use_profiles_category_(false) {
   DCHECK(Enabled());
   // To update JumpList when a tab is added or removed, we add this object to
   // the observer list of the TabRestoreService class.
@@ -202,6 +247,8 @@ JumpList::JumpList(Profile* profile)
 
   app_id_ = ShellIntegration::GetChromiumModelIdForProfile(profile_->GetPath());
   icon_dir_ = profile_->GetPath().Append(chrome::kJumpListIconDirname);
+  use_profiles_category_ = HasProfilesJumplistExperiment();
+
   history::TopSites* top_sites = profile_->GetTopSites();
   if (top_sites) {
     // TopSites updates itself after a delay. This is especially noticable when
@@ -224,6 +271,12 @@ JumpList::JumpList(Profile* profile)
   pref_change_registrar_->Add(
       prefs::kIncognitoModeAvailability,
       base::Bind(&JumpList::OnIncognitoAvailabilityChanged, this));
+
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  avatar_menu_.reset(new AvatarMenu(
+      &profile_manager->GetProfileInfoCache(), this, NULL));
+  avatar_menu_->RebuildMenu();
+  UpdateProfileSwitcher();
 }
 
 JumpList::~JumpList() {
@@ -281,7 +334,6 @@ void JumpList::Terminate() {
 
 void JumpList::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& data) {
-
   // If we have a pending favicon request, cancel it here (it is out of date).
   CancelPendingUpdate();
 
@@ -294,6 +346,8 @@ void JumpList::OnMostVisitedURLsAvailable(
       std::string url_string = url.url.spec();
       std::wstring url_string_wide = base::UTF8ToWide(url_string);
       link->GetCommandLine()->AppendArgNative(url_string_wide);
+      link->GetCommandLine()->AppendSwitchASCII(
+          switches::kWinJumplistAction, jumplist::kMostVisitedCategory);
       link->set_title(!url.title.empty()? url.title : url_string_wide);
       most_visited_pages_.push_back(link);
       icon_urls_.push_back(make_pair(url_string, link));
@@ -350,6 +404,11 @@ void JumpList::TabRestoreServiceChanged(TabRestoreService* service) {
 void JumpList::TabRestoreServiceDestroyed(TabRestoreService* service) {
 }
 
+void JumpList::OnAvatarMenuChanged(AvatarMenu* avatar_menu) {
+  UpdateProfileSwitcher();
+  PostRunUpdate();
+}
+
 bool JumpList::AddTab(const TabRestoreService::Tab* tab,
                       ShellLinkItemList* list,
                       size_t max_items) {
@@ -363,6 +422,8 @@ bool JumpList::AddTab(const TabRestoreService::Tab* tab,
       tab->navigations.at(tab->current_navigation_index);
   std::string url = current_navigation.virtual_url().spec();
   link->GetCommandLine()->AppendArgNative(base::UTF8ToWide(url));
+  link->GetCommandLine()->AppendSwitchASCII(
+      switches::kWinJumplistAction, jumplist::kRecentlyClosedCategory);
   link->set_title(current_navigation.title());
   list->push_back(link);
   icon_urls_.push_back(make_pair(url, link));
@@ -397,7 +458,7 @@ void JumpList::StartLoadingFavicon() {
 
   if (!waiting_for_icons) {
     // No more favicons are needed by the application JumpList. Schedule a
-    // RunUpdate call.
+    // RunUpdateOnFileThread call.
     PostRunUpdate();
     return;
   }
@@ -415,11 +476,11 @@ void JumpList::OnFaviconDataAvailable(
   // If there is currently a favicon request in progress, it is now outdated,
   // as we have received another, so nullify the handle from the old request.
   task_id_ = base::CancelableTaskTracker::kBadTaskId;
-  // lock the list to set icon data and pop the url
+  // Lock the list to set icon data and pop the url.
   {
     base::AutoLock auto_lock(list_lock_);
     // Attach the received data to the ShellLinkItem object.
-    // This data will be decoded by the RunUpdate method.
+    // This data will be decoded by the RunUpdateOnFileThread method.
     if (!image_result.image.IsEmpty()) {
       if (!icon_urls_.empty() && icon_urls_.front().second.get())
         icon_urls_.front().second->set_icon_data(image_result.image.AsBitmap());
@@ -452,13 +513,16 @@ void JumpList::PostRunUpdate() {
 
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&JumpList::RunUpdate, this, incognito_availability));
+      base::Bind(&JumpList::RunUpdateOnFileThread,
+                 this,
+                 incognito_availability));
 }
 
-void JumpList::RunUpdate(
+void JumpList::RunUpdateOnFileThread(
     IncognitoModePrefs::Availability incognito_availability) {
   ShellLinkItemList local_most_visited_pages;
   ShellLinkItemList local_recently_closed_pages;
+  ShellLinkItemList local_profile_switcher;
 
   {
     base::AutoLock auto_lock(list_lock_);
@@ -470,6 +534,7 @@ void JumpList::RunUpdate(
     // Make local copies of lists so we can release the lock.
     local_most_visited_pages = most_visited_pages_;
     local_recently_closed_pages = recently_closed_pages_;
+    local_profile_switcher = profile_switcher_;
   }
 
   // Delete the directory which contains old icon files, rename the current
@@ -488,11 +553,19 @@ void JumpList::RunUpdate(
   // category.
   CreateIconFiles(local_recently_closed_pages);
 
+  // Create temporary icon files for the profile avatars in the "People"
+  // category.
+  CreateIconFiles(local_profile_switcher);
+
   // We finished collecting all resources needed for updating an application
   // JumpList. So, create a new JumpList and replace the current JumpList
   // with it.
-  UpdateJumpList(app_id_.c_str(), local_most_visited_pages,
-                 local_recently_closed_pages, incognito_availability);
+  UpdateJumpList(app_id_.c_str(),
+                 local_most_visited_pages,
+                 local_recently_closed_pages,
+                 local_profile_switcher,
+                 incognito_availability,
+                 use_profiles_category_);
 }
 
 void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
@@ -501,5 +574,37 @@ void JumpList::CreateIconFiles(const ShellLinkItemList& item_list) {
     base::FilePath icon_path;
     if (CreateIconFile((*item)->icon_data(), icon_dir_, &icon_path))
       (*item)->set_icon(icon_path.value(), 0);
+  }
+}
+
+void JumpList::UpdateProfileSwitcher() {
+  ShellLinkItemList new_profile_switcher;
+
+  // Don't display a menu in the single profile case.
+  if (avatar_menu_->GetNumberOfItems() > 1) {
+    for (size_t i = 0; i < avatar_menu_->GetNumberOfItems(); ++i) {
+      scoped_refptr<ShellLinkItem> link = CreateShellLink();
+      const AvatarMenu::Item& item = avatar_menu_->GetItemAt(i);
+
+      link->set_title(item.name);
+      link->GetCommandLine()->AppendSwitchPath(
+          switches::kProfileDirectory, item.profile_path.BaseName());
+      link->GetCommandLine()->AppendSwitch(
+          switches::kActivateExistingProfileBrowser);
+      link->GetCommandLine()->AppendSwitchASCII(
+          switches::kWinJumplistAction, jumplist::kProfilesCategory);
+
+      gfx::Image avatar;
+      bool is_rectangle;
+      profiles::GetTransparentBackgroundProfileAvatar(
+          item.profile_path, &avatar, &is_rectangle);
+      link->set_icon_data(avatar.AsBitmap());
+      new_profile_switcher.push_back(link);
+    }
+  }
+
+  {
+    base::AutoLock auto_lock(list_lock_);
+    new_profile_switcher.swap(profile_switcher_);
   }
 }
