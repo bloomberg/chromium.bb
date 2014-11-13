@@ -117,6 +117,7 @@ ScrollTopLeftInterop status=experimental
 ShowModalDialog status=deprecated
 ServiceWorker status=stable
 ServiceWorkerCache status=stable
+ServiceWorkerNotifications status=experimental
 ServiceWorkerOnFetch status=stable
 SessionStorage status=stable
 SharedWorker status=stable
