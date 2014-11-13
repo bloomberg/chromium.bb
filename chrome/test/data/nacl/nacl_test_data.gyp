@@ -37,11 +37,19 @@
       },
       'conditions': [
         ['target_arch=="ia32" and OS=="linux"', {
-          # Enable nonsfi testing only on ia32-linux environment.
+          # Enable nonsfi testing on ia32-linux environment.
           # This flag causes test_files to be copied into nonsfi directory,
           # too.
           'variables': {
             'enable_x86_32_nonsfi': 1,
+          },
+        }],
+        ['target_arch=="arm" and OS=="linux"', {
+          # Enable nonsfi testing on arm-linux environment.
+          # This flag causes test_files to be copied into nonsfi directory,
+          # too.
+          'variables': {
+            'enable_arm_nonsfi': 1,
           },
         }],
       ],
@@ -549,19 +557,27 @@
         'nacl_ppapi_util',
       ],
       'conditions': [
+        # These are needed to build a non-SFI nexe binary.
+        # Note that these trigger building nexe files for other
+        # architectures, such as x86-32 (based on enable_XXX variables).
+        # As described above, although the tests for pnacl are currently
+        # disabled, but building the binary should work.
+        # We cannot disable building, as enable_XXX variables are also used
+        # to build newlib linked nexes.
         ['target_arch=="ia32" and OS=="linux"', {
-          # Enable nonsfi testing only on ia32-linux environment.
+          # Enable nonsfi testing on ia32-linux environment.
           'variables': {
-            # This is needed to build a non-SFI nexe binary.
-            # Note that this triggers building nexe files for other
-            # architectures, such as x86-32 (based on enable_XXX variables).
-            # As described above, although the tests for pnacl are currently
-            # disabled, but building the binary should work.
-            # We cannot disable building, as enable_XXX variables are also used
-            # to build newlib linked nexes.
             'build_pnacl_newlib': 1,
             'translate_pexe_with_build': 1,
             'enable_x86_32_nonsfi': 1,
+          },
+        }],
+        ['target_arch=="arm" and OS=="linux"', {
+          # Enable nonsfi testing on arm-linux environment.
+          'variables': {
+            'build_pnacl_newlib': 1,
+            'translate_pexe_with_build': 1,
+            'enable_arm_nonsfi': 1,
           },
         }],
       ],
@@ -603,9 +619,16 @@
       ],
       'conditions': [
         ['target_arch=="ia32" and OS=="linux"', {
-          # Enable nonsfi testing only on ia32-linux environment.
+          # Enable nonsfi testing on ia32-linux environment.
           'variables': {
             'enable_x86_32_nonsfi': 1,
+            'translate_pexe_with_build': 1,
+          },
+        }],
+        ['target_arch=="arm" and OS=="linux"', {
+          # Enable nonsfi testing on arm-linux environment.
+          'variables': {
+            'enable_arm_nonsfi': 1,
             'translate_pexe_with_build': 1,
           },
         }],

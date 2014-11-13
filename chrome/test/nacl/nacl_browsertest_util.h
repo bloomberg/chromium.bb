@@ -182,8 +182,8 @@ class NaClBrowserTestGLibcExtension : public NaClBrowserTestGLibc {
 #endif
 
 // Currently, translation from pexe to non-sfi nexe is supported only for
-// x86-32 binary.
-#if defined(OS_LINUX) && defined(ARCH_CPU_X86)
+// x86-32 or ARM binary.
+#if defined(OS_LINUX) && (defined(ARCH_CPU_X86) || defined(ARCH_CPU_ARMEL))
 #  define MAYBE_PNACL_NONSFI(test_case) test_case
 #else
 #  define MAYBE_PNACL_NONSFI(test_case) DISABLED_##test_case

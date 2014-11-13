@@ -235,14 +235,26 @@
             },
           ],
         }],
-        ['disable_pnacl==0 and target_arch=="ia32" and OS=="linux"', {
-          # In addition to above configuration, build x86-32-nonsfi .nexe file
-          # by translating from .pexe binary, for non-SFI mode PPAPI testing.
+        ['disable_pnacl==0 and (target_arch=="ia32" or target_arch=="arm") and OS=="linux"', {
+          # In addition to above configuration, build x86-32 and arm nonsfi
+          # .nexe files by translating from .pexe binary, for non-SFI mode PPAPI
+          # testing.
           'variables': {
-            'enable_x86_32_nonsfi': 1,
             'translate_pexe_with_build': 1,
             'nmf_nonsfi%': '<(PRODUCT_DIR)/>(nexe_target)_pnacl_nonsfi.nmf',
           },
+          'conditions': [
+            ['target_arch=="ia32"', {
+              'variables': {
+                'enable_x86_32_nonsfi': 1,
+              },
+            }],
+            ['target_arch=="arm"', {
+              'variables': {
+                'enable_arm_nonsfi': 1,
+              },
+            }],
+          ],
           # Shim is a dependency for the nexe because we pre-translate.
          'dependencies': [
             '<(DEPTH)/ppapi/native_client/src/untrusted/pnacl_irt_shim/pnacl_irt_shim.gyp:aot',
@@ -256,7 +268,20 @@
                 'python',
                 '>(create_nonsfi_test_nmf)',
                 '--output=>(nmf_nonsfi)',
-                '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+              ],
+              'target_conditions': [
+                ['enable_x86_32_nonsfi==1', {
+                  'action': [
+                    '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                    '--arch=x86-32',
+                  ],
+                }],
+                ['enable_arm_nonsfi==1', {
+                  'action': [
+                    '--program=>(out_pnacl_newlib_arm_nonsfi_nexe)',
+                    '--arch=arm',
+                  ],
+                }],
               ],
             },
           ],

@@ -106,7 +106,8 @@
         ],
       },
     }],
-    ['disable_nacl==0 and OS=="linux" and target_arch=="ia32"', {
+    [('disable_nacl==0 and OS=="linux" and '
+      '(target_arch=="ia32" or target_arch=="arm")'), {
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_nonsfi.nmf',
@@ -118,6 +119,7 @@
         'files': [
           '<(PRODUCT_DIR)/ppapi_nacl_tests_newlib_arm.nexe',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_arm.nexe',
+          '<(PRODUCT_DIR)/ppapi_nacl_tests_pnacl_newlib_arm_nonsfi.nexe',
         ],
       },
     }],

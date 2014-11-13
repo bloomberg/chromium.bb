@@ -25,6 +25,8 @@
         # variable, as it is no longer used.
         'out_pnacl_newlib_x86_32_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi/>(nlib_target)',
         'out_newlib32_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-x86-32-nonsfi/>(nlib_target)',
+        'out_pnacl_newlib_arm_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi/>(nlib_target)',
+        'out_newlib_arm_nonsfi': '>(tc_lib_dir_pnacl_translate)/lib-arm-nonsfi/>(nlib_target)',
         'build_glibc': 0,
         'build_newlib': 0,
         'build_pnacl_newlib': 1,
@@ -34,6 +36,7 @@
         'enable_arm': 1,
         'enable_mips': 1,
         'enable_x86_32_nonsfi': 1,
+        'enable_arm_nonsfi': 1,
         'sources': [
           'irt_shim_ppapi.c',
           'pnacl_shim.c',

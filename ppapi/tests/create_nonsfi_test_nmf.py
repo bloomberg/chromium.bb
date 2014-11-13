@@ -19,18 +19,20 @@ import collections
 import json
 import logging
 import os
+import sys
 
 _FILES_KEY = 'files'
 _PORTABLE_KEY = 'portable'
 _PROGRAM_KEY = 'program'
 _URL_KEY = 'url'
-_X86_32_NONSFI_KEY = 'x86-32-nonsfi'
-
 
 def ParseArgs():
   parser = argparse.ArgumentParser()
   parser.add_argument(
       '--program', metavar='FILE', help='Main program nexe')
+  parser.add_argument(
+      '--arch', metavar='ARCH', choices=('x86-32', 'arm'),
+      help='The archtecture of main program nexe')
   # To keep compatibility with create_nmf.py, we use -x and --extra-files
   # as flags.
   parser.add_argument(
@@ -43,14 +45,15 @@ def ParseArgs():
   return parser.parse_args()
 
 
-def BuildNmfMap(root_path, program, extra_files):
+def BuildNmfMap(root_path, program, arch, extra_files):
   """Build simple map representing nmf json."""
+  nonsfi_key = arch + '-nonsfi'
   result = {
     _PROGRAM_KEY: {
-      _X86_32_NONSFI_KEY: {
+      nonsfi_key: {
         # The program path is relative to the root_path.
         _URL_KEY: os.path.relpath(program, root_path)
-      }
+      },
     }
   }
 
@@ -81,12 +84,15 @@ def main():
   if not args.program:
     logging.error('--program is not specified.')
     sys.exit(1)
+  if not args.arch:
+    logging.error('--arch is not specified.')
+    sys.exit(1)
   if not args.output:
     logging.error('--output is not specified.')
     sys.exit(1)
 
   nmf_map = BuildNmfMap(os.path.dirname(args.output),
-                        args.program, args.extra_files)
+                        args.program, args.arch, args.extra_files)
   OutputNmf(nmf_map, args.output)
 
 

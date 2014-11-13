@@ -35,6 +35,7 @@
           'out_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target)_newlib_pnacl.pexe',
           'nmf_pnacl_newlib%': '>(nacl_pnacl_newlib_out_dir)/>(nexe_target).nmf',
           'out_pnacl_newlib_x86_32_nonsfi_nexe': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target)_pnacl_newlib_x32_nonsfi.nexe',
+          'out_pnacl_newlib_arm_nonsfi_nexe': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target)_pnacl_newlib_arm_nonsfi.nexe',
           'nmf_pnacl_newlib_nonsfi%': '>(nacl_pnacl_newlib_nonsfi_out_dir)/>(nexe_target).nmf',
         }],
       ],
@@ -77,7 +78,7 @@
           },
         ],
       }],
-      ['test_files!=[] and build_pnacl_newlib==1 and enable_x86_32_nonsfi==1', {
+      ['test_files!=[] and build_pnacl_newlib==1 and (enable_x86_32_nonsfi==1 or enable_arm_nonsfi==1)', {
         'copies': [
           {
             'destination': '>(nacl_pnacl_newlib_nonsfi_out_dir)',
@@ -209,22 +210,33 @@
               },
             ],
           }],
-          ['generate_nmf==1 and build_pnacl_newlib==1 and disable_pnacl==0 and enable_x86_32_nonsfi==1', {
+          ['generate_nmf==1 and build_pnacl_newlib==1 and disable_pnacl==0 and (enable_x86_32_nonsfi==1 or enable_arm_nonsfi==1)', {
             'actions': [
               {
                 'action_name': 'Generate PNACL NEWLIB nonsfi NMF',
-                # If we add support for ARM, we should split the dependency on
-                # out_pnacl_newlib_x86_32_nonsfi_nexe to 'target_conditions',
-                # similar to build_newlib=1 config declared above.
-                'inputs': ['>(create_nonsfi_test_nmf)',
-                           '>(out_pnacl_newlib_x86_32_nonsfi_nexe)'],
+                'inputs': ['>(create_nonsfi_test_nmf)'],
                 'outputs': ['>(nmf_pnacl_newlib_nonsfi)'],
                 'action': [
                   'python',
                   '>(create_nonsfi_test_nmf)',
+                  '>@(create_nmf_args_portable)',
                   '--output=>(nmf_pnacl_newlib_nonsfi)',
-                  '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
-                  '>@(create_nmf_args_portable)'
+                ],
+                'target_conditions': [
+                  ['enable_x86_32_nonsfi==1', {
+                    'inputs': ['>(out_pnacl_newlib_x86_32_nonsfi_nexe)'],
+                    'action': [
+                      '--program=>(out_pnacl_newlib_x86_32_nonsfi_nexe)',
+                      '--arch=x86-32',
+                    ]
+                  }],
+                  ['enable_arm_nonsfi==1', {
+                    'inputs': ['>(out_pnacl_newlib_arm_nonsfi_nexe)'],
+                    'action': [
+                      '--program=>(out_pnacl_newlib_arm_nonsfi_nexe)',
+                      '--arch=arm',
+                    ]
+                  }],
                 ],
               },
             ],
