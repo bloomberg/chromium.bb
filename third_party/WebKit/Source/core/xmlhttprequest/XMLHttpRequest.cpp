@@ -383,7 +383,7 @@ ReadableStream* XMLHttpRequest::responseStream()
     return m_responseStream;
 }
 
-void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& exceptionState)
+void XMLHttpRequest::setTimeout(unsigned timeout, ExceptionState& exceptionState)
 {
     // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
     // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."

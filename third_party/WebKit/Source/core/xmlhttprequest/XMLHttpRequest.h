@@ -134,8 +134,8 @@ public:
     DOMArrayBuffer* responseArrayBuffer();
     Stream* responseLegacyStream();
     ReadableStream* responseStream();
-    unsigned long timeout() const { return m_timeoutMilliseconds; }
-    void setTimeout(unsigned long timeout, ExceptionState&);
+    unsigned timeout() const { return m_timeoutMilliseconds; }
+    void setTimeout(unsigned timeout, ExceptionState&);
     ResponseTypeCode responseTypeCode() const { return m_responseTypeCode; }
     String responseType();
     void setResponseType(const String&, ExceptionState&);
