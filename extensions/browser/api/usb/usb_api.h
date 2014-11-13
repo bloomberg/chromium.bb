@@ -21,7 +21,9 @@
 
 namespace extensions {
 
+class DevicePermissionEntry;
 class DevicePermissions;
+class DevicePermissionsManager;
 class UsbDeviceResource;
 
 class UsbAsyncApiFunction : public AsyncApiFunction {
@@ -31,21 +33,19 @@ class UsbAsyncApiFunction : public AsyncApiFunction {
  protected:
   ~UsbAsyncApiFunction() override;
 
+  // AsyncApiFunction:
   bool PrePrepare() override;
   bool Respond() override;
 
   bool HasDevicePermission(scoped_refptr<device::UsbDevice> device);
-  scoped_refptr<device::UsbDevice> GetDeviceOrCompleteWithError(
-      const extensions::core_api::usb::Device& input_device);
   scoped_refptr<device::UsbDeviceHandle> GetDeviceHandleOrCompleteWithError(
       const extensions::core_api::usb::ConnectionHandle& input_device_handle);
-
   void RemoveUsbDeviceResource(int api_resource_id);
-
   void CompleteWithError(const std::string& error);
 
   ApiResourceManager<UsbDeviceResource>* manager_;
   scoped_ptr<DevicePermissions> device_permissions_;
+  scoped_refptr<DevicePermissionEntry> permission_entry_;
 };
 
 class UsbAsyncApiTransferFunction : public UsbAsyncApiFunction {
@@ -76,6 +76,7 @@ class UsbFindDevicesFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbFindDevicesFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -93,6 +94,7 @@ class UsbGetDevicesFunction : public UsbAsyncApiFunction {
 
   UsbGetDevicesFunction();
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -114,6 +116,8 @@ class UsbGetUserSelectedDevicesFunction
 
  protected:
   ~UsbGetUserSelectedDevicesFunction() override;
+
+  // ExtensionFunction:
   ResponseAction Run() override;
 
  private:
@@ -132,6 +136,7 @@ class UsbRequestAccessFunction : public UsbAsyncApiFunction {
 
   UsbRequestAccessFunction();
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -148,8 +153,10 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
 
   UsbOpenDeviceFunction();
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
+  bool Respond() override;
 
  protected:
   ~UsbOpenDeviceFunction() override;
@@ -157,6 +164,7 @@ class UsbOpenDeviceFunction : public UsbAsyncApiFunction {
  private:
   void OnRequestAccessComplete(bool success);
 
+  DevicePermissionsManager* device_permissions_manager_;
   scoped_refptr<device::UsbDevice> device_;
   scoped_ptr<extensions::core_api::usb::OpenDevice::Params> parameters_;
 };
@@ -170,6 +178,7 @@ class UsbGetConfigurationFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbGetConfigurationFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -186,6 +195,7 @@ class UsbListInterfacesFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbListInterfacesFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -202,6 +212,7 @@ class UsbCloseDeviceFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbCloseDeviceFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -218,6 +229,7 @@ class UsbClaimInterfaceFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbClaimInterfaceFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -234,6 +246,7 @@ class UsbReleaseInterfaceFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbReleaseInterfaceFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -251,6 +264,7 @@ class UsbSetInterfaceAlternateSettingFunction : public UsbAsyncApiFunction {
  private:
   ~UsbSetInterfaceAlternateSettingFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -267,6 +281,7 @@ class UsbControlTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   ~UsbControlTransferFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -283,6 +298,7 @@ class UsbBulkTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   ~UsbBulkTransferFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -299,6 +315,7 @@ class UsbInterruptTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   ~UsbInterruptTransferFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -315,6 +332,7 @@ class UsbIsochronousTransferFunction : public UsbAsyncApiTransferFunction {
  protected:
   ~UsbIsochronousTransferFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 
@@ -332,6 +350,7 @@ class UsbResetDeviceFunction : public UsbAsyncApiFunction {
  protected:
   ~UsbResetDeviceFunction() override;
 
+  // AsyncApiFunction:
   bool Prepare() override;
   void AsyncWorkStart() override;
 

@@ -463,6 +463,15 @@ bool UsbAsyncApiFunction::Respond() {
 }
 
 bool UsbAsyncApiFunction::HasDevicePermission(scoped_refptr<UsbDevice> device) {
+  DCHECK(device_permissions_);
+
+  // Check the DevicePermissionsManager first so that if an entry is found
+  // it can be stored for later.
+  permission_entry_ = device_permissions_->FindEntry(device);
+  if (permission_entry_.get()) {
+    return true;
+  }
+
   UsbDevicePermission::CheckParam param(
       device->vendor_id(),
       device->product_id(),
@@ -472,35 +481,7 @@ bool UsbAsyncApiFunction::HasDevicePermission(scoped_refptr<UsbDevice> device) {
     return true;
   }
 
-  if (device_permissions_.get()) {
-    return device_permissions_->CheckUsbDevice(device);
-  }
-
   return false;
-}
-
-scoped_refptr<UsbDevice> UsbAsyncApiFunction::GetDeviceOrCompleteWithError(
-    const Device& input_device) {
-  UsbService* service = device::DeviceClient::Get()->GetUsbService();
-  if (!service) {
-    CompleteWithError(kErrorInitService);
-    return NULL;
-  }
-
-  scoped_refptr<UsbDevice> device = service->GetDeviceById(input_device.device);
-  if (!device.get()) {
-    CompleteWithError(kErrorNoDevice);
-    return NULL;
-  }
-
-  if (!HasDevicePermission(device)) {
-    // Must act as if there is no such a device.
-    // Otherwise can be used to finger print unauthorized devices.
-    CompleteWithError(kErrorNoDevice);
-    return NULL;
-  }
-
-  return device;
 }
 
 scoped_refptr<UsbDeviceHandle>
@@ -791,14 +772,30 @@ UsbOpenDeviceFunction::~UsbOpenDeviceFunction() {
 bool UsbOpenDeviceFunction::Prepare() {
   parameters_ = OpenDevice::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(parameters_.get());
-  device_permissions_ = DevicePermissionsManager::Get(browser_context())
-                            ->GetForExtension(extension()->id());
+  device_permissions_manager_ =
+      DevicePermissionsManager::Get(browser_context());
+  device_permissions_ =
+      device_permissions_manager_->GetForExtension(extension()->id());
   return true;
 }
 
 void UsbOpenDeviceFunction::AsyncWorkStart() {
-  device_ = GetDeviceOrCompleteWithError(parameters_->device);
+  UsbService* service = device::DeviceClient::Get()->GetUsbService();
+  if (!service) {
+    CompleteWithError(kErrorInitService);
+    return;
+  }
+
+  device_ = service->GetDeviceById(parameters_->device.device);
   if (!device_.get()) {
+    CompleteWithError(kErrorNoDevice);
+    return;
+  }
+
+  if (!HasDevicePermission(device_)) {
+    // This function must act as if there is no such device. Otherwise it can be
+    // used to fingerprint unauthorized devices.
+    CompleteWithError(kErrorNoDevice);
     return;
   }
 
@@ -829,6 +826,14 @@ void UsbOpenDeviceFunction::OnRequestAccessComplete(bool success) {
       manager_->Add(new UsbDeviceResource(extension_->id(), handle)),
       device_->vendor_id(), device_->product_id()));
   AsyncWorkCompleted();
+}
+
+bool UsbOpenDeviceFunction::Respond() {
+  if (permission_entry_.get()) {
+    device_permissions_manager_->UpdateLastUsed(extension_->id(),
+                                                permission_entry_);
+  }
+  return UsbAsyncApiFunction::Respond();
 }
 
 UsbGetConfigurationFunction::UsbGetConfigurationFunction() {
