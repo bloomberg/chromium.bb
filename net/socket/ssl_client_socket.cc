@@ -37,10 +37,13 @@ NextProto SSLClientSocket::NextProtoFromString(
     return kProtoSPDY3;
   } else if (proto_string == "spdy/3.1") {
     return kProtoSPDY31;
+  } else if (proto_string == "h2-14") {
+    // For internal consistency, HTTP/2 is named SPDY4 within Chromium.
+    // This is the HTTP/2 draft-14 identifier.
+    return kProtoSPDY4_14;
   } else if (proto_string == "h2-15") {
-    // This is the HTTP/2 draft-15 identifier. For internal
-    // consistency, HTTP/2 is named SPDY4 within Chromium.
-    return kProtoSPDY4;
+    // This is the HTTP/2 draft-15 identifier.
+    return kProtoSPDY4_15;
   } else if (proto_string == "quic/1+spdy/3") {
     return kProtoQUIC1SPDY3;
   } else {
@@ -59,9 +62,12 @@ const char* SSLClientSocket::NextProtoToString(NextProto next_proto) {
       return "spdy/3";
     case kProtoSPDY31:
       return "spdy/3.1";
-    case kProtoSPDY4:
-      // This is the HTTP/2 draft-15 identifier. For internal
-      // consistency, HTTP/2 is named SPDY4 within Chromium.
+    case kProtoSPDY4_14:
+      // For internal consistency, HTTP/2 is named SPDY4 within Chromium.
+      // This is the HTTP/2 draft-14 identifier.
+      return "h2-14";
+    case kProtoSPDY4_15:
+      // This is the HTTP/2 draft-15 identifier.
       return "h2-15";
     case kProtoQUIC1SPDY3:
       return "quic/1+spdy/3";

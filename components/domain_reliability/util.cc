@@ -108,7 +108,8 @@ std::string GetDomainReliabilityProtocol(
       return ssl_info_populated ? "HTTPS" : "HTTP";
     case net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2:
     case net::HttpResponseInfo::CONNECTION_INFO_SPDY3:
-    case net::HttpResponseInfo::CONNECTION_INFO_SPDY4:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2_14:
+    case net::HttpResponseInfo::CONNECTION_INFO_HTTP2_15:
       return "SPDY";
     case net::HttpResponseInfo::CONNECTION_INFO_QUIC1_SPDY3:
       return "QUIC";

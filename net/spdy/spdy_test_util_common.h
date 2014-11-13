@@ -552,7 +552,9 @@ class SpdyTestUtil {
   NextProto protocol() const { return protocol_; }
   SpdyMajorVersion spdy_version() const { return spdy_version_; }
   bool is_spdy2() const { return protocol_ < kProtoSPDY3; }
-  bool include_version_header() const { return protocol_ < kProtoSPDY4; }
+  bool include_version_header() const {
+    return protocol_ < kProtoSPDY4MinimumVersion;
+  }
   scoped_ptr<SpdyFramer> CreateFramer(bool compressed) const;
 
   const char* GetMethodKey() const;

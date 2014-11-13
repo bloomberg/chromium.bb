@@ -351,9 +351,12 @@ INSTANTIATE_TEST_CASE_P(
         HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY31),
         HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY31),
         HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY31),
-        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY4),
-        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY4),
-        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY4)));
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY4_14),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY4_14),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY4_14),
+        HttpProxyClientSocketPoolTestParams(HTTP, kProtoSPDY4_15),
+        HttpProxyClientSocketPoolTestParams(HTTPS, kProtoSPDY4_15),
+        HttpProxyClientSocketPoolTestParams(SPDY, kProtoSPDY4_15)));
 
 TEST_P(HttpProxyClientSocketPoolTest, NoTunnel) {
   Initialize(NULL, 0, NULL, 0, NULL, 0, NULL, 0);

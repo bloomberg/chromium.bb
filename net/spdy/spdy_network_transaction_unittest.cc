@@ -726,9 +726,12 @@ INSTANTIATE_TEST_CASE_P(
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNOSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYSSL),
         SpdyNetworkTransactionTestParams(kProtoSPDY31, SPDYNPN),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNOSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYSSL),
-        SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNOSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNPN),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNOSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYSSL),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNPN)));
 
 // Verify HttpNetworkTransaction constructor.
 TEST_P(SpdyNetworkTransactionTest, Constructor) {
@@ -3576,7 +3579,7 @@ TEST_P(SpdyNetworkTransactionTest, CorruptFrameSessionErrorSpdy4) {
 }
 
 TEST_P(SpdyNetworkTransactionTest, GoAwayOnDecompressionFailure) {
-  if (GetParam().protocol < kProtoSPDY4) {
+  if (GetParam().protocol < kProtoSPDY4MinimumVersion) {
     // Decompression failures are a stream error in SPDY3 and above.
     return;
   }
@@ -4433,7 +4436,8 @@ TEST_P(SpdyNetworkTransactionTest, SettingsPlayback) {
       spdy_util_.ConstructSpdyGet(NULL, 0, false, 1, LOWEST, true));
 
   std::vector<MockWrite> writes;
-  if (GetParam().protocol == kProtoSPDY4) {
+  if ((GetParam().protocol >= kProtoSPDY4MinimumVersion) &&
+      (GetParam().protocol <= kProtoSPDY4MaximumVersion)) {
     writes.push_back(
         MockWrite(ASYNC,
                   kHttp2ConnectionHeaderPrefix,
@@ -6599,7 +6603,9 @@ class SpdyNetworkTransactionTLSUsageCheckTest
 INSTANTIATE_TEST_CASE_P(
     Spdy,
     SpdyNetworkTransactionTLSUsageCheckTest,
-    ::testing::Values(SpdyNetworkTransactionTestParams(kProtoSPDY4, SPDYNPN)));
+    ::testing::Values(
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_14, SPDYNPN),
+        SpdyNetworkTransactionTestParams(kProtoSPDY4_15, SPDYNPN)));
 
 TEST_P(SpdyNetworkTransactionTLSUsageCheckTest, TLSVersionTooOld) {
   scoped_ptr<SSLSocketDataProvider> ssl_provider(
