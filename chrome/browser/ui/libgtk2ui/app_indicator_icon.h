@@ -14,6 +14,8 @@
 typedef struct _AppIndicator AppIndicator;
 typedef struct _GtkWidget GtkWidget;
 
+class SkBitmap;
+
 namespace gfx {
 class ImageSkia;
 }
@@ -45,7 +47,31 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   void RefreshPlatformContextMenu() override;
 
  private:
-  void SetImageFromFile(const base::FilePath& icon_file_path);
+  struct SetImageFromFileParams {
+    // The temporary directory in which the icon(s) were written.
+    base::FilePath parent_temp_dir;
+
+    // The icon theme path to pass to libappindicator.
+    std::string icon_theme_path;
+
+    // The icon name to pass to libappindicator.
+    std::string icon_name;
+  };
+
+  // Writes |bitmap| to a temporary directory on a worker thread. The temporary
+  // directory is selected based on KDE's quirks.
+  static SetImageFromFileParams WriteKDE4TempImageOnWorkerThread(
+      const SkBitmap& bitmap,
+      const base::FilePath& existing_temp_dir);
+
+  // Writes |bitmap| to a temporary directory on a worker thread. The temporary
+  // directory is selected based on Unity's quirks.
+  static SetImageFromFileParams WriteUnityTempImageOnWorkerThread(
+      const SkBitmap& bitmap,
+      int icon_change_count,
+      const std::string& id);
+
+  void SetImageFromFile(const SetImageFromFileParams& params);
   void SetMenu();
 
   // Sets a menu item at the top of the menu as a replacement for the status
@@ -68,7 +94,7 @@ class AppIndicatorIcon : public views::StatusIconLinux {
   scoped_ptr<AppIndicatorIconMenu> menu_;
   ui::MenuModel* menu_model_;
 
-  base::FilePath icon_file_path_;
+  base::FilePath temp_dir_;
   int icon_change_count_;
 
   base::WeakPtrFactory<AppIndicatorIcon> weak_factory_;

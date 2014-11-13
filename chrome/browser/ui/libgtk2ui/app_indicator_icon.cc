@@ -18,7 +18,10 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/libgtk2ui/app_indicator_icon_menu.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -134,92 +137,14 @@ void EnsureMethodsLoaded() {
           dlsym(indicator_lib, "app_indicator_set_icon_theme_path"));
 }
 
-// Returns whether a temporary directory should be created for each app
-// indicator image.
-bool ShouldCreateTempDirectoryPerImage(bool using_kde4) {
-  // Create a new temporary directory for each image on Unity since using a
-  // single temporary directory seems to have issues when changing icons in
-  // quick succession.
-  return !using_kde4;
-}
-
-// Returns the subdirectory of |temp_dir| in which the app indicator image
-// should be saved.
-base::FilePath GetImageDirectoryPath(bool using_kde4,
-                                     const base::FilePath& temp_dir) {
-  // On KDE4, an image located in a directory ending with
-  // "icons/hicolor/16x16/apps" can be used as the app indicator image because
-  // "/usr/share/icons/hicolor/16x16/apps" exists.
-  return using_kde4 ?
-      temp_dir.AppendASCII("icons").AppendASCII("hicolor").AppendASCII("16x16").
-          AppendASCII("apps") :
-      temp_dir;
-}
-
-std::string GetImageFileNameForKDE4(
-    const scoped_refptr<base::RefCountedMemory>& png_data) {
-  // On KDE4, the name of the image file for each different looking bitmap must
-  // be unique. It must also be unique across runs of Chrome.
-  base::MD5Digest digest;
-  base::MD5Sum(png_data->front_as<char>(), png_data->size(), &digest);
-  return base::StringPrintf("chrome_app_indicator_%s.png",
-                            base::MD5DigestToBase16(digest).c_str());
-}
-
-std::string GetImageFileNameForNonKDE4(int icon_change_count,
-                                       const std::string& id) {
-  return base::StringPrintf("%s_%d.png", id.c_str(), icon_change_count);
-}
-
-// Returns the "icon theme path" given the file path of the app indicator image.
-std::string GetIconThemePath(bool using_kde4,
-                             const base::FilePath& image_path) {
-  return using_kde4 ?
-      image_path.DirName().DirName().DirName().DirName().value() :
-      image_path.DirName().value();
-}
-
-base::FilePath CreateTempImageFile(bool using_kde4,
-                                   gfx::ImageSkia* image_ptr,
-                                   int icon_change_count,
-                                   std::string id,
-                                   const base::FilePath& previous_file_path) {
-  scoped_ptr<gfx::ImageSkia> image(image_ptr);
-
-  scoped_refptr<base::RefCountedMemory> png_data =
-      gfx::Image(*image.get()).As1xPNGBytes();
-  if (png_data->size() == 0) {
-    // If the bitmap could not be encoded to PNG format, skip it.
-    LOG(WARNING) << "Could not encode icon";
-    return base::FilePath();
-  }
-
-  base::FilePath new_file_path;
-  if (previous_file_path.empty() ||
-      ShouldCreateTempDirectoryPerImage(using_kde4)) {
-    base::FilePath tmp_dir;
-    if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &tmp_dir))
-      return base::FilePath();
-    new_file_path = GetImageDirectoryPath(using_kde4, tmp_dir);
-    if (new_file_path != tmp_dir) {
-      if (!base::CreateDirectory(new_file_path))
-        return base::FilePath();
-    }
-  } else {
-    new_file_path = previous_file_path.DirName();
-  }
-
-  new_file_path = new_file_path.Append(using_kde4 ?
-      GetImageFileNameForKDE4(png_data) :
-      GetImageFileNameForNonKDE4(icon_change_count, id));
-
-  int bytes_written =
-      base::WriteFile(new_file_path,
-                      png_data->front_as<char>(), png_data->size());
-
-  if (bytes_written != static_cast<int>(png_data->size()))
-    return base::FilePath();
-  return new_file_path;
+// Writes |bitmap| to a file at |path|. Returns true if successful.
+bool WriteFile(const base::FilePath& path, const SkBitmap& bitmap) {
+  std::vector<unsigned char> png_data;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &png_data))
+    return false;
+  int bytes_written = base::WriteFile(
+      path, reinterpret_cast<char*>(&png_data[0]), png_data.size());
+  return (bytes_written == static_cast<int>(png_data.size()));
 }
 
 void DeleteTempDirectory(const base::FilePath& dir_path) {
@@ -255,7 +180,7 @@ AppIndicatorIcon::~AppIndicatorIcon() {
     g_object_unref(icon_);
     content::BrowserThread::GetBlockingPool()->PostTask(
         FROM_HERE,
-        base::Bind(&DeleteTempDirectory, icon_file_path_.DirName()));
+        base::Bind(&DeleteTempDirectory, temp_dir_.DirName()));
   }
 }
 
@@ -271,22 +196,29 @@ void AppIndicatorIcon::SetImage(const gfx::ImageSkia& image) {
 
   ++icon_change_count_;
 
-  // We create a deep copy of the image since it may have been freed by the time
-  // it's accessed in the other thread.
-  scoped_ptr<gfx::ImageSkia> safe_image(image.DeepCopy());
-  base::PostTaskAndReplyWithResult(
+  // Copy the bitmap because it may be freed by the time it's accessed in
+  // another thread.
+  SkBitmap safe_bitmap = *image.bitmap();
+
+  scoped_refptr<base::TaskRunner> task_runner =
       content::BrowserThread::GetBlockingPool()
           ->GetTaskRunnerWithShutdownBehavior(
-                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN).get(),
-      FROM_HERE,
-      base::Bind(&CreateTempImageFile,
-                 using_kde4_,
-                 safe_image.release(),
-                 icon_change_count_,
-                 id_,
-                 icon_file_path_),
-      base::Bind(&AppIndicatorIcon::SetImageFromFile,
-                 weak_factory_.GetWeakPtr()));
+                base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
+  if (using_kde4_) {
+    base::PostTaskAndReplyWithResult(
+        task_runner.get(), FROM_HERE,
+        base::Bind(AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread,
+                   safe_bitmap, temp_dir_),
+        base::Bind(&AppIndicatorIcon::SetImageFromFile,
+                   weak_factory_.GetWeakPtr()));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        task_runner.get(), FROM_HERE,
+        base::Bind(AppIndicatorIcon::WriteUnityTempImageOnWorkerThread,
+                   safe_bitmap, icon_change_count_, id_),
+        base::Bind(&AppIndicatorIcon::SetImageFromFile,
+                   weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AppIndicatorIcon::SetToolTip(const base::string16& tool_tip) {
@@ -311,37 +243,113 @@ void AppIndicatorIcon::RefreshPlatformContextMenu() {
   menu_->Refresh();
 }
 
-void AppIndicatorIcon::SetImageFromFile(const base::FilePath& icon_file_path) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (icon_file_path.empty())
-    return;
+// static
+AppIndicatorIcon::SetImageFromFileParams
+AppIndicatorIcon::WriteKDE4TempImageOnWorkerThread(
+    const SkBitmap& bitmap,
+    const base::FilePath& existing_temp_dir) {
+  base::FilePath temp_dir = existing_temp_dir;
+  if (temp_dir.empty() &&
+      !base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir)) {
+    LOG(WARNING) << "Could not create temporary directory";
+    return SetImageFromFileParams();
+  }
 
-  base::FilePath old_path = icon_file_path_;
-  icon_file_path_ = icon_file_path;
+  base::FilePath icon_theme_path = temp_dir.AppendASCII("icons");
+
+  // On KDE4, an image located in a directory ending with
+  // "icons/hicolor/24x24/apps" can be used as the app indicator image because
+  // "/usr/share/icons/hicolor/24x24/apps" exists.
+  base::FilePath image_dir = icon_theme_path.AppendASCII("hicolor")
+                                 .AppendASCII("24x24")
+                                 .AppendASCII("apps");
+
+  if (!base::CreateDirectory(image_dir))
+    return SetImageFromFileParams();
+
+  // On KDE4, the name of the image file for each different looking bitmap must
+  // be unique. It must also be unique across runs of Chrome.
+  std::vector<unsigned char> bitmap_png_data;
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_png_data)) {
+    LOG(WARNING) << "Could not encode icon";
+    return SetImageFromFileParams();
+  }
+  base::MD5Digest digest;
+  base::MD5Sum(reinterpret_cast<char*>(&bitmap_png_data[0]),
+               bitmap_png_data.size(), &digest);
+  std::string icon_name = base::StringPrintf(
+      "chrome_app_indicator2_%s", base::MD5DigestToBase16(digest).c_str());
+
+  // If |bitmap| is not 24x24, KDE does some really ugly resizing. Pad |bitmap|
+  // with transparent pixels to make it 24x24.
+  const int kDesiredSize = 24;
+  SkBitmap scaled_bitmap;
+  scaled_bitmap.allocN32Pixels(kDesiredSize, kDesiredSize);
+  scaled_bitmap.eraseARGB(0, 0, 0, 0);
+  SkCanvas canvas(scaled_bitmap);
+  canvas.drawBitmap(bitmap, (kDesiredSize - bitmap.width()) / 2,
+                    (kDesiredSize - bitmap.height()) / 2);
+
+  base::FilePath image_path = image_dir.Append(icon_name + ".png");
+  if (!WriteFile(image_path, scaled_bitmap))
+    return SetImageFromFileParams();
+
+  SetImageFromFileParams params;
+  params.parent_temp_dir = temp_dir;
+  params.icon_theme_path = icon_theme_path.value();
+  params.icon_name = icon_name;
+  return params;
+}
+
+// static
+AppIndicatorIcon::SetImageFromFileParams
+AppIndicatorIcon::WriteUnityTempImageOnWorkerThread(const SkBitmap& bitmap,
+                                                    int icon_change_count,
+                                                    const std::string& id) {
+  // Create a new temporary directory for each image on Unity since using a
+  // single temporary directory seems to have issues when changing icons in
+  // quick succession.
+  base::FilePath temp_dir;
+  if (!base::CreateNewTempDirectory(base::FilePath::StringType(), &temp_dir)) {
+    LOG(WARNING) << "Could not create temporary directory";
+    return SetImageFromFileParams();
+  }
 
   std::string icon_name =
-      icon_file_path_.BaseName().RemoveExtension().value();
-  std::string icon_dir = GetIconThemePath(using_kde4_, icon_file_path);
+      base::StringPrintf("%s_%d", id.c_str(), icon_change_count);
+  base::FilePath image_path = temp_dir.Append(icon_name + ".png");
+  SetImageFromFileParams params;
+  if (WriteFile(image_path, bitmap)) {
+    params.parent_temp_dir = temp_dir;
+    params.icon_theme_path = temp_dir.value();
+    params.icon_name = icon_name;
+  }
+  return params;
+}
+
+void AppIndicatorIcon::SetImageFromFile(const SetImageFromFileParams& params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (params.icon_theme_path.empty())
+    return;
+
   if (!icon_) {
     icon_ =
         app_indicator_new_with_path(id_.c_str(),
-                                    icon_name.c_str(),
+                                    params.icon_name.c_str(),
                                     APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
-                                    icon_dir.c_str());
+                                    params.icon_theme_path.c_str());
     app_indicator_set_status(icon_, APP_INDICATOR_STATUS_ACTIVE);
     SetMenu();
   } else {
-    // Currently we are creating a new temp directory every time the icon is
-    // set. So we need to set the directory each time.
-    app_indicator_set_icon_theme_path(icon_, icon_dir.c_str());
-    app_indicator_set_icon_full(icon_, icon_name.c_str(), "icon");
+    app_indicator_set_icon_theme_path(icon_, params.icon_theme_path.c_str());
+    app_indicator_set_icon_full(icon_, params.icon_name.c_str(), "icon");
+  }
 
-    if (ShouldCreateTempDirectoryPerImage(using_kde4_)) {
-      // Delete previous icon directory.
-      content::BrowserThread::GetBlockingPool()->PostTask(
-          FROM_HERE,
-          base::Bind(&DeleteTempDirectory, old_path.DirName()));
-    }
+  if (temp_dir_ != params.parent_temp_dir) {
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE,
+        base::Bind(&DeleteTempDirectory, temp_dir_));
+    temp_dir_ = params.parent_temp_dir;
   }
 }
 
