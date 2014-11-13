@@ -13,7 +13,9 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "extensions/browser/event_router.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace extensions {
 
@@ -255,6 +257,100 @@ bool HotwordPrivateStopTrainingFunction::RunSync() {
   }
 
   hotword_service->StopTraining();
+  return true;
+}
+
+bool HotwordPrivateGetLocalizedStringsFunction::RunSync() {
+  base::DictionaryValue* localized_strings = new base::DictionaryValue();
+
+  localized_strings->SetString(
+      "cancel",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_CANCEL));
+  localized_strings->SetString(
+      "introTitle",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_TITLE));
+  localized_strings->SetString(
+      "introSubtitle",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_SUBTITLE));
+  localized_strings->SetString(
+      "introDescription",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION));
+  localized_strings->SetString(
+      "introDescriptionAudioHistoryEnabled",
+      l10n_util::GetStringUTF16(
+          IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED));
+  localized_strings->SetString(
+      "introStart",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_INTRO_START));
+  localized_strings->SetString(
+      "audioHistoryTitle",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE));
+  localized_strings->SetString(
+      "audioHistoryDescription",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION));
+  localized_strings->SetString(
+      "audioHistoryLearnMore",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_LEARN_MORE));
+  localized_strings->SetString(
+      "audioHistoryDecline",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DECLINE));
+  localized_strings->SetString(
+      "audioHistoryAgree",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_AGREE));
+  localized_strings->SetString(
+      "trainingTitle",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_TITLE));
+  localized_strings->SetString(
+      "trainingDescription",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION));
+  localized_strings->SetString(
+      "trainingSpeak",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_SPEAK));
+  localized_strings->SetString(
+      "trainingFirstPrompt",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_FIRST_PROMPT));
+  localized_strings->SetString(
+      "trainingMiddlePrompt",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_MIDDLE_PROMPT));
+  localized_strings->SetString(
+      "trainingLastPrompt",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_LAST_PROMPT));
+  localized_strings->SetString(
+      "trainingRecorded",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_RECORDED));
+  localized_strings->SetString(
+      "trainingTimeout",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_TIMEOUT));
+  localized_strings->SetString(
+      "trainingRetry",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_TRAINING_RETRY));
+  localized_strings->SetString(
+      "finishedTitle",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_TITLE));
+  localized_strings->SetString(
+      "finishedListIntro",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO));
+  localized_strings->SetString(
+      "finishedListItem1",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_1));
+  localized_strings->SetString(
+      "finishedListItem2",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_2));
+  localized_strings->SetString(
+      "finishedSettings",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_SETTINGS));
+  localized_strings->SetString(
+      "finishedAudioHistory",
+      l10n_util::GetStringUTF16(
+          IDS_HOTWORD_OPT_IN_FINISHED_AUDIO_HISTORY));
+  localized_strings->SetString(
+      "finish",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISH));
+  localized_strings->SetString(
+      "finishedWait",
+      l10n_util::GetStringUTF16(IDS_HOTWORD_OPT_IN_FINISHED_WAIT));
+
+  SetResult(localized_strings);
   return true;
 }
 

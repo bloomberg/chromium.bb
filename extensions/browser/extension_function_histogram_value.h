@@ -982,6 +982,7 @@ enum HistogramValue {
   DOCUMENT_SCAN_SCAN,
   EASYUNLOCKPRIVATE_GETUSERIMAGE,
   HOTWORDPRIVATE_NOTIFYSPEAKERMODELSAVED,
+  HOTWORDPRIVATE_GETLOCALIZEDSTRINGS,
   // Last entry: Add new entries above and ensure to update
   // tools/metrics/histograms/histograms.xml.
   ENUM_BOUNDARY

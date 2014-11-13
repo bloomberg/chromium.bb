@@ -15076,6 +15076,92 @@ Do you accept?
     <message name="IDS_FLAGS_DISABLE_CAST_STREAMING_HW_ENCODING_DESCRIPTION" desc="Description of chrome:flags option to turn off Cast Streaming hardware video encoding support.">
       This option disables support in Cast Streaming for encoding video streams using platform hardware.
     </message>
+
+   <!-- Hotword Audio Verification (opt-in) App strings. -->
+    <message name="IDS_HOTWORD_OPT_IN_CANCEL" desc="Text on the cancel button for the 'Ok Google' hotword opt-in dialog.">
+      CANCEL
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_INTRO_TITLE" desc="Title of the intro page of the 'Ok Google' hotword opt-in dialog.">
+      Voice search at any time
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_INTRO_SUBTITLE" desc="Sub-title of the intro page of the 'Ok Google' hotword opt-in dialog.">
+      Say "Ok Google" when your screen is on and unlocked
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION" desc="Description explaining the steps required to continue through the hotword opt-in process.">
+      To make this happen, you'll need to enable Google Audio History and train your Chromebook in the following steps.
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_INTRO_DESCRIPTION_AUDIO_HISTORY_ENABLED" desc="Description explaining the steps required to continue through the hotword opt-in process.">
+      To make this happen, you'll need to train your Chromebook in the following step.
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_INTRO_START" desc="Text on the start button for the 'Ok Google' hotword opt-in dialog.">
+      GET STARTED
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_TITLE" desc="Title of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
+      Enable Audio History
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DESCRIPTION" desc="Description of the Audio History page of the 'Ok Google' hotword opt-in dialog.">
+      When you use voice activation commands, such as "Ok Google" or touching a microphone icon, a recording of the next thing you say, plus a few seconds before, may be used and stored by Google and associated with your Google Account to help recognize your voice and improve speech recognition.
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_LEARN_MORE" desc="The text indicating where the user can learn more about Audio History.">
+      <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://support.google.com/websearch?p=chromebook_audiohistory"&gt;</ph>LEARN MORE<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_DECLINE" desc="Text on the decline button for the Audio History section of the 'Ok Google' hotword opt-in dialog.">
+      NO THANKS
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_AUDIO_HISTORY_AGREE" desc="Text on the agree button for the Audio History section of the 'Ok Google' hotword opt-in dialog.">
+      I AGREE
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_TITLE" desc="Title of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      Let's train your Chromebook
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_DESCRIPTION" desc="Description on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      To help your Chromebook respond to you and for reliable and easy access to voice search, you need to teach Google the sound of your voice.
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_SPEAK" desc="The text describing the action the user should take on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      Just say "Ok Google" three times
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_FIRST_PROMPT" desc="The first prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      Say "Ok Google"
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_MIDDLE_PROMPT" desc="The middle prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      Say "Ok Google" again
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_LAST_PROMPT" desc="The last prompt text on the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      Say "Ok Google" one last time
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_RECORDED" desc="The message displayed when an 'Ok Google' utterance has been recorded.">
+      Recorded
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_TIMEOUT" desc="The message displayed when an 'Ok Google' training has time out.">
+      Training timed out
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_TRAINING_RETRY" desc="Text on the retry button of the voice model training page of the 'Ok Google' hotword opt-in dialog.">
+      RETRY
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_TITLE" desc="Title of the finished page of the 'Ok Google' hotword opt-in dialog.">
+      You're all set!
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_INTRO" desc="The text at the beginning of the list describing the Chromebook's new abilities. ">
+      Your Chromebook can now:
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_1" desc="The text of the first item in the list of Chromebook abilities. ">
+      Recognize your voice when you say "Ok Google"
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_LIST_ITEM_2" desc="The text of the second item in the list of Chromebook abilities. ">
+      Respond to "Ok Google" when the screen is on and unlocked
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_SETTINGS" desc="The text indicating where the user can change their Chrome settings. ">
+      You can change this at any time in <ph name="BEGIN_LINK">&lt;a target="_blank" href="#" id="settings-link"&gt;</ph>Chrome Settings<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_AUDIO_HISTORY" desc="The text indicating where the user can change their account history. ">
+      Search queries will be tied to your Google Account. You can view and delete them in your <ph name="BEGIN_LINK">&lt;a target="_blank" href="https://www.google.com/settings/accounthistory"&gt;</ph>Account History<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISH" desc="Text on the finish button for the 'Ok Google' hotword opt-in dialog.">
+      FINISH
+    </message>
+    <message name="IDS_HOTWORD_OPT_IN_FINISHED_WAIT" desc="The text displayed when waiting for the voice model training to complete. ">
+      Please wait ...
+    </message>
   </messages>
   </release>
 </grit>

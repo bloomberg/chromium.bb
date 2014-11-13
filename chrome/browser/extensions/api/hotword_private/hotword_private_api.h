@@ -191,6 +191,19 @@ class HotwordPrivateStopTrainingFunction :
   bool RunSync() override;
 };
 
+class HotwordPrivateGetLocalizedStringsFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("hotwordPrivate.getLocalizedStrings",
+                             HOTWORDPRIVATE_GETLOCALIZEDSTRINGS)
+
+ protected:
+  virtual ~HotwordPrivateGetLocalizedStringsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunSync() override;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_HOTWORD_PRIVATE_HOTWORD_PRIVATE_API_H_

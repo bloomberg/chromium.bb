@@ -44751,6 +44751,7 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="921" label="DOCUMENT_SCAN_SCAN"/>
   <int value="922" label="EASYUNLOCKPRIVATE_GETUSERIMAGE"/>
   <int value="923" label="HOTWORDPRIVATE_NOTIFYSPEAKERMODELSAVED"/>
+  <int value="924" label="HOTWORDPRIVATE_GETLOCALIZEDSTRINGS"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

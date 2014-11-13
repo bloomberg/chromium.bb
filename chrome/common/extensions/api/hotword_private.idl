@@ -53,6 +53,7 @@
 
   callback GenericDoneCallback = void ();
   callback LaunchStateCallback = void(LaunchState result);
+  callback LocalizeStringsCallback = void(object result);
   callback StatusDetailsCallback = void(StatusDetails result);
 
   interface Functions {
@@ -64,6 +65,9 @@
     // Retrieves the current state of hotword search.
     // The result is put into a StatusDetails object.
     static void getStatus(StatusDetailsCallback callback);
+
+    // Retrieves a dictionary mapping names to localized resource strings.
+    static void getLocalizedStrings(LocalizeStringsCallback callback);
 
     // Sets the current enabled state of audio logging in the extension.
     // True: logging enabled. False: no logging.
