@@ -238,7 +238,6 @@ crbug.com/381684 [ Win Android Mac ] fonts/family-fallback-gardiner.html [ Skip 
 # Untriaged Mavericks failures
 
 crbug.com/314947 [ Mavericks ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
-# crbug.com/314947 [ Mavericks ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 
 # Mavericks bots seem to fail lots of tests on occasion.
 # crbug.com/331582 [ Mavericks ] fast/inline/justify-emphasis-inline-box.html [ Pass ImageOnlyFailure ]
@@ -734,7 +733,6 @@ crbug.com/334269 [ SnowLeopard Debug ] virtual/antialiasedtext/fast/text/zero-wi
 
 crbug.com/334269 [ Mac ] editing/spelling/spellcheck-editable-on-focus-sync.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/repaint/4776765.html [ NeedsManualRebaseline ]
-crbug.com/334269 [ Mac ] http/tests/images/drag-image-to-desktop.html [ NeedsManualRebaseline ]
 
 crbug.com/334269 [ Mac ] fast/repaint/text-emphasis-h.html [ NeedsManualRebaseline ]
 crbug.com/334269 [ Mac ] fast/transforms/shadows.html [ NeedsManualRebaseline ]
@@ -1117,7 +1115,6 @@ crbug.com/384566 svg/custom/textPath-change-reference2.svg [ ImageOnlyFailure Pa
 
 # switching to apache-win32: needs triaging.
 crbug.com/30536 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ ImageOnlyFailure ]
-crbug.com/30536 [ Win ] http/tests/images/drag-image-to-desktop.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
 crbug.com/30536 [ Win ] http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
 crbug.com/30536 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
