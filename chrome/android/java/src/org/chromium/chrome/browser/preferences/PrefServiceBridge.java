@@ -550,6 +550,13 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @return Whether the camera/microphone permission is enabled.
+     */
+    public boolean isCameraMicEnabled() {
+        return nativeGetCameraMicEnabled();
+    }
+
+    /**
      * @return true if incognito mode is enabled.
      */
     public boolean isIncognitoModeEnabled() {
@@ -718,6 +725,7 @@ public final class PrefServiceBridge {
     private native void nativeSetPopupException(String pattern, boolean allow);
     private native void nativeRemovePopupException(String pattern);
     private native void nativeGetPopupExceptions(Object list);
+    private native boolean nativeGetCameraMicEnabled();
     private native boolean nativeGetAutologinEnabled();
     private native void nativeSetAutologinEnabled(boolean autologinEnabled);
     private native void nativeSetCrashReporting(boolean reporting);

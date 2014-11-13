@@ -478,6 +478,13 @@ static void SetAllowPopupsEnabled(JNIEnv* env, jobject obj, jboolean allow) {
       allow ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
+static jboolean GetCameraMicEnabled(JNIEnv* env, jobject obj) {
+  HostContentSettingsMap* content_settings =
+      GetOriginalProfile()->GetHostContentSettingsMap();
+  return GetBooleanForContentSetting(content_settings,
+      CONTENT_SETTINGS_TYPE_MEDIASTREAM);
+}
+
 static jboolean GetAutologinEnabled(JNIEnv* env, jobject obj) {
   return GetPrefService()->GetBoolean(prefs::kAutologinEnabled);
 }
