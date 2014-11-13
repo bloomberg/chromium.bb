@@ -12,7 +12,7 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
-if (!is_android && !(is_chromeos && !use_ozone)) {
+if (!is_android) {
 
 # TODO(GYP) for Windows need to the the reorder-imports step which probably
 # means adding another target and renaming this to chrome_initial like in GYP.
