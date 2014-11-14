@@ -3,6 +3,10 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
+function display(callback)
+{
+    requestAnimationFrame(testRunner.displayAsyncThen.bind(testRunner, callback));
+}
 
 function test()
 {
@@ -10,7 +14,9 @@ function test()
 
     function pageReloaded()
     {
-        InspectorTest.stopTimeline(finish);
+        InspectorTest.invokePageFunctionAsync("display", function() {
+            InspectorTest.stopTimeline(finish);
+        });
     }
 
     function finish()
@@ -18,9 +24,11 @@ function test()
         InspectorTest.addResult("Model records:");
         InspectorTest.printTimelineRecords("MarkDOMContent");
         InspectorTest.printTimelineRecords("MarkLoad");
+        InspectorTest.printTimelineRecords("MarkFirstPaint");
         InspectorTest.addResult("Timestamp records:");
         InspectorTest.printTimestampRecords("MarkDOMContent");
         InspectorTest.printTimestampRecords("MarkLoad");
+        InspectorTest.printTimestampRecords("MarkFirstPaint");
         InspectorTest.completeTest();
     }
 }
@@ -28,7 +36,7 @@ function test()
 </script>
 </head>
 
-<body onload="runTest()">
+<body onload="runTestAfterDisplay()">
 <p>
 Tests the load event.
 </p>

@@ -27,4 +27,13 @@ MarkLoad Properties:
     thread : <string>
     type : "MarkLoad"
 }
+MarkFirstPaint Properties:
+{
+    data : {
+    }
+    endTime : <number>
+    startTime : <number>
+    thread : <string>
+    type : "MarkFirstPaint"
+}
 
