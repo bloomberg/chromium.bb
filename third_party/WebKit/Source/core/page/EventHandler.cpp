@@ -140,6 +140,8 @@ static const double TextDragDelay = 0.0;
 
 enum NoCursorChangeType { NoCursorChange };
 
+enum class DragInitiator { Mouse, Touch };
+
 class OptionalCursor {
 public:
     OptionalCursor(NoCursorChangeType) : m_isCursorChange(false) { }
@@ -221,7 +223,6 @@ EventHandler::EventHandler(LocalFrame* frame)
     , m_scrollGestureHandlingNode(nullptr)
     , m_lastGestureScrollOverWidget(false)
     , m_maxMouseMovedDuration(0)
-    , m_didStartDrag(false)
     , m_longTapShouldInvokeContextMenu(false)
     , m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired)
     , m_lastShowPressTimestamp(0)
@@ -296,7 +297,6 @@ void EventHandler::clear()
     m_previousGestureScrolledNode = nullptr;
     m_scrollbarHandlingScrollGesture = nullptr;
     m_maxMouseMovedDuration = 0;
-    m_didStartDrag = false;
     m_touchPressed = false;
     m_mouseDownMayStartSelect = false;
     m_mouseDownMayStartDrag = false;
@@ -653,7 +653,7 @@ bool EventHandler::handleMouseDraggedEvent(const MouseEventWithHitTestResults& e
     if (!m_mousePressed)
         return false;
 
-    if (handleDrag(event, ShouldCheckDragHysteresis))
+    if (handleDrag(event, DragInitiator::Mouse))
         return true;
 
     Node* targetNode = event.innerNode();
@@ -2314,13 +2314,11 @@ bool EventHandler::handleGestureLongPress(const GestureEventWithHitTestResults& 
             gestureEvent.shiftKey(), gestureEvent.ctrlKey(), gestureEvent.altKey(), gestureEvent.metaKey(), PlatformMouseEvent::FromTouch, WTF::currentTime());
         HitTestRequest request(HitTestRequest::ReadOnly);
         MouseEventWithHitTestResults mev = prepareMouseEvent(request, mouseDragEvent);
-        m_didStartDrag = false;
         m_mouseDownMayStartDrag = true;
         dragState().m_dragSrc = nullptr;
         m_mouseDownPos = m_frame->view()->windowToContents(mouseDragEvent.position());
         RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
-        handleDrag(mev, DontCheckDragHysteresis);
-        if (m_didStartDrag) {
+        if (handleDrag(mev, DragInitiator::Touch)) {
             m_longTapShouldInvokeContextMenu = true;
             return true;
         }
@@ -3201,7 +3199,7 @@ bool EventHandler::dispatchDragSrcEvent(const AtomicString& eventType, const Pla
     return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragDataTransfer.get());
 }
 
-bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDragHysteresis checkDragHysteresis)
+bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, DragInitiator initiator)
 {
     ASSERT(event.event().type() == PlatformEvent::MouseMoved);
     // Callers must protect the reference to FrameView, since this function may dispatch DOM
@@ -3211,6 +3209,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     if (!m_frame->page())
         return false;
 
+    // FIXME: Does this ever get hit??
     if (event.event().button() != LeftButton || event.event().type() != PlatformEvent::MouseMoved) {
         // If we allowed the other side of the bridge to handle a drag
         // last time, then m_mousePressed might still be set. So we
@@ -3239,13 +3238,13 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
     }
 
     if (!m_mouseDownMayStartDrag)
-        return !mouseDownMayStartSelect() && !m_mouseDownMayStartAutoscroll;
+        return initiator == DragInitiator::Mouse && !mouseDownMayStartSelect() && !m_mouseDownMayStartAutoscroll;
 
     // We are starting a text/image/url drag, so the cursor should be an arrow
     // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
     m_frame->view()->setCursor(pointerCursor());
 
-    if (checkDragHysteresis == ShouldCheckDragHysteresis && !dragHysteresisExceeded(event.event().position()))
+    if (initiator == DragInitiator::Mouse && !dragHysteresisExceeded(event.event().position()))
         return true;
 
     // Once we're past the hysteresis point, we don't want to treat this gesture as a click
@@ -3303,11 +3302,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
 
     if (m_mouseDownMayStartDrag) {
         // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
-        m_didStartDrag = m_frame->page() && dragController.startDrag(m_frame, dragState(), event.event(), m_mouseDownPos);
-        // FIXME: This seems pretty useless now. The gesture code uses this as a signal for
-        // whether or not the drag started, but perhaps it can simply use the return value from
-        // handleDrag(), even though it doesn't mean exactly the same thing.
-        if (m_didStartDrag)
+        if (m_frame->page() && dragController.startDrag(m_frame, dragState(), event.event(), m_mouseDownPos))
             return true;
         // Drag was canned at the last minute - we owe m_dragSrc a DRAGEND event
         dispatchDragSrcEvent(EventTypeNames::dragend, event.event());

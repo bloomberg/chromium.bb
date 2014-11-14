@@ -80,7 +80,7 @@ class WheelEvent;
 class Widget;
 
 enum AppendTrailingWhitespace { ShouldAppendTrailingWhitespace, DontAppendTrailingWhitespace };
-enum CheckDragHysteresis { ShouldCheckDragHysteresis, DontCheckDragHysteresis };
+enum class DragInitiator;
 
 class EventHandler : public NoBaseWillBeGarbageCollectedFinalized<EventHandler> {
     WTF_MAKE_NONCOPYABLE(EventHandler);
@@ -276,7 +276,7 @@ private:
 
     void clearDragDataTransfer();
 
-    bool handleDrag(const MouseEventWithHitTestResults&, CheckDragHysteresis);
+    bool handleDrag(const MouseEventWithHitTestResults&, DragInitiator);
     bool tryStartDrag(const MouseEventWithHitTestResults&);
     void clearDragState();
 
@@ -395,7 +395,6 @@ private:
     RefPtrWillBeMember<Scrollbar> m_scrollbarHandlingScrollGesture;
 
     double m_maxMouseMovedDuration;
-    bool m_didStartDrag;
 
     bool m_longTapShouldInvokeContextMenu;
 
