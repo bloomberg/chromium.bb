@@ -472,8 +472,9 @@ void Scheduler::BeginRetroFrame() {
                          "Scheduler::BeginRetroFrames all expired",
                          TRACE_EVENT_SCOPE_THREAD);
   } else {
-    BeginImplFrame(begin_retro_frame_args_.front());
+    BeginFrameArgs front = begin_retro_frame_args_.front();
     begin_retro_frame_args_.pop_front();
+    BeginImplFrame(front);
   }
 }
 
