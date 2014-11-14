@@ -8,6 +8,8 @@ vars = {
          '1338',
     'chromium_trunk':
          'http://src.chromium.org/svn/trunk',
+    'android_tools_rev':
+         'ea50cccc11657404ce22cf928062ed1a3927eb39',
     'gyp_rev':
          '1927',
     'tools_rev':
@@ -65,7 +67,7 @@ deps_os = {
     'android':
     {
         'third_party/android_tools':
-            Var('git_url') + '/android_tools.git@aabf2a28449fe47dedeee51d3570ff8687ff015f',
+            Var('git_url') + '/android_tools.git@ea50cccc11657404ce22cf928062ed1a3927eb39',
     },
     'unix':
     {
