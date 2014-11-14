@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,11 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
+
+namespace sessions {
+struct SessionTab;
+struct SessionWindow;
+}
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -46,7 +51,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
                                         SessionID::id_type window_num);
 
   // Helper method to create JSON compatible objects from Session objects.
-  static bool SessionTabToValue(const SessionTab& tab,
+  static bool SessionTabToValue(const ::sessions::SessionTab& tab,
                                 base::DictionaryValue* dictionary);
 
   // Returns a pointer to the current session model associator or NULL.
@@ -86,7 +91,7 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void HandleSetForeignSessionCollapsed(const base::ListValue* args);
 
   // Helper method to create JSON compatible objects from Session objects.
-  bool SessionWindowToValue(const SessionWindow& window,
+  bool SessionWindowToValue(const ::sessions::SessionWindow& window,
                             base::DictionaryValue* dictionary);
 
   // The Registrar used to register ForeignSessionHandler for notifications.

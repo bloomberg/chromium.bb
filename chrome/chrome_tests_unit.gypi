@@ -716,9 +716,7 @@
       'browser/services/gcm/push_messaging_application_id_unittest.cc',
       'browser/sessions/persistent_tab_restore_service_unittest.cc',
       'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
-      'browser/sessions/session_backend_unittest.cc',
       'browser/sessions/session_service_unittest.cc',
-      'browser/sessions/session_types_unittest.cc',
       'browser/shell_integration_linux_unittest.cc',
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
@@ -1929,7 +1927,7 @@
         # 2) test-specific support libraries:
         '../base/base.gyp:test_support_base',
         '../components/components_resources.gyp:components_resources',
-	'../components/components.gyp:content_settings_core_test_support',
+        '../components/components.gyp:content_settings_core_test_support',
         '../content/content_shell_and_tests.gyp:test_support_content',
         '../content/content.gyp:content_app_both',
         '../crypto/crypto.gyp:crypto_test_support',
@@ -2626,7 +2624,6 @@
             'test/base/test_browser_window.h',
 
             'browser/sessions/persistent_tab_restore_service_unittest.cc',
-            'browser/sessions/session_backend_unittest.cc',
 
             # Test files cannot be opened on Android.
             'browser/drive/fake_drive_service_unittest.cc',

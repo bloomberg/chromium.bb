@@ -9,12 +9,12 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
+#include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -24,7 +24,7 @@
 // static
 content::WebContents* SessionRestore::RestoreForeignSessionTab(
     content::WebContents* web_contents,
-    const SessionTab& session_tab,
+    const sessions::SessionTab& session_tab,
     WindowOpenDisposition disposition) {
   DCHECK(session_tab.navigations.size() > 0);
   content::BrowserContext* context = web_contents->GetBrowserContext();
@@ -62,8 +62,8 @@ content::WebContents* SessionRestore::RestoreForeignSessionTab(
 std::vector<Browser*> SessionRestore::RestoreForeignSessionWindows(
     Profile* profile,
     chrome::HostDesktopType host_desktop_type,
-    std::vector<const SessionWindow*>::const_iterator begin,
-    std::vector<const SessionWindow*>::const_iterator end) {
+    std::vector<const sessions::SessionWindow*>::const_iterator begin,
+    std::vector<const sessions::SessionWindow*>::const_iterator end) {
   NOTREACHED();
   return std::vector<Browser*>();
 }

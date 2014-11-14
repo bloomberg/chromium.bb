@@ -57,7 +57,7 @@ sync_pb::SessionHeader SyncedSession::ToSessionHeader() const {
 
 // Note: if you modify this, make sure you modify
 // SessionModelAssociator::ShouldSyncTab to ensure the logic matches.
-bool ShouldSyncSessionTab(const SessionTab& tab) {
+bool ShouldSyncSessionTab(const sessions::SessionTab& tab) {
   if (tab.navigations.empty())
     return false;
   bool found_valid_url = false;
@@ -74,11 +74,10 @@ bool ShouldSyncSessionTab(const SessionTab& tab) {
   return found_valid_url;
 }
 
-bool SessionWindowHasNoTabsToSync(const SessionWindow& window) {
+bool SessionWindowHasNoTabsToSync(const sessions::SessionWindow& window) {
   int num_populated = 0;
-  for (std::vector<SessionTab*>::const_iterator i = window.tabs.begin();
-      i != window.tabs.end(); ++i) {
-    const SessionTab* tab = *i;
+  for (auto i = window.tabs.begin(); i != window.tabs.end(); ++i) {
+    const sessions::SessionTab* tab = *i;
     if (ShouldSyncSessionTab(*tab))
       num_populated++;
   }

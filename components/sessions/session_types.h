@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
-#define CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
+#ifndef COMPONENTS_SESSIONS_SESSION_TYPES_H_
+#define COMPONENTS_SESSIONS_SESSION_TYPES_H_
 
 #include <algorithm>
 #include <string>
@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/sessions_export.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/rect.h"
@@ -24,10 +25,12 @@ class BrowserContext;
 class NavigationEntry;
 }
 
+namespace sessions {
+
 // SessionTab ----------------------------------------------------------------
 
 // SessionTab corresponds to a NavigationController.
-struct SessionTab {
+struct SESSIONS_EXPORT SessionTab {
   SessionTab();
   ~SessionTab();
 
@@ -105,7 +108,7 @@ struct SessionTab {
 // SessionWindow -------------------------------------------------------------
 
 // Describes a saved window.
-struct SessionWindow {
+struct SESSIONS_EXPORT SessionWindow {
   SessionWindow();
   ~SessionWindow();
 
@@ -161,4 +164,6 @@ struct SessionWindow {
   DISALLOW_COPY_AND_ASSIGN(SessionWindow);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_SESSION_TYPES_H_
+}  // namespace sessions
+
+#endif  // COMPONENTS_SESSIONS_SESSION_TYPES_H_

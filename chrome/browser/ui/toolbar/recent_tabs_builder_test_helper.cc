@@ -225,7 +225,7 @@ void RecentTabsBuilderTestHelper::VerifyExport(
   ASSERT_TRUE(delegate->GetAllForeignSessions(&sessions));
   ASSERT_EQ(GetSessionCount(), static_cast<int>(sessions.size()));
   for (int s = 0; s < GetSessionCount(); ++s) {
-    std::vector<const SessionWindow*> windows;
+    std::vector<const sessions::SessionWindow*> windows;
     ASSERT_TRUE(delegate->GetForeignSession(ToSessionTag(GetSessionID(s)),
                                             &windows));
     ASSERT_EQ(GetWindowCount(s), static_cast<int>(windows.size()));

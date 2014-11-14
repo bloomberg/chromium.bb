@@ -15,13 +15,13 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/favicon_cache.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/glue/synced_session_tracker.h"
 #include "chrome/browser/sync/open_tabs_ui_delegate.h"
 #include "chrome/browser/sync/sessions/tab_node_pool.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/sync_prefs.h"
 #include "sync/api/syncable_service.h"
@@ -109,11 +109,12 @@ class SessionsSyncManager : public syncer::SyncableService,
       scoped_refptr<base::RefCountedMemory>* favicon_png) const override;
   bool GetAllForeignSessions(
       std::vector<const SyncedSession*>* sessions) override;
-  bool GetForeignSession(const std::string& tag,
-                         std::vector<const SessionWindow*>* windows) override;
+  bool GetForeignSession(
+      const std::string& tag,
+      std::vector<const sessions::SessionWindow*>* windows) override;
   bool GetForeignTab(const std::string& tag,
                      const SessionID::id_type tab_id,
-                     const SessionTab** tab) override;
+                     const sessions::SessionTab** tab) override;
   void DeleteForeignSession(const std::string& tag) override;
   bool GetLocalSession(const SyncedSession** local_session) override;
 
@@ -256,7 +257,7 @@ class SessionsSyncManager : public syncer::SyncableService,
       const std::string& session_tag,
       const sync_pb::SessionWindow& specifics,
       base::Time mtime,
-      SessionWindow* session_window);
+      sessions::SessionWindow* session_window);
 
   // Resync local window information. Updates the local sessions header node
   // with the status of open windows and the order of tabs they contain. Should
@@ -296,7 +297,7 @@ class SessionsSyncManager : public syncer::SyncableService,
   static void SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
-      SessionTab* session_tab);
+      sessions::SessionTab* session_tab);
 
   // Populates |specifics| based on the data in |tab_delegate|.
   void LocalTabDelegateToSpecifics(const SyncedTabDelegate& tab_delegate,

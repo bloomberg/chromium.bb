@@ -60,7 +60,7 @@ void SessionSyncTestHelper::VerifySyncedSession(
   for (std::vector<std::vector<int> >::const_iterator win_iter =
            windows.begin();
        win_iter != windows.end(); ++win_iter, ++i) {
-    SessionWindow* win_ptr;
+    sessions::SessionWindow* win_ptr;
     SyncedSession::SyncedWindowMap::const_iterator map_iter =
         session.windows.find(i);
     if (map_iter != session.windows.end())
@@ -69,11 +69,11 @@ void SessionSyncTestHelper::VerifySyncedSession(
       FAIL();
     ASSERT_EQ(win_iter->size(), win_ptr->tabs.size());
     ASSERT_EQ(0, win_ptr->selected_tab_index);
-    ASSERT_EQ(SessionWindow::TYPE_TABBED, win_ptr->type);
+    ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, win_ptr->type);
     int j = 0;
     for (std::vector<int>::const_iterator tab_iter = (*win_iter).begin();
          tab_iter != (*win_iter).end(); ++tab_iter, ++j) {
-      SessionTab* tab = win_ptr->tabs[j];
+      sessions::SessionTab* tab = win_ptr->tabs[j];
       ASSERT_EQ(*tab_iter, tab->tab_id.id());
       ASSERT_EQ(1U, tab->navigations.size());
       ASSERT_EQ(1, tab->tab_visual_index);

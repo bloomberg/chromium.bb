@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,6 +34,7 @@
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -571,7 +571,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignTab) {
   sync_data.add_navigation()->CopyFrom(nav1.ToSyncData());
   sync_data.add_navigation()->CopyFrom(nav2.ToSyncData());
 
-  SessionTab tab;
+  sessions::SessionTab tab;
   tab.SetFromSyncData(sync_data, base::Time::Now());
   EXPECT_EQ(2U, tab.navigations.size());
   for (size_t i = 0; i < tab.navigations.size(); ++i)
@@ -650,9 +650,9 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   SerializedNavigationEntryTestHelper::SetIsOverridingUserAgent(true, &nav2);
 
   // Set up the restore data -- one window with two tabs.
-  std::vector<const SessionWindow*> session;
-  SessionWindow window;
-  SessionTab tab1;
+  std::vector<const sessions::SessionWindow*> session;
+  sessions::SessionWindow window;
+  sessions::SessionTab tab1;
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(0);
@@ -663,7 +663,7 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
   }
   window.tabs.push_back(&tab1);
 
-  SessionTab tab2;
+  sessions::SessionTab tab2;
   {
     sync_pb::SessionTab sync_data;
     sync_data.set_tab_visual_index(1);
@@ -676,10 +676,10 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, RestoreForeignSession) {
 
   // Leave tab3 empty. Should have no effect on restored session, but simulates
   // partially complete foreign session data.
-  SessionTab tab3;
+  sessions::SessionTab tab3;
   window.tabs.push_back(&tab3);
 
-  session.push_back(static_cast<const SessionWindow*>(&window));
+  session.push_back(static_cast<const sessions::SessionWindow*>(&window));
   ui_test_utils::BrowserAddedObserver window_observer;
   std::vector<Browser*> browsers =
       SessionRestore::RestoreForeignSessionWindows(

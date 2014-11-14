@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 #include "sync/protocol/session_specifics.pb.h"
 
 namespace content {
@@ -23,7 +23,8 @@ namespace browser_sync {
 // list of windows along with a unique session identifer (tag) and meta-data
 // about the device being synced.
 struct SyncedSession {
-  typedef std::map<SessionID::id_type, SessionWindow*> SyncedWindowMap;
+  typedef std::map<SessionID::id_type, sessions::SessionWindow*>
+      SyncedWindowMap;
 
   // The type of device.
   // Please keep in sync with ForeignSessionHelper.java
@@ -91,11 +92,11 @@ struct SyncedSession {
 // Control which foreign tabs we're interested in syncing/displaying. Checks
 // that the tab has navigations and contains at least one valid url.
 // Note: chrome:// and file:// are not considered valid urls (for syncing).
-bool ShouldSyncSessionTab(const SessionTab& tab);
+bool ShouldSyncSessionTab(const sessions::SessionTab& tab);
 
 // Checks whether the window has tabs to sync. If no tabs to sync, it returns
 // true, false otherwise.
-bool SessionWindowHasNoTabsToSync(const SessionWindow& window);
+bool SessionWindowHasNoTabsToSync(const sessions::SessionWindow& window);
 
 }  // namespace browser_sync
 

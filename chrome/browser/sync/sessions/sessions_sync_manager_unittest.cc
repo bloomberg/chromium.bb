@@ -7,7 +7,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/session_sync_test_helper.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate.h"
 #include "chrome/browser/sync/glue/synced_window_delegate.h"
@@ -19,6 +18,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 #include "components/sync_driver/device_info.h"
 #include "components/sync_driver/local_device_info_provider_mock.h"
 #include "content/public/browser/navigation_entry.h"
@@ -335,7 +335,7 @@ TEST_F(SessionsSyncManagerTest, PopulateSessionWindow) {
       tag, window_s, base::Time(), session->windows[0]);
   ASSERT_EQ(1U, session->windows[0]->tabs.size());
   ASSERT_EQ(1, session->windows[0]->selected_tab_index);
-  ASSERT_EQ(SessionWindow::TYPE_TABBED, session->windows[0]->type);
+  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, session->windows[0]->type);
   ASSERT_EQ(1U, manager()->session_tracker_.num_synced_sessions());
   ASSERT_EQ(1U,
             manager()->session_tracker_.num_synced_tabs(std::string("tag")));
@@ -507,7 +507,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegate) {
   tab.AppendEntry(entry3);
   tab.set_current_entry_index(2);
 
-  SessionTab session_tab;
+  sessions::SessionTab session_tab;
   session_tab.window_id.set_id(1);
   session_tab.tab_id.set_id(1);
   session_tab.tab_visual_index = 1;
@@ -609,7 +609,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateNavigationIndex) {
   tab.AppendEntry(entry9);
   tab.set_current_entry_index(8);
 
-  SessionTab session_tab;
+  sessions::SessionTab session_tab;
   manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
 
   EXPECT_EQ(6, session_tab.current_navigation_index);
@@ -649,7 +649,7 @@ TEST_F(SessionsSyncManagerTest, SetSessionTabFromDelegateCurrentInvalid) {
   tab.AppendEntry(entry3);
   tab.set_current_entry_index(1);
 
-  SessionTab session_tab;
+  sessions::SessionTab session_tab;
   manager()->SetSessionTabFromDelegate(tab, kTime9, &session_tab);
 
   EXPECT_EQ(2, session_tab.current_navigation_index);
@@ -678,7 +678,7 @@ TEST_F(SessionsSyncManagerTest, BlockedNavigations) {
   tab.set_is_supervised(true);
   tab.set_blocked_navigations(&blocked_navigations.get());
 
-  SessionTab session_tab;
+  sessions::SessionTab session_tab;
   session_tab.window_id.set_id(1);
   session_tab.tab_id.set_id(1);
   session_tab.tab_visual_index = 1;
@@ -2035,7 +2035,7 @@ TEST_F(SessionsSyncManagerTest, ReceiveDuplicateUnassociatedTabs) {
   std::vector<const SyncedSession*> foreign_sessions;
   ASSERT_TRUE(manager()->GetAllForeignSessions(&foreign_sessions));
 
-  const std::vector<SessionTab*>& window_tabs =
+  const std::vector<sessions::SessionTab*>& window_tabs =
       foreign_sessions[0]->windows.find(0)->second->tabs;
   ASSERT_EQ(3U, window_tabs.size());
   // The first one is from the original set of tabs.

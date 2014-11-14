@@ -17,9 +17,9 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/session_command.h"
 #include "components/sessions/content/content_serialized_navigation_builder.h"
 #include "components/sessions/serialized_navigation_entry.h"
+#include "components/sessions/session_command.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -336,7 +336,7 @@ ScopedJavaLocalRef<jobject> WebContentsState::WriteNavigationsAsByteBuffer(
     Pickle tab_navigation_pickle;
     // Max size taken from BaseSessionService::CreateUpdateTabNavigationCommand.
     static const size_t max_state_size =
-        std::numeric_limits<SessionCommand::size_type>::max() - 1024;
+        std::numeric_limits<sessions::SessionCommand::size_type>::max() - 1024;
     sessions::ContentSerializedNavigationBuilder::FromNavigationEntry(
         i, *navigations[i])
         .WriteToPickle(max_state_size, &tab_navigation_pickle);

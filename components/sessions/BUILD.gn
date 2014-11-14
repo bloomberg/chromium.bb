@@ -12,11 +12,24 @@ if (is_android) {
 # into multiple shared libraries.  Revisit this setup if necessary.
 source_set("sessions_core") {
   sources = [
+    "base_session_service.cc",
+    "base_session_service.h",
+    "base_session_service_commands.cc",
+    "base_session_service_commands.h",
+    "base_session_service_delegate.h",
     "core/serialized_navigation_driver.h",
     "serialized_navigation_entry.cc",
     "serialized_navigation_entry.h",
+    "session_backend.cc",
+    "session_backend.h",
+    "session_command.cc",
+    "session_command.h",
     "session_id.cc",
     "session_id.h",
+    "session_service_commands.cc",
+    "session_service_commands.h",
+    "session_types.cc",
+    "session_types.h",
   ]
 
   defines = [ "SESSIONS_IMPLEMENTATION" ]
@@ -26,6 +39,7 @@ source_set("sessions_core") {
     "//skia",
     "//third_party/protobuf:protobuf_lite",
     "//ui/base",
+    "//ui/gfx",
     "//url",
   ]
 
@@ -72,3 +86,20 @@ if (!is_ios) {
     ]
   }
 }
+
+if (!is_ios && !is_android) {
+  source_set("unit_tests") {
+    testonly = true
+    sources = [
+      "session_types_unittest.cc",
+      "session_backend_unittest.cc",
+    ]
+    deps = [
+      ":sessions_content",
+      "//base/test:test_support",
+      "//testing/gtest",
+      "//third_party/protobuf:protobuf_lite",
+    ]
+  }
+}
+

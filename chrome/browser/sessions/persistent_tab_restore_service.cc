@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,12 +18,12 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/base_session_service.h"
-#include "chrome/browser/sessions/base_session_service_commands.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
-#include "chrome/browser/sessions/session_command.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "components/sessions/base_session_service.h"
+#include "components/sessions/base_session_service_commands.h"
+#include "components/sessions/session_command.h"
 #include "content/public/browser/session_storage_namespace.h"
 
 namespace {
@@ -94,14 +94,14 @@ enum LoadState {
 //   described).
 // . When the user restores an entry a command of type kCommandRestoredEntry
 //   is written.
-const SessionCommand::id_type kCommandUpdateTabNavigation = 1;
-const SessionCommand::id_type kCommandRestoredEntry = 2;
-const SessionCommand::id_type kCommandWindow = 3;
-const SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
-const SessionCommand::id_type kCommandPinnedState = 5;
-const SessionCommand::id_type kCommandSetExtensionAppID = 6;
-const SessionCommand::id_type kCommandSetWindowAppName = 7;
-const SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
+const sessions::SessionCommand::id_type kCommandUpdateTabNavigation = 1;
+const sessions::SessionCommand::id_type kCommandRestoredEntry = 2;
+const sessions::SessionCommand::id_type kCommandWindow = 3;
+const sessions::SessionCommand::id_type kCommandSelectedNavigationInTab = 4;
+const sessions::SessionCommand::id_type kCommandPinnedState = 5;
+const sessions::SessionCommand::id_type kCommandSetExtensionAppID = 6;
+const sessions::SessionCommand::id_type kCommandSetWindowAppName = 7;
+const sessions::SessionCommand::id_type kCommandSetTabUserAgentOverride = 8;
 
 // Number of entries (not commands) before we clobber the file and write
 // everything.
@@ -144,8 +144,9 @@ class PersistentTabRestoreService::Delegate
   bool IsLoaded() const;
 
   // Creates and add entries to |entries| for each of the windows in |windows|.
-  static void CreateEntriesFromWindows(std::vector<SessionWindow*>* windows,
-                                       std::vector<Entry*>* entries);
+  static void CreateEntriesFromWindows(
+      std::vector<sessions::SessionWindow*>* windows,
+      std::vector<Entry*>* entries);
 
   void Shutdown();
 
@@ -157,19 +158,21 @@ class PersistentTabRestoreService::Delegate
   void ScheduleCommandsForTab(const Tab& tab, int selected_index);
 
   // Creates a window close command.
-  static scoped_ptr<SessionCommand> CreateWindowCommand(SessionID::id_type id,
-                                                        int selected_tab_index,
-                                                        int num_tabs,
-                                                        base::Time timestamp);
+  static scoped_ptr<sessions::SessionCommand> CreateWindowCommand(
+      SessionID::id_type id,
+      int selected_tab_index,
+      int num_tabs,
+      base::Time timestamp);
 
   // Creates a tab close command.
-  static scoped_ptr<SessionCommand> CreateSelectedNavigationInTabCommand(
+  static scoped_ptr<sessions::SessionCommand>
+  CreateSelectedNavigationInTabCommand(
       SessionID::id_type tab_id,
       int32 index,
       base::Time timestamp);
 
   // Creates a restore command.
-  static scoped_ptr<SessionCommand> CreateRestoredEntryCommand(
+  static scoped_ptr<sessions::SessionCommand> CreateRestoredEntryCommand(
     SessionID::id_type entry_id);
 
   // Returns the index to persist as the selected index. This is the same as
@@ -181,11 +184,13 @@ class PersistentTabRestoreService::Delegate
   // Invoked when we've loaded the session commands that identify the previously
   // closed tabs. This creates entries, adds them to staging_entries_, and
   // invokes LoadState.
-  void OnGotLastSessionCommands(ScopedVector<SessionCommand> commands);
+  void OnGotLastSessionCommands(
+      ScopedVector<sessions::SessionCommand> commands);
 
   // Populates |loaded_entries| with Entries from |commands|.
-  void CreateEntriesFromCommands(const std::vector<SessionCommand*>& commands,
-                                 std::vector<Entry*>* loaded_entries);
+  void CreateEntriesFromCommands(
+      const std::vector<sessions::SessionCommand*>& commands,
+      std::vector<Entry*>* loaded_entries);
 
   // Validates all entries in |entries|, deleting any with no navigations. This
   // also deletes any entries beyond the max number of entries we can hold.
@@ -195,13 +200,14 @@ class PersistentTabRestoreService::Delegate
   // previous session. This creates and add entries to |staging_entries_| and
   // invokes LoadStateChanged. |ignored_active_window| is ignored because we
   // don't need to restore activation.
-  void OnGotPreviousSession(ScopedVector<SessionWindow> windows,
+  void OnGotPreviousSession(ScopedVector<sessions::SessionWindow> windows,
                             SessionID::id_type ignored_active_window);
 
   // Converts a SessionWindow into a Window, returning true on success. We use 0
   // as the timestamp here since we do not know when the window/tab was closed.
-  static bool ConvertSessionWindowToWindow(SessionWindow* session_window,
-                                           Window* window);
+  static bool ConvertSessionWindowToWindow(
+      sessions::SessionWindow* session_window,
+      Window* window);
 
   // Invoked when previous tabs or session is loaded. If both have finished
   // loading the entries in |staging_entries_| are added to entries and
@@ -216,7 +222,7 @@ class PersistentTabRestoreService::Delegate
                        std::vector<TabRestoreService::Entry*>* entries);
 
  private:
-  scoped_ptr<BaseSessionService> base_session_service_;
+  scoped_ptr<sessions::BaseSessionService> base_session_service_;
 
   // The associated profile.
   Profile* profile_;
@@ -246,9 +252,10 @@ class PersistentTabRestoreService::Delegate
 PersistentTabRestoreService::Delegate::Delegate(Profile* profile)
     : BaseSessionServiceDelegateImpl(true),
       base_session_service_(
-          new BaseSessionService(BaseSessionService::TAB_RESTORE,
-                                 profile->GetPath(),
-                                 this)),
+          new sessions::BaseSessionService(
+              sessions::BaseSessionService::TAB_RESTORE,
+              profile->GetPath(),
+              this)),
       profile_(profile),
       tab_restore_service_helper_(NULL),
       entries_to_write_(0),
@@ -385,7 +392,7 @@ bool PersistentTabRestoreService::Delegate::IsLoaded() const {
 
 // static
 void PersistentTabRestoreService::Delegate::CreateEntriesFromWindows(
-    std::vector<SessionWindow*>* windows,
+    std::vector<sessions::SessionWindow*>* windows,
     std::vector<Entry*>* entries) {
   for (size_t i = 0; i < windows->size(); ++i) {
     scoped_ptr<Window> window(new Window());
@@ -422,9 +429,9 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForWindow(
 
   if (!window.app_name.empty()) {
     base_session_service_->ScheduleCommand(
-        CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
-                                      window.id,
-                                      window.app_name).Pass());
+        sessions::CreateSetWindowAppNameCommand(kCommandSetWindowAppName,
+                                                window.id,
+                                                window.app_name).Pass());
   }
 
   for (size_t i = 0; i < window.tabs.size(); ++i) {
@@ -460,24 +467,26 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 
   if (tab.pinned) {
     PinnedStatePayload payload = true;
-    scoped_ptr<SessionCommand> command(
-        new SessionCommand(kCommandPinnedState, sizeof(payload)));
+    scoped_ptr<sessions::SessionCommand> command(
+        new sessions::SessionCommand(kCommandPinnedState, sizeof(payload)));
     memcpy(command->contents(), &payload, sizeof(payload));
     base_session_service_->ScheduleCommand(command.Pass());
   }
 
   if (!tab.extension_app_id.empty()) {
     base_session_service_->ScheduleCommand(
-        CreateSetTabExtensionAppIDCommand(kCommandSetExtensionAppID,
-                                          tab.id,
-                                          tab.extension_app_id).Pass());
+        sessions::CreateSetTabExtensionAppIDCommand(
+            kCommandSetExtensionAppID,
+            tab.id,
+            tab.extension_app_id).Pass());
   }
 
   if (!tab.user_agent_override.empty()) {
     base_session_service_->ScheduleCommand(
-        CreateSetTabUserAgentOverrideCommand(kCommandSetTabUserAgentOverride,
-                                             tab.id,
-                                             tab.user_agent_override).Pass());
+        sessions::CreateSetTabUserAgentOverrideCommand(
+            kCommandSetTabUserAgentOverride,
+            tab.id,
+            tab.user_agent_override).Pass());
   }
 
   // Then write the navigations.
@@ -493,7 +502,7 @@ void PersistentTabRestoreService::Delegate::ScheduleCommandsForTab(
 }
 
 // static
-scoped_ptr<SessionCommand>
+scoped_ptr<sessions::SessionCommand>
 PersistentTabRestoreService::Delegate::CreateWindowCommand(
     SessionID::id_type id,
     int selected_tab_index,
@@ -508,14 +517,14 @@ PersistentTabRestoreService::Delegate::CreateWindowCommand(
   payload.num_tabs = num_tabs;
   payload.timestamp = timestamp.ToInternalValue();
 
-  scoped_ptr<SessionCommand> command(
-      new SessionCommand(kCommandWindow, sizeof(payload)));
+  scoped_ptr<sessions::SessionCommand> command(
+      new sessions::SessionCommand(kCommandWindow, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-scoped_ptr<SessionCommand>
+scoped_ptr<sessions::SessionCommand>
 PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
     SessionID::id_type tab_id,
     int32 index,
@@ -524,19 +533,20 @@ PersistentTabRestoreService::Delegate::CreateSelectedNavigationInTabCommand(
   payload.id = tab_id;
   payload.index = index;
   payload.timestamp = timestamp.ToInternalValue();
-  scoped_ptr<SessionCommand> command(
-      new SessionCommand(kCommandSelectedNavigationInTab, sizeof(payload)));
+  scoped_ptr<sessions::SessionCommand> command(
+      new sessions::SessionCommand(
+          kCommandSelectedNavigationInTab, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
 
 // static
-scoped_ptr<SessionCommand>
+scoped_ptr<sessions::SessionCommand>
 PersistentTabRestoreService::Delegate::CreateRestoredEntryCommand(
     SessionID::id_type entry_id) {
   RestoredEntryPayload payload = entry_id;
-  scoped_ptr<SessionCommand> command(
-      new SessionCommand(kCommandRestoredEntry, sizeof(payload)));
+  scoped_ptr<sessions::SessionCommand> command(
+      new sessions::SessionCommand(kCommandRestoredEntry, sizeof(payload)));
   memcpy(command->contents(), &payload, sizeof(payload));
   return command;
 }
@@ -569,7 +579,7 @@ int PersistentTabRestoreService::Delegate::GetSelectedNavigationIndexToPersist(
 }
 
 void PersistentTabRestoreService::Delegate::OnGotLastSessionCommands(
-    ScopedVector<SessionCommand> commands) {
+    ScopedVector<sessions::SessionCommand> commands) {
   std::vector<Entry*> entries;
   CreateEntriesFromCommands(commands.get(), &entries);
   // Closed tabs always go to the end.
@@ -580,7 +590,7 @@ void PersistentTabRestoreService::Delegate::OnGotLastSessionCommands(
 }
 
 void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
-    const std::vector<SessionCommand*>& commands,
+    const std::vector<sessions::SessionCommand*>& commands,
     std::vector<Entry*>* loaded_entries) {
   if (tab_restore_service_helper_->entries().size() == kMaxEntries)
     return;
@@ -594,9 +604,9 @@ void PersistentTabRestoreService::Delegate::CreateEntriesFromCommands(
   Window* current_window = NULL;
   // If > 0, we've gotten a window command but not all the tabs yet.
   int pending_window_tabs = 0;
-  for (std::vector<SessionCommand*>::const_iterator i = commands.begin();
-       i != commands.end(); ++i) {
-    const SessionCommand& command = *(*i);
+  for (std::vector<sessions::SessionCommand*>::const_iterator i =
+           commands.begin(); i != commands.end(); ++i) {
+    const sessions::SessionCommand& command = *(*i);
     switch (command.id()) {
       case kCommandRestoredEntry: {
         if (pending_window_tabs > 0) {
@@ -799,7 +809,7 @@ void PersistentTabRestoreService::Delegate::ValidateAndDeleteEmptyEntries(
 }
 
 void PersistentTabRestoreService::Delegate::OnGotPreviousSession(
-    ScopedVector<SessionWindow> windows,
+    ScopedVector<sessions::SessionWindow> windows,
     SessionID::id_type ignored_active_window) {
   std::vector<Entry*> entries;
   CreateEntriesFromWindows(&windows.get(), &entries);
@@ -811,7 +821,7 @@ void PersistentTabRestoreService::Delegate::OnGotPreviousSession(
 }
 
 bool PersistentTabRestoreService::Delegate::ConvertSessionWindowToWindow(
-    SessionWindow* session_window,
+    sessions::SessionWindow* session_window,
     Window* window) {
   for (size_t i = 0; i < session_window->tabs.size(); ++i) {
     if (!session_window->tabs[i]->navigations.empty()) {

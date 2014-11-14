@@ -1,15 +1,18 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright 2006 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_SESSION_COMMAND_H_
-#define CHROME_BROWSER_SESSIONS_SESSION_COMMAND_H_
+#ifndef COMPONENTS_SESSIONS_SESSION_COMMAND_H_
+#define COMPONENTS_SESSIONS_SESSION_COMMAND_H_
 
 #include <string>
 
 #include "base/basictypes.h"
+#include "components/sessions/sessions_export.h"
 
 class Pickle;
+
+namespace sessions {
 
 // SessionCommand contains a command id and arbitrary chunk of data. The id
 // and chunk of data are specific to the service creating them.
@@ -18,10 +21,10 @@ class Pickle;
 // state on disk.
 //
 // There are two ways to create a SessionCommand:
-// . Specificy the size of the data block to create. This is useful for
+// . Specifiy the size of the data block to create. This is useful for
 //   commands that have a fixed size.
 // . From a pickle, this is useful for commands whose length varies.
-class SessionCommand {
+class SESSIONS_EXPORT SessionCommand {
  public:
   // These get written to disk, so we define types for them.
   // Type for the identifier.
@@ -65,4 +68,6 @@ class SessionCommand {
   DISALLOW_COPY_AND_ASSIGN(SessionCommand);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_SESSION_COMMAND_H_
+}  // namespace sessions
+
+#endif  // COMPONENTS_SESSIONS_SESSION_COMMAND_H_

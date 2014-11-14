@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,10 +18,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -29,6 +27,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/session_command.h"
+#include "components/sessions/session_types.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -93,7 +93,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     }
   }
 
-  void ReadWindows(std::vector<SessionWindow*>* windows,
+  void ReadWindows(std::vector<sessions::SessionWindow*>* windows,
                    SessionID::id_type* active_window_id) {
     // Forces closing the file.
     helper_.SetService(NULL);
@@ -124,7 +124,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     if (pinned_state || write_always)
       helper_.service()->SetPinnedState(window_id, tab_id, pinned_state);
 
-    ScopedVector<SessionWindow> windows;
+    ScopedVector<sessions::SessionWindow> windows;
     ReadWindows(&(windows.get()), NULL);
 
     EXPECT_EQ(1U, windows.size());
@@ -134,7 +134,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     if (HasFatalFailure())
       return false;
 
-    SessionTab* tab = windows[0]->tabs[0];
+    sessions::SessionTab* tab = windows[0]->tabs[0];
     helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
 
     return tab->pinned;
@@ -194,7 +194,7 @@ TEST_F(SessionServiceTest, Basic) {
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -202,9 +202,9 @@ TEST_F(SessionServiceTest, Basic) {
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
-  ASSERT_EQ(SessionWindow::TYPE_TABBED, windows[0]->type);
+  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, windows[0]->type);
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
 
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
@@ -223,7 +223,7 @@ TEST_F(SessionServiceTest, PersistPostData) {
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
@@ -248,7 +248,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   UpdateNavigation(window_id, tab2_id, nav2, true);
   service()->TabClosed(window_id, tab2_id, false);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -256,7 +256,7 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
 
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
@@ -280,14 +280,14 @@ TEST_F(SessionServiceTest, Pruning) {
   }
   service()->TabNavigationPathPrunedFromBack(window_id, tab_id, 3);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   // We left the selected index at 5, then pruned. When rereading the
   // index should get reset to last valid navigation, which is 2.
   helper_.AssertTabEquals(window_id, tab_id, 0, 2, 3, *tab);
@@ -308,7 +308,7 @@ TEST_F(SessionServiceTest, TwoWindows) {
   CreateAndWriteSessionWithTwoWindows(
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
@@ -317,8 +317,8 @@ TEST_F(SessionServiceTest, TwoWindows) {
   ASSERT_EQ(1U, windows[0]->tabs.size());
   ASSERT_EQ(1U, windows[1]->tabs.size());
 
-  SessionTab* rt1;
-  SessionTab* rt2;
+  sessions::SessionTab* rt1;
+  sessions::SessionTab* rt2;
   if (windows[0]->window_id.id() == window_id.id()) {
     ASSERT_EQ(window2_id.id(), windows[1]->window_id.id());
     ASSERT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
@@ -333,7 +333,7 @@ TEST_F(SessionServiceTest, TwoWindows) {
     rt1 = windows[1]->tabs[0];
     rt2 = windows[0]->tabs[0];
   }
-  SessionTab* tab = rt1;
+  sessions::SessionTab* tab = rt1;
   helper_.AssertTabEquals(window_id, tab1_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 
@@ -363,7 +363,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
                              ui::SHOW_STATE_NORMAL);
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -371,7 +371,7 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   ASSERT_EQ(1U, windows[0]->tabs.size());
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab1_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
@@ -396,7 +396,7 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
 
   service()->WindowClosing(window_id);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -404,7 +404,7 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(2U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 
@@ -437,7 +437,7 @@ TEST_F(SessionServiceTest, LockingWindowRemembersAll) {
   service()->WindowClosing(window2_id);
   service()->WindowClosed(window2_id);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
@@ -475,7 +475,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   service()->TabClosed(window2_id, tab2_id, false);
   service()->WindowClosed(window2_id);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -483,7 +483,7 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
@@ -515,7 +515,7 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
   UpdateNavigation(window2_id, tab2_id, nav2, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -523,7 +523,7 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
@@ -557,25 +557,25 @@ TEST_F(SessionServiceTest, RestoreApp) {
   helper_.PrepareTabInWindow(window2_id, tab2_id, 0, false);
   UpdateNavigation(window2_id, tab2_id, nav2, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(2U, windows.size());
-  int tabbed_index = windows[0]->type == SessionWindow::TYPE_TABBED ?
+  int tabbed_index = windows[0]->type == sessions::SessionWindow::TYPE_TABBED ?
       0 : 1;
   int app_index = tabbed_index == 0 ? 1 : 0;
   ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
   ASSERT_EQ(window_id.id(), windows[tabbed_index]->window_id.id());
   ASSERT_EQ(1U, windows[tabbed_index]->tabs.size());
 
-  SessionTab* tab = windows[tabbed_index]->tabs[0];
+  sessions::SessionTab* tab = windows[tabbed_index]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 
   ASSERT_EQ(0, windows[app_index]->selected_tab_index);
   ASSERT_EQ(window2_id.id(), windows[app_index]->window_id.id());
   ASSERT_EQ(1U, windows[app_index]->tabs.size());
-  ASSERT_TRUE(windows[app_index]->type == SessionWindow::TYPE_POPUP);
+  ASSERT_TRUE(windows[app_index]->type == sessions::SessionWindow::TYPE_POPUP);
   ASSERT_EQ("TestApp", windows[app_index]->app_name);
 
   tab = windows[app_index]->tabs[0];
@@ -604,7 +604,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 2);
 
   // Read back in.
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -616,7 +616,7 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   EXPECT_TRUE(windows[0]->tabs[0]->extension_app_id.empty());
 
   // We should be left with three navigations, the 2nd selected.
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   ASSERT_EQ(1, tab->current_navigation_index);
   EXPECT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(GURL(base_url + base::IntToString(2)) ==
@@ -647,7 +647,7 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
   helper_.service()->TabNavigationPathPrunedFromFront(window_id, tab_id, 5);
 
   // Read back in.
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(0U, windows.size());
@@ -682,7 +682,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   UpdateNavigation(window_id, tab_id, nav1, true);
   helper_.SetTabExtensionAppID(window_id, tab_id, app_id);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
@@ -706,11 +706,11 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
   UpdateNavigation(window_id, tab_id, nav1, true);
   helper_.SetTabUserAgentOverride(window_id, tab_id, user_agent_override);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
   EXPECT_TRUE(user_agent_override == tab->user_agent_override);
@@ -738,7 +738,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   UpdateNavigation(window_id, tab_id, nav1, true);
   service()->TabClosed(window_id, tab_id, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_TRUE(windows.empty());
@@ -757,7 +757,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
                              window_bounds,
                              ui::SHOW_STATE_DEFAULT);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
   ASSERT_EQ(1U, windows.size());
   EXPECT_EQ(ui::SHOW_STATE_NORMAL, windows[0]->show_state);
@@ -793,7 +793,7 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   UpdateNavigation(window_id, tab_id, nav1, true);
   UpdateNavigation(window_id, tab_id, nav2, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 2);
@@ -823,7 +823,7 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
@@ -850,7 +850,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
   }
 
   // Read back in.
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   // The ones with index 0, and 2 should have been replaced by 1 and 3.
@@ -890,7 +890,7 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   UpdateNavigation(window_id, tab_id, nav, true);
 
   // Read back in.
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   // We should still have that last navigation at the end,
@@ -912,10 +912,12 @@ TEST_F(SessionServiceTest, RestoreActivation1) {
   CreateAndWriteSessionWithTwoWindows(
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
-  service()->ScheduleCommand(CreateSetActiveWindowCommand(window2_id).Pass());
-  service()->ScheduleCommand(CreateSetActiveWindowCommand(window_id).Pass());
+  service()->ScheduleCommand(
+      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
+  service()->ScheduleCommand(
+      sessions::CreateSetActiveWindowCommand(window_id).Pass());
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   SessionID::id_type active_window_id = 0;
   ReadWindows(&(windows.get()), &active_window_id);
   EXPECT_EQ(window_id.id(), active_window_id);
@@ -933,11 +935,14 @@ TEST_F(SessionServiceTest, RestoreActivation2) {
   CreateAndWriteSessionWithTwoWindows(
       window2_id, tab1_id, tab2_id, &nav1, &nav2);
 
-  service()->ScheduleCommand(CreateSetActiveWindowCommand(window2_id).Pass());
-  service()->ScheduleCommand(CreateSetActiveWindowCommand(window_id).Pass());
-  service()->ScheduleCommand(CreateSetActiveWindowCommand(window2_id).Pass());
+  service()->ScheduleCommand(
+      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
+  service()->ScheduleCommand(
+      sessions::CreateSetActiveWindowCommand(window_id).Pass());
+  service()->ScheduleCommand(
+      sessions::CreateSetActiveWindowCommand(window2_id).Pass());
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   SessionID::id_type active_window_id = 0;
   ReadWindows(&(windows.get()), &active_window_id);
   EXPECT_EQ(window2_id.id(), active_window_id);
@@ -962,7 +967,7 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   UpdateNavigation(window_id, tab_id, nav2, true);
   UpdateNavigation(window_id, tab_id, nav3, true);
 
-  ScopedVector<SessionWindow> windows;
+  ScopedVector<sessions::SessionWindow> windows;
   ReadWindows(&(windows.get()), NULL);
 
   ASSERT_EQ(1U, windows.size());
@@ -970,7 +975,7 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
-  SessionTab* tab = windows[0]->tabs[0];
+  sessions::SessionTab* tab = windows[0]->tabs[0];
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
   helper_.AssertNavigationEquals(nav1, tab->navigations[0]);
 }
@@ -978,7 +983,7 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
 // Functions used by GetSessionsAndDestroy.
 namespace {
 
-void OnGotPreviousSession(ScopedVector<SessionWindow> windows,
+void OnGotPreviousSession(ScopedVector<sessions::SessionWindow> windows,
                           SessionID::id_type ignored_active_window) {
   FAIL() << "SessionService was destroyed, this shouldn't be reached.";
 }

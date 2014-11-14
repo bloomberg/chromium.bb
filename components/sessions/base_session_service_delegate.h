@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
-#define CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
+#ifndef COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
+#define COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -12,6 +12,7 @@ class SequencedWorkerPool;
 }
 
 class GURL;
+// TODO(skuhne): Add sessions namespace.
 
 // The BaseSessionServiceDelegate decouples the BaseSessionService from
 // chrome/content dependencies.
@@ -40,4 +41,4 @@ class BaseSessionServiceDelegate {
   virtual ~BaseSessionServiceDelegate() {}
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_
+#endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_

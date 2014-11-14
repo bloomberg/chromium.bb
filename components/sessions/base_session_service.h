@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
-#define CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
+#ifndef COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_
+#define COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -12,21 +12,24 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
+#include "components/sessions/sessions_export.h"
 #include "url/gurl.h"
 
 class BaseSessionServiceDelegate;
 class SessionBackend;
-class SessionCommand;
+class BetterSessionRestoreCrashTest;
+class SessionServiceTestHelper;
+class NoStartupWindowTest;
 
 namespace sessions {
 class SerializedNavigationEntry;
-}
+class SessionCommand;
 
 // BaseSessionService is the super class of both tab restore service and
 // session service. It contains commonality needed by both, in particular
 // it manages a set of SessionCommands that are periodically sent to a
 // SessionBackend.
-class BaseSessionService {
+class SESSIONS_EXPORT BaseSessionService {
  public:
   // Identifies the type of session service this is. This is used by the
   // backend to determine the name of the files.
@@ -101,9 +104,11 @@ class BaseSessionService {
       base::CancelableTaskTracker* tracker);
 
  private:
-  friend class BetterSessionRestoreCrashTest;
-  friend class SessionServiceTestHelper;
-  friend class NoStartupWindowTest;
+  // TODO(skuhne): move these test accessors out into a separate testing
+  // framework - and / or the tests here.
+  friend class ::BetterSessionRestoreCrashTest;
+  friend class ::SessionServiceTestHelper;
+  friend class ::NoStartupWindowTest;
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
@@ -141,4 +146,6 @@ class BaseSessionService {
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
+}  // namespace sessions
+
+#endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_H_

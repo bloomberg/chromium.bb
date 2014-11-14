@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,11 +11,11 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sessions/serialized_navigation_entry.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 #include "content/public/browser/session_storage_namespace.h"
 #include "ui/base/window_open_disposition.h"
 

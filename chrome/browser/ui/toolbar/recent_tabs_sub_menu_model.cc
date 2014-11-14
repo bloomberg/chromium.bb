@@ -77,7 +77,8 @@ bool SortSessionsByRecency(const browser_sync::SyncedSession* s1,
 
 // Comparator function for use with std::sort that will sort tabs by
 // descending timestamp (i.e., most recent first).
-bool SortTabsByRecency(const SessionTab* t1, const SessionTab* t2) {
+bool SortTabsByRecency(const sessions::SessionTab* t1,
+                       const sessions::SessionTab* t2) {
   return t1->timestamp > t2->timestamp;
 }
 
@@ -286,7 +287,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       browser_sync::OpenTabsUIDelegate* open_tabs = GetOpenTabsUIDelegate();
       if (!open_tabs)
         return;
-      const SessionTab* tab;
+      const sessions::SessionTab* tab;
       if (!open_tabs->GetForeignTab(item.session_tag, item.tab_id, &tab))
         return;
       if (tab->navigations.empty())
@@ -446,7 +447,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
     const std::string& session_tag = session->session_tag;
 
     // Get windows of session.
-    std::vector<const SessionWindow*> windows;
+    std::vector<const sessions::SessionWindow*> windows;
     if (!open_tabs->GetForeignSession(session_tag, &windows) ||
         windows.empty()) {
       continue;
@@ -455,11 +456,11 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
     // Collect tabs from all windows of session, pruning those that are not
     // syncable or are NewTabPage, then sort them from most recent to least
     // recent, independent of which window the tabs were from.
-    std::vector<const SessionTab*> tabs_in_session;
+    std::vector<const sessions::SessionTab*> tabs_in_session;
     for (size_t j = 0; j < windows.size(); ++j) {
-      const SessionWindow* window = windows[j];
+      const sessions::SessionWindow* window = windows[j];
       for (size_t t = 0; t < window->tabs.size(); ++t) {
-        const SessionTab* tab = window->tabs[t];
+        const sessions::SessionTab* tab = window->tabs[t];
         if (tab->navigations.empty())
           continue;
         const sessions::SerializedNavigationEntry& current_navigation =
@@ -537,7 +538,7 @@ void RecentTabsSubMenuModel::BuildLocalWindowItem(
 
 void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
     const std::string& session_tag,
-    const SessionTab& tab) {
+    const sessions::SessionTab& tab) {
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.normalized_navigation_index());
   TabNavigationItem item(session_tag, tab.tab_id.id(),

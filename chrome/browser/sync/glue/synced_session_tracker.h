@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,10 +12,10 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/sessions/tab_node_pool.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 
 namespace browser_sync {
 
@@ -46,8 +46,9 @@ class SyncedSessionTracker {
   // - Fills windows with the SessionWindow pointers, returns true.
   // Else
   // - Returns false.
-  bool LookupSessionWindows(const std::string& session_tag,
-                            std::vector<const SessionWindow*>* windows) const;
+  bool LookupSessionWindows(
+      const std::string& session_tag,
+      std::vector<const sessions::SessionWindow*>* windows) const;
 
   // Attempts to look up the tab associated with the given tag and tab id.
   // Ownership of the SessionTab remains within the SyncedSessionTracker.
@@ -57,7 +58,7 @@ class SyncedSessionTracker {
   // - Returns false, tab is set to NULL.
   bool LookupSessionTab(const std::string& session_tag,
                         SessionID::id_type tab_id,
-                        const SessionTab** tab) const;
+                        const sessions::SessionTab** tab) const;
 
   // Allows retrieval of existing data for the local session. Unlike GetSession
   // this won't create-if-not-present.
@@ -109,9 +110,9 @@ class SyncedSessionTracker {
   // the session specified with |session_tag|. If none exists, creates one.
   // Ownership of the SessionTab remains within the SyncedSessionTracker.
   // |tab_node_id| must be a valid node id for the node backing this tab.
-  SessionTab* GetTab(const std::string& session_tag,
-                     SessionID::id_type tab_id,
-                     int tab_node_id);
+  sessions::SessionTab* GetTab(const std::string& session_tag,
+                               SessionID::id_type tab_id,
+                               int tab_node_id);
 
   // Fills |tab_node_ids| with the tab node ids (see GetTab) for all the tabs*
   // associated with the session having tag |session_tag|.
@@ -167,11 +168,13 @@ class SyncedSessionTracker {
     SessionTabWrapper() : tab_ptr(NULL),
                           owned(false),
                           tab_node_id(TabNodePool::kInvalidTabNodeID) {}
-    SessionTabWrapper(SessionTab* tab_ptr, OwnedState owned, int tab_node_id)
+    SessionTabWrapper(sessions::SessionTab* tab_ptr,
+                      OwnedState owned,
+                      int tab_node_id)
         : tab_ptr(tab_ptr),
           owned(owned == IS_OWNED),
           tab_node_id(tab_node_id) {}
-    SessionTab* tab_ptr;
+    sessions::SessionTab* tab_ptr;
 
     // This is used as part of a mark-and-sweep approach to garbage
     // collection for closed tabs that are no longer "in use", or "owned".
@@ -189,10 +192,10 @@ class SyncedSessionTracker {
 
   struct SessionWindowWrapper {
     SessionWindowWrapper() : window_ptr(NULL), owned(false) {}
-    SessionWindowWrapper(SessionWindow* window_ptr, OwnedState owned)
+    SessionWindowWrapper(sessions::SessionWindow* window_ptr, OwnedState owned)
         : window_ptr(window_ptr),
           owned(owned == IS_OWNED) {}
-    SessionWindow* window_ptr;
+    sessions::SessionWindow* window_ptr;
     bool owned;
   };
   typedef std::map<SessionID::id_type, SessionWindowWrapper>
@@ -206,9 +209,9 @@ class SyncedSessionTracker {
   bool DeleteOldSessionTabIfNecessary(SessionTabWrapper tab_wrapper);
 
   // Implementation for GetTab(...) above, permits invalid tab_node_id.
-  SessionTab* GetTabImpl(const std::string& session_tag,
-                         SessionID::id_type tab_id,
-                         int tab_node_id);
+  sessions::SessionTab* GetTabImpl(const std::string& session_tag,
+                                   SessionID::id_type tab_id,
+                                   int tab_node_id);
 
   // Per client mapping of tab id's to their SessionTab objects.
   // Key: session tag.
@@ -229,7 +232,7 @@ class SyncedSessionTracker {
   // have not yet mapped to SyncedSessions. These are temporarily orphaned
   // tabs, and won't be deleted if we delete synced_session_map_, but are still
   // owned by the SyncedSessionTracker itself (and deleted on Clear()).
-  std::set<SessionTab*> unmapped_tabs_;
+  std::set<sessions::SessionTab*> unmapped_tabs_;
 
   // The tag for this machine's local session, so we can distinguish the foreign
   // sessions.

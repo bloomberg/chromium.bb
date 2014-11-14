@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -27,7 +27,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/search.h"
-#include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/cld_data_harness.h"
@@ -2209,7 +2208,8 @@ class NoStartupWindowTest : public BrowserTest {
   }
 
   // Returns true if any commands were processed.
-  bool ProcessedAnyCommands(BaseSessionService* base_session_service) {
+  bool ProcessedAnyCommands(
+      sessions::BaseSessionService* base_session_service) {
     return base_session_service->ProcessedAnyCommandsForTest();
   }
 };
@@ -2246,7 +2246,7 @@ IN_PROC_BROWSER_TEST_F(NoStartupWindowTest, DontInitSessionServiceForApps) {
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile);
-  BaseSessionService* base_session_service =
+  sessions::BaseSessionService* base_session_service =
       session_service->GetBaseSessionServiceForTest();
   ASSERT_FALSE(ProcessedAnyCommands(base_session_service));
 

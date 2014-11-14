@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/session_backend.h"
+#include "components/sessions/session_backend.h"
 
 #include <limits>
 
@@ -37,8 +37,8 @@ struct FileHeader {
 
 class SessionFileReader {
  public:
-  typedef SessionCommand::id_type id_type;
-  typedef SessionCommand::size_type size_type;
+  typedef sessions::SessionCommand::id_type id_type;
+  typedef sessions::SessionCommand::size_type size_type;
 
   explicit SessionFileReader(const base::FilePath& path)
       : errored_(false),
@@ -51,15 +51,15 @@ class SessionFileReader {
   // Reads the contents of the file specified in the constructor, returning
   // true on success. It is up to the caller to free all SessionCommands
   // added to commands.
-  bool Read(BaseSessionService::SessionType type,
-            ScopedVector<SessionCommand>* commands);
+  bool Read(sessions::BaseSessionService::SessionType type,
+            ScopedVector<sessions::SessionCommand>* commands);
 
  private:
   // Reads a single command, returning it. A return value of NULL indicates
   // either there are no commands, or there was an error. Use errored_ to
   // distinguish the two. If NULL is returned, and there is no error, it means
   // the end of file was successfully reached.
-  SessionCommand* ReadCommand();
+  sessions::SessionCommand* ReadCommand();
 
   // Shifts the unused portion of buffer_ to the beginning and fills the
   // remaining portion with data from the file. Returns false if the buffer
@@ -85,8 +85,8 @@ class SessionFileReader {
   DISALLOW_COPY_AND_ASSIGN(SessionFileReader);
 };
 
-bool SessionFileReader::Read(BaseSessionService::SessionType type,
-                             ScopedVector<SessionCommand>* commands) {
+bool SessionFileReader::Read(sessions::BaseSessionService::SessionType type,
+                             ScopedVector<sessions::SessionCommand>* commands) {
   if (!file_->IsValid())
     return false;
   FileHeader header;
@@ -98,13 +98,13 @@ bool SessionFileReader::Read(BaseSessionService::SessionType type,
       header.version != kFileCurrentVersion)
     return false;
 
-  ScopedVector<SessionCommand> read_commands;
-  for (SessionCommand* command = ReadCommand(); command && !errored_;
+  ScopedVector<sessions::SessionCommand> read_commands;
+  for (sessions::SessionCommand* command = ReadCommand(); command && !errored_;
        command = ReadCommand())
     read_commands.push_back(command);
   if (!errored_)
     read_commands.swap(*commands);
-  if (type == BaseSessionService::TAB_RESTORE) {
+  if (type == sessions::BaseSessionService::TAB_RESTORE) {
     UMA_HISTOGRAM_TIMES("TabRestore.read_session_file_time",
                         TimeTicks::Now() - start_time);
   } else {
@@ -114,7 +114,7 @@ bool SessionFileReader::Read(BaseSessionService::SessionType type,
   return !errored_;
 }
 
-SessionCommand* SessionFileReader::ReadCommand() {
+sessions::SessionCommand* SessionFileReader::ReadCommand() {
   // Make sure there is enough in the buffer for the size of the next command.
   if (available_count_ < sizeof(size_type)) {
     if (!FillBuffer())
@@ -151,8 +151,8 @@ SessionCommand* SessionFileReader::ReadCommand() {
   const id_type command_id = buffer_[buffer_position_];
   // NOTE: command_size includes the size of the id, which is not part of
   // the contents of the SessionCommand.
-  SessionCommand* command =
-      new SessionCommand(command_id, command_size - sizeof(id_type));
+  sessions::SessionCommand* command =
+      new sessions::SessionCommand(command_id, command_size - sizeof(id_type));
   if (command_size > sizeof(id_type)) {
     memcpy(command->contents(),
            &(buffer_[buffer_position_ + sizeof(id_type)]),
@@ -198,7 +198,7 @@ static const char* kLastSessionFileName = "Last Session";
 // static
 const int SessionBackend::kFileReadBufferSize = 1024;
 
-SessionBackend::SessionBackend(BaseSessionService::SessionType type,
+SessionBackend::SessionBackend(sessions::BaseSessionService::SessionType type,
                                const base::FilePath& path_to_dir)
     : type_(type),
       path_to_dir_(path_to_dir),
@@ -221,7 +221,7 @@ void SessionBackend::Init() {
 }
 
 void SessionBackend::AppendCommands(
-    ScopedVector<SessionCommand> commands,
+    ScopedVector<sessions::SessionCommand> commands,
     bool reset_first) {
   Init();
   // Make sure and check current_session_file_, if opening the file failed
@@ -240,19 +240,19 @@ void SessionBackend::AppendCommands(
 
 void SessionBackend::ReadLastSessionCommands(
     const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-    const BaseSessionService::GetCommandsCallback& callback) {
+    const sessions::BaseSessionService::GetCommandsCallback& callback) {
   if (is_canceled.Run())
     return;
 
   Init();
 
-  ScopedVector<SessionCommand> commands;
+  ScopedVector<sessions::SessionCommand> commands;
   ReadLastSessionCommandsImpl(&commands);
   callback.Run(commands.Pass());
 }
 
 bool SessionBackend::ReadLastSessionCommandsImpl(
-    ScopedVector<SessionCommand>* commands) {
+    ScopedVector<sessions::SessionCommand>* commands) {
   Init();
   SessionFileReader file_reader(GetLastSessionPath());
   return file_reader.Read(type_, commands);
@@ -274,7 +274,7 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   if (base::PathExists(current_session_path)) {
     int64 file_size;
     if (base::GetFileSize(current_session_path, &file_size)) {
-      if (type_ == BaseSessionService::TAB_RESTORE) {
+      if (type_ == sessions::BaseSessionService::TAB_RESTORE) {
         UMA_HISTOGRAM_COUNTS("TabRestore.last_session_file_size",
                              static_cast<int>(file_size / 1024));
       } else {
@@ -293,20 +293,21 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
 }
 
 bool SessionBackend::ReadCurrentSessionCommandsImpl(
-    ScopedVector<SessionCommand>* commands) {
+    ScopedVector<sessions::SessionCommand>* commands) {
   Init();
   SessionFileReader file_reader(GetCurrentSessionPath());
   return file_reader.Read(type_, commands);
 }
 
 bool SessionBackend::AppendCommandsToFile(base::File* file,
-    const ScopedVector<SessionCommand>& commands) {
-  for (ScopedVector<SessionCommand>::const_iterator i = commands.begin();
+    const ScopedVector<sessions::SessionCommand>& commands) {
+  for (ScopedVector<sessions::SessionCommand>::const_iterator i =
+           commands.begin();
        i != commands.end(); ++i) {
     int wrote;
     const size_type content_size = static_cast<size_type>((*i)->size());
     const size_type total_size =  content_size + sizeof(id_type);
-    if (type_ == BaseSessionService::TAB_RESTORE)
+    if (type_ == sessions::BaseSessionService::TAB_RESTORE)
       UMA_HISTOGRAM_COUNTS("TabRestore.command_size", total_size);
     else
       UMA_HISTOGRAM_COUNTS("SessionRestore.command_size", total_size);
@@ -385,7 +386,7 @@ base::File* SessionBackend::OpenAndWriteHeader(const base::FilePath& path) {
 
 base::FilePath SessionBackend::GetLastSessionPath() {
   base::FilePath path = path_to_dir_;
-  if (type_ == BaseSessionService::TAB_RESTORE)
+  if (type_ == sessions::BaseSessionService::TAB_RESTORE)
     path = path.AppendASCII(kLastTabSessionFileName);
   else
     path = path.AppendASCII(kLastSessionFileName);
@@ -394,7 +395,7 @@ base::FilePath SessionBackend::GetLastSessionPath() {
 
 base::FilePath SessionBackend::GetCurrentSessionPath() {
   base::FilePath path = path_to_dir_;
-  if (type_ == BaseSessionService::TAB_RESTORE)
+  if (type_ == sessions::BaseSessionService::TAB_RESTORE)
     path = path.AppendASCII(kCurrentTabSessionFileName);
   else
     path = path.AppendASCII(kCurrentSessionFileName);

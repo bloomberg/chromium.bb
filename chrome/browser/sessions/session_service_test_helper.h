@@ -13,11 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "components/sessions/session_id.h"
 
-class SessionBackend;
-class SessionCommand;
 class SessionService;
-struct SessionTab;
-struct SessionWindow;
 
 namespace base {
 class RunLoop;
@@ -25,6 +21,9 @@ class RunLoop;
 
 namespace sessions {
 class SerializedNavigationEntry;
+class SessionCommand;
+struct SessionTab;
+struct SessionWindow;
 }
 
 // A simple class that makes writing SessionService related tests easier.
@@ -52,7 +51,7 @@ class SessionServiceTestHelper {
       bool force_browser_not_alive_with_no_windows);
 
   // Reads the contents of the last session.
-  void ReadWindows(std::vector<SessionWindow*>* windows,
+  void ReadWindows(std::vector<sessions::SessionWindow*>* windows,
                    SessionID::id_type* active_window_id);
 
   void AssertTabEquals(const SessionID& window_id,
@@ -60,19 +59,19 @@ class SessionServiceTestHelper {
                        int visual_index,
                        int nav_index,
                        size_t nav_count,
-                       const SessionTab& session_tab);
+                       const sessions::SessionTab& session_tab);
 
   void AssertTabEquals(int visual_index,
                        int nav_index,
                        size_t nav_count,
-                       const SessionTab& session_tab);
+                       const sessions::SessionTab& session_tab);
 
   void AssertNavigationEquals(
       const sessions::SerializedNavigationEntry& expected,
       const sessions::SerializedNavigationEntry& actual);
 
   void AssertSingleWindowWithSingleTab(
-      const std::vector<SessionWindow*>& windows,
+      const std::vector<sessions::SessionWindow*>& windows,
       size_t nav_count);
 
   void SetService(SessionService* service);

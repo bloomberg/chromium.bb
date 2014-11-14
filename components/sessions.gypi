@@ -1,4 +1,4 @@
-# Copyright (c) 2013 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,11 +14,24 @@
     # unsuitable as a static_library because it would be linked into multiple
     # shared libraries.  Revisit this setup if necessary.
     'sessions_core_sources': [
+      'sessions/base_session_service.cc',
+      'sessions/base_session_service.h',
+      'sessions/base_session_service_commands.cc',
+      'sessions/base_session_service_commands.h',
+      'sessions/base_session_service_delegate.h',
       'sessions/core/serialized_navigation_driver.h',
       'sessions/serialized_navigation_entry.cc',
       'sessions/serialized_navigation_entry.h',
+      'sessions/session_backend.cc',
+      'sessions/session_backend.h',
+      'sessions/session_command.cc',
+      'sessions/session_command.h',
       'sessions/session_id.cc',
       'sessions/session_id.h',
+      'sessions/session_service_commands.cc',
+      'sessions/session_service_commands.h',
+      'sessions/session_types.cc',
+      'sessions/session_types.h',
     ],
   },
   'targets': [
@@ -45,6 +58,12 @@
              '../sync/sync.gyp:sync',
           ]
         }],
+        ['OS!="ios" and OS!="android"', {
+         'sources': [
+           'sessions/session_backend.cc',
+           'sessions/session_backend.h',
+          ]
+        }],
       ],
     },
   ],
@@ -64,6 +83,7 @@
 	    '../skia/skia.gyp:skia',
 	    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
 	    '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
 	    '../url/url.gyp:url_lib',
 	  ],
 	  'include_dirs': [
@@ -101,6 +121,7 @@
             '../sync/sync.gyp:sync',
 	    '../third_party/protobuf/protobuf.gyp:protobuf_lite',
 	    '../ui/base/ui_base.gyp:ui_base',
+            '../ui/gfx/gfx.gyp:gfx_geometry',
 	    '../url/url.gyp:url_lib',
 	  ],
 	  'include_dirs': [

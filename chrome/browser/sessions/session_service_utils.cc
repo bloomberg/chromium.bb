@@ -6,22 +6,24 @@
 
 const int gMaxPersistNavigationCount = 6;
 
-SessionWindow::WindowType WindowTypeForBrowserType(Browser::Type type) {
+sessions::SessionWindow::WindowType WindowTypeForBrowserType(
+    Browser::Type type) {
   switch (type) {
     case Browser::TYPE_POPUP:
-      return SessionWindow::TYPE_POPUP;
+      return sessions::SessionWindow::TYPE_POPUP;
     case Browser::TYPE_TABBED:
-      return SessionWindow::TYPE_TABBED;
+      return sessions::SessionWindow::TYPE_TABBED;
   }
   NOTREACHED();
-  return SessionWindow::TYPE_TABBED;
+  return sessions::SessionWindow::TYPE_TABBED;
 }
 
-Browser::Type BrowserTypeForWindowType(SessionWindow::WindowType type) {
+Browser::Type BrowserTypeForWindowType(
+    sessions::SessionWindow::WindowType type) {
   switch (type) {
-    case SessionWindow::TYPE_POPUP:
+    case sessions::SessionWindow::TYPE_POPUP:
       return Browser::TYPE_POPUP;
-    case SessionWindow::TYPE_TABBED:
+    case sessions::SessionWindow::TYPE_TABBED:
       return Browser::TYPE_TABBED;
   }
   NOTREACHED();

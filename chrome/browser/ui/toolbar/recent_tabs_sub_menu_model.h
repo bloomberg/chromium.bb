@@ -17,7 +17,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-struct SessionTab;
 
 namespace browser_sync {
 class OpenTabsUIDelegate;
@@ -29,6 +28,10 @@ struct FaviconImageResult;
 
 namespace gfx {
 class Image;
+}
+
+namespace sessions {
+struct SessionTab;
 }
 
 namespace ui {
@@ -101,7 +104,7 @@ class RecentTabsSubMenuModel : public ui::SimpleMenuModel,
 
   // Build the tab item for other devices with parameters needed to restore it.
   void BuildOtherDevicesTabItem(const std::string& session_tag,
-                                const SessionTab& tab);
+                                const sessions::SessionTab& tab);
 
   // Add the favicon for the device section header.
   void AddDeviceFavicon(int index_in_menu,

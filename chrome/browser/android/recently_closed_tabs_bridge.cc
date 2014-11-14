@@ -109,7 +109,7 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
     return false;
 
   // RestoreForeignSessionTab needs a SessionTab.
-  SessionTab session_tab;
+  sessions::SessionTab session_tab;
   session_tab.current_navigation_index = tab_entry->current_navigation_index;
   session_tab.navigations = tab_entry->navigations;
 

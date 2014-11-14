@@ -232,7 +232,7 @@ void SessionsSyncManager::AssociateWindows(
         // change processor calling AssociateTab for all modified tabs.
         // Therefore, we can key whether this window has valid tabs based on
         // the tab's presence in the tracker.
-        const SessionTab* tab = NULL;
+        const sessions::SessionTab* tab = NULL;
         if (session_tracker_.LookupSessionTab(local_tag, tab_id, &tab)) {
           found_tabs = true;
           window_s.add_tab(tab_id);
@@ -443,7 +443,7 @@ syncer::SyncDataList SessionsSyncManager::GetAllSyncData(
   SyncedSession::SyncedWindowMap::const_iterator win_iter;
   for (win_iter = session->windows.begin();
        win_iter != session->windows.end(); ++win_iter) {
-    std::vector<SessionTab*>::const_iterator tabs_iter;
+    std::vector<sessions::SessionTab*>::const_iterator tabs_iter;
     for (tabs_iter = win_iter->second->tabs.begin();
          tabs_iter != win_iter->second->tabs.end(); ++tabs_iter) {
       sync_pb::EntitySpecifics entity;
@@ -653,7 +653,7 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
     const sync_pb::SessionTab& tab_s = specifics.tab();
     SessionID::id_type tab_id = tab_s.tab_id();
 
-    const SessionTab* existing_tab;
+    const sessions::SessionTab* existing_tab;
     if (session_tracker_.LookupSessionTab(
             foreign_session_tag, tab_id, &existing_tab) &&
         existing_tab->timestamp > modification_time) {
@@ -662,7 +662,7 @@ void SessionsSyncManager::UpdateTrackerWithForeignSession(
       return;
     }
 
-    SessionTab* tab =
+    sessions::SessionTab* tab =
         session_tracker_.GetTab(foreign_session_tag,
                                 tab_id,
                                 specifics.tab_node_id());
@@ -744,7 +744,7 @@ void SessionsSyncManager::BuildSyncedSessionFromSpecifics(
     const std::string& session_tag,
     const sync_pb::SessionWindow& specifics,
     base::Time mtime,
-    SessionWindow* session_window) {
+    sessions::SessionWindow* session_window) {
   if (specifics.has_window_id())
     session_window->window_id.set_id(specifics.window_id());
   if (specifics.has_selected_tab_index())
@@ -754,9 +754,9 @@ void SessionsSyncManager::BuildSyncedSessionFromSpecifics(
     // |SessionWindow::WindowType|. This should get changed.
     if (specifics.browser_type() ==
         sync_pb::SessionWindow_BrowserType_TYPE_TABBED) {
-      session_window->type = SessionWindow::TYPE_TABBED;
+      session_window->type = sessions::SessionWindow::TYPE_TABBED;
     } else {
-      session_window->type = SessionWindow::TYPE_POPUP;
+      session_window->type = sessions::SessionWindow::TYPE_POPUP;
     }
   }
   session_window->timestamp = mtime;
@@ -874,15 +874,15 @@ GURL SessionsSyncManager::GetCurrentFaviconURL(
 
 bool SessionsSyncManager::GetForeignSession(
     const std::string& tag,
-    std::vector<const SessionWindow*>* windows) {
+    std::vector<const sessions::SessionWindow*>* windows) {
   return session_tracker_.LookupSessionWindows(tag, windows);
 }
 
 bool SessionsSyncManager::GetForeignTab(
     const std::string& tag,
     const SessionID::id_type tab_id,
-    const SessionTab** tab) {
-  const SessionTab* synced_tab = NULL;
+    const sessions::SessionTab** tab) {
+  const sessions::SessionTab* synced_tab = NULL;
   bool success = session_tracker_.LookupSessionTab(tag,
                                                    tab_id,
                                                    &synced_tab);
@@ -894,7 +894,7 @@ bool SessionsSyncManager::GetForeignTab(
 void SessionsSyncManager::LocalTabDelegateToSpecifics(
     const SyncedTabDelegate& tab_delegate,
     sync_pb::SessionSpecifics* specifics) {
-  SessionTab* session_tab = NULL;
+  sessions::SessionTab* session_tab = NULL;
   session_tab =
       session_tracker_.GetTab(current_machine_tag(),
                               tab_delegate.GetSessionId(),
@@ -958,7 +958,7 @@ void SessionsSyncManager::AssociateRestoredPlaceholderTab(
 void SessionsSyncManager::SetSessionTabFromDelegate(
       const SyncedTabDelegate& tab_delegate,
       base::Time mtime,
-      SessionTab* session_tab) {
+      sessions::SessionTab* session_tab) {
   DCHECK(session_tab);
   session_tab->window_id.set_id(tab_delegate.GetWindowId());
   session_tab->tab_id.set_id(tab_delegate.GetSessionId());

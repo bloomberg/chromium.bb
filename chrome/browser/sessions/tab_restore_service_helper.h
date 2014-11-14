@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,10 @@
 #include "base/basictypes.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 
 class Profile;
 class TabRestoreService;

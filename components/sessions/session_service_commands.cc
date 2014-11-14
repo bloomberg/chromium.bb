@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/session_service_commands.h"
+#include "components/sessions/session_service_commands.h"
 
 #include <vector>
 
 #include "base/pickle.h"
-#include "chrome/browser/sessions/base_session_service_commands.h"
-#include "chrome/browser/sessions/base_session_service_delegate.h"
-#include "chrome/browser/sessions/session_command.h"
-#include "chrome/browser/sessions/session_types.h"
+#include "components/sessions/base_session_service_commands.h"
+#include "components/sessions/base_session_service_delegate.h"
+#include "components/sessions/session_command.h"
+#include "components/sessions/session_types.h"
+
+namespace sessions {
 
 // Identifier for commands written to file.
 static const SessionCommand::id_type kCommandSetTabWindow = 0;
@@ -831,3 +833,5 @@ void RestoreSessionFromCommands(const ScopedVector<SessionCommand>& commands,
   // Don't delete contents of windows, that is done by the caller as all
   // valid windows are added to valid_windows.
 }
+
+}  // namespace sessions

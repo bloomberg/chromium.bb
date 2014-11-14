@@ -76,7 +76,7 @@ void ForeignSessionHandler::OpenForeignSessionTab(
 
   // We don't actually care about |window_num|, this is just a sanity check.
   DCHECK_LT(kInvalidId, window_num);
-  const SessionTab* tab;
+  const ::sessions::SessionTab* tab;
   if (!open_tabs->GetForeignTab(session_string_value, tab_id, &tab)) {
     LOG(ERROR) << "Failed to load foreign tab.";
     return;
@@ -98,19 +98,19 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
   if (!open_tabs)
     return;
 
-  std::vector<const SessionWindow*> windows;
+  std::vector<const ::sessions::SessionWindow*> windows;
   // Note: we don't own the ForeignSessions themselves.
   if (!open_tabs->GetForeignSession(session_string_value, &windows)) {
     LOG(ERROR) << "ForeignSessionHandler failed to get session data from"
         "OpenTabsUIDelegate.";
     return;
   }
-  std::vector<const SessionWindow*>::const_iterator iter_begin =
+  std::vector<const ::sessions::SessionWindow*>::const_iterator iter_begin =
       windows.begin() + (window_num == kInvalidId ? 0 : window_num);
-  std::vector<const SessionWindow*>::const_iterator iter_end =
+  std::vector<const ::sessions::SessionWindow*>::const_iterator iter_end =
       window_num == kInvalidId ?
-      std::vector<const SessionWindow*>::const_iterator(windows.end()) :
-      iter_begin + 1;
+      std::vector<const ::sessions::SessionWindow*>::const_iterator(
+          windows.end()) : iter_begin + 1;
   chrome::HostDesktopType host_desktop_type =
       chrome::GetHostDesktopTypeForNativeView(
           web_ui->GetWebContents()->GetNativeView());
@@ -120,7 +120,7 @@ void ForeignSessionHandler::OpenForeignSessionWindows(
 
 // static
 bool ForeignSessionHandler::SessionTabToValue(
-    const SessionTab& tab,
+    const ::sessions::SessionTab& tab,
     base::DictionaryValue* dictionary) {
   if (tab.navigations.empty())
     return false;
@@ -270,7 +270,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       scoped_ptr<base::ListValue> window_list(new base::ListValue());
       for (SyncedSession::SyncedWindowMap::const_iterator it =
            session->windows.begin(); it != session->windows.end(); ++it) {
-        SessionWindow* window = it->second;
+        ::sessions::SessionWindow* window = it->second;
         scoped_ptr<base::DictionaryValue> window_data(
             new base::DictionaryValue());
         if (SessionWindowToValue(*window, window_data.get()))
@@ -385,7 +385,7 @@ void ForeignSessionHandler::HandleSetForeignSessionCollapsed(
 }
 
 bool ForeignSessionHandler::SessionWindowToValue(
-    const SessionWindow& window,
+    const ::sessions::SessionWindow& window,
     base::DictionaryValue* dictionary) {
   if (window.tabs.empty()) {
     NOTREACHED();

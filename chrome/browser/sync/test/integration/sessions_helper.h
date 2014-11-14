@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "components/sessions/session_types.h"
 #include "sync/syncable/nigori_util.h"
 
 class GURL;

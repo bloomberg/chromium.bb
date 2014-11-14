@@ -215,6 +215,7 @@
             'sessions/ios/ios_serialized_navigation_builder_unittest.cc',
             'sessions/ios/ios_serialized_navigation_driver_unittest.cc',
             'sessions/serialized_navigation_entry_unittest.cc',
+            'sessions/session_types_unittest.cc',
             'signin/core/browser/account_tracker_service_unittest.cc',
             'signin/core/browser/mutable_profile_oauth2_token_service_unittest.cc',
             'signin/core/browser/signin_error_controller_unittest.cc',
@@ -549,6 +550,13 @@
                 # Dependencies of web_modal
                 'components.gyp:web_modal',
                 'components.gyp:web_modal_test_support',
+              ],
+              'conditions': [
+                ['OS != "android"', {
+                  'sources': [
+                    'sessions/session_backend_unittest.cc',
+                   ],
+                }],
               ],
             }, { # 'OS == "ios"'
               'includes': ['../chrome/chrome_ios_bundle_resources.gypi'],

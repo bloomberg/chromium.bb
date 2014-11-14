@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/base_session_service_commands.h"
+#include "components/sessions/base_session_service_commands.h"
 
 #include "base/pickle.h"
-#include "chrome/browser/sessions/session_backend.h"
-#include "chrome/browser/sessions/session_types.h"
+#include "components/sessions/session_backend.h"
+#include "components/sessions/session_types.h"
 
+namespace sessions {
 namespace {
 
 // Helper used by CreateUpdateTabNavigationCommand(). It writes |str| to
@@ -147,3 +148,5 @@ bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
   return pickle->ReadInt(&iterator, window_id) &&
       pickle->ReadString(&iterator, app_name);
 }
+
+}  // namespace sessions

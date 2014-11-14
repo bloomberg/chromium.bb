@@ -48,7 +48,7 @@ OpenTabsUIDelegate* GetOpenTabsUIDelegate(Profile* profile) {
   return service->GetOpenTabsUIDelegate();
 }
 
-bool ShouldSkipTab(const SessionTab& session_tab) {
+bool ShouldSkipTab(const sessions::SessionTab& session_tab) {
     if (session_tab.navigations.empty())
       return true;
 
@@ -62,10 +62,10 @@ bool ShouldSkipTab(const SessionTab& session_tab) {
     return false;
 }
 
-bool ShouldSkipWindow(const SessionWindow& window) {
-  for (std::vector<SessionTab*>::const_iterator tab_it = window.tabs.begin();
-      tab_it != window.tabs.end(); ++tab_it) {
-    const SessionTab &session_tab = **tab_it;
+bool ShouldSkipWindow(const sessions::SessionWindow& window) {
+  for (std::vector<sessions::SessionTab*>::const_iterator tab_it =
+           window.tabs.begin(); tab_it != window.tabs.end(); ++tab_it) {
+    const sessions::SessionTab &session_tab = **tab_it;
     if (!ShouldSkipTab(session_tab))
       return false;
   }
@@ -75,7 +75,7 @@ bool ShouldSkipWindow(const SessionWindow& window) {
 bool ShouldSkipSession(const browser_sync::SyncedSession& session) {
   for (SyncedSession::SyncedWindowMap::const_iterator it =
       session.windows.begin(); it != session.windows.end(); ++it) {
-    const SessionWindow  &window = *(it->second);
+    const sessions::SessionWindow  &window = *(it->second);
     if (!ShouldSkipWindow(window))
       return false;
   }
@@ -84,11 +84,11 @@ bool ShouldSkipSession(const browser_sync::SyncedSession& session) {
 
 void CopyTabsToJava(
     JNIEnv* env,
-    const SessionWindow& window,
+    const sessions::SessionWindow& window,
     ScopedJavaLocalRef<jobject>& j_window) {
-  for (std::vector<SessionTab*>::const_iterator tab_it = window.tabs.begin();
-      tab_it != window.tabs.end(); ++tab_it) {
-    const SessionTab &session_tab = **tab_it;
+  for (std::vector<sessions::SessionTab*>::const_iterator tab_it =
+           window.tabs.begin(); tab_it != window.tabs.end(); ++tab_it) {
+    const sessions::SessionTab &session_tab = **tab_it;
 
     if (ShouldSkipTab(session_tab))
       continue;
@@ -117,7 +117,7 @@ void CopyWindowsToJava(
     ScopedJavaLocalRef<jobject>& j_session) {
   for (SyncedSession::SyncedWindowMap::const_iterator it =
       session.windows.begin(); it != session.windows.end(); ++it) {
-    const SessionWindow &window = *(it->second);
+    const sessions::SessionWindow &window = *(it->second);
 
     if (ShouldSkipWindow(window))
       continue;
@@ -265,7 +265,7 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(JNIEnv* env,
     return false;
   }
 
-  const SessionTab* session_tab;
+  const sessions::SessionTab* session_tab;
 
   if (!open_tabs->GetForeignTab(ConvertJavaStringToUTF8(env, session_tag),
                                 session_tab_id,

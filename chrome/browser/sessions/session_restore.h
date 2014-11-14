@@ -9,8 +9,8 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_service.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "components/sessions/session_types.h"
 #include "ui/base/window_open_disposition.h"
 
 class Browser;
@@ -63,8 +63,8 @@ class SessionRestore {
   static std::vector<Browser*> RestoreForeignSessionWindows(
       Profile* profile,
       chrome::HostDesktopType host_desktop_type,
-      std::vector<const SessionWindow*>::const_iterator begin,
-      std::vector<const SessionWindow*>::const_iterator end);
+      std::vector<const sessions::SessionWindow*>::const_iterator begin,
+      std::vector<const sessions::SessionWindow*>::const_iterator end);
 
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session tab to the browser of |source_web_contents| if
@@ -73,7 +73,7 @@ class SessionRestore {
   // may be destroyed.
   static content::WebContents* RestoreForeignSessionTab(
       content::WebContents* source_web_contents,
-      const SessionTab& tab,
+      const sessions::SessionTab& tab,
       WindowOpenDisposition disposition);
 
   // Returns true if we're in the process of restoring |profile|.

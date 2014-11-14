@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/session_types.h"
+#include "components/sessions/session_types.h"
 
 #include <cstddef>
 #include <string>
@@ -11,7 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/search/search.h"
+//#include "chrome/browser/search/search.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "sync/protocol/session_specifics.pb.h"
 #include "sync/util/time.h"
@@ -40,7 +40,7 @@ TEST(SessionTab, FromSyncData) {
     navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
   }
 
-  SessionTab tab;
+  sessions::SessionTab tab;
   tab.window_id.set_id(100);
   tab.tab_id.set_id(100);
   tab.tab_visual_index = 100;
@@ -75,7 +75,7 @@ TEST(SessionTab, FromSyncData) {
 }
 
 TEST(SessionTab, ToSyncData) {
-  SessionTab tab;
+  sessions::SessionTab tab;
   tab.window_id.set_id(10);
   tab.tab_id.set_id(5);
   tab.tab_visual_index = 13;

@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,11 +6,11 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "components/sessions/session_backend.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,22 +56,23 @@ void SessionServiceTestHelper::SetForceBrowserNotAliveWithNoWindows(
 
 // Be sure and null out service to force closing the file.
 void SessionServiceTestHelper::ReadWindows(
-    std::vector<SessionWindow*>* windows,
+    std::vector<sessions::SessionWindow*>* windows,
     SessionID::id_type* active_window_id) {
   Time last_time;
-  ScopedVector<SessionCommand> read_commands;
+  ScopedVector<sessions::SessionCommand> read_commands;
   service()->GetBaseSessionServiceForTest()->ReadLastSessionCommandsForTest(
       &read_commands);
   RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
 }
 
-void SessionServiceTestHelper::AssertTabEquals(const SessionID& window_id,
-                                               const SessionID& tab_id,
-                                               int visual_index,
-                                               int nav_index,
-                                               size_t nav_count,
-                                               const SessionTab& session_tab) {
+void SessionServiceTestHelper::AssertTabEquals(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    int visual_index,
+    int nav_index,
+    size_t nav_count,
+    const sessions::SessionTab& session_tab) {
   EXPECT_EQ(window_id.id(), session_tab.window_id.id());
   EXPECT_EQ(tab_id.id(), session_tab.tab_id.id());
   AssertTabEquals(visual_index, nav_index, nav_count, session_tab);
@@ -81,7 +82,7 @@ void SessionServiceTestHelper::AssertTabEquals(
     int visual_index,
     int nav_index,
     size_t nav_count,
-    const SessionTab& session_tab) {
+    const sessions::SessionTab& session_tab) {
   EXPECT_EQ(visual_index, session_tab.tab_visual_index);
   EXPECT_EQ(nav_index, session_tab.current_navigation_index);
   ASSERT_EQ(nav_count, session_tab.navigations.size());
@@ -97,7 +98,7 @@ void SessionServiceTestHelper::AssertNavigationEquals(
 }
 
 void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(
-    const std::vector<SessionWindow*>& windows,
+    const std::vector<sessions::SessionWindow*>& windows,
     size_t nav_count) {
   ASSERT_EQ(1U, windows.size());
   EXPECT_EQ(1U, windows[0]->tabs.size());

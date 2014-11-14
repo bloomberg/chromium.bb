@@ -52,14 +52,14 @@ class SessionsGetDevicesFunction : public ChromeSyncExtensionFunction {
 
  private:
   scoped_ptr<api::tabs::Tab> CreateTabModel(const std::string& session_tag,
-                                            const SessionTab& tab,
+                                            const sessions::SessionTab& tab,
                                             int tab_index,
                                             int selected_index);
   scoped_ptr<api::windows::Window> CreateWindowModel(
-      const SessionWindow& window,
+      const sessions::SessionWindow& window,
       const std::string& session_tag);
   scoped_ptr<api::sessions::Session> CreateSessionModel(
-      const SessionWindow& window,
+      const sessions::SessionWindow& window,
       const std::string& session_tag);
   scoped_ptr<api::sessions::Device> CreateDeviceModel(
       const browser_sync::SyncedSession* session);

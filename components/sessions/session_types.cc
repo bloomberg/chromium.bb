@@ -1,15 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/session_types.h"
+#include "components/sessions/session_types.h"
 
 #include "base/basictypes.h"
 #include "base/stl_util.h"
-#include "chrome/browser/sessions/session_command.h"
-#include "chrome/browser/ui/browser.h"
+#include "components/sessions/session_command.h"
 
-using sessions::SerializedNavigationEntry;
+namespace sessions {
+
+//using class SerializedNavigationEntry;
 
 // SessionTab -----------------------------------------------------------------
 
@@ -90,3 +91,5 @@ sync_pb::SessionWindow SessionWindow::ToSyncData() const {
 
   return sync_data;
 }
+
+}  // namespace sessions

@@ -16,25 +16,28 @@
 #include "base/time/time.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/base_session_service_delegate_impl.h"
-#include "chrome/browser/sessions/session_service_commands.h"
 #include "chrome/browser/sessions/session_service_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/sessions/session_service_commands.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/ui_base_types.h"
 
 class Profile;
-class SessionCommand;
-struct SessionTab;
-struct SessionWindow;
 
 namespace content {
 class NavigationEntry;
 class WebContents;
-}
+}  // namespace content
+
+namespace sessions {
+class SessionCommand;
+struct SessionTab;
+struct SessionWindow;
+}  // namespace sessions
 
 // SessionService ------------------------------------------------------------
 
@@ -200,8 +203,8 @@ class SessionService : public BaseSessionServiceDelegateImpl,
 
   // Callback from GetLastSession.
   // The second parameter is the id of the window that was last active.
-  typedef base::Callback<void(ScopedVector<SessionWindow>, SessionID::id_type)>
-      SessionCallback;
+  typedef base::Callback<void(ScopedVector<sessions::SessionWindow>,
+                         SessionID::id_type)> SessionCallback;
 
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
@@ -226,11 +229,12 @@ class SessionService : public BaseSessionServiceDelegateImpl,
 
   // Returns true if a window of given |window_type| and |app_type| should get
   // restored upon session restore.
-  bool ShouldRestoreWindowOfType(SessionWindow::WindowType type,
+  bool ShouldRestoreWindowOfType(sessions::SessionWindow::WindowType type,
                                  AppType app_type) const;
 
   // Removes unrestorable windows from the previous windows list.
-  void RemoveUnusedRestoreWindows(std::vector<SessionWindow*>* window_list);
+  void RemoveUnusedRestoreWindows(
+      std::vector<sessions::SessionWindow*>* window_list);
 
   // Implementation of RestoreIfNecessary. If |browser| is non-null and we need
   // to restore, the tabs are added to it, otherwise a new browser is created.
@@ -248,7 +252,7 @@ class SessionService : public BaseSessionServiceDelegateImpl,
 
   // Converts |commands| to SessionWindows and notifies the callback.
   void OnGotSessionCommands(const SessionCallback& callback,
-                            ScopedVector<SessionCommand> commands);
+                            ScopedVector<sessions::SessionCommand> commands);
 
   // Adds commands to commands that will recreate the state of the specified
   // tab. This adds at most kMaxNavigationCountToPersist navigations (in each
@@ -283,7 +287,7 @@ class SessionService : public BaseSessionServiceDelegateImpl,
   void ScheduleResetCommands();
 
   // Schedules the specified command.
-  void ScheduleCommand(scoped_ptr<SessionCommand> command);
+  void ScheduleCommand(scoped_ptr<sessions::SessionCommand> command);
 
   // Converts all pending tab/window closes to commands and schedules them.
   void CommitPendingCloses();
@@ -324,13 +328,13 @@ class SessionService : public BaseSessionServiceDelegateImpl,
   void MaybeDeleteSessionOnlyData();
 
   // Unit test accessors.
-  BaseSessionService* GetBaseSessionServiceForTest();
+  sessions::BaseSessionService* GetBaseSessionServiceForTest();
 
   // The profile. This may be null during testing.
   Profile* profile_;
 
   // The owned BaseSessionService.
-  scoped_ptr<BaseSessionService> base_session_service_;
+  scoped_ptr<sessions::BaseSessionService> base_session_service_;
 
   content::NotificationRegistrar registrar_;
 

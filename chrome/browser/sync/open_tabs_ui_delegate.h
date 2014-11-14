@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
-#include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sync/glue/synced_session.h"
 #include "components/sessions/session_id.h"
+#include "components/sessions/session_types.h"
 
 namespace browser_sync {
 
@@ -36,7 +36,7 @@ class OpenTabsUIDelegate {
   // Returns true if the foreign session and tab were found, false otherwise.
   virtual bool GetForeignTab(const std::string& tag,
                              const SessionID::id_type tab_id,
-                             const SessionTab** tab) = 0;
+                             const sessions::SessionTab** tab) = 0;
 
   // Delete a foreign session and all its sync data.
   virtual void DeleteForeignSession(const std::string& tag) = 0;
@@ -46,7 +46,7 @@ class OpenTabsUIDelegate {
   // Returns true if the foreign session was found, false otherwise.
   virtual bool GetForeignSession(
       const std::string& tag,
-      std::vector<const SessionWindow*>* windows) = 0;
+      std::vector<const sessions::SessionWindow*>* windows) = 0;
 
   // Sets |*local| to point to the sessions sync representation of the
   // local machine.

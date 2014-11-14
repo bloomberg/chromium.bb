@@ -1,16 +1,17 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/sessions/base_session_service.h"
+#include "components/sessions/base_session_service.h"
 
 #include "base/bind.h"
 #include "base/threading/thread.h"
-#include "chrome/browser/sessions/base_session_service_delegate.h"
-#include "chrome/browser/sessions/session_backend.h"
+#include "components/sessions/base_session_service_delegate.h"
+#include "components/sessions/session_backend.h"
 
 // BaseSessionService ---------------------------------------------------------
 
+namespace sessions {
 namespace {
 
 // Helper used by ScheduleGetLastSessionCommands. It runs callback on TaskRunner
@@ -187,3 +188,5 @@ bool BaseSessionService::ReadLastSessionCommandsForTest(
     ScopedVector<SessionCommand>* commands) {
   return backend_->ReadLastSessionCommandsImpl(commands);
 }
+
+}  // namespace sessions

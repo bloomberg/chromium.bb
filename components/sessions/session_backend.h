@@ -1,17 +1,17 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
-#define CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
+#ifndef COMPONENTS_SESSIONS_SESSION_BACKEND_H_
+#define COMPONENTS_SESSIONS_SESSION_BACKEND_H_
 
 #include <vector>
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "chrome/browser/sessions/base_session_service.h"
-#include "chrome/browser/sessions/session_command.h"
+#include "components/sessions/base_session_service.h"
+#include "components/sessions/session_command.h"
 
 namespace base {
 class File;
@@ -30,10 +30,11 @@ class File;
 // BaseSessionService. A command consists of a unique id and a stream of bytes.
 // SessionBackend does not use the id in anyway, that is used by
 // BaseSessionService.
+// TODO(skuhne): Move into sessions space.
 class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
  public:
-  typedef SessionCommand::id_type id_type;
-  typedef SessionCommand::size_type size_type;
+  typedef sessions::SessionCommand::id_type id_type;
+  typedef sessions::SessionCommand::size_type size_type;
 
   // Initial size of the buffer used in reading the file. This is exposed
   // for testing.
@@ -46,7 +47,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // |path_to_dir| gives the path the files are written two, and |type|
   // indicates which service is using this backend. |type| is used to determine
   // the name of the files to use as well as for logging.
-  SessionBackend(BaseSessionService::SessionType type,
+  SessionBackend(sessions::BaseSessionService::SessionType type,
                  const base::FilePath& path_to_dir);
 
   // Moves the current file to the last file, and recreates the current file.
@@ -58,18 +59,20 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   // Appends the specified commands to the current file. If reset_first is
   // true the the current file is recreated.
-  void AppendCommands(ScopedVector<SessionCommand> commands, bool reset_first);
+  void AppendCommands(ScopedVector<sessions::SessionCommand> commands,
+                      bool reset_first);
 
   // Invoked from the service to read the commands that make up the last
   // session, invokes ReadLastSessionCommandsImpl to do the work.
   void ReadLastSessionCommands(
       const base::CancelableTaskTracker::IsCanceledCallback& is_canceled,
-      const BaseSessionService::GetCommandsCallback& callback);
+      const sessions::BaseSessionService::GetCommandsCallback& callback);
 
   // Reads the commands from the last file.
   //
   // On success, the read commands are added to commands.
-  bool ReadLastSessionCommandsImpl(ScopedVector<SessionCommand>* commands);
+  bool ReadLastSessionCommandsImpl(
+      ScopedVector<sessions::SessionCommand>* commands);
 
   // Deletes the file containing the commands for the last session.
   void DeleteLastSession();
@@ -83,7 +86,8 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   //
   // On success, the read commands are added to commands. It is up to the
   // caller to delete the commands.
-  bool ReadCurrentSessionCommandsImpl(ScopedVector<SessionCommand>* commands);
+  bool ReadCurrentSessionCommandsImpl(
+      ScopedVector<sessions::SessionCommand>* commands);
 
  private:
   friend class base::RefCountedThreadSafe<SessionBackend>;
@@ -103,10 +107,11 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   base::File* OpenAndWriteHeader(const base::FilePath& path);
 
   // Appends the specified commands to the specified file.
-  bool AppendCommandsToFile(base::File* file,
-                            const ScopedVector<SessionCommand>& commands);
+  bool AppendCommandsToFile(
+      base::File* file,
+      const ScopedVector<sessions::SessionCommand>& commands);
 
-  const BaseSessionService::SessionType type_;
+  const sessions::BaseSessionService::SessionType type_;
 
   // Returns the path to the last file.
   base::FilePath GetLastSessionPath();
@@ -133,4 +138,4 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   DISALLOW_COPY_AND_ASSIGN(SessionBackend);
 };
 
-#endif  // CHROME_BROWSER_SESSIONS_SESSION_BACKEND_H_
+#endif  // COMPONENTS_SESSIONS_SESSION_BACKEND_H_
