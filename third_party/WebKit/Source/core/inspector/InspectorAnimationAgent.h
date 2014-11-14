@@ -34,7 +34,7 @@ public:
     void reset();
 
     // Protocol method implementations.
-    virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
+    virtual void getAnimationPlayersForNode(ErrorString*, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray) override;
     virtual void pauseAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void playAnimationPlayer(ErrorString*, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
     virtual void setAnimationPlayerCurrentTime(ErrorString*, const String& id, double currentTime, RefPtr<TypeBuilder::Animation::AnimationPlayer>&) override;
@@ -47,6 +47,10 @@ public:
 
 private:
     InspectorAnimationAgent(InspectorDOMAgent*);
+
+    PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimationNode(AnimationNode*);
+    PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer&, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr);
+    PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > buildArrayForAnimationPlayers(Element&, const WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >);
 
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     InspectorFrontend::Animation* m_frontend;

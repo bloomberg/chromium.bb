@@ -16,6 +16,7 @@
 #include "core/css/CSSKeyframeRule.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/inspector/InspectorDOMAgent.h"
+#include "core/inspector/InspectorNodeIds.h"
 #include "core/inspector/InspectorStyleSheet.h"
 #include "platform/Decimal.h"
 
@@ -44,7 +45,7 @@ void InspectorAnimationAgent::reset()
     m_idToAnimationPlayer.clear();
 }
 
-static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimationNode(AnimationNode* animationNode)
+PassRefPtr<TypeBuilder::Animation::AnimationNode> InspectorAnimationAgent::buildObjectForAnimationNode(AnimationNode* animationNode)
 {
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = TypeBuilder::Animation::AnimationNode::create()
         .setStartDelay(animationNode->specifiedTiming().startDelay)
@@ -55,7 +56,8 @@ static PassRefPtr<TypeBuilder::Animation::AnimationNode> buildObjectForAnimation
         .setDirection(animationNode->specifiedTiming().direction)
         .setFillMode(animationNode->specifiedTiming().fillMode)
         .setTimeFraction(animationNode->timeFraction())
-        .setName(animationNode->name());
+        .setName(animationNode->name())
+        .setBackendNodeId(InspectorNodeIds::idForNode(toAnimation(animationNode)->target()));
     return animationObject.release();
 }
 
@@ -64,7 +66,7 @@ static String playerId(AnimationPlayer& player)
     return String::number(player.sequenceNumber());
 }
 
-static PassRefPtr<TypeBuilder::Animation::AnimationPlayer> buildObjectForAnimationPlayer(AnimationPlayer& animationPlayer, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = nullptr)
+PassRefPtr<TypeBuilder::Animation::AnimationPlayer> InspectorAnimationAgent::buildObjectForAnimationPlayer(AnimationPlayer& animationPlayer, PassRefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule)
 {
     RefPtr<TypeBuilder::Animation::AnimationNode> animationObject = buildObjectForAnimationNode(animationPlayer.source());
     if (keyframeRule)
@@ -136,16 +138,17 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForAnimation
     return keyframesObject.release();
 }
 
-static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframesRule(const Element& element, const AnimationPlayer& player)
+static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframesRule(const AnimationPlayer& player)
 {
-    StyleResolver& styleResolver = element.ownerDocument()->ensureStyleResolver();
-    CSSAnimations& cssAnimations = element.activeAnimations()->cssAnimations();
+    const Element* element = toAnimation(player.source())->target();
+    StyleResolver& styleResolver = element->ownerDocument()->ensureStyleResolver();
+    CSSAnimations& cssAnimations = element->activeAnimations()->cssAnimations();
     const AtomicString animationName = cssAnimations.getAnimationNameForInspector(player);
     RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule;
 
     if (!animationName.isNull()) {
         // CSS Animations
-        const StyleRuleKeyframes* keyframes = cssAnimations.matchScopedKeyframesRule(&styleResolver, &element, animationName.impl());
+        const StyleRuleKeyframes* keyframes = cssAnimations.matchScopedKeyframesRule(&styleResolver, element, animationName.impl());
         keyframeRule = buildObjectForStyleRuleKeyframes(keyframes);
     } else {
         // Web Animations
@@ -155,20 +158,33 @@ static PassRefPtr<TypeBuilder::Animation::KeyframesRule> buildObjectForKeyframes
     return keyframeRule;
 }
 
-void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray)
+PassRefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > InspectorAnimationAgent::buildArrayForAnimationPlayers(Element& element, const WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players)
 {
-    animationPlayersArray = TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>::create();
+    RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> > animationPlayersArray = TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer>::create();
+    for (const auto& it : players) {
+        AnimationPlayer& player = *(it.get());
+        Animation* animation = toAnimation(player.source());
+        if (!element.contains(animation->target()))
+            continue;
+        m_idToAnimationPlayer.set(playerId(player), &player);
+        RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = buildObjectForKeyframesRule(player);
+        animationPlayersArray->addItem(buildObjectForAnimationPlayer(player, keyframeRule));
+    }
+    return animationPlayersArray.release();
+}
+
+void InspectorAnimationAgent::getAnimationPlayersForNode(ErrorString* errorString, int nodeId, bool includeSubtreeAnimations, RefPtr<TypeBuilder::Array<TypeBuilder::Animation::AnimationPlayer> >& animationPlayersArray)
+{
     Element* element = m_domAgent->assertElement(errorString, nodeId);
     if (!element)
         return;
     m_idToAnimationPlayer.clear();
-    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players = ElementAnimation::getAnimationPlayers(*element);
-    for (WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> >::iterator it = players.begin(); it != players.end(); ++it) {
-        AnimationPlayer& player = *(it->get());
-        m_idToAnimationPlayer.set(playerId(player), &player);
-        RefPtr<TypeBuilder::Animation::KeyframesRule> keyframeRule = buildObjectForKeyframesRule(*element, player);
-        animationPlayersArray->addItem(buildObjectForAnimationPlayer(player, keyframeRule));
-    }
+    WillBeHeapVector<RefPtrWillBeMember<AnimationPlayer> > players;
+    if (!includeSubtreeAnimations)
+        players = ElementAnimation::getAnimationPlayers(*element);
+    else
+        players = element->ownerDocument()->timeline().getAnimationPlayers();
+    animationPlayersArray = buildArrayForAnimationPlayers(*element, players);
 }
 
 void InspectorAnimationAgent::pauseAnimationPlayer(ErrorString* errorString, const String& id, RefPtr<TypeBuilder::Animation::AnimationPlayer>& animationPlayer)

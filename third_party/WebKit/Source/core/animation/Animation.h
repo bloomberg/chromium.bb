@@ -67,7 +67,7 @@ public:
     const AnimationEffect* effect() const { return m_effect.get(); }
     AnimationEffect* effect() { return m_effect.get(); }
     Priority priority() const { return m_priority; }
-    Element* target() { return m_target; }
+    Element* target() const { return m_target; }
 
     void notifySampledEffectRemovedFromAnimationStack();
 #if !ENABLE(OILPAN)
