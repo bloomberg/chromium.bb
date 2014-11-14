@@ -179,7 +179,12 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(
     // requested on the whatwg list.
     // See http://code.google.com/p/chromium/issues/detail?id=69594
     // TODO(michaeln): Consider doing this for cross-origin HTTP too.
-    if (net::IsCertStatusError(request->ssl_info().cert_status) ||
+    const net::HttpNetworkSession::Params* session_params =
+        request->context()->GetNetworkSessionParams();
+    bool ignore_cert_errors = session_params &&
+                              session_params->ignore_certificate_errors;
+    if ((net::IsCertStatusError(request->ssl_info().cert_status) &&
+            !ignore_cert_errors) ||
         (url_.GetOrigin() != job_->manifest_url_.GetOrigin() &&
             request->response_headers()->
                 HasHeaderValue("cache-control", "no-store"))) {
