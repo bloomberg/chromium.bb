@@ -51,7 +51,7 @@ remoting.OAuth2.prototype.SCOPE_ =
  *  @return {string} OAuth2 redirect URI.
  */
 remoting.OAuth2.prototype.getRedirectUri_ = function() {
-  return remoting.settings.OAUTH2_REDIRECT_URL;
+  return remoting.settings.OAUTH2_REDIRECT_URL();
 };
 
 /** @private

@@ -32,8 +32,16 @@ remoting.Settings.prototype.OAUTH2_API_BASE_URL = 'OAUTH2_API_BASE_URL';
 remoting.Settings.prototype.DIRECTORY_API_BASE_URL = 'DIRECTORY_API_BASE_URL';
 /** @type {string} URL for the talk gadget web service. */
 remoting.Settings.prototype.TALK_GADGET_URL = 'TALK_GADGET_URL';
-/** @type {string} OAuth2 redirect URI. */
-remoting.Settings.prototype.OAUTH2_REDIRECT_URL = 'OAUTH2_REDIRECT_URL';
+
+/**
+ * @return {string} OAuth2 redirect URI. Note that this needs to be a function
+ *     because it gets expanded at compile-time to an expression that involves
+ *     a chrome API. Since this file is loaded into the WCS sandbox, which has
+ *     no access to these APIs, we can't call it at global scope.
+ */
+remoting.Settings.prototype.OAUTH2_REDIRECT_URL = function() {
+  return 'OAUTH2_REDIRECT_URL';
+}
 
 /** @type {string} XMPP JID for the remoting directory server bot. */
 remoting.Settings.prototype.DIRECTORY_BOT_JID = 'DIRECTORY_BOT_JID';
