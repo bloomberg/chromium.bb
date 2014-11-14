@@ -557,6 +557,8 @@ public:
         LangAttributeDoesNotMatchToUILocale = 590,
         InputTypeSubmit = 591,
         InputTypeSubmitWithValue = 592,
+        // The above items are available in M40 branch.
+
         SetReferrerPolicy = 593,
         DOMImplementationHasFeatureReturnFalseInternal = 594,
 
