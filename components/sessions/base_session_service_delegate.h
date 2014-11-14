@@ -12,7 +12,8 @@ class SequencedWorkerPool;
 }
 
 class GURL;
-// TODO(skuhne): Add sessions namespace.
+
+namespace sessions {
 
 // The BaseSessionServiceDelegate decouples the BaseSessionService from
 // chrome/content dependencies.
@@ -40,5 +41,7 @@ class BaseSessionServiceDelegate {
  protected:
   virtual ~BaseSessionServiceDelegate() {}
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_BASE_SESSION_SERVICE_DELEGATE_H_

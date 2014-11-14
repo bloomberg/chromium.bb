@@ -15,13 +15,13 @@
 #include "components/sessions/sessions_export.h"
 #include "url/gurl.h"
 
-class BaseSessionServiceDelegate;
 class SessionBackend;
 class BetterSessionRestoreCrashTest;
 class SessionServiceTestHelper;
 class NoStartupWindowTest;
 
 namespace sessions {
+class BaseSessionServiceDelegate;
 class SerializedNavigationEntry;
 class SessionCommand;
 

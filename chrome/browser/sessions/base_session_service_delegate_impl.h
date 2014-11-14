@@ -7,7 +7,8 @@
 
 #include "components/sessions/base_session_service_delegate.h"
 
-class BaseSessionServiceDelegateImpl : public BaseSessionServiceDelegate {
+class BaseSessionServiceDelegateImpl
+    : public sessions::BaseSessionServiceDelegate {
  public:
   // If |use_delayed_save| is true, save operations can be performed as a
   // delayed task. Generally |used_delayed_save| should be true, testing may
