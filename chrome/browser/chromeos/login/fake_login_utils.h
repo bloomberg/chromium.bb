@@ -30,8 +30,6 @@ class FakeLoginUtils : public LoginUtils {
   virtual void DelegateDeleted(LoginUtils::Delegate* delegate) override;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       AuthStatusConsumer* consumer) override;
-  virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
-                                                   bool early_restart) override;
 
   void SetExpectedCredentials(const UserContext& user_context);
   void set_should_launch_browser(bool should_launch_browser) {

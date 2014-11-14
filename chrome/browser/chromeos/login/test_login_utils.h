@@ -33,8 +33,6 @@ class TestLoginUtils : public LoginUtils {
   virtual void DelegateDeleted(Delegate* delegate) override;
   virtual scoped_refptr<Authenticator> CreateAuthenticator(
       AuthStatusConsumer* consumer) override;
-  virtual bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
-                                                   bool early_restart) override;
 
  private:
   UserContext expected_user_context_;

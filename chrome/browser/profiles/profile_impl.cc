@@ -125,7 +125,7 @@
 #include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/login_utils.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #else
@@ -726,8 +726,8 @@ void ProfileImpl::DoFinalInit() {
                    path_.value().c_str());
 
 #if defined(OS_CHROMEOS)
-  if (chromeos::LoginUtils::Get()->RestartToApplyPerSessionFlagsIfNeed(this,
-                                                                       true)) {
+  if (chromeos::UserSessionManager::GetInstance()
+          ->RestartToApplyPerSessionFlagsIfNeed(this, true)) {
     return;
   }
 #endif

@@ -144,14 +144,6 @@ class UserSessionManager
   // and start certificate loader with it.
   void InitializeCerts(Profile* profile);
 
-  // TODO(nkostylev): Drop these methods once LoginUtilsImpl::AttemptRestart()
-  // is migrated.
-  OAuth2LoginManager::SessionRestoreStrategy GetSigninSessionRestoreStrategy();
-  bool exit_after_session_restore() { return exit_after_session_restore_; }
-  void set_exit_after_session_restore(bool value) {
-    exit_after_session_restore_ = value;
-  }
-
   // Invoked when the user is logging in for the first time, or is logging in to
   // an ephemeral session type, such as guest or a public session.
   void SetFirstLoginPrefs(Profile* profile,
@@ -173,6 +165,17 @@ class UserSessionManager
       Profile* profile,
       const user_manager::User* user,
       const locale_util::SwitchLanguageCallback& callback) const;
+
+  // Restarts Chrome if needed. This happens when user session has custom
+  // flags/switches enabled. Another case when owner has setup custom flags,
+  // they are applied on login screen as well but not to user session.
+  // |early_restart| is true if this restart attempt happens before user profile
+  // is fully initialized.
+  // Might not return if restart is possible right now.
+  // Returns true if restart was scheduled.
+  // Returns false if no restart is needed.
+  bool RestartToApplyPerSessionFlagsIfNeed(Profile* profile,
+                                           bool early_restart);
 
   // Returns true if Easy unlock keys needs to be updated.
   bool NeedsToUpdateEasyUnlockKeys() const;
@@ -292,6 +295,10 @@ class UserSessionManager
 
   // Notifies observers that user pending sessions restore has finished.
   void NotifyPendingUserSessionsRestoreFinished();
+
+  // Attempts restarting the browser process and esures that this does
+  // not happen while we are still fetching new OAuth refresh tokens.
+  void AttemptRestart(Profile* profile);
 
   // Callback invoked when Easy unlock key operations are finished.
   void OnEasyUnlockKeyOpsFinished(const std::string& user_id,

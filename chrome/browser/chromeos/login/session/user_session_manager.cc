@@ -52,6 +52,7 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/net/nss_context.h"
+#include "chrome/browser/pref_service_flags_storage.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -187,6 +188,76 @@ void OnGetNSSCertDatabaseForUser(net::NSSCertDatabase* database) {
     return;
 
   CertLoader::Get()->StartWithNSSDB(database);
+}
+
+// Returns new CommandLine with per-user flags.
+CommandLine CreatePerSessionCommandLine(Profile* profile) {
+  CommandLine user_flags(CommandLine::NO_PROGRAM);
+  about_flags::PrefServiceFlagsStorage flags_storage_(profile->GetPrefs());
+  about_flags::ConvertFlagsToSwitches(&flags_storage_, &user_flags,
+                                      about_flags::kAddSentinels);
+  return user_flags;
+}
+
+// Returns true if restart is needed to apply per-session flags.
+bool NeedRestartToApplyPerSessionFlags(
+    const CommandLine& user_flags,
+    std::set<CommandLine::StringType>* out_command_line_difference) {
+  // Don't restart browser if it is not first profile in session.
+  if (user_manager::UserManager::Get()->GetLoggedInUsers().size() != 1)
+    return false;
+
+  // Only restart if needed and if not going into managed mode.
+  if (user_manager::UserManager::Get()->IsLoggedInAsSupervisedUser())
+    return false;
+
+  if (about_flags::AreSwitchesIdenticalToCurrentCommandLine(
+          user_flags, *CommandLine::ForCurrentProcess(),
+          out_command_line_difference)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool CanPerformEarlyRestart() {
+  // Desktop build is used for development only. Early restart is not supported.
+  if (!base::SysInfo::IsRunningOnChromeOS())
+    return false;
+
+  if (!ChromeUserManager::Get()
+           ->GetCurrentUserFlow()
+           ->SupportsEarlyRestartToApplyFlags()) {
+    return false;
+  }
+
+  const ExistingUserController* controller =
+      ExistingUserController::current_controller();
+  if (!controller)
+    return true;
+
+  // Early restart is possible only if OAuth token is up to date.
+
+  if (controller->password_changed())
+    return false;
+
+  if (controller->auth_mode() != LoginPerformer::AUTH_MODE_INTERNAL)
+    return false;
+
+  // No early restart if Easy unlock key needs to be updated.
+  if (UserSessionManager::GetInstance()->NeedsToUpdateEasyUnlockKeys())
+    return false;
+
+  return true;
+}
+
+void LogCustomSwitches(const std::set<std::string>& switches) {
+  if (!VLOG_IS_ON(1))
+    return;
+  for (std::set<std::string>::const_iterator it = switches.begin();
+       it != switches.end(); ++it) {
+    VLOG(1) << "Switch leading to restart: '" << *it << "'";
+  }
 }
 
 }  // namespace
@@ -358,8 +429,7 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 void UserSessionManager::RestoreActiveSessions() {
   user_sessions_restore_in_progress_ = true;
   DBusThreadManager::Get()->GetSessionManagerClient()->RetrieveActiveSessions(
-      base::Bind(&UserSessionManager::OnRestoreActiveSessions,
-                 base::Unretained(this)));
+      base::Bind(&UserSessionManager::OnRestoreActiveSessions, AsWeakPtr()));
 }
 
 bool UserSessionManager::UserSessionsRestored() const {
@@ -386,11 +456,6 @@ void UserSessionManager::InitRlz(Profile* profile) {
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
-}
-
-OAuth2LoginManager::SessionRestoreStrategy
-UserSessionManager::GetSigninSessionRestoreStrategy() {
-  return session_restore_strategy_;
 }
 
 void UserSessionManager::SetFirstLoginPrefs(
@@ -499,6 +564,34 @@ bool UserSessionManager::RespectLocalePreference(
   locale_util::SwitchLanguage(
       pref_locale, enable_layouts, false /* login_layouts_only */, callback);
 
+  return true;
+}
+
+bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
+    Profile* profile,
+    bool early_restart) {
+  if (ProfileHelper::IsSigninProfile(profile))
+    return false;
+
+  if (early_restart && !CanPerformEarlyRestart())
+    return false;
+
+  const CommandLine user_flags(CreatePerSessionCommandLine(profile));
+  std::set<CommandLine::StringType> command_line_difference;
+  if (!NeedRestartToApplyPerSessionFlags(user_flags, &command_line_difference))
+    return false;
+
+  LogCustomSwitches(command_line_difference);
+
+  about_flags::ReportCustomFlags("Login.CustomFlags", command_line_difference);
+
+  CommandLine::StringVector flags;
+  // argv[0] is the program name |CommandLine::NO_PROGRAM|.
+  flags.assign(user_flags.argv().begin() + 1, user_flags.argv().end());
+  LOG(WARNING) << "Restarting to apply per-session flags...";
+  DBusThreadManager::Get()->GetSessionManagerClient()->SetFlagsForUser(
+      user_manager::UserManager::Get()->GetActiveUser()->email(), flags);
+  AttemptRestart(profile);
   return true;
 }
 
@@ -638,7 +731,7 @@ void UserSessionManager::OnProfilePrepared(Profile* profile,
     // users once it is fully multi-profile aware. http://crbug.com/238987
     // For now if we have other user pending sessions they'll override OAuth
     // session restore for previous users.
-    UserSessionManager::GetInstance()->RestoreAuthenticationSession(profile);
+    RestoreAuthenticationSession(profile);
   }
 
   // Restore other user sessions if any.
@@ -1237,6 +1330,33 @@ void UserSessionManager::UpdateEasyUnlockKeys(const UserContext& user_context) {
                    AsWeakPtr(),
                    user_context.GetUserID()));
   }
+}
+
+void UserSessionManager::AttemptRestart(Profile* profile) {
+  if (CheckEasyUnlockKeyOps(base::Bind(&UserSessionManager::AttemptRestart,
+                                       AsWeakPtr(), profile))) {
+    return;
+  }
+
+  if (session_restore_strategy_ !=
+      OAuth2LoginManager::RESTORE_FROM_COOKIE_JAR) {
+    chrome::AttemptRestart();
+    return;
+  }
+
+  // We can't really quit if the session restore process that mints new
+  // refresh token is still in progress.
+  OAuth2LoginManager* login_manager =
+      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(profile);
+  if (login_manager->state() != OAuth2LoginManager::SESSION_RESTORE_PREPARING &&
+      login_manager->state() !=
+          OAuth2LoginManager::SESSION_RESTORE_IN_PROGRESS) {
+    chrome::AttemptRestart();
+    return;
+  }
+
+  LOG(WARNING) << "Attempting browser restart during session restore.";
+  exit_after_session_restore_ = true;
 }
 
 void UserSessionManager::OnEasyUnlockKeyOpsFinished(
