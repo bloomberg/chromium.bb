@@ -2156,11 +2156,11 @@ void RenderLayer::invalidatePaintForBlockSelectionGaps()
 
 IntRect RenderLayer::blockSelectionGapsBounds() const
 {
-    if (!renderer()->isRenderBlock())
+    if (!renderer()->isRenderBlockFlow())
         return IntRect();
 
-    RenderBlock* renderBlock = toRenderBlock(renderer());
-    LayoutRect gapRects = renderBlock->selectionGapRectsForPaintInvalidation(renderBlock);
+    RenderBlockFlow* renderBlockFlow = toRenderBlockFlow(renderer());
+    LayoutRect gapRects = renderBlockFlow->selectionGapRectsForPaintInvalidation(renderBlockFlow);
 
     return pixelSnappedIntRect(gapRects);
 }

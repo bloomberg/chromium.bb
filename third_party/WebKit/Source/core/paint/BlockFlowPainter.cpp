@@ -8,6 +8,7 @@
 #include "core/rendering/FloatingObjects.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlockFlow.h"
+#include "core/rendering/RenderLayer.h"
 
 namespace blink {
 
@@ -40,6 +41,30 @@ void BlockFlowPainter::paintFloats(PaintInfo& paintInfo, const LayoutPoint& pain
                 currentPaintInfo.phase = PaintPhaseOutline;
                 floatingObject->renderer()->paint(currentPaintInfo, childPoint);
             }
+        }
+    }
+}
+
+void BlockFlowPainter::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    if (m_renderBlockFlow.shouldPaintSelectionGaps() && paintInfo.phase == PaintPhaseForeground) {
+        LayoutUnit lastTop = 0;
+        LayoutUnit lastLeft = m_renderBlockFlow.logicalLeftSelectionOffset(&m_renderBlockFlow, lastTop);
+        LayoutUnit lastRight = m_renderBlockFlow.logicalRightSelectionOffset(&m_renderBlockFlow, lastTop);
+        GraphicsContextStateSaver stateSaver(*paintInfo.context);
+
+        LayoutRect gapRectsBounds = m_renderBlockFlow.selectionGaps(&m_renderBlockFlow, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight, &paintInfo);
+        if (!gapRectsBounds.isEmpty()) {
+            RenderLayer* layer = m_renderBlockFlow.enclosingLayer();
+            gapRectsBounds.moveBy(-paintOffset);
+            if (!m_renderBlockFlow.hasLayer()) {
+                LayoutRect localBounds(gapRectsBounds);
+                m_renderBlockFlow.flipForWritingMode(localBounds);
+                gapRectsBounds = m_renderBlockFlow.localToContainerQuad(FloatRect(localBounds), layer->renderer()).enclosingBoundingBox();
+                if (layer->renderer()->hasOverflowClip())
+                    gapRectsBounds.move(layer->renderBox()->scrolledContentOffset());
+            }
+            layer->addBlockSelectionGapsBounds(gapRectsBounds);
         }
     }
 }

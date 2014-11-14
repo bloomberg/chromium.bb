@@ -158,13 +158,6 @@ public:
     LayoutUnit blockDirectionOffset(const LayoutSize& offsetFromBlock) const;
     LayoutUnit inlineDirectionOffset(const LayoutSize& offsetFromBlock) const;
 
-    virtual bool shouldPaintSelectionGaps() const override final;
-    GapRects selectionGapRectsForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const;
-    LayoutRect logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                                       const RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
-    LayoutRect logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                                        const RenderObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
-    void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap) const;
     RenderBlock* blockBeforeWithinSelectionRoot(LayoutSize& offset) const;
 
     virtual void setSelectionState(SelectionState) override;
@@ -242,9 +235,6 @@ public:
     virtual LayoutUnit logicalLeftSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
     virtual LayoutUnit logicalRightSelectionOffset(const RenderBlock* rootBlock, LayoutUnit position) const;
 
-    GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
-
 #if ENABLE(ASSERT)
     void checkPositionedObjectsNeedLayout();
     bool paintsContinuationOutline(RenderInline* flow);
@@ -255,8 +245,6 @@ public:
 
     bool recalcChildOverflowAfterStyleChange();
     bool recalcOverflowAfterStyleChange();
-
-    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override final;
 
 protected:
     virtual void willBeDestroyed() override;
@@ -286,6 +274,7 @@ public:
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool) { }
+    virtual void paintSelection(PaintInfo&, const LayoutPoint&) { }
 
 protected:
     virtual void adjustInlineDirectionLineBounds(unsigned /* expansionOpportunityCount */, float& /* logicalLeft */, float& /* logicalWidth */) const { }
@@ -395,10 +384,6 @@ private:
     virtual void childBecameNonInline(RenderObject* child) override final;
 
     bool isSelectionRoot() const;
-    GapRects blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                                LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
-    LayoutRect blockSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
-                                 LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo*) const;
 
     // FIXME-BLOCKFLOW: Remove virtualizaion when all callers have moved to RenderBlockFlow
     virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const { };

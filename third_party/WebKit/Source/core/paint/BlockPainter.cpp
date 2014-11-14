@@ -196,7 +196,7 @@ void BlockPainter::paintObject(PaintInfo& paintInfo, const LayoutPoint& paintOff
     // FIXME: Make this work with multi column layouts. For now don't fill gaps.
     bool isPrinting = m_renderBlock.document().printing();
     if (!isPrinting && !m_renderBlock.hasColumns())
-        paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
+        m_renderBlock.paintSelection(paintInfo, scrolledOffset); // Fill in gaps in selection on lines and between blocks.
 
     // 4. paint floats.
     if (paintPhase == PaintPhaseFloat || paintPhase == PaintPhaseSelection || paintPhase == PaintPhaseTextClip) {
@@ -438,30 +438,6 @@ void BlockPainter::paintContents(PaintInfo& paintInfo, const LayoutPoint& paintO
         paintInfoForChild.phase = newPhase;
         paintInfoForChild.updatePaintingRootForChildren(&m_renderBlock);
         m_renderBlock.paintChildren(paintInfoForChild, paintOffset);
-    }
-}
-
-void BlockPainter::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
-{
-    if (m_renderBlock.shouldPaintSelectionGaps() && paintInfo.phase == PaintPhaseForeground) {
-        LayoutUnit lastTop = 0;
-        LayoutUnit lastLeft = m_renderBlock.logicalLeftSelectionOffset(&m_renderBlock, lastTop);
-        LayoutUnit lastRight = m_renderBlock.logicalRightSelectionOffset(&m_renderBlock, lastTop);
-        GraphicsContextStateSaver stateSaver(*paintInfo.context);
-
-        LayoutRect gapRectsBounds = m_renderBlock.selectionGaps(&m_renderBlock, paintOffset, LayoutSize(), lastTop, lastLeft, lastRight, &paintInfo);
-        if (!gapRectsBounds.isEmpty()) {
-            RenderLayer* layer = m_renderBlock.enclosingLayer();
-            gapRectsBounds.moveBy(-paintOffset);
-            if (!m_renderBlock.hasLayer()) {
-                LayoutRect localBounds(gapRectsBounds);
-                m_renderBlock.flipForWritingMode(localBounds);
-                gapRectsBounds = m_renderBlock.localToContainerQuad(FloatRect(localBounds), layer->renderer()).enclosingBoundingBox();
-                if (layer->renderer()->hasOverflowClip())
-                    gapRectsBounds.move(layer->renderBox()->scrolledContentOffset());
-            }
-            layer->addBlockSelectionGapsBounds(gapRectsBounds);
-        }
     }
 }
 

@@ -37,6 +37,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLDialogElement.h"
 #include "core/paint/BlockFlowPainter.h"
+#include "core/paint/DrawingRecorder.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderLayer.h"
@@ -46,6 +47,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/line/LineWidth.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/text/BidiTextRun.h"
 
 namespace blink {
@@ -2105,6 +2107,11 @@ void RenderBlockFlow::paintFloats(PaintInfo& paintInfo, const LayoutPoint& paint
     BlockFlowPainter(*this).paintFloats(paintInfo, paintOffset, preservePhase);
 }
 
+void RenderBlockFlow::paintSelection(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
+{
+    BlockFlowPainter(*this).paintSelection(paintInfo, paintOffset);
+}
+
 void RenderBlockFlow::clipOutFloatingObjects(const RenderBlock* rootBlock, const PaintInfo* paintInfo, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock) const
 {
     if (m_floatingObjects) {
@@ -2644,6 +2651,83 @@ LayoutUnit RenderBlockFlow::logicalRightFloatOffsetForLine(LayoutUnit logicalTop
     return fixedOffset;
 }
 
+LayoutRect RenderBlockFlow::selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+{
+    LayoutRect rect = selectionGapRectsForPaintInvalidation(paintInvalidationContainer);
+    // FIXME: groupedMapping() leaks the squashing abstraction.
+    if (paintInvalidationContainer->layer()->groupedMapping())
+        RenderLayer::mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+    return rect;
+}
+
+GapRects RenderBlockFlow::selectionGapRectsForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const
+{
+    ASSERT(!needsLayout());
+
+    if (!shouldPaintSelectionGaps())
+        return GapRects();
+
+    TransformState transformState(TransformState::ApplyTransformDirection, FloatPoint());
+    mapLocalToContainer(paintInvalidationContainer, transformState, ApplyContainerFlip | UseTransforms);
+    LayoutPoint offsetFromPaintInvalidationContainer = roundedLayoutPoint(transformState.mappedPoint());
+
+    if (hasOverflowClip())
+        offsetFromPaintInvalidationContainer -= scrolledContentOffset();
+
+    LayoutUnit lastTop = 0;
+    LayoutUnit lastLeft = logicalLeftSelectionOffset(this, lastTop);
+    LayoutUnit lastRight = logicalRightSelectionOffset(this, lastTop);
+
+    return selectionGaps(this, offsetFromPaintInvalidationContainer, IntSize(), lastTop, lastLeft, lastRight);
+}
+
+static void clipOutPositionedObjects(const PaintInfo& paintInfo, const LayoutPoint& offset, TrackedRendererListHashSet* positionedObjects)
+{
+    if (!positionedObjects)
+        return;
+
+    TrackedRendererListHashSet::const_iterator end = positionedObjects->end();
+    for (TrackedRendererListHashSet::const_iterator it = positionedObjects->begin(); it != end; ++it) {
+        RenderBox* r = *it;
+        paintInfo.context->clipOut(IntRect(offset.x() + r->x(), offset.y() + r->y(), r->width(), r->height()));
+    }
+}
+
+GapRects RenderBlockFlow::selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo) const
+{
+    // IMPORTANT: Callers of this method that intend for painting to happen need to do a save/restore.
+    if (paintInfo) {
+        // Note that we don't clip out overflow for positioned objects.  We just stick to the border box.
+        LayoutRect flippedBlockRect(offsetFromRootBlock.width(), offsetFromRootBlock.height(), width(), height());
+        rootBlock->flipForWritingMode(flippedBlockRect);
+        flippedBlockRect.moveBy(rootBlockPhysicalPosition);
+        clipOutPositionedObjects(*paintInfo, flippedBlockRect.location(), positionedObjects());
+        if (isBody() || isDocumentElement()) // The <body> must make sure to examine its containingBlock's positioned objects.
+            for (RenderBlock* cb = containingBlock(); cb && !cb->isRenderView(); cb = cb->containingBlock())
+                clipOutPositionedObjects(*paintInfo, LayoutPoint(cb->x(), cb->y()), cb->positionedObjects()); // FIXME: Not right for flipped writing modes.
+        clipOutFloatingObjects(rootBlock, paintInfo, rootBlockPhysicalPosition, offsetFromRootBlock);
+    }
+
+    GapRects result;
+
+    if (hasColumns() || hasTransformRelatedProperty() || style()->columnSpan())
+        return result;
+
+    if (childrenInline())
+        result = inlineSelectionGaps(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, lastLogicalTop, lastLogicalLeft, lastLogicalRight, paintInfo);
+    else
+        result = blockSelectionGaps(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, lastLogicalTop, lastLogicalLeft, lastLogicalRight, paintInfo);
+
+    // Go ahead and fill the vertical gap all the way to the bottom of our block if the selection extends past our block.
+    if (rootBlock == this && (selectionState() != SelectionBoth && selectionState() != SelectionEnd)) {
+        result.uniteCenter(blockSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock,
+            lastLogicalTop, lastLogicalLeft, lastLogicalRight, logicalHeight(), paintInfo));
+    }
+    return result;
+}
+
+
 GapRects RenderBlockFlow::inlineSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
     LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo) const
 {
@@ -2698,6 +2782,156 @@ GapRects RenderBlockFlow::inlineSelectionGaps(const RenderBlock* rootBlock, cons
         lastLogicalRight = logicalRightSelectionOffset(rootBlock, lastSelectedLine->selectionBottom());
     }
     return result;
+}
+
+IntRect alignSelectionRectToDevicePixels(LayoutRect& rect)
+{
+    LayoutUnit roundedX = rect.x().round();
+    return IntRect(roundedX, rect.y().round(),
+        (rect.maxX() - roundedX).round(),
+        snapSizeToPixel(rect.height(), rect.y()));
+}
+
+bool RenderBlockFlow::shouldPaintSelectionGaps() const
+{
+    return selectionState() != SelectionNone && style()->visibility() == VISIBLE && isSelectionRoot();
+}
+
+LayoutRect RenderBlockFlow::blockSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo* paintInfo) const
+{
+    LayoutUnit logicalTop = lastLogicalTop;
+    LayoutUnit logicalHeight = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalBottom - logicalTop;
+    if (logicalHeight <= 0)
+        return LayoutRect();
+
+    // Get the selection offsets for the bottom of the gap
+    LayoutUnit logicalLeft = std::max(lastLogicalLeft, logicalLeftSelectionOffset(rootBlock, logicalBottom));
+    LayoutUnit logicalRight = std::min(lastLogicalRight, logicalRightSelectionOffset(rootBlock, logicalBottom));
+    LayoutUnit logicalWidth = logicalRight - logicalLeft;
+    if (logicalWidth <= 0)
+        return LayoutRect();
+
+    LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(logicalLeft, logicalTop, logicalWidth, logicalHeight));
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selectionBackgroundColor());
+    }
+    return gapRect;
+}
+
+GapRects RenderBlockFlow::blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* paintInfo) const
+{
+    GapRects result;
+
+    // Go ahead and jump right to the first block child that contains some selected objects.
+    RenderBox* curr;
+    for (curr = firstChildBox(); curr && curr->selectionState() == SelectionNone; curr = curr->nextSiblingBox()) { }
+
+    for (bool sawSelectionEnd = false; curr && !sawSelectionEnd; curr = curr->nextSiblingBox()) {
+        SelectionState childState = curr->selectionState();
+        if (childState == SelectionBoth || childState == SelectionEnd)
+            sawSelectionEnd = true;
+
+        if (curr->isFloatingOrOutOfFlowPositioned())
+            continue; // We must be a normal flow object in order to even be considered.
+
+        if (curr->isRelPositioned() && curr->hasLayer()) {
+            // If the relposition offset is anything other than 0, then treat this just like an absolute positioned element.
+            // Just disregard it completely.
+            LayoutSize relOffset = curr->layer()->offsetForInFlowPosition();
+            if (relOffset.width() || relOffset.height())
+                continue;
+        }
+
+        bool paintsOwnSelection = curr->shouldPaintSelectionGaps() || curr->isTable(); // FIXME: Eventually we won't special-case table like this.
+        bool fillBlockGaps = paintsOwnSelection || (curr->canBeSelectionLeaf() && childState != SelectionNone);
+        if (fillBlockGaps) {
+            // We need to fill the vertical gap above this object.
+            if (childState == SelectionEnd || childState == SelectionInside) {
+                // Fill the gap above the object.
+                result.uniteCenter(blockSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, lastLogicalTop, lastLogicalLeft, lastLogicalRight,
+                    curr->logicalTop(), paintInfo));
+            }
+
+            // Only fill side gaps for objects that paint their own selection if we know for sure the selection is going to extend all the way *past*
+            // our object.  We know this if the selection did not end inside our object.
+            if (paintsOwnSelection && (childState == SelectionStart || sawSelectionEnd))
+                childState = SelectionNone;
+
+            // Fill side gaps on this object based off its state.
+            bool leftGap, rightGap;
+            getSelectionGapInfo(childState, leftGap, rightGap);
+
+            if (leftGap)
+                result.uniteLeft(logicalLeftSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, this, curr->logicalLeft(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
+            if (rightGap)
+                result.uniteRight(logicalRightSelectionGap(rootBlock, rootBlockPhysicalPosition, offsetFromRootBlock, this, curr->logicalRight(), curr->logicalTop(), curr->logicalHeight(), paintInfo));
+
+            // Update lastLogicalTop to be just underneath the object.  lastLogicalLeft and lastLogicalRight extend as far as
+            // they can without bumping into floating or positioned objects.  Ideally they will go right up
+            // to the border of the root selection block.
+            lastLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + curr->logicalBottom();
+            lastLogicalLeft = logicalLeftSelectionOffset(rootBlock, curr->logicalBottom());
+            lastLogicalRight = logicalRightSelectionOffset(rootBlock, curr->logicalBottom());
+        } else if (childState != SelectionNone && curr->isRenderBlockFlow()) {
+            // We must be a block that has some selected object inside it.  Go ahead and recur.
+            result.unite(toRenderBlockFlow(curr)->selectionGaps(rootBlock, rootBlockPhysicalPosition, LayoutSize(offsetFromRootBlock.width() + curr->x(), offsetFromRootBlock.height() + curr->y()),
+                lastLogicalTop, lastLogicalLeft, lastLogicalRight, paintInfo));
+        }
+    }
+    return result;
+}
+
+LayoutRect RenderBlockFlow::logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    const RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+{
+    LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
+    LayoutUnit rootBlockLogicalLeft = std::max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight));
+    LayoutUnit rootBlockLogicalRight = std::min(rootBlock->inlineDirectionOffset(offsetFromRootBlock) + logicalLeft, std::min(logicalRightSelectionOffset(rootBlock, logicalTop), logicalRightSelectionOffset(rootBlock, logicalTop + logicalHeight)));
+    LayoutUnit rootBlockLogicalWidth = rootBlockLogicalRight - rootBlockLogicalLeft;
+    if (rootBlockLogicalWidth <= 0)
+        return LayoutRect();
+
+    LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+    }
+    return gapRect;
+}
+
+LayoutRect RenderBlockFlow::logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+    const RenderObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo* paintInfo) const
+{
+    LayoutUnit rootBlockLogicalTop = rootBlock->blockDirectionOffset(offsetFromRootBlock) + logicalTop;
+    LayoutUnit rootBlockLogicalLeft = std::max(rootBlock->inlineDirectionOffset(offsetFromRootBlock) + logicalRight, max(logicalLeftSelectionOffset(rootBlock, logicalTop), logicalLeftSelectionOffset(rootBlock, logicalTop + logicalHeight)));
+    LayoutUnit rootBlockLogicalRight = std::min(logicalRightSelectionOffset(rootBlock, logicalTop), logicalRightSelectionOffset(rootBlock, logicalTop + logicalHeight));
+    LayoutUnit rootBlockLogicalWidth = rootBlockLogicalRight - rootBlockLogicalLeft;
+    if (rootBlockLogicalWidth <= 0)
+        return LayoutRect();
+
+    LayoutRect gapRect = rootBlock->logicalRectToPhysicalRect(rootBlockPhysicalPosition, LayoutRect(rootBlockLogicalLeft, rootBlockLogicalTop, rootBlockLogicalWidth, logicalHeight));
+    if (paintInfo) {
+        IntRect selectionGapRect = alignSelectionRectToDevicePixels(gapRect);
+        DrawingRecorder recorder(paintInfo->context, this, paintInfo->phase, selectionGapRect);
+        paintInfo->context->fillRect(selectionGapRect, selObj->selectionBackgroundColor());
+    }
+    return gapRect;
+}
+
+void RenderBlockFlow::getSelectionGapInfo(SelectionState state, bool& leftGap, bool& rightGap) const
+{
+    bool ltr = style()->isLeftToRightDirection();
+    leftGap = (state == RenderObject::SelectionInside)
+        || (state == RenderObject::SelectionEnd && ltr)
+        || (state == RenderObject::SelectionStart && !ltr);
+    rightGap = (state == RenderObject::SelectionInside)
+        || (state == RenderObject::SelectionStart && ltr)
+        || (state == RenderObject::SelectionEnd && !ltr);
 }
 
 void RenderBlockFlow::setPaginationStrut(LayoutUnit strut)

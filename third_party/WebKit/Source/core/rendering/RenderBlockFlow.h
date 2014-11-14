@@ -181,8 +181,23 @@ public:
     // FIXME: This should be const to avoid a const_cast, but can modify child dirty bits and RenderCombineText
     void computeInlinePreferredLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth);
 
+    virtual bool shouldPaintSelectionGaps() const override final;
+    LayoutRect logicalLeftSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        const RenderObject* selObj, LayoutUnit logicalLeft, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
+    LayoutRect logicalRightSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        const RenderObject* selObj, LayoutUnit logicalRight, LayoutUnit logicalTop, LayoutUnit logicalHeight, const PaintInfo*) const;
+    void getSelectionGapInfo(SelectionState, bool& leftGap, bool& rightGap) const;
+
+    virtual LayoutRect selectionRectForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const override final;
+    GapRects selectionGapRectsForPaintInvalidation(const RenderLayerModelObject* paintInvalidationContainer) const;
+    GapRects selectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo* = 0) const;
     GapRects inlineSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
         LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
+    GapRects blockSelectionGaps(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*) const;
+    LayoutRect blockSelectionGap(const RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        LayoutUnit lastLogicalTop, LayoutUnit lastLogicalLeft, LayoutUnit lastLogicalRight, LayoutUnit logicalBottom, const PaintInfo*) const;
 
     LayoutUnit paginationStrut() const { return m_rareData ? m_rareData->m_paginationStrut : LayoutUnit(); }
     void setPaginationStrut(LayoutUnit);
@@ -267,6 +282,7 @@ private:
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants) override final;
     virtual void invalidatePaintForOverflow() override final;
     virtual void paintFloats(PaintInfo&, const LayoutPoint&, bool preservePhase = false) override final;
+    virtual void paintSelection(PaintInfo&, const LayoutPoint&) override final;
     virtual void clipOutFloatingObjects(const RenderBlock*, const PaintInfo*, const LayoutPoint&, const LayoutSize&) const override;
     void clearFloats(EClear);
 
