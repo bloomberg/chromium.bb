@@ -90,6 +90,11 @@ AlgorithmImplementation* CreatePlatformRsaPssImplementation() {
   return NULL;
 }
 
+AlgorithmImplementation* CreatePlatformEcdsaImplementation() {
+  // TODO(eroman): http://crbug.com/399094
+  return NULL;
+}
+
 }  // namespace webcrypto
 
 }  // namespace content

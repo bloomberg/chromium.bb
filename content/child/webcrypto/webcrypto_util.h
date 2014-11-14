@@ -44,6 +44,11 @@ CONTENT_EXPORT blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
     blink::WebCryptoAlgorithmId id,
     blink::WebCryptoAlgorithmId hash_id);
 
+// Creates an import algorithm for EC keys.
+CONTENT_EXPORT blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoNamedCurve named_curve);
+
 // Returns true if the set bits in b make up a subset of the set bits in a.
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b);

@@ -4,6 +4,9 @@
 
 #include "content/child/webcrypto/status.h"
 
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
+
 namespace content {
 
 // TODO(eroman): The error text for JWK uses the terminology "property" however
@@ -247,6 +250,34 @@ Status Status::ErrorGenerateKeyLength() {
 Status Status::ErrorCreateKeyBadUsages() {
   return Status(blink::WebCryptoErrorTypeSyntax,
                 "Cannot create a key using the specified key usages.");
+}
+
+Status Status::ErrorImportedEcKeyIncorrectCurve() {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The imported EC key specifies a different curve than requested");
+}
+
+Status Status::ErrorJwkIncorrectCrv() {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      "The JWK's \"crv\" member specifies a different curve than requested");
+}
+
+Status Status::ErrorEcKeyInvalid() {
+  return Status(blink::WebCryptoErrorTypeData,
+                "The imported EC key is invalid");
+}
+
+Status Status::JwkOctetStringWrongLength(const std::string& member_name,
+                                         size_t expected_length,
+                                         size_t actual_length) {
+  return Status(
+      blink::WebCryptoErrorTypeData,
+      base::StringPrintf(
+          "The JWK's \"%s\" member defines an octet string of length %" PRIuS
+          " bytes but should be %" PRIuS,
+          member_name.c_str(), actual_length, expected_length));
 }
 
 Status::Status(blink::WebCryptoErrorType error_type,

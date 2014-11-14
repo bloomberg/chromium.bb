@@ -108,6 +108,8 @@ class JwkReader {
 class JwkWriter {
  public:
   // Initializes a writer, and sets the standard JWK members as indicated.
+  // |algorithm| is optional, and is only written if the provided |algorithm| is
+  // non-empty.
   JwkWriter(const std::string& algorithm,
             bool extractable,
             blink::WebCryptoKeyUsageMask usages,

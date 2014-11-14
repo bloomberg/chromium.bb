@@ -137,6 +137,13 @@ blink::WebCryptoAlgorithm CreateRsaHashedImportAlgorithm(
       id, new blink::WebCryptoRsaHashedImportParams(CreateAlgorithm(hash_id)));
 }
 
+blink::WebCryptoAlgorithm CreateEcImportAlgorithm(
+    blink::WebCryptoAlgorithmId id,
+    blink::WebCryptoNamedCurve named_curve) {
+  return blink::WebCryptoAlgorithm::adoptParamsAndCreate(
+      id, new blink::WebCryptoEcKeyImportParams(named_curve));
+}
+
 bool ContainsKeyUsages(blink::WebCryptoKeyUsageMask a,
                        blink::WebCryptoKeyUsageMask b) {
   return (a & b) == b;

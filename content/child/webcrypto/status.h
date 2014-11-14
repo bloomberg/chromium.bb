@@ -214,6 +214,23 @@ class CONTENT_EXPORT Status {
   // and algorithm.
   static Status ErrorCreateKeyBadUsages();
 
+  // An EC key imported using SPKI/PKCS8 format had the wrong curve specified in
+  // the key.
+  static Status ErrorImportedEcKeyIncorrectCurve();
+
+  // The "crv" member for a JWK did not match the expectations from importKey()
+  static Status ErrorJwkIncorrectCrv();
+
+  // The EC key failed validation (coordinates don't lie on curve, out of range,
+  // etc.)
+  static Status ErrorEcKeyInvalid();
+
+  // The octet string |member_name| was expected to be |expected_length| bytes
+  // long, but was instead |actual_length| bytes long.
+  static Status JwkOctetStringWrongLength(const std::string& member_name,
+                                          size_t expected_length,
+                                          size_t actual_length);
+
  private:
   enum Type { TYPE_ERROR, TYPE_SUCCESS };
 

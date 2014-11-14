@@ -655,6 +655,7 @@
         'child/webcrypto/test/aes_ctr_unittest.cc',
         'child/webcrypto/test/aes_gcm_unittest.cc',
         'child/webcrypto/test/aes_kw_unittest.cc',
+        'child/webcrypto/test/ecdsa_unittest.cc',
         'child/webcrypto/test/hmac_unittest.cc',
         'child/webcrypto/test/rsa_oaep_unittest.cc',
         'child/webcrypto/test/rsa_pss_unittest.cc',
