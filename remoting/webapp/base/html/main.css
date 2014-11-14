@@ -703,7 +703,7 @@ html.apps-v2.scrollable {
  * no scroll-bars, so the advantages of flex-box layout to achieve centering
  * (ie, the DOM is easier to measure to determine when scroll-bars are needed)
  * don't apply */
-.full-screen #session-mode {
+.fullscreen #session-mode {
   position: fixed;
   top: 0;
   left: 0;

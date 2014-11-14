@@ -87,6 +87,11 @@ remoting.FullscreenAppsV1.prototype.onFullscreenChanged_ = function() {
   window.setTimeout(
       /** @this {remoting.FullscreenAppsV1} */
       function() {
+        if (this.isActive()) {
+          document.body.classList.add('fullscreen');
+        } else {
+          document.body.classList.remove('fullscreen');
+        }
         this.eventSource_.raiseEvent(this.kEventName_, this.isActive());
       }.bind(this),
       500);

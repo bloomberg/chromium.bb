@@ -1302,13 +1302,7 @@ remoting.ClientSession.prototype.requestPairing = function(clientName, onDone) {
  * @private
  */
 remoting.ClientSession.prototype.onFullScreenChanged_ = function (fullscreen) {
-  var htmlNode = /** @type {HTMLElement} */ (document.documentElement);
   this.enableBumpScroll_(fullscreen);
-  if (fullscreen) {
-    htmlNode.classList.add('full-screen');
-  } else {
-    htmlNode.classList.remove('full-screen');
-  }
 };
 
 /**
