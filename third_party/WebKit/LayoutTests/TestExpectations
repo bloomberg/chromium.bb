@@ -1345,6 +1345,9 @@ crbug.com/429128 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 # By about a quarter or less of a pixel.
 crbug.com/421412 [ Mac ] virtual/antialiasedtext/fast/text/international/bdo-bidi-width.html [ ImageOnlyFailure ]
 
+crbug.com/433146 fast/media/mq-hover.html [ Failure ]
+crbug.com/433146 fast/media/mq-pointer.html [ Failure ]
+
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/apply-start-width-after-skipped-text.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-embedding-pop-and-push-same-2.html [ Failure ]
 crbug.com/429133 [ SnowLeopard ] virtual/textblob/fast/text/bidi-explicit-embedding-past-end.html [ Failure ]
