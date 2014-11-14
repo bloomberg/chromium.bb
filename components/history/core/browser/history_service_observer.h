@@ -30,6 +30,14 @@ class HistoryServiceObserver {
                             const RedirectList& redirects,
                             base::Time visit_time) {}
 
+  // Called when a URL has been added or modified.
+  //
+  // |changed_urls| lists the information for each of the URLs affected. The
+  // rows will have the IDs that are currently in effect in the main history
+  // database.
+  virtual void OnURLsModified(HistoryService* history_service,
+                              const URLRows& changed_urls) {}
+
   // Called on changes to the VisitDatabase.
   virtual void OnAddVisit(HistoryService* history_service,
                           const BriefVisitInfo& info) {}

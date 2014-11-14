@@ -235,15 +235,6 @@ enum NotificationType {
   // HistoryService.
   NOTIFICATION_HISTORY_LOADED,
 
-  // Sent when a URL has been added or modified. This is used by the in-memory
-  // URL database and the InMemoryURLIndex (both used by autocomplete) to track
-  // changes to the main history system.
-  //
-  // The source is the profile owning the history service that changed, and
-  // the details is history::URLsModifiedDetails that lists the modified or
-  // added URLs.
-  NOTIFICATION_HISTORY_URLS_MODIFIED,
-
   // Sent when one or more URLs are deleted.
   //
   // The source is the profile owning the history service that changed, and

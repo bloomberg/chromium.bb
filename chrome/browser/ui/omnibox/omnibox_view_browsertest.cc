@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "base/command_line.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +35,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/history/core/browser/history_service_observer.h"
 #include "components/omnibox/autocomplete_input.h"
 #include "components/omnibox/autocomplete_match.h"
 #include "components/search_engines/template_url.h"
@@ -137,7 +139,8 @@ const int kCtrlOrCmdMask = ui::EF_CONTROL_DOWN;
 }  // namespace
 
 class OmniboxViewTest : public InProcessBrowserTest,
-                        public content::NotificationObserver {
+                        public content::NotificationObserver,
+                        public history::HistoryServiceObserver {
  protected:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
@@ -304,9 +307,9 @@ class OmniboxViewTest : public InProcessBrowserTest,
       bookmarks::AddIfNotBookmarked(bookmark_model, url, base::string16());
     // Wait at least for the AddPageWithDetails() call to finish.
     {
-      content::NotificationRegistrar registrar;
-      registrar.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                    content::Source<Profile>(profile));
+      ScopedObserver<HistoryService, history::HistoryServiceObserver> observer(
+          this);
+      observer.Add(history_service);
       content::RunMessageLoop();
       // We don't want to return until all observers have processed this
       // notification, because some (e.g. the in-memory history database) may do
@@ -347,11 +350,15 @@ class OmniboxViewTest : public InProcessBrowserTest,
       case chrome::NOTIFICATION_TAB_PARENTED:
       case chrome::NOTIFICATION_AUTOCOMPLETE_CONTROLLER_RESULT_READY:
       case chrome::NOTIFICATION_HISTORY_LOADED:
-      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
         break;
       default:
         FAIL() << "Unexpected notification type";
     }
+    base::MessageLoop::current()->Quit();
+  }
+
+  void OnURLsModified(HistoryService* history_service,
+                      const history::URLRows& changed_urls) override {
     base::MessageLoop::current()->Quit();
   }
 };

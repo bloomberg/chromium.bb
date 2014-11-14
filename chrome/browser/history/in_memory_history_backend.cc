@@ -59,7 +59,6 @@ void InMemoryHistoryBackend::AttachToHistoryService(
   // Register for the notifications we care about.
   // We only want notifications for the associated profile.
   content::Source<Profile> source(profile_);
-  registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED, source);
   registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_KEYWORD_SEARCH_TERM_UPDATED, source);
@@ -82,6 +81,13 @@ void InMemoryHistoryBackend::OnURLVisited(HistoryService* history_service,
   OnURLVisitedOrModified(row);
 }
 
+void InMemoryHistoryBackend::OnURLsModified(HistoryService* history_service,
+                                            const URLRows& changed_urls) {
+  for (const auto& row : changed_urls) {
+    OnURLVisitedOrModified(row);
+  }
+}
+
 void InMemoryHistoryBackend::Observe(
     int type,
     const content::NotificationSource& source,
@@ -95,16 +101,6 @@ void InMemoryHistoryBackend::Observe(
       OnKeywordSearchTermDeleted(
           *content::Details<KeywordSearchDeletedDetails>(details).ptr());
       break;
-    case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED: {
-      const URLsModifiedDetails* modified_details =
-          content::Details<URLsModifiedDetails>(details).ptr();
-      URLRows::const_iterator it;
-      for (it = modified_details->changed_urls.begin();
-           it != modified_details->changed_urls.end(); ++it) {
-        OnURLVisitedOrModified(*it);
-      }
-      break;
-    }
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
       OnURLsDeleted(*content::Details<URLsDeletedDetails>(details).ptr());
       break;

@@ -67,19 +67,15 @@ void TypedUrlChangeProcessor::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(backend_loop_ == base::MessageLoop::current());
+  DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
 
   base::AutoLock al(disconnect_lock_);
   if (disconnected_)
     return;
 
   DVLOG(1) << "Observed typed_url change.";
-  if (type == chrome::NOTIFICATION_HISTORY_URLS_MODIFIED) {
-    HandleURLsModified(
-        content::Details<history::URLsModifiedDetails>(details).ptr());
-  } else if (type == chrome::NOTIFICATION_HISTORY_URLS_DELETED) {
-    HandleURLsDeleted(
-        content::Details<history::URLsDeletedDetails>(details).ptr());
-  }
+  HandleURLsDeleted(
+      content::Details<history::URLsDeletedDetails>(details).ptr());
   UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
                            model_associator_->GetErrorPercentage());
 }
@@ -105,18 +101,26 @@ void TypedUrlChangeProcessor::OnURLVisited(
                            model_associator_->GetErrorPercentage());
 }
 
-void TypedUrlChangeProcessor::HandleURLsModified(
-    history::URLsModifiedDetails* details) {
+void TypedUrlChangeProcessor::OnURLsModified(
+    history::HistoryBackend* history_backend,
+    const history::URLRows& changed_urls) {
+  DCHECK(backend_loop_ == base::MessageLoop::current());
 
+  base::AutoLock al(disconnect_lock_);
+  if (disconnected_)
+    return;
+
+  DVLOG(1) << "Observed typed_url change.";
   syncer::WriteTransaction trans(FROM_HERE, share_handle());
-  for (history::URLRows::iterator url = details->changed_urls.begin();
-       url != details->changed_urls.end(); ++url) {
-    if (url->typed_count() > 0) {
+  for (const auto& row : changed_urls) {
+    if (row.typed_count() > 0) {
       // If there were any errors updating the sync node, just ignore them and
       // continue on to process the next URL.
-      CreateOrUpdateSyncNode(*url, &trans);
+      CreateOrUpdateSyncNode(row, &trans);
     }
   }
+  UMA_HISTOGRAM_PERCENTAGE("Sync.TypedUrlChangeProcessorErrors",
+                           model_associator_->GetErrorPercentage());
 }
 
 bool TypedUrlChangeProcessor::CreateOrUpdateSyncNode(
@@ -344,9 +348,6 @@ void TypedUrlChangeProcessor::StartObserving() {
   DCHECK(history_backend_);
   DCHECK(profile_);
   notification_registrar_.Add(
-      this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-      content::Source<Profile>(profile_));
-  notification_registrar_.Add(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile_));
   history_backend_->AddObserver(this);
@@ -356,9 +357,6 @@ void TypedUrlChangeProcessor::StopObserving() {
   DCHECK(backend_loop_ == base::MessageLoop::current());
   DCHECK(history_backend_);
   DCHECK(profile_);
-  notification_registrar_.Remove(
-      this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-      content::Source<Profile>(profile_));
   notification_registrar_.Remove(
       this, chrome::NOTIFICATION_HISTORY_URLS_DELETED,
       content::Source<Profile>(profile_));

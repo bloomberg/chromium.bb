@@ -245,9 +245,10 @@ class InMemoryURLIndex : public HistoryServiceObserver,
                     const URLRow& row,
                     const RedirectList& redirects,
                     base::Time visit_time) override;
+  void OnURLsModified(HistoryService* history_service,
+                      const URLRows& changed_urls) override;
 
   // Notification handlers.
-  void OnURLsModified(const URLsModifiedDetails* details);
   void OnURLsDeleted(const URLsDeletedDetails* details);
 
   // Sets the directory wherein the cache file will be maintained.

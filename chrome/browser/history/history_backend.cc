@@ -2538,14 +2538,18 @@ void HistoryBackend::NotifyURLVisited(ui::PageTransition transition,
 }
 
 void HistoryBackend::NotifyURLsModified(const URLRows& rows) {
-  scoped_ptr<URLsModifiedDetails> details(new URLsModifiedDetails);
-  details->changed_urls = rows;
-
+  URLRows changed_urls(rows);
   if (typed_url_syncable_service_.get())
-    typed_url_syncable_service_->OnUrlsModified(&details->changed_urls);
+    typed_url_syncable_service_->OnUrlsModified(&changed_urls);
 
-  BroadcastNotifications(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                         details.Pass());
+  FOR_EACH_OBSERVER(
+      HistoryBackendObserver, observers_, OnURLsModified(this, changed_urls));
+
+  // TODO(sdefresne): turn HistoryBackend::Delegate from HistoryService into
+  // an HistoryBackendObserver and register it so that we can remove this
+  // method.
+  if (delegate_)
+    delegate_->NotifyURLsModified(changed_urls);
 }
 
 void HistoryBackend::NotifyURLsDeleted(bool all_history,

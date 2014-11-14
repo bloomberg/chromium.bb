@@ -603,6 +603,10 @@ class HistoryService : public content::NotificationObserver,
                         const history::RedirectList& redirects,
                         base::Time visit_time);
 
+  // Notify all HistoryServiceObservers registered that URLs have been added or
+  // modified. |changed_urls| contains the list of affects URLs.
+  void NotifyURLsModified(const history::URLRows& changed_urls);
+
   // Favicon -------------------------------------------------------------------
 
   // These favicon methods are exposed to the FaviconService. Instead of calling

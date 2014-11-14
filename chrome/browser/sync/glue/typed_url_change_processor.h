@@ -64,6 +64,8 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
+  void OnURLsModified(history::HistoryBackend* history_backend,
+                      const history::URLRows& changed_urls) override;
 
   // sync API model -> WebDataService change application.
   void ApplyChangesFromSyncModel(
@@ -86,7 +88,6 @@ class TypedUrlChangeProcessor : public sync_driver::ChangeProcessor,
   void StartObserving();
   void StopObserving();
 
-  void HandleURLsModified(history::URLsModifiedDetails* details);
   void HandleURLsDeleted(history::URLsDeletedDetails* details);
 
   // Returns true if the caller should sync as a result of the passed visit

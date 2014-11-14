@@ -108,8 +108,6 @@ InMemoryURLIndex::InMemoryURLIndex(Profile* profile,
   if (profile) {
     // TODO(mrossetti): Register for language change notifications.
     content::Source<Profile> source(profile);
-    registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   source);
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_URLS_DELETED, source);
   }
   if (history_service_)
@@ -189,10 +187,6 @@ void InMemoryURLIndex::Observe(int notification_type,
                                const content::NotificationSource& source,
                                const content::NotificationDetails& details) {
   switch (notification_type) {
-    case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED:
-      OnURLsModified(
-          content::Details<history::URLsModifiedDetails>(details).ptr());
-      break;
     case chrome::NOTIFICATION_HISTORY_URLS_DELETED:
       OnURLsDeleted(
           content::Details<history::URLsDeletedDetails>(details).ptr());
@@ -222,15 +216,15 @@ void InMemoryURLIndex::OnURLVisited(HistoryService* history_service,
                                                   &private_data_tracker_);
 }
 
-void InMemoryURLIndex::OnURLsModified(const URLsModifiedDetails* details) {
-  HistoryService* service =
-      HistoryServiceFactory::GetForProfile(profile_,
-                                           Profile::EXPLICIT_ACCESS);
-  for (URLRows::const_iterator row = details->changed_urls.begin();
-       row != details->changed_urls.end();
-       ++row) {
-    needs_to_be_cached_ |= private_data_->UpdateURL(
-        service, *row, languages_, scheme_whitelist_, &private_data_tracker_);
+void InMemoryURLIndex::OnURLsModified(HistoryService* history_service,
+                                      const URLRows& changed_urls) {
+  DCHECK_EQ(history_service_, history_service);
+  for (const auto& row : changed_urls) {
+    needs_to_be_cached_ |= private_data_->UpdateURL(history_service_,
+                                                    row,
+                                                    languages_,
+                                                    scheme_whitelist_,
+                                                    &private_data_tracker_);
   }
 }
 

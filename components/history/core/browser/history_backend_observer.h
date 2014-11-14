@@ -30,6 +30,14 @@ class HistoryBackendObserver {
                             const RedirectList& redirects,
                             base::Time visit_time) = 0;
 
+  // Called when a URL has been added or modified.
+  //
+  // |changed_urls| lists the information for each of the URLs affected. The
+  // rows will have the IDs that are currently in effect in the main history
+  // database.
+  virtual void OnURLsModified(history::HistoryBackend* history_backend,
+                              const history::URLRows& changed_urls) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HistoryBackendObserver);
 };

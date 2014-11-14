@@ -139,6 +139,10 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                                   const RedirectList& redirects,
                                   base::Time visit_time) = 0;
 
+    // Notify HistoryService that some URLs have been modified. The event will
+    // be forwarded to the HistoryServiceObservers in the correct thread.
+    virtual void NotifyURLsModified(const URLRows& changed_urls) = 0;
+
     // Broadcasts the specified notification to the notification service.
     // This is implemented here because notifications must only be sent from
     // the main thread. This is the only method that doesn't identify the

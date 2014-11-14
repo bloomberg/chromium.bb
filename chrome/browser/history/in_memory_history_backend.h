@@ -79,6 +79,8 @@ class InMemoryHistoryBackend : public HistoryServiceObserver,
                     const URLRow& row,
                     const RedirectList& redirects,
                     base::Time visit_time) override;
+  void OnURLsModified(HistoryService* history_service,
+                      const URLRows& changed_urls) override;
 
   // Notification callback.
   void Observe(int type,

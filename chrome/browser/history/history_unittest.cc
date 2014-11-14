@@ -101,6 +101,7 @@ class BackendDelegate : public HistoryBackend::Delegate {
                         const URLRow& row,
                         const RedirectList& redirects,
                         base::Time visit_time) override {}
+  void NotifyURLsModified(const URLRows& changed_urls) override {}
   void BroadcastNotifications(int type,
                               scoped_ptr<HistoryDetails> details) override;
   void DBLoaded() override {}

@@ -69,38 +69,29 @@ class AndroidProviderBackendDelegate : public HistoryBackend::Delegate {
  public:
   AndroidProviderBackendDelegate() {}
 
-  virtual void NotifyProfileError(sql::InitStatus init_status) override {}
-  virtual void SetInMemoryBackend(
+  void NotifyProfileError(sql::InitStatus init_status) override {}
+  void SetInMemoryBackend(
       scoped_ptr<InMemoryHistoryBackend> backend) override {}
-  virtual void NotifyAddVisit(const history::BriefVisitInfo& info) override {}
-  virtual void NotifyFaviconChanged(const std::set<GURL>& url) override {
+  void NotifyAddVisit(const history::BriefVisitInfo& info) override {}
+  void NotifyFaviconChanged(const std::set<GURL>& url) override {
     favicon_changed_.reset(new std::set<GURL>(url.begin(), url.end()));
   }
-  virtual void NotifyURLVisited(ui::PageTransition,
-                                const history::URLRow& row,
-                                const history::RedirectList& redirects,
-                                base::Time visit_time) override {}
-  virtual void BroadcastNotifications(
+  void NotifyURLVisited(ui::PageTransition,
+                        const history::URLRow& row,
+                        const history::RedirectList& redirects,
+                        base::Time visit_time) override {}
+  void NotifyURLsModified(const history::URLRows& rows) override {
+    modified_details_.reset(new history::URLRows(rows));
+  }
+  void BroadcastNotifications(
       int type,
       scoped_ptr<HistoryDetails> details) override {
-    switch (type) {
-      case chrome::NOTIFICATION_HISTORY_URLS_DELETED: {
-        scoped_ptr<URLsDeletedDetails> urls_deleted_details(
-            static_cast<URLsDeletedDetails*>(details.release()));
-        deleted_details_.reset(new history::URLRows(
-            urls_deleted_details->rows));
-        break;
-      }
-      case chrome::NOTIFICATION_HISTORY_URLS_MODIFIED: {
-        scoped_ptr<URLsModifiedDetails> urls_modified_details(
-            static_cast<URLsModifiedDetails*>(details.release()));
-        modified_details_.reset(new history::URLRows(
-            urls_modified_details->changed_urls));
-        break;
-      }
-    }
+    DCHECK_EQ(type, chrome::NOTIFICATION_HISTORY_URLS_DELETED);
+    scoped_ptr<URLsDeletedDetails> urls_deleted_details(
+        static_cast<URLsDeletedDetails*>(details.release()));
+    deleted_details_.reset(new history::URLRows(urls_deleted_details->rows));
   }
-  virtual void DBLoaded() override {}
+  void DBLoaded() override {}
 
   history::URLRows* deleted_details() const { return deleted_details_.get(); }
 
@@ -174,10 +165,10 @@ class AndroidProviderBackendTest : public testing::Test {
         ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_) {
   }
-  virtual ~AndroidProviderBackendTest() {}
+  ~AndroidProviderBackendTest() override {}
 
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     // Setup the testing profile, so the bookmark_model_sql_handler could
     // get the bookmark model from it.
     ASSERT_TRUE(profile_manager_.SetUp());

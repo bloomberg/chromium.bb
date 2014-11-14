@@ -351,6 +351,12 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
                    visit_time));
   }
 
+  void SendNotificationURLsModified(const history::URLRows& rows) {
+    SendNotification(base::Bind(&HistoryBackendNotifier::NotifyURLsModified,
+                                base::Unretained(history_backend_.get()),
+                                rows));
+  }
+
   static bool URLsEqual(history::URLRow& lhs, history::URLRow& rhs) {
     // Only verify the fields we explicitly sync (i.e. don't verify typed_count
     // or visit_count because we rely on the history DB to manage those values
@@ -631,13 +637,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAdd) {
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(added_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+  history::URLRows changed_urls;
+  changed_urls.push_back(added_entry);
+  SendNotificationURLsModified(changed_urls);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -661,14 +663,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeAddWithBlank) {
   CreateRootHelper create_root(this, syncer::TYPED_URLS);
   StartSyncService(create_root.callback());
 
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(empty_entry);
-  details.changed_urls.push_back(added_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+  history::URLRows changed_urls;
+  changed_urls.push_back(empty_entry);
+  changed_urls.push_back(added_entry);
+  SendNotificationURLsModified(changed_urls);
 
   std::vector<history::URLRow> new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -700,13 +698,9 @@ TEST_F(ProfileSyncServiceTypedUrlTest, ProcessUserChangeUpdate) {
       WillOnce(DoAll(SetArgumentPointee<2>(updated_visits),
                      Return(true)));
 
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(updated_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+  history::URLRows changed_urls;
+  changed_urls.push_back(updated_entry);
+  SendNotificationURLsModified(changed_urls);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -1044,15 +1038,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalFileURL) {
   history::URLRow new_file_entry(MakeTypedUrlEntry("file:///dog.jpg",
                                                    "dog", 20, 15, false,
                                                    &updated_visits));
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(updated_url_entry);
-  details.changed_urls.push_back(updated_file_entry);
-  details.changed_urls.push_back(new_file_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+
+  history::URLRows changed_urls;
+  changed_urls.push_back(updated_url_entry);
+  changed_urls.push_back(updated_file_entry);
+  changed_urls.push_back(new_file_entry);
+  SendNotificationURLsModified(changed_urls);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -1098,15 +1089,12 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreLocalhostURL) {
   history::URLRow localhost_ip_entry(MakeTypedUrlEntry("http://127.0.0.1",
                                                   "localhost", 12, 15, false,
                                                   &original_visits));
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(updated_url_entry);
-  details.changed_urls.push_back(updated_localhost_entry);
-  details.changed_urls.push_back(localhost_ip_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+
+  history::URLRows changed_urls;
+  changed_urls.push_back(updated_url_entry);
+  changed_urls.push_back(updated_localhost_entry);
+  changed_urls.push_back(localhost_ip_entry);
+  SendNotificationURLsModified(changed_urls);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);
@@ -1129,13 +1117,10 @@ TEST_F(ProfileSyncServiceTypedUrlTest, IgnoreModificationWithoutValidVisit) {
   history::URLRow updated_url_entry(MakeTypedUrlEntry("http://yey.com",
                                                   "yey", 20, 0, false,
                                                   &updated_visits));
-  history::URLsModifiedDetails details;
-  details.changed_urls.push_back(updated_url_entry);
-  scoped_refptr<ThreadNotifier> notifier(
-      new ThreadNotifier(history_thread_.get()));
-  notifier->Notify(chrome::NOTIFICATION_HISTORY_URLS_MODIFIED,
-                   content::Source<Profile>(profile_),
-                   content::Details<history::URLsModifiedDetails>(&details));
+
+  history::URLRows changed_urls;
+  changed_urls.push_back(updated_url_entry);
+  SendNotificationURLsModified(changed_urls);
 
   history::URLRows new_sync_entries;
   GetTypedUrlsFromSyncDB(&new_sync_entries);

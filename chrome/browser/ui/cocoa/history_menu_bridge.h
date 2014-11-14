@@ -147,6 +147,8 @@ class HistoryMenuBridge : public content::NotificationObserver,
                     const history::URLRow& row,
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
+  void OnURLsModified(HistoryService* history_service,
+                      const history::URLRows& changed_urls) override;
 
   // Looks up an NSMenuItem in the |menu_item_map_| and returns the
   // corresponding HistoryItem.

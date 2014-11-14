@@ -181,6 +181,14 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
                                               visit_time));
   }
 
+  void NotifyURLsModified(const history::URLRows& changed_urls) override {
+    service_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&HistoryService::NotifyURLsModified,
+                   history_service_,
+                   changed_urls));
+  }
+
   void BroadcastNotifications(
       int type,
       scoped_ptr<history::HistoryDetails> details) override {
@@ -1252,6 +1260,13 @@ void HistoryService::NotifyURLVisited(ui::PageTransition transition,
   FOR_EACH_OBSERVER(history::HistoryServiceObserver,
                     observers_,
                     OnURLVisited(this, transition, row, redirects, visit_time));
+}
+
+void HistoryService::NotifyURLsModified(const history::URLRows& changed_urls) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  FOR_EACH_OBSERVER(history::HistoryServiceObserver,
+                    observers_,
+                    OnURLsModified(this, changed_urls));
 }
 
 scoped_ptr<base::CallbackList<void(const std::set<GURL>&)>::Subscription>
