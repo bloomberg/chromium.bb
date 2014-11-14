@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/passwords/save_password_refusal_combobox_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_password_item_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -170,6 +171,74 @@ void CloseManagePasswordsBubble(content::WebContents* web_contents) {
 
 }  // namespace chrome
 
+
+// ManagePasswordsBubbleView::AccountChooserView ------------------------------
+
+// A view offering the user the ability to choose credentials for
+// authentication. Contains a list of CredentialsItemView, along with a
+// "Cancel" button.
+class ManagePasswordsBubbleView::AccountChooserView
+    : public views::View,
+      public views::ButtonListener {
+ public:
+  explicit AccountChooserView(ManagePasswordsBubbleView* parent);
+  ~AccountChooserView() override;
+
+ private:
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  ManagePasswordsBubbleView* parent_;
+  views::LabelButton* cancel_button_;
+};
+
+ManagePasswordsBubbleView::AccountChooserView::AccountChooserView(
+    ManagePasswordsBubbleView* parent)
+    : parent_(parent) {
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  cancel_button_ =
+      new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_CANCEL));
+  cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
+  cancel_button_->SetFontList(
+      ui::ResourceBundle::GetSharedInstance().GetFontList(
+          ui::ResourceBundle::SmallFont));
+
+  // Title row.
+  BuildColumnSet(layout, SINGLE_VIEW_COLUMN_SET);
+  AddTitleRow(layout, parent_->model());
+
+  // TODO(vasilii): this is a stub instead of actual data. We temporary show 2
+  // credentials.
+  for (int i = 0; i < 2; ++i) {
+    base::string16 name =
+        l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME, i);
+    CredentialsItemView* credential_view = new CredentialsItemView(this, name);
+    // Add the title to the layout with appropriate padding.
+    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
+    layout->AddView(credential_view);
+  }
+
+  // Button row.
+  BuildColumnSet(layout, SINGLE_BUTTON_COLUMN_SET);
+  layout->StartRowWithPadding(
+      0, SINGLE_BUTTON_COLUMN_SET, 0, views::kRelatedControlVerticalSpacing);
+  layout->AddView(cancel_button_);
+
+  // Extra padding for visual awesomeness.
+  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+
+  parent_->set_initially_focused_view(cancel_button_);
+}
+
+ManagePasswordsBubbleView::AccountChooserView::~AccountChooserView() {
+}
+
+void ManagePasswordsBubbleView::AccountChooserView::ButtonPressed(
+    views::Button* sender, const ui::Event& event) {
+  parent_->Close();
+}
 
 // ManagePasswordsBubbleView::PendingView -------------------------------------
 

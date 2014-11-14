@@ -53,6 +53,7 @@ class ManagePasswordsBubbleView : public ManagePasswordsBubble,
   }
 
  private:
+  class AccountChooserView;
   class BlacklistedView;
   class ConfirmNeverView;
   class ManageView;

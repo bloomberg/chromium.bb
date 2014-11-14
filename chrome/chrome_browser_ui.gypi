@@ -2155,6 +2155,8 @@
       'browser/ui/views/panels/taskbar_window_thumbnailer_win.h',
       'browser/ui/views/panels/x11_panel_resizer.cc',
       'browser/ui/views/panels/x11_panel_resizer.h',
+      'browser/ui/views/passwords/credentials_item_view.cc',
+      'browser/ui/views/passwords/credentials_item_view.h',
       'browser/ui/views/passwords/manage_password_item_view.cc',
       'browser/ui/views/passwords/manage_password_item_view.h',
       'browser/ui/views/passwords/manage_passwords_bubble_view.cc',
