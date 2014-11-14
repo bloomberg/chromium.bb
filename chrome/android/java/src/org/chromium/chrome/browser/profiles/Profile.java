@@ -46,6 +46,13 @@ public class Profile {
         return nativeIsOffTheRecord(mNativeProfileAndroid);
     }
 
+    /**
+     * @return Whether or not the native side profile exists.
+     */
+    public boolean isNativeInitialized() {
+        return mNativeProfileAndroid != 0;
+    }
+
     @CalledByNative
     private static Profile create(long nativeProfileAndroid) {
         return new Profile(nativeProfileAndroid);
