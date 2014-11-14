@@ -81,6 +81,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   // (which you can prepare by calling one of the GetUserMedia* methods above).
   void SetupPeerconnectionWithLocalStream(content::WebContents* tab) const;
 
+  // Same as above but does not add the local stream.
+  void SetupPeerconnectionWithoutLocalStream(content::WebContents* tab) const;
+
   // Exchanges offers and answers between the peer connections in the
   // respective tabs. Before calling this, you must have prepared peer
   // connections in both tabs and configured them as you like (for instance by

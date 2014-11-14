@@ -255,9 +255,14 @@ std::string WebRtcTestBase::ExecuteJavascript(
 
 void WebRtcTestBase::SetupPeerconnectionWithLocalStream(
     content::WebContents* tab) const {
+  SetupPeerconnectionWithoutLocalStream(tab);
+  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
+}
+
+void WebRtcTestBase::SetupPeerconnectionWithoutLocalStream(
+    content::WebContents* tab) const {
   EXPECT_EQ("ok-peerconnection-created",
             ExecuteJavascript("preparePeerConnection()", tab));
-  EXPECT_EQ("ok-added", ExecuteJavascript("addLocalStream()", tab));
 }
 
 std::string WebRtcTestBase::CreateLocalOffer(

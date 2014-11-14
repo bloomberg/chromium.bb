@@ -67,15 +67,34 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
     return NULL;
   }
 
-  const base::DictionaryValue* GetDataOnFirstPeerConnection(
-      const base::DictionaryValue* all_data) {
+  const base::DictionaryValue* GetDataOnPeerConnection(
+      const base::DictionaryValue* all_data,
+      int peer_connection_index) {
     base::DictionaryValue::Iterator iterator(*all_data);
+
+    for (int i = 0; i < peer_connection_index && !iterator.IsAtEnd();
+        --peer_connection_index) {
+      iterator.Advance();
+    }
 
     const base::DictionaryValue* result;
     if (!iterator.IsAtEnd() && iterator.value().GetAsDictionary(&result))
       return result;
 
     return NULL;
+  }
+
+  scoped_ptr<base::DictionaryValue> MeasureWebRtcInternalsData(
+      int duration_msec) {
+    chrome::AddTabAt(browser(), GURL(), -1, true);
+    ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
+    content::WebContents* webrtc_internals_tab =
+        browser()->tab_strip_model()->GetActiveWebContents();
+
+    test::SleepInJavascript(webrtc_internals_tab, duration_msec);
+
+    return scoped_ptr<base::DictionaryValue>(
+        GetWebrtcInternalsData(webrtc_internals_tab));
   }
 };
 
@@ -111,22 +130,65 @@ IN_PROC_BROWSER_TEST_F(WebRtcPerfBrowserTest,
   test::SleepInJavascript(left_tab, 60000);
 
   // Start measurements.
-  chrome::AddTabAt(browser(), GURL(), -1, true);
-  ui_test_utils::NavigateToURL(browser(), GURL("chrome://webrtc-internals"));
-  content::WebContents* webrtc_internals_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  test::SleepInJavascript(left_tab, 10000);
-
-  scoped_ptr<base::DictionaryValue> all_data(
-      GetWebrtcInternalsData(webrtc_internals_tab));
+  scoped_ptr<base::DictionaryValue> all_data =
+      MeasureWebRtcInternalsData(10000);
   ASSERT_TRUE(all_data.get() != NULL);
 
   const base::DictionaryValue* first_pc_dict =
-      GetDataOnFirstPeerConnection(all_data.get());
+      GetDataOnPeerConnection(all_data.get(), 0);
   ASSERT_TRUE(first_pc_dict != NULL);
-  test::PrintBweForVideoMetrics(*first_pc_dict);
-  test::PrintMetricsForAllStreams(*first_pc_dict);
+  test::PrintBweForVideoMetrics(*first_pc_dict, "");
+  test::PrintMetricsForAllStreams(*first_pc_dict, "");
+
+  HangUp(left_tab);
+  HangUp(right_tab);
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcPerfBrowserTest,
+                       MANUAL_RunsOneWayCall60SecsAndLogsInternalMetrics) {
+  if (OnWinXp()) return;
+
+  ASSERT_TRUE(test::HasReferenceFilesInCheckout());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  ASSERT_GE(TestTimeouts::action_max_timeout().InSeconds(), 100) <<
+      "This is a long-running test; you must specify "
+      "--ui-test-action-max-timeout to have a value of at least 100000.";
+
+  content::WebContents* left_tab =
+      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+  content::WebContents* right_tab =
+      OpenTestPageAndGetUserMediaInNewTab(kMainWebrtcTestHtmlPage);
+
+  SetupPeerconnectionWithLocalStream(left_tab);
+  SetupPeerconnectionWithoutLocalStream(right_tab);
+
+  NegotiateCall(left_tab, right_tab);
+
+  // Remote video will only play in one tab since the call is one-way.
+  StartDetectingVideo(right_tab, "remote-view");
+  WaitForVideoToPlay(right_tab);
+
+  // Let values stabilize, bandwidth ramp up, etc.
+  test::SleepInJavascript(left_tab, 60000);
+
+  scoped_ptr<base::DictionaryValue> all_data =
+      MeasureWebRtcInternalsData(10000);
+  ASSERT_TRUE(all_data.get() != NULL);
+
+  // This assumes the sending peer connection is always listed first in the
+  // data store, and the receiving second.
+  const base::DictionaryValue* first_pc_dict =
+      GetDataOnPeerConnection(all_data.get(), 0);
+  ASSERT_TRUE(first_pc_dict != NULL);
+  test::PrintBweForVideoMetrics(*first_pc_dict, "_sendonly");
+  test::PrintMetricsForAllStreams(*first_pc_dict, "_sendonly");
+
+  const base::DictionaryValue* second_pc_dict =
+      GetDataOnPeerConnection(all_data.get(), 1);
+  ASSERT_TRUE(second_pc_dict != NULL);
+  test::PrintBweForVideoMetrics(*second_pc_dict, "_recvonly");
+  test::PrintMetricsForAllStreams(*second_pc_dict, "_recvonly");
 
   HangUp(left_tab);
   HangUp(right_tab);

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_MEDIA_WEBRTC_BROWSERTEST_PERF_H_
 #define CHROME_BROWSER_MEDIA_WEBRTC_BROWSERTEST_PERF_H_
 
+#include <string>
+
 namespace base {
 class DictionaryValue;
 }
@@ -18,9 +20,14 @@ namespace test {
 // dashboard and thereby track it for regressions.
 //
 // These functions expect to run under googletest and will use EXPECT_ and
-// ASSERT_ macros to signal failure.
-void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict);
-void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict);
+// ASSERT_ macros to signal failure. They take as argument one peer connection's
+// stats data and a |modifier| to append to each result bucket. For instance, if
+// the modifier is '_oneway', the rtt stat will be logged as goog_rtt in
+// the video_tx_oneway bucket.
+void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
+                             const std::string& modifier);
+void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
+                               const std::string& modifier);
 
 }  // namespace test
 
