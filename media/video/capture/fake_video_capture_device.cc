@@ -34,7 +34,10 @@ void FakeVideoCaptureDevice::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!capture_thread_.IsRunning());
+  if (capture_thread_.IsRunning()) {
+    NOTREACHED();
+    return;
+  }
 
   capture_thread_.Start();
   capture_thread_.message_loop()->PostTask(
@@ -47,7 +50,10 @@ void FakeVideoCaptureDevice::AllocateAndStart(
 
 void FakeVideoCaptureDevice::StopAndDeAllocate() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(capture_thread_.IsRunning());
+  if (!capture_thread_.IsRunning()) {
+    NOTREACHED();
+    return;
+  }
   capture_thread_.message_loop()->PostTask(
       FROM_HERE,
       base::Bind(&FakeVideoCaptureDevice::OnStopAndDeAllocate,
