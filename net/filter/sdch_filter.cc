@@ -58,22 +58,31 @@ const char* ResponseCorruptionDetectionCauseToString(
   switch (cause) {
     case RESPONSE_NONE:
       cause_string = "NONE";
+      break;
     case RESPONSE_404:
       cause_string = "404";
+      break;
     case RESPONSE_NOT_200:
       cause_string = "NOT_200";
+      break;
     case RESPONSE_OLD_UNENCODED:
       cause_string = "OLD_UNENCODED";
+      break;
     case RESPONSE_TENTATIVE_SDCH:
       cause_string = "TENTATIVE_SDCH";
+      break;
     case RESPONSE_NO_DICTIONARY:
       cause_string = "NO_DICTIONARY";
+      break;
     case RESPONSE_CORRUPT_SDCH:
       cause_string = "CORRUPT_SDCH";
+      break;
     case RESPONSE_ENCODING_LIE:
       cause_string = "ENCODING_LIE";
+      break;
     case RESPONSE_MAX:
       cause_string = "<Error: max enum value>";
+      break;
   }
   return cause_string;
 }
@@ -85,7 +94,6 @@ base::Value* NetLogSdchResponseCorruptionDetectionCallback(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("cause", ResponseCorruptionDetectionCauseToString(cause));
   dict->SetBoolean("cached", cached);
-  dict->SetInteger("net_error", ERR_FAILED);
   return dict;
 }
 
