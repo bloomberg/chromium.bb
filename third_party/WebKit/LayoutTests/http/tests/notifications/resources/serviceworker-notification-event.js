@@ -4,7 +4,12 @@ importScripts('/resources/testharness-helpers.js');
 test(function() {
     assert_true('NotificationEvent' in self);
 
-}, 'NotificationEvent is exposed.');
+    var event = new NotificationEvent('NotificationEvent');
+    assert_equals(event.type, 'NotificationEvent');
+    assert_own_property(event, 'notification');
+    assert_inherits(event, 'waitUntil');
+
+}, 'NotificationEvent is exposed, and has the expected interface.');
 
 test(function() {
     assert_own_property(self, 'onnotificationclick', 'The notificationclick event exists.');

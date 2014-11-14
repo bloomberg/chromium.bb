@@ -8,8 +8,9 @@
   </head>
   <body>
     <script>
-      // Tests that the NotificationEvent object is exposed in a ServiceWorker,
-      // as well as the "notificationclick" and "notificationerror" events.
+      // Tests that the NotificationEvent object is exposed in a ServiceWorker
+      // and exposes the "notification" and "waitUntil" members, as well as the
+      // "notificationclick" and "notificationerror" events.
       service_worker_test(
           'resources/serviceworker-notification-event.js',
           'Exposure of the NotificationEvent object in a ServiceWorker.');

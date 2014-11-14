@@ -4,8 +4,8 @@
 
 // https://notifications.spec.whatwg.org/#service-worker-api
 
-// FIXME: NotificationEvent should support being constructed from JavaScript.
 [
+    EventConstructor,
     Exposed=ServiceWorker,
     RuntimeEnabled=ServiceWorkerNotifications,
     TypeChecking=Interface,

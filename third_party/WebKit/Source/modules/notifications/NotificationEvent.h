@@ -12,7 +12,7 @@
 
 namespace blink {
 
-struct NotificationEventInit : public EventInit {
+struct NotificationEventInit : public ExtendableEventInit {
     NotificationEventInit();
 
     Member<Notification> notification;
@@ -24,6 +24,10 @@ public:
     static PassRefPtrWillBeRawPtr<NotificationEvent> create()
     {
         return adoptRefWillBeNoop(new NotificationEvent);
+    }
+    static PassRefPtrWillBeRawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer)
+    {
+        return adoptRefWillBeNoop(new NotificationEvent(type, initializer));
     }
     static PassRefPtrWillBeRawPtr<NotificationEvent> create(const AtomicString& type, const NotificationEventInit& initializer, WaitUntilObserver* observer)
     {
@@ -40,6 +44,7 @@ public:
 
 private:
     NotificationEvent();
+    NotificationEvent(const AtomicString& type, const NotificationEventInit&);
     NotificationEvent(const AtomicString& type, const NotificationEventInit&, WaitUntilObserver*);
 
     PersistentWillBeMember<Notification> m_notification;
