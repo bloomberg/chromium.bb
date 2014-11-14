@@ -11,8 +11,8 @@
 
 // static
 SessionService* SessionServiceFactory::GetForProfile(Profile* profile) {
-#if defined(OS_ANDROID)
-  // For Android we do not store sessions in the SessionService.
+#if defined(OS_ANDROID) || defined(USE_ATHENA)
+  // For Android and Athena we do not store sessions in the SessionService.
   return NULL;
 #else
   return static_cast<SessionService*>(
@@ -23,8 +23,8 @@ SessionService* SessionServiceFactory::GetForProfile(Profile* profile) {
 // static
 SessionService* SessionServiceFactory::GetForProfileIfExisting(
     Profile* profile) {
-#if defined(OS_ANDROID)
-  // For Android we do not store sessions in the SessionService.
+#if defined(OS_ANDROID) || defined(USE_ATHENA)
+  // For Android and Athena we do not store sessions in the SessionService.
   return NULL;
 #else
   return static_cast<SessionService*>(
