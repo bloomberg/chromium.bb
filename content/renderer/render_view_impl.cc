@@ -1136,6 +1136,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setPinchOverlayScrollbarThickness(
       prefs.pinch_overlay_scrollbar_thickness);
+  settings->setRubberBandingOnCompositorThread(
+      prefs.rubber_banding_on_compositor_thread);
   settings->setUseSolidColorScrollbars(prefs.use_solid_color_scrollbars);
 }
 

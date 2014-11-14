@@ -402,6 +402,10 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs(const GURL& url) {
     prefs.pinch_virtual_viewport_enabled = true;
     prefs.pinch_overlay_scrollbar_thickness = 10;
   }
+#if defined(OS_MACOSX)
+  prefs.rubber_banding_on_compositor_thread =
+      command_line.HasSwitch(switches::kEnableThreadedEventHandlingMac);
+#endif
   prefs.use_solid_color_scrollbars = ui::IsOverlayScrollbarEnabled();
 
 #if defined(OS_ANDROID)
