@@ -324,6 +324,12 @@ FileManager.prototype = /** @struct */ {
     return this.directoryModel_;
   },
   /**
+   * @return {FolderShortcutsDataModel}
+   */
+  get folderShortcutsModel() {
+    return this.folderShortcutsModel_;
+  },
+  /**
    * @return {DirectoryTree}
    */
   get directoryTree() {
@@ -1716,51 +1722,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   };
 
   /**
-   * Shows the share dialog for the selected file or directory.
-   */
-  FileManager.prototype.shareSelection = function() {
-    var entries = this.getSelection().entries;
-    if (entries.length != 1) {
-      console.warn('Unable to share multiple items at once.');
-      return;
-    }
-    // Add the overlapped class to prevent the applicaiton window from
-    // captureing mouse events.
-    this.ui_.shareDialog.show(entries[0], function(result) {
-      if (result == ShareDialog.Result.NETWORK_ERROR)
-        this.ui_.errorDialog.show(str('SHARE_ERROR'), null, null, null);
-    }.bind(this));
-  };
-
-  /**
-   * Creates a folder shortcut.
-   * @param {Entry} entry A shortcut which refers to |entry| to be created.
-   */
-  FileManager.prototype.createFolderShortcut = function(entry) {
-    // Duplicate entry.
-    if (this.folderShortcutExists(entry))
-      return;
-
-    this.folderShortcutsModel_.add(entry);
-  };
-
-  /**
-   * Checkes if the shortcut which refers to the given folder exists or not.
-   * @param {Entry} entry Entry of the folder to be checked.
-   */
-  FileManager.prototype.folderShortcutExists = function(entry) {
-    return this.folderShortcutsModel_.exists(entry);
-  };
-
-  /**
-   * Removes the folder shortcut.
-   * @param {Entry} entry The shortcut which refers to |entry| is to be removed.
-   */
-  FileManager.prototype.removeFolderShortcut = function(entry) {
-    this.folderShortcutsModel_.remove(entry);
-  };
-
-  /**
    * Blinks the selection. Used to give feedback when copying or cutting the
    * selection.
    */
@@ -2107,73 +2068,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.backgroundPage_.background.tryClose();
   };
 
-  FileManager.prototype.createNewFolder = function() {
-    var defaultName = str('DEFAULT_NEW_FOLDER_NAME');
-
-    // Find a name that doesn't exist in the data model.
-    var files = this.directoryModel_.getFileList();
-    var hash = {};
-    for (var i = 0; i < files.length; i++) {
-      var name = files.item(i).name;
-      // Filtering names prevents from conflicts with prototype's names
-      // and '__proto__'.
-      if (name.substring(0, defaultName.length) == defaultName)
-        hash[name] = 1;
-    }
-
-    var baseName = defaultName;
-    var separator = '';
-    var suffix = '';
-    var index = '';
-
-    var advance = function() {
-      separator = ' (';
-      suffix = ')';
-      index++;
-    };
-
-    var current = function() {
-      return baseName + separator + index + suffix;
-    };
-
-    // Accessing hasOwnProperty is safe since hash properties filtered.
-    while (hash.hasOwnProperty(current())) {
-      advance();
-    }
-
-    var self = this;
-    var list = self.ui_.listContainer.currentList;
-
-    var onSuccess = function(entry) {
-      metrics.recordUserAction('CreateNewFolder');
-      list.selectedItem = entry;
-
-      self.ui_.listContainer.endBatchUpdates();
-
-      self.namingController_.initiateRename();
-    };
-
-    var onError = function(error) {
-      self.ui_.listContainer.endBatchUpdates();
-
-      self.ui_.alertDialog.show(
-          strf('ERROR_CREATING_FOLDER',
-               current(),
-               util.getFileErrorString(error.name)),
-          null, null);
-    };
-
-    var onAbort = function() {
-      self.ui_.listContainer.endBatchUpdates();
-    };
-
-    this.ui_.listContainer.startBatchUpdates();
-    this.directoryModel_.createDirectory(current(),
-                                         onSuccess,
-                                         onError,
-                                         onAbort);
-  };
-
   /**
    * Handles click event on the toggle-view button.
    * @param {Event} event Click event.
@@ -2297,31 +2191,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     this.ui_.listContainer.textSearchState.text = '';
-  };
-
-  /**
-   * Toggle whether mobile data is used for sync.
-   */
-  FileManager.prototype.toggleDriveSyncSettings = function() {
-    // If checked, the sync is disabled.
-    var nowCellularDisabled = this.syncButton.hasAttribute('checked');
-    var changeInfo = {cellularDisabled: !nowCellularDisabled};
-    chrome.fileManagerPrivate.setPreferences(changeInfo);
-  };
-
-  /**
-   * Toggle whether Google Docs files are shown.
-   */
-  FileManager.prototype.toggleDriveHostedSettings = function() {
-    // If checked, showing drive hosted files is enabled.
-    var nowHostedFilesEnabled = this.hostedButton.hasAttribute('checked');
-    var nowHostedFilesDisabled = !nowHostedFilesEnabled;
-    /*
-    var changeInfo = {hostedFilesDisabled: !nowHostedFilesDisabled};
-    */
-    var changeInfo = {};
-    changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
-    chrome.fileManagerPrivate.setPreferences(changeInfo);
   };
 
   /**
