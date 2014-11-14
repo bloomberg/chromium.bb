@@ -243,7 +243,8 @@ MockConnection::MockConnection(bool is_server)
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server, QuicSupportedVersions()),
+                     is_server,
+                     QuicSupportedVersions()),
       helper_(helper()) {
 }
 
@@ -253,7 +254,8 @@ MockConnection::MockConnection(IPEndPoint address,
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server, QuicSupportedVersions()),
+                     is_server,
+                     QuicSupportedVersions()),
       helper_(helper()) {
 }
 
@@ -264,7 +266,8 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server, QuicSupportedVersions()),
+                     is_server,
+                     QuicSupportedVersions()),
       helper_(helper()) {
 }
 
@@ -275,7 +278,8 @@ MockConnection::MockConnection(bool is_server,
                      new testing::NiceMock<MockHelper>(),
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
-                     is_server, supported_versions),
+                     is_server,
+                     supported_versions),
       helper_(helper()) {
 }
 
