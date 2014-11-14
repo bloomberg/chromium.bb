@@ -10,6 +10,7 @@
 #include "chrome/browser/thumbnails/simple_thumbnail_crop.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/gfx/skbitmap_operations.h"
@@ -76,7 +77,7 @@ void ContentBasedThumbnailingAlgorithm::ProcessBitmap(
   if (source_bitmap.width() <= target_thumbnail_size.width() ||
       source_bitmap.height() <= target_thumbnail_size.height()) {
     context->score.boring_score =
-        SimpleThumbnailCrop::CalculateBoringScore(source_bitmap);
+        color_utils::CalculateBoringScore(source_bitmap);
     context->score.good_clipping =
         (context->clip_result == CLIP_RESULT_WIDER_THAN_TALL ||
          context->clip_result == CLIP_RESULT_TALLER_THAN_WIDE ||
@@ -187,7 +188,7 @@ void ContentBasedThumbnailingAlgorithm::CreateRetargetedThumbnail(
                           base::TimeTicks::Now() - begin_compute_thumbnail);
   }
   context->score.boring_score =
-        SimpleThumbnailCrop::CalculateBoringScore(source_bitmap);
+      color_utils::CalculateBoringScore(source_bitmap);
   if (!processing_failed)
     context->score.boring_score *= kScoreBoostFromSuccessfulRetargeting;
   context->score.good_clipping =

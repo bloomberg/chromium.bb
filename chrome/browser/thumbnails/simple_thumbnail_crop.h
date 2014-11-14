@@ -27,13 +27,6 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
                      const ConsumerCallback& callback,
                      const SkBitmap& bitmap) override;
 
-  // Calculates how "boring" a thumbnail is. The boring score is the
-  // 0,1 ranged percentage of pixels that are the most common
-  // luma. Higher boring scores indicate that a higher percentage of a
-  // bitmap are all the same brightness.
-  // Statically exposed for use by tests only.
-  static double CalculateBoringScore(const SkBitmap& bitmap);
-
   // Gets the clipped bitmap from |bitmap| per the aspect ratio of the
   // desired width and the desired height. For instance, if the input
   // bitmap is vertically long (ex. 400x900) and the desired size is
@@ -69,6 +62,6 @@ class SimpleThumbnailCrop : public ThumbnailingAlgorithm {
   DISALLOW_COPY_AND_ASSIGN(SimpleThumbnailCrop);
 };
 
-}
+}  // namespace thumbnails
 
 #endif  // CHROME_BROWSER_THUMBNAILS_SIMPLE_THUMBNAIL_CROP_H_

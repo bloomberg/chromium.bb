@@ -7,7 +7,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace color_utils {
 
@@ -112,6 +114,41 @@ TEST(ColorUtils, ColorToHSLRegisterSpill) {
   EXPECT_EQ(SkColorGetR(input), SkColorGetR(result));
   EXPECT_EQ(SkColorGetG(input), SkColorGetG(result));
   EXPECT_EQ(SkColorGetB(input), SkColorGetB(result));
+}
+
+TEST(ColorUtils, CalculateBoringScore_Empty) {
+  SkBitmap bitmap;
+  EXPECT_DOUBLE_EQ(1.0, CalculateBoringScore(bitmap));
+}
+
+TEST(ColorUtils, CalculateBoringScore_SingleColor) {
+  const gfx::Size kSize(20, 10);
+  gfx::Canvas canvas(kSize, 1.0f, true);
+  // Fill all pixels in black.
+  canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
+
+  SkBitmap bitmap =
+      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  // The thumbnail should deserve the highest boring score.
+  EXPECT_DOUBLE_EQ(1.0, CalculateBoringScore(bitmap));
+}
+
+TEST(ColorUtils, CalculateBoringScore_TwoColors) {
+  const gfx::Size kSize(20, 10);
+
+  gfx::Canvas canvas(kSize, 1.0f, true);
+  // Fill all pixels in black.
+  canvas.FillRect(gfx::Rect(kSize), SK_ColorBLACK);
+  // Fill the left half pixels in white.
+  canvas.FillRect(gfx::Rect(0, 0, kSize.width() / 2, kSize.height()),
+                  SK_ColorWHITE);
+
+  SkBitmap bitmap =
+      skia::GetTopDevice(*canvas.sk_canvas())->accessBitmap(false);
+  ASSERT_EQ(kSize.width(), bitmap.width());
+  ASSERT_EQ(kSize.height(), bitmap.height());
+  // The thumbnail should be less boring because two colors are used.
+  EXPECT_DOUBLE_EQ(0.5, CalculateBoringScore(bitmap));
 }
 
 TEST(ColorUtils, AlphaBlend) {
