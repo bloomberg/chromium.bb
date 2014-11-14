@@ -312,8 +312,9 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_Local) {
 }
 
 TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
-  // Create attachment list with 3 ids.
+  // Create attachment list with 4 ids.
   AttachmentIdList attachment_ids;
+  attachment_ids.push_back(AttachmentId::Create());
   attachment_ids.push_back(AttachmentId::Create());
   attachment_ids.push_back(AttachmentId::Create());
   attachment_ids.push_back(AttachmentId::Create());
@@ -323,13 +324,13 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
   // Ensure AttachmentStore is called.
   EXPECT_FALSE(store()->read_ids.empty());
 
-  // make AttachmentStore return only attachment 0.
+  // Make AttachmentStore return only attachment 0.
   AttachmentIdSet local_attachments;
   local_attachments.insert(attachment_ids[0]);
   store()->RespondToRead(local_attachments);
   RunLoop();
   // Ensure Downloader called with right attachment ids
-  EXPECT_EQ(2U, downloader()->download_requests.size());
+  EXPECT_EQ(3U, downloader()->download_requests.size());
 
   // Make downloader return attachment 1.
   downloader()->RespondToDownload(attachment_ids[1],
@@ -337,11 +338,29 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
   RunLoop();
   // Ensure consumer callback is not called.
   EXPECT_TRUE(download_results().empty());
-
-  // Make downloader fail attachment 2.
-  downloader()->RespondToDownload(
-      attachment_ids[2], AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
+  // Make AttachmentStore acknowledge writing attachment 1.
+  store()->RespondToWrite(AttachmentStore::SUCCESS);
   RunLoop();
+  // Ensure consumer callback is not called.
+  EXPECT_TRUE(download_results().empty());
+
+  // Make downloader return attachment 2.
+  downloader()->RespondToDownload(attachment_ids[2],
+                                  AttachmentDownloader::DOWNLOAD_SUCCESS);
+  RunLoop();
+  // Ensure consumer callback is not called.
+  EXPECT_TRUE(download_results().empty());
+  // Make AttachmentStore fail writing attachment 2.
+  store()->RespondToWrite(AttachmentStore::UNSPECIFIED_ERROR);
+  RunLoop();
+  // Ensure consumer callback is not called.
+  EXPECT_TRUE(download_results().empty());
+
+  // Make downloader fail attachment 3.
+  downloader()->RespondToDownload(
+      attachment_ids[3], AttachmentDownloader::DOWNLOAD_UNSPECIFIED_ERROR);
+  RunLoop();
+
   // Ensure callback is called
   EXPECT_FALSE(download_results().empty());
   // There should be only two attachments returned, 0 and 1.
@@ -351,6 +370,8 @@ TEST_F(AttachmentServiceImplTest, GetOrDownload_LocalRemoteUnavailable) {
   EXPECT_TRUE(last_download_attachments().find(attachment_ids[1]) !=
               last_download_attachments().end());
   EXPECT_TRUE(last_download_attachments().find(attachment_ids[2]) ==
+              last_download_attachments().end());
+  EXPECT_TRUE(last_download_attachments().find(attachment_ids[3]) ==
               last_download_attachments().end());
 }
 

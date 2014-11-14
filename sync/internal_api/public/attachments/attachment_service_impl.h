@@ -82,6 +82,9 @@ class SYNC_EXPORT AttachmentServiceImpl
                 const AttachmentStore::Result& result,
                 scoped_ptr<AttachmentMap> attachments,
                 scoped_ptr<AttachmentIdList> unavailable_attachment_ids);
+  void WriteDone(const scoped_refptr<GetOrDownloadState>& state,
+                 const Attachment& attachment,
+                 const AttachmentStore::Result& result);
   void DropDone(const DropCallback& callback,
                 const AttachmentStore::Result& result);
   void UploadDone(const AttachmentUploader::UploadResult& result,
