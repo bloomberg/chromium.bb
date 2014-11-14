@@ -18,12 +18,18 @@ MockDemuxer::MockDemuxer() {}
 
 MockDemuxer::~MockDemuxer() {}
 
-MockDemuxerStream::MockDemuxerStream(DemuxerStream::Type type) : type_(type) {}
+MockDemuxerStream::MockDemuxerStream(DemuxerStream::Type type)
+    : type_(type), liveness_(LIVENESS_UNKNOWN) {
+}
 
 MockDemuxerStream::~MockDemuxerStream() {}
 
-DemuxerStream::Type MockDemuxerStream::type() {
+DemuxerStream::Type MockDemuxerStream::type() const {
   return type_;
+}
+
+DemuxerStream::Liveness MockDemuxerStream::liveness() const {
+  return liveness_;
 }
 
 AudioDecoderConfig MockDemuxerStream::audio_decoder_config() {
@@ -46,6 +52,10 @@ void MockDemuxerStream::set_video_decoder_config(
     const VideoDecoderConfig& config) {
   DCHECK_EQ(type_, DemuxerStream::VIDEO);
   video_decoder_config_ = config;
+}
+
+void MockDemuxerStream::set_liveness(DemuxerStream::Liveness liveness) {
+  liveness_ = liveness;
 }
 
 VideoRotation MockDemuxerStream::video_rotation() {

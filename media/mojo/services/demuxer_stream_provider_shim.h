@@ -26,7 +26,6 @@ class DemuxerStreamProviderShim : public DemuxerStreamProvider {
 
   // DemuxerStreamProvider interface.
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
-  Liveness GetLiveness() const override;
 
  private:
   // Called as each mojo::DemuxerStream becomes ready.  Once all streams are

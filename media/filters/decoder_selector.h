@@ -66,7 +66,6 @@ class MEDIA_EXPORT DecoderSelector {
   // Selected Decoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
   void SelectDecoder(DemuxerStream* stream,
-                     bool low_delay,
                      const SelectDecoderCB& select_decoder_cb,
                      const typename Decoder::OutputCB& output_cb);
 
@@ -82,7 +81,6 @@ class MEDIA_EXPORT DecoderSelector {
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
   DemuxerStream* input_stream_;
-  bool low_delay_;
   SelectDecoderCB select_decoder_cb_;
   typename Decoder::OutputCB output_cb_;
 

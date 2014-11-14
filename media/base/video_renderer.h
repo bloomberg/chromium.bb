@@ -49,7 +49,6 @@ class MEDIA_EXPORT VideoRenderer {
   //
   // |get_time_cb| is used to query the current media playback time.
   virtual void Initialize(DemuxerStream* stream,
-                          bool low_delay,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const BufferingStateCB& buffering_state_cb,

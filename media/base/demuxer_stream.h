@@ -26,6 +26,12 @@ class MEDIA_EXPORT DemuxerStream {
     NUM_TYPES,  // Always keep this entry as the last one!
   };
 
+  enum Liveness {
+    LIVENESS_UNKNOWN,
+    LIVENESS_RECORDED,
+    LIVENESS_LIVE,
+  };
+
   // Status returned in the Read() callback.
   //  kOk : Indicates the second parameter is Non-NULL and contains media data
   //        or the end of the stream.
@@ -58,16 +64,18 @@ class MEDIA_EXPORT DemuxerStream {
                               const scoped_refptr<DecoderBuffer>&)>ReadCB;
   virtual void Read(const ReadCB& read_cb) = 0;
 
-  // Returns the audio decoder configuration. It is an error to call this method
-  // if type() != AUDIO.
+  // Returns the audio/video decoder configuration. It is an error to call the
+  // audio method on a video stream and vice versa. After |kConfigChanged| is
+  // returned in a Read(), the caller should call this method again to retrieve
+  // the new config.
   virtual AudioDecoderConfig audio_decoder_config() = 0;
-
-  // Returns the video decoder configuration. It is an error to call this method
-  // if type() != VIDEO.
   virtual VideoDecoderConfig video_decoder_config() = 0;
 
   // Returns the type of stream.
-  virtual Type type() = 0;
+  virtual Type type() const = 0;
+
+  // Returns liveness of the streams provided, i.e. whether recorded or live.
+  virtual Liveness liveness() const;
 
   virtual void EnableBitstreamConverter();
 

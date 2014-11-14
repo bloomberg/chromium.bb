@@ -99,9 +99,6 @@ class PipelineTest : public ::testing::Test {
     EXPECT_CALL(*demuxer_, GetTimelineOffset())
         .WillRepeatedly(Return(base::Time()));
 
-    EXPECT_CALL(*demuxer_, GetLiveness())
-        .WillRepeatedly(Return(Demuxer::LIVENESS_UNKNOWN));
-
     EXPECT_CALL(*renderer_, GetMediaTime())
         .WillRepeatedly(Return(base::TimeDelta()));
 

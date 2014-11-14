@@ -132,7 +132,6 @@ class VideoFrameStreamTest
     pending_initialize_ = true;
     video_frame_stream_->Initialize(
         demuxer_stream_.get(),
-        false,
         base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::OnInitialized,
                    base::Unretained(this)));

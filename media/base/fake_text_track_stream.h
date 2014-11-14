@@ -21,7 +21,7 @@ class FakeTextTrackStream : public DemuxerStream {
   virtual void Read(const ReadCB&) override;
   MOCK_METHOD0(audio_decoder_config, AudioDecoderConfig());
   MOCK_METHOD0(video_decoder_config, VideoDecoderConfig());
-  virtual Type type() override;
+  virtual Type type() const override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
   virtual bool SupportsConfigChanges();
   virtual VideoRotation video_rotation() override;

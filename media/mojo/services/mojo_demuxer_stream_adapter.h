@@ -35,7 +35,7 @@ class MojoDemuxerStreamAdapter : public DemuxerStream,
   void Read(const ReadCB& read_cb) override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
-  Type type() override;
+  Type type() const override;
   void EnableBitstreamConverter() override;
   bool SupportsConfigChanges() override;
   VideoRotation video_rotation() override;

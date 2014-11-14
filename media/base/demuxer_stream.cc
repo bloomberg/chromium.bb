@@ -8,6 +8,12 @@ namespace media {
 
 DemuxerStream::~DemuxerStream() {}
 
+// Most DemuxerStream implementations don't specify liveness. Returns unknown
+// liveness by default.
+DemuxerStream::Liveness DemuxerStream::liveness() const {
+  return DemuxerStream::LIVENESS_UNKNOWN;
+}
+
 // Most DemuxerStream implementations don't need to convert bit stream.
 // Do nothing by default.
 void DemuxerStream::EnableBitstreamConverter() {}

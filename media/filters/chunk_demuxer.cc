@@ -773,8 +773,11 @@ void SourceState::OnSourceInitDone(bool success,
   base::ResetAndReturn(&init_cb_).Run(success, params);
 }
 
-ChunkDemuxerStream::ChunkDemuxerStream(Type type, bool splice_frames_enabled)
+ChunkDemuxerStream::ChunkDemuxerStream(Type type,
+                                       Liveness liveness,
+                                       bool splice_frames_enabled)
     : type_(type),
+      liveness_(liveness),
       state_(UNINITIALIZED),
       splice_frames_enabled_(splice_frames_enabled),
       partial_append_window_trimming_enabled_(false) {
@@ -972,7 +975,11 @@ void ChunkDemuxerStream::Read(const ReadCB& read_cb) {
   CompletePendingReadIfPossible_Locked();
 }
 
-DemuxerStream::Type ChunkDemuxerStream::type() { return type_; }
+DemuxerStream::Type ChunkDemuxerStream::type() const { return type_; }
+
+DemuxerStream::Liveness ChunkDemuxerStream::liveness() const {
+  return liveness_;
+}
 
 AudioDecoderConfig ChunkDemuxerStream::audio_decoder_config() {
   CHECK_EQ(type_, AUDIO);
@@ -1068,7 +1075,7 @@ ChunkDemuxer::ChunkDemuxer(const base::Closure& open_cb,
       log_cb_(log_cb),
       duration_(kNoTimestamp()),
       user_specified_duration_(-1),
-      liveness_(LIVENESS_UNKNOWN),
+      liveness_(DemuxerStream::LIVENESS_UNKNOWN),
       splice_frames_enabled_(splice_frames_enabled) {
   DCHECK(!open_cb_.is_null());
   DCHECK(!need_key_cb_.is_null());
@@ -1150,10 +1157,6 @@ DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
 
 TimeDelta ChunkDemuxer::GetStartTime() const {
   return TimeDelta();
-}
-
-Demuxer::Liveness ChunkDemuxer::GetLiveness() const {
-  return liveness_;
 }
 
 void ChunkDemuxer::StartWaitingForSeek(TimeDelta seek_time) {
@@ -1636,8 +1639,9 @@ void ChunkDemuxer::OnSourceInitDone(
     timeline_offset_ = params.timeline_offset;
   }
 
-  if (params.liveness != LIVENESS_UNKNOWN) {
-    if (liveness_ != LIVENESS_UNKNOWN && params.liveness != liveness_) {
+  if (params.liveness != DemuxerStream::LIVENESS_UNKNOWN) {
+    if (liveness_ != DemuxerStream::LIVENESS_UNKNOWN &&
+        params.liveness != liveness_) {
       MEDIA_LOG(log_cb_)
           << "Liveness is not the same across all SourceBuffers.";
       ReportError_Locked(DEMUXER_ERROR_COULD_NOT_OPEN);
@@ -1670,19 +1674,19 @@ ChunkDemuxer::CreateDemuxerStream(DemuxerStream::Type type) {
     case DemuxerStream::AUDIO:
       if (audio_)
         return NULL;
-      audio_.reset(
-          new ChunkDemuxerStream(DemuxerStream::AUDIO, splice_frames_enabled_));
+      audio_.reset(new ChunkDemuxerStream(DemuxerStream::AUDIO, liveness_,
+                                          splice_frames_enabled_));
       return audio_.get();
       break;
     case DemuxerStream::VIDEO:
       if (video_)
         return NULL;
-      video_.reset(
-          new ChunkDemuxerStream(DemuxerStream::VIDEO, splice_frames_enabled_));
+      video_.reset(new ChunkDemuxerStream(DemuxerStream::VIDEO, liveness_,
+                                          splice_frames_enabled_));
       return video_.get();
       break;
     case DemuxerStream::TEXT: {
-      return new ChunkDemuxerStream(DemuxerStream::TEXT,
+      return new ChunkDemuxerStream(DemuxerStream::TEXT, liveness_,
                                     splice_frames_enabled_);
       break;
     }

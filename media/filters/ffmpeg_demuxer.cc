@@ -93,6 +93,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
       task_runner_(base::MessageLoopProxy::current()),
       stream_(stream),
       type_(UNKNOWN),
+      liveness_(LIVENESS_UNKNOWN),
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp()),
       last_packet_duration_(kNoTimestamp()),
@@ -166,6 +167,12 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(FFmpegDemuxer* demuxer,
     encryption_key_id_.assign(enc_key_id);
     demuxer_->FireNeedKey(kWebMInitDataType, enc_key_id);
   }
+}
+
+FFmpegDemuxerStream::~FFmpegDemuxerStream() {
+  DCHECK(!demuxer_);
+  DCHECK(read_cb_.is_null());
+  DCHECK(buffer_queue_.IsEmpty());
 }
 
 void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
@@ -403,9 +410,14 @@ void FFmpegDemuxerStream::Stop() {
   end_of_stream_ = true;
 }
 
-DemuxerStream::Type FFmpegDemuxerStream::type() {
+DemuxerStream::Type FFmpegDemuxerStream::type() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return type_;
+}
+
+DemuxerStream::Liveness FFmpegDemuxerStream::liveness() const {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  return liveness_;
 }
 
 void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
@@ -473,10 +485,10 @@ VideoRotation FFmpegDemuxerStream::video_rotation() {
   return video_rotation_;
 }
 
-FFmpegDemuxerStream::~FFmpegDemuxerStream() {
-  DCHECK(!demuxer_);
-  DCHECK(read_cb_.is_null());
-  DCHECK(buffer_queue_.IsEmpty());
+void FFmpegDemuxerStream::SetLiveness(Liveness liveness) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_EQ(liveness_, LIVENESS_UNKNOWN);
+  liveness_ = liveness;
 }
 
 base::TimeDelta FFmpegDemuxerStream::GetElapsedTime() const {
@@ -571,7 +583,6 @@ FFmpegDemuxer::FFmpegDemuxer(
       start_time_(kNoTimestamp()),
       preferred_stream_for_seeking_(-1, kNoTimestamp()),
       fallback_stream_for_seeking_(-1, kNoTimestamp()),
-      liveness_(LIVENESS_UNKNOWN),
       text_enabled_(false),
       duration_known_(false),
       need_key_cb_(need_key_cb),
@@ -709,11 +720,6 @@ FFmpegDemuxerStream* FFmpegDemuxer::GetFFmpegStream(
 
 base::TimeDelta FFmpegDemuxer::GetStartTime() const {
   return std::max(start_time_, base::TimeDelta());
-}
-
-Demuxer::Liveness FFmpegDemuxer::GetLiveness() const {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return liveness_;
 }
 
 void FFmpegDemuxer::AddTextStreams() {
@@ -988,11 +994,11 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     timeline_offset_ += start_time_;
 
   if (max_duration == kInfiniteDuration() && !timeline_offset_.is_null()) {
-    liveness_ = LIVENESS_LIVE;
+    SetLiveness(DemuxerStream::LIVENESS_LIVE);
   } else if (max_duration != kInfiniteDuration()) {
-    liveness_ = LIVENESS_RECORDED;
+    SetLiveness(DemuxerStream::LIVENESS_RECORDED);
   } else {
-    liveness_ = LIVENESS_UNKNOWN;
+    SetLiveness(DemuxerStream::LIVENESS_UNKNOWN);
   }
 
   // Good to go: set the duration and bitrate and notify we're done
@@ -1273,6 +1279,14 @@ void FFmpegDemuxer::NotifyBufferingChanged() {
 
 void FFmpegDemuxer::OnDataSourceError() {
   host_->OnDemuxerError(PIPELINE_ERROR_READ);
+}
+
+void FFmpegDemuxer::SetLiveness(DemuxerStream::Liveness liveness) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  for (const auto& stream : streams_) {  // |stream| is a ref to a pointer.
+    if (stream)
+      stream->SetLiveness(liveness);
+  }
 }
 
 }  // namespace media

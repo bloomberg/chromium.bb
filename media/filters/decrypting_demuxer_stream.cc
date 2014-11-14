@@ -121,9 +121,14 @@ VideoDecoderConfig DecryptingDemuxerStream::video_decoder_config() {
   return video_config_;
 }
 
-DemuxerStream::Type DecryptingDemuxerStream::type() {
+DemuxerStream::Type DecryptingDemuxerStream::type() const {
   DCHECK(state_ != kUninitialized && state_ != kDecryptorRequested) << state_;
   return demuxer_stream_->type();
+}
+
+DemuxerStream::Liveness DecryptingDemuxerStream::liveness() const {
+  DCHECK(state_ != kUninitialized && state_ != kDecryptorRequested) << state_;
+  return demuxer_stream_->liveness();
 }
 
 void DecryptingDemuxerStream::EnableBitstreamConverter() {

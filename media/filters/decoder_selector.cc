@@ -74,7 +74,6 @@ DecoderSelector<StreamType>::~DecoderSelector() {
 template <DemuxerStream::Type StreamType>
 void DecoderSelector<StreamType>::SelectDecoder(
     DemuxerStream* stream,
-    bool low_delay,
     const SelectDecoderCB& select_decoder_cb,
     const typename Decoder::OutputCB& output_cb) {
   DVLOG(2) << __FUNCTION__;
@@ -91,7 +90,6 @@ void DecoderSelector<StreamType>::SelectDecoder(
   }
 
   input_stream_ = stream;
-  low_delay_ = low_delay;
   output_cb_ = output_cb;
 
   if (!IsStreamEncrypted(input_stream_)) {
@@ -108,10 +106,8 @@ void DecoderSelector<StreamType>::SelectDecoder(
   decoder_.reset(new typename StreamTraits::DecryptingDecoderType(
       task_runner_, set_decryptor_ready_cb_));
 
-  DecoderStreamTraits<StreamType>::Initialize(
-      decoder_.get(),
-      StreamTraits::GetDecoderConfig(*input_stream_),
-      low_delay_,
+  DecoderStreamTraits<StreamType>::InitializeDecoder(
+      decoder_.get(), input_stream_,
       base::Bind(&DecoderSelector<StreamType>::DecryptingDecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       output_cb_);
@@ -170,10 +166,8 @@ void DecoderSelector<StreamType>::InitializeDecoder() {
   decoder_.reset(decoders_.front());
   decoders_.weak_erase(decoders_.begin());
 
-  DecoderStreamTraits<StreamType>::Initialize(
-      decoder_.get(),
-      StreamTraits::GetDecoderConfig(*input_stream_),
-      low_delay_,
+  DecoderStreamTraits<StreamType>::InitializeDecoder(
+      decoder_.get(), input_stream_,
       base::Bind(&DecoderSelector<StreamType>::DecoderInitDone,
                  weak_ptr_factory_.GetWeakPtr()),
       output_cb_);

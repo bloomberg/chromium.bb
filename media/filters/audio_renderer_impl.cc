@@ -316,9 +316,7 @@ void AudioRendererImpl::Initialize(DemuxerStream* stream,
       new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
 
   audio_buffer_stream_->Initialize(
-      stream,
-      false,
-      statistics_cb,
+      stream, statistics_cb,
       base::Bind(&AudioRendererImpl::OnAudioBufferStreamInitialized,
                  weak_factory_.GetWeakPtr()));
 }

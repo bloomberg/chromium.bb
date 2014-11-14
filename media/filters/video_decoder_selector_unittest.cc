@@ -131,7 +131,6 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
-        false,
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::FrameReady,

@@ -136,7 +136,6 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   void SelectDecoder() {
     decoder_selector_->SelectDecoder(
         demuxer_stream_.get(),
-        false,
         base::Bind(&AudioDecoderSelectorTest::MockOnDecoderSelected,
                    base::Unretained(this)),
         base::Bind(&AudioDecoderSelectorTest::OnDecoderOutput));

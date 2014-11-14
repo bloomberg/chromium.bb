@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "media/base/byte_queue.h"
 #include "media/base/demuxer.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
 #include "media/filters/source_buffer_stream.h"
@@ -27,7 +28,7 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;
 
-  explicit ChunkDemuxerStream(Type type, bool splice_frames_enabled);
+  ChunkDemuxerStream(Type type, Liveness liveness, bool splice_frames_enabled);
   ~ChunkDemuxerStream() override;
 
   // ChunkDemuxerStream control methods.
@@ -81,7 +82,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // DemuxerStream methods.
   void Read(const ReadCB& read_cb) override;
-  Type type() override;
+  Type type() const override;
+  Liveness liveness() const override;
   AudioDecoderConfig audio_decoder_config() override;
   VideoDecoderConfig video_decoder_config() override;
   bool SupportsConfigChanges() override;
@@ -115,6 +117,8 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
 
   // Specifies the type of the stream.
   Type type_;
+
+  Liveness liveness_;
 
   scoped_ptr<SourceBufferStream> stream_;
 
@@ -165,7 +169,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Time GetTimelineOffset() const override;
   DemuxerStream* GetStream(DemuxerStream::Type type) override;
   base::TimeDelta GetStartTime() const override;
-  Liveness GetLiveness() const override;
 
   // Methods used by an external object to control this demuxer.
   //
@@ -379,7 +382,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   double user_specified_duration_;
 
   base::Time timeline_offset_;
-  Liveness liveness_;
+  DemuxerStream::Liveness liveness_;
 
   typedef std::map<std::string, SourceState*> SourceStateMap;
   SourceStateMap source_state_map_;

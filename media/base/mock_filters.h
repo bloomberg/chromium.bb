@@ -41,7 +41,6 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD1(GetStream, DemuxerStream*(DemuxerStream::Type));
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
   MOCK_CONST_METHOD0(GetTimelineOffset, base::Time());
-  MOCK_CONST_METHOD0(GetLiveness, Liveness());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);
@@ -53,20 +52,23 @@ class MockDemuxerStream : public DemuxerStream {
   virtual ~MockDemuxerStream();
 
   // DemuxerStream implementation.
-  virtual Type type() override;
+  Type type() const override;
+  Liveness liveness() const override;
   MOCK_METHOD1(Read, void(const ReadCB& read_cb));
-  virtual AudioDecoderConfig audio_decoder_config() override;
-  virtual VideoDecoderConfig video_decoder_config() override;
+  AudioDecoderConfig audio_decoder_config() override;
+  VideoDecoderConfig video_decoder_config() override;
   MOCK_METHOD0(EnableBitstreamConverter, void());
   MOCK_METHOD0(SupportsConfigChanges, bool());
 
   void set_audio_decoder_config(const AudioDecoderConfig& config);
   void set_video_decoder_config(const VideoDecoderConfig& config);
+  void set_liveness(Liveness liveness);
 
-  virtual VideoRotation video_rotation() override;
+  VideoRotation video_rotation() override;
 
  private:
-  DemuxerStream::Type type_;
+  Type type_;
+  Liveness liveness_;
   AudioDecoderConfig audio_decoder_config_;
   VideoDecoderConfig video_decoder_config_;
 
@@ -119,8 +121,7 @@ class MockVideoRenderer : public VideoRenderer {
   virtual ~MockVideoRenderer();
 
   // VideoRenderer implementation.
-  MOCK_METHOD9(Initialize, void(DemuxerStream* stream,
-                                bool low_delay,
+  MOCK_METHOD8(Initialize, void(DemuxerStream* stream,
                                 const PipelineStatusCB& init_cb,
                                 const StatisticsCB& statistics_cb,
                                 const BufferingStateCB& buffering_state_cb,

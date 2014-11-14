@@ -253,8 +253,6 @@ void RendererImpl::InitializeVideoRenderer() {
 
   video_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO),
-      demuxer_stream_provider_->GetLiveness() ==
-          DemuxerStreamProvider::LIVENESS_LIVE,
       done_cb,
       base::Bind(&RendererImpl::OnUpdateStatistics, weak_this_),
       base::Bind(&RendererImpl::OnBufferingStateChanged,

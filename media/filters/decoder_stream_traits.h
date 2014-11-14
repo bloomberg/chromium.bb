@@ -25,21 +25,18 @@ template <>
 struct DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef AudioBuffer OutputType;
   typedef AudioDecoder DecoderType;
-  typedef AudioDecoderConfig DecoderConfigType;
   typedef DecryptingAudioDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> StreamInitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
   static std::string ToString();
-  static void Initialize(DecoderType* decoder,
-                         const DecoderConfigType& config,
-                         bool low_delay,
-                         const PipelineStatusCB& status_cb,
-                         const OutputCB& output_cb);
+  static void InitializeDecoder(DecoderType* decoder,
+                                DemuxerStream* stream,
+                                const PipelineStatusCB& status_cb,
+                                const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder) { return false; }
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
-  static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
   static scoped_refptr<OutputType> CreateEOSOutput();
 };
 
@@ -47,21 +44,18 @@ template <>
 struct DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef VideoFrame OutputType;
   typedef VideoDecoder DecoderType;
-  typedef VideoDecoderConfig DecoderConfigType;
   typedef DecryptingVideoDecoder DecryptingDecoderType;
   typedef base::Callback<void(bool success)> StreamInitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
   static std::string ToString();
-  static void Initialize(DecoderType* decoder,
-                         const DecoderConfigType& config,
-                         bool low_delay,
-                         const PipelineStatusCB& status_cb,
-                         const OutputCB& output_cb);
+  static void InitializeDecoder(DecoderType* decoder,
+                                DemuxerStream* stream,
+                                const PipelineStatusCB& status_cb,
+                                const OutputCB& output_cb);
   static bool NeedsBitstreamConversion(DecoderType* decoder);
   static void ReportStatistics(const StatisticsCB& statistics_cb,
                                int bytes_decoded);
-  static DecoderConfigType GetDecoderConfig(DemuxerStream& stream);
   static scoped_refptr<OutputType> CreateEOSOutput();
 };
 

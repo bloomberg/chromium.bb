@@ -55,7 +55,6 @@ class MEDIA_EXPORT VideoRendererImpl
 
   // VideoRenderer implementation.
   void Initialize(DemuxerStream* stream,
-                  bool low_delay,
                   const PipelineStatusCB& init_cb,
                   const StatisticsCB& statistics_cb,
                   const BufferingStateCB& buffering_state_cb,

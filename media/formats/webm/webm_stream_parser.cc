@@ -207,11 +207,11 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 
   if (unknown_segment_size_ && (info_parser.duration() <= 0) &&
       !info_parser.date_utc().is_null()) {
-    params.liveness = Demuxer::LIVENESS_LIVE;
+    params.liveness = DemuxerStream::LIVENESS_LIVE;
   } else if (info_parser.duration() >= 0) {
-    params.liveness = Demuxer::LIVENESS_RECORDED;
+    params.liveness = DemuxerStream::LIVENESS_RECORDED;
   } else {
-    params.liveness = Demuxer::LIVENESS_UNKNOWN;
+    params.liveness = DemuxerStream::LIVENESS_UNKNOWN;
   }
 
   const AudioDecoderConfig& audio_config = tracks_parser.audio_decoder_config();

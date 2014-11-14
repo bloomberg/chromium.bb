@@ -18,13 +18,13 @@ std::string DecoderStreamTraits<DemuxerStream::AUDIO>::ToString() {
   return "audio";
 }
 
-void DecoderStreamTraits<DemuxerStream::AUDIO>::Initialize(
+void DecoderStreamTraits<DemuxerStream::AUDIO>::InitializeDecoder(
     DecoderType* decoder,
-    const DecoderConfigType& config,
-    bool low_delay,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const OutputCB& output_cb) {
-  decoder->Initialize(config, status_cb, output_cb);
+  DCHECK(stream->audio_decoder_config().IsValidConfig());
+  decoder->Initialize(stream->audio_decoder_config(), status_cb, output_cb);
 }
 
 void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
@@ -33,12 +33,6 @@ void DecoderStreamTraits<DemuxerStream::AUDIO>::ReportStatistics(
   PipelineStatistics statistics;
   statistics.audio_bytes_decoded = bytes_decoded;
   statistics_cb.Run(statistics);
-}
-
-DecoderStreamTraits<DemuxerStream::AUDIO>::DecoderConfigType
-    DecoderStreamTraits<DemuxerStream::AUDIO>::GetDecoderConfig(
-        DemuxerStream& stream) {
-  return stream.audio_decoder_config();
 }
 
 scoped_refptr<DecoderStreamTraits<DemuxerStream::AUDIO>::OutputType>
@@ -50,13 +44,15 @@ std::string DecoderStreamTraits<DemuxerStream::VIDEO>::ToString() {
   return "video";
 }
 
-void DecoderStreamTraits<DemuxerStream::VIDEO>::Initialize(
+void DecoderStreamTraits<DemuxerStream::VIDEO>::InitializeDecoder(
     DecoderType* decoder,
-    const DecoderConfigType& config,
-    bool low_delay,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const OutputCB& output_cb) {
-  decoder->Initialize(config, low_delay, status_cb, output_cb);
+  DCHECK(stream->video_decoder_config().IsValidConfig());
+  decoder->Initialize(stream->video_decoder_config(),
+                      stream->liveness() == DemuxerStream::LIVENESS_LIVE,
+                      status_cb, output_cb);
 }
 
 bool DecoderStreamTraits<DemuxerStream::VIDEO>::NeedsBitstreamConversion(
@@ -70,12 +66,6 @@ void DecoderStreamTraits<DemuxerStream::VIDEO>::ReportStatistics(
   PipelineStatistics statistics;
   statistics.video_bytes_decoded = bytes_decoded;
   statistics_cb.Run(statistics);
-}
-
-DecoderStreamTraits<DemuxerStream::VIDEO>::DecoderConfigType
-    DecoderStreamTraits<DemuxerStream::VIDEO>::GetDecoderConfig(
-        DemuxerStream& stream) {
-  return stream.video_decoder_config();
 }
 
 scoped_refptr<DecoderStreamTraits<DemuxerStream::VIDEO>::OutputType>

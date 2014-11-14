@@ -68,8 +68,6 @@ class RendererImplTest : public ::testing::Test {
     DemuxerStream* null_pointer = NULL;
     EXPECT_CALL(*demuxer_, GetStream(_))
         .WillRepeatedly(Return(null_pointer));
-    EXPECT_CALL(*demuxer_, GetLiveness())
-        .WillRepeatedly(Return(Demuxer::LIVENESS_UNKNOWN));
   }
 
   virtual ~RendererImplTest() {
@@ -100,10 +98,10 @@ class RendererImplTest : public ::testing::Test {
   // Sets up expectations to allow the video renderer to initialize.
   void SetVideoRendererInitializeExpectations(PipelineStatus status) {
     EXPECT_CALL(*video_renderer_,
-                Initialize(video_stream_.get(), _, _, _, _, _, _, _, _))
-        .WillOnce(DoAll(SaveArg<4>(&video_buffering_state_cb_),
-                        SaveArg<6>(&video_ended_cb_),
-                        RunCallback<2>(status)));
+                Initialize(video_stream_.get(), _, _, _, _, _, _, _))
+        .WillOnce(DoAll(SaveArg<3>(&video_buffering_state_cb_),
+                        SaveArg<5>(&video_ended_cb_),
+                        RunCallback<1>(status)));
   }
 
   void InitializeAndExpect(PipelineStatus start_status) {
@@ -440,11 +438,11 @@ TEST_F(RendererImplTest, ErrorDuringInitialize) {
 
   // Force an audio error to occur during video renderer initialization.
   EXPECT_CALL(*video_renderer_,
-              Initialize(video_stream_.get(), _, _, _, _, _, _, _, _))
+              Initialize(video_stream_.get(),  _, _, _, _, _, _, _))
       .WillOnce(DoAll(AudioError(&audio_error_cb_, PIPELINE_ERROR_DECODE),
-                      SaveArg<4>(&video_buffering_state_cb_),
-                      SaveArg<6>(&video_ended_cb_),
-                      RunCallback<2>(PIPELINE_OK)));
+                      SaveArg<3>(&video_buffering_state_cb_),
+                      SaveArg<5>(&video_ended_cb_),
+                      RunCallback<1>(PIPELINE_OK)));
 
   InitializeAndExpect(PIPELINE_ERROR_DECODE);
 }

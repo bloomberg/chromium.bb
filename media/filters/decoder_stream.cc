@@ -48,7 +48,6 @@ DecoderStream<StreamType>::DecoderStream(
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
       stream_(NULL),
-      low_delay_(false),
       decoder_selector_(
           new DecoderSelector<StreamType>(task_runner,
                                           decoders.Pass(),
@@ -83,7 +82,6 @@ DecoderStream<StreamType>::~DecoderStream() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
-                                           bool low_delay,
                                            const StatisticsCB& statistics_cb,
                                            const InitCB& init_cb) {
   FUNCTION_DVLOG(2);
@@ -95,12 +93,11 @@ void DecoderStream<StreamType>::Initialize(DemuxerStream* stream,
   statistics_cb_ = statistics_cb;
   init_cb_ = init_cb;
   stream_ = stream;
-  low_delay_ = low_delay;
 
   state_ = STATE_INITIALIZING;
   // TODO(xhwang): DecoderSelector only needs a config to select a decoder.
   decoder_selector_->SelectDecoder(
-      stream, low_delay,
+      stream,
       base::Bind(&DecoderStream<StreamType>::OnDecoderSelected,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,
@@ -479,12 +476,9 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
   DCHECK_EQ(state_, STATE_FLUSHING_DECODER) << state_;
   DCHECK_EQ(pending_decode_requests_, 0);
 
-  DCHECK(StreamTraits::GetDecoderConfig(*stream_).IsValidConfig());
   state_ = STATE_REINITIALIZING_DECODER;
-  DecoderStreamTraits<StreamType>::Initialize(
-      decoder_.get(),
-      StreamTraits::GetDecoderConfig(*stream_),
-      low_delay_,
+  DecoderStreamTraits<StreamType>::InitializeDecoder(
+      decoder_.get(), stream_,
       base::Bind(&DecoderStream<StreamType>::OnDecoderReinitialized,
                  weak_factory_.GetWeakPtr()),
       base::Bind(&DecoderStream<StreamType>::OnDecodeOutputReady,

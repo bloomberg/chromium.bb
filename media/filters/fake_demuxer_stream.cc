@@ -84,7 +84,7 @@ VideoDecoderConfig FakeDemuxerStream::video_decoder_config() {
 }
 
 // TODO(xhwang): Support audio if needed.
-DemuxerStream::Type FakeDemuxerStream::type() {
+DemuxerStream::Type FakeDemuxerStream::type() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   return VIDEO;
 }

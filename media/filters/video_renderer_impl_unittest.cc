@@ -93,11 +93,12 @@ class VideoRendererImplTest : public ::testing::Test {
   void CallInitialize(const PipelineStatusCB& status_cb,
                       bool low_delay,
                       PipelineStatus decoder_status) {
+    if (low_delay)
+      demuxer_stream_.set_liveness(DemuxerStream::LIVENESS_LIVE);
     EXPECT_CALL(*decoder_, Initialize(_, _, _, _)).WillOnce(
         DoAll(SaveArg<3>(&output_cb_), RunCallback<2>(decoder_status)));
     renderer_->Initialize(
         &demuxer_stream_,
-        low_delay,
         status_cb,
         base::Bind(&VideoRendererImplTest::OnStatisticsUpdate,
                    base::Unretained(this)),

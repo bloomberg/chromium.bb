@@ -12,7 +12,7 @@ namespace media {
 StreamParser::InitParameters::InitParameters(base::TimeDelta duration)
     : duration(duration),
       auto_update_timestamp_offset(false),
-      liveness(Demuxer::LIVENESS_UNKNOWN) {
+      liveness(DemuxerStream::LIVENESS_UNKNOWN) {
 }
 
 StreamParser::StreamParser() {}

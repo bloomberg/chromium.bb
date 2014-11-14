@@ -51,9 +51,6 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
       return this;
     return nullptr;
   }
-  media::DemuxerStreamProvider::Liveness GetLiveness() const override {
-    return media::DemuxerStreamProvider::LIVENESS_UNKNOWN;
-  }
 
   // media::DemuxerStream implementation.
   void Read(const ReadCB& read_cb) override {}
@@ -78,7 +75,7 @@ class FakeDemuxerStream : public media::DemuxerStreamProvider,
     return media::VideoDecoderConfig();
   }
 
-  media::DemuxerStream::Type type() override {
+  media::DemuxerStream::Type type() const override {
     return media::DemuxerStream::AUDIO;
   }
 

@@ -48,12 +48,6 @@ DemuxerStream* DemuxerStreamProviderShim::GetStream(DemuxerStream::Type type) {
   return nullptr;
 }
 
-DemuxerStreamProvider::Liveness DemuxerStreamProviderShim::GetLiveness() const {
-  // TODO(dalecurtis): This should be removed once liveness lives elsewhere, see
-  // http://crbug.com/420025
-  return DemuxerStreamProvider::LIVENESS_UNKNOWN;
-}
-
 void DemuxerStreamProviderShim::OnStreamReady() {
   if (++streams_ready_ == streams_.size())
     base::ResetAndReturn(&demuxer_ready_cb_).Run();

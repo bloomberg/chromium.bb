@@ -32,7 +32,7 @@ void FakeTextTrackStream::Read(const ReadCB& read_cb) {
   }
 }
 
-DemuxerStream::Type FakeTextTrackStream::type() {
+DemuxerStream::Type FakeTextTrackStream::type() const {
   return DemuxerStream::TEXT;
 }
 

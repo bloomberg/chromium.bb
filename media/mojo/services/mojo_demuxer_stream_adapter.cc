@@ -47,7 +47,7 @@ VideoDecoderConfig MojoDemuxerStreamAdapter::video_decoder_config() {
   return video_config_queue_.front();
 }
 
-DemuxerStream::Type MojoDemuxerStreamAdapter::type() {
+DemuxerStream::Type MojoDemuxerStreamAdapter::type() const {
   return type_;
 }
 
@@ -64,6 +64,7 @@ VideoRotation MojoDemuxerStreamAdapter::video_rotation() {
   return VIDEO_ROTATION_0;
 }
 
+// TODO(xhwang): Pass liveness here.
 void MojoDemuxerStreamAdapter::OnStreamReady(
     mojo::ScopedDataPipeConsumerHandle pipe) {
   DVLOG(1) << __FUNCTION__;

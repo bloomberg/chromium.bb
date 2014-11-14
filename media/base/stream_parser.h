@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
+#include "media/base/demuxer_stream.h"
 #include "media/base/media_export.h"
 #include "media/base/media_log.h"
 
@@ -62,7 +63,7 @@ class MEDIA_EXPORT StreamParser {
     bool auto_update_timestamp_offset;
 
     // Indicates live stream.
-    Demuxer::Liveness liveness;
+    DemuxerStream::Liveness liveness;
   };
 
   // Indicates completion of parser initialization.

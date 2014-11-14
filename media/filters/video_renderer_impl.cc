@@ -104,7 +104,6 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
 }
 
 void VideoRendererImpl::Initialize(DemuxerStream* stream,
-                                   bool low_delay,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const BufferingStateCB& buffering_state_cb,
@@ -124,7 +123,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   DCHECK(!get_time_cb.is_null());
   DCHECK_EQ(kUninitialized, state_);
 
-  low_delay_ = low_delay;
+  low_delay_ = (stream->liveness() == DemuxerStream::LIVENESS_LIVE);
 
   // Always post |init_cb_| because |this| could be destroyed if initialization
   // failed.
@@ -139,9 +138,7 @@ void VideoRendererImpl::Initialize(DemuxerStream* stream,
   state_ = kInitializing;
 
   video_frame_stream_->Initialize(
-      stream,
-      low_delay,
-      statistics_cb,
+      stream, statistics_cb,
       base::Bind(&VideoRendererImpl::OnVideoFrameStreamInitialized,
                  weak_factory_.GetWeakPtr()));
 }

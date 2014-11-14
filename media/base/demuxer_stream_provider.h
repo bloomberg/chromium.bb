@@ -12,21 +12,12 @@ namespace media {
 
 class MEDIA_EXPORT DemuxerStreamProvider {
  public:
-  enum Liveness {
-    LIVENESS_UNKNOWN,
-    LIVENESS_RECORDED,
-    LIVENESS_LIVE,
-  };
-
   DemuxerStreamProvider();
   virtual ~DemuxerStreamProvider();
 
   // Returns the first stream of the given stream type (which is not allowed
   // to be DemuxerStream::TEXT), or NULL if that type of stream is not present.
   virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
-
-  // Returns liveness of the streams provided, i.e. whether recorded or live.
-  virtual Liveness GetLiveness() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DemuxerStreamProvider);
