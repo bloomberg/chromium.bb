@@ -751,6 +751,12 @@ hooks = [
                 'src/third_party/apache-win32',
     ],
   },
+  # Pull the mojo_shell binary, used for mojo development
+  {
+    'name': 'download_mojo_shell',
+    'pattern': '',
+    'action': [ 'python', 'src/mojo/public/tools/download_shell_binary.py' ],
+  },
   {
     # A change to a .gyp, .gypi, or to GYP itself should run the generator.
     'name': 'gyp',

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo.gni")
+
 # GYP version: mojo/mojo_services.gypi:html_viewer
 shared_library("html_viewer") {
   sources = [
@@ -72,4 +74,8 @@ shared_library("html_viewer") {
     "//ui/native_theme",
     "//url",
   ]
+
+  if (use_prebuilt_mojo_shell) {
+    datadeps = [ "//mojo/public/tools:copy_mojo_shell" ]
+  }
 }
