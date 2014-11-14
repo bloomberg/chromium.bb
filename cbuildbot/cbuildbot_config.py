@@ -2496,7 +2496,6 @@ _release.add_config('swanky-release',
 _release_freon = _release.derive(
   # Freon release builds can't run vm_tests, bug 387507, 431110.
   vm_tests=[],
-  paygen_skip_testing=True,
 )
 
 _release_freon.add_config('link_freon-release',
