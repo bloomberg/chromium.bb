@@ -18,6 +18,7 @@
 #include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/profiler/profiler_metrics_provider.h"
+#include "content/public/common/content_switches.h"
 
 #if defined(OS_LINUX)
 #include "chromecast/browser/metrics/external_metrics.h"
@@ -160,9 +161,13 @@ CastMetricsServiceClient::CastMetricsServiceClient(
       new CastStabilityMetricsProvider(metrics_service_.get());
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(stability_provider));
-  metrics_service_->RegisterMetricsProvider(
-      scoped_ptr< ::metrics::MetricsProvider>(
-          new ::metrics::GPUMetricsProvider));
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(switches::kDisableGpu)) {
+    metrics_service_->RegisterMetricsProvider(
+        scoped_ptr< ::metrics::MetricsProvider>(
+            new ::metrics::GPUMetricsProvider));
+  }
   metrics_service_->RegisterMetricsProvider(
       scoped_ptr< ::metrics::MetricsProvider>(
           new ::metrics::NetworkMetricsProvider(io_task_runner)));
