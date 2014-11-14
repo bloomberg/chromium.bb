@@ -8,12 +8,14 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_policy_observer.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
@@ -21,6 +23,7 @@ class CHROMEOS_EXPORT AutoConnectHandler
     : public LoginState::Observer,
       public NetworkPolicyObserver,
       public NetworkConnectionHandler::Observer,
+      public NetworkStateHandlerObserver,
       public ClientCertResolver::Observer {
  public:
   ~AutoConnectHandler() override;
@@ -34,6 +37,9 @@ class CHROMEOS_EXPORT AutoConnectHandler
   // NetworkPolicyObserver
   void PoliciesChanged(const std::string& userhash) override;
   void PoliciesApplied(const std::string& userhash) override;
+
+  // NetworkStateHandlerObserver
+  void ScanCompleted(const DeviceState* device) override;
 
   // ClientCertResolver::Observer
   void ResolveRequestCompleted(bool network_properties_changed) override;
@@ -73,6 +79,9 @@ class CHROMEOS_EXPORT AutoConnectHandler
   // then this will call ConnectToBestWifiNetwork of |network_state_handler_|.
   void CheckBestConnection();
 
+  // Calls Shill.Manager.ConnectToBestServices().
+  void CallShillConnectToBestServices() const;
+
   // Local references to the associated handler instances.
   ClientCertResolver* client_cert_resolver_;
   NetworkConnectionHandler* network_connection_handler_;
@@ -81,7 +90,8 @@ class CHROMEOS_EXPORT AutoConnectHandler
 
   // Whether a request to connect to the best network is pending. If true, once
   // all requirements are met (like policy loaded, certificate patterns being
-  // resolved), the request is forwarded to the |network_state_handler_|.
+  // resolved), a scan will be requested and ConnectToBestServices will be
+  // triggered once it completes.
   bool request_best_connection_pending_;
 
   // Whether the device policy, which might be empty, is already applied.
@@ -99,6 +109,11 @@ class CHROMEOS_EXPORT AutoConnectHandler
   // Whether the autoconnect policy was applied already, see
   // DisconnectIfPolicyRequires().
   bool applied_autoconnect_policy_;
+
+  // When true, trigger ConnectToBestServices after the next scan completion.
+  bool connect_to_best_services_after_scan_;
+
+  base::WeakPtrFactory<AutoConnectHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoConnectHandler);
 };

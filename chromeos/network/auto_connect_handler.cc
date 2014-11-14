@@ -8,13 +8,19 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "chromeos/dbus/shill_service_client.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_state.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "dbus/object_path.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
@@ -24,7 +30,9 @@ AutoConnectHandler::AutoConnectHandler()
       device_policy_applied_(false),
       user_policy_applied_(false),
       client_certs_resolved_(false),
-      applied_autoconnect_policy_(false) {
+      applied_autoconnect_policy_(false),
+      connect_to_best_services_after_scan_(false),
+      weak_ptr_factory_(this) {
 }
 
 AutoConnectHandler::~AutoConnectHandler() {
@@ -32,6 +40,8 @@ AutoConnectHandler::~AutoConnectHandler() {
     client_cert_resolver_->RemoveObserver(this);
   if (LoginState::IsInitialized())
     LoginState::Get()->RemoveObserver(this);
+  if (network_state_handler_)
+    network_state_handler_->RemoveObserver(this, FROM_HERE);
   if (managed_configuration_handler_)
     managed_configuration_handler_->RemoveObserver(this);
 }
@@ -53,11 +63,12 @@ void AutoConnectHandler::Init(
     network_connection_handler_->AddObserver(this);
 
   network_state_handler_ = network_state_handler;
+  if (network_state_handler_)
+    network_state_handler_->AddObserver(this, FROM_HERE);
 
-  if (managed_network_configuration_handler) {
-    managed_configuration_handler_ = managed_network_configuration_handler;
+  managed_configuration_handler_ = managed_network_configuration_handler;
+  if (managed_configuration_handler_)
     managed_configuration_handler_->AddObserver(this);
-  }
 
   if (LoginState::IsInitialized())
     LoggedInStateChanged();
@@ -104,6 +115,18 @@ void AutoConnectHandler::PoliciesApplied(const std::string& userhash) {
   } else {
     CheckBestConnection();
   }
+}
+
+void AutoConnectHandler::ScanCompleted(const DeviceState* device) {
+  if (!connect_to_best_services_after_scan_ ||
+      device->type() != shill::kTypeWifi) {
+    return;
+  }
+  connect_to_best_services_after_scan_ = false;
+  // Request ConnectToBestServices after processing any pending DBus calls.
+  base::MessageLoopProxy::current()->PostTask(
+      FROM_HERE, base::Bind(&AutoConnectHandler::CallShillConnectToBestServices,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AutoConnectHandler::ResolveRequestCompleted(
@@ -156,8 +179,17 @@ void AutoConnectHandler::CheckBestConnection() {
   }
 
   request_best_connection_pending_ = false;
-  NET_LOG_EVENT("ConnectToBestWifiNetwork", "");
-  network_state_handler_->ConnectToBestWifiNetwork();
+
+  // Trigger a ConnectToBestNetwork request after the next scan completion.
+  // Note: there is an edge case here if a scan is in progress and a hidden
+  // network has been configured since the scan started. crbug.com/433075.
+  if (connect_to_best_services_after_scan_)
+    return;
+  connect_to_best_services_after_scan_ = true;
+  if (!network_state_handler_->GetScanningByType(
+          NetworkTypePattern::Primitive(shill::kTypeWifi))) {
+    network_state_handler_->RequestScan();
+  }
 }
 
 void AutoConnectHandler::DisconnectIfPolicyRequires() {
@@ -209,6 +241,15 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
                    "AutoConnectHandler.Disconnect failed", network->path(),
                    network_handler::ErrorCallback()));
   }
+}
+
+void AutoConnectHandler::CallShillConnectToBestServices() const {
+  NET_LOG_EVENT("ConnectToBestServices", "");
+  DBusThreadManager::Get()->GetShillManagerClient()->ConnectToBestServices(
+      base::Bind(&base::DoNothing),
+      base::Bind(&network_handler::ShillErrorCallbackFunction,
+                 "ConnectToBestServices Failed",
+                 "", network_handler::ErrorCallback()));
 }
 
 }  // namespace chromeos

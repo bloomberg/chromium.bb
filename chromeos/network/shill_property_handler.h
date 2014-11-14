@@ -132,9 +132,6 @@ class CHROMEOS_EXPORT ShillPropertyHandler
   // Requests an immediate network scan.
   void RequestScan() const;
 
-  // Calls Manager.ConnectToBestServices().
-  void ConnectToBestServices() const;
-
   // Requests all properties for the service or device (called for new items).
   void RequestProperties(ManagedState::ManagedType type,
                          const std::string& path);

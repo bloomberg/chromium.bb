@@ -34,6 +34,9 @@ void NetworkStateHandlerObserver::DevicePropertiesUpdated(
     const chromeos::DeviceState* device) {
 }
 
+void NetworkStateHandlerObserver::ScanCompleted(const DeviceState* device) {
+}
+
 void NetworkStateHandlerObserver::IsShuttingDown() {
 }
 

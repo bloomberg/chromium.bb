@@ -207,15 +207,6 @@ void ShillPropertyHandler::RequestScan() const {
                  "", network_handler::ErrorCallback()));
 }
 
-void ShillPropertyHandler::ConnectToBestServices() const {
-  NET_LOG_EVENT("ConnectToBestServices", "");
-  shill_manager_->ConnectToBestServices(
-      base::Bind(&base::DoNothing),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 "ConnectToBestServices Failed",
-                 "", network_handler::ErrorCallback()));
-}
-
 void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
                                              const std::string& path) {
   if (pending_updates_[type].find(path) != pending_updates_[type].end())

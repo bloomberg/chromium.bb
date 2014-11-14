@@ -191,14 +191,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // list, which will trigger the appropriate observer calls.
   void RequestScan() const;
 
-  // Requests a scan if not scanning and runs |callback| when the Scanning state
-  // for any Device of network type |type| completes.
-  void WaitForScan(const std::string& type, const base::Closure& callback);
-
-  // Requests a network scan then signals Shill to connect to the best available
-  // wifi network when completed.
-  void ConnectToBestWifiNetwork();
-
   // Requests an update for an existing NetworkState, e.g. after configuring
   // a network. This is a no-op if an update request is already pending. To
   // ensure that a change is picked up, this must be called after Shill
@@ -305,8 +297,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void InitShillPropertyHandler();
 
  private:
-  typedef std::list<base::Closure> ScanCallbackList;
-  typedef std::map<std::string, ScanCallbackList> ScanCompleteCallbackMap;
   typedef std::map<std::string, std::string> SpecifierGuidMap;
   friend class NetworkStateHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkStateHandlerTest, NetworkStateHandlerStub);
@@ -359,7 +349,7 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void NotifyDevicePropertiesUpdated(const DeviceState* device);
 
   // Called whenever Device.Scanning state transitions to false.
-  void ScanCompleted(const std::string& type);
+  void NotifyScanCompleted(const DeviceState* device);
 
   // Returns one technology type for |type|. This technology will be the
   // highest priority technology in the type pattern.
@@ -390,9 +380,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // List of interfaces on which portal check is enabled.
   std::string check_portal_list_;
-
-  // Callbacks to run when a scan for the technology type completes.
-  ScanCompleteCallbackMap scan_complete_callbacks_;
 
   // Map of network specifiers to guids. Contains an entry for each
   // NetworkState that is not saved in a profile.

@@ -341,20 +341,6 @@ void NetworkStateHandler::RequestScan() const {
   shill_property_handler_->RequestScan();
 }
 
-void NetworkStateHandler::WaitForScan(const std::string& type,
-                                      const base::Closure& callback) {
-  scan_complete_callbacks_[type].push_back(callback);
-  if (!GetScanningByType(NetworkTypePattern::Primitive(type)))
-    RequestScan();
-}
-
-void NetworkStateHandler::ConnectToBestWifiNetwork() {
-  NET_LOG_USER("ConnectToBestWifiNetwork", "");
-  WaitForScan(shill::kTypeWifi,
-              base::Bind(&internal::ShillPropertyHandler::ConnectToBestServices,
-                         shill_property_handler_->AsWeakPtr()));
-}
-
 void NetworkStateHandler::RequestUpdateForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);
@@ -619,8 +605,9 @@ void NetworkStateHandler::UpdateDeviceProperty(const std::string& device_path,
   NotifyDeviceListChanged();
   NotifyDevicePropertiesUpdated(device);
 
-  if (key == shill::kScanningProperty && device->scanning() == false)
-    ScanCompleted(device->type());
+  if (key == shill::kScanningProperty && device->scanning() == false) {
+    NotifyScanCompleted(device);
+  }
   if (key == shill::kEapAuthenticationCompletedProperty) {
     // Notify a change for each Ethernet service using this device.
     NetworkStateList ethernet_services;
@@ -912,18 +899,10 @@ void NetworkStateHandler::NotifyDevicePropertiesUpdated(
                     DevicePropertiesUpdated(device));
 }
 
-void NetworkStateHandler::ScanCompleted(const std::string& type) {
-  size_t num_callbacks = scan_complete_callbacks_.count(type);
-  NET_LOG_EVENT("ScanCompleted",
-                base::StringPrintf("%s:%" PRIuS, type.c_str(), num_callbacks));
-  if (num_callbacks == 0)
-    return;
-  ScanCallbackList& callback_list = scan_complete_callbacks_[type];
-  for (ScanCallbackList::iterator iter = callback_list.begin();
-       iter != callback_list.end(); ++iter) {
-    (*iter).Run();
-  }
-  scan_complete_callbacks_.erase(type);
+void NetworkStateHandler::NotifyScanCompleted(const DeviceState* device) {
+  NET_LOG_DEBUG("NOTIFY:ScanCompleted", GetLogName(device));
+  FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
+                    ScanCompleted(device));
 }
 
 std::string NetworkStateHandler::GetTechnologyForType(
