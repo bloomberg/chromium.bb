@@ -91,10 +91,6 @@ gerrit_instances = [
     'host': 'gerrit.chromium.org',
     'port': 29418,
   },
-  {
-    'host': 'gerrit-int.chromium.org',
-    'port': 29419,
-  },
 ]
 
 google_code_projects = [
