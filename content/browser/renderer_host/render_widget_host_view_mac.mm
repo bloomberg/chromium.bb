@@ -529,8 +529,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // Paint this view host with |background_color_| when there is no content
   // ready to draw.
   background_layer_.reset([[CALayer alloc] init]);
-  [background_layer_
-      setBackgroundColor:gfx::CGColorCreateFromSkColor(background_color_)];
+  base::ScopedCFTypeRef<CGColorRef> background(
+      gfx::CGColorCreateFromSkColor(background_color_));
+  [background_layer_ setBackgroundColor:background];
   [cocoa_view_ setLayer:background_layer_];
   [cocoa_view_ setWantsLayer:YES];
 

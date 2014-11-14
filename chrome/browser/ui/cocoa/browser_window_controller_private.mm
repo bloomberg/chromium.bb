@@ -1021,7 +1021,7 @@ willPositionSheet:(NSWindow*)sheet
   }
 
   // Remove all subviews that aren't the tabContentArea.
-  for (NSView* view in [[self.chromeContentView subviews] copy]) {
+  for (NSView* view in [[[self.chromeContentView subviews] copy] autorelease]) {
     if (view != tabContentArea)
       [view removeFromSuperview];
   }
