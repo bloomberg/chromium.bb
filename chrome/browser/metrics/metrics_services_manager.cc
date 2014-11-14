@@ -11,6 +11,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
+#include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -38,7 +39,8 @@ metrics::MetricsService* MetricsServicesManager::GetMetricsService() {
 rappor::RapporService* MetricsServicesManager::GetRapporService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!rappor_service_)
-    rappor_service_.reset(new rappor::RapporService(local_state_));
+    rappor_service_.reset(new rappor::RapporService(
+        local_state_, base::Bind(&chrome::IsOffTheRecordSessionActive)));
   return rappor_service_.get();
 }
 

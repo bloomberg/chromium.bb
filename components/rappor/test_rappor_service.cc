@@ -10,8 +10,16 @@
 
 namespace rappor {
 
+namespace {
+
+bool MockIsIncognito() {
+  return false;
+}
+
+}  // namespace
+
 TestRapporService::TestRapporService()
-    : RapporService(&prefs_) {
+    : RapporService(&prefs_, base::Bind(&MockIsIncognito)) {
   Initialize(0,
              HmacByteVectorGenerator::GenerateEntropyInput(),
              FINE_LEVEL);

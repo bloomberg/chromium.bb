@@ -14,9 +14,18 @@
 
 namespace rappor {
 
+namespace {
+
+bool MockIsIncognito(bool is_incognito) {
+  return is_incognito;
+}
+
+}  // namespace
+
 class TestRapporService : public RapporService {
  public:
-  TestRapporService(ReportingLevel reporting_level) : RapporService(&prefs) {
+  TestRapporService(ReportingLevel reporting_level, bool is_incognito)
+      : RapporService(&prefs, base::Bind(&MockIsIncognito, is_incognito)) {
     RegisterPrefs(prefs.registry());
     Initialize(0,
                HmacByteVectorGenerator::GenerateEntropyInput(),
@@ -48,13 +57,13 @@ class TestRapporService : public RapporService {
 };
 
 TEST(RapporServiceTest, LoadCohort) {
-  TestRapporService rappor_service(REPORTING_DISABLED);
+  TestRapporService rappor_service(REPORTING_DISABLED, false);
   rappor_service.prefs.SetInteger(prefs::kRapporCohortSeed, 1);
   EXPECT_EQ(1, rappor_service.TestLoadCohort());
 }
 
 TEST(RapporServiceTest, LoadSecret) {
-  TestRapporService rappor_service(REPORTING_DISABLED);
+  TestRapporService rappor_service(REPORTING_DISABLED, false);
   std::string secret = HmacByteVectorGenerator::GenerateEntropyInput();
   std::string secret_base64;
   base::Base64Encode(secret, &secret_base64);
@@ -74,7 +83,7 @@ TEST(RapporServiceTest, RecordAndExportMetrics) {
       PROBABILITY_50 /* Zero coin probability */,
       COARSE_LEVEL};
 
-  TestRapporService rappor_service(COARSE_LEVEL);
+  TestRapporService rappor_service(COARSE_LEVEL, false);
 
   // Multiple samples for the same metric should only generate one report.
   rappor_service.TestRecordSample("MyMetric", kTestRapporParameters, "foo");
@@ -101,9 +110,30 @@ TEST(RapporServiceTest, ReportingLevel) {
       PROBABILITY_50 /* Zero coin probability */,
       FINE_LEVEL};
 
-  TestRapporService rappor_service(COARSE_LEVEL);
+  TestRapporService rappor_service(COARSE_LEVEL, false);
 
   rappor_service.TestRecordSample("FineMetric", kFineRapporParameters, "foo");
+
+  RapporReports reports;
+  rappor_service.GetReports(&reports);
+  EXPECT_EQ(0, reports.report_size());
+}
+
+// Check that the incognito is respected.
+TEST(RapporServiceTest, Incognito) {
+  const RapporParameters kFineRapporParameters = {
+      1 /* Num cohorts */,
+      16 /* Bloom filter size bytes */,
+      4 /* Bloom filter hash count */,
+      PROBABILITY_75 /* Fake data probability */,
+      PROBABILITY_50 /* Fake one probability */,
+      PROBABILITY_75 /* One coin probability */,
+      PROBABILITY_50 /* Zero coin probability */,
+      COARSE_LEVEL};
+
+  TestRapporService rappor_service(COARSE_LEVEL, true);
+
+  rappor_service.TestRecordSample("MyMetric", kFineRapporParameters, "foo");
 
   RapporReports reports;
   rappor_service.GetReports(&reports);

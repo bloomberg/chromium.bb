@@ -73,8 +73,11 @@ const RapporParameters kRapporParametersForType[NUM_RAPPOR_TYPES] = {
 
 }  // namespace
 
-RapporService::RapporService(PrefService* pref_service)
+RapporService::RapporService(
+    PrefService* pref_service,
+    const base::Callback<bool(void)> is_incognito_callback)
     : pref_service_(pref_service),
+      is_incognito_callback_(is_incognito_callback),
       cohort_(-1),
       daily_event_(pref_service,
                    prefs::kRapporLastDailySample,
@@ -236,6 +239,10 @@ void RapporService::RecordSampleInternal(const std::string& metric_name,
                                          const RapporParameters& parameters,
                                          const std::string& sample) {
   DCHECK(IsInitialized());
+  if (is_incognito_callback_.Run()) {
+    DVLOG(2) << "Metric not logged due to incognito mode.";
+    return;
+  }
   // Skip this metric if it's reporting level is less than the enabled
   // reporting level.
   if (reporting_level_ < parameters.reporting_level) {

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
@@ -43,7 +44,9 @@ class RapporService {
   // Constructs a RapporService.
   // Calling code is responsible for ensuring that the lifetime of
   // |pref_service| is longer than the lifetime of RapporService.
-  explicit RapporService(PrefService* pref_service);
+  // |is_incognito_callback| will be called to test if incognito mode is active.
+  RapporService(PrefService* pref_service,
+                const base::Callback<bool(void)> is_incognito_callback);
   virtual ~RapporService();
 
   // Add an observer for collecting daily metrics.
@@ -106,6 +109,9 @@ class RapporService {
 
   // A weak pointer to the PrefService used to read and write preferences.
   PrefService* pref_service_;
+
+  // A callback for testing if incognito mode is active;
+  const base::Callback<bool(void)> is_incognito_callback_;
 
   // Client-side secret used to generate fake bits.
   std::string secret_;
