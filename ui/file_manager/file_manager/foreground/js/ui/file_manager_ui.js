@@ -174,6 +174,12 @@ function FileManagerUI(element, launchParam) {
    */
   this.taskMenuButton = FileManagerUI.queryDecoratedElement_(
       '#tasks', cr.ui.ComboButton);
+  this.taskMenuButton.showMenu = function(shouldSetFocus) {
+    // Prevent the empty menu from opening.
+    if (!this.menu.length)
+      return;
+    cr.ui.ComboButton.prototype.showMenu.call(this, shouldSetFocus);
+  };
 
   /**
    * Dialog footer.
@@ -189,12 +195,11 @@ function FileManagerUI(element, launchParam) {
       chrome.runtime.getManifest().name;
   this.element_.setAttribute('type', this.dialogType_);
 
-  // Prevent opening an URL by dropping it onto the page.
+  // Modify UI default behavior.
+  this.element_.addEventListener('click', this.onExternalLinkClick_.bind(this));
   this.element_.addEventListener('drop', function(e) {
     e.preventDefault();
   });
-
-  // Suppresses the default context menu.
   if (util.runningInBrowser()) {
     this.element_.addEventListener('contextmenu', function(e) {
       e.preventDefault();
@@ -274,6 +279,10 @@ FileManagerUI.prototype.initAdditionalUI = function(
 
   // Add handlers.
   document.defaultView.addEventListener('resize', this.relayout.bind(this));
+  document.addEventListener('focusout', this.onFocusOut_.bind(this));
+
+  // Set the initial focus.
+  this.onFocusOut_();
 };
 
 /**
@@ -341,6 +350,22 @@ FileManagerUI.prototype.setCurrentListType = function(listType) {
 };
 
 /**
+ * Overrides default handling for clicks on hyperlinks.
+ * In a packaged apps links with targer='_blank' open in a new tab by
+ * default, other links do not open at all.
+ *
+ * @param {!Event} event Click event.
+ * @private
+ */
+FileManagerUI.prototype.onExternalLinkClick_ = function(event) {
+  if (event.target.tagName != 'A' || !event.target.href)
+    return;
+
+  if (this.dialogType_ != DialogType.FULL_PAGE)
+    this.dialogFooter.cancelButton.click();
+};
+
+/**
  * Invoked while the drag is being performed on the list or the grid.
  * Note: this method may be called multiple times before onDragEnd_().
  * @private
@@ -374,6 +399,36 @@ FileManagerUI.prototype.onPreviewPanelVisibilityChange_ = function() {
       this.previewPanel.height : 0;
   this.listContainer.table.setBottomMarginForPanel(panelHeight);
   this.listContainer.grid.setBottomMarginForPanel(panelHeight);
+};
+
+/**
+ * Re-focuses an element.
+ * @private
+ */
+FileManagerUI.prototype.onFocusOut_ = function() {
+  setTimeout(function() {
+    // When there is no focus, the active element is the <body>
+    if (document.activeElement !== document.body)
+      return;
+
+    var targetElement;
+    if (this.dialogType_ == DialogType.SELECT_SAVEAS_FILE) {
+      targetElement = this.dialogFooter.filenameInput;
+    } else if (this.listContainer.currentListType !=
+               ListContainer.ListType.UNINITIALIZED) {
+      targetElement = this.listContainer.currentList;
+    } else {
+      return;
+    }
+
+    // Hack: if the tabIndex is disabled, we can assume a modal dialog is
+    // shown. Focus to a button on the dialog instead.
+    if (!targetElement.hasAttribute('tabIndex') || targetElement.tabIndex == -1)
+      targetElement = document.querySelector('button:not([tabIndex="-1"])');
+
+    if (targetElement)
+      targetElement.focus();
+  }.bind(this), 0);
 };
 
 /**

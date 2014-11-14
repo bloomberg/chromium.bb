@@ -582,10 +582,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         this.commandHandler,
         this.selectionHandler_);
 
-    this.ui_.directoryTree.addEventListener('change', function() {
-      this.ensureDirectoryTreeItemNotBehindPreviewPanel_();
-    }.bind(this));
-
     var stateChangeHandler =
         this.onPreferencesChanged_.bind(this);
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(
@@ -598,60 +594,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         driveConnectionChangedHandler);
     driveConnectionChangedHandler();
 
-    // Set the initial focus.
-    this.refocus();
-    // Set it as a fallback when there is no focus.
-    this.document_.addEventListener('focusout', function(e) {
-      setTimeout(function() {
-        // When there is no focus, the active element is the <body>.
-        if (this.document_.activeElement == this.document_.body)
-          this.refocus();
-      }.bind(this), 0);
-    }.bind(this));
-
     this.initDataTransferOperations_();
 
     this.selectionHandler_.onFileSelectionChanged();
     this.ui_.listContainer.endBatchUpdates();
 
     callback();
-  };
-
-  /**
-   * If |item| in the directory tree is behind the preview panel, scrolls up the
-   * parent view and make the item visible. This should be called when:
-   *  - the selected item is changed in the directory tree.
-   *  - the visibility of the the preview panel is changed.
-   *
-   * @private
-   */
-  FileManager.prototype.ensureDirectoryTreeItemNotBehindPreviewPanel_ =
-      function() {
-    var selectedSubTree = this.ui_.directoryTree.selectedItem;
-    if (!selectedSubTree)
-      return;
-    var item = selectedSubTree.rowElement;
-    var parentView = this.ui_.directoryTree;
-
-    var itemRect = item.getBoundingClientRect();
-    if (!itemRect)
-      return;
-
-    var listRect = parentView.getBoundingClientRect();
-    if (!listRect)
-      return;
-
-    var previewPanel = this.dialogDom_.querySelector('.preview-panel');
-    var previewPanelRect = previewPanel.getBoundingClientRect();
-    var panelHeight = previewPanelRect ? previewPanelRect.height : 0;
-
-    var itemBottom = itemRect.bottom;
-    var listBottom = listRect.bottom - panelHeight;
-
-    if (itemBottom > listBottom) {
-      var scrollOffset = itemBottom - listBottom;
-      parentView.scrollTop += scrollOffset;
-    }
   };
 
   /**
@@ -1002,8 +950,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             this.volumeManager_));
 
     // Handle document event.
-    this.dialogDom_.addEventListener('click',
-                                     this.onExternalLinkClick_.bind(this));
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
     this.document_.addEventListener('keyup', this.onKeyUp_.bind(this));
 
@@ -1029,12 +975,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         (queryRequiredElement(this.dialogDom_,
                              '#gear-menu-drive-hosted-settings'));
 
-    this.ui_.taskMenuButton.showMenu = function(shouldSetFocus) {
-      // Prevent the empty menu from opening.
-      if (!this.menu.length)
-        return;
-      cr.ui.ComboButton.prototype.showMenu.call(this, shouldSetFocus);
-    };
     this.ui_.taskMenuButton.addEventListener('select',
         this.onTaskItemClicked_.bind(this));
 
@@ -1245,22 +1185,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       window.appState.viewOptions = prefs;
       util.saveAppState();
     }
-  };
-
-  FileManager.prototype.refocus = function() {
-    var targetElement;
-    if (this.dialogType == DialogType.SELECT_SAVEAS_FILE)
-      targetElement = this.ui_.dialogFooter.filenameInput;
-    else
-      targetElement = this.ui.listContainer.currentList;
-
-    // Hack: if the tabIndex is disabled, we can assume a modal dialog is
-    // shown. Focus to a button on the dialog instead.
-    if (!targetElement.hasAttribute('tabIndex') || targetElement.tabIndex == -1)
-      targetElement = document.querySelector('button:not([tabIndex="-1"])');
-
-    if (targetElement)
-      targetElement.focus();
   };
 
   /**
@@ -1659,22 +1583,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    */
   FileManager.prototype.shouldShowDriveSettings = function() {
     return this.isOnDrive() && this.isSecretGearMenuShown_;
-  };
-
-  /**
-   * Overrides default handling for clicks on hyperlinks.
-   * In a packaged apps links with targer='_blank' open in a new tab by
-   * default, other links do not open at all.
-   *
-   * @param {Event} event Click event.
-   * @private
-   */
-  FileManager.prototype.onExternalLinkClick_ = function(event) {
-    if (event.target.tagName != 'A' || !event.target.href)
-      return;
-
-    if (this.dialogType != DialogType.FULL_PAGE)
-      this.ui_.dialogFooter.cancelButton.click();
   };
 
   /**
