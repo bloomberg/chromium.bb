@@ -644,7 +644,7 @@ void PeerConnectionDependencyFactory::OnAecDumpFile(
   // |pc_factory_| always takes ownership of |aec_dump_file|. If StartAecDump()
   // fails, |aec_dump_file| will be closed.
   if (!GetPcFactory()->StartAecDump(file.TakePlatformFile()))
-    VLOG(1) << "Could not start AEC dump.";
+    DVLOG(1) << "Could not start AEC dump.";
 }
 
 void PeerConnectionDependencyFactory::OnDisableAecDump() {

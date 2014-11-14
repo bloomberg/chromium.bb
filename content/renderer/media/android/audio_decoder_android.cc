@@ -309,10 +309,10 @@ bool WAVEDecoder::CopyDataChunkToBus(blink::WebAudioBus* destination_bus) {
     return false;
   }
 
-  VLOG(0) << "Decoding WAVE file: " << number_of_channels_ << " channels, "
-          << sample_rate_ << " kHz, "
-          << chunk_size_ / bytes_per_sample_ / number_of_channels_
-          << " frames, " << 8 * bytes_per_sample_ << " bits/sample";
+  DVLOG(0) << "Decoding WAVE file: " << number_of_channels_ << " channels, "
+           << sample_rate_ << " kHz, "
+           << chunk_size_ / bytes_per_sample_ / number_of_channels_
+           << " frames, " << 8 * bytes_per_sample_ << " bits/sample";
 
   // Create the destination bus of the appropriate size and then decode
   // the data into the bus.

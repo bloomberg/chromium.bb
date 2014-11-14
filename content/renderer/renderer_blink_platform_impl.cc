@@ -1093,8 +1093,8 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     default:
       // A default statement is required to prevent compilation errors when
       // Blink adds a new type.
-      VLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
-                 "unknown type.";
+      DVLOG(1) << "RendererBlinkPlatformImpl::startListening() with "
+                  "unknown type.";
   }
 
   return NULL;

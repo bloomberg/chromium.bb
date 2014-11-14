@@ -1866,7 +1866,7 @@ bool PepperPluginInstanceImpl::SetFullscreen(bool fullscreen) {
   if (fullscreen && !IsProcessingUserGesture())
     return false;
 
-  VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
+  DVLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   desired_fullscreen_state_ = fullscreen;
 
   if (fullscreen) {
@@ -3059,7 +3059,7 @@ bool PepperPluginInstanceImpl::FlashSetFullscreen(bool fullscreen,
     return false;
 
   // Unbind current 2D or 3D graphics context.
-  VLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
+  DVLOG(1) << "Setting fullscreen to " << (fullscreen ? "on" : "off");
   if (fullscreen) {
     DCHECK(!fullscreen_container_);
     fullscreen_container_ =

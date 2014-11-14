@@ -131,7 +131,7 @@ void P2PSocketDispatcher::OnGetHostAddressResult(
     const net::IPAddressList& addresses) {
   P2PAsyncAddressResolver* request = host_address_requests_.Lookup(request_id);
   if (!request) {
-    VLOG(1) << "Received P2P message for socket that doesn't exist.";
+    DVLOG(1) << "Received P2P message for socket that doesn't exist.";
     return;
   }
 
@@ -186,7 +186,7 @@ P2PSocketClientImpl* P2PSocketDispatcher::GetClient(int socket_id) {
     // This may happen if the socket was closed, but the browser side
     // hasn't processed the close message by the time it sends the
     // message to the renderer.
-    VLOG(1) << "Received P2P message for socket that doesn't exist.";
+    DVLOG(1) << "Received P2P message for socket that doesn't exist.";
     return NULL;
   }
 

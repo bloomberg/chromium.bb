@@ -253,9 +253,9 @@ void RendererAccessibility::SendPendingAccessibilityEvents() {
           event_msg.update.nodes[i].location;
     }
 
-    VLOG(0) << "Accessibility event: " << ui::ToString(event.event_type)
-            << " on node id " << event_msg.id
-            << "\n" << event_msg.update.ToString();
+    DVLOG(0) << "Accessibility event: " << ui::ToString(event.event_type)
+             << " on node id " << event_msg.id
+             << "\n" << event_msg.update.ToString();
   }
 
   Send(new AccessibilityHostMsg_Events(routing_id(), event_msgs, reset_token_));
