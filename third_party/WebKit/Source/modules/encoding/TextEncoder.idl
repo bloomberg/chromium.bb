@@ -29,7 +29,6 @@
  */
 
 [
-    RuntimeEnabled=EncodingAPI,
     Exposed=(Window,Worker),
     Constructor(optional DOMString utfLabel = "utf-8"),
     RaisesException=Constructor,

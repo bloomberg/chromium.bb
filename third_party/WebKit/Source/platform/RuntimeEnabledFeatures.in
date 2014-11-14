@@ -50,7 +50,6 @@ DecodeToYUV status=experimental
 DeviceLight status=experimental
 DisplayList2dCanvas status=stable
 ForceDisplayList2dCanvas
-EncodingAPI status=stable
 EncryptedMedia status=test
 ExecCommandInJavaScript status=test
 ExperimentalCanvasFeatures status=test
