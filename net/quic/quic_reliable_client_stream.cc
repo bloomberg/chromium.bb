@@ -83,7 +83,7 @@ int QuicReliableClientStream::WriteStreamData(
 
 void QuicReliableClientStream::SetDelegate(
     QuicReliableClientStream::Delegate* delegate) {
-  DCHECK((!delegate_ && delegate) || (delegate_ && !delegate));
+  DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
 }
 
