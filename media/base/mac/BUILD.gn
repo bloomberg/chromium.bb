@@ -10,6 +10,8 @@ source_set("mac") {
     "coremedia_glue.h",
     "coremedia_glue.mm",
     "corevideo_glue.h",
+    "video_frame_mac.h",
+    "video_frame_mac.cc",
     "videotoolbox_glue.h",
     "videotoolbox_glue.mm",
   ]
@@ -20,4 +22,11 @@ source_set("mac") {
     ]
   }
   set_sources_assignment_filter(sources_assignment_filter)
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "video_frame_mac_unittests.cc",
+  ]
 }
