@@ -21,6 +21,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/network_activity_monitor.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/socket_libevent.h"
 #include "net/socket/socket_net_log_params.h"
@@ -601,6 +602,8 @@ int TCPSocketLibevent::HandleReadCompleted(IOBuffer* buf, int rv) {
   read_bytes.Add(rv);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
                                 buf->data());
+  NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(rv);
+
   return rv;
 }
 
@@ -633,6 +636,7 @@ int TCPSocketLibevent::HandleWriteCompleted(IOBuffer* buf, int rv) {
   write_bytes.Add(rv);
   net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv,
                                 buf->data());
+  NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);
   return rv;
 }
 

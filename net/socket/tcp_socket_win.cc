@@ -18,6 +18,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/network_activity_monitor.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/winsock_init.h"
 #include "net/base/winsock_util.h"
@@ -545,6 +546,7 @@ int TCPSocketWin::Write(IOBuffer* buf,
       write_bytes.Add(rv);
       net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, rv,
                                     buf->data());
+      NetworkActivityMonitor::GetInstance()->IncrementBytesSent(rv);
       return rv;
     }
   } else {
@@ -913,6 +915,7 @@ int TCPSocketWin::DoRead(IOBuffer* buf, int buf_len,
       read_bytes.Add(rv);
     net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_RECEIVED, rv,
                                   buf->data());
+    NetworkActivityMonitor::GetInstance()->IncrementBytesReceived(rv);
     return rv;
   }
 
@@ -982,6 +985,7 @@ void TCPSocketWin::DidCompleteWrite() {
       write_bytes.Add(num_bytes);
       net_log_.AddByteTransferEvent(NetLog::TYPE_SOCKET_BYTES_SENT, num_bytes,
                                     core_->write_iobuffer_->data());
+      NetworkActivityMonitor::GetInstance()->IncrementBytesSent(num_bytes);
     }
   }
 
