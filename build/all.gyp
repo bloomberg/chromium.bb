@@ -689,6 +689,13 @@
             '../third_party/webrtc/tools/tools.gyp:frame_analyzer',
             '../third_party/webrtc/tools/tools.gyp:rgba_to_i420_converter',
           ],
+          'conditions': [
+            ['remoting==1', {
+              'dependencies': [
+                '../remoting/remoting.gyp:*',
+              ],
+            }],
+          ],
         },  # target_name: chromium_builder_webrtc
         {
           'target_name': 'chromium_builder_chromedriver',
@@ -868,6 +875,8 @@
             '../tools/android/android_tools.gyp:android_tools',
             '../tools/android/android_tools.gyp:memconsumer',
             # Unit test bundles packaged as an apk.
+            '../components/devtools_bridge.gyp:devtools_bridge_tests_apk',
+            '../components/devtools_bridge.gyp:devtools_bridge_tests2_apk',
             '../content/content_shell_and_tests.gyp:content_browsertests_apk',
           ],
         },  # target_name: android_builder_chromium_webrtc
