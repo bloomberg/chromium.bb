@@ -126,6 +126,8 @@ public:
         return descendants && !descendants->isEmpty();
     }
 
+    void notifyScrollbarThicknessChanged() { m_widthAvailableToChildrenChanged = true; }
+
     void setHasMarkupTruncation(bool b) { m_hasMarkupTruncation = b; }
     bool hasMarkupTruncation() const { return m_hasMarkupTruncation; }
 
@@ -479,7 +481,7 @@ protected:
     unsigned m_hasMarginAfterQuirk : 1;
     unsigned m_beingDestroyed : 1;
     unsigned m_hasMarkupTruncation : 1;
-    unsigned m_hasBorderOrPaddingLogicalWidthChanged : 1;
+    unsigned m_widthAvailableToChildrenChanged  : 1;
     mutable unsigned m_hasOnlySelfCollapsingChildren : 1;
     mutable unsigned m_descendantsWithFloatsMarkedForLayout : 1;
 

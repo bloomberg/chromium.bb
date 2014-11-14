@@ -149,7 +149,7 @@ RenderBlock::RenderBlock(ContainerNode* node)
     , m_hasMarginAfterQuirk(false)
     , m_beingDestroyed(false)
     , m_hasMarkupTruncation(false)
-    , m_hasBorderOrPaddingLogicalWidthChanged(false)
+    , m_widthAvailableToChildrenChanged(false)
     , m_hasOnlySelfCollapsingChildren(false)
     , m_descendantsWithFloatsMarkedForLayout(false)
 {
@@ -372,7 +372,7 @@ void RenderBlock::styleDidChange(StyleDifference diff, const RenderStyle* oldSty
 
     // It's possible for our border/padding to change, but for the overall logical width of the block to
     // end up being the same. We keep track of this change so in layoutBlock, we can know to set relayoutChildren=true.
-    m_hasBorderOrPaddingLogicalWidthChanged = oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(oldStyle, newStyle);
+    m_widthAvailableToChildrenChanged |= oldStyle && diff.needsFullLayout() && needsLayout() && borderOrPaddingLogicalWidthChanged(oldStyle, newStyle);
 
     // If the style has unloaded images, want to notify the ResourceLoadPriorityOptimizer so that
     // network priorities can be set.
@@ -1439,8 +1439,8 @@ bool RenderBlock::updateImageLoadingPriorities()
 
 bool RenderBlock::widthAvailableToChildrenHasChanged()
 {
-    bool widthAvailableToChildrenHasChanged = m_hasBorderOrPaddingLogicalWidthChanged;
-    m_hasBorderOrPaddingLogicalWidthChanged = false;
+    bool widthAvailableToChildrenHasChanged = m_widthAvailableToChildrenChanged;
+    m_widthAvailableToChildrenChanged = false;
 
     // If we use border-box sizing, have percentage padding, and our parent has changed width then the width available to our children has changed even
     // though our own width has remained the same.
