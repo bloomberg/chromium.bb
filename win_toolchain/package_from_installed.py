@@ -8,7 +8,7 @@ into a .zip file.
 
 It assumes default install locations for tools, in particular:
 - C:\Program Files (x86)\Microsoft Visual Studio 12.0\...
-- C:\Program Files (x86)\Windows Kits\8.0\...
+- C:\Program Files (x86)\Windows Kits\8.1\...
 
 1. Start from a fresh Win7 VM image.
 2. Install VS Pro. Deselect everything except MFC.
@@ -36,7 +36,7 @@ def BuildFileList():
 
   # Subset of VS corresponding roughly to VC.
   vs_path = r'C:\Program Files (x86)\Microsoft Visual Studio 12.0'
-  for path in [ 
+  for path in [
       'DIA SDK/bin',
       'DIA SDK/idl',
       'DIA SDK/include',
@@ -81,7 +81,7 @@ def BuildFileList():
             result.append((final_from, dest))
 
   # Just copy the whole SDK.
-  sdk_path = r'C:\Program Files (x86)\Windows Kits\8.0'
+  sdk_path = r'C:\Program Files (x86)\Windows Kits\8.1'
   for root, _, files in os.walk(sdk_path):
     for f in files:
       combined = os.path.normpath(os.path.join(root, f))

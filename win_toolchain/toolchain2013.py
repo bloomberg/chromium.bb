@@ -344,7 +344,7 @@ def CopyToFinalLocation(extracted_dirs, target_dir):
       'Program Files\\Microsoft Visual Studio 12.0\\DIA SDK\\': 'DIA SDK\\',
       'System64\\': 'sys64\\',
       'System\\': 'sys32\\',
-      'Windows Kits\\8.0\\': 'win8sdk\\',
+      'Windows Kits\\8.1\\': 'win8sdk\\',
       'WinDDK\\7600.16385.win7_wdk.100208-1538\\': 'wdk\\',
   }
   matches = []
@@ -398,7 +398,7 @@ def GenerateSetEnvCmd(target_dir, pro):
       f.write('set PATH=%~dp0..\\..\\win8sdk\\bin\\x86;'
                 '%~dp0..\\..\\VC\\bin;%PATH%\n')
     f.write('set LIB=%~dp0..\\..\\VC\\lib;'
-               '%~dp0..\\..\\win8sdk\\Lib\\win8\\um\\x86;'
+               '%~dp0..\\..\\win8sdk\\Lib\\winv6.3\\um\\x86;'
                '%~dp0..\\..\\VC\\atlmfc\\lib\n'
             'goto :EOF\n')
 
@@ -420,7 +420,7 @@ def GenerateSetEnvCmd(target_dir, pro):
                  '%~dp0..\\..\\VC\\bin\\amd64;'
                  '%PATH%\n')
     f.write('set LIB=%~dp0..\\..\\VC\\lib\\amd64;'
-               '%~dp0..\\..\\win8sdk\\Lib\\win8\\um\\x64;'
+               '%~dp0..\\..\\win8sdk\\Lib\\winv6.3\\um\\x64;'
                '%~dp0..\\..\\VC\\atlmfc\\lib\\amd64\n')
 
 
