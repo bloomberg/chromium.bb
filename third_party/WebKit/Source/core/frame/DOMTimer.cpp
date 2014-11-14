@@ -99,7 +99,7 @@ DOMTimer::DOMTimer(ExecutionContext* context, PassOwnPtr<ScheduledAction> action
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
 
-    double intervalMilliseconds = std::max(oneMillisecond, interval * oneMillisecond);
+    double intervalMilliseconds = std::max(0.0, interval * oneMillisecond);
     if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
         intervalMilliseconds = minimumInterval;
     if (singleShot)
