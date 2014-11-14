@@ -224,6 +224,10 @@ public:
     BLINK_PLATFORM_EXPORT bool downloadToFile() const;
     BLINK_PLATFORM_EXPORT void setDownloadToFile(bool);
 
+    // True if the requestor wants to receive the response body as a stream.
+    BLINK_PLATFORM_EXPORT bool useStreamOnResponse() const;
+    BLINK_PLATFORM_EXPORT void setUseStreamOnResponse(bool);
+
     // True if the request should not be handled by the ServiceWorker.
     BLINK_PLATFORM_EXPORT bool skipServiceWorker() const;
     BLINK_PLATFORM_EXPORT void setSkipServiceWorker(bool);

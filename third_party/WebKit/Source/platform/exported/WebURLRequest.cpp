@@ -299,6 +299,16 @@ void WebURLRequest::setDownloadToFile(bool downloadToFile)
     m_private->m_resourceRequest->setDownloadToFile(downloadToFile);
 }
 
+bool WebURLRequest::useStreamOnResponse() const
+{
+    return m_private->m_resourceRequest->useStreamOnResponse();
+}
+
+void WebURLRequest::setUseStreamOnResponse(bool useStreamOnResponse)
+{
+    m_private->m_resourceRequest->setUseStreamOnResponse(useStreamOnResponse);
+}
+
 bool WebURLRequest::skipServiceWorker() const
 {
     return m_private->m_resourceRequest->skipServiceWorker();

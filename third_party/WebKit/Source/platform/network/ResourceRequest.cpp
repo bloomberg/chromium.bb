@@ -50,6 +50,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
     request->setReportUploadProgress(data->m_reportUploadProgress);
     request->setHasUserGesture(data->m_hasUserGesture);
     request->setDownloadToFile(data->m_downloadToFile);
+    request->setUseStreamOnResponse(data->m_useStreamOnResponse);
     request->setSkipServiceWorker(data->m_skipServiceWorker);
     request->setRequestorID(data->m_requestorID);
     request->setRequestorProcessID(data->m_requestorProcessID);
@@ -80,6 +81,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_reportUploadProgress = m_reportUploadProgress;
     data->m_hasUserGesture = m_hasUserGesture;
     data->m_downloadToFile = m_downloadToFile;
+    data->m_useStreamOnResponse = m_useStreamOnResponse;
     data->m_skipServiceWorker = m_skipServiceWorker;
     data->m_requestorID = m_requestorID;
     data->m_requestorProcessID = m_requestorProcessID;
@@ -410,6 +412,7 @@ void ResourceRequest::initialize(const KURL& url)
     m_reportRawHeaders = false;
     m_hasUserGesture = false;
     m_downloadToFile = false;
+    m_useStreamOnResponse = false;
     m_skipServiceWorker = false;
     m_priority = ResourceLoadPriorityLowest;
     m_intraPriorityValue = 0;

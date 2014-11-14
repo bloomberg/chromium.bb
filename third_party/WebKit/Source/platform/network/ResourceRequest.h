@@ -171,6 +171,11 @@ public:
     bool downloadToFile() const { return m_downloadToFile; }
     void setDownloadToFile(bool downloadToFile) { m_downloadToFile = downloadToFile; }
 
+    // True if the requestor wants to receive a response body as
+    // WebDataConsumerHandle.
+    bool useStreamOnResponse() const { return m_useStreamOnResponse; }
+    void setUseStreamOnResponse(bool useStreamOnResponse) { m_useStreamOnResponse = useStreamOnResponse; }
+
     // True if the request should not be handled by the ServiceWorker.
     bool skipServiceWorker() const { return m_skipServiceWorker; }
     void setSkipServiceWorker(bool skipServiceWorker) { m_skipServiceWorker = skipServiceWorker; }
@@ -217,6 +222,7 @@ private:
     bool m_reportRawHeaders : 1;
     bool m_hasUserGesture : 1;
     bool m_downloadToFile : 1;
+    bool m_useStreamOnResponse : 1;
     bool m_skipServiceWorker : 1;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
@@ -258,6 +264,7 @@ public:
     bool m_hasUserGesture;
     bool m_downloadToFile;
     bool m_skipServiceWorker;
+    bool m_useStreamOnResponse;
     ResourceLoadPriority m_priority;
     int m_intraPriorityValue;
     int m_requestorID;
