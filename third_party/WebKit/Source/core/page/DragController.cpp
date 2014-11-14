@@ -931,8 +931,6 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
         }
         doSystemDrag(dragImage.get(), dragLocation, mouseDraggedPoint, dataTransfer, src, true);
     } else if (state.m_dragType == DragSourceActionDHTML) {
-        if (!dragImage)
-            return false;
         doSystemDrag(dragImage.get(), dragLocation, dragOrigin, dataTransfer, src, false);
     } else {
         ASSERT_NOT_REACHED();
