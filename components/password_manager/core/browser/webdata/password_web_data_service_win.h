@@ -14,14 +14,11 @@
 #include "components/webdata/common/web_data_service_consumer.h"
 #include "components/webdata/common/web_database.h"
 
-class GURL;
 struct IE7PasswordInfo;
-class Profile;
 class WebDatabaseService;
 
 namespace base {
 class MessageLoopProxy;
-class Thread;
 }
 
 namespace content {

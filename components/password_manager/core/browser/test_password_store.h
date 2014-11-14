@@ -12,10 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/password_manager/core/browser/password_store.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace password_manager {
 
 // A very simple PasswordStore implementation that keeps all of the passwords

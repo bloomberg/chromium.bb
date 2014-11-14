@@ -23,8 +23,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class PasswordGenerationManager;
-
 using autofill::PasswordForm;
 using base::ASCIIToUTF16;
 using testing::_;
@@ -33,10 +31,6 @@ using testing::DoAll;
 using testing::Exactly;
 using testing::Return;
 using testing::WithArg;
-
-namespace autofill {
-class AutofillManager;
-}
 
 namespace password_manager {
 

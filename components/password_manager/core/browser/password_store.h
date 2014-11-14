@@ -25,13 +25,6 @@ namespace autofill {
 struct PasswordForm;
 }
 
-namespace browser_sync {
-class PasswordChangeProcessor;
-class PasswordDataTypeController;
-class PasswordModelAssociator;
-class PasswordModelWorker;
-}
-
 namespace password_manager {
 class PasswordStore;
 }  // namespace password_manager

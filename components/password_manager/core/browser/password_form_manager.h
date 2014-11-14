@@ -17,10 +17,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace password_manager {
 
 class PasswordManager;

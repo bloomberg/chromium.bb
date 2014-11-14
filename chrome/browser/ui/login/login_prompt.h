@@ -18,6 +18,7 @@ class GURL;
 namespace content {
 class RenderViewHostDelegate;
 class NotificationRegistrar;
+class WebContents;
 }  // namespace content
 
 namespace net {

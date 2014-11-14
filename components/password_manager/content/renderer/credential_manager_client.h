@@ -20,7 +20,6 @@ class WebURL;
 }
 
 namespace content {
-class RenderThread;
 class RenderView;
 }
 

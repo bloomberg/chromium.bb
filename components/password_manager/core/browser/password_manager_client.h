@@ -13,7 +13,6 @@ class PrefService;
 
 namespace password_manager {
 
-struct CredentialInfo;
 class PasswordFormManager;
 class PasswordManagerDriver;
 class PasswordStore;

@@ -21,10 +21,6 @@
 
 class PrefRegistrySimple;
 
-namespace content {
-class WebContents;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -34,7 +30,6 @@ namespace password_manager {
 class BrowserSavePasswordProgressLogger;
 class PasswordManagerClient;
 class PasswordManagerDriver;
-class PasswordManagerTest;
 class PasswordFormManager;
 
 // Per-tab password manager. Handles creation and management of UI elements,

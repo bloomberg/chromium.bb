@@ -11,10 +11,6 @@
 
 class GURL;
 
-namespace autofill {
-struct PasswordForm;
-}  // namespace autofill
-
 namespace password_manager {
 
 // Enum used for histogram tracking PSL Domain triggering.

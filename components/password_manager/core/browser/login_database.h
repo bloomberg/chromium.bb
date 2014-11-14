@@ -18,8 +18,6 @@
 
 namespace password_manager {
 
-class PasswordManagerClient;
-
 // Interface to the database storage of login information, intended as a helper
 // for PasswordStore on platforms that need internal storage of some or all of
 // the login information.

@@ -9,10 +9,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace password_manager {
 
 class MockPasswordStore : public PasswordStore {

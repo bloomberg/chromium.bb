@@ -11,14 +11,9 @@ namespace autofill {
 struct PasswordForm;
 }
 
-namespace content {
-class WebContents;
-}  // namespace content
-
 namespace password_manager {
 
 class ContentCredentialManagerDispatcher;
-class PasswordManager;
 class PasswordManagerClient;
 
 // A PasswordFormManager built to handle PassworForm objects synthesized
