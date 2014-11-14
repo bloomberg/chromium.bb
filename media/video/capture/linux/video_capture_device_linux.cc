@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <poll.h>
 #if defined(OS_OPENBSD)
 #include <sys/videoio.h>
 #else
@@ -27,13 +28,10 @@ namespace media {
 
 // Max number of video buffers VideoCaptureDeviceLinux can allocate.
 enum { kMaxVideoBuffers = 2 };
-// Timeout in microseconds v4l2_thread_ blocks waiting for a frame from the hw.
-enum { kCaptureTimeoutUs = 200000 };
+// Timeout in milliseconds v4l2_thread_ blocks waiting for a frame from the hw.
+enum { kCaptureTimeoutMs = 200 };
 // The number of continuous timeouts tolerated before treated as error.
 enum { kContinuousTimeoutLimit = 10 };
-// Time to wait in milliseconds before v4l2_thread_ reschedules OnCaptureTask
-// if an event is triggered (select) but no video frame is read.
-enum { kCaptureSelectWaitMs = 10 };
 // MJPEG is preferred if the width or height is larger than this.
 enum { kMjpegWidth = 640 };
 enum { kMjpegHeight = 480 };
@@ -359,33 +357,17 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
   if (!is_capturing_)
     return;
 
-  fd_set r_set;
-  FD_ZERO(&r_set);
-  FD_SET(device_fd_.get(), &r_set);
-  timeval timeout;
+  pollfd device_pfd;
+  device_pfd.fd = device_fd_.get();
+  device_pfd.events = POLLIN;
 
-  timeout.tv_sec = 0;
-  timeout.tv_usec = kCaptureTimeoutUs;
-
-  // First argument to select is the highest numbered file descriptor +1.
-  // Refer to http://linux.die.net/man/2/select for more information.
-  int result =
-      HANDLE_EINTR(select(device_fd_.get() + 1, &r_set, NULL, NULL, &timeout));
-  // Check if select have failed.
+  const int result = HANDLE_EINTR(poll(&device_pfd, 1, kCaptureTimeoutMs));
   if (result < 0) {
-    // EINTR is a signal. This is not really an error.
-    if (errno != EINTR) {
-      SetErrorState("Select failed");
-      return;
-    }
-    v4l2_thread_.message_loop()->PostDelayedTask(
-        FROM_HERE,
-        base::Bind(&VideoCaptureDeviceLinux::OnCaptureTask,
-                   base::Unretained(this)),
-        base::TimeDelta::FromMilliseconds(kCaptureSelectWaitMs));
+    SetErrorState("Poll failed");
+    return;
   }
 
-  // Check if select timeout.
+  // Check if poll did timeout.
   if (result == 0) {
     timeout_count_++;
     if (timeout_count_ >= kContinuousTimeoutLimit) {
@@ -394,12 +376,12 @@ void VideoCaptureDeviceLinux::OnCaptureTask() {
       timeout_count_ = 0;
       return;
     }
-  } else {
-    timeout_count_ = 0;
   }
 
-  // Check if the driver have filled a buffer.
-  if (FD_ISSET(device_fd_.get(), &r_set)) {
+  timeout_count_ = 0;
+
+  // Check if the driver has filled a buffer.
+  if (device_pfd.revents & POLLIN) {
     v4l2_buffer buffer;
     memset(&buffer, 0, sizeof(buffer));
     buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
