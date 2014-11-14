@@ -73,8 +73,9 @@ class PageHandler {
                            const int* quality,
                            const int* max_width,
                            const int* max_height);
-
   Response StopScreencast();
+  Response ScreencastFrameAck(int frame_number);
+
   Response HandleJavaScriptDialog(bool accept, const std::string* prompt_text);
 
   scoped_refptr<DevToolsProtocol::Response> QueryUsageAndQuota(

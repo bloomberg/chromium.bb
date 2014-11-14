@@ -352,6 +352,10 @@ Response PageHandler::StopScreencast() {
   return Response::FallThrough();
 }
 
+Response PageHandler::ScreencastFrameAck(int frame_number) {
+  return Response::OK();
+}
+
 Response PageHandler::HandleJavaScriptDialog(bool accept,
                                              const std::string* prompt_text) {
   base::string16 prompt_override;
