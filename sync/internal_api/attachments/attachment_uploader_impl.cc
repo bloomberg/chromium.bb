@@ -20,7 +20,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/protocol/sync.pb.h"
-#include "third_party/leveldatabase/src/util/crc32c.h"
 
 namespace {
 
@@ -207,12 +206,9 @@ void AttachmentUploaderImpl::UploadState::OnGetTokenSuccess(
   fetcher_->SetUploadData(kContentType, upload_content);
   const std::string auth_header("Authorization: Bearer " + access_token_);
   fetcher_->AddExtraRequestHeader(auth_header);
-  // TODO(maniscalco): Consider computing the hash once and storing the value as
-  // a new field in the Attachment object to avoid recomputing when an upload
-  // fails and is retried (bug 417794).
+  const uint32_t crc32c = attachment_.GetCrc32c();
   fetcher_->AddExtraRequestHeader(base::StringPrintf(
-      "X-Goog-Hash: crc32c=%s",
-      ComputeCrc32cHash(memory->front_as<char>(), memory->size()).c_str()));
+      "X-Goog-Hash: crc32c=%s", FormatCrc32cHash(crc32c).c_str()));
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_COOKIES |
                          net::LOAD_DISABLE_CACHE);
@@ -345,10 +341,8 @@ void AttachmentUploaderImpl::OnUploadStateStopped(const UniqueId& unique_id) {
   }
 }
 
-std::string AttachmentUploaderImpl::ComputeCrc32cHash(const char* data,
-                                                      size_t size) {
-  const uint32_t crc32c_big_endian =
-      base::HostToNet32(leveldb::crc32c::Value(data, size));
+std::string AttachmentUploaderImpl::FormatCrc32cHash(uint32_t crc32c) {
+  const uint32_t crc32c_big_endian = base::HostToNet32(crc32c);
   const base::StringPiece raw(reinterpret_cast<const char*>(&crc32c_big_endian),
                         sizeof(crc32c_big_endian));
   std::string encoded;

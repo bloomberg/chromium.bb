@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/timer/mock_timer.h"
+#include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/internal_api/public/attachments/fake_attachment_downloader.h"
 #include "sync/internal_api/public/attachments/fake_attachment_uploader.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -55,7 +56,9 @@ class MockAttachmentStore : public AttachmentStore,
     for (AttachmentIdList::const_iterator iter = ids.begin(); iter != ids.end();
          ++iter) {
       if (local_attachments.find(*iter) != local_attachments.end()) {
-        Attachment attachment = Attachment::CreateWithId(*iter, data);
+        uint32_t crc32c = ComputeCrc32c(data);
+        Attachment attachment =
+            Attachment::CreateFromParts(*iter, data, crc32c);
         attachments->insert(std::make_pair(*iter, attachment));
       } else {
         unavailable_attachments->push_back(*iter);
@@ -112,7 +115,9 @@ class MockAttachmentDownloader
     scoped_ptr<Attachment> attachment;
     if (result == DOWNLOAD_SUCCESS) {
       scoped_refptr<base::RefCountedString> data = new base::RefCountedString();
-      attachment.reset(new Attachment(Attachment::CreateWithId(id, data)));
+      uint32_t crc32c = ComputeCrc32c(data);
+      attachment.reset(
+          new Attachment(Attachment::CreateFromParts(id, data, crc32c)));
     }
     base::MessageLoop::current()->PostTask(
         FROM_HERE,

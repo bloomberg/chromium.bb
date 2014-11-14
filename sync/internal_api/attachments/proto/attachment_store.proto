@@ -24,4 +24,6 @@ message StoreMetadata {
 message RecordMetadata {
   // Size of attachment data. Useful for attachment store space management.
   optional int64 attachment_size = 1;
+  // Crc32c of attachment data.
+  optional fixed32 crc32c = 2;
 }

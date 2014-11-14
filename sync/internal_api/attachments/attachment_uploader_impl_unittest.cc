@@ -23,6 +23,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_test_util.h"
 #include "sync/api/attachments/attachment.h"
+#include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -627,18 +628,16 @@ TEST_F(AttachmentUploaderImplTest, UploadAttachment_BadToken) {
   ASSERT_EQ(1, token_service().num_invalidate_token());
 }
 
-TEST_F(AttachmentUploaderImplTest, ComputeCrc32cHash) {
+TEST_F(AttachmentUploaderImplTest, FormatCrc32cHash) {
   scoped_refptr<base::RefCountedString> empty(new base::RefCountedString);
   empty->data() = "";
   EXPECT_EQ("AAAAAA==",
-            AttachmentUploaderImpl::ComputeCrc32cHash(empty->front_as<char>(),
-                                                      empty->size()));
+            AttachmentUploaderImpl::FormatCrc32cHash(ComputeCrc32c(empty)));
 
   scoped_refptr<base::RefCountedString> hello_world(new base::RefCountedString);
   hello_world->data() = "hello world";
-  EXPECT_EQ("yZRlqg==",
-            AttachmentUploaderImpl::ComputeCrc32cHash(
-                hello_world->front_as<char>(), hello_world->size()));
+  EXPECT_EQ("yZRlqg==", AttachmentUploaderImpl::FormatCrc32cHash(
+                            ComputeCrc32c(hello_world)));
 }
 
 // TODO(maniscalco): Add test case for when we are uploading an attachment that

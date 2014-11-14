@@ -266,6 +266,8 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, StoreMetadata) {
   EXPECT_EQ(store_.get(), nullptr);
 }
 
+// Ensure that attachment store correctly maintains metadata records for
+// attachments.
 TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath db_path =
@@ -311,6 +313,43 @@ TEST_F(OnDiskAttachmentStoreSpecificTest, RecordMetadata) {
   // Verify that attachment store contains only records for second attachment.
   VerifyAttachmentRecordsPresent(db_path, attachments[0].GetId(), false);
   VerifyAttachmentRecordsPresent(db_path, attachments[1].GetId(), true);
+}
+
+// Ensure that attachment store fails to load attachment with mismatched crc.
+TEST_F(OnDiskAttachmentStoreSpecificTest, MismatchedCrc) {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+  // Create attachment store.
+  AttachmentStore::Result result = AttachmentStore::UNSPECIFIED_ERROR;
+  AttachmentStore::CreateOnDiskStore(
+      temp_dir_.path(), base::ThreadTaskRunnerHandle::Get(),
+      base::Bind(&AttachmentStoreCreated, &store_, &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+
+  // Write attachment with incorrect crc32c.
+  const uint32_t intentionally_wrong_crc32c = 0;
+  std::string some_data("data1");
+  Attachment attachment = Attachment::CreateFromParts(
+      AttachmentId::Create(), base::RefCountedString::TakeString(&some_data),
+      intentionally_wrong_crc32c);
+  AttachmentList attachments;
+  attachments.push_back(attachment);
+  store_->Write(attachments,
+                base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResult,
+                           base::Unretained(this), &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::SUCCESS);
+
+  // Read attachment.
+  AttachmentIdList attachment_ids;
+  attachment_ids.push_back(attachment.GetId());
+  store_->Read(
+      attachment_ids,
+      base::Bind(&OnDiskAttachmentStoreSpecificTest::CopyResultAttachments,
+                 base::Unretained(this), &result));
+  RunLoop();
+  EXPECT_EQ(result, AttachmentStore::UNSPECIFIED_ERROR);
 }
 
 }  // namespace syncer

@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "sync/internal_api/attachments/proto/attachment_store.pb.h"
+#include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/attachments.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/options.h"
@@ -211,16 +212,35 @@ scoped_ptr<Attachment> OnDiskAttachmentStore::ReadSingleAttachment(
   scoped_ptr<Attachment> attachment;
 
   const std::string key = MakeDataKeyFromAttachmentId(attachment_id);
-  std::string data_str;
-  leveldb::Status status = db_->Get(MakeDataReadOptions(), key, &data_str);
-  if (status.ok()) {
-    scoped_refptr<base::RefCountedMemory> data =
-        base::RefCountedString::TakeString(&data_str);
-    attachment.reset(
-        new Attachment(Attachment::CreateWithId(attachment_id, data)));
-  } else {
-    DVLOG(1) << "DB::Get failed: status=" << status.ToString();
+  const std::string metadata_key =
+      MakeMetadataKeyFromAttachmentId(attachment_id);
+  leveldb::Status status;
+  std::string metadata_str;
+  status = db_->Get(MakeMetadataReadOptions(), metadata_key, &metadata_str);
+  if (!status.ok()) {
+    DVLOG(1) << "DB::Get for metadata failed: status=" << status.ToString();
+    return attachment.Pass();
   }
+  attachment_store_pb::RecordMetadata record_metadata;
+  if (!record_metadata.ParseFromString(metadata_str)) {
+    DVLOG(1) << "RecordMetadata::ParseFromString failed";
+    return attachment.Pass();
+  }
+  std::string data_str;
+  status = db_->Get(MakeDataReadOptions(), key, &data_str);
+  if (!status.ok()) {
+    DVLOG(1) << "DB::Get for data failed: status=" << status.ToString();
+    return attachment.Pass();
+  }
+  scoped_refptr<base::RefCountedMemory> data =
+      base::RefCountedString::TakeString(&data_str);
+  uint32_t crc32c = ComputeCrc32c(data);
+  if (record_metadata.has_crc32c() && record_metadata.crc32c() != crc32c) {
+    DVLOG(1) << "Attachment crc does not match";
+    return attachment.Pass();
+  }
+  attachment.reset(
+      new Attachment(Attachment::CreateFromParts(attachment_id, data, crc32c)));
   return attachment.Pass();
 }
 
@@ -247,6 +267,7 @@ bool OnDiskAttachmentStore::WriteSingleAttachment(
   // Write metadata.
   attachment_store_pb::RecordMetadata metadata;
   metadata.set_attachment_size(attachment.GetData()->size());
+  metadata.set_crc32c(attachment.GetCrc32c());
   metadata_str = metadata.SerializeAsString();
   write_batch.Put(metadata_key, metadata_str);
   // Write data.

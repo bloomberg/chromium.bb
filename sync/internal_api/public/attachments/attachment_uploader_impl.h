@@ -51,14 +51,12 @@ class SYNC_EXPORT AttachmentUploaderImpl : public AttachmentUploader,
   static GURL GetURLForAttachmentId(const GURL& sync_service_url,
                                     const AttachmentId& attachment_id);
 
-  // Return the crc32c of the memory described by |data| and |size|.
+  // Format crc32c to pass into X-Goog-Hash header.
   //
   // The value is base64 encoded, big-endian format.  Suitable for use in the
   // X-Goog-Hash header
   // (https://cloud.google.com/storage/docs/reference-headers#xgooghash).
-  //
-  // Potentially expensive.
-  static std::string ComputeCrc32cHash(const char* data, size_t size);
+  static std::string FormatCrc32cHash(uint32_t crc32c);
 
  private:
   class UploadState;

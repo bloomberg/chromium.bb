@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/thread_task_runner_handle.h"
 #include "sync/api/attachments/attachment.h"
+#include "sync/internal_api/public/attachments/attachment_util.h"
 #include "sync/protocol/sync.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -116,8 +117,9 @@ TYPED_TEST_CASE_P(AttachmentStoreTest);
 TYPED_TEST_P(AttachmentStoreTest, Write_NoOverwriteNoError) {
   // Create two attachments with the same id but different data.
   Attachment attachment1 = Attachment::Create(this->some_data1);
-  Attachment attachment2 =
-      Attachment::CreateWithId(attachment1.GetId(), this->some_data2);
+  uint32_t crc32c = ComputeCrc32c(this->some_data2);
+  Attachment attachment2 = Attachment::CreateFromParts(
+      attachment1.GetId(), this->some_data2, crc32c);
 
   // Write the first one.
   AttachmentList some_attachments;

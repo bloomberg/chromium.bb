@@ -16,7 +16,9 @@
 #include "net/url_request/url_request_test_util.h"
 #include "sync/api/attachments/attachment.h"
 #include "sync/internal_api/public/attachments/attachment_uploader_impl.h"
+#include "sync/internal_api/public/attachments/attachment_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/leveldatabase/src/util/crc32c.h"
 
 namespace syncer {
 
@@ -278,8 +280,8 @@ void AttachmentDownloaderImplTest::AddHashHeader(
     case HASH_HEADER_NONE:
       break;
     case HASH_HEADER_VALID:
-      header += AttachmentUploaderImpl::ComputeCrc32cHash(
-          kAttachmentContent, strlen(kAttachmentContent));
+      header += AttachmentUploaderImpl::FormatCrc32cHash(leveldb::crc32c::Value(
+          kAttachmentContent, strlen(kAttachmentContent)));
       headers->AddHeader(header);
       break;
     case HASH_HEADER_INVALID:
@@ -419,6 +421,11 @@ TEST_F(AttachmentDownloaderImplTest, InvalidHash) {
   VerifyDownloadResult(id1, AttachmentDownloader::DOWNLOAD_TRANSIENT_ERROR);
 }
 
+// Verify that extract fails when there is no headers object.
+TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_NoHeaders) {
+  uint32_t extracted;
+  ASSERT_FALSE(AttachmentDownloaderImpl::ExtractCrc32c(nullptr, &extracted));
+}
 
 // Verify that extract fails when there is no crc32c value.
 TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_Empty) {
@@ -430,29 +437,48 @@ TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_Empty) {
   std::replace(raw.begin(), raw.end(), '\n', '\0');
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(raw));
-  std::string extracted;
-  ASSERT_FALSE(AttachmentDownloaderImpl::ExtractCrc32c(*headers, &extracted));
+  uint32_t extracted;
+  ASSERT_FALSE(
+      AttachmentDownloaderImpl::ExtractCrc32c(headers.get(), &extracted));
 }
 
 // Verify that extract finds the first crc32c and ignores others.
 TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_First) {
-  const std::string expected = "z8SuHQ==";
+  const std::string expected_encoded = "z8SuHQ==";
+  const uint32_t expected = 3485773341;
   std::string raw;
   raw += "HTTP/1.1 200 OK\n";
   raw += "Foo: bar\n";
   // Ignored because it's the wrong header.
   raw += "X-Goog-Hashes: crc32c=AAAAAA==\n";
   // Header name matches.  The md5 item is ignored.
-  raw += "X-Goog-HASH: md5=rL0Y20zC+Fzt72VPzMSk2A==,crc32c=" + expected + "\n";
+  raw += "X-Goog-HASH: md5=rL0Y20zC+Fzt72VPzMSk2A==,crc32c=" +
+         expected_encoded + "\n";
   // Ignored because we already found a crc32c in the one above.
   raw += "X-Goog-HASH: crc32c=AAAAAA==\n";
   raw += "\n";
   std::replace(raw.begin(), raw.end(), '\n', '\0');
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(raw));
-  std::string extracted;
-  ASSERT_TRUE(AttachmentDownloaderImpl::ExtractCrc32c(*headers, &extracted));
+  uint32_t extracted;
+  ASSERT_TRUE(
+      AttachmentDownloaderImpl::ExtractCrc32c(headers.get(), &extracted));
   ASSERT_EQ(expected, extracted);
+}
+
+// Verify that extract fails when encoded value is too long.
+TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_TooLong) {
+  std::string raw;
+  raw += "HTTP/1.1 200 OK\n";
+  raw += "Foo: bar\n";
+  raw += "X-Goog-HASH: crc32c=AAAAAAAA\n";
+  raw += "\n";
+  std::replace(raw.begin(), raw.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw));
+  uint32_t extracted;
+  ASSERT_FALSE(
+      AttachmentDownloaderImpl::ExtractCrc32c(headers.get(), &extracted));
 }
 
 // Verify that extract fails if there is no crc32c.
@@ -465,8 +491,9 @@ TEST_F(AttachmentDownloaderImplTest, ExtractCrc32c_None) {
   std::replace(raw.begin(), raw.end(), '\n', '\0');
   scoped_refptr<net::HttpResponseHeaders> headers(
       new net::HttpResponseHeaders(raw));
-  std::string extracted;
-  ASSERT_FALSE(AttachmentDownloaderImpl::ExtractCrc32c(*headers, &extracted));
+  uint32_t extracted;
+  ASSERT_FALSE(
+      AttachmentDownloaderImpl::ExtractCrc32c(headers.get(), &extracted));
 }
 
 }  // namespace syncer
