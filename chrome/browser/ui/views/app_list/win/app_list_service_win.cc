@@ -351,8 +351,10 @@ void AppListServiceWin::ScheduleWarmup() {
 }
 
 bool AppListServiceWin::IsWarmupNeeded() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!g_browser_process || g_browser_process->IsShuttingDown() ||
-      browser_shutdown::IsTryingToQuit()) {
+      browser_shutdown::IsTryingToQuit() ||
+      command_line->HasSwitch(switches::kTestType)) {
     return false;
   }
 
