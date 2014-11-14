@@ -527,19 +527,13 @@ void FrameLoaderClientImpl::dispatchAddNavigationTransitionData(const Document::
     if (!m_webFrame->client())
         return;
 
-    // FIXME: change to use WebTransitionElementData after the chrome side is done.
-    Vector<String> ids;
-    Vector<IntRect> rects;
+    WebVector<WebTransitionElement> webElements(data.elements.size());
     for (size_t i = 0; i < data.elements.size(); ++i) {
-        ids.append(data.elements[i].id);
-        rects.append(data.elements[i].rect);
+        webElements[i].id = data.elements[i].id;
+        webElements[i].rect = data.elements[i].rect;
     }
-    m_webFrame->client()->addNavigationTransitionData(
-        WebString(data.scope),
-        WebString(data.selector),
-        WebString(data.markup),
-        WebVector<WebString>(ids),
-        WebVector<WebRect>(rects));
+    WebTransitionElementData webData(data.scope, data.selector, data.markup, webElements);
+    m_webFrame->client()->addNavigationTransitionData(webData);
 }
 
 void FrameLoaderClientImpl::dispatchWillRequestResource(FetchRequest* request)
