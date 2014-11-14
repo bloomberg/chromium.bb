@@ -236,6 +236,21 @@ def _CreateBisectOptionsFromConfig(config):
   return bisect_perf_regression.BisectOptions.FromDict(opts_dict)
 
 
+def _ParseCloudLinksFromOutput(output, bucket):
+  cloud_file_links = [t for t in output.splitlines()
+      if 'storage.googleapis.com/chromium-telemetry/%s/' % bucket in t]
+
+  # What we're getting here is basically "View online at http://..." so parse
+  # out just the URL portion.
+  for i in xrange(len(cloud_file_links)):
+    cloud_file_link = cloud_file_links[i]
+    cloud_file_link = [t for t in cloud_file_link.split(' ')
+        if 'storage.googleapis.com/chromium-telemetry/%s/' % bucket in t]
+    assert cloud_file_link, 'Couldn\'t parse URL from output.'
+    cloud_file_links[i] = cloud_file_link[0]
+  return cloud_file_links
+
+
 def _RunPerformanceTest(config):
   """Runs a performance test with and without the current patch.
 
@@ -263,7 +278,11 @@ def _RunPerformanceTest(config):
   bisect_utils.OutputAnnotationStepStart('Running With Patch')
 
   results_with_patch = b.RunPerformanceTestAndParseResults(
-      opts.command, opts.metric, reset_on_first_run=True, results_label='Patch')
+      opts.command,
+      opts.metric,
+      reset_on_first_run=True,
+      upload_on_last_run=True,
+      results_label='Patch')
 
   if results_with_patch[1]:
     raise RuntimeError('Patched version failed to run performance test.')
@@ -298,19 +317,19 @@ def _RunPerformanceTest(config):
     raise RuntimeError('Unpatched version failed to run performance test.')
 
   # Find the link to the cloud stored results file.
+  cloud_file_link = _ParseCloudLinksFromOutput(results_without_patch[2],
+                                               'html-results')
   output = results_without_patch[2]
-  cloud_file_link = [t for t in output.splitlines()
-      if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
   if cloud_file_link:
-    # What we're getting here is basically "View online at http://..." so parse
-    # out just the URL portion.
-    cloud_file_link = cloud_file_link[0]
-    cloud_file_link = [t for t in cloud_file_link.split(' ')
-        if 'storage.googleapis.com/chromium-telemetry/html-results/' in t]
-    assert cloud_file_link, 'Couldn\'t parse URL from output.'
     cloud_file_link = cloud_file_link[0]
   else:
     cloud_file_link = ''
+
+  profiler_file_links_with_patch = _ParseCloudLinksFromOutput(
+      results_with_patch[2], 'profiling-results')
+
+  profiler_file_links_without_patch = _ParseCloudLinksFromOutput(
+      results_without_patch[2], 'profiling-results')
 
   # Calculate the % difference in the means of the 2 runs.
   percent_diff_in_means = None
@@ -339,6 +358,16 @@ def _RunPerformanceTest(config):
     bisect_utils.OutputAnnotationStepClosed()
   elif cloud_file_link:
     bisect_utils.OutputAnnotationStepLink('HTML Results', cloud_file_link)
+
+  if profiler_file_links_with_patch and profiler_file_links_without_patch:
+    for i in xrange(len(profiler_file_links_with_patch)):
+      bisect_utils.OutputAnnotationStepLink(
+          'With Patch - Profiler Data[%d]' % i,
+          profiler_file_links_with_patch[i])
+    for i in xrange(len(profiler_file_links_without_patch)):
+      bisect_utils.OutputAnnotationStepLink(
+          'Without Patch - Profiler Data[%d]' % i,
+          profiler_file_links_without_patch[i])
 
 
 def _SetupAndRunPerformanceTest(config, path_to_goma):

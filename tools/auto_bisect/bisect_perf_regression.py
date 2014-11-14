@@ -1407,7 +1407,7 @@ class BisectPerformanceMetrics(object):
       if is_telemetry:
         if i == 0 and reset_on_first_run:
           current_args.append('--reset-results')
-        elif i == self.opts.repeat_test_count - 1 and upload_on_last_run:
+        if i == self.opts.repeat_test_count - 1 and upload_on_last_run:
           current_args.append('--upload-results')
         if results_label:
           current_args.append('--results-label=%s' % results_label)
