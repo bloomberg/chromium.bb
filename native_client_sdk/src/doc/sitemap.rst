@@ -38,6 +38,10 @@ Contents:
    devguide/coding/view-focus-input-events.rst
    devguide/distributing.rst
    io2014.rst
+   cds2014/index.rst
+   cds2014/python.rst
+   cds2014/cpp.rst
+   nacldev.rst
    community/index.rst
    community/security-contest/index.rst
    community/security-contest/contest-announcement.rst

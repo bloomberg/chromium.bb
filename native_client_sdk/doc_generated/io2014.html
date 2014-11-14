@@ -9,13 +9,14 @@ Explore our new in-browser development environment and debugger.</p>
 all in your desktop web browser or on a Chromebook.
 Work either on-line or off-line!</p>
 <iframe class="video" width="500" height="281"
-src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><h3 id="work-in-progress">Work in Progress</h3>
-<p>These development tools are a work in progress, see <a class="reference internal" href="#feature-status">Feature Status</a>.
+src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><h3 id="our-web-based-tools">Our Web-based Tools</h3>
+<p>These development tools are a <a class="reference external" href="nacldev">work in progress</a>.
 At this point, they are a learning tool and demonstration of NaCl&#8217;s
 flexibility, but are not the recommended tools for a production application.
-To develop a substantial application for Native Client /
+In the future, that may change, but for the moment,
+to develop a substantial application for Native Client /
 Portable Native Client,
-we currently recommend you use the
+we recommend you use the
 <a class="reference external" href="/native-client/sdk/download">Native Client SDK</a>.</p>
 <b><font color="#880000">
 NOTE: The NaCl Development Environment is not yet stable.
@@ -58,11 +59,12 @@ Once you&#8217;re ready to apply the debugger, follow these steps:</p>
 temporarily and try again.</li>
 </ul>
 </div></blockquote>
-<h3 id="editor">Editor</h3>
-<p>To follow along in this tutorial, you&#8217;ll need to use a text editor to modify
+<h4 id="editing">Editing</h4>
+<p>To follow along in this codelab, you&#8217;ll need to use a text editor to modify
 various files in our development environment.
 There are currently two editor options, nano or vim.
-Emacs is coming soon...
+We have an Emacs port, but it is not yet available in the Dev Environment
+(coming soon).
 If you&#8217;re unsure what to pick, nano is simpler to start with and has on-screen
 help.</p>
 <ul class="small-gap">
@@ -84,15 +86,11 @@ $ vim &lt;filename&gt;
 <a class="reference external" href="http://en.wikipedia.org/wiki/Git_(software)">git</a>.
 In order to commit to a git repository,
 you need to setup your environment to with your identity.</p>
-<p>You&#8217;ll need to add these lines to <cite>~/.bashrc</cite> to cause them to be invoked each
-time you start the development environment.</p>
+<p>Run these commands (with your info) to setup your <cite>~/.gitconfig</cite>
+for use:</p>
 <pre class="prettyprint">
 git config --global user.name &quot;John Doe&quot;
 git config --global user.email johndoe&#64;example.com
-</pre>
-<p>You can reload you <cite>~/.bashrc</cite> by running:</p>
-<pre class="prettyprint">
-source ~/.bashrc
 </pre>
 <h3 id="tour-follow-the-video">Tour (follow the video)</h3>
 <p>Create a working directory and go into it:</p>
@@ -213,58 +211,7 @@ $ make serve
 <p>Thanks for checking out our environment.
 Things are rapidly changing and in the coming months you can expect to see
 further improvements and filling out of our platform and library support.</p>
-<p>Check back at this page for the latest status.</p>
-<h3 id="feature-status">Feature Status</h3>
-<p>Here is a summary of feature status. We hope to overcome these limitations
-in the near future:</p>
-<blockquote>
-<div><ul class="small-gap">
-<li><p class="first">NaCl Development Environment</p>
-<ul class="small-gap">
-<li><p class="first">General</p>
-<ul class="small-gap">
-<li><p class="first">Supported:</p>
-<ul class="small-gap">
-<li>Python (built-in)</li>
-<li>GCC w/ GLibC (x86-32 and x86-64 only)</li>
-<li>Lua (install with: <cite>package -i lua &amp;&amp; . setup-environment</cite>)</li>
-<li>Ruby (install with: <cite>package -i ruby &amp;&amp; . setup-environment</cite>)</li>
-<li>Nethack! (install with: <cite>package -i nethack &amp;&amp; . setup-environment</cite>)</li>
-</ul>
-</li>
-<li><p class="first">Unsupported:</p>
-<ul class="small-gap">
-<li>Targeting Newlib</li>
-<li>Targeting PNaCl</li>
-<li>Forking in bash</li>
-<li>Pipes / Redirection</li>
-<li>Symbolic and hard links</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p class="first">Missing / broken on ARM:</p>
-<ul class="small-gap">
-<li>Git (broken)</li>
-<li>GCC (unsupported)</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><p class="first">Debugger</p>
-<ul class="small-gap">
-<li>Runs reliably only on a recent Beta or Dev Channel (M36+) build.</li>
-<li><p class="first">Currently unreliable on some platforms:</p>
-<ul class="small-gap">
-<li>ChromeOS</li>
-<li>Mac OSX</li>
-<li>Windows</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div></blockquote>
+<p>Follow the status of the NaCl Dev Environment at <a class="reference external" href="naclenv">this page</a>.</p>
 </section>
 
 {{/partials.standard_nacl_article}}
