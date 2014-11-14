@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
@@ -133,6 +134,19 @@ IPCResourceLoaderBridge::IPCResourceLoaderBridge(
   request_.fetch_frame_type = request_info.fetch_frame_type;
   request_.enable_load_timing = request_info.enable_load_timing;
   request_.enable_upload_progress = request_info.enable_upload_progress;
+
+  if ((request_info.referrer_policy == blink::WebReferrerPolicyDefault ||
+       request_info.referrer_policy ==
+           blink::WebReferrerPolicyNoReferrerWhenDowngrade) &&
+      request_info.referrer.SchemeIsSecure() &&
+      !request_info.url.SchemeIsSecure()) {
+    // Debug code for crbug.com/422871
+    base::debug::DumpWithoutCrashing();
+    DLOG(FATAL) << "Trying to send secure referrer for insecure request "
+                << "without an appropriate referrer policy.\n"
+                << "URL = " << request_info.url << "\n"
+                << "Referrer = " << request_info.referrer;
+  }
 
   const RequestExtraData kEmptyData;
   const RequestExtraData* extra_data;
