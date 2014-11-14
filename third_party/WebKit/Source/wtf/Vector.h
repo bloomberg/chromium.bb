@@ -359,6 +359,16 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             Allocator::backingFree(bufferToDeallocate);
         }
 
+        bool expandBuffer(size_t newCapacity)
+        {
+            size_t sizeToAllocate = allocationSize(newCapacity);
+            if (Allocator::backingExpand(m_buffer, sizeToAllocate)) {
+                m_capacity = sizeToAllocate / sizeof(T);
+                return true;
+            }
+            return false;
+        }
+
         void resetBufferPointer()
         {
             m_buffer = 0;
@@ -426,6 +436,20 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
         {
             if (UNLIKELY(bufferToDeallocate != inlineBuffer()))
                 reallyDeallocateBuffer(bufferToDeallocate);
+        }
+
+        bool expandBuffer(size_t newCapacity)
+        {
+            ASSERT(newCapacity > inlineCapacity);
+            if (m_buffer == inlineBuffer())
+                return false;
+
+            size_t sizeToAllocate = allocationSize(newCapacity);
+            if (Allocator::backingExpand(m_buffer, sizeToAllocate)) {
+                m_capacity = sizeToAllocate / sizeof(T);
+                return true;
+            }
+            return false;
         }
 
         void resetBufferPointer()
@@ -949,6 +973,8 @@ static const size_t kInitialVectorSize = WTF_VECTOR_INITIAL_SIZE;
             return;
         T* oldBuffer = begin();
         T* oldEnd = end();
+        if (Base::expandBuffer(newCapacity))
+            return;
         Base::allocateBuffer(newCapacity);
         TypeOperations::move(oldBuffer, oldEnd, begin());
         Base::deallocateBuffer(oldBuffer);

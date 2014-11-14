@@ -330,7 +330,10 @@ namespace WTF {
     {
         size_t oldCapacity = m_buffer.capacity();
         T* oldBuffer = m_buffer.buffer();
-        m_buffer.allocateBuffer(std::max(static_cast<size_t>(16), oldCapacity + oldCapacity / 4 + 1));
+        size_t newCapacity = std::max(static_cast<size_t>(16), oldCapacity + oldCapacity / 4 + 1);
+        if (m_buffer.expandBuffer(newCapacity))
+            return;
+        m_buffer.allocateBuffer(newCapacity);
         if (m_start <= m_end)
             TypeOperations::move(oldBuffer + m_start, oldBuffer + m_end, m_buffer.buffer() + m_start);
         else {

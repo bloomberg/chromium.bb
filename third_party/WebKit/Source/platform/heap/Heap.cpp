@@ -863,6 +863,29 @@ void FreeList<Header>::addToFreeList(Address address, size_t size)
 }
 
 template<typename Header>
+bool ThreadHeap<Header>::expandObject(Header* header, size_t newSize)
+{
+    ASSERT(header->payloadSize() < newSize);
+    size_t allocationSize = allocationSizeFromSize(newSize);
+    ASSERT(allocationSize > header->size());
+    size_t expandSize = allocationSize - header->size();
+    if (header->payloadEnd() == m_currentAllocationPoint && expandSize <= m_remainingAllocationSize) {
+        m_currentAllocationPoint += expandSize;
+        m_remainingAllocationSize -= expandSize;
+
+        // Unpoison the memory used for the object (payload).
+        ASAN_UNPOISON_MEMORY_REGION(header->payloadEnd(), expandSize);
+#if ENABLE(ASSERT) || defined(LEAK_SANITIZER) || defined(ADDRESS_SANITIZER)
+        memset(header->payloadEnd(), 0, expandSize);
+#endif
+        header->setSize(allocationSize);
+        ASSERT(heapPageFromAddress(header->payloadEnd() - 1));
+        return true;
+    }
+    return false;
+}
+
+template<typename Header>
 void ThreadHeap<Header>::promptlyFreeObject(Header* header)
 {
     ASSERT(!m_threadState->isSweepInProgress());
@@ -2864,6 +2887,33 @@ void HeapAllocator::backingFree(void* address)
     int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
     HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
     heap->promptlyFreeObject(header);
+}
+
+bool HeapAllocator::backingExpand(void* address, size_t newSize)
+{
+    if (!address || ThreadState::isAnyThreadInGC())
+        return false;
+
+    ThreadState* state = ThreadState::current();
+    if (state->isSweepInProgress())
+        return false;
+    ASSERT(state->isAllocationAllowed());
+
+    BaseHeapPage* page = pageHeaderFromObject(address);
+    if (page->isLargeObject() || page->threadState() != state)
+        return false;
+
+    typedef HeapIndexTrait<CollectionBackingHeap> HeapTraits;
+    typedef HeapTraits::HeapType HeapType;
+    typedef HeapTraits::HeaderType HeaderType;
+
+    HeaderType* header = HeaderType::fromPayload(address);
+    header->checkHeader();
+
+    const GCInfo* gcInfo = header->gcInfo();
+    int heapIndex = HeapTraits::index(gcInfo->hasFinalizer(), header->payloadSize());
+    HeapType* heap = static_cast<HeapType*>(state->heap(heapIndex));
+    return heap->expandObject(header, newSize);
 }
 
 BaseHeapPage* Heap::lookup(Address address)

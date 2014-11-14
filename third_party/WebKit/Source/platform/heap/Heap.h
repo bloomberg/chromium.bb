@@ -304,6 +304,9 @@ public:
     NO_SANITIZE_ADDRESS
     size_t size() const { return m_size & sizeMask; }
 
+    NO_SANITIZE_ADDRESS
+    void setSize(size_t size) { m_size = (size | (m_size & ~sizeMask)); }
+
 #if ENABLE(GC_PROFILE_HEAP)
     NO_SANITIZE_ADDRESS
     size_t encodedSize() const { return m_size; }
@@ -813,6 +816,7 @@ public:
     void removePageFromHeap(HeapPage<Header>*);
 
     PLATFORM_EXPORT void promptlyFreeObject(Header*);
+    PLATFORM_EXPORT bool expandObject(Header*, size_t);
 
 private:
     void addPageToHeap(const GCInfo*);
@@ -1491,6 +1495,7 @@ public:
         return reinterpret_cast<Return>(Heap::allocate<Metadata>(size));
     }
     PLATFORM_EXPORT static void backingFree(void* address);
+    PLATFORM_EXPORT static bool backingExpand(void*, size_t);
 
     static void free(void* address) { }
     template<typename T>
