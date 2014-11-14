@@ -194,6 +194,12 @@
             "Authentication": "None"
         }
     },
+    "network-missing-required-type": {
+        "Name": "name",
+        "Ethernet": {
+            "Authentication": "None"
+        }
+    },
     "network-nested-state-field-repaired": {
         "GUID": "guid",
         "Type": "WiFi",

@@ -227,18 +227,16 @@ bool Validator::ValidateRecommendedField(
     base::DictionaryValue* result) {
   CHECK(result);
 
-  scoped_ptr<base::ListValue> recommended;
   scoped_ptr<base::Value> recommended_value;
   // This remove passes ownership to |recommended_value|.
   if (!result->RemoveWithoutPathExpansion(::onc::kRecommended,
                                           &recommended_value)) {
     return true;
   }
-  base::ListValue* recommended_list = NULL;
-  recommended_value.release()->GetAsList(&recommended_list);
-  CHECK(recommended_list);
 
-  recommended.reset(recommended_list);
+  base::ListValue* recommended_list = nullptr;
+  recommended_value->GetAsList(&recommended_list);
+  DCHECK(recommended_list);  // The types of field values are already verified.
 
   if (!managed_onc_) {
     error_or_warning_found_ = true;
@@ -249,11 +247,10 @@ bool Validator::ValidateRecommendedField(
   }
 
   scoped_ptr<base::ListValue> repaired_recommended(new base::ListValue);
-  for (base::ListValue::iterator it = recommended->begin();
-       it != recommended->end(); ++it) {
+  for (const base::Value* entry : *recommended_list) {
     std::string field_name;
-    if (!(*it)->GetAsString(&field_name)) {
-      NOTREACHED();
+    if (!entry->GetAsString(&field_name)) {
+      NOTREACHED(); // The types of field values are already verified.
       continue;
     }
 
@@ -286,7 +283,7 @@ bool Validator::ValidateRecommendedField(
       }
     }
 
-    repaired_recommended->Append((*it)->DeepCopy());
+    repaired_recommended->AppendString(field_name);
   }
 
   result->Set(::onc::kRecommended, repaired_recommended.release());
@@ -494,7 +491,7 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
 
     // Prohibit anything but WiFi and Ethernet for device-level policy (which
     // corresponds to shared networks). See also http://crosbug.com/28741.
-    if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY &&
+    if (onc_source_ == ::onc::ONC_SOURCE_DEVICE_POLICY && !type.empty() &&
         type != ::onc::network_type::kWiFi &&
         type != ::onc::network_type::kEthernet) {
       error_or_warning_found_ = true;
@@ -513,8 +510,6 @@ bool Validator::ValidateNetworkConfiguration(base::DictionaryValue* result) {
           RequireField(*result, ::onc::network_config::kCellular);
     } else if (type == ::onc::network_type::kVPN) {
       all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
-    } else if (!type.empty()) {
-      NOTREACHED();
     }
   }
 
