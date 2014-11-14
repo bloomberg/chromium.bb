@@ -677,6 +677,10 @@ void ResourceFetcher::maybeNotifyInsecureContent(const Resource* resource) const
                                           resource->lastResourceRequest().url());
 }
 
+// Limit the number of URLs in m_validatedURLs to avoid memory bloat.
+// http://crbug.com/52411
+static const int kMaxValidatedURLsSize = 10000;
+
 void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest& request, ResourceLoadStartType type)
 {
     if (type == ResourceLoadingFromCache)
@@ -694,6 +698,9 @@ void ResourceFetcher::requestLoadStarted(Resource* resource, const FetchRequest&
             m_resourceTimingReportTimer.startOneShot(0, FROM_HERE);
     }
 
+    if (m_validatedURLs.size() >= kMaxValidatedURLsSize) {
+        m_validatedURLs.clear();
+    }
     m_validatedURLs.add(request.resourceRequest().url());
 }
 
