@@ -271,5 +271,70 @@ TEST(NinePatchLayerImplTest, Occlusion) {
   }
 }
 
+TEST(NinePatchLayerImplTest, OpaqueRect) {
+  gfx::Size layer_size(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+
+  SkBitmap sk_bitmap_opaque;
+  sk_bitmap_opaque.allocN32Pixels(10, 10);
+  sk_bitmap_opaque.setImmutable();
+  sk_bitmap_opaque.setAlphaType(kOpaque_SkAlphaType);
+
+  UIResourceId uid_opaque = 6;
+  UIResourceBitmap bitmap_opaque(sk_bitmap_opaque);
+  impl.host_impl()->CreateUIResource(uid_opaque, bitmap_opaque);
+
+  SkBitmap sk_bitmap_alpha;
+  sk_bitmap_alpha.allocN32Pixels(10, 10);
+  sk_bitmap_alpha.setImmutable();
+  sk_bitmap_alpha.setAlphaType(kUnpremul_SkAlphaType);
+
+  UIResourceId uid_alpha = 7;
+  UIResourceBitmap bitmap_alpha(sk_bitmap_alpha);
+
+  impl.host_impl()->CreateUIResource(uid_alpha, bitmap_alpha);
+
+  NinePatchLayerImpl *nine_patch_layer_impl =
+      impl.AddChildToRoot<NinePatchLayerImpl>();
+  nine_patch_layer_impl->SetBounds(layer_size);
+  nine_patch_layer_impl->SetContentBounds(layer_size);
+  nine_patch_layer_impl->SetDrawsContent(true);
+
+  impl.CalcDrawProps(viewport_size);
+
+  {
+    SCOPED_TRACE("Use opaque image");
+
+    nine_patch_layer_impl->SetUIResourceId(uid_opaque);
+    nine_patch_layer_impl->SetImageBounds(gfx::Size(10, 10));
+
+    gfx::Rect aperture = gfx::Rect(3, 3, 4, 4);
+    gfx::Rect border = gfx::Rect(300, 300, 400, 400);
+    nine_patch_layer_impl->SetLayout(aperture, border, true);
+
+    impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, gfx::Rect());
+
+    const QuadList &quad_list = impl.quad_list();
+    for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
+         it != quad_list.BackToFrontEnd(); ++it)
+      EXPECT_FALSE(it->ShouldDrawWithBlending());
+  }
+
+  {
+    SCOPED_TRACE("Use tranparent image");
+
+    nine_patch_layer_impl->SetUIResourceId(uid_alpha);
+
+    impl.AppendQuadsWithOcclusion(nine_patch_layer_impl, gfx::Rect());
+
+    const QuadList &quad_list = impl.quad_list();
+    for (QuadList::ConstBackToFrontIterator it = quad_list.BackToFrontBegin();
+         it != quad_list.BackToFrontEnd(); ++it)
+      EXPECT_TRUE(it->ShouldDrawWithBlending());
+  }
+}
+
 }  // namespace
 }  // namespace cc
