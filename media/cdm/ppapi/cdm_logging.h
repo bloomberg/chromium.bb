@@ -7,7 +7,7 @@
 #ifndef MEDIA_CDM_PPAPI_CDM_LOGGING_H_
 #define MEDIA_CDM_PPAPI_CDM_LOGGING_H_
 
-#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <string>
 
@@ -29,6 +29,17 @@ class LogMessageVoidify {
 };
 
 }  // namespace
+
+// This class is used to avoid having to include <iostream> in this file.
+class CdmLogStream {
+ public:
+  CdmLogStream() {}
+
+  // Retrieves the stream that we write to. This header cannot depend on
+  // <iostream> because that will add static initializers to all files that
+  // include this header. See crbug.com/94794.
+  std::ostream& stream();
+};
 
 // This class serves two purposes:
 // (1) It adds common headers to the log message, e.g. timestamp, process ID.
@@ -52,13 +63,18 @@ class CdmLogMessage {
 #define CDM_LAZY_STREAM(stream, condition) \
   !(condition) ? (void) 0 : LogMessageVoidify() & (stream)
 
-#define CDM_DLOG() CDM_LAZY_STREAM(std::cout, CDM_DLOG_IS_ON()) \
-  << CdmLogMessage(__FILE__, __LINE__).message()
-
 #if defined(NDEBUG)
+// Logging is disabled for the release builds, theoretically the compiler should
+// take care of removing the references to CdmLogMessage but it's not always the
+// case when some specific optimizations are turned on (like PGO). Update the
+// macro to make sure that we don't try to do any logging or to refer to
+// CdmLogMessage in release.
 #define CDM_DLOG_IS_ON() false
+#define CDM_DLOG() CDM_LAZY_STREAM(CdmLogStream().stream(), CDM_DLOG_IS_ON())
 #else
 #define CDM_DLOG_IS_ON() true
+#define CDM_DLOG() CDM_LAZY_STREAM(CdmLogStream().stream(), CDM_DLOG_IS_ON()) \
+    << CdmLogMessage(__FILE__, __LINE__).message()
 #endif
 
 }  // namespace media
