@@ -41,7 +41,6 @@
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DrawingRecorder.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineIterator.h"
@@ -67,8 +66,6 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContextCullSaver.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 

@@ -30,7 +30,6 @@
 #include "core/paint/ViewPainter.h"
 #include "core/rendering/ColumnInfo.h"
 #include "core/rendering/FlowThreadController.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderGeometryMap.h"
@@ -43,7 +42,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 

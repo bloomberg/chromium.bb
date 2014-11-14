@@ -34,7 +34,6 @@
 #include "core/paint/TablePainter.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderTableCaption.h"
@@ -45,7 +44,6 @@
 #include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/TextAutosizer.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
 

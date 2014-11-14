@@ -30,7 +30,6 @@
 #include "core/paint/BoxPainter.h"
 #include "core/paint/InlinePainter.h"
 #include "core/paint/ObjectPainter.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
@@ -43,7 +42,6 @@
 #include "core/rendering/style/StyleInheritedData.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 

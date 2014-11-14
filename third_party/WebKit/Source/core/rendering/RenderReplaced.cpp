@@ -26,13 +26,11 @@
 
 #include "core/editing/PositionWithAffinity.h"
 #include "core/paint/ReplacedPainter.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 #include "platform/LengthFunctions.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 

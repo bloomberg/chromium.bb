@@ -30,7 +30,6 @@
 #include "core/rendering/RenderReplica.h"
 
 #include "core/paint/ReplicaPainter.h"
-#include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/RenderLayer.h"
 
 namespace blink {
