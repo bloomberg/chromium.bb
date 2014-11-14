@@ -187,17 +187,24 @@ with Chrome sync.
 The app runtime sends the <code>onSuspend()</code>
 event to the event page before unloading it.
 Your event page can listen out for this event and
-do clean-up tasks before the app closes.
+do clean-up tasks and save state before the app closes.
 </p>
 
 <p>
 Once this event is fired,
-the app runtime starts the process of closing the app:
-all events stop firing and
-JavaScript execution is halted.
-Any asynchronous operations started
-while handling this event are not guaranteed to complete.
-Keep the clean-up tasks synchronous and simple.
+the app runtime starts the process of closing the app. If the app has open
+windows it may be restarted in the future via the <code>onRestarted</code>
+event. In this case the app should save its current state to persistent
+storage so it can restart in the same state if it receives an
+<code>onRestarted</code> event. The app only has a few seconds to save its
+state, after which it will be terminated, so it is a good idea to be
+incrementally saving app state while the app is running normally.
+</p>
+<p>
+After receiving <code>onSuspend</code> no further events will be delivered
+to the app, unless the suspension is aborted for some reason. In this case
+the <code>onSuspendCanceled</code> will be delivered to the app, and the app
+won't be unloaded.
 </p>
 
 <pre data-filename="background.js">
