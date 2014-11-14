@@ -901,7 +901,7 @@ bool RenderLayerCompositor::requiresScrollCornerLayer() const
 void RenderLayerCompositor::updateOverflowControlsLayers()
 {
 #if USE(RUBBER_BANDING)
-    if (m_renderView.frame()->isLocalRoot()) {
+    if (m_renderView.frame()->isLocalRoot() && !m_renderView.document().settings()->rubberBandingOnCompositorThread()) {
         if (!m_layerForOverhangShadow) {
             m_layerForOverhangShadow = GraphicsLayer::create(graphicsLayerFactory(), this);
             OverscrollTheme::theme()->setUpOverhangShadowLayer(m_layerForOverhangShadow.get());

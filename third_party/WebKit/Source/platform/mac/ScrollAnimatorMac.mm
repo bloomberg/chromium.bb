@@ -1080,7 +1080,7 @@ bool ScrollAnimatorMac::handleWheelEvent(const PlatformWheelEvent& wheelEvent)
 {
     m_haveScrolledSincePageLoad = true;
 
-    if (!wheelEvent.hasPreciseScrollingDeltas() || !rubberBandingEnabledForSystem())
+    if (!wheelEvent.hasPreciseScrollingDeltas() || !rubberBandingEnabledForSystem() || m_scrollableArea->rubberBandingOnCompositorThread())
         return ScrollAnimator::handleWheelEvent(wheelEvent);
 
     // FIXME: This is somewhat roundabout hack to allow forwarding wheel events

@@ -251,6 +251,11 @@ void WebSettingsImpl::setRootLayerScrolls(bool rootLayerScrolls)
     m_settings->setRootLayerScrolls(rootLayerScrolls);
 }
 
+void WebSettingsImpl::setRubberBandingOnCompositorThread(bool rubberBandingOnCompositorThread)
+{
+    m_settings->setRubberBandingOnCompositorThread(rubberBandingOnCompositorThread);
+}
+
 void WebSettingsImpl::setClobberUserAgentInitialScaleQuirk(bool clobberUserAgentInitialScaleQuirk)
 {
     m_clobberUserAgentInitialScaleQuirk = clobberUserAgentInitialScaleQuirk;

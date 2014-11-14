@@ -224,6 +224,11 @@ pinchVirtualViewportEnabled initial=false
 useSolidColorScrollbars initial=false
 pinchOverlayScrollbarThickness type=int, initial=0
 
+# The rubber-band overscroll effect is implemented in Blink and is being moved
+# to the compositor thread. This will be set to true and eventually removed.
+# crbug.com/133097
+rubberBandingOnCompositorThread initial=false
+
 mainFrameClipsContent initial=true
 
 

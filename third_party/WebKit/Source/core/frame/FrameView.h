@@ -163,6 +163,7 @@ public:
 
     void setScrollPosition(const DoublePoint&, ScrollBehavior = ScrollBehaviorInstant);
     virtual bool isRubberBandInProgress() const override;
+    virtual bool rubberBandingOnCompositorThread() const override;
     void setScrollPositionNonProgrammatically(const IntPoint&);
 
     // This is different than visibleContentRect() in that it ignores negative (or overly positive)

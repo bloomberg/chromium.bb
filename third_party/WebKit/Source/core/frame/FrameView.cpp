@@ -1673,6 +1673,11 @@ bool FrameView::isRubberBandInProgress() const
     return false;
 }
 
+bool FrameView::rubberBandingOnCompositorThread() const
+{
+    return m_frame->settings()->rubberBandingOnCompositorThread();
+}
+
 HostWindow* FrameView::hostWindow() const
 {
     Page* page = frame().page();
