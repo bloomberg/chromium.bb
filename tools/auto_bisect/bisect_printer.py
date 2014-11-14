@@ -344,7 +344,8 @@ class BisectPrinter(object):
       current_rev_state, prev_rev_state, confidence = regression
       self._PrintTableRow(
           [8, 70, 10],
-          [current_rev_state.depot, current_rev_state.revision, confidence])
+          [current_rev_state.depot, current_rev_state.revision,
+           '%d%%' % confidence])
       self._PrintTableRow(
           [8, 70], [prev_rev_state.depot, prev_rev_state.revision])
       print
