@@ -10,6 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
+#import "ui/base/cocoa/tracking_area.h"
 
 namespace autofill {
 class AutofillPopupController;
@@ -30,6 +31,7 @@ class AutofillPopupController;
   base::scoped_nsobject<NSImageView> keyIcon_;
   base::scoped_nsobject<NSBox> divider_;
   base::scoped_nsobject<HyperlinkTextView> helpTextView_;
+  ui::ScopedCrTrackingArea helpTextTrackingArea_;
 }
 
 // Designated initializer.

@@ -126,6 +126,26 @@ NSColor* HelpLinkColor() {
   return self;
 }
 
+- (void)updateTrackingAreas {
+  [super updateTrackingAreas];
+  if (helpTextTrackingArea_.get())
+    [self removeTrackingArea:helpTextTrackingArea_.get()];
+
+  // Set up tracking for the help text so the cursor, etc. is properly handled.
+  // Must set tracking to "always" because the autofill window is never key.
+  NSTrackingAreaOptions options = NSTrackingActiveAlways |
+                                  NSTrackingMouseEnteredAndExited |
+                                  NSTrackingMouseMoved |
+                                  NSTrackingCursorUpdate;
+  helpTextTrackingArea_.reset(
+      [[CrTrackingArea alloc] initWithRect:[self bounds]
+                                   options:options
+                                     owner:helpTextView_.get()
+                                  userInfo:nil]);
+
+  [self addTrackingArea:helpTextTrackingArea_.get()];
+}
+
 #pragma mark NSView implementation:
 
 - (void)drawRect:(NSRect)dirtyRect {
