@@ -72,7 +72,6 @@ else
   packages="$common_packages $trusty_specific_packages"
 fi
 
-echo $packages
 sudo apt-get build-dep -y $packages
 
 # Extra build deps for pulseaudio, which apt-get build-dep may fail to install
@@ -80,3 +79,13 @@ sudo apt-get build-dep -y $packages
 sudo apt-get install libltdl3-dev libjson0-dev \
          libsndfile1-dev libspeexdsp-dev \
          chrpath -y  # Chrpath is required by fix_rpaths.sh.
+
+if test "$ubuntu_release" = "trusty" ; then
+  # On Trusty, build deps for some of the instrumented packages above conflict
+  # with Chromium's build deps. In particular:
+  # zlib1g and libffi remove gcc-4.8 in favor of gcc-multilib,
+  # libglib2.0-0 removes libelf in favor of libelfg0.
+  # We let Chromium's build deps take priority. So, run Chromium's
+  # install-build-deps.sh to reinstall those that have been removed.
+  $(dirname ${BASH_SOURCE[0]})/../../build/install-build-deps.sh --no-prompt
+fi
