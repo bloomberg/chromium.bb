@@ -1027,6 +1027,7 @@ void BrowserView::UpdateToolbar(content::WebContents* contents) {
   // We may end up here during destruction.
   if (toolbar_)
     toolbar_->Update(contents);
+  frame_->UpdateToolbar();
 }
 
 void BrowserView::FocusToolbar() {
@@ -1265,9 +1266,15 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       content::WebContents* web_contents,
                                       const GURL& url,
                                       const content::SSLStatus& ssl) {
-  WebsiteSettingsPopupView::ShowPopup(
-      GetLocationBarView()->location_icon_view(), profile,
-      web_contents, url, ssl, browser_.get());
+  views::View* popup_anchor = GetLocationBarView()->location_icon_view();
+
+  // If the toolbar isn't showing this might be a web app window that has a
+  // location icon.
+  if (!IsToolbarVisible())
+    popup_anchor = frame_->GetLocationIconView();
+
+  WebsiteSettingsPopupView::ShowPopup(popup_anchor, profile, web_contents, url,
+                                      ssl, browser_.get());
 }
 
 void BrowserView::ShowAppMenu() {

@@ -62,6 +62,8 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
     return icon_;
   }
 
+  int icon_image_id() const { return icon_image_id_; }
+
  protected:
   // views::CustomButton override:
   void OnGestureEvent(ui::GestureEvent* event) override;

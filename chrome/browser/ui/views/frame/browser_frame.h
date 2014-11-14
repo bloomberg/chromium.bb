@@ -73,6 +73,15 @@ class BrowserFrame
   // Tells the frame to update the throbber.
   void UpdateThrobber(bool running);
 
+  // Tells the frame to update any toolbar elements it has.
+  void UpdateToolbar();
+
+  // Returns the location icon, if there is a location icon embedded into the
+  // frame. This is the case for web app frames, which do not have a visible
+  // toolbar. Instead of using the normal location icon from the location bar
+  // in the toolbar, these windows have a location icon in the frame.
+  views::View* GetLocationIconView() const;
+
   // Returns the NonClientFrameView of this frame.
   views::View* GetFrameView() const;
 

@@ -1,0 +1,91 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
+
+#include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "base/command_line.h"
+#include "chrome/browser/ui/toolbar/test_toolbar_model.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/common/chrome_switches.h"
+#include "grit/theme_resources.h"
+#include "ui/aura/window.h"
+#include "ui/views/controls/button/button.h"
+#include "url/gurl.h"
+
+class WebAppLeftHeaderViewTest : public TestWithBrowserView {
+ public:
+  WebAppLeftHeaderViewTest()
+      : TestWithBrowserView(Browser::TYPE_TABBED,
+                            chrome::HOST_DESKTOP_TYPE_ASH,
+                            true),
+        frame_view_(nullptr),
+        test_toolbar_model_(nullptr) {}
+  ~WebAppLeftHeaderViewTest() override {}
+
+  // TestWithBrowserView override:
+  void SetUp() override {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableStreamlinedHostedApps);
+
+    TestWithBrowserView::SetUp();
+
+    // Setup a fake toolbar to enable testing.
+    test_toolbar_model_ = new TestToolbarModel();
+    scoped_ptr<ToolbarModel> toolbar_model(test_toolbar_model_);
+    browser()->swap_toolbar_models(&toolbar_model);
+    test_toolbar_model_->set_icon(IDR_LOCATION_BAR_HTTP);
+
+    AddTab(browser(), GURL("about:blank"));
+    NavigateAndCommitActiveTab(GURL("http://www.google.com"));
+    browser()->window()->Show();
+
+    views::Widget* widget = browser_view()->GetWidget();
+    frame_view_ = static_cast<BrowserNonClientFrameViewAsh*>(
+                      widget->non_client_view()->frame_view());
+  }
+
+ protected:
+  // Owned by the browser view.
+  BrowserNonClientFrameViewAsh* frame_view_;
+
+  // Owned by the browser.
+  TestToolbarModel* test_toolbar_model_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebAppLeftHeaderViewTest);
+};
+
+TEST_F(WebAppLeftHeaderViewTest, BackButton) {
+  WebAppLeftHeaderView* view = frame_view_->web_app_left_header_view_;
+
+  // The left header view should not be null or our test is broken.
+  ASSERT_TRUE(view);
+
+  // The back button should be inactive until a navigate happens.
+  EXPECT_EQ(views::Button::STATE_DISABLED, view->back_button_->state());
+
+  NavigateAndCommitActiveTab(GURL("www2.google.com"));
+
+  // The back button should be active now that a navigation happened.
+  EXPECT_EQ(views::Button::STATE_NORMAL, view->back_button_->state());
+}
+
+TEST_F(WebAppLeftHeaderViewTest, LocationIcon) {
+  WebAppLeftHeaderView* view = frame_view_->web_app_left_header_view_;
+
+  // The left header view should not be null or our test is broken.
+  ASSERT_TRUE(view);
+
+  // The location icon should be non-secure one.
+  EXPECT_EQ(IDR_LOCATION_BAR_HTTP, view->location_icon_->icon_image_id());
+
+  test_toolbar_model_->set_icon(IDR_OMNIBOX_HTTPS_VALID);
+  NavigateAndCommitActiveTab(GURL("https://secure.google.com"));
+
+  // The location icon should now be the secure one.
+  EXPECT_EQ(IDR_OMNIBOX_HTTPS_VALID, view->location_icon_->icon_image_id());
+}

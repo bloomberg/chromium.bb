@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
@@ -21,12 +20,12 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
+#include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
 #include "chrome/browser/ui/views/profiles/avatar_menu_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/ash_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/aura/client/aura_constants.h"
@@ -102,7 +101,7 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       caption_button_container_(nullptr),
-      web_app_back_button_(nullptr),
+      web_app_left_header_view_(nullptr),
       window_icon_(nullptr),
       frame_border_hit_test_controller_(
           new ash::FrameBorderHitTestController(frame)) {
@@ -111,9 +110,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   ash::Shell::GetInstance()->RemoveShellObserver(this);
-  // browser_view() outlives the frame, as destruction of sibling views happens
-  // in the same order as creation - see BrowserView::CreateBrowserWindow.
-  chrome::RemoveCommandObserver(browser_view()->browser(), IDC_BACK, this);
 }
 
 void BrowserNonClientFrameViewAsh::Init() {
@@ -145,23 +141,13 @@ void BrowserNonClientFrameViewAsh::Init() {
       header_painter->UpdateLeftHeaderView(window_icon_);
     }
   } else if (UseWebAppHeaderStyle()) {
-    web_app_back_button_ =
-        new ash::FrameCaptionButton(this, ash::CAPTION_BUTTON_ICON_BACK);
-    web_app_back_button_->SetImages(ash::CAPTION_BUTTON_ICON_BACK,
-                                    ash::FrameCaptionButton::ANIMATE_NO,
-                                    IDR_AURA_WINDOW_CONTROL_ICON_BACK,
-                                    IDR_AURA_WINDOW_CONTROL_ICON_BACK_I,
-                                    IDR_AURA_WINDOW_CONTROL_BACKGROUND_H,
-                                    IDR_AURA_WINDOW_CONTROL_BACKGROUND_P);
-
-    UpdateBackButtonState(true);
-    chrome::AddCommandObserver(browser_view()->browser(), IDC_BACK, this);
-    AddChildView(web_app_back_button_);
+    web_app_left_header_view_ = new WebAppLeftHeaderView(browser_view());
+    AddChildView(web_app_left_header_view_);
 
     ash::DefaultHeaderPainter* header_painter = new ash::DefaultHeaderPainter;
     header_painter_.reset(header_painter);
     header_painter->Init(frame(), this, caption_button_container_);
-    header_painter->UpdateLeftHeaderView(web_app_back_button_);
+    header_painter->UpdateLeftHeaderView(web_app_left_header_view_);
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);
@@ -223,6 +209,18 @@ void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
     window_icon_->Update();
 }
 
+void BrowserNonClientFrameViewAsh::UpdateToolbar() {
+  if (web_app_left_header_view_)
+    web_app_left_header_view_->Update();
+}
+
+views::View* BrowserNonClientFrameViewAsh::GetLocationIconView() const {
+  if (web_app_left_header_view_)
+    return web_app_left_header_view_->GetLocationIconView();
+
+  return nullptr;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // views::NonClientFrameView:
 
@@ -257,8 +255,8 @@ int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   }
 
   // See if the point is actually within the web app back button.
-  if (hit_test == HTCAPTION && web_app_back_button_ &&
-      ConvertedHitTest(this, web_app_back_button_, point)) {
+  if (hit_test == HTCAPTION && web_app_left_header_view_ &&
+      ConvertedHitTest(this, web_app_left_header_view_, point)) {
     return HTCLIENT;
   }
 
@@ -326,13 +324,8 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   }
 
   caption_button_container_->SetPaintAsActive(ShouldPaintAsActive());
-  if (web_app_back_button_) {
-    // TODO(benwells): Check that the disabled and inactive states should be
-    // drawn in the same way.
-    web_app_back_button_->set_paint_as_active(
-        ShouldPaintAsActive() &&
-        chrome::IsCommandEnabled(browser_view()->browser(), IDC_BACK));
-  }
+  if (web_app_left_header_view_)
+    web_app_left_header_view_->SetPaintAsActive(ShouldPaintAsActive());
 
   ash::HeaderPainter::Mode header_mode = ShouldPaintAsActive() ?
       ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
@@ -445,25 +438,12 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CommandObserver:
-
-void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
-                                                                 bool enabled) {
-  DCHECK_EQ(IDC_BACK, id);
-  UpdateBackButtonState(enabled);
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // views::ButtonListener:
 
 void BrowserNonClientFrameViewAsh::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
-  if (sender == web_app_back_button_)
-    chrome::ExecuteCommand(browser_view()->browser(), IDC_BACK);
-  else if (sender == new_avatar_button())
-    chrome::ExecuteCommand(browser_view()->browser(), IDC_SHOW_AVATAR_MENU);
-  else
-    NOTREACHED();
+  DCHECK(sender == new_avatar_button());
+  chrome::ExecuteCommand(browser_view()->browser(), IDC_SHOW_AVATAR_MENU);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -684,9 +664,4 @@ void BrowserNonClientFrameViewAsh::PaintContentEdge(gfx::Canvas* canvas) {
                              width(), kClientEdgeThickness),
                    ThemeProperties::GetDefaultColor(
                        ThemeProperties::COLOR_TOOLBAR_SEPARATOR));
-}
-
-void BrowserNonClientFrameViewAsh::UpdateBackButtonState(bool enabled) {
-  web_app_back_button_->SetState(enabled ? views::Button::STATE_NORMAL
-                                         : views::Button::STATE_DISABLED);
 }

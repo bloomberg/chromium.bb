@@ -54,6 +54,13 @@ BrowserNonClientFrameView::~BrowserNonClientFrameView() {
   }
 }
 
+void BrowserNonClientFrameView::UpdateToolbar() {
+}
+
+views::View* BrowserNonClientFrameView::GetLocationIconView() const {
+  return nullptr;
+}
+
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   if (!is_visible)

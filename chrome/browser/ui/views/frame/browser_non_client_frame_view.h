@@ -52,6 +52,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Updates the throbber.
   virtual void UpdateThrobber(bool running) = 0;
 
+  // Updates any toolbar components in the frame. The default implementation
+  // does nothing.
+  virtual void UpdateToolbar();
+
+  // Returns the location icon, if this frame has any.
+  virtual views::View* GetLocationIconView() const;
+
   // Overriden from views::View.
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 

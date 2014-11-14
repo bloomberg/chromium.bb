@@ -2453,6 +2453,8 @@
       'browser/ui/views/frame/browser_non_client_frame_view_ash.h',
       'browser/ui/views/frame/immersive_mode_controller_ash.cc',
       'browser/ui/views/frame/immersive_mode_controller_ash.h',
+      'browser/ui/views/frame/web_app_left_header_view_ash.cc',
+      'browser/ui/views/frame/web_app_left_header_view_ash.h',
       'browser/ui/views/tabs/window_finder_ash.cc',
     ],
     # Used when Ash is enabled but not Athena.

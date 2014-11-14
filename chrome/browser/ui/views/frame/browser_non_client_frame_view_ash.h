@@ -8,12 +8,12 @@
 #include "ash/shell_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "ui/views/controls/button/button.h"
 
 class TabIconView;
+class WebAppLeftHeaderView;
 
 namespace ash {
 class FrameBorderHitTestController;
@@ -21,6 +21,7 @@ class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 class HeaderPainter;
 }
+
 namespace views {
 class ImageButton;
 class ToggleImageButton;
@@ -29,7 +30,6 @@ class ToggleImageButton;
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                                      public ash::ShellObserver,
                                      public chrome::TabIconViewModel,
-                                     public CommandObserver,
                                      public views::ButtonListener {
  public:
   static const char kViewClassName[];
@@ -44,6 +44,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   int GetTopInset() const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
+  void UpdateToolbar() override;
+  views::View* GetLocationIconView() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -72,9 +74,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
 
-  // CommandObserver:
-  void EnabledStateChangedForCommand(int id, bool enabled) override;
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
@@ -86,6 +85,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ImmersiveFullscreen);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            ToggleMaximizeModeRelayout);
+  FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, BackButton);
+  FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, LocationIcon);
 
   // views::NonClientFrameView:
   bool DoesIntersectRect(const views::View* target,
@@ -131,14 +132,12 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // the packaged app header style.
   void PaintContentEdge(gfx::Canvas* canvas);
 
-  // Update the state of the back button.
-  void UpdateBackButtonState(bool enabled);
-
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
 
-  // The back button for web app style header.
-  ash::FrameCaptionButton* web_app_back_button_;
+  // The holder for the buttons on the left side of the header. This is included
+  // for web app style frames, and includes a back button and location icon.
+  WebAppLeftHeaderView* web_app_left_header_view_;
 
   // For popups, the window icon.
   TabIconView* window_icon_;
