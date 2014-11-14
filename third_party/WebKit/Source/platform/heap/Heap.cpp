@@ -701,9 +701,8 @@ void ThreadHeap<Header>::updateRemainingAllocationSize()
 }
 
 template<typename Header>
-Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
+Address ThreadHeap<Header>::outOfLineAllocate(size_t payloadSize, size_t allocationSize, const GCInfo* gcInfo)
 {
-    size_t allocationSize = allocationSizeFromSize(size);
     ASSERT(allocationSize > remainingAllocationSize());
     if (allocationSize > blinkPageSize / 2)
         return allocateLargeObject(allocationSize, gcInfo);
@@ -720,7 +719,7 @@ Address ThreadHeap<Header>::outOfLineAllocate(size_t size, const GCInfo* gcInfo)
         setAllocationPoint(0, 0);
     }
     ensureCurrentAllocation(allocationSize, gcInfo);
-    return allocate(size, gcInfo);
+    return allocate(payloadSize, gcInfo);
 }
 
 template<typename Header>

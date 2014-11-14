@@ -820,7 +820,7 @@ public:
 
 private:
     void addPageToHeap(const GCInfo*);
-    PLATFORM_EXPORT Address outOfLineAllocate(size_t, const GCInfo*);
+    PLATFORM_EXPORT Address outOfLineAllocate(size_t payloadSize, size_t allocationSize, const GCInfo*);
     static size_t allocationSizeFromSize(size_t);
     PLATFORM_EXPORT Address allocateLargeObject(size_t, const GCInfo*);
     Address currentAllocationPoint() const { return m_currentAllocationPoint; }
@@ -1401,7 +1401,7 @@ Address ThreadHeap<Header>::allocate(size_t size, const GCInfo* gcInfo)
         ASSERT(heapPageFromAddress(headerAddress + allocationSize - 1));
         return result;
     }
-    return outOfLineAllocate(size, gcInfo);
+    return outOfLineAllocate(size, allocationSize, gcInfo);
 }
 
 template<typename T, typename HeapTraits>
