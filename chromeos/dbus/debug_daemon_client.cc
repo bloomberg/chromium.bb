@@ -35,6 +35,15 @@ void EmptyStopSystemTracingCallbackBody(
 
 }  // namespace
 
+// TODO(zelidrag): Move this to ChromeOS wherever place...
+namespace debugd {
+
+const char kEnableDebuggingFeatures[] = "EnableChromeDevFeatures";
+const char kQueryDevFeatures[] = "QueryDevFeatures";
+const char kRemoveRootfsVerification[] = "RemoveRootfsVerification";
+
+}  // namespace debugd
+
 namespace chromeos {
 
 // The DebugDaemonClient implementation used in production.
@@ -302,6 +311,47 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    weak_ptr_factory_.GetWeakPtr()));
   }
 
+  virtual void EnableDebuggingFeatures(
+      const std::string& password,
+      const EnableDebuggingCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kEnableDebuggingFeatures);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(password);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnEnableDebuggingFeatures,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void QueryDebuggingFeatures(
+      const QueryDevFeaturesCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kQueryDevFeatures);
+    dbus::MessageWriter writer(&method_call);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnQueryDebuggingFeatures,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
+  virtual void RemoveRootfsVerification(
+      const EnableDebuggingCallback& callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kRemoveRootfsVerification);
+    dbus::MessageWriter writer(&method_call);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnRemoveRootfsVerification,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
  protected:
   virtual void Init(dbus::Bus* bus) override {
     debugdaemon_proxy_ =
@@ -457,6 +507,39 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
       LOG(ERROR) << "Failed to request start";
       return;
     }
+  }
+
+  void OnEnableDebuggingFeatures(
+      const EnableDebuggingCallback& callback,
+      dbus::Response* response) {
+    if (callback.is_null())
+      return;
+
+    callback.Run(response != NULL);
+  }
+
+  void OnQueryDebuggingFeatures(
+      const QueryDevFeaturesCallback& callback,
+      dbus::Response* response) {
+    if (callback.is_null())
+      return;
+
+    int32 feature_mask = DEV_FEATURE_NONE;
+    if (!response || !dbus::MessageReader(response).PopInt32(&feature_mask)) {
+      callback.Run(false, DEV_FEATURES_DISABLED);
+      return;
+    }
+
+    callback.Run(true, feature_mask);
+  }
+
+  void OnRemoveRootfsVerification(
+      const EnableDebuggingCallback& callback,
+      dbus::Response* response) {
+    if (callback.is_null())
+      return;
+
+    callback.Run(response != NULL);
   }
 
   // Creates dbus::FileDescriptor from base::File.

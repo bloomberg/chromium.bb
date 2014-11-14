@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/device_disabled_screen.h"
+#include "chrome/browser/chromeos/login/screens/enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
@@ -151,6 +152,7 @@ const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
+const char WizardController::kEnableDebuggingScreenName[] = "debugging";
 const char WizardController::kEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kKioskEnableScreenName[] = "kiosk-enable";
@@ -313,6 +315,10 @@ BaseScreen* WizardController::CreateScreen(const std::string& screen_name) {
   } else if (screen_name == kResetScreenName) {
     return new chromeos::ResetScreen(this,
                                      oobe_display_->GetResetScreenActor());
+  } else if (screen_name == kEnableDebuggingScreenName) {
+    return new chromeos::EnableDebuggingScreen(
+        this,
+        oobe_display_->GetEnableDebuggingScreenActor());
   } else if (screen_name == kKioskEnableScreenName) {
     return new chromeos::KioskEnableScreen(
         this, oobe_display_->GetKioskEnableScreenActor());
@@ -471,6 +477,12 @@ void WizardController::ShowKioskAutolaunchScreen() {
   VLOG(1) << "Showing kiosk autolaunch screen.";
   SetStatusAreaVisible(false);
   SetCurrentScreen(GetScreen(kKioskAutolaunchScreenName));
+}
+
+void WizardController::ShowEnableDebuggingScreen() {
+  VLOG(1) << "Showing enable developer features screen.";
+  SetStatusAreaVisible(false);
+  SetCurrentScreen(GetScreen(kEnableDebuggingScreenName));
 }
 
 void WizardController::ShowTermsOfServiceScreen() {
@@ -705,7 +717,7 @@ void WizardController::OnEnrollmentDone() {
     ShowLoginScreen(LoginScreenContext());
 }
 
-void WizardController::OnResetCanceled() {
+void WizardController::OnDeviceModificationCanceled() {
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
   } else {
@@ -909,6 +921,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowKioskEnableScreen();
   } else if (screen_name == kKioskAutolaunchScreenName) {
     ShowKioskAutolaunchScreen();
+  } else if (screen_name == kEnableDebuggingScreenName) {
+    ShowEnableDebuggingScreen();
   } else if (screen_name == kEnrollmentScreenName) {
     ShowEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
@@ -990,6 +1004,12 @@ void WizardController::OnExit(BaseScreen& /* screen */,
     case EULA_BACK:
       ShowNetworkScreen();
       break;
+    case ENABLE_DEBUGGING_CANCELED:
+      OnDeviceModificationCanceled();
+      break;
+    case ENABLE_DEBUGGING_FINISHED:
+      OnDeviceModificationCanceled();
+      break;
     case ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED:
       OnAutoEnrollmentCheckCompleted();
       break;
@@ -1001,7 +1021,7 @@ void WizardController::OnExit(BaseScreen& /* screen */,
       ShowAutoEnrollmentCheckScreen();
       break;
     case RESET_CANCELED:
-      OnResetCanceled();
+      OnDeviceModificationCanceled();
       break;
     case KIOSK_AUTOLAUNCH_CANCELED:
       OnKioskAutolaunchCanceled();

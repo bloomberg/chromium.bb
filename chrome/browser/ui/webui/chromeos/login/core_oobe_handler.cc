@@ -145,6 +145,8 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("launchHelpApp",
               &CoreOobeHandler::HandleLaunchHelpApp);
   AddCallback("toggleResetScreen", &CoreOobeHandler::HandleToggleResetScreen);
+  AddCallback("toggleEnableDebuggingScreen",
+              &CoreOobeHandler::HandleEnableDebuggingScreen);
   AddCallback(kJsApiHeaderBarVisible,
               &CoreOobeHandler::HandleHeaderBarVisible);
 }
@@ -180,6 +182,16 @@ void CoreOobeHandler::ShowDeviceResetScreen() {
             WizardController::kResetScreenName, params.Pass());
       }
     }
+  }
+}
+
+void CoreOobeHandler::ShowEnableDebuggingScreen() {
+  // Don't recreate WizardController if it already exists.
+  WizardController* wizard_controller =
+      WizardController::default_controller();
+  if (wizard_controller && !wizard_controller->login_screen_started()) {
+    wizard_controller->AdvanceToScreen(
+        WizardController::kEnableDebuggingScreenName);
   }
 }
 
@@ -304,7 +316,13 @@ void CoreOobeHandler::HandleSkipToLoginForTesting(
       WizardController::default_controller()->SkipToLoginForTesting(context);
 }
 
-void CoreOobeHandler::HandleToggleResetScreen() { ShowDeviceResetScreen(); }
+void CoreOobeHandler::HandleToggleResetScreen() {
+  ShowDeviceResetScreen();
+}
+
+void CoreOobeHandler::HandleEnableDebuggingScreen() {
+  ShowEnableDebuggingScreen();
+}
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
   if (show == show_oobe_ui_)

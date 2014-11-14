@@ -10,6 +10,7 @@
 /** @const */ var SCREEN_OOBE_NETWORK = 'connect';
 /** @const */ var SCREEN_OOBE_HID_DETECTION = 'hid-detection';
 /** @const */ var SCREEN_OOBE_EULA = 'eula';
+/** @const */ var SCREEN_OOBE_ENABLE_DEBUGGING = 'debugging';
 /** @const */ var SCREEN_OOBE_UPDATE = 'update';
 /** @const */ var SCREEN_OOBE_RESET = 'reset';
 /** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
@@ -32,6 +33,7 @@
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
+/** @const */ var ACCELERATOR_ENABLE_DEBBUGING = 'debugging';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
 /** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
@@ -131,13 +133,28 @@ cr.define('cr.ui.login', function() {
   ];
 
   /**
+   * Group of screens (screen IDs) where enable debuggingscreen invocation is
+   * available.
+   * @type Array.<string>
+   * @const
+   */
+  var ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP = [
+    SCREEN_OOBE_HID_DETECTION,
+    SCREEN_OOBE_NETWORK,
+    SCREEN_OOBE_EULA,
+    SCREEN_OOBE_UPDATE,
+    SCREEN_TERMS_OF_SERVICE
+  ];
+
+  /**
    * Group of screens (screen IDs) that are not participating in
    * left-current-right animation.
    * @type Array.<string>
    * @const
    */
   var NOT_ANIMATED_SCREEN_GROUP = [
-    SCREEN_OOBE_RESET
+    SCREEN_OOBE_ENABLE_DEBUGGING,
+    SCREEN_OOBE_RESET,
   ];
 
 
@@ -333,6 +350,11 @@ cr.define('cr.ui.login', function() {
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen.cancel) {
           this.currentScreen.cancel();
+        }
+      } else if (name == ACCELERATOR_ENABLE_DEBBUGING) {
+        if (ENABLE_DEBUGGING_AVAILABLE_SCREEN_GROUP.indexOf(
+                currentStepId) != -1) {
+          chrome.send('toggleEnableDebuggingScreen');
         }
       } else if (name == ACCELERATOR_ENROLLMENT) {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||

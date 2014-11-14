@@ -1228,6 +1228,9 @@ Press any key to continue exploring.
   <message name="IDS_KIOSK_ENABLE_SCREEN_ENABLE_BUTTON" desc="Enable button text">
     Enable
   </message>
+  <message name="IDS_EXCLAMATION_ICON_TITLE" desc="Accessible title of the reset screen icon depicting exclamation mark.">
+    Exclamation mark icon
+  </message>
   <message name="IDS_RESET_SCREEN_TITLE" desc="Title of the reset screen">
     Factory reset
   </message>
@@ -1323,6 +1326,9 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_NETWORK_SELECTION_CONTINUE_BUTTON" desc="Text shown on continue button" meaning="Continue button label of network screen.">
     Continue
+  </message>
+  <message name="IDS_NETWORK_ENABLE_DEV_FEATURES_LINK" desc="Text shown on continue button" meaning="Link shown on OOBE screens that opens enable debugging features dialog">
+    Enable debugging features
   </message>
   <message name="IDS_NETWORK_SELECTION_ERROR" desc="Error shown when connection to network failed or timed out.">
     <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph> was unable to connect to <ph name="NETWORK_ID">$2<ex>Public Wifi</ex></ph>. Please select another network or try again.
@@ -2739,6 +2745,43 @@ Press any key to continue exploring.
   </message>
   <message name="IDS_EULA_TPM_DISABLED" desc="Tooltip text describing why 'System security setting' link is disabled.">
     Trusted Platform Module (TPM) chip is disabled or absent.
+  </message>
+
+  <message name="IDS_ENABLE_DEBUGGING_SCREEN_TITLE" desc="Title of the enable debugging features screen">
+    Enable debugging features
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_SCREEN_WARNING_MSG" desc="Warning text shown on enable debugging features screen above the exclamation icon.">
+    Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_SCREEN_ROOTFS_REMOVE_MSG" desc="Text shown on enable debugging features screen below warning messages if device needs extra restart before powerwash.">
+    A removal of rootfs protection and restart is required before enabling other debugging features.
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_REMOVE_ROOTFS_BUTTON" desc="Button for rootfs protection removal shown on enable debugging dialog.">
+    Proceed
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_ENABLE_BUTTON" desc="Button for enabling debugging features shown on enable debugging dialog.">
+    Enable
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
+   You are enabling Chrome OS debugging features which will setup sshd daemon and enable booting from USB drives.
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_DONE_MESSAGE" desc="Completion message in dialog for enabling debugging features.">
+    You have successfully enabled debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_ERROR_MESSAGE" desc="Error message when enabling of debugging features fails.">
+    Something went wrong. The debugging features were not completely enabled on this <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device.
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_ROOT_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
+   root password
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_CONFIRM_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
+   confirm password
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_WAIT_MESSAGE" desc="Confirmation message in dialog for enabling debugging features.">
+    Please wait...
+  </message>
+  <message name="IDS_ENABLE_DEBUGGING_EMPTY_ROOT_PASSWORD_LABEL" desc="Text for root password entry field label from enable debugging features dialog.">
+    leave empty if you want to set the root password to the default test image value
   </message>
 
   <message name="IDS_RESET_SCREEN_WARNING_MSG" desc="Warning text shown on reset screen above the exclamation icon.">

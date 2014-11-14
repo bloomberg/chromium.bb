@@ -139,6 +139,15 @@ void RecordPasswordLoginEvent(const UserContext& user_context) {
   }
 }
 
+bool CanShowDebuggingFeatures() {
+  // We need to be on the login screen and in dev mode to show this menu item.
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kSystemDevMode) &&
+         CommandLine::ForCurrentProcess()->HasSwitch(
+             chromeos::switches::kLoginManager) &&
+         !user_manager::UserManager::Get()->IsSessionStarted();
+}
+
 }  // namespace
 
 // static
@@ -569,6 +578,11 @@ void ExistingUserController::OnStartEnterpriseEnrollment() {
                  weak_factory_.GetWeakPtr()));
 }
 
+void ExistingUserController::OnStartEnableDebuggingScreen() {
+  if (CanShowDebuggingFeatures())
+    ShowEnableDebuggingScreen();
+}
+
 void ExistingUserController::OnStartKioskEnableScreen() {
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(
       base::Bind(
@@ -642,6 +656,12 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
 void ExistingUserController::ShowResetScreen() {
   scoped_ptr<base::DictionaryValue> params;
   host_->StartWizard(WizardController::kResetScreenName, params.Pass());
+}
+
+void ExistingUserController::ShowEnableDebuggingScreen() {
+  scoped_ptr<base::DictionaryValue> params;
+  host_->StartWizard(WizardController::kEnableDebuggingScreenName,
+                     params.Pass());
 }
 
 void ExistingUserController::ShowKioskEnableScreen() {

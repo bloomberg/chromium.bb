@@ -87,6 +87,7 @@ class WebUIScreenLocker : public WebUILoginView,
   virtual void MigrateUserData(const std::string& old_password) override;
   virtual void OnSigninScreenReady() override;
   virtual void OnStartEnterpriseEnrollment() override;
+  virtual void OnStartEnableDebuggingScreen() override;
   virtual void OnStartKioskEnableScreen() override;
   virtual void OnStartKioskAutolaunchScreen() override;
   virtual void ShowWrongHWIDScreen() override;

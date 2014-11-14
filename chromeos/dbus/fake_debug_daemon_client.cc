@@ -10,12 +10,16 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "chromeos/chromeos_switches.h"
 
 namespace chromeos {
 
-FakeDebugDaemonClient::FakeDebugDaemonClient() {}
+FakeDebugDaemonClient::FakeDebugDaemonClient()
+    : featues_mask_(DebugDaemonClient::DEV_FEATURE_NONE) {
+}
 
 FakeDebugDaemonClient::~FakeDebugDaemonClient() {}
 
@@ -118,6 +122,36 @@ void FakeDebugDaemonClient::TestICMPWithOptions(
 }
 
 void FakeDebugDaemonClient::UploadCrashes() {
+}
+
+void FakeDebugDaemonClient::EnableDebuggingFeatures(
+    const std::string& password,
+    const DebugDaemonClient::EnableDebuggingCallback& callback) {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, true));
+}
+
+void FakeDebugDaemonClient::SetDebuggingFeaturesStatus(int featues_mask) {
+  featues_mask_ = featues_mask;
+}
+
+void FakeDebugDaemonClient::QueryDebuggingFeatures(
+    const DebugDaemonClient::QueryDevFeaturesCallback& callback) {
+  bool supported = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kSystemDevMode);
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 true,
+                 static_cast<int>(
+                     supported ? featues_mask_ :
+                                 DebugDaemonClient::DEV_FEATURES_DISABLED)));
+}
+
+void FakeDebugDaemonClient::RemoveRootfsVerification(
+    const DebugDaemonClient::EnableDebuggingCallback& callback) {
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback, true));
 }
 
 }  // namespace chromeos

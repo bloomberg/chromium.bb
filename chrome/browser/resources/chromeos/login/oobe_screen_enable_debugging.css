@@ -1,0 +1,112 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#debugging {
+  display: flex;
+  flex-flow: column;
+  font-size: 16px;
+  min-height: 423px;
+  padding: 40px 17px 80px;
+  text-align: center;
+  width: 722px;
+}
+
+#debugging #debugging-controls {
+  bottom: 40px;
+  justify-content: center;
+  margin-top: auto;
+}
+
+#debugging-controls button {
+  margin: 0 10px;
+}
+
+#debugging #debugging-warning-icon {
+  height: 112px;
+}
+
+#debugging #enable-debugging-warning-msg {
+  color: #606060;
+  font-size: 22px;
+  padding: 5px 45px 30px;
+}
+
+.enable-debugging-text {
+  color: #606060;
+}
+
+#debugging #debugging-warning-details,
+#debugging #debugging-done-msg {
+  padding: 20px 40px 0;
+}
+
+#debugging #debugging-warning-restart {
+  padding: 30px 40px 0;
+}
+
+#debugging #enable-debugging-wait-msg {
+  display: inline-block;
+  padding: 25px 0;
+  vertical-align: middle;
+}
+
+#debugging #enable-debugging-spinner {
+  margin-top: 0;
+  vertical-align: middle;
+}
+
+#enable-debugging-passwords {
+  margin-bottom: 10px;
+  margin-top: 20px;
+}
+
+#enable-debugging-password-note {
+  color: #808080;
+  font-size: 12px;
+}
+
+.enable-debugging-password-label {
+  width: 200px;
+}
+
+.enable-debugging-password-input {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-around;
+  margin-top: 5px;
+}
+
+.done-specific,
+.error-specific,
+.remove-protection-specific,
+.setup-specific,
+.wait-specific {
+  display: none;
+}
+
+.error-view .error-specific,
+.done-view .done-specific,
+.remove-protection-view .remove-protection-specific,
+.setup-view .setup-specific,
+.wait-view .wait-specific {
+  display: block;
+}
+
+#debugging-remove-protection-button,
+#debugging-enable-button,
+#debugging-cancel-button,
+#debugging-ok-button {
+  display: none;
+}
+
+.remove-protection-view #debugging-remove-protection-button,
+.remove-protection-view #debugging-cancel-button,
+.setup-view #debugging-enable-button,
+.setup-view #debugging-cancel-button,
+.done-view #debugging-ok-button,
+.error-view #debugging-ok-button {
+  display: inline-block;
+}
+

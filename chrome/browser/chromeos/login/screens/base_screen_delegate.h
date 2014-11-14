@@ -53,6 +53,8 @@ class BaseScreenDelegate {
     WRONG_HWID_WARNING_SKIPPED = 20,
     CONTROLLER_PAIRING_FINISHED = 21,
     HOST_PAIRING_FINISHED = 22,
+    ENABLE_DEBUGGING_FINISHED = 23,
+    ENABLE_DEBUGGING_CANCELED = 24,
     EXIT_CODES_COUNT  // not a real code, must be the last
   };
 

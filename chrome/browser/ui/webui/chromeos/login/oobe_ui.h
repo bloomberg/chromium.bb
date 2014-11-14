@@ -64,6 +64,7 @@ class OobeUI : public OobeDisplay,
   // JS oobe/login screens names.
   static const char kScreenOobeHIDDetection[];
   static const char kScreenOobeNetwork[];
+  static const char kScreenOobeEnableDebugging[];
   static const char kScreenOobeEula[];
   static const char kScreenOobeUpdate[];
   static const char kScreenOobeEnrollment[];
@@ -96,6 +97,7 @@ class OobeUI : public OobeDisplay,
   virtual UpdateScreenActor* GetUpdateScreenActor() override;
   virtual NetworkScreenActor* GetNetworkScreenActor() override;
   virtual EulaScreenActor* GetEulaScreenActor() override;
+  virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() override;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() override;
   virtual ResetScreenActor* GetResetScreenActor() override;
   virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() override;
@@ -187,6 +189,7 @@ class OobeUI : public OobeDisplay,
   // Screens actors. Note, OobeUI owns them via |handlers_|, not directly here.
   UpdateScreenHandler* update_screen_handler_;
   NetworkScreenActor* network_screen_actor_;
+  EnableDebuggingScreenActor* debugging_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
   EnrollmentScreenActor* enrollment_screen_actor_;
   HIDDetectionScreenActor* hid_detection_screen_actor_;

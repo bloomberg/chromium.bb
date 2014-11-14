@@ -266,6 +266,10 @@ void WebUIScreenLocker::OnStartEnterpriseEnrollment() {
   NOTREACHED();
 }
 
+void WebUIScreenLocker::OnStartEnableDebuggingScreen() {
+  NOTREACHED();
+}
+
 void WebUIScreenLocker::OnStartKioskEnableScreen() {
   NOTREACHED();
 }

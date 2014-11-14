@@ -297,6 +297,11 @@ void WebUILoginDisplay::ShowEnterpriseEnrollmentScreen() {
     delegate_->OnStartEnterpriseEnrollment();
 }
 
+void WebUILoginDisplay::ShowEnableDebuggingScreen() {
+  if (delegate_)
+    delegate_->OnStartEnableDebuggingScreen();
+}
+
 void WebUILoginDisplay::ShowKioskEnableScreen() {
   if (delegate_)
     delegate_->OnStartKioskEnableScreen();

@@ -50,8 +50,20 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
       const std::map<std::string, std::string>& options,
       const TestICMPCallback& callback) override;
   virtual void UploadCrashes() override;
+  virtual void EnableDebuggingFeatures(
+      const std::string& password,
+      const EnableDebuggingCallback& callback) override;
+  virtual void QueryDebuggingFeatures(
+      const QueryDevFeaturesCallback& callback) override;
+  virtual void RemoveRootfsVerification(
+      const EnableDebuggingCallback& callback) override;
+
+  // Sets debugging features mask for testing.
+  virtual void SetDebuggingFeaturesStatus(int featues_mask);
 
  private:
+  int featues_mask_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeDebugDaemonClient);
 };
 

@@ -90,6 +90,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void MigrateUserData(const std::string& old_password) override;
   virtual void OnSigninScreenReady() override;
   virtual void OnStartEnterpriseEnrollment() override;
+  virtual void OnStartEnableDebuggingScreen() override;
   virtual void OnStartKioskEnableScreen() override;
   virtual void OnStartKioskAutolaunchScreen() override;
   virtual void ResetPublicSessionAutoLoginTimer() override;
@@ -191,6 +192,9 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Shows "reset device" screen.
   void ShowResetScreen();
+
+  // Shows "enable developer features" screen.
+  void ShowEnableDebuggingScreen();
 
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();

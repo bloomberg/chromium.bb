@@ -29,6 +29,14 @@
   width: 435px;
 }
 
+.connect-debugging-specific {
+  display: none;
+}
+
+.connect-debugging-view .connect-debugging-specific {
+  display: block;
+}
+
 html:not([highlight=strong]) #network-timezone-setting {
   display: none;
 }

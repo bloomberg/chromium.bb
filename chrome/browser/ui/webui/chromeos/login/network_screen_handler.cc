@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -103,6 +105,12 @@ void NetworkScreenHandler::Show() {
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
     if (core_oobe_actor_)
       core_oobe_actor_->ShowDeviceResetScreen();
+
+    return;
+  } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
+    if (core_oobe_actor_)
+      core_oobe_actor_->ShowEnableDebuggingScreen();
+
     return;
   }
 
@@ -112,7 +120,12 @@ void NetworkScreenHandler::Show() {
   handler->SetTechnologyEnabled(NetworkTypePattern::NonVirtual(),
                                 true,
                                 chromeos::network_handler::ErrorCallback());
-  ShowScreen(OobeUI::kScreenOobeNetwork, NULL);
+
+  base::DictionaryValue network_screen_params;
+  network_screen_params.SetBoolean("isDeveloperMode",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSystemDevMode));
+  ShowScreen(OobeUI::kScreenOobeNetwork, &network_screen_params);
   core_oobe_actor_->InitDemoModeDetection();
 }
 
@@ -157,6 +170,7 @@ void NetworkScreenHandler::DeclareLocalizedValues(
   builder->Add("selectTimezone", IDS_OPTIONS_SETTINGS_TIMEZONE_DESCRIPTION);
   builder->Add("proxySettings", IDS_OPTIONS_PROXIES_CONFIGURE_BUTTON);
   builder->Add("continueButton", IDS_NETWORK_SELECTION_CONTINUE_BUTTON);
+  builder->Add("debuggingFeaturesLink", IDS_NETWORK_ENABLE_DEV_FEATURES_LINK);
 }
 
 void NetworkScreenHandler::OnLanguageListResolved(

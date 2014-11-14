@@ -14,13 +14,14 @@
 /* @const */ var WAIT_FOR_POLYMER = true;
 
 <include src="login_common.js">
-<include src="oobe_screen_eula.js">
-<include src="oobe_screen_network.js">
-<include src="oobe_screen_hid_detection.js">
-<include src="oobe_screen_update.js">
-<include src="oobe_screen_controller_pairing.js">
-<include src="oobe_screen_host_pairing.js">
 <include src="oobe_screen_auto_enrollment_check.js">
+<include src="oobe_screen_controller_pairing.js">
+<include src="oobe_screen_enable_debugging.js">
+<include src="oobe_screen_eula.js">
+<include src="oobe_screen_hid_detection.js">
+<include src="oobe_screen_host_pairing.js">
+<include src="oobe_screen_network.js">
+<include src="oobe_screen_update.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
@@ -78,6 +79,7 @@ cr.define('cr.ui.Oobe', function() {
       login.EulaScreen.register();
       login.UpdateScreen.register();
       login.AutoEnrollmentCheckScreen.register();
+      login.EnableDebuggingScreen.register();
       login.ResetScreen.register();
       login.AutolaunchScreen.register();
       login.KioskEnableScreen.register();

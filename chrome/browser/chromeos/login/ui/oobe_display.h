@@ -17,6 +17,7 @@ class AutoEnrollmentCheckScreenActor;
 class CoreOobeActor;
 class ControllerPairingScreenActor;
 class DeviceDisabledScreenActor;
+class EnableDebuggingScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
@@ -41,6 +42,7 @@ class OobeDisplay {
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
     SCREEN_OOBE_UPDATE,
+    SCREEN_OOBE_ENABLE_DEBUGGING,
     SCREEN_OOBE_ENROLLMENT,
     SCREEN_OOBE_RESET,
     SCREEN_GAIA_SIGNIN,
@@ -73,6 +75,7 @@ class OobeDisplay {
   virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
   virtual NetworkScreenActor* GetNetworkScreenActor() = 0;
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
+  virtual EnableDebuggingScreenActor* GetEnableDebuggingScreenActor() = 0;
   virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;
   virtual ResetScreenActor* GetResetScreenActor() = 0;
   virtual KioskAutolaunchScreenActor* GetKioskAutolaunchScreenActor() = 0;

@@ -54,6 +54,7 @@
 #oobe.autolaunch #inner-container,
 #oobe.confirm-password #inner-container,
 #oobe.connect #inner-container,
+#oobe.debugging #inner-container,
 #oobe.enrollment #inner-container,
 #oobe.eula #inner-container,
 #oobe.fatal-error #inner-container,
@@ -135,6 +136,7 @@
 #autolaunch-dot,
 #confirm-password-dot,
 #controller-pairing-dot,
+#debugging-dot,
 #enrollment-dot,
 #error-message-dot,
 #fatal-error-dot,
@@ -165,6 +167,7 @@
   opacity: 1;
 }
 
+#oobe.debugging #progress-dots,
 #oobe.reset #progress-dots,
 #oobe.host-pairing #progress-dots,
 #oobe.controller-pairing #progress-dots {

@@ -36,10 +36,21 @@ login.createScreen('NetworkScreen', 'connect', function() {
 
       this.dropdown_ = $('networks-list');
       cr.ui.DropDown.decorate(this.dropdown_);
+
+      $('connect-debugging-features-link').addEventListener('click',
+        this.handleDeveloperFeaturesLinkClick_.bind(this));
+      $('connect-debugging-features-link').addEventListener('keyup',
+        function(event) {
+          if (event.keyCode == 32)
+            this.handleDeveloperFeaturesLinkClick_(event);
+        }
+      );
     },
 
     onBeforeShow: function(data) {
       cr.ui.DropDown.show('networks-list', true, -1);
+      this.classList.toggle('connect-debugging-view',
+        data && 'isDeveloperMode' in data && data['isDeveloperMode']);
     },
 
     onBeforeHide: function() {
@@ -81,6 +92,13 @@ login.createScreen('NetworkScreen', 'connect', function() {
      */
     get defaultControl() {
       return $('language-select');
+    },
+
+    /**
+     * Enable developer features link handler.
+     */
+    handleDeveloperFeaturesLinkClick_: function() {
+      chrome.send('toggleEnableDebuggingScreen');
     },
 
     /**

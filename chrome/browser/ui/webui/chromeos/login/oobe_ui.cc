@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/controller_pairing_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
@@ -156,6 +157,7 @@ const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 // static
 const char OobeUI::kScreenOobeHIDDetection[] = "hid-detection";
 const char OobeUI::kScreenOobeNetwork[] = "connect";
+const char OobeUI::kScreenOobeEnableDebugging[] = "debugging";
 const char OobeUI::kScreenOobeEula[] = "eula";
 const char OobeUI::kScreenOobeUpdate[] = "update";
 const char OobeUI::kScreenOobeEnrollment[] = "oauth-enrollment";
@@ -187,6 +189,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
       network_dropdown_handler_(NULL),
       update_screen_handler_(NULL),
       network_screen_actor_(NULL),
+      debugging_screen_actor_(NULL),
       eula_screen_actor_(NULL),
       hid_detection_screen_actor_(NULL),
       reset_screen_actor_(NULL),
@@ -230,6 +233,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     network_screen_actor_ = network_screen_handler;
     AddScreenHandler(network_screen_handler);
   }
+
+  EnableDebuggingScreenHandler* debugging_screen_handler =
+      new EnableDebuggingScreenHandler();
+  debugging_screen_actor_ = debugging_screen_handler;
+  AddScreenHandler(debugging_screen_handler);
 
   EulaScreenHandler* eula_screen_handler = new EulaScreenHandler(core_handler_);
   eula_screen_actor_ = eula_screen_handler;
@@ -376,6 +384,10 @@ EulaScreenActor* OobeUI::GetEulaScreenActor() {
   return eula_screen_actor_;
 }
 
+EnableDebuggingScreenActor* OobeUI::GetEnableDebuggingScreenActor() {
+  return debugging_screen_actor_;
+}
+
 EnrollmentScreenActor* OobeUI::GetEnrollmentScreenActor() {
   return enrollment_screen_actor_;
 }
@@ -476,6 +488,7 @@ void OobeUI::InitializeScreenMaps() {
   screen_names_[SCREEN_OOBE_EULA] = kScreenOobeEula;
   screen_names_[SCREEN_OOBE_UPDATE] = kScreenOobeUpdate;
   screen_names_[SCREEN_OOBE_ENROLLMENT] = kScreenOobeEnrollment;
+  screen_names_[SCREEN_OOBE_ENABLE_DEBUGGING] = kScreenOobeEnableDebugging;
   screen_names_[SCREEN_OOBE_RESET] = kScreenOobeReset;
   screen_names_[SCREEN_GAIA_SIGNIN] = kScreenGaiaSignin;
   screen_names_[SCREEN_ACCOUNT_PICKER] = kScreenAccountPicker;

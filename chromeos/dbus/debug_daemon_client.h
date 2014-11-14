@@ -145,6 +145,46 @@ class CHROMEOS_EXPORT DebugDaemonClient : public DBusClient {
       const std::map<std::string, std::string>& options,
       const TestICMPCallback& callback) = 0;
 
+  // Called once EnableDebuggingFeatures() is complete. |succeeded| will be true
+  // if debugging features have been successfully enabled.
+  typedef base::Callback<void(bool succeeded)> EnableDebuggingCallback;
+
+  // Enables debugging features (sshd, boot from USB). |password| is a new
+  // password for root user. Can be only called in dev mode.
+  virtual void EnableDebuggingFeatures(
+      const std::string& password,
+      const EnableDebuggingCallback& callback) = 0;
+
+  enum DebuggingFeature {
+    DEV_FEATURE_NONE                        = 0,
+    DEV_FEATURES_DISABLED                   = 1 << 0,
+    DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED = 1 << 1,
+    DEV_FEATURE_BOOT_FROM_USB_ENABLED       = 1 << 2,
+    DEV_FEATURE_SSH_SERVER_CONFIGURED       = 1 << 3,
+    DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET  = 1 << 4,
+    DEV_FEATURE_SYSTEM_ROOT_PASSWORD_SET    = 1 << 5,
+    DEV_FEATURE_ALL_ENABLED                 =
+        DEV_FEATURE_ROOTFS_VERIFICATION_REMOVED |
+        DEV_FEATURE_BOOT_FROM_USB_ENABLED |
+        DEV_FEATURE_SSH_SERVER_CONFIGURED |
+        DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET |
+        DEV_FEATURE_DEV_MODE_ROOT_PASSWORD_SET,
+  };
+
+  // Called once QueryDebuggingFeatures() is complete. |succeeded| will be true
+  // if debugging features have been successfully enabled. |feature_mask| is a
+  // bitmask made out of DebuggingFeature enum values.
+  typedef base::Callback<void(bool succeeded,
+                              int feature_mask)> QueryDevFeaturesCallback;
+  // Checks which debugging features have been already enabled.
+  virtual void QueryDebuggingFeatures(
+      const QueryDevFeaturesCallback& callback) = 0;
+
+  // Removes rootfs verification from the file system. Can be only called in
+  // dev mode.
+  virtual void RemoveRootfsVerification(
+      const EnableDebuggingCallback& callback) = 0;
+
   // Trigger uploading of crashes.
   virtual void UploadCrashes() = 0;
 

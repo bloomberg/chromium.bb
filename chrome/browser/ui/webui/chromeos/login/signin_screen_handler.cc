@@ -749,6 +749,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
+  AddCallback("toggleEnableDebuggingScreen",
+              &SigninScreenHandler::HandleToggleEnableDebuggingScreen);
   AddCallback("switchToEmbeddedSignin",
               &SigninScreenHandler::HandleSwitchToEmbeddedSignin);
   AddCallback("toggleKioskEnableScreen",
@@ -1193,6 +1195,11 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
     delegate_->ShowEnterpriseEnrollmentScreen();
 }
 
+void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {
+  if (delegate_)
+    delegate_->ShowEnableDebuggingScreen();
+}
+
 void SigninScreenHandler::HandleToggleKioskEnableScreen() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
@@ -1236,10 +1243,15 @@ void SigninScreenHandler::HandleAccountPickerReady() {
 
   PrefService* prefs = g_browser_process->local_state();
   if (prefs->GetBoolean(prefs::kFactoryResetRequested)) {
-    if (core_oobe_actor_) {
+    if (core_oobe_actor_)
       core_oobe_actor_->ShowDeviceResetScreen();
-      return;
-    }
+
+    return;
+  } else if (prefs->GetBoolean(prefs::kDebuggingFeaturesRequested)) {
+    if (core_oobe_actor_)
+      core_oobe_actor_->ShowEnableDebuggingScreen();
+
+    return;
   }
 
   is_account_picker_showing_first_time_ = true;

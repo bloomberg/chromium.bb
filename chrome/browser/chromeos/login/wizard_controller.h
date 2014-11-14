@@ -152,6 +152,7 @@ class WizardController : public BaseScreenDelegate,
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
+  static const char kEnableDebuggingScreenName[];
   static const char kEnrollmentScreenName[];
   static const char kResetScreenName[];
   static const char kKioskEnableScreenName[];
@@ -179,6 +180,7 @@ class WizardController : public BaseScreenDelegate,
   void ShowEnrollmentScreen();
   void ShowResetScreen();
   void ShowKioskAutolaunchScreen();
+  void ShowEnableDebuggingScreen();
   void ShowKioskEnableScreen();
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
@@ -211,7 +213,7 @@ class WizardController : public BaseScreenDelegate,
   void OnUserImageSkipped();
   void OnEnrollmentDone();
   void OnAutoEnrollmentDone();
-  void OnResetCanceled();
+  void OnDeviceModificationCanceled();
   void OnKioskAutolaunchCanceled();
   void OnKioskAutolaunchConfirmed();
   void OnKioskEnableCompleted();

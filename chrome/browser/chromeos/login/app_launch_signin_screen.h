@@ -63,6 +63,7 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   virtual void RemoveUser(const std::string& username) override;
   virtual void ResyncUserData() override;
   virtual void ShowEnterpriseEnrollmentScreen() override;
+  virtual void ShowEnableDebuggingScreen() override;
   virtual void ShowKioskEnableScreen() override;
   virtual void ShowKioskAutolaunchScreen() override;
   virtual void ShowWrongHWIDScreen() override;

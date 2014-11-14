@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_device_disabled_screen_actor.h"
+#include "chrome/browser/chromeos/login/screens/mock_enable_debugging_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_network_screen.h"
 #include "chrome/browser/chromeos/login/screens/mock_update_screen.h"
@@ -274,6 +275,12 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
       run_loop.Run();
   }
 
+  bool JSExecute(const std::string& expression) {
+    return content::ExecuteScript(
+        GetWebContents(),
+        "window.domAutomationController.send(!!(" + expression + "));");
+  }
+
   bool JSExecuteBooleanExpression(const std::string& expression) {
     bool result;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -432,6 +439,10 @@ class WizardControllerFlowTest : public WizardControllerTest {
          MockAutoEnrollmentCheckScreenActor);
     MOCK(mock_wrong_hwid_screen_, kWrongHWIDScreenName, MockWrongHWIDScreen,
          MockWrongHWIDScreenActor);
+    MOCK(mock_enable_debugging_screen_,
+         kEnableDebuggingScreenName,
+         MockEnableDebuggingScreen,
+         MockEnableDebuggingScreenActor);
     device_disabled_screen_actor_.reset(new MockDeviceDisabledScreenActor);
     wizard_controller->screens_[WizardController::kDeviceDisabledScreenName] =
         make_linked_ptr(new DeviceDisabledScreen(
@@ -517,6 +528,8 @@ class WizardControllerFlowTest : public WizardControllerTest {
       MockAutoEnrollmentCheckScreenActor>* mock_auto_enrollment_check_screen_;
   MockOutShowHide<MockWrongHWIDScreen, MockWrongHWIDScreenActor>*
       mock_wrong_hwid_screen_;
+  MockOutShowHide<MockEnableDebuggingScreen,
+      MockEnableDebuggingScreenActor>* mock_enable_debugging_screen_;
   scoped_ptr<MockDeviceDisabledScreenActor> device_disabled_screen_actor_;
 
  private:
@@ -1094,7 +1107,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
 }
 
-
 IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
                        ControlFlowEnrollmentBack) {
   EXPECT_CALL(*mock_enrollment_screen_->actor(),
@@ -1140,6 +1152,48 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
 
   CheckCurrentScreen(WizardController::kAutoEnrollmentCheckScreenName);
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+}
+
+
+class WizardControllerEnableDebuggingTest : public WizardControllerFlowTest {
+ protected:
+  WizardControllerEnableDebuggingTest() {}
+
+  // Overridden from InProcessBrowserTest:
+  virtual void SetUpCommandLine(CommandLine* command_line) override {
+    WizardControllerFlowTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(chromeos::switches::kSystemDevMode);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WizardControllerEnableDebuggingTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerEnableDebuggingTest,
+                       ShowAndCancelEnableDebugging) {
+  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
+  CheckCurrentScreen(WizardController::kNetworkScreenName);
+  WaitUntilJSIsReady();
+
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_enable_debugging_screen_, Show()).Times(1);
+
+  ASSERT_TRUE(JSExecute("$('connect-debugging-features-link').click()"));
+
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(WizardController::kEnableDebuggingScreenName);
+  EXPECT_CALL(*mock_enable_debugging_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+
+  OnExit(*mock_enable_debugging_screen_,
+         BaseScreenDelegate::ENABLE_DEBUGGING_CANCELED);
+
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  CheckCurrentScreen(WizardController::kNetworkScreenName);
 }
 
 class WizardControllerOobeResumeTest : public WizardControllerTest {
@@ -1218,7 +1272,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeResumeTest,
 // TODO(dzhioev): Add tests for controller/host pairing flow.
 // http://crbug.com/375191
 
-COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 23,
+COMPILE_ASSERT(BaseScreenDelegate::EXIT_CODES_COUNT == 25,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

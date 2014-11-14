@@ -241,6 +241,10 @@ const char kSmsTestMessages[] = "sms-test-messages";
 // This option is for testing the chromeos build of chrome on the desktop only.
 const char kStubCrosSettings[] = "stub-cros-settings";
 
+// Indicates that the system is running in dev mode. The dev mode probing is
+// done by session manager.
+const char kSystemDevMode[] = "system-developer-mode";
+
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 

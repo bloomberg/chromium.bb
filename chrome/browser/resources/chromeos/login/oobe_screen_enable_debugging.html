@@ -1,0 +1,54 @@
+<div class="step faded hidden no-logo" id="debugging" role="group" hidden
+     i18n-values="aria-label:enableDebuggingScreenAccessibleTitle">
+  <div class="step-contents">
+    <div id="enable-debugging-warning-msg"
+        i18n-content="enableDebuggingScreenTitle"
+        class="remove-protection-specific setup-specific
+               done-specific wait-specific">
+    </div>
+    <img id="enable-debugging-warning-icon"
+        src="chrome://theme/IDR_RESET_WARNING"
+        i18n-values="alt:enableDebuggingScreenIconTitle"/>
+    <div id="enable-debugging-info"
+        class="enable-debugging-text
+               remove-protection-specific setup-specific state-specific
+               error-specific done-specific">
+      <div id="enable-debugging-remove-protection-details"
+          i18n-content="enableDebuggingRemveRootfsMessage"
+          class="remove-protection-specific">
+      </div>
+      <div id="enable-debugging-setup-details"
+          i18n-content="enableDebuggingSetupMessage"
+          class="setup-specific">
+      </div>
+      <div id="enable-debugging-passwords" class="setup-specific">
+        <div class="enable-debugging-password-input">
+          <input id="enable-debugging-password"
+              class="enable-debugging-password-field" type="password"
+              size="20">
+          <input id="enable-debugging-password2"
+              class="enable-debugging-password-field" type="password"
+              size="20">
+        </div>
+        <div id="enable-debugging-password-note"
+            i18n-content="enableDebuggingPasswordLengthNote">
+        </div>
+      </div>
+      <div class="enable-debugging-completed-details done-specific"
+          i18n-content="enableDebuggingDoneMessage">
+      </div>
+      <div class="enable-debugging-error-details error-specific"
+          i18n-content="enableDebuggingErrorMessage">
+      </div>
+      <a id="enable-debugging-help-link" href="#" i18n-content="learnMore"></a>
+    </div>
+    <div id="revert-promise" class="wait-specific">
+      <div id="enable-debugging-wait-msg"
+          i18n-content="enableDebuggingWaitMessage">
+      </div>
+      <div id="enable-debugging-spinner" class="throbber">
+      </div>
+    </div>
+  </div>
+  <div id="debugging-controls" class="step-controls"></div>
+</div>

@@ -84,6 +84,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   virtual void SetKeyboardState(bool shown, const gfx::Rect& bounds) override;
   virtual void SetClientAreaSize(int width, int height) override;
   virtual void ShowDeviceResetScreen() override;
+  virtual void ShowEnableDebuggingScreen() override;
+
   virtual void InitDemoModeDetection() override;
   virtual void StopDemoModeDetection() override;
 
@@ -101,6 +103,8 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSkipToLoginForTesting(const base::ListValue* args);
   void HandleLaunchHelpApp(double help_topic_id);
   void HandleToggleResetScreen();
+  void HandleEnableDebuggingScreen();
+
   void HandleHeaderBarVisible();
 
   // Updates a11y menu state based on the current a11y features state(on/off).

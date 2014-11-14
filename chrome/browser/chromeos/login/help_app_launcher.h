@@ -38,6 +38,10 @@ class HelpAppLauncher : public base::RefCountedThreadSafe<HelpAppLauncher> {
     HELP_ENTERPRISE = 2535613,
     // Shown at reset screen as "Learn more" about powerwash/rollback options.
     HELP_POWERWASH = 183084,
+    // Shown at enable debugging screen as "Learn more" about developer options.
+    // TODO(zelidrag): http://crbug.com/431950, show the link once we
+    // create HC article.
+    HELP_ENABLE_DEBUGGING = -1,
   };
 
   // Parent window is used to show dialog.
