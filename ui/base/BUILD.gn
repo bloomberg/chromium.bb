@@ -895,6 +895,11 @@ test("ui_unittests") {
 
   if (is_chromeos) {
     sources += [
+      # TODO(pkotwicz): Move tests to their own target (crbug.com/432538) 
+      "../chromeos/ime/candidate_view_unittest.cc",
+      "../chromeos/ime/candidate_window_view_unittest.cc",
+      "../chromeos/ime/input_method_menu_item_unittest.cc",
+      "../chromeos/ime/input_method_menu_manager_unittest.cc",
       "../chromeos/network/network_state_notifier_unittest.cc",
       "../chromeos/touch_exploration_controller_unittest.cc",
     ]
@@ -910,6 +915,8 @@ test("ui_unittests") {
       "//ui/chromeos:ui_chromeos",
       "//ui/events:gesture_detection",
       "//ui/message_center:message_center",
+      "//ui/views",
+      "//ui/views:test_support",
     ]
   }
 }

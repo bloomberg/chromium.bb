@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
 
-#include "ash/ime/mode_indicator_view.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "ui/chromeos/ime/mode_indicator_view.h"
 
 namespace chromeos {
 namespace input_method {
@@ -108,7 +108,7 @@ void ModeIndicatorController::ShowModeIndicator() {
   aura::Window* parent =
       ash::Shell::GetContainer(ash::wm::GetActiveWindow()->GetRootWindow(),
                                ash::kShellWindowId_SettingBubbleContainer);
-  ash::ime::ModeIndicatorView* mi_view = new ash::ime::ModeIndicatorView(
+  ui::ime::ModeIndicatorView* mi_view = new ui::ime::ModeIndicatorView(
       parent, cursor_bounds_, short_name);
   views::BubbleDelegateView::CreateBubble(mi_view);
 

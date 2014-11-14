@@ -6,8 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -31,6 +29,8 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/mock_ime_engine_handler.h"
 #include "ui/base/ime/input_method_initializer.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace chromeos {
@@ -61,7 +61,7 @@ std::string ImeIdFromEngineId(const std::string& id) {
 }
 
 class TestObserver : public InputMethodManager::Observer,
-                     public ash::ime::InputMethodMenuManager::Observer {
+                     public ui::ime::InputMethodMenuManager::Observer {
  public:
   TestObserver()
       : input_method_changed_count_(0),
@@ -76,7 +76,7 @@ class TestObserver : public InputMethodManager::Observer,
     last_show_message_ = show_message;
   }
   virtual void InputMethodMenuItemChanged(
-      ash::ime::InputMethodMenuManager* manager) override {
+      ui::ime::InputMethodMenuManager* manager) override {
     ++input_method_menu_item_changed_count_;
   }
 
@@ -141,7 +141,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     IMEBridge::Initialize();
     IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
-    menu_manager_ = ash::ime::InputMethodMenuManager::GetInstance();
+    menu_manager_ = ui::ime::InputMethodMenuManager::GetInstance();
 
     InitImeList();
 
@@ -325,7 +325,7 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
   FakeImeKeyboard* keyboard_;
   MockComponentExtIMEManagerDelegate* mock_delegate_;
   std::vector<ComponentExtensionIME> ime_list_;
-  ash::ime::InputMethodMenuManager* menu_manager_;
+  ui::ime::InputMethodMenuManager* menu_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodManagerImplTest);
@@ -799,8 +799,8 @@ TEST_F(InputMethodManagerImplTest, TestXkbSetting) {
 
 TEST_F(InputMethodManagerImplTest, TestActivateInputMethodMenuItem) {
   const std::string kKey = "key";
-  ash::ime::InputMethodMenuItemList menu_list;
-  menu_list.push_back(ash::ime::InputMethodMenuItem(
+  ui::ime::InputMethodMenuItemList menu_list;
+  menu_list.push_back(ui::ime::InputMethodMenuItem(
       kKey, "label", false, false));
   menu_manager_->SetCurrentInputMethodMenuItemList(menu_list);
 
@@ -826,8 +826,8 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodProperties) {
   manager_->GetActiveIMEState()->ChangeInputMethod(
       ImeIdFromEngineId(kNaclMozcUsId), false /* show_message */);
 
-  ash::ime::InputMethodMenuItemList current_property_list;
-  current_property_list.push_back(ash::ime::InputMethodMenuItem(
+  ui::ime::InputMethodMenuItemList current_property_list;
+  current_property_list.push_back(ui::ime::InputMethodMenuItem(
       "key", "label", false, false));
   menu_manager_->SetCurrentInputMethodMenuItemList(current_property_list);
 
@@ -852,8 +852,8 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
   EXPECT_EQ(2U, manager_->GetActiveIMEState()->GetNumActiveInputMethods());
   EXPECT_TRUE(menu_manager_->GetCurrentInputMethodMenuItemList().empty());
 
-  ash::ime::InputMethodMenuItemList current_property_list;
-  current_property_list.push_back(ash::ime::InputMethodMenuItem("key-mozc",
+  ui::ime::InputMethodMenuItemList current_property_list;
+  current_property_list.push_back(ui::ime::InputMethodMenuItem("key-mozc",
                                                                 "label",
                                                                 false,
                                                                 false));
@@ -870,7 +870,7 @@ TEST_F(InputMethodManagerImplTest, TestGetCurrentInputMethodPropertiesTwoImes) {
 
   // Asynchronous property update signal from mozc-chewing.
   current_property_list.clear();
-  current_property_list.push_back(ash::ime::InputMethodMenuItem(
+  current_property_list.push_back(ui::ime::InputMethodMenuItem(
       "key-chewing", "label", false, false));
   menu_manager_->SetCurrentInputMethodMenuItemList(current_property_list);
   ASSERT_EQ(1U, menu_manager_->GetCurrentInputMethodMenuItemList().size());

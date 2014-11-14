@@ -11,6 +11,7 @@ include_rules = [
   "+ui/gfx",
   "+ui/gl",
   "+ui/message_center",
+  "+ui/native_theme",
   "+ui/views",
   "+ui/wm",
 ]

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/mode_indicator_view.h"
+#include "ui/chromeos/ime/mode_indicator_view.h"
 
 #include "base/logging.h"
 #include "ui/gfx/display.h"
@@ -13,7 +13,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/wm/core/window_animations.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 namespace {
@@ -92,4 +92,4 @@ views::NonClientFrameView* ModeIndicatorView::CreateNonClientFrameView(
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

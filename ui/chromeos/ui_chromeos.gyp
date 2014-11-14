@@ -23,7 +23,7 @@
         },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
-    },
+    },  # target_name: ui_chromeos_resources
     {
       'target_name': 'ui_chromeos_strings',
       'type': 'none',
@@ -40,12 +40,13 @@
         },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
-    },
+    },  # target_name: ui_chromeos_strings
     {
       'target_name': 'ui_chromeos',
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../chromeos/chromeos.gyp:power_manager_proto',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
@@ -62,6 +63,18 @@
       ],
       'sources': [
         'accessibility_types.h',
+        'ime/candidate_view.cc',
+        'ime/candidate_view.h',
+        'ime/candidate_window_view.cc',
+        'ime/candidate_window_view.h',
+        'ime/infolist_window.cc',
+        'ime/infolist_window.h',
+        'ime/input_method_menu_item.cc',
+        'ime/input_method_menu_item.h',
+        'ime/input_method_menu_manager.cc',
+        'ime/input_method_menu_manager.h',
+        'ime/mode_indicator_view.cc',
+        'ime/mode_indicator_view.h',
         'network/network_connect.cc',
         'network/network_connect.h',
         'network/network_icon.cc',
@@ -81,6 +94,6 @@
         'user_activity_power_manager_notifier.cc',
         'user_activity_power_manager_notifier.h',
       ],
-    },
+    },  # target_name: ui_chromeos
   ],
 }

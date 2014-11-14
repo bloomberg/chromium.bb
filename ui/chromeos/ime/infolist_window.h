@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_INFOLIST_WINDOW_H_
-#define ASH_IME_INFOLIST_WINDOW_H_
+#ifndef UI_CHROMEOS_IME_INFOLIST_WINDOW_H_
+#define UI_CHROMEOS_IME_INFOLIST_WINDOW_H_
 
 #include <string>
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/base/ime/infolist_entry.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 class InfolistEntryView;
 
 // A widget delegate representing the infolist window UI.
-class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
+class UI_CHROMEOS_EXPORT InfolistWindow : public views::BubbleDelegateView {
  public:
   InfolistWindow(views::View* candidate_window,
                  const std::vector<ui::InfolistEntry>& entries);
@@ -59,6 +59,6 @@ class ASH_EXPORT InfolistWindow : public views::BubbleDelegateView {
 };
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_INFOLIST_WINDOW_H_
+#endif  // UI_CHROMEOS_IME_INFOLIST_WINDOW_H_

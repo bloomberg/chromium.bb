@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/candidate_view.h"
+#include "ui/chromeos/ime/candidate_view.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,7 +14,7 @@
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 namespace {
 
@@ -179,4 +179,4 @@ TEST_F(CandidateViewTest, ClickAndMove) {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

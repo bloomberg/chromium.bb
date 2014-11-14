@@ -9,9 +9,6 @@
 #undef RootWindow
 #include <map>
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
-#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -28,6 +25,8 @@
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/keycodes/dom4/keycode_converter.h"
@@ -36,6 +35,10 @@
 
 #if defined(USE_ATHENA)
 #include "athena/screen/public/screen_manager.h"
+#endif
+
+#if defined(USE_ASH)
+#include "ash/shell.h"
 #endif
 
 namespace chromeos {
@@ -459,15 +462,15 @@ bool InputMethodEngine::UpdateMenuItems(
   if (!IsActive())
     return false;
 
-  ash::ime::InputMethodMenuItemList menu_item_list;
+  ui::ime::InputMethodMenuItemList menu_item_list;
   for (std::vector<MenuItem>::const_iterator item = items.begin();
        item != items.end(); ++item) {
-    ash::ime::InputMethodMenuItem property;
+    ui::ime::InputMethodMenuItem property;
     MenuItemToProperty(*item, &property);
     menu_item_list.push_back(property);
   }
 
-  ash::ime::InputMethodMenuManager::GetInstance()->
+  ui::ime::InputMethodMenuManager::GetInstance()->
       SetCurrentInputMethodMenuItemList(
           menu_item_list);
   return true;
@@ -662,7 +665,7 @@ void InputMethodEngine::SetSurroundingText(const std::string& text,
 // TODO(uekawa): rename this method to a more reasonable name.
 void InputMethodEngine::MenuItemToProperty(
     const MenuItem& item,
-    ash::ime::InputMethodMenuItem* property) {
+    ui::ime::InputMethodMenuItem* property) {
   property->key = item.id;
 
   if (item.modified & MENU_ITEM_MODIFIED_LABEL) {

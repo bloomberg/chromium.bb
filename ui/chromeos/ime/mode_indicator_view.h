@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_MODE_INDICATOR_VIEW_H_
-#define ASH_IME_MODE_INDICATOR_VIEW_H_
+#ifndef UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
+#define UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_
 
-#include "ash/ash_export.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -17,10 +17,10 @@ class Label;
 class Widget;
 }  // namespace views
 
-namespace ash {
+namespace ui {
 namespace ime {
 
-class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
+class UI_CHROMEOS_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
  public:
   ModeIndicatorView(gfx::NativeView parent,
                     const gfx::Rect& cursor_bounds,
@@ -50,6 +50,6 @@ class ASH_EXPORT ModeIndicatorView : public views::BubbleDelegateView {
 };
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_MODE_INDICATOR_VIEW_H_
+#endif  // UI_CHROMEOS_IME_MODE_INDICATOR_VIEW_H_

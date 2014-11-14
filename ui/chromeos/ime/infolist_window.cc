@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/infolist_window.h"
+#include "ui/chromeos/ime/infolist_window.h"
 
 #include <string>
 #include <vector>
 
-#include "ash/ime/candidate_window_constants.h"
 #include "base/logging.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/ime/candidate_window_constants.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -22,7 +22,7 @@
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 namespace {
@@ -187,7 +187,7 @@ InfolistWindow::InfolistWindow(views::View* candidate_window,
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
   views::Label* caption_label = new views::Label(
-      l10n_util::GetStringUTF16(IDS_ASH_IME_INFOLIST_WINDOW_TITLE));
+      l10n_util::GetStringUTF16(IDS_CHROMEOS_IME_INFOLIST_WINDOW_TITLE));
   caption_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   caption_label->SetEnabledColor(GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_LabelEnabledColor));
@@ -277,4 +277,4 @@ void InfolistWindow::WindowClosing() {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

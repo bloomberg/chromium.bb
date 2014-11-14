@@ -8,8 +8,6 @@
 
 #include <sstream>
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -38,6 +36,8 @@
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
@@ -982,9 +982,9 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
     // extension IMEs via InputMethodEngine::(Set|Update)MenuItems.
     // If the current input method is a keyboard layout, empty
     // properties are sufficient.
-    const ash::ime::InputMethodMenuItemList empty_menu_item_list;
-    ash::ime::InputMethodMenuManager* input_method_menu_manager =
-        ash::ime::InputMethodMenuManager::GetInstance();
+    const ui::ime::InputMethodMenuItemList empty_menu_item_list;
+    ui::ime::InputMethodMenuManager* input_method_menu_manager =
+        ui::ime::InputMethodMenuManager::GetInstance();
     input_method_menu_manager->SetCurrentInputMethodMenuItemList(
             empty_menu_item_list);
   }
@@ -1061,7 +1061,7 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
     const std::string& key) {
   DCHECK(!key.empty());
 
-  if (ash::ime::InputMethodMenuManager::GetInstance()->
+  if (ui::ime::InputMethodMenuManager::GetInstance()->
       HasInputMethodMenuItemForKey(key)) {
     IMEEngineHandlerInterface* engine =
         IMEBridge::Get()->GetCurrentEngineHandler();

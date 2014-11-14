@@ -18,13 +18,11 @@ class Profile;
 namespace ui {
 class CandidateWindow;
 class KeyEvent;
-}  // namespace ui
 
-namespace ash {
 namespace ime {
 struct InputMethodMenuItem;
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
 namespace chromeos {
 
@@ -97,7 +95,7 @@ class InputMethodEngine : public InputMethodEngineInterface {
  private:
   // Converts MenuItem to InputMethodMenuItem.
   void MenuItemToProperty(const MenuItem& item,
-                          ash::ime::InputMethodMenuItem* property);
+                          ui::ime::InputMethodMenuItem* property);
 
   // Enables overriding input view page to Virtual Keyboard window.
   void EnableInputView();

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_INPUT_METHOD_MENU_ITEM_H_
-#define ASH_IME_INPUT_METHOD_MENU_ITEM_H_
+#ifndef UI_CHROMEOS_IME_INPUT_METHOD_MENU_ITEM_H_
+#define UI_CHROMEOS_IME_INPUT_METHOD_MENU_ITEM_H_
 
 #include <string>
 #include <vector>
-#include "ash/ash_export.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 // A structure which represents a property for an input method engine.
-struct ASH_EXPORT InputMethodMenuItem {
+struct UI_CHROMEOS_EXPORT InputMethodMenuItem {
   InputMethodMenuItem(const std::string& in_key,
                       const std::string& in_label,
                       bool in_is_selection_item,
@@ -39,6 +39,6 @@ struct ASH_EXPORT InputMethodMenuItem {
 typedef std::vector<InputMethodMenuItem> InputMethodMenuItemList;
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_INPUT_METHOD_MENU_ITEM_H_
+#endif  // UI_CHROMEOS_IME_INPUT_METHOD_MENU_ITEM_H_

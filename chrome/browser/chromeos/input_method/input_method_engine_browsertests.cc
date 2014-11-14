@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "base/bind_helpers.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +19,8 @@
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 #include "ui/events/event.h"
 
 namespace chromeos {
@@ -881,8 +881,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     ASSERT_TRUE(content::ExecuteScript(
         host->host_contents(), set_menu_item_test_script));
 
-    const ash::ime::InputMethodMenuItemList& props =
-        ash::ime::InputMethodMenuManager::GetInstance()->
+    const ui::ime::InputMethodMenuItemList& props =
+        ui::ime::InputMethodMenuManager::GetInstance()->
         GetCurrentInputMethodMenuItemList();
     ASSERT_EQ(5U, props.size());
 

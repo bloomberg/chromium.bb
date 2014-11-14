@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/candidate_view.h"
-
-#include "ash/ime/candidate_window_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/ime/candidate_window.h"
+#include "ui/chromeos/ime/candidate_view.h"
+#include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -14,7 +13,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 namespace {
@@ -298,4 +297,4 @@ gfx::Size CandidateView::GetPreferredSize() const {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

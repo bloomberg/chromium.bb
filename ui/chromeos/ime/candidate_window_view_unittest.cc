@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/candidate_window_view.h"
+#include "ui/chromeos/ime/candidate_window_view.h"
 
 #include <string>
 
-#include "ash/ime/candidate_view.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/chromeos/ime/candidate_view.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 namespace {
@@ -385,4 +385,4 @@ TEST_F(CandidateWindowViewTest, DoNotChangeRowHeightWithLabelSwitchTest) {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

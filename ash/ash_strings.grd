@@ -383,10 +383,6 @@ Press Ctrl+Alt+Z to disable.
         Press Control Shift Q twice to quit.
       </message>
 
-      <message name="IDS_ASH_IME_INFOLIST_WINDOW_TITLE" desc="The title of the infolist window where the meanings and the usages of words are displayed.">
-        Information
-      </message>
-
       <message name="IDS_ASH_CONTROL_KEY" desc="Name of [Ctrl] key name. Shouldn't be translated in many languages actually. This name should be lower case.">
         ctrl
       </message>

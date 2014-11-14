@@ -7,12 +7,12 @@
 #include <string>
 #include <vector>
 
-#include "ash/ime/infolist_window.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/input_method/mode_indicator_controller.h"
+#include "ui/chromeos/ime/infolist_window.h"
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -46,7 +46,7 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
 
   aura::Window* active_window = ash::wm::GetActiveWindow();
   candidate_window_view_ =
-      new ash::ime::CandidateWindowView(ash::Shell::GetContainer(
+      new ui::ime::CandidateWindowView(ash::Shell::GetContainer(
           active_window ? active_window->GetRootWindow()
                         : ash::Shell::GetTargetRootWindow(),
           ash::kShellWindowId_SettingBubbleContainer));
@@ -143,7 +143,7 @@ void CandidateWindowControllerImpl::UpdateLookupTable(
   if (infolist_window_) {
     infolist_window_->Relayout(infolist_entries);
   } else {
-    infolist_window_ = new ash::ime::InfolistWindow(
+    infolist_window_ = new ui::ime::InfolistWindow(
         candidate_window_view_, infolist_entries);
     infolist_window_->InitWidget();
     infolist_window_->GetWidget()->AddObserver(this);

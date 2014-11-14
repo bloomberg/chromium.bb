@@ -5,6 +5,18 @@
 component("ui_chromeos") {
   sources = [
     "accessibility_types.h",
+    "ime/candidate_view.cc",
+    "ime/candidate_view.h",
+    "ime/candidate_window_view.cc",
+    "ime/candidate_window_view.h",
+    "ime/infolist_window.cc",
+    "ime/infolist_window.h",
+    "ime/input_method_menu_item.cc",
+    "ime/input_method_menu_item.h",
+    "ime/input_method_menu_manager.cc",
+    "ime/input_method_menu_manager.h",
+    "ime/mode_indicator_view.cc",
+    "ime/mode_indicator_view.h",
     "network/network_connect.cc",
     "network/network_connect.h",
     "network/network_icon.cc",
@@ -26,6 +38,7 @@ component("ui_chromeos") {
   ]
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
     "//chromeos:power_manager_proto",
     "//skia",
     "//ui/aura",

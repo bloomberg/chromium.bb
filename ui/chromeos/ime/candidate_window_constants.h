@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_
-#define ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_
+#ifndef UI_CHROMEOS_IME_CANDIDATE_WINDOW_CONSTANTS_H_
+#define UI_CHROMEOS_IME_CANDIDATE_WINDOW_CONSTANTS_H_
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 // We'll use a bigger font size, so Chinese characters are more readable
@@ -37,6 +37,6 @@ const int kInfolistIndicatorIconWidth = 4;
 const int kInfolistIndicatorIconPadding = 2;
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_CANDIDATE_WINDOW_CONSTANTS_H_
+#endif  // UI_CHROMEOS_IME_CANDIDATE_WINDOW_CONSTANTS_H_

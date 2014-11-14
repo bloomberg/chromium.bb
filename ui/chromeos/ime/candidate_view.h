@@ -5,18 +5,18 @@
 #ifndef ASH_IME_CANDIDATE_VIEW_H_
 #define ASH_IME_CANDIDATE_VIEW_H_
 
-#include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
 #include "ui/base/ime/candidate_window.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 // CandidateView renderes a row of a candidate.
-class ASH_EXPORT CandidateView : public views::CustomButton {
+class UI_CHROMEOS_EXPORT CandidateView : public views::CustomButton {
  public:
   CandidateView(views::ButtonListener* listener,
                 ui::CandidateWindow::Orientation orientation);
@@ -70,6 +70,6 @@ class ASH_EXPORT CandidateView : public views::CustomButton {
 };
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_CANDIDATE_VIEW_H_
+#endif  // UI_CHROMEOS_IME_CANDIDATE_VIEW_H_

@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/candidate_window_view.h"
+#include "ui/chromeos/ime/candidate_window_view.h"
 
 #include <string>
 
-#include "ash/ime/candidate_view.h"
-#include "ash/ime/candidate_window_constants.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/chromeos/ime/candidate_view.h"
+#include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/screen.h"
 #include "ui/native_theme/native_theme.h"
@@ -20,7 +20,7 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/wm/core/window_animations.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 namespace {
@@ -403,4 +403,4 @@ void CandidateWindowView::ButtonPressed(views::Button* sender,
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

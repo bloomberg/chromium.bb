@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
 
 #include <sstream>
 
 #include "base/logging.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 InputMethodMenuItem::InputMethodMenuItem(const std::string& in_key,
@@ -51,4 +51,4 @@ std::string InputMethodMenuItem::ToString() const {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

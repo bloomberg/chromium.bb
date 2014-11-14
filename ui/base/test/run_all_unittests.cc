@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gl/gl_surface.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -46,6 +47,13 @@ UIBaseTestSuite::UIBaseTestSuite(int argc, char** argv)
 
 void UIBaseTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+#if defined(OS_CHROMEOS)
+  // Needed for the tests in ui/chromeos.
+  // TODO(pkotwicz): Move the tests in ui/chromeos to their own test suite.
+  // (crbug.com/432538)
+  gfx::GLSurface::InitializeOneOffForTests();
+#endif
 
 #if defined(OS_WIN)
   gfx::InitDeviceScaleFactor(1.0);

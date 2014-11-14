@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_IME_CANDIDATE_WINDOW_VIEW_H_
-#define ASH_IME_CANDIDATE_WINDOW_VIEW_H_
+#ifndef UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
+#define UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_
 
-#include "ash/ash_export.h"
 #include "ui/base/ime/candidate_window.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 class CandidateView;
 class InformationTextArea;
 
 // CandidateWindowView is the main container of the candidate window UI.
-class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
+class UI_CHROMEOS_EXPORT CandidateWindowView : public views::BubbleDelegateView,
                                        public views::ButtonListener {
  public:
   // The object can be monitored by the observer.
@@ -128,6 +128,6 @@ class ASH_EXPORT CandidateWindowView : public views::BubbleDelegateView,
 };
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif  // ASH_IME_CANDIDATE_WINDOW_VIEW_H_
+#endif  // UI_CHROMEOS_IME_CANDIDATE_WINDOW_VIEW_H_

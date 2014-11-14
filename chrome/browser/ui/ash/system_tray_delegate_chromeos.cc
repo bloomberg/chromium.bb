@@ -11,8 +11,6 @@
 
 #include "ash/ash_switches.h"
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "ash/ime/input_method_menu_item.h"
-#include "ash/ime/input_method_menu_manager.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/session/session_state_delegate.h"
 #include "ash/session/session_state_observer.h"
@@ -112,6 +110,8 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 
 namespace chromeos {
 
@@ -233,7 +233,7 @@ void SystemTrayDelegateChromeOS::Initialize() {
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
 
   input_method::InputMethodManager::Get()->AddObserver(this);
-  ash::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
+  ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
   UpdateClockType();
 
   device::BluetoothAdapterFactory::GetAdapter(
@@ -299,7 +299,7 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
-  ash::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
+  ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
   bluetooth_adapter_->RemoveObserver(this);
   ash::Shell::GetInstance()
       ->session_state_delegate()
@@ -729,8 +729,8 @@ void SystemTrayDelegateChromeOS::GetAvailableIMEList(ash::IMEInfoList* list) {
 
 void SystemTrayDelegateChromeOS::GetCurrentIMEProperties(
     ash::IMEPropertyInfoList* list) {
-  ash::ime::InputMethodMenuItemList menu_list =
-      ash::ime::InputMethodMenuManager::GetInstance()->
+  ui::ime::InputMethodMenuItemList menu_list =
+      ui::ime::InputMethodMenuManager::GetInstance()->
       GetCurrentInputMethodMenuItemList();
   for (size_t i = 0; i < menu_list.size(); ++i) {
     ash::IMEPropertyInfo property;
@@ -1182,7 +1182,7 @@ void SystemTrayDelegateChromeOS::InputMethodChanged(
 
 // Overridden from InputMethodMenuManager::Observer.
 void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
-    ash::ime::InputMethodMenuManager* manager) {
+    ui::ime::InputMethodMenuManager* manager) {
   GetSystemTrayNotifier()->NotifyRefreshIME();
 }
 

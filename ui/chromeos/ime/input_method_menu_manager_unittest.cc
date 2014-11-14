@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_manager.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 TEST(InputMethodMenuManagerTest, TestGetSingleton) {
@@ -70,4 +70,4 @@ TEST_F(InputMethodMenuManagerStatefulTest, AddAndCheckExists) {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

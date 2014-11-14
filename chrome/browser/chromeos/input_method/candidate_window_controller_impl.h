@@ -7,21 +7,19 @@
 
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 
-#include "ash/ime/candidate_window_view.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/infolist_entry.h"
+#include "ui/chromeos/ime/candidate_window_view.h"
 #include "ui/views/widget/widget_observer.h"
-
-namespace ash {
-namespace ime {
-class InfolistWindow;
-}  // namespace ime
-}  // namespace ash
 
 namespace ui {
 class CandidateWindow;
+
+namespace ime {
+class InfolistWindow;
+}  // namespace ime
 }  // namespace ui
 
 namespace views {
@@ -38,7 +36,7 @@ class ModeIndicatorController;
 // CandidateWindowController controls the CandidateWindow.
 class CandidateWindowControllerImpl
     : public CandidateWindowController,
-      public ash::ime::CandidateWindowView::Observer,
+      public ui::ime::CandidateWindowView::Observer,
       public views::WidgetObserver,
       public IMECandidateWindowHandlerInterface {
  public:
@@ -59,7 +57,7 @@ class CandidateWindowControllerImpl
       bool* has_highlighted);
 
  private:
-  // ash::ime::CandidateWindowView::Observer implementation.
+  // ui::ime::CandidateWindowView::Observer implementation.
   virtual void OnCandidateCommitted(int index) override;
 
   // views::WidgetObserver implementation.
@@ -78,10 +76,10 @@ class CandidateWindowControllerImpl
   void InitCandidateWindowView();
 
   // The candidate window view.
-  ash::ime::CandidateWindowView* candidate_window_view_;
+  ui::ime::CandidateWindowView* candidate_window_view_;
 
   // This is the outer frame of the infolist window view. Owned by the widget.
-  ash::ime::InfolistWindow* infolist_window_;
+  ui::ime::InfolistWindow* infolist_window_;
 
   gfx::Rect cursor_bounds_;
   gfx::Rect composition_head_;

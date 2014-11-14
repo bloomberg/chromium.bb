@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_item.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
 
 #include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 TEST(InputMethodMenuItemTest, TestOperatorEqual) {
@@ -29,4 +29,4 @@ TEST(InputMethodMenuItemTest, TestOperatorEqual) {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui

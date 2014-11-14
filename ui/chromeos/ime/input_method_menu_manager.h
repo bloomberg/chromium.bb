@@ -2,20 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_export.h"
-
-#include "ash/ime/input_method_menu_item.h"
 #include "base/observer_list.h"
+#include "ui/chromeos/ime/input_method_menu_item.h"
+#include "ui/chromeos/ui_chromeos_export.h"
 
-#ifndef ASH_IME_INPUT_METHOD_MENU_MANAGER_H_
-#define ASH_IME_INPUT_METHOD_MENU_MANAGER_H_
+#ifndef UI_CHROMEOS_IME_INPUT_METHOD_MENU_MANAGER_H_
+#define UI_CHROMEOS_IME_INPUT_METHOD_MENU_MANAGER_H_
 
 template<typename Type> struct DefaultSingletonTraits;
 
-namespace ash {
+namespace ui {
 namespace ime {
 
-class ASH_EXPORT InputMethodMenuManager {
+class UI_CHROMEOS_EXPORT InputMethodMenuManager {
 public:
   class Observer {
    public:
@@ -60,6 +59,6 @@ public:
 };
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
 
-#endif // ASH_IME_INPUT_METHOD_MENU_MANAGER_H_
+#endif // UI_CHROMEOS_IME_INPUT_METHOD_MENU_MANAGER_H_

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ime/input_method_menu_manager.h"
+#include "ui/chromeos/ime/input_method_menu_manager.h"
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 
-namespace ash {
+namespace ui {
 namespace ime {
 
 InputMethodMenuManager::InputMethodMenuManager()
@@ -54,4 +54,4 @@ InputMethodMenuManager* InputMethodMenuManager::GetInstance() {
 }
 
 }  // namespace ime
-}  // namespace ash
+}  // namespace ui
