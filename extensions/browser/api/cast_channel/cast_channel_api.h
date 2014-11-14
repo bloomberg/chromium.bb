@@ -38,8 +38,7 @@ class Logger;
 
 namespace cast_channel = core_api::cast_channel;
 
-class CastChannelAPI : public BrowserContextKeyedAPI,
-                       public cast_channel::CastSocket::Delegate {
+class CastChannelAPI : public BrowserContextKeyedAPI {
  public:
   explicit CastChannelAPI(content::BrowserContext* context);
 
@@ -56,26 +55,22 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // reference of Logger to the CastSockets instead.
   scoped_refptr<cast_channel::Logger> GetLogger();
 
-  // Sets the CastSocket instance to be returned by CreateCastSocket for
-  // testing.
+  // Sets the CastSocket instance to be used for testing.
   void SetSocketForTest(scoped_ptr<cast_channel::CastSocket> socket_for_test);
 
   // Returns a test CastSocket instance, if it is defined.
   // Otherwise returns a scoped_ptr with a NULL ptr value.
   scoped_ptr<cast_channel::CastSocket> GetSocketForTest();
 
+  // Returns the API browser context.
+  content::BrowserContext* GetBrowserContext() const;
+
  private:
   friend class BrowserContextKeyedAPIFactory<CastChannelAPI>;
   friend class ::CastChannelAPITest;
+  friend class CastTransportDelegate;
 
   ~CastChannelAPI() override;
-
-  // CastSocket::Delegate.  Called on IO thread.
-  void OnError(const cast_channel::CastSocket* socket,
-               cast_channel::ChannelError error_state,
-               const cast_channel::LastErrors& last_errors) override;
-  void OnMessage(const cast_channel::CastSocket* socket,
-                 const cast_channel::MessageInfo& message) override;
 
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "CastChannelAPI"; }
@@ -121,7 +116,7 @@ class CastChannelAsyncApiFunction : public AsyncApiFunction {
 
   // Returns the socket corresponding to |channel_id| if one exists, or null
   // otherwise.
-  cast_channel::CastSocket* GetSocket(int channel_id);
+  cast_channel::CastSocket* GetSocket(int channel_id) const;
 
  private:
   // Sets the function result from |channel_info|.
@@ -146,6 +141,24 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
  private:
   DECLARE_EXTENSION_FUNCTION("cast.channel.open", CAST_CHANNEL_OPEN)
 
+  // Processes incoming cast message events and errors,
+  // and provides additional API and socket context for those events.
+  class CastMessageHandler : public cast_channel::CastTransport::Delegate {
+   public:
+    CastMessageHandler(CastChannelAPI* api, cast_channel::CastSocket* socket);
+    ~CastMessageHandler() override;
+
+    void OnError(cast_channel::ChannelError error_state,
+                 const cast_channel::LastErrors& last_errors) override;
+    void OnMessage(const cast_channel::CastMessage& message) override;
+
+   private:
+    CastChannelAPI* const api;
+    cast_channel::CastSocket* const socket;
+
+    DISALLOW_COPY_AND_ASSIGN(CastMessageHandler);
+  };
+
   // Parses the cast:// or casts:// |url|, fills |connect_info| with the
   // corresponding details, and returns true. Returns false if |url| is not a
   // valid Cast URL.
@@ -157,7 +170,7 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   static net::IPEndPoint* ParseConnectInfo(
       const cast_channel::ConnectInfo& connect_info);
 
-  void OnOpen(int result);
+  void OnOpen(cast_channel::ChannelError result);
 
   scoped_ptr<cast_channel::Open::Params> params_;
   // The id of the newly opened socket.

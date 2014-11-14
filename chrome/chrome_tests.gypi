@@ -38,6 +38,8 @@
       '../extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_apitest.cc',
       '../extensions/browser/api/bluetooth_socket/bluetooth_socket_apitest.cc',
       '../extensions/browser/api/cast_channel/cast_channel_apitest.cc',
+      '../extensions/browser/api/cast_channel/test_util.cc',
+      '../extensions/browser/api/cast_channel/test_util.h',
       '../extensions/browser/api/runtime/runtime_apitest.cc',
       '../extensions/browser/api/serial/serial_apitest.cc',
       '../extensions/browser/api/usb/usb_manual_apitest.cc',

@@ -16,23 +16,30 @@
 #include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/net_errors.h"
+#include "net/socket/socket.h"
 
-#define VLOG_WITH_CONNECTION(level)                       \
-  VLOG(level) << "[" << socket_->ip_endpoint().ToString() \
-              << ", auth=" << socket_->channel_auth() << "] "
+#define VLOG_WITH_CONNECTION(level)                                           \
+  VLOG(level) << "[" << ip_endpoint_.ToString() << ", auth=" << channel_auth_ \
+              << "] "
 
 namespace extensions {
 namespace core_api {
 namespace cast_channel {
 
-CastTransport::CastTransport(CastSocketInterface* socket,
-                             Delegate* read_delegate,
-                             scoped_refptr<Logger> logger)
+CastTransportImpl::CastTransportImpl(net::Socket* socket,
+                                     Delegate* read_delegate,
+                                     int channel_id,
+                                     const net::IPEndPoint& ip_endpoint,
+                                     ChannelAuthType channel_auth,
+                                     scoped_refptr<Logger> logger)
     : socket_(socket),
       read_delegate_(read_delegate),
       write_state_(WRITE_STATE_NONE),
       read_state_(READ_STATE_NONE),
       error_state_(CHANNEL_ERROR_NONE),
+      channel_id_(channel_id),
+      ip_endpoint_(ip_endpoint),
+      channel_auth_(channel_auth),
       logger_(logger) {
   DCHECK(socket);
   DCHECK(read_delegate);
@@ -44,24 +51,24 @@ CastTransport::CastTransport(CastSocketInterface* socket,
   framer_.reset(new MessageFramer(read_buffer_));
 }
 
-CastTransport::~CastTransport() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+CastTransportImpl::~CastTransportImpl() {
+  DCHECK(CalledOnValidThread());
   FlushWriteQueue();
 }
 
 // static
-proto::ReadState CastTransport::ReadStateToProto(
-    CastTransport::ReadState state) {
+proto::ReadState CastTransportImpl::ReadStateToProto(
+    CastTransportImpl::ReadState state) {
   switch (state) {
-    case CastTransport::READ_STATE_NONE:
+    case CastTransportImpl::READ_STATE_NONE:
       return proto::READ_STATE_NONE;
-    case CastTransport::READ_STATE_READ:
+    case CastTransportImpl::READ_STATE_READ:
       return proto::READ_STATE_READ;
-    case CastTransport::READ_STATE_READ_COMPLETE:
+    case CastTransportImpl::READ_STATE_READ_COMPLETE:
       return proto::READ_STATE_READ_COMPLETE;
-    case CastTransport::READ_STATE_DO_CALLBACK:
+    case CastTransportImpl::READ_STATE_DO_CALLBACK:
       return proto::READ_STATE_DO_CALLBACK;
-    case CastTransport::READ_STATE_ERROR:
+    case CastTransportImpl::READ_STATE_ERROR:
       return proto::READ_STATE_ERROR;
     default:
       NOTREACHED();
@@ -70,18 +77,18 @@ proto::ReadState CastTransport::ReadStateToProto(
 }
 
 // static
-proto::WriteState CastTransport::WriteStateToProto(
-    CastTransport::WriteState state) {
+proto::WriteState CastTransportImpl::WriteStateToProto(
+    CastTransportImpl::WriteState state) {
   switch (state) {
-    case CastTransport::WRITE_STATE_NONE:
+    case CastTransportImpl::WRITE_STATE_NONE:
       return proto::WRITE_STATE_NONE;
-    case CastTransport::WRITE_STATE_WRITE:
+    case CastTransportImpl::WRITE_STATE_WRITE:
       return proto::WRITE_STATE_WRITE;
-    case CastTransport::WRITE_STATE_WRITE_COMPLETE:
+    case CastTransportImpl::WRITE_STATE_WRITE_COMPLETE:
       return proto::WRITE_STATE_WRITE_COMPLETE;
-    case CastTransport::WRITE_STATE_DO_CALLBACK:
+    case CastTransportImpl::WRITE_STATE_DO_CALLBACK:
       return proto::WRITE_STATE_DO_CALLBACK;
-    case CastTransport::WRITE_STATE_ERROR:
+    case CastTransportImpl::WRITE_STATE_ERROR:
       return proto::WRITE_STATE_ERROR;
     default:
       NOTREACHED();
@@ -90,7 +97,7 @@ proto::WriteState CastTransport::WriteStateToProto(
 }
 
 // static
-proto::ErrorState CastTransport::ErrorStateToProto(ChannelError state) {
+proto::ErrorState CastTransportImpl::ErrorStateToProto(ChannelError state) {
   switch (state) {
     case CHANNEL_ERROR_NONE:
       return proto::CHANNEL_ERROR_NONE;
@@ -118,7 +125,12 @@ proto::ErrorState CastTransport::ErrorStateToProto(ChannelError state) {
   }
 }
 
-void CastTransport::FlushWriteQueue() {
+void CastTransportImpl::SetReadDelegate(Delegate* read_delegate) {
+  DCHECK(read_delegate);
+  read_delegate_ = read_delegate;
+}
+
+void CastTransportImpl::FlushWriteQueue() {
   for (; !write_queue_.empty(); write_queue_.pop()) {
     net::CompletionCallback& callback = write_queue_.front().callback;
     callback.Run(net::ERR_FAILED);
@@ -126,13 +138,12 @@ void CastTransport::FlushWriteQueue() {
   }
 }
 
-void CastTransport::SendMessage(const CastMessage& message,
-                                const net::CompletionCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void CastTransportImpl::SendMessage(const CastMessage& message,
+                                    const net::CompletionCallback& callback) {
+  DCHECK(CalledOnValidThread());
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
-    logger_->LogSocketEventForMessage(socket_->id(),
-                                      proto::SEND_MESSAGE_FAILED,
+    logger_->LogSocketEventForMessage(channel_id_, proto::SEND_MESSAGE_FAILED,
                                       message.namespace_(),
                                       "Error when serializing message.");
     callback.Run(net::ERR_FAILED);
@@ -143,9 +154,7 @@ void CastTransport::SendMessage(const CastMessage& message,
 
   write_queue_.push(write_request);
   logger_->LogSocketEventForMessage(
-      socket_->id(),
-      proto::MESSAGE_ENQUEUED,
-      message.namespace_(),
+      channel_id_, proto::MESSAGE_ENQUEUED, message.namespace_(),
       base::StringPrintf("Queue size: %" PRIuS, write_queue_.size()));
   if (write_state_ == WRITE_STATE_NONE) {
     SetWriteState(WRITE_STATE_WRITE);
@@ -153,7 +162,7 @@ void CastTransport::SendMessage(const CastMessage& message,
   }
 }
 
-CastTransport::WriteRequest::WriteRequest(
+CastTransportImpl::WriteRequest::WriteRequest(
     const std::string& namespace_,
     const std::string& payload,
     const net::CompletionCallback& callback)
@@ -163,37 +172,30 @@ CastTransport::WriteRequest::WriteRequest(
                                          payload.size());
 }
 
-CastTransport::WriteRequest::~WriteRequest() {
+CastTransportImpl::WriteRequest::~WriteRequest() {
 }
 
-void CastTransport::SetReadState(ReadState read_state) {
+void CastTransportImpl::SetReadState(ReadState read_state) {
   if (read_state_ != read_state) {
     read_state_ = read_state;
-    logger_->LogSocketReadState(socket_->id(), ReadStateToProto(read_state_));
+    logger_->LogSocketReadState(channel_id_, ReadStateToProto(read_state_));
   }
 }
 
-void CastTransport::SetWriteState(WriteState write_state) {
+void CastTransportImpl::SetWriteState(WriteState write_state) {
   if (write_state_ != write_state) {
     write_state_ = write_state;
-    logger_->LogSocketWriteState(socket_->id(),
-                                 WriteStateToProto(write_state_));
+    logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
   }
 }
 
-void CastTransport::SetErrorState(ChannelError error_state) {
-  if (error_state_ != error_state) {
-    error_state_ = error_state;
-    logger_->LogSocketErrorState(socket_->id(),
-                                 ErrorStateToProto(error_state_));
-  }
+void CastTransportImpl::SetErrorState(ChannelError error_state) {
+  VLOG_WITH_CONNECTION(2) << "SetErrorState: " << error_state;
+  error_state_ = error_state;
 }
 
-void CastTransport::OnWriteResult(int result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  VLOG_WITH_CONNECTION(1) << "OnWriteResult queue size: "
-                          << write_queue_.size();
-
+void CastTransportImpl::OnWriteResult(int result) {
+  DCHECK(CalledOnValidThread());
   if (write_queue_.empty()) {
     SetWriteState(WRITE_STATE_NONE);
     return;
@@ -205,6 +207,10 @@ void CastTransport::OnWriteResult(int result) {
   // synchronously.
   int rv = result;
   do {
+    VLOG_WITH_CONNECTION(2) << "OnWriteResult (state=" << write_state_ << ", "
+                            << "result=" << rv << ", "
+                            << "queue size=" << write_queue_.size() << ")";
+
     WriteState state = write_state_;
     write_state_ = WRITE_STATE_NONE;
     switch (state) {
@@ -227,11 +233,10 @@ void CastTransport::OnWriteResult(int result) {
   } while (!write_queue_.empty() && rv != net::ERR_IO_PENDING &&
            write_state_ != WRITE_STATE_NONE);
 
-  // No state change occurred in do-while loop above. This means state has
-  // transitioned to NONE.
+  // No state change occurred in the switch case above. This means the
+  // write operation has completed.
   if (write_state_ == WRITE_STATE_NONE) {
-    logger_->LogSocketWriteState(socket_->id(),
-                                 WriteStateToProto(write_state_));
+    logger_->LogSocketWriteState(channel_id_, WriteStateToProto(write_state_));
   }
 
   // If write loop is done because the queue is empty then set write
@@ -240,15 +245,15 @@ void CastTransport::OnWriteResult(int result) {
     SetWriteState(WRITE_STATE_NONE);
   }
 
-  // Write loop is done - if the result is ERR_FAILED then close with error.
+  // Write loop is done - flush the remaining write operations if an error
+  // was encountered.
   if (rv == net::ERR_FAILED) {
     DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
-    socket_->CloseWithError(error_state_);
     FlushWriteQueue();
   }
 }
 
-int CastTransport::DoWrite() {
+int CastTransportImpl::DoWrite() {
   DCHECK(!write_queue_.empty());
   WriteRequest& request = write_queue_.front();
 
@@ -259,19 +264,17 @@ int CastTransport::DoWrite() {
   SetWriteState(WRITE_STATE_WRITE_COMPLETE);
 
   int rv = socket_->Write(
-      request.io_buffer.get(),
-      request.io_buffer->BytesRemaining(),
-      base::Bind(&CastTransport::OnWriteResult, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(socket_->id(), proto::SOCKET_WRITE, rv);
-
+      request.io_buffer.get(), request.io_buffer->BytesRemaining(),
+      base::Bind(&CastTransportImpl::OnWriteResult, base::Unretained(this)));
+  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, rv);
   return rv;
 }
 
-int CastTransport::DoWriteComplete(int result) {
+int CastTransportImpl::DoWriteComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoWriteComplete result=" << result;
   DCHECK(!write_queue_.empty());
   if (result <= 0) {  // NOTE that 0 also indicates an error
-    SetErrorState(CHANNEL_ERROR_TRANSPORT_ERROR);
+    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     SetWriteState(WRITE_STATE_ERROR);
     return result == 0 ? net::ERR_FAILED : result;
   }
@@ -289,7 +292,7 @@ int CastTransport::DoWriteComplete(int result) {
   return net::OK;
 }
 
-int CastTransport::DoWriteCallback() {
+int CastTransportImpl::DoWriteCallback() {
   VLOG_WITH_CONNECTION(2) << "DoWriteCallback";
   DCHECK(!write_queue_.empty());
 
@@ -298,39 +301,39 @@ int CastTransport::DoWriteCallback() {
   WriteRequest& request = write_queue_.front();
   int bytes_consumed = request.io_buffer->BytesConsumed();
   logger_->LogSocketEventForMessage(
-      socket_->id(),
-      proto::MESSAGE_WRITTEN,
-      request.message_namespace,
+      channel_id_, proto::MESSAGE_WRITTEN, request.message_namespace,
       base::StringPrintf("Bytes: %d", bytes_consumed));
   request.callback.Run(net::OK);
   write_queue_.pop();
   return net::OK;
 }
 
-int CastTransport::DoWriteError(int result) {
+int CastTransportImpl::DoWriteError(int result) {
   VLOG_WITH_CONNECTION(2) << "DoWriteError result=" << result;
   DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
   DCHECK_LT(result, 0);
   return net::ERR_FAILED;
 }
 
-void CastTransport::StartReadLoop() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  // Read loop would have already been started if read state is not NONE
+void CastTransportImpl::StartReading() {
+  DCHECK(CalledOnValidThread());
   if (read_state_ == READ_STATE_NONE) {
+    // Initialize and run the read state machine.
     SetReadState(READ_STATE_READ);
     OnReadResult(net::OK);
   }
 }
 
-void CastTransport::OnReadResult(int result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+void CastTransportImpl::OnReadResult(int result) {
+  DCHECK(CalledOnValidThread());
   // Network operations can either finish synchronously or asynchronously.
   // This method executes the state machine transitions in a loop so that
   // write state transitions happen even when network operations finish
   // synchronously.
   int rv = result;
   do {
+    VLOG_WITH_CONNECTION(2) << "OnReadResult(state=" << read_state_
+                            << ", result=" << rv << ")";
     ReadState state = read_state_;
     read_state_ = READ_STATE_NONE;
 
@@ -357,57 +360,52 @@ void CastTransport::OnReadResult(int result) {
   // No state change occurred in do-while loop above. This means state has
   // transitioned to NONE.
   if (read_state_ == READ_STATE_NONE) {
-    logger_->LogSocketReadState(socket_->id(), ReadStateToProto(read_state_));
+    logger_->LogSocketReadState(channel_id_, ReadStateToProto(read_state_));
   }
 
   if (rv == net::ERR_FAILED) {
+    VLOG_WITH_CONNECTION(2) << "Sending OnError().";
     DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
-    socket_->CloseWithError(error_state_);
-    FlushWriteQueue();
-    read_delegate_->OnError(
-        socket_, error_state_, logger_->GetLastErrors(socket_->id()));
+    read_delegate_->OnError(error_state_, logger_->GetLastErrors(channel_id_));
   }
 }
 
-int CastTransport::DoRead() {
+int CastTransportImpl::DoRead() {
   VLOG_WITH_CONNECTION(2) << "DoRead";
   SetReadState(READ_STATE_READ_COMPLETE);
 
   // Determine how many bytes need to be read.
   size_t num_bytes_to_read = framer_->BytesRequested();
+  DCHECK_GT(num_bytes_to_read, 0u);
 
   // Read up to num_bytes_to_read into |current_read_buffer_|.
-  int rv = socket_->Read(
-      read_buffer_.get(),
-      base::checked_cast<uint32>(num_bytes_to_read),
-      base::Bind(&CastTransport::OnReadResult, base::Unretained(this)));
-
-  return rv;
+  return socket_->Read(
+      read_buffer_.get(), base::checked_cast<uint32>(num_bytes_to_read),
+      base::Bind(&CastTransportImpl::OnReadResult, base::Unretained(this)));
 }
 
-int CastTransport::DoReadComplete(int result) {
+int CastTransportImpl::DoReadComplete(int result) {
   VLOG_WITH_CONNECTION(2) << "DoReadComplete result = " << result;
 
   if (result <= 0) {
-    SetErrorState(CHANNEL_ERROR_TRANSPORT_ERROR);
+    VLOG_WITH_CONNECTION(1) << "Read error, peer closed the socket.";
+    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     SetReadState(READ_STATE_ERROR);
     return result == 0 ? net::ERR_FAILED : result;
   }
 
   size_t message_size;
   DCHECK(current_message_.get() == NULL);
-  current_message_ = framer_->Ingest(result, &message_size, &error_state_);
-  if (current_message_.get()) {
-    DCHECK_EQ(error_state_, CHANNEL_ERROR_NONE);
+  ChannelError framing_error;
+  current_message_ = framer_->Ingest(result, &message_size, &framing_error);
+  if (current_message_.get() && (framing_error == CHANNEL_ERROR_NONE)) {
     DCHECK_GT(message_size, static_cast<size_t>(0));
     logger_->LogSocketEventForMessage(
-        socket_->id(),
-        proto::MESSAGE_READ,
-        current_message_->namespace_(),
+        channel_id_, proto::MESSAGE_READ, current_message_->namespace_(),
         base::StringPrintf("Message size: %u",
                            static_cast<uint32>(message_size)));
     SetReadState(READ_STATE_DO_CALLBACK);
-  } else if (error_state_ != CHANNEL_ERROR_NONE) {
+  } else if (framing_error != CHANNEL_ERROR_NONE) {
     DCHECK(current_message_.get() == NULL);
     SetErrorState(CHANNEL_ERROR_INVALID_MESSAGE);
     SetReadState(READ_STATE_ERROR);
@@ -418,24 +416,24 @@ int CastTransport::DoReadComplete(int result) {
   return net::OK;
 }
 
-int CastTransport::DoReadCallback() {
+int CastTransportImpl::DoReadCallback() {
   VLOG_WITH_CONNECTION(2) << "DoReadCallback";
-  SetReadState(READ_STATE_READ);
   if (!IsCastMessageValid(*current_message_)) {
     SetReadState(READ_STATE_ERROR);
     SetErrorState(CHANNEL_ERROR_INVALID_MESSAGE);
     return net::ERR_INVALID_RESPONSE;
   }
-  logger_->LogSocketEventForMessage(socket_->id(),
-                                    proto::NOTIFY_ON_MESSAGE,
+  SetReadState(READ_STATE_READ);
+  logger_->LogSocketEventForMessage(channel_id_, proto::NOTIFY_ON_MESSAGE,
                                     current_message_->namespace_(),
                                     std::string());
-  read_delegate_->OnMessage(socket_, *current_message_);
+
+  read_delegate_->OnMessage(*current_message_);
   current_message_.reset();
   return net::OK;
 }
 
-int CastTransport::DoReadError(int result) {
+int CastTransportImpl::DoReadError(int result) {
   VLOG_WITH_CONNECTION(2) << "DoReadError";
   DCHECK_NE(CHANNEL_ERROR_NONE, error_state_);
   DCHECK_LE(result, 0);

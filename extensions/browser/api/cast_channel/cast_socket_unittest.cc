@@ -15,7 +15,9 @@
 #include "base/timer/mock_timer.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_transport.h"
 #include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/browser/api/cast_channel/test_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/capturing_net_log.h"
@@ -33,56 +35,63 @@ const int64 kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 using ::testing::_;
 using ::testing::A;
 using ::testing::DoAll;
+using ::testing::Invoke;
+using ::testing::InvokeArgument;
+using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
-
-namespace {
-const char* kTestData[4] = {
-    "Hello, World!",
-    "Goodbye, World!",
-    "Hello, Sky!",
-    "Goodbye, Volcano!",
-};
-}  // namespace
 
 namespace extensions {
 namespace core_api {
 namespace cast_channel {
+const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 
-// Fills in |message| with a string message.
-static void CreateStringMessage(const std::string& namespace_,
-                                const std::string& source_id,
-                                const std::string& destination_id,
-                                const std::string& data,
-                                MessageInfo* message) {
-  message->namespace_ = namespace_;
-  message->source_id = source_id;
-  message->destination_id = destination_id;
-  message->data.reset(new base::StringValue(data));
+// Checks if two proto messages are the same.
+// From
+// third_party/cacheinvalidation/overrides/google/cacheinvalidation/deps/gmock.h
+// TODO(kmarshall): promote to a shared testing library.
+MATCHER_P(EqualsProto, message, "") {
+  std::string expected_serialized, actual_serialized;
+  message.SerializeToString(&expected_serialized);
+  arg.SerializeToString(&actual_serialized);
+  return expected_serialized == actual_serialized;
 }
 
-// Fills in |message| with a binary message.
-static void CreateBinaryMessage(const std::string& namespace_,
-                                const std::string& source_id,
-                                const std::string& destination_id,
-                                const std::string& data,
-                                MessageInfo* message) {
-  message->namespace_ = namespace_;
-  message->source_id = source_id;
-  message->destination_id = destination_id;
-  message->data.reset(base::BinaryValue::CreateWithCopiedBuffer(
-      data.c_str(), data.size()));
+ACTION_TEMPLATE(RunCompletionCallback,
+                HAS_1_TEMPLATE_PARAMS(int, cb_idx),
+                AND_1_VALUE_PARAMS(rv)) {
+  testing::get<cb_idx>(args).Run(rv);
 }
 
-class MockCastSocketDelegate : public CastSocket::Delegate {
- public:
-  MOCK_METHOD3(OnError,
-               void(const CastSocket* socket,
-                    ChannelError error,
-                    const LastErrors& last_errors));
-  MOCK_METHOD2(OnMessage,
-               void(const CastSocket* socket, const MessageInfo& message));
-};
+// Returns an auth challenge message inline.
+CastMessage CreateAuthChallenge() {
+  CastMessage output;
+  CreateAuthChallengeMessage(&output);
+  return output;
+}
+
+// Returns an auth challenge response message inline.
+CastMessage CreateAuthReply() {
+  CastMessage output;
+  output.set_protocol_version(CastMessage::CASTV2_1_0);
+  output.set_source_id("sender-0");
+  output.set_destination_id("receiver-0");
+  output.set_payload_type(CastMessage::BINARY);
+  output.set_payload_binary("abcd");
+  output.set_namespace_(kAuthNamespace);
+  return output;
+}
+
+CastMessage CreateTestMessage() {
+  CastMessage test_message;
+  test_message.set_protocol_version(CastMessage::CASTV2_1_0);
+  test_message.set_namespace_("ns");
+  test_message.set_source_id("source");
+  test_message.set_destination_id("dest");
+  test_message.set_payload_type(CastMessage::STRING);
+  test_message.set_payload_utf8("payload");
+  return test_message;
+}
 
 class MockTCPSocket : public net::TCPClientSocket {
  public:
@@ -97,7 +106,7 @@ class MockTCPSocket : public net::TCPClientSocket {
     do_nothing_ = do_nothing;
   }
 
-  virtual int Connect(const net::CompletionCallback& callback) override {
+  virtual int Connect(const net::CompletionCallback& callback) {
     if (do_nothing_) {
       // Stall the I/O event loop.
       return net::ERR_IO_PENDING;
@@ -114,12 +123,12 @@ class MockTCPSocket : public net::TCPClientSocket {
     }
   }
 
-  virtual bool SetKeepAlive(bool enable, int delay) override {
+  virtual bool SetKeepAlive(bool enable, int delay) {
     // Always return true in tests
     return true;
   }
 
-  virtual bool SetNoDelay(bool no_delay) override {
+  virtual bool SetNoDelay(bool no_delay) {
     // Always return true in tests
     return true;
   }
@@ -129,150 +138,122 @@ class MockTCPSocket : public net::TCPClientSocket {
   MOCK_METHOD3(Write,
                int(net::IOBuffer*, int, const net::CompletionCallback&));
 
-  virtual void Disconnect() override {
+  virtual void Disconnect() {
     // Do nothing in tests
   }
 
  private:
   net::MockConnect connect_data_;
   bool do_nothing_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTCPSocket);
+};
+
+class MockDelegate : public CastTransport::Delegate {
+ public:
+  MockDelegate() {}
+  virtual ~MockDelegate() {}
+  MOCK_METHOD2(OnError,
+               void(ChannelError error_state, const LastErrors& last_errors));
+  MOCK_METHOD1(OnMessage, void(const CastMessage& message));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 class CompleteHandler {
  public:
   CompleteHandler() {}
   MOCK_METHOD1(OnCloseComplete, void(int result));
-  MOCK_METHOD1(OnConnectComplete, void(int result));
+  MOCK_METHOD1(OnConnectComplete, void(ChannelError error_state));
   MOCK_METHOD1(OnWriteComplete, void(int result));
+  MOCK_METHOD1(OnReadComplete, void(int result));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
 
-class TestCastSocket : public CastSocket {
+class TestCastSocket : public CastSocketImpl {
  public:
-  static scoped_ptr<TestCastSocket> Create(MockCastSocketDelegate* delegate,
-                                           Logger* logger) {
-    return scoped_ptr<TestCastSocket>(new TestCastSocket(delegate,
-                                                         CreateIPEndPoint(),
-                                                         CHANNEL_AUTH_TYPE_SSL,
-                                                         kDistantTimeoutMillis,
-                                                         logger));
-  }
-
-  static scoped_ptr<TestCastSocket> CreateSecure(
-      MockCastSocketDelegate* delegate,
-      Logger* logger) {
+  static scoped_ptr<TestCastSocket> Create(Logger* logger) {
     return scoped_ptr<TestCastSocket>(
-        new TestCastSocket(delegate,
-                           CreateIPEndPoint(),
-                           CHANNEL_AUTH_TYPE_SSL_VERIFIED,
-                           kDistantTimeoutMillis,
-                           logger));
+        new TestCastSocket(CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL,
+                           kDistantTimeoutMillis, logger));
   }
 
-  explicit TestCastSocket(MockCastSocketDelegate* delegate,
-                          const net::IPEndPoint& ip_endpoint,
+  static scoped_ptr<TestCastSocket> CreateSecure(Logger* logger) {
+    return scoped_ptr<TestCastSocket>(new TestCastSocket(
+        CreateIPEndPointForTest(), CHANNEL_AUTH_TYPE_SSL_VERIFIED,
+        kDistantTimeoutMillis, logger));
+  }
+
+  explicit TestCastSocket(const net::IPEndPoint& ip_endpoint,
                           ChannelAuthType channel_auth,
                           int64 timeout_ms,
                           Logger* logger)
-      : CastSocket("abcdefg",
-                   ip_endpoint,
-                   channel_auth,
-                   delegate,
-                   &capturing_net_log_,
-                   base::TimeDelta::FromMilliseconds(timeout_ms),
-                   logger),
+      : CastSocketImpl("some_extension_id",
+                       ip_endpoint,
+                       channel_auth,
+                       &capturing_net_log_,
+                       base::TimeDelta::FromMilliseconds(timeout_ms),
+                       logger),
         ip_(ip_endpoint),
         connect_index_(0),
         extract_cert_result_(true),
         verify_challenge_result_(true),
         verify_challenge_disallow_(false),
         tcp_unresponsive_(false),
-        mock_timer_(new base::MockTimer(false, false)) {}
-
-  static net::IPEndPoint CreateIPEndPoint() {
-    net::IPAddressNumber number;
-    number.push_back(192);
-    number.push_back(0);
-    number.push_back(0);
-    number.push_back(1);
-    return net::IPEndPoint(number, 8009);
-  }
-
-  // Returns the size of the body (in bytes) of the given serialized message.
-  static size_t ComputeBodySize(const std::string& msg) {
-    return msg.length() - MessageFramer::MessageHeader::header_size();
-  }
+        mock_timer_(new base::MockTimer(false, false)),
+        mock_transport_(NULL) {}
 
   ~TestCastSocket() override {}
 
-  // Helpers to set mock results for various operations.
+  void SetupMockTransport() {
+    mock_transport_ = new MockCastTransport;
+    SetTransportForTesting(make_scoped_ptr(mock_transport_));
+  }
+
+  // Socket connection helpers.
   void SetupTcp1Connect(net::IoMode mode, int result) {
     tcp_connect_data_[0].reset(new net::MockConnect(mode, result));
-  }
-  void SetupSsl1Connect(net::IoMode mode, int result) {
-    ssl_connect_data_[0].reset(new net::MockConnect(mode, result));
   }
   void SetupTcp2Connect(net::IoMode mode, int result) {
     tcp_connect_data_[1].reset(new net::MockConnect(mode, result));
   }
+  void SetupSsl1Connect(net::IoMode mode, int result) {
+    ssl_connect_data_[0].reset(new net::MockConnect(mode, result));
+  }
   void SetupSsl2Connect(net::IoMode mode, int result) {
     ssl_connect_data_[1].reset(new net::MockConnect(mode, result));
   }
-  void SetupTcp1ConnectUnresponsive() {
-    tcp_unresponsive_ = true;
-  }
+
+  // Socket I/O helpers.
   void AddWriteResult(const net::MockWrite& write) {
     writes_.push_back(write);
   }
   void AddWriteResult(net::IoMode mode, int result) {
     AddWriteResult(net::MockWrite(mode, result));
   }
-  void AddWriteResultForMessage(net::IoMode mode, const std::string& msg) {
+  void AddWriteResultForData(net::IoMode mode, const std::string& msg) {
     AddWriteResult(mode, msg.size());
   }
-  void AddWriteResultForMessage(net::IoMode mode,
-                                const std::string& msg,
-                                size_t ch_size) {
-    size_t msg_size = msg.size();
-    for (size_t offset = 0; offset < msg_size; offset += ch_size) {
-      if (offset + ch_size > msg_size)
-        ch_size = msg_size - offset;
-      AddWriteResult(mode, ch_size);
-    }
-  }
-
   void AddReadResult(const net::MockRead& read) {
     reads_.push_back(read);
   }
   void AddReadResult(net::IoMode mode, int result) {
     AddReadResult(net::MockRead(mode, result));
   }
-  void AddReadResult(net::IoMode mode, const char* data, int data_len) {
-    AddReadResult(net::MockRead(mode, data, data_len));
+  void AddReadResultForData(net::IoMode mode, const std::string& data) {
+    AddReadResult(net::MockRead(mode, data.c_str(), data.size()));
   }
-  void AddReadResultForMessage(net::IoMode mode, const std::string& msg) {
-    size_t body_size = ComputeBodySize(msg);
-    const char* data = msg.c_str();
-    AddReadResult(mode, data, MessageFramer::MessageHeader::header_size());
-    AddReadResult(
-        mode, data + MessageFramer::MessageHeader::header_size(), body_size);
-  }
-  void AddReadResultForMessage(net::IoMode mode,
-                               const std::string& msg,
-                               size_t ch_size) {
-    size_t msg_size = msg.size();
-    const char* data = msg.c_str();
-    for (size_t offset = 0; offset < msg_size; offset += ch_size) {
-      if (offset + ch_size > msg_size)
-        ch_size = msg_size - offset;
-      AddReadResult(mode, data + offset, ch_size);
-    }
-  }
+
+  // Helpers for modifying other connection-related behaviors.
+  void SetupTcp1ConnectUnresponsive() { tcp_unresponsive_ = true; }
 
   void SetExtractCertResult(bool value) {
     extract_cert_result_ = value;
   }
+
   void SetVerifyChallengeResult(bool value) {
     verify_challenge_result_ = value;
   }
@@ -282,6 +263,11 @@ class TestCastSocket : public CastSocket {
   }
 
   void DisallowVerifyChallengeResult() { verify_challenge_disallow_ = true; }
+
+  MockCastTransport* GetMockTransport() {
+    CHECK(mock_transport_);
+    return mock_transport_;
+  }
 
  private:
   scoped_ptr<net::TCPClientSocket> CreateTcpSocket() override {
@@ -341,6 +327,9 @@ class TestCastSocket : public CastSocket {
   // If true, makes TCP connection process stall. For timeout testing.
   bool tcp_unresponsive_;
   scoped_ptr<base::MockTimer> mock_timer_;
+  MockCastTransport* mock_transport_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestCastSocket);
 };
 
 class CastSocketTest : public testing::Test {
@@ -348,19 +337,13 @@ class CastSocketTest : public testing::Test {
   CastSocketTest()
       : logger_(new Logger(
             scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
-            base::TimeTicks())) {}
-  ~CastSocketTest() override {}
+            base::TimeTicks())),
+        read_delegate_(new MockDelegate) {}
+  virtual ~CastSocketTest() {}
 
-  void SetUp() override {
-    // Create a few test messages
-    for (size_t i = 0; i < arraysize(test_messages_); i++) {
-      CreateStringMessage("urn:cast", "1", "2", kTestData[i],
-                          &test_messages_[i]);
-      ASSERT_TRUE(MessageInfoToCastMessage(
-          test_messages_[i], &test_protos_[i]));
-      ASSERT_TRUE(
-          MessageFramer::Serialize(test_protos_[i], &test_proto_strs_[i]));
-    }
+  virtual void SetUp() override {
+    EXPECT_CALL(*read_delegate_, OnMessage(_)).Times(0);
+    EXPECT_CALL(*read_delegate_, OnError(_, _)).Times(0);
   }
 
   void TearDown() override {
@@ -371,43 +354,25 @@ class CastSocketTest : public testing::Test {
     }
   }
 
-  // The caller can specify non-standard namespaces by setting "auth_namespace"
-  // (useful for negative test cases.)
-  void SetupAuthMessage(
-      const char* auth_namespace = "urn:x-cast:com.google.cast.tp.deviceauth") {
-    // Create a test auth request.
-    CastMessage request;
-    CreateAuthChallengeMessage(&request);
-    ASSERT_TRUE(MessageFramer::Serialize(request, &auth_request_));
-
-    // Create a test auth reply.
-    MessageInfo reply;
-    CreateBinaryMessage(
-        auth_namespace, "sender-0", "receiver-0", "abcd", &reply);
-    CastMessage reply_msg;
-    ASSERT_TRUE(MessageInfoToCastMessage(reply, &reply_msg));
-    ASSERT_TRUE(MessageFramer::Serialize(reply_msg, &auth_reply_));
-  }
-
-  void CreateCastSocket() {
-    socket_ = TestCastSocket::Create(&mock_delegate_, logger_.get());
-  }
+  void CreateCastSocket() { socket_ = TestCastSocket::Create(logger_); }
 
   void CreateCastSocketSecure() {
-    socket_ = TestCastSocket::CreateSecure(&mock_delegate_, logger_.get());
+    socket_ = TestCastSocket::CreateSecure(logger_);
   }
 
-  // Sets up CastSocket::Connect to succeed.
-  // Connecting the socket also starts the read loop; so we add a mock
-  // read result that returns IO_PENDING and callback is never fired.
-  void ConnectHelper() {
-    socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
-    socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
-    socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
-
-    EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-    socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  void HandleAuthHandshake() {
+    socket_->SetupMockTransport();
+    CastMessage challenge_proto = CreateAuthChallenge();
+    EXPECT_CALL(*socket_->GetMockTransport(),
+                SendMessage(EqualsProto(challenge_proto), _))
+        .WillOnce(RunCompletionCallback<1>(net::OK));
+    EXPECT_CALL(*socket_->GetMockTransport(), StartReading());
+    EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+    socket_->Connect(read_delegate_.Pass(),
+                     base::Bind(&CompleteHandler::OnConnectComplete,
                                 base::Unretained(&handler_)));
+    RunPendingTasks();
+    socket_->auth_delegate_.OnMessage(CreateAuthReply());
     RunPendingTasks();
   }
 
@@ -419,22 +384,28 @@ class CastSocketTest : public testing::Test {
   }
 
   base::MessageLoop message_loop_;
-  MockCastSocketDelegate mock_delegate_;
-  scoped_refptr<Logger> logger_;
+  Logger* logger_;
   scoped_ptr<TestCastSocket> socket_;
   CompleteHandler handler_;
-  MessageInfo test_messages_[arraysize(kTestData)];
-  CastMessage test_protos_[arraysize(kTestData)];
-  std::string test_proto_strs_[arraysize(kTestData)];
-  std::string auth_request_;
-  std::string auth_reply_;
+  scoped_ptr<MockDelegate> read_delegate_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CastSocketTest);
 };
 
 // Tests connecting and closing the socket.
 TEST_F(CastSocketTest, TestConnectAndClose) {
   CreateCastSocket();
-  ConnectHelper();
-  SetupAuthMessage();
+  socket_->SetupMockTransport();
+  socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
+  socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
+
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 
@@ -450,18 +421,34 @@ TEST_F(CastSocketTest, TestConnectAndClose) {
 // - SSL connection succeeds (async)
 TEST_F(CastSocketTest, TestConnect) {
   CreateCastSocket();
-  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::OK);
   socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+}
+
+// Tests that the following connection flow works:
+// - TCP connection fails (async)
+TEST_F(CastSocketTest, TestConnectFails) {
+  CreateCastSocket();
+  socket_->SetupTcp1Connect(net::ASYNC, net::ERR_FAILED);
+
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
 }
 
 // Test that the following connection flow works:
@@ -472,18 +459,17 @@ TEST_F(CastSocketTest, TestConnect) {
 // - Second SSL connection succeeds (async)
 TEST_F(CastSocketTest, TestConnectTwoStep) {
   CreateCastSocket();
-  SetupAuthMessage();
+  socket_->SetupMockTransport();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
   socket_->SetupSsl2Connect(net::ASYNC, net::OK);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
-
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
@@ -497,23 +483,20 @@ TEST_F(CastSocketTest, TestConnectTwoStep) {
 // - The flow should NOT be tried again
 TEST_F(CastSocketTest, TestConnectMaxTwoAttempts) {
   CreateCastSocket();
-  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
   socket_->SetupSsl2Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
+            socket_->error_state());
 }
 
 // Tests that the following connection flow works:
@@ -527,42 +510,34 @@ TEST_F(CastSocketTest, TestConnectMaxTwoAttempts) {
 // - Credentials are verified successfuly
 TEST_F(CastSocketTest, TestConnectFullSecureFlowAsync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
-
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
   socket_->SetupSsl2Connect(net::ASYNC, net::OK);
-  socket_->AddWriteResultForMessage(net::ASYNC, auth_request_);
-  socket_->AddReadResultForMessage(net::ASYNC, auth_reply_);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
+  HandleAuthHandshake();
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
 
-// Same as TestFullSecureConnectionFlowAsync, but operations are synchronous.
+// Tests that the following connection flow works:
+// - TCP connection succeeds (sync)
+// - SSL connection fails with cert error (sync)
+// - Cert is extracted successfully
+// - Second TCP connection succeeds (sync)
+// - Second SSL connection succeeds (sync)
+// - Challenge request is sent (sync)
+// - Challenge response is received (sync)
+// - Credentials are verified successfuly
 TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
-
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl2Connect(net::SYNCHRONOUS, net::OK);
-  socket_->AddWriteResultForMessage(net::SYNCHRONOUS, auth_request_);
-  socket_->AddReadResultForMessage(net::SYNCHRONOUS, auth_reply_);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::OK));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
-                              base::Unretained(&handler_)));
-  RunPendingTasks();
+  HandleAuthHandshake();
 
   EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
   EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
@@ -572,44 +547,43 @@ TEST_F(CastSocketTest, TestConnectFullSecureFlowSync) {
 // of the connection event loop.
 TEST_F(CastSocketTest, TestConnectAuthMessageCorrupted) {
   CreateCastSocketSecure();
-  SetupAuthMessage("bogus_namespace");
+  socket_->SetupMockTransport();
 
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   socket_->SetupTcp2Connect(net::ASYNC, net::OK);
   socket_->SetupSsl2Connect(net::ASYNC, net::OK);
-  socket_->AddWriteResultForMessage(net::ASYNC, auth_request_);
-  socket_->AddReadResultForMessage(net::ASYNC, auth_reply_);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
-  // Guard against VerifyChallengeResult() being triggered.
-  socket_->DisallowVerifyChallengeResult();
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  CastMessage challenge_proto = CreateAuthChallenge();
+  EXPECT_CALL(*socket_->GetMockTransport(),
+              SendMessage(EqualsProto(challenge_proto), _))
+      .WillOnce(RunCompletionCallback<1>(net::OK));
+  EXPECT_CALL(*socket_->GetMockTransport(), StartReading());
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_TRANSPORT_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
+  RunPendingTasks();
+  CastMessage mangled_auth_reply = CreateAuthReply();
+  mangled_auth_reply.set_namespace_("BOGUS_NAMESPACE");
+
+  socket_->auth_delegate_.OnMessage(mangled_auth_reply);
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_TRANSPORT_ERROR,
+            socket_->error_state());
 }
 
 // Test connection error - TCP connect fails (async)
 TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::ASYNC, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
@@ -620,16 +594,12 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorAsync) {
 // Test connection error - TCP connect fails (sync)
 TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
@@ -641,12 +611,9 @@ TEST_F(CastSocketTest, TestConnectTcpConnectErrorSync) {
 TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
   CreateCastSocketSecure();
   socket_->SetupTcp1ConnectUnresponsive();
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_TIMEOUT,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_CONNECT_TIMEOUT));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
@@ -663,547 +630,236 @@ TEST_F(CastSocketTest, TestConnectTcpTimeoutError) {
 // Test connection error - SSL connect fails (async)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorAsync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
+            socket_->error_state());
 }
 
 // Test connection error - SSL connect fails (sync)
 TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
+            socket_->error_state());
 }
 
 // Test connection error - cert extraction error (async)
 TEST_F(CastSocketTest, TestConnectCertExtractionErrorAsync) {
   CreateCastSocket();
-  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::ASYNC, net::OK);
   socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
   // Set cert extraction to fail
   socket_->SetExtractCertResult(false);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
+            socket_->error_state());
 }
 
 // Test connection error - cert extraction error (sync)
 TEST_F(CastSocketTest, TestConnectCertExtractionErrorSync) {
   CreateCastSocket();
-  SetupAuthMessage();
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_CERT_AUTHORITY_INVALID);
   // Set cert extraction to fail
   socket_->SetExtractCertResult(false);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
+            socket_->error_state());
 }
 
 // Test connection error - challenge send fails
 TEST_F(CastSocketTest, TestConnectChallengeSendError) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
+  socket_->SetupMockTransport();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
-  socket_->AddWriteResult(net::SYNCHRONOUS, net::ERR_FAILED);
+  EXPECT_CALL(*socket_->GetMockTransport(),
+              SendMessage(EqualsProto(CreateAuthChallenge()), _))
+      .WillOnce(RunCompletionCallback<1>(net::ERR_CONNECTION_RESET));
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
 }
 
 // Test connection error - challenge reply receive fails
 TEST_F(CastSocketTest, TestConnectChallengeReplyReceiveError) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
+  socket_->SetupMockTransport();
 
   socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
   socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
-  socket_->AddWriteResultForMessage(net::ASYNC, auth_request_);
+  EXPECT_CALL(*socket_->GetMockTransport(),
+              SendMessage(EqualsProto(CreateAuthChallenge()), _))
+      .WillOnce(RunCompletionCallback<1>(net::OK));
   socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_FAILED);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_SOCKET_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
+  socket_->auth_delegate_.OnError(CHANNEL_ERROR_SOCKET_ERROR, LastErrors());
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
 }
 
-// Test connection error - challenge reply verification fails
 TEST_F(CastSocketTest, TestConnectChallengeVerificationFails) {
   CreateCastSocketSecure();
-  SetupAuthMessage();
-
-  socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
-  socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::OK);
-  socket_->AddWriteResultForMessage(net::ASYNC, auth_request_);
-  socket_->AddReadResultForMessage(net::ASYNC, auth_reply_);
-  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
+  socket_->SetupMockTransport();
+  socket_->SetupTcp1Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
+  socket_->SetupTcp2Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl2Connect(net::ASYNC, net::OK);
   socket_->SetVerifyChallengeResult(false);
 
-  EXPECT_CALL(handler_, OnConnectComplete(net::ERR_CONNECTION_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                      A<const LastErrors&>()));
-  socket_->Connect(base::Bind(&CompleteHandler::OnConnectComplete,
+  CastMessage challenge_proto = CreateAuthChallenge();
+  EXPECT_CALL(*socket_->GetMockTransport(),
+              SendMessage(EqualsProto(challenge_proto), _))
+      .WillOnce(RunCompletionCallback<1>(net::OK));
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_AUTHENTICATION_ERROR));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
                               base::Unretained(&handler_)));
   RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_CONNECT_ERROR, socket_->error_state());
-}
-
-// Test write success - single message (async)
-TEST_F(CastSocketTest, TestWriteAsync) {
-  CreateCastSocket();
-  socket_->AddWriteResultForMessage(net::ASYNC, test_proto_strs_[0]);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write success - single message (sync)
-TEST_F(CastSocketTest, TestWriteSync) {
-  CreateCastSocket();
-  socket_->AddWriteResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0]);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write success - single message sent in multiple chunks (async)
-TEST_F(CastSocketTest, TestWriteChunkedAsync) {
-  CreateCastSocket();
-  socket_->AddWriteResultForMessage(net::ASYNC, test_proto_strs_[0], 2);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write success - single message sent in multiple chunks (sync)
-TEST_F(CastSocketTest, TestWriteChunkedSync) {
-  CreateCastSocket();
-  socket_->AddWriteResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0], 2);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(test_proto_strs_[0].size()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write success - multiple messages (async)
-TEST_F(CastSocketTest, TestWriteManyAsync) {
-  CreateCastSocket();
-  for (size_t i = 0; i < arraysize(test_messages_); i++) {
-    size_t msg_size = test_proto_strs_[i].size();
-    socket_->AddWriteResult(net::ASYNC, msg_size);
-    EXPECT_CALL(handler_, OnWriteComplete(msg_size));
-  }
-  ConnectHelper();
-  SetupAuthMessage();
-
-  for (size_t i = 0; i < arraysize(test_messages_); i++) {
-    socket_->SendMessage(test_messages_[i],
-                         base::Bind(&CompleteHandler::OnWriteComplete,
-                                    base::Unretained(&handler_)));
-  }
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write success - multiple messages (sync)
-TEST_F(CastSocketTest, TestWriteManySync) {
-  CreateCastSocket();
-  for (size_t i = 0; i < arraysize(test_messages_); i++) {
-    size_t msg_size = test_proto_strs_[i].size();
-    socket_->AddWriteResult(net::SYNCHRONOUS, msg_size);
-    EXPECT_CALL(handler_, OnWriteComplete(msg_size));
-  }
-  ConnectHelper();
-  SetupAuthMessage();
-
-  for (size_t i = 0; i < arraysize(test_messages_); i++) {
-    socket_->SendMessage(test_messages_[i],
-                         base::Bind(&CompleteHandler::OnWriteComplete,
-                                    base::Unretained(&handler_)));
-  }
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write error - not connected
-TEST_F(CastSocketTest, TestWriteErrorNotConnected) {
-  CreateCastSocket();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-
-  EXPECT_EQ(cast_channel::READY_STATE_NONE, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write error - very large message
-TEST_F(CastSocketTest, TestWriteErrorLargeMessage) {
-  CreateCastSocket();
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  size_t size = MessageFramer::MessageHeader::max_message_size() + 1;
-  test_messages_[0].data.reset(
-      new base::StringValue(std::string(size, 'a')));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test write error - network error (sync)
-TEST_F(CastSocketTest, TestWriteNetworkErrorSync) {
-  CreateCastSocket();
-  socket_->AddWriteResult(net::SYNCHRONOUS, net::ERR_FAILED);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
+  socket_->auth_delegate_.OnMessage(CreateAuthReply());
   RunPendingTasks();
 
   EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test write error - network error (async)
-TEST_F(CastSocketTest, TestWriteErrorAsync) {
-  CreateCastSocket();
-  socket_->AddWriteResult(net::ASYNC, net::ERR_FAILED);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test write error - 0 bytes written should be considered an error
-TEST_F(CastSocketTest, TestWriteErrorZeroBytesWritten) {
-  CreateCastSocket();
-  socket_->AddWriteResult(net::SYNCHRONOUS, 0);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_FAILED));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  socket_->SendMessage(test_messages_[0],
-                       base::Bind(&CompleteHandler::OnWriteComplete,
-                                  base::Unretained(&handler_)));
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test that when an error occurrs in one write, write callback is invoked for
-// all pending writes with the error
-TEST_F(CastSocketTest, TestWriteErrorWithMultiplePendingWritesAsync) {
-  CreateCastSocket();
-  socket_->AddWriteResult(net::ASYNC, net::ERR_SOCKET_NOT_CONNECTED);
-  ConnectHelper();
-  SetupAuthMessage();
-
-  const int num_writes = arraysize(test_messages_);
-  EXPECT_CALL(handler_, OnWriteComplete(net::ERR_SOCKET_NOT_CONNECTED))
-      .Times(num_writes);
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  for (int i = 0; i < num_writes; i++) {
-    socket_->SendMessage(test_messages_[i],
-                         base::Bind(&CompleteHandler::OnWriteComplete,
-                                    base::Unretained(&handler_)));
-  }
-  RunPendingTasks();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test read success - single message (async)
-TEST_F(CastSocketTest, TestReadAsync) {
-  CreateCastSocket();
-  socket_->AddReadResultForMessage(net::ASYNC, test_proto_strs_[0]);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()));
-  ConnectHelper();
-  SetupAuthMessage();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read success - single message (sync)
-TEST_F(CastSocketTest, TestReadSync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0]);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read success - single message received in multiple chunks (async)
-TEST_F(CastSocketTest, TestReadChunkedAsync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  socket_->AddReadResultForMessage(net::ASYNC, test_proto_strs_[0], 2);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read success - single message received in multiple chunks (sync)
-TEST_F(CastSocketTest, TestReadChunkedSync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[0], 2);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read success - multiple messages (async)
-TEST_F(CastSocketTest, TestReadManyAsync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  size_t num_reads = arraysize(test_proto_strs_);
-  for (size_t i = 0; i < num_reads; i++)
-    socket_->AddReadResultForMessage(net::ASYNC, test_proto_strs_[i]);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()))
-      .Times(num_reads);
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read success - multiple messages (sync)
-TEST_F(CastSocketTest, TestReadManySync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  size_t num_reads = arraysize(test_proto_strs_);
-  for (size_t i = 0; i < num_reads; i++)
-    socket_->AddReadResultForMessage(net::SYNCHRONOUS, test_proto_strs_[i]);
-  EXPECT_CALL(mock_delegate_,
-              OnMessage(socket_.get(), A<const MessageInfo&>()))
-      .Times(num_reads);
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
-}
-
-// Test read error - network error (async)
-TEST_F(CastSocketTest, TestReadErrorAsync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  socket_->AddReadResult(net::ASYNC, net::ERR_SOCKET_NOT_CONNECTED);
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test read error - network error (sync)
-TEST_F(CastSocketTest, TestReadErrorSync) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  socket_->AddReadResult(net::SYNCHRONOUS, net::ERR_SOCKET_NOT_CONNECTED);
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_SOCKET_ERROR,
-                      A<const LastErrors&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_SOCKET_ERROR, socket_->error_state());
-}
-
-// Test read error - header parse error
-TEST_F(CastSocketTest, TestReadHeaderParseError) {
-  CreateCastSocket();
-  SetupAuthMessage();
-
-  uint32 body_size =
-      base::HostToNet32(MessageFramer::MessageHeader::max_message_size() + 1);
-  // TODO(munjal): Add a method to cast_message_util.h to serialize messages
-  char header[sizeof(body_size)];
-  memcpy(&header, &body_size, arraysize(header));
-  socket_->AddReadResult(net::SYNCHRONOUS, header, arraysize(header));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
-                      A<const LastErrors&>()));
-  ConnectHelper();
-
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_AUTHENTICATION_ERROR,
             socket_->error_state());
 }
 
-// Test read error - body parse error
-TEST_F(CastSocketTest, TestReadBodyParseError) {
-  CreateCastSocket();
-  SetupAuthMessage();
-  char body[] = "some body";
-  uint32 body_size = base::HostToNet32(arraysize(body));
-  char header[sizeof(body_size)];
-  memcpy(&header, &body_size, arraysize(header));
-  socket_->AddReadResult(net::SYNCHRONOUS, header, arraysize(header));
-  socket_->AddReadResult(net::SYNCHRONOUS, body, arraysize(body));
-  EXPECT_CALL(mock_delegate_,
-              OnError(socket_.get(),
-                      cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
-                      A<const LastErrors&>()));
-  ConnectHelper();
+// Sends message data through an actual non-mocked CastTransport object,
+// testing the two components in integration.
+TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportAsync) {
+  CreateCastSocketSecure();
+  socket_->SetupTcp1Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl1Connect(net::ASYNC, net::ERR_CERT_AUTHORITY_INVALID);
+  socket_->SetupTcp2Connect(net::ASYNC, net::OK);
+  socket_->SetupSsl2Connect(net::ASYNC, net::OK);
 
-  EXPECT_EQ(cast_channel::READY_STATE_CLOSED, socket_->ready_state());
-  EXPECT_EQ(cast_channel::CHANNEL_ERROR_INVALID_MESSAGE,
-            socket_->error_state());
+  // Set low-level auth challenge expectations.
+  CastMessage challenge = CreateAuthChallenge();
+  std::string challenge_str;
+  EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
+  socket_->AddWriteResultForData(net::ASYNC, challenge_str);
+
+  // Set low-level auth reply expectations.
+  CastMessage reply = CreateAuthReply();
+  std::string reply_str;
+  EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
+  socket_->AddReadResultForData(net::ASYNC, reply_str);
+  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
+
+  CastMessage test_message = CreateTestMessage();
+  std::string test_message_str;
+  EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
+  socket_->AddWriteResultForData(net::ASYNC, test_message_str);
+
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+
+  // Send the test message through a real transport object.
+  EXPECT_CALL(handler_, OnWriteComplete(net::OK));
+  socket_->transport()->SendMessage(
+      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
+                               base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+}
+
+// Same as TestConnectEndToEndWithRealTransportAsync, except synchronous.
+TEST_F(CastSocketTest, TestConnectEndToEndWithRealTransportSync) {
+  CreateCastSocketSecure();
+  socket_->SetupTcp1Connect(net::SYNCHRONOUS, net::OK);
+  socket_->SetupSsl1Connect(net::SYNCHRONOUS, net::ERR_CERT_AUTHORITY_INVALID);
+  socket_->SetupTcp2Connect(net::SYNCHRONOUS, net::OK);
+  socket_->SetupSsl2Connect(net::SYNCHRONOUS, net::OK);
+
+  // Set low-level auth challenge expectations.
+  CastMessage challenge = CreateAuthChallenge();
+  std::string challenge_str;
+  EXPECT_TRUE(MessageFramer::Serialize(challenge, &challenge_str));
+  socket_->AddWriteResultForData(net::SYNCHRONOUS, challenge_str);
+
+  // Set low-level auth reply expectations.
+  CastMessage reply = CreateAuthReply();
+  std::string reply_str;
+  EXPECT_TRUE(MessageFramer::Serialize(reply, &reply_str));
+  socket_->AddReadResultForData(net::SYNCHRONOUS, reply_str);
+  socket_->AddReadResult(net::ASYNC, net::ERR_IO_PENDING);
+
+  CastMessage test_message = CreateTestMessage();
+  std::string test_message_str;
+  EXPECT_TRUE(MessageFramer::Serialize(test_message, &test_message_str));
+  socket_->AddWriteResultForData(net::SYNCHRONOUS, test_message_str);
+
+  EXPECT_CALL(handler_, OnConnectComplete(CHANNEL_ERROR_NONE));
+  socket_->Connect(read_delegate_.Pass(),
+                   base::Bind(&CompleteHandler::OnConnectComplete,
+                              base::Unretained(&handler_)));
+  RunPendingTasks();
+  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
+
+  // Send the test message through a real transport object.
+  EXPECT_CALL(handler_, OnWriteComplete(net::OK));
+  socket_->transport()->SendMessage(
+      test_message, base::Bind(&CompleteHandler::OnWriteComplete,
+                               base::Unretained(&handler_)));
+  RunPendingTasks();
+
+  EXPECT_EQ(cast_channel::READY_STATE_OPEN, socket_->ready_state());
+  EXPECT_EQ(cast_channel::CHANNEL_ERROR_NONE, socket_->error_state());
 }
 }  // namespace cast_channel
 }  // namespace core_api

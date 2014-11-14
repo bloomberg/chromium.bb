@@ -9,13 +9,15 @@
 
 #include "base/test/simple_test_tick_clock.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
-#include "extensions/browser/api/cast_channel/cast_transport.h"
+#include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
+#include "extensions/browser/api/cast_channel/test_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/base/capturing_net_log.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/socket/socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,54 +124,32 @@ MATCHER_P(EqualsProto, message, "") {
 
 class MockCastTransportDelegate : public CastTransport::Delegate {
  public:
-  MOCK_METHOD3(OnError,
-               void(const CastSocketInterface* socket,
-                    ChannelError error,
-                    const LastErrors& last_errors));
-  MOCK_METHOD2(OnMessage,
-               void(const CastSocketInterface* socket,
-                    const CastMessage& message));
+  MOCK_METHOD2(OnError,
+               void(ChannelError error, const LastErrors& last_errors));
+  MOCK_METHOD1(OnMessage, void(const CastMessage& message));
 };
 
-class MockCastSocket : public CastSocketInterface {
+class MockSocket : public net::Socket {
  public:
-  MockCastSocket() {
-    net::IPAddressNumber number;
-    number.push_back(192);
-    number.push_back(0);
-    number.push_back(0);
-    number.push_back(1);
-    ip_ = net::IPEndPoint(number, 8009);
-  }
-
-  virtual ~MockCastSocket() {}
-
-  // The IP endpoint for the destination of the channel.
-  virtual const net::IPEndPoint& ip_endpoint() const override { return ip_; }
-
-  // The authentication level requested for the channel.
-  virtual ChannelAuthType channel_auth() const override {
-    return CHANNEL_AUTH_TYPE_SSL_VERIFIED;
-  }
-
-  virtual int id() const override { return 1; }
-
-  MOCK_METHOD3(Write,
-               int(net::IOBuffer* buffer,
-                   size_t size,
-                   const net::CompletionCallback& callback));
   MOCK_METHOD3(Read,
                int(net::IOBuffer* buf,
                    int buf_len,
                    const net::CompletionCallback& callback));
-  MOCK_METHOD1(CloseWithError, void(ChannelError error));
 
- protected:
-  virtual void CloseInternal() {}
+  MOCK_METHOD3(Write,
+               int(net::IOBuffer* buf,
+                   int buf_len,
+                   const net::CompletionCallback& callback));
 
- private:
-  net::IPEndPoint ip_;
-  net::CapturingNetLog capturing_net_log_;
+  virtual int SetReceiveBufferSize(int32 size) {
+    NOTREACHED();
+    return 0;
+  }
+
+  virtual int SetSendBufferSize(int32 size) {
+    NOTREACHED();
+    return 0;
+  }
 };
 
 class CastTransportTest : public testing::Test {
@@ -178,14 +158,17 @@ class CastTransportTest : public testing::Test {
       : logger_(new Logger(
             scoped_ptr<base::TickClock>(new base::SimpleTestTickClock),
             base::TimeTicks())) {
-    transport_.reset(new CastTransport(&mock_socket_, &delegate_, logger_));
+    transport_.reset(new CastTransportImpl(&mock_socket_, &delegate_, 0,
+                                           CreateIPEndPointForTest(),
+                                           auth_type_, logger_));
   }
   ~CastTransportTest() override {}
 
  protected:
   MockCastTransportDelegate delegate_;
-  MockCastSocket mock_socket_;
-  scoped_refptr<Logger> logger_;
+  MockSocket mock_socket_;
+  ChannelAuthType auth_type_;
+  Logger* logger_;
   scoped_ptr<CastTransport> transport_;
 };
 
@@ -223,12 +206,15 @@ TEST_F(CastTransportTest, TestPartialWritesAsync) {
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
 
   // Only one byte is written.
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size(), _))
+  EXPECT_CALL(mock_socket_,
+              Write(NotNull(), static_cast<int>(serialized_message.size()), _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)));
   // Remainder of bytes are written.
-  EXPECT_CALL(mock_socket_, Write(NotNull(), serialized_message.size() - 1, _))
+  EXPECT_CALL(
+      mock_socket_,
+      Write(NotNull(), static_cast<int>(serialized_message.size() - 1), _))
       .WillOnce(DoAll(ReadBufferToString<0, 1>(&output),
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)));
@@ -315,6 +301,7 @@ TEST_F(CastTransportTest, TestWriteFailureSync) {
 // ----------------------------------------------------------------------------
 // Asynchronous read tests
 TEST_F(CastTransportTest, TestFullReadAsync) {
+  InSequence s;
   CompletionQueue socket_cbs;
 
   CastMessage message = CreateCastMessage();
@@ -326,8 +313,8 @@ TEST_F(CastTransportTest, TestFullReadAsync) {
               Read(NotNull(), MessageFramer::MessageHeader::header_size(), _))
       .WillOnce(DoAll(FillBufferFromString<0>(serialized_message),
                       EnqueueCallback<2>(&socket_cbs),
-                      Return(net::ERR_IO_PENDING)))
-      .RetiresOnSaturation();
+                      Return(net::ERR_IO_PENDING)));
+
   // Read bytes [4, n].
   EXPECT_CALL(mock_socket_,
               Read(NotNull(),
@@ -342,17 +329,18 @@ TEST_F(CastTransportTest, TestFullReadAsync) {
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(delegate_, OnMessage(&mock_socket_, EqualsProto(message)));
-  transport_->StartReadLoop();
-  socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
+  EXPECT_CALL(delegate_, OnMessage(EqualsProto(message)));
   EXPECT_CALL(mock_socket_,
               Read(NotNull(), MessageFramer::MessageHeader::header_size(), _))
       .WillOnce(Return(net::ERR_IO_PENDING));
+  transport_->StartReading();
+  socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
   socket_cbs.Pop(serialized_message.size() -
                  MessageFramer::MessageHeader::header_size());
 }
 
 TEST_F(CastTransportTest, TestPartialReadAsync) {
+  InSequence s;
   CompletionQueue socket_cbs;
 
   CastMessage message = CreateCastMessage();
@@ -386,15 +374,14 @@ TEST_F(CastTransportTest, TestPartialReadAsync) {
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
-
-  EXPECT_CALL(delegate_, OnMessage(&mock_socket_, EqualsProto(message)));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnMessage(EqualsProto(message)));
+  transport_->StartReading();
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
+  socket_cbs.Pop(serialized_message.size() -
+                 MessageFramer::MessageHeader::header_size() - 1);
   EXPECT_CALL(mock_socket_,
               Read(NotNull(), MessageFramer::MessageHeader::header_size(), _))
       .WillOnce(Return(net::ERR_IO_PENDING));
-  socket_cbs.Pop(serialized_message.size() -
-                 MessageFramer::MessageHeader::header_size() - 1);
   socket_cbs.Pop(1);
 }
 
@@ -413,10 +400,8 @@ TEST_F(CastTransportTest, TestReadErrorInHeaderAsync) {
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_TRANSPORT_ERROR, _));
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_TRANSPORT_ERROR));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR, _));
+  transport_->StartReading();
   // Header read failure.
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
 }
@@ -448,13 +433,10 @@ TEST_F(CastTransportTest, TestReadErrorInBodyAsync) {
                       EnqueueCallback<2>(&socket_cbs),
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
-
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_TRANSPORT_ERROR, _));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR, _));
+  transport_->StartReading();
   // Header read is OK.
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_TRANSPORT_ERROR));
   // Body read fails.
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
 }
@@ -494,11 +476,9 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageAsync) {
                       Return(net::ERR_IO_PENDING)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_INVALID_MESSAGE, _));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE, _));
+  transport_->StartReading();
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_INVALID_MESSAGE));
   socket_cbs.Pop(serialized_message.size() -
                  MessageFramer::MessageHeader::header_size());
 }
@@ -530,11 +510,12 @@ TEST_F(CastTransportTest, TestFullReadSync) {
                       Return(serialized_message.size() -
                              MessageFramer::MessageHeader::header_size())))
       .RetiresOnSaturation();
-  EXPECT_CALL(delegate_, OnMessage(&mock_socket_, EqualsProto(message)));
+  EXPECT_CALL(delegate_, OnMessage(EqualsProto(message)));
+  // Async result in order to discontinue the read loop.
   EXPECT_CALL(mock_socket_,
               Read(NotNull(), MessageFramer::MessageHeader::header_size(), _))
       .WillOnce(Return(net::ERR_IO_PENDING));
-  transport_->StartReadLoop();
+  transport_->StartReading();
 }
 
 TEST_F(CastTransportTest, TestPartialReadSync) {
@@ -569,14 +550,15 @@ TEST_F(CastTransportTest, TestPartialReadSync) {
                           serialized_message.size() - 1, 1)),
                       Return(1)))
       .RetiresOnSaturation();
-  EXPECT_CALL(delegate_, OnMessage(&mock_socket_, EqualsProto(message)));
+  EXPECT_CALL(delegate_, OnMessage(EqualsProto(message)));
   EXPECT_CALL(mock_socket_,
               Read(NotNull(), MessageFramer::MessageHeader::header_size(), _))
       .WillOnce(Return(net::ERR_IO_PENDING));
-  transport_->StartReadLoop();
+  transport_->StartReading();
 }
 
 TEST_F(CastTransportTest, TestReadErrorInHeaderSync) {
+  InSequence s;
   CastMessage message = CreateCastMessage();
   std::string serialized_message;
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
@@ -587,10 +569,8 @@ TEST_F(CastTransportTest, TestReadErrorInHeaderSync) {
       .WillOnce(DoAll(FillBufferFromString<0>(serialized_message),
                       Return(net::ERR_CONNECTION_RESET)))
       .RetiresOnSaturation();
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_TRANSPORT_ERROR, _));
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_TRANSPORT_ERROR));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR, _));
+  transport_->StartReading();
 }
 
 TEST_F(CastTransportTest, TestReadErrorInBodySync) {
@@ -616,13 +596,12 @@ TEST_F(CastTransportTest, TestReadErrorInBodySync) {
                               MessageFramer::MessageHeader::header_size() - 1)),
                       Return(net::ERR_CONNECTION_RESET)))
       .RetiresOnSaturation();
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_TRANSPORT_ERROR, _));
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_TRANSPORT_ERROR));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_SOCKET_ERROR, _));
+  transport_->StartReading();
 }
 
 TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
+  InSequence s;
   CastMessage message = CreateCastMessage();
   std::string serialized_message;
   EXPECT_TRUE(MessageFramer::Serialize(message, &serialized_message));
@@ -653,10 +632,8 @@ TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {
                       Return(serialized_message.size() -
                              MessageFramer::MessageHeader::header_size())))
       .RetiresOnSaturation();
-  EXPECT_CALL(delegate_,
-              OnError(&mock_socket_, CHANNEL_ERROR_INVALID_MESSAGE, _));
-  EXPECT_CALL(mock_socket_, CloseWithError(CHANNEL_ERROR_INVALID_MESSAGE));
-  transport_->StartReadLoop();
+  EXPECT_CALL(delegate_, OnError(CHANNEL_ERROR_INVALID_MESSAGE, _));
+  transport_->StartReading();
 }
 }  // namespace cast_channel
 }  // namespace core_api

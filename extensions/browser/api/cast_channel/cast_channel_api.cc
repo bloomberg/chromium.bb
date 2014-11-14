@@ -15,9 +15,11 @@
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_auth_ica.h"
+#include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/api/cast_channel/logging.pb.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -35,6 +37,7 @@ namespace OnError = cast_channel::OnError;
 namespace OnMessage = cast_channel::OnMessage;
 namespace Open = cast_channel::Open;
 namespace Send = cast_channel::Send;
+using cast_channel::CastMessage;
 using cast_channel::CastSocket;
 using cast_channel::ChannelAuthType;
 using cast_channel::ChannelError;
@@ -62,7 +65,7 @@ std::string ParamToString(const T& info) {
 void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   DCHECK(channel_info);
   channel_info->channel_id = socket.id();
-  channel_info->url = socket.CastUrl();
+  channel_info->url = socket.cast_url();
   const net::IPEndPoint& ip_endpoint = socket.ip_endpoint();
   channel_info->connect_info.ip_address = ip_endpoint.ToStringWithoutPort();
   channel_info->connect_info.port = ip_endpoint.port();
@@ -136,38 +139,12 @@ void CastChannelAPI::SetSocketForTest(scoped_ptr<CastSocket> socket_for_test) {
   socket_for_test_ = socket_for_test.Pass();
 }
 
-scoped_ptr<cast_channel::CastSocket> CastChannelAPI::GetSocketForTest() {
+scoped_ptr<CastSocket> CastChannelAPI::GetSocketForTest() {
   return socket_for_test_.Pass();
 }
 
-void CastChannelAPI::OnError(const CastSocket* socket,
-                             cast_channel::ChannelError error_state,
-                             const cast_channel::LastErrors& last_errors) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ChannelInfo channel_info;
-  FillChannelInfo(*socket, &channel_info);
-  channel_info.error_state = error_state;
-  ErrorInfo error_info;
-  FillErrorInfo(error_state, last_errors, &error_info);
-  scoped_ptr<base::ListValue> results =
-      OnError::Create(channel_info, error_info);
-  scoped_ptr<Event> event(new Event(OnError::kEventName, results.Pass()));
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
-}
-
-void CastChannelAPI::OnMessage(const CastSocket* socket,
-                               const MessageInfo& message_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ChannelInfo channel_info;
-  FillChannelInfo(*socket, &channel_info);
-  scoped_ptr<base::ListValue> results =
-    OnMessage::Create(channel_info, message_info);
-  VLOG(1) << "Sending message " << ParamToString(message_info)
-          << " to channel " << ParamToString(channel_info);
-  scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
-  extensions::EventRouter::Get(browser_context_)
-      ->DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
+content::BrowserContext* CastChannelAPI::GetBrowserContext() const {
+  return browser_context_;
 }
 
 CastChannelAPI::~CastChannelAPI() {}
@@ -237,7 +214,7 @@ void CastChannelAsyncApiFunction::SetResultFromError(int channel_id,
   SetError("Channel error = " + base::IntToString(error));
 }
 
-CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) {
+CastSocket* CastChannelAsyncApiFunction::GetSocket(int channel_id) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(manager_);
   return manager_->Get(extension_->id(), channel_id);
@@ -358,32 +335,32 @@ bool CastChannelOpenFunction::Prepare() {
 void CastChannelOpenFunction::AsyncWorkStart() {
   DCHECK(api_);
   DCHECK(ip_endpoint_.get());
-  scoped_ptr<CastSocket> socket = api_->GetSocketForTest();
-  if (!socket.get()) {
-    socket.reset(new CastSocket(
-        extension_->id(),
-        *ip_endpoint_,
-        channel_auth_,
-        api_,
+  CastSocket* socket;
+  scoped_ptr<CastSocket> test_socket = api_->GetSocketForTest();
+  if (test_socket.get()) {
+    socket = test_socket.release();
+  } else {
+    socket = new cast_channel::CastSocketImpl(
+        extension_->id(), *ip_endpoint_, channel_auth_,
         ExtensionsBrowserClient::Get()->GetNetLog(),
         base::TimeDelta::FromMilliseconds(connect_info_->timeout.get()
                                               ? *connect_info_->timeout
                                               : kDefaultConnectTimeoutMillis),
-        api_->GetLogger()));
+        api_->GetLogger());
   }
-  new_channel_id_ = AddSocket(socket.release());
-  CastSocket* new_socket = GetSocket(new_channel_id_);
-  api_->GetLogger()->LogNewSocketEvent(*new_socket);
-  new_socket->Connect(base::Bind(&CastChannelOpenFunction::OnOpen, this));
+  new_channel_id_ = AddSocket(socket);
+  scoped_ptr<CastMessageHandler> delegate(new CastMessageHandler(api_, socket));
+  api_->GetLogger()->LogNewSocketEvent(*socket);
+  socket->Connect(delegate.Pass(),
+                  base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }
 
-void CastChannelOpenFunction::OnOpen(int result) {
+void CastChannelOpenFunction::OnOpen(cast_channel::ChannelError result) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   VLOG(1) << "Connect finished, OnOpen invoked.";
   CastSocket* socket = GetSocket(new_channel_id_);
   if (!socket) {
-    SetResultFromError(new_channel_id_,
-                       cast_channel::CHANNEL_ERROR_CONNECT_ERROR);
+    SetResultFromError(new_channel_id_, result);
   } else {
     SetResultFromSocket(*socket);
   }
@@ -428,8 +405,15 @@ void CastChannelSendFunction::AsyncWorkStart() {
     AsyncWorkCompleted();
     return;
   }
-  socket->SendMessage(params_->message,
-                      base::Bind(&CastChannelSendFunction::OnSend, this));
+  CastMessage message_to_send;
+  if (!MessageInfoToCastMessage(params_->message, &message_to_send)) {
+    SetResultFromError(params_->channel.channel_id,
+                       cast_channel::CHANNEL_ERROR_INVALID_MESSAGE);
+    AsyncWorkCompleted();
+    return;
+  }
+  socket->transport()->SendMessage(
+      message_to_send, base::Bind(&CastChannelSendFunction::OnSend, this));
 }
 
 void CastChannelSendFunction::OnSend(int result) {
@@ -478,7 +462,6 @@ void CastChannelCloseFunction::OnClose(int result) {
     SetResultFromSocket(*socket);
     // This will delete |socket|.
     RemoveSocket(channel_id);
-    socket = NULL;
   }
   AsyncWorkCompleted();
 }
@@ -512,6 +495,53 @@ void CastChannelGetLogsFunction::AsyncWorkStart() {
   api_->GetLogger()->Reset();
 
   AsyncWorkCompleted();
+}
+
+CastChannelOpenFunction::CastMessageHandler::CastMessageHandler(
+    CastChannelAPI* api,
+    cast_channel::CastSocket* socket)
+    : api(api), socket(socket) {
+  DCHECK(api);
+  DCHECK(socket);
+}
+
+CastChannelOpenFunction::CastMessageHandler::~CastMessageHandler() {
+}
+
+void CastChannelOpenFunction::CastMessageHandler::OnError(
+    cast_channel::ChannelError error_state,
+    const cast_channel::LastErrors& last_errors) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ChannelInfo channel_info;
+  FillChannelInfo(*socket, &channel_info);
+  channel_info.error_state = error_state;
+  ErrorInfo error_info;
+  FillErrorInfo(error_state, last_errors, &error_info);
+
+  scoped_ptr<base::ListValue> results =
+      OnError::Create(channel_info, error_info);
+  scoped_ptr<Event> event(new Event(OnError::kEventName, results.Pass()));
+  extensions::EventRouter::Get(api->GetBrowserContext())
+      ->DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
+}
+
+void CastChannelOpenFunction::CastMessageHandler::OnMessage(
+    const CastMessage& message) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  MessageInfo message_info;
+  cast_channel::CastMessageToMessageInfo(message, &message_info);
+  ChannelInfo channel_info;
+  FillChannelInfo(*socket, &channel_info);
+  VLOG(1) << "Received message " << ParamToString(message_info)
+          << " on channel " << ParamToString(channel_info);
+
+  scoped_ptr<base::ListValue> results =
+      OnMessage::Create(channel_info, message_info);
+  scoped_ptr<Event> event(new Event(OnMessage::kEventName, results.Pass()));
+  extensions::EventRouter::Get(api->GetBrowserContext())
+      ->DispatchEventToExtension(socket->owner_extension_id(), event.Pass());
 }
 
 CastChannelSetAuthorityKeysFunction::CastChannelSetAuthorityKeysFunction() {

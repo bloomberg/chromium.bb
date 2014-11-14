@@ -13,7 +13,9 @@
 #include "extensions/browser/api/cast_channel/cast_channel_api.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/logger.h"
+#include "extensions/browser/api/cast_channel/test_util.h"
 #include "extensions/common/api/cast_channel.h"
+#include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/test_util.h"
 #include "extensions/test/result_catcher.h"
@@ -27,11 +29,16 @@
 // (crbug.com/398242) and simulate unloading of the extension.
 
 namespace cast_channel = extensions::core_api::cast_channel;
+using cast_channel::CastMessage;
 using cast_channel::CastSocket;
+using cast_channel::CastTransport;
+using cast_channel::ChannelAuthType;
 using cast_channel::ChannelError;
+using cast_channel::CreateIPEndPointForTest;
 using cast_channel::ErrorInfo;
 using cast_channel::Logger;
 using cast_channel::MessageInfo;
+using cast_channel::MockCastTransport;
 using cast_channel::ReadyState;
 using extensions::Extension;
 
@@ -42,19 +49,24 @@ using ::testing::A;
 using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::InSequence;
+using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::ReturnRef;
+using ::testing::ReturnPointee;
+using ::testing::SaveArg;
 
 namespace {
 
 const char kTestExtensionId[] = "ddchlicdkolnonkihahngkmmmjnjlkkf";
-const int64 kTimeoutMs = 10000;
+const char kTestCastUrl[] = "cast://192.168.1.1:8009";
 
-static void FillMessageInfo(MessageInfo* message_info,
-                            const std::string& message) {
-  message_info->namespace_ = "foo";
-  message_info->source_id = "src";
-  message_info->destination_id = "dest";
-  message_info->data.reset(new base::StringValue(message));
+static void FillCastMessage(const std::string& message,
+                            CastMessage* cast_message) {
+  cast_message->set_namespace_("foo");
+  cast_message->set_source_id("src");
+  cast_message->set_destination_id("dest");
+  cast_message->set_payload_utf8(message);
+  cast_message->set_payload_type(CastMessage::STRING);
 }
 
 ACTION_TEMPLATE(InvokeCompletionCallback,
@@ -69,32 +81,48 @@ ACTION_P2(InvokeDelegateOnError, api_test, api) {
 
 class MockCastSocket : public CastSocket {
  public:
-  explicit MockCastSocket(CastSocket::Delegate* delegate,
-                          net::IPEndPoint ip_endpoint,
-                          net::NetLog* net_log,
-                          const scoped_refptr<Logger>& logger)
-      : CastSocket(kTestExtensionId,
-                   ip_endpoint,
-                   cast_channel::CHANNEL_AUTH_TYPE_SSL,
-                   delegate,
-                   net_log,
-                   base::TimeDelta::FromMilliseconds(kTimeoutMs),
-                   logger) {}
+  MockCastSocket()
+      : CastSocket(kTestExtensionId), mock_transport_(new MockCastTransport) {}
   virtual ~MockCastSocket() {}
 
-  MOCK_METHOD1(Connect, void(const net::CompletionCallback& callback));
-  MOCK_METHOD2(SendMessage, void(const MessageInfo& message,
-                                 const net::CompletionCallback& callback));
+  // Mockable version of Connect. Accepts a bare pointer to a mock object.
+  // (GMock won't compile with scoped_ptr method parameters.)
+  MOCK_METHOD2(ConnectWeakPtr,
+               void(CastTransport::Delegate* delegate,
+                    base::Callback<void(ChannelError)> callback));
+
+  // Proxy for ConnectWeakPtr. Unpacks scoped_ptr into a GMock-friendly bare
+  // ptr.
+  virtual void Connect(scoped_ptr<CastTransport::Delegate> delegate,
+                       base::Callback<void(ChannelError)> callback) override {
+    delegate_ = delegate.Pass();
+    ConnectWeakPtr(delegate_.get(), callback);
+  }
+
   MOCK_METHOD1(Close, void(const net::CompletionCallback& callback));
-  MOCK_CONST_METHOD0(ready_state, cast_channel::ReadyState());
-  MOCK_CONST_METHOD0(error_state, cast_channel::ChannelError());
+  MOCK_CONST_METHOD0(ip_endpoint, const net::IPEndPoint&());
+  MOCK_CONST_METHOD0(id, int());
+  MOCK_METHOD1(set_id, void(int id));
+  MOCK_CONST_METHOD0(channel_auth, ChannelAuthType());
+  MOCK_CONST_METHOD0(cast_url, std::string());
+  MOCK_CONST_METHOD0(ready_state, ReadyState());
+  MOCK_CONST_METHOD0(error_state, ChannelError());
+  MOCK_METHOD1(SetErrorState, void(ChannelError error_state));
+
+  CastTransport* transport() const override { return mock_transport_.get(); }
+
+  MockCastTransport* mock_transport() const { return mock_transport_.get(); }
+
+ private:
+  scoped_ptr<MockCastTransport> mock_transport_;
+  scoped_ptr<CastTransport::Delegate> delegate_;
 };
 
 }  // namespace
 
 class CastChannelAPITest : public ExtensionApiTest {
  public:
-  CastChannelAPITest() {}
+  CastChannelAPITest() : ip_endpoint_(CreateIPEndPointForTest()) {}
 
   void SetUpCommandLine(CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
@@ -108,11 +136,19 @@ class CastChannelAPITest : public ExtensionApiTest {
     net::IPAddressNumber ip_number;
     net::ParseIPLiteralToNumber("192.168.1.1", &ip_number);
     net::IPEndPoint ip_endpoint(ip_number, 8009);
-    mock_cast_socket_ = new MockCastSocket(
-        api, ip_endpoint, &capturing_net_log_, api->GetLogger());
+    mock_cast_socket_ = new MockCastSocket;
     // Transfers ownership of the socket.
     api->SetSocketForTest(
         make_scoped_ptr<CastSocket>(mock_cast_socket_).Pass());
+    ON_CALL(*mock_cast_socket_, set_id(_))
+        .WillByDefault(SaveArg<0>(&channel_id_));
+    ON_CALL(*mock_cast_socket_, id())
+        .WillByDefault(ReturnPointee(&channel_id_));
+    ON_CALL(*mock_cast_socket_, ip_endpoint())
+        .WillByDefault(ReturnRef(ip_endpoint_));
+    ON_CALL(*mock_cast_socket_, channel_auth())
+        .WillByDefault(Return(cast_channel::CHANNEL_AUTH_TYPE_SSL));
+    ON_CALL(*mock_cast_socket_, cast_url()).WillByDefault(Return(kTestCastUrl));
   }
 
   void SetUpOpenSendClose() {
@@ -121,11 +157,13 @@ class CastChannelAPITest : public ExtensionApiTest {
         .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_NONE));
     {
       InSequence sequence;
-      EXPECT_CALL(*mock_cast_socket_, Connect(_))
-          .WillOnce(InvokeCompletionCallback<0>(net::OK));
+      EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(_, _))
+          .WillOnce(
+              InvokeCompletionCallback<1>(cast_channel::CHANNEL_ERROR_NONE));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(cast_channel::READY_STATE_OPEN));
-      EXPECT_CALL(*mock_cast_socket_, SendMessage(A<const MessageInfo&>(), _))
+      EXPECT_CALL(*mock_cast_socket_->mock_transport(),
+                  SendMessage(A<const CastMessage&>(), _))
           .WillOnce(InvokeCompletionCallback<1>(net::OK));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(cast_channel::READY_STATE_OPEN));
@@ -145,9 +183,8 @@ class CastChannelAPITest : public ExtensionApiTest {
     last_errors.challenge_reply_error_type =
         cast_channel::proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED;
     last_errors.nss_error_code = -8164;
-    api->OnError(mock_cast_socket_,
-                 cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
-                 last_errors);
+    message_delegate_->OnError(cast_channel::CHANNEL_ERROR_CONNECT_ERROR,
+                               last_errors);
   }
 
  protected:
@@ -162,9 +199,9 @@ class CastChannelAPITest : public ExtensionApiTest {
   void DoCallOnMessage(extensions::CastChannelAPI* api,
                        MockCastSocket* cast_socket,
                        const std::string& message) {
-    MessageInfo message_info;
-    FillMessageInfo(&message_info, message);
-    api->OnMessage(cast_socket, message_info);
+    CastMessage cast_message;
+    FillCastMessage(message, &cast_message);
+    message_delegate_->OnMessage(cast_message);
   }
 
   extensions::CastChannelOpenFunction* CreateOpenFunction(
@@ -193,7 +230,10 @@ class CastChannelAPITest : public ExtensionApiTest {
   }
 
   MockCastSocket* mock_cast_socket_;
+  net::IPEndPoint ip_endpoint_;
+  CastTransport::Delegate* message_delegate_;
   net::CapturingNetLog capturing_net_log_;
+  int channel_id_;
 };
 
 // TODO(munjal): Win Dbg has a workaround that makes RunExtensionSubtest
@@ -244,8 +284,10 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenReceiveClose) {
 
   {
     InSequence sequence;
-    EXPECT_CALL(*mock_cast_socket_, Connect(_))
-        .WillOnce(InvokeCompletionCallback<0>(net::OK));
+    EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(NotNull(), _))
+        .WillOnce(DoAll(
+            SaveArg<0>(&message_delegate_),
+            InvokeCompletionCallback<1>(cast_channel::CHANNEL_ERROR_NONE)));
     EXPECT_CALL(*mock_cast_socket_, ready_state())
         .Times(3)
         .WillRepeatedly(Return(cast_channel::READY_STATE_OPEN));
@@ -289,9 +331,11 @@ IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestGetLogs) {
 IN_PROC_BROWSER_TEST_F(CastChannelAPITest, MAYBE_TestOpenError) {
   SetUpMockCastSocket();
 
-  EXPECT_CALL(*mock_cast_socket_, Connect(_))
-      .WillOnce(DoAll(InvokeDelegateOnError(this, GetApi()),
-                      InvokeCompletionCallback<0>(net::ERR_CONNECTION_FAILED)));
+  EXPECT_CALL(*mock_cast_socket_, ConnectWeakPtr(NotNull(), _))
+      .WillOnce(DoAll(SaveArg<0>(&message_delegate_),
+                      InvokeDelegateOnError(this, GetApi()),
+                      InvokeCompletionCallback<1>(
+                          cast_channel::CHANNEL_ERROR_CONNECT_ERROR)));
   EXPECT_CALL(*mock_cast_socket_, error_state())
       .WillRepeatedly(Return(cast_channel::CHANNEL_ERROR_CONNECT_ERROR));
   EXPECT_CALL(*mock_cast_socket_, ready_state())

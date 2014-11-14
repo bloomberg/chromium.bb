@@ -18,6 +18,7 @@
 #include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_framer.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
+#include "extensions/browser/api/cast_channel/cast_transport.h"
 #include "extensions/browser/api/cast_channel/logger.h"
 #include "extensions/browser/api/cast_channel/logger_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
@@ -51,7 +52,6 @@ const int kTcpKeepAliveDelaySecs = 10;
 }  // namespace
 
 namespace extensions {
-
 static base::LazyInstance<BrowserContextKeyedAPIFactory<
     ApiResourceManager<core_api::cast_channel::CastSocket> > > g_factory =
     LAZY_INSTANCE_INITIALIZER;
@@ -66,26 +66,29 @@ ApiResourceManager<core_api::cast_channel::CastSocket>::GetFactoryInstance() {
 
 namespace core_api {
 namespace cast_channel {
-CastSocket::CastSocket(const std::string& owner_extension_id,
-                       const net::IPEndPoint& ip_endpoint,
-                       ChannelAuthType channel_auth,
-                       CastSocket::Delegate* delegate,
-                       net::NetLog* net_log,
-                       const base::TimeDelta& timeout,
-                       const scoped_refptr<Logger>& logger)
-    : ApiResource(owner_extension_id),
+
+CastSocket::CastSocket(const std::string& owner_extension_id)
+    : ApiResource(owner_extension_id) {
+}
+
+CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
+                               const net::IPEndPoint& ip_endpoint,
+                               ChannelAuthType channel_auth,
+                               net::NetLog* net_log,
+                               const base::TimeDelta& timeout,
+                               const scoped_refptr<Logger>& logger)
+    : CastSocket(owner_extension_id),
+      auth_delegate_(this),
+      owner_extension_id_(owner_extension_id),
       channel_id_(0),
       ip_endpoint_(ip_endpoint),
       channel_auth_(channel_auth),
-      delegate_(delegate),
       net_log_(net_log),
       logger_(logger),
       connect_timeout_(timeout),
-      connect_timeout_timer_(new base::OneShotTimer<CastSocket>),
+      connect_timeout_timer_(new base::OneShotTimer<CastSocketImpl>),
       is_canceled_(false),
       connect_state_(proto::CONN_STATE_NONE),
-      write_state_(proto::WRITE_STATE_NONE),
-      read_state_(proto::READ_STATE_NONE),
       error_state_(CHANNEL_ERROR_NONE),
       ready_state_(READY_STATE_NONE) {
   DCHECK(net_log_);
@@ -93,28 +96,39 @@ CastSocket::CastSocket(const std::string& owner_extension_id,
          channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED);
   net_log_source_.type = net::NetLog::SOURCE_SOCKET;
   net_log_source_.id = net_log_->NextID();
-
-  // Buffer is reused across messages.
-  read_buffer_ = new net::GrowableIOBuffer();
-  read_buffer_->SetCapacity(MessageFramer::MessageHeader::max_message_size());
-  framer_.reset(new MessageFramer(read_buffer_));
 }
 
-CastSocket::~CastSocket() {
+CastSocketImpl::~CastSocketImpl() {
   // Ensure that resources are freed but do not run pending callbacks to avoid
   // any re-entrancy.
   CloseInternal();
 }
 
-ReadyState CastSocket::ready_state() const {
+ReadyState CastSocketImpl::ready_state() const {
   return ready_state_;
 }
 
-ChannelError CastSocket::error_state() const {
+ChannelError CastSocketImpl::error_state() const {
   return error_state_;
 }
 
-scoped_ptr<net::TCPClientSocket> CastSocket::CreateTcpSocket() {
+const net::IPEndPoint& CastSocketImpl::ip_endpoint() const {
+  return ip_endpoint_;
+}
+
+int CastSocketImpl::id() const {
+  return channel_id_;
+}
+
+void CastSocketImpl::set_id(int id) {
+  channel_id_ = id;
+}
+
+ChannelAuthType CastSocketImpl::channel_auth() const {
+  return channel_auth_;
+}
+
+scoped_ptr<net::TCPClientSocket> CastSocketImpl::CreateTcpSocket() {
   net::AddressList addresses(ip_endpoint_);
   return scoped_ptr<net::TCPClientSocket>(
       new net::TCPClientSocket(addresses, net_log_, net_log_source_));
@@ -123,7 +137,7 @@ scoped_ptr<net::TCPClientSocket> CastSocket::CreateTcpSocket() {
   // or Connect() is called.
 }
 
-scoped_ptr<net::SSLClientSocket> CastSocket::CreateSslSocket(
+scoped_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
     scoped_ptr<net::StreamSocket> socket) {
   net::SSLConfig ssl_config;
   // If a peer cert was extracted in a previous attempt to connect, then
@@ -153,7 +167,7 @@ scoped_ptr<net::SSLClientSocket> CastSocket::CreateSslSocket(
       connection.Pass(), host_and_port, ssl_config, context);
 }
 
-bool CastSocket::ExtractPeerCert(std::string* cert) {
+bool CastSocketImpl::ExtractPeerCert(std::string* cert) {
   DCHECK(cert);
   DCHECK(peer_cert_.empty());
   net::SSLInfo ssl_info;
@@ -175,7 +189,7 @@ bool CastSocket::ExtractPeerCert(std::string* cert) {
   return result;
 }
 
-bool CastSocket::VerifyChallengeReply() {
+bool CastSocketImpl::VerifyChallengeReply() {
   AuthResult result = AuthenticateChallengeReply(*challenge_reply_, peer_cert_);
   if (result.success()) {
     VLOG(1) << result.error_message;
@@ -184,13 +198,22 @@ bool CastSocket::VerifyChallengeReply() {
   return result.success();
 }
 
-void CastSocket::Connect(const net::CompletionCallback& callback) {
+void CastSocketImpl::SetTransportForTesting(
+    scoped_ptr<CastTransport> transport) {
+  transport_ = transport.Pass();
+}
+
+void CastSocketImpl::Connect(scoped_ptr<CastTransport::Delegate> delegate,
+                             base::Callback<void(ChannelError)> callback) {
   DCHECK(CalledOnValidThread());
   VLOG_WITH_CONNECTION(1) << "Connect readyState = " << ready_state_;
+
+  read_delegate_ = delegate.Pass();
+
   if (ready_state_ != READY_STATE_NONE) {
     logger_->LogSocketEventWithDetails(
         channel_id_, proto::CONNECT_FAILED, "ReadyState not NONE");
-    callback.Run(net::ERR_CONNECTION_FAILED);
+    callback.Run(CHANNEL_ERROR_CONNECT_ERROR);
     return;
   }
 
@@ -198,45 +221,54 @@ void CastSocket::Connect(const net::CompletionCallback& callback) {
   SetReadyState(READY_STATE_CONNECTING);
   SetConnectState(proto::CONN_STATE_TCP_CONNECT);
 
+  // Set up connection timeout.
   if (connect_timeout_.InMicroseconds() > 0) {
     DCHECK(connect_timeout_callback_.IsCancelled());
     connect_timeout_callback_.Reset(
-        base::Bind(&CastSocket::OnConnectTimeout, base::Unretained(this)));
+        base::Bind(&CastSocketImpl::OnConnectTimeout, base::Unretained(this)));
     GetTimer()->Start(FROM_HERE,
                       connect_timeout_,
                       connect_timeout_callback_.callback());
   }
+
   DoConnectLoop(net::OK);
 }
 
-void CastSocket::PostTaskToStartConnectLoop(int result) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(connect_loop_callback_.IsCancelled());
-  connect_loop_callback_.Reset(
-      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this), result));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         connect_loop_callback_.callback());
+CastTransport* CastSocketImpl::transport() const {
+  DCHECK_EQ(ready_state_, READY_STATE_OPEN);
+  return transport_.get();
 }
 
-void CastSocket::OnConnectTimeout() {
+void CastSocketImpl::OnConnectTimeout() {
   DCHECK(CalledOnValidThread());
   // Stop all pending connection setup tasks and report back to the client.
   is_canceled_ = true;
   logger_->LogSocketEvent(channel_id_, proto::CONNECT_TIMED_OUT);
   VLOG_WITH_CONNECTION(1) << "Timeout while establishing a connection.";
-  DoConnectCallback(net::ERR_TIMED_OUT);
+  SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
+  DoConnectCallback();
+}
+
+void CastSocketImpl::PostTaskToStartConnectLoop(int result) {
+  DCHECK(CalledOnValidThread());
+  DCHECK(connect_loop_callback_.IsCancelled());
+  connect_loop_callback_.Reset(base::Bind(&CastSocketImpl::DoConnectLoop,
+                                          base::Unretained(this), result));
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         connect_loop_callback_.callback());
 }
 
 // This method performs the state machine transitions for connection flow.
 // There are two entry points to this method:
 // 1. Connect method: this starts the flow
-// 2. Callback from network operations that finish asynchronously
-void CastSocket::DoConnectLoop(int result) {
+// 2. Callback from network operations that finish asynchronously.
+void CastSocketImpl::DoConnectLoop(int result) {
   connect_loop_callback_.Cancel();
   if (is_canceled_) {
     LOG(ERROR) << "CANCELLED - Aborting DoConnectLoop.";
     return;
   }
+
   // Network operations can either finish synchronously or asynchronously.
   // This method executes the state machine transitions in a loop so that
   // correct state transitions happen even when network operations finish
@@ -279,32 +311,30 @@ void CastSocket::DoConnectLoop(int result) {
   // Get out of the loop either when: // a. A network operation is pending, OR
   // b. The Do* method called did not change state
 
-  // No state change occurred in do-while loop above. This means state has
-  // transitioned to NONE.
+  // No state change occurred above. This means state has transitioned to NONE.
   if (connect_state_ == proto::CONN_STATE_NONE) {
     logger_->LogSocketConnectState(channel_id_, connect_state_);
   }
 
-  // Connect loop is finished: if there is no pending IO invoke the callback.
   if (rv != net::ERR_IO_PENDING) {
     GetTimer()->Stop();
-    DoConnectCallback(rv);
+    DoConnectCallback();
   }
 }
 
-int CastSocket::DoTcpConnect() {
+int CastSocketImpl::DoTcpConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
   SetConnectState(proto::CONN_STATE_TCP_CONNECT_COMPLETE);
   tcp_socket_ = CreateTcpSocket();
 
   int rv = tcp_socket_->Connect(
-      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this)));
+      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
   logger_->LogSocketEventWithRv(channel_id_, proto::TCP_SOCKET_CONNECT, rv);
   return rv;
 }
 
-int CastSocket::DoTcpConnectComplete(int result) {
+int CastSocketImpl::DoTcpConnectComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoTcpConnectComplete: " << result;
   if (result == net::OK) {
     // Enable TCP protocol-level keep-alive.
@@ -313,35 +343,52 @@ int CastSocket::DoTcpConnectComplete(int result) {
     logger_->LogSocketEventWithRv(
         channel_id_, proto::TCP_SOCKET_SET_KEEP_ALIVE, result ? 1 : 0);
     SetConnectState(proto::CONN_STATE_SSL_CONNECT);
+  } else {
+    SetErrorState(CHANNEL_ERROR_CONNECT_ERROR);
   }
   return result;
 }
 
-int CastSocket::DoSslConnect() {
+int CastSocketImpl::DoSslConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoSslConnect";
   SetConnectState(proto::CONN_STATE_SSL_CONNECT_COMPLETE);
   socket_ = CreateSslSocket(tcp_socket_.Pass());
 
   int rv = socket_->Connect(
-      base::Bind(&CastSocket::DoConnectLoop, base::Unretained(this)));
+      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
   logger_->LogSocketEventWithRv(channel_id_, proto::SSL_SOCKET_CONNECT, rv);
   return rv;
 }
 
-int CastSocket::DoSslConnectComplete(int result) {
+int CastSocketImpl::DoSslConnectComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoSslConnectComplete: " << result;
   if (result == net::ERR_CERT_AUTHORITY_INVALID &&
       peer_cert_.empty() && ExtractPeerCert(&peer_cert_)) {
+    // Peer certificate fallback - try the connection again, from the top.
     SetConnectState(proto::CONN_STATE_TCP_CONNECT);
-  } else if (result == net::OK &&
-             channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) {
-    SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
+  } else if (result == net::OK) {
+    // SSL connection succeeded.
+    if (!transport_.get()) {
+      // Create a channel transport if one wasn't already set (e.g. by test
+      // code).
+      transport_.reset(new CastTransportImpl(
+          this->socket_.get(), &auth_delegate_, channel_id_, ip_endpoint_,
+          channel_auth_, logger_));
+    }
+    if (channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) {
+      // Additionally verify the connection with a handshake.
+      SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
+    } else {
+      transport_->StartReading();
+    }
+  } else {
+    SetErrorState(CHANNEL_ERROR_AUTHENTICATION_ERROR);
   }
   return result;
 }
 
-int CastSocket::DoAuthChallengeSend() {
+int CastSocketImpl::DoAuthChallengeSend() {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeSend";
   SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE);
 
@@ -349,541 +396,145 @@ int CastSocket::DoAuthChallengeSend() {
   CreateAuthChallengeMessage(&challenge_message);
   VLOG_WITH_CONNECTION(1) << "Sending challenge: "
                           << CastMessageToString(challenge_message);
-  // Post a task to send auth challenge so that DoWriteLoop is not nested inside
-  // DoConnectLoop. This is not strictly necessary but keeps the write loop
-  // code decoupled from connect loop code.
-  DCHECK(send_auth_challenge_callback_.IsCancelled());
-  send_auth_challenge_callback_.Reset(
-      base::Bind(&CastSocket::SendCastMessageInternal,
-                 base::Unretained(this),
-                 challenge_message,
-                 base::Bind(&CastSocket::DoAuthChallengeSendWriteComplete,
-                            base::Unretained(this))));
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE,
-      send_auth_challenge_callback_.callback());
+
+  transport_->SendMessage(
+      challenge_message,
+      base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
+
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
 }
 
-void CastSocket::DoAuthChallengeSendWriteComplete(int result) {
-  send_auth_challenge_callback_.Cancel();
-  VLOG_WITH_CONNECTION(2) << "DoAuthChallengeSendWriteComplete: " << result;
-  DCHECK_GT(result, 0);
-  DCHECK_EQ(write_queue_.size(), 1UL);
-  PostTaskToStartConnectLoop(result);
-}
-
-int CastSocket::DoAuthChallengeSendComplete(int result) {
+int CastSocketImpl::DoAuthChallengeSendComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeSendComplete: " << result;
   if (result < 0) {
+    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
     return result;
   }
+  transport_->StartReading();
   SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE);
-
-  // Post a task to start read loop so that DoReadLoop is not nested inside
-  // DoConnectLoop. This is not strictly necessary but keeps the read loop
-  // code decoupled from connect loop code.
-  PostTaskToStartReadLoop();
-  // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
 }
 
-int CastSocket::DoAuthChallengeReplyComplete(int result) {
+CastSocketImpl::AuthTransportDelegate::AuthTransportDelegate(
+    CastSocketImpl* socket)
+    : socket_(socket) {
+  DCHECK(socket);
+}
+
+void CastSocketImpl::AuthTransportDelegate::OnError(
+    ChannelError error_state,
+    const LastErrors& last_errors) {
+  socket_->SetErrorState(error_state);
+  socket_->PostTaskToStartConnectLoop(net::ERR_CONNECTION_FAILED);
+}
+
+void CastSocketImpl::AuthTransportDelegate::OnMessage(
+    const CastMessage& message) {
+  if (!IsAuthMessage(message)) {
+    socket_->SetErrorState(CHANNEL_ERROR_TRANSPORT_ERROR);
+    socket_->PostTaskToStartConnectLoop(net::ERR_INVALID_RESPONSE);
+  } else {
+    socket_->challenge_reply_.reset(new CastMessage(message));
+    socket_->logger_->LogSocketEvent(socket_->channel_id_,
+                                     proto::RECEIVED_CHALLENGE_REPLY);
+    socket_->PostTaskToStartConnectLoop(net::OK);
+  }
+}
+
+int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeReplyComplete: " << result;
   if (result < 0) {
     return result;
   }
   if (!VerifyChallengeReply()) {
-    return net::ERR_FAILED;
+    SetErrorState(CHANNEL_ERROR_AUTHENTICATION_ERROR);
+    return net::ERR_CONNECTION_FAILED;
   }
   VLOG_WITH_CONNECTION(1) << "Auth challenge verification succeeded";
   return net::OK;
 }
 
-void CastSocket::DoConnectCallback(int result) {
-  SetReadyState((result == net::OK) ? READY_STATE_OPEN : READY_STATE_CLOSED);
-  if (result == net::OK) {
-    SetErrorState(CHANNEL_ERROR_NONE);
-    PostTaskToStartReadLoop();
-    VLOG_WITH_CONNECTION(1) << "Calling Connect_Callback";
-    base::ResetAndReturn(&connect_callback_).Run(result);
-    return;
-  } else if (result == net::ERR_TIMED_OUT) {
-    SetErrorState(CHANNEL_ERROR_CONNECT_TIMEOUT);
+void CastSocketImpl::DoConnectCallback() {
+  VLOG(1) << "DoConnectCallback (error_state = " << error_state_ << ")";
+  if (error_state_ == CHANNEL_ERROR_NONE) {
+    SetReadyState(READY_STATE_OPEN);
+    transport_->SetReadDelegate(read_delegate_.get());
   } else {
-    SetErrorState(CHANNEL_ERROR_CONNECT_ERROR);
+    SetReadyState(READY_STATE_CLOSED);
+    CloseInternal();
   }
-  // Calls the connect callback.
-  CloseWithError();
+  base::ResetAndReturn(&connect_callback_).Run(error_state_);
 }
 
-void CastSocket::Close(const net::CompletionCallback& callback) {
+void CastSocketImpl::Close(const net::CompletionCallback& callback) {
+  DCHECK(CalledOnValidThread());
   CloseInternal();
-  RunPendingCallbacksOnClose();
   // Run this callback last.  It may delete the socket.
   callback.Run(net::OK);
 }
 
-void CastSocket::CloseInternal() {
+void CastSocketImpl::CloseInternal() {
   // TODO(mfoltz): Enforce this when CastChannelAPITest is rewritten to create
   // and free sockets on the same thread.  crbug.com/398242
-  // DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidThread());
   if (ready_state_ == READY_STATE_CLOSED) {
     return;
   }
 
   VLOG_WITH_CONNECTION(1) << "Close ReadyState = " << ready_state_;
+  transport_.reset();
   tcp_socket_.reset();
   socket_.reset();
-  cert_verifier_.reset();
   transport_security_state_.reset();
-  GetTimer()->Stop();
+  if (GetTimer()) {
+    GetTimer()->Stop();
+  }
 
   // Cancel callbacks that we queued ourselves to re-enter the connect or read
   // loops.
   connect_loop_callback_.Cancel();
   send_auth_challenge_callback_.Cancel();
-  read_loop_callback_.Cancel();
   connect_timeout_callback_.Cancel();
   SetReadyState(READY_STATE_CLOSED);
   logger_->LogSocketEvent(channel_id_, proto::SOCKET_CLOSED);
 }
 
-void CastSocket::RunPendingCallbacksOnClose() {
-  DCHECK_EQ(ready_state_, READY_STATE_CLOSED);
-  if (!connect_callback_.is_null()) {
-    connect_callback_.Run(net::ERR_CONNECTION_FAILED);
-    connect_callback_.Reset();
-  }
-  for (; !write_queue_.empty(); write_queue_.pop()) {
-    net::CompletionCallback& callback = write_queue_.front().callback;
-    callback.Run(net::ERR_FAILED);
-    callback.Reset();
-  }
+std::string CastSocketImpl::cast_url() const {
+  return ((channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) ? "casts://"
+                                                            : "cast://") +
+         ip_endpoint_.ToString();
 }
 
-void CastSocket::SendMessage(const MessageInfo& message,
-                             const net::CompletionCallback& callback) {
-  DCHECK(CalledOnValidThread());
-  if (ready_state_ != READY_STATE_OPEN) {
-    logger_->LogSocketEventForMessage(channel_id_,
-                                      proto::SEND_MESSAGE_FAILED,
-                                      message.namespace_,
-                                      "Ready state not OPEN");
-    callback.Run(net::ERR_FAILED);
-    return;
-  }
-  CastMessage message_proto;
-  if (!MessageInfoToCastMessage(message, &message_proto)) {
-    logger_->LogSocketEventForMessage(channel_id_,
-                                      proto::SEND_MESSAGE_FAILED,
-                                      message.namespace_,
-                                      "Failed to convert to CastMessage");
-    callback.Run(net::ERR_FAILED);
-    return;
-  }
-  SendCastMessageInternal(message_proto, callback);
-}
-
-void CastSocket::SendCastMessageInternal(
-    const CastMessage& message,
-    const net::CompletionCallback& callback) {
-  WriteRequest write_request(callback);
-  if (!write_request.SetContent(message)) {
-    logger_->LogSocketEventForMessage(channel_id_,
-                                      proto::SEND_MESSAGE_FAILED,
-                                      message.namespace_(),
-                                      "SetContent failed");
-    callback.Run(net::ERR_FAILED);
-    return;
-  }
-
-  write_queue_.push(write_request);
-  logger_->LogSocketEventForMessage(
-      channel_id_,
-      proto::MESSAGE_ENQUEUED,
-      message.namespace_(),
-      base::StringPrintf("Queue size: %" PRIuS, write_queue_.size()));
-  if (write_state_ == proto::WRITE_STATE_NONE) {
-    SetWriteState(proto::WRITE_STATE_WRITE);
-    DoWriteLoop(net::OK);
-  }
-}
-
-void CastSocket::DoWriteLoop(int result) {
-  DCHECK(CalledOnValidThread());
-  VLOG_WITH_CONNECTION(1) << "DoWriteLoop queue size: " << write_queue_.size();
-
-  if (write_queue_.empty()) {
-    SetWriteState(proto::WRITE_STATE_NONE);
-    return;
-  }
-
-  // Network operations can either finish synchronously or asynchronously.
-  // This method executes the state machine transitions in a loop so that
-  // write state transitions happen even when network operations finish
-  // synchronously.
-  int rv = result;
-  do {
-    proto::WriteState state = write_state_;
-    write_state_ = proto::WRITE_STATE_NONE;
-    switch (state) {
-      case proto::WRITE_STATE_WRITE:
-        rv = DoWrite();
-        break;
-      case proto::WRITE_STATE_WRITE_COMPLETE:
-        rv = DoWriteComplete(rv);
-        break;
-      case proto::WRITE_STATE_DO_CALLBACK:
-        rv = DoWriteCallback();
-        break;
-      case proto::WRITE_STATE_ERROR:
-        rv = DoWriteError(rv);
-        break;
-      default:
-        NOTREACHED() << "BUG in write flow. Unknown state: " << state;
-        break;
-    }
-  } while (!write_queue_.empty() && rv != net::ERR_IO_PENDING &&
-           write_state_ != proto::WRITE_STATE_NONE);
-
-  // No state change occurred in do-while loop above. This means state has
-  // transitioned to NONE.
-  if (write_state_ == proto::WRITE_STATE_NONE) {
-    logger_->LogSocketWriteState(channel_id_, write_state_);
-  }
-
-  // If write loop is done because the queue is empty then set write
-  // state to NONE
-  if (write_queue_.empty()) {
-    SetWriteState(proto::WRITE_STATE_NONE);
-  }
-
-  // Write loop is done - if the result is ERR_FAILED then close with error.
-  if (rv == net::ERR_FAILED) {
-    CloseWithError();
-  }
-}
-
-int CastSocket::DoWrite() {
-  DCHECK(!write_queue_.empty());
-  WriteRequest& request = write_queue_.front();
-
-  VLOG_WITH_CONNECTION(2) << "WriteData byte_count = "
-                          << request.io_buffer->size() << " bytes_written "
-                          << request.io_buffer->BytesConsumed();
-
-  SetWriteState(proto::WRITE_STATE_WRITE_COMPLETE);
-
-  int rv = socket_->Write(
-      request.io_buffer.get(),
-      request.io_buffer->BytesRemaining(),
-      base::Bind(&CastSocket::DoWriteLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_WRITE, rv);
-
-  return rv;
-}
-
-int CastSocket::DoWriteComplete(int result) {
-  DCHECK(!write_queue_.empty());
-  if (result <= 0) {  // NOTE that 0 also indicates an error
-    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
-    SetWriteState(proto::WRITE_STATE_ERROR);
-    return result == 0 ? net::ERR_FAILED : result;
-  }
-
-  // Some bytes were successfully written
-  WriteRequest& request = write_queue_.front();
-  scoped_refptr<net::DrainableIOBuffer> io_buffer = request.io_buffer;
-  io_buffer->DidConsume(result);
-  if (io_buffer->BytesRemaining() == 0) {  // Message fully sent
-    SetWriteState(proto::WRITE_STATE_DO_CALLBACK);
-  } else {
-    SetWriteState(proto::WRITE_STATE_WRITE);
-  }
-
-  return net::OK;
-}
-
-int CastSocket::DoWriteCallback() {
-  DCHECK(!write_queue_.empty());
-
-  SetWriteState(proto::WRITE_STATE_WRITE);
-
-  WriteRequest& request = write_queue_.front();
-  int bytes_consumed = request.io_buffer->BytesConsumed();
-  logger_->LogSocketEventForMessage(
-      channel_id_,
-      proto::MESSAGE_WRITTEN,
-      request.message_namespace,
-      base::StringPrintf("Bytes: %d", bytes_consumed));
-  request.callback.Run(bytes_consumed);
-  write_queue_.pop();
-  return net::OK;
-}
-
-int CastSocket::DoWriteError(int result) {
-  DCHECK(!write_queue_.empty());
-  DCHECK_LT(result, 0);
-
-  // If inside connection flow, then there should be exactly one item in
-  // the write queue.
-  if (ready_state_ == READY_STATE_CONNECTING) {
-    write_queue_.pop();
-    DCHECK(write_queue_.empty());
-    PostTaskToStartConnectLoop(result);
-    // Connect loop will handle the error. Return net::OK so that write flow
-    // does not try to report error also.
-    return net::OK;
-  }
-
-  while (!write_queue_.empty()) {
-    WriteRequest& request = write_queue_.front();
-    request.callback.Run(result);
-    write_queue_.pop();
-  }
-  return net::ERR_FAILED;
-}
-
-void CastSocket::PostTaskToStartReadLoop() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(read_loop_callback_.IsCancelled());
-  read_loop_callback_.Reset(
-      base::Bind(&CastSocket::StartReadLoop, base::Unretained(this)));
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         read_loop_callback_.callback());
-}
-
-void CastSocket::StartReadLoop() {
-  read_loop_callback_.Cancel();
-  // Read loop would have already been started if read state is not NONE
-  if (read_state_ == proto::READ_STATE_NONE) {
-    SetReadState(proto::READ_STATE_READ);
-    DoReadLoop(net::OK);
-  }
-}
-
-void CastSocket::DoReadLoop(int result) {
-  DCHECK(CalledOnValidThread());
-  // Network operations can either finish synchronously or asynchronously.
-  // This method executes the state machine transitions in a loop so that
-  // write state transitions happen even when network operations finish
-  // synchronously.
-  int rv = result;
-  do {
-    proto::ReadState state = read_state_;
-    read_state_ = proto::READ_STATE_NONE;
-
-    switch (state) {
-      case proto::READ_STATE_READ:
-        rv = DoRead();
-        break;
-      case proto::READ_STATE_READ_COMPLETE:
-        rv = DoReadComplete(rv);
-        break;
-      case proto::READ_STATE_DO_CALLBACK:
-        rv = DoReadCallback();
-        break;
-      case proto::READ_STATE_ERROR:
-        rv = DoReadError(rv);
-        DCHECK_EQ(read_state_, proto::READ_STATE_NONE);
-        break;
-      default:
-        NOTREACHED() << "BUG in read flow. Unknown state: " << state;
-        break;
-    }
-  } while (rv != net::ERR_IO_PENDING && read_state_ != proto::READ_STATE_NONE);
-
-  // No state change occurred in do-while loop above. This means state has
-  // transitioned to NONE.
-  if (read_state_ == proto::READ_STATE_NONE) {
-    logger_->LogSocketReadState(channel_id_, read_state_);
-  }
-
-  if (rv == net::ERR_FAILED) {
-    if (ready_state_ == READY_STATE_CONNECTING) {
-      // Read errors during the handshake should notify the caller via the
-      // connect callback.  This will also send error status via the OnError
-      // delegate.
-      PostTaskToStartConnectLoop(net::ERR_FAILED);
-    } else {
-      // Connection is already established.  Close and send error status via the
-      // OnError delegate.
-      CloseWithError();
-    }
-  }
-}
-
-int CastSocket::DoRead() {
-  SetReadState(proto::READ_STATE_READ_COMPLETE);
-
-  // Determine how many bytes need to be read.
-  size_t num_bytes_to_read = framer_->BytesRequested();
-
-  // Read up to num_bytes_to_read into |current_read_buffer_|.
-  int rv = socket_->Read(
-      read_buffer_.get(),
-      base::checked_cast<uint32>(num_bytes_to_read),
-      base::Bind(&CastSocket::DoReadLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, proto::SOCKET_READ, rv);
-
-  return rv;
-}
-
-int CastSocket::DoReadComplete(int result) {
-  VLOG_WITH_CONNECTION(2) << "DoReadComplete result = " << result;
-
-  if (result <= 0) {  // 0 means EOF: the peer closed the socket
-    VLOG_WITH_CONNECTION(1) << "Read error, peer closed the socket";
-    SetErrorState(CHANNEL_ERROR_SOCKET_ERROR);
-    SetReadState(proto::READ_STATE_ERROR);
-    return result == 0 ? net::ERR_FAILED : result;
-  }
-
-  size_t message_size;
-  DCHECK(current_message_.get() == NULL);
-  current_message_ = framer_->Ingest(result, &message_size, &error_state_);
-  if (current_message_.get()) {
-    DCHECK_EQ(error_state_, CHANNEL_ERROR_NONE);
-    DCHECK_GT(message_size, static_cast<size_t>(0));
-    logger_->LogSocketEventForMessage(
-        channel_id_,
-        proto::MESSAGE_READ,
-        current_message_->namespace_(),
-        base::StringPrintf("Message size: %u",
-                           static_cast<uint32>(message_size)));
-    SetReadState(proto::READ_STATE_DO_CALLBACK);
-  } else if (error_state_ != CHANNEL_ERROR_NONE) {
-    DCHECK(current_message_.get() == NULL);
-    SetReadState(proto::READ_STATE_ERROR);
-  } else {
-    DCHECK(current_message_.get() == NULL);
-    SetReadState(proto::READ_STATE_READ);
-  }
-  return net::OK;
-}
-
-int CastSocket::DoReadCallback() {
-  SetReadState(proto::READ_STATE_READ);
-  const CastMessage& message = *current_message_;
-  if (ready_state_ == READY_STATE_CONNECTING) {
-    if (IsAuthMessage(message)) {
-      challenge_reply_.reset(new CastMessage(message));
-      logger_->LogSocketEvent(channel_id_, proto::RECEIVED_CHALLENGE_REPLY);
-      PostTaskToStartConnectLoop(net::OK);
-      current_message_.reset();
-      return net::OK;
-    } else {
-      SetReadState(proto::READ_STATE_ERROR);
-      SetErrorState(CHANNEL_ERROR_INVALID_MESSAGE);
-      current_message_.reset();
-      return net::ERR_INVALID_RESPONSE;
-    }
-  }
-
-  MessageInfo message_info;
-  if (!CastMessageToMessageInfo(message, &message_info)) {
-    current_message_.reset();
-    SetReadState(proto::READ_STATE_ERROR);
-    SetErrorState(CHANNEL_ERROR_INVALID_MESSAGE);
-    return net::ERR_INVALID_RESPONSE;
-  }
-
-  logger_->LogSocketEventForMessage(channel_id_,
-                                    proto::NOTIFY_ON_MESSAGE,
-                                    message.namespace_(),
-                                    std::string());
-  delegate_->OnMessage(this, message_info);
-  current_message_.reset();
-
-  return net::OK;
-}
-
-int CastSocket::DoReadError(int result) {
-  DCHECK_LE(result, 0);
-  return net::ERR_FAILED;
-}
-
-void CastSocket::CloseWithError() {
-  DCHECK(CalledOnValidThread());
-  CloseInternal();
-  RunPendingCallbacksOnClose();
-  if (delegate_) {
-    logger_->LogSocketEvent(channel_id_, proto::NOTIFY_ON_ERROR);
-    delegate_->OnError(this, error_state_, logger_->GetLastErrors(channel_id_));
-  }
-}
-
-std::string CastSocket::CastUrl() const {
-  return ((channel_auth_ == CHANNEL_AUTH_TYPE_SSL_VERIFIED) ?
-          "casts://" : "cast://") + ip_endpoint_.ToString();
-}
-
-bool CastSocket::CalledOnValidThread() const {
+bool CastSocketImpl::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-base::Timer* CastSocket::GetTimer() {
+base::Timer* CastSocketImpl::GetTimer() {
   return connect_timeout_timer_.get();
 }
 
-void CastSocket::SetConnectState(proto::ConnectionState connect_state) {
+void CastSocketImpl::SetConnectState(proto::ConnectionState connect_state) {
   if (connect_state_ != connect_state) {
     connect_state_ = connect_state;
     logger_->LogSocketConnectState(channel_id_, connect_state_);
   }
 }
 
-void CastSocket::SetReadyState(ReadyState ready_state) {
+void CastSocketImpl::SetReadyState(ReadyState ready_state) {
   if (ready_state_ != ready_state) {
     ready_state_ = ready_state;
     logger_->LogSocketReadyState(channel_id_, ReadyStateToProto(ready_state_));
   }
 }
 
-void CastSocket::SetErrorState(ChannelError error_state) {
-  if (error_state_ != error_state) {
-    error_state_ = error_state;
-    logger_->LogSocketErrorState(channel_id_, ErrorStateToProto(error_state_));
-  }
+void CastSocketImpl::SetErrorState(ChannelError error_state) {
+  VLOG_WITH_CONNECTION(1) << "SetErrorState " << error_state;
+  DCHECK_EQ(CHANNEL_ERROR_NONE, error_state_);
+  error_state_ = error_state;
+  logger_->LogSocketErrorState(channel_id_, ErrorStateToProto(error_state_));
 }
-
-void CastSocket::SetReadState(proto::ReadState read_state) {
-  if (read_state_ != read_state) {
-    read_state_ = read_state;
-    logger_->LogSocketReadState(channel_id_, read_state_);
-  }
-}
-
-void CastSocket::SetWriteState(proto::WriteState write_state) {
-  if (write_state_ != write_state) {
-    write_state_ = write_state;
-    logger_->LogSocketWriteState(channel_id_, write_state_);
-  }
-}
-
-CastSocket::WriteRequest::WriteRequest(const net::CompletionCallback& callback)
-    : callback(callback) {
-}
-
-bool CastSocket::WriteRequest::SetContent(const CastMessage& message_proto) {
-  DCHECK(!io_buffer.get());
-  std::string message_data;
-  if (!MessageFramer::Serialize(message_proto, &message_data)) {
-    return false;
-  }
-  message_namespace = message_proto.namespace_();
-  io_buffer = new net::DrainableIOBuffer(new net::StringIOBuffer(message_data),
-                                         message_data.size());
-  return true;
-}
-
-CastSocket::WriteRequest::~WriteRequest() {
-}
-
 }  // namespace cast_channel
 }  // namespace core_api
 }  // namespace extensions
-
 #undef VLOG_WITH_CONNECTION
