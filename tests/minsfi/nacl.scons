@@ -41,11 +41,11 @@ def CompileSandbox(test_name, exerciser_src, sandbox_src, ptrsize=0):
       test_name + '.postopt.bc',
       [input_module],
       '${PNACLOPT} '
-      '-strip-debug '
       '-minsfi-strip-tls '
       '-pnacl-abi-simplify-preopt '
       '-pnacl-abi-simplify-postopt '
       '-minsfi '
+      '-pnaclabi-allow-debug-metadata '
       '-pnaclabi-allow-minsfi-syscalls '
       '-minsfi-ptrsize=%d '
       '${SOURCES} -o ${TARGET}'
