@@ -1156,11 +1156,7 @@ WebString WebLocalFrameImpl::selectionAsMarkup() const
 
 void WebLocalFrameImpl::selectWordAroundPosition(LocalFrame* frame, VisiblePosition position)
 {
-    VisibleSelection selection(position);
-    selection.expandUsingGranularity(WordGranularity);
-
-    TextGranularity granularity = selection.isRange() ? WordGranularity : CharacterGranularity;
-    frame->selection().setSelection(selection, granularity);
+    frame->selection().selectWordAroundPosition(position);
 }
 
 bool WebLocalFrameImpl::selectWordAroundCaret()
@@ -1168,8 +1164,7 @@ bool WebLocalFrameImpl::selectWordAroundCaret()
     FrameSelection& selection = frame()->selection();
     if (selection.isNone() || selection.isRange())
         return false;
-    selectWordAroundPosition(frame(), selection.selection().visibleStart());
-    return true;
+    return frame()->selection().selectWordAroundPosition(selection.selection().visibleStart());
 }
 
 void WebLocalFrameImpl::selectRange(const WebPoint& base, const WebPoint& extent)

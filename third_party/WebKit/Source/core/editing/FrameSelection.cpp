@@ -72,6 +72,7 @@
 #include "platform/SecureTextInput.h"
 #include "platform/geometry/FloatQuad.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/text/UnicodeUtilities.h"
 #include "wtf/text/CString.h"
 #include <stdio.h>
 
@@ -1928,6 +1929,22 @@ void FrameSelection::scheduleVisualUpdate() const
         return;
     if (Page* page = m_frame->page())
         page->animator().scheduleVisualUpdate();
+}
+
+bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position)
+{
+    static const EWordSide wordSideList[2] = { RightWordIfOnBoundary, LeftWordIfOnBoundary };
+    for (EWordSide wordSide : wordSideList) {
+        VisiblePosition start = startOfWord(position, wordSide);
+        VisiblePosition end = endOfWord(position, wordSide);
+        String text = plainText(start.deepEquivalent(), end.deepEquivalent());
+        if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
+            setSelection(VisibleSelection(start, end), WordGranularity);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 }
