@@ -27,10 +27,6 @@
 #include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/dpi.h"
 
-#ifdef ENABLE_VTUNE_JIT_INTERFACE
-#include "v8/src/third_party/vtune/v8-vtune.h"
-#endif
-
 #include <dwrite.h>
 
 namespace content {
@@ -78,11 +74,6 @@ RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 
 void RendererMainPlatformDelegate::PlatformInitialize() {
   const CommandLine& command_line = parameters_.command_line;
-
-#ifdef ENABLE_VTUNE_JIT_INTERFACE
-  if (command_line.HasSwitch(switches::kEnableVtune))
-    vTune::InitializeVtuneForV8();
-#endif
 
   // Be mindful of what resources you acquire here. They can be used by
   // malicious code if the renderer gets compromised.

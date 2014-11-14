@@ -100,6 +100,7 @@
 #include "content/renderer/service_worker/embedded_worker_context_message_filter.h"
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
+#include "gin/public/debug.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/mojo/ipc_channel_mojo.h"
@@ -160,6 +161,10 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc_identity_service.h"
+#endif
+
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+#include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
 using base::ThreadRestrictions;
@@ -863,6 +868,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   if (blink_platform_impl_)
     return;
 
+const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+#ifdef ENABLE_VTUNE_JIT_INTERFACE
+  if (command_line.HasSwitch(switches::kEnableVtune))
+    gin::Debug::SetJitCodeEventHandler(vTune::GetVtuneCodeEventHandler());
+#endif
+
   blink_platform_impl_.reset(
       new RendererBlinkPlatformImpl(renderer_scheduler_.get()));
   blink::initialize(blink_platform_impl_.get());
@@ -872,8 +884,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   isolate->SetCounterFunction(base::StatsTable::FindLocation);
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
-
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   main_thread_compositor_task_runner_ =
       renderer_scheduler()->CompositorTaskRunner();
