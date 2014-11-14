@@ -1349,7 +1349,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
             callback();
           }.bind(this), callback);
       // TODO(mtomasz): Implement reopening on special search, when fake
-      // entries are converted to directory providers.
+      // entries are converted to directory providers. crbug.com/433161.
     }.bind(this));
 
     // If the directory to be changed to is not available, then first fallback
@@ -1476,14 +1476,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
   FileManager.prototype.finishSetupCurrentDirectory_ = function(
       directoryEntry, opt_selectionEntry, opt_suggestedName) {
     // Open the directory, and select the selection (if passed).
-    if (util.isFakeEntry(directoryEntry)) {
-      this.directoryModel_.specialSearch(directoryEntry, '');
-    } else {
-      this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
-        if (opt_selectionEntry)
-          this.directoryModel_.selectEntry(opt_selectionEntry);
-      }.bind(this));
-    }
+    this.directoryModel_.changeDirectoryEntry(directoryEntry, function() {
+      if (opt_selectionEntry)
+        this.directoryModel_.selectEntry(opt_selectionEntry);
+    }.bind(this));
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       // In the FULL_PAGE mode if the restored URL points to a file we might
