@@ -177,7 +177,7 @@ public:
     CompositeOperator compositeOperation() const { return immutableState()->compositeOperator(); }
     WebBlendMode blendModeOperation() const { return immutableState()->blendMode(); }
 
-    // Speicy the device scale factor which may change the way document markers
+    // Specify the device scale factor which may change the way document markers
     // and fonts are rendered.
     void setDeviceScaleFactor(float factor) { m_deviceScaleFactor = factor; }
     float deviceScaleFactor() const { return m_deviceScaleFactor; }
@@ -373,10 +373,6 @@ public:
     void scale(float x, float y);
     void rotate(float angleInRadians);
     void translate(float x, float y);
-
-    // This function applies the device scale factor to the context, making the context capable of
-    // acting as a base-level context for a HiDPI environment.
-    void applyDeviceScaleFactor(float deviceScaleFactor) { scale(deviceScaleFactor, deviceScaleFactor); }
     // ---------- End transformation methods -----------------
 
     // URL drawing

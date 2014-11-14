@@ -67,8 +67,9 @@ void PageWidgetDelegate::paint(Page& page, PageOverlayList* overlays, WebCanvas*
         return;
     GraphicsContext gc(canvas);
     gc.setCertainlyOpaque(background == Opaque);
-    gc.applyDeviceScaleFactor(page.deviceScaleFactor());
-    gc.setDeviceScaleFactor(page.deviceScaleFactor());
+    float scaleFactor = page.deviceScaleFactor();
+    gc.scale(scaleFactor, scaleFactor);
+    gc.setDeviceScaleFactor(scaleFactor);
     IntRect dirtyRect(rect);
     gc.save(); // Needed to save the canvas, not the GraphicsContext.
     FrameView* view = root.view();

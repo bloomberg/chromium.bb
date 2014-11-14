@@ -228,7 +228,8 @@ void WebPopupMenuImpl::paint(WebCanvas* canvas, const WebRect& rect)
 
     if (!rect.isEmpty()) {
         GraphicsContext context(canvas);
-        context.applyDeviceScaleFactor(m_client->deviceScaleFactor());
+        float scaleFactor = m_client->deviceScaleFactor();
+        context.scale(scaleFactor, scaleFactor);
         m_widget->paint(&context, rect);
     }
 }
