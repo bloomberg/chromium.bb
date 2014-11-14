@@ -31,6 +31,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         bug=428845)
     self.Fail('conformance/glsl/misc/expression-list-in-declarator-initializer.html',
         bug=428845)
+    self.Fail('conformance/uniforms/gl-uniform-arrays.html',
+        bug=433385)
 
     # Win failures
     self.Fail('conformance/glsl/misc/struct-equals.html',
@@ -47,6 +49,8 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['win'], bug=420357)
     self.Fail('conformance/glsl/misc/ternary-operators-in-global-initializers.html',
         ['win'], bug=415694)
+    self.Fail('conformance/glsl/misc/struct-specifiers-in-uniforms.html',
+        ['win'], bug=433412)
     # This test still causes itself and any tests afterwards to time out
     # in Win Debug bots.
     self.Skip('conformance/textures/texture-copying-feedback-loops.html',
