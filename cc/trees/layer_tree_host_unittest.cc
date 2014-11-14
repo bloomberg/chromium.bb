@@ -5557,7 +5557,8 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
   base::WaitableEvent playback_allowed_event_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
+// TODO(danakj): Disabled for flake: crbug.com/433208
+// MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
