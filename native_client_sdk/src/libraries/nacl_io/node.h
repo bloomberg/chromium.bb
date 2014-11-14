@@ -127,6 +127,14 @@ class Node : public sdk_util::RefObject {
   virtual void Link();
   virtual void Unlink();
 
+  // Update the a/m/c time in stat_.
+  enum {
+    UPDATE_ATIME = 1,
+    UPDATE_MTIME = 2,
+    UPDATE_CTIME = 4,
+  };
+  void UpdateTime(int update_bits);
+
  protected:
   struct stat stat_;
   sdk_util::SimpleLock node_lock_;

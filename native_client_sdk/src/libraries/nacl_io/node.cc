@@ -18,6 +18,7 @@
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/osmman.h"
+#include "nacl_io/ostime.h"
 #include "sdk_util/auto_lock.h"
 
 namespace nacl_io {
@@ -252,6 +253,25 @@ void Node::Link() {
 
 void Node::Unlink() {
   stat_.st_nlink--;
+}
+
+void Node::UpdateTime(int update_bits) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  // TODO(binji): honor noatime mount option?
+  if (update_bits & UPDATE_ATIME) {
+    stat_.st_atime = now.tv_sec;
+    stat_.st_atimensec = now.tv_usec * 1000;
+  }
+  if (update_bits & UPDATE_MTIME) {
+    stat_.st_mtime = now.tv_sec;
+    stat_.st_mtimensec = now.tv_usec * 1000;
+  }
+  if (update_bits & UPDATE_CTIME) {
+    stat_.st_ctime = now.tv_sec;
+    stat_.st_ctimensec = now.tv_usec * 1000;
+  }
 }
 
 }  // namespace nacl_io

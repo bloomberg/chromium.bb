@@ -35,6 +35,7 @@ MemFsNode::MemFsNode(Filesystem* filesystem)
     data_(NULL),
     data_capacity_(0) {
   SetType(S_IFREG);
+  UpdateTime(UPDATE_ATIME | UPDATE_MTIME | UPDATE_CTIME);
 }
 
 MemFsNode::~MemFsNode() {
@@ -55,6 +56,10 @@ Error MemFsNode::Read(const HandleAttr& attr,
 
   if (attr.offs + count > size) {
     count = size - attr.offs;
+  }
+
+  if (count > 0) {
+    UpdateTime(UPDATE_ATIME);
   }
 
   memcpy(buf, data_ + attr.offs, count);
@@ -82,6 +87,10 @@ Error MemFsNode::Write(const HandleAttr& attr,
     }
   }
 
+  if (count > 0) {
+    UpdateTime(UPDATE_MTIME | UPDATE_CTIME);
+  }
+
   memcpy(data_ + attr.offs, buf, count);
   *out_bytes = static_cast<int>(count);
   return 0;
@@ -89,7 +98,11 @@ Error MemFsNode::Write(const HandleAttr& attr,
 
 Error MemFsNode::FTruncate(off_t new_size) {
   AUTO_LOCK(node_lock_);
-  return Resize(new_size);
+  Error error = Resize(new_size);
+  if (error == 0) {
+    UpdateTime(UPDATE_MTIME | UPDATE_CTIME);
+  }
+  return error;
 }
 
 Error MemFsNode::Resize(off_t new_length) {
@@ -136,6 +149,7 @@ Error MemFsNode::Futimens(const struct timespec times[2]) {
 Error MemFsNode::Fchmod(mode_t mode) {
   AUTO_LOCK(node_lock_);
   SetMode(mode);
+  UpdateTime(UPDATE_CTIME);
   return 0;
 }
 

@@ -20,6 +20,7 @@
 #include "nacl_io/memfs/mem_fs_node.h"
 #include "nacl_io/node.h"
 #include "nacl_io/osdirent.h"
+#include "nacl_io/ostime.h"
 
 #define NULL_NODE ((Node*)NULL)
 
@@ -54,6 +55,21 @@ class MemFsNodeForTesting : public MemFsNode {
 
   ~MemFsNodeForTesting() { s_alloc_num--; }
 
+  void set_atime(time_t time, int64_t nsec = 0) {
+    stat_.st_atime = time;
+    stat_.st_atimensec = nsec;
+  }
+
+  void set_mtime(time_t time, int64_t nsec = 0) {
+    stat_.st_mtime = time;
+    stat_.st_mtimensec = nsec;
+  }
+
+  void set_ctime(time_t time, int64_t nsec = 0) {
+    stat_.st_ctime = time;
+    stat_.st_ctimensec = nsec;
+  }
+
   using MemFsNode::Init;
   using MemFsNode::AddChild;
   using MemFsNode::RemoveChild;
@@ -67,6 +83,21 @@ class DirNodeForTesting : public DirNode {
   }
 
   ~DirNodeForTesting() { s_alloc_num--; }
+
+  void set_atime(time_t time, int64_t nsec = 0) {
+    stat_.st_atime = time;
+    stat_.st_atimensec = nsec;
+  }
+
+  void set_mtime(time_t time, int64_t nsec = 0) {
+    stat_.st_mtime = time;
+    stat_.st_mtimensec = nsec;
+  }
+
+  void set_ctime(time_t time, int64_t nsec = 0) {
+    stat_.st_ctime = time;
+    stat_.st_ctimensec = nsec;
+  }
 
   using DirNode::Init;
   using DirNode::AddChild;
@@ -359,4 +390,215 @@ TEST(MemFsNodeTest, OpenMode) {
     ASSERT_EQ(0, handle.Read(read_buf, sizeof(read_buf), &byte_count));
     ASSERT_EQ(byte_count, sizeof(read_buf));
   }
+}
+
+TEST(MemFsNodeTest, Ctime) {
+  struct timeval before, after;
+  struct stat s;
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  MemFsNodeForTesting file;
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  EXPECT_EQ(0, file.GetStat(&s));
+
+  EXPECT_GE(s.st_atime, before.tv_sec);
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_GE(s.st_ctime, before.tv_sec);
+
+  EXPECT_LE(s.st_atime, after.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_LE(s.st_ctime, after.tv_sec);
+}
+
+TEST(MemFsNodeTest, Ctime_Chmod) {
+  struct timeval before, after;
+  MemFsNodeForTesting file;
+  struct stat s;
+
+  file.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  // Changing the mode bits should update the ctime.
+  file.Fchmod(0600);
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_GE(s.st_ctime, before.tv_sec);
+  EXPECT_LE(s.st_ctime, after.tv_sec);
+  EXPECT_NE(-1, s.st_ctimensec);
+}
+
+TEST(MemFsNodeTest, Mtime) {
+  // st_mtime is changed on calls to truncate/utime/write.
+  // st_ctime should be updated when st_mtime is.
+  MemFsNodeForTesting file;
+  struct timeval before, after;
+
+  // Writing 0 bytes should not affect the mtime.
+  struct stat s;
+  HandleAttr attr;
+  int result_bytes;
+  char data[10];
+  file.set_mtime(0, -1);
+  ASSERT_EQ(0, file.Write(attr, data, 0, &result_bytes));
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_EQ(0, s.st_mtime);
+
+  // Writing data to the file should modify the mtime.
+  file.set_mtime(0, -1);
+  file.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  ASSERT_EQ(0, file.Write(attr, data, sizeof(data), &result_bytes));
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  ASSERT_EQ(sizeof(data), result_bytes);
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_NE(-1, s.st_mtimensec);
+  EXPECT_EQ(s.st_mtime, s.st_ctime);
+  EXPECT_NE(-1, s.st_ctimensec);
+
+  // Truncating the file should update the mtime.
+  file.set_mtime(0, -1);
+  file.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  ASSERT_EQ(0, file.FTruncate(0));
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_NE(-1, s.st_mtimensec);
+  EXPECT_EQ(s.st_mtime, s.st_ctime);
+  EXPECT_NE(-1, s.st_ctimensec);
+}
+
+TEST(MemFsNodeTest, Atime) {
+  // st_atime is changed on calls to utime/read (and others we don't support).
+  MemFsNodeForTesting file;
+  struct timeval before, after;
+
+  // Write some data to the file, so there is something to read.
+  HandleAttr attr;
+  int result_bytes;
+  char data[10];
+  ASSERT_EQ(0, file.Write(attr, data, sizeof(data), &result_bytes));
+  ASSERT_EQ(sizeof(data), result_bytes);
+
+  // Reading 0 bytes should not affect the atime.
+  struct stat s;
+  file.set_atime(0, -1);
+  ASSERT_EQ(0, file.Read(attr, data, 0, &result_bytes));
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_EQ(0, s.st_atime);
+
+  // Reading data from the file should modify the atime.
+  file.set_atime(0, -1);
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  ASSERT_EQ(0, file.Read(attr, data, sizeof(data), &result_bytes));
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  ASSERT_EQ(sizeof(data), result_bytes);
+  EXPECT_EQ(0, file.GetStat(&s));
+  EXPECT_GE(s.st_atime, before.tv_sec);
+  EXPECT_LE(s.st_atime, after.tv_sec);
+  EXPECT_NE(-1, s.st_atimensec);
+}
+
+TEST(MemFsNodeTest, Ctime_Directory) {
+  struct timeval before, after;
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  DirNodeForTesting node;
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  struct stat s;
+  EXPECT_EQ(0, node.GetStat(&s));
+  EXPECT_GE(s.st_atime, before.tv_sec);
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_GE(s.st_ctime, before.tv_sec);
+  EXPECT_LE(s.st_atime, after.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_LE(s.st_ctime, after.tv_sec);
+
+}
+
+TEST(MemFsNodeTest, Ctime_DirectoryChmod) {
+  struct timeval before, after;
+  DirNodeForTesting node;
+  node.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  // Changing the mode bits should update the ctime.
+  node.Fchmod(0600);
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  struct stat s;
+  EXPECT_EQ(0, node.GetStat(&s));
+  EXPECT_GE(s.st_ctime, before.tv_sec);
+  EXPECT_LE(s.st_ctime, after.tv_sec);
+  EXPECT_NE(-1, s.st_ctimensec);
+}
+
+TEST(MemFsNodeTest, Mtime_Directory) {
+  // st_mtime is changed when files are added or removed.
+  // st_ctime should be updated when st_mtime is.
+  DirNodeForTesting node;
+
+  struct timeval before, after;
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+
+  // Add a file to this directory.
+  node.set_mtime(0, -1);
+  node.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  ScopedNode file(new MemFsNodeForTesting());
+  node.AddChild("foo", file);
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  struct stat s;
+  EXPECT_EQ(0, node.GetStat(&s));
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_EQ(s.st_mtime, s.st_ctime);
+
+  // Now remove the file.
+  node.set_mtime(0, -1);
+  node.set_ctime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  node.RemoveChild("foo");
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  EXPECT_EQ(0, node.GetStat(&s));
+  EXPECT_GE(s.st_mtime, before.tv_sec);
+  EXPECT_LE(s.st_mtime, after.tv_sec);
+  EXPECT_NE(-1, s.st_mtimensec);
+  EXPECT_EQ(s.st_mtime, s.st_ctime);
+  EXPECT_NE(-1, s.st_ctimensec);
+}
+
+TEST(MemFsNodeTest, Atime_Directory) {
+  // st_atime is changed when the directory is read.
+  DirNodeForTesting node;
+  struct timeval before, after;
+
+  int result_bytes = 0;
+  struct dirent dirents[2];
+  node.set_atime(0, -1);
+
+  ASSERT_EQ(0, gettimeofday(&before, NULL));
+  EXPECT_EQ(0, node.GetDents(0, &dirents[0], sizeof(dirents), &result_bytes));
+  ASSERT_EQ(0, gettimeofday(&after, NULL));
+
+  struct stat s;
+  EXPECT_EQ(0, node.GetStat(&s));
+  EXPECT_GE(s.st_atime, before.tv_sec);
+  EXPECT_LE(s.st_atime, after.tv_sec);
+  EXPECT_NE(-1, s.st_atimensec);
 }
