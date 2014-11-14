@@ -2563,28 +2563,6 @@ void RenderFrameImpl::didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame) {
   render_view_->didUpdateCurrentHistoryItem(frame);
 }
 
-// TODO(zhenw): This will be removed once the blink side implementation is done.
-void RenderFrameImpl::addNavigationTransitionData(
-    const blink::WebString& allowed_destination_host_pattern,
-    const blink::WebString& selector,
-    const blink::WebString& markup,
-    const blink::WebVector<blink::WebString>& web_ids,
-    const blink::WebVector<blink::WebRect>& web_rects) {
-  FrameHostMsg_AddNavigationTransitionData_Params params;
-  params.render_frame_id = routing_id_;
-  params.allowed_destination_host_pattern =
-      allowed_destination_host_pattern.utf8();
-  params.selector = selector.utf8();
-  params.markup = markup.utf8();
-  params.elements.resize(web_ids.size());
-  for (size_t i = 0; i < web_ids.size(); i++) {
-    params.elements[i].id = web_ids[i].utf8();
-    params.elements[i].rect = gfx::Rect(web_rects[i]);
-  }
-
-  Send(new FrameHostMsg_AddNavigationTransitionData(params));
-}
-
 void RenderFrameImpl::addNavigationTransitionData(
     const blink::WebTransitionElementData& data) {
   FrameHostMsg_AddNavigationTransitionData_Params params;

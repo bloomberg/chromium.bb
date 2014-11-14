@@ -382,12 +382,6 @@ class CONTENT_EXPORT RenderFrameImpl
                                      blink::WebHistoryCommitType commit_type);
   virtual void didUpdateCurrentHistoryItem(blink::WebLocalFrame* frame);
   virtual void addNavigationTransitionData(
-      const blink::WebString& allowedDestinationOrigin,
-      const blink::WebString& selector,
-      const blink::WebString& markup,
-      const blink::WebVector<blink::WebString>& web_ids,
-      const blink::WebVector<blink::WebRect>& web_rects);
-  virtual void addNavigationTransitionData(
       const blink::WebTransitionElementData& data);
   virtual void didChangeThemeColor();
   virtual void requestNotificationPermission(
