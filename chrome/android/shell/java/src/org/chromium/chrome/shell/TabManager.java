@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
@@ -216,6 +217,9 @@ public class TabManager extends LinearLayout {
             mContentViewHolder.addView(mTabModelWrapper);
         }
         mToolbar.showAddButton(true);
+        InputMethodManager mImm = (InputMethodManager) getContext().getSystemService(
+                Context.INPUT_METHOD_SERVICE);
+        mImm.hideSoftInputFromWindow(mContentViewHolder.getWindowToken(), 0);
     }
 
     /**
