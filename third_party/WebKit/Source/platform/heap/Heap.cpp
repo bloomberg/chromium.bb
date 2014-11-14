@@ -2813,19 +2813,6 @@ void Heap::getHeapSpaceSize(uint64_t* objectSpaceSize, uint64_t* allocatedSpaceS
     }
 }
 
-void Heap::getStats(HeapStats* stats)
-{
-    stats->clear();
-    ASSERT(ThreadState::isAnyThreadInGC());
-    ThreadState::AttachedThreadStateSet& threads = ThreadState::attachedThreads();
-    typedef ThreadState::AttachedThreadStateSet::iterator ThreadStateIterator;
-    for (ThreadStateIterator it = threads.begin(), end = threads.end(); it != end; ++it) {
-        HeapStats temp;
-        (*it)->getStats(temp);
-        stats->add(&temp);
-    }
-}
-
 void Heap::getStatsForTesting(HeapStats* stats)
 {
     stats->clear();

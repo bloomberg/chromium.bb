@@ -967,11 +967,6 @@ public:
     static String createBacktraceString();
 #endif
 
-    // Collect heap stats for all threads attached to the Blink
-    // garbage collector. Should only be called during garbage
-    // collection where threads are known to be at safe points.
-    static void getStats(HeapStats*);
-
     static void getStatsForTesting(HeapStats*);
 
     static void getHeapSpaceSize(uint64_t*, uint64_t*);
