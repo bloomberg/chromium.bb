@@ -390,18 +390,14 @@ RenderPart* HTMLPlugInElement::renderPartForJSBindings() const
 
 bool HTMLPlugInElement::isKeyboardFocusable() const
 {
-    if (useFallbackContent() || usePlaceholderContent())
-        return HTMLElement::isKeyboardFocusable();
-
     if (!document().isActive())
         return false;
-
     return pluginWidget() && pluginWidget()->isPluginView() && toPluginView(pluginWidget())->supportsKeyboardFocus();
 }
 
 bool HTMLPlugInElement::hasCustomFocusLogic() const
 {
-    return renderer() && renderer()->isEmbeddedObject();
+    return !hasAuthorShadowRoot();
 }
 
 bool HTMLPlugInElement::isPluginElement() const
