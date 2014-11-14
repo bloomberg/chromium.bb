@@ -76,18 +76,13 @@ public:
 
     class ConversionContext {
     public:
-        ConversionContext(const String& interfaceName, const String& methodName, ExceptionState& exceptionState)
-            : m_interfaceName(interfaceName)
-            , m_methodName(methodName)
-            , m_exceptionState(exceptionState)
+        explicit ConversionContext(ExceptionState& exceptionState)
+            : m_exceptionState(exceptionState)
             , m_dirty(true)
         {
             resetPerPropertyContext();
         }
 
-        const String& interfaceName() const { return m_interfaceName; }
-        const String& methodName() const { return m_methodName; }
-        bool forConstructor() const { return m_methodName.isEmpty(); }
         ExceptionState& exceptionState() const { return m_exceptionState; }
 
         bool isNullable() const { return m_isNullable; }
@@ -100,8 +95,6 @@ public:
         void resetPerPropertyContext();
 
     private:
-        const String m_interfaceName;
-        const String m_methodName;
         ExceptionState& m_exceptionState;
         bool m_dirty;
 
@@ -111,7 +104,7 @@ public:
 
     class ConversionContextScope {
     public:
-        ConversionContextScope(ConversionContext& context)
+        explicit ConversionContextScope(ConversionContext& context)
             : m_context(context) { }
         ~ConversionContextScope()
         {

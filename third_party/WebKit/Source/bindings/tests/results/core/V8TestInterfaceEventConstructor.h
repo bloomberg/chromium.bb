@@ -47,7 +47,7 @@ public:
     static void installConditionallyEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 };
 
-bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info, const String& = "");
+bool initializeTestInterfaceEventConstructor(TestInterfaceEventConstructorInit&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info);
 
 } // namespace blink
 
