@@ -45,7 +45,7 @@ FilterPainter::FilterPainter(RenderLayer& renderLayer, GraphicsContext* context,
     paintingInfo.clipToDirtyRect = false;
 
     if (clipRect.rect() != paintingInfo.paintDirtyRect || clipRect.hasRadius()) {
-        m_clipRecorder = adoptPtr(new ClipRecorder(&renderLayer, context, DisplayItem::ClipLayerFilter, clipRect));
+        m_clipRecorder = adoptPtr(new ClipRecorder(renderLayer.renderer(), context, DisplayItem::ClipLayerFilter, clipRect));
         if (clipRect.hasRadius())
             LayerPainter::applyRoundedRectClips(renderLayer, paintingInfo, context, paintFlags, *m_clipRecorder);
     }

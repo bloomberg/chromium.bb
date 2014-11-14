@@ -51,8 +51,7 @@ PaintList::iterator ViewDisplayList::findDisplayItem(PaintList::iterator begin, 
             return it;
     }
 
-    // FIXME: Properly handle clips.
-    ASSERT(!displayItem.renderer());
+    ASSERT_NOT_REACHED();
     return end;
 }
 

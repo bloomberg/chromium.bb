@@ -7,6 +7,7 @@
 
 #include "core/paint/ViewDisplayList.h"
 #include "core/rendering/PaintPhase.h"
+#include "core/rendering/RenderLayerModelObject.h"
 #include "platform/geometry/RoundedRect.h"
 #include "wtf/Vector.h"
 
@@ -14,12 +15,10 @@ namespace blink {
 
 class ClipRect;
 class GraphicsContext;
-class RenderObject;
-class RenderLayer;
 
 class ClipDisplayItem : public DisplayItem {
 public:
-    ClipDisplayItem(RenderObject* renderer, RenderLayer*, Type type, IntRect clipRect)
+    ClipDisplayItem(const RenderLayerModelObject* renderer, Type type, IntRect clipRect)
         : DisplayItem(renderer, type), m_clipRect(clipRect) { }
 
     Vector<RoundedRect>& roundedRectClips() { return m_roundedRectClips; }
@@ -36,7 +35,7 @@ private:
 
 class EndClipDisplayItem : public DisplayItem {
 public:
-    EndClipDisplayItem() : DisplayItem(0, EndClip) { }
+    EndClipDisplayItem(const RenderLayerModelObject* renderer) : DisplayItem(renderer, EndClip) { }
 
 private:
     virtual void replay(GraphicsContext*) override;
@@ -44,7 +43,7 @@ private:
 
 class ClipRecorder {
 public:
-    explicit ClipRecorder(RenderLayer*, GraphicsContext*, DisplayItem::Type, const ClipRect&);
+    explicit ClipRecorder(const RenderLayerModelObject*, GraphicsContext*, DisplayItem::Type, const ClipRect&);
     void addRoundedRectClip(const RoundedRect&);
 
     ~ClipRecorder();
@@ -52,7 +51,7 @@ public:
 private:
     ClipDisplayItem* m_clipDisplayItem;
     GraphicsContext* m_graphicsContext;
-    RenderLayer* m_renderLayer;
+    const RenderLayerModelObject* m_renderer;
 };
 
 } // namespace blink

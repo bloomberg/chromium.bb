@@ -5,8 +5,7 @@
 #include "config.h"
 #include "core/paint/ClipRecorder.h"
 
-#include "core/rendering/RenderLayer.h"
-#include "core/rendering/RenderObject.h"
+#include "core/rendering/ClipRect.h"
 #include "core/rendering/RenderView.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -26,17 +25,17 @@ void EndClipDisplayItem::replay(GraphicsContext* context)
     context->restore();
 }
 
-ClipRecorder::ClipRecorder(RenderLayer* renderLayer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect)
+ClipRecorder::ClipRecorder(const RenderLayerModelObject* renderer, GraphicsContext* graphicsContext, DisplayItem::Type clipType, const ClipRect& clipRect)
     : m_graphicsContext(graphicsContext)
-    , m_renderLayer(renderLayer)
+    , m_renderer(renderer)
 {
     IntRect snappedClipRect = pixelSnappedIntRect(clipRect.rect());
     if (!RuntimeEnabledFeatures::slimmingPaintEnabled()) {
         graphicsContext->save();
         graphicsContext->clip(snappedClipRect);
     } else {
-        m_clipDisplayItem = new ClipDisplayItem(0, renderLayer, clipType, snappedClipRect);
-        m_renderLayer->renderer()->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
+        m_clipDisplayItem = new ClipDisplayItem(renderer, clipType, snappedClipRect);
+        m_renderer->view()->viewDisplayList().add(adoptPtr(m_clipDisplayItem));
     }
 }
 
@@ -51,8 +50,8 @@ void ClipRecorder::addRoundedRectClip(const RoundedRect& roundedRect)
 ClipRecorder::~ClipRecorder()
 {
     if (RuntimeEnabledFeatures::slimmingPaintEnabled()) {
-        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem);
-        m_renderLayer->renderer()->view()->viewDisplayList().add(endClip.release());
+        OwnPtr<EndClipDisplayItem> endClip = adoptPtr(new EndClipDisplayItem(m_renderer));
+        m_renderer->view()->viewDisplayList().add(endClip.release());
     } else {
         m_graphicsContext->restore();
     }

@@ -102,7 +102,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
             clipRect.intersect(paintingInfo.paintDirtyRect);
 
             if (needsToClip(paintingInfo, clipRect)) {
-                clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent(), context, DisplayItem::ClipLayerParent, clipRect));
+                clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent()->renderer(), context, DisplayItem::ClipLayerParent, clipRect));
                 if (clipRect.hasRadius())
                     applyRoundedRectClips(*m_renderLayer.parent(), paintingInfo, context, paintFlags, *clipRecorder);
             }
@@ -503,7 +503,7 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
         OwnPtr<ClipRecorder> clipRecorder;
 
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
-            clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect));
+            clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect));
             if (fragment.backgroundRect.hasRadius())
                 applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, paintFlags, *clipRecorder);
         }
@@ -692,7 +692,7 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
             ASSERT_NOT_REACHED();
         }
 
-        clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, clipType, clipRect));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect));
         if (clipRect.hasRadius())
             applyRoundedRectClips(m_renderLayer, paintingInfo, context, paintFlags, *clipRecorder, clippingRule);
     }
@@ -719,7 +719,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     ClipState clipState = HasNotClipped;
     OwnPtr<ClipRecorder> clipRecorder;
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
-        clipRecorder = adoptPtr(new ClipRecorder(&m_renderLayer, context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect));
+        clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect));
         if (layerFragments[0].foregroundRect.hasRadius())
             applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, paintFlags, *clipRecorder);
         clipState = HasClipped;
@@ -810,7 +810,7 @@ void LayerPainter::paintTransformedLayerIntoFragments(GraphicsContext* context, 
 
         OwnPtr<ClipRecorder> clipRecorder;
         if (needsToClip(paintingInfo, clipRect))
-            clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent(), context, DisplayItem::ClipLayerFragmentParent, clipRect));
+            clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerFragmentParent, clipRect));
 
         paintLayerByApplyingTransform(context, paintingInfo, paintFlags, fragment.paginationOffset);
     }
