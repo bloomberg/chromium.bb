@@ -212,7 +212,6 @@ class UserSessionManager
   virtual void OnSessionRestoreStateChanged(
       Profile* user_profile,
       OAuth2LoginManager::SessionRestoreState state) override;
-  virtual void OnNewRefreshTokenAvaiable(Profile* user_profile) override;
 
   // net::NetworkChangeNotifier::ConnectionTypeObserver overrides:
   virtual void OnConnectionTypeChanged(

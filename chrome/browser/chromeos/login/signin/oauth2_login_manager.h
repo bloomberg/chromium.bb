@@ -34,18 +34,18 @@ class OAuth2LoginManager : public KeyedService,
   // Session restore states.
   enum SessionRestoreState {
     // Session restore is not started.
-    SESSION_RESTORE_NOT_STARTED,
+    SESSION_RESTORE_NOT_STARTED = 0,
     // Session restore is being prepared.
-    SESSION_RESTORE_PREPARING,
+    SESSION_RESTORE_PREPARING = 1,
     // Session restore is in progress. We are currently issuing calls to verify
     // stored OAuth tokens and populate cookie jar with GAIA credentials.
-    SESSION_RESTORE_IN_PROGRESS,
+    SESSION_RESTORE_IN_PROGRESS = 2,
     // Session restore is completed.
-    SESSION_RESTORE_DONE,
+    SESSION_RESTORE_DONE = 3,
     // Session restore failed.
-    SESSION_RESTORE_FAILED,
+    SESSION_RESTORE_FAILED = 4,
     // Session restore failed due to connection or service errors.
-    SESSION_RESTORE_CONNECTION_FAILED,
+    SESSION_RESTORE_CONNECTION_FAILED = 5,
   };
 
   // Session restore strategy.

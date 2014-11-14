@@ -660,27 +660,18 @@ void UserSessionManager::OnSessionRestoreStateChanged(
   }
 
   login_manager->RemoveObserver(this);
-}
 
-void UserSessionManager::OnNewRefreshTokenAvaiable(Profile* user_profile) {
-  // Check if we were waiting to restart chrome.
-  if (!exit_after_session_restore_)
-    return;
+  if (exit_after_session_restore_ &&
+      (state  == OAuth2LoginManager::SESSION_RESTORE_DONE ||
+       state  == OAuth2LoginManager::SESSION_RESTORE_FAILED ||
+       state  == OAuth2LoginManager::SESSION_RESTORE_CONNECTION_FAILED)) {
+    LOG(WARNING) << "Restarting Chrome after session restore finishes, "
+                 << "most likely due to custom flags.";
 
-  OAuth2LoginManager* login_manager =
-      OAuth2LoginManagerFactory::GetInstance()->GetForProfile(user_profile);
-  login_manager->RemoveObserver(this);
-
-  // Mark user auth token status as valid.
-  user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      user_manager::UserManager::Get()->GetLoggedInUser()->email(),
-      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-
-  VLOG(1) << "Exiting after new refresh token fetched";
-
-  // We need to restart cleanly in this case to make sure OAuth2 RT is actually
-  // saved.
-  chrome::AttemptRestart();
+    // We need to restart cleanly in this case to make sure OAuth2 RT is
+    // actually saved.
+    chrome::AttemptRestart();
+  }
 }
 
 void UserSessionManager::OnConnectionTypeChanged(
