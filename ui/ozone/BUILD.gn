@@ -142,7 +142,7 @@ action("generate_ozone_platform_list") {
 action("generate_constructor_list") {
   script = "generate_constructor_list.py"
 
-  source_prereqs = [
+  inputs = [
     platform_list_txt_file,
   ]
   outputs = [

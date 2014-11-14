@@ -13,7 +13,7 @@ if (!link_pulseaudio) {
 
     script = "../../tools/generate_stubs/generate_stubs.py"
     sources = [ "pulse/pulse.sigs" ]
-    source_prereqs = [ extra_header ]
+    inputs = [ extra_header ]
     stubs_filename_root = "pulse_stubs"
 
     # TODO(ajwong): these need to be included in the pulse build.

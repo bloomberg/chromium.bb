@@ -13,7 +13,7 @@ if (is_chromeos && use_x11 && cpu_arch != "arm") {
 
     script = "../../tools/generate_stubs/generate_stubs.py"
     sources = [ "gpu/media/va.sigs" ]
-    source_prereqs = [ extra_header ]
+    inputs = [ extra_header ]
     stubs_filename_root = "va_stubs"
 
     outputs = [
