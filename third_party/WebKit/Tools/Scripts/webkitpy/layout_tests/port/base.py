@@ -264,7 +264,7 @@ class Port(object):
             # ASAN/MSAN/TSAN use more memory than regular content_shell. Their
             # memory usage may also grow over time, up to a certain point.
             # Relaunching the driver periodically helps keep it under control.
-            return 50
+            return 40
         # The default is infinte batch size.
         return None
 
