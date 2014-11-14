@@ -4,11 +4,10 @@
 
 #include "ui/gfx/platform_font_win.h"
 
-#include <windows.h>
-#include <math.h>
-
 #include <algorithm>
-#include <string>
+#include <dwrite.h>
+#include <math.h>
+#include <windows.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -79,11 +78,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::base_font_ref_;
 
 // static
 PlatformFontWin::AdjustFontCallback
-    PlatformFontWin::adjust_font_callback = NULL;
+    PlatformFontWin::adjust_font_callback = nullptr;
 PlatformFontWin::GetMinimumFontSizeCallback
     PlatformFontWin::get_minimum_font_size_callback = NULL;
 
-bool PlatformFontWin::use_skia_for_font_metrics_ = false;
+IDWriteFactory* PlatformFontWin::direct_write_factory_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontWin, public
@@ -207,6 +206,13 @@ NativeFont PlatformFontWin::GetNativeFont() const {
   return font_ref_->hfont();
 }
 
+void PlatformFontWin::SetDirectWriteFactory(IDWriteFactory* factory) {
+  // We grab a reference on the DirectWrite factory. This reference is
+  // leaked, which is ok because skia leaks it as well.
+  factory->AddRef();
+  direct_write_factory_ = factory;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Font, private:
 
@@ -249,10 +255,10 @@ PlatformFontWin::HFontRef* PlatformFontWin::GetBaseFontRef() {
 }
 
 PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRef(HFONT font) {
-  TEXTMETRIC font_metrics;
-
-  if (use_skia_for_font_metrics_)
+  if (direct_write_factory_)
     return CreateHFontRefFromSkia(font);
+
+  TEXTMETRIC font_metrics;
 
   {
     base::win::ScopedGetDC screen_dc(NULL);
@@ -322,6 +328,30 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
   LOGFONT font_info = {0};
   GetObject(gdi_font, sizeof(LOGFONT), &font_info);
 
+  // Skia does not return all values we need for font metrics. For e.g.
+  // the cap height which indicates the height of capital letters is not
+  // returned even though it is returned by DirectWrite.
+  // TODO(ananta)
+  // Fix SkScalerContext_win_dw.cpp to return all metrics we need from
+  // DirectWrite and remove the code here which retrieves metrics from
+  // DirectWrite to calculate the cap height.
+  base::win::ScopedComPtr<IDWriteGdiInterop> gdi_interop;
+  HRESULT hr = direct_write_factory_->GetGdiInterop(gdi_interop.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return NULL;
+  }
+
+  base::win::ScopedComPtr<IDWriteFont> dwrite_font;
+  hr = gdi_interop->CreateFontFromLOGFONT(&font_info, dwrite_font.Receive());
+  if (FAILED(hr)) {
+    CHECK(false);
+    return NULL;
+  }
+
+  DWRITE_FONT_METRICS dwrite_font_metrics = {0};
+  dwrite_font->GetMetrics(&dwrite_font_metrics);
+
   int skia_style = SkTypeface::kNormal;
   if (font_info.lfWeight >= FW_SEMIBOLD &&
       font_info.lfWeight <= FW_ULTRABOLD) {
@@ -346,12 +376,11 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
 
   // The calculations below are similar to those in the CreateHFontRef
   // function.
-  const int height =
-      std::max<int>(1, std::ceil(fabs(skia_metrics.fAscent)) +
-                    std::ceil(skia_metrics.fDescent));
-  const int baseline = std::max<int>(1, std::ceil(fabs(skia_metrics.fAscent)));
-  const int cap_height = std::max<int>(1,
-      std::ceil(fabs(skia_metrics.fAscent)) - skia_metrics.fLeading);
+  const int height = std::round(skia_metrics.fDescent - skia_metrics.fAscent);
+  const int baseline = std::max<int>(1, std::round(-skia_metrics.fAscent));
+  const int cap_height = std::round(-font_info.lfHeight *
+      dwrite_font_metrics.capHeight / dwrite_font_metrics.designUnitsPerEm);
+
   // The metrics retrieved from skia don't have the average character width. In
   // any case if we get the average character width from skia then use that or
   // use the text extent technique as documented by microsoft. See
@@ -360,7 +389,12 @@ PlatformFontWin::HFontRef* PlatformFontWin::CreateHFontRefFromSkia(
       skia_metrics.fAvgCharWidth == 0 ?
           HFontRef::GetAverageCharWidthInDialogUnits(gdi_font)
               : skia_metrics.fAvgCharWidth;
-  const int font_size = std::max<int>(1, height - skia_metrics.fLeading);
+
+  // tmAscent - tmInternalLeading in gdi font land gives us the cap height.
+  // We can use fAscent - cap_height in DirectWrite land to get the internal
+  // leading value.
+  const int internal_leading = -skia_metrics.fAscent - cap_height;
+  const int font_size = std::max<int>(1, height - internal_leading);
 
   int style = 0;
   if (skia_style & SkTypeface::kItalic)

@@ -13,6 +13,8 @@
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/platform_font.h"
 
+__interface IDWriteFactory;
+
 namespace gfx {
 
 class GFX_EXPORT PlatformFontWin : public PlatformFont {
@@ -67,11 +69,9 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   virtual const FontRenderParams& GetFontRenderParams() const override;
   virtual NativeFont GetNativeFont() const override;
 
-  // Called once during initialization if should be retrieving font metrics
-  // from skia.
-  static void set_use_skia_for_font_metrics(bool use_skia_for_font_metrics) {
-    use_skia_for_font_metrics_ = use_skia_for_font_metrics;
-  }
+  // Called once during initialization if we should be retrieving font metrics
+  // from skia and DirectWrite.
+  static void SetDirectWriteFactory(IDWriteFactory* factory);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RenderTextTest, HarfBuzz_UniscribeFallback);
@@ -168,8 +168,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // Creates and returns a new HFontRef from the specified HFONT using metrics
   // from skia. Currently this is only used if we use DirectWrite for font
   // metrics.
-  static PlatformFontWin::HFontRef* CreateHFontRefFromSkia(
-      HFONT gdi_font);
+  // |gdi_font| : Handle to the GDI font created via CreateFontIndirect.
+  static PlatformFontWin::HFontRef* CreateHFontRefFromSkia(HFONT gdi_font);
 
   // Creates a new PlatformFontWin with the specified HFontRef. Used when
   // constructing a Font from a HFONT we don't want to copy.
@@ -181,9 +181,8 @@ class GFX_EXPORT PlatformFontWin : public PlatformFont {
   // Indirect reference to the HFontRef, which references the underlying HFONT.
   scoped_refptr<HFontRef> font_ref_;
 
-  // Set to true if font metrics are to be retrieved from skia. Defaults to
-  // false.
-  static bool use_skia_for_font_metrics_;
+  // Pointer to the global IDWriteFactory interface.
+  static IDWriteFactory* direct_write_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformFontWin);
 };

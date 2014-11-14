@@ -141,7 +141,7 @@ void MaybeEnableDirectWriteFontRendering() {
                                    __uuidof(IDWriteFactory),
                                    reinterpret_cast<IUnknown**>(&factory))));
     SetDefaultSkiaFactory(SkFontMgr_New_DirectWrite(factory));
-    gfx::PlatformFontWin::set_use_skia_for_font_metrics(true);
+    gfx::PlatformFontWin::SetDirectWriteFactory(factory);
   }
 }
 
