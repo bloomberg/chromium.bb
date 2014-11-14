@@ -5,7 +5,7 @@
   'conditions': [
     ['v8_use_external_startup_data==1', {
       'variables': {
-        'isolate_dependency_tracked': [
+        'files': [
           '<(PRODUCT_DIR)/natives_blob.bin',
           '<(PRODUCT_DIR)/snapshot_blob.bin',
         ],
