@@ -137,15 +137,15 @@ TEST_F(DevToolsHttpHandlerTest, TestStartStop) {
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  content::DevToolsHttpHandler* devtools_http_handler =
+  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler(
       content::DevToolsHttpHandler::Start(factory.Pass(),
                                           std::string(),
                                           new DummyDelegate(),
-                                          base::FilePath());
+                                          base::FilePath()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
-  devtools_http_handler->Stop();
+  devtools_http_handler.reset();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 }
@@ -155,11 +155,11 @@ TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new FailingServerSocketFactory(run_loop.QuitClosure(),
                                      run_loop_2.QuitClosure()));
-  content::DevToolsHttpHandler* devtools_http_handler =
+  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler(
       content::DevToolsHttpHandler::Start(factory.Pass(),
                                           std::string(),
                                           new DummyDelegate(),
-                                          base::FilePath());
+                                          base::FilePath()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
@@ -167,7 +167,7 @@ TEST_F(DevToolsHttpHandlerTest, TestServerSocketFailed) {
     RunAllPendingInMessageLoop(BrowserThread::UI);
     RunAllPendingInMessageLoop(BrowserThread::FILE);
   }
-  devtools_http_handler->Stop();
+  devtools_http_handler.reset();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 }
@@ -180,15 +180,15 @@ TEST_F(DevToolsHttpHandlerTest, TestDevToolsActivePort) {
   scoped_ptr<DevToolsHttpHandler::ServerSocketFactory> factory(
       new DummyServerSocketFactory(run_loop.QuitClosure(),
                                    run_loop_2.QuitClosure()));
-  content::DevToolsHttpHandler* devtools_http_handler =
+  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler(
       content::DevToolsHttpHandler::Start(factory.Pass(),
                                           std::string(),
                                           new DummyDelegate(),
-                                          temp_dir.path());
+                                          temp_dir.path()));
   // Our dummy socket factory will post a quit message once the server will
   // become ready.
   run_loop.Run();
-  devtools_http_handler->Stop();
+  devtools_http_handler.reset();
   // Make sure the handler actually stops.
   run_loop_2.Run();
 

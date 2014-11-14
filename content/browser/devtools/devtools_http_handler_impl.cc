@@ -101,7 +101,6 @@ class DevToolsHttpHandlerImpl : public DevToolsHttpHandler {
 
  private:
   // DevToolsHttpHandler implementation.
-  void Stop() override;
   GURL GetFrontendURL() override;
 
 
@@ -527,14 +526,10 @@ DevToolsHttpHandler::ServerSocketFactory::CreateAndListen() const {
 // DevToolsHttpHandlerImpl ---------------------------------------------------
 
 DevToolsHttpHandlerImpl::~DevToolsHttpHandlerImpl() {
+  TerminateOnUI(thread_, server_wrapper_);
   STLDeleteValues(&target_map_);
   STLDeleteValues(&browser_targets_);
   STLDeleteValues(&connection_to_client_);
-}
-
-void DevToolsHttpHandlerImpl::Stop() {
-  TerminateOnUI(thread_, server_wrapper_);
-  delete this;
 }
 
 GURL DevToolsHttpHandlerImpl::GetFrontendURL() {

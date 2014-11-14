@@ -47,13 +47,12 @@ RemoteDebuggingServer::RemoteDebuggingServer(
 
   scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
       new TCPServerSocketFactory(ip, port, 1));
-  devtools_http_handler_ = content::DevToolsHttpHandler::Start(
+  devtools_http_handler_.reset(content::DevToolsHttpHandler::Start(
       factory.Pass(),
       "",
       new BrowserListTabContentsProvider(host_desktop_type),
-      output_dir);
+      output_dir));
 }
 
 RemoteDebuggingServer::~RemoteDebuggingServer() {
-  devtools_http_handler_->Stop();
 }

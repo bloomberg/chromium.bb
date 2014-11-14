@@ -181,8 +181,7 @@ class UnixDomainServerSocketFactory
 
 DevToolsServer::DevToolsServer(const std::string& socket_name_prefix)
     : socket_name_(base::StringPrintf(kDevToolsChannelNameFormat,
-                                      socket_name_prefix.c_str())),
-      protocol_handler_(NULL) {
+                                      socket_name_prefix.c_str())) {
   // Override the socket name if one is specified on the command line.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRemoteDebuggingSocketName)) {
@@ -205,20 +204,15 @@ void DevToolsServer::Start(bool allow_debug_permission) {
           base::Bind(&content::CanUserConnectToDevTools);
   scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(socket_name_, auth_callback));
-  protocol_handler_ = content::DevToolsHttpHandler::Start(
+  protocol_handler_.reset(content::DevToolsHttpHandler::Start(
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new DevToolsServerDelegate(auth_callback),
-      base::FilePath());
+      base::FilePath()));
 }
 
 void DevToolsServer::Stop() {
-  if (!protocol_handler_)
-    return;
-  // Note that the call to Stop() below takes care of |protocol_handler_|
-  // deletion.
-  protocol_handler_->Stop();
-  protocol_handler_ = NULL;
+  protocol_handler_.reset();
 }
 
 bool DevToolsServer::IsStarted() const {

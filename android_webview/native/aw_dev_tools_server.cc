@@ -108,8 +108,7 @@ class UnixDomainServerSocketFactory
 
 namespace android_webview {
 
-AwDevToolsServer::AwDevToolsServer()
-    : protocol_handler_(NULL) {
+AwDevToolsServer::AwDevToolsServer() {
 }
 
 AwDevToolsServer::~AwDevToolsServer() {
@@ -123,20 +122,15 @@ void AwDevToolsServer::Start() {
   scoped_ptr<content::DevToolsHttpHandler::ServerSocketFactory> factory(
       new UnixDomainServerSocketFactory(
           base::StringPrintf(kSocketNameFormat, getpid())));
-  protocol_handler_ = content::DevToolsHttpHandler::Start(
+  protocol_handler_.reset(content::DevToolsHttpHandler::Start(
       factory.Pass(),
       base::StringPrintf(kFrontEndURL, content::GetWebKitRevision().c_str()),
       new AwDevToolsServerDelegate(),
-      base::FilePath());
+      base::FilePath()));
 }
 
 void AwDevToolsServer::Stop() {
-  if (!protocol_handler_)
-    return;
-  // Note that the call to Stop() below takes care of |protocol_handler_|
-  // deletion.
-  protocol_handler_->Stop();
-  protocol_handler_ = NULL;
+  protocol_handler_.reset();
 }
 
 bool AwDevToolsServer::IsStarted() const {

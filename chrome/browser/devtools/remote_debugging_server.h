@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/host_desktop.h"
 
 namespace content {
@@ -23,7 +24,7 @@ class RemoteDebuggingServer {
   virtual ~RemoteDebuggingServer();
 
  private:
-  content::DevToolsHttpHandler* devtools_http_handler_;
+  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
   DISALLOW_COPY_AND_ASSIGN(RemoteDebuggingServer);
 };
 

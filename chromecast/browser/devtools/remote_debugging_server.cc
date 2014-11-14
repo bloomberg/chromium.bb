@@ -129,18 +129,16 @@ void RemoteDebuggingServer::OnPortChanged() {
 
   if (devtools_http_handler_) {
     LOG(INFO) << "Stop old devtools: port=" << port_;
-    // Note: Stop destroys devtools_http_handler_.
-    devtools_http_handler_->Stop();
-    devtools_http_handler_ = NULL;
+    devtools_http_handler_.reset();
   }
 
   port_ = new_port;
   if (port_ > 0) {
-    devtools_http_handler_ = content::DevToolsHttpHandler::Start(
+    devtools_http_handler_.reset(content::DevToolsHttpHandler::Start(
         CreateSocketFactory(port_),
         GetFrontendUrl(),
         new CastDevToolsDelegate(),
-        base::FilePath());
+        base::FilePath()));
     LOG(INFO) << "Devtools started: port=" << port_;
   }
 }

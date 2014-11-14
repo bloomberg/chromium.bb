@@ -72,14 +72,9 @@ class DevToolsHttpHandler {
       DevToolsHttpHandlerDelegate* delegate,
       const base::FilePath& active_port_output_directory);
 
-  // Called from the main thread in order to stop protocol handler.
-  // Automatically destroys the handler instance.
-  virtual void Stop() = 0;
-
   // Returns the URL for the address to debug |agent_host|.
   virtual GURL GetFrontendURL() = 0;
 
- protected:
   virtual ~DevToolsHttpHandler() {}
 };
 

@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_BROWSER_DEVTOOLS_REMOTE_DEBUGGING_SERVER_H_
 #define CHROMECAST_BROWSER_DEVTOOLS_REMOTE_DEBUGGING_SERVER_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_member.h"
 
 namespace content {
@@ -27,7 +28,7 @@ class RemoteDebuggingServer {
   // on device startup.
   bool ShouldStartImmediately();
 
-  content::DevToolsHttpHandler* devtools_http_handler_;
+  scoped_ptr<content::DevToolsHttpHandler> devtools_http_handler_;
 
   IntegerPrefMember pref_port_;
   int port_;

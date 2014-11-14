@@ -87,10 +87,7 @@ ShellBrowserMainParts::ShellBrowserMainParts(
 }
 
 ShellBrowserMainParts::~ShellBrowserMainParts() {
-  if (devtools_http_handler_) {
-    // Note that Stop destroys devtools_http_handler_.
-    devtools_http_handler_->Stop();
-  }
+  DCHECK(!devtools_http_handler_);
 }
 
 #if !defined(OS_MACOSX)
@@ -147,9 +144,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   Shell::Initialize();
   net::NetModule::SetResourceProvider(PlatformResourceProvider);
 
-  // CreateHttpHandler retains ownership over DevToolsHttpHandler.
-  devtools_http_handler_ =
-      ShellDevToolsManagerDelegate::CreateHttpHandler(browser_context_.get());
+  devtools_http_handler_.reset(
+      ShellDevToolsManagerDelegate::CreateHttpHandler(browser_context_.get()));
 
   InitializeMessageLoopContext();
 
@@ -165,11 +161,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  if (devtools_http_handler_) {
-    // Note that Stop destroys devtools_http_handler_.
-    devtools_http_handler_->Stop();
-    devtools_http_handler_ = nullptr;
-  }
+  devtools_http_handler_.reset();
   browser_context_.reset();
   off_the_record_browser_context_.reset();
 }

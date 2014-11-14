@@ -8,6 +8,7 @@
 #include <string>
 #include <jni.h>
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class DevToolsHttpHandler;
@@ -29,7 +30,7 @@ class DevToolsServer {
 
  private:
   std::string socket_name_;
-  content::DevToolsHttpHandler* protocol_handler_;
+  scoped_ptr<content::DevToolsHttpHandler> protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsServer);
 };

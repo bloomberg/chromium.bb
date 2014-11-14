@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace content {
 class DevToolsHttpHandler;
@@ -31,7 +32,7 @@ class AwDevToolsServer {
   bool IsStarted() const;
 
  private:
-  content::DevToolsHttpHandler* protocol_handler_;
+  scoped_ptr<content::DevToolsHttpHandler> protocol_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(AwDevToolsServer);
 };

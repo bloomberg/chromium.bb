@@ -193,10 +193,9 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                                        base::Bind(CrxInstallComplete));
   }
 
-  // CreateHttpHandler retains ownership over DevToolsHttpHandler.
-  devtools_http_handler_ =
+  devtools_http_handler_.reset(
       content::ShellDevToolsManagerDelegate::CreateHttpHandler(
-          browser_context_.get());
+          browser_context_.get()));
   if (parameters_.ui_task) {
     // For running browser tests.
     parameters_.ui_task->Run();
@@ -219,11 +218,7 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
   browser_main_delegate_->Shutdown();
-  if (devtools_http_handler_) {
-    // Note that Stop destroys devtools_http_handler_.
-    devtools_http_handler_->Stop();
-    devtools_http_handler_ = nullptr;
-  }
+  devtools_http_handler_.reset();
 
 #if !defined(DISABLE_NACL)
   task_tracker_.TryCancelAll();
