@@ -133,7 +133,7 @@ void V8{{container.cpp_class}}::toImpl(v8::Isolate* isolate, v8::Handle<v8::Valu
 
     {% else %}
     {# 19. TypeError #}
-    exceptionState.throwTypeError("Not a valid union member.");
+    exceptionState.throwTypeError("The provided value is not of type '{{container.type_string}}'");
     {% endif %}
 }
 

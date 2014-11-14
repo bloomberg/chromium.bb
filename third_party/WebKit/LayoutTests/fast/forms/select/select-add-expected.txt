@@ -18,12 +18,12 @@ PASS addOption(Infinity) is "X,0,1,2"
 PASS addOption(-Infinity) is "X,0,1,2"
 PASS addOption("foo") is "X,0,1,2"
 PASS select.add() threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': 1 argument required, but only 0 present..
-PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
+PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
 PASS getSelectOptions() is "0,X,Y,1,2"
 Test select multiple
 PASS addOption(0) is "X,0,1,2"
@@ -40,12 +40,12 @@ PASS addOption(Infinity) is "X,0,1,2"
 PASS addOption(-Infinity) is "X,0,1,2"
 PASS addOption("foo") is "X,0,1,2"
 PASS select.add() threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': 1 argument required, but only 0 present..
-PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
-PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': Not a valid union member..
+PASS select.add("foo") threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add("foo", 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(undefined) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(undefined, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(null) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
+PASS select.add(null, 0) threw exception TypeError: Failed to execute 'add' on 'HTMLSelectElement': The provided value is not of type '(HTMLOptionElement or HTMLOptGroupElement)'.
 PASS getSelectOptions() is "0,X,Y,1,2"
 PASS successfullyParsed is true
 

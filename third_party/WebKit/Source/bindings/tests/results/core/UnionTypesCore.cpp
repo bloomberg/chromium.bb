@@ -95,7 +95,7 @@ void V8ArrayBufferOrArrayBufferViewOrDictionary::toImpl(v8::Isolate* isolate, v8
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
+    exceptionState.throwTypeError("The provided value is not of type '(ArrayBuffer or ArrayBufferView or Dictionary)'");
 }
 
 v8::Handle<v8::Value> toV8(ArrayBufferOrArrayBufferViewOrDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -340,7 +340,7 @@ void V8NodeOrNodeList::toImpl(v8::Isolate* isolate, v8::Handle<v8::Value> v8Valu
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
+    exceptionState.throwTypeError("The provided value is not of type '(Node or NodeList)'");
 }
 
 v8::Handle<v8::Value> toV8(NodeOrNodeList& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -733,7 +733,7 @@ void V8TestInterfaceOrTestInterfaceEmpty::toImpl(v8::Isolate* isolate, v8::Handl
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
+    exceptionState.throwTypeError("The provided value is not of type '(TestInterface or TestInterfaceEmpty)'");
 }
 
 v8::Handle<v8::Value> toV8(TestInterfaceOrTestInterfaceEmpty& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
@@ -812,7 +812,7 @@ void V8TestInterfaceWillBeGarbageCollectedOrTestDictionary::toImpl(v8::Isolate* 
         return;
     }
 
-    exceptionState.throwTypeError("Not a valid union member.");
+    exceptionState.throwTypeError("The provided value is not of type '(TestInterfaceWillBeGarbageCollected or TestDictionary)'");
 }
 
 v8::Handle<v8::Value> toV8(TestInterfaceWillBeGarbageCollectedOrTestDictionary& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
