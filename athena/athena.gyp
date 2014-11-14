@@ -182,8 +182,6 @@
         'extensions/athena_constrained_window_views_client.h',
         'extensions/athena_javascript_native_dialog_factory.cc',
         'extensions/athena_javascript_native_dialog_factory.h',
-        'extensions/athena_native_app_window_views.cc',
-        'extensions/athena_native_app_window_views.h',
         'extensions/extension_app_model_builder.cc',
         'extensions/extensions_delegate.cc',
         'extensions/pubilc/apps_search_controller_factory.h',

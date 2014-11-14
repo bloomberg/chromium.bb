@@ -6,10 +6,10 @@
 
 #include "athena/activity/public/activity_factory.h"
 #include "athena/activity/public/activity_manager.h"
-#include "athena/extensions/athena_native_app_window_views.h"
 #include "athena/wm/public/window_list_provider.h"
 #include "athena/wm/public/window_manager.h"
 #include "extensions/common/extension.h"
+#include "extensions/components/native_app_window/native_app_window_views.h"
 
 namespace athena {
 
@@ -22,10 +22,10 @@ AthenaAppWindowClientBase::~AthenaAppWindowClientBase() {
 extensions::NativeAppWindow* AthenaAppWindowClientBase::CreateNativeAppWindow(
     extensions::AppWindow* app_window,
     extensions::AppWindow::CreateParams* params) {
-  AthenaNativeAppWindowViews* native_window = new AthenaNativeAppWindowViews;
+  auto* native_window = new native_app_window::NativeAppWindowViews;
   native_window->Init(app_window, *params);
   ActivityFactory::Get()->CreateAppActivity(app_window->extension_id(),
-                                            native_window->GetWebView());
+                                            native_window->web_view());
   if (params->focused) {
     // Windows are created per default at the top of the stack. If - at this
     // point of initialization - it is has been moved into a different Z-order

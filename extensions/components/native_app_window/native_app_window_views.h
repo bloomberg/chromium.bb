@@ -54,19 +54,19 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
   // Signal that CanHaveTransparentBackground has changed.
   void OnCanHaveAlphaEnabledChanged();
 
+  extensions::AppWindow* app_window() { return app_window_; }
+  const extensions::AppWindow* app_window() const { return app_window_; }
+
+  views::WebView* web_view() { return web_view_; }
+  const views::WebView* web_view() const { return web_view_; }
+
   views::Widget* widget() { return widget_; }
+  const views::Widget* widget() const { return widget_; }
 
   void set_window_for_testing(views::Widget* window) { widget_ = window; }
   void set_web_view_for_testing(views::WebView* view) { web_view_ = view; }
 
  protected:
-  extensions::AppWindow* app_window() { return app_window_; }
-  const extensions::AppWindow* app_window() const { return app_window_; }
-
-  const views::Widget* widget() const { return widget_; }
-
-  views::WebView* web_view() { return web_view_; }
-
   // Initializes |widget_| for |app_window|.
   virtual void InitializeWindow(
       extensions::AppWindow* app_window,
