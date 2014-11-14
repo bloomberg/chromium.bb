@@ -1005,15 +1005,16 @@ Vector<T> toImplArray(v8::Handle<v8::Value> value, int argumentIndex, v8::Isolat
 template <class T>
 Vector<T> toImplArguments(const v8::FunctionCallbackInfo<v8::Value>& info, int startIndex, ExceptionState& exceptionState)
 {
-    ASSERT(startIndex <= info.Length());
     Vector<T> result;
     typedef NativeValueTraits<T> TraitsType;
     int length = info.Length();
-    result.reserveInitialCapacity(length);
-    for (int i = startIndex; i < length; ++i) {
-        result.uncheckedAppend(TraitsType::nativeValue(info[i], info.GetIsolate(), exceptionState));
-        if (exceptionState.hadException())
-            return Vector<T>();
+    if (startIndex < length) {
+        result.reserveInitialCapacity(length - startIndex);
+        for (int i = startIndex; i < length; ++i) {
+            result.uncheckedAppend(TraitsType::nativeValue(info[i], info.GetIsolate(), exceptionState));
+            if (exceptionState.hadException())
+                return Vector<T>();
+        }
     }
     return result;
 }
