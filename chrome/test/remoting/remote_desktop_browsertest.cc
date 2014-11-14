@@ -468,7 +468,11 @@ void RemoteDesktopBrowserTest::SetUpTestForMe2Me() {
   Auth();
   LoadScript(app_web_content(), FILE_PATH_LITERAL("browser_test.js"));
   ExpandMe2Me();
-  EnsureRemoteConnectionEnabled();
+  // The call to EnsureRemoteConnectionEnabled() does a PIN reset.
+  // This causes the test to fail because of a recent bug:
+  // crbug.com/430676
+  // TODO(anandc): Reactivate this call after above bug is fixed.
+  //EnsureRemoteConnectionEnabled();
 }
 
 void RemoteDesktopBrowserTest::Auth() {
@@ -495,6 +499,13 @@ void RemoteDesktopBrowserTest::EnsureRemoteConnectionEnabled() {
 }
 
 void RemoteDesktopBrowserTest::ConnectToLocalHost(bool remember_pin) {
+  // Wait for local-host to be ready.
+  ConditionalTimeoutWaiter waiter(
+        base::TimeDelta::FromSeconds(5),
+        base::TimeDelta::FromMilliseconds(500),
+        base::Bind(&RemoteDesktopBrowserTest::IsLocalHostReady, this));
+  EXPECT_TRUE(waiter.Wait());
+
   // Verify that the local host is online.
   ASSERT_TRUE(ExecuteScriptAndExtractBool(
       "remoting.hostList.localHost_.hostName && "
