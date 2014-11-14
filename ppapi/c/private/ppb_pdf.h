@@ -172,7 +172,8 @@ struct PPB_PDF {
 
   // Gets pointers to both the mmap'd V8 snapshot files and their sizes.
   // This is needed when loading V8's initial snapshot from external files.
-  void (*GetV8ExternalSnapshotData)(const char** natives_data_out,
+  void (*GetV8ExternalSnapshotData)(PP_Instance instance,
+                                    const char** natives_data_out,
                                     int* natives_size_out,
                                     const char** snapshot_data_out,
                                     int* snapshot_size_out);

@@ -14,5 +14,6 @@ static_library("plugin") {
     "//base",
     "//chrome:strings",
     "//content/public/plugin",
+    "//gin",
   ]
 }

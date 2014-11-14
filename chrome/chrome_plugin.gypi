@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../content/content.gyp:content_plugin',
+        '../gin/gin.gyp:gin',
         'chrome_resources.gyp:chrome_strings',
       ],
       'include_dirs': [

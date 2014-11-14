@@ -125,6 +125,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gles2_implementation',
             '../gpu/gpu.gyp:gpu_ipc',
             '../media/media.gyp:shared_memory_support',
@@ -175,6 +176,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../gin/gin.gyp:gin',
             '../gpu/gpu.gyp:gles2_implementation',
             '../gpu/gpu.gyp:gpu_ipc',
             '../media/media.gyp:shared_memory_support',

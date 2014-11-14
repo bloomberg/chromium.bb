@@ -18,6 +18,7 @@
         '<@(test_trusted_source_files)',
       ],
       'dependencies': [
+        '../gin/gin.gyp:gin',
         'ppapi.gyp:ppapi_cpp',
         'ppapi_internal.gyp:ppapi_shared',
       ],

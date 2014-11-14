@@ -34,6 +34,10 @@ class PPB_PDF_API {
   virtual PP_Bool IsOutOfProcess() = 0;
   virtual void SetSelectedText(const char* selected_text) = 0;
   virtual void SetLinkUnderCursor(const char* url) = 0;
+  virtual void GetV8ExternalSnapshotData(const char** natives_data_out,
+                                         int* natives_size_out,
+                                         const char** snapshot_data_out,
+                                         int* snapshot_size_out) = 0;
 
   static const SingletonResourceID kSingletonResourceID = PDF_SINGLETON_ID;
 };

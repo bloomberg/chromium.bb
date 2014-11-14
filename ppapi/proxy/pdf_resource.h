@@ -57,6 +57,10 @@ class PPAPI_PROXY_EXPORT PDFResource
   virtual PP_Bool IsOutOfProcess() override;
   virtual void SetSelectedText(const char* selected_text) override;
   virtual void SetLinkUnderCursor(const char* url) override;
+  virtual void GetV8ExternalSnapshotData(const char** natives_data_out,
+                                         int* natives_size_out,
+                                         const char** snapshot_data_out,
+                                         int* snapshot_size_out) override;
 
  private:
   std::string locale_;

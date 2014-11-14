@@ -17,9 +17,17 @@
 #endif
 #endif
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 namespace chrome {
 
 void ChromeContentPluginClient::PreSandboxInitialization() {
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  gin::IsolateHolder::LoadV8Snapshot();
+#endif
+
 #if defined(ENABLE_REMOTING)
 
   // Load crypto libraries for the Chromoting client plugin.

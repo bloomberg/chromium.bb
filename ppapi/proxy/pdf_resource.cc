@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
+#include "gin/public/isolate_holder.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/proxy/ppapi_messages.h"
@@ -202,6 +203,14 @@ void PDFResource::SetSelectedText(const char* selected_text) {
 
 void PDFResource::SetLinkUnderCursor(const char* url) {
   Post(RENDERER, PpapiHostMsg_PDF_SetLinkUnderCursor(url));
+}
+
+void PDFResource::GetV8ExternalSnapshotData(const char** natives_data_out,
+                                            int* natives_size_out,
+                                            const char** snapshot_data_out,
+                                            int* snapshot_size_out) {
+  gin::IsolateHolder::GetV8ExternalSnapshotData(natives_data_out,
+      natives_size_out, snapshot_data_out, snapshot_size_out);
 }
 
 }  // namespace proxy

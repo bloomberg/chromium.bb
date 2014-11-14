@@ -11,6 +11,10 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/tests/testing_instance.h"
 
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+#include "gin/public/isolate_holder.h"
+#endif
+
 REGISTER_TEST_CASE(PDF);
 
 TestPDF::TestPDF(TestingInstance* instance)
@@ -20,6 +24,7 @@ TestPDF::TestPDF(TestingInstance* instance)
 void TestPDF::RunTests(const std::string& filter) {
   RUN_TEST(GetLocalizedString, filter);
   RUN_TEST(GetResourceImage, filter);
+  RUN_TEST(GetV8ExternalSnapshotData, filter);
 }
 
 std::string TestPDF::TestGetLocalizedString() {
@@ -42,5 +47,30 @@ std::string TestPDF::TestGetResourceImage() {
       ASSERT_NE(0, *data.GetAddr32(point));
     }
   }
+  PASS();
+}
+
+std::string TestPDF::TestGetV8ExternalSnapshotData() {
+  const char* natives_data;
+  const char* snapshot_data;
+  int natives_size;
+  int snapshot_size;
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+  bool loaded_ok = gin::IsolateHolder::LoadV8Snapshot();
+  ASSERT_TRUE(loaded_ok);
+  pp::PDF::GetV8ExternalSnapshotData(instance_, &natives_data, &natives_size,
+      &snapshot_data, &snapshot_size);
+  ASSERT_NE(natives_data, (char*) (NULL));
+  ASSERT_NE(natives_size, 0);
+  ASSERT_NE(snapshot_data, (char*) (NULL));
+  ASSERT_NE(snapshot_size, 0);
+#else
+  pp::PDF::GetV8ExternalSnapshotData(instance_, &natives_data, &natives_size,
+      &snapshot_data, &snapshot_size);
+  ASSERT_EQ(natives_data, (char*) (NULL));
+  ASSERT_EQ(natives_size, 0);
+  ASSERT_EQ(snapshot_data, (char*) (NULL));
+  ASSERT_EQ(snapshot_size, 0);
+#endif
   PASS();
 }

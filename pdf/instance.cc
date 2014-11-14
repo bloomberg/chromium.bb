@@ -322,7 +322,7 @@ Instance::~Instance() {
 bool Instance::Init(uint32_t argc, const char* argn[], const char* argv[]) {
   v8::StartupData natives;
   v8::StartupData snapshot;
-  pp::PDF::GetV8ExternalSnapshotData(&natives.data, &natives.raw_size,
+  pp::PDF::GetV8ExternalSnapshotData(this, &natives.data, &natives.raw_size,
                                      &snapshot.data, &snapshot.raw_size);
   if (natives.data) {
     natives.compressed_size = natives.raw_size;

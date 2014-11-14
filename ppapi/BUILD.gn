@@ -738,6 +738,7 @@ component("ppapi_proxy") {
     ":ppapi_ipc",
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//gin",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/ipc",
     "//media:shared_memory_support",

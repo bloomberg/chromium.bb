@@ -20,6 +20,7 @@ class TestPDF : public TestCase {
  private:
   std::string TestGetLocalizedString();
   std::string TestGetResourceImage();
+  std::string TestGetV8ExternalSnapshotData();
 };
 
 #endif  // PAPPI_TESTS_TEST_PDF_H_

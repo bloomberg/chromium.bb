@@ -330,7 +330,8 @@ void SetLinkUnderCursor(PP_Instance instance_id, const char* url) {
   instance->SetLinkUnderCursor(url);
 }
 
-void GetV8ExternalSnapshotData(const char** natives_data_out,
+void GetV8ExternalSnapshotData(PP_Instance instance_id,
+                               const char** natives_data_out,
                                int* natives_size_out,
                                const char** snapshot_data_out,
                                int* snapshot_size_out) {
