@@ -34,9 +34,7 @@ enum MediaStreamType {
   MEDIA_DESKTOP_VIDEO_CAPTURE,
 
   // Capture system audio (post-mix loopback stream).
-  //
-  // TODO(sergeyu): Replace with MEDIA_DESKTOP_AUDIO_CAPTURE.
-  MEDIA_LOOPBACK_AUDIO_CAPTURE,
+  MEDIA_DESKTOP_AUDIO_CAPTURE,
 
   // This is used for enumerating audio output devices.
   // TODO(grunell): Output isn't really a part of media streams. Device

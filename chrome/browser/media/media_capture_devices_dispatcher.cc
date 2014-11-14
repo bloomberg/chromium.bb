@@ -171,7 +171,7 @@ scoped_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   if (capture_audio) {
     // Use the special loopback device ID for system audio capture.
     devices->push_back(content::MediaStreamDevice(
-        content::MEDIA_LOOPBACK_AUDIO_CAPTURE,
+        content::MEDIA_DESKTOP_AUDIO_CAPTURE,
         media::AudioManagerBase::kLoopbackInputDeviceId, "System Audio"));
   }
 
@@ -328,7 +328,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
-      request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE) {
+      request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE) {
     ProcessDesktopCaptureAccessRequest(
         web_contents, request, callback, extension);
   } else if (request.video_type == content::MEDIA_TAB_VIDEO_CAPTURE ||
@@ -524,7 +524,7 @@ void MediaCaptureDevicesDispatcher::ProcessDesktopCaptureAccessRequest(
   // Audio is only supported for screen capture streams.
   bool capture_audio =
       (media_id.type == content::DesktopMediaID::TYPE_SCREEN &&
-       request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE &&
+       request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
        loopback_audio_supported);
 
   ui = GetDevicesForDesktopCapture(
@@ -634,7 +634,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
 #endif  // !defined(OS_CHROMEOS)
 
       bool capture_audio =
-          (request.audio_type == content::MEDIA_LOOPBACK_AUDIO_CAPTURE &&
+          (request.audio_type == content::MEDIA_DESKTOP_AUDIO_CAPTURE &&
            loopback_audio_supported);
 
       // Unless we're being invoked from a component extension, register to

@@ -375,7 +375,7 @@ TEST_F(SpeechRecognitionAudioSinkTest, CheckIsSupportedAudioTrack) {
   p[MEDIA_TAB_AUDIO_CAPTURE] = false;
   p[MEDIA_TAB_VIDEO_CAPTURE] = false;
   p[MEDIA_DESKTOP_VIDEO_CAPTURE] = false;
-  p[MEDIA_LOOPBACK_AUDIO_CAPTURE] = false;
+  p[MEDIA_DESKTOP_AUDIO_CAPTURE] = false;
   p[MEDIA_DEVICE_AUDIO_OUTPUT] = false;
 
   // Ensure this test gets updated along with |content::MediaStreamType| enum.

@@ -289,7 +289,7 @@ class CONTENT_EXPORT MediaStreamManager
   // MEDIA_TAB_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamOptions::Constraints for requested tab capture IDs.
   bool SetupTabCaptureRequest(DeviceRequest* request);
-  // Prepare |request| of type MEDIA_LOOPBACK_AUDIO_CAPTURE and/or
+  // Prepare |request| of type MEDIA_DESKTOP_AUDIO_CAPTURE and/or
   // MEDIA_DESKTOP_VIDEO_CAPTURE for being posted to the UI by parsing
   // StreamOptions::Constraints for the requested desktop ID.
   bool SetupScreenCaptureRequest(DeviceRequest* request);
