@@ -263,6 +263,7 @@ group("root") {
   if (!is_android && !is_ios) {
     deps += [
       "//device/usb",
+      "//third_party/pdfium/samples",
     ]
   }
 
