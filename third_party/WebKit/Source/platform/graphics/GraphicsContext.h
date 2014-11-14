@@ -155,11 +155,10 @@ public:
     // FIXME: the setter is only used once, at construction time; convert to a constructor param,
     // and possibly consolidate with other flags (paintDisabled, isPrinting, ...)
     void setShouldSmoothFonts(bool smoothFonts) { m_shouldSmoothFonts = smoothFonts; }
-    bool shouldSmoothFonts() const { return m_shouldSmoothFonts; }
 
     // Turn off LCD text for the paint if not supported on this context.
     void adjustTextRenderMode(SkPaint*) const;
-    bool couldUseLCDRenderedText() const;
+    bool couldUseLCDRenderedText() const { return m_isCertainlyOpaque && m_shouldSmoothFonts; }
 
     void setTextDrawingMode(TextDrawingModeFlags mode) { mutableState()->setTextDrawingMode(mode); }
     TextDrawingModeFlags textDrawingMode() const { return immutableState()->textDrawingMode(); }
@@ -188,7 +187,6 @@ public:
     // the canvas may have transparency (as is the case when rendering
     // to a canvas object).
     void setCertainlyOpaque(bool isOpaque) { m_isCertainlyOpaque = isOpaque; }
-    bool isCertainlyOpaque() const { return m_isCertainlyOpaque; }
 
     // Returns if the context is a printing context instead of a display
     // context. Bitmap shouldn't be resampled when printing to keep the best
