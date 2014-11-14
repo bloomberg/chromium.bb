@@ -60,7 +60,7 @@ bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
 bool ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrialWithNameHash(
     uint32_t trial_name_hash,
     const std::string& group_name) {
-  return MetricsServiceAccessor::RegisterSyntheticFieldTrial(
+  return metrics::MetricsServiceAccessor::RegisterSyntheticFieldTrial(
       g_browser_process->metrics_service(),
       trial_name_hash,
       metrics::HashName(group_name));

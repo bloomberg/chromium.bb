@@ -50,6 +50,8 @@
         'metrics/metrics_reporting_scheduler.h',
         'metrics/metrics_service.cc',
         'metrics/metrics_service.h',
+        'metrics/metrics_service_accessor.cc',
+        'metrics/metrics_service_accessor.h',
         'metrics/metrics_service_client.cc',
         'metrics/metrics_service_client.h',
         'metrics/metrics_state_manager.cc',

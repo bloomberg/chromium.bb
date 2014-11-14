@@ -671,8 +671,6 @@
       'browser/metrics/jumplist_metrics_win.h',
       'browser/metrics/metrics_reporting_state.cc',
       'browser/metrics/metrics_reporting_state.h',
-      'browser/metrics/metrics_service_accessor.cc',
-      'browser/metrics/metrics_service_accessor.h',
       'browser/metrics/metrics_services_manager.cc',
       'browser/metrics/metrics_services_manager.h',
       'browser/metrics/network_stats_uploader.cc',

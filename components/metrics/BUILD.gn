@@ -34,6 +34,8 @@ source_set("metrics") {
     "metrics_reporting_scheduler.h",
     "metrics_service.cc",
     "metrics_service.h",
+    "metrics_service_accessor.cc",
+    "metrics_service_accessor.h",
     "metrics_service_client.cc",
     "metrics_service_client.h",
     "metrics_state_manager.cc",

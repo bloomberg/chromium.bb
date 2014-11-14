@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
-#include "chrome/browser/metrics/metrics_service_accessor.h"
+#include "components/metrics/metrics_service_accessor.h"
 
 class ChromeExtensionDownloaderFactory;
 class PrefService;
@@ -47,7 +47,7 @@ class BrowserOptionsHandler;
 // This class limits and documents access to metrics service helper methods.
 // Since these methods are private, each user has to be explicitly declared
 // as a 'friend' below.
-class ChromeMetricsServiceAccessor : public MetricsServiceAccessor {
+class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
  private:
   friend void component_updater::RegisterSwReporterComponent(
       component_updater::ComponentUpdateService* cus,

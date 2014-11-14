@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/metrics/metrics_service_accessor.h"
+#include "components/metrics/metrics_service_accessor.h"
 
 #include "components/metrics/metrics_service.h"
 
-// TODO(asvitkine): Remove when this class is moved to metrics namespace.
-using metrics::MetricsService;
-using metrics::SyntheticTrialGroup;
+namespace metrics {
 
 // static
 bool MetricsServiceAccessor::RegisterSyntheticFieldTrial(
@@ -22,3 +20,5 @@ bool MetricsServiceAccessor::RegisterSyntheticFieldTrial(
   metrics_service->RegisterSyntheticFieldTrial(trial_group);
   return true;
 }
+
+}  // namespace metrics
