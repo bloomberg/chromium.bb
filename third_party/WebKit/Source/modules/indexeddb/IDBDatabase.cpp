@@ -204,7 +204,7 @@ IDBObjectStore* IDBDatabase::createObjectStore(const String& name, const Diction
         Vector<String> keyPathArray;
         if (DictionaryHelper::get(options, "keyPath", keyPathArray))
             keyPath = IDBKeyPath(keyPathArray);
-        else if (options.getWithUndefinedOrNullCheck("keyPath", keyPathString))
+        else if (DictionaryHelper::getWithUndefinedOrNullCheck(options, "keyPath", keyPathString))
             keyPath = IDBKeyPath(keyPathString);
 
         DictionaryHelper::get(options, "autoIncrement", autoIncrement);

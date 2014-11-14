@@ -40,6 +40,7 @@ enum IDBTransactionMode {
     readonly attribute DOMString name;
     [CallWith=ScriptState] readonly attribute any version;
     readonly attribute DOMStringList objectStoreNames;
+    // FIXME: |options| should be an IDL dictionary (IDBObjectStoreParameters)
     [RaisesException] IDBObjectStore createObjectStore(DOMString name, optional Dictionary options);
     [RaisesException] void deleteObjectStore(DOMString name);
     // FIXME: should be union type http://crbug.com/240176

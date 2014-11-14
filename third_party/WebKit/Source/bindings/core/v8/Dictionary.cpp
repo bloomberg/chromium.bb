@@ -125,37 +125,6 @@ bool Dictionary::get(const String& key, v8::Local<v8::Value>& value) const
     return getKey(key, value);
 }
 
-bool Dictionary::getWithUndefinedOrNullCheck(const String& key, String& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
-        return false;
-
-    TOSTRING_DEFAULT(V8StringResource<>, stringValue, v8Value, false);
-    value = stringValue;
-    return true;
-}
-
-bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMember<Element>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
-        return false;
-
-    value = V8Element::toImplWithTypeCheck(m_isolate, v8Value);
-    return true;
-}
-
-bool Dictionary::getWithUndefinedOrNullCheck(const String& key, RefPtrWillBeMember<Path2D>& value) const
-{
-    v8::Local<v8::Value> v8Value;
-    if (!getKey(key, v8Value) || blink::isUndefinedOrNull(v8Value))
-        return false;
-
-    value = V8Path2D::toImplWithTypeCheck(m_isolate, v8Value);
-    return true;
-}
-
 bool Dictionary::get(const String& key, Dictionary& value) const
 {
     v8::Local<v8::Value> v8Value;

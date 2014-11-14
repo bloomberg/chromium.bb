@@ -126,10 +126,6 @@ public:
     bool getOwnPropertiesAsStringHashMap(HashMap<String, String>&) const;
     bool getPropertyNames(Vector<String>&) const;
 
-    bool getWithUndefinedOrNullCheck(const String&, String&) const;
-    bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Element>&) const;
-    bool getWithUndefinedOrNullCheck(const String&, RefPtrWillBeMember<Path2D>&) const;
-
     bool hasProperty(const String&) const;
 
     v8::Isolate* isolate() const { return m_isolate; }
