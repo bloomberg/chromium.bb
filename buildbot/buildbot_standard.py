@@ -169,26 +169,53 @@ def BuildScript(status, context):
       CommandGclientRunhooks(context)
 
   # Make sure our GN build is working.
-  gn_path = None
-  targets = ['trusted_' + context['arch'], 'untrusted']
-  if context.Linux() and context['arch'] != 'arm':
-    gn_path = '../buildtools/linux32/gn'
+  can_use_gn = context.Linux() and context['arch'] != 'arm'
+  gn_out = '../out'
 
-  # TODO(noelallen) Disable Mac and Windows build, but
-  # check in so we can debug on the bots.
-  if 0:
-    if context.Windows():
-      gn_path = '../buildtools/win/gn.exe'
-    if context.Mac():
-      gn_path = '../buildtools/mac/gn'
+  if can_use_gn:
+    def BoolFlag(cond):
+      return 'true' if cond else 'false'
 
-  if gn_path:
+    gn_x86 = 'false'
+    gn_x64 = 'false'
+    gn_arm = 'false'
+
+    if context['arch'] == '32':
+      gn_x86 = 'true'
+    elif context['arch'] == '64':
+      gn_x64 = 'true'
+    elif context['arch'] == 'arm':
+      gn_arm = 'true'
+    else:
+      raise Exception("Unexpected arch: " + context['arch'])
+
+    gn_newlib = BoolFlag(not context['use_glibc'])
+    gn_glibc = BoolFlag(context['use_glibc'])
+
+    gn_gen_args = [
+      'is_debug=' + context['gn_is_debug'],
+      'use_trusted_x86=' + gn_x86,
+      'use_nacl_x86=' + gn_x86,
+      'use_trusted_x64=' + gn_x64,
+      'use_nacl_x64=' + gn_x64,
+      'use_trusted_arm=' + gn_arm,
+      'use_nacl_arm=' + gn_arm,
+      'use_gcc_newlib=' + gn_newlib,
+      'use_gcc_glibc=' + gn_glibc,
+      'use_clang_newlib=' + gn_newlib,
+    ]
+
     with Step('gn_compile', status):
       Command(context,
-              cmd=[gn_path, '--dotfile=../native_client/.gn',
-                   '--args=is_debug=%s' % context['gn_is_debug'],
-                   '--root=..', 'gen', '../out'])
-      Command(context, cmd=['ninja', '-C', '../out', '-j10'] + targets)
+              cmd=['gn', '--dotfile=../native_client/.gn', '--root=..',
+                   # Note: quotes are not needed around this space-separated
+                   # list of args.  The shell would remove them before passing
+                   # them to a program, and Python bypasses the shell.  Adding
+                   # quotes will cause an error because GN will see unexpected
+                   # double quotes.
+                   '--args=%s' % ' '.join(gn_gen_args),
+                   'gen', gn_out])
+      Command(context, cmd=['ninja', '-C', gn_out])
 
   if context['clang']:
     with Step('update_clang', status):
@@ -279,13 +306,13 @@ def BuildScript(status, context):
   ### END tests ###
 
   ### BEGIN GN tests ###
-  if gn_path:
+  if can_use_gn:
     arch_name = {
       'arm': 'arm',
       '32': 'x86',
       '64': 'x64'
     }[context['arch']]
-    gn_sel_ldr = '../out/trusted_%s/sel_ldr' % arch_name
+    gn_sel_ldr = os.path.join(gn_out, 'trusted_' + arch_name, 'sel_ldr')
     gn_extra = [
         'force_sel_ldr=' + gn_sel_ldr,
         'perf_prefix=gn_',

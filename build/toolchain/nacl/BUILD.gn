@@ -99,8 +99,9 @@ nacl_toolchain("irt_x86") {
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
-  # Link with clang to avoid including any C++ libs.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${toolprefix}clang --readelf-cmd=${toolprefix}readelf"
+  readelf = toolprefix + "readelf"
+  # Link with cc to avoid including any C++ libs.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
 
   # TODO(ncbray): depend on link script
   deps = [
@@ -118,8 +119,29 @@ nacl_toolchain("irt_x64") {
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
   ar = toolprefix + "ar"
-  # Link with clang to avoid including any C++ libs.
-  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${toolprefix}clang --readelf-cmd=${toolprefix}readelf"
+  readelf = toolprefix + "readelf"
+  # Link with cc to avoid including any C++ libs.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
+
+  # TODO(ncbray): depend on link script
+  deps = [
+    "//native_client/src/tools/tls_edit:tls_edit($host_toolchain)",
+  ]
+}
+
+# Uses newlib to match the Chrome build.
+nacl_toolchain("irt_arm") {
+  package = "nacl_arm_newlib"
+  toolchain_cpu_arch = "arm"
+  toolprefix = "toolchain/${os}_x86/${package}/bin/arm-nacl-"
+
+  cc = toolprefix + "gcc"
+  cxx = toolprefix + "g++"
+  ar = toolprefix + "ar"
+  readelf = toolprefix + "readelf"
+  # Link with cc to avoid including any C++ libs.
+  ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
+
 
   # TODO(ncbray): depend on link script
   deps = [

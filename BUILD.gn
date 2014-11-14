@@ -14,26 +14,38 @@
 # combinations of the real targets.
 #
 
-if (os == "linux") {
+trusted_deps = []
+
+if (use_trusted_x86) {
+  group("trusted_x86") {
+    deps = [
+      "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x86)",
+    ]
+  }
+  trusted_deps += [":trusted_x86"]
+}
+
+if (use_trusted_x64) {
+  group("trusted_x64") {
+    deps = [
+      "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x64)",
+    ]
+  }
+  trusted_deps += [":trusted_x64"]
+}
+
+if (use_trusted_arm) {
   group("trusted_arm") {
     deps = [
       "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_arm)",
     ]
   }
+  trusted_deps += [":trusted_arm"]
 }
 
-group("trusted_32") {
-  deps = [
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x86)",
-  ]
+group("trusted") {
+  deps = trusted_deps
 }
-
-group("trusted_64") {
-  deps = [
-    "//native_client/src:trusted_targets(//native_client/build/toolchain/$os:trusted_x64)",
-  ]
-}
-
 
 #
 # This is the root untrusted target which will build all trusted components
@@ -41,17 +53,17 @@ group("trusted_64") {
 group("untrusted") {
   deps = []
   if (use_nacl_x86) {
-    if (use_newlib) {
+    if (use_gcc_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x86)",
       ]
     }
-    if (use_glibc) {
+    if (use_gcc_glibc) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x86)"
       ]
     }
-    if (use_clang) {
+    if (use_clang_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x86)",
       ]
@@ -61,17 +73,17 @@ group("untrusted") {
     ]
   }
   if (use_nacl_x64) {
-    if (use_newlib) {
+    if (use_gcc_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_x64)",
       ]
     }
-    if (use_glibc) {
+    if (use_gcc_glibc) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:glibc_x64)"
       ]
     }
-    if (use_clang) {
+    if (use_clang_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:clang_newlib_x64)",
       ]
@@ -81,7 +93,7 @@ group("untrusted") {
     ]
   }
   if (use_nacl_arm) {
-    if (use_newlib) {
+    if (use_gcc_newlib) {
       deps += [
         "//native_client/src/:untrusted_targets(//native_client/build/toolchain/nacl:newlib_arm)",
       ]

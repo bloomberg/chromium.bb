@@ -17,25 +17,27 @@ bootstrap_exe_path = "$root_out_dir/nacl_helper_bootstrap"
 
 linker_script_path = rebase_path("nacl_bootstrap.x")
 
-if (cpu_arch=="x64") {
+if (cpu_arch == "x64") {
   nacl_reserve_top = "0x0"
   linker_emulation = "elf_x86_64"
 }
-if (cpu_arch=="x86") {
+if (cpu_arch == "x86") {
   nacl_reserve_top = "0x40000000"
   linker_emulation = "elf_i386"
 }
-if (cpu_arch=="arm") {
+if (cpu_arch == "arm") {
   nacl_reserve_top = "0x40002000"
   linker_emulation = "armelf_linux_eabi"
 }
-if (cpu_arch=="mipsel") {
+if (cpu_arch == "mipsel") {
   nacl_reserve_top = "0x40008000"
   linker_emulation = "elf32ltsmip"
 }
 
 if (is_android) {
   compiler = "g++"
+} else if (cpu_arch == "arm") {
+  compiler = "arm-linux-gnueabihf-g++"
 } else {
   compiler = "g++"
 }

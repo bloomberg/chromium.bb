@@ -220,6 +220,13 @@ if (current_toolchain == "//native_client/build/toolchain/nacl:toolchain_prep") 
             "//native_client/src/untrusted/nacl:nacl(//native_client/build/toolchain/nacl:raw_${toolchain_prefix}_arm)",
           ]
         }
+        copy("${target_name}_libpthread_arm") {
+          sources = [ "${obj_dir}/native_client/src/untrusted/pthread/libpthread.a" ]
+          outputs = [ "${install_dir}/lib/libpthread.a" ]
+          deps = [
+            "//native_client/src/untrusted/pthread:pthread(//native_client/build/toolchain/nacl:raw_${toolchain_prefix}_arm)",
+          ]
+        }
       } else {
         crt_path = "${obj_dir}/native_client/src/untrusted/stubs"
         copy("${target_name}_crti_x86_32") {
