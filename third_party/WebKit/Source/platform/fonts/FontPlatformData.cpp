@@ -49,9 +49,6 @@ FontPlatformData::FontPlatformData(WTF::HashTableDeletedValueType)
 #if OS(MACOSX)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#endif
-    , m_widthVariant(RegularWidth)
-#if OS(MACOSX)
     , m_font(nullptr)
 #else
     , m_style(FontRenderStyle())
@@ -78,9 +75,6 @@ FontPlatformData::FontPlatformData()
 #if OS(MACOSX)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#endif
-    , m_widthVariant(RegularWidth)
-#if OS(MACOSX)
     , m_font(nullptr)
 #else
     , m_style(FontRenderStyle())
@@ -95,7 +89,7 @@ FontPlatformData::FontPlatformData()
 {
 }
 
-FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation)
     : m_typeface(nullptr)
 #if !OS(WIN)
     , m_family(CString())
@@ -107,9 +101,6 @@ FontPlatformData::FontPlatformData(float size, bool syntheticBold, bool syntheti
 #if OS(MACOSX)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-#endif
-    , m_widthVariant(widthVariant)
-#if OS(MACOSX)
     , m_font(nullptr)
 #else
     , m_style(FontRenderStyle())
@@ -137,7 +128,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& source)
     , m_isColorBitmapFont(source.m_isColorBitmapFont)
     , m_isCompositeFontReference(source.m_isCompositeFontReference)
 #endif
-    , m_widthVariant(source.m_widthVariant)
 #if !OS(MACOSX)
     , m_style(source.m_style)
 #endif
@@ -168,7 +158,6 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
     , m_isColorBitmapFont(src.m_isColorBitmapFont)
     , m_isCompositeFontReference(src.m_isCompositeFontReference)
 #endif
-    , m_widthVariant(RegularWidth)
 #if !OS(MACOSX)
     , m_style(src.m_style)
 #endif
@@ -189,7 +178,7 @@ FontPlatformData::FontPlatformData(const FontPlatformData& src, float textSize)
 }
 
 #if OS(MACOSX)
-FontPlatformData::FontPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> tf, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData::FontPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> tf, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation)
     : m_typeface(tf)
     , m_family(CString())
     , m_textSize(size)
@@ -198,7 +187,6 @@ FontPlatformData::FontPlatformData(CGFontRef cgFont, PassRefPtr<SkTypeface> tf, 
     , m_orientation(orientation)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-    , m_widthVariant(widthVariant)
     , m_font(nullptr)
     , m_cgFont(cgFont)
     , m_isHashTableDeletedValue(false)
@@ -216,7 +204,6 @@ FontPlatformData::FontPlatformData(PassRefPtr<SkTypeface> tf, const char* family
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
-    , m_widthVariant(RegularWidth)
     , m_isHashTableDeletedValue(false)
 #if OS(WIN)
     , m_paintTextFlags(0)
@@ -253,14 +240,12 @@ const FontPlatformData& FontPlatformData::operator=(const FontPlatformData& othe
     m_syntheticItalic = other.m_syntheticItalic;
     m_harfBuzzFace = nullptr;
     m_orientation = other.m_orientation;
-    m_widthVariant = other.m_widthVariant;
 #if OS(MACOSX)
     m_isColorBitmapFont = other.m_isColorBitmapFont;
     m_isCompositeFontReference = other.m_isCompositeFontReference;
 #else
     m_style = other.m_style;
 #endif
-    m_widthVariant = other.m_widthVariant;
 
 #if OS(WIN)
     m_paintTextFlags = 0;
@@ -300,12 +285,11 @@ bool FontPlatformData::operator==(const FontPlatformData& a) const
         && m_syntheticItalic == a.m_syntheticItalic
         && m_orientation == a.m_orientation
 #if !OS(MACOSX)
-        && m_style == a.m_style
+        && m_style == a.m_style;
 #else
         && m_isColorBitmapFont == a.m_isColorBitmapFont
-        && m_isCompositeFontReference == a.m_isCompositeFontReference
+        && m_isCompositeFontReference == a.m_isCompositeFontReference;
 #endif
-        && m_widthVariant == a.m_widthVariant;
 }
 
 SkFontID FontPlatformData::uniqueID() const

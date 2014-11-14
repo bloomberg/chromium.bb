@@ -30,7 +30,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "platform/Timer.h"
 #include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontWidthVariant.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -64,7 +63,7 @@ public:
     bool isCORSFailed() const { return m_corsFailed; }
 
     bool ensureCustomFontData();
-    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
+    FontPlatformData platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation = Horizontal);
 
 protected:
     virtual bool isSafeToUnlock() const override;

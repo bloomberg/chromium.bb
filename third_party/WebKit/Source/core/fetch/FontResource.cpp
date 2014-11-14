@@ -136,10 +136,10 @@ bool FontResource::ensureCustomFontData()
     return m_fontData;
 }
 
-FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData FontResource::platformDataFromCustomData(float size, bool bold, bool italic, FontOrientation orientation)
 {
     ASSERT(m_fontData);
-    return m_fontData->fontPlatformData(size, bold, italic, orientation, widthVariant);
+    return m_fontData->fontPlatformData(size, bold, italic, orientation);
 }
 
 bool FontResource::isSafeToUnlock() const

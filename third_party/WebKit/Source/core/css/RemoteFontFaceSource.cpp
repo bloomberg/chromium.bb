@@ -101,7 +101,7 @@ PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(const FontDescri
     return SimpleFontData::create(
         m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
             fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
-            fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create());
+            fontDescription.orientation()), CustomFontData::create());
 }
 
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createLoadingFallbackFontData(const FontDescription& fontDescription)

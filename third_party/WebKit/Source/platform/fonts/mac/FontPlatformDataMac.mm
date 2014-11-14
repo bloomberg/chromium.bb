@@ -41,7 +41,7 @@ namespace blink {
 unsigned FontPlatformData::hash() const
 {
     ASSERT(m_font || !m_cgFont);
-    uintptr_t hashCodes[3] = { (uintptr_t)m_font, m_widthVariant, static_cast<uintptr_t>(m_isHashTableDeletedValue << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticItalic) };
+    uintptr_t hashCodes[2] = { (uintptr_t)m_font, static_cast<uintptr_t>(m_isHashTableDeletedValue << 3 | m_orientation << 2 | m_syntheticBold << 1 | m_syntheticItalic) };
     return StringHasher::hashMemory<sizeof(hashCodes)>(hashCodes);
 }
 
@@ -72,17 +72,13 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext*, const Font* 
         paint->setHinting(SkPaint::kNo_Hinting);
 }
 
-// These CoreText Text Spacing feature selectors are not defined in CoreText.
-enum TextSpacingCTFeatureSelector { TextSpacingProportional, TextSpacingFullWidth, TextSpacingHalfWidth, TextSpacingThirdWidth, TextSpacingQuarterWidth };
-
-FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBold, bool syntheticItalic, FontOrientation orientation)
     : m_textSize(size)
     , m_syntheticBold(syntheticBold)
     , m_syntheticItalic(syntheticItalic)
     , m_orientation(orientation)
     , m_isColorBitmapFont(false)
     , m_isCompositeFontReference(false)
-    , m_widthVariant(widthVariant)
     , m_font(nsFont)
     , m_isHashTableDeletedValue(false)
 {
@@ -189,26 +185,6 @@ bool FontPlatformData::allowsLigatures() const
     return ![[m_font coveredCharacterSet] characterIsMember:'a'];
 }
 
-inline int mapFontWidthVariantToCTFeatureSelector(FontWidthVariant variant)
-{
-    switch(variant) {
-    case RegularWidth:
-        return TextSpacingProportional;
-
-    case HalfWidth:
-        return TextSpacingHalfWidth;
-
-    case ThirdWidth:
-        return TextSpacingThirdWidth;
-
-    case QuarterWidth:
-        return TextSpacingQuarterWidth;
-    }
-
-    ASSERT_NOT_REACHED();
-    return TextSpacingProportional;
-}
-
 static CFDictionaryRef createFeatureSettingDictionary(int featureTypeIdentifier, int featureSelectorIdentifier)
 {
     RetainPtr<CFNumberRef> featureTypeIdentifierNumber(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureTypeIdentifier));
@@ -279,19 +255,6 @@ CTFontRef FontPlatformData::ctFont() const
         m_CTFont.adoptCF(CTFontCreateCopyWithAttributes(m_CTFont.get(), m_textSize, 0, fontDescriptor));
     } else
         m_CTFont.adoptCF(CTFontCreateWithGraphicsFont(m_cgFont.get(), m_textSize, 0, cascadeToLastResortFontDescriptor()));
-
-    if (m_widthVariant != RegularWidth) {
-        int featureTypeValue = kTextSpacingType;
-        int featureSelectorValue = mapFontWidthVariantToCTFeatureSelector(m_widthVariant);
-        RetainPtr<CTFontDescriptorRef> sourceDescriptor(AdoptCF, CTFontCopyFontDescriptor(m_CTFont.get()));
-        RetainPtr<CFNumberRef> featureType(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureTypeValue));
-        RetainPtr<CFNumberRef> featureSelector(AdoptCF, CFNumberCreate(kCFAllocatorDefault, kCFNumberIntType, &featureSelectorValue));
-        RetainPtr<CTFontDescriptorRef> newDescriptor(AdoptCF, CTFontDescriptorCreateCopyWithFeature(sourceDescriptor.get(), featureType.get(), featureSelector.get()));
-        RetainPtr<CTFontRef> newFont(AdoptCF, CTFontCreateWithFontDescriptor(newDescriptor.get(), m_textSize, 0));
-
-        if (newFont)
-            m_CTFont = newFont;
-    }
 
     return m_CTFont.get();
 }

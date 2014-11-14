@@ -42,9 +42,9 @@ FontCustomPlatformData::~FontCustomPlatformData()
 {
 }
 
-FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold, bool italic, FontOrientation orientation, FontWidthVariant widthVariant)
+FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold, bool italic, FontOrientation orientation)
 {
-    return FontPlatformData(m_cgFont.get(), m_typeface, size, bold, italic, orientation, widthVariant);
+    return FontPlatformData(m_cgFont.get(), m_typeface, size, bold, italic, orientation);
 }
 
 PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer)

@@ -34,7 +34,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/fonts/FontOrientation.h"
-#include "platform/fonts/FontWidthVariant.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -59,7 +58,7 @@ public:
     static PassOwnPtr<FontCustomPlatformData> create(SharedBuffer*);
     ~FontCustomPlatformData();
 
-    FontPlatformData fontPlatformData(float size, bool bold, bool italic, FontOrientation = Horizontal, FontWidthVariant = RegularWidth);
+    FontPlatformData fontPlatformData(float size, bool bold, bool italic, FontOrientation = Horizontal);
 
     static bool supportsFormat(const String&);
 

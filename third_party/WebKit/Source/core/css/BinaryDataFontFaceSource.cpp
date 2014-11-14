@@ -31,7 +31,7 @@ PassRefPtr<SimpleFontData> BinaryDataFontFaceSource::createFontData(const FontDe
     return SimpleFontData::create(
         m_customPlatformData->fontPlatformData(fontDescription.effectiveFontSize(),
             fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
-            fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create());
+            fontDescription.orientation()), CustomFontData::create());
 }
 
 } // namespace blink
