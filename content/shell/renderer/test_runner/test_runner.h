@@ -591,6 +591,9 @@ class TestRunner : public WebTestRunner,
   // test.
   void LocationChangeDone();
 
+  // Sets a flag causing the next call to WebGLRenderingContext::create to fail.
+  void ForceNextWebGLContextCreationToFail();
+
   bool test_is_running_;
 
   // When reset is called, go through and close all but the main test shell
