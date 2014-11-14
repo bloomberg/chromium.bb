@@ -3435,3 +3435,18 @@
    fun:_ZN3gin21ObjectTemplateBuilder9SetMethodIMN4mojo2js13HandleWrapperEFSsvEEERS0_RKN4base16BasicStringPieceISsEERKT_
    fun:_ZN4mojo2js13HandleWrapper24GetObjectTemplateBuilderEPN2v87IsolateE
 }
+{
+  bug_433374
+  Memcheck:Leak
+  fun:malloc
+  fun:BN_new
+  fun:bn_new
+  fun:ASN1_primitive_new
+  fun:asn1_item_ex_combine_new
+  fun:ASN1_template_new
+  fun:asn1_item_ex_combine_new
+  fun:ASN1_item_ex_new
+  fun:ASN1_item_new
+  fun:ECDSA_SIG_new
+  fun:_ZN7content9webcrypto12_GLOBAL__N_139ConvertWebCryptoSignatureToDerSignatureEP11evp_pkey_stRKNS0_10CryptoDataEPSt6vectorIhSaIhEEPb
+}
