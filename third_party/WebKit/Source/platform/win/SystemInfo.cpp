@@ -26,25 +26,25 @@
 #include "config.h"
 #include "platform/win/SystemInfo.h"
 
-#if _WIN32_WINNT_WINBLUE
+#include <windows.h>
+
+#if _WIN32_WINNT >= 0x0603
 #include <versionhelpers.h>
 #endif
 
-#include <windows.h>
-
 namespace blink {
 
-#ifndef _WIN32_WINNT_WINBLUE
+#if _WIN32_WINNT < 0x0603
 static bool IsWindowsVistaOrGreater()
 {
     OSVERSIONINFOEXW osvi = { };
     osvi.dwOSVersionInfoSize = sizeof(osvi);
     osvi.dwMajorVersion = HIBYTE(_WIN32_WINNT_VISTA);
     osvi.dwMinorVersion = LOBYTE(_WIN32_WINNT_VISTA);
-    DWORDLONG conditoin = 0;
-    VER_SET_CONDITION(conditoin, VER_MAJORVERSION, VER_GREATER_EQUAL);
-    VER_SET_CONDITION(conditoin, VER_MINORVERSION, VER_GREATER_EQUAL);
-    return !!::VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION, conditoin);
+    DWORDLONG condition = 0;
+    VER_SET_CONDITION(condition, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(condition, VER_MINORVERSION, VER_GREATER_EQUAL);
+    return !!::VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION, condition);
 }
 #endif
 
