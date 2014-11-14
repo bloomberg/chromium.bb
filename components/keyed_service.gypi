@@ -74,5 +74,33 @@
         ],
       }],
     }],
+    ['OS == "ios"', {
+      'targets': [
+        {
+          'target_name': 'keyed_service_ios',
+          'type': '<(component)',
+          'defines': [
+            'KEYED_SERVICE_IMPLEMENTATION',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../base/base.gyp:base_prefs',
+            '../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+            '../ios/web/ios_web.gyp:ios_web',
+            'keyed_service_core',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'keyed_service/ios/browser_state_dependency_manager.cc',
+            'keyed_service/ios/browser_state_dependency_manager.h',
+            'keyed_service/ios/browser_state_keyed_service_factory.cc',
+            'keyed_service/ios/browser_state_keyed_service_factory.h',
+            'keyed_service/ios/refcounted_browser_state_keyed_service_factory.cc',
+            'keyed_service/ios/refcounted_browser_state_keyed_service_factory.h',
+        ],
+      }],
+    }],
   ],
 }
