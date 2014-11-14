@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "7.7",
+  "version": "7.8",
   "entries": [
     {
       "id": 1,
@@ -1045,6 +1045,27 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_async_readpixels"
+      ]
+    },
+    {
+      "id": 94,
+      "description": "Disable EGL_KHR_wait_sync on NVIDIA with GLES 3.1",
+      "cr_bugs": [433057],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "5.0.0"
+        }
+      },
+      "gl_vendor": "NVIDIA.*",
+      "gl_type": "gles",
+      "gl_version": {
+        "op": "=",
+        "value": "3.1"
+      },
+      "features": [
+        "disable_egl_khr_wait_sync"
       ]
     }
   ]

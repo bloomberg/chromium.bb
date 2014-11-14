@@ -28,6 +28,8 @@
          disable_depth_texture)                              \
   GPU_OP(DISABLE_EGL_KHR_FENCE_SYNC,                         \
          disable_egl_khr_fence_sync)                         \
+  GPU_OP(DISABLE_EGL_KHR_WAIT_SYNC,                          \
+         disable_egl_khr_wait_sync)                          \
   GPU_OP(DISABLE_EXT_DISCARD_FRAMEBUFFER,                    \
          disable_ext_discard_framebuffer)                    \
   GPU_OP(DISABLE_EXT_DRAW_BUFFERS,                           \

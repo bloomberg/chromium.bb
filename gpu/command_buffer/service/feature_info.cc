@@ -848,6 +848,9 @@ void FeatureInfo::InitializeFeatures() {
   if (workarounds_.disable_egl_khr_fence_sync) {
     gfx::g_driver_egl.ext.b_EGL_KHR_fence_sync = false;
   }
+  if (workarounds_.disable_egl_khr_wait_sync) {
+    gfx::g_driver_egl.ext.b_EGL_KHR_wait_sync = false;
+  }
 #endif
   if (workarounds_.disable_arb_sync)
     gfx::g_driver_gl.ext.b_GL_ARB_sync = false;
