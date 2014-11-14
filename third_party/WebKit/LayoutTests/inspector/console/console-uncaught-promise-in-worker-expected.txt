@@ -1,12 +1,12 @@
-CONSOLE ERROR: Unhandled promise rejection
-CONSOLE ERROR: Unhandled promise rejection
+CONSOLE ERROR: line 3: Unhandled promise rejection
+CONSOLE ERROR: line 21: Unhandled promise rejection
 Tests that uncaught promise rejections happenned in workers are logged into console.
 
-Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err1}
+worker-with-unhandled-promises.js:3 Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err1}
     __proto__: Promise
     [[PromiseStatus]]: "rejected"
     [[PromiseValue]]: Error: err1
-Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err2}
+worker-with-unhandled-promises.js:21 Unhandled promise rejection Promise {[[PromiseStatus]]: "rejected", [[PromiseValue]]: Error: err2}
     __proto__: Promise
     [[PromiseStatus]]: "rejected"
     [[PromiseValue]]: Error: err2
