@@ -202,7 +202,9 @@ size_t ToolbarActionsBar::GetIconCount() const {
 
 void ToolbarActionsBar::CreateActions() {
   DCHECK(toolbar_actions_.empty());
-  if (!model_)
+  // We wait for the extension system to be initialized before we add any
+  // actions, as they rely on the extension system to function.
+  if (!model_ || !model_->extensions_initialized())
     return;
 
   {
@@ -429,9 +431,14 @@ void ToolbarActionsBar::ToolbarHighlightModeChanged(bool is_highlighting) {
 }
 
 void ToolbarActionsBar::OnToolbarModelInitialized() {
-  ToolbarVisibleCountChanged();  // We may not have resized since the start.
-  delegate_->Redraw(false);  // Order didn't change.
+  // We shouldn't have any actions before the model is initialized.
+  DCHECK(toolbar_actions_.empty());
   suppress_animation_ = false;
+  CreateActions();
+  if (!toolbar_actions_.empty()) {
+    delegate_->Redraw(false);
+    ToolbarVisibleCountChanged();
+  }
 }
 
 void ToolbarActionsBar::OnToolbarReorderNecessary(

@@ -289,9 +289,6 @@ class BrowserActionsContainer
   // The vector of toolbar actions (icons/image buttons for each action).
   ToolbarActionViews toolbar_action_views_;
 
-  // Whether or not the container has been initialized.
-  bool initialized_;
-
   // The Browser object the container is associated with.
   Browser* browser_;
 

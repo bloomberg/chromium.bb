@@ -43,6 +43,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
    public:
     // TODO(devlin): Rename these methods to be OnFoo.
     // Signals that an |extension| has been added to the toolbar at |index|.
+    // This will *only* be called after the toolbar model has been initialized.
     virtual void ToolbarExtensionAdded(const Extension* extension,
                                        int index) = 0;
 
@@ -79,16 +80,16 @@ class ExtensionToolbarModel : public content::NotificationObserver,
     //   with the new set (and just assume the new set is different).
     virtual void ToolbarHighlightModeChanged(bool is_highlighting) = 0;
 
+    // Signals that the toolbar model has been initialized, so that if any
+    // observers were postponing animation during the initialization stage, they
+    // can catch up.
+    virtual void OnToolbarModelInitialized() = 0;
+
     // Signals that the toolbar needs to be reordered for the given
     // |web_contents|. This is caused by an overflowed action wanting to run,
     // and needing to "pop itself out".
     virtual void OnToolbarReorderNecessary(
         content::WebContents* web_contents) = 0;
-
-    // Signals that the toolbar model has been initialized, so that if any
-    // observers were postponing animation during the initialization stage, they
-    // can catch up.
-    virtual void OnToolbarModelInitialized() = 0;
 
     // Returns the browser associated with the Observer.
     virtual Browser* GetBrowser() = 0;
@@ -113,8 +114,13 @@ class ExtensionToolbarModel : public content::NotificationObserver,
   void SetVisibleIconCount(size_t count);
 
   size_t visible_icon_count() const {
+    // We have guards around this because |visible_icon_count_| can be set by
+    // prefs/sync, and we want to ensure that the icon count returned is within
+    // bounds.
     return visible_icon_count_ == -1 ?
-        toolbar_items().size() : static_cast<size_t>(visible_icon_count_);
+        toolbar_items().size() :
+        std::min(static_cast<size_t>(visible_icon_count_),
+                 toolbar_items().size());
   }
 
   bool all_icons_visible() const { return visible_icon_count_ == -1; }
@@ -202,7 +208,7 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   // Updates |extension|'s browser action visibility pref if the browser action
   // is in the overflow menu and should be considered hidden.
-  void MaybeUpdateVisibilityPref(const Extension* extension, int index);
+  void MaybeUpdateVisibilityPref(const Extension* extension, size_t index);
 
   // Calls MaybeUpdateVisibilityPref() for each extension in |toolbar_items|.
   void MaybeUpdateVisibilityPrefs();
@@ -256,6 +262,8 @@ class ExtensionToolbarModel : public content::NotificationObserver,
 
   // The number of icons visible (the rest should be hidden in the overflow
   // chevron). A value of -1 indicates that all icons should be visible.
+  // Instead of using this variable directly, use visible_icon_count() if
+  // possible.
   // TODO(devlin): Make a new variable to indicate that all icons should be
   // visible, instead of overloading this one.
   int visible_icon_count_;

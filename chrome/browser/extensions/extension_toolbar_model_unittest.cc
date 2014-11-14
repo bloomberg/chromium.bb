@@ -112,7 +112,10 @@ KeyedService* BuildToolbarModel(content::BrowserContext* context) {
 // Given a |profile|, assigns the testing keyed service function to
 // BuildToolbarModel() and uses it to create and initialize a new
 // ExtensionToolbarModel.
-ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile) {
+// |wait_for_ready| indicates whether or not to post the ExtensionSystem's
+// ready task.
+ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile,
+                                                    bool wait_for_ready) {
   ExtensionToolbarModel* model = ExtensionToolbarModel::Get(profile);
   if (model)
     return model;
@@ -122,15 +125,18 @@ ExtensionToolbarModel* CreateToolbarModelForProfile(Profile* profile) {
   ExtensionToolbarModelFactory::GetInstance()->SetTestingFactory(
       profile, &BuildToolbarModel);
   model = ExtensionToolbarModel::Get(profile);
-  // Fake the extension system ready signal.
-  // HACK ALERT! In production, the ready task on ExtensionSystem (and most
-  // everything else on it, too) is shared between incognito and normal
-  // profiles, but a TestExtensionSystem doesn't have the concept of "shared".
-  // Because of this, we have to set any new profile's TestExtensionSystem's
-  // ready task, too.
-  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile))->SetReady();
-  // Run tasks posted to TestExtensionSystem.
-  base::RunLoop().RunUntilIdle();
+  if (wait_for_ready) {
+    // Fake the extension system ready signal.
+    // HACK ALERT! In production, the ready task on ExtensionSystem (and most
+    // everything else on it, too) is shared between incognito and normal
+    // profiles, but a TestExtensionSystem doesn't have the concept of "shared".
+    // Because of this, we have to set any new profile's TestExtensionSystem's
+    // ready task, too.
+    static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile))->
+        SetReady();
+    // Run tasks posted to TestExtensionSystem.
+    base::RunLoop().RunUntilIdle();
+  }
 
   return model;
 }
@@ -164,6 +170,7 @@ class ExtensionToolbarModelTestObserver
   size_t removed_count() const { return removed_count_; }
   size_t moved_count() const { return moved_count_; }
   int highlight_mode_count() const { return highlight_mode_count_; }
+  size_t initialized_count() const { return initialized_count_; }
   size_t reorder_count() const { return reorder_count_; }
 
  private:
@@ -194,7 +201,7 @@ class ExtensionToolbarModelTestObserver
     highlight_mode_count_ += is_highlighting ? 1 : -1;
   }
 
-  void OnToolbarModelInitialized() override {}
+  void OnToolbarModelInitialized() override { ++initialized_count_; }
 
   void OnToolbarReorderNecessary(content::WebContents* web_contents) override {
     ++reorder_count_;
@@ -209,6 +216,7 @@ class ExtensionToolbarModelTestObserver
   size_t moved_count_;
   // Int because it could become negative (if something goes wrong).
   int highlight_mode_count_;
+  size_t initialized_count_;
   size_t reorder_count_;
 };
 
@@ -218,6 +226,7 @@ ExtensionToolbarModelTestObserver::ExtensionToolbarModelTestObserver(
                                     removed_count_(0),
                                     moved_count_(0),
                                     highlight_mode_count_(0),
+                                    initialized_count_(0),
                                     reorder_count_(0) {
   model_->AddObserver(this);
 }
@@ -299,7 +308,7 @@ class ExtensionToolbarModelUnitTest : public ExtensionServiceTestBase {
 
 void ExtensionToolbarModelUnitTest::Init() {
   InitializeEmptyExtensionService();
-  toolbar_model_ = CreateToolbarModelForProfile(profile());
+  toolbar_model_ = CreateToolbarModelForProfile(profile(), true);
   model_observer_.reset(new ExtensionToolbarModelTestObserver(toolbar_model_));
 }
 
@@ -887,7 +896,7 @@ TEST_F(ExtensionToolbarModelUnitTest, ExtensionToolbarIncognitoModeTest) {
 
   // Get an incognito profile and toolbar.
   ExtensionToolbarModel* incognito_model =
-      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile());
+      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile(), true);
 
   ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
   EXPECT_EQ(0u, incognito_observer.moved_count());
@@ -992,7 +1001,7 @@ TEST_F(ExtensionToolbarModelUnitTest,
 
   // Get an incognito profile and toolbar.
   ExtensionToolbarModel* incognito_model =
-      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile());
+      CreateToolbarModelForProfile(profile()->GetOffTheRecordProfile(), true);
   ExtensionToolbarModelTestObserver incognito_observer(incognito_model);
 
   // Right now, no extensions are enabled in incognito mode.
@@ -1273,6 +1282,33 @@ TEST_F(ExtensionToolbarModelUnitTest, ToolbarActionsPopOutToAct) {
   EXPECT_EQ(no_action(), tab_order[2].get());
   EXPECT_EQ(1u, toolbar_model()->GetVisibleIconCountForTab(web_contents));
   EXPECT_EQ(3u, observer()->reorder_count());
+}
+
+// Test that observers receive no Added notifications until after the
+// ExtensionSystem has initialized.
+TEST_F(ExtensionToolbarModelUnitTest, ModelWaitsForExtensionSystemReady) {
+  InitializeEmptyExtensionService();
+  ExtensionToolbarModel* toolbar_model =
+       CreateToolbarModelForProfile(profile(), false);
+  ExtensionToolbarModelTestObserver model_observer(toolbar_model);
+  EXPECT_TRUE(AddBrowserActionExtensions());
+
+  // Since the model hasn't been initialized (the ExtensionSystem::ready task
+  // hasn't been run), there should be no insertion notifications.
+  EXPECT_EQ(0u, model_observer.inserted_count());
+  EXPECT_EQ(0u, model_observer.initialized_count());
+  EXPECT_FALSE(toolbar_model->extensions_initialized());
+
+  // Run the ready task.
+  static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile()))->
+      SetReady();
+  // Run tasks posted to TestExtensionSystem.
+  base::RunLoop().RunUntilIdle();
+
+  // We should still have no insertions, but should have an initialized count.
+  EXPECT_TRUE(toolbar_model->extensions_initialized());
+  EXPECT_EQ(0u, model_observer.inserted_count());
+  EXPECT_EQ(1u, model_observer.initialized_count());
 }
 
 }  // namespace extensions

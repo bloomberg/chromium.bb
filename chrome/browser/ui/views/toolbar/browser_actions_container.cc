@@ -73,7 +73,6 @@ BrowserActionsContainer::BrowserActionsContainer(
     : toolbar_actions_bar_(new ToolbarActionsBar(this,
                                                  browser,
                                                  main_container != nullptr)),
-      initialized_(false),
       browser_(browser),
       main_container_(main_container),
       popup_owner_(NULL),
@@ -126,8 +125,6 @@ void BrowserActionsContainer::Init() {
   // We wait to set the container width until now so that the chevron images
   // will be loaded.  The width calculation needs to know the chevron size.
   container_width_ = toolbar_actions_bar_->GetPreferredSize().width();
-
-  initialized_ = true;
 }
 
 const std::string& BrowserActionsContainer::GetIdAt(size_t index) {
