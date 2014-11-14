@@ -473,6 +473,8 @@ component("net") {
     # doesn't set USE_NSS but needs some of the files.
     set_sources_assignment_filter([])
     sources += [
+      "base/net_util_mac.cc",
+      "base/net_util_mac.h",
       "base/network_change_notifier_mac.cc",
       "base/network_config_watcher_mac.cc",
       "base/platform_mime_util_mac.mm",
@@ -506,6 +508,8 @@ component("net") {
       "base/platform_mime_util_linux.cc",
       "base/address_tracker_linux.cc",
       "base/address_tracker_linux.h",
+      "base/net_util_linux.cc",
+      "base/net_util_linux.h"
     ]
     set_sources_assignment_filter(sources_assignment_filter)
 

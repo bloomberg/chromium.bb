@@ -17,10 +17,17 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/time/time.h"
+#include "net/base/ip_endpoint.h"
 
 #if !defined(OS_NACL) && !defined(OS_WIN)
 #include <net/if.h>
 #include <netinet/in.h>
+#if defined(OS_MACOSX)
+#include <ifaddrs.h>
+#if !defined(OS_IOS)
+#include <netinet/in_var.h>
+#endif  // !OS_IOS
+#endif  // OS_MACOSX
 #endif  // !OS_NACL && !OS_WIN
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -38,6 +45,11 @@
 
 #if !defined(OS_WIN)
 #include "net/base/net_util_posix.h"
+#if defined(OS_MACOSX)
+#include "net/base/net_util_mac.h"
+#else  // OS_MACOSX
+#include "net/base/net_util_linux.h"
+#endif
 #endif  // !OS_WIN
 
 using base::ASCIIToUTF16;
@@ -84,6 +96,58 @@ std::string DumpIPNumber(const IPAddressNumber& v) {
   }
   return out;
 }
+
+#if defined(OS_MACOSX)
+class IPAttributesGetterTest : public internal::IPAttributesGetterMac {
+ public:
+  IPAttributesGetterTest() : native_attributes_(0) {}
+  bool IsInitialized() const override { return true; }
+  bool GetIPAttributes(const char* ifname,
+                       const sockaddr* sock_addr,
+                       int* native_attributes) override {
+    *native_attributes = native_attributes_;
+    return true;
+  }
+  void set_native_attributes(int native_attributes) {
+    native_attributes_ = native_attributes;
+  }
+
+ private:
+  int native_attributes_;
+};
+
+// Helper function to create a single valid ifaddrs
+bool FillIfaddrs(ifaddrs* interfaces,
+                 const char* ifname,
+                 uint flags,
+                 const IPAddressNumber& ip_address,
+                 const IPAddressNumber& ip_netmask,
+                 sockaddr_storage sock_addrs[2]) {
+  interfaces->ifa_next = NULL;
+  interfaces->ifa_name = const_cast<char*>(ifname);
+  interfaces->ifa_flags = flags;
+
+  socklen_t sock_len = sizeof(sockaddr_storage);
+
+  // Convert to sockaddr for next check.
+  if (!IPEndPoint(ip_address, 0)
+           .ToSockAddr(reinterpret_cast<sockaddr*>(&sock_addrs[0]),
+                       &sock_len)) {
+    return false;
+  }
+  interfaces->ifa_addr = reinterpret_cast<sockaddr*>(&sock_addrs[0]);
+
+  sock_len = sizeof(sockaddr_storage);
+  if (!IPEndPoint(ip_netmask, 0)
+           .ToSockAddr(reinterpret_cast<sockaddr*>(&sock_addrs[1]),
+                       &sock_len)) {
+    return false;
+  }
+  interfaces->ifa_netmask = reinterpret_cast<sockaddr*>(&sock_addrs[1]);
+
+  return true;
+}
+#endif  // OS_MACOSX
 
 }  // anonymous namespace
 
@@ -812,6 +876,18 @@ TEST(NetUtilTest, GetNetworkList) {
   }
 }
 
+static const char ifname_em1[] = "em1";
+static const char ifname_vm[] = "vmnet";
+
+static const unsigned char kIPv6LocalAddr[] = {
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+static const unsigned char kIPv6Addr[] =
+  {0x24, 0x01, 0xfa, 0x00, 0x00, 0x04, 0x10, 0x00, 0xbe, 0x30, 0x5b, 0xff,
+   0xfe, 0xe5, 0x00, 0xc3};
+static const unsigned char kIPv6Netmask[] =
+  {0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+   0x00, 0x00, 0x00, 0x00};
+
 #if !defined(OS_MACOSX) && !defined(OS_WIN) && !defined(OS_NACL)
 
 char* CopyInterfaceName(const char* ifname, int ifname_size, char* output) {
@@ -820,30 +896,24 @@ char* CopyInterfaceName(const char* ifname, int ifname_size, char* output) {
   return output;
 }
 
-static const char ifname_em1[] = "em1";
 char* GetInterfaceName(unsigned int interface_index, char* ifname) {
   return CopyInterfaceName(ifname_em1, arraysize(ifname_em1), ifname);
 }
 
-static const char ifname_vm[] = "vmnet";
 char* GetInterfaceNameVM(unsigned int interface_index, char* ifname) {
   return CopyInterfaceName(ifname_vm, arraysize(ifname_vm), ifname);
 }
 
 TEST(NetUtilTest, GetNetworkListTrimming) {
-  NetworkInterfaceList results;
-  ::base::hash_set<int> online_links;
-  net::internal::AddressTrackerLinux::AddressMap address_map;
-
-  const unsigned char kIPv6LocalAddr[] = {
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-  const unsigned char kIPv6Addr[] =
-    {0x24, 0x01, 0xfa, 0x00, 0x00, 0x04, 0x10, 0x00, 0xbe, 0x30, 0x5b, 0xff,
-     0xfe, 0xe5, 0x00, 0xc3};
-
   IPAddressNumber ipv6_local_address(
       kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
   IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
+  IPAddressNumber ipv6_netmask(kIPv6Netmask,
+                               kIPv6Netmask + arraysize(kIPv6Netmask));
+
+  NetworkInterfaceList results;
+  ::base::hash_set<int> online_links;
+  net::internal::AddressTrackerLinux::AddressMap address_map;
 
   // Interface 1 is offline.
   struct ifaddrmsg msg = {
@@ -956,7 +1026,101 @@ TEST(NetUtilTest, GetNetworkListTrimming) {
   results.clear();
 }
 
-#endif
+#elif defined(OS_MACOSX)
+
+TEST(NetUtilTest, GetNetworkListTrimming) {
+  IPAddressNumber ipv6_local_address(
+      kIPv6LocalAddr, kIPv6LocalAddr + arraysize(kIPv6LocalAddr));
+  IPAddressNumber ipv6_address(kIPv6Addr, kIPv6Addr + arraysize(kIPv6Addr));
+  IPAddressNumber ipv6_netmask(kIPv6Netmask,
+                               kIPv6Netmask + arraysize(kIPv6Netmask));
+
+  NetworkInterfaceList results;
+  IPAttributesGetterTest ip_attributes_getter;
+  sockaddr_storage addresses[2];
+  ifaddrs interface;
+
+  // Address of offline links should be ignored.
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_em1, IFF_UP, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 0ul);
+
+  // Local address should be trimmed out.
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_em1, IFF_RUNNING,
+                          ipv6_local_address, ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 0ul);
+
+  // vmware address should return by default.
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_vm, IFF_RUNNING, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_vm);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  results.clear();
+
+  // vmware address should be trimmed out if policy specified so.
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_vm, IFF_RUNNING, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+#if !defined(OS_IOS)
+  // Addresses with banned attributes should be ignored.
+  ip_attributes_getter.set_native_attributes(IN6_IFF_ANYCAST);
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_em1, IFF_RUNNING, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 0ul);
+  results.clear();
+
+  // Addresses with allowed attribute IFA_F_TEMPORARY should be returned and
+  // attributes should be translated correctly.
+  ip_attributes_getter.set_native_attributes(IN6_IFF_TEMPORARY);
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_em1, IFF_RUNNING, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_TEMPORARY);
+  results.clear();
+
+  // Addresses with allowed attribute IFA_F_DEPRECATED should be returned and
+  // attributes should be translated correctly.
+  ip_attributes_getter.set_native_attributes(IN6_IFF_DEPRECATED);
+  ASSERT_TRUE(FillIfaddrs(&interface, ifname_em1, IFF_RUNNING, ipv6_address,
+                          ipv6_netmask, addresses));
+  EXPECT_TRUE(net::internal::GetNetworkListImpl(
+      &results, INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES, &interface,
+      &ip_attributes_getter));
+  EXPECT_EQ(results.size(), 1ul);
+  EXPECT_EQ(results[0].name, ifname_em1);
+  EXPECT_EQ(results[0].network_prefix, 1ul);
+  EXPECT_EQ(results[0].address, ipv6_address);
+  EXPECT_EQ(results[0].ip_address_attributes, IP_ADDRESS_ATTRIBUTE_DEPRECATED);
+  results.clear();
+#endif  // !OS_IOS
+}
+
+#endif  // !OS_MACOSX && !OS_WIN && !OS_NACL
 
 namespace {
 

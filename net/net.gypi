@@ -246,6 +246,8 @@
       'base/net_log_logger.h',
       'base/net_log_util.cc',
       'base/net_log_util.h',
+      'base/net_util_linux.cc',
+      'base/net_util_mac.cc',
       'base/net_util_win.cc',
       'base/network_change_notifier.cc',
       'base/network_change_notifier.h',

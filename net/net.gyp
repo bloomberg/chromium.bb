@@ -487,10 +487,14 @@
             ['include', '^base/platform_mime_util_linux\\.cc$'],
             ['include', '^base/address_tracker_linux\\.cc$'],
             ['include', '^base/address_tracker_linux\\.h$'],
+            ['include', '^base/net_util_linux\\.cc$'],
+            ['include', '^base/net_util_linux\\.h$'],
           ],
         }],
         ['OS == "ios"', {
           'sources/': [
+            ['include', '^base/net_util_mac\\.cc$'],
+            ['include', '^base/net_util_mac\\.h$'],
             ['include', '^base/network_change_notifier_mac\\.cc$'],
             ['include', '^base/network_config_watcher_mac\\.cc$'],
             ['include', '^base/platform_mime_util_mac\\.mm$'],
