@@ -45748,6 +45748,27 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="576" label="RenderRuby"/>
   <int value="577" label="CanvasRenderingContext2DCompositeOperationDarker"/>
   <int value="578" label="ScriptElementWithInvalidTypeHasSrc"/>
+  <int value="579" label="TimelineStart"/>
+  <int value="580" label="ElementBaseURIFromXMLBase"/>
+  <int value="581"
+      label="XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload"/>
+  <int value="582" label="CSSSelectorPseudoScrollbar"/>
+  <int value="583" label="CSSSelectorPseudoScrollbarButton"/>
+  <int value="584" label="CSSSelectorPseudoScrollbarThumb"/>
+  <int value="585" label="CSSSelectorPseudoScrollbarTrack"/>
+  <int value="586" label="CSSSelectorPseudoScrollbarTrackPiece"/>
+  <int value="587" label="LangAttribute"/>
+  <int value="588" label="LangAttributeOnHTML"/>
+  <int value="589" label="LangAttributeOnBody"/>
+  <int value="590" label="LangAttributeDoesNotMatchToUILocale"/>
+  <int value="591" label="InputTypeSubmit"/>
+  <int value="592" label="InputTypeSubmitWithValue"/>
+  <int value="593" label="SetReferrerPolicy"/>
+  <int value="594" label="DOMImplementationHasFeatureReturnFalseInternal"/>
+  <int value="595" label="MouseEventWhich"/>
+  <int value="596" label="UIEventCharCode"/>
+  <int value="597" label="UIEventKeyCode"/>
+  <int value="598" label="UIEventWhich"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
