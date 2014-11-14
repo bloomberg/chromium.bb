@@ -5,11 +5,13 @@
 """Tools and utilities for creating proofs about tries."""
 
 import itertools
+import multiprocessing
 import optparse
 
 import spec
 import trie
 import validator
+
 
 class Operands(object):
   """Contains parts of the disassembly of a single instruction.
@@ -79,6 +81,7 @@ def AllYMMOperands(bitness):
   assert bitness in (32, 64), bitness
   return set([Operands(disasms=('%ymm{}'.format(i),))
               for i in xrange(8 if bitness == 32 else 16)])
+
 
 def GprOperands(bitness, operand_size):
   regs = []
@@ -260,41 +263,28 @@ def GetRRInfoFromTrie(trie_state, bitness):
   return input_rr, output_rr
 
 
-class TrieDiffSet(object):
-  """Collects differences from tries.
-
-  Collects trie diffs by converting them into sets of Operands objects.
-  Each differing byte sequence is disassembled and converted into and Operands
-  object. The object is added to the sets corresponding to the tries which
-  accept the byte sequence.
-  """
-
-  def __init__(self, the_validator, bitness):
-    assert bitness in (32, 64), bitness
-    self.bitness = bitness
-    self.the_validator = the_validator
-    self.accept_trie1_set = set()
-    self.accept_trie2_set = set()
-
-  def Process(self, (byte_tuple, accept_info1, accept_info2)):
-    """Callback Reciever for trie.DiffTries."""
-    # TODO(shyamsundarr): investigate using objdump instead.
-    disassembly = self.the_validator.DisassembleChunk(
-        ''.join([chr(int(x)) for x in byte_tuple]),
-        bitness=self.bitness)
-    assert len(disassembly) == 1
-    prefixes, mnemonic, operands = (spec.ParseInstruction(disassembly[0]))
-    full_operands = tuple(prefixes + [mnemonic] + operands)
-    if accept_info1 is not None:
-      input_rr, output_rr = GetRRInfoFromTrie(accept_info1, self.bitness)
-      self.accept_trie1_set.add(Operands(disasms=full_operands,
-                                         input_rr=input_rr,
-                                         output_rr=output_rr))
-    if accept_info2 is not None:
-      input_rr, output_rr = GetRRInfoFromTrie(accept_info2, self.bitness)
-      self.accept_trie2_set.add(Operands(disasms=full_operands,
-                                         input_rr=input_rr,
-                                         output_rr=output_rr))
+def Disassemble((bitness, (byte_tuple, accept_info1, accept_info2))):
+  """Disassembles byte sequence and returns it in old or new trie."""
+  global the_validator
+  old_trie_set = set()
+  new_trie_set = set()
+  disassembly = the_validator.DisassembleChunk(
+      ''.join([chr(int(x)) for x in byte_tuple]),
+      bitness=bitness)
+  assert len(disassembly) == 1
+  prefixes, mnemonic, operands = (spec.ParseInstruction(disassembly[0]))
+  full_operands = tuple(prefixes + [mnemonic] + operands)
+  if accept_info1 is not None:
+    input_rr, output_rr = GetRRInfoFromTrie(accept_info1, bitness)
+    old_trie_set.add(Operands(disasms=full_operands,
+                              input_rr=input_rr,
+                              output_rr=output_rr))
+  if accept_info2 is not None:
+    input_rr, output_rr = GetRRInfoFromTrie(accept_info2, bitness)
+    new_trie_set.add(Operands(disasms=full_operands,
+                              input_rr=input_rr,
+                              output_rr=output_rr))
+  return old_trie_set, new_trie_set
 
 
 def ParseStandardOpts():
@@ -320,27 +310,39 @@ def RunProof(standard_opts, proof_func):
   Returns:
     None
   """
+  # The validator itself must be passed to the other processes as a global
+  # as it is c object that must be passed via forking and not as an argument
+  # which means the validator must support being via pickled.
+  global the_validator
   the_validator = validator.Validator(
       validator_dll=standard_opts.validator_dll,
       decoder_dll=standard_opts.decoder_dll)
   bitness = int(standard_opts.bitness)
-  trie_diff_set = TrieDiffSet(the_validator, bitness)
-  trie.DiffTrieFiles(standard_opts.new, standard_opts.old,
-                     trie_diff_set.Process)
-  proof_func(trie_diff_set, bitness)
+  adds = set()
+  removes = set()
+  tasks = itertools.izip(itertools.repeat(bitness),
+                         trie.DiffTrieFiles(standard_opts.new,
+                                            standard_opts.old))
+  pool = multiprocessing.Pool()
+  results = pool.imap_unordered(Disassemble, tasks, chunksize=10000)
+  for new, old in results:
+    adds |= new
+    removes |= old
+  proof_func((adds, removes), bitness)
 
 
-def AssertDiffSetEquals(trie_diffs, expected_adds, expected_removes):
+def AssertDiffSetEquals((adds, removes),
+                        expected_adds, expected_removes):
   """Assert that diffs is composed of expected_adds and expected_removes."""
-  if trie_diffs.accept_trie1_set != expected_adds:
+  if adds != expected_adds:
     raise AssertionError('falsely added instructions: ',
-                         trie_diffs.accept_trie1_set - expected_adds,
+                         adds - expected_adds,
                          'unadded instructions: ',
-                         expected_adds - trie_diffs.accept_trie1_set)
+                         expected_adds - adds)
 
-  if trie_diffs.accept_trie2_set != expected_removes:
+  if removes != expected_removes:
     raise AssertionError('falsely removed instructions: ',
-                         trie_diffs.accept_trie2_set - expected_removes,
+                         removes - expected_removes,
                          'missing instructions: ',
-                         expected_removes - trie_diffs.accept_trie2_set)
+                         expected_removes - removes)
 

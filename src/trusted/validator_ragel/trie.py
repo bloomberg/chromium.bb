@@ -302,46 +302,42 @@ def ReadFromFile(filename, node_cache):
   return TrieFromDict(trie_data, node_cache)
 
 
-def DiffTrieFiles(file_a, file_b, callback):
+def DiffTrieFiles(file_a, file_b):
   """Diff two trie files.
 
   Args:
     file_a: File path of first trie.
     file_b: File path of second trie.
-    callback: Function to run when state differs between tries.
-              Delivers (differing_bytes, state_from_trie_a, state_from_trie_b)
   Returns:
-    None
+    iterator of difference tuples (bytes, state_from_trie_a, state_from_trie_b)
   """
   cache = NodeCache()
   trie_a = ReadFromFile(file_a, cache)
   trie_b = ReadFromFile(file_b, cache)
-  DiffTries(trie_a, trie_b, cache.empty_node, callback, ())
+  return DiffTries(trie_a, trie_b, cache.empty_node, ())
 
 
-def DiffTries(node1, node2, empty_node, callback, context):
+def DiffTries(node1, node2, empty_node, context):
   """Diff two tries.
 
   Args:
     node1: Node in first trie.
     node2: Node in second trie.
     empty_node: The empty node (for use when one trie doesn't have the prefix).
-    callback: Function to run when state differs between tries.
-              Delivers (differing_bytes, state_from_trie_a, state_from_trie_b)
     context: The prefix of bytes traversed so far.
-  Returns:
-    None
+  Yields:
+    difference tuples (bytes, state_from_trie_a, state_from_trie_b)
   """
   if node1 == node2:
     return
 
   if node1.accept_info != node2.accept_info:
-    callback((context, node1.accept_info, node2.accept_info))
+    yield (context, node1.accept_info, node2.accept_info)
 
   keys = GetUnionOfChildKeys(node1, node2)
   for key in sorted(keys):
-    DiffTries(node1.children.get(key, empty_node),
-              node2.children.get(key, empty_node),
-              empty_node,
-              callback,
-              context + (key,))
+    for diff in DiffTries(node1.children.get(key, empty_node),
+                          node2.children.get(key, empty_node),
+                          empty_node,
+                          context + (key,)):
+      yield diff

@@ -34,11 +34,10 @@ def ParseArgs():
 
 def main():
   args = ParseArgs()
-  diff_set = set()
   golden = latest_trie.LatestRagelTriePath(SNAPSHOTS_DIR, args.bitness)
-  trie.DiffTrieFiles(args.trie[0], golden, diff_set.add)
-  if diff_set:
-    print 'tries differ: ', diff_set
+  diff_list = [diff for diff in trie.DiffTrieFiles(args.trie[0], golden)]
+  if diff_list:
+    print 'tries differ: ', diff_list
     sys.exit(1)
 
 

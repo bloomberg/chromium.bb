@@ -75,10 +75,12 @@ class TrieTest(unittest.TestCase):
     diffs = set()
     compressed_diffs = set()
 
-    trie.DiffTries(trie1, trie2, node_cache.empty_node,
-                   diffs.add, ())
-    trie.DiffTries(compressed_trie1, compressed_trie2, node_cache.empty_node,
-                   compressed_diffs.add, ())
+    for diff in trie.DiffTries(trie1, trie2, node_cache.empty_node, ()):
+      diffs.add(diff)
+
+    for diff in trie.DiffTries(compressed_trie1, compressed_trie2,
+                               node_cache.empty_node, ()):
+      compressed_diffs.add(diff)
 
     self.assertEquals(
         diffs,
