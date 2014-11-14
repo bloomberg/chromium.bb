@@ -60,7 +60,7 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
                               const PipelineStatusCB& error_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_UNINITIALIZED) << state_;
+  DCHECK_EQ(state_, STATE_UNINITIALIZED);
   DCHECK(!init_cb.is_null());
   DCHECK(!statistics_cb.is_null());
   DCHECK(!buffering_state_cb.is_null());
@@ -85,8 +85,12 @@ void RendererImpl::Initialize(DemuxerStreamProvider* demuxer_stream_provider,
 void RendererImpl::Flush(const base::Closure& flush_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_PLAYING) << state_;
   DCHECK(flush_cb_.is_null());
+
+  if (state_ != STATE_PLAYING) {
+    DCHECK_EQ(state_, STATE_ERROR);
+    return;
+  }
 
   flush_cb_ = flush_cb;
   state_ = STATE_FLUSHING;
@@ -100,7 +104,11 @@ void RendererImpl::Flush(const base::Closure& flush_cb) {
 void RendererImpl::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_PLAYING) << state_;
+
+  if (state_ != STATE_PLAYING) {
+    DCHECK_EQ(state_, STATE_ERROR);
+    return;
+  }
 
   time_source_->SetMediaTime(time);
 
@@ -186,7 +194,7 @@ base::TimeDelta RendererImpl::GetMediaTimeForSyncingVideo() {
 void RendererImpl::InitializeAudioRenderer() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
+  DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(!init_cb_.is_null());
 
   PipelineStatusCB done_cb =
@@ -198,6 +206,8 @@ void RendererImpl::InitializeAudioRenderer() {
     return;
   }
 
+  // Note: After the initialization of a renderer, error events from it may
+  // happen at any time and all future calls must guard against STATE_ERROR.
   audio_renderer_->Initialize(
       demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO),
       done_cb,
@@ -211,22 +221,25 @@ void RendererImpl::InitializeAudioRenderer() {
 void RendererImpl::OnAudioRendererInitializeDone(PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
-  DCHECK(!init_cb_.is_null());
 
-  if (status != PIPELINE_OK) {
-    audio_renderer_.reset();
+  if (status != PIPELINE_OK)
     OnError(status);
+
+  // OnError() may be fired at any time by the renderers, even if they thought
+  // they initialized successfully (due to delayed output device setup).
+  if (state_ != STATE_INITIALIZING) {
+    audio_renderer_.reset();
     return;
   }
 
+  DCHECK(!init_cb_.is_null());
   InitializeVideoRenderer();
 }
 
 void RendererImpl::InitializeVideoRenderer() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
+  DCHECK_EQ(state_, STATE_INITIALIZING);
   DCHECK(!init_cb_.is_null());
 
   PipelineStatusCB done_cb =
@@ -257,15 +270,19 @@ void RendererImpl::InitializeVideoRenderer() {
 void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
   DVLOG(1) << __FUNCTION__ << ": " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_INITIALIZING) << state_;
-  DCHECK(!init_cb_.is_null());
 
-  if (status != PIPELINE_OK) {
+  if (status != PIPELINE_OK)
+    OnError(status);
+
+  // OnError() may be fired at any time by the renderers, even if they thought
+  // they initialized successfully (due to delayed output device setup).
+  if (state_ != STATE_INITIALIZING) {
     audio_renderer_.reset();
     video_renderer_.reset();
-    OnError(status);
     return;
   }
+
+  DCHECK(!init_cb_.is_null());
 
   if (audio_renderer_) {
     time_source_ = audio_renderer_->GetTimeSource();
@@ -283,7 +300,7 @@ void RendererImpl::OnVideoRendererInitializeDone(PipelineStatus status) {
 void RendererImpl::FlushAudioRenderer() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_FLUSHING) << state_;
+  DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
 
   if (!audio_renderer_) {
@@ -304,7 +321,7 @@ void RendererImpl::OnAudioRendererFlushDone() {
     return;
   }
 
-  DCHECK_EQ(state_, STATE_FLUSHING) << state_;
+  DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
 
   DCHECK_EQ(audio_buffering_state_, BUFFERING_HAVE_NOTHING);
@@ -315,7 +332,7 @@ void RendererImpl::OnAudioRendererFlushDone() {
 void RendererImpl::FlushVideoRenderer() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(state_, STATE_FLUSHING) << state_;
+  DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
 
   if (!video_renderer_) {
@@ -336,7 +353,7 @@ void RendererImpl::OnVideoRendererFlushDone() {
     return;
   }
 
-  DCHECK_EQ(state_, STATE_FLUSHING) << state_;
+  DCHECK_EQ(state_, STATE_FLUSHING);
   DCHECK(!flush_cb_.is_null());
 
   DCHECK_EQ(video_buffering_state_, BUFFERING_HAVE_NOTHING);
@@ -411,8 +428,11 @@ void RendererImpl::PausePlayback() {
 
     case STATE_UNINITIALIZED:
     case STATE_INITIALIZING:
-    case STATE_ERROR:
       NOTREACHED() << "Invalid state: " << state_;
+      break;
+
+    case STATE_ERROR:
+      // An error state may occur at any time.
       break;
   }
 
@@ -487,6 +507,10 @@ void RendererImpl::OnError(PipelineStatus error) {
   DVLOG(1) << __FUNCTION__ << "(" << error << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_NE(PIPELINE_OK, error) << "PIPELINE_OK isn't an error!";
+
+  // An error has already been delivered.
+  if (state_ == STATE_ERROR)
+    return;
 
   state_ = STATE_ERROR;
 

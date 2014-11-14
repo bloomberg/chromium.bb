@@ -434,4 +434,19 @@ TEST_F(RendererImplTest, ErrorAfterFlush) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(RendererImplTest, ErrorDuringInitialize) {
+  CreateAudioAndVideoStream();
+  SetAudioRendererInitializeExpectations(PIPELINE_OK);
+
+  // Force an audio error to occur during video renderer initialization.
+  EXPECT_CALL(*video_renderer_,
+              Initialize(video_stream_.get(), _, _, _, _, _, _, _, _))
+      .WillOnce(DoAll(AudioError(&audio_error_cb_, PIPELINE_ERROR_DECODE),
+                      SaveArg<4>(&video_buffering_state_cb_),
+                      SaveArg<6>(&video_ended_cb_),
+                      RunCallback<2>(PIPELINE_OK)));
+
+  InitializeAndExpect(PIPELINE_ERROR_DECODE);
+}
+
 }  // namespace media
