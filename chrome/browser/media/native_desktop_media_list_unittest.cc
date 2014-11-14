@@ -45,11 +45,6 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     callback_->OnCaptureCompleted(frame);
   }
 
-  void SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) override {
-    NOTIMPLEMENTED();
-  }
-
   bool GetScreenList(ScreenList* screens) override {
     webrtc::ScreenCapturer::Screen screen;
     screen.id = 0;

@@ -13,6 +13,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capture_options.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
@@ -114,9 +115,6 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
     callback_->OnCaptureCompleted(frame);
   }
 
-  void SetMouseShapeObserver(
-      MouseShapeObserver* mouse_shape_observer) override {}
-
   bool GetScreenList(ScreenList* screens) override { return false; }
 
   bool SelectScreen(webrtc::ScreenId id) override { return false; }
@@ -150,7 +148,8 @@ class DesktopCaptureDeviceTest : public testing::Test {
 #endif
 TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   scoped_ptr<webrtc::DesktopCapturer> capturer(
-      webrtc::ScreenCapturer::Create());
+      webrtc::ScreenCapturer::Create(
+          webrtc::DesktopCaptureOptions::CreateDefault()));
   CreateScreenCaptureDevice(capturer.Pass());
 
   media::VideoCaptureFormat format;
