@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
 
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/common/url_constants.h"
@@ -72,6 +73,7 @@ InlineLoginUI::InlineLoginUI(content::WebUI* web_ui)
   // automatically).
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
+  extensions::TabHelper::CreateForWebContents(contents);
   // Ensure that the login UI has a tab ID, which will allow the GAIA auth
   // extension's background script to tell it apart from iframes injected by
   // other extensions.

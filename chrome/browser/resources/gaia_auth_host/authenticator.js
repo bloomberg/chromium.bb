@@ -62,6 +62,7 @@ cr.define('cr.login', function() {
 
     this.email_ = null;
     this.password_ = null;
+    this.gaiaId_ = null,
     this.sessionIndex_ = null;
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
@@ -244,6 +245,7 @@ cr.define('cr.login', function() {
           // Clears the scraped password if the email has changed.
           this.password_ = null;
         }
+        this.gaiaId_ = signinDetails['obfuscatedid'].slice(1, -1);
         this.sessionIndex_ = signinDetails['sessionindex'];
       } else if (headerName == SAML_HEADER) {
         this.authFlow_ = AuthFlow.SAML;
@@ -285,6 +287,7 @@ cr.define('cr.login', function() {
     }
 
     this.listener_.onSuccess({email: this.email_,
+                              gaiaId: this.gaiaId_,
                               password: this.password_,
                               usingSAML: this.authFlow_ == AuthFlow.SAML,
                               chooseWhatToSync: this.chooseWhatToSync_,
