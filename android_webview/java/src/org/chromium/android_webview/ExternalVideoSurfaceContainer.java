@@ -118,9 +118,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     protected void requestExternalVideoSurface(int playerId) {
         if (mPlayerId == playerId) return;
 
-        if (mPlayerId == INVALID_PLAYER_ID) {
-            setActiveContainer(this);
-        }
+        setActiveContainer(this);
 
         mPlayerId = playerId;
         initializeCurrentPositionOfSurfaceView();
@@ -169,6 +167,7 @@ public class ExternalVideoSurfaceContainer implements SurfaceHolder.Callback {
     }
 
     private void createSurfaceView() {
+        assert mSurfaceView == null;
         mSurfaceView = new NoPunchingSurfaceView(mContentViewCore.getContext());
         mSurfaceView.getHolder().addCallback(this);
         // SurfaceHoder.surfaceCreated() will be called after the SurfaceView is attached to
