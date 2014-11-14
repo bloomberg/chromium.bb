@@ -46,7 +46,8 @@ namespace blink {
 
 class SVGElement;
 
-class SVGAnimatedPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGAnimatedPropertyBase>, public ScriptWrappableBase {
+class SVGAnimatedPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGAnimatedPropertyBase>, public ScriptWrappable {
+    DEFINE_WRAPPERTYPEINFO_NOT_REACHED();
     WTF_MAKE_NONCOPYABLE(SVGAnimatedPropertyBase);
 public:
     virtual ~SVGAnimatedPropertyBase();

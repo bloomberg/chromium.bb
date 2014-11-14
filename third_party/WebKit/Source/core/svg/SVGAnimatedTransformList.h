@@ -36,7 +36,19 @@
 
 namespace blink {
 
-typedef SVGAnimatedProperty<SVGTransformList> SVGAnimatedTransformList;
+// SVG Spec: http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGAnimatedTransformList
+class SVGAnimatedTransformList final : public SVGAnimatedProperty<SVGTransformList> {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static PassRefPtrWillBeRawPtr<SVGAnimatedTransformList> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGTransformList> initialValue)
+    {
+        return adoptRefWillBeNoop(new SVGAnimatedTransformList(contextElement, attributeName, initialValue));
+    }
+
+protected:
+    SVGAnimatedTransformList(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGTransformList> initialValue)
+        : SVGAnimatedProperty<SVGTransformList>(contextElement, attributeName, initialValue) { }
+};
 
 } // namespace blink
 

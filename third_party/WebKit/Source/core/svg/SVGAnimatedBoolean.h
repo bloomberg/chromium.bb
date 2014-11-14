@@ -37,6 +37,7 @@
 namespace blink {
 
 class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedBoolean> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGBoolean> initialValue)
     {

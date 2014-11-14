@@ -40,6 +40,7 @@ namespace blink {
 class SVGMarkerElement;
 
 class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedAngle> create(SVGMarkerElement* contextElement)
     {

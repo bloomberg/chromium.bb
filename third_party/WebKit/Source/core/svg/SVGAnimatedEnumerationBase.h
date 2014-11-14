@@ -37,6 +37,7 @@
 namespace blink {
 
 class SVGAnimatedEnumerationBase : public SVGAnimatedProperty<SVGEnumerationBase> {
+    DEFINE_WRAPPERTYPEINFO();
 public:
     virtual ~SVGAnimatedEnumerationBase();
 

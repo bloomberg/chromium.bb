@@ -36,7 +36,19 @@
 
 namespace blink {
 
-typedef SVGAnimatedProperty<SVGNumberList> SVGAnimatedNumberList;
+// SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumberList
+class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList> {
+    DEFINE_WRAPPERTYPEINFO();
+public:
+    static PassRefPtrWillBeRawPtr<SVGAnimatedNumberList> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGNumberList> initialValue)
+    {
+        return adoptRefWillBeNoop(new SVGAnimatedNumberList(contextElement, attributeName, initialValue));
+    }
+
+protected:
+    SVGAnimatedNumberList(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGNumberList> initialValue)
+        : SVGAnimatedProperty<SVGNumberList>(contextElement, attributeName, initialValue) { }
+};
 
 } // namespace blink
 

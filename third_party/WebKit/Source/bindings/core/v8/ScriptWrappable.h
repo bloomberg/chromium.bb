@@ -256,6 +256,25 @@ public: \
 private: \
     static const WrapperTypeInfo& s_wrapperTypeInfo
 
+// Defines 'wrapperTypeInfo' virtual method, which should never be called.
+//
+// This macro is used when there exists a class hierarchy with a root class
+// and most of the subclasses are script-wrappable but not all of them.
+// In that case, the root class can inherit from ScriptWrappable and use
+// this macro, and let subclasses have a choice whether or not use
+// DEFINE_WRAPPERTYPEINFO macro. The script-wrappable subclasses which have
+// corresponding IDL file must call DEFINE_WRAPPERTYPEINFO, and the others
+// must not.
+#define DEFINE_WRAPPERTYPEINFO_NOT_REACHED() \
+public: \
+    virtual const WrapperTypeInfo* wrapperTypeInfo() const override \
+    { \
+        ASSERT_NOT_REACHED(); \
+        return 0; \
+    } \
+private: \
+    typedef void end_of_define_wrappertypeinfo_not_reached_t
+
 } // namespace blink
 
 #endif // ScriptWrappable_h
