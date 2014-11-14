@@ -256,6 +256,11 @@
             'host/linux/x_server_clipboard_unittest.cc',
           ],
         }],
+        [ 'use_ozone==1', {
+          'sources!': [
+            'host/local_input_monitor_unittest.cc',
+          ],
+        }],
         ['enable_remoting_host == 0', {
           'dependencies!': [
             'remoting_host',
