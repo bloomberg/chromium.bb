@@ -72,6 +72,7 @@
         "quick_unit": false,
         "rootfs_verification": true,
         "sanity_check_slaves": null,
+        "separate_debug_symbols": false,
         "shared_user_password": null,
         "signer_tests": false,
         "sync_chrome": null,

@@ -125,6 +125,9 @@ class BuilderStage(object):
     if useflags:
       self._portage_extra_env['USE'] = ' '.join(useflags)
 
+    if self._run.config.separate_debug_symbols:
+      self._portage_extra_env['FEATURES'] = 'separatedebug'
+
   def GetStageNames(self):
     """Get a list of the places where this stage has recorded results."""
     return [self.name]
