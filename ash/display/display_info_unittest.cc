@@ -11,12 +11,13 @@ namespace {
 
 std::string GetModeSizeInDIP(const gfx::Size& size,
                              float device_scale_factor,
-                             float ui_scale) {
+                             float ui_scale,
+                             bool is_internal) {
   DisplayMode mode;
   mode.size = size;
   mode.device_scale_factor = device_scale_factor;
   mode.ui_scale = ui_scale;
-  return mode.GetSizeInDIP().ToString();
+  return mode.GetSizeInDIP(is_internal).ToString();
 }
 
 }  // namespace
@@ -82,33 +83,42 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
 
 TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPNormal) {
   gfx::Size size(1366, 768);
-  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.0f, 1.125f));
-  EXPECT_EQ("1366x768", GetModeSizeInDIP(size, 1.0f, 1.0f));
-  EXPECT_EQ("1092x614", GetModeSizeInDIP(size, 1.0f, 0.8f));
-  EXPECT_EQ("853x480", GetModeSizeInDIP(size, 1.0f, 0.625f));
-  EXPECT_EQ("683x384", GetModeSizeInDIP(size, 1.0f, 0.5f));
+  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.0f, 1.125f, true));
+  EXPECT_EQ("1366x768", GetModeSizeInDIP(size, 1.0f, 1.0f, true));
+  EXPECT_EQ("1092x614", GetModeSizeInDIP(size, 1.0f, 0.8f, true));
+  EXPECT_EQ("853x480", GetModeSizeInDIP(size, 1.0f, 0.625f, true));
+  EXPECT_EQ("683x384", GetModeSizeInDIP(size, 1.0f, 0.5f, true));
 }
 
 TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIPHiDPI) {
   gfx::Size size(2560, 1700);
-  EXPECT_EQ("2560x1700", GetModeSizeInDIP(size, 2.0f, 2.0f));
-  EXPECT_EQ("1920x1275", GetModeSizeInDIP(size, 2.0f, 1.5f));
-  EXPECT_EQ("1600x1062", GetModeSizeInDIP(size, 2.0f, 1.25f));
-  EXPECT_EQ("1440x956", GetModeSizeInDIP(size, 2.0f, 1.125f));
-  EXPECT_EQ("1280x850", GetModeSizeInDIP(size, 2.0f, 1.0f));
-  EXPECT_EQ("1024x680", GetModeSizeInDIP(size, 2.0f, 0.8f));
-  EXPECT_EQ("800x531", GetModeSizeInDIP(size, 2.0f, 0.625f));
-  EXPECT_EQ("640x425", GetModeSizeInDIP(size, 2.0f, 0.5f));
+  EXPECT_EQ("2560x1700", GetModeSizeInDIP(size, 2.0f, 2.0f, true));
+  EXPECT_EQ("1920x1275", GetModeSizeInDIP(size, 2.0f, 1.5f, true));
+  EXPECT_EQ("1600x1062", GetModeSizeInDIP(size, 2.0f, 1.25f, true));
+  EXPECT_EQ("1440x956", GetModeSizeInDIP(size, 2.0f, 1.125f, true));
+  EXPECT_EQ("1280x850", GetModeSizeInDIP(size, 2.0f, 1.0f, true));
+  EXPECT_EQ("1024x680", GetModeSizeInDIP(size, 2.0f, 0.8f, true));
+  EXPECT_EQ("800x531", GetModeSizeInDIP(size, 2.0f, 0.625f, true));
+  EXPECT_EQ("640x425", GetModeSizeInDIP(size, 2.0f, 0.5f, true));
 }
 
 TEST_F(DisplayInfoTest, DisplayModeGetSizeInDIP125) {
   DisplayInfo::SetUse125DSFForUIScaling(true);
   gfx::Size size(1920, 1080);
-  EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25));
-  EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f));
-  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.25f, 0.8f));
-  EXPECT_EQ("1200x675", GetModeSizeInDIP(size, 1.25f, 0.625f));
-  EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f));
+  EXPECT_EQ("2400x1350", GetModeSizeInDIP(size, 1.25f, 1.25f, true));
+  EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 1.25f, 1.0f, true));
+  EXPECT_EQ("1536x864", GetModeSizeInDIP(size, 1.25f, 0.8f, true));
+  EXPECT_EQ("1200x675", GetModeSizeInDIP(size, 1.25f, 0.625f, true));
+  EXPECT_EQ("960x540", GetModeSizeInDIP(size, 1.25f, 0.5f, true));
+  DisplayInfo::SetUse125DSFForUIScaling(false);
+}
+
+TEST_F(DisplayInfoTest, DisplayModeGetSizeForExternal4K) {
+  DisplayInfo::SetUse125DSFForUIScaling(true);
+  gfx::Size size(3840, 2160);
+  EXPECT_EQ("1920x1080", GetModeSizeInDIP(size, 2.0f, 1.0f, false));
+  EXPECT_EQ("3072x1728", GetModeSizeInDIP(size, 1.25f, 1.0f, false));
+  EXPECT_EQ("3840x2160", GetModeSizeInDIP(size, 1.0f, 1.0f, false));
   DisplayInfo::SetUse125DSFForUIScaling(false);
 }
 

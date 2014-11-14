@@ -63,13 +63,15 @@ DisplayMode::DisplayMode(const gfx::Size& size,
       ui_scale(1.0f),
       device_scale_factor(1.0f) {}
 
-gfx::Size DisplayMode::GetSizeInDIP() const {
+gfx::Size DisplayMode::GetSizeInDIP(bool is_internal) const {
   gfx::SizeF size_dip(size);
   size_dip.Scale(ui_scale);
   // DSF=1.25 is special. The screen is drawn with DSF=1.25 in some mode but it
   // doesn't affect the screen size computation.
-  if (!use_125_dsf_for_ui_scaling || device_scale_factor != 1.25f)
+  if (!(use_125_dsf_for_ui_scaling && is_internal) ||
+      device_scale_factor != 1.25f) {
     size_dip.Scale(1.0f / device_scale_factor);
+  }
   return gfx::ToFlooredSize(size_dip);
 }
 
@@ -284,7 +286,7 @@ void DisplayInfo::SetBounds(const gfx::Rect& new_bounds_in_native) {
 }
 
 float DisplayInfo::GetEffectiveDeviceScaleFactor() const {
-  if (use_125_dsf_for_ui_scaling && device_scale_factor_ == 1.25f)
+  if (Use125DSFRorUIScaling() && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.25f : 1.0f;
   if (device_scale_factor_ == configured_ui_scale_)
     return 1.0f;
@@ -292,7 +294,7 @@ float DisplayInfo::GetEffectiveDeviceScaleFactor() const {
 }
 
 float DisplayInfo::GetEffectiveUIScale() const {
-  if (use_125_dsf_for_ui_scaling && device_scale_factor_ == 1.25f)
+  if (Use125DSFRorUIScaling() && device_scale_factor_ == 1.25f)
     return (configured_ui_scale_ == 0.8f) ? 1.0f : configured_ui_scale_;
   if (device_scale_factor_ == configured_ui_scale_)
     return 1.0f;
@@ -382,6 +384,10 @@ bool DisplayInfo::IsColorProfileAvailable(
   return std::find(available_color_profiles_.begin(),
                    available_color_profiles_.end(),
                    profile) != available_color_profiles_.end();
+}
+
+bool DisplayInfo::Use125DSFRorUIScaling() const {
+  return use_125_dsf_for_ui_scaling && id_ == gfx::Display::InternalDisplayId();
 }
 
 }  // namespace ash

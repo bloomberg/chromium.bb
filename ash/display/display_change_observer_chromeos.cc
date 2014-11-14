@@ -63,13 +63,17 @@ const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 //  * the area in pixels in ascending order
 //  * refresh rate in descending order
 struct DisplayModeSorter {
+  explicit DisplayModeSorter(bool is_internal) : is_internal(is_internal) {}
+
   bool operator()(const DisplayMode& a, const DisplayMode& b) {
-    gfx::Size size_a_dip = a.GetSizeInDIP();
-    gfx::Size size_b_dip = b.GetSizeInDIP();
+    gfx::Size size_a_dip = a.GetSizeInDIP(is_internal);
+    gfx::Size size_b_dip = b.GetSizeInDIP(is_internal);
     if (size_a_dip.GetArea() == size_b_dip.GetArea())
       return (a.refresh_rate > b.refresh_rate);
     return (size_a_dip.GetArea() < size_b_dip.GetArea());
   }
+
+  bool is_internal;
 };
 
 }  // namespace
@@ -96,8 +100,8 @@ std::vector<DisplayMode> DisplayChangeObserver::GetInternalDisplayModeList(
     display_mode_list.push_back(mode);
   }
 
-  std::sort(
-      display_mode_list.begin(), display_mode_list.end(), DisplayModeSorter());
+  std::sort(display_mode_list.begin(), display_mode_list.end(),
+            DisplayModeSorter(true));
   return display_mode_list;
 }
 
@@ -160,8 +164,8 @@ std::vector<DisplayMode> DisplayChangeObserver::GetExternalDisplayModeList(
     }
   }
 
-  std::sort(
-      display_mode_list.begin(), display_mode_list.end(), DisplayModeSorter());
+  std::sort(display_mode_list.begin(), display_mode_list.end(),
+            DisplayModeSorter(false));
   return display_mode_list;
 }
 

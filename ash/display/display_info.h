@@ -24,8 +24,8 @@ struct ASH_EXPORT DisplayMode {
               bool interlaced,
               bool native);
 
-  // Returns the size in DIP which isvisible to the user.
-  gfx::Size GetSizeInDIP() const;
+  // Returns the size in DIP which is visible to the user.
+  gfx::Size GetSizeInDIP(bool is_internal) const;
 
   // Returns true if |other| has same size and scale factors.
   bool IsEquivalent(const DisplayMode& other) const;
@@ -220,6 +220,10 @@ class ASH_EXPORT DisplayInfo {
   std::string ToFullString() const;
 
  private:
+  // Returns true if this display should use DSF=1.25 for UI scaling; i.e.
+  // SetUse125DSFForUIScaling(true) is called and this is the internal display.
+  bool Use125DSFRorUIScaling() const;
+
   int64 id_;
   std::string name_;
   bool has_overscan_;
