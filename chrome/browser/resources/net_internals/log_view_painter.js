@@ -87,7 +87,7 @@ createLogEntryTablePrinter = function(logEntries, privacyStripping,
   }
 
   return tablePrinter;
-}
+};
 
 /**
  * Adds a new row to the given TablePrinter, and adds five cells containing
@@ -350,6 +350,12 @@ function defaultWriteParameter(key, value, out) {
     return;
   }
 
+  if (key == 'sdch_problem_code' && typeof value == 'number') {
+    var valueStr = value + ' (' + sdchProblemCodeToString(value) + ')';
+    out.writeArrowKeyValue(key, valueStr);
+    return;
+  }
+
   // Otherwise just default to JSON formatting of the value.
   out.writeArrowKeyValue(key, JSON.stringify(value));
 }
@@ -558,7 +564,7 @@ stripCookiesAndLoginInfo = function(entry) {
 
   entry.params.headers = entry.params.headers.map(stripCookieOrLoginInfo);
   return entry;
-}
+};
 
 /**
  * Outputs the request header parameters of |entry| to |out|.

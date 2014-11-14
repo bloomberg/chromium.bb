@@ -1,0 +1,13 @@
+<html>
+<title>Base page containing iframe with SDCH-encoded content</title>
+<body>
+  <iframe></iframe>
+  <script>
+    var iframe = document.querySelector('iframe');
+    var re = /[&?]iframe_url=([^&?#]*)/;
+    var result = re.exec(document.location.search);
+    iframe.src = 'http://sub.testdomain.com:' + document.location.port +
+                 decodeURI(result[1]);
+  </script>
+</body>
+</html>

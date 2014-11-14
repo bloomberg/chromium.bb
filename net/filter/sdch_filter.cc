@@ -11,7 +11,9 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/values.h"
 #include "net/base/sdch_manager.h"
+#include "net/base/sdch_net_log_params.h"
 #include "net/url_request/url_request_context.h"
 
 #include "sdch/open-vcdiff/src/google/vcdecoder.h"
@@ -50,6 +52,43 @@ enum ResponseCorruptionDetectionCause {
   RESPONSE_MAX,
 };
 
+const char* ResponseCorruptionDetectionCauseToString(
+    ResponseCorruptionDetectionCause cause) {
+  const char* cause_string = "<unknown>";
+  switch (cause) {
+    case RESPONSE_NONE:
+      cause_string = "NONE";
+    case RESPONSE_404:
+      cause_string = "404";
+    case RESPONSE_NOT_200:
+      cause_string = "NOT_200";
+    case RESPONSE_OLD_UNENCODED:
+      cause_string = "OLD_UNENCODED";
+    case RESPONSE_TENTATIVE_SDCH:
+      cause_string = "TENTATIVE_SDCH";
+    case RESPONSE_NO_DICTIONARY:
+      cause_string = "NO_DICTIONARY";
+    case RESPONSE_CORRUPT_SDCH:
+      cause_string = "CORRUPT_SDCH";
+    case RESPONSE_ENCODING_LIE:
+      cause_string = "ENCODING_LIE";
+    case RESPONSE_MAX:
+      cause_string = "<Error: max enum value>";
+  }
+  return cause_string;
+}
+
+base::Value* NetLogSdchResponseCorruptionDetectionCallback(
+    ResponseCorruptionDetectionCause cause,
+    bool cached,
+    NetLog::LogLevel log_level) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("cause", ResponseCorruptionDetectionCauseToString(cause));
+  dict->SetBoolean("cached", cached);
+  dict->SetInteger("net_error", ERR_FAILED);
+  return dict;
+}
+
 }  // namespace
 
 SdchFilter::SdchFilter(const FilterContext& filter_context)
@@ -84,12 +123,12 @@ SdchFilter::~SdchFilter() {
   if (vcdiff_streaming_decoder_.get()) {
     if (!vcdiff_streaming_decoder_->FinishDecoding()) {
       decoding_status_ = DECODING_ERROR;
-      SdchManager::SdchErrorRecovery(SdchManager::INCOMPLETE_SDCH_CONTENT);
+      LogSdchProblem(SDCH_INCOMPLETE_SDCH_CONTENT);
       // Make it possible for the user to hit reload, and get non-sdch content.
       // Note this will "wear off" quickly enough, and is just meant to assure
       // in some rare case that the user is not stuck.
       url_request_context_->sdch_manager()->BlacklistDomain(
-          url_, SdchManager::INCOMPLETE_SDCH_CONTENT);
+          url_, SDCH_INCOMPLETE_SDCH_CONTENT);
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialBytesIn",
            static_cast<int>(filter_context_.GetByteReadCount()));
       UMA_HISTOGRAM_COUNTS("Sdch3.PartialVcdiffIn", source_bytes_);
@@ -99,7 +138,7 @@ SdchFilter::~SdchFilter() {
 
   if (!dest_buffer_excess_.empty()) {
     // Filter chaining error, or premature teardown.
-    SdchManager::SdchErrorRecovery(SdchManager::UNFLUSHED_CONTENT);
+    LogSdchProblem(SDCH_UNFLUSHED_CONTENT);
     UMA_HISTOGRAM_COUNTS("Sdch3.UnflushedBytesIn",
          static_cast<int>(filter_context_.GetByteReadCount()));
     UMA_HISTOGRAM_COUNTS("Sdch3.UnflushedBufferSize",
@@ -111,7 +150,7 @@ SdchFilter::~SdchFilter() {
   if (filter_context_.IsCachedContent()) {
     // Not a real error, but it is useful to have this tally.
     // TODO(jar): Remove this stat after SDCH stability is validated.
-    SdchManager::SdchErrorRecovery(SdchManager::CACHE_DECODED);
+    LogSdchProblem(SDCH_CACHE_DECODED);
     return;  // We don't need timing stats, and we aready got ratios.
   }
 
@@ -135,15 +174,15 @@ SdchFilter::~SdchFilter() {
       return;
     }
     case DECODING_UNINITIALIZED: {
-      SdchManager::SdchErrorRecovery(SdchManager::UNINITIALIZED);
+      LogSdchProblem(SDCH_UNINITIALIZED);
       return;
     }
     case WAITING_FOR_DICTIONARY_SELECTION: {
-      SdchManager::SdchErrorRecovery(SdchManager::PRIOR_TO_DICTIONARY);
+      LogSdchProblem(SDCH_PRIOR_TO_DICTIONARY);
       return;
     }
     case DECODING_ERROR: {
-      SdchManager::SdchErrorRecovery(SdchManager::DECODE_ERROR);
+      LogSdchProblem(SDCH_DECODE_ERROR);
       return;
     }
     case META_REFRESH_RECOVERY: {
@@ -210,7 +249,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         // We could be more generous, but for now, only a "NOT FOUND" code will
         // cause a pass through.  All other bad codes will fall into a
         // meta-refresh.
-        SdchManager::SdchErrorRecovery(SdchManager::PASS_THROUGH_404_CODE);
+        LogSdchProblem(SDCH_PASS_THROUGH_404_CODE);
         cause = RESPONSE_404;
         decoding_status_ = PASS_THROUGH;
       } else if (filter_context_.GetResponseCode() != 200) {
@@ -220,7 +259,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
                  && !dictionary_hash_is_plausible_) {
         // We must have hit the back button, and gotten content that was fetched
         // before we *really* advertised SDCH and a dictionary.
-        SdchManager::SdchErrorRecovery(SdchManager::PASS_THROUGH_OLD_CACHED);
+        LogSdchProblem(SDCH_PASS_THROUGH_OLD_CACHED);
         decoding_status_ = PASS_THROUGH;
         cause = RESPONSE_OLD_UNENCODED;
       } else if (possible_pass_through_) {
@@ -256,11 +295,11 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         // though it is not!
         // Meta-refresh won't help, as we didn't advertise an SDCH dictionary!!
         // Worse yet, meta-refresh could lead to an infinite refresh loop.
-        SdchManager::SdchErrorRecovery(SdchManager::PASSING_THROUGH_NON_SDCH);
+        LogSdchProblem(SDCH_PASSING_THROUGH_NON_SDCH);
         decoding_status_ = PASS_THROUGH;
         // ... but further back-off on advertising SDCH support.
         url_request_context_->sdch_manager()->BlacklistDomain(
-            url_, SdchManager::PASSING_THROUGH_NON_SDCH);
+            url_, SDCH_PASSING_THROUGH_NON_SDCH);
         cause = RESPONSE_ENCODING_LIE;
       }
       DCHECK_NE(RESPONSE_NONE, cause);
@@ -274,6 +313,10 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         UMA_HISTOGRAM_ENUMERATION(
             "Sdch3.ResponseCorruptionDetection.Uncached", cause, RESPONSE_MAX);
       }
+      filter_context_.GetNetLog().AddEvent(
+          NetLog::TYPE_SDCH_RESPONSE_CORRUPTION_DETECTION,
+          base::Bind(&NetLogSdchResponseCorruptionDetectionCallback, cause,
+                     filter_context_.IsCachedContent()));
 
       if (decoding_status_ == PASS_THROUGH) {
         dest_buffer_excess_ = dictionary_hash_;  // Send what we scanned.
@@ -282,13 +325,12 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         if (std::string::npos == mime_type_.find("text/html")) {
           // Since we can't do a meta-refresh (along with an exponential
           // backoff), we'll just make sure this NEVER happens again.
-          SdchManager::ProblemCodes problem =
-              (filter_context_.IsCachedContent() ?
-               SdchManager::CACHED_META_REFRESH_UNSUPPORTED :
-               SdchManager::META_REFRESH_UNSUPPORTED);
+          SdchProblemCode problem = (filter_context_.IsCachedContent()
+                                         ? SDCH_CACHED_META_REFRESH_UNSUPPORTED
+                                         : SDCH_META_REFRESH_UNSUPPORTED);
           url_request_context_->sdch_manager()->BlacklistDomainForever(
               url_, problem);
-          SdchManager::SdchErrorRecovery(problem);
+          LogSdchProblem(problem);
           return FILTER_ERROR;
         }
         // HTML content means we can issue a meta-refresh, and get the content
@@ -296,14 +338,13 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
         if (filter_context_.IsCachedContent()) {
           // Cached content is probably a startup tab, so we'll just get fresh
           // content and try again, without disabling sdch.
-          SdchManager::SdchErrorRecovery(
-              SdchManager::META_REFRESH_CACHED_RECOVERY);
+          LogSdchProblem(SDCH_META_REFRESH_CACHED_RECOVERY);
         } else {
           // Since it wasn't in the cache, we definately need at least some
           // period of blacklisting to get the correct content.
           url_request_context_->sdch_manager()->BlacklistDomain(
-              url_, SdchManager::META_REFRESH_RECOVERY);
-          SdchManager::SdchErrorRecovery(SdchManager::META_REFRESH_RECOVERY);
+              url_, SDCH_META_REFRESH_RECOVERY);
+          LogSdchProblem(SDCH_META_REFRESH_RECOVERY);
         }
         decoding_status_ = META_REFRESH_RECOVERY;
         // Issue a meta redirect with SDCH disabled.
@@ -357,7 +398,7 @@ Filter::FilterStatus SdchFilter::ReadFilteredData(char* dest_buffer,
   if (!ret) {
     vcdiff_streaming_decoder_.reset(NULL);  // Don't call it again.
     decoding_status_ = DECODING_ERROR;
-    SdchManager::SdchErrorRecovery(SdchManager::DECODE_BODY_ERROR);
+    LogSdchProblem(SDCH_DECODE_BODY_ERROR);
     return FILTER_ERROR;
   }
 
@@ -394,32 +435,35 @@ Filter::FilterStatus SdchFilter::InitializeDictionary() {
   DCHECK(!dictionary_.get());
   dictionary_hash_is_plausible_ = true;  // Assume plausible, but check.
 
+  SdchProblemCode rv = SDCH_OK;
   if ('\0' == dictionary_hash_[kServerIdLength - 1]) {
     SdchManager* manager(url_request_context_->sdch_manager());
-    manager->GetVcdiffDictionary(
-        std::string(dictionary_hash_, 0, kServerIdLength - 1),
-        url_, &dictionary_);
-  } else {
-    dictionary_hash_is_plausible_ = false;
-  }
-
-  if (!dictionary_.get()) {
-    DCHECK(dictionary_hash_.size() == kServerIdLength);
-    // Since dictionary was not found, check to see if hash was even plausible.
-    for (size_t i = 0; i < kServerIdLength - 1; ++i) {
-      char base64_char = dictionary_hash_[i];
-      if (!isalnum(base64_char) && '-' != base64_char && '_' != base64_char) {
-        dictionary_hash_is_plausible_ = false;
-        break;
+    rv = manager->GetVcdiffDictionary(
+        std::string(dictionary_hash_, 0, kServerIdLength - 1), url_,
+        &dictionary_);
+    if (rv == SDCH_DICTIONARY_HASH_NOT_FOUND) {
+      DCHECK(dictionary_hash_.size() == kServerIdLength);
+      // Since dictionary was not found, check to see if hash was even
+      // plausible.
+      for (size_t i = 0; i < kServerIdLength - 1; ++i) {
+        char base64_char = dictionary_hash_[i];
+        if (!isalnum(base64_char) && '-' != base64_char && '_' != base64_char) {
+          rv = SDCH_DICTIONARY_HASH_MALFORMED;
+          dictionary_hash_is_plausible_ = false;
+          break;
+        }
       }
     }
-    if (dictionary_hash_is_plausible_)
-      SdchManager::SdchErrorRecovery(SdchManager::DICTIONARY_HASH_NOT_FOUND);
-    else
-      SdchManager::SdchErrorRecovery(SdchManager::DICTIONARY_HASH_MALFORMED);
+  } else {
+    dictionary_hash_is_plausible_ = false;
+    rv = SDCH_DICTIONARY_HASH_MALFORMED;
+  }
+  if (rv != SDCH_OK) {
+    LogSdchProblem(rv);
     decoding_status_ = DECODING_ERROR;
     return FILTER_ERROR;
   }
+  DCHECK(dictionary_.get());
   vcdiff_streaming_decoder_.reset(new open_vcdiff::VCDiffStreamingDecoder);
   vcdiff_streaming_decoder_->SetAllowVcdTarget(false);
   vcdiff_streaming_decoder_->StartDecoding(dictionary_->text().data(),
@@ -444,6 +488,13 @@ int SdchFilter::OutputBufferExcess(char* const dest_buffer,
     dest_buffer_excess_index_ = 0;
   }
   return amount;
+}
+
+void SdchFilter::LogSdchProblem(SdchProblemCode problem) {
+  SdchManager::SdchErrorRecovery(problem);
+  filter_context_.GetNetLog().AddEvent(
+      NetLog::TYPE_SDCH_DECODING_ERROR,
+      base::Bind(&NetLogSdchResourceProblemCallback, problem));
 }
 
 }  // namespace net

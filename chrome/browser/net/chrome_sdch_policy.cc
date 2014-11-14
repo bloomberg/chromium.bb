@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "net/base/sdch_manager.h"
+#include "net/base/sdch_net_log_params.h"
 
 ChromeSdchPolicy::ChromeSdchPolicy(net::SdchManager* sdch_manager,
                                    net::URLRequestContext* context)
@@ -24,8 +25,16 @@ ChromeSdchPolicy::~ChromeSdchPolicy() {
 }
 
 void ChromeSdchPolicy::OnDictionaryFetched(const std::string& dictionary_text,
-                                           const GURL& dictionary_url) {
-  manager_->AddSdchDictionary(dictionary_text, dictionary_url);
+                                           const GURL& dictionary_url,
+                                           const net::BoundNetLog& net_log) {
+  net::SdchProblemCode rv =
+      manager_->AddSdchDictionary(dictionary_text, dictionary_url);
+  if (rv != net::SDCH_OK) {
+    net::SdchManager::SdchErrorRecovery(rv);
+    net_log.AddEvent(net::NetLog::TYPE_SDCH_DICTIONARY_ERROR,
+                     base::Bind(&net::NetLogSdchDictionaryFetchProblemCallback,
+                                rv, dictionary_url, true));
+  }
 }
 
 void ChromeSdchPolicy::OnGetDictionary(net::SdchManager* manager,

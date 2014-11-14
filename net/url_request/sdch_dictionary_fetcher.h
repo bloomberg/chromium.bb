@@ -36,7 +36,8 @@ class NET_EXPORT SdchDictionaryFetcher : public URLRequest::Delegate,
                                          public base::NonThreadSafe {
  public:
   typedef base::Callback<void(const std::string& dictionary_text,
-                              const GURL& dictionary_url)>
+                              const GURL& dictionary_url,
+                              const BoundNetLog& net_log)>
       OnDictionaryFetchedCallback;
 
   // The consumer must guarantee that |*context| outlives this object.

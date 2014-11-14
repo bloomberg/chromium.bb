@@ -28,7 +28,8 @@ class ChromeSdchPolicy : public net::SdchObserver {
   ~ChromeSdchPolicy() override;
 
   void OnDictionaryFetched(const std::string& dictionary_text,
-                           const GURL& dictionary_url);
+                           const GURL& dictionary_url,
+                           const net::BoundNetLog& net_log);
 
   // SdchObserver implementation.
   void OnGetDictionary(net::SdchManager* manager,

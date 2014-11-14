@@ -31046,11 +31046,22 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="Sdch3.ProblemCodes_3" enum="SdchProblemCode">
+  <obsolete>
+    Deprecated 2014-11. Sdch3.ProblemCodes_5 used instead.
+  </obsolete>
   <owner>rdsmith@chromium.org</owner>
   <summary>Each sample is the report of a distinct problem code.</summary>
 </histogram>
 
 <histogram name="Sdch3.ProblemCodes_4" enum="SdchProblemCode">
+  <obsolete>
+    Deprecated 2014-11. Sdch3.ProblemCodes_5 used instead.
+  </obsolete>
+  <owner>rdsmith@chromium.org</owner>
+  <summary>Each sample is the report of a distinct problem code.</summary>
+</histogram>
+
+<histogram name="Sdch3.ProblemCodes_5" enum="SdchProblemCode">
   <owner>rdsmith@chromium.org</owner>
   <summary>Each sample is the report of a distinct problem code.</summary>
 </histogram>
@@ -53458,7 +53469,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SdchProblemCode" type="int">
-  <summary>SDCH problem codes, listed in net/base/sdch_manager.h</summary>
+  <summary>
+    SDCH problem codes, listed in net/base/sdch_problem_code_list.h
+  </summary>
   <int value="1" label="ADDED_CONTENT_ENCODING"/>
   <int value="2" label="FIXED_CONTENT_ENCODING"/>
   <int value="3" label="FIXED_CONTENT_ENCODINGS"/>
@@ -53474,6 +53487,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="13" label="DICTIONARY_FOUND_HAS_WRONG_SCHEME"/>
   <int value="14" label="DICTIONARY_HASH_NOT_FOUND"/>
   <int value="15" label="DICTIONARY_HASH_MALFORMED"/>
+  <int value="16" label="DICTIONARY_FOUND_EXPIRED"/>
   <int value="20" label="DICTIONARY_HAS_NO_HEADER"/>
   <int value="21" label="DICTIONARY_HEADER_LINE_MISSING_COLON"/>
   <int value="22" label="DICTIONARY_MISSING_DOMAIN_SPECIFIER"/>
@@ -53482,15 +53496,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="25" label="DICTIONARY_PORT_NOT_MATCHING_SOURCE_URL"/>
   <int value="26" label="DICTIONARY_HAS_NO_TEXT"/>
   <int value="27" label="DICTIONARY_REFERER_URL_HAS_DOT_IN_PREFIX"/>
+  <int value="28" label="DICTIONARY_UNSUPPORTED_VERSION"/>
   <int value="30" label="DICTIONARY_LOAD_ATTEMPT_FROM_DIFFERENT_HOST"/>
   <int value="31" label="DICTIONARY_SELECTED_FOR_SSL"/>
   <int value="32" label="DICTIONARY_ALREADY_LOADED"/>
   <int value="33" label="DICTIONARY_SELECTED_FROM_NON_HTTP"/>
   <int value="34" label="DICTIONARY_IS_TOO_LARGE"/>
   <int value="35" label="DICTIONARY_COUNT_EXCEEDED"/>
-  <int value="36" label="DICTIONARY_ALREADY_SCHEDULED_TO_DOWNLOAD"/>
-  <int value="37" label="DICTIONARY_ALREADY_TRIED_TO_DOWNLOAD"/>
+  <int value="36" label="defunct">
+    DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD used instead
+  </int>
+  <int value="37" label="defunct">
+    DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD used instead
+  </int>
   <int value="38" label="DICTIONARY_FETCH_READ_FAILED"/>
+  <int value="39" label="DICTIONARY_PREVIOUSLY_SCHEDULED_TO_DOWNLOAD"/>
   <int value="40" label="ATTEMPT_TO_DECODE_NON_HTTP_DATA"/>
   <int value="50" label="MULTIENCODING_FOR_NON_SDCH_REQUEST"/>
   <int value="51" label="SDCH_CONTENT_ENCODE_FOR_NON_SDCH_REQUEST"/>
@@ -53521,6 +53541,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="95" label="PRIOR_TO_DICTIONARY"/>
   <int value="96" label="DECODE_ERROR"/>
   <int value="100" label="LATENCY_TEST_DISALLOWED"/>
+  <int value="105" label="DISABLED"/>
+  <int value="106" label="SECURE_SCHEME_NOT_SUPPORTED"/>
 </enum>
 
 <enum name="SdchResponseCorruptionDetectionCauses" type="int">
