@@ -26,7 +26,7 @@ function initialize_extensionsPanelTest()
     InspectorTest.dumpStatusBarButtons = function()
     {
         var panel = WebInspector.inspectorView.currentPanel();
-        var items = panel._panelStatusBarElement.children;
+        var items = panel._panelStatusBar.element.children;
         InspectorTest.addResult("Status bar buttons state:");
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
@@ -37,13 +37,13 @@ function initialize_extensionsPanelTest()
             // Strip url(...) and prefix of the URL within, leave just last 3 components.
             var url = item.style.backgroundImage.replace(/^url\(.*(([/][^/]*){3}[^/)]*)\)$/, "...$1");
             InspectorTest.addResult("status bar item " + i + ", icon: " + url + ", tooltip: '" + item.title + "', disabled: " + item.disabled);
-        }
+       }
     }
 
     InspectorTest.clickButton = function(index)
     {
         var panel = WebInspector.inspectorView.currentPanel();
-        panel._panelStatusBarElement.children[index].click();
+        panel._panelStatusBar.element.children[index].click();
     }
 
     InspectorTest.clickOnURL = function()
