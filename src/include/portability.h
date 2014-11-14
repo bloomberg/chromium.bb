@@ -120,7 +120,7 @@
 # define  NACL___PRIdS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
 # define  NACL___PRIuS_PREFIX "l" /* -pedantic C++ programs w/ xcode */
 #elif NACL_ANDROID
-# define  NACL___PRIdS_PREFIX "l" /* Android uses "long int" for ssize_t */
+# define  NACL___PRIdS_PREFIX "z"
 # define  NACL___PRIuS_PREFIX "z"
 #elif defined(__native_client__)
 # define NACL___PRIdS_PREFIX "z"

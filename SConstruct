@@ -2680,7 +2680,7 @@ def SetUpAndroidEnv(env):
                                        'android-14', 'arch-arm')
     android_ndk_lib_dir = os.path.join('usr', 'lib')
     android_toolchain = os.path.join(android_ndk_root, 'toolchains',
-                                     'arm-linux-androideabi-4.6', 'prebuilt',
+                                     'arm-linux-androideabi-4.8', 'prebuilt',
                                      '%s-x86_64' % host_os, 'bin')
     arch_cflags += ['-march=armv7-a', '-mfloat-abi=softfp']
   elif env.Bit('build_x86_32'):

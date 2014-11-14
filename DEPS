@@ -2,14 +2,17 @@
 
 vars = {
   "chrome_rev": "275800",
-  # NOTE!  These four should match their counterparts in chromium/src/DEPS.
+  # NOTE!  These five should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   # (This is not essential for Breakpad, because we do not use its code
   # in the build that goes into Chromium.  But might as well update it too.)
+  # The last one is needed to ensure that the (currently untested on the bots)
+  # build of native client in chrome on Android continues to work.
   "gtest_rev": "643",
   "gyp_rev": "1927",
   "lss_rev": "26",
   "breakpad_rev": "1338",
+  "android_tools_rev": "ea50cccc11657404ce22cf928062ed1a3927eb39",
 
   "lcov_rev": "149720",
   "tools_rev": "13800",
@@ -79,8 +82,7 @@ deps_os = {
   },
   "android": {
     "third_party/android_tools":
-      Var("chromium_git") + "/android_tools.git" +
-      "@aabf2a28449fe47dedeee51d3570ff8687ff015f",
+      (Var("chromium_git") + "/android_tools.git@" + Var("android_tools_rev"))
   },
 }
 

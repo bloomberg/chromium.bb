@@ -62,7 +62,7 @@
           'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-arm/gdbserver/gdbserver',
           'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-arm',
           'android_ndk_lib_dir%': 'usr/lib',
-          'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
+          'android_toolchain%': '<(android_ndk_root)/toolchains/arm-linux-androideabi-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
         }],
         ['target_arch == "arm64"', {
           'android_app_abi%': 'arm64-v8a',

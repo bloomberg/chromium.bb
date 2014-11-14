@@ -170,16 +170,6 @@ typedef struct {
 
 #endif
 
-/* Userlevel context.  */
-typedef struct ucontext {
-  uint32_t uc_flags;
-  struct ucontext *uc_link;
-  stack_t uc_stack;
-  mcontext_t uc_mcontext;
-  sigset_t uc_sigmask;
-  uint32_t uc_regspace[128] __attribute__((__aligned__(8)));
-} ucontext_t;
-
 #endif /* NACL_ANDROID */
 
 #endif /* NATIVE_CLIENT_SERVICE_RUNTIME_LINUX_NACL_ANDROID_COMPAT_H_ */
