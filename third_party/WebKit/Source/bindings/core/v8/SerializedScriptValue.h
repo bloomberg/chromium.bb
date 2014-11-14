@@ -69,6 +69,10 @@ public:
 
     ~SerializedScriptValue();
 
+    // VarInt encoding constants.
+    static const int varIntShift = 7;
+    static const int varIntMask = (1 << varIntShift) - 1;
+
     // If a serialization error occurs (e.g., cyclic input value) this
     // function returns an empty representation, schedules a V8 exception to
     // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
