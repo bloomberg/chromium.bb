@@ -594,7 +594,7 @@ NSImage* Overlay(NSImage* ground, NSImage* overlay, CGFloat alpha) {
 }
 
 + (CGFloat)defaultTabHeight {
-  return 26.0;
+  return [TabController defaultTabHeight];
 }
 
 + (CGFloat)defaultLeftIndentForControls {

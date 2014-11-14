@@ -82,6 +82,9 @@ class MenuDelegate;
 @property(readonly, nonatomic) MediaIndicatorButton* mediaIndicatorButton;
 @property(readonly, nonatomic) HoverCloseButton* closeButton;
 
+// Default height for tabs.
++ (CGFloat)defaultTabHeight;
+
 // Minimum and maximum allowable tab width. The minimum width does not show
 // the icon or the close button. The active tab always has at least a close
 // button so it has a different minimum width.

@@ -66,6 +66,8 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 
 }  // TabControllerInternal namespace
 
++ (CGFloat)defaultTabHeight { return 26; }
+
 // The min widths is the smallest number at which the right edge of the right
 // tab border image is not visibly clipped.  It is a bit smaller than the sum
 // of the two tab edge bitmaps because these bitmaps have a few transparent
@@ -105,10 +107,10 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
     [closeButton_ setTarget:self];
     [closeButton_ setAction:@selector(closeTab:)];
 
-    base::scoped_nsobject<TabView> view(
-        [[TabView alloc] initWithFrame:NSMakeRect(0, 0, 160, 25)
-                            controller:self
-                           closeButton:closeButton_]);
+    base::scoped_nsobject<TabView> view([[TabView alloc]
+        initWithFrame:NSMakeRect(0, 0, 160, [TabController defaultTabHeight])
+           controller:self
+          closeButton:closeButton_]);
     [view setAutoresizingMask:NSViewMaxXMargin | NSViewMinYMargin];
     [view addSubview:iconView_];
     [view addSubview:closeButton_];
