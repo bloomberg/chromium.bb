@@ -525,10 +525,18 @@ crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-import-jwk-small-key.html [ 
 crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-import-jwk.html [ Failure Pass ]
 crbug.com/378315 [ Linux ] crypto/rsassa-pkcs1-v1_5-sign-verify.html [ Failure Pass ]
 
-# RSA-PSS is only available for BoringSSL-based WebCrypto (which is currently
+# RSA-PSS and ECDSA are only available for BoringSSL-based WebCrypto (which is currently
 # just Mac and Android). Once other platforms are switched over to BoringSSL
-# this test will pass.
+# these test will pass.
 crbug.com/338883 [ Linux Win ] crypto/rsa-pss-verify.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/clone-ecKey-private.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/clone-ecKey-public.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ec-export-private-key.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ec-export-public-key.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ecdsa-generate-key.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ecdsa-generateKey-parseAlgorithm-failures.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ecdsa-import-jwk.html [ Failure Pass ]
+crbug.com/338883 [ Linux Win ] crypto/ecdsa-sign-verify.html [ Failure Pass ]
 
 # This test needs to be updated to use a non-svg font.
 crbug.com/242735 fast/css/ex-unit-with-no-x-height.html [ ImageOnlyFailure Failure ]

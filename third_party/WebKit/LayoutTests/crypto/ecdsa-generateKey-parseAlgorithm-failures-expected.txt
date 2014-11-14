@@ -1,0 +1,13 @@
+Tests generateKey() with bad ECDSA parameters.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+error is: SyntaxError: EcKeyGenParams: namedCurve: Missing or not a string
+error is: NotSupportedError: EcKeyGenParams: Unrecognized namedCurve
+error is: NotSupportedError: EcKeyGenParams: Unrecognized namedCurve
+error is: NotSupportedError: EcKeyGenParams: Unrecognized namedCurve
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

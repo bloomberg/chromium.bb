@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<script src="resources/common.js"></script>
+</head>
+<body>
+<p id="description"></p>
+<div id="console"></div>
+
+<script>
+description("Tests generateKey() with bad ECDSA parameters.");
+jsTestIsAsync = true;
+
+extractable = true;
+keyUsages = ['sign', 'verify'];
+
+Promise.resolve(null).then(function() {
+    // Missing curve name.
+    return crypto.subtle.generateKey({name: 'ECDSA'}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    // Named curve is invalid (an integer when it should be a string).
+    return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: -1}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    // Named curve is unrecognized (lower case when it should be upper case)
+    return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'p-256'}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+
+    // Named curve is unrecognized (contains some trailing characters).
+    return crypto.subtle.generateKey({name: 'ECDSA', namedCurve: 'P-256aa'}, extractable , keyUsages);
+}).then(failAndFinishJSTest, function(result) {
+    logError(result);
+}).then(finishJSTest, failAndFinishJSTest);
+
+</script>
+
+</body>
+</html>
