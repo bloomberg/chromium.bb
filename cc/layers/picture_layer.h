@@ -45,6 +45,8 @@ class CC_EXPORT PictureLayer : public Layer {
 
  protected:
   explicit PictureLayer(ContentLayerClient* client);
+  // Allow tests to inject a recording source.
+  PictureLayer(ContentLayerClient* client, scoped_ptr<RecordingSource> source);
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;

@@ -26,6 +26,12 @@ PictureLayer::PictureLayer(ContentLayerClient* client)
       can_use_lcd_text_last_frame_(can_use_lcd_text()) {
 }
 
+PictureLayer::PictureLayer(ContentLayerClient* client,
+                           scoped_ptr<RecordingSource> source)
+    : PictureLayer(client) {
+  recording_source_ = source.Pass();
+}
+
 PictureLayer::~PictureLayer() {
 }
 

@@ -26,7 +26,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       last_frame_number_swap_performed_(-1),
       last_frame_number_swap_requested_(-1),
       last_frame_number_begin_main_frame_sent_(-1),
-      last_frame_number_update_visible_tiles_was_called_(-1),
       manage_tiles_funnel_(0),
       consecutive_checkerboard_animations_(0),
       max_pending_swaps_(1),
@@ -34,7 +33,6 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_redraw_(false),
       needs_animate_(false),
       needs_manage_tiles_(false),
-      swap_used_incomplete_tile_(false),
       needs_commit_(false),
       inside_poll_for_anticipated_draw_triggers_(false),
       visible_(false),
@@ -129,8 +127,6 @@ const char* SchedulerStateMachine::ActionToString(Action action) {
       return "ACTION_SEND_BEGIN_MAIN_FRAME";
     case ACTION_COMMIT:
       return "ACTION_COMMIT";
-    case ACTION_UPDATE_VISIBLE_TILES:
-      return "ACTION_UPDATE_VISIBLE_TILES";
     case ACTION_ACTIVATE_SYNC_TREE:
       return "ACTION_ACTIVATE_SYNC_TREE";
     case ACTION_DRAW_AND_SWAP_IF_POSSIBLE:
@@ -206,8 +202,6 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
                     last_frame_number_swap_requested_);
   state->SetInteger("last_frame_number_begin_main_frame_sent",
                     last_frame_number_begin_main_frame_sent_);
-  state->SetInteger("last_frame_number_update_visible_tiles_was_called",
-                    last_frame_number_update_visible_tiles_was_called_);
 
   state->SetInteger("manage_tiles_funnel", manage_tiles_funnel_);
   state->SetInteger("consecutive_checkerboard_animations",
@@ -217,7 +211,6 @@ void SchedulerStateMachine::AsValueInto(base::debug::TracedValue* state,
   state->SetBoolean("needs_redraw", needs_redraw_);
   state->SetBoolean("needs_animate_", needs_animate_);
   state->SetBoolean("needs_manage_tiles", needs_manage_tiles_);
-  state->SetBoolean("swap_used_incomplete_tile", swap_used_incomplete_tile_);
   state->SetBoolean("needs_commit", needs_commit_);
   state->SetBoolean("visible", visible_);
   state->SetBoolean("can_start", can_start_);
@@ -263,11 +256,6 @@ bool SchedulerStateMachine::HasAnimatedThisFrame() const {
 bool SchedulerStateMachine::HasSentBeginMainFrameThisFrame() const {
   return current_frame_number_ ==
          last_frame_number_begin_main_frame_sent_;
-}
-
-bool SchedulerStateMachine::HasUpdatedVisibleTilesThisFrame() const {
-  return current_frame_number_ ==
-         last_frame_number_update_visible_tiles_was_called_;
 }
 
 bool SchedulerStateMachine::HasSwappedThisFrame() const {
@@ -394,34 +382,6 @@ bool SchedulerStateMachine::ShouldActivatePendingTree() const {
   return pending_tree_is_ready_for_activation_;
 }
 
-bool SchedulerStateMachine::ShouldUpdateVisibleTiles() const {
-  if (!settings_.impl_side_painting)
-    return false;
-  if (HasUpdatedVisibleTilesThisFrame())
-    return false;
-
-  // We don't want to update visible tiles right after drawing.
-  if (HasRequestedSwapThisFrame())
-    return false;
-
-  // There's no reason to check for tiles if we don't have an output surface.
-  if (!HasInitializedOutputSurface())
-    return false;
-
-  // We should not check for visible tiles until we've entered the deadline so
-  // we check as late as possible and give the tiles more time to initialize.
-  if (begin_impl_frame_state_ != BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE)
-    return false;
-
-  // If the last swap drew with checkerboard or missing tiles, we should
-  // poll for any new visible tiles so we can be notified to draw again
-  // when there are.
-  if (swap_used_incomplete_tile_)
-    return true;
-
-  return false;
-}
-
 bool SchedulerStateMachine::ShouldAnimate() const {
   // If a commit occurred after our last call, we need to do animation again.
   if (HasAnimatedThisFrame() && !did_commit_after_animating_)
@@ -534,8 +494,6 @@ bool SchedulerStateMachine::ShouldManageTiles() const {
 }
 
 SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
-  if (ShouldUpdateVisibleTiles())
-    return ACTION_UPDATE_VISIBLE_TILES;
   if (ShouldActivatePendingTree())
     return ACTION_ACTIVATE_SYNC_TREE;
   if (ShouldCommit())
@@ -562,11 +520,6 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
 void SchedulerStateMachine::UpdateState(Action action) {
   switch (action) {
     case ACTION_NONE:
-      return;
-
-    case ACTION_UPDATE_VISIBLE_TILES:
-      last_frame_number_update_visible_tiles_was_called_ =
-          current_frame_number_;
       return;
 
     case ACTION_ACTIVATE_SYNC_TREE:
@@ -767,12 +720,6 @@ bool SchedulerStateMachine::BeginFrameNeededToAnimateOrDraw() const {
   if (forced_redraw_state_ == FORCED_REDRAW_STATE_WAITING_FOR_DRAW)
     return true;
 
-  // We need to draw a more complete frame than we did the last BeginImplFrame,
-  // so request another BeginImplFrame in anticipation that we will have
-  // additional visible tiles.
-  if (swap_used_incomplete_tile_)
-    return true;
-
   return needs_animate_ || needs_redraw_;
 }
 
@@ -961,11 +908,6 @@ void SchedulerStateMachine::DidSwapBuffers() {
   DCHECK_LE(pending_swaps_, max_pending_swaps_);
 
   last_frame_number_swap_performed_ = current_frame_number_;
-}
-
-void SchedulerStateMachine::SetSwapUsedIncompleteTile(
-    bool used_incomplete_tile) {
-  swap_used_incomplete_tile_ = used_incomplete_tile;
 }
 
 void SchedulerStateMachine::DidSwapBuffersComplete() {

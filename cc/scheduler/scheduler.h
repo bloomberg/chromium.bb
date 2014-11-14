@@ -40,7 +40,6 @@ class SchedulerClient {
   virtual DrawResult ScheduledActionDrawAndSwapForced() = 0;
   virtual void ScheduledActionAnimate() = 0;
   virtual void ScheduledActionCommit() = 0;
-  virtual void ScheduledActionUpdateVisibleTiles() = 0;
   virtual void ScheduledActionActivateSyncTree() = 0;
   virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
   virtual void ScheduledActionManageTiles() = 0;
@@ -120,7 +119,6 @@ class CC_EXPORT Scheduler : public BeginFrameObserverMixIn,
 
   void SetMaxSwapsPending(int max);
   void DidSwapBuffers();
-  void SetSwapUsedIncompleteTile(bool used_incomplete_tile);
   void DidSwapBuffersComplete();
 
   void SetImplLatencyTakesPriority(bool impl_latency_takes_priority);

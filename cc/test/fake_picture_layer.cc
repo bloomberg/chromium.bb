@@ -12,8 +12,19 @@ FakePictureLayer::FakePictureLayer(ContentLayerClient* client)
     : PictureLayer(client),
       update_count_(0),
       push_properties_count_(0),
-      always_update_resources_(false),
-      output_surface_created_count_(0) {
+      output_surface_created_count_(0),
+      always_update_resources_(false) {
+  SetBounds(gfx::Size(1, 1));
+  SetIsDrawable(true);
+}
+
+FakePictureLayer::FakePictureLayer(ContentLayerClient* client,
+                                   scoped_ptr<RecordingSource> source)
+    : PictureLayer(client, source.Pass()),
+      update_count_(0),
+      push_properties_count_(0),
+      output_surface_created_count_(0),
+      always_update_resources_(false) {
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
 }

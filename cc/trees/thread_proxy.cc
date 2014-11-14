@@ -479,23 +479,6 @@ void ThreadProxy::SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) {
   SetNeedsRedrawOnImplThread();
 }
 
-void ThreadProxy::SetSwapUsedIncompleteTileOnImplThread(
-    bool used_incomplete_tile) {
-  DCHECK(IsImplThread());
-  if (used_incomplete_tile) {
-    TRACE_EVENT_INSTANT0("cc",
-                         "ThreadProxy::SetSwapUsedIncompleteTileOnImplThread",
-                         TRACE_EVENT_SCOPE_THREAD);
-  }
-  impl().scheduler->SetSwapUsedIncompleteTile(used_incomplete_tile);
-}
-
-void ThreadProxy::DidInitializeVisibleTileOnImplThread() {
-  TRACE_EVENT0("cc", "ThreadProxy::DidInitializeVisibleTileOnImplThread");
-  DCHECK(IsImplThread());
-  impl().scheduler->SetNeedsRedraw();
-}
-
 void ThreadProxy::MainThreadHasStoppedFlinging() {
   DCHECK(IsMainThread());
   Proxy::ImplThreadTaskRunner()->PostTask(
@@ -989,12 +972,6 @@ void ThreadProxy::ScheduledActionCommit() {
   impl().timing_history.DidCommit();
 }
 
-void ThreadProxy::ScheduledActionUpdateVisibleTiles() {
-  TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionUpdateVisibleTiles");
-  DCHECK(IsImplThread());
-  impl().layer_tree_host_impl->UpdateVisibleTiles();
-}
-
 void ThreadProxy::ScheduledActionActivateSyncTree() {
   TRACE_EVENT0("cc", "ThreadProxy::ScheduledActionActivateSyncTree");
   DCHECK(IsImplThread());
@@ -1055,15 +1032,8 @@ DrawResult ThreadProxy::DrawSwapInternal(bool forced_draw) {
   bool start_ready_animations = draw_frame;
   impl().layer_tree_host_impl->UpdateAnimationState(start_ready_animations);
 
-  if (draw_frame) {
-    bool did_request_swap = impl().layer_tree_host_impl->SwapBuffers(frame);
-
-    // We don't know if we have incomplete tiles if we didn't actually swap.
-    if (did_request_swap) {
-      DCHECK(!frame.has_no_damage);
-      SetSwapUsedIncompleteTileOnImplThread(frame.contains_incomplete_tile);
-    }
-  }
+  if (draw_frame)
+    impl().layer_tree_host_impl->SwapBuffers(frame);
 
   // Tell the main thread that the the newly-commited frame was drawn.
   if (impl().next_frame_is_newly_committed_frame) {

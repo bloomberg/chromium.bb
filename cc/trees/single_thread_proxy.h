@@ -67,7 +67,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionCommit() override;
   void ScheduledActionAnimate() override;
-  void ScheduledActionUpdateVisibleTiles() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionManageTiles() override;
@@ -93,7 +92,6 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
   void SetNeedsAnimateOnImplThread() override;
   void SetNeedsManageTilesOnImplThread() override;
-  void DidInitializeVisibleTileOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> events) override;

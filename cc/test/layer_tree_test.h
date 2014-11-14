@@ -57,9 +57,10 @@ class TestHooks : public AnimationDelegate {
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl, bool result) {}
   virtual void SwapBuffersCompleteOnThread(LayerTreeHostImpl* host_impl) {}
-  virtual void UpdateVisibleTilesOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToActivateOnThread(LayerTreeHostImpl* host_impl) {}
   virtual void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) {}
+  virtual void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
+                                              const Tile* tile) {}
   virtual void AnimateLayers(LayerTreeHostImpl* host_impl,
                              base::TimeTicks monotonic_time) {}
   virtual void UpdateAnimationState(LayerTreeHostImpl* host_impl,
@@ -130,7 +131,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   virtual ~LayerTreeTest();
 
   virtual void EndTest();
-  void EndTestAfterDelay(int delay_milliseconds);
+  void EndTestAfterDelayMs(int delay_milliseconds);
 
   void PostAddAnimationToMainThread(Layer* layer_to_receive_animation);
   void PostAddInstantAnimationToMainThread(Layer* layer_to_receive_animation);

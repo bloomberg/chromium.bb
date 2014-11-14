@@ -9,6 +9,10 @@
 #include "cc/resources/picture_pile_impl.h"
 #include "cc/test/fake_content_layer_client.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace cc {
 
 class FakePicturePileImpl : public PicturePileImpl {
@@ -23,6 +27,14 @@ class FakePicturePileImpl : public PicturePileImpl {
       CreateEmptyPileThatThinksItHasRecordings(const gfx::Size& tile_size,
                                                const gfx::Size& layer_bounds);
   static scoped_refptr<FakePicturePileImpl> CreateInfiniteFilledPile();
+  static scoped_refptr<FakePicturePileImpl> CreateFromPile(
+      const PicturePile* other,
+      base::WaitableEvent* playback_allowed_event);
+
+  // Hi-jack the PlaybackToCanvas method to delay its completion.
+  void PlaybackToCanvas(SkCanvas* canvas,
+                        const gfx::Rect& canvas_rect,
+                        float contents_scale) const override;
 
   TilingData& tiling() { return tiling_; }
 
@@ -84,11 +96,13 @@ class FakePicturePileImpl : public PicturePileImpl {
 
  protected:
   FakePicturePileImpl();
-  explicit FakePicturePileImpl(const PicturePile* other);
+  FakePicturePileImpl(const PicturePile* other,
+                      base::WaitableEvent* playback_allowed_event);
   ~FakePicturePileImpl() override;
 
   FakeContentLayerClient client_;
   SkPaint default_paint_;
+  base::WaitableEvent* playback_allowed_event_;
   SkTileGridFactory::TileGridInfo tile_grid_info_;
 };
 

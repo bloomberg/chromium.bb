@@ -26,6 +26,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/io_surface_draw_quad.h"
+#include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/prioritized_resource.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/resources/resource_update_queue.h"
@@ -37,6 +38,7 @@
 #include "cc/test/fake_painted_scrollbar_layer.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
+#include "cc/test/fake_picture_pile.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_scoped_ui_resource.h"
 #include "cc/test/fake_video_frame_provider.h"
@@ -5022,7 +5024,8 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   void SetupTree() override {
     LayerTreeHostTest::SetupTree();
 
-    scoped_refptr<PictureLayer> layer = PictureLayer::Create(&layer_client_);
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::Create(&layer_client_);
     layer->SetBounds(gfx::Size(10, 10));
     layer->SetIsDrawable(true);
     layer_tree_host()->root_layer()->AddChild(layer);
@@ -5352,4 +5355,354 @@ class LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostAcceptsDeltasFromImplWithoutRootLayer);
+
+class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestCrispUpAfterPinchEnds()
+      : playback_allowed_event_(true, true) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->impl_side_painting = true;
+  }
+
+  void SetupTree() override {
+    frame_ = 1;
+    posted_ = false;
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(500, 500));
+
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollClipLayerId(root->id());
+    pinch->SetIsContainerForFixedPositionLayers(true);
+    root->AddChild(pinch);
+
+    scoped_ptr<FakePicturePile> pile(new FakePicturePile);
+    pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    layer->SetBounds(gfx::Size(500, 500));
+    layer->SetContentsOpaque(true);
+    pinch->AddChild(layer);
+
+    layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  // Returns the delta scale of all quads in the frame's root pass from their
+  // ideal, or 0 if they are not all the same.
+  float FrameQuadScaleDeltaFromIdeal(LayerTreeHostImpl::FrameData* frame_data) {
+    if (frame_data->has_no_damage)
+      return 0.f;
+    float frame_scale = 0.f;
+    RenderPass* root_pass = frame_data->render_passes.back();
+    for (const auto& draw_quad : root_pass->quad_list) {
+      // Checkerboards mean an incomplete frame.
+      if (draw_quad->material != DrawQuad::TILED_CONTENT)
+        return 0.f;
+      const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
+      float quad_scale =
+          quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
+      float transform_scale =
+          SkMScalarToFloat(quad->quadTransform().matrix().get(0, 0));
+      float scale = quad_scale / transform_scale;
+      if (frame_scale != 0.f && frame_scale != scale)
+        return 0.f;
+      frame_scale = scale;
+    }
+    return frame_scale;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    float quad_scale_delta = FrameQuadScaleDeltaFromIdeal(frame_data);
+    switch (frame_) {
+      case 1:
+        // Drew at page scale 1 before any pinching.
+        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, quad_scale_delta);
+        PostNextAfterDraw(host_impl);
+        break;
+      case 2:
+        if (quad_scale_delta != 1.f)
+          break;
+        // Drew at page scale 2.2 after pinching in.
+        EXPECT_EQ(2.2f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, quad_scale_delta);
+        PostNextAfterDraw(host_impl);
+        break;
+      case 3:
+        if (quad_scale_delta != 2.2f)
+          break;
+        // Drew at page scale 1 with the 2.2 tiling while pinching out.
+        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(2.2f, quad_scale_delta);
+        PostNextAfterDraw(host_impl);
+        break;
+      case 4:
+        // Drew at page scale 1 with the 2.2 tiling after pinching out completed
+        // while waiting for texture uploads to complete.
+        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        // This frame will not have any damage, since it's actually the same as
+        // the last frame, and should contain no incomplete tiles. We just want
+        // to make sure we drew here at least once after the pinch ended to be
+        // sure that drawing after pinch doesn't leave us at the wrong scale
+        // forever.
+        EXPECT_TRUE(frame_data->has_no_damage);
+        PostNextAfterDraw(host_impl);
+        break;
+      case 5:
+        if (quad_scale_delta != 1.f)
+          break;
+        // Drew at scale 1 after texture uploads are done.
+        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, quad_scale_delta);
+        EndTest();
+        break;
+    }
+    return draw_result;
+  }
+
+  void PostNextAfterDraw(LayerTreeHostImpl* host_impl) {
+    if (posted_)
+      return;
+    posted_ = true;
+    ImplThreadTaskRunner()->PostDelayedTask(
+        FROM_HERE, base::Bind(&LayerTreeHostTestCrispUpAfterPinchEnds::Next,
+                              base::Unretained(this), host_impl),
+        // Use a delay to allow raster/upload to happen in between frames. This
+        // should cause flakiness if we fail to block raster/upload when
+        // desired.
+        base::TimeDelta::FromMilliseconds(16 * 6));
+  }
+
+  void Next(LayerTreeHostImpl* host_impl) {
+    ++frame_;
+    posted_ = false;
+    switch (frame_) {
+      case 2:
+        // Pinch zoom in.
+        host_impl->PinchGestureBegin();
+        host_impl->PinchGestureUpdate(2.2f, gfx::Point(100, 100));
+        host_impl->PinchGestureEnd();
+        break;
+      case 3:
+        // Pinch zoom back to 1.f but don't end it.
+        host_impl->PinchGestureBegin();
+        host_impl->PinchGestureUpdate(1.f / 2.2f, gfx::Point(100, 100));
+        break;
+      case 4:
+        // End the pinch, but delay tile production.
+        playback_allowed_event_.Reset();
+        host_impl->PinchGestureEnd();
+        break;
+      case 5:
+        // Let tiles complete.
+        playback_allowed_event_.Signal();
+        break;
+    }
+  }
+
+  void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
+                                      const Tile* tile) override {
+    // On frame_ == 4, we are preventing texture uploads from completing,
+    // so this verifies they are not completing before frame_ == 5.
+    // Flaky failures here indicate we're failing to prevent uploads from
+    // completing.
+    EXPECT_NE(4, frame_);
+  }
+
+  void AfterTest() override {}
+
+  FakeContentLayerClient client_;
+  int frame_;
+  bool posted_;
+  base::WaitableEvent playback_allowed_event_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
+
+class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
+    : public LayerTreeHostTestCrispUpAfterPinchEnds {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->impl_side_painting = true;
+    settings->use_one_copy = true;
+  }
+
+  scoped_ptr<FakeOutputSurface> CreateFakeOutputSurface(
+      bool fallback) override {
+    scoped_ptr<TestWebGraphicsContext3D> context3d =
+        TestWebGraphicsContext3D::Create();
+    context3d->set_support_image(true);
+    context3d->set_support_sync_query(true);
+
+    if (delegating_renderer())
+      return FakeOutputSurface::CreateDelegating3d(context3d.Pass());
+    else
+      return FakeOutputSurface::Create3d(context3d.Pass());
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
+
+class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
+    : public LayerTreeHostTest {
+ protected:
+  LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles()
+      : playback_allowed_event_(true, true) {}
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->impl_side_painting = true;
+  }
+
+  void SetupTree() override {
+    step_ = 1;
+    continuous_draws_ = 0;
+    client_.set_fill_with_nonsolid_color(true);
+
+    scoped_refptr<Layer> root = Layer::Create();
+    root->SetBounds(gfx::Size(500, 500));
+
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollClipLayerId(root->id());
+    pinch->SetIsContainerForFixedPositionLayers(true);
+    root->AddChild(pinch);
+
+    scoped_ptr<FakePicturePile> pile(new FakePicturePile);
+    pile->SetPlaybackAllowedEvent(&playback_allowed_event_);
+    scoped_refptr<FakePictureLayer> layer =
+        FakePictureLayer::CreateWithRecordingSource(&client_, pile.Pass());
+    layer->SetBounds(gfx::Size(500, 500));
+    layer->SetContentsOpaque(true);
+    pinch->AddChild(layer);
+
+    layer_tree_host()->RegisterViewportLayers(root, pinch, pinch);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+    layer_tree_host()->SetRootLayer(root);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  // Returns the delta scale of all quads in the frame's root pass from their
+  // ideal, or 0 if they are not all the same.
+  float FrameQuadScaleDeltaFromIdeal(LayerTreeHostImpl::FrameData* frame_data) {
+    if (frame_data->has_no_damage)
+      return 0.f;
+    float frame_scale = 0.f;
+    RenderPass* root_pass = frame_data->render_passes.back();
+    for (const auto& draw_quad : root_pass->quad_list) {
+      const TileDrawQuad* quad = TileDrawQuad::MaterialCast(draw_quad);
+      float quad_scale =
+          quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
+      float transform_scale =
+          SkMScalarToFloat(quad->quadTransform().matrix().get(0, 0));
+      float scale = quad_scale / transform_scale;
+      if (frame_scale != 0.f && frame_scale != scale)
+        return 0.f;
+      frame_scale = scale;
+    }
+    return frame_scale;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                   LayerTreeHostImpl::FrameData* frame_data,
+                                   DrawResult draw_result) override {
+    float quad_scale_delta = FrameQuadScaleDeltaFromIdeal(frame_data);
+    switch (step_) {
+      case 1:
+        // Drew at scale 1 before any pinching.
+        EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, quad_scale_delta);
+        break;
+      case 2:
+        if (quad_scale_delta != 1.f / 1.5f)
+          break;
+        // Drew at scale 1 still though the ideal is 1.5.
+        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f / 1.5f, quad_scale_delta);
+        break;
+      case 3:
+        // Continuous draws are attempted.
+        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        if (!frame_data->has_no_damage)
+          EXPECT_EQ(1.f / 1.5f, quad_scale_delta);
+        break;
+      case 4:
+        if (quad_scale_delta != 1.f)
+          break;
+        // Drew at scale 1.5 when all the tiles completed.
+        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
+        EXPECT_EQ(1.f, quad_scale_delta);
+
+        // We should not continue to draw any more. End the test after a timeout
+        // to watch for any extraneous draws.
+        // TODO(brianderson): We could remove this delay and instead wait until
+        // the BeginFrameSource decides it doesn't need to send frames anymore,
+        // or test that it already doesn't here.
+        EndTestAfterDelayMs(16 * 4);
+        ++step_;
+        break;
+      case 5:
+        ADD_FAILURE()
+            << "No draws should happen once we have a complete frame.";
+        break;
+    }
+    return draw_result;
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    switch (step_) {
+      case 1:
+        // Delay tile production.
+        playback_allowed_event_.Reset();
+        // Pinch zoom in to cause new tiles to be required.
+        host_impl->PinchGestureBegin();
+        host_impl->PinchGestureUpdate(1.5f, gfx::Point(100, 100));
+        host_impl->PinchGestureEnd();
+        ++step_;
+        break;
+      case 2:
+        ++step_;
+        break;
+      case 3:
+        // We should continue to try draw while there are incomplete visible
+        // tiles.
+        if (++continuous_draws_ > 5) {
+          // Allow the tiles to complete.
+          playback_allowed_event_.Signal();
+          ++step_;
+        }
+        break;
+    }
+  }
+
+  void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
+                                      const Tile* tile) override {
+    // On step_ == 2, we are preventing texture uploads from completing,
+    // so this verifies they are not completing before step_ == 3.
+    // Flaky failures here indicate we're failing to prevent uploads from
+    // completing.
+    EXPECT_NE(2, step_);
+  }
+
+  void AfterTest() override { EXPECT_GT(continuous_draws_, 5); }
+
+  FakeContentLayerClient client_;
+  int step_;
+  int continuous_draws_;
+  base::WaitableEvent playback_allowed_event_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles);
+
 }  // namespace cc

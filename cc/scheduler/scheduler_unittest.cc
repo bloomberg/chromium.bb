@@ -88,8 +88,6 @@ class FakeSchedulerClient : public SchedulerClient {
 
   FakeSchedulerClient()
       : automatic_swap_ack_(true),
-        swap_contains_incomplete_tile_(false),
-        redraw_will_happen_if_update_visible_tiles_happens_(false),
         now_src_(TestNowSource::Create()),
         task_runner_(new OrderedSimpleTaskRunner(now_src_, true)),
         fake_external_begin_frame_source_(nullptr),
@@ -191,10 +189,6 @@ class FakeSchedulerClient : public SchedulerClient {
     return -1;
   }
 
-  void SetSwapContainsIncompleteTile(bool contain) {
-    swap_contains_incomplete_tile_ = contain;
-  }
-
   bool HasAction(const char* action) const {
     return ActionIndex(action) >= 0;
   }
@@ -207,9 +201,6 @@ class FakeSchedulerClient : public SchedulerClient {
   }
   void SetAutomaticSwapAck(bool automatic_swap_ack) {
     automatic_swap_ack_ = automatic_swap_ack;
-  }
-  void SetRedrawWillHappenIfUpdateVisibleTilesHappens(bool redraw) {
-    redraw_will_happen_if_update_visible_tiles_happens_ = redraw;
   }
   // SchedulerClient implementation.
   void WillBeginImplFrame(const BeginFrameArgs& args) override {
@@ -234,12 +225,6 @@ class FakeSchedulerClient : public SchedulerClient {
         draw_will_happen_ && swap_will_happen_if_draw_happens_;
     if (swap_will_happen) {
       scheduler_->DidSwapBuffers();
-      if (swap_contains_incomplete_tile_) {
-        scheduler_->SetSwapUsedIncompleteTile(true);
-        swap_contains_incomplete_tile_ = false;
-      } else {
-        scheduler_->SetSwapUsedIncompleteTile(false);
-      }
 
       if (automatic_swap_ack_)
         scheduler_->DidSwapBuffersComplete();
@@ -254,12 +239,6 @@ class FakeSchedulerClient : public SchedulerClient {
   void ScheduledActionCommit() override {
     actions_.push_back("ScheduledActionCommit");
     states_.push_back(scheduler_->AsValue());
-  }
-  void ScheduledActionUpdateVisibleTiles() override {
-    actions_.push_back("ScheduledActionUpdateVisibleTiles");
-    states_.push_back(scheduler_->AsValue());
-    if (redraw_will_happen_if_update_visible_tiles_happens_)
-      scheduler_->SetNeedsRedraw();
   }
   void ScheduledActionActivateSyncTree() override {
     actions_.push_back("ScheduledActionActivateSyncTree");
@@ -303,8 +282,6 @@ class FakeSchedulerClient : public SchedulerClient {
   bool automatic_swap_ack_;
   int num_draws_;
   bool log_anticipated_draw_time_change_;
-  bool swap_contains_incomplete_tile_;
-  bool redraw_will_happen_if_update_visible_tiles_happens_;
   base::TimeTicks posted_begin_impl_frame_deadline_;
   std::vector<const char*> actions_;
   std::vector<scoped_refptr<base::debug::ConvertableToTraceFormat>> states_;
@@ -1010,68 +987,6 @@ TEST(SchedulerTest, ManageTilesOncePerFrame) {
   EXPECT_FALSE(scheduler->ManageTilesPending());
   EXPECT_FALSE(scheduler->BeginImplFrameDeadlinePending());
   scheduler->DidManageTiles();  // Corresponds to ScheduledActionManageTiles
-}
-
-TEST(SchedulerTest, ShouldUpdateVisibleTiles) {
-  FakeSchedulerClient client;
-  SchedulerSettings scheduler_settings;
-  scheduler_settings.impl_side_painting = true;
-  scheduler_settings.use_external_begin_frame_source = true;
-  TestScheduler* scheduler = client.CreateScheduler(scheduler_settings);
-  scheduler->SetCanStart();
-  scheduler->SetVisible(true);
-  scheduler->SetCanDraw(true);
-  InitializeOutputSurfaceAndFirstCommit(scheduler, &client);
-
-  client.SetRedrawWillHappenIfUpdateVisibleTilesHappens(true);
-
-  // SetNeedsCommit should begin the frame.
-  client.Reset();
-  scheduler->SetNeedsCommit();
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client);
-
-  client.Reset();
-  client.AdvanceFrame();
-  EXPECT_ACTION("WillBeginImplFrame", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client, 1, 2);
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-
-  client.Reset();
-  scheduler->NotifyBeginMainFrameStarted();
-  scheduler->NotifyReadyToCommit();
-  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client);
-
-  client.Reset();
-  scheduler->NotifyReadyToActivate();
-  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client);
-
-  client.Reset();
-  client.SetSwapContainsIncompleteTile(true);
-  client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionAnimate", client, 0, 2);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 1, 2);
-  EXPECT_FALSE(scheduler->RedrawPending());
-
-  client.Reset();
-  client.AdvanceFrame();
-  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-
-  client.Reset();
-  client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_ACTION("ScheduledActionUpdateVisibleTiles", client, 0, 3);
-  EXPECT_ACTION("ScheduledActionAnimate", client, 1, 3);
-  EXPECT_ACTION("ScheduledActionDrawAndSwapIfPossible", client, 2, 3);
-
-  client.Reset();
-  client.AdvanceFrame();
-  EXPECT_SINGLE_ACTION("WillBeginImplFrame", client);
-  EXPECT_TRUE(scheduler->BeginImplFrameDeadlinePending());
-
-  // No more UpdateVisibleTiles().
-  client.Reset();
-  client.task_runner().RunPendingTasks();  // Run posted deadline.
-  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(false)", client);
 }
 
 TEST(SchedulerTest, TriggerBeginFrameDeadlineEarly) {

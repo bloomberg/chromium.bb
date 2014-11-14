@@ -383,12 +383,6 @@ void SingleThreadProxy::SetNeedsRedrawRectOnImplThread(
   SetNeedsRedrawOnImplThread();
 }
 
-void SingleThreadProxy::DidInitializeVisibleTileOnImplThread() {
-  TRACE_EVENT0("cc", "SingleThreadProxy::DidInitializeVisibleTileOnImplThread");
-  if (scheduler_on_impl_thread_)
-    scheduler_on_impl_thread_->SetNeedsRedraw();
-}
-
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
   client_->ScheduleComposite();
   if (scheduler_on_impl_thread_)
@@ -751,11 +745,6 @@ void SingleThreadProxy::ScheduledActionAnimate() {
   TRACE_EVENT0("cc", "ScheduledActionAnimate");
   DebugScopedSetImplThread impl(this);
   DoAnimate();
-}
-
-void SingleThreadProxy::ScheduledActionUpdateVisibleTiles() {
-  DebugScopedSetImplThread impl(this);
-  layer_tree_host_impl_->UpdateVisibleTiles();
 }
 
 void SingleThreadProxy::ScheduledActionActivateSyncTree() {

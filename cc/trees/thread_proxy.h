@@ -195,7 +195,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   void SetNeedsRedrawRectOnImplThread(const gfx::Rect& dirty_rect) override;
   void SetNeedsAnimateOnImplThread() override;
   void SetNeedsManageTilesOnImplThread() override;
-  void DidInitializeVisibleTileOnImplThread() override;
   void SetNeedsCommitOnImplThread() override;
   void PostAnimationEventsToMainThreadOnImplThread(
       scoped_ptr<AnimationEventsVector> queue) override;
@@ -215,7 +214,6 @@ class CC_EXPORT ThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawAndSwapForced() override;
   void ScheduledActionAnimate() override;
   void ScheduledActionCommit() override;
-  void ScheduledActionUpdateVisibleTiles() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginOutputSurfaceCreation() override;
   void ScheduledActionManageTiles() override;

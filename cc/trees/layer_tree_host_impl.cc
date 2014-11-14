@@ -174,8 +174,8 @@ size_t GetMaxStagingResourceCount() {
 
 }  // namespace
 
-LayerTreeHostImpl::FrameData::FrameData()
-    : contains_incomplete_tile(false), has_no_damage(false) {}
+LayerTreeHostImpl::FrameData::FrameData() : has_no_damage(false) {
+}
 
 LayerTreeHostImpl::FrameData::~FrameData() {}
 
@@ -239,11 +239,11 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       animation_registrar_(AnimationRegistrar::Create()),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       micro_benchmark_controller_(this),
-      need_to_update_visible_tiles_before_draw_(false),
       shared_bitmap_manager_(shared_bitmap_manager),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       id_(id),
-      requires_high_res_to_draw_(false) {
+      requires_high_res_to_draw_(false),
+      required_for_draw_tile_is_top_of_raster_queue_(false) {
   DCHECK(proxy_->IsImplThread());
   DidVisibilityChange(this, visible_);
   animation_registrar_->set_supports_scroll_animations(
@@ -489,7 +489,6 @@ void LayerTreeHostImpl::TrackDamageForAllSurfaces(
 
 void LayerTreeHostImpl::FrameData::AsValueInto(
     base::debug::TracedValue* value) const {
-  value->SetBoolean("contains_incomplete_tile", contains_incomplete_tile);
   value->SetBoolean("has_no_damage", has_no_damage);
 
   // Quad data can be quite large, so only dump render passes if we select
@@ -839,7 +838,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
 
     if (append_quads_data.num_incomplete_tiles ||
         append_quads_data.num_missing_tiles) {
-      frame->contains_incomplete_tile = true;
       if (RequiresHighResToDraw())
         draw_result = DRAW_ABORTED_MISSING_HIGH_RES_CONTENT;
     }
@@ -1034,12 +1032,11 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
                "LayerTreeHostImpl::PrepareToDraw",
                "SourceFrameNumber",
                active_tree_->source_frame_number());
-
-  if (need_to_update_visible_tiles_before_draw_ &&
-      tile_manager_ && tile_manager_->UpdateVisibleTiles()) {
-    DidInitializeVisibleTile();
-  }
-  need_to_update_visible_tiles_before_draw_ = true;
+  // This will cause NotifyTileStateChanged() to be called for any visible tiles
+  // that completed, which will add damage to the frame for them so they appear
+  // as part of the current frame being drawn.
+  if (settings().impl_side_painting)
+    tile_manager_->UpdateVisibleTiles();
 
   UMA_HISTOGRAM_CUSTOM_COUNTS(
       "Compositing.NumActiveLayers", active_tree_->NumLayers(), 1, 400, 20);
@@ -1051,7 +1048,6 @@ DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   frame->render_passes.clear();
   frame->render_passes_by_id.clear();
   frame->will_draw_layers.clear();
-  frame->contains_incomplete_tile = false;
   frame->has_no_damage = false;
 
   if (active_tree_->root_layer()) {
@@ -1080,13 +1076,6 @@ void LayerTreeHostImpl::EvictTexturesForTesting() {
 
 void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
   NOTREACHED();
-}
-
-void LayerTreeHostImpl::DidInitializeVisibleTileForTesting() {
-  // Add arbitrary damage, to trigger prepare-to-draws.
-  // Here, setting damage as viewport size, used only for testing.
-  SetFullRootLayerDamage();
-  DidInitializeVisibleTile();
 }
 
 void LayerTreeHostImpl::ResetTreesForTesting() {
@@ -1180,11 +1169,6 @@ void LayerTreeHostImpl::DidModifyTilePriorities() {
   client_->SetNeedsManageTilesOnImplThread();
 }
 
-void LayerTreeHostImpl::DidInitializeVisibleTile() {
-  if (client_ && !client_->IsInsideDraw())
-    client_->DidInitializeVisibleTileOnImplThread();
-}
-
 void LayerTreeHostImpl::GetPictureLayerImplPairs(
     std::vector<PictureLayerImpl::Pair>* layer_pairs,
     bool need_valid_tile_priorities) const {
@@ -1225,6 +1209,20 @@ void LayerTreeHostImpl::BuildRasterQueue(RasterTilePriorityQueue* queue,
   picture_layer_pairs_.clear();
   GetPictureLayerImplPairs(&picture_layer_pairs_, true);
   queue->Build(picture_layer_pairs_, tree_priority);
+
+  if (!queue->IsEmpty()) {
+    // Only checking the Top() tile here isn't a definite answer that there is
+    // or isn't something required for draw in this raster queue. It's just a
+    // heuristic to let us hit the common case and proactively tell the
+    // scheduler that we expect to draw within each vsync until we get all the
+    // tiles ready to draw. If we happen to miss a required for draw tile here,
+    // then we will miss telling the scheduler each frame that we intend to draw
+    // so it may make worse scheduling decisions.
+    required_for_draw_tile_is_top_of_raster_queue_ =
+        queue->Top()->required_for_draw();
+  } else {
+    required_for_draw_tile_is_top_of_raster_queue_ = false;
+  }
 }
 
 void LayerTreeHostImpl::BuildEvictionQueue(EvictionTilePriorityQueue* queue,
@@ -1245,6 +1243,11 @@ void LayerTreeHostImpl::NotifyReadyToActivate() {
 }
 
 void LayerTreeHostImpl::NotifyReadyToDraw() {
+  // Tiles that are ready will cause NotifyTileStateChanged() to be called so we
+  // don't need to schedule a draw here. Just stop WillBeginImplFrame() from
+  // causing optimistic requests to draw a frame.
+  required_for_draw_tile_is_top_of_raster_queue_ = false;
+
   client_->NotifyReadyToDraw();
 }
 
@@ -1263,6 +1266,13 @@ void LayerTreeHostImpl::NotifyTileStateChanged(const Tile* tile) {
         pending_tree_->FindPendingTreeLayerById(tile->layer_id());
     if (layer_impl)
       layer_impl->NotifyTileStateChanged(tile);
+  }
+
+  // Check for a non-null active tree to avoid doing this during shutdown.
+  if (active_tree_ && !client_->IsInsideDraw() && tile->required_for_draw()) {
+    // The LayerImpl::NotifyTileStateChanged() should damage the layer, so this
+    // redraw will make those tiles be displayed.
+    SetNeedsRedraw();
   }
 }
 
@@ -1602,6 +1612,13 @@ void LayerTreeHostImpl::WillBeginImplFrame(const BeginFrameArgs& args) {
   UpdateCurrentBeginFrameArgs(args);
   // Cache the begin impl frame interval
   begin_impl_frame_interval_ = args.interval;
+
+  if (required_for_draw_tile_is_top_of_raster_queue_) {
+    // Optimistically schedule a draw, as a tile required for draw is at the top
+    // of the current raster queue. This will let us expect the tile to complete
+    // and draw it within the impl frame we are beginning now.
+    SetNeedsRedraw();
+  }
 }
 
 void LayerTreeHostImpl::UpdateViewportContainerSizes() {
@@ -1729,15 +1746,7 @@ void LayerTreeHostImpl::CreatePendingTree() {
   TRACE_EVENT_ASYNC_BEGIN0("cc", "PendingTree:waiting", pending_tree_.get());
 }
 
-void LayerTreeHostImpl::UpdateVisibleTiles() {
-  if (tile_manager_ && tile_manager_->UpdateVisibleTiles())
-    DidInitializeVisibleTile();
-  need_to_update_visible_tiles_before_draw_ = false;
-}
-
 void LayerTreeHostImpl::ActivateSyncTree() {
-  need_to_update_visible_tiles_before_draw_ = true;
-
   if (pending_tree_) {
     TRACE_EVENT_ASYNC_END0("cc", "PendingTree:waiting", pending_tree_.get());
 
@@ -1940,7 +1949,6 @@ void LayerTreeHostImpl::CreateAndSetTileManager() {
                                       scheduled_raster_task_limit);
 
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
-  need_to_update_visible_tiles_before_draw_ = false;
 }
 
 void LayerTreeHostImpl::CreateResourceAndRasterWorkerPool(
@@ -2940,9 +2948,6 @@ void LayerTreeHostImpl::PinchGestureEnd() {
   // scales that we want when we're not inside a pinch.
   active_tree_->set_needs_update_draw_properties();
   SetNeedsRedraw();
-  // TODO(danakj): Don't set root damage. Just updating draw properties and
-  // getting new tiles rastered should be enough! crbug.com/427423
-  SetFullRootLayerDamage();
 }
 
 static void CollectScrollDeltas(ScrollAndScaleSet* scroll_info,

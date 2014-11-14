@@ -259,22 +259,17 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     LayerTreeHostImpl::ReclaimResources(ack);
   }
 
-  void UpdateVisibleTiles() override {
-    LayerTreeHostImpl::UpdateVisibleTiles();
-    test_hooks_->UpdateVisibleTilesOnThread(this);
-  }
-
   void NotifyReadyToActivate() override {
     if (block_notify_ready_to_activate_for_testing_) {
       notify_ready_to_activate_was_blocked_ = true;
     } else {
-      client_->NotifyReadyToActivate();
+      LayerTreeHostImpl::NotifyReadyToActivate();
       test_hooks_->NotifyReadyToActivateOnThread(this);
     }
   }
 
   void NotifyReadyToDraw() override {
-    client_->NotifyReadyToDraw();
+    LayerTreeHostImpl::NotifyReadyToDraw();
     test_hooks_->NotifyReadyToDrawOnThread(this);
   }
 
@@ -325,6 +320,11 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
       }
     }
     test_hooks_->UpdateAnimationState(this, has_unfinished_animation);
+  }
+
+  void NotifyTileStateChanged(const Tile* tile) override {
+    LayerTreeHostImpl::NotifyTileStateChanged(tile);
+    test_hooks_->NotifyTileStateChangedOnThread(this, tile);
   }
 
  private:
@@ -513,7 +513,7 @@ void LayerTreeTest::EndTest() {
   }
 }
 
-void LayerTreeTest::EndTestAfterDelay(int delay_milliseconds) {
+void LayerTreeTest::EndTestAfterDelayMs(int delay_milliseconds) {
   main_task_runner_->PostDelayedTask(
       FROM_HERE,
       base::Bind(&LayerTreeTest::EndTest, main_thread_weak_ptr_),

@@ -7,11 +7,19 @@
 
 #include "cc/resources/picture_pile.h"
 
+namespace base {
+class WaitableEvent;
+}
+
 namespace cc {
 
 class FakePicturePile : public PicturePile {
  public:
+  FakePicturePile() : playback_allowed_event_(nullptr) {}
   ~FakePicturePile() override {}
+
+  // PicturePile overrides.
+  scoped_refptr<RasterSource> CreateRasterSource() const override;
 
   using PicturePile::buffer_pixels;
   using PicturePile::CanRasterSlowTileCheck;
@@ -37,6 +45,10 @@ class FakePicturePile : public PicturePile {
     has_any_recordings_ = has_recordings;
   }
 
+  void SetPlaybackAllowedEvent(base::WaitableEvent* event) {
+    playback_allowed_event_ = event;
+  }
+
   TilingData& tiling() { return tiling_; }
 
   bool is_solid_color() const { return is_solid_color_; }
@@ -47,7 +59,11 @@ class FakePicturePile : public PicturePile {
   typedef PicturePile::PictureInfo PictureInfo;
   typedef PicturePile::PictureMapKey PictureMapKey;
   typedef PicturePile::PictureMap PictureMap;
+
+ private:
+  base::WaitableEvent* playback_allowed_event_;
 };
+
 }  // namespace cc
 
 #endif  // CC_TEST_FAKE_PICTURE_PILE_H_

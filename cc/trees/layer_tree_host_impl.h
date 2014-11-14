@@ -82,7 +82,6 @@ class LayerTreeHostImplClient {
   virtual void SetNeedsRedrawOnImplThread() = 0;
   virtual void SetNeedsRedrawRectOnImplThread(const gfx::Rect& damage_rect) = 0;
   virtual void SetNeedsAnimateOnImplThread() = 0;
-  virtual void DidInitializeVisibleTileOnImplThread() = 0;
   virtual void SetNeedsCommitOnImplThread() = 0;
   virtual void SetNeedsManageTilesOnImplThread() = 0;
   virtual void PostAnimationEventsToMainThreadOnImplThread(
@@ -172,7 +171,6 @@ class CC_EXPORT LayerTreeHostImpl
     RenderPassIdHashMap render_passes_by_id;
     const LayerImplList* render_surface_layer_list;
     LayerImplList will_draw_layers;
-    bool contains_incomplete_tile;
     bool has_no_damage;
 
     // RenderPassSink implementation.
@@ -209,9 +207,6 @@ class CC_EXPORT LayerTreeHostImpl
   // called. When disabled, it calls client_->NotifyReadyToActivate()
   // immediately if any notifications had been blocked while blocking.
   virtual void BlockNotifyReadyToActivateForTesting(bool block);
-
-  // This allows us to inject DidInitializeVisibleTile events for testing.
-  void DidInitializeVisibleTileForTesting();
 
   // Resets all of the trees to an empty state.
   void ResetTreesForTesting();
@@ -302,7 +297,6 @@ class CC_EXPORT LayerTreeHostImpl
     return pending_tree_ ? pending_tree_.get() : active_tree_.get();
   }
   virtual void CreatePendingTree();
-  virtual void UpdateVisibleTiles();
   virtual void ActivateSyncTree();
 
   // Shortcuts to layers on the active tree.
@@ -574,8 +568,6 @@ class CC_EXPORT LayerTreeHostImpl
                               bool zero_budget);
   void EnforceManagedMemoryPolicy(const ManagedMemoryPolicy& policy);
 
-  void DidInitializeVisibleTile();
-
   void MarkUIResourceNotEvicted(UIResourceId uid);
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
@@ -699,8 +691,6 @@ class CC_EXPORT LayerTreeHostImpl
   MicroBenchmarkControllerImpl micro_benchmark_controller_;
   scoped_ptr<TaskGraphRunner> single_thread_synchronous_task_graph_runner_;
 
-  bool need_to_update_visible_tiles_before_draw_;
-
   // Optional callback to notify of new tree activations.
   base::Closure tree_activation_callback_;
 
@@ -714,6 +704,7 @@ class CC_EXPORT LayerTreeHostImpl
   std::vector<PictureLayerImpl::Pair> picture_layer_pairs_;
 
   bool requires_high_res_to_draw_;
+  bool required_for_draw_tile_is_top_of_raster_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };

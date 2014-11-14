@@ -91,7 +91,6 @@ class LayerTreeHostImplTest : public testing::Test,
         did_request_redraw_(false),
         did_request_animate_(false),
         did_request_manage_tiles_(false),
-        did_upload_visible_tile_(false),
         reduce_memory_result_(true),
         current_limit_bytes_(0),
         current_priority_cutoff_value_(0) {
@@ -137,9 +136,6 @@ class LayerTreeHostImplTest : public testing::Test,
   void SetNeedsAnimateOnImplThread() override { did_request_animate_ = true; }
   void SetNeedsManageTilesOnImplThread() override {
     did_request_manage_tiles_ = true;
-  }
-  void DidInitializeVisibleTileOnImplThread() override {
-    did_upload_visible_tile_ = true;
   }
   void SetNeedsCommitOnImplThread() override { did_request_commit_ = true; }
   void PostAnimationEventsToMainThreadOnImplThread(
@@ -399,7 +395,6 @@ class LayerTreeHostImplTest : public testing::Test,
   bool did_request_redraw_;
   bool did_request_animate_;
   bool did_request_manage_tiles_;
-  bool did_upload_visible_tile_;
   bool reduce_memory_result_;
   base::Closure scrollbar_fade_start_;
   base::TimeDelta requested_scrollbar_animation_delay_;
