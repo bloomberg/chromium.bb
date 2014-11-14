@@ -18,7 +18,7 @@
           '../../file_manager/common/js/volume_manager_common.js',
           '../../file_manager/background/js/volume_manager.js',
           '../../file_manager/common/js/error_util.js',
-          '../../file_manager/foreground/js/file_type.js'
+          '../../file_manager/common/js/file_type.js'
         ],
         'externs': [
           '<(CLOSURE_DIR)/externs/chrome_send_externs.js',

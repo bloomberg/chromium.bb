@@ -25,9 +25,9 @@ Object['observe'] = undefined;
 'use strict';
 
 <include src="../../file_manager/common/js/async_util.js"/>
+<include src="../../file_manager/common/js/file_type.js"/>
 <include src="../../file_manager/common/js/util.js"/>
 <include src="../../file_manager/common/js/volume_manager_common.js"/>
-<include src="../../file_manager/foreground/js/file_type.js"/>
 <include src="../../file_manager/foreground/js/volume_manager_wrapper.js">
 <include src="../../file_manager/foreground/js/metadata/metadata_cache.js"/>
 

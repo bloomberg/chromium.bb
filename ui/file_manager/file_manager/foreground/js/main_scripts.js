@@ -71,6 +71,7 @@
 //<include src="../../common/js/error_util.js">
 //
 //<include src="../../common/js/async_util.js">
+//<include src="../../common/js/file_type.js">
 //<include src="../../common/js/volume_manager_common.js">
 //<include src="../../common/js/util.js">
 //<include src="../../common/js/progress_center_common.js">
@@ -89,7 +90,6 @@
 //<include src="file_selection.js">
 //<include src="file_tasks.js">
 //<include src="file_transfer_controller.js">
-//<include src="file_type.js">
 //<include src="file_watcher.js">
 //<include src="folder_shortcuts_data_model.js">
 //<include src="launch_param.js">

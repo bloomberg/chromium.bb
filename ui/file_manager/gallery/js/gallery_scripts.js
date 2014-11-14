@@ -33,9 +33,9 @@
 // 'strict mode' is invoked for this scope.
 
 //<include src="../../file_manager/common/js/async_util.js">
+//<include src="../../file_manager/common/js/file_type.js">
 //<include src="../../file_manager/common/js/util.js">
 //<include src="../../file_manager/common/js/volume_manager_common.js">
-//<include src="../../file_manager/foreground/js/file_type.js">
 //<include src="../../file_manager/foreground/js/metadata/metadata_cache.js">
 //<include src="../../file_manager/foreground/js/mouse_inactivity_watcher.js">
 //<include src="../../file_manager/foreground/js/share_client.js">

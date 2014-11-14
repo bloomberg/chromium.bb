@@ -55,7 +55,7 @@
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/volume_manager_common.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/background/js/volume_manager.js",
         "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/error_util.js",
-        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/foreground/js/file_type.js",
+        "chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/common/js/file_type.js",
         "js/background.js"
       ]
     },
