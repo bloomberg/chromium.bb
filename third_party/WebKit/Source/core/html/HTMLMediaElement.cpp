@@ -276,6 +276,8 @@ enum AutoplayMetrics {
     AutoplayBailout = 2,
     // Autoplay disabled but user manually started media.
     AutoplayManualStart = 3,
+    // Autoplay was (re)enabled through a user-gesture triggered load()
+    AutoplayEnabledThroughLoad = 4,
     // This enum value must be last.
     NumberOfAutoplayMetrics,
 };
@@ -740,8 +742,10 @@ void HTMLMediaElement::load()
 {
     WTF_LOG(Media, "HTMLMediaElement::load(%p)", this);
 
-    if (UserGestureIndicator::processingUserGesture())
+    if (UserGestureIndicator::processingUserGesture()) {
+        recordAutoplayMetric(AutoplayEnabledThroughLoad);
         m_userGestureRequiredForPlay = false;
+    }
 
     prepareForLoad();
     loadInternal();
