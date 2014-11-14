@@ -53,12 +53,12 @@ public:
     bool canInsertDTMF() const;
     MediaStreamTrack* track() const;
     String toneBuffer() const;
-    long duration() const { return m_duration; }
-    long interToneGap() const { return m_interToneGap; }
+    int duration() const { return m_duration; }
+    int interToneGap() const { return m_interToneGap; }
 
     void insertDTMF(const String& tones, ExceptionState&);
-    void insertDTMF(const String& tones, long duration, ExceptionState&);
-    void insertDTMF(const String& tones, long duration, long interToneGap, ExceptionState&);
+    void insertDTMF(const String& tones, int duration, ExceptionState&);
+    void insertDTMF(const String& tones, int duration, int interToneGap, ExceptionState&);
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(tonechange);
 
@@ -81,8 +81,8 @@ private:
     virtual void didPlayTone(const WebString&) override;
 
     Member<MediaStreamTrack> m_track;
-    long m_duration;
-    long m_interToneGap;
+    int m_duration;
+    int m_interToneGap;
 
     OwnPtr<WebRTCDTMFSenderHandler> m_handler;
 

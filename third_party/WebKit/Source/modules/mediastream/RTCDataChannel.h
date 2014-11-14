@@ -66,7 +66,7 @@ public:
     bool negotiated() const;
     unsigned short id() const;
     String readyState() const;
-    unsigned long bufferedAmount() const;
+    unsigned bufferedAmount() const;
 
     String binaryType() const;
     void setBinaryType(const String&, ExceptionState&);

@@ -146,7 +146,7 @@ String RTCDataChannel::readyState() const
     return String();
 }
 
-unsigned long RTCDataChannel::bufferedAmount() const
+unsigned RTCDataChannel::bufferedAmount() const
 {
     return m_handler->bufferedAmount();
 }
