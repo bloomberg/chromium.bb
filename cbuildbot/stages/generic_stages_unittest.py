@@ -41,7 +41,7 @@ DEFAULT_BUILD_ID = 31337
 # cleaning up the temporary directories.
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
 class StageTest(cros_test_lib.MockOutputTestCase,
-                cros_test_lib.MoxTempDirTestCase):
+                cros_test_lib.TempDirTestCase):
   """Test running a single stage in isolation."""
 
   TARGET_MANIFEST_BRANCH = 'ooga_booga'

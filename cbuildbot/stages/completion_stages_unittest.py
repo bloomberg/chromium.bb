@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import mox
 import os
 import sys
 
@@ -26,6 +25,9 @@ from chromite.lib import clactions
 from chromite.lib import cros_test_lib
 from chromite.lib import patch_unittest
 
+
+# TODO(build): Finish test wrapper (http://crosbug.com/37517).
+# Until then, this has to be after the chromite imports.
 import mock
 
 
@@ -38,41 +40,37 @@ class ManifestVersionedSyncCompletionStageTest(
 
   def testManifestVersionedSyncCompletedSuccess(self):
     """Tests basic ManifestVersionedSyncStageCompleted on success"""
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
-
     board_runattrs = self._run.GetBoardRunAttrs('x86-mario')
     board_runattrs.SetParallel('success', True)
-    self.manager.UpdateStatus(message=None, success_map={self.BOT_ID: True},
-                              dashboard_url=mox.IgnoreArg())
+    update_status_mock = self.PatchObject(
+        manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.mox.ReplayAll()
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
         self._run, self.sync_stage, success=True)
+
     stage.Run()
-    self.mox.VerifyAll()
+    update_status_mock.assert_called_once_with(
+        message=None, success_map={self.BOT_ID: True}, dashboard_url=mock.ANY)
 
   def testManifestVersionedSyncCompletedFailure(self):
     """Tests basic ManifestVersionedSyncStageCompleted on failure"""
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
         self._run, self.sync_stage, success=False)
-    self.mox.StubOutWithMock(manifest_version.BuildSpecsManager, 'UpdateStatus')
-    self.mox.StubOutWithMock(stage, 'GetBuildFailureMessage')
+    message = 'foo'
+    self.PatchObject(stage, 'GetBuildFailureMessage', return_value=message)
+    update_status_mock = self.PatchObject(
+        manifest_version.BuildSpecsManager, 'UpdateStatus')
 
-    self.manager.UpdateStatus(message=None, success_map={self.BOT_ID: False},
-                              dashboard_url=mox.IgnoreArg())
-    stage.GetBuildFailureMessage()
-
-    self.mox.ReplayAll()
     stage.Run()
-    self.mox.VerifyAll()
+    update_status_mock.assert_called_once_with(
+        message='foo', success_map={self.BOT_ID: False},
+        dashboard_url=mock.ANY)
 
   def testManifestVersionedSyncCompletedIncomplete(self):
     """Tests basic ManifestVersionedSyncStageCompleted on incomplete build."""
-    self.mox.ReplayAll()
     stage = completion_stages.ManifestVersionedSyncCompletionStage(
         self._run, self.sync_stage, success=False)
     stage.Run()
-    self.mox.VerifyAll()
 
   def testMeaningfulMessage(self):
     """Tests that all essential components are in the message."""
@@ -189,13 +187,9 @@ class MasterSlaveSyncCompletionStageTest(
     try:
       test_config = self._GetTestConfig()
       completion_stages.cbuildbot_config.config = test_config
-
-      self.mox.ReplayAll()
-
       stage = self.ConstructStage()
-      p = stage._GetSlaveConfigs()
-      self.mox.VerifyAll()
 
+      p = stage._GetSlaveConfigs()
       self.assertTrue(test_config['test3'] in p)
       self.assertTrue(test_config['test5'] in p)
       self.assertFalse(test_config['test1'] in p)
@@ -268,7 +262,6 @@ class CanaryCompletionStageTest(
   """Tests how canary master handles failures in CanaryCompletionStage."""
   BOT_ID = 'master-release'
 
-  # pylint: disable=E1120
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CanaryCompletionStageTest, self)._Prepare(bot_id, **kwargs)
 
@@ -298,7 +291,6 @@ class CommitQueueCompletionStageTest(
   """Tests how CQ master handles changes in CommitQueueCompletionStage."""
   BOT_ID = 'master-paladin'
 
-  # pylint: disable=E1120
   def _Prepare(self, bot_id=BOT_ID, **kwargs):
     super(CommitQueueCompletionStageTest, self)._Prepare(bot_id, **kwargs)
     self.assertTrue(self._run.config['master'])
@@ -456,14 +448,11 @@ class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):
   """Tests for the PublishUprevChanges stage."""
 
   def setUp(self):
-    # pylint: disable=E1120
-    self.mox.StubOutWithMock(completion_stages.PublishUprevChangesStage,
-                             '_GetPortageEnvVar')
-    self.mox.StubOutWithMock(commands, 'UprevPush')
-    self.mox.StubOutWithMock(completion_stages.PublishUprevChangesStage,
-                             '_ExtractOverlays')
-    completion_stages.PublishUprevChangesStage._ExtractOverlays().AndReturn(
-        [['foo'], ['bar']])
+    self.PatchObject(completion_stages.PublishUprevChangesStage,
+                     '_GetPortageEnvVar')
+    self.PatchObject(completion_stages.PublishUprevChangesStage,
+                     '_ExtractOverlays', return_value=[['foo'], ['bar']])
+    self.push_mock = self.PatchObject(commands, 'UprevPush')
 
   def ConstructStage(self):
     return completion_stages.PublishUprevChangesStage(self._run, success=True)
@@ -475,11 +464,8 @@ class PublishUprevChangesStageTest(generic_stages_unittest.AbstractStageTest):
                                 'master': True},
                   extra_cmd_args=['--chrome_rev', constants.CHROME_REV_TOT])
     self._run.options.prebuilts = True
-    completion_stages.commands.UprevPush(self.build_root, ['bar'], False)
-
-    self.mox.ReplayAll()
     self.RunStage()
-    self.mox.VerifyAll()
+    self.push_mock.assert_called_once_with(self.build_root, ['bar'], False)
 
 
 if __name__ == '__main__':
