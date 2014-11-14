@@ -5,14 +5,17 @@
 /**
  * Scrollable thumbnail ribbon at the bottom of the Gallery in the Slide mode.
  *
- * @param {Document} document Document.
- * @param {cr.ui.ArrayDataModel} dataModel Data model.
- * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
- * @return {Element} Ribbon element.
+ * @param {!Document} document Document.
+ * @param {!cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @return {!HTMLElement} Ribbon element.
+ * @extends {HTMLElement}
  * @constructor
+ * @suppress {checkStructDictInheritance}
+ * @struct
  */
 function Ribbon(document, dataModel, selectionModel) {
-  var self = document.createElement('div');
+  var self = assertInstanceof(document.createElement('div'), HTMLElement);
   Ribbon.decorate(self, dataModel, selectionModel);
   return self;
 }
@@ -25,14 +28,36 @@ Ribbon.prototype.__proto__ = HTMLDivElement.prototype;
 /**
  * Decorate a Ribbon instance.
  *
- * @param {Ribbon} self Self pointer.
- * @param {cr.ui.ArrayDataModel} dataModel Data model.
- * @param {cr.ui.ListSelectionModel} selectionModel Selection model.
+ * @param {!HTMLElement} self Self pointer.
+ * @param {!cr.ui.ArrayDataModel} dataModel Data model.
+ * @param {!cr.ui.ListSelectionModel} selectionModel Selection model.
  */
 Ribbon.decorate = function(self, dataModel, selectionModel) {
   self.__proto__ = Ribbon.prototype;
+  self = /** @type {!Ribbon} */ (self);
   self.dataModel_ = dataModel;
   self.selectionModel_ = selectionModel;
+
+  /** @type {!Object} */
+  self.renderCache_ = {};
+
+  /** @type {number} */
+  self.firstVisibleIndex_ = 0;
+
+  /** @type {number} */
+  self.lastVisibleIndex_ = -1;
+
+  /** @type {?function(!Event)} */
+  self.onContentBound_ = null;
+
+  /** @type {?function(!Event)} */
+  self.onSpliceBound_ = null;
+
+  /** @type {?function(!Event)} */
+  self.onSelectionBound_ = null;
+
+  /** @type {?number} */
+  self.removeTimeout_ = null;
 
   self.className = 'ribbon';
 };
@@ -40,6 +65,7 @@ Ribbon.decorate = function(self, dataModel, selectionModel) {
 /**
  * Max number of thumbnails in the ribbon.
  * @type {number}
+ * @const
  */
 Ribbon.ITEMS_COUNT = 5;
 
@@ -90,7 +116,7 @@ Ribbon.prototype.disable = function() {
 
 /**
  * Data model splice handler.
- * @param {Event} event Event.
+ * @param {!Event} event Event.
  * @private
  */
 Ribbon.prototype.onSplice_ = function(event) {
@@ -298,7 +324,7 @@ Ribbon.prototype.removeVanishing_ = function() {
  * Create a DOM element for a thumbnail.
  *
  * @param {number} index Item index.
- * @return {Element} Newly created element.
+ * @return {!Element} Newly created element.
  * @private
  */
 Ribbon.prototype.renderThumbnail_ = function(index) {
@@ -335,8 +361,8 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
 /**
  * Set the thumbnail image.
  *
- * @param {Element} thumbnail Thumbnail element.
- * @param {Gallery.Item} item Gallery item.
+ * @param {!Element} thumbnail Thumbnail element.
+ * @param {!Gallery.Item} item Gallery item.
  * @private
  */
 Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
@@ -353,7 +379,7 @@ Ribbon.prototype.setThumbnailImage_ = function(thumbnail, item) {
 /**
  * Content change handler.
  *
- * @param {Event} event Event.
+ * @param {!Event} event Event.
  * @private
  */
 Ribbon.prototype.onContentChange_ = function(event) {
