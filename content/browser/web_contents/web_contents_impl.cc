@@ -35,7 +35,6 @@
 #include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
-#include "content/browser/geolocation/geolocation_dispatcher_host.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -1189,7 +1188,6 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
                  NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
                  NotificationService::AllBrowserContextsAndSources());
 
-  geolocation_dispatcher_host_.reset(new GeolocationDispatcherHost(this));
   midi_dispatcher_host_.reset(new MidiDispatcherHost(this));
 
   screen_orientation_dispatcher_host_.reset(

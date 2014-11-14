@@ -66,6 +66,8 @@
 #include "content/browser/mime_registry_message_filter.h"
 #include "content/browser/mojo/mojo_application_host.h"
 #include "content/browser/notifications/notification_message_filter.h"
+#include "content/browser/permissions/permission_service_context.h"
+#include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/profiler_message_filter.h"
 #include "content/browser/push_messaging/push_messaging_message_filter.h"
 #include "content/browser/quota_dispatcher_host.h"
@@ -448,6 +450,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       within_process_died_observer_(false),
       power_monitor_broadcaster_(this),
       worker_ref_count_(0),
+      permission_service_context_(new PermissionServiceContext(nullptr)),
       weak_factory_(this) {
   widget_helper_ = new RenderWidgetHelper();
 
@@ -876,6 +879,10 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 void RenderProcessHostImpl::RegisterMojoServices() {
   mojo_application_host_->service_registry()->AddService(
       base::Bind(&device::BatteryMonitorImpl::Create));
+
+  mojo_application_host_->service_registry()->AddService(
+      base::Bind(&PermissionServiceContext::CreateService,
+                 base::Unretained(permission_service_context_.get())));
 }
 
 int RenderProcessHostImpl::GetNextRoutingID() {

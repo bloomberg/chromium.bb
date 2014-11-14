@@ -319,6 +319,7 @@ source_set("common") {
 mojom("mojo_bindings") {
   sources = [
     "geolocation_service.mojom",
+    "permission_service.mojom",
     "render_frame_setup.mojom",
   ]
 

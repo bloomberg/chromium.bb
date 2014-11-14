@@ -15,6 +15,7 @@
       'sources': [
         # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
         'common/geolocation_service.mojom',
+        'common/permission_service.mojom',
         'common/render_frame_setup.mojom',
 
         # NOTE: Sources duplicated in

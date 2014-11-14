@@ -51,7 +51,6 @@ class BrowserPluginGuest;
 class BrowserPluginGuestManager;
 class DateTimeChooserAndroid;
 class DownloadItem;
-class GeolocationDispatcherHost;
 class GeolocationServiceContext;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
@@ -1213,8 +1212,6 @@ class CONTENT_EXPORT WebContentsImpl
   bool last_dialog_suppressed_;
 
   scoped_ptr<GeolocationServiceContext> geolocation_service_context_;
-
-  scoped_ptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
 
   scoped_ptr<MidiDispatcherHost> midi_dispatcher_host_;
 

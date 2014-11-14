@@ -25,6 +25,8 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/geolocation/geolocation_service_context.h"
+#include "content/browser/permissions/permission_service_context.h"
+#include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -1248,6 +1250,13 @@ void RenderFrameHostImpl::RegisterMojoServices() {
                    base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
                               base::Unretained(this))));
   }
+
+  if (!permission_service_context_)
+    permission_service_context_.reset(new PermissionServiceContext(this));
+
+  GetServiceRegistry()->AddService<PermissionService>(
+      base::Bind(&PermissionServiceContext::CreateService,
+                 base::Unretained(permission_service_context_.get())));
 }
 
 void RenderFrameHostImpl::SetState(RenderFrameHostImplState rfh_state) {

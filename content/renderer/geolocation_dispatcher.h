@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "content/common/geolocation_service.mojom.h"
+#include "content/common/permission_service.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "third_party/WebKit/public/web/WebGeolocationClient.h"
 #include "third_party/WebKit/public/web/WebGeolocationController.h"
@@ -33,9 +34,6 @@ class GeolocationDispatcher
   virtual ~GeolocationDispatcher();
 
  private:
-  // RenderFrame::Observer implementation.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
   // WebGeolocationClient
   virtual void startUpdating();
   virtual void stopUpdating();
@@ -51,7 +49,7 @@ class GeolocationDispatcher
   void OnLocationUpdate(MojoGeopositionPtr geoposition) override;
 
   // Permission for using geolocation has been set.
-  void OnPermissionSet(int bridge_id, bool is_allowed);
+  void OnPermissionSet(int permission_request_id, PermissionStatus status);
 
   scoped_ptr<blink::WebGeolocationController> controller_;
 
@@ -59,6 +57,7 @@ class GeolocationDispatcher
       pending_permissions_;
   GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
+  PermissionServicePtr permission_service_;
 };
 
 }  // namespace content

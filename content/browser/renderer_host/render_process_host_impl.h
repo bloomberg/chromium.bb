@@ -48,6 +48,7 @@ class NotificationMessageFilter;
 #if defined(ENABLE_WEBRTC)
 class P2PSocketDispatcherHost;
 #endif
+class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class RendererMainThread;
 class RenderWidgetHelper;
@@ -464,6 +465,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // Records the time when the process starts surviving for workers for UMA.
   base::TimeTicks survive_for_worker_start_time_;
+
+  // Context shared for each PermissionService instance created for this RPH.
+  scoped_ptr<PermissionServiceContext> permission_service_context_;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 

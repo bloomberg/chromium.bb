@@ -248,7 +248,6 @@
       'common/geofencing_messages.h',
       'common/geofencing_status.cc',
       'common/geofencing_status.h',
-      'common/geolocation_messages.h',
       'common/gin_java_bridge_messages.h',
       'common/gpu/client/command_buffer_proxy_impl.cc',
       'common/gpu/client/command_buffer_proxy_impl.h',

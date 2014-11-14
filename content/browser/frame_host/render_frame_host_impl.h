@@ -53,6 +53,7 @@ class CrossProcessFrameConnector;
 class CrossSiteTransferringRequest;
 class FrameTree;
 class FrameTreeNode;
+class PermissionServiceContext;
 class RenderFrameHostDelegate;
 class RenderFrameProxyHost;
 class RenderProcessHost;
@@ -604,6 +605,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // PlzNavigate: Owns the stream used in navigations to store the body of the
   // response once it has started.
   scoped_ptr<StreamHandle> stream_handle_;
+
+  // Context shared for each PermissionService instance created for this RFH.
+  scoped_ptr<PermissionServiceContext> permission_service_context_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;
