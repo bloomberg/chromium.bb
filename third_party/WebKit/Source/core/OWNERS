@@ -43,8 +43,10 @@ pfeldman@chromium.org
 # philipj reviews <video>, <track>, WebVTT and Fullscreen.
 philipj@opera.com
 pkasting@chromium.org
+# rbyers reviews input related changes (eg. event handling, mouse cursors, touch hit testing, scrolling coordinator)
 rbyers@chromium.org
 rob.buis@samsung.com
+# rune reviews core/css and parts of core/rendering
 rune@opera.com
 schenney@chromium.org
 senorblanco@chromium.org
@@ -54,6 +56,7 @@ thakis@chromium.org
 timloh@chromium.org
 tkent@chromium.org
 tonyg@chromium.org
+# vollick reviews compositor integration, accelerated transitions, animations and scrolling, scrolling coordinator, CSS transforms
 vollick@chromium.org
 vsevik@chromium.org
 wangxianzhu@chromium.org
