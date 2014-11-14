@@ -1043,6 +1043,9 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     AVCodec* codec = avcodec_find_decoder(video_codec->codec_id);
     if (codec) {
       media_log_->SetStringProperty("video_codec_name", codec->name);
+    } else if (video_codec->codec_id == AV_CODEC_ID_VP9) {
+      // ffmpeg doesn't know about VP9 decoder. So we need to log it explicitly.
+      media_log_->SetStringProperty("video_codec_name", "vp9");
     }
 
     media_log_->SetIntegerProperty("width", video_codec->width);
