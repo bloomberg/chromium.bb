@@ -106,7 +106,7 @@ void SSLClientAuthHandler::DidGetClientCerts() {
 }
 
 void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
-  VLOG(1) << this << " DoCertificateSelected " << cert;
+  DVLOG(1) << this << " DoCertificateSelected " << cert;
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   callback_.Run(cert);

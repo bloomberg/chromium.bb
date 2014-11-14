@@ -55,7 +55,7 @@ bool ParseServerResponse(const std::string& response_body,
   }
 
   if (!response_value->IsType(base::Value::TYPE_DICTIONARY)) {
-    VLOG(1) << "ParseServerResponse: Unexpected response type "
+    DVLOG(1) << "ParseServerResponse: Unexpected response type "
             << response_value->GetType();
     return false;
   }
@@ -65,7 +65,7 @@ bool ParseServerResponse(const std::string& response_body,
   // Get the status.
   int status;
   if (!response_object->GetInteger(kStatusString, &status)) {
-    VLOG(1) << "ParseServerResponse: " << kStatusString
+    DVLOG(1) << "ParseServerResponse: " << kStatusString
             << " is not a valid integer value.";
     return false;
   }
@@ -83,21 +83,21 @@ bool ParseServerResponse(const std::string& response_body,
     default:
       error->code = SPEECH_RECOGNITION_ERROR_NETWORK;
       // Other status codes should not be returned by the server.
-      VLOG(1) << "ParseServerResponse: unexpected status code " << status;
+      DVLOG(1) << "ParseServerResponse: unexpected status code " << status;
       return false;
   }
 
   // Get the hypotheses.
   const base::Value* hypotheses_value = NULL;
   if (!response_object->Get(kHypothesesString, &hypotheses_value)) {
-    VLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
+    DVLOG(1) << "ParseServerResponse: Missing hypotheses attribute.";
     return false;
   }
 
   DCHECK(hypotheses_value);
   if (!hypotheses_value->IsType(base::Value::TYPE_LIST)) {
-    VLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
-            << hypotheses_value->GetType();
+    DVLOG(1) << "ParseServerResponse: Unexpected hypotheses type "
+             << hypotheses_value->GetType();
     return false;
   }
 
