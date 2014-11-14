@@ -34,6 +34,15 @@
   };
 
   /**
+   * The training state.
+   * @enum {string}
+   */
+  var TrainingState = {
+    RESET: 'reset',
+    TIMEOUT: 'timeout',
+  };
+
+  /**
    * Class to control the page flow of the always-on hotword and
    * Audio History opt-in process.
    * @constructor
@@ -55,10 +64,30 @@
     this.training_ = false;
 
     /**
+     * The current training state.
+     * @private {?TrainingState}
+     */
+    this.trainingState_ = null;
+
+    /**
+     * Whether an expected hotword trigger has been received, indexed by
+     * training step.
+     * @private {boolean[]}
+     */
+    this.hotwordTriggerReceived_ = [];
+
+    /**
      * Prefix of the element ids for the page that is currently training.
      * @private {string}
      */
     this.trainingPagePrefix_ = '';
+
+    /**
+     * Chrome event listener. Saved so that it can be de-registered
+     * when training stops.
+     * @private {Function}
+     */
+    this.hotwordTriggeredListener_ = this.handleHotwordTrigger_.bind(this);
   }
 
   /**
@@ -94,10 +123,14 @@
       this.trainingPagePrefix_ = 'speech-training';
     }
 
-    if (chrome.hotwordPrivate.onHotwordTriggered) {
+    if (chrome.hotwordPrivate.onHotwordTriggered &&
+        !chrome.hotwordPrivate.onHotwordTriggered.hasListener(
+            this.hotwordTriggeredListener_)) {
       chrome.hotwordPrivate.onHotwordTriggered.addListener(
-          this.handleHotwordTrigger_.bind(this));
+          this.hotwordTriggeredListener_);
     }
+
+    this.waitForHotwordTrigger_(0);
     if (chrome.hotwordPrivate.startTraining)
       chrome.hotwordPrivate.startTraining();
   };
@@ -112,7 +145,7 @@
     this.training_ = false;
     if (chrome.hotwordPrivate.onHotwordTriggered) {
       chrome.hotwordPrivate.onHotwordTriggered.
-          removeListener(this.handleHotwordTrigger_);
+          removeListener(this.hotwordTriggeredListener_);
     }
     if (chrome.hotwordPrivate.stopTraining)
       chrome.hotwordPrivate.stopTraining();
@@ -124,13 +157,21 @@
   Flow.prototype.onSpeakerModelFinalized = function() {
     this.stopTraining();
 
-    if (chrome.hotwordPrivate.setAudioLoggingEnabled)
-      chrome.hotwordPrivate.setAudioLoggingEnabled(true, function() {});
-
     if (chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled) {
       chrome.hotwordPrivate.setHotwordAlwaysOnSearchEnabled(true,
           this.advanceStep.bind(this));
     }
+  };
+
+  /**
+   * Handles a user clicking on the retry button.
+   */
+  Flow.prototype.handleRetry = function() {
+    if (this.trainingState_ != TrainingState.TIMEOUT)
+      return;
+
+    this.startTraining();
+    this.updateTrainingState_(TrainingState.RESET);
   };
 
   // ---- private methods:
@@ -152,23 +193,127 @@
   };
 
   /**
+   * Returns the current training step.
+   * @param {string} curStepClassName The name of the class of the current
+   *     training step.
+   * @return {Object} The current training step, its index, and an array of
+   *     all training steps. Any of these can be undefined.
+   * @private
+   */
+  Flow.prototype.getCurrentTrainingStep_ = function(curStepClassName) {
+    var steps =
+        $(this.trainingPagePrefix_ + '-training').querySelectorAll('.train');
+    var curStep =
+        $(this.trainingPagePrefix_ + '-training').querySelector('.listening');
+    return {current: curStep,
+            index: Array.prototype.indexOf.call(steps, curStep),
+            steps: steps};
+  };
+
+  /**
+   * Updates the training state.
+   * @param {TrainingState} state The training state.
+   * @private
+   */
+  Flow.prototype.updateTrainingState_ = function(state) {
+    this.trainingState_ = state;
+    this.updateErrorUI_();
+  };
+
+  /**
+   * Waits two minutes and then checks for a training error.
+   * @param {number} index The index of the training step.
+   * @private
+   */
+  Flow.prototype.waitForHotwordTrigger_ = function(index) {
+    if (!this.training_)
+      return;
+
+    this.hotwordTriggerReceived_[index] = false;
+    setTimeout(this.handleTrainingTimeout_.bind(this, index), 120000);
+  };
+
+  /**
+   * Checks for and handles a training error.
+   * @param {number} index The index of the training step.
+   * @private
+   */
+  Flow.prototype.handleTrainingTimeout_ = function(index) {
+    if (!this.training_)
+      return;
+
+    if (this.hotwordTriggerReceived_[index])
+      return;
+
+    this.updateTrainingState_(TrainingState.TIMEOUT);
+    this.stopTraining();
+  };
+
+  /**
+   * Updates the training error UI.
+   * @private
+   */
+  Flow.prototype.updateErrorUI_ = function() {
+    if (!this.training_)
+      return;
+
+    var trainingSteps = this.getCurrentTrainingStep_('listening');
+    var steps = trainingSteps.steps;
+
+    if (this.trainingState_ == TrainingState.RESET) {
+      // We reset the training to begin at the first step.
+      // The first step is reset to 'listening', while the rest
+      // are reset to 'not-started'.
+
+      // TODO(kcarattini): Localize strings.
+      var prompt = 'Say "Ok Google"';
+      for (var i = 0; i < steps.length; ++i) {
+        steps[i].classList.remove('recorded');
+        if (i == 0) {
+          steps[i].classList.remove('not-started');
+          steps[i].classList.add('listening');
+        } else {
+          steps[i].classList.add('not-started');
+          if (i == steps.length - 1)
+            prompt += ' one last time';
+          else
+            prompt += ' again';
+        }
+        steps[i].querySelector('.text').textContent = prompt;
+      }
+    } else if (this.trainingState_ == TrainingState.TIMEOUT) {
+      var curStep = trainingSteps.current;
+      if (curStep) {
+        curStep.classList.remove('listening');
+        curStep.classList.add('not-started');
+      }
+    }
+    $(this.trainingPagePrefix_ + '-timeout').hidden =
+        !(this.trainingState_ == TrainingState.TIMEOUT);
+  };
+
+  /**
    * Handles a hotword trigger event and updates the training UI.
    * @private
    */
   Flow.prototype.handleHotwordTrigger_ = function() {
-    var curStep =
-        $(this.trainingPagePrefix_ + '-training').querySelector('.listening');
-    // TODO(kcarattini): Localize this string.
-    curStep.querySelector('.text').textContent = 'Recorded';
-    curStep.classList.remove('listening');
-    curStep.classList.add('recorded');
+    var trainingSteps = this.getCurrentTrainingStep_('listening');
 
-    var steps =
-        $(this.trainingPagePrefix_ + '-training').querySelectorAll('.train');
-    var index = Array.prototype.indexOf.call(steps, curStep);
-    if (steps[index + 1]) {
-      steps[index + 1].classList.remove('not-started');
-      steps[index + 1].classList.add('listening');
+    if (!trainingSteps.current)
+      return;
+
+    var index = trainingSteps.index;
+    this.hotwordTriggerReceived_[index] = true;
+
+    // TODO(kcarattini): Localize this string.
+    trainingSteps.current.querySelector('.text').textContent = 'Recorded';
+    trainingSteps.current.classList.remove('listening');
+    trainingSteps.current.classList.add('recorded');
+
+    if (trainingSteps.steps[index + 1]) {
+      trainingSteps.steps[index + 1].classList.remove('not-started');
+      trainingSteps.steps[index + 1].classList.add('listening');
+      this.waitForHotwordTrigger_(index + 1);
       return;
     }
 

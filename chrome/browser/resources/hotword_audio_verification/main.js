@@ -17,7 +17,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   };
 
+  var retry = function(e) {
+    var classes = e.target.classList;
+    if (classes.contains('retry-button')) {
+      flow.handleRetry();
+      e.preventDefault();
+    }
+  };
+
   $('steps').addEventListener('click', closeAppWindow);
+  $('steps').addEventListener('click', retry);
 
   $('hw-agree-button').addEventListener('click', function(e) {
     flow.advanceStep();
