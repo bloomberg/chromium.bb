@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/touch/touch_device.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -131,10 +132,16 @@ struct CONTENT_EXPORT WebPreferences {
   bool css_variables_enabled;
   bool region_based_columns_enabled;
   bool touch_enabled;
+  // TODO(mustaq): Nuke when the new API is ready
   bool device_supports_touch;
+  // TODO(mustaq): Nuke when the new API is ready
   bool device_supports_mouse;
   bool touch_adjustment_enabled;
   int pointer_events_max_touch_points;
+  int available_pointer_types;
+  ui::PointerType primary_pointer_type;
+  int available_hover_types;
+  ui::HoverType primary_hover_type;
   bool sync_xhr_in_documents_enabled;
   bool deferred_image_decoding_enabled;
   bool image_color_profiles_enabled;

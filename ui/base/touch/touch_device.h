@@ -26,6 +26,28 @@ UI_BASE_EXPORT bool IsTouchDevicePresent();
 // http://www.w3.org/TR/pointerevents/#widl-Navigator-maxTouchPoints
 UI_BASE_EXPORT int MaxTouchPoints();
 
+// Bit field values indicating available pointer types. Identical to
+// blink::WebSettings::PointerType enums, enforced by compile-time assertions
+// in content/public/common/web_preferences.cc .
+enum PointerType {
+  POINTER_TYPE_NONE = 1 << 0,
+  POINTER_TYPE_FIRST = POINTER_TYPE_NONE,
+  POINTER_TYPE_COARSE = 1 << 1,
+  POINTER_TYPE_FINE = 1 << 2,
+  POINTER_TYPE_LAST = POINTER_TYPE_FINE
+};
+
+// Bit field values indicating available hover types. Identical to
+// blink::WebSettings::HoverType enums, enforced by compile-time assertions
+// in content/public/common/web_preferences.cc .
+enum HoverType {
+  HOVER_TYPE_NONE = 1 << 0,
+  HOVER_TYPE_FIRST = HOVER_TYPE_NONE,
+  HOVER_TYPE_ON_DEMAND = 1 << 1,
+  HOVER_TYPE_HOVER = 1 << 2,
+  HOVER_TYPE_LAST = HOVER_TYPE_HOVER
+};
+
 #if defined(OS_ANDROID)
 bool RegisterTouchDeviceAndroid(JNIEnv* env);
 #endif

@@ -52,6 +52,20 @@ COMPILE_ASSERT_MATCHING_ENUMS(
     V8_SCRIPT_STREAMING_MODE_LAST,
     WebSettings::V8ScriptStreamingModeAllPlusBlockParsingBlocking);
 
+COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_NONE,
+                              WebSettings::PointerTypeNone);
+COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_COARSE,
+                              WebSettings::PointerTypeCoarse);
+COMPILE_ASSERT_MATCHING_ENUMS(ui::POINTER_TYPE_FINE,
+                              WebSettings::PointerTypeFine);
+
+COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_NONE,
+                              WebSettings::HoverTypeNone);
+COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_ON_DEMAND,
+                              WebSettings::HoverTypeOnDemand);
+COMPILE_ASSERT_MATCHING_ENUMS(ui::HOVER_TYPE_HOVER,
+                              WebSettings::HoverTypeHover);
+
 WebPreferences::WebPreferences()
     : default_font_size(16),
       default_fixed_font_size(13),
@@ -119,6 +133,10 @@ WebPreferences::WebPreferences()
       device_supports_mouse(true),
       touch_adjustment_enabled(true),
       pointer_events_max_touch_points(0),
+      available_pointer_types(0),
+      primary_pointer_type(ui::POINTER_TYPE_NONE),
+      available_hover_types(0),
+      primary_hover_type(ui::HOVER_TYPE_NONE),
       sync_xhr_in_documents_enabled(true),
       deferred_image_decoding_enabled(false),
       image_color_profiles_enabled(false),
