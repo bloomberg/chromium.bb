@@ -21,7 +21,7 @@ function test() {
     target.refresh();
 
     function isFilteredOut(request) {
-        return !!target._nodesByRequestId.get(request.requestId)[WebInspector.NetworkLogView._isFilteredOutSymbol];
+        return !!target._nodesByRequestId.get(request.requestId)._isFilteredOut;
     }
 
     InspectorTest.addResult("");
