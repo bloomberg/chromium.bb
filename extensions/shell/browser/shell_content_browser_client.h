@@ -59,6 +59,12 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       std::vector<std::string>* additional_schemes) override;
   content::DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
 
+ protected:
+  // Subclasses may wish to provide their own ShellBrowserMainParts.
+  virtual ShellBrowserMainParts* CreateShellBrowserMainParts(
+      const content::MainFunctionParams& parameters,
+      ShellBrowserMainDelegate* browser_main_delegate);
+
  private:
   // Appends command line switches for a renderer process.
   void AppendRendererSwitches(base::CommandLine* command_line);

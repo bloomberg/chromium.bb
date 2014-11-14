@@ -69,7 +69,7 @@ content::BrowserContext* ShellContentBrowserClient::GetBrowserContext() {
 content::BrowserMainParts* ShellContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
   browser_main_parts_ =
-      new ShellBrowserMainParts(parameters, browser_main_delegate_);
+      CreateShellBrowserMainParts(parameters, browser_main_delegate_);
   return browser_main_parts_;
 }
 
@@ -217,6 +217,17 @@ void ShellContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
   additional_allowed_schemes->push_back(kExtensionScheme);
 }
 
+content::DevToolsManagerDelegate*
+ShellContentBrowserClient::GetDevToolsManagerDelegate() {
+  return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
+}
+
+ShellBrowserMainParts* ShellContentBrowserClient::CreateShellBrowserMainParts(
+    const content::MainFunctionParams& parameters,
+    ShellBrowserMainDelegate* browser_main_delegate) {
+  return new ShellBrowserMainParts(parameters, browser_main_delegate);
+}
+
 void ShellContentBrowserClient::AppendRendererSwitches(
     CommandLine* command_line) {
   // TODO(jamescook): Should we check here if the process is in the extension
@@ -242,11 +253,6 @@ const Extension* ShellContentBrowserClient::GetExtension(
       ExtensionRegistry::Get(site_instance->GetBrowserContext());
   return registry->enabled_extensions().GetExtensionOrAppByURL(
       site_instance->GetSiteURL());
-}
-
-content::DevToolsManagerDelegate*
-ShellContentBrowserClient::GetDevToolsManagerDelegate() {
-  return new content::ShellDevToolsManagerDelegate(GetBrowserContext());
 }
 
 }  // namespace extensions
