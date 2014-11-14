@@ -163,9 +163,6 @@ def interface_context(interface):
     for set_wrapper_reference_to in set_wrapper_reference_to_list:
         set_wrapper_reference_to['idl_type'].add_includes_for_type()
 
-    # [NotScriptWrappable]
-    is_script_wrappable = 'NotScriptWrappable' not in extended_attributes
-
     # [SetWrapperReferenceFrom]
     has_visit_dom_wrapper = (
         has_extended_attribute_value(interface, 'Custom', 'VisitDOMWrapper') or
@@ -204,7 +201,6 @@ def interface_context(interface):
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),
         'is_partial': interface.is_partial,
-        'is_script_wrappable': is_script_wrappable,
         'is_typed_array_type': is_typed_array_type,
         'iterator_method': iterator_method,
         'lifetime': 'Dependent'

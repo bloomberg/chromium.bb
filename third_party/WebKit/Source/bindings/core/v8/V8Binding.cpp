@@ -127,7 +127,7 @@ PassRefPtrWillBeRawPtr<NodeFilter> toNodeFilter(v8::Handle<v8::Value> callback, 
         return nullptr;
     RefPtrWillBeRawPtr<NodeFilter> filter = NodeFilter::create();
 
-    v8::Handle<v8::Object> filterWrapper = toV8(filter, creationContext, scriptState->isolate()).As<v8::Object>();
+    v8::Handle<v8::Object> filterWrapper = toV8(filter.get(), creationContext, scriptState->isolate()).As<v8::Object>();
 
     RefPtrWillBeRawPtr<NodeFilterCondition> condition = V8NodeFilterCondition::create(callback, filterWrapper, scriptState);
     filter->setCondition(condition.release());

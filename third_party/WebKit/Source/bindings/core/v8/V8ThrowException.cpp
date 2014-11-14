@@ -63,7 +63,7 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(v8::Isolate* isolate,
         return V8ThrowException::createReferenceError(isolate, sanitizedMessage);
 
     RefPtrWillBeRawPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
-    v8::Handle<v8::Value> exception = toV8(domException, creationContext, isolate);
+    v8::Handle<v8::Value> exception = toV8(domException.get(), creationContext, isolate);
 
     if (exception.IsEmpty())
         return v8Undefined();

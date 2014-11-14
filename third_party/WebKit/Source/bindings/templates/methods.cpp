@@ -573,11 +573,7 @@ static void {{name}}(const v8::FunctionCallbackInfo<v8::Value>& info)
                                        if constructor.is_named_constructor else
                                        '') %}
 v8::Handle<v8::Object> wrapper = info.Holder();
-{% if is_script_wrappable %}
 impl->associateWithWrapper(&{{constructor_class}}::wrapperTypeInfo, wrapper, info.GetIsolate());
-{% else %}
-V8DOMWrapper::associateObjectWithWrapper(info.GetIsolate(), impl.get(), &{{constructor_class}}::wrapperTypeInfo, wrapper);
-{% endif %}
 v8SetReturnValue(info, wrapper);
 {% endmacro %}
 

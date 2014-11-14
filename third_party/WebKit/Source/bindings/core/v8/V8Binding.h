@@ -177,19 +177,6 @@ inline void v8SetReturnValueStringOrUndefined(const CallbackInfo& info, const St
 }
 
 template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappableBase* impl, const WrapperTypeInfo* wrapperTypeInfo)
-{
-    if (UNLIKELY(!impl)) {
-        v8SetReturnValueNull(callbackInfo);
-        return;
-    }
-    if (DOMDataStore::setReturnValue(callbackInfo.GetReturnValue(), impl))
-        return;
-    v8::Handle<v8::Object> wrapper = impl->wrap(callbackInfo.Holder(), callbackInfo.GetIsolate(), wrapperTypeInfo);
-    v8SetReturnValue(callbackInfo, wrapper);
-}
-
-template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ScriptWrappable* impl)
 {
     if (UNLIKELY(!impl)) {
@@ -302,13 +289,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Node* impl, c
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-template<typename CallbackInfo>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ScriptWrappable* impl, const ScriptWrappableBase*)
-{
-    // If the third arg is not ScriptWrappable, there is no fast path.
-    v8SetReturnValue(callbackInfo, impl);
-}
-
 template<typename CallbackInfo, typename T, typename Wrappable>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr<T> impl, const Wrappable* wrappable)
 {
@@ -386,17 +366,6 @@ inline v8::Handle<v8::Value> v8Undefined()
     return v8::Handle<v8::Value>();
 }
 
-inline v8::Handle<v8::Value> toV8(ScriptWrappableBase* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapper(impl, isolate);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-
-    return impl->wrap(creationContext, isolate, wrapperTypeInfo);
-}
-
 inline v8::Handle<v8::Value> toV8(ScriptWrappable* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     if (UNLIKELY(!impl))
@@ -417,12 +386,6 @@ inline v8::Handle<v8::Value> toV8(Node* impl, v8::Handle<v8::Object> creationCon
         return wrapper;
 
     return ScriptWrappable::fromNode(impl)->wrap(creationContext, isolate);
-}
-
-template<typename T>
-inline v8::Handle<v8::Value> toV8(RefPtr<T>& impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl.get(), creationContext, isolate);
 }
 
 template<typename T>

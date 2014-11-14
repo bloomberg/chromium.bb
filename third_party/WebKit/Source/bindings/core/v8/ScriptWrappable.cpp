@@ -46,27 +46,6 @@ private:
 
 } // namespace
 
-// ScriptWrappableBase
-
-v8::Handle<v8::Object> ScriptWrappableBase::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, const WrapperTypeInfo* wrapperTypeInfo)
-{
-    // It's possible that no one except for the new wrapper owns this object at
-    // this moment, so we have to prevent GC to collect this object until the
-    // object gets associated with the wrapper.
-    ScriptWrappableBaseProtector protect(this, wrapperTypeInfo);
-
-    ASSERT(!DOMDataStore::containsWrapper(this, isolate));
-
-    v8::Handle<v8::Object> wrapper = V8DOMWrapper::createWrapper(isolate, creationContext, wrapperTypeInfo, this);
-    if (UNLIKELY(wrapper.IsEmpty()))
-        return wrapper;
-
-    wrapperTypeInfo->installConditionallyEnabledProperties(wrapper, isolate);
-    return V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperTypeInfo, wrapper);
-}
-
-// ScriptWrappable
-
 v8::Handle<v8::Object> ScriptWrappable::wrap(v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     const WrapperTypeInfo* wrapperTypeInfo = this->wrapperTypeInfo();

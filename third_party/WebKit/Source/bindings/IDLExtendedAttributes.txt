@@ -71,7 +71,6 @@ NamedConstructor=*
 NoImplHeader
 NoInterfaceObject
 NotEnumerable
-NotScriptWrappable
 OnlyExposedToPrivateScript
 OverrideBuiltins
 PartialInterfaceImplementedAs=*

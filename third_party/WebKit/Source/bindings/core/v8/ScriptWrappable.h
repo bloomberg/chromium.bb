@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Noncopyable.h"
 #include <v8.h>
 
 namespace blink {
@@ -68,6 +69,8 @@ namespace blink {
 __declspec(align(4))
 #endif
 class ScriptWrappableBase {
+    WTF_MAKE_NONCOPYABLE(ScriptWrappableBase);
+    friend class ScriptWrappable;
 public:
     template<typename T>
     T* toImpl()
@@ -89,19 +92,16 @@ public:
         return this;
     }
 
-    // Creates and returns a new wrapper object.
-    // Do not call this method for a ScriptWrappable or its subclasses. This
-    // non-virtual version of "wrap" is meant only for non-ScriptWrappable
-    // objects. This wrap takes an extra third argument of type WrapperTypeInfo
-    // because ScriptWrappableBase doesn't have wrapperTypeInfo() method unlike
-    // ScriptWrappable.
-    v8::Handle<v8::Object> wrap(v8::Handle<v8::Object> creationContext, v8::Isolate*, const WrapperTypeInfo*);
-
     void assertWrapperSanity(v8::Local<v8::Object> object)
     {
         RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(object.IsEmpty()
             || object->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == toScriptWrappableBase());
     }
+
+private:
+    // Do not allow DOM classes to inherit directly from ScriptWrappableBase.
+    // DOM classes must inherit from ScriptWrappable instead.
+    ScriptWrappableBase() { }
 };
 
 /**
@@ -236,17 +236,9 @@ private:
 // the instance. Also declares a static member of type WrapperTypeInfo, of which
 // the definition is given by the IDL code generator.
 //
-// Every DOM Class T must meet either of the following conditions:
-// - T.idl inherits from [NotScriptWrappable].
-// - T inherits from ScriptWrappable and has DEFINE_WRAPPERTYPEINFO().
-//
-// If a DOM class T does not inherit from ScriptWrappable, you have to write
-// [NotScriptWrappable] in the IDL file as an extended attribute in order to let
-// IDL code generator know that T does not inherit from ScriptWrappable. Note
-// that [NotScriptWrappable] is inheritable.
-//
 // All the derived classes of ScriptWrappable, regardless of directly or
-// indirectly, must write this macro in the class definition.
+// indirectly, must write this macro in the class definition as long as the
+// class has a corresponding .idl file.
 #define DEFINE_WRAPPERTYPEINFO() \
 public: \
     virtual const WrapperTypeInfo* wrapperTypeInfo() const override \

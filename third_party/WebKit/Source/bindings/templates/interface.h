@@ -202,37 +202,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}
      v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
-{% elif not is_script_wrappable %}
-inline v8::Handle<v8::Value> toV8({{cpp_class}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ScriptWrappableBase* scriptWrappableBase = impl ? impl->toScriptWrappableBase() : 0;
-    return toV8(scriptWrappableBase, creationContext, isolate, &{{v8_class}}::wrapperTypeInfo);
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValue(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-    ScriptWrappableBase* scriptWrappableBase = impl ? impl->toScriptWrappableBase() : 0;
-    return v8SetReturnValue(callbackInfo, scriptWrappableBase, &{{v8_class}}::wrapperTypeInfo);
-}
-
-template<typename CallbackInfo>
-inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, {{cpp_class}}* impl)
-{
-    ASSERT(DOMWrapperWorld::current(callbackInfo.GetIsolate()).isMainWorld());
-    // Since |impl| is not ScriptWrappable, it doesn't matter much if it's the
-    // main world or not.
-    return v8SetReturnValue(callbackInfo, impl);
-}
-
-template<typename CallbackInfo, typename Wrappable>
-inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, {{cpp_class}}* impl, Wrappable*)
-{
-    // Since |impl| is not ScriptWrappable, it doesn't matter much if it's the
-    // main world or not.
-    return v8SetReturnValue(callbackInfo, impl);
-}
-
 {% endif %}{# has_custom_to_v8 #}
 {% if has_event_constructor %}
 bool initialize{{cpp_class}}({{cpp_class}}Init&, const Dictionary&, ExceptionState&, const v8::FunctionCallbackInfo<v8::Value>& info);
