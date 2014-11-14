@@ -33,6 +33,7 @@ bool FetchEvent::isReload() const
 
 void FetchEvent::respondWith(ScriptState* scriptState, const ScriptValue& value, ExceptionState& exceptionState)
 {
+    stopImmediatePropagation();
     m_observer->respondWith(scriptState, value, exceptionState);
 }
 
