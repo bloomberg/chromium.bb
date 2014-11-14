@@ -422,7 +422,7 @@ bool CollectGraphicsInfo(gpu::GPUInfo& gpu_info) {
       res = false;
       break;
     case gpu::kCollectInfoNonFatalFailure:
-      VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
       break;
     case gpu::kCollectInfoNone:
       NOTREACHED();
@@ -441,7 +441,7 @@ bool CanAccessNvidiaDeviceFile() {
   bool res = true;
   base::ThreadRestrictions::AssertIOAllowed();
   if (access("/dev/nvidiactl", R_OK) != 0) {
-    VLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
+    DVLOG(1) << "NVIDIA device file /dev/nvidiactl access denied";
     res = false;
   }
   return res;
@@ -452,7 +452,7 @@ void CreateDummyGlContext() {
   scoped_refptr<gfx::GLSurface> surface(
       gfx::GLSurface::CreateOffscreenGLSurface(gfx::Size()));
   if (!surface.get()) {
-    VLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
+    DVLOG(1) << "gfx::GLSurface::CreateOffscreenGLSurface failed";
     return;
   }
 
@@ -461,7 +461,7 @@ void CreateDummyGlContext() {
   scoped_refptr<gfx::GLContext> context(gfx::GLContext::CreateGLContext(
       NULL, surface.get(), gfx::PreferDiscreteGpu));
   if (!context.get()) {
-    VLOG(1) << "gfx::GLContext::CreateGLContext failed";
+    DVLOG(1) << "gfx::GLContext::CreateGLContext failed";
     return;
   }
 
@@ -469,7 +469,7 @@ void CreateDummyGlContext() {
   if (context->MakeCurrent(surface.get())) {
     context->ReleaseCurrent(surface.get());
   } else {
-    VLOG(1)  << "gfx::GLContext::MakeCurrent failed";
+    DVLOG(1)  << "gfx::GLContext::MakeCurrent failed";
   }
 }
 

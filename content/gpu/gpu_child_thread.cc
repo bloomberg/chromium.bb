@@ -198,7 +198,7 @@ void GpuChildThread::OnCollectGraphicsInfo() {
       // TODO(piman): can we signal overall failure?
       break;
     case gpu::kCollectInfoNonFatalFailure:
-      VLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
+      DVLOG(1) << "gpu::CollectGraphicsInfo failed (non-fatal).";
       break;
     case gpu::kCollectInfoNone:
       NOTREACHED();
@@ -235,20 +235,20 @@ void GpuChildThread::OnGetVideoMemoryUsageStats() {
 }
 
 void GpuChildThread::OnClean() {
-  VLOG(1) << "GPU: Removing all contexts";
+  DVLOG(1) << "GPU: Removing all contexts";
   if (gpu_channel_manager_)
     gpu_channel_manager_->LoseAllContexts();
 }
 
 void GpuChildThread::OnCrash() {
-  VLOG(1) << "GPU: Simulating GPU crash";
+  DVLOG(1) << "GPU: Simulating GPU crash";
   // Good bye, cruel world.
   volatile int* it_s_the_end_of_the_world_as_we_know_it = NULL;
   *it_s_the_end_of_the_world_as_we_know_it = 0xdead;
 }
 
 void GpuChildThread::OnHang() {
-  VLOG(1) << "GPU: Simulating GPU hang";
+  DVLOG(1) << "GPU: Simulating GPU hang";
   for (;;) {
     // Do not sleep here. The GPU watchdog timer tracks the amount of user
     // time this thread is using and it doesn't use much while calling Sleep.
@@ -256,7 +256,7 @@ void GpuChildThread::OnHang() {
 }
 
 void GpuChildThread::OnDisableWatchdog() {
-  VLOG(1) << "GPU: Disabling watchdog thread";
+  DVLOG(1) << "GPU: Disabling watchdog thread";
   if (watchdog_thread_.get()) {
     // Disarm the watchdog before shutting down the message loop. This prevents
     // the future posting of tasks to the message loop.
@@ -268,7 +268,7 @@ void GpuChildThread::OnDisableWatchdog() {
 }
 
 void GpuChildThread::OnGpuSwitched() {
-  VLOG(1) << "GPU: GPU has switched";
+  DVLOG(1) << "GPU: GPU has switched";
   // Notify observers in the GPU process.
   ui::GpuSwitchingManager::GetInstance()->NotifyGpuSwitched();
 }
