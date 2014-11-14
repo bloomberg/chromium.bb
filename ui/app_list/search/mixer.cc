@@ -154,19 +154,15 @@ void Mixer::MixAndPublish(const KnownResults& known_results) {
   // Collapse duplicate apps from local and web store.
   RemoveDuplicates(&results);
 
-  DCHECK_GE(kMaxResults, results.size());
-  size_t remaining_slots = kMaxResults - results.size();
-
-  // Reserves at least one slot for the omnibox result. If there is no available
-  // slot for omnibox results, removes the last one from web store.
-  const size_t omnibox_results = groups_[OMNIBOX_GROUP]->results().size();
-  if (!remaining_slots && omnibox_results)
-    results.pop_back();
-
-  remaining_slots = std::min(kMaxResults - results.size(), omnibox_results);
-  results.insert(results.end(),
-                 groups_[OMNIBOX_GROUP]->results().begin(),
-                 groups_[OMNIBOX_GROUP]->results().begin() + remaining_slots);
+  // Fill the remaining slots with omnibox results. Always add at least one
+  // omnibox result (even if there are no more slots; if we over-fill the
+  // vector, the web store and people results will be removed in a later step).
+  const Group& omnibox_group = *groups_[OMNIBOX_GROUP];
+  const size_t omnibox_results =
+      std::min(omnibox_group.results().size(),
+               results.size() < kMaxResults ? kMaxResults - results.size() : 1);
+  results.insert(results.end(), omnibox_group.results().begin(),
+                 omnibox_group.results().begin() + omnibox_results);
 
   std::sort(results.begin(), results.end());
   RemoveDuplicates(&results);

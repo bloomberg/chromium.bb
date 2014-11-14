@@ -128,6 +128,7 @@ class MixerTest : public testing::Test {
   TestSearchProvider* app_provider() { return providers_[0]; }
   TestSearchProvider* omnibox_provider() { return providers_[1]; }
   TestSearchProvider* webstore_provider() { return providers_[2]; }
+  TestSearchProvider* people_provider() { return providers_[3]; }
 
  private:
   scoped_ptr<Mixer> mixer_;
@@ -143,26 +144,35 @@ TEST_F(MixerTest, Basic) {
     const size_t app_results;
     const size_t omnibox_results;
     const size_t webstore_results;
+    const size_t people_results;
     const char* expected;
   } kTestCases[] = {
-        {0, 0, 0, ""},
-        {4, 6, 2, "app0,app1,app2,app3,omnibox0,webstore0"},
-        {10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0"},
-        {0, 10, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5"},
-        {0, 10, 1, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0"},
-        {0, 10, 2, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
-        {1, 10, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4"},
-        {2, 10, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3"},
-        {2, 10, 1, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0"},
-        {2, 10, 2, "app0,app1,omnibox0,omnibox1,webstore0,webstore1"},
-        {2, 0, 2, "app0,app1,webstore0,webstore1"},
-        {0, 0, 0, ""},
-    };
+      {0, 0, 0, 0, ""},
+      {10, 0, 0, 0, "app0,app1,app2,app3"},
+      {0, 0, 10, 0, "webstore0,webstore1"},
+      {0, 0, 0, 10, "people0,people1"},
+      {4, 6, 0, 0, "app0,app1,app2,app3,omnibox0,omnibox1"},
+      {4, 6, 2, 0, "app0,app1,app2,app3,omnibox0,webstore0"},
+      {4, 6, 0, 2, "app0,app1,app2,app3,omnibox0,people0"},
+      {10, 10, 10, 0, "app0,app1,app2,app3,omnibox0,webstore0"},
+      {0, 10, 0, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5"},
+      {0, 10, 1, 0, "omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,webstore0"},
+      {0, 10, 2, 0, "omnibox0,omnibox1,omnibox2,omnibox3,webstore0,webstore1"},
+      {1, 10, 0, 0, "app0,omnibox0,omnibox1,omnibox2,omnibox3,omnibox4"},
+      {2, 10, 0, 0, "app0,app1,omnibox0,omnibox1,omnibox2,omnibox3"},
+      {2, 10, 1, 0, "app0,app1,omnibox0,omnibox1,omnibox2,webstore0"},
+      {2, 10, 2, 0, "app0,app1,omnibox0,omnibox1,webstore0,webstore1"},
+      {2, 0, 2, 0, "app0,app1,webstore0,webstore1"},
+      {10, 0, 10, 10, "app0,app1,app2,app3,webstore0,webstore1"},
+      {10, 10, 10, 10, "app0,app1,app2,app3,omnibox0,webstore0"},
+      {0, 0, 0, 0, ""},
+  };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
     app_provider()->set_count(kTestCases[i].app_results);
     omnibox_provider()->set_count(kTestCases[i].omnibox_results);
     webstore_provider()->set_count(kTestCases[i].webstore_results);
+    people_provider()->set_count(kTestCases[i].people_results);
     RunQuery();
 
     EXPECT_EQ(kTestCases[i].expected, GetResults()) << "Case " << i;
