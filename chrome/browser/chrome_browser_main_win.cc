@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
@@ -36,6 +37,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/env_vars.h"
 #include "chrome/common/terminate_on_heap_corruption_experiment_win.h"
@@ -47,7 +49,10 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/shell_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/utility_process_host.h"
+#include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 #include "content/public/common/main_function_params.h"
 #include "installer_util_strings/installer_util_strings.h"
 #include "ui/base/cursor/cursor_loader_win.h"
@@ -57,6 +62,7 @@
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
+#include "ui/gfx/win/direct_write.h"
 #include "ui/strings/grit/app_locale_settings.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -99,6 +105,14 @@ class TranslationDelegate : public installer::TranslationDelegate {
 
 bool IsSafeModeStart() {
   return ::GetEnvironmentVariableA(chrome::kSafeModeEnvVar, NULL, 0) != 0;
+}
+
+void ExecuteFontCacheBuildTask(const base::FilePath& path) {
+  base::WeakPtr<content::UtilityProcessHost> utility_process_host(
+      content::UtilityProcessHost::Create(NULL, NULL)->AsWeakPtr());
+  utility_process_host->DisableSandbox();
+  utility_process_host->Send(
+      new ChromeUtilityHostMsg_BuildDirectWriteFontCache(path));
 }
 
 }  // namespace
@@ -246,6 +260,24 @@ void ChromeBrowserMainPartsWin::ShowMissingLocaleMessageBox() {
                  base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataMessage),
                  base::ASCIIToUTF16(chrome_browser::kMissingLocaleDataTitle),
                  MB_OK | MB_ICONERROR | MB_TOPMOST);
+}
+
+void ChromeBrowserMainPartsWin::PostProfileInit() {
+  ChromeBrowserMainParts::PostProfileInit();
+
+  // DirectWrite support is mainly available Windows 7 and up.
+  if (gfx::win::ShouldUseDirectWrite()) {
+    base::FilePath path(
+      profile()->GetPath().AppendASCII(content::kFontCacheSharedSectionName));
+    // This function will create a read only section if cache file exists
+    // otherwise it will spawn utility process to build cache file, which will
+    // be used during next browser start/postprofileinit.
+    if (!content::LoadFontCache(path)) {
+      content::BrowserThread::PostTask(
+          content::BrowserThread::IO, FROM_HERE,
+          base::Bind(ExecuteFontCacheBuildTask, path));
+    }
+  }
 }
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {

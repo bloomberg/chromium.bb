@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/dwrite_font_platform_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 
 #include <dwrite.h>
 #include <map>
@@ -33,7 +33,6 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/dwrite_font_cache_win.h"
 
 namespace {
 
@@ -1173,12 +1172,8 @@ bool LoadFontCache(const base::FilePath& path) {
   return true;
 }
 
-// Assumption for this function is that it will get called through a posted task
-// on FILE thread.
-bool BuildAndLoadFontCache(const base::FilePath& file) {
-  if (BuildFontCacheInternal(file.value().c_str()))
-    return LoadFontCache(file);
-  return false;
+bool BuildFontCache(const base::FilePath& file) {
+  return BuildFontCacheInternal(file.value().c_str());
 }
 
 }  // namespace content
