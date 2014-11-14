@@ -432,22 +432,27 @@ void InspectorDOMDebuggerAgent::updateSubtreeBreakpoints(Node* node, uint32_t ro
         updateSubtreeBreakpoints(child, newRootMask, set);
 }
 
-void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> eventData, bool synchronous)
+void InspectorDOMDebuggerAgent::pauseOnNativeEventIfNeeded(PassRefPtr<JSONObject> prpEventData, bool synchronous)
 {
-    if (!eventData)
+    if (!prpEventData)
         return;
+    RefPtr<JSONObject> eventData = prpEventData;
+    InspectorFrontend::Debugger::Reason::Enum breakReason = InspectorFrontend::Debugger::Reason::EventListener;
+    if (m_pauseInNextEventListener) {
+        m_pauseInNextEventListener = false;
+        breakReason = InspectorFrontend::Debugger::Reason::Other;
+        eventData = nullptr;
+    }
     if (synchronous)
-        m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::EventListener, eventData);
+        m_debuggerAgent->breakProgram(breakReason, eventData.release());
     else
-        m_debuggerAgent->schedulePauseOnNextStatement(InspectorFrontend::Debugger::Reason::EventListener, eventData);
+        m_debuggerAgent->schedulePauseOnNextStatement(breakReason, eventData.release());
 }
 
 PassRefPtr<JSONObject> InspectorDOMDebuggerAgent::preparePauseOnNativeEventData(const String& eventName, const String* targetName)
 {
     String fullEventName = (targetName ? listenerEventCategoryType : instrumentationEventCategoryType) + eventName;
-    if (m_pauseInNextEventListener) {
-        m_pauseInNextEventListener = false;
-    } else {
+    if (!m_pauseInNextEventListener) {
         RefPtr<JSONObject> eventListenerBreakpoints = m_state->getObject(DOMDebuggerAgentState::eventListenerBreakpoints);
         JSONObject::iterator it = eventListenerBreakpoints->find(fullEventName);
         if (it == eventListenerBreakpoints->end())
