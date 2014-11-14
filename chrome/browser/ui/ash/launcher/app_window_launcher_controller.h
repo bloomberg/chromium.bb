@@ -51,7 +51,8 @@ class AppWindowLauncherController
 
   // Overridden from AppWindowRegistry::Observer:
   void OnAppWindowIconChanged(extensions::AppWindow* app_window) override;
-  void OnAppWindowShown(extensions::AppWindow* app_window) override;
+  void OnAppWindowShown(extensions::AppWindow* app_window,
+                        bool was_hidden) override;
   void OnAppWindowHidden(extensions::AppWindow* app_window) override;
 
   // Overriden from aura::WindowObserver:

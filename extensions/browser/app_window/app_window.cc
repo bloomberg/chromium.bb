@@ -656,6 +656,7 @@ void AppWindow::SetContentSizeConstraints(const gfx::Size& min_size,
 }
 
 void AppWindow::Show(ShowType show_type) {
+  bool was_hidden = is_hidden_ || !has_been_shown_;
   is_hidden_ = false;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -676,7 +677,7 @@ void AppWindow::Show(ShowType show_type) {
       GetBaseWindow()->ShowInactive();
       break;
   }
-  AppWindowRegistry::Get(browser_context_)->AppWindowShown(this);
+  AppWindowRegistry::Get(browser_context_)->AppWindowShown(this, was_hidden);
 
   has_been_shown_ = true;
   SendOnWindowShownIfShown();

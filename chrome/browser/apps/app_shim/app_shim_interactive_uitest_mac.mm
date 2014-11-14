@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 #include <vector>
 
+#include "apps/app_lifetime_monitor_factory.h"
 #include "apps/switches.h"
 #include "base/auto_reset.h"
 #include "base/callback.h"
@@ -150,6 +151,37 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
   DISALLOW_COPY_AND_ASSIGN(WindowedAppShimLaunchObserver);
 };
 
+class AppLifetimeMonitorObserver : public apps::AppLifetimeMonitor::Observer {
+ public:
+  AppLifetimeMonitorObserver(Profile* profile)
+      : profile_(profile), activated_count_(0), deactivated_count_(0) {
+    apps::AppLifetimeMonitorFactory::GetForProfile(profile_)->AddObserver(this);
+  }
+  virtual ~AppLifetimeMonitorObserver() {
+    apps::AppLifetimeMonitorFactory::GetForProfile(profile_)
+        ->RemoveObserver(this);
+  }
+
+  int activated_count() { return activated_count_; }
+  int deactivated_count() { return deactivated_count_; }
+
+ protected:
+  // AppLifetimeMonitor::Observer overrides:
+  void OnAppActivated(Profile* profile, const std::string& app_id) override {
+    ++activated_count_;
+  }
+  void OnAppDeactivated(Profile* profile, const std::string& app_id) override {
+    ++deactivated_count_;
+  }
+
+ private:
+  Profile* profile_;
+  int activated_count_;
+  int deactivated_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppLifetimeMonitorObserver);
+};
+
 NSString* GetBundleID(const base::FilePath& shim_path) {
   base::FilePath plist_path = shim_path.Append("Contents").Append("Info.plist");
   NSMutableDictionary* plist = [NSMutableDictionary
@@ -162,6 +194,30 @@ bool HasAppShimHost(Profile* profile, const std::string& app_id) {
       ->app_shim_host_manager()
       ->extension_app_shim_handler()
       ->FindHost(profile, app_id);
+}
+
+base::FilePath GetAppShimPath(Profile* profile,
+                              const extensions::Extension* app) {
+  // Use a WebAppShortcutCreator to get the path.
+  web_app::WebAppShortcutCreator shortcut_creator(
+      web_app::GetWebAppDataDirectory(profile->GetPath(), app->id(), GURL()),
+      web_app::ShortcutInfoForExtensionAndProfile(app, profile),
+      extensions::FileHandlersInfo());
+  return shortcut_creator.GetInternalShortcutPath();
+}
+
+void UpdateAppAndAwaitShimCreation(Profile* profile,
+                                   const extensions::Extension* app,
+                                   const base::FilePath& shim_path) {
+  // Create the internal app shim by simulating an app update. FilePathWatcher
+  // is used to wait for file operations on the shim to be finished before
+  // attempting to launch it. Since all of the file operations are done in the
+  // same event on the FILE thread, everything will be done by the time the
+  // watcher's callback is executed.
+  scoped_refptr<WindowedFilePathWatcher> file_watcher =
+      new WindowedFilePathWatcher(shim_path);
+  web_app::UpdateAllShortcuts(base::string16(), profile, app);
+  file_watcher->Wait();
 }
 
 }  // namespace
@@ -224,9 +280,11 @@ namespace apps {
 // Shims require static libraries http://crbug.com/386024.
 #if defined(COMPONENT_BUILD)
 #define MAYBE_Launch DISABLED_Launch
+#define MAYBE_ShowWindow DISABLED_ShowWindow
 #define MAYBE_RebuildShim DISABLED_RebuildShim
 #else
 #define MAYBE_Launch Launch
+#define MAYBE_ShowWindow ShowWindow
 #define MAYBE_RebuildShim RebuildShim
 #endif
 
@@ -234,26 +292,12 @@ namespace apps {
 // These two cases are combined because the time to run the test is dominated
 // by loading the extension and creating the shim.
 IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
-  // Install the app.
   const extensions::Extension* app = InstallPlatformApp("minimal");
 
-  // Use a WebAppShortcutCreator to get the path.
-  web_app::WebAppShortcutCreator shortcut_creator(
-      web_app::GetWebAppDataDirectory(profile()->GetPath(), app->id(), GURL()),
-      web_app::ShortcutInfoForExtensionAndProfile(app, profile()),
-      extensions::FileHandlersInfo());
-  base::FilePath shim_path = shortcut_creator.GetInternalShortcutPath();
+  base::FilePath shim_path = GetAppShimPath(profile(), app);
   EXPECT_FALSE(base::PathExists(shim_path));
 
-  // Create the internal app shim by simulating an app update. FilePathWatcher
-  // is used to wait for file operations on the shim to be finished before
-  // attempting to launch it. Since all of the file operations are done in the
-  // same event on the FILE thread, everything will be done by the time the
-  // watcher's callback is executed.
-  scoped_refptr<WindowedFilePathWatcher> file_watcher =
-      new WindowedFilePathWatcher(shim_path);
-  web_app::UpdateAllShortcuts(base::string16(), profile(), app);
-  file_watcher->Wait();
+  UpdateAppAndAwaitShimCreation(profile(), app, shim_path);
   ASSERT_TRUE(base::PathExists(shim_path));
   NSString* bundle_id = GetBundleID(shim_path);
 
@@ -312,6 +356,125 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
         base::WaitForSingleProcess(shim_pid, TestTimeouts::action_timeout()));
 
     EXPECT_FALSE(GetFirstAppWindow());
+    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  }
+}
+
+// Test that the shim's lifetime depends on the visibility of windows. I.e. the
+// shim is only active when there are visible windows.
+IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_ShowWindow) {
+  const extensions::Extension* app = InstallPlatformApp("hidden");
+
+  base::FilePath shim_path = GetAppShimPath(profile(), app);
+  EXPECT_FALSE(base::PathExists(shim_path));
+
+  UpdateAppAndAwaitShimCreation(profile(), app, shim_path);
+  ASSERT_TRUE(base::PathExists(shim_path));
+  NSString* bundle_id = GetBundleID(shim_path);
+
+  // It's impractical to confirm that the shim did not launch by timing out, so
+  // instead we watch AppLifetimeMonitor::Observer::OnAppActivated.
+  AppLifetimeMonitorObserver lifetime_observer(profile());
+
+  // Launch the app. It should create a hidden window, but the shim should not
+  // launch.
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    LaunchPlatformApp(app);
+    EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+  }
+  extensions::AppWindow* window_1 = GetFirstAppWindow();
+  ASSERT_TRUE(window_1);
+  EXPECT_TRUE(window_1->is_hidden());
+  EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  EXPECT_EQ(0, lifetime_observer.activated_count());
+
+  // Showing the window causes the shim to launch.
+  {
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWorkspaceDidLaunchApplicationNotification
+                    andBundleId:bundle_id]);
+    WindowedAppShimLaunchObserver observer(app->id());
+    window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
+    [ns_observer wait];
+    observer.Wait();
+    EXPECT_EQ(1, lifetime_observer.activated_count());
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+  }
+
+  // Hiding the window causes the shim to quit.
+  {
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWorkspaceDidTerminateApplicationNotification
+                    andBundleId:bundle_id]);
+    window_1->Hide();
+    [ns_observer wait];
+    EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  }
+
+  // Launch a second window. It should not launch the shim.
+  {
+    ExtensionTestMessageListener launched_listener("Launched", false);
+    LaunchPlatformApp(app);
+    EXPECT_TRUE(launched_listener.WaitUntilSatisfied());
+  }
+  const extensions::AppWindowRegistry::AppWindowList& app_windows =
+      extensions::AppWindowRegistry::Get(profile())->app_windows();
+  EXPECT_EQ(2u, app_windows.size());
+  extensions::AppWindow* window_2 = app_windows.front();
+  EXPECT_NE(window_1, window_2);
+  ASSERT_TRUE(window_2);
+  EXPECT_TRUE(window_2->is_hidden());
+  EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
+  EXPECT_EQ(1, lifetime_observer.activated_count());
+
+  // Showing one of the windows should launch the shim.
+  {
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWorkspaceDidLaunchApplicationNotification
+                    andBundleId:bundle_id]);
+    WindowedAppShimLaunchObserver observer(app->id());
+    window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
+    [ns_observer wait];
+    observer.Wait();
+    EXPECT_EQ(2, lifetime_observer.activated_count());
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+    EXPECT_TRUE(window_2->is_hidden());
+  }
+
+  // Showing the other window does nothing.
+  {
+    window_2->Show(extensions::AppWindow::SHOW_INACTIVE);
+    EXPECT_EQ(2, lifetime_observer.activated_count());
+  }
+
+  // Showing an already visible window does nothing.
+  {
+    window_1->Show(extensions::AppWindow::SHOW_INACTIVE);
+    EXPECT_EQ(2, lifetime_observer.activated_count());
+  }
+
+  // Hiding one window does nothing.
+  {
+    AppLifetimeMonitorObserver deactivate_observer(profile());
+    window_1->Hide();
+    EXPECT_EQ(0, deactivate_observer.deactivated_count());
+  }
+
+  // Hiding other window causes the shim to quit.
+  {
+    AppLifetimeMonitorObserver deactivate_observer(profile());
+    EXPECT_TRUE(HasAppShimHost(profile(), app->id()));
+    base::scoped_nsobject<WindowedNSNotificationObserver> ns_observer(
+        [[WindowedNSNotificationObserver alloc]
+            initForNotification:NSWorkspaceDidTerminateApplicationNotification
+                    andBundleId:bundle_id]);
+    window_2->Hide();
+    [ns_observer wait];
+    EXPECT_EQ(1, deactivate_observer.deactivated_count());
     EXPECT_FALSE(HasAppShimHost(profile(), app->id()));
   }
 }

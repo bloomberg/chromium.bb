@@ -91,7 +91,8 @@ void MultiProfileAppWindowLauncherController::OnAppWindowAdded(
 }
 
 void MultiProfileAppWindowLauncherController::OnAppWindowShown(
-    extensions::AppWindow* app_window) {
+    extensions::AppWindow* app_window,
+    bool was_hidden) {
   if (!ControlsWindow(app_window->GetNativeWindow()))
     return;
 

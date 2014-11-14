@@ -81,21 +81,24 @@ void AppLifetimeMonitor::Observe(int type,
 }
 
 void AppLifetimeMonitor::OnAppWindowRemoved(AppWindow* app_window) {
-  if (!HasVisibleAppWindows(app_window))
+  if (!HasOtherVisibleAppWindows(app_window))
     NotifyAppDeactivated(app_window->extension_id());
 }
 
 void AppLifetimeMonitor::OnAppWindowHidden(AppWindow* app_window) {
-  if (!HasVisibleAppWindows(app_window))
+  if (!HasOtherVisibleAppWindows(app_window))
     NotifyAppDeactivated(app_window->extension_id());
 }
 
-void AppLifetimeMonitor::OnAppWindowShown(AppWindow* app_window) {
+void AppLifetimeMonitor::OnAppWindowShown(AppWindow* app_window,
+                                          bool was_hidden) {
   if (app_window->window_type() != AppWindow::WINDOW_TYPE_DEFAULT)
     return;
 
-  if (HasVisibleAppWindows(app_window))
+  // The app is being activated if this is the first window to become visible.
+  if (was_hidden && !HasOtherVisibleAppWindows(app_window)) {
     NotifyAppActivated(app_window->extension_id());
+  }
 }
 
 void AppLifetimeMonitor::Shutdown() {
@@ -106,7 +109,8 @@ void AppLifetimeMonitor::Shutdown() {
     app_window_registry->RemoveObserver(this);
 }
 
-bool AppLifetimeMonitor::HasVisibleAppWindows(AppWindow* app_window) const {
+bool AppLifetimeMonitor::HasOtherVisibleAppWindows(
+    AppWindow* app_window) const {
   AppWindowRegistry::AppWindowList windows =
       AppWindowRegistry::Get(app_window->browser_context())
           ->GetAppWindowsForApp(app_window->extension_id());
@@ -114,7 +118,7 @@ bool AppLifetimeMonitor::HasVisibleAppWindows(AppWindow* app_window) const {
   for (AppWindowRegistry::AppWindowList::const_iterator i = windows.begin();
        i != windows.end();
        ++i) {
-    if (!(*i)->is_hidden())
+    if (*i != app_window && !(*i)->is_hidden())
       return true;
   }
   return false;

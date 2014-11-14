@@ -99,7 +99,8 @@ void AppWindowLauncherController::OnAppWindowIconChanged(
                                app_window->app_icon().AsImageSkia());
 }
 
-void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window) {
+void AppWindowLauncherController::OnAppWindowShown(AppWindow* app_window,
+                                                   bool was_hidden) {
   aura::Window* window = app_window->GetNativeWindow();
   if (!ControlsWindow(window))
     return;

@@ -44,7 +44,7 @@ class AppWindowRegistry : public KeyedService {
     // it not visible.
     virtual void OnAppWindowHidden(AppWindow* app_window);
     // Called just after a app window was shown.
-    virtual void OnAppWindowShown(AppWindow* app_window);
+    virtual void OnAppWindowShown(AppWindow* app_window, bool was_hidden);
 
    protected:
     virtual ~Observer();
@@ -67,7 +67,7 @@ class AppWindowRegistry : public KeyedService {
   // Called by |app_window| when it is activated.
   void AppWindowActivated(AppWindow* app_window);
   void AppWindowHidden(AppWindow* app_window);
-  void AppWindowShown(AppWindow* app_window);
+  void AppWindowShown(AppWindow* app_window, bool was_hidden);
   void RemoveAppWindow(AppWindow* app_window);
 
   void AddObserver(Observer* observer);

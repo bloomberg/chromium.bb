@@ -60,7 +60,8 @@ void AppWindowRegistry::Observer::OnAppWindowRemoved(AppWindow* app_window) {
 void AppWindowRegistry::Observer::OnAppWindowHidden(AppWindow* app_window) {
 }
 
-void AppWindowRegistry::Observer::OnAppWindowShown(AppWindow* app_window) {
+void AppWindowRegistry::Observer::OnAppWindowShown(AppWindow* app_window,
+                                                   bool was_shown) {
 }
 
 AppWindowRegistry::Observer::~Observer() {
@@ -100,8 +101,9 @@ void AppWindowRegistry::AppWindowHidden(AppWindow* app_window) {
   FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowHidden(app_window));
 }
 
-void AppWindowRegistry::AppWindowShown(AppWindow* app_window) {
-  FOR_EACH_OBSERVER(Observer, observers_, OnAppWindowShown(app_window));
+void AppWindowRegistry::AppWindowShown(AppWindow* app_window, bool was_hidden) {
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnAppWindowShown(app_window, was_hidden));
 }
 
 void AppWindowRegistry::RemoveAppWindow(AppWindow* app_window) {
