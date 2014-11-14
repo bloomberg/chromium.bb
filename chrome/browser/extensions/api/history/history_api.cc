@@ -204,6 +204,7 @@ HistoryAPI::~HistoryAPI() {
 }
 
 void HistoryAPI::Shutdown() {
+  history_event_router_.reset();
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 
@@ -218,6 +219,7 @@ BrowserContextKeyedAPIFactory<HistoryAPI>* HistoryAPI::GetFactoryInstance() {
 template <>
 void BrowserContextKeyedAPIFactory<HistoryAPI>::DeclareFactoryDependencies() {
   DependsOn(ActivityLog::GetFactoryInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 }
 
