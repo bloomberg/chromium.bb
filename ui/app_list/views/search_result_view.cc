@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/views/progress_bar_view.h"
 #include "ui/app_list/views/search_result_actions_view.h"
@@ -209,7 +210,8 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect content_rect(rect);
-  content_rect.set_height(rect.height() - kBorderSize);
+  if (!switches::IsExperimentalAppListEnabled())
+    content_rect.set_height(rect.height() - kBorderSize);
 
   const bool selected = list_view_->IsResultViewSelected(this);
   const bool hover = state() == STATE_HOVERED || state() == STATE_PRESSED;
@@ -217,7 +219,7 @@ void SearchResultView::OnPaint(gfx::Canvas* canvas) {
     canvas->FillRect(content_rect, kSelectedColor);
   else if (hover)
     canvas->FillRect(content_rect, kHighlightedColor);
-  else
+  else if (!switches::IsExperimentalAppListEnabled())
     canvas->FillRect(content_rect, kContentsBackgroundColor);
 
   gfx::Rect border_bottom = gfx::SubtractRects(rect, content_rect);

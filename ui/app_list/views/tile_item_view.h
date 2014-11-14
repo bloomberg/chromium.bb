@@ -28,6 +28,8 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   TileItemView();
   ~TileItemView() override;
 
+  void SetTitleBackgroundColor(SkColor color);
+
  protected:
   void SetIcon(const gfx::ImageSkia& icon);
 

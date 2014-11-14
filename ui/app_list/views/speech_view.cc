@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkPath.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/speech_ui_model.h"
@@ -28,8 +29,6 @@ namespace app_list {
 
 namespace {
 
-const int kShadowOffset = 1;
-const int kShadowBlur = 4;
 const int kSpeechViewMaxHeight = 300;
 const int kMicButtonMargin = 12;
 const int kTextMargin = 32;
@@ -41,7 +40,6 @@ const int kIndicatorCenterOffsetY = -1;
 const int kIndicatorRadiusMinOffset = -3;
 const int kIndicatorRadiusMax = 100;
 const int kIndicatorAnimationDuration = 100;
-const SkColor kShadowColor = SkColorSetARGB(0.3 * 255, 0, 0, 0);
 const SkColor kHintTextColor = SkColorSetRGB(119, 119, 119);
 const SkColor kResultTextColor = SkColorSetRGB(178, 178, 178);
 const SkColor kSoundLevelIndicatorColor = SkColorSetRGB(219, 219, 219);
@@ -111,9 +109,8 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
     : delegate_(delegate),
       logo_(NULL) {
   SetBorder(scoped_ptr<views::Border>(
-      new views::ShadowBorder(kShadowBlur,
-                              kShadowColor,
-                              kShadowOffset,  // Vertical offset.
+      new views::ShadowBorder(kCardShadowBlur, kCardShadowColor,
+                              kCardShadowYOffset,  // Vertical offset.
                               0)));
 
   // To keep the painting order of the border and the background, this class

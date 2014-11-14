@@ -50,6 +50,11 @@ const float kFolderBubbleRadius = 22;
 const float kFolderShadowRadius = 22.5;
 const float kFolderShadowOffsetY = 1;
 
+const int kCardShadowBlur = 4;
+const int kCardShadowYOffset = 1;
+const SkColor kCardShadowColor = SkColorSetARGB(0x4C, 0, 0, 0);
+const SkColor kCardBackgroundColor = SK_ColorWHITE;
+
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;
 

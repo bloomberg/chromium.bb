@@ -35,8 +35,6 @@ TileItemView::TileItemView()
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetEnabledColor(kGridTitleColor);
-  title_->set_background(views::Background::CreateSolidBackground(
-      kLabelBackgroundColor));
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -45,6 +43,10 @@ TileItemView::TileItemView()
 }
 
 TileItemView::~TileItemView() {
+}
+
+void TileItemView::SetTitleBackgroundColor(SkColor color) {
+  title_->set_background(views::Background::CreateSolidBackground(color));
 }
 
 void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
