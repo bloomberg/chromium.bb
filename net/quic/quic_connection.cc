@@ -189,6 +189,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
                                const PacketWriterFactory& writer_factory,
                                bool owns_writer,
                                bool is_server,
+                               bool is_secure,
                                const QuicVersionVector& supported_versions)
     : framer_(supported_versions, helper->GetClock()->ApproximateNow(),
               is_server),
@@ -222,9 +223,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       timeout_alarm_(helper->CreateAlarm(new TimeoutAlarm(this))),
       ping_alarm_(helper->CreateAlarm(new PingAlarm(this))),
       packet_generator_(connection_id_, &framer_, random_generator_, this),
-      idle_network_timeout_(FLAGS_quic_unified_timeouts ?
-          QuicTime::Delta::Infinite() :
-          QuicTime::Delta::FromSeconds(kDefaultIdleTimeoutSecs)),
+      idle_network_timeout_(QuicTime::Delta::Infinite()),
       overall_connection_timeout_(QuicTime::Delta::Infinite()),
       time_of_last_received_packet_(clock_->ApproximateNow()),
       time_of_last_sent_new_packet_(clock_->ApproximateNow()),
@@ -240,12 +239,10 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
       peer_port_changed_(false),
       self_ip_changed_(false),
       self_port_changed_(false),
-      can_truncate_connection_ids_(true) {
+      can_truncate_connection_ids_(true),
+      is_secure_(is_secure) {
   DVLOG(1) << ENDPOINT << "Created connection with connection_id: "
            << connection_id;
-  if (!FLAGS_quic_unified_timeouts) {
-    timeout_alarm_->Set(clock_->ApproximateNow().Add(idle_network_timeout_));
-  }
   framer_.set_visitor(this);
   framer_.set_received_entropy_calculator(&received_packet_manager_);
   stats_.connection_creation_time = clock_->ApproximateNow();
@@ -266,17 +263,14 @@ QuicConnection::~QuicConnection() {
 }
 
 void QuicConnection::SetFromConfig(const QuicConfig& config) {
-  if (FLAGS_quic_unified_timeouts) {
-    if (config.negotiated()) {
-      SetNetworkTimeouts(QuicTime::Delta::Infinite(),
-                         config.IdleConnectionStateLifetime());
-    } else {
-      SetNetworkTimeouts(config.max_time_before_crypto_handshake(),
-                         config.max_idle_time_before_crypto_handshake());
-    }
+  if (config.negotiated()) {
+    SetNetworkTimeouts(QuicTime::Delta::Infinite(),
+                       config.IdleConnectionStateLifetime());
   } else {
-    SetIdleNetworkTimeout(config.IdleConnectionStateLifetime());
+    SetNetworkTimeouts(config.max_time_before_crypto_handshake(),
+                       config.max_idle_time_before_crypto_handshake());
   }
+
   sent_packet_manager_.SetFromConfig(config);
   if (FLAGS_allow_truncated_connection_ids_for_quic &&
       config.HasReceivedBytesForConnectionId() &&
@@ -1898,11 +1892,11 @@ void QuicConnection::CloseFecGroupsBefore(
   }
 }
 
-size_t QuicConnection::max_packet_length() const {
+QuicByteCount QuicConnection::max_packet_length() const {
   return packet_generator_.max_packet_length();
 }
 
-void QuicConnection::set_max_packet_length(size_t length) {
+void QuicConnection::set_max_packet_length(QuicByteCount length) {
   return packet_generator_.set_max_packet_length(length);
 }
 
@@ -1926,32 +1920,6 @@ bool QuicConnection::CanWriteStreamData() {
   // write more.
   return ShouldGeneratePacket(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                               pending_handshake);
-}
-
-void QuicConnection::SetIdleNetworkTimeout(QuicTime::Delta timeout) {
-  // Adjust the idle timeout on client and server to prevent clients from
-  // sending requests to servers which have already closed the connection.
-  if (is_server_) {
-    timeout = timeout.Add(QuicTime::Delta::FromSeconds(3));
-  } else if (timeout > QuicTime::Delta::FromSeconds(1)) {
-    timeout = timeout.Subtract(QuicTime::Delta::FromSeconds(1));
-  }
-
-  if (timeout < idle_network_timeout_) {
-    idle_network_timeout_ = timeout;
-    SetTimeoutAlarm();
-  } else {
-    idle_network_timeout_ = timeout;
-  }
-}
-
-void QuicConnection::SetOverallConnectionTimeout(QuicTime::Delta timeout) {
-  if (timeout < overall_connection_timeout_) {
-    overall_connection_timeout_ = timeout;
-    SetTimeoutAlarm();
-  } else {
-    overall_connection_timeout_ = timeout;
-  }
 }
 
 void QuicConnection::SetNetworkTimeouts(QuicTime::Delta overall_timeout,

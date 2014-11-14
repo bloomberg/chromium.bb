@@ -95,8 +95,7 @@ class VisitorShim : public QuicConnectionVisitorInterface {
   QuicSession* session_;
 };
 
-QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config,
-                         bool is_secure)
+QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config)
     : connection_(connection),
       visitor_shim_(new VisitorShim(this)),
       config_(config),
@@ -106,8 +105,7 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config,
       error_(QUIC_NO_ERROR),
       goaway_received_(false),
       goaway_sent_(false),
-      has_pending_handshake_(false),
-      is_secure_(is_secure) {
+      has_pending_handshake_(false) {
   if (connection_->version() == QUIC_VERSION_19) {
     flow_controller_.reset(new QuicFlowController(
         connection_.get(), 0, is_server(), kDefaultFlowControlSendWindow,
@@ -124,10 +122,6 @@ QuicSession::QuicSession(QuicConnection* connection, const QuicConfig& config,
 void QuicSession::InitializeSession() {
   connection_->set_visitor(visitor_shim_.get());
   connection_->SetFromConfig(config_);
-  if (!FLAGS_quic_unified_timeouts && connection_->connected()) {
-    connection_->SetOverallConnectionTimeout(
-        config_.max_time_before_crypto_handshake());
-  }
   headers_stream_.reset(new QuicHeadersStream(this));
 }
 
@@ -569,9 +563,6 @@ void QuicSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
       // Discard originally encrypted packets, since they can't be decrypted by
       // the peer.
       connection_->NeuterUnencryptedPackets();
-      if (!FLAGS_quic_unified_timeouts) {
-        connection_->SetOverallConnectionTimeout(QuicTime::Delta::Infinite());
-      }
       if (!FLAGS_quic_allow_more_open_streams) {
         max_open_streams_ = config_.MaxStreamsPerConnection();
       }

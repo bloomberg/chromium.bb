@@ -65,8 +65,9 @@ class TestQuicConnection : public QuicConnection {
                        address,
                        helper,
                        writer_factory,
-                       true  /* owns_writer */,
+                       true   /* owns_writer */,
                        false  /* is_server */,
+                       false  /* is_secure */,
                        versions) {
   }
 
@@ -215,7 +216,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         WillRepeatedly(Return(QuicTime::Delta::Zero()));
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate()).WillRepeatedly(
         Return(QuicBandwidth::Zero()));
-    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
+    EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _, _)).Times(AnyNumber());
     helper_.reset(new QuicConnectionHelper(runner_.get(), &clock_,
                                            &random_generator_));
     TestPacketWriterFactory writer_factory(socket);
@@ -232,7 +233,6 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                               &transport_security_state_,
                               make_scoped_ptr((QuicServerInfo*)nullptr),
                               DefaultQuicConfig(),
-                              /*is_secure=*/false,
                               base::MessageLoop::current()->
                                   message_loop_proxy().get(),
                               nullptr));

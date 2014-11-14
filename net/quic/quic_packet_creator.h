@@ -212,11 +212,11 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
     next_sequence_number_length_ = length;
   }
 
-  size_t max_packet_length() const {
+  QuicByteCount max_packet_length() const {
     return max_packet_length_;
   }
 
-  void set_max_packet_length(size_t length) {
+  void set_max_packet_length(QuicByteCount length) {
     // |max_packet_length_| should not be changed mid-packet or mid-FEC group.
     DCHECK(fec_group_.get() == nullptr && queued_frames_.empty());
     max_packet_length_ = length;
@@ -272,7 +272,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // packet.
   bool send_version_in_packet_;
   // Maximum length including headers and encryption (UDP payload length.)
-  size_t max_packet_length_;
+  QuicByteCount max_packet_length_;
   // 0 indicates FEC is disabled.
   size_t max_packets_per_fec_group_;
   // Length of connection_id to send over the wire.

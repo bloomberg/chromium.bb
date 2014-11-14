@@ -357,11 +357,11 @@ QuicPacketSequenceNumber QuicPacketGenerator::sequence_number() const {
   return packet_creator_.sequence_number();
 }
 
-size_t QuicPacketGenerator::max_packet_length() const {
+QuicByteCount QuicPacketGenerator::max_packet_length() const {
   return packet_creator_.max_packet_length();
 }
 
-void QuicPacketGenerator::set_max_packet_length(size_t length) {
+void QuicPacketGenerator::set_max_packet_length(QuicByteCount length) {
   packet_creator_.set_max_packet_length(length);
 }
 

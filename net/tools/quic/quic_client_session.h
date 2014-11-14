@@ -25,9 +25,7 @@ namespace tools {
 
 class QuicClientSession : public QuicClientSessionBase {
  public:
-  QuicClientSession(const QuicConfig& config,
-                    QuicConnection* connection,
-                    bool is_secure);
+  QuicClientSession(const QuicConfig& config, QuicConnection* connection);
   ~QuicClientSession() override;
 
   void InitializeSession(const QuicServerId& server_id,

@@ -49,6 +49,10 @@ static const size_t kNumMinRttSamplesAfterQuiescence = 2;
 // Number of unpaced packets to send after quiescence.
 static const size_t kInitialUnpacedBurst = 10;
 
+// Fraction of the receive buffer that can be used for encrypted bytes.
+// Allows a 5% overhead for IP and UDP framing, as well as ack only packets.
+static const float kUsableRecieveBufferFraction = 0.95f;
+
 bool HasCryptoHandshake(const TransmissionInfo& transmission_info) {
   if (transmission_info.retransmittable_frames == nullptr) {
     return false;
@@ -124,7 +128,9 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     send_algorithm_.reset(
         SendAlgorithmInterface::Create(clock_, &rtt_stats_, kReno, stats_));
   }
-  if (HasClientSentConnectionOption(config, kPACE)) {
+  if (HasClientSentConnectionOption(config, kPACE) ||
+      (FLAGS_quic_allow_bbr &&
+       HasClientSentConnectionOption(config, kTBBR))) {
     EnablePacing();
   }
   if (HasClientSentConnectionOption(config, k1CON)) {
@@ -145,7 +151,7 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
         max(kMinSocketReceiveBuffer,
             static_cast<QuicByteCount>(config.ReceivedSocketReceiveBuffer()));
   }
-  send_algorithm_->SetFromConfig(config, is_server_);
+  send_algorithm_->SetFromConfig(config, is_server_, using_pacing_);
 
   if (network_change_visitor_ != nullptr) {
     network_change_visitor_->OnCongestionWindowChange();
@@ -757,7 +763,8 @@ QuicTime::Delta QuicSentPacketManager::TimeUntilSend(
   if (pending_timer_transmission_count_ > 0) {
     return QuicTime::Delta::Zero();
   }
-  if (unacked_packets_.bytes_in_flight() >= receive_buffer_bytes_) {
+  if (unacked_packets_.bytes_in_flight() >=
+      kUsableRecieveBufferFraction * receive_buffer_bytes_) {
     return QuicTime::Delta::Infinite();
   }
   return send_algorithm_->TimeUntilSend(

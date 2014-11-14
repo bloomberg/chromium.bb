@@ -978,30 +978,30 @@ uint8 QuicFramer::GetSequenceNumberFlags(
 QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
     const QuicAckFrame& frame) {
   AckFrameInfo ack_info;
-  if (!frame.missing_packets.empty()) {
-    DCHECK_GE(frame.largest_observed, *frame.missing_packets.rbegin());
-    size_t cur_range_length = 0;
-    SequenceNumberSet::const_iterator iter = frame.missing_packets.begin();
-    QuicPacketSequenceNumber last_missing = *iter;
-    ++iter;
-    for (; iter != frame.missing_packets.end(); ++iter) {
-      if (cur_range_length != numeric_limits<uint8>::max() &&
-          *iter == (last_missing + 1)) {
-        ++cur_range_length;
-      } else {
-        ack_info.nack_ranges[last_missing - cur_range_length] =
-            cur_range_length;
-        cur_range_length = 0;
-      }
-      ack_info.max_delta = max(ack_info.max_delta, *iter - last_missing);
-      last_missing = *iter;
-    }
-    // Include the last nack range.
-    ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
-    // Include the range to the largest observed.
-    ack_info.max_delta = max(ack_info.max_delta,
-                             frame.largest_observed - last_missing);
+  if (frame.missing_packets.empty()) {
+    return ack_info;
   }
+  DCHECK_GE(frame.largest_observed, *frame.missing_packets.rbegin());
+  size_t cur_range_length = 0;
+  SequenceNumberSet::const_iterator iter = frame.missing_packets.begin();
+  QuicPacketSequenceNumber last_missing = *iter;
+  ++iter;
+  for (; iter != frame.missing_packets.end(); ++iter) {
+    if (cur_range_length != numeric_limits<uint8>::max() &&
+        *iter == (last_missing + 1)) {
+      ++cur_range_length;
+    } else {
+      ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
+      cur_range_length = 0;
+    }
+    ack_info.max_delta = max(ack_info.max_delta, *iter - last_missing);
+    last_missing = *iter;
+  }
+  // Include the last nack range.
+  ack_info.nack_ranges[last_missing - cur_range_length] = cur_range_length;
+  // Include the range to the largest observed.
+  ack_info.max_delta =
+      max(ack_info.max_delta, frame.largest_observed - last_missing);
   return ack_info;
 }
 

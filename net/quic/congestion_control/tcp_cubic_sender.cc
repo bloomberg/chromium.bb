@@ -55,7 +55,9 @@ TcpCubicSender::~TcpCubicSender() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.FinalTcpCwnd", congestion_window_);
 }
 
-void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
+void TcpCubicSender::SetFromConfig(const QuicConfig& config,
+                                   bool is_server,
+                                   bool using_pacing) {
   if (is_server) {
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), kIW10)) {
@@ -69,6 +71,11 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config, bool is_server) {
           min(kMaxInitialWindow,
               static_cast<QuicPacketCount>(
                   config.ReceivedInitialCongestionWindow())));
+    }
+    if (using_pacing) {
+      // Disable the ack train mode in hystart when pacing is enabled, since it
+      // may be falsely triggered.
+      hybrid_slow_start_.set_ack_train_detection(false);
     }
   }
 }

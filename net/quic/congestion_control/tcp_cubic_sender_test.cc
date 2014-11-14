@@ -24,9 +24,6 @@ namespace test {
 const uint32 kDefaultWindowTCP = kDefaultInitialWindow * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
 
-// TODO(ianswett): Remove 10000 once b/10075719 is fixed.
-const QuicPacketCount kDefaultMaxCongestionWindowTCP = 10000;
-
 class TcpCubicSenderPeer : public TcpCubicSender {
  public:
   TcpCubicSenderPeer(const QuicClock* clock,
@@ -61,7 +58,7 @@ class TcpCubicSenderTest : public ::testing::Test {
   TcpCubicSenderTest()
       : one_ms_(QuicTime::Delta::FromMilliseconds(1)),
         sender_(new TcpCubicSenderPeer(&clock_, true,
-                                       kDefaultMaxCongestionWindowTCP)),
+                                       kMaxTcpCongestionWindow)),
         receiver_(new TcpReceiver()),
         sequence_number_(1),
         acked_sequence_number_(0),
@@ -209,7 +206,7 @@ TEST_F(TcpCubicSenderTest, ExponentialSlowStart) {
 
 TEST_F(TcpCubicSenderTest, SlowStartAckTrain) {
   sender_->SetNumEmulatedConnections(1);
-  EXPECT_EQ(kDefaultMaxCongestionWindowTCP * kDefaultTCPMSS,
+  EXPECT_EQ(kMaxTcpCongestionWindow * kDefaultTCPMSS,
             sender_->GetSlowStartThreshold());
 
   // Make sure that we fall out of slow start when we send ACK train longer
@@ -424,7 +421,7 @@ TEST_F(TcpCubicSenderTest, SlowStartBurstPacketLossPRR) {
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(10000u, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxTcpCongestionWindow, sender_->slowstart_threshold());
 
   // Expect the window to decrease to the minimum once the RTO fires
   // and slow start threshold to be set to 1/2 of the CWND.
@@ -435,7 +432,7 @@ TEST_F(TcpCubicSenderTest, RTOCongestionWindowAndRevert) {
   // Now repair the RTO and ensure the slowstart threshold reverts.
   sender_->RevertRetransmissionTimeout();
   EXPECT_EQ(kDefaultWindowTCP, sender_->GetCongestionWindow());
-  EXPECT_EQ(10000u, sender_->slowstart_threshold());
+  EXPECT_EQ(kMaxTcpCongestionWindow, sender_->slowstart_threshold());
 }
 
 TEST_F(TcpCubicSenderTest, RTOCongestionWindowNoRetransmission) {
@@ -578,7 +575,9 @@ TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
   QuicConfig config;
   QuicConfigPeer::SetReceivedInitialWindow(&config, 2 * congestion_window);
 
-  sender_->SetFromConfig(config, true);
+  sender_->SetFromConfig(config,
+                         /* is_server= */ true,
+                         /* using_pacing= */ false);
   EXPECT_EQ(2 * congestion_window, sender_->congestion_window());
 
   // Verify that kCOPT: kIW10 forces the congestion window to the
@@ -586,8 +585,20 @@ TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
   QuicTagVector options;
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
-  sender_->SetFromConfig(config, true);
+  sender_->SetFromConfig(config,
+                         /* is_server= */ true,
+                         /* using_pacing= */ false);
   EXPECT_EQ(congestion_window, sender_->congestion_window());
+}
+
+TEST_F(TcpCubicSenderTest, DisableAckTrainDetectionWithPacing) {
+  EXPECT_TRUE(sender_->hybrid_slow_start().ack_train_detection());
+
+  QuicConfig config;
+  sender_->SetFromConfig(config,
+                         /* is_server= */ true,
+                         /* using_pacing= */ true);
+  EXPECT_FALSE(sender_->hybrid_slow_start().ack_train_detection());
 }
 
 TEST_F(TcpCubicSenderTest, 2ConnectionCongestionAvoidanceAtEndOfRecovery) {

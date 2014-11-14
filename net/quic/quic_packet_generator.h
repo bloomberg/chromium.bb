@@ -177,9 +177,9 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // created.
   QuicPacketSequenceNumber sequence_number() const;
 
-  size_t max_packet_length() const;
+  QuicByteCount max_packet_length() const;
 
-  void set_max_packet_length(size_t length);
+  void set_max_packet_length(QuicByteCount length);
 
   void set_debug_delegate(DebugDelegate* debug_delegate) {
     debug_delegate_ = debug_delegate;

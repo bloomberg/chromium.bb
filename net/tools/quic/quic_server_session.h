@@ -47,8 +47,7 @@ class QuicServerSession : public QuicSession {
  public:
   QuicServerSession(const QuicConfig& config,
                     QuicConnection* connection,
-                    QuicServerSessionVisitor* visitor,
-                    bool is_secure);
+                    QuicServerSessionVisitor* visitor);
 
   // Override the base class to notify the owner of the connection close.
   void OnConnectionClosed(QuicErrorCode error, bool from_peer) override;

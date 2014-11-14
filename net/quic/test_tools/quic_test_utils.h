@@ -270,6 +270,9 @@ class MockConnection : public QuicConnection {
   // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.
   explicit MockConnection(bool is_server);
 
+  // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.
+  MockConnection(bool is_server, bool is_secure);
+
   // Uses a MockHelper, ConnectionId of 42.
   MockConnection(IPEndPoint address, bool is_server);
 
@@ -437,7 +440,9 @@ class MockSendAlgorithm : public SendAlgorithmInterface {
   MockSendAlgorithm();
   virtual ~MockSendAlgorithm();
 
-  MOCK_METHOD2(SetFromConfig, void(const QuicConfig& config, bool is_server));
+  MOCK_METHOD3(SetFromConfig, void(const QuicConfig& config,
+                                   bool is_server,
+                                   bool using_pacing));
   MOCK_METHOD1(SetNumEmulatedConnections, void(int num_connections));
   MOCK_METHOD1(SetMaxPacketSize, void(QuicByteCount max_packet_size));
   MOCK_METHOD2(OnIncomingQuicCongestionFeedbackFrame,

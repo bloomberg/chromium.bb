@@ -41,6 +41,19 @@ MockConnection::MockConnection(bool is_server)
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
+                     QuicSupportedVersions()),
+      helper_(helper()) {
+}
+
+MockConnection::MockConnection(bool is_server, bool is_secure)
+    : QuicConnection(kTestConnectionId,
+                     IPEndPoint(net::test::Loopback4(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
+                     is_server,
+                     is_secure,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -52,6 +65,7 @@ MockConnection::MockConnection(IPEndPoint address,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -64,6 +78,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -76,7 +91,8 @@ MockConnection::MockConnection(bool is_server,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
-                     QuicSupportedVersions()),
+                     /* is_secure= */ false,
+                     supported_versions),
       helper_(helper()) {
 }
 
@@ -97,9 +113,8 @@ QuicAckFrame MakeAckFrameWithNackRanges(
   return ack;
 }
 
-TestSession::TestSession(QuicConnection* connection,
-                         const QuicConfig& config)
-    : QuicSession(connection, config, /*is_secure=*/false),
+TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
+    : QuicSession(connection, config),
       crypto_stream_(nullptr) {
   InitializeSession();
 }

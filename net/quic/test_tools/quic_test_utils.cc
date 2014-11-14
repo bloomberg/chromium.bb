@@ -244,6 +244,19 @@ MockConnection::MockConnection(bool is_server)
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
+                     QuicSupportedVersions()),
+      helper_(helper()) {
+}
+
+MockConnection::MockConnection(bool is_server, bool is_secure)
+    : QuicConnection(kTestConnectionId,
+                     IPEndPoint(TestPeerIPAddress(), kTestPort),
+                     new testing::NiceMock<MockHelper>(),
+                     NiceMockPacketWriterFactory(),
+                     /* owns_writer= */ true,
+                     is_server,
+                     is_secure,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -255,6 +268,7 @@ MockConnection::MockConnection(IPEndPoint address,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -267,6 +281,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
                      QuicSupportedVersions()),
       helper_(helper()) {
 }
@@ -279,6 +294,7 @@ MockConnection::MockConnection(bool is_server,
                      NiceMockPacketWriterFactory(),
                      /* owns_writer= */ true,
                      is_server,
+                     /* is_secure= */ false,
                      supported_versions),
       helper_(helper()) {
 }
@@ -320,7 +336,7 @@ void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
 }
 
 MockSession::MockSession(QuicConnection* connection)
-    : QuicSession(connection, DefaultQuicConfig(), /*is_secure=*/false) {
+    : QuicSession(connection, DefaultQuicConfig()) {
   InitializeSession();
   ON_CALL(*this, WritevData(_, _, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
@@ -330,7 +346,7 @@ MockSession::~MockSession() {
 }
 
 TestSession::TestSession(QuicConnection* connection, const QuicConfig& config)
-    : QuicSession(connection, config, /*is_secure=*/false),
+    : QuicSession(connection, config),
       crypto_stream_(nullptr) {
   InitializeSession();
 }
@@ -347,7 +363,7 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
 
 TestClientSession::TestClientSession(QuicConnection* connection,
                                      const QuicConfig& config)
-    : QuicClientSessionBase(connection, config, /*is_secure=*/false),
+    : QuicClientSessionBase(connection, config),
       crypto_stream_(nullptr) {
   EXPECT_CALL(*this, OnProofValid(_)).Times(AnyNumber());
   InitializeSession();

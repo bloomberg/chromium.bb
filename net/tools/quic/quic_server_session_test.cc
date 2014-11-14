@@ -79,8 +79,7 @@ class QuicServerSessionTest : public ::testing::TestWithParam<QuicVersion> {
 
     connection_ =
         new StrictMock<MockConnection>(true, SupportedVersions(GetParam()));
-    session_.reset(new QuicServerSession(config_, connection_, &owner_,
-                                         /*is_secure=*/false));
+    session_.reset(new QuicServerSession(config_, connection_, &owner_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,

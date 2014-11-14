@@ -53,6 +53,14 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   // Call for the start of each receive round (burst) in the slow start phase.
   void StartReceiveRound(QuicPacketSequenceNumber last_sent);
 
+  void set_ack_train_detection(bool ack_train_detection) {
+    ack_train_detection_ = ack_train_detection;
+  }
+
+  bool ack_train_detection() const {
+    return ack_train_detection_;
+  }
+
   // Whether slow start has started.
   bool started() const {
     return started_;
@@ -67,6 +75,7 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
   };
 
   const QuicClock* clock_;
+  bool ack_train_detection_;
   // Whether the hybrid slow start has been started.
   bool started_;
   HystartState hystart_found_;

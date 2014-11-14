@@ -36,10 +36,6 @@ bool FLAGS_quic_use_bbr_congestion_control = false;
 // limit.
 bool FLAGS_quic_allow_more_open_streams = false;
 
-// If true, then QUIC connections will set both idle and overall timeouts in a
-// single method.
-bool FLAGS_quic_unified_timeouts = true;
-
 // If true, QUIC will be more resilliant to junk packets with valid connection
 // IDs.
 bool FLAGS_quic_drop_junk_packets = true;

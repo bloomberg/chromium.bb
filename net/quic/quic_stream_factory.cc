@@ -922,6 +922,7 @@ int QuicStreamFactory::CreateSession(
                                                   packet_writer_factory,
                                                   true  /* owns_writer */,
                                                   false  /* is_server */,
+                                                  server_id.is_https(),
                                                   supported_versions_);
   connection->set_max_packet_length(max_packet_length_);
 
@@ -954,7 +955,7 @@ int QuicStreamFactory::CreateSession(
 
   *session = new QuicClientSession(
       connection, socket.Pass(), this, transport_security_state_,
-      server_info.Pass(), config, server_id.is_https(),
+      server_info.Pass(), config,
       base::MessageLoop::current()->message_loop_proxy().get(),
       net_log.net_log());
   all_sessions_[*session] = server_id;  // owning pointer

@@ -14,8 +14,7 @@ namespace net {
 class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSession {
  public:
   QuicClientSessionBase(QuicConnection* connection,
-                        const QuicConfig& config,
-                        bool is_secure);
+                        const QuicConfig& config);
 
   ~QuicClientSessionBase() override;
 

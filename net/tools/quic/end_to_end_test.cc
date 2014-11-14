@@ -946,8 +946,15 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   EXPECT_EQ(kMaxInitialWindow,
             server_sent_packet_manager.GetCongestionWindowInTcpMss());
 
-  EXPECT_EQ(GetParam().use_pacing, server_sent_packet_manager.using_pacing());
-  EXPECT_EQ(GetParam().use_pacing, client_sent_packet_manager.using_pacing());
+  // BBR automatically enables pacing.
+  EXPECT_EQ(GetParam().use_pacing ||
+            (FLAGS_quic_allow_bbr &&
+             GetParam().congestion_control_tag == kTBBR),
+            server_sent_packet_manager.using_pacing());
+  EXPECT_EQ(GetParam().use_pacing ||
+            (FLAGS_quic_allow_bbr &&
+             GetParam().congestion_control_tag == kTBBR),
+            client_sent_packet_manager.using_pacing());
 
   // The client *should* set the intitial RTT, but it's increased to 10ms.
   EXPECT_EQ(20000u, client_sent_packet_manager.GetRttStats()->initial_rtt_us());

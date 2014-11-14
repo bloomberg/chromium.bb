@@ -15,9 +15,8 @@ namespace net {
 
 QuicServerSession::QuicServerSession(const QuicConfig& config,
                                      QuicConnection* connection,
-                                     QuicServerSessionVisitor* visitor,
-                                     bool is_secure)
-    : QuicSession(connection, config, is_secure),
+                                     QuicServerSessionVisitor* visitor)
+    : QuicSession(connection, config),
       visitor_(visitor),
       bandwidth_estimate_sent_to_client_(QuicBandwidth::Zero()),
       last_scup_time_(QuicTime::Zero()),

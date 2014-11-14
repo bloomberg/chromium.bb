@@ -36,7 +36,8 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
 
   virtual ~SendAlgorithmInterface() {}
 
-  virtual void SetFromConfig(const QuicConfig& config, bool is_server) = 0;
+  virtual void SetFromConfig(
+      const QuicConfig& config, bool is_server, bool using_pacing) = 0;
 
   // Sets the number of connections to emulate when doing congestion control,
   // particularly for congestion avoidance.  Can be set any time.
