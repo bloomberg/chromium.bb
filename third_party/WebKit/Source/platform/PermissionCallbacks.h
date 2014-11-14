@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -15,17 +16,17 @@ namespace blink {
 class PLATFORM_EXPORT PermissionCallbacks {
     WTF_MAKE_NONCOPYABLE(PermissionCallbacks);
 public:
-    static PassOwnPtr<PermissionCallbacks> create(const Closure& allowed, const Closure& denied);
+    static PassOwnPtr<PermissionCallbacks> create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
     virtual ~PermissionCallbacks() { }
 
-    void onAllowed() { m_allowed(); }
-    void onDenied() { m_denied(); }
+    void onAllowed() { (*m_allowed)(); }
+    void onDenied() { (*m_denied)(); }
 
 private:
-    PermissionCallbacks(const Closure& allowed, const Closure& denied);
+    PermissionCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied);
 
-    Closure m_allowed;
-    Closure m_denied;
+    OwnPtr<Closure> m_allowed;
+    OwnPtr<Closure> m_denied;
 };
 
 } // namespace blink

@@ -53,8 +53,8 @@ public:
         m_observedType = type;
         m_callbackCount += 1;
 
-        if (!m_closure.isNull())
-            m_closure();
+        if (m_closure && !m_closure->isNull())
+            (*m_closure)();
     }
 
     blink::WebConnectionType observedType() const
@@ -67,13 +67,13 @@ public:
         return m_callbackCount;
     }
 
-    void setNotificationCallback(const Closure& closure)
+    void setNotificationCallback(PassOwnPtr<Closure> closure)
     {
         m_closure = closure;
     }
 
 private:
-    Closure m_closure;
+    OwnPtr<Closure> m_closure;
     blink::WebConnectionType m_observedType;
     int m_callbackCount;
 };

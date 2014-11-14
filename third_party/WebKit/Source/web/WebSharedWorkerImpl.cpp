@@ -87,7 +87,7 @@ public:
         m_scriptLoader->setClient(0);
     }
 
-    void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& receiveResponseCallback, const Closure& finishCallback)
+    void load(ExecutionContext* loadingContext, const KURL& scriptURL, PassOwnPtr<Closure> receiveResponseCallback, PassOwnPtr<Closure> finishCallback)
     {
         ASSERT(loadingContext);
         m_receiveResponseCallback = receiveResponseCallback;
@@ -101,12 +101,12 @@ public:
     {
         m_identifier = identifier;
         m_appCacheID = response.appCacheID();
-        m_receiveResponseCallback();
+        (*m_receiveResponseCallback)();
     }
 
     virtual void notifyFinished() override
     {
-        m_finishCallback();
+        (*m_finishCallback)();
     }
 
     void cancel()
@@ -128,8 +128,8 @@ private:
     RefPtr<WorkerScriptLoader> m_scriptLoader;
     unsigned long m_identifier;
     long long m_appCacheID;
-    Closure m_receiveResponseCallback;
-    Closure m_finishCallback;
+    OwnPtr<Closure> m_receiveResponseCallback;
+    OwnPtr<Closure> m_finishCallback;
 };
 
 // This function is called on the main thread to force to initialize some static

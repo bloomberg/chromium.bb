@@ -34,12 +34,12 @@
 
 namespace blink {
 
-PassOwnPtr<PermissionCallbacks> PermissionCallbacks::create(const Closure& allowed, const Closure& denied)
+PassOwnPtr<PermissionCallbacks> PermissionCallbacks::create(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
 {
     return adoptPtr(new PermissionCallbacks(allowed, denied));
 }
 
-PermissionCallbacks::PermissionCallbacks(const Closure& allowed, const Closure& denied)
+PermissionCallbacks::PermissionCallbacks(PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
     : m_allowed(allowed)
     , m_denied(denied)
 {

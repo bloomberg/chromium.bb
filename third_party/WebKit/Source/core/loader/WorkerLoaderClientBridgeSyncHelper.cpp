@@ -58,7 +58,7 @@ void WorkerLoaderClientBridgeSyncHelper::run()
     // This must be called only after m_event is signalled.
     ASSERT(m_done);
     for (size_t i = 0; i < m_clientTasks.size(); ++i)
-        m_clientTasks[i]();
+        (*m_clientTasks[i])();
 }
 
 void WorkerLoaderClientBridgeSyncHelper::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)

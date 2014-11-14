@@ -66,9 +66,9 @@ static void callFunctionObject(void* context)
     delete function;
 }
 
-void callOnMainThread(const Function<void()>& function)
+void callOnMainThread(PassOwnPtr<Function<void()>> function)
 {
-    callOnMainThread(callFunctionObject, new Function<void()>(function));
+    callOnMainThread(callFunctionObject, function.leakPtr());
 }
 
 bool isMainThread()

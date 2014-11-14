@@ -79,7 +79,7 @@ public:
         m_scriptLoader->setClient(0);
     }
 
-    void load(ExecutionContext* loadingContext, const KURL& scriptURL, const Closure& callback)
+    void load(ExecutionContext* loadingContext, const KURL& scriptURL, PassOwnPtr<Closure> callback)
     {
         ASSERT(loadingContext);
         m_callback = callback;
@@ -90,7 +90,7 @@ public:
 
     virtual void notifyFinished() override
     {
-        m_callback();
+        (*m_callback)();
     }
 
     void cancel()
@@ -108,7 +108,7 @@ private:
     }
 
     RefPtr<WorkerScriptLoader> m_scriptLoader;
-    Closure m_callback;
+    OwnPtr<Closure> m_callback;
 };
 
 class WebEmbeddedWorkerImpl::LoaderProxy : public WorkerLoaderProxy {

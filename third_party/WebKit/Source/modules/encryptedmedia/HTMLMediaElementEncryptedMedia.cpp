@@ -76,7 +76,7 @@ typedef Function<void(ExceptionCode, const String&)> FailureCallback;
 // Calls |success| if result is resolved, |failure| is result is rejected.
 class SetContentDecryptionModuleResult final : public ContentDecryptionModuleResult {
 public:
-    SetContentDecryptionModuleResult(SuccessCallback success, FailureCallback failure)
+    SetContentDecryptionModuleResult(PassOwnPtr<SuccessCallback> success, PassOwnPtr<FailureCallback> failure)
         : m_successCallback(success)
         , m_failureCallback(failure)
     {
@@ -85,23 +85,23 @@ public:
     // ContentDecryptionModuleResult implementation.
     virtual void complete() override
     {
-        m_successCallback();
+        (*m_successCallback)();
     }
 
     virtual void completeWithSession(blink::WebContentDecryptionModuleResult::SessionStatus status) override
     {
         ASSERT_NOT_REACHED();
-        m_failureCallback(InvalidStateError, "Unexpected completion.");
+        (*m_failureCallback)(InvalidStateError, "Unexpected completion.");
     }
 
     virtual void completeWithError(blink::WebContentDecryptionModuleException code, unsigned long systemCode, const blink::WebString& message) override
     {
-        m_failureCallback(WebCdmExceptionToExceptionCode(code), message);
+        (*m_failureCallback)(WebCdmExceptionToExceptionCode(code), message);
     }
 
 private:
-    SuccessCallback m_successCallback;
-    FailureCallback m_failureCallback;
+    OwnPtr<SuccessCallback> m_successCallback;
+    OwnPtr<FailureCallback> m_failureCallback;
 };
 
 ScriptPromise SetMediaKeysHandler::create(ScriptState* scriptState, HTMLMediaElement& element, MediaKeys* mediaKeys)
@@ -187,9 +187,9 @@ void SetMediaKeysHandler::setNewMediaKeys()
         //       sessions).
         //       (Handled in Chromium).
         if (m_element->webMediaPlayer()) {
-            SuccessCallback successCallback = bind(&SetMediaKeysHandler::finish, this);
-            FailureCallback failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::reportSetFailed, this);
-            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback, failureCallback);
+            OwnPtr<SuccessCallback> successCallback = bind(&SetMediaKeysHandler::finish, this);
+            OwnPtr<FailureCallback> failureCallback = bind<ExceptionCode, const String&>(&SetMediaKeysHandler::reportSetFailed, this);
+            ContentDecryptionModuleResult* result = new SetContentDecryptionModuleResult(successCallback.release(), failureCallback.release());
             m_element->webMediaPlayer()->setContentDecryptionModule(m_newMediaKeys->contentDecryptionModule(), result->result());
 
             // Don't do anything more until |result| is resolved (or rejected).

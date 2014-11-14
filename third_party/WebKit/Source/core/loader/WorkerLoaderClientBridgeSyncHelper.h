@@ -71,7 +71,7 @@ private:
     ThreadableLoaderClient& m_client;
     OwnPtr<blink::WebWaitableEvent> m_event;
     Vector<Vector<char>*> m_receivedData;
-    Vector<Closure> m_clientTasks;
+    Vector<OwnPtr<Closure>> m_clientTasks;
 };
 
 } // namespace blink

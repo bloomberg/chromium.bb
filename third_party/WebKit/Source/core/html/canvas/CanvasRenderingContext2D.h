@@ -347,7 +347,7 @@ private:
 
     void inflateStrokeRect(FloatRect&) const;
 
-    void fullCanvasCompositedDraw(const Closure& draw);
+    void fullCanvasCompositedDraw(PassOwnPtr<Closure> draw);
 
     void drawFocusIfNeededInternal(const Path&, Element*);
     bool focusRingCallIsValid(const Path&, Element*);

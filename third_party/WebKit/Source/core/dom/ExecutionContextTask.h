@@ -54,15 +54,15 @@ public:
     // Do not use |create| other than in createCrossThreadTask and
     // createSameThreadTask.
     // See http://crbug.com/390851
-    static PassOwnPtr<CallClosureTask> create(const Closure& closure)
+    static PassOwnPtr<CallClosureTask> create(PassOwnPtr<Closure> closure)
     {
         return adoptPtr(new CallClosureTask(closure));
     }
-    virtual void performTask(ExecutionContext*) override { m_closure(); }
+    virtual void performTask(ExecutionContext*) override { (*m_closure)(); }
 
 private:
-    explicit CallClosureTask(const Closure& closure) : m_closure(closure) { }
-    Closure m_closure;
+    explicit CallClosureTask(PassOwnPtr<Closure> closure) : m_closure(closure) { }
+    OwnPtr<Closure> m_closure;
 };
 
 // Create tasks passed within a single thread.

@@ -122,18 +122,18 @@ WebFileSystem* LocalFileSystem::fileSystem() const
     return Platform::current()->fileSystem();
 }
 
-void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context, const Closure& allowed, const Closure& denied)
+void LocalFileSystem::requestFileSystemAccessInternal(ExecutionContext* context, PassOwnPtr<Closure> allowed, PassOwnPtr<Closure> denied)
 {
     if (!client()) {
-        denied();
+        (*denied)();
         return;
     }
     if (!context->isDocument()) {
         if (!client()->requestFileSystemAccessSync(context)) {
-            denied();
+            (*denied)();
             return;
         }
-        allowed();
+        (*allowed)();
         return;
     }
     client()->requestFileSystemAccessAsync(context, PermissionCallbacks::create(allowed, denied));

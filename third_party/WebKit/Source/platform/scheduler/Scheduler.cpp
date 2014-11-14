@@ -14,7 +14,7 @@ namespace blink {
 
 class IdleTaskRunner : public WebScheduler::IdleTask {
 public:
-    explicit IdleTaskRunner(const Scheduler::IdleTask& task)
+    explicit IdleTaskRunner(PassOwnPtr<Scheduler::IdleTask> task)
         : m_task(task)
     {
     }
@@ -26,10 +26,10 @@ public:
     // WebScheduler::IdleTask implementation.
     void run(double deadlineSeconds) override
     {
-        m_task(deadlineSeconds);
+        (*m_task)(deadlineSeconds);
     }
 private:
-    Scheduler::IdleTask m_task;
+    OwnPtr<Scheduler::IdleTask> m_task;
 };
 
 Scheduler* Scheduler::s_sharedScheduler = nullptr;
@@ -58,7 +58,7 @@ Scheduler::~Scheduler()
         m_webScheduler->shutdown();
 }
 
-void Scheduler::postIdleTask(const TraceLocation& location, const IdleTask& idleTask)
+void Scheduler::postIdleTask(const TraceLocation& location, PassOwnPtr<IdleTask> idleTask)
 {
     if (m_webScheduler)
         m_webScheduler->postIdleTask(WebTraceLocation(location), new IdleTaskRunner(idleTask));

@@ -94,7 +94,7 @@ bool HTMLParserThread::isRunning()
     return !!m_thread;
 }
 
-void HTMLParserThread::postTask(const Closure& closure)
+void HTMLParserThread::postTask(PassOwnPtr<Closure> closure)
 {
     platformThread().postTask(new Task(closure));
 }

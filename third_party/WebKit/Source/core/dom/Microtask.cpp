@@ -73,7 +73,7 @@ void Microtask::enqueueMicrotask(PassOwnPtr<WebThread::Task> callback)
     isolate->EnqueueMicrotask(&microtaskFunctionCallback, callback.leakPtr());
 }
 
-void Microtask::enqueueMicrotask(const Closure& callback)
+void Microtask::enqueueMicrotask(PassOwnPtr<Closure> callback)
 {
     enqueueMicrotask(adoptPtr(new Task(callback)));
 }

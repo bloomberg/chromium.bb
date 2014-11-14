@@ -1656,7 +1656,7 @@ bool CanvasRenderingContext2D::rectContainsTransformedRect(const FloatRect& rect
     return state().m_transform.mapQuad(quad).containsQuad(transformedQuad);
 }
 
-void CanvasRenderingContext2D::fullCanvasCompositedDraw(const Closure& draw)
+void CanvasRenderingContext2D::fullCanvasCompositedDraw(PassOwnPtr<Closure> draw)
 {
     ASSERT(isFullCanvasCompositeMode(state().m_globalComposite));
 
@@ -1669,7 +1669,7 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(const Closure& draw)
         c->beginLayer(1, state().m_globalComposite);
         c->setCompositeOperation(CompositeSourceOver);
         applyShadow(DrawShadowOnly);
-        draw();
+        (*draw)();
         c->setCompositeOperation(previousOperator);
         c->endLayer();
     }
@@ -1677,7 +1677,7 @@ void CanvasRenderingContext2D::fullCanvasCompositedDraw(const Closure& draw)
     c->beginLayer(1, state().m_globalComposite);
     c->clearShadow();
     c->setCompositeOperation(CompositeSourceOver);
-    draw();
+    (*draw)();
     c->setCompositeOperation(previousOperator);
     c->endLayer();
     applyShadow(DrawShadowAndForeground); // go back to normal shadows mode

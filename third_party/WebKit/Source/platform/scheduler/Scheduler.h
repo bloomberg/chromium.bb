@@ -8,6 +8,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 class TraceLocation;
@@ -27,7 +28,7 @@ public:
 
     // For non-critical tasks which may be reordered relative to other task types and may be starved
     // for an arbitrarily long time if no idle time is available.
-    void postIdleTask(const TraceLocation&, const IdleTask&);
+    void postIdleTask(const TraceLocation&, PassOwnPtr<IdleTask>);
 
     // Returns true if there is high priority work pending on the main thread
     // and the caller should yield to let the scheduler service that work.

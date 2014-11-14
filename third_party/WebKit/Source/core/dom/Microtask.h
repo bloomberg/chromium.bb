@@ -43,7 +43,7 @@ public:
     static void performCheckpoint();
     static bool performingCheckpoint(v8::Isolate*);
     static void enqueueMicrotask(PassOwnPtr<WebThread::Task>);
-    static void enqueueMicrotask(const Closure&);
+    static void enqueueMicrotask(PassOwnPtr<Closure>);
 
 private:
     explicit Microtask();

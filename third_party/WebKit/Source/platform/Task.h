@@ -33,23 +33,25 @@
 
 #include "public/platform/WebThread.h"
 #include "wtf/Functional.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
 class Task : public WebThread::Task {
 public:
-    explicit Task(const Closure& closure)
+    explicit Task(PassOwnPtr<Closure> closure)
         : m_closure(closure)
     {
     }
 
     virtual void run() override
     {
-        m_closure();
+        (*m_closure)();
     }
 
 private:
-    Closure m_closure;
+    OwnPtr<Closure> m_closure;
 };
 
 } // namespace blink
