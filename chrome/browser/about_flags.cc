@@ -1053,6 +1053,12 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(ash::switches::kAshDisableTextFilteringInOverviewMode),
   },
+  { "ash-enable-mirrored-screen",
+    IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME,
+    IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),
+  },
 #endif  // defined(USE_ASH)
 #if defined(OS_CHROMEOS)
   {

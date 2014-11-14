@@ -6062,6 +6062,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_ENABLE_TOUCH_VIEW_TESTING_DESCRIPTION" desc="Description for the flag to enable the TouchView testing mode.">
           Enable Ctrl+Alt+Shift+8 to toggle the TouchView maximizing mode.
         </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME" desc="Title for the flag to enable the mirrored screen mode.">
+          Enable mirrored screen mode.
+        </message>
+        <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION" desc="Description for the flag to enable the mirrored screen mode.">
+          Enable the mirrored screen mode. This mode flips the screen image horizontally.
+        </message>
         <message name="IDS_FLAGS_ENABLE_TOUCH_FEEDBACK_NAME" desc="Title for the flag to enable additional visual feedback for touch.">
           Enable additional touch feedback on UI components.
         </message>
