@@ -138,12 +138,11 @@ Status ConvertWebCryptoSignatureToDerSignature(
   if (!ecdsa_sig)
     return Status::OperationError();
 
-  ecdsa_sig->r = BN_bin2bn(signature.bytes(), order_size_bytes, NULL);
-  ecdsa_sig->s =
-      BN_bin2bn(signature.bytes() + order_size_bytes, order_size_bytes, NULL);
-
-  if (!ecdsa_sig->r || !ecdsa_sig->s)
+  if (!BN_bin2bn(signature.bytes(), order_size_bytes, ecdsa_sig->r) ||
+      !BN_bin2bn(signature.bytes() + order_size_bytes, order_size_bytes,
+                 ecdsa_sig->s)) {
     return Status::ErrorUnexpected();
+  }
 
   // Determine the size of the DER-encoded signature.
   int der_encoding_size = i2d_ECDSA_SIG(ecdsa_sig.get(), NULL);
