@@ -11,7 +11,7 @@ for more details about the presubmit API built into depot_tools.
 import re
 import string
 
-CC_SOURCE_FILES=(r'^cc/.*\.(cc|h)$',)
+CC_SOURCE_FILES=(r'^cc/.*\.(cc|h)$', r'^cc\\.*\.(cc|h)$')
 
 def CheckChangeLintsClean(input_api, output_api):
   input_api.cpplint._cpplint_state.ResetErrorCounts()  # reset global state
