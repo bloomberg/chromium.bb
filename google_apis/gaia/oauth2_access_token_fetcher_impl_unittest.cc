@@ -199,7 +199,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, DISABLED_MakeGetAccessTokenBody) {
 #endif  // defined(OS_WIN)
 TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
   {  // No body.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
 
     std::string at;
     int expires_in;
@@ -209,7 +209,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
     EXPECT_TRUE(at.empty());
   }
   {  // Bad json.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString("foo");
 
     std::string at;
@@ -220,7 +220,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
     EXPECT_TRUE(at.empty());
   }
   {  // Valid json: access token missing.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
 
     std::string at;
@@ -231,7 +231,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
     EXPECT_TRUE(at.empty());
   }
   {  // Valid json: all good.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString(kValidTokenResponse);
 
     std::string at;
@@ -243,7 +243,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
     EXPECT_EQ(3600, expires_in);
   }
   {  // Valid json: invalid error response.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString(kTokenResponseNoAccessToken);
 
     std::string error;
@@ -253,7 +253,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MAYBE_ParseGetAccessTokenResponse) {
     EXPECT_TRUE(error.empty());
   }
   {  // Valid json: error response.
-    TestURLFetcher url_fetcher(0, GURL("www.google.com"), NULL);
+    TestURLFetcher url_fetcher(0, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString(kValidFailureTokenResponse);
 
     std::string error;

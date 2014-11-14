@@ -48,6 +48,7 @@ TestURLFetcher::TestURLFetcher(int id,
       fake_response_destination_(STRING),
       fake_was_fetched_via_proxy_(false),
       fake_max_retries_(0) {
+  CHECK(original_url_.is_valid());
 }
 
 TestURLFetcher::~TestURLFetcher() {

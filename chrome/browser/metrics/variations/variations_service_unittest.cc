@@ -303,6 +303,8 @@ TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   TestVariationsService service(new TestRequestAllowedNotifier, &prefs);
+  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  service.variations_server_url_ = url;
   service.set_intercepts_fetch(false);
 
   net::TestURLFetcherFactory factory;
@@ -333,6 +335,8 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   VariationsService::RegisterPrefs(prefs.registry());
 
   VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
+  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  service.variations_server_url_ = url;
   for (size_t i = 0; i < arraysize(non_ok_status_codes); ++i) {
     net::TestURLFetcherFactory factory;
     service.DoActualFetch();
@@ -353,8 +357,10 @@ TEST_F(VariationsServiceTest, SeedDateUpdatedOn304Status) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
 
-  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
   net::TestURLFetcherFactory factory;
+  VariationsService service(new TestRequestAllowedNotifier, &prefs, NULL);
+  const GURL url = VariationsService::GetVariationsServerURL(&prefs);
+  service.variations_server_url_ = url;
   service.DoActualFetch();
   EXPECT_TRUE(
       prefs.FindPreference(prefs::kVariationsSeedDate)->IsDefaultValue());

@@ -2195,9 +2195,9 @@ TEST_F(ExtensionUpdaterTest, TestStartUpdateCheckMemory) {
   MockExtensionDownloaderDelegate delegate;
   ExtensionDownloader downloader(&delegate, service.request_context());
 
-  StartUpdateCheck(&downloader, CreateManifestFetchData(GURL()));
+  StartUpdateCheck(&downloader, CreateManifestFetchData(GURL("http://localhost/foo")));
   // This should delete the newly-created ManifestFetchData.
-  StartUpdateCheck(&downloader, CreateManifestFetchData(GURL()));
+  StartUpdateCheck(&downloader, CreateManifestFetchData(GURL("http://localhost/foo")));
   // This should add into |manifests_pending_|.
   StartUpdateCheck(&downloader,
                    CreateManifestFetchData(GURL("http://www.google.com")));
