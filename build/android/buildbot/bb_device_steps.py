@@ -124,6 +124,9 @@ def _RunTest(options, cmd, suite):
     args += ['--target', 'Release']
   else:
     args += ['--target', 'Debug']
+  if options.flakiness_server:
+    args += ['--flakiness-dashboard-server=%s' %
+                options.flakiness_server]
   args += cmd
   RunCmd(args, cwd=DIR_BUILD_ROOT)
 
@@ -150,9 +153,6 @@ def RunTestSuites(options, suites, suites_options=None):
     args.append('--tool=asan')
   if options.gtest_filter:
     args.append('--gtest-filter=%s' % options.gtest_filter)
-  if options.flakiness_server:
-    args.append('--flakiness-dashboard-server=%s' %
-                options.flakiness_server)
 
   for suite in suites:
     bb_annotations.PrintNamedStep(suite)
