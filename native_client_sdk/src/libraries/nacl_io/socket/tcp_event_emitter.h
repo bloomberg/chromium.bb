@@ -37,6 +37,7 @@ class TcpEventEmitter : public StreamEventEmitter {
   void SetAcceptedSocket_Locked(PP_Resource socket);
   void UpdateStatus_Locked();
   void SetListening_Locked();
+  void SetRecvEndOfStream_Locked();
 
   uint32_t BytesInOutputFIFO();
   uint32_t SpaceInInputFIFO();
@@ -50,6 +51,7 @@ class TcpEventEmitter : public StreamEventEmitter {
   FIFOChar out_fifo_;
   bool error_;
   bool listening_;
+  bool recv_endofstream_;
   PP_Resource accepted_socket_;
   DISALLOW_COPY_AND_ASSIGN(TcpEventEmitter);
 };

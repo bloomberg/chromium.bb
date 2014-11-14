@@ -31,7 +31,8 @@ enum StreamStateFlags {
   SSF_CAN_CONNECT = 0x00f0,
   SSF_NON_BLOCK = 0x1000,
   SSF_ERROR = 0x4000,
-  SSF_CLOSED = 0x8000
+  SSF_CLOSED = 0x8000,
+  SSF_RECV_ENDOFSTREAM = 0x10000,
 };
 
 class StreamNode : public Node {

@@ -355,6 +355,11 @@ Error SocketNode::RecvHelper(const HandleAttr& attr,
   if (0 == socket_resource_)
     return EBADF;
 
+  if (TestStreamFlags(SSF_RECV_ENDOFSTREAM)) {
+    *out_len = 0;
+    return 0;
+  }
+
   int ms = read_timeout_;
   if ((flags & MSG_DONTWAIT) || !attr.IsBlocking())
     ms = 0;

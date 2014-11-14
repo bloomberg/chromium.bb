@@ -790,11 +790,12 @@ TEST_F(SocketTestTCP, SendRecvAfterRemoteShutdown) {
   int bytes_remaining = strlen(send_buf) - 10;
   ASSERT_EQ(bytes_remaining, ki_recv(client_sock, buf, 256, 0));
 
-  // Attempt to read/write after remote shutdown, with no bytes remainging
+  // Attempt to read/write after remote shutdown, with no bytes remaining
   ASSERT_EQ(0, ki_recv(client_sock, buf, 10, 0));
   ASSERT_EQ(0, ki_recv(client_sock, buf, 10, 0));
-  ASSERT_EQ(-1, ki_send(client_sock, buf, 10, 0));
-  ASSERT_EQ(errno, EPIPE);
+
+  // It is still legal to send to the remote socket, even after it is closed.
+  ASSERT_EQ(10, ki_send(client_sock, buf, 10, 0));
 }
 
 TEST_F(SocketTestTCP, SendRecvAfterLocalShutdown) {

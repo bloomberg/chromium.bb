@@ -18,6 +18,7 @@ TcpEventEmitter::TcpEventEmitter(size_t rsize, size_t wsize)
       out_fifo_(wsize),
       error_(false),
       listening_(false),
+      recv_endofstream_(false),
       accepted_socket_(0) {
 }
 
@@ -30,6 +31,11 @@ uint32_t TcpEventEmitter::ReadIn_Locked(char* data, uint32_t len) {
 void TcpEventEmitter::UpdateStatus_Locked() {
   if (error_) {
     RaiseEvents_Locked(POLLIN | POLLOUT);
+    return;
+  }
+
+  if (recv_endofstream_) {
+    RaiseEvents_Locked(POLLIN);
     return;
   }
 
@@ -92,6 +98,11 @@ PP_Resource TcpEventEmitter::GetAcceptedSocket_Locked() {
   accepted_socket_ = 0;
   UpdateStatus_Locked();
   return rtn;
+}
+
+void TcpEventEmitter::SetRecvEndOfStream_Locked() {
+  recv_endofstream_ = true;
+  UpdateStatus_Locked();
 }
 
 uint32_t TcpEventEmitter::BytesInOutputFIFO() {
