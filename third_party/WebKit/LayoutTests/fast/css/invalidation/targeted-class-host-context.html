@@ -38,7 +38,7 @@ test(function(){
     assert_equals(getComputedStyle(inner, "").backgroundColor, transparent, "Background color before class change.");
     t2.className = "t2";
     if (window.internals)
-        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 8, "Element recalc count on class change.");
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 2, "Element recalc count on class change.");
     assert_equals(getComputedStyle(inner, "").backgroundColor, green, "Background color after class change.");
 }, "Matching id descendant of :host-context with class.");
 
