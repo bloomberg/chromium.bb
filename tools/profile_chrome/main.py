@@ -36,8 +36,9 @@ def _ComputeChromeCategories(options):
   if options.trace_memory:
     categories.append('disabled-by-default-memory')
   if options.trace_scheduler:
-    categories.append('disabled-by-default-cc.debug.scheduler')
     categories.append('disabled-by-default-blink.scheduler')
+    categories.append('disabled-by-default-cc.debug.scheduler')
+    categories.append('disabled-by-default-renderer.scheduler')
   if options.chrome_categories:
     categories += options.chrome_categories.split(',')
   return categories
