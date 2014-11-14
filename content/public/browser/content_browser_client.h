@@ -479,7 +479,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allows the embedder to return a delegate for the SpeechRecognitionManager.
   // The delegate will be owned by the manager. It's valid to return NULL.
   virtual SpeechRecognitionManagerDelegate*
-      GetSpeechRecognitionManagerDelegate();
+      CreateSpeechRecognitionManagerDelegate();
 
   // Getters for common objects.
   virtual net::NetLog* GetNetLog();

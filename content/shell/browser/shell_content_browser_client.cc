@@ -275,7 +275,7 @@ ShellContentBrowserClient::CreateQuotaPermissionContext() {
 }
 
 SpeechRecognitionManagerDelegate*
-    ShellContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+    ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new ShellSpeechRecognitionManagerDelegate();
 }
 

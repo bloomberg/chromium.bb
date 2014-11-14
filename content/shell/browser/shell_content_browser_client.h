@@ -55,7 +55,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
   QuotaPermissionContext* CreateQuotaPermissionContext() override;
-  SpeechRecognitionManagerDelegate* GetSpeechRecognitionManagerDelegate()
+  SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;
   net::NetLog* GetNetLog() override;
   bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,

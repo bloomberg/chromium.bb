@@ -194,7 +194,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
 }
 
 content::SpeechRecognitionManagerDelegate*
-ShellContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+ShellContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new speech::ShellSpeechRecognitionManagerDelegate();
 }
 

@@ -221,7 +221,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                        bool* no_javascript_access) override;
   void ResourceDispatcherHostCreated() override;
   content::SpeechRecognitionManagerDelegate*
-  GetSpeechRecognitionManagerDelegate() override;
+  CreateSpeechRecognitionManagerDelegate() override;
   net::NetLog* GetNetLog() override;
   content::AccessTokenStore* CreateAccessTokenStore() override;
   bool IsFastShutdownPossible() override;

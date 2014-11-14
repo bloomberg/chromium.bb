@@ -69,7 +69,7 @@ SpeechRecognitionManagerImpl::SpeechRecognitionManagerImpl(
       last_session_id_(kSessionIDInvalid),
       is_dispatching_event_(false),
       delegate_(GetContentClient()->browser()->
-                    GetSpeechRecognitionManagerDelegate()),
+                    CreateSpeechRecognitionManagerDelegate()),
       weak_factory_(this) {
   DCHECK(!g_speech_recognition_manager_impl);
   g_speech_recognition_manager_impl = this;

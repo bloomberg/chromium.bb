@@ -2150,9 +2150,8 @@ void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   return g_browser_process->ResourceDispatcherHostCreated();
 }
 
-// TODO(tommi): Rename from Get to Create.
 content::SpeechRecognitionManagerDelegate*
-    ChromeContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+    ChromeContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return new speech::ChromeSpeechRecognitionManagerDelegate();
 }
 

@@ -53,7 +53,7 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   content::SpeechRecognitionManagerDelegate*
-  GetSpeechRecognitionManagerDelegate() override;
+  CreateSpeechRecognitionManagerDelegate() override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
   void GetAdditionalAllowedSchemesForFileSystem(

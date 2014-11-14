@@ -257,7 +257,7 @@ bool ContentBrowserClient::CanCreateWindow(
 }
 
 SpeechRecognitionManagerDelegate*
-    ContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+    ContentBrowserClient::CreateSpeechRecognitionManagerDelegate() {
   return NULL;
 }
 
