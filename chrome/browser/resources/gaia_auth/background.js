@@ -109,6 +109,13 @@ BackgroundBridge.prototype = {
   // The associated tab ID. Only used for debugging now.
   tabId: null,
 
+  // The initial URL loaded in the gaia iframe.  We only want to handle
+  // onCompleted() for the frame that loaded this URL.
+  initialFrameUrlWithoutParams: null,
+
+  // On process onCompleted() requests that come from this frame Id.
+  frameId: -1,
+
   isDesktopFlow_: false,
 
   // Whether the extension is loaded in a constrained window.
@@ -202,6 +209,7 @@ BackgroundBridge.prototype = {
     this.isDesktopFlow_ = true;
     this.gaiaUrl_ = msg.gaiaUrl;
     this.isConstrainedWindow_ = msg.isConstrainedWindow;
+    this.initialFrameUrlWithoutParams = msg.initialFrameUrlWithoutParams;
   },
 
   /**
@@ -211,10 +219,21 @@ BackgroundBridge.prototype = {
    * script of switching to full tab if necessary.
    */
   onCompleted: function(details) {
-    // Only monitors requests in the gaia frame whose parent frame ID must be
-    // positive.
-    if (details.parentFrameId <= 0)
+    // Only monitors requests in the gaia frame.  The gaia frame is the one
+    // where the initial frame URL completes.
+    if (details.url.lastIndexOf(
+            this.initialFrameUrlWithoutParams, 0) == 0) {
+      this.frameId = details.frameId;
+    }
+    if (this.frameId == -1) {
+      // If for some reason the frameId could not be set above, just make sure
+      // the frame is more than two levels deep (since the gaia frame is at
+      // least three levels deep).
+      if (details.parentFrameId <= 0)
+        return;
+    } else if (details.frameId != this.frameId) {
       return;
+    }
 
     if (details.url.lastIndexOf(backgroundBridgeManager.CONTINUE_URL_BASE, 0) ==
         0) {
