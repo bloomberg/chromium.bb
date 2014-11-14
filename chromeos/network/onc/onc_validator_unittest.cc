@@ -201,22 +201,41 @@ INSTANTIATE_TEST_CASE_P(
 namespace {
 
 struct RepairParams {
-  // Both arguments are strings to identify the object that is expected as the
-  // validation result. They may either be used as filenames or as dictionary
-  // keys.
-  RepairParams(std::string strict_repaired,
-               std::string liberal_repaired)
+  RepairParams(const std::string& strict_repaired,
+               const std::string& liberal_repaired,
+               bool liberal_valid)
       : location_of_strict_repaired(strict_repaired),
-        location_of_liberal_repaired(liberal_repaired) {
-  }
+        location_of_liberal_repaired(liberal_repaired),
+        expect_liberal_valid(liberal_valid) {}
 
   std::string location_of_strict_repaired;
   std::string location_of_liberal_repaired;
+  bool expect_liberal_valid;
 };
 
+// Both |strict_repaired| and |liberal_repaired| are strings to identify the
+// object that is expected as the validation result. They may either be used
+// as filenames or as dictionary keys.
+RepairParams ExpectBothNotValid(const std::string& strict_repaired,
+                                const std::string& liberal_repaired) {
+  return RepairParams(strict_repaired, liberal_repaired, false);
+}
+
+// |strict_repaired| is a string to identify the object that is expected as the
+// validation result. They may either be used
+// as filenames or as dictionary keys.
+RepairParams ExpectStrictNotValid(const std::string& strict_repaired) {
+  return RepairParams(strict_repaired, std::string(), true);
+}
+
 ::std::ostream& operator<<(::std::ostream& os, const RepairParams& rp) {
-  return os << "(" << rp.location_of_strict_repaired << ", "
-            << rp.location_of_liberal_repaired << ")";
+  if (rp.expect_liberal_valid) {
+    os << "(" << rp.location_of_strict_repaired << ", liberal is valid)";
+  } else {
+    os << "(" << rp.location_of_strict_repaired << ", "
+       << rp.location_of_liberal_repaired << ")";
+  }
+  return os;
 }
 
 }  // namespace
@@ -260,12 +279,17 @@ TEST_P(ONCValidatorTestRepairable, LiberalValidation) {
   OncParams onc = GetParam().first;
   Validate(false, GetDictionaryFromTestFile(onc.location), onc.signature,
            onc.is_managed, onc.onc_source);
-  std::string location_of_repaired =
-      GetParam().second.location_of_liberal_repaired;
-  if (location_of_repaired.empty())
-    ExpectInvalid();
-  else
-    ExpectRepairWithWarnings(*GetDictionaryFromTestFile(location_of_repaired));
+  if (GetParam().second.expect_liberal_valid) {
+    ExpectValid();
+  } else {
+    std::string location_of_repaired =
+        GetParam().second.location_of_liberal_repaired;
+    if (location_of_repaired.empty())
+      ExpectInvalid();
+    else
+      ExpectRepairWithWarnings(
+          *GetDictionaryFromTestFile(location_of_repaired));
+  }
 }
 
 // The parameters for all test case instantations below are:
@@ -274,14 +298,45 @@ TEST_P(ONCValidatorTestRepairable, LiberalValidation) {
 //                   dictionary will be tested.
 //           OncValueSignature: signature of that ONC,
 //           bool: true if the ONC is managed).
-// RepairParams(string: A fieldname in the dictionary from the file
+//
+// If both strict and liberal validation are expected to be not valid:
+//  ExpectBothNotValid(string: A fieldname in the dictionary from the file
 //                      "invalid_settings_with_repairs.json". That nested
 //                      dictionary is the expected result from strict
 //                      validation,
-//              string: A fieldname in the dictionary from the file
+//                     string: A fieldname in the dictionary from the file
 //                      "invalid_settings_with_repairs.json". That nested
 //                      dictionary is the expected result from liberal
 //                      validation).
+//
+// If liberal valiation is expected to return VALID and strict validation is
+// expected to be not valid:
+//  ExpectStrictNotValid(string: A fieldname in the dictionary from the file
+//                        "invalid_settings_with_repairs.json". That nested
+//                        dictionary is the expected result from strict
+//                        validation).
+
+// Strict validator returns INVALID. Liberal validator returns VALID.
+INSTANTIATE_TEST_CASE_P(
+    StrictInvalidLiberalValid,
+    ONCValidatorTestRepairable,
+    ::testing::Values(
+        std::make_pair(OncParams("network-missing-required",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectStrictNotValid("")),
+        std::make_pair(OncParams("network-missing-required-type",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectStrictNotValid("")),
+        std::make_pair(OncParams("managed-network-missing-required",
+                                 &kNetworkConfigurationSignature,
+                                 true),
+                       ExpectStrictNotValid("")),
+        std::make_pair(OncParams("openvpn-missing-verify-x509-name",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectStrictNotValid(""))));
 
 // Strict validator returns INVALID. Liberal validator repairs.
 INSTANTIATE_TEST_CASE_P(
@@ -291,157 +346,156 @@ INSTANTIATE_TEST_CASE_P(
         std::make_pair(OncParams("network-unknown-fieldname",
                                  &kNetworkConfigurationSignature,
                                  false),
-                       RepairParams("", "network-repaired")),
+                       ExpectBothNotValid("", "network-repaired")),
         std::make_pair(OncParams("managed-network-unknown-fieldname",
                                  &kNetworkConfigurationSignature,
                                  true),
-                       RepairParams("", "managed-network-repaired")),
+                       ExpectBothNotValid("", "managed-network-repaired")),
         std::make_pair(OncParams("managed-network-unknown-recommended",
                                  &kNetworkConfigurationSignature,
                                  true),
-                       RepairParams("", "managed-network-repaired")),
+                       ExpectBothNotValid("", "managed-network-repaired")),
         std::make_pair(OncParams("managed-network-dict-recommended",
                                  &kNetworkConfigurationSignature,
                                  true),
-                       RepairParams("", "managed-network-repaired")),
-        std::make_pair(OncParams("network-missing-required",
-                                 &kNetworkConfigurationSignature,
-                                 false),
-                       RepairParams("", "network-missing-required")),
-        std::make_pair(OncParams("network-missing-required-type",
-                                 &kNetworkConfigurationSignature,
-                                 false),
-                       RepairParams("", "network-missing-required-type")),
-        std::make_pair(OncParams("managed-network-missing-required",
-                                 &kNetworkConfigurationSignature,
-                                 true),
-                       RepairParams("", "managed-network-missing-required")),
+                       ExpectBothNotValid("", "managed-network-repaired")),
         // Ensure that state values from Shill aren't accepted as
         // configuration.
         std::make_pair(OncParams("network-state-field",
                                  &kNetworkConfigurationSignature,
                                  false),
-                       RepairParams("", "network-repaired")),
-        std::make_pair(OncParams("network-nested-state-field",
-                                 &kNetworkConfigurationSignature,
-                                 false),
-                       RepairParams("", "network-nested-state-field-repaired")),
+                       ExpectBothNotValid("", "network-repaired")),
+        std::make_pair(
+            OncParams("network-nested-state-field",
+                      &kNetworkConfigurationSignature,
+                      false),
+            ExpectBothNotValid("", "network-nested-state-field-repaired")),
         std::make_pair(OncParams("network-with-ipconfigs",
                                  &kNetworkConfigurationSignature,
                                  false),
-                       RepairParams("", "network-repaired")),
-        std::make_pair(OncParams("openvpn-missing-verify-x509-name",
-                                 &kNetworkConfigurationSignature, false),
-                        RepairParams("", "openvpn-missing-verify-x509-name")),
-        std::make_pair(OncParams("ipsec-with-client-cert-missing-cacert",
-                                 &kIPsecSignature,
-                                 false),
-                       RepairParams("",
-                                    "ipsec-with-client-cert-missing-cacert")),
+                       ExpectBothNotValid("", "network-repaired")),
+        std::make_pair(
+            OncParams("ipsec-with-client-cert-missing-cacert",
+                      &kIPsecSignature,
+                      false),
+            ExpectBothNotValid("", "ipsec-with-client-cert-missing-cacert")),
         std::make_pair(OncParams("toplevel-with-repairable-networks",
                                  &kToplevelConfigurationSignature,
                                  false,
                                  ::onc::ONC_SOURCE_DEVICE_POLICY),
-                       RepairParams("", "toplevel-with-repaired-networks"))));
+                       ExpectBothNotValid("",
+                                          "toplevel-with-repaired-networks"))));
 
 // Strict and liberal validator repair identically.
 INSTANTIATE_TEST_CASE_P(
     StrictAndLiberalRepairIdentically,
     ONCValidatorTestRepairable,
     ::testing::Values(
-         std::make_pair(OncParams("toplevel-invalid-network",
-                                  &kToplevelConfigurationSignature,
-                                  false),
-                        RepairParams("toplevel-repaired",
-                                     "toplevel-repaired")),
-         std::make_pair(OncParams("duplicate-network-guid",
-                                  &kToplevelConfigurationSignature,
-                                  false),
-                        RepairParams("repaired-duplicate-network-guid",
-                                     "repaired-duplicate-network-guid")),
-         std::make_pair(OncParams("duplicate-cert-guid",
-                                  &kToplevelConfigurationSignature,
-                                  false),
-                        RepairParams("repaired-duplicate-cert-guid",
-                                     "repaired-duplicate-cert-guid")),
-         std::make_pair(OncParams("toplevel-invalid-network",
-                                  &kToplevelConfigurationSignature,
-                                  true),
-                        RepairParams("toplevel-repaired",
-                                     "toplevel-repaired")),
-         // Ignore recommended arrays in unmanaged ONC.
-         std::make_pair(OncParams("network-with-illegal-recommended",
-                                  &kNetworkConfigurationSignature,
-                                  false),
-                        RepairParams("network-repaired", "network-repaired")),
-         std::make_pair(OncParams("toplevel-with-vpn",
-                                  &kToplevelConfigurationSignature,
-                                  false,
-                                  ::onc::ONC_SOURCE_DEVICE_POLICY),
-                        RepairParams("toplevel-empty", "toplevel-empty")),
-         std::make_pair(OncParams("toplevel-with-server-and-ca-cert",
-                                  &kToplevelConfigurationSignature,
-                                  true,
-                                  ::onc::ONC_SOURCE_DEVICE_POLICY),
-                        RepairParams("toplevel-server-and-ca-cert-dropped",
-                                     "toplevel-server-and-ca-cert-dropped"))));
+        std::make_pair(OncParams("toplevel-invalid-network",
+                                 &kToplevelConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("toplevel-repaired",
+                                          "toplevel-repaired")),
+        std::make_pair(OncParams("duplicate-network-guid",
+                                 &kToplevelConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("repaired-duplicate-network-guid",
+                                          "repaired-duplicate-network-guid")),
+        std::make_pair(OncParams("duplicate-cert-guid",
+                                 &kToplevelConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("repaired-duplicate-cert-guid",
+                                          "repaired-duplicate-cert-guid")),
+        std::make_pair(OncParams("toplevel-invalid-network",
+                                 &kToplevelConfigurationSignature,
+                                 true),
+                       ExpectBothNotValid("toplevel-repaired",
+                                          "toplevel-repaired")),
+        // Ignore recommended arrays in unmanaged ONC.
+        std::make_pair(OncParams("network-with-illegal-recommended",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("network-repaired",
+                                          "network-repaired")),
+        std::make_pair(OncParams("toplevel-with-vpn",
+                                 &kToplevelConfigurationSignature,
+                                 false,
+                                 ::onc::ONC_SOURCE_DEVICE_POLICY),
+                       ExpectBothNotValid("toplevel-empty", "toplevel-empty")),
+        std::make_pair(
+            OncParams("toplevel-with-server-and-ca-cert",
+                      &kToplevelConfigurationSignature,
+                      true,
+                      ::onc::ONC_SOURCE_DEVICE_POLICY),
+            ExpectBothNotValid("toplevel-server-and-ca-cert-dropped",
+                               "toplevel-server-and-ca-cert-dropped"))));
 
 // Strict and liberal validator both repair, but with different results.
 INSTANTIATE_TEST_CASE_P(
     StrictAndLiberalRepairDifferently,
     ONCValidatorTestRepairable,
-    ::testing::Values(
-         std::make_pair(OncParams("toplevel-with-nested-warning",
-                                  &kToplevelConfigurationSignature,
-                                  false),
-                        RepairParams("toplevel-empty", "toplevel-repaired"))));
+    ::testing::Values(std::make_pair(OncParams("toplevel-with-nested-warning",
+                                               &kToplevelConfigurationSignature,
+                                               false),
+                                     ExpectBothNotValid("toplevel-empty",
+                                                        "toplevel-repaired"))));
 
 // Strict and liberal validator return both INVALID.
 INSTANTIATE_TEST_CASE_P(
     StrictAndLiberalInvalid,
     ONCValidatorTestRepairable,
     ::testing::Values(
-         std::make_pair(OncParams("network-unknown-value",
-                                  &kNetworkConfigurationSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("managed-network-unknown-value",
-                                  &kNetworkConfigurationSignature, true),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("network-value-out-of-range",
-                                  &kNetworkConfigurationSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("ipsec-with-psk-and-cacert",
-                                  &kIPsecSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("ipsec-with-empty-cacertrefs",
-                                  &kIPsecSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("ipsec-with-servercaref-and-servercarefs",
-                                  &kIPsecSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("openvpn-with-servercaref-and-servercarefs",
-                                  &kOpenVPNSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("eap-with-servercaref-and-servercarefs",
-                                  &kEAPSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("managed-network-value-out-of-range",
-                                  &kNetworkConfigurationSignature, true),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("network-wrong-type",
-                                  &kNetworkConfigurationSignature, false),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("managed-network-wrong-type",
-                                  &kNetworkConfigurationSignature, true),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("network-with-client-cert-pattern",
-                                  &kNetworkConfigurationSignature, true,
-                                  ::onc::ONC_SOURCE_DEVICE_POLICY),
-                        RepairParams("", "")),
-         std::make_pair(OncParams("openvpn-invalid-verify-x509-type",
-                                  &kNetworkConfigurationSignature, false),
-                        RepairParams("", ""))
-         ));
+        std::make_pair(OncParams("network-unknown-value",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("managed-network-unknown-value",
+                                 &kNetworkConfigurationSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("network-value-out-of-range",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(
+            OncParams("ipsec-with-psk-and-cacert", &kIPsecSignature, false),
+            ExpectBothNotValid("", "")),
+        std::make_pair(
+            OncParams("ipsec-with-empty-cacertrefs", &kIPsecSignature, false),
+            ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("ipsec-with-servercaref-and-servercarefs",
+                                 &kIPsecSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("openvpn-with-servercaref-and-servercarefs",
+                                 &kOpenVPNSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("eap-with-servercaref-and-servercarefs",
+                                 &kEAPSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("managed-network-value-out-of-range",
+                                 &kNetworkConfigurationSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("network-wrong-type",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("managed-network-wrong-type",
+                                 &kNetworkConfigurationSignature,
+                                 true),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("network-with-client-cert-pattern",
+                                 &kNetworkConfigurationSignature,
+                                 true,
+                                 ::onc::ONC_SOURCE_DEVICE_POLICY),
+                       ExpectBothNotValid("", "")),
+        std::make_pair(OncParams("openvpn-invalid-verify-x509-type",
+                                 &kNetworkConfigurationSignature,
+                                 false),
+                       ExpectBothNotValid("", ""))));
 
 }  // namespace onc
 }  // namespace chromeos

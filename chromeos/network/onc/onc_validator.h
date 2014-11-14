@@ -38,7 +38,9 @@ struct OncValueSignature;
 // - |managed_onc| is false and a field with name kRecommended is found
 //   (always ignored)
 //
-// - a required field is missing (controlled by flag |error_on_missing_field|)
+// - a required field is missing. Controlled by flag |error_on_missing_field|.
+//   If true this is an error. If false, a message is logged but no error or
+//   warning is flagged.
 //
 // If one of these invalid cases occurs and, in case of a controlling flag, that
 // flag is true, then it is an error. The function ValidateAndRepairObject sets
@@ -180,6 +182,9 @@ class CHROMEOS_EXPORT Validator : public Mapper {
   bool FieldExistsAndIsEmpty(const base::DictionaryValue& object,
                              const std::string& field_name);
 
+  // Returns true if |key| is a key of |dict|. Otherwise, returns false and,
+  // depending on |error_on_missing_field_|, logs a message and sets
+  // |error_or_warning_found_|.
   bool RequireField(const base::DictionaryValue& dict, const std::string& key);
 
   // Returns true if the GUID is unique or if the GUID is not a string

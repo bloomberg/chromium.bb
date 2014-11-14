@@ -400,13 +400,14 @@ bool Validator::RequireField(const base::DictionaryValue& dict,
                              const std::string& field_name) {
   if (dict.HasKey(field_name))
     return true;
-  error_or_warning_found_ = true;
   std::string message = MessageHeader() + "The required field '" + field_name +
       "' is missing.";
-  if (error_on_missing_field_)
+  if (error_on_missing_field_) {
+    error_or_warning_found_ = true;
     LOG(ERROR) << message;
-  else
-    LOG(WARNING) << message;
+  } else {
+    VLOG(1) << message;
+  }
   return false;
 }
 
