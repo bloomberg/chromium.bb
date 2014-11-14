@@ -24,7 +24,8 @@ class CastNetworkDelegate : public net::NetworkDelegate {
 
   virtual void Initialize(bool use_sync_signing) = 0;
 
-  virtual bool IsWhitelisted(const GURL& gurl, bool for_device_auth) const = 0;
+  virtual bool IsWhitelisted(const GURL& gurl, int render_process_id,
+                             bool for_device_auth) const = 0;
 
  private:
   // net::NetworkDelegate implementation:

@@ -177,17 +177,20 @@ void CastContentBrowserClient::SelectClientCertificate(
       base::Bind(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
           base::Unretained(this),
-          requesting_url),
+          requesting_url,
+          render_process_id),
       callback);
 }
 
 net::X509Certificate*
 CastContentBrowserClient::SelectClientCertificateOnIOThread(
-    GURL requesting_url) {
+    GURL requesting_url,
+    int render_process_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CastNetworkDelegate* network_delegate =
       url_request_context_factory_->app_network_delegate();
-  if (network_delegate->IsWhitelisted(requesting_url, false)) {
+  if (network_delegate->IsWhitelisted(requesting_url,
+                                      render_process_id, false)) {
     return CastNetworkDelegate::DeviceCert();
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "

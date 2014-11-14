@@ -84,7 +84,8 @@ class CastContentBrowserClient: public content::ContentBrowserClient {
 
  private:
   net::X509Certificate* SelectClientCertificateOnIOThread(
-      GURL requesting_url);
+      GURL requesting_url,
+      int render_process_id);
 
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
