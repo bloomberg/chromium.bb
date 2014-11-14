@@ -37,11 +37,14 @@
 
 namespace blink {
 
+using InstallEventInit = ExtendableEventInit;
+
 class InstallEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<InstallEvent> create();
-    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const InstallEventInit&);
+    static PassRefPtrWillBeRawPtr<InstallEvent> create(const AtomicString& type, const InstallEventInit&, WaitUntilObserver*);
 
     virtual const AtomicString& interfaceName() const override;
 
@@ -49,7 +52,8 @@ public:
 
 private:
     InstallEvent();
-    InstallEvent(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+    InstallEvent(const AtomicString& type, const InstallEventInit&);
+    InstallEvent(const AtomicString& type, const InstallEventInit&, WaitUntilObserver*);
 };
 
 } // namespace blink

@@ -73,7 +73,7 @@ void ServiceWorkerGlobalScopeProxy::dispatchActivateEvent(int eventID)
 {
     ASSERT(m_workerGlobalScope);
     WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Activate, eventID);
-    RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, EventInit(), observer));
+    RefPtrWillBeRawPtr<Event> event(ExtendableEvent::create(EventTypeNames::activate, ExtendableEventInit(), observer));
     m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 

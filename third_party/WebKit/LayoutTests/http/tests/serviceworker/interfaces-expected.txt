@@ -7,5 +7,6 @@ PASS ServiceWorkerClients
 PASS ServiceWorkerClient 
 FAIL CacheStorage assert_true: match should be an attribute of CacheStorage expected true got false
 FAIL Cache assert_true: matchAll should be an attribute of Cache expected true got false
+PASS Event constructors 
 Harness: the test ran to completion.
 

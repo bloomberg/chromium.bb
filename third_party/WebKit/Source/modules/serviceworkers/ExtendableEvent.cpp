@@ -41,7 +41,12 @@ PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create()
     return adoptRefWillBeNoop(new ExtendableEvent());
 }
 
-PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const EventInit& eventInit, WaitUntilObserver* observer)
+PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit)
+{
+    return adoptRefWillBeNoop(new ExtendableEvent(type, eventInit));
+}
+
+PassRefPtrWillBeRawPtr<ExtendableEvent> ExtendableEvent::create(const AtomicString& type, const ExtendableEventInit& eventInit, WaitUntilObserver* observer)
 {
     return adoptRefWillBeNoop(new ExtendableEvent(type, eventInit, observer));
 }
@@ -52,14 +57,20 @@ ExtendableEvent::~ExtendableEvent()
 
 void ExtendableEvent::waitUntil(ScriptState* scriptState, const ScriptValue& value)
 {
-    m_observer->waitUntil(scriptState, value);
+    if (m_observer)
+        m_observer->waitUntil(scriptState, value);
 }
 
 ExtendableEvent::ExtendableEvent()
 {
 }
 
-ExtendableEvent::ExtendableEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
+ExtendableEvent::ExtendableEvent(const AtomicString& type, const ExtendableEventInit& initializer)
+    : Event(type, initializer)
+{
+}
+
+ExtendableEvent::ExtendableEvent(const AtomicString& type, const ExtendableEventInit& initializer, WaitUntilObserver* observer)
     : Event(type, initializer)
     , m_observer(observer)
 {

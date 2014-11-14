@@ -38,11 +38,14 @@ namespace blink {
 
 class WaitUntilObserver;
 
+using ExtendableEventInit = EventInit;
+
 class ExtendableEvent : public Event {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<ExtendableEvent> create();
-    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&);
+    static PassRefPtrWillBeRawPtr<ExtendableEvent> create(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
     virtual ~ExtendableEvent();
 
@@ -53,7 +56,8 @@ public:
 
 protected:
     ExtendableEvent();
-    ExtendableEvent(const AtomicString& type, const EventInit&, WaitUntilObserver*);
+    ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);
+    ExtendableEvent(const AtomicString& type, const ExtendableEventInit&, WaitUntilObserver*);
 
     PersistentWillBeMember<WaitUntilObserver> m_observer;
 };

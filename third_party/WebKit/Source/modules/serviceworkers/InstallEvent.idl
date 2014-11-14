@@ -30,6 +30,7 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#install-event-interface
 [
+    EventConstructor,
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
     TypeChecking=Interface,

@@ -62,3 +62,9 @@ promise_test(function(t) {
                            });
         });
   }, 'Cache');
+
+test(function() {
+    assert_equals(new ExtendableEvent('ExtendableEvent').type, 'ExtendableEvent');
+    assert_equals(new InstallEvent('InstallEvent').type, 'InstallEvent');
+
+  }, 'Event constructors');

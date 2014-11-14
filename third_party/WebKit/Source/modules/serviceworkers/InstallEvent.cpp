@@ -42,7 +42,12 @@ PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create()
     return adoptRefWillBeNoop(new InstallEvent());
 }
 
-PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
+PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const InstallEventInit& initializer)
+{
+    return adoptRefWillBeNoop(new InstallEvent(type, initializer));
+}
+
+PassRefPtrWillBeRawPtr<InstallEvent> InstallEvent::create(const AtomicString& type, const InstallEventInit& initializer, WaitUntilObserver* observer)
 {
     return adoptRefWillBeNoop(new InstallEvent(type, initializer, observer));
 }
@@ -56,7 +61,12 @@ InstallEvent::InstallEvent()
 {
 }
 
-InstallEvent::InstallEvent(const AtomicString& type, const EventInit& initializer, WaitUntilObserver* observer)
+InstallEvent::InstallEvent(const AtomicString& type, const InstallEventInit& initializer)
+    : ExtendableEvent(type, initializer)
+{
+}
+
+InstallEvent::InstallEvent(const AtomicString& type, const InstallEventInit& initializer, WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer)
 {
 }
