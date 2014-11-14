@@ -68,13 +68,17 @@ bool PatchHost::OnMessageReceived(const IPC::Message& message) {
 }
 
 void PatchHost::OnPatchFinished(int result) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
-  task_runner_ = NULL;
+  if (task_runner_.get()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
+    task_runner_ = NULL;
+  }
 }
 
 void PatchHost::OnProcessCrashed(int exit_code) {
-  task_runner_->PostTask(FROM_HERE, base::Bind(callback_, -1));
-  task_runner_ = NULL;
+  if (task_runner_.get()) {
+    task_runner_->PostTask(FROM_HERE, base::Bind(callback_, -1));
+    task_runner_ = NULL;
+  }
 }
 
 ChromeOutOfProcessPatcher::ChromeOutOfProcessPatcher() {
