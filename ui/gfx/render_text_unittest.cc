@@ -2332,7 +2332,7 @@ TEST_F(RenderTextTest, StringFitsOwnWidth) {
 #if !defined(OS_WIN)
 // Ensure that RenderText examines all of the fonts in its FontList before
 // falling back to other fonts.
-TEST_F(RenderTextTest, FontListFallback) {
+TEST_F(RenderTextTest, HarfBuzz_FontListFallback) {
   // Double-check that the requested fonts are present.
   FontList font_list("Arial, Symbol, 12px");
   const std::vector<Font>& fonts = font_list.GetFonts();
@@ -2344,11 +2344,11 @@ TEST_F(RenderTextTest, FontListFallback) {
 
   // "⊕" (CIRCLED PLUS) should be rendered with Symbol rather than falling back
   // to some other font that's present on the system.
-  scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
-  render_text->SetFontList(font_list);
-  render_text->SetText(UTF8ToUTF16("\xE2\x8A\x95"));
+  RenderTextHarfBuzz render_text;
+  render_text.SetFontList(font_list);
+  render_text.SetText(UTF8ToUTF16("\xE2\x8A\x95"));
   const std::vector<RenderText::FontSpan> spans =
-      render_text->GetFontSpansForTesting();
+      render_text.GetFontSpansForTesting();
   ASSERT_EQ(static_cast<size_t>(1), spans.size());
   EXPECT_EQ("Symbol", spans[0].first.GetFontName());
 }
