@@ -124,6 +124,11 @@ component("crypto") {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
 
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]
+  }
+
   if (use_openssl) {
     # Remove NSS files when using OpenSSL
     sources -= [

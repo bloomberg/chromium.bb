@@ -567,7 +567,10 @@ static_library("http_server") {
     "server/web_socket.cc",
     "server/web_socket.h",
   ]
-  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [
+    "//build/config/compiler:wexit_time_destructors",
+    ":net_win_size_truncation"
+  ]
   deps = [
     ":net",
     "//base",
