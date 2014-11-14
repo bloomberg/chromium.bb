@@ -181,7 +181,7 @@ void FrameLoader::stopLoading()
 {
     if (m_frame->document() && m_frame->document()->parsing()) {
         finishedParsing();
-        m_frame->document()->setParsing(false);
+        m_frame->document()->setParsingState(Document::FinishedParsing);
     }
 
     if (Document* doc = m_frame->document()) {
@@ -468,7 +468,7 @@ void FrameLoader::checkCompleted()
         return;
 
     // Are we still parsing?
-    if (m_frame->document()->parsing())
+    if (m_frame->document()->parsing() || m_frame->document()->isInDOMContentLoaded())
         return;
 
     // Still waiting imports?

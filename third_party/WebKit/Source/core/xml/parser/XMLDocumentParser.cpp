@@ -1486,7 +1486,7 @@ void XMLDocumentParser::doEnd()
         xmlDocPtr doc = xmlDocPtrForString(document()->fetcher(), m_originalSourceForTransform.toString(), document()->url().string());
         document()->setTransformSource(adoptPtr(new TransformSource(doc)));
         // Make the document think it's done, so it will apply XSL stylesheets.
-        document()->setParsing(false);
+        document()->setParsingState(Document::FinishedParsing);
         document()->styleResolverChanged();
 
         // styleResolverChanged() call can detach the parser and null out its
@@ -1494,7 +1494,7 @@ void XMLDocumentParser::doEnd()
         if (isDetached())
             return;
 
-        document()->setParsing(true);
+        document()->setParsingState(Document::Parsing);
         DocumentParser::stopParsing();
     }
 }

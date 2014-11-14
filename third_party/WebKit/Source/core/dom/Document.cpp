@@ -463,7 +463,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_visitedLinkState(VisitedLinkState::create(*this))
     , m_visuallyOrdered(false)
     , m_readyState(Complete)
-    , m_isParsing(false)
+    , m_parsingState(FinishedParsing)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -2376,7 +2376,7 @@ PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen()
     setCompatibilityMode(NoQuirksMode);
 
     m_parser = createParser();
-    setParsing(true);
+    setParsingState(Parsing);
     setReadyState(Loading);
 
     return m_parser;
@@ -2670,11 +2670,11 @@ Document::PageDismissalType Document::pageDismissalEventBeingDispatched() const
     return NoDismissal;
 }
 
-void Document::setParsing(bool b)
+void Document::setParsingState(ParsingState parsingState)
 {
-    m_isParsing = b;
+    m_parsingState = parsingState;
 
-    if (m_isParsing && !m_elementDataCache)
+    if (parsing() && !m_elementDataCache)
         m_elementDataCache = ElementDataCache::create();
 }
 
@@ -4430,16 +4430,16 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     String resultMIMEType;
     String newSource;
     String resultEncoding;
-    setParsing(true);
+    setParsingState(Parsing);
     if (!processor->transformToString(this, resultMIMEType, newSource, resultEncoding)) {
-        setParsing(false);
+        setParsingState(FinishedParsing);
         return;
     }
     // FIXME: If the transform failed we should probably report an error (like Mozilla does).
     LocalFrame* ownerFrame = frame();
     processor->createDocumentFromSource(newSource, resultEncoding, resultMIMEType, this, ownerFrame);
     InspectorInstrumentation::frameDocumentUpdated(ownerFrame);
-    setParsing(false);
+    setParsingState(FinishedParsing);
 }
 
 void Document::setTransformSource(PassOwnPtr<TransformSource> source)
@@ -4624,12 +4624,13 @@ void Document::finishedParsing()
 {
     ASSERT(!scriptableDocumentParser() || !m_parser->isParsing());
     ASSERT(!scriptableDocumentParser() || m_readyState != Loading);
-    setParsing(false);
+    setParsingState(InDOMContentLoaded);
     if (!m_documentTiming.domContentLoadedEventStart)
         m_documentTiming.domContentLoadedEventStart = monotonicallyIncreasingTime();
     dispatchEvent(Event::createBubble(EventTypeNames::DOMContentLoaded));
     if (!m_documentTiming.domContentLoadedEventEnd)
         m_documentTiming.domContentLoadedEventEnd = monotonicallyIncreasingTime();
+    setParsingState(FinishedParsing);
 
     // The loader's finishedParsing() method may invoke script that causes this object to
     // be dereferenced (when this document is in an iframe and the onload causes the iframe's src to change).

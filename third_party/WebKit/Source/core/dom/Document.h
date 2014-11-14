@@ -592,8 +592,14 @@ public:
     void setReadyState(ReadyState);
     bool isLoadCompleted();
 
-    void setParsing(bool);
-    bool parsing() const { return m_isParsing; }
+    enum ParsingState {
+        Parsing,
+        InDOMContentLoaded,
+        FinishedParsing
+    };
+    void setParsingState(ParsingState);
+    bool parsing() const { return m_parsingState == Parsing; }
+    bool isInDOMContentLoaded() const { return m_parsingState == InDOMContentLoaded; }
 
     bool shouldScheduleLayout() const;
     int elapsedTime() const;
@@ -1249,7 +1255,7 @@ private:
 
     bool m_visuallyOrdered;
     ReadyState m_readyState;
-    bool m_isParsing;
+    ParsingState m_parsingState;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;
