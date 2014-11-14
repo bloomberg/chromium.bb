@@ -40,8 +40,8 @@ struct MEDIA_EXPORT KeySystemInfoForUMA {
   std::string key_system_name_for_uma;
 
   // Whether query/support statistics for |key_system| should be reported.
-  // If set to true, make sure to update AddKeySystemSupportActions() in
-  // tools/metrics/actions/extract_actions.py. See KeySystemsSupportUMA for
+  // If set to true, make sure to add a new Media.EME.KeySystemSupport.* to
+  // tools/metrics/histograms/histograms.xml. See KeySystemsSupportUMA for
   // details on how key system query/support UMA is reported.
   bool reports_key_system_support_to_uma;
 };
