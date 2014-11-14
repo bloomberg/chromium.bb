@@ -2,27 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/renderer/media/cdm_session_adapter.h"
-#include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise.h"
+#include "media/blink/cdm_session_adapter.h"
+#include "media/blink/webcontentdecryptionmodulesession_impl.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace media {
 
 WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
-    media::CdmFactory* cdm_factory,
+    CdmFactory* cdm_factory,
     const blink::WebSecurityOrigin& security_origin,
     const base::string16& key_system) {
   DCHECK(!security_origin.isNull());
@@ -36,7 +37,7 @@ WebContentDecryptionModuleImpl* WebContentDecryptionModuleImpl::Create(
   }
 
   std::string key_system_ascii = base::UTF16ToASCII(key_system);
-  if (!media::IsConcreteSupportedKeySystem(key_system_ascii))
+  if (!IsConcreteSupportedKeySystem(key_system_ascii))
     return NULL;
 
   // If unique security origin, don't try to create the CDM.
@@ -85,12 +86,12 @@ void WebContentDecryptionModuleImpl::setServerCertificate(
   DCHECK(server_certificate);
   adapter_->SetServerCertificate(
       server_certificate,
-      server_certificate_length,
-      scoped_ptr<media::SimpleCdmPromise>(
-          new media::CdmResultPromise<>(result, std::string())));
+      base::saturated_cast<int>(server_certificate_length),
+      scoped_ptr<SimpleCdmPromise>(
+          new CdmResultPromise<>(result, std::string())));
 }
 
-media::Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
+Decryptor* WebContentDecryptionModuleImpl::GetDecryptor() {
   return adapter_->GetDecryptor();
 }
 
@@ -100,4 +101,4 @@ int WebContentDecryptionModuleImpl::GetCdmId() const {
 }
 #endif  // defined(ENABLE_BROWSER_CDMS)
 
-}  // namespace content
+}  // namespace media

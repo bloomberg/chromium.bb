@@ -13,10 +13,10 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
-#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/key_systems.h"
 #include "media/blink/encrypted_media_player_support.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
@@ -304,7 +304,7 @@ void EncryptedMediaPlayerSupportImpl::SetInitialContentDecryptionModule(
   // Used when loading media and no pipeline/decoder attached yet.
   DCHECK(decryptor_ready_cb_.is_null());
 
-  web_cdm_ = ToWebContentDecryptionModuleImpl(initial_cdm);
+  web_cdm_ = media::ToWebContentDecryptionModuleImpl(initial_cdm);
 }
 
 void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModule(
@@ -313,7 +313,7 @@ void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModule(
   if (!cdm)
     return;
 
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
 
   if (web_cdm_ && !decryptor_ready_cb_.is_null())
     base::ResetAndReturn(&decryptor_ready_cb_)
@@ -332,7 +332,7 @@ void EncryptedMediaPlayerSupportImpl::SetContentDecryptionModule(
     return;
   }
 
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
 
   if (web_cdm_ && !decryptor_ready_cb_.is_null()) {
     base::ResetAndReturn(&decryptor_ready_cb_)

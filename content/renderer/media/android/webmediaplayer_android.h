@@ -58,13 +58,14 @@ struct MailboxHolder;
 
 namespace media {
 class MediaLog;
+class WebContentDecryptionModuleImpl;
 class WebMediaPlayerDelegate;
 }
 
 namespace content {
+
 class RendererCdmManager;
 class RendererMediaPlayerManager;
-class WebContentDecryptionModuleImpl;
 
 // This class implements blink::WebMediaPlayer by keeping the android
 // media player in the browser process. It listens to all the status changes
@@ -475,7 +476,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Non-owned pointer to the CDM. Updated via calls to
   // setContentDecryptionModule().
-  WebContentDecryptionModuleImpl* web_cdm_;
+  media::WebContentDecryptionModuleImpl* web_cdm_;
 
   // This is only Used by Clear Key key system implementation, where a renderer
   // side CDM will be used. This is similar to WebMediaPlayerImpl. For other key

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
+#ifndef MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
+#define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "media/base/media_export.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 
@@ -19,21 +20,18 @@ class WebSecurityOrigin;
 }
 
 namespace media {
+
 class CdmFactory;
+class CdmSessionAdapter;
 class Decryptor;
 class MediaKeys;
-}
-
-namespace content {
-
-class CdmSessionAdapter;
 class WebContentDecryptionModuleSessionImpl;
 
-class WebContentDecryptionModuleImpl
+class MEDIA_EXPORT WebContentDecryptionModuleImpl
     : public blink::WebContentDecryptionModule {
  public:
   static WebContentDecryptionModuleImpl* Create(
-      media::CdmFactory* cdm_factory,
+      CdmFactory* cdm_factory,
       const blink::WebSecurityOrigin& security_origin,
       const base::string16& key_system);
 
@@ -43,7 +41,7 @@ class WebContentDecryptionModuleImpl
   // Decryptor associated with the MediaKeys object.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
-  media::Decryptor* GetDecryptor();
+  Decryptor* GetDecryptor();
 
 #if defined(ENABLE_BROWSER_CDMS)
   // Returns the CDM ID associated with this object. May be kInvalidCdmId if no
@@ -77,6 +75,6 @@ inline WebContentDecryptionModuleImpl* ToWebContentDecryptionModuleImpl(
   return static_cast<WebContentDecryptionModuleImpl*>(cdm);
 }
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULE_IMPL_H_
+#endif  // MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULE_IMPL_H_

@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/cdm_session_adapter.h"
+#include "media/blink/cdm_session_adapter.h"
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
-#include "content/renderer/media/webcontentdecryptionmodulesession_impl.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_keys.h"
+#include "media/blink/webcontentdecryptionmodulesession_impl.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace media {
 
 const char kMediaEME[] = "Media.EME.";
 const char kDot[] = ".";
@@ -25,11 +25,11 @@ CdmSessionAdapter::CdmSessionAdapter() : weak_ptr_factory_(this) {
 
 CdmSessionAdapter::~CdmSessionAdapter() {}
 
-bool CdmSessionAdapter::Initialize(media::CdmFactory* cdm_factory,
+bool CdmSessionAdapter::Initialize(CdmFactory* cdm_factory,
                                    const std::string& key_system,
                                    const GURL& security_origin) {
   key_system_uma_prefix_ =
-      kMediaEME + media::GetKeySystemNameForUMA(key_system) + kDot;
+      kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
 
   base::WeakPtr<CdmSessionAdapter> weak_this = weak_ptr_factory_.GetWeakPtr();
   media_keys_ = cdm_factory->Create(
@@ -49,7 +49,7 @@ bool CdmSessionAdapter::Initialize(media::CdmFactory* cdm_factory,
 void CdmSessionAdapter::SetServerCertificate(
     const uint8* server_certificate,
     int server_certificate_length,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    scoped_ptr<SimpleCdmPromise> promise) {
   media_keys_->SetServerCertificate(
       server_certificate, server_certificate_length, promise.Pass());
 }
@@ -78,8 +78,8 @@ void CdmSessionAdapter::InitializeNewSession(
     const std::string& init_data_type,
     const uint8* init_data,
     int init_data_length,
-    media::MediaKeys::SessionType session_type,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    MediaKeys::SessionType session_type,
+    scoped_ptr<NewSessionCdmPromise> promise) {
   media_keys_->CreateSession(init_data_type,
                              init_data,
                              init_data_length,
@@ -89,7 +89,7 @@ void CdmSessionAdapter::InitializeNewSession(
 
 void CdmSessionAdapter::LoadSession(
     const std::string& web_session_id,
-    scoped_ptr<media::NewSessionCdmPromise> promise) {
+    scoped_ptr<NewSessionCdmPromise> promise) {
   media_keys_->LoadSession(web_session_id, promise.Pass());
 }
 
@@ -97,30 +97,30 @@ void CdmSessionAdapter::UpdateSession(
     const std::string& web_session_id,
     const uint8* response,
     int response_length,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    scoped_ptr<SimpleCdmPromise> promise) {
   media_keys_->UpdateSession(
       web_session_id, response, response_length, promise.Pass());
 }
 
 void CdmSessionAdapter::CloseSession(
     const std::string& web_session_id,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    scoped_ptr<SimpleCdmPromise> promise) {
   media_keys_->CloseSession(web_session_id, promise.Pass());
 }
 
 void CdmSessionAdapter::RemoveSession(
     const std::string& web_session_id,
-    scoped_ptr<media::SimpleCdmPromise> promise) {
+    scoped_ptr<SimpleCdmPromise> promise) {
   media_keys_->RemoveSession(web_session_id, promise.Pass());
 }
 
 void CdmSessionAdapter::GetUsableKeyIds(
     const std::string& web_session_id,
-    scoped_ptr<media::KeyIdsPromise> promise) {
+    scoped_ptr<KeyIdsPromise> promise) {
   media_keys_->GetUsableKeyIds(web_session_id, promise.Pass());
 }
 
-media::Decryptor* CdmSessionAdapter::GetDecryptor() {
+Decryptor* CdmSessionAdapter::GetDecryptor() {
   return media_keys_->GetDecryptor();
 }
 
@@ -178,7 +178,7 @@ void CdmSessionAdapter::OnSessionClosed(const std::string& web_session_id) {
 
 void CdmSessionAdapter::OnSessionError(
     const std::string& web_session_id,
-    media::MediaKeys::Exception exception_code,
+    MediaKeys::Exception exception_code,
     uint32 system_code,
     const std::string& error_message) {
   // Error events not used by unprefixed EME.
@@ -194,4 +194,4 @@ WebContentDecryptionModuleSessionImpl* CdmSessionAdapter::GetSession(
   return (session != sessions_.end()) ? session->second.get() : NULL;
 }
 
-}  // namespace content
+}  // namespace media

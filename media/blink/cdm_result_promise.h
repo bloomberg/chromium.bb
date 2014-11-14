@@ -10,6 +10,7 @@
 #include "media/base/media_keys.h"
 #include "media/blink/cdm_result_promise_helper.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
+#include "third_party/WebKit/public/platform/WebString.h"
 
 namespace media {
 

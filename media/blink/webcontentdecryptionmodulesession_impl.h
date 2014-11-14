@@ -2,10 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
-#define CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
+#ifndef MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
+#define MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
 
-#include <map>
 #include <string>
 #include <vector>
 
@@ -18,11 +17,9 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 
 namespace media {
-class MediaKeys;
-}
 
-namespace content {
 class CdmSessionAdapter;
+class MediaKeys;
 
 class WebContentDecryptionModuleSessionImpl
     : public blink::WebContentDecryptionModuleSession {
@@ -93,6 +90,6 @@ class WebContentDecryptionModuleSessionImpl
   DISALLOW_COPY_AND_ASSIGN(WebContentDecryptionModuleSessionImpl);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_
+#endif  // MEDIA_BLINK_WEBCONTENTDECRYPTIONMODULESESSION_IMPL_H_

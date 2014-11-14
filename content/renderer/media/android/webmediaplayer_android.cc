@@ -25,7 +25,6 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/crypto/render_cdm_factory.h"
 #include "content/renderer/media/crypto/renderer_cdm_manager.h"
-#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -39,6 +38,7 @@
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
@@ -176,7 +176,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
 
   // Set the initial CDM, if specified.
   if (initial_cdm) {
-    web_cdm_ = ToWebContentDecryptionModuleImpl(initial_cdm);
+    web_cdm_ = media::ToWebContentDecryptionModuleImpl(initial_cdm);
     if (web_cdm_->GetCdmId() != media::MediaKeys::kInvalidCdmId)
       player_manager_->SetCdm(player_id_, web_cdm_->GetCdmId());
   }
@@ -1646,7 +1646,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
   if (!cdm)
     return;
 
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
   if (!web_cdm_)
     return;
 
@@ -1673,7 +1673,7 @@ void WebMediaPlayerAndroid::setContentDecryptionModule(
     return;
   }
 
-  web_cdm_ = ToWebContentDecryptionModuleImpl(cdm);
+  web_cdm_ = media::ToWebContentDecryptionModuleImpl(cdm);
   DCHECK(web_cdm_);
 
   if (!decryptor_ready_cb_.is_null()) {

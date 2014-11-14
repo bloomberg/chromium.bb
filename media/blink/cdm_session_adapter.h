@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_MEDIA_CDM_SESSION_ADAPTER_H_
-#define CONTENT_RENDERER_MEDIA_CDM_SESSION_ADAPTER_H_
+#ifndef MEDIA_BLINK_CDM_SESSION_ADAPTER_H_
+#define MEDIA_BLINK_CDM_SESSION_ADAPTER_H_
 
 #include <map>
 #include <string>
@@ -18,11 +18,8 @@
 class GURL;
 
 namespace media {
+
 class CdmFactory;
-}
-
-namespace content {
-
 class WebContentDecryptionModuleSessionImpl;
 
 // Owns the CDM instance and makes calls from session objects to the CDM.
@@ -34,7 +31,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   CdmSessionAdapter();
 
   // Returns true on success.
-  bool Initialize(media::CdmFactory* cdm_factory,
+  bool Initialize(CdmFactory* cdm_factory,
                   const std::string& key_system,
                   const GURL& security_origin);
 
@@ -42,7 +39,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   // license server.
   void SetServerCertificate(const uint8* server_certificate,
                             int server_certificate_length,
-                            scoped_ptr<media::SimpleCdmPromise> promise);
+                            scoped_ptr<SimpleCdmPromise> promise);
 
   // Creates a new session and adds it to the internal map. The caller owns the
   // created session. RemoveSession() must be called when destroying it, if
@@ -64,38 +61,38 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void InitializeNewSession(const std::string& init_data_type,
                             const uint8* init_data,
                             int init_data_length,
-                            media::MediaKeys::SessionType session_type,
-                            scoped_ptr<media::NewSessionCdmPromise> promise);
+                            MediaKeys::SessionType session_type,
+                            scoped_ptr<NewSessionCdmPromise> promise);
 
   // Loads the session specified by |web_session_id|.
   void LoadSession(const std::string& web_session_id,
-                   scoped_ptr<media::NewSessionCdmPromise> promise);
+                   scoped_ptr<NewSessionCdmPromise> promise);
 
   // Updates the session specified by |web_session_id| with |response|.
   void UpdateSession(const std::string& web_session_id,
                      const uint8* response,
                      int response_length,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     scoped_ptr<SimpleCdmPromise> promise);
 
   // Closes the session specified by |web_session_id|.
   void CloseSession(const std::string& web_session_id,
-                    scoped_ptr<media::SimpleCdmPromise> promise);
+                    scoped_ptr<SimpleCdmPromise> promise);
 
   // Removes stored session data associated with the session specified by
   // |web_session_id|.
   void RemoveSession(const std::string& web_session_id,
-                     scoped_ptr<media::SimpleCdmPromise> promise);
+                     scoped_ptr<SimpleCdmPromise> promise);
 
   // Retrieves the key IDs for keys in the session that the CDM knows are
   // currently usable to decrypt media data.
   void GetUsableKeyIds(const std::string& web_session_id,
-                       scoped_ptr<media::KeyIdsPromise> promise);
+                       scoped_ptr<KeyIdsPromise> promise);
 
   // Returns the Decryptor associated with this CDM. May be NULL if no
   // Decryptor is associated with the MediaKeys object.
   // TODO(jrummell): Figure out lifetimes, as WMPI may still use the decryptor
   // after WebContentDecryptionModule is freed. http://crbug.com/330324
-  media::Decryptor* GetDecryptor();
+  Decryptor* GetDecryptor();
 
   // Returns a prefix to use for UMAs.
   const std::string& GetKeySystemUMAPrefix() const;
@@ -125,7 +122,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   void OnSessionReady(const std::string& web_session_id);
   void OnSessionClosed(const std::string& web_session_id);
   void OnSessionError(const std::string& web_session_id,
-                      media::MediaKeys::Exception exception_code,
+                      MediaKeys::Exception exception_code,
                       uint32 system_code,
                       const std::string& error_message);
 
@@ -133,7 +130,7 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   WebContentDecryptionModuleSessionImpl* GetSession(
       const std::string& web_session_id);
 
-  scoped_ptr<media::MediaKeys> media_keys_;
+  scoped_ptr<MediaKeys> media_keys_;
 
   SessionMap sessions_;
 
@@ -145,6 +142,6 @@ class CdmSessionAdapter : public base::RefCounted<CdmSessionAdapter> {
   DISALLOW_COPY_AND_ASSIGN(CdmSessionAdapter);
 };
 
-}  // namespace content
+}  // namespace media
 
-#endif  // CONTENT_RENDERER_MEDIA_CDM_SESSION_ADAPTER_H_
+#endif  // MEDIA_BLINK_CDM_SESSION_ADAPTER_H_

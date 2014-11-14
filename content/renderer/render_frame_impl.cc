@@ -77,7 +77,6 @@
 #include "content/renderer/media/midi_dispatcher.h"
 #include "content/renderer/media/render_media_log.h"
 #include "content/renderer/media/user_media_client_impl.h"
-#include "content/renderer/media/webcontentdecryptionmodule_impl.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/mojo/service_registry_js_wrapper.h"
 #include "content/renderer/notification_permission_dispatcher.h"
@@ -98,6 +97,7 @@
 #include "gin/modules/module_registry.h"
 #include "media/base/audio_renderer_mixer_input.h"
 #include "media/base/renderer.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webmediaplayer_impl.h"
 #include "media/blink/webmediaplayer_params.h"
 #include "media/filters/gpu_video_accelerator_factories.h"
@@ -1772,8 +1772,8 @@ RenderFrameImpl::createContentDecryptionModule(
   RenderCdmFactory cdm_factory;
 #endif
 
-  return WebContentDecryptionModuleImpl::Create(&cdm_factory, security_origin,
-                                                key_system);
+  return media::WebContentDecryptionModuleImpl::Create(
+      &cdm_factory, security_origin, key_system);
 }
 
 blink::WebApplicationCacheHost* RenderFrameImpl::createApplicationCacheHost(

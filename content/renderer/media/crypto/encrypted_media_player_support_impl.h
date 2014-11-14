@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/media/crypto/proxy_decryptor.h"
 #include "media/blink/encrypted_media_player_support.h"
+#include "media/blink/webcontentdecryptionmodule_impl.h"
 
 namespace blink {
 class WebMediaPlayerClient;
@@ -119,7 +120,7 @@ class EncryptedMediaPlayerSupportImpl
 
   // Non-owned pointer to the CDM. Updated via calls to
   // setContentDecryptionModule().
-  WebContentDecryptionModuleImpl* web_cdm_;
+  media::WebContentDecryptionModuleImpl* web_cdm_;
 
   media::DecryptorReadyCB decryptor_ready_cb_;
 
