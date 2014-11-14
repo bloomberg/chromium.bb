@@ -11,7 +11,7 @@ cd ${SCRIPT_DIR}
 
 OUT_DIR=out
 NACLPORTS_URL=https://chromium.googlesource.com/external/naclports.git
-NACLPORTS_REV=796184d48c27d65f48638a51ae144d651cd9f90d
+NACLPORTS_REV=e53078c33d99b0b3cbadbbbbb92cccf7a48d5dc1
 NACLPORTS_DIR=${OUT_DIR}/naclports
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
