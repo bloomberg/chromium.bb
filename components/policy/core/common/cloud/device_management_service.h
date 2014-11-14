@@ -89,6 +89,7 @@ class POLICY_EXPORT DeviceManagementRequestJob {
 
   ParameterMap query_params_;
   std::string gaia_token_;
+  std::string oauth_token_;
   std::string dm_token_;
   enterprise_management::DeviceManagementRequest request_;
   RetryCallback retry_callback_;

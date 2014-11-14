@@ -58,6 +58,7 @@ import base64
 import BaseHTTPServer
 import cgi
 import glob
+import google.protobuf.message
 import google.protobuf.text_format
 import hashlib
 import logging
@@ -221,6 +222,26 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return param_list[0]
     return None
 
+  def GetAuthorizationHeader(self, auth_type):
+    """Gets an authorization header of the appropriate type.
+
+    Args:
+      auth_type: Name of the authorization type.
+    Returns:
+      The payload found in the authorization header, i.e. the data following
+      after the authorization type.
+    """
+    for line in self.headers.getallmatchingheaders('Authorization'):
+      try:
+        header_value = line.split(':', 1)[1].strip()
+        if header_value.startswith(auth_type):
+          return header_value[len(auth_type):].strip()
+      except ValueError, IndexError:
+        # Failed to parse the header.
+        pass
+
+    return None
+
   def do_GET(self):
     """Handles GET requests.
 
@@ -275,8 +296,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     rmsg.ParseFromString(self.rfile.read(length))
 
     logging.debug('gaia auth token -> ' +
-                  self.headers.getheader('Authorization', ''))
-    logging.debug('oauth token -> ' + str(self.GetUniqueParam('oauth_token')))
+                  str(self.GetAuthorizationHeader('GoogleLogin auth=')))
+    logging.debug('oauth token -> ' +
+                  str(self.GetAuthorizationHeader('Bearer')))
+    logging.debug('dm token -> ' +
+                  str(self.GetAuthorizationHeader('GoogleDMToken token=')))
     logging.debug('deviceid -> ' + str(self.GetUniqueParam('deviceid')))
     self.DumpMessage('Request', rmsg)
 
@@ -303,8 +327,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       return (400, 'Invalid request parameter')
 
-    self.DumpMessage('Response', response[1])
-    return (response[0], response[1].SerializeToString())
+    if isinstance(response[1], basestring):
+      body = response[1]
+    elif isinstance(response[1], google.protobuf.message.Message):
+      self.DumpMessage('Response', response[1])
+      body = response[1].SerializeToString()
+    else:
+      body = ''
+
+    return (response[0], body)
 
   def CreatePolicyForExternalPolicyData(self, policy_key):
     """Returns an ExternalPolicyData protobuf for policy_key.
@@ -328,19 +359,24 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     return settings.SerializeToString()
 
   def CheckGoogleLogin(self):
-    """Extracts the auth token from the request and returns it. The token may
-    either be a GoogleLogin token from an Authorization header, or an OAuth V2
-    token from the oauth_token query parameter. Returns None if no token is
-    present.
+    """Extracts the auth token from the request and returns it. The token is
+    passed via an Authorization header and may either be a GoogleLogin token or
+    an OAuth V2 token. Returns None if no token is present.
     """
+    oauth_token = self.GetAuthorizationHeader('Bearer')
+    if oauth_token:
+      return oauth_token
+
+    # Previous versions of Chrome passed the access token in the oauth_token
+    # query parameter. The test server still accepts this so things don't break
+    # in case of version mismatch, for example when bisecting.
     oauth_token = self.GetUniqueParam('oauth_token')
     if oauth_token:
       return oauth_token
 
-    match = re.match('GoogleLogin auth=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
-    if match:
-      return match.group(1)
+    google_login_token = self.GetAuthorizationHeader('GoogleLogin auth=')
+    if google_login_token:
+      return google_login_token
 
     return None
 
@@ -833,12 +869,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       returned by LookupToken().
     """
     error = 500
-    dmtoken = None
     request_device_id = self.GetUniqueParam('deviceid')
-    match = re.match('GoogleDMToken token=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
-    if match:
-      dmtoken = match.group(1)
+    dmtoken = self.GetAuthorizationHeader('GoogleDMToken token=')
     if not dmtoken:
       error = 401
     else:

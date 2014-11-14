@@ -27,6 +27,7 @@ namespace {
 
 const char kPostContentType[] = "application/protobuf";
 
+const char kOAuthTokenAuthHeader[] = "Authorization: Bearer ";
 const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
 const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
 
@@ -311,6 +312,8 @@ void DeviceManagementRequestJobImpl::ConfigureRequest(
   CHECK(request_.SerializeToString(&payload));
   fetcher->SetUploadData(kPostContentType, payload);
   std::string extra_headers;
+  if (!oauth_token_.empty())
+    extra_headers += kOAuthTokenAuthHeader + oauth_token_ + "\n";
   if (!gaia_token_.empty())
     extra_headers += kServiceTokenAuthHeader + gaia_token_ + "\n";
   if (!dm_token_.empty())
@@ -359,7 +362,7 @@ void DeviceManagementRequestJob::SetGaiaToken(const std::string& gaia_token) {
 }
 
 void DeviceManagementRequestJob::SetOAuthToken(const std::string& oauth_token) {
-  AddParameter(dm_protocol::kParamOAuthToken, oauth_token);
+  oauth_token_ = oauth_token;
 }
 
 void DeviceManagementRequestJob::SetUserAffiliation(

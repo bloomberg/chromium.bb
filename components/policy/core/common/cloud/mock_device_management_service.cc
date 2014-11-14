@@ -32,7 +32,7 @@ class MockRequestJobBase : public DeviceManagementRequestJob {
   void Run() override {
     service_->StartJob(ExtractParameter(dm_protocol::kParamRequest),
                        gaia_token_,
-                       ExtractParameter(dm_protocol::kParamOAuthToken),
+                       oauth_token_,
                        dm_token_,
                        ExtractParameter(dm_protocol::kParamUserAffiliation),
                        ExtractParameter(dm_protocol::kParamDeviceID),
