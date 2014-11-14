@@ -135,9 +135,10 @@ void NavigationEntryScreenshotManager::SetMinScreenshotIntervalMS(
   min_screenshot_interval_ms_ = interval_ms;
 }
 
-void NavigationEntryScreenshotManager::OnScreenshotTaken(int unique_id,
-                                                     bool success,
-                                                     const SkBitmap& bitmap) {
+void NavigationEntryScreenshotManager::OnScreenshotTaken(
+    int unique_id,
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
   NavigationEntryImpl* entry = NULL;
   int entry_count = owner_->GetEntryCount();
   for (int i = 0; i < entry_count; ++i) {
@@ -153,7 +154,7 @@ void NavigationEntryScreenshotManager::OnScreenshotTaken(int unique_id,
     return;
   }
 
-  if (!success || bitmap.empty() || bitmap.isNull()) {
+  if ((response != READBACK_SUCCESS) || bitmap.empty() || bitmap.isNull()) {
     if (!ClearScreenshot(entry))
       OnScreenshotSet(entry);
     return;

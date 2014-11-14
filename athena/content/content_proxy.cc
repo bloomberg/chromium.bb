@@ -157,12 +157,14 @@ void ContentProxy::CreateProxyContent() {
       kAlpha_8_SkColorType);
 }
 
-void ContentProxy::OnContentImageRead(bool success, const SkBitmap& bitmap) {
+void ContentProxy::OnContentImageRead(const SkBitmap& bitmap,
+                                      content::ReadbackResponse response) {
   // Now we can hide the content. Note that after hiding we are freeing memory
   // and if something goes wrong we will end up with an empty page.
   HideOriginalContent();
 
-  if (!success || bitmap.empty() || bitmap.isNull())
+  if (response != content::READBACK_SUCCESS || bitmap.empty() ||
+      bitmap.isNull())
     return;
 
   // While we are encoding the image, we keep the current image as reference

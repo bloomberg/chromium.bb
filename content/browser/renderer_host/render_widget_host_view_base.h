@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
+#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebScreenOrientationType.h"
@@ -55,12 +56,6 @@ class WebCursor;
 struct DidOverscrollParams;
 struct NativeWebKeyboardEvent;
 struct WebPluginGeometry;
-
-// TODO(Sikugu): Though we have the return status of the result here,
-// we should add the reason for failure as a new parameter to handle cases
-// efficiently.
-typedef const base::Callback<void(bool, const SkBitmap&)>
-    CopyFromCompositingSurfaceCallback;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
@@ -261,11 +256,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // copy is then scaled to a SkBitmap of size |dst_size|. |callback| is run
   // with true on success, false otherwise. A smaller region than |src_subrect|
   // may be copied if the underlying surface is smaller than |src_subrect|.
-  virtual void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      CopyFromCompositingSurfaceCallback& callback,
-      const SkColorType color_type) = 0;
+  virtual void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                          const gfx::Size& dst_size,
+                                          ReadbackRequestCallback& callback,
+                                          const SkColorType color_type) = 0;
 
   // Copies the contents of the compositing surface, populating the given
   // |target| with YV12 image data. |src_subrect| is specified in layer space

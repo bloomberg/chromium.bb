@@ -57,8 +57,7 @@ class ContentViewCoreImpl : public ContentViewCore,
       float scale,
       SkColorType color_type,
       gfx::Rect src_subrect,
-      const base::Callback<void(bool, const SkBitmap&)>& result_callback)
-      override;
+      ReadbackRequestCallback& result_callback) override;
   virtual float GetDpiScale() const override;
   virtual void PauseOrResumeGeolocation(bool should_pause) override;
   virtual void RequestTextSurroundingSelection(

@@ -99,7 +99,7 @@ void SendImeEventAck(RenderWidgetHostImpl* host) {
 }
 
 void CopyFromCompositingSurfaceFinished(
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
     const base::TimeTicks& start_time,
@@ -118,7 +118,8 @@ void CopyFromCompositingSurfaceFinished(
   release_callback->Run(sync_point, lost_resource);
   UMA_HISTOGRAM_TIMES(kAsyncReadBackString,
                       base::TimeTicks::Now() - start_time);
-  callback.Run(result, *bitmap);
+  ReadbackResponse response = result ? READBACK_SUCCESS : READBACK_FAILED;
+  callback.Run(*bitmap, response);
 }
 
 ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
@@ -239,11 +240,10 @@ bool HasMobileViewport(const cc::CompositorFrameMetadata& frame_metadata) {
 
 }  // anonymous namespace
 
-ReadbackRequest::ReadbackRequest(
-    float scale,
-    SkColorType color_type,
-    gfx::Rect src_subrect,
-    const base::Callback<void(bool, const SkBitmap&)>& result_callback)
+ReadbackRequest::ReadbackRequest(float scale,
+                                 SkColorType color_type,
+                                 gfx::Rect src_subrect,
+                                 ReadbackRequestCallback& result_callback)
     : scale_(scale),
       color_type_(color_type),
       src_subrect_(src_subrect),
@@ -380,7 +380,7 @@ void RenderWidgetHostViewAndroid::SetBounds(const gfx::Rect& rect) {
 void RenderWidgetHostViewAndroid::AbortPendingReadbackRequests() {
   while (!readbacks_waiting_for_frame_.empty()) {
     ReadbackRequest& readback_request = readbacks_waiting_for_frame_.front();
-    readback_request.GetResultCallback().Run(false, SkBitmap());
+    readback_request.GetResultCallback().Run(SkBitmap(), READBACK_FAILED);
     readbacks_waiting_for_frame_.pop();
   }
 }
@@ -389,9 +389,9 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
     float scale,
     SkColorType color_type,
     gfx::Rect src_subrect,
-    CopyFromCompositingSurfaceCallback& result_callback) {
+    ReadbackRequestCallback& result_callback) {
   if (!host_ || host_->is_hidden()) {
-    result_callback.Run(false, SkBitmap());
+    result_callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
     return;
   }
   if (!IsSurfaceAvailableForCopy()) {
@@ -833,17 +833,17 @@ void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    CopyFromCompositingSurfaceCallback& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromCompositingSurface");
   if ((!host_ || host_->is_hidden()) ||
       !IsReadbackConfigSupported(color_type)) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), READBACK_FORMAT_NOT_SUPPORTED);
     return;
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
   if (!using_synchronous_compositor_ && !IsSurfaceAvailableForCopy()) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
     return;
   }
   const gfx::Display& display =
@@ -1193,13 +1193,13 @@ scoped_ptr<TouchHandleDrawable> RenderWidgetHostViewAndroid::CreateDrawable() {
 void RenderWidgetHostViewAndroid::SynchronousCopyContents(
     const gfx::Rect& src_subrect_in_pixel,
     const gfx::Size& dst_size_in_pixel,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   SynchronousCompositor* compositor =
       SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
                                         host_->GetRoutingID());
   if (!compositor) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
 
@@ -1213,7 +1213,7 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
       (float)dst_size_in_pixel.width() / (float)src_subrect_in_pixel.width(),
       (float)dst_size_in_pixel.height() / (float)src_subrect_in_pixel.height());
   compositor->DemandDrawSw(&canvas);
-  callback.Run(true, bitmap);
+  callback.Run(bitmap, READBACK_SUCCESS);
 }
 
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
@@ -1693,7 +1693,7 @@ RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResultForDelegatedReadback(
     const SkColorType color_type,
     const base::TimeTicks& start_time,
     scoped_refptr<cc::Layer> readback_layer,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   readback_layer->RemoveFromParent();
   PrepareTextureCopyOutputResult(
@@ -1705,10 +1705,10 @@ void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
     const base::TimeTicks& start_time,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
+      base::Bind(callback, SkBitmap(), READBACK_FAILED));
   TRACE_EVENT0("cc",
                "RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult");
 

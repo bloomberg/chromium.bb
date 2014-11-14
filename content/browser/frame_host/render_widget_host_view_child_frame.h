@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/readback_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/rect.h"
 
@@ -83,11 +84,10 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
                         const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type) override;
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& dst_size,
+                                  ReadbackRequestCallback& callback,
+                                  const SkColorType color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,

@@ -271,9 +271,9 @@ bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& /* dst_size */,
-    CopyFromCompositingSurfaceCallback& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
-  callback.Run(false, SkBitmap());
+  callback.Run(SkBitmap(), READBACK_NOT_SUPPORTED);
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(

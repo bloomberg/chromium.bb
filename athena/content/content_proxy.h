@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/readback_types.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace views {
@@ -70,7 +71,8 @@ class ContentProxy {
   bool CreateContentImage();
 
   // Called once the content was read back.
-  void OnContentImageRead(bool success, const SkBitmap& bitmap);
+  void OnContentImageRead(const SkBitmap& bitmap,
+                          content::ReadbackResponse response);
 
   // Called once the image content has been converted to PNG.
   void OnContentImageEncodeComplete(scoped_refptr<ProxyImageData> image);

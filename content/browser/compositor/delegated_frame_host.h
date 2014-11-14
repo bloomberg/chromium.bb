@@ -100,7 +100,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void RemovingFromWindow();
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& output_size,
-                                  CopyFromCompositingSurfaceCallback& callback,
+                                  ReadbackRequestCallback& callback,
                                   const SkColorType color_type);
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
@@ -182,17 +182,17 @@ class CONTENT_EXPORT DelegatedFrameHost
   static void CopyFromCompositingSurfaceHasResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareBitmapCopyOutputResult(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void CopyFromCompositingSurfaceHasResultForVideo(
       base::WeakPtr<DelegatedFrameHost> rwhva,

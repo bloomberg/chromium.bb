@@ -633,10 +633,10 @@ void ContentViewCoreImpl::GetScaledContentBitmap(
     float scale,
     SkColorType color_type,
     gfx::Rect src_subrect,
-    const base::Callback<void(bool, const SkBitmap&)>& result_callback) {
+    ReadbackRequestCallback& result_callback) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (!view) {
-    result_callback.Run(false, SkBitmap());
+    result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
 

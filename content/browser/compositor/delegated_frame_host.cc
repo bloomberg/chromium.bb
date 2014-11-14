@@ -161,7 +161,7 @@ void DelegatedFrameHost::RequestCopyOfOutput(
 void DelegatedFrameHost::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    CopyFromCompositingSurfaceCallback& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   // Only ARGB888 and RGB565 supported as of now.
   bool format_support = ((color_type == kAlpha_8_SkColorType) ||
@@ -169,7 +169,7 @@ void DelegatedFrameHost::CopyFromCompositingSurface(
                          (color_type == kN32_SkColorType));
   DCHECK(format_support);
   if (!CanCopyToBitmap()) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), content::READBACK_SURFACE_UNAVAILABLE);
     return;
   }
 
@@ -553,10 +553,10 @@ void DelegatedFrameHost::EvictDelegatedFrame() {
 void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (result->IsEmpty() || result->size().IsEmpty()) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), content::READBACK_FAILED);
     return;
   }
 
@@ -575,7 +575,7 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResult(
 }
 
 static void CopyFromCompositingSurfaceFinished(
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::SingleReleaseCallback> release_callback,
     scoped_ptr<SkBitmap> bitmap,
     scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
@@ -590,18 +590,18 @@ static void CopyFromCompositingSurfaceFinished(
   bool lost_resource = sync_point == 0;
   release_callback->Run(sync_point, lost_resource);
 
-  callback.Run(result, *bitmap);
+  callback.Run(*bitmap, content::READBACK_SUCCESS);
 }
 
 // static
 void DelegatedFrameHost::PrepareTextureCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   DCHECK(result->HasTexture());
   base::ScopedClosureRunner scoped_callback_runner(
-      base::Bind(callback, false, SkBitmap()));
+      base::Bind(callback, SkBitmap(), content::READBACK_FAILED));
 
   // TODO(sikugu): We should be able to validate the format here using
   // GLHelper::IsReadbackConfigSupported before we processs the result.
@@ -649,11 +649,11 @@ void DelegatedFrameHost::PrepareTextureCopyOutputResult(
 void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
     const gfx::Size& dst_size_in_pixel,
     const SkColorType color_type,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     scoped_ptr<cc::CopyOutputResult> result) {
   if (color_type != kN32_SkColorType && color_type != kAlpha_8_SkColorType) {
     NOTIMPLEMENTED();
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), READBACK_FORMAT_NOT_SUPPORTED);
     return;
   }
   DCHECK(result->HasBitmap());
@@ -672,7 +672,7 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
   }
   if (color_type == kN32_SkColorType) {
     DCHECK_EQ(scaled_bitmap.colorType(), kN32_SkColorType);
-    callback.Run(true, scaled_bitmap);
+    callback.Run(scaled_bitmap, READBACK_SUCCESS);
     return;
   }
   DCHECK_EQ(color_type, kAlpha_8_SkColorType);
@@ -684,7 +684,7 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
   bool success = grayscale_bitmap.tryAllocPixels(
       SkImageInfo::MakeA8(scaled_bitmap.width(), scaled_bitmap.height()));
   if (!success) {
-    callback.Run(false, SkBitmap());
+    callback.Run(SkBitmap(), content::READBACK_MEMORY_ALLOCATION_FAILURE);
     return;
   }
   SkCanvas canvas(grayscale_bitmap);
@@ -693,7 +693,7 @@ void DelegatedFrameHost::PrepareBitmapCopyOutputResult(
       skia::AdoptRef(SkLumaColorFilter::Create());
   paint.setColorFilter(filter.get());
   canvas.drawBitmap(scaled_bitmap, SkIntToScalar(0), SkIntToScalar(0), &paint);
-  callback.Run(true, grayscale_bitmap);
+  callback.Run(grayscale_bitmap, READBACK_SUCCESS);
 }
 
 // static

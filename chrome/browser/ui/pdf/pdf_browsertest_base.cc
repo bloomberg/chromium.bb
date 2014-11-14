@@ -111,10 +111,11 @@ bool PDFBrowserTest::VerifySnapshot(const std::string& expected_filename) {
   return !snapshot_different_;
 }
 
-void PDFBrowserTest::CopyFromBackingStoreCallback(bool success,
-                                                  const SkBitmap& bitmap) {
+void PDFBrowserTest::CopyFromBackingStoreCallback(
+    const SkBitmap& bitmap,
+    content::ReadbackResponse response) {
   base::MessageLoopForUI::current()->Quit();
-  ASSERT_EQ(success, true);
+  ASSERT_EQ(response, content::READBACK_SUCCESS);
   base::FilePath reference = ui_test_utils::GetTestFilePath(
       base::FilePath(FILE_PATH_LITERAL("pdf_private")),
       base::FilePath().AppendASCII(expected_filename_));

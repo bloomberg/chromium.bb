@@ -64,9 +64,9 @@ void UpdateThumbnail(const ThumbnailingContext& context,
 
 void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
                            scoped_refptr<ThumbnailingAlgorithm> algorithm,
-                           bool succeeded,
-                           const SkBitmap& bitmap) {
-  if (!succeeded)
+                           const SkBitmap& bitmap,
+                           content::ReadbackResponse response) {
+  if (response != content::READBACK_SUCCESS)
     return;
 
   // On success, we must be on the UI thread (on failure because of shutdown we

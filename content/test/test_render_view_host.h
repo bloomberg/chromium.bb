@@ -113,7 +113,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
       const ViewHostMsg_SelectionBounds_Params& params) override {}
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& dst_size,
-                                  CopyFromCompositingSurfaceCallback& callback,
+                                  ReadbackRequestCallback& callback,
                                   const SkColorType color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,

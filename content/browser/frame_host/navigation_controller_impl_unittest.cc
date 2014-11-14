@@ -81,7 +81,7 @@ class MockScreenshotManager : public content::NavigationEntryScreenshotManager {
         1, 1, kAlpha_8_SkColorType, kPremul_SkAlphaType));
     bitmap.eraseARGB(0, 0, 0, 0);
     encoding_screenshot_in_progress_ = true;
-    OnScreenshotTaken(entry->GetUniqueID(), true, bitmap);
+    OnScreenshotTaken(entry->GetUniqueID(), bitmap, content::READBACK_SUCCESS);
     WaitUntilScreenshotIsReady();
   }
 

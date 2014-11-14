@@ -281,11 +281,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                         const gfx::Range& range) override;
   void SelectionBoundsChanged(
       const ViewHostMsg_SelectionBounds_Params& params) override;
-  void CopyFromCompositingSurface(
-      const gfx::Rect& src_subrect,
-      const gfx::Size& dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      SkColorType color_type) override;
+  void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
+                                  const gfx::Size& dst_size,
+                                  ReadbackRequestCallback& callback,
+                                  SkColorType color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
       const scoped_refptr<media::VideoFrame>& target,

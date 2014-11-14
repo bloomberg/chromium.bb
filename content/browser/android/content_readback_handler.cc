@@ -20,18 +20,16 @@ namespace content {
 
 namespace {
 
-typedef base::Callback<void(bool, const SkBitmap&)> ResultCallback;
-
 void OnFinishCopyOutputRequest(
-    const ResultCallback& result_callback,
+    const ReadbackRequestCallback& result_callback,
     scoped_ptr<cc::CopyOutputResult> copy_output_result) {
   if (!copy_output_result->HasBitmap()) {
-    result_callback.Run(false, SkBitmap());
+    result_callback.Run(SkBitmap(), READBACK_FAILED);
     return;
   }
 
   scoped_ptr<SkBitmap> bitmap = copy_output_result->TakeBitmap();
-  result_callback.Run(true, *bitmap);
+  result_callback.Run(*bitmap, READBACK_SUCCESS);
 }
 
 }  // anonymous namespace
@@ -64,7 +62,7 @@ void ContentReadbackHandler::GetContentBitmap(JNIEnv* env,
       ContentViewCore::GetNativeContentViewCore(env, content_view_core);
   DCHECK(view);
 
-  ResultCallback result_callback =
+  ReadbackRequestCallback result_callback =
       base::Bind(&ContentReadbackHandler::OnFinishReadback,
                  weak_factory_.GetWeakPtr(),
                  readback_id);
@@ -82,7 +80,7 @@ void ContentReadbackHandler::GetCompositorBitmap(JNIEnv* env,
       reinterpret_cast<ui::WindowAndroid*>(native_window_android);
   DCHECK(window_android);
 
-  ResultCallback result_callback =
+  ReadbackRequestCallback result_callback =
       base::Bind(&ContentReadbackHandler::OnFinishReadback,
                  weak_factory_.GetWeakPtr(),
                  readback_id);
@@ -105,11 +103,11 @@ void ContentReadbackHandler::GetCompositorBitmap(JNIEnv* env,
 ContentReadbackHandler::~ContentReadbackHandler() {}
 
 void ContentReadbackHandler::OnFinishReadback(int readback_id,
-                                              bool success,
-                                              const SkBitmap& bitmap) {
+                                              const SkBitmap& bitmap,
+                                              ReadbackResponse response) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_bitmap;
-  if (success)
+  if (response == READBACK_SUCCESS)
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
 
   Java_ContentReadbackHandler_notifyGetBitmapFinished(

@@ -258,8 +258,8 @@ class WebContentsCaptureMachine : public VideoCaptureMachine {
       const scoped_refptr<media::VideoFrame>& target,
       const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
           deliver_frame_cb,
-      bool success,
-      const SkBitmap& bitmap);
+      const SkBitmap& bitmap,
+      ReadbackResponse response);
 
   // Response callback for RWHVP::CopyFromCompositingSurfaceToVideoFrame().
   void DidCopyFromCompositingSurfaceToVideoFrame(
@@ -686,13 +686,13 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
     const scoped_refptr<media::VideoFrame>& target,
     const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&
         deliver_frame_cb,
-    bool success,
-    const SkBitmap& bitmap) {
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::TimeTicks now = base::TimeTicks::Now();
   DCHECK(render_thread_.get());
-  if (success) {
+  if (response == READBACK_SUCCESS) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("mirroring", "Capture", target.get(),
                                  "Render");

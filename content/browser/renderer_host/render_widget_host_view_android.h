@@ -24,6 +24,7 @@
 #include "content/browser/renderer_host/input/touch_selection_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -57,25 +58,22 @@ struct NativeWebKeyboardEvent;
 
 class ReadbackRequest {
  public:
-  explicit ReadbackRequest(
-      float scale,
-      SkColorType color_type,
-      gfx::Rect src_subrect,
-      const base::Callback<void(bool, const SkBitmap&)>& result_callback);
+  explicit ReadbackRequest(float scale,
+                           SkColorType color_type,
+                           gfx::Rect src_subrect,
+                           ReadbackRequestCallback& result_callback);
   ~ReadbackRequest();
   float GetScale() { return scale_; }
   SkColorType GetColorFormat() { return color_type_; }
   const gfx::Rect GetCaptureRect() { return src_subrect_; }
-  const base::Callback<void(bool, const SkBitmap&)>& GetResultCallback() {
-    return result_callback_;
-  }
+  ReadbackRequestCallback& GetResultCallback() { return result_callback_; }
 
  private:
   ReadbackRequest();
   float scale_;
   SkColorType color_type_;
   gfx::Rect src_subrect_;
-  base::Callback<void(bool, const SkBitmap&)> result_callback_;
+  ReadbackRequestCallback result_callback_;
 };
 
 // -----------------------------------------------------------------------------
@@ -149,7 +147,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void CopyFromCompositingSurface(
       const gfx::Rect& src_subrect,
       const gfx::Size& dst_size,
-      CopyFromCompositingSurfaceCallback& callback,
+      ReadbackRequestCallback& callback,
       const SkColorType color_type) override;
   virtual void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
@@ -238,11 +236,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   void WasResized();
 
-  void GetScaledContentBitmap(
-      float scale,
-      SkColorType color_type,
-      gfx::Rect src_subrect,
-      const base::Callback<void(bool, const SkBitmap&)>& result_callback);
+  void GetScaledContentBitmap(float scale,
+                              SkColorType color_type,
+                              gfx::Rect src_subrect,
+                              ReadbackRequestCallback& result_callback);
 
   scoped_refptr<cc::DelegatedRendererLayer>
       CreateDelegatedLayerForFrameProvider() const;
@@ -298,22 +295,21 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
       const base::TimeTicks& start_time,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
   static void PrepareTextureCopyOutputResultForDelegatedReadback(
       const gfx::Size& dst_size_in_pixel,
       const SkColorType color_type,
       const base::TimeTicks& start_time,
       scoped_refptr<cc::Layer> readback_layer,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      ReadbackRequestCallback& callback,
       scoped_ptr<cc::CopyOutputResult> result);
 
   // DevTools ScreenCast support for Android WebView.
-  void SynchronousCopyContents(
-      const gfx::Rect& src_subrect_in_pixel,
-      const gfx::Size& dst_size_in_pixel,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type);
+  void SynchronousCopyContents(const gfx::Rect& src_subrect_in_pixel,
+                               const gfx::Size& dst_size_in_pixel,
+                               ReadbackRequestCallback& callback,
+                               const SkColorType color_type);
 
   bool IsReadbackConfigSupported(SkColorType color_type);
 

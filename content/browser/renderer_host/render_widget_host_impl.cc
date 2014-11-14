@@ -693,7 +693,7 @@ void RenderWidgetHostImpl::ViewDestroyed() {
 void RenderWidgetHostImpl::CopyFromBackingStore(
     const gfx::Rect& src_subrect,
     const gfx::Size& accelerated_dst_size,
-    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   if (view_) {
     TRACE_EVENT0("browser",
@@ -705,7 +705,7 @@ void RenderWidgetHostImpl::CopyFromBackingStore(
     return;
   }
 
-  callback.Run(false, SkBitmap());
+  callback.Run(SkBitmap(), content::READBACK_FAILED);
 }
 
 bool RenderWidgetHostImpl::CanCopyFromBackingStore() {

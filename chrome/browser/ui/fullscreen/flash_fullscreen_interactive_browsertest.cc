@@ -240,9 +240,9 @@ class FlashFullscreenInteractiveBrowserTest : public OutOfProcessPPAPITest {
   static void CheckBitmapForFillColor(SkColor expected_color,
                                       bool* is_expected_color,
                                       const base::Closure& done_cb,
-                                      bool success,
-                                      const SkBitmap& bitmap) {
-    if (success) {
+                                      const SkBitmap& bitmap,
+                                      content::ReadbackResponse response) {
+    if (response == content::READBACK_SUCCESS) {
       SkAutoLockPixels lock_pixels(bitmap);
       if (bitmap.width() > 0 && bitmap.height() > 0)
         *is_expected_color = (bitmap.getColor(0, 0) == expected_color);

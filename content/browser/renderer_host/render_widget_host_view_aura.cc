@@ -948,7 +948,7 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
-    CopyFromCompositingSurfaceCallback& callback,
+    ReadbackRequestCallback& callback,
     const SkColorType color_type) {
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, color_type);
@@ -1260,9 +1260,10 @@ void RenderWidgetHostViewAura::ShowDisambiguationPopup(
 }
 
 void RenderWidgetHostViewAura::DisambiguationPopupRendered(
-    bool success,
-    const SkBitmap& result) {
-  if (!success || disambiguation_scroll_offset_ != last_scroll_offset_)
+    const SkBitmap& result,
+    ReadbackResponse response) {
+  if ((response != READBACK_SUCCESS) ||
+      disambiguation_scroll_offset_ != last_scroll_offset_)
     return;
 
   // Use RenderViewHostDelegate to get to the WebContentsViewAura, which will

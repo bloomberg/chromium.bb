@@ -34,7 +34,7 @@ class ColorPicker {
  private:
   void UpdateFrame();
   void ResetFrame();
-  void FrameUpdated(bool succeeded, const SkBitmap& bitmap);
+  void FrameUpdated(const SkBitmap&, ReadbackResponse);
   bool HandleMouseEvent(const blink::WebMouseEvent& event);
   void UpdateCursor();
 

@@ -487,9 +487,9 @@ void PageHandler::ScreencastFrameCaptured(
     const std::string& format,
     int quality,
     const cc::CompositorFrameMetadata& metadata,
-    bool success,
-    const SkBitmap& bitmap) {
-  if (!success) {
+    const SkBitmap& bitmap,
+    ReadbackResponse response) {
+  if (response != READBACK_SUCCESS) {
     if (capture_retry_count_) {
       --capture_retry_count_;
       base::MessageLoop::current()->PostDelayedTask(

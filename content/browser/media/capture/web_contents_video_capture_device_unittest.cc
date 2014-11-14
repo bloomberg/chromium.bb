@@ -246,11 +246,10 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
   }
 
   // TestRenderViewHost overrides.
-  void CopyFromBackingStore(
-      const gfx::Rect& src_rect,
-      const gfx::Size& accelerated_dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type) override {
+  void CopyFromBackingStore(const gfx::Rect& src_rect,
+                            const gfx::Size& accelerated_dst_size,
+                            ReadbackRequestCallback& callback,
+                            const SkColorType color_type) override {
     gfx::Size size = controller_->GetCopyResultSize();
     SkColor color = controller_->GetSolidColor();
 
@@ -262,7 +261,7 @@ class CaptureTestRenderViewHost : public TestRenderViewHost {
       SkAutoLockPixels locker(output.GetBitmap());
       output.GetBitmap().eraseColor(color);
     }
-    callback.Run(true, output.GetBitmap());
+    callback.Run(output.GetBitmap(), content::READBACK_SUCCESS);
     controller_->SignalCopy();
   }
 

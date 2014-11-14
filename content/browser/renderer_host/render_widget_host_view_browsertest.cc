@@ -106,10 +106,10 @@ class RenderWidgetHostViewBrowserTest : public ContentBrowserTest {
 
   // Callback when using CopyFromBackingStore() API.
   void FinishCopyFromBackingStore(const base::Closure& quit_closure,
-                                  bool frame_captured,
-                                  const SkBitmap& bitmap) {
+                                  const SkBitmap& bitmap,
+                                  ReadbackResponse response) {
     ++callback_invoke_count_;
-    if (frame_captured) {
+    if (response == READBACK_SUCCESS) {
       ++frames_captured_;
       EXPECT_FALSE(bitmap.empty());
     }
@@ -404,9 +404,10 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     CompositingRenderWidgetHostViewBrowserTest::SetUp();
   }
 
-  void CopyFromCompositingSurfaceCallback(base::Closure quit_callback,
-                                          bool result,
-                                          const SkBitmap& bitmap) {
+  void ReadbackRequestCallbackTest(base::Closure quit_callback,
+                                   const SkBitmap& bitmap,
+                                   ReadbackResponse response) {
+    bool result = (response == READBACK_SUCCESS);
     EXPECT_EQ(expected_copy_from_compositing_surface_result_, result);
     if (!result) {
       quit_callback.Run();
@@ -463,7 +464,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     quit_callback.Run();
   }
 
-  void CopyFromCompositingSurfaceCallbackForVideo(
+  void ReadbackRequestCallbackForVideo(
       scoped_refptr<media::VideoFrame> video_frame,
       base::Closure quit_callback,
       bool result) {
@@ -481,10 +482,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     // Don't clear the canvas because drawing a video frame by Src mode.
     SkCanvas canvas(bitmap);
     video_renderer.Copy(video_frame, &canvas);
+    ReadbackResponse response = result ? READBACK_SUCCESS : READBACK_FAILED;
 
-    CopyFromCompositingSurfaceCallback(quit_callback,
-                                       result,
-                                       bitmap);
+    ReadbackRequestCallbackTest(quit_callback, bitmap, response);
   }
 
   void SetExpectedCopyFromCompositingSurfaceResult(bool result,
@@ -583,13 +583,12 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 
       base::Callback<void(bool success)> callback =
           base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
-                         CopyFromCompositingSurfaceCallbackForVideo,
+                         ReadbackRequestCallbackForVideo,
                      base::Unretained(this),
                      video_frame,
                      run_loop.QuitClosure());
-      rwhv->CopyFromCompositingSurfaceToVideoFrame(copy_rect,
-                                                   video_frame,
-                                                   callback);
+      rwhv->CopyFromCompositingSurfaceToVideoFrame(
+          copy_rect, video_frame, callback);
     } else {
       if (IsDelegatedRendererEnabled()) {
         if (!content::GpuDataManager::GetInstance()
@@ -602,15 +601,13 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
         }
       }
 
-      base::Callback<void(bool, const SkBitmap&)> callback =
+      ReadbackRequestCallback callback =
           base::Bind(&CompositingRenderWidgetHostViewBrowserTestTabCapture::
-                       CopyFromCompositingSurfaceCallback,
-                   base::Unretained(this),
-                   run_loop.QuitClosure());
-      rwhv->CopyFromCompositingSurface(copy_rect,
-                                       output_size,
-                                       callback,
-                                       kN32_SkColorType);
+                         ReadbackRequestCallbackTest,
+                     base::Unretained(this),
+                     run_loop.QuitClosure());
+      rwhv->CopyFromCompositingSurface(
+          copy_rect, output_size, callback, kN32_SkColorType);
     }
     run_loop.Run();
   }
@@ -657,9 +654,9 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
 
   void CheckResultForCyanPixel(bool* saw_cyan_pixel,
                                base::Closure done_callback,
-                               bool result,
-                               const SkBitmap& bitmap) {
-    if (result) {
+                               const SkBitmap& bitmap,
+                               ReadbackResponse response) {
+    if (response == READBACK_SUCCESS) {
       SkAutoLockPixels bitmap_lock(bitmap);
       if (bitmap.width() > 0 && bitmap.height() > 0 &&
           bitmap.getColor(0, 0) == SK_ColorCYAN) {

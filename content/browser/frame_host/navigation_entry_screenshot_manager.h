@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/readback_types.h"
 
 class SkBitmap;
 
@@ -50,8 +51,8 @@ class CONTENT_EXPORT NavigationEntryScreenshotManager {
   // The callback invoked when taking the screenshot of the page is complete.
   // This sets the screenshot on the navigation entry.
   void OnScreenshotTaken(int unique_id,
-                         bool success,
-                         const SkBitmap& bitmap);
+                         const SkBitmap& bitmap,
+                         ReadbackResponse response);
 
   // Returns the number of entries with screenshots.
   int GetScreenshotCount() const;

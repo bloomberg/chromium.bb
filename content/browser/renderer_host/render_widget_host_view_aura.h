@@ -189,7 +189,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const ViewHostMsg_SelectionBounds_Params& params) override;
   void CopyFromCompositingSurface(const gfx::Rect& src_subrect,
                                   const gfx::Size& dst_size,
-                                  CopyFromCompositingSurfaceCallback& callback,
+                                  ReadbackRequestCallback& callback,
                                   const SkColorType color_type) override;
   void CopyFromCompositingSurfaceToVideoFrame(
       const gfx::Rect& src_subrect,
@@ -328,7 +328,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UpdateMouseLockRegion();
 #endif
 
-  void DisambiguationPopupRendered(bool success, const SkBitmap& result);
+  void DisambiguationPopupRendered(const SkBitmap& result,
+                                   ReadbackResponse response);
 
   void HideDisambiguationPopup();
 

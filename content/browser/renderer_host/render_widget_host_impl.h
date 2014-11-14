@@ -33,6 +33,7 @@
 #include "content/common/input/input_event_ack_state.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/view_message_enums.h"
+#include "content/public/browser/readback_types.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/common/page_zoom.h"
 #include "ipc/ipc_listener.h"
@@ -132,11 +133,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void Focus() override;
   void Blur() override;
   void SetActive(bool active) override;
-  void CopyFromBackingStore(
-      const gfx::Rect& src_rect,
-      const gfx::Size& accelerated_dst_size,
-      const base::Callback<void(bool, const SkBitmap&)>& callback,
-      const SkColorType color_type) override;
+  void CopyFromBackingStore(const gfx::Rect& src_rect,
+                            const gfx::Size& accelerated_dst_size,
+                            ReadbackRequestCallback& callback,
+                            const SkColorType color_type) override;
   bool CanCopyFromBackingStore() override;
 #if defined(OS_ANDROID)
   virtual void LockBackingStore() override;

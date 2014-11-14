@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "cc/output/compositor_frame_metadata.h"
 #include "content/browser/devtools/protocol/devtools_protocol_handler_impl.h"
+#include "content/public/browser/readback_types.h"
 
 class SkBitmap;
 
@@ -89,12 +90,11 @@ class PageHandler {
 
   void NotifyScreencastVisibility(bool visible);
   void InnerSwapCompositorFrame();
-  void ScreencastFrameCaptured(
-      const std::string& format,
-      int quality,
-      const cc::CompositorFrameMetadata& metadata,
-      bool success,
-      const SkBitmap& bitmap);
+  void ScreencastFrameCaptured(const std::string& format,
+                               int quality,
+                               const cc::CompositorFrameMetadata& metadata,
+                               const SkBitmap& bitmap,
+                               ReadbackResponse response);
 
   void ScreenshotCaptured(
       scoped_refptr<DevToolsProtocol::Command> command,

@@ -95,11 +95,12 @@ void ColorPicker::ResetFrame() {
   last_cursor_y_ = -1;
 }
 
-void ColorPicker::FrameUpdated(bool succeeded, const SkBitmap& bitmap) {
+void ColorPicker::FrameUpdated(const SkBitmap& bitmap,
+                               ReadbackResponse response) {
   if (!enabled_)
     return;
 
-  if (succeeded) {
+  if (response == READBACK_SUCCESS) {
     frame_ = bitmap;
     UpdateCursor();
   }

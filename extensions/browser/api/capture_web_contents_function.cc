@@ -91,9 +91,9 @@ bool CaptureWebContentsFunction::RunAsync() {
 }
 
 void CaptureWebContentsFunction::CopyFromBackingStoreComplete(
-    bool succeeded,
-    const SkBitmap& bitmap) {
-  if (succeeded) {
+    const SkBitmap& bitmap,
+    content::ReadbackResponse response) {
+  if (response == content::READBACK_SUCCESS) {
     OnCaptureSuccess(bitmap);
     return;
   }

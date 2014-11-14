@@ -10,6 +10,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/readback_types.h"
 
 class SkBitmap;
 
@@ -48,8 +49,8 @@ class ContentReadbackHandler {
   virtual ~ContentReadbackHandler();
 
   void OnFinishReadback(int readback_id,
-                        bool success,
-                        const SkBitmap& bitmap);
+                        const SkBitmap& bitmap,
+                        ReadbackResponse response);
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   base::WeakPtrFactory<ContentReadbackHandler> weak_factory_;
