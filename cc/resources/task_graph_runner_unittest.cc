@@ -167,7 +167,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
                             public base::DelegateSimpleThread::Delegate {
  public:
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     const size_t num_threads = GetParam();
     while (workers_.size() < num_threads) {
       scoped_ptr<base::DelegateSimpleThread> worker =
@@ -179,7 +179,7 @@ class TaskGraphRunnerTest : public TaskGraphRunnerTestBase,
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     task_graph_runner_->Shutdown();
     while (workers_.size()) {
       scoped_ptr<base::DelegateSimpleThread> worker = workers_.take_front();
@@ -285,14 +285,14 @@ class TaskGraphRunnerSingleThreadTest
       public base::DelegateSimpleThread::Delegate {
  public:
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     worker_.reset(new base::DelegateSimpleThread(this, "TestWorker"));
     worker_->Start();
 
     for (int i = 0; i < kNamespaceCount; ++i)
       namespace_token_[i] = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() override {
+  void TearDown() override {
     task_graph_runner_->Shutdown();
     worker_->Join();
   }

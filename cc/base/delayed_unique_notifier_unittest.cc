@@ -35,7 +35,7 @@ class DelayedUniqueNotifierTest : public testing::Test {
  public:
   DelayedUniqueNotifierTest() : notification_count_(0) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     notification_count_ = 0;
     task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
   }

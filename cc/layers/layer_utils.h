@@ -8,21 +8,21 @@
 #include "cc/base/cc_export.h"
 
 namespace gfx {
-  class BoxF;
+class BoxF;
 }  // namespace gfx
 
 namespace cc {
-  class LayerImpl;
+class LayerImpl;
 
-  class CC_EXPORT LayerUtils {
-   public:
-    // Computes a box in screen space that should entirely contain the layer's
-    // bounds through the entirety of the layer's current animation. Returns
-    // true and sets |out| to the inflation if there are animations that can
-    // inflate bounds in the path to the root layer and that it was able to
-    // inflate correctly. Returns false otherwise.
-    static bool GetAnimationBounds(const LayerImpl& layer, gfx::BoxF* out);
-  };
+class CC_EXPORT LayerUtils {
+ public:
+  // Computes a box in screen space that should entirely contain the layer's
+  // bounds through the entirety of the layer's current animation. Returns
+  // true and sets |out| to the inflation if there are animations that can
+  // inflate bounds in the path to the root layer and that it was able to
+  // inflate correctly. Returns false otherwise.
+  static bool GetAnimationBounds(const LayerImpl& layer, gfx::BoxF* out);
+};
 
 }  // namespace cc
 

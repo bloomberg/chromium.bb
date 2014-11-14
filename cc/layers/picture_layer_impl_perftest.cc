@@ -45,7 +45,7 @@ class PictureLayerImplPerfTest : public testing::Test {
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
 
-  virtual void SetUp() override {
+  void SetUp() override {
     host_impl_.InitializeRenderer(FakeOutputSurface::Create3d());
   }
 

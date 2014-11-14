@@ -6,7 +6,9 @@
 #define CC_RESOURCES_PICTURE_PILE_H_
 
 #include <bitset>
+#include <utility>
 
+#include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/tiling_data.h"
 #include "cc/resources/recording_source.h"

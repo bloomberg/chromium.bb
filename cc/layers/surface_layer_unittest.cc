@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <vector>
+
 #include "base/message_loop/message_loop_proxy.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"

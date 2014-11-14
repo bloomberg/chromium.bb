@@ -61,7 +61,7 @@ class LayerTreeHostBlendingPixelTest : public LayerTreePixelTest {
     pixel_comparator_.reset(new FuzzyPixelOffByOneComparator(true));
   }
 
-  virtual void InitializeSettings(LayerTreeSettings* settings) override {
+  void InitializeSettings(LayerTreeSettings* settings) override {
     settings->force_antialiasing = force_antialiasing_;
     settings->force_blending_with_shaders = force_blending_with_shaders_;
   }

@@ -56,10 +56,9 @@ class SimpleDrawQuadConstructMagicNumberTwo : public SimpleDrawQuad {
 
 class MockDrawQuad : public DrawQuad {
  public:
-  virtual ~MockDrawQuad() { Destruct(); }
-  virtual void IterateResources(
-      const ResourceIteratorCallback& callback) override {}
-  virtual void ExtendValue(base::debug::TracedValue* value) const override {}
+  ~MockDrawQuad() override { Destruct(); }
+  void IterateResources(const ResourceIteratorCallback& callback) override {}
+  void ExtendValue(base::debug::TracedValue* value) const override {}
   MOCK_METHOD0(Destruct, void());
 };
 

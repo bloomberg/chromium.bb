@@ -17,7 +17,7 @@ namespace cc {
 // GL resources while an instance of this class is alive.
 class CC_EXPORT ScopedGpuRaster {
  public:
-  ScopedGpuRaster(ContextProvider* context_provider);
+  explicit ScopedGpuRaster(ContextProvider* context_provider);
   ~ScopedGpuRaster();
 
  private:

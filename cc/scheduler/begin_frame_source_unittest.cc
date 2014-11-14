@@ -312,7 +312,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   scoped_ptr<TestBackToBackBeginFrameSource> source_;
   scoped_ptr<MockBeginFrameObserver> obs_;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     now_src_ = TestNowSource::Create(1000);
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_, false));
@@ -323,7 +323,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     source_->AddObserver(obs_.get());
   }
 
-  virtual void TearDown() override { obs_.reset(); }
+  void TearDown() override { obs_.reset(); }
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
@@ -478,7 +478,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
   scoped_ptr<TestSyntheticBeginFrameSource> source_;
   scoped_ptr<MockBeginFrameObserver> obs_;
 
-  virtual void SetUp() override {
+  void SetUp() override {
     now_src_ = TestNowSource::Create(1000);
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_, false));
@@ -488,7 +488,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
     source_->AddObserver(obs_.get());
   }
 
-  virtual void TearDown() override { obs_.reset(); }
+  void TearDown() override { obs_.reset(); }
 };
 
 TEST_F(SyntheticBeginFrameSourceTest,
@@ -547,7 +547,7 @@ TEST_F(SyntheticBeginFrameSourceTest, VSyncChanges) {
 // BeginFrameSourceMultiplexer testing -----------------------------------
 class BeginFrameSourceMultiplexerTest : public ::testing::Test {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     mux_ = BeginFrameSourceMultiplexer::Create();
 
     source1_store_ = make_scoped_ptr(new FakeBeginFrameSource());
@@ -559,7 +559,7 @@ class BeginFrameSourceMultiplexerTest : public ::testing::Test {
     source3_ = source3_store_.get();
   }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     // Make sure the mux is torn down before the sources.
     mux_.reset();
   }

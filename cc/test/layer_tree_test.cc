@@ -69,7 +69,7 @@ class ExternalBeginFrameSourceForTest
     DCHECK(CalledOnValidThread());
   }
 
-  virtual void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
+  void OnNeedsBeginFramesChange(bool needs_begin_frames) override {
     DCHECK(CalledOnValidThread());
     if (needs_begin_frames) {
       base::MessageLoop::current()->PostDelayedTask(
@@ -80,7 +80,7 @@ class ExternalBeginFrameSourceForTest
     }
   }
 
-  virtual void SetClientReady() override {
+  void SetClientReady() override {
     DCHECK(CalledOnValidThread());
     is_ready_ = true;
   }

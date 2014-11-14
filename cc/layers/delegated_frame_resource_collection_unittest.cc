@@ -21,9 +21,9 @@ class DelegatedFrameResourceCollectionTest
  protected:
   DelegatedFrameResourceCollectionTest() : resources_available_(false) {}
 
-  virtual void SetUp() override { CreateResourceCollection(); }
+  void SetUp() override { CreateResourceCollection(); }
 
-  virtual void TearDown() override { DestroyResourceCollection(); }
+  void TearDown() override { DestroyResourceCollection(); }
 
   void CreateResourceCollection() {
     DCHECK(!resource_collection_.get());

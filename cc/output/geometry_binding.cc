@@ -26,11 +26,9 @@ GeometryBinding::GeometryBinding(gpu::gles2::GLES2Interface* gl,
     uint16 data[6];
   };
 
-  COMPILE_ASSERT(sizeof(Quad) == 24 * sizeof(float),  // NOLINT(runtime/sizeof)
+  COMPILE_ASSERT(sizeof(Quad) == 24 * sizeof(float), struct_is_densely_packed);
+  COMPILE_ASSERT(sizeof(QuadIndex) == 6 * sizeof(uint16_t),
                  struct_is_densely_packed);
-  COMPILE_ASSERT(
-      sizeof(QuadIndex) == 6 * sizeof(uint16_t),  // NOLINT(runtime/sizeof)
-      struct_is_densely_packed);
 
   Quad quad_list[8];
   QuadIndex quad_index_list[8];
@@ -79,33 +77,17 @@ void GeometryBinding::PrepareForDraw() {
   // "const GLvoid*" even though it is actually an offset into the buffer
   // object's data store and not a pointer to the client's address space.
   const void* offsets[3] = {
-      0, reinterpret_cast<const void*>(
-             3 * sizeof(float)),  // NOLINT(runtime/sizeof)
-      reinterpret_cast<const void*>(5 *
-                                    sizeof(float)),  // NOLINT(runtime/sizeof)
+      0,
+      reinterpret_cast<const void*>(3 * sizeof(float)),
+      reinterpret_cast<const void*>(5 * sizeof(float)),
   };
 
-  GLC(gl_,
-      gl_->VertexAttribPointer(PositionAttribLocation(),
-                               3,
-                               GL_FLOAT,
-                               false,
-                               6 * sizeof(float),  // NOLINT(runtime/sizeof)
-                               offsets[0]));
-  GLC(gl_,
-      gl_->VertexAttribPointer(TexCoordAttribLocation(),
-                               2,
-                               GL_FLOAT,
-                               false,
-                               6 * sizeof(float),  // NOLINT(runtime/sizeof)
-                               offsets[1]));
-  GLC(gl_,
-      gl_->VertexAttribPointer(TriangleIndexAttribLocation(),
-                               1,
-                               GL_FLOAT,
-                               false,
-                               6 * sizeof(float),  // NOLINT(runtime/sizeof)
-                               offsets[2]));
+  GLC(gl_, gl_->VertexAttribPointer(PositionAttribLocation(), 3, GL_FLOAT,
+                                    false, 6 * sizeof(float), offsets[0]));
+  GLC(gl_, gl_->VertexAttribPointer(TexCoordAttribLocation(), 2, GL_FLOAT,
+                                    false, 6 * sizeof(float), offsets[1]));
+  GLC(gl_, gl_->VertexAttribPointer(TriangleIndexAttribLocation(), 1, GL_FLOAT,
+                                    false, 6 * sizeof(float), offsets[2]));
   GLC(gl_, gl_->EnableVertexAttribArray(PositionAttribLocation()));
   GLC(gl_, gl_->EnableVertexAttribArray(TexCoordAttribLocation()));
   GLC(gl_, gl_->EnableVertexAttribArray(TriangleIndexAttribLocation()));

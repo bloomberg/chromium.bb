@@ -2598,9 +2598,7 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
     test_capabilities_.gpu.texture_rectangle = true;
   }
 
-  virtual GLuint createTexture() override {
-    return 1;
-  }
+  GLuint createTexture() override { return 1; }
   MOCK_METHOD1(activeTexture, void(GLenum texture));
   MOCK_METHOD2(bindTexture, void(GLenum target,
                                  GLuint texture_id));

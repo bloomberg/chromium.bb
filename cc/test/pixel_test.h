@@ -93,7 +93,7 @@ class RendererPixelTest : public PixelTest {
   bool ExpandedViewport() const;
 
  protected:
-  virtual void SetUp() override;
+  void SetUp() override;
 };
 
 // Wrappers to differentiate renderers where the the output surface and viewport

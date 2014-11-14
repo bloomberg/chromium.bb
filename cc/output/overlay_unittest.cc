@@ -539,7 +539,7 @@ class OverlayInfoRendererGL : public GLRenderer {
 
   using GLRenderer::BeginDrawingFrame;
 
-  virtual void FinishDrawingFrame(DrawingFrame* frame) override {
+  void FinishDrawingFrame(DrawingFrame* frame) override {
     GLRenderer::FinishDrawingFrame(frame);
 
     if (!expect_overlays_) {

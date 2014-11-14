@@ -108,11 +108,11 @@ class LayerTreeHostImplTest : public testing::Test,
     return settings;
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     CreateHostImpl(DefaultSettings(), CreateOutputSurface());
   }
 
-  virtual void TearDown() override {}
+  void TearDown() override {}
 
   void UpdateRendererCapabilitiesOnImplThread() override {}
   void DidLoseOutputSurfaceOnImplThread() override {}
@@ -6251,7 +6251,7 @@ TEST_F(LayerTreeHostImplTest,
 
 class LayerTreeHostImplTestDeferredInitialize : public LayerTreeHostImplTest {
  protected:
-  virtual void SetUp() override {
+  void SetUp() override {
     LayerTreeHostImplTest::SetUp();
 
     set_reduce_memory_result(false);
@@ -6440,7 +6440,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
 
 class LayerTreeHostImplTestManageTiles : public LayerTreeHostImplTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     LayerTreeSettings settings;
     settings.impl_side_painting = true;
 
@@ -7098,7 +7098,7 @@ TEST_F(LayerTreeHostImplTest, SimpleSwapPromiseMonitor) {
 
 class LayerTreeHostImplWithTopControlsTest : public LayerTreeHostImplTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     LayerTreeSettings settings = DefaultSettings();
     settings.calculate_top_controls_position = true;
     settings.top_controls_height = top_controls_height_;
@@ -7486,7 +7486,7 @@ TEST_F(LayerTreeHostImplVirtualViewportTest, FlingScrollBubblesToInner) {
 
 class LayerTreeHostImplWithImplicitLimitsTest : public LayerTreeHostImplTest {
  public:
-  virtual void SetUp() override {
+  void SetUp() override {
     LayerTreeSettings settings = DefaultSettings();
     settings.max_memory_for_prepaint_percentage = 50;
     CreateHostImpl(settings, CreateOutputSurface());

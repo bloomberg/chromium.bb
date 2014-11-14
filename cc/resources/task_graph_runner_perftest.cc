@@ -45,11 +45,11 @@ class TaskGraphRunnerPerfTest : public testing::Test {
                kTimeCheckInterval) {}
 
   // Overridden from testing::Test:
-  virtual void SetUp() override {
+  void SetUp() override {
     task_graph_runner_ = make_scoped_ptr(new TaskGraphRunner);
     namespace_token_ = task_graph_runner_->GetNamespaceToken();
   }
-  virtual void TearDown() override { task_graph_runner_ = nullptr; }
+  void TearDown() override { task_graph_runner_ = nullptr; }
 
   void AfterTest(const std::string& test_name) {
     // Format matches chrome/test/perf/perf_test.h:PrintResult

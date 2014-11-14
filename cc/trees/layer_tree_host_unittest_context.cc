@@ -140,7 +140,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   void DidFailToInitializeOutputSurface() override { ++times_create_failed_; }
 
-  virtual void TearDown() override {
+  void TearDown() override {
     LayerTreeTest::TearDown();
     EXPECT_EQ(times_to_expect_create_failed_, times_create_failed_);
   }

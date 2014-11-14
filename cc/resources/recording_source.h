@@ -50,6 +50,7 @@ class CC_EXPORT RecordingSource {
   virtual void SetUnsuitableForGpuRasterizationForTesting() = 0;
   virtual SkTileGridFactory::TileGridInfo GetTileGridInfoForTesting() const = 0;
 };
-}
+
+}  // namespace cc
 
 #endif  // CC_RESOURCES_RECORDING_SOURCE_H_

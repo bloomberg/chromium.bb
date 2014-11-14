@@ -25,7 +25,7 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
  public:
   LayerUtilsGetAnimationBoundsTest()
       : host_impl_(&proxy_, &shared_bitmap_manager_),
-        root_(CreateThreeNodeTree(host_impl_)),
+        root_(CreateThreeNodeTree(&host_impl_)),
         parent_(root_->children()[0]),
         child_(parent_->children()[0]) {}
 
@@ -35,11 +35,11 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
 
  private:
   static scoped_ptr<LayerImpl> CreateThreeNodeTree(
-      LayerTreeHostImpl& host_impl) {
-    scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.active_tree(), 1);
-    root->AddChild(LayerImpl::Create(host_impl.active_tree(), 2));
-    root->children()[0]
-        ->AddChild(LayerImpl::Create(host_impl.active_tree(), 3));
+      LayerTreeHostImpl* host_impl) {
+    scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl->active_tree(), 1);
+    root->AddChild(LayerImpl::Create(host_impl->active_tree(), 2));
+    root->children()[0]->AddChild(
+        LayerImpl::Create(host_impl->active_tree(), 3));
     return root.Pass();
   }
 

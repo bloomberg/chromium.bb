@@ -21,10 +21,6 @@ def CheckChangeLintsClean(input_api, output_api):
            input_api.AffectedSourceFiles(source_filter)]
   level = 1  # strict, but just warn
 
-  # TODO(danakj): Temporary, while the OVERRIDE and FINAL fixup is in progress.
-  # crbug.com/422353
-  input_api.cpplint._SetFilters('-readability/inheritance')
-
   for file_name in files:
     input_api.cpplint.ProcessFile(file_name, level)
 

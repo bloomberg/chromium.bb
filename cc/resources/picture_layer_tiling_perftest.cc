@@ -43,7 +43,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
                                                   1).Pass();
   }
 
-  virtual void SetUp() override {
+  void SetUp() override {
     picture_layer_tiling_client_.SetTileSize(gfx::Size(256, 256));
     picture_layer_tiling_client_.set_max_tiles_for_interest_area(250);
     picture_layer_tiling_client_.set_tree(PENDING_TREE);
@@ -52,9 +52,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_->CreateAllTilesForTesting();
   }
 
-  virtual void TearDown() override {
-    picture_layer_tiling_.reset(NULL);
-  }
+  void TearDown() override { picture_layer_tiling_.reset(NULL); }
 
   void RunInvalidateTest(const std::string& test_name, const Region& region) {
     timer_.Reset();

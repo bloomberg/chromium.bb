@@ -17,7 +17,7 @@ class UniqueNotifierTest : public testing::Test {
  public:
   UniqueNotifierTest() : notification_count_(0) {}
 
-  virtual void SetUp() override { ResetNotificationCount(); }
+  void SetUp() override { ResetNotificationCount(); }
 
   void Notify() { ++notification_count_; }
 
