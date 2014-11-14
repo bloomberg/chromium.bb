@@ -47,12 +47,13 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
   // TODO(jamescook): Quota management?
-  // TODO(jamescook): Speech recognition?
   bool IsHandledURL(const GURL& url) override;
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
   void SiteInstanceDeleting(content::SiteInstance* site_instance) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
+  content::SpeechRecognitionManagerDelegate*
+  GetSpeechRecognitionManagerDelegate() override;
   content::BrowserPpapiHost* GetExternalBrowserPpapiHost(
       int plugin_process_id) override;
   void GetAdditionalAllowedSchemesForFileSystem(

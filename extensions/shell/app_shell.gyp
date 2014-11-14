@@ -104,6 +104,8 @@
         'browser/shell_runtime_api_delegate.h',
         'browser/shell_special_storage_policy.cc',
         'browser/shell_special_storage_policy.h',
+        'browser/shell_speech_recognition_manager_delegate.cc',
+        'browser/shell_speech_recognition_manager_delegate.h',
         'browser/shell_url_request_context_getter.cc',
         'browser/shell_url_request_context_getter.h',
         'browser/shell_web_contents_modal_dialog_manager.cc',

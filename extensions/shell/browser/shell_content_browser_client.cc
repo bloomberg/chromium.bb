@@ -23,6 +23,7 @@
 #include "extensions/shell/browser/shell_browser_context.h"
 #include "extensions/shell/browser/shell_browser_main_parts.h"
 #include "extensions/shell/browser/shell_extension_system.h"
+#include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
 #include "url/gurl.h"
 
 #if !defined(DISABLE_NACL)
@@ -190,6 +191,11 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->GetSwitchValueASCII(::switches::kProcessType);
   if (process_type == ::switches::kRendererProcess)
     AppendRendererSwitches(command_line);
+}
+
+content::SpeechRecognitionManagerDelegate*
+ShellContentBrowserClient::GetSpeechRecognitionManagerDelegate() {
+  return new speech::ShellSpeechRecognitionManagerDelegate();
 }
 
 content::BrowserPpapiHost*
