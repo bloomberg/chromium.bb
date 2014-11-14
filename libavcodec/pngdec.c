@@ -559,7 +559,7 @@ static int decode_frame(AVCodecContext *avctx,
     }
     for (;;) {
         if (bytestream2_get_bytes_left(&s->gb) <= 0) {
-            av_log(avctx, AV_LOG_ERROR, "No bytes left\n");
+            av_log(avctx, AV_LOG_ERROR, "%d bytes left\n", bytestream2_get_bytes_left(&s->gb));
             if (   s->state & PNG_ALLIMAGE
                 && avctx->strict_std_compliance <= FF_COMPLIANCE_NORMAL)
                 goto exit_loop;
@@ -650,7 +650,7 @@ static int decode_frame(AVCodecContext *avctx,
                 } else if ((s->bits_per_pixel == 1 || s->bits_per_pixel == 2 || s->bits_per_pixel == 4 || s->bits_per_pixel == 8) &&
                            s->color_type == PNG_COLOR_TYPE_PALETTE) {
                     avctx->pix_fmt = AV_PIX_FMT_PAL8;
-                } else if (s->bit_depth == 1) {
+                } else if (s->bit_depth == 1 && s->bits_per_pixel == 1) {
                     avctx->pix_fmt = AV_PIX_FMT_MONOBLACK;
                 } else if (s->bit_depth == 8 &&
                            s->color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
@@ -860,10 +860,11 @@ exit_loop:
             int i, j;
             uint8_t *pd      = p->data[0];
             uint8_t *pd_last = s->last_picture.f->data[0];
+            int ls = FFMIN(av_image_get_linesize(p->format, s->width, 0), s->width * s->bpp);
 
             ff_thread_await_progress(&s->last_picture, INT_MAX, 0);
             for (j = 0; j < s->height; j++) {
-                for (i = 0; i < s->width * s->bpp; i++)
+                for (i = 0; i < ls; i++)
                     pd[i] += pd_last[i];
                 pd      += s->image_linesize;
                 pd_last += s->image_linesize;

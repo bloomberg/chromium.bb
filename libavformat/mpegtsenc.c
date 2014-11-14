@@ -721,6 +721,7 @@ static int mpegts_write_header(AVFormatContext *s)
             ret = avcodec_copy_context(ast->codec, st->codec);
             if (ret != 0)
                 goto fail;
+            ast->time_base = st->time_base;
             ret = avformat_write_header(ts_st->amux, NULL);
             if (ret < 0)
                 goto fail;
@@ -1197,7 +1198,9 @@ int ff_check_h264_startcode(AVFormatContext *s, const AVStream *st, const AVPack
                    "('-bsf:v h264_mp4toannexb' option with ffmpeg)\n");
             return AVERROR_INVALIDDATA;
         }
-        av_log(s, AV_LOG_WARNING, "H.264 bitstream error, startcode missing\n");
+        av_log(s, AV_LOG_WARNING, "H.264 bitstream error, startcode missing, size %d", pkt->size);
+        if (pkt->size) av_log(s, AV_LOG_WARNING, " data %08X", AV_RB32(pkt->data));
+        av_log(s, AV_LOG_WARNING, "\n");
     }
     return 0;
 }
@@ -1209,7 +1212,9 @@ static int check_hevc_startcode(AVFormatContext *s, const AVStream *st, const AV
             av_log(s, AV_LOG_ERROR, "HEVC bitstream malformed, no startcode found\n");
             return AVERROR_PATCHWELCOME;
         }
-        av_log(s, AV_LOG_WARNING, "HEVC bitstream error, startcode missing\n");
+        av_log(s, AV_LOG_WARNING, "HEVC bitstream error, startcode missing, size %d", pkt->size);
+        if (pkt->size) av_log(s, AV_LOG_WARNING, " data %08X", AV_RB32(pkt->data));
+        av_log(s, AV_LOG_WARNING, "\n");
     }
     return 0;
 }

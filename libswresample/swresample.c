@@ -435,9 +435,15 @@ static int resample(SwrContext *s, AudioData *out_param, int out_count,
 
     border = s->resampler->invert_initial_buffer(s->resample, &s->in_buffer,
                  &in, in_count, &s->in_buffer_index, &s->in_buffer_count);
-    if (border == INT_MAX) return 0;
-    else if (border < 0) return border;
-    else if (border) { buf_set(&in, &in, border); in_count -= border; s->resample_in_constraint = 0; }
+    if (border == INT_MAX) {
+        return 0;
+    } else if (border < 0) {
+        return border;
+    } else if (border) {
+        buf_set(&in, &in, border);
+        in_count -= border;
+        s->resample_in_constraint = 0;
+    }
 
     do{
         int ret, size, consumed;
@@ -663,11 +669,13 @@ int swr_convert(struct SwrContext *s, uint8_t *out_arg[SWR_CH_MAX], int out_coun
         in_count = 0;
         if(ret>0) {
             s->drop_output -= ret;
+            if (!s->drop_output && !out_arg)
+                return 0;
             continue;
         }
 
-        if(s->drop_output || !out_arg)
-            return 0;
+        av_assert0(s->drop_output);
+        return 0;
     }
 
     if(!in_arg){

@@ -169,6 +169,7 @@ def CleanObjectFiles(object_files):
       'libavutil/audio_fifo.o',
       'libavutil/aes.o',
       'libavutil/blowfish.o',
+      'libavutil/cast5.o',
       'libavutil/des.o',
       'libavutil/file.o',
       'libavutil/hash.o',

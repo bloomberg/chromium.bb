@@ -162,6 +162,10 @@ static int img_read_probe(AVProbeData *p)
             return AVPROBE_SCORE_MAX;
         else if (is_glob(p->filename))
             return AVPROBE_SCORE_MAX;
+        else if (p->filename[strcspn(p->filename, "*?{")]) // probably PT_GLOB
+            return AVPROBE_SCORE_EXTENSION + 2; // score chosen to be a tad above the image pipes
+        else if (p->buf_size == 0)
+            return 0;
         else if (av_match_ext(p->filename, "raw") || av_match_ext(p->filename, "gif"))
             return 5;
         else
@@ -356,7 +360,7 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
     VideoDemuxData *s = s1->priv_data;
     char filename_bytes[1024];
     char *filename = filename_bytes;
-    int i;
+    int i, res;
     int size[3]           = { 0 }, ret[3] = { 0 };
     AVIOContext *f[3]     = { NULL };
     AVCodecContext *codec = s1->streams[0]->codec;
@@ -419,8 +423,10 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
             infer_size(&codec->width, &codec->height, size[0]);
     } else {
         f[0] = s1->pb;
+        if (avio_feof(f[0]) && s->loop && s->is_pipe)
+            avio_seek(f[0], 0, SEEK_SET);
         if (avio_feof(f[0]))
-            return AVERROR(EIO);
+            return AVERROR_EOF;
         if (s->frame_size > 0) {
             size[0] = s->frame_size;
         } else if (!s1->streams[0]->parser) {
@@ -430,8 +436,9 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
         }
     }
 
-    if (av_new_packet(pkt, size[0] + size[1] + size[2]) < 0)
-        return AVERROR(ENOMEM);
+    res = av_new_packet(pkt, size[0] + size[1] + size[2]);
+    if (res < 0)
+        return res;
     pkt->stream_index = 0;
     pkt->flags       |= AV_PKT_FLAG_KEY;
     if (s->ts_from_file) {
@@ -448,10 +455,19 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
         pkt->pts      = s->pts;
     }
 
+    if (s->is_pipe)
+        pkt->pos = avio_tell(f[0]);
+
     pkt->size = 0;
     for (i = 0; i < 3; i++) {
         if (f[i]) {
             ret[i] = avio_read(f[i], pkt->data + pkt->size, size[i]);
+            if (s->loop && s->is_pipe && ret[i] == AVERROR_EOF) {
+                if (avio_seek(f[i], 0, SEEK_SET) >= 0) {
+                    pkt->pos = 0;
+                    ret[i] = avio_read(f[i], pkt->data + pkt->size, size[i]);
+                }
+            }
             if (!s->is_pipe)
                 avio_close(f[i]);
             if (ret[i] > 0)
@@ -461,7 +477,13 @@ int ff_img_read_packet(AVFormatContext *s1, AVPacket *pkt)
 
     if (ret[0] <= 0 || ret[1] < 0 || ret[2] < 0) {
         av_free_packet(pkt);
-        return AVERROR(EIO); /* signal EOF */
+        if (ret[0] < 0) {
+            return ret[0];
+        } else if (ret[1] < 0) {
+            return ret[1];
+        } else if (ret[2] < 0)
+            return ret[2];
+        return AVERROR_EOF;
     } else {
         s->img_count++;
         s->img_number++;
@@ -503,7 +525,7 @@ static int img_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
 
 #define OFFSET(x) offsetof(VideoDemuxData, x)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
-static const AVOption options[] = {
+const AVOption ff_img_options[] = {
     { "framerate",    "set the video framerate",             OFFSET(framerate),    AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, 0,   DEC },
     { "loop",         "force loop over input file sequence", OFFSET(loop),         AV_OPT_TYPE_INT,    {.i64 = 0   }, 0, 1,       DEC },
 
@@ -528,7 +550,7 @@ static const AVOption options[] = {
 static const AVClass img2_class = {
     .class_name = "image2 demuxer",
     .item_name  = av_default_item_name,
-    .option     = options,
+    .option     = ff_img_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 AVInputFormat ff_image2_demuxer = {
@@ -548,7 +570,7 @@ AVInputFormat ff_image2_demuxer = {
 static const AVClass img2pipe_class = {
     .class_name = "image2pipe demuxer",
     .item_name  = av_default_item_name,
-    .option     = options,
+    .option     = ff_img_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 AVInputFormat ff_image2pipe_demuxer = {
@@ -607,6 +629,57 @@ static int j2k_probe(AVProbeData *p)
         AV_RB32(b) == 0xff4fff51)
         return AVPROBE_SCORE_EXTENSION + 1;
     return 0;
+}
+
+static int jpeg_probe(AVProbeData *p)
+{
+    const uint8_t *b = p->buf;
+    int i, state = 0xD8;
+
+    if (AV_RB16(b) != 0xFFD8 ||
+        AV_RB32(b) == 0xFFD8FFF7)
+    return 0;
+
+    b += 2;
+    for (i = 0; i < p->buf_size - 2; i++) {
+        int c;
+        if (b[i] != 0xFF)
+            continue;
+        c = b[i + 1];
+        switch (c) {
+        case 0xD8:
+            return 0;
+        case 0xC0:
+        case 0xC1:
+        case 0xC2:
+        case 0xC3:
+        case 0xC5:
+        case 0xC6:
+        case 0xC7:
+            if (state != 0xD8)
+                return 0;
+            state = 0xC0;
+            break;
+        case 0xDA:
+            if (state != 0xC0)
+                return 0;
+            state = 0xDA;
+            break;
+        case 0xD9:
+            if (state != 0xDA)
+                return 0;
+            state = 0xD9;
+            break;
+        default:
+            if (  (c >= 0x02 && c <= 0xBF)
+                || c == 0xC8)
+                return 0;
+        }
+    }
+
+    if (state == 0xD9)
+        return AVPROBE_SCORE_EXTENSION + 1;
+    return AVPROBE_SCORE_EXTENSION / 8;
 }
 
 static int jpegls_probe(AVProbeData *p)
@@ -681,7 +754,7 @@ static int webp_probe(AVProbeData *p)
 static const AVClass imgname ## _class = {\
     .class_name = AV_STRINGIFY(imgname) " demuxer",\
     .item_name  = av_default_item_name,\
-    .option     = options,\
+    .option     = ff_img_options,\
     .version    = LIBAVUTIL_VERSION_INT,\
 };\
 AVInputFormat ff_image_ ## imgname ## _pipe_demuxer = {\
@@ -692,6 +765,7 @@ AVInputFormat ff_image_ ## imgname ## _pipe_demuxer = {\
     .read_header    = ff_img_read_header,\
     .read_packet    = ff_img_read_packet,\
     .priv_class     = & imgname ## _class,\
+    .flags          = AVFMT_GENERIC_INDEX, \
     .raw_codec_id   = codecid,\
 };
 
@@ -699,6 +773,7 @@ IMAGEAUTO_DEMUXER(bmp,     AV_CODEC_ID_BMP)
 IMAGEAUTO_DEMUXER(dpx,     AV_CODEC_ID_DPX)
 IMAGEAUTO_DEMUXER(exr,     AV_CODEC_ID_EXR)
 IMAGEAUTO_DEMUXER(j2k,     AV_CODEC_ID_JPEG2000)
+IMAGEAUTO_DEMUXER(jpeg,    AV_CODEC_ID_MJPEG)
 IMAGEAUTO_DEMUXER(jpegls,  AV_CODEC_ID_JPEGLS)
 IMAGEAUTO_DEMUXER(pictor,  AV_CODEC_ID_PICTOR)
 IMAGEAUTO_DEMUXER(png,     AV_CODEC_ID_PNG)

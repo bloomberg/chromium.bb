@@ -114,6 +114,12 @@ pcm(){
     ffmpeg "$@" -vn -f s16le -
 }
 
+fmtstdout(){
+    fmt=$1
+    shift 1
+    ffmpeg -flags +bitexact "$@" -f $fmt -
+}
+
 enc_dec_pcm(){
     out_fmt=$1
     dec_fmt=$2
@@ -223,6 +229,7 @@ fi
 if test -e "$ref" || test $cmp = "oneline" ; then
     case $cmp in
         diff)   diff -u -b "$ref" "$outfile"            >$cmpfile ;;
+        rawdiff)diff -u    "$ref" "$outfile"            >$cmpfile ;;
         oneoff) oneoff     "$ref" "$outfile"            >$cmpfile ;;
         stddev) stddev     "$ref" "$outfile"            >$cmpfile ;;
         oneline)oneline    "$ref" "$outfile"            >$cmpfile ;;
@@ -248,6 +255,7 @@ if test $err = 0; then
     rm -f $outfile $errfile $cmpfile $cleanfiles
 elif test $gen = "no"; then
     echo "Test $test failed. Look at $errfile for details."
+    test "${V:-0}" -gt 0 && cat $errfile
 else
     echo "Updating reference failed, possibly no output file was generated."
 fi

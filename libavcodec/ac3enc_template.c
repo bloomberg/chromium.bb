@@ -263,7 +263,7 @@ static void apply_channel_coupling(AC3EncodeContext *s)
                 energy_cpl = energy[blk][CPL_CH][bnd];
                 energy_ch = energy[blk][ch][bnd];
                 blk1 = blk+1;
-                while (!s->blocks[blk1].new_cpl_coords[ch] && blk1 < s->num_blocks) {
+                while (blk1 < s->num_blocks && !s->blocks[blk1].new_cpl_coords[ch]) {
                     if (s->blocks[blk1].cpl_in_use) {
                         energy_cpl += energy[blk1][CPL_CH][bnd];
                         energy_ch += energy[blk1][ch][bnd];
@@ -443,7 +443,7 @@ int AC3_NAME(encode_frame)(AVCodecContext *avctx, AVPacket *avpkt,
     ff_ac3_output_frame(s, avpkt->data);
 
     if (frame->pts != AV_NOPTS_VALUE)
-        avpkt->pts = frame->pts - ff_samples_to_time_base(avctx, avctx->delay);
+        avpkt->pts = frame->pts - ff_samples_to_time_base(avctx, avctx->initial_padding);
 
     *got_packet_ptr = 1;
     return 0;

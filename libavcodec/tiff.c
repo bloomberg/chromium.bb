@@ -510,7 +510,9 @@ static int tiff_unpack_strip(TiffContext *s, AVFrame *p, uint8_t *dst, int strid
         }
         dst = s->yuv_line;
         stride = 0;
-        width = s->width * s->subsampling[1] + 2*(s->width / s->subsampling[0]);
+
+        width = (s->width - 1) / s->subsampling[0] + 1;
+        width = width * s->subsampling[0] * s->subsampling[1] + 2*width;
         av_assert0(width <= bytes_per_row);
         av_assert0(s->bpp == 24);
     }
@@ -812,13 +814,13 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
         s->height = value;
         break;
     case TIFF_BPP:
-        s->bppcount = count;
-        if (count > 4) {
+        if (count > 4U) {
             av_log(s->avctx, AV_LOG_ERROR,
                    "This format is not supported (bpp=%d, %d components)\n",
-                   s->bpp, count);
+                   value, count);
             return AVERROR_INVALIDDATA;
         }
+        s->bppcount = count;
         if (count == 1)
             s->bpp = value;
         else {
@@ -835,6 +837,13 @@ static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
             default:
                 s->bpp = -1;
             }
+        }
+        if (s->bpp > 64U) {
+            av_log(s->avctx, AV_LOG_ERROR,
+                   "This format is not supported (bpp=%d, %d components)\n",
+                   s->bpp, count);
+            s->bpp = 0;
+            return AVERROR_INVALIDDATA;
         }
         break;
     case TIFF_SAMPLES_PER_PIXEL:

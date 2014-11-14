@@ -40,10 +40,10 @@ AVFILTER_DEFINE_CLASS(idet);
 static const char *type2str(Type type)
 {
     switch(type) {
-        case TFF         : return "Top Field First   ";
-        case BFF         : return "Bottom Field First";
-        case PROGRSSIVE  : return "Progressive       ";
-        case UNDETERMINED: return "Undetermined      ";
+        case TFF          : return "Top Field First   ";
+        case BFF          : return "Bottom Field First";
+        case PROGRESSIVE  : return "Progressive       ";
+        case UNDETERMINED : return "Undetermined      ";
     }
     return NULL;
 }
@@ -108,7 +108,7 @@ static void filter(AVFilterContext *ctx)
     }else if(alpha[1] > idet->interlace_threshold * alpha[0]){
         type = BFF;
     }else if(alpha[1] > idet->progressive_threshold * delta){
-        type = PROGRSSIVE;
+        type = PROGRESSIVE;
     }else{
         type = UNDETERMINED;
     }
@@ -141,7 +141,7 @@ static void filter(AVFilterContext *ctx)
     }else if(idet->last_type == BFF){
         idet->cur->top_field_first = 0;
         idet->cur->interlaced_frame = 1;
-    }else if(idet->last_type == PROGRSSIVE){
+    }else if(idet->last_type == PROGRESSIVE){
         idet->cur->interlaced_frame = 0;
     }
 
@@ -154,6 +154,7 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
 {
     AVFilterContext *ctx = link->dst;
     IDETContext *idet = ctx->priv;
+    AVDictionary **metadata = avpriv_frame_get_metadatap(picref);
 
     if (idet->prev)
         av_frame_free(&idet->prev);
@@ -177,7 +178,46 @@ static int filter_frame(AVFilterLink *link, AVFrame *picref)
 
     filter(ctx);
 
+    av_dict_set_int(metadata, "lavfi.idet.single.tff", idet->prestat[TFF], 0);
+    av_dict_set_int(metadata, "lavfi.idet.single.bff", idet->prestat[BFF], 0);
+    av_dict_set_int(metadata, "lavfi.idet.single.progressive", idet->prestat[PROGRESSIVE], 0);
+    av_dict_set_int(metadata, "lavfi.idet.single.undetermined", idet->prestat[UNDETERMINED], 0);
+
+    av_dict_set_int(metadata, "lavfi.idet.multiple.tff", idet->poststat[TFF], 0);
+    av_dict_set_int(metadata, "lavfi.idet.multiple.bff", idet->poststat[BFF], 0);
+    av_dict_set_int(metadata, "lavfi.idet.multiple.progressive", idet->poststat[PROGRESSIVE], 0);
+    av_dict_set_int(metadata, "lavfi.idet.multiple.undetermined", idet->poststat[UNDETERMINED], 0);
+
     return ff_filter_frame(ctx->outputs[0], av_frame_clone(idet->cur));
+}
+
+static int request_frame(AVFilterLink *link)
+{
+    AVFilterContext *ctx = link->src;
+    IDETContext *idet = ctx->priv;
+
+    do {
+        int ret;
+
+        if (idet->eof)
+            return AVERROR_EOF;
+
+        ret = ff_request_frame(link->src->inputs[0]);
+
+        if (ret == AVERROR_EOF && idet->cur) {
+            AVFrame *next = av_frame_clone(idet->next);
+
+            if (!next)
+                return AVERROR(ENOMEM);
+
+            filter_frame(link->src->inputs[0], next);
+            idet->eof = 1;
+        } else if (ret < 0) {
+            return ret;
+        }
+    } while (!idet->cur);
+
+    return 0;
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -187,13 +227,13 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_log(ctx, AV_LOG_INFO, "Single frame detection: TFF:%d BFF:%d Progressive:%d Undetermined:%d\n",
            idet->prestat[TFF],
            idet->prestat[BFF],
-           idet->prestat[PROGRSSIVE],
+           idet->prestat[PROGRESSIVE],
            idet->prestat[UNDETERMINED]
     );
     av_log(ctx, AV_LOG_INFO, "Multi frame detection: TFF:%d BFF:%d Progressive:%d Undetermined:%d\n",
            idet->poststat[TFF],
            idet->poststat[BFF],
-           idet->poststat[PROGRSSIVE],
+           idet->poststat[PROGRESSIVE],
            idet->poststat[UNDETERMINED]
     );
 
@@ -242,6 +282,7 @@ static av_cold int init(AVFilterContext *ctx)
 {
     IDETContext *idet = ctx->priv;
 
+    idet->eof = 0;
     idet->last_type = UNDETERMINED;
     memset(idet->history, UNDETERMINED, HIST_SIZE);
 
@@ -268,6 +309,7 @@ static const AVFilterPad idet_outputs[] = {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_output,
+        .request_frame = request_frame
     },
     { NULL }
 };

@@ -1209,6 +1209,16 @@ static const enum AVPixelFormat mpeg2_hwaccel_pixfmt_list_420[] = {
     AV_PIX_FMT_NONE
 };
 
+static const enum AVPixelFormat mpeg12_pixfmt_list_422[] = {
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_NONE
+};
+
+static const enum AVPixelFormat mpeg12_pixfmt_list_444[] = {
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_NONE
+};
+
 static inline int uses_vdpau(AVCodecContext *avctx) {
     return avctx->pix_fmt == AV_PIX_FMT_VDPAU_MPEG1 || avctx->pix_fmt == AV_PIX_FMT_VDPAU_MPEG2;
 }
@@ -1217,16 +1227,18 @@ static enum AVPixelFormat mpeg_get_pixelformat(AVCodecContext *avctx)
 {
     Mpeg1Context *s1  = avctx->priv_data;
     MpegEncContext *s = &s1->mpeg_enc_ctx;
+    const enum AVPixelFormat *pix_fmts;
 
     if (s->chroma_format < 2)
-        return ff_thread_get_format(avctx,
-                                avctx->codec_id == AV_CODEC_ID_MPEG1VIDEO ?
+        pix_fmts = avctx->codec_id == AV_CODEC_ID_MPEG1VIDEO ?
                                 mpeg1_hwaccel_pixfmt_list_420 :
-                                mpeg2_hwaccel_pixfmt_list_420);
+                                mpeg2_hwaccel_pixfmt_list_420;
     else if (s->chroma_format == 2)
-        return AV_PIX_FMT_YUV422P;
+        pix_fmts = mpeg12_pixfmt_list_422;
     else
-        return AV_PIX_FMT_YUV444P;
+        pix_fmts = mpeg12_pixfmt_list_444;
+
+    return ff_thread_get_format(avctx, pix_fmts);
 }
 
 static void setup_hwaccel_for_pixfmt(AVCodecContext *avctx)
@@ -1296,16 +1308,15 @@ static int mpeg_decode_postinit(AVCodecContext *avctx)
 
         if (avctx->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
             // MPEG-1 fps
-            avctx->time_base.den = ff_mpeg12_frame_rate_tab[s->frame_rate_index].num;
-            avctx->time_base.num = ff_mpeg12_frame_rate_tab[s->frame_rate_index].den;
+            avctx->framerate = ff_mpeg12_frame_rate_tab[s->frame_rate_index];
             // MPEG-1 aspect
             avctx->sample_aspect_ratio = av_d2q(1.0 / ff_mpeg1_aspect[s->aspect_ratio_info], 255);
             avctx->ticks_per_frame     = 1;
         } else { // MPEG-2
             // MPEG-2 fps
-            av_reduce(&s->avctx->time_base.den,
-                      &s->avctx->time_base.num,
-                      ff_mpeg12_frame_rate_tab[s->frame_rate_index].num * s1->frame_rate_ext.num * 2,
+            av_reduce(&s->avctx->framerate.num,
+                      &s->avctx->framerate.den,
+                      ff_mpeg12_frame_rate_tab[s->frame_rate_index].num * s1->frame_rate_ext.num,
                       ff_mpeg12_frame_rate_tab[s->frame_rate_index].den * s1->frame_rate_ext.den,
                       1 << 30);
             avctx->ticks_per_frame = 2;
@@ -2159,8 +2170,8 @@ static int mpeg1_decode_sequence(AVCodecContext *avctx,
         s->low_delay = 1;
 
     if (s->avctx->debug & FF_DEBUG_PICT_INFO)
-        av_log(s->avctx, AV_LOG_DEBUG, "vbv buffer: %d, bitrate:%d\n",
-               s->avctx->rc_buffer_size, s->bit_rate);
+        av_log(s->avctx, AV_LOG_DEBUG, "vbv buffer: %d, bitrate:%d, aspect_ratio_info: %d \n",
+               s->avctx->rc_buffer_size, s->bit_rate, s->aspect_ratio_info);
 
     return 0;
 }

@@ -309,6 +309,7 @@ libavdevice
 
 
   avfoundation.m                        Thilo Borgmann
+  decklink*                             Deti Fliegl
   dshow.c                               Roger Pack (CC rogerdpack@gmail.com)
   fbdev_enc.c                           Lukasz Marek
   gdigrab.c                             Roger Pack (CC rogerdpack@gmail.com)
@@ -462,7 +463,7 @@ Muxers/Demuxers:
   rtmp*                                 Kostya Shishkov
   rtp.c, rtpenc.c                       Martin Storsjo
   rtpdec_h261.*, rtpenc_h261.*          Thomas Volkert
-  rtpdec_hevc.*                         Thomas Volkert
+  rtpdec_hevc.*, rtpenc_hevc.*          Thomas Volkert
   rtpdec_asf.*                          Ronald S. Bultje
   rtpenc_mpv.*, rtpenc_aac.*            Martin Storsjo
   rtsp.c                                Luca Barbato
@@ -534,7 +535,7 @@ x86                                     Michael Niedermayer
 Releases
 ========
 
-2.3                                     Michael Niedermayer
+2.4                                     Michael Niedermayer
 2.2                                     Michael Niedermayer
 1.2                                     Michael Niedermayer
 
