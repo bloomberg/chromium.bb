@@ -496,8 +496,10 @@ void WebRtcLoggingHandlerHost::LogInitialInfoOnIOThread(
                       " network interfaces:");
   for (net::NetworkInterfaceList::const_iterator it = network_list.begin();
        it != network_list.end(); ++it) {
-    LogToCircularBuffer("Name: " + it->friendly_name + ", Address: " +
-                        IPAddressToSensitiveString(it->address));
+    LogToCircularBuffer(
+        "Name: " + it->friendly_name + ", Address: " +
+        IPAddressToSensitiveString(it->address) + ", Type: " +
+        net::NetworkChangeNotifier::ConnectionTypeToString(it->type));
   }
 
   NotifyLoggingStarted();
