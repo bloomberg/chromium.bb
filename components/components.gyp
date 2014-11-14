@@ -28,6 +28,7 @@
     'favicon.gypi',
     'favicon_base.gypi',
     'google.gypi',
+    'handoff.gypi',
     'history.gypi',
     'infobars.gypi',
     'json_schema.gypi',

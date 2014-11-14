@@ -1364,11 +1364,6 @@
       'browser/media_galleries/fileapi/iphoto_file_util.cc',
       'browser/media_galleries/fileapi/iphoto_file_util.h',
     ],
-    # Sources used by Mac and iOS.
-    'chrome_browser_mac_ios_sources': [
-      'browser/mac/handoff_utility.h',
-      'browser/mac/handoff_utility.mm',
-    ],
     # Sources (generally "desktop OS importers") used only on Mac & Windows.
     'chrome_browser_win_mac_sources': [
       'browser/media_galleries/fileapi/iapps_data_provider.cc',
@@ -2838,6 +2833,7 @@
         '../components/components.gyp:feedback_component',
         '../components/components.gyp:gcm_driver',
         '../components/components.gyp:google_core_browser',
+        '../components/components.gyp:handoff',
         '../components/components.gyp:history_core_browser',
         '../components/components.gyp:history_core_common',
         '../components/components.gyp:infobars_core',
@@ -3041,9 +3037,6 @@
             'browser_app_shim',
           ],
           'sources': [ '<@(chrome_browser_mac_sources)' ]
-        }],
-        ['OS=="mac" or OS=="ios"', {
-          'sources': [ '<@(chrome_browser_mac_ios_sources)' ]
         }],
         ['chromeos==1 or OS=="ios"', {
           'sources!': [

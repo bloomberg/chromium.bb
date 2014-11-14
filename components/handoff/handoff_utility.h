@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MAC_HANDOFF_UTILITY_H_
-#define CHROME_BROWSER_MAC_HANDOFF_UTILITY_H_
+#ifndef COMPONENTS_HANDOFF_HANDOFF_UTILITY_H_
+#define COMPONENTS_HANDOFF_HANDOFF_UTILITY_H_
 
 #import <Foundation/Foundation.h>
 
@@ -34,4 +34,4 @@ Origin OriginFromString(NSString* string);
 
 }  // namespace handoff
 
-#endif  // CHROME_BROWSER_MAC_HANDOFF_UTILITY_H_
+#endif  // COMPONENTS_HANDOFF_HANDOFF_UTILITY_H_

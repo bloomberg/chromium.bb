@@ -34,6 +34,7 @@ include_rules = [
   "+components/gcm_driver",
   "+components/google",
   "+components/grit",
+  "+components/handoff",
   "+components/history",
   "+components/infobars",
   "+components/invalidation",
