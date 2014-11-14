@@ -607,12 +607,6 @@ test("media_unittests") {
     ]
   }
 
-  if (is_mac || is_ios) {
-    deps += [
-      "//media/base/mac",
-    ]
-  }
-
   if (is_mac) {
     sources += [
       "video/capture/mac/video_capture_device_factory_mac_unittest.mm"

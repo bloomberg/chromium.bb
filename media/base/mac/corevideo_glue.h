@@ -14,9 +14,6 @@
 class MEDIA_EXPORT CoreVideoGlue {
  public:
   // Originally from CVPixelBuffer.h
-  enum {
-    kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange = '420v',
-  };
   typedef struct CVPlanarPixelBufferInfo_YCbCrPlanar
       CVPlanarPixelBufferInfo_YCbCrPlanar;
   struct CVPlanarPixelBufferInfo_YCbCrBiPlanar {
