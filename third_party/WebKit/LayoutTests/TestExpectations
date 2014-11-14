@@ -555,6 +555,10 @@ crbug.com/306595 svg/W3C-SVG-1.1-SE/struct-dom-11-f.svg [ Pass Timeout NeedsManu
 crbug.com/306595 svg/W3C-SVG-1.1-SE/types-dom-03-b.svg [ Pass Timeout NeedsManualRebaseline ]
 crbug.com/306595 svg/W3C-SVG-1.1-SE/svgdom-over-01-f.svg [ Pass Timeout NeedsManualRebaseline ]
 
+crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-03-b.svg [ NeedsRebaseline ]
+crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-04-b.svg [ NeedsRebaseline ]
+crbug.com/429536 svg/W3C-SVG-1.1/struct-dom-05-b.svg [ NeedsRebaseline ]
+
 crbug.com/310992 virtual/threaded/animations/play-state.html [ Pass Failure ]
 crbug.com/310992 animations/play-state.html [ Pass Failure ]
 

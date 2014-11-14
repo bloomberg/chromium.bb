@@ -1,3 +1,4 @@
+CONSOLE WARNING: 'DOMImplementation.hasFeature()' returning false is deprecated. Please do not use it, as per DOM it should always return true (https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature).
 "org.w3c.svg", "1.0": true
 "org.w3c.svg.static", "1.0": true
 "org.w3c.svg.animation", "1.0": false

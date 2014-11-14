@@ -173,7 +173,7 @@ bool DOMImplementation::hasFeature(const String& feature, const String& version)
 bool DOMImplementation::hasFeatureForBindings(const String& feature, const String& version)
 {
     if (!hasFeature(feature, version)) {
-        UseCounter::count(m_document, UseCounter::DOMImplementationHasFeatureReturnFalse);
+        UseCounter::countDeprecation(m_document, UseCounter::DOMImplementationHasFeatureReturnFalse);
         return false;
     }
     return true;

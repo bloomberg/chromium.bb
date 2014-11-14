@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+    <title>The requiredFeatures attribute and the hasFeature() API should be in agreement</title>
+    <text x="20" y="20" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Filter">This text should be visible</text>
+    <text x="20" y="40" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Font">This text should not be visible</text>
+    <text x="20" y="60" class="Filter">This text should be visible</text>
+    <text x="20" y="80" class="Font">This text should not be visible</text>
+    <script><![CDATA[
+        var textElements = document.querySelectorAll("text[class]");
+        Array.prototype.forEach.call(textElements, function(text)
+        {
+            var feature = "http://www.w3.org/TR/SVG11/feature#" + text.getAttribute("class");
+            if (!document.implementation.hasFeature(feature, null)) {
+                text.parentNode.removeChild(text);
+            }
+        });
+    ]]></script>
+</svg>

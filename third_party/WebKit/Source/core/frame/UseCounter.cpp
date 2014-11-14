@@ -819,6 +819,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case FontFaceSetReady:
         return "document.fonts.ready() method is going to be replaced with document.fonts.ready attribute in future releases. Please be prepared. For more help, check https://code.google.com/p/chromium/issues/detail?id=392077#c3 .";
 
+    case DOMImplementationHasFeatureReturnFalse:
+        return "'DOMImplementation.hasFeature()' returning false is deprecated. Please do not use it, as per DOM it should always return true (https://dom.spec.whatwg.org/#dom-domimplementation-hasfeature).";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
