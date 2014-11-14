@@ -45,3 +45,8 @@ per-file callback_unittest.cc=ajwong@chromium.org
 per-file callback_unittest.h=ajwong@chromium.org
 per-file callback_unittest.nc=ajwong@chromium.org
 per-file security_unittest.cc=jln@chromium.org
+
+# For Android-specific changes:
+per-file *android*=nyquist@chromium.org
+per-file *android*=rmcilroy@chromium.org
+per-file *android*=yfriedman@chromium.org
