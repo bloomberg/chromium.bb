@@ -202,6 +202,8 @@ function onKeyboardReady(runTestCallback, opt_config) {
   };
   var config = opt_config || default_config;
   chrome.virtualKeyboardPrivate.keyboardLoaded = function() {
+    // Disarm to prevent repeated calls to run a test.
+    chrome.virtualKeyboardPrivate.keyboardLoaded = function() {};
     runTestCallback();
   };
   window.initializeVirtualKeyboard(config.keyset,
@@ -265,20 +267,23 @@ function getSoftKeyView(source) {
  * Locates a key by label.
  * @param {string} label The label on the key.  If the key has multiple labels,
  *    |label| can match any of them.
- * @param {?Element} .
+ * @param {string=} opt_rowId Optional ID of the row containing the key.
+ * @returns {?Element} .
  */
-function findKey(label) {
+function findKey(label, opt_rowId) {
   var view = getActiveView();
   assertTrue(!!view, 'Unable to find active keyboard view');
-  var characters = view.querySelectorAll('.inputview-ch');
-  // Compact layouts use a different naming convention.
-  if (characters.length == 0) {
-    characters = view.querySelectorAll('.inputview-special-key-name');
+  if (opt_rowId) {
+    view = view.querySelector('#' + opt_rowId);
+    assertTrue(!!view, 'Unable to locate row ' + opt_rowId);
   }
-  for (var i = 0; i < characters.length; i++) {
-    if (characters[i].textContent == label) {
-      return getSoftKeyView(characters[i]);
-    }
+  var candidates = view.querySelectorAll('.inputview-ch');
+  // Compact layouts use a different naming convention.
+  if (candidates.length == 0)
+    candidates = view.querySelectorAll('.inputview-special-key-name');
+  for (var i = 0; i < candidates.length; i++) {
+    if (candidates[i].textContent == label)
+      return getSoftKeyView(candidates[i]);
   }
   assertTrue(false, 'Cannot find key labeled \'' + label + '\'');
 }
@@ -293,6 +298,24 @@ function findKeyById(label) {
   var key = view.querySelector('#' + label);
   assertTrue(!!key, 'Cannot find key with ID ' + label);
   return key;
+}
+
+/**
+ * Verifies if a key contains a matching label.
+ * @param {Element} key .
+ * @param {string} label .
+ * @return {boolean} .
+ */
+function hasLabel(key, label) {
+  var characters = key.querySelectorAll('.inputview-ch');
+  // Compact layouts represent keys differently.
+  if (characters.length == 0)
+    characters = key.querySelectorAll('.inputview-special-key-name');
+  for (var i = 0; i < characters.length; i++) {
+    if (characters[i].textContent == label)
+      return true;
+  }
+  return false;
 }
 
 /**
