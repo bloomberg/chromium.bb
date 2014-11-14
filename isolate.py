@@ -880,9 +880,9 @@ def CMDbatcharchive(parser, args):
   Takes a list of paths to *.isolated.gen.json files that describe what trees to
   isolate. Format of files is:
   {
-    'version': 1,
-    'dir': <absolute path to a directory all other paths are relative to>,
-    'arg': [list of command line arguments for single 'archive' command]
+    "version": 1,
+    "dir": <absolute path to a directory all other paths are relative to>,
+    "args": [list of command line arguments for single 'archive' command]
   }
   """
   isolateserver.add_isolate_server_options(parser, False)
