@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import collections
 import contextlib
 import copy
@@ -29,7 +28,6 @@ from chromite.cbuildbot import repository
 from chromite.cbuildbot import tree_status
 from chromite.cbuildbot import validation_pool
 from chromite.cbuildbot import triage_lib
-from chromite.cbuildbot import triage_lib_unittest
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -37,7 +35,6 @@ from chromite.lib import fake_cidb
 from chromite.lib import gerrit
 from chromite.lib import gob_util
 from chromite.lib import gs
-from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import parallel_unittest
 from chromite.lib import partial_mock
@@ -142,34 +139,6 @@ class MoxBase(patch_unittest.MockPatchBase, cros_test_lib.MoxTestCase):
       cros.version = '2.2'
     return validation_pool.HelperPool(cros_internal=cros_internal,
                                       cros=cros)
-
-
-class IgnoredStagesTest(patch_unittest.MockPatchBase):
-  """Tests for functions that calculate what stages to ignore."""
-
-  def GetOption(self, path, section='GENERAL', option='ignored-stages'):
-    return triage_lib._GetOptionFromConfigFile(path, section, option)
-
-  def testBadConfigFile(self):
-    """Test if we can handle an incorrectly formatted config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, 'foobar')
-      self.assertRaises(ConfigParser.Error, self.GetOption, path)
-
-  def testMissingConfigFile(self):
-    """Test if we can handle a missing config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      self.assertEqual(None, self.GetOption(path))
-
-  def testGoodConfigFile(self):
-    """Test if we can handle a good config file."""
-    with osutils.TempDir(set_global=True) as tempdir:
-      path = os.path.join(tempdir, 'foo.ini')
-      osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
-      ignored = self.GetOption(path)
-      self.assertEqual('bar baz', ignored)
 
 
 class TestPatchSeries(MoxBase):
@@ -1358,14 +1327,15 @@ class MockValidationPool(partial_mock.PartialMock):
 class BaseSubmitPoolTestCase(MoxBase):
   """Test full ability to submit and reject CL pools."""
 
+  # Whether all slave builds passed. This would affect the submission
+  # logic.
+  ALL_BUILDS_PASSED = True
+
   def setUp(self):
     self.pool_mock = self.StartPatcher(MockValidationPool(self.manager))
     self.patch_mock = self.StartPatcher(MockPatchSeries())
     self.PatchObject(gerrit.GerritHelper, 'QuerySingleRecord')
     self.patches = self.GetPatches(2)
-
-    # By default, don't ignore any errors.
-    self.ignores = dict((patch, []) for patch in self.patches)
 
   def SetUpPatchPool(self, failed_to_apply=False):
     pool = MakePool(changes=self.patches, dryrun=False)
@@ -1377,14 +1347,6 @@ class BaseSubmitPoolTestCase(MoxBase):
       pool.changes_that_failed_to_apply_earlier = errors[:]
     return pool
 
-  def GetMessages(self):
-    """Return the list of failure messages.
-
-    This is intended to be overridden by subclasses so that they can specify
-    what failures occur during the CQ run.
-    """
-    return []
-
   def SubmitPool(self, submitted=(), rejected=(), **kwargs):
     """Helper function for testing that we can submit a pool successfully.
 
@@ -1393,17 +1355,11 @@ class BaseSubmitPoolTestCase(MoxBase):
       rejected: List of changes that we expect to be rejected.
       **kwargs: Keyword arguments for SetUpPatchPool.
     """
-    # self.ignores maps changes to a list of stages to ignore. Use it.
-    self.PatchObject(
-        triage_lib, 'GetStagesToIgnoreForChange',
-        side_effect=lambda _, change: self.ignores[change])
-
     # Set up our pool and submit the patches.
     pool = self.SetUpPatchPool(**kwargs)
-    messages = self.GetMessages()
-    if messages:
+    if not self.ALL_BUILDS_PASSED:
       actually_rejected = sorted(pool.SubmitPartialPool(
-          pool.changes, self.GetMessages(), dict(), [], [], []))
+          pool.changes, mock.ANY, dict(), [], [], []))
     else:
       actually_rejected = pool.SubmitChanges(self.patches)
 
@@ -1538,32 +1494,24 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
   """Test the SubmitPartialPool function."""
 
+  # Whether all slave builds passed. This would affect the submission
+  # logic.
+  ALL_BUILDS_PASSED = False
+
   def setUp(self):
     # Set up each patch to be in its own project, so that we can easily
     # request to ignore failures for the specified patch.
     for patch in self.patches:
       patch.project = str(patch)
 
-    self.stage_name = 'MyHWTest'
-    self.PatchObject(triage_lib.CalculateSuspects,
-                     'FilterOutInnocentOverlayChanges',
-                     side_effect=lambda build_root, changes, messages: changes)
-    self.messages = [
-        triage_lib_unittest.TestFindSuspects.GetFailedMessage(
-            [Exception()], stage=self.stage_name)]
-    self.PatchObject(triage_lib.CalculateSuspects, 'GetFullyVerifiedChanges')
+    self.verified_mock = self.PatchObject(
+        triage_lib.CalculateSuspects, 'GetFullyVerifiedChanges',
+        return_value=[])
+    self.PatchObject(validation_pool.ValidationPool, '_GetShouldSubmitChanges')
 
-  def GetMessages(self):
-    """Return a list of failure messages containing a single traceback.
-
-    This is used by SubmitPool and specifies what error messages occured
-    during the CQ run.
-    """
-    return self.messages
-
-  def IgnoreFailures(self, patch):
-    """Set us up to ignore failures for the specified |patch|."""
-    self.ignores[patch] = [self.stage_name]
+  def _MarkPatchesVerified(self, patches):
+    """Set up to mark |patches| as verified."""
+    self.verified_mock.return_value = patches
 
   def testSubmitNone(self):
     """Submit no changes."""
@@ -1571,37 +1519,18 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
 
   def testSubmitAll(self):
     """Submit all changes."""
-    self.IgnoreFailures(self.patches[0])
-    self.IgnoreFailures(self.patches[1])
+    self._MarkPatchesVerified(self.patches[:2])
     self.SubmitPool(submitted=self.patches, rejected=[])
 
   def testSubmitFirst(self):
     """Submit the first change in a series."""
-    self.IgnoreFailures(self.patches[0])
+    self._MarkPatchesVerified([self.patches[0]])
     self.SubmitPool(submitted=[self.patches[0]], rejected=[self.patches[1]])
 
   def testSubmitSecond(self):
     """Attempt to submit the second change in a series."""
-    self.IgnoreFailures(self.patches[1])
+    self._MarkPatchesVerified([self.patches[1]])
     self.SubmitPool(submitted=[], rejected=[self.patches[0]])
-
-  def testSubmitUnrelatedOverlay(self):
-    """Verify that innocent changes are submitted."""
-    self.PatchObject(triage_lib.CalculateSuspects,
-        'FilterOutInnocentOverlayChanges', return_value=[self.patches[1]])
-    self.SubmitPool(submitted=[self.patches[0]],
-                    rejected=[self.patches[1]])
-
-  def testSubmitUnrelatedOverlaySecond(self):
-    """Verify that dependencies are respected when submitting innocents."""
-    self.PatchObject(triage_lib.CalculateSuspects,
-        'FilterOutInnocentOverlayChanges', return_value=[self.patches[0]])
-    self.SubmitPool(submitted=[], rejected=[self.patches[0]])
-
-  def testSubmitBrokenBuilder(self):
-    """Submit no changes when infra failures occur."""
-    self.messages = [None]
-    self.SubmitPool(submitted=(), rejected=self.patches)
 
 
 class LoadManifestTest(cros_test_lib.TempDirTestCase):

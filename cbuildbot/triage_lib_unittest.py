@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import ConfigParser
 import os
 import sys
 import unittest
@@ -19,6 +20,7 @@ from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import triage_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
+from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
 from chromite.lib import patch_unittest
 
@@ -28,6 +30,18 @@ import mock
 # Some tests require the kernel, and fail with buildtools only repo.
 KERNEL_AVAILABLE = os.path.exists(os.path.join(
     constants.SOURCE_ROOT, 'src', 'third_party', 'kernel'))
+
+
+def GetFailedMessage(exceptions, stage='Build', internal=False,
+                     bot='daisy_spring-paladin'):
+  """Returns a BuildFailureMessage object."""
+  tracebacks = []
+  for ex in exceptions:
+    tracebacks.append(results_lib.RecordedTraceback(stage, stage, ex,
+                                                    str(ex)))
+  reason = 'failure reason string'
+  return failures_lib.BuildFailureMessage(
+      'Stage %s failed' % stage, tracebacks, internal, reason, bot)
 
 
 class TestFindSuspects(patch_unittest.MockPatchBase):
@@ -60,18 +74,6 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     ex = cros_build_lib.RunCommandError('foo', cros_build_lib.CommandResult())
     return failures_lib.PackageBuildFailure(ex, 'bar', [pkg])
 
-  @staticmethod
-  def GetFailedMessage(exceptions, stage='Build', internal=False,
-                       bot='daisy_spring-paladin'):
-    """Returns a BuildFailureMessage object."""
-    tracebacks = []
-    for ex in exceptions:
-      tracebacks.append(results_lib.RecordedTraceback(stage, stage, ex,
-                                                      str(ex)))
-    reason = 'failure reason string'
-    return failures_lib.BuildFailureMessage(
-        'Stage %s failed' % stage, tracebacks, internal, reason, bot)
-
   def _AssertSuspects(self, patches, suspects, pkgs=(), exceptions=(),
                       internal=False, infra_fail=False, lab_fail=False):
     """Run _FindSuspects and verify its output.
@@ -86,7 +88,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
       lab_fail: Whether the build failed due to lab infrastructure issues.
     """
     all_exceptions = list(exceptions) + [self._GetBuildFailure(x) for x in pkgs]
-    message = self.GetFailedMessage(all_exceptions, internal=internal)
+    message = GetFailedMessage(all_exceptions, internal=internal)
     results = triage_lib.CalculateSuspects.FindSuspects(
         patches, [message], lab_fail=lab_fail, infra_fail=infra_fail)
     self.assertEquals(set(suspects), results)
@@ -167,14 +169,13 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     """Returns a list of BuildFailureMessage objects."""
     messages = []
     messages.extend(
-        [self.GetFailedMessage([failures_lib.TestLabFailure()])
+        [GetFailedMessage([failures_lib.TestLabFailure()])
          for _ in range(lab_fail)])
     messages.extend(
-        [self.GetFailedMessage([failures_lib.InfrastructureFailure()])
+        [GetFailedMessage([failures_lib.InfrastructureFailure()])
          for _ in range(infra_fail)])
     messages.extend(
-        [self.GetFailedMessage(Exception())
-         for _ in range(other_fail)])
+        [GetFailedMessage(Exception()) for _ in range(other_fail)])
     return messages
 
   def testOnlyLabFailures(self):
@@ -230,7 +231,7 @@ class TestFindSuspects(patch_unittest.MockPatchBase):
     self.PatchObject(changes[3], 'GetDiffStatus',
         return_value={'overlay-daisy_spring/make.conf': 'M'})
 
-    message = self.GetFailedMessage([Exception()])
+    message = GetFailedMessage([Exception()])
     candidates = \
         triage_lib.CalculateSuspects.FilterOutInnocentOverlayChanges(
             constants.SOURCE_ROOT, changes, [message])
@@ -243,7 +244,6 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
   def setUp(self):
     self.build_root = '/foo/build/root'
     self.changes = self.GetPatches(how_many=5)
-    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures')
 
   def testChangesNoAllTested(self):
     """Tests that those changes are fully verified."""
@@ -278,8 +278,8 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     changes_by_config = {'bar-paladin': set(self.changes),
                          'cub-paladin': set(self.changes[:2])}
 
-    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
-                     return_value=False)
+    self.PatchObject(
+        triage_lib.CalculateSuspects, '_CanIgnoreFailures', return_value=False)
     verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
@@ -292,12 +292,61 @@ class TestGetFullyVerifiedChanges(patch_unittest.MockPatchBase):
     changes_by_config = {'bar-paladin': set(self.changes),
                          'cub-paladin': set(self.changes[:2])}
 
-    self.PatchObject(triage_lib.CalculateSuspects, '_CanIgnoreFailures',
-                     return_value=True)
+    self.PatchObject(
+        triage_lib.CalculateSuspects, '_CanIgnoreFailures', return_value=True)
     verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
         self.changes, changes_by_config, failing, inflight, no_stat,
         messages, self.build_root)
     self.assertEquals(verified, set(self.changes))
+
+  # pylint: disable=W0212
+  def testCanIgnoreFailures(self):
+    """Tests _CanIgnoreFailures()."""
+    change = self.changes[0]
+    messages = [GetFailedMessage([Exception()], stage='HWTest'),
+                GetFailedMessage([Exception()], stage='VMTest'),]
+    m = self.PatchObject(triage_lib, 'GetStagesToIgnoreForChange')
+
+    m.return_value = ('HWTest',)
+    self.assertFalse(triage_lib.CalculateSuspects._CanIgnoreFailures(
+        messages, change, self.build_root))
+
+    m.return_value = ('HWTest', 'VMTest', 'Foo')
+    self.assertTrue(triage_lib.CalculateSuspects._CanIgnoreFailures(
+        messages, change, self.build_root))
+
+    m.return_value = None
+    self.assertFalse(triage_lib.CalculateSuspects._CanIgnoreFailures(
+        messages, change, self.build_root))
+
+
+class IgnoredStagesTest(patch_unittest.MockPatchBase):
+  """Tests for functions that calculate what stages to ignore."""
+
+  # pylint: disable=W0212
+  def GetOption(self, path, section='GENERAL', option='ignored-stages'):
+    return triage_lib._GetOptionFromConfigFile(path, section, option)
+
+  def testBadConfigFile(self):
+    """Test if we can handle an incorrectly formatted config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      osutils.WriteFile(path, 'foobar')
+      self.assertRaises(ConfigParser.Error, self.GetOption, path)
+
+  def testMissingConfigFile(self):
+    """Test if we can handle a missing config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      self.assertEqual(None, self.GetOption(path))
+
+  def testGoodConfigFile(self):
+    """Test if we can handle a good config file."""
+    with osutils.TempDir(set_global=True) as tempdir:
+      path = os.path.join(tempdir, 'foo.ini')
+      osutils.WriteFile(path, '[GENERAL]\nignored-stages: bar baz\n')
+      ignored = self.GetOption(path)
+      self.assertEqual('bar baz', ignored)
 
 
 if __name__ == '__main__':

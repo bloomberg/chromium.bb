@@ -2094,6 +2094,9 @@ class ValidationPool(object):
     Returns:
       A set of the non-submittable changes.
     """
+    # TODO(yjhong): Deprecate _GetShouldSubmitChanges() and the
+    # related code (crbug.com/422639).
+
     should_submit = self._GetShouldSubmitChanges(
         changes, messages, self.build_root, no_stat)
     fully_verified = triage_lib.CalculateSuspects.GetFullyVerifiedChanges(
@@ -2101,23 +2104,13 @@ class ValidationPool(object):
         messages, self.build_root)
 
     if should_submit:
-      logging.info('The following changes will be submitted: %s',
+      logging.info('The following changes would have been submitted using '
+                   'deprecated logic: %s',
                    cros_patch.GetChangesAsString(should_submit))
     if fully_verified:
-      logging.info('The following changes would be submitted if we switch to '
-                   'using board-specific triaging logic: %s',
+      logging.info('The following changes will be submitted using '
+                   'board-aware submission logic: %s',
                    cros_patch.GetChangesAsString(fully_verified))
-
-    if should_submit - fully_verified:
-      logging.warning('Board-specific triaging logic would not have '
-                      'submitted changes: %s',
-                      cros_patch.GetChangesAsString(
-                          should_submit - fully_verified))
-    if fully_verified - should_submit:
-      logging.info('Board-specific triaging logic would have '
-                   'submitted changes: %s',
-                   cros_patch.GetChangesAsString(
-                       fully_verified - should_submit))
 
     # Record the difference of CL submission count between the old and
     # the new board-specific submission logic in metadata.json.
@@ -2126,12 +2119,10 @@ class ValidationPool(object):
     self._run.attrs.metadata.UpdateWithDict(
       {'bs_submission_diff_count': len(fully_verified) - len(should_submit)})
 
-    # TODO(yjhong): Replace should_submit with fully_verified once we
-    # confirm there will be no regression (crbug.com/422639).
-    self.SubmitChanges(should_submit)
+    self.SubmitChanges(fully_verified)
 
-    # Return the list of rejected changes.
-    return set(changes) - set(should_submit)
+    # Return the list of non-submittable changes.
+    return set(changes) - set(fully_verified)
 
   def _HandleApplyFailure(self, failures):
     """Handles changes that were not able to be applied cleanly.
