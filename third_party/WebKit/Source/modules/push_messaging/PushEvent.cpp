@@ -15,14 +15,14 @@ PushEvent::PushEvent()
 {
 }
 
-PushEvent::PushEvent(const AtomicString& type, const String& data)
-    : Event(type, /*canBubble=*/false, /*cancelable=*/false)
+PushEvent::PushEvent(const AtomicString& type, const String& data, WaitUntilObserver* observer)
+    : ExtendableEvent(type, ExtendableEventInit(), observer)
     , m_data(data)
 {
 }
 
 PushEvent::PushEvent(const AtomicString& type, const PushEventInit& initializer)
-    : Event(type, initializer)
+    : ExtendableEvent(type, initializer)
     , m_data(initializer.data)
 {
 }

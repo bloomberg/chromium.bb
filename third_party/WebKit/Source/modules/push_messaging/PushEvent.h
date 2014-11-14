@@ -6,28 +6,29 @@
 #define PushEvent_h
 
 #include "modules/EventModules.h"
+#include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
-struct PushEventInit : public EventInit {
+struct PushEventInit : public ExtendableEventInit {
     PushEventInit();
 
     String data;
 };
 
-class PushEvent final : public Event {
+class PushEvent final : public ExtendableEvent {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<PushEvent> create()
     {
         return adoptRefWillBeNoop(new PushEvent);
     }
-    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, const String& data)
+    static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, const String& data, WaitUntilObserver* observer)
     {
-        return adoptRefWillBeNoop(new PushEvent(type, data));
+        return adoptRefWillBeNoop(new PushEvent(type, data, observer));
     }
     static PassRefPtrWillBeRawPtr<PushEvent> create(const AtomicString& type, const PushEventInit& initializer)
     {
@@ -42,7 +43,7 @@ public:
 
 private:
     PushEvent();
-    PushEvent(const AtomicString& type, const String& data);
+    PushEvent(const AtomicString& type, const String& data, WaitUntilObserver*);
     PushEvent(const AtomicString& type, const PushEventInit&);
     String m_data;
 };

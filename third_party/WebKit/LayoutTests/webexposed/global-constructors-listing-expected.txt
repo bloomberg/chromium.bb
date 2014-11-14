@@ -282,7 +282,6 @@ PresentationSession
 ProcessingInstruction
 ProgressEvent
 Promise
-PushEvent
 RTCIceCandidate
 RTCSessionDescription
 Range

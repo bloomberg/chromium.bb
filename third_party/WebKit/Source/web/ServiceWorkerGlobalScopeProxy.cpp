@@ -140,11 +140,9 @@ void ServiceWorkerGlobalScopeProxy::dispatchNotificationErrorEvent(int eventID, 
 void ServiceWorkerGlobalScopeProxy::dispatchPushEvent(int eventID, const WebString& data)
 {
     ASSERT(m_workerGlobalScope);
-    m_workerGlobalScope->dispatchEvent(PushEvent::create(EventTypeNames::push, data));
-    // TODO(mvanouwerkerk): Instead of calling didHandlePushEvent here, it
-    // should get called from WaitUntilObserver::decrementPendingActivity once
-    // the push event is hooked up to event.waitUntil (crbug.com/430888).
-    ServiceWorkerGlobalScopeClient::from(m_workerGlobalScope)->didHandlePushEvent(eventID, WebServiceWorkerEventResultCompleted);
+    WaitUntilObserver* observer = WaitUntilObserver::create(m_workerGlobalScope, WaitUntilObserver::Push, eventID);
+    RefPtrWillBeRawPtr<Event> event(PushEvent::create(EventTypeNames::push, data, observer));
+    m_workerGlobalScope->dispatchExtendableEvent(event.release(), observer);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(int eventID)
