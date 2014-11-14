@@ -12,9 +12,10 @@
     [Unforgeable] readonly attribute ServiceWorker? installing;
     [Unforgeable] readonly attribute ServiceWorker? waiting;
     [Unforgeable] readonly attribute ServiceWorker? active;
+
     readonly attribute USVString scope;
 
-    [CallWith=ScriptState] Promise unregister();
+    [CallWith=ScriptState] Promise<boolean> unregister();
 
     attribute EventHandler onupdatefound;
 };

@@ -35,8 +35,9 @@
     TypeChecking=Interface,
 ] interface ServiceWorkerContainer {
     [Unforgeable] readonly attribute ServiceWorker? controller;
-    [CallWith=ScriptState] readonly attribute Promise ready;
+    [CallWith=ScriptState] readonly attribute Promise<ServiceWorkerRegistration> ready;
 
-    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise register(USVString url, optional RegistrationOptions options);
-    [CallWith=ScriptState] Promise getRegistration(optional USVString documentURL = "");
+    [CallWith=ScriptState, ImplementedAs=registerServiceWorker] Promise<ServiceWorkerRegistration> register(USVString url, optional RegistrationOptions options);
+
+    [CallWith=ScriptState] Promise<ServiceWorkerRegistration> getRegistration(optional USVString documentURL = "");
 };

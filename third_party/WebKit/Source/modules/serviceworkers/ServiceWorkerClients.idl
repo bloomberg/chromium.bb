@@ -9,5 +9,5 @@
     GarbageCollected,
     TypeChecking=Interface,
 ] interface ServiceWorkerClients {
-    [CallWith=ScriptState] Promise getAll(optional ServiceWorkerClientQueryOptions options);
+    [CallWith=ScriptState] Promise<sequence<ServiceWorkerClient>?> getAll(optional ServiceWorkerClientQueryOptions options);
 };

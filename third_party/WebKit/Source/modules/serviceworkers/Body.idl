@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // http://fetch.spec.whatwg.org/#body
+typedef object JSON;
 [
     RuntimeEnabled=ServiceWorker,
     Exposed=ServiceWorker,
@@ -12,11 +13,11 @@
     TypeChecking=Interface,
 ] interface Body {
     readonly attribute boolean bodyUsed;
-    [CallWith=ScriptState] Promise arrayBuffer();
-    [CallWith=ScriptState] Promise blob();
-    [CallWith=ScriptState] Promise json();
-    [CallWith=ScriptState] Promise text();
+    [CallWith=ScriptState] Promise<ArrayBuffer> arrayBuffer();
+    [CallWith=ScriptState] Promise<Blob> blob();
+    [CallWith=ScriptState] Promise<JSON> json();
+    [CallWith=ScriptState] Promise<USVString> text();
 
     // Still to be implemented.
-    // [CallWith=ScriptState] Promise formData();
+    // [CallWith=ScriptState] Promise<FormData> formData();
 };

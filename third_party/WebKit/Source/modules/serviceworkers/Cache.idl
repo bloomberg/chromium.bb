@@ -12,21 +12,19 @@ typedef (Request or USVString) RequestInfo;
     RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface Cache {
-    [CallWith=ScriptState, RaisesException] Promise match(RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<Response> match(RequestInfo request, optional CacheQueryOptions options);
 
     // FIXME: Implement matchAll(): http://crbug.com/428363
     // FIXME: First argument of matchAll() should be optional: http://crbug.com/425459
-    // [CallWith=ScriptState, RaisesException] Promise matchAll(RequestInfo request, optional CacheQueryOptions options);
+    // [CallWith=ScriptState, RaisesException] Promise<sequence<Response>> matchAll(RequestInfo request, optional CacheQueryOptions options);
 
     // FIXME: Implement add(): http://crbug.com/427652
-    // [CallWith=ScriptState, RaisesException] Promise add(RequestInfo request);
+    // [CallWith=ScriptState, RaisesException] Promise<void> add(RequestInfo request);
 
     // FIXME: Implement addAll(): http://crbug.com/427652
-    // FIXME: Sequences of Unions are not yet supported, instead bind a generic type. http://crbug.com/240176
-    // [CallWith=ScriptState] Promise addAll(sequence<RequestInfo> requests);
-    // [CallWith=ScriptState] Promise addAll(sequence<any> requests);
+    // [CallWith=ScriptState] Promise<void> addAll(sequence<RequestInfo> requests);
 
-    [CallWith=ScriptState, RaisesException] Promise put(RequestInfo request, Response response);
-    [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] Promise delete(RequestInfo request, optional CacheQueryOptions options);
-    [CallWith=ScriptState, RaisesException] Promise keys(optional RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<void> put(RequestInfo request, Response response);
+    [CallWith=ScriptState, ImplementedAs=deleteFunction, RaisesException] Promise<boolean> delete(RequestInfo request, optional CacheQueryOptions options);
+    [CallWith=ScriptState, RaisesException] Promise<sequence<Response>> keys(optional RequestInfo request, optional CacheQueryOptions options);
 };

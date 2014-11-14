@@ -40,8 +40,8 @@
   [CallWith=ExecutionContext, Unforgeable] readonly attribute USVString scope;
   [CallWith=ExecutionContext, Unforgeable, RuntimeEnabled=ServiceWorkerCache] readonly attribute CacheStorage caches;
 
-  [CallWith=ScriptState] Promise fetch(DOMString request, optional Dictionary requestInitDict);
-  [CallWith=ScriptState] Promise fetch(Request request, optional Dictionary requestInitDict);
+  [CallWith=ScriptState] Promise<Response> fetch(DOMString request, optional Dictionary requestInitDict);
+  [CallWith=ScriptState] Promise<Response> fetch(Request request, optional Dictionary requestInitDict);
 
   [RaisesException] void close();
 

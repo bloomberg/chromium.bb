@@ -9,10 +9,10 @@
     RuntimeEnabled=ServiceWorkerCache,
     TypeChecking=Interface,
 ] interface CacheStorage {
-  [CallWith=ScriptState] Promise has(USVString cacheName);
-  [CallWith=ScriptState] Promise open(USVString cacheName);
-  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise delete(USVString cacheName);
-  [CallWith=ScriptState] Promise keys();
+  [CallWith=ScriptState] Promise<boolean> has(USVString cacheName);
+  [CallWith=ScriptState] Promise<Cache> open(USVString cacheName);
+  [CallWith=ScriptState, ImplementedAs=deleteFunction] Promise<boolean> delete(USVString cacheName);
+  [CallWith=ScriptState] Promise<sequence<DOMString>> keys();
   // FIXME: From https://github.com/slightlyoff/ServiceWorker/issues/372 and the updated
   // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#cache-storage ,
   // we have yet to implement match().
