@@ -58,6 +58,7 @@
     [MeasureAs=MouseEventY] readonly attribute long y;
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
+    [MeasureAs=MouseEventWhich] readonly attribute long which;
 
     // FIXME: this belongs on the DragEvent interface
     readonly attribute DataTransfer dataTransfer;

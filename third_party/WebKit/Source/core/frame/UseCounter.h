@@ -561,6 +561,10 @@ public:
 
         SetReferrerPolicy = 593,
         DOMImplementationHasFeatureReturnFalseInternal = 594,
+        MouseEventWhich = 595,
+        UIEventCharCode = 596,
+        UIEventKeyCode = 597,
+        UIEventWhich = 598,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

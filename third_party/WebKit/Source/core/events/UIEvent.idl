@@ -36,7 +36,7 @@
     [MeasureAs=UIEventPageY] readonly attribute long pageY;
 
     // FIXME: these belong on the KeyboardEvent interface
-    readonly attribute long keyCode;
-    readonly attribute long charCode;
-    readonly attribute long which;
+    [MeasureAs=UIEventCharCode] readonly attribute long charCode;
+    [MeasureAs=UIEventKeyCode] readonly attribute long keyCode;
+    [MeasureAs=UIEventWhich] readonly attribute long which;
 };
