@@ -12,6 +12,21 @@
 #define CRAZY_DEBUG 0
 #endif
 
+// Define COMPILE_ASSERT using the implementation described in:
+// http://chromium.googlesource.com/chromium/src.git/+/539fc831/base/basictypes.h
+#if __cplusplus >= 201103L
+
+#define COMPILE_ASSERT(expr, msg) static_assert(expr, #msg)
+
+#else
+
+template <bool> struct CompileAssert { };
+#define COMPILE_ASSERT(expr, msg) \
+  typedef CompileAssert<(bool(expr))> msg[bool(expr) ? 1 : -1] \
+  __attribute__((unused))
+
+#endif  // __cplusplus >= 201103L
+
 namespace crazy {
 
 #if CRAZY_DEBUG

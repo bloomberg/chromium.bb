@@ -62,3 +62,5 @@ Local Modifications:
 
 - Fix -Wreorder warning (error with -Werror) in class ElfLoader.
 
+- Control static_assert invocations with a new COMPILE_ASSERT macro.
+

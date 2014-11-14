@@ -23,8 +23,8 @@ namespace {
 
 // Page size for alignment in a zip file.
 const size_t kZipAlignmentPageSize = 4096;
-static_assert(kZipAlignmentPageSize % PAGE_SIZE == 0,
-              "kZipAlignmentPageSize must be a multiple of PAGE_SIZE");
+COMPILE_ASSERT(kZipAlignmentPageSize % PAGE_SIZE == 0,
+               kZipAlignmentPageSize_must_be_a_multiple_of_PAGE_SIZE);
 
 // A helper struct used when looking up symbols in libraries.
 struct SymbolLookupState {
@@ -428,8 +428,9 @@ int LibraryList::FindMappableLibraryInZipFile(
     return CRAZY_OFFSET_FAILED;
   }
 
-  static_assert((kZipAlignmentPageSize & (kZipAlignmentPageSize - 1)) == 0,
-                "kZipAlignmentPageSize must be a power of 2");
+  COMPILE_ASSERT((kZipAlignmentPageSize & (kZipAlignmentPageSize - 1)) == 0,
+                 kZipAlignmentPageSize_must_be_a_power_of_2);
+
   if ((offset & (kZipAlignmentPageSize - 1)) != 0) {
     error->Format("Library %s is not page aligned in zipfile %s\n",
                   lib_name, zip_file_path);
