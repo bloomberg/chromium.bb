@@ -177,7 +177,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
 
    private:
     friend class ChannelProxy;
-    friend class SendCallbackHelper;
+    friend class IpcSecurityTestUtil;
 
     // Create the Channel
     void CreateChannel(scoped_ptr<ChannelFactory> factory);
@@ -225,7 +225,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   Context* context() { return context_.get(); }
 
  private:
-  friend class SendCallbackHelper;
+  friend class IpcSecurityTestUtil;
 
   // By maintaining this indirection (ref-counted) to our internal state, we
   // can safely be destroyed while the background thread continues to do stuff

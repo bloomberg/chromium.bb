@@ -23,11 +23,6 @@ GpuPixelBrowserTest.*
 FileSystemBrowserTestWithLowQuota.QuotaTest
 ChildProcessSecurityPolicyInProcessBrowserTest.NoLeak
 
-# Needs to start the test server before
-# BrowserTestBase::SetUpCommandLine is called, but on Android
-# the test server needs to be started in SetUpOnMainThread().
-SecurityExploitBrowserTest.SetWebUIProperty
-
 # Plugins are not supported.
 BrowserPluginThreadedCompositorPixelTest.*
 BrowserPluginHostTest.*
@@ -107,10 +102,6 @@ TouchActionBrowserTest.*
 
 # http://crbug.com/338408
 TracingControllerTest.EnableCaptureAndDisableMonitoring
-
-# http://crbug.com/338023
-SecurityExploitBrowserTest.AttemptDuplicateRenderViewHost
-SecurityExploitBrowserTest.AttemptDuplicateRenderWidgetHost
 
 # http://crbug.com/338411
 FrameTreeBrowserTest.NavigateWithLeftoverFrames
