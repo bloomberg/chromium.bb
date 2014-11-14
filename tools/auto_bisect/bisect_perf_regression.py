@@ -1393,8 +1393,6 @@ class BisectPerformanceMetrics(object):
       err_text = 'Failed to generate profile for performance test.'
       return (err_text, failure_code)
 
-    # If running a Telemetry test for Chrome OS, insert the remote IP and
-    # identity parameters.
     is_telemetry = bisect_utils.IsTelemetryCommand(command_to_run)
 
     start_time = time.time()
