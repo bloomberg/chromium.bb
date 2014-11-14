@@ -16,7 +16,7 @@ function initAutosizingTest() {
         console.warn("This test depends on Text Autosizing being enabled. Run with content shell"
                 + "and --dump-render-tree or manually enable Text Autosizing and either use a "
                 + "mobile device with 320px device-width (like Nexus S or iPhone), or define "
-                + "HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP.");
+                + "DEBUG_TEXT_AUTOSIZING_ON_DESKTOP.");
     }
 }
 

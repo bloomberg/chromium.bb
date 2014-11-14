@@ -66,7 +66,7 @@ static const bool defaultSelectTrailingWhitespaceEnabled = false;
 
 Settings::Settings()
     : m_openGLMultisamplingEnabled(false)
-#if HACK_FORCE_TEXT_AUTOSIZING_ON_DESKTOP
+#if DEBUG_TEXT_AUTOSIZING_ON_DESKTOP
     , m_textAutosizingWindowSizeOverride(320, 480)
     , m_textAutosizingEnabled(true)
 #else
