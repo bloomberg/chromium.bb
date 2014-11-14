@@ -14,6 +14,7 @@
           'inputs': [
             'builder.py',
             '<@(inputview_sources)',
+            'inputview.gypi',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/resources/inputview.js',

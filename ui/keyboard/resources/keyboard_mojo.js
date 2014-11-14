@@ -56,7 +56,13 @@ if (!chrome.virtualKeyboardPrivate) {
   chrome.virtualKeyboardPrivate.moveCursor = function() {};
   chrome.virtualKeyboardPrivate.lockKeyboard = function() {};
   chrome.virtualKeyboardPrivate.keyboardLoaded = function() {};
-  chrome.virtualKeyboardPrivate.getKeyboardConfig = function() {};
+  chrome.virtualKeyboardPrivate.getKeyboardConfig = function(callback) {
+    callback({
+      layout: 'qwerty',
+      a11ymode: false,
+      experimental: false
+    });
+  };
 
   function BrowserEvent() {
     this.listeners_ = [];

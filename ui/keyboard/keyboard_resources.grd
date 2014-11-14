@@ -15,47 +15,46 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_KEYBOARD_FUNCTION_KEY_ROW" file="resources/layouts/function-key-row.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_BACK" file="resources/images/back.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_BACKSPACE" file="resources/images/backspace.png" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_BRIGHTNESS_DOWN" file="resources/images/brightness-down.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_BRIGHTNESS_UP" file="resources/images/brightness-up.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_CHANGE_WINDOW" file="resources/images/change-window.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_DOWN" file="resources/images/down.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_FORWARD" file="resources/images/forward.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_FULLSCREEN" file="resources/images/fullscreen.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD" file="resources/images/hide-keyboard.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CONFIG_EMOJI" file="${inputview_dir}/config/emoji_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CONFIG_HWT" file="${inputview_dir}/config/hwt_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_CONFIG_US" file="${inputview_dir}/config/us_data.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_BACKSPACE" file="${inputview_dir}/images/backspace.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_CHECK" file="${inputview_dir}/images/check.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_COMPACT" file="${inputview_dir}/images/compact.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_DOWN" file="${inputview_dir}/images/down.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_ERROR" file="${inputview_dir}/images/error.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_FULLSIZE" file="${inputview_dir}/images/regular_size.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_GLOBE" file="${inputview_dir}/images/globe.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_HIDE_KEYBOARD" file="${inputview_dir}/images/hide.png" type="BINDATA" />
       <include name="IDR_KEYBOARD_IMAGES_KEYBOARD" file="resources/images/keyboard.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_LEFT" file="resources/images/left.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_MICROPHONE" file="resources/images/microphone.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_MICROPHONE_GREEN" file="resources/images/microphone-green.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_MUTE" file="resources/images/mute.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_RELOAD" file="resources/images/reload.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_RETURN" file="resources/images/return.png" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_RIGHT" file="resources/images/right.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="resources/images/search.png" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SHIFT" file="resources/images/shift.png" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_SHUTDOWN" file="resources/images/shutdown.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_TAB" file="resources/images/tab.png" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_UP" file="resources/images/up.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_VOLUME_DOWN" file="resources/images/volume-down.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_IMAGES_VOLUME_UP" file="resources/images/volume-up.svg" type="BINDATA" />
-      <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_LEFT" file="${inputview_dir}/images/left.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_MENU" file="${inputview_dir}/images/menu.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_PENCIL" file="${inputview_dir}/images/pencil.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_RETURN" file="${inputview_dir}/images/enter.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_RIGHT" file="${inputview_dir}/images/right.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SEARCH" file="${inputview_dir}/images/search.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SETTINGS" file="${inputview_dir}/images/setting.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SHIFT" file="${inputview_dir}/images/shift.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_SPACE" file="${inputview_dir}/images/space.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_TAB" file="${inputview_dir}/images/tab.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_IMAGES_UP" file="${inputview_dir}/images/up.png" type="BINDATA" />
+      <include name="IDR_KEYBOARD_INDEX" file="resources/index.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_INPUTVIEW_ADAPTER" file="resources/inputview_adapter.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_INPUTVIEW_CSS" file="${inputview_dir}/common.css" type="BINDATA" />
+      <include name="IDR_KEYBOARD_INPUTVIEW_JS" file="${inputview_gen_js}" use_base_dir="false" type="BINDATA" />
       <include name="IDR_KEYBOARD_MOJO_JS" file="resources/keyboard_mojo.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_KEYBOARD_MOJO_GEN_JS" file="${keyboard_mojom_gen_js}" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_KEYBOARD_JS" file="resources/keyboard.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_NUMERIC" file="resources/layouts/numeric.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_QWERTY" file="resources/layouts/qwerty.html" type="BINDATA" />
-      <include name="IDR_KEYBOARD_LAYOUTS_SYSTEM_QWERTY" file="resources/layouts/system-qwerty.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LOCALES_EN" file="resources/locales/en.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LAYOUTS_101" file="${inputview_dir}/layouts/101kbd_layout.js" type="BINDATA"/>
+      <include name="IDR_KEYBOARD_LAYOUTS_COMPACT_QWERTY" file="${inputview_dir}/layouts/compactkbd_qwerty_layout.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LAYOUTS_COMPACT_NUMBERPAD" file="${inputview_dir}/layouts/compactkbd_numberpad_layout.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LAYOUTS_EMOJI" file="${inputview_dir}/layouts/emoji_layout.js" type="BINDATA" />
+      <include name="IDR_KEYBOARD_LAYOUTS_HWT" file="${inputview_dir}/layouts/handwriting_layout.js" type="BINDATA" />
       <include name="IDR_KEYBOARD_MANIFEST" file="resources/manifest.json" type="BINDATA" />
-      <include name="IDR_KEYBOARD_MAIN_CSS" file="resources/main.css" type="BINDATA" />
-      <include name="IDR_KEYBOARD_POLYMER_LOADER" file="resources/polymer_loader.js" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_KEYBOARD_ROBOTO_BOLD_TTF" file="resources/roboto_bold.ttf" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE" file="resources/sounds/keypress-delete.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_RETURN" file="resources/sounds/keypress-return.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR" file="resources/sounds/keypress-spacebar.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD" file="resources/sounds/keypress-standard.wav" type="BINDATA" />
-      <include name="IDR_KEYBOARD_SPACEBAR_ROW" file="resources/layouts/spacebar-row.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_DELETE" file="${inputview_dir}/sounds/keypress-delete.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_RETURN" file="${inputview_dir}/sounds/keypress-return.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_SPACEBAR" file="${inputview_dir}/sounds/keypress-spacebar.wav" type="BINDATA" />
+      <include name="IDR_KEYBOARD_SOUNDS_KEYPRESS_STANDARD" file="${inputview_dir}/sounds/keypress-standard.wav" type="BINDATA" />
     </includes>
   </release>
 </grit>

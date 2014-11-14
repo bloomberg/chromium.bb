@@ -79,6 +79,7 @@
       'src/chrome/os/inputview/layouts/rowsof102.js',
       'src/chrome/os/inputview/layouts/rowsofcompact.js',
       'src/chrome/os/inputview/layouts/rowsofjp.js',
+      'src/chrome/os/inputview/layouts/rowsofnumberpad.js',
       'src/chrome/os/inputview/layouts/spacerow.js',
       'src/chrome/os/inputview/layouts/util.js',
       'src/chrome/os/inputview/m17nmodel.js',

@@ -1,0 +1,337 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+var CLOSURE_NO_DEPS=true;
+
+var controller;
+var activeKeySet;
+
+/**
+ * Registers a function, which may override a preexisting implementation.
+ * @param {string} path Full path for the function name.
+ * @param {function=} opt_fn Optional function definition. If not specified,
+ *     the default implementation prettyprints the method call with arguments.
+ * @return {function} Registered function, which may be a mock implementation.
+ */
+function registerFunction(path, opt_fn) {
+  var parts = path.split('.');
+  var base = window;
+  var part = null;
+  var fn = opt_fn;
+  if (!fn) {
+    fn = function() {
+      var prettyprint = function(arg) {
+        if (arg instanceof Array) {
+          var terms = [];
+          for (var i = 0; i < arg.length; i++) {
+            terms.push(prettyprint(arg[i]));
+          }
+          return '[' + terms.join(', ') + ']';
+        } else if (typeof arg == 'object') {
+          var properties = [];
+          for (var key in arg) {
+             properties.push(key + ': ' + prettyprint(arg[key]));
+          }
+          return '{' + properties.join(', ') + '}';
+        } else {
+          return arg;
+        }
+      };
+      // The property 'arguments' is an array-like object. Convert to a true
+      // array for prettyprinting.
+      var args = Array.prototype.slice.call(arguments);
+      console.log('Call to ' + path + ': ' + prettyprint(args));
+    };
+  }
+  for (var i = 0; i < parts.length - 1; i++) {
+    part = parts[i];
+    if (!base[part]) {
+      base[part] = {};
+    }
+    base = base[part];
+  }
+  base[parts[parts.length - 1]] = fn;
+  return fn;
+}
+
+/**
+ * The chrome.i18n API is not compatible with component extensions due to the
+ * way in which json files are handled. The messages.json files cannot be
+ * properly referenced within the extensions.
+ */
+function overrideGetMessage() {
+  var originalGetMessage = chrome.i18n.getMessage;
+
+  /**
+   * Localize a string resource.
+   * @param {string} key The message key to localize.
+   * @return {string} Translated resource.
+   */
+  chrome.i18n.getMessage = function(key) {
+    if (key.indexOf('@@') == 0)
+      return originalGetMessage(key);
+
+    // TODO(kevers): Add support for other locales.
+    var table = i18n.input.chrome.inputview.TranslationTable;
+    var entry = table[key];
+    if (!entry)
+      entry = table[key.toLowerCase()];
+    return entry ? entry.message || '' : '';
+  };
+};
+
+/**
+ * Overrides call to switch keysets in order to catch when the keyboard
+ * is ready for input. Used to synchronize the start of automated
+ * virtual keyboard tests.
+ */
+function overrideSwitchToKeyset() {
+  var KeyboardContainer = i18n.input.chrome.inputview.KeyboardContainer;
+  var switcher = KeyboardContainer.prototype.switchToKeyset;
+  KeyboardContainer.prototype.switchToKeyset = function() {
+    var success = switcher.apply(this, arguments);
+    if (success) {
+      var newKeySet = arguments[0];
+      if (activeKeySet != newKeySet) {
+        activeKeySet = newKeySet;
+        // The first resize call forces resizing of the keyboard window.
+        // The second resize call forces a clean layout for chrome://keyboard.
+        controller.resize(false);
+        controller.resize(true);
+        var settings = controller.model_.settings;
+        settings.supportCompact = true;
+        chrome.virtualKeyboardPrivate.keyboardLoaded();
+      }
+    }
+  };
+}
+
+/**
+ * Spatial data is used in conjunction with a language model to offer
+ * corrections for 'fat finger' typing and is not needed for the system VK.
+ */
+function overrideGetSpatialData() {
+  var Controller = i18n.input.chrome.inputview.Controller;
+  Controller.prototype.getSpatialData_ = function() {};
+}
+
+// Plug in for API calls.
+function registerInputviewApi() {
+
+  // Flag values for ctrl, alt and shift as defined by EventFlags
+  // in "event_constants.h".
+  // @enum {number}
+  var Modifier = {
+    NONE: 0,
+    ALT: 8,
+    CONTROL: 4,
+    SHIFT: 2
+  };
+
+  // Mapping from keyName to keyCode
+  var nonAlphaNumericKeycodes = {
+    Backspace: 0x08,
+    Tab: 0x09,
+    Enter: 0x0D,
+  };
+
+  /**
+   * Displays a console message containing the last runtime error.
+   * @private
+   */
+  function logIfError_() {
+    if (chrome.runtime.lastError) {
+      console.log(chrome.runtime.lastError);
+    }
+  }
+
+  /**
+   * Retrieve the preferred keyboard configuration.
+   * @param {function} callback The callback function for processing the
+   *     keyboard configuration.
+   * @private
+   */
+  function getKeyboardConfig_(callback) {
+    chrome.virtualKeyboardPrivate.getKeyboardConfig(callback);
+  }
+
+  /**
+   * Retrieve a list of all enabled input methods.
+   * @param {function} callback The callback function for processing the list
+   *     of enabled input methods.
+   * @private
+   */
+  function getInputMethods_(callback) {
+    if (chrome.inputMethodPrivate)
+      chrome.inputMethodPrivate.getInputMethods(callback);
+    else
+      callback([]);
+  }
+
+  /**
+   * Retrieve the name of the active input method.
+   * @param {function} callback The callback function for processing the
+   *     name of the active input mehtod.
+   * @private
+   */
+  function getCurrentInputMethod_(callback) {
+    if (chrome.inputMethodPrivate)
+      chrome.inputMethodPrivate.getCurrentInputMethod(callback);
+    else
+      callback('');
+  }
+
+  /**
+   * Changes the active input method.
+   * @param {string} inputMethodId The id of the input method to activate.
+   * @private
+   */
+  function switchToInputMethod_(inputMethodId) {
+    if (chrome.inputMethodPrivate)
+      chrome.inputMethodPrivate.setCurrentInputMethod(inputMethodId)
+  }
+
+  /**
+   * Opens the language settings for specifying and configuring input methods.
+   * @private
+   */
+  function openSettings_() {
+    chrome.virtualKeyboardPrivate.openSettings();
+  }
+
+  /**
+   * Dispatches a virtual key event. The system VK does not use the IME
+   * API as its primary role is to work in conjunction with a non-VK aware
+   * IME. Some reformatting of the key data is required to work with the
+   * virtualKeyboardPrivate API.
+   * @param {!Object} keyData Description of the key event.
+   */
+  function sendKeyEvent_(keyData) {
+    keyData.forEach(function(data) {
+      var charValue = data.key.length == 1 ? data.key.charCodeAt(0) : 0;
+      var keyCode = data.keyCode ? data.keyCode :
+          getKeyCode_(data.key, data.code);
+      var event = {
+        type: data.type,
+        charValue: charValue,
+        keyCode: keyCode,
+        keyName: data.code,
+        modifiers: Modifier.NONE
+      };
+      if (data.altKey)
+        event.modifers |= Modifier.ALT;
+      if (data.ctrlKey)
+        event.modifiers |= Modifier.CTRL;
+      if (data.shiftKey || data.capsLock)
+        event.modifiers |= Modifier.SHIFT;
+      chrome.virtualKeyboardPrivate.sendKeyEvent(event, logIfError_);
+    });
+  }
+
+  /**
+   * Computes keyCodes based on the US-101 keyboard for common keys.  Required
+   * to properly handle special keys such as backspace.
+   * @param {string} keyChar Character being typed.
+   * @param {string} keyName w3c name of the character.
+   */
+  function getKeyCode_(keyChar, keyName) {
+    var keyCode = nonAlphaNumericKeycodes[keyName];
+    if (keyCode)
+      return keyCode;
+    if (keyChar.length == 1) {
+      if (keyChar >= 'a' && keyChar <= 'z')
+        return keyChar.charCodeAt(0) - 32;
+      if (keyChar >= 'A' && keyChar <= 'Z')
+        return keyChar.charCodeAt(0);
+      if (keyChar >= '0' && keyChar <= '9')
+        return keyChar.charCodeAt(0);
+    }
+    return 0;
+  }
+
+  window.inputview = {
+    getKeyboardConfig: getKeyboardConfig_,
+    getInputMethods: getInputMethods_,
+    getCurrentInputMethod: getCurrentInputMethod_,
+    switchToInputMethod: switchToInputMethod_,
+    openSettings: openSettings_
+  };
+
+  registerFunction('chrome.input.ime.hideInputView', function() {
+    chrome.virtualKeyboardPrivate.hideKeyboard();
+    chrome.virtualKeyboardPrivate.lockKeyboard(false);
+  });
+
+  var defaultSendMessage = registerFunction('chrome.runtime.sendMessage');
+  registerFunction('chrome.runtime.sendMessage', function(message) {
+    if (message.type == 'send_key_event')
+      sendKeyEvent_(message.keyData);
+    else
+      defaultSendMessage(message);
+  });
+
+}
+
+
+registerFunction('chrome.runtime.getBackgroundPage', function() {
+  var callback = arguments[0];
+  callback();
+});
+registerFunction('chrome.runtime.sendMessage');
+registerFunction('chrome.runtime.onMessage.addListener');
+
+if (!chrome.i18n) {
+  chrome.i18n = {};
+  chrome.i18n.getMessage = function(name) {
+    return name;
+  }
+}
+
+/**
+ * Trigger loading the virtual keyboard on completion of page load.
+ */
+window.onload = function() {
+  var params = {};
+  var matches = window.location.href.match(/[#?].*$/);
+  if (matches && matches.length > 0) {
+    matches[0].slice(1).split('&').forEach(function(s) {
+      var pair = s.split('=');
+      params[pair[0]] = pair[1];
+    });
+  }
+
+  var keyset = params['id'] || 'us.compact.qwerty';
+  var languageCode = params['language'] || 'en';
+  var passwordLayout = params['passwordLayout'] || 'us';
+  var name = params['name'] || 'English';
+
+  overrideGetMessage();
+  overrideSwitchToKeyset();
+  overrideGetSpatialData();
+  registerInputviewApi();
+  i18n.input.chrome.inputview.Controller.DEV = true;
+
+  if (keyset != 'none') {
+    window.initializeVirtualKeyboard(keyset, languageCode, passwordLayout,
+        name);
+  }
+};
+
+/**
+ * Loads a virtual keyboard. If a keyboard was previously loaded, it is
+ * reinitialized with the new configuration.
+ * @param {string} keyset The keyboard keyset.
+ * @param {string} languageCode The language code for this keyboard.
+ * @param {string} passwordLayout The layout for password box.
+ * @param {string} name The input tool name.
+ */
+window.initializeVirtualKeyboard = function(keyset, languageCode,
+    passwordLayout, name) {
+  if (controller)
+    goog.dispose(controller);
+  activeKeySet = undefined;
+
+  controller = new i18n.input.chrome.inputview.Controller(keyset,
+      languageCode, passwordLayout, name);
+};

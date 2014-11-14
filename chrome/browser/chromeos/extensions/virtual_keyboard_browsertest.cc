@@ -39,7 +39,10 @@ const char kBaseKeyboardTestFramework[] = "virtual_keyboard_test_base.js";
 
 const char kExtensionId[] = "mppnpdlheglhdfmldimlhpnegondlapf";
 
-const char kVirtualKeyboardURL[] = "chrome://keyboard";
+// Loading the virtual keyboard with id=none suppresses asynchronous loading of
+// layout and configuration assets. This allows the javascript test code to be
+// injected ahead of the keyboard initialization.
+const char kVirtualKeyboardURL[] = "chrome://keyboard?id=none";
 
 }  // namespace
 
@@ -126,8 +129,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_AttributesTest) {
           VirtualKeyboardBrowserTestConfig());
 }
 
-// crbug.com/387372. This test started failing at Blink r176582.
-IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, DISABLED_TypingTest) {
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardBrowserTest, TypingTest) {
   RunTest(base::FilePath(FILE_PATH_LITERAL("typing_test.js")),
           VirtualKeyboardBrowserTestConfig());
 }

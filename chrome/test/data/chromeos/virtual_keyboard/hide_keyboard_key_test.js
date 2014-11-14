@@ -9,21 +9,11 @@
  * @param {Function} testDoneCallback The callback function on completion.
  */
 function testHideKeyboard(testDoneCallback) {
-  var self = this;
-  var mockEvent = {pointerId: 1};
-  mockEvent.stopPropagation = function() {};
-  var fn = function() {
-    Debug('Mock tap on hide keyboard key.');
-    var hideKey =
-        $('keyboard').activeKeyset.querySelector('kb-hide-keyboard-key');
-    assertTrue(!!hideKey, 'Unable to find hide keyboard key.');
-
-    hideKey.down(mockEvent);
-    // Expect hideKeyboard to be called.
+  onKeyboardReady(function() {
+    var key = findKeyById('HideKeyboard');
+    mockTap(key);
     chrome.virtualKeyboardPrivate.hideKeyboard.addExpectation();
-    // hideKeyboard in api_adapter also unlocks the keyboard.
     chrome.virtualKeyboardPrivate.lockKeyboard.addExpectation(false);
-    hideKey.up(mockEvent);
-  };
-  onKeyboardReady('testHideKeyboard', fn, testDoneCallback);
+    testDoneCallback();
+  });
 }

@@ -73,9 +73,15 @@ grit("resources_grit") {
   ]
 
   keyboard_mojom_gen_js = "$root_gen_dir/ui/keyboard/webui/keyboard.mojom.js"
+  inputview_dir = "../../third_party/google_input_tools/src/chrome/os/inputview"
+  inputview_gen_js = "$root_gen_dir/ui/keyboard/resources/inputview.js"
   grit_flags = [
     "-E", "keyboard_mojom_gen_js=" +
           rebase_path(keyboard_mojom_gen_js, root_build_dir),
+    "-E", "inputview_dir=" +
+          rebase_path(inputview_dir, root_build_dir),
+    "-E", "inputview_gen_js=" +
+          rebase_path(inputview_gen_js, root_build_dir),
   ]
 
   deps = [
@@ -94,6 +100,7 @@ build_closure("inputview") {
   sources = inputview_sources
   target = "$target_gen_dir/resources/inputview.js"
   json_file = "//third_party/google_input_tools/inputview.gypi"
+  sources += [ json_file ]
   json_sources = "variables.inputview_sources"
   path = rebase_path("//third_party/google_input_tools")
 }
