@@ -78,6 +78,7 @@ HTMLFormElement::HTMLFormElement(Document& document)
     , m_shouldSubmit(false)
     , m_isInResetFunction(false)
     , m_wasDemoted(false)
+    , m_invalidControlsCount(0)
     , m_pendingAutocompleteEventsQueue(GenericEventQueue::create(this))
 {
 }
@@ -715,13 +716,29 @@ HTMLFormControlElement* HTMLFormElement::defaultButton() const
     return 0;
 }
 
-void HTMLFormElement::setNeedsValidityCheck()
+void HTMLFormElement::setNeedsValidityCheck(ValidityRecalcReason reason, bool isValid)
 {
-    // For now unconditionally order style recalculation, which triggers
-    // validity recalculation. In the near future, implement validity cache and
-    // recalculate style only if it changed.
-    pseudoStateChanged(CSSSelector::PseudoValid);
-    pseudoStateChanged(CSSSelector::PseudoInvalid);
+    bool formWasInvalid = m_invalidControlsCount > 0;
+    switch (reason) {
+    case ElementRemoval:
+        if (!isValid)
+            --m_invalidControlsCount;
+        break;
+    case ElementAddition:
+        if (!isValid)
+            ++m_invalidControlsCount;
+        break;
+    case ElementModification:
+        if (isValid)
+            --m_invalidControlsCount;
+        else
+            ++m_invalidControlsCount;
+        break;
+    }
+    if (formWasInvalid && !m_invalidControlsCount)
+        pseudoStateChanged(CSSSelector::PseudoValid);
+    if (!formWasInvalid && m_invalidControlsCount)
+        pseudoStateChanged(CSSSelector::PseudoInvalid);
 }
 
 bool HTMLFormElement::checkValidity()
@@ -731,6 +748,9 @@ bool HTMLFormElement::checkValidity()
 
 bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<RefPtrWillBeMember<HTMLFormControlElement>>* unhandledInvalidControls, CheckValidityEventBehavior eventBehavior)
 {
+    if (!unhandledInvalidControls && eventBehavior == CheckValidityDispatchNoEvent)
+        return m_invalidControlsCount;
+
     RefPtrWillBeRawPtr<HTMLFormElement> protector(this);
     // Copy associatedElements because event handlers called from
     // HTMLFormControlElement::checkValidity() might change associatedElements.
@@ -739,15 +759,17 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(WillBeHeapVector<R
     elements.reserveCapacity(associatedElements.size());
     for (unsigned i = 0; i < associatedElements.size(); ++i)
         elements.append(associatedElements[i]);
-    bool hasInvalidControls = false;
+    int invalidControlsCount = 0;
     for (unsigned i = 0; i < elements.size(); ++i) {
         if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
             HTMLFormControlElement* control = toHTMLFormControlElement(elements[i].get());
             if (!control->checkValidity(unhandledInvalidControls, eventBehavior) && control->formOwner() == this)
-                hasInvalidControls = true;
+                ++invalidControlsCount;
         }
     }
-    return hasInvalidControls;
+    if (eventBehavior == CheckValidityDispatchNoEvent)
+        ASSERT(invalidControlsCount == m_invalidControlsCount);
+    return invalidControlsCount;
 }
 
 bool HTMLFormElement::reportValidity()

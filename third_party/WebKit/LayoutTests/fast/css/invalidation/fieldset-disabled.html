@@ -35,7 +35,7 @@ fieldset.disabled = true;
 if (window.internals) {
     // There are still instances of SubtreeStyleChange left when updating
     // disabled state. This count should become lower.
-    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "7");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 }
 
 shouldBe("getComputedStyle(fieldset, '').backgroundColor", "green");

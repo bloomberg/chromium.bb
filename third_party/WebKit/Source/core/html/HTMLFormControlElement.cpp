@@ -263,27 +263,28 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint)
     m_hasValidationMessage = false;
     m_ancestorDisabledState = AncestorDisabledStateUnknown;
     m_dataListAncestorState = Unknown;
+    setNeedsWillValidateCheck();
     HTMLElement::removedFrom(insertionPoint);
     FormAssociatedElement::removedFrom(insertionPoint);
 }
 
 void HTMLFormControlElement::willChangeForm()
 {
-    formOwnerSetNeedsValidityCheck();
     FormAssociatedElement::willChangeForm();
+    formOwnerSetNeedsValidityCheck(ElementRemoval, isValidElement());
 }
 
 void HTMLFormControlElement::didChangeForm()
 {
-    formOwnerSetNeedsValidityCheck();
     FormAssociatedElement::didChangeForm();
+    formOwnerSetNeedsValidityCheck(ElementAddition, isValidElement());
 }
 
-void HTMLFormControlElement::formOwnerSetNeedsValidityCheck()
+void HTMLFormControlElement::formOwnerSetNeedsValidityCheck(ValidityRecalcReason reason, bool isValid)
 {
     HTMLFormElement* form = formOwner();
     if (form)
-        form->setNeedsValidityCheck();
+        form->setNeedsValidityCheck(reason, isValid);
 }
 
 void HTMLFormControlElement::fieldSetAncestorsSetNeedsValidityCheck(Node* node)
@@ -406,12 +407,7 @@ bool HTMLFormControlElement::recalcWillValidate() const
 bool HTMLFormControlElement::willValidate() const
 {
     if (!m_willValidateInitialized || m_dataListAncestorState == Unknown) {
-        m_willValidateInitialized = true;
-        bool newWillValidate = recalcWillValidate();
-        if (m_willValidate != newWillValidate) {
-            m_willValidate = newWillValidate;
-            const_cast<HTMLFormControlElement*>(this)->setNeedsValidityCheck();
-        }
+        const_cast<HTMLFormControlElement*>(this)->setNeedsWillValidateCheck();
     } else {
         // If the following assertion fails, setNeedsWillValidateCheck() is not
         // called correctly when something which changes recalcWillValidate() result
@@ -430,7 +426,10 @@ void HTMLFormControlElement::setNeedsWillValidateCheck()
     m_willValidateInitialized = true;
     m_willValidate = newWillValidate;
     setNeedsValidityCheck();
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::Validate));
+    // No need to trigger style recalculation here because
+    // setNeedsValidityCheck() does it in the right away. This relies on
+    // the assumption that valid() is always true if willValidate() is false.
+
     if (!m_willValidate)
         hideVisibleValidationMessage();
 }
@@ -557,14 +556,15 @@ bool HTMLFormControlElement::isValidElement()
 void HTMLFormControlElement::setNeedsValidityCheck()
 {
     bool newIsValid = valid();
-    if (willValidate() && newIsValid != m_isValid) {
-        formOwnerSetNeedsValidityCheck();
+    bool changed = newIsValid != m_isValid;
+    m_isValid = newIsValid;
+    if (changed) {
+        formOwnerSetNeedsValidityCheck(ElementModification, newIsValid);
         fieldSetAncestorsSetNeedsValidityCheck(parentNode());
         // Update style for pseudo classes such as :valid :invalid.
         pseudoStateChanged(CSSSelector::PseudoValid);
         pseudoStateChanged(CSSSelector::PseudoInvalid);
     }
-    m_isValid = newIsValid;
 
     // Updates only if this control already has a validation message.
     if (isValidationMessageVisible()) {

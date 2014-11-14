@@ -34,6 +34,7 @@ class HTMLFormElement;
 class ValidationMessageClient;
 
 enum CheckValidityEventBehavior { CheckValidityDispatchNoEvent, CheckValidityDispatchInvalidEvent };
+enum ValidityRecalcReason { ElementAddition, ElementRemoval, ElementModification };
 
 // HTMLFormControlElement is the default implementation of FormAssociatedElement,
 // and form-associated element implementations should use HTMLFormControlElement
@@ -168,7 +169,9 @@ private:
     ValidationMessageClient* validationMessageClient() const;
 
     // Requests validity recalc for the form owner, if one exists.
-    void formOwnerSetNeedsValidityCheck();
+    // In case of removal, isValid specifies element validity upon removal.
+    // In case of addition and modification, it specifies new validity.
+    void formOwnerSetNeedsValidityCheck(ValidityRecalcReason, bool isValid);
     // Requests validity recalc for all ancestor fieldsets, if exist.
     void fieldSetAncestorsSetNeedsValidityCheck(Node*);
 

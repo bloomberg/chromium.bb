@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS getComputedStyle(fieldset, '').backgroundColor is transparent
-PASS internals.updateStyleAndReturnAffectedElementCount() is 7
+PASS internals.updateStyleAndReturnAffectedElementCount() is 2
 PASS getComputedStyle(fieldset, '').backgroundColor is green
 PASS successfullyParsed is true
 
