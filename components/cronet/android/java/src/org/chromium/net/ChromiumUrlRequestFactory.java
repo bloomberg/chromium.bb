@@ -21,7 +21,7 @@ public class ChromiumUrlRequestFactory extends HttpUrlRequestFactory {
 
     @UsedByReflection("HttpUrlRequestFactory.java")
     public ChromiumUrlRequestFactory(
-            Context context, HttpUrlRequestFactoryConfig config) {
+            Context context, UrlRequestContextConfig config) {
         if (isEnabled()) {
             System.loadLibrary(config.libraryName());
             mRequestContext = new ChromiumUrlRequestContext(

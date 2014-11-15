@@ -74,7 +74,7 @@ public abstract class HttpUrlRequestFactory {
     public abstract void stopNetLog();
 
     private static HttpUrlRequestFactory createChromiumFactory(
-            Context context, HttpUrlRequestFactoryConfig config) {
+            Context context, UrlRequestContextConfig config) {
         HttpUrlRequestFactory factory = null;
         try {
             Class<? extends HttpUrlRequestFactory> factoryClass =
@@ -83,7 +83,7 @@ public abstract class HttpUrlRequestFactory {
                             .asSubclass(HttpUrlRequestFactory.class);
             Constructor<? extends HttpUrlRequestFactory> constructor =
                     factoryClass.getConstructor(
-                            Context.class, HttpUrlRequestFactoryConfig.class);
+                            Context.class, UrlRequestContextConfig.class);
             HttpUrlRequestFactory chromiumFactory =
                     constructor.newInstance(context, config);
             if (chromiumFactory.isEnabled()) {

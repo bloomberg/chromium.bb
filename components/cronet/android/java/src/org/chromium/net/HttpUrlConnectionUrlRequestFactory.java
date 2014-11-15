@@ -19,7 +19,7 @@ class HttpUrlConnectionUrlRequestFactory extends HttpUrlRequestFactory {
     private final Context mContext;
 
     public HttpUrlConnectionUrlRequestFactory(
-            Context context, HttpUrlRequestFactoryConfig config) {
+            Context context, UrlRequestContextConfig config) {
         mContext = context.getApplicationContext();
     }
 
