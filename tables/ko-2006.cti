@@ -1,11 +1,11 @@
-# liblouis: Korean (Base table and chars)
+# liblouis: Korean (Base table and chars for 2006 edition)
 #
 # Based on the braille contraction table in BRLTTY
 #
 # Copyright (C) 1995-2012 by The BRLTTY Team. 
 # Copyright (C) 2012 by Samuel Thibault <samuel.thibault@ens-lyon.org>
 # Copyright (C) 2012 by Mesar Hameed <mhameed@src.gnome.org>
-# Copyright (C) 2013 by Joseph Lee <joseph.lee22590@gmail.com>
+# Copyright (C) 2014 by Joseph Lee <joseph.lee22590@gmail.com>
 #
 # This file is part of liblouis.
 #
@@ -27,39 +27,7 @@
 # ARAEA for which I couldn't find documentation.  Please contact me to fix
 # anything, as this table was generated from a C program.
 
-## Comments:
-
-# There are three files that are needed for displaying Korean chars:
-
-# ko.cti, which contains punctuations, numbers and Unicode sign
-# opcodes for Korean (Hangul) chars. This file also includes Korean
-# dot/char patterns which are not affected by grade 1 and grade 2
-# rules - that is, entries which are common to grade 1 and grade 2.
-# The "universal" entries fixes an issue where some Korean conscenant
-# dot patterns were confused with litdigit (although in the table, I
-# put after digit), which was a concern raised by a number of Korean
-# braille readers. For example, the conscenant dots fpr "ni-eun" is
-# dots 14, which are same as number 3.
-
-# ko-g1.ctb, uncontracted Korean table. Includes har/dot pairs used in
-# Grade 1 rules. Mostly deals with "after digit" situations.
-
-# ko-g2.ctb, contracted Korean braille. Includes same chars as ko1.ctb
-# which has different dot patterns in grade 2. These are shorthands
-# for uncontracted chars. Also includes certain strings which must be
-# uncontracted and a number of multi-char ones which has shorthand dot
-# patterns.
-
-# As for the structure of the files: ko.cti is the base table from
-# which ko-g1.ctb and ko-g2.ctb derives. Thus, unlike other tables,
-# ko-g2.ctb does not include ko-g1.ctb. This would help me extend the
-# table without major modifications - all I need to do is categorize
-# whether an entry is universal or grade-specific, then add the
-# entries in the appropriate file (if it is universal, then ko.cti
-# will be modified; if it is grade-specific, ko-g1 or ko-g2 will be
-# modified).
-
-# Globals (used for punctuations and others):
+#Same as ko.cti except for punctuation dot changes.
 
 include chardefs.cti All character definition opcodes
 include braille-patterns.cti
@@ -122,8 +90,8 @@ word ; 56-23
 midnum : 5-2
 postpunc : 5-2
 always : 5-2
-postpunc ! 456
-always ! 456
+postpunc ! 235
+always ! 235
 midnum / 456-34
 always / 456-34
 always < 5-13
@@ -217,4 +185,3 @@ letsign 356
 include ko-chars.cti
 
 
-# For grade 1 and grade 2 rules not discussed here, see ko-g1.ctb and ko-g2.ctb.
