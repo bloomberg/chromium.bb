@@ -30,8 +30,6 @@
 
 namespace blink {
 
-class XSLStyleSheetResource;
-
 class XSLImportRule final : public NoBaseWillBeGarbageCollectedFinalized<XSLImportRule> {
     WTF_MAKE_FAST_ALLOCATED_WILL_BE_REMOVED;
 public:

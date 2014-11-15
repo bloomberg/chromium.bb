@@ -37,7 +37,6 @@ namespace blink {
 class ExceptionState;
 class LocalFrame;
 class KURL;
-class Page;
 class SecurityOrigin;
 class Storage;
 class WebStorageArea;

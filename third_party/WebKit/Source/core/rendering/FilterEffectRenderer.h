@@ -36,8 +36,6 @@
 namespace blink {
 
 class FilterOperations;
-class FloatRect;
-class GraphicsContext;
 class ReferenceFilter;
 class RenderObject;
 

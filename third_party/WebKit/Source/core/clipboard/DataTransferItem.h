@@ -42,7 +42,6 @@ namespace blink {
 class Blob;
 class DataObjectItem;
 class DataTransfer;
-class File;
 class StringCallback;
 class ExecutionContext;
 

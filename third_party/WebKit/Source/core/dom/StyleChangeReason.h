@@ -14,9 +14,6 @@
 namespace blink {
 
 class QualifiedName;
-namespace TraceEvent {
-class ConvertableToTraceFormat;
-}
 
 namespace StyleChangeReason {
 extern const char ActiveStylesheetsUpdate[];

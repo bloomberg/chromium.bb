@@ -41,8 +41,6 @@
 namespace blink {
 
 class CSSAnimations;
-class RenderObject;
-class Element;
 
 using AnimationPlayerCountedSet = WillBeHeapHashCountedSet<RawPtrWillBeWeakMember<AnimationPlayer>>;
 

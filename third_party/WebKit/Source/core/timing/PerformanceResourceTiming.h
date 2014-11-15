@@ -40,10 +40,7 @@
 namespace blink {
 
 class Document;
-class KURL;
 class ResourceLoadTiming;
-class ResourceRequest;
-class ResourceResponse;
 class ResourceTimingInfo;
 
 class PerformanceResourceTiming final : public PerformanceEntry {

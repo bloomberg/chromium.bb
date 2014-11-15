@@ -30,7 +30,6 @@
 
 namespace blink {
 
-class Plugin;
 class PluginData;
 
 class DOMPlugin final : public RefCountedWillBeGarbageCollectedFinalized<DOMPlugin>, public ScriptWrappable, public FrameDestructionObserver {

@@ -29,7 +29,6 @@ namespace blink {
 class ContainerNode;
 class Document;
 class Element;
-class TreeScope;
 
 class StyleElement : public WillBeGarbageCollectedMixin {
 public:

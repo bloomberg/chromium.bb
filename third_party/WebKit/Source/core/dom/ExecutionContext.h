@@ -50,7 +50,6 @@ class LocalDOMWindow;
 class ErrorEvent;
 class EventQueue;
 class ExecutionContextTask;
-class ScriptState;
 class PublicURLManager;
 class SecurityOrigin;
 class ScriptCallStack;

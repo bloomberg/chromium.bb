@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class KURL;
 class WebWaitableEvent;
 class WorkerGlobalScope;
 class WorkerInspectorController;

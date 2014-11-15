@@ -171,8 +171,6 @@ struct QualifiedNameHash {
 
 namespace WTF {
 
-    template<typename T> struct DefaultHash;
-
     template<> struct DefaultHash<blink::QualifiedName> {
         typedef blink::QualifiedNameHash Hash;
     };

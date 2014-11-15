@@ -48,8 +48,6 @@ class RenderPart;
 class Settings;
 class WebLayer;
 
-struct Referrer;
-
 class Frame : public RefCountedWillBeGarbageCollectedFinalized<Frame> {
 public:
     virtual ~Frame();

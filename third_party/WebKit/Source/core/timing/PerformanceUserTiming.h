@@ -39,7 +39,6 @@ namespace blink {
 
 class ExceptionState;
 class Performance;
-class PerformanceEntry;
 
 typedef unsigned long long (PerformanceTiming::*NavigationTimingFunction)() const;
 using PerformanceEntryMap = WillBeHeapHashMap<String, PerformanceEntryVector>;

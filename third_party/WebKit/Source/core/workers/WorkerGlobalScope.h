@@ -47,11 +47,9 @@
 
 namespace blink {
 
-class Blob;
 class ConsoleMessage;
 class ConsoleMessageStorage;
 class ExceptionState;
-class ScheduledAction;
 class WorkerClients;
 class WorkerConsole;
 class WorkerInspectorController;

@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class ScriptResource;
 class Document;
 class ScriptLoader;
 

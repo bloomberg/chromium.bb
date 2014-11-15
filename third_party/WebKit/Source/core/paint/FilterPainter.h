@@ -13,7 +13,6 @@ namespace blink {
 
 class ClipRecorder;
 class ClipRect;
-class FloatRect;
 class GraphicsContext;
 class RenderLayer;
 

@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class GraphicsLayer;
 class LayoutUnit;
 class Position;
 class RenderObject;

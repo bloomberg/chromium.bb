@@ -39,7 +39,6 @@
 namespace blink {
 
 class KURL;
-class Worker;
 
 // A proxy to talk to the worker global scope.
 class WorkerGlobalScopeProxy {

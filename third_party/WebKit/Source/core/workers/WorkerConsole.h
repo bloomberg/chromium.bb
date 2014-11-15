@@ -42,7 +42,6 @@
 namespace blink {
 
 class ConsoleMessage;
-class ScriptArguments;
 class WorkerGlobalScope;
 
 class WorkerConsole final : public ConsoleBase {

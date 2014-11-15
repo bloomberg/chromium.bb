@@ -32,15 +32,12 @@
 #include "wtf/text/WTFString.h"
 #include <v8.h>
 
-struct NPObject;
-
 namespace blink { class WebLayer; }
 
 namespace blink {
 
 class ResourceError;
 class ResourceResponse;
-class Scrollbar;
 
 class PluginView : public Widget {
 public:

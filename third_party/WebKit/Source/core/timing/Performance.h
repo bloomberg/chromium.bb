@@ -48,8 +48,6 @@ namespace blink {
 
 class Document;
 class ExceptionState;
-class ResourceRequest;
-class ResourceResponse;
 class ResourceTimingInfo;
 class UserTiming;
 

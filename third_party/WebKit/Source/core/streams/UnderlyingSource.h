@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class ScriptState;
 
 class UnderlyingSource : public GarbageCollectedMixin {

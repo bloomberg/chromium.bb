@@ -36,7 +36,6 @@
 namespace blink {
 
 class Event;
-class Node;
 class ExecutionContext;
 
 class WorkerEventQueue final : public EventQueue {

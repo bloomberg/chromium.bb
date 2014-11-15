@@ -36,7 +36,6 @@ class WebStorageNamespace;
 
 namespace blink {
 
-class Page;
 class SecurityOrigin;
 class StorageArea;
 

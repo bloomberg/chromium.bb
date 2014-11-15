@@ -36,7 +36,6 @@ class ClassCollection;
 class ExceptionState;
 class FloatPoint;
 class HTMLCollection;
-template <typename NodeType> class StaticNodeTypeList;
 using StaticElementList = StaticNodeTypeList<Element>;
 class TagCollection;
 

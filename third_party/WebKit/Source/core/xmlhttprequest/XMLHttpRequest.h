@@ -48,7 +48,6 @@ class DOMFormData;
 class Document;
 class DocumentParser;
 class ExceptionState;
-class ResourceRequest;
 class SecurityOrigin;
 class SharedBuffer;
 class Stream;

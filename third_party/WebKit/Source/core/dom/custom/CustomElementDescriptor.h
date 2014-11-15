@@ -91,7 +91,6 @@ private:
 
 namespace WTF {
 
-template<typename T> struct DefaultHash;
 template<> struct DefaultHash<blink::CustomElementDescriptor> {
     typedef blink::CustomElementDescriptorHash Hash;
 };

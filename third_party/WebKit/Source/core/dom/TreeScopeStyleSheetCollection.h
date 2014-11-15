@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class ContainerNode;
 class Node;
 class StyleSheetContents;
 class StyleRuleFontFace;

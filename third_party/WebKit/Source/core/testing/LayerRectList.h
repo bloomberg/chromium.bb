@@ -40,7 +40,6 @@
 namespace blink {
 
 class ClientRect;
-class ClientRectList;
 class LayerRect;
 class Node;
 

@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class Document;
 class ResourceFetcher;
 class FontPlatformData;
 class FontCustomPlatformData;
