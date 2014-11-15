@@ -24,13 +24,22 @@ concurrent_links = exec_script("../get_concurrent_links.py", [], "value")
 # Parameters:
 #  cpu_arch: cpu_arch to pass as a build arg
 #  environment: File name of environment file.
-#  force_win64 (optional): value for this build arg.
 template("msvc_toolchain") {
   if (defined(invoker.concurrent_links)) {
     concurrent_links = invoker.concurrent_links
   }
 
   env = invoker.environment
+
+  if (is_debug) {
+    configuration = "Debug"
+  } else {
+    configuration = "Release"
+  }
+  exec_script("../../vs_toolchain.py", ["copy_dlls",
+                                        rebase_path(root_build_dir),
+                                        configuration,
+                                        invoker.cpu_arch])
 
   toolchain(target_name) {
     # Make these apply to all tools below.
@@ -154,23 +163,24 @@ template("msvc_toolchain") {
     # passed to the build. They are ignored when this is the default toolchain.
     toolchain_args() {
       cpu_arch = invoker.cpu_arch
-
-      # Normally the build config resets the CPU architecture to 32-bits. Setting
-      # this flag overrides that behavior.
-      if (defined(invoker.force_win64)) {
-        force_win64 = invoker.force_win64
-      }
     }
   }
 }
 
-msvc_toolchain("32") {
-  environment = "environment.x86"
-  cpu_arch = "x64"
+# TODO(dpranke): Declare both toolchains all of the time when we
+# get it sorted out how we want to support them both in a single build.
+# Right now only one of these can be enabled at a time because the
+# runtime libraries get copied to root_build_dir and would collide.
+if (cpu_arch == "x86") {
+  msvc_toolchain("32") {
+    environment = "environment.x86"
+    cpu_arch = "x86"
+  }
 }
 
-msvc_toolchain("64") {
-  environment = "environment.x64"
-  cpu_arch = "x64"
-  force_win64 = true
+if (cpu_arch == "x64") {
+  msvc_toolchain("64") {
+    environment = "environment.x64"
+    cpu_arch = "x64"
+  }
 }

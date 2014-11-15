@@ -63,6 +63,29 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   return vs2013_runtime_dll_dirs
 
 
+def _CopyRuntimeImpl(target, source):
+  """Copy |source| to |target| if it doesn't already exist or if it
+  needs to be updated.
+  """
+  if (os.path.isdir(os.path.dirname(target)) and
+      (not os.path.isfile(target) or
+      os.stat(target).st_mtime != os.stat(source).st_mtime)):
+    print 'Copying %s to %s...' % (source, target)
+    if os.path.exists(target):
+      os.unlink(target)
+    shutil.copy2(source, target)
+
+
+def _CopyRuntime(target_dir, source_dir, dll_pattern):
+    """Copy both the msvcr and msvcp runtime DLLs, only if the target doesn't
+    exist, but the target directory does exist."""
+    for which in ('p', 'r'):
+      dll = dll_pattern % which
+      target = os.path.join(target_dir, dll)
+      source = os.path.join(source_dir, dll)
+      _CopyRuntimeImpl(target, source)
+
+
 def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   """Copies the VS runtime DLLs from the given |runtime_dirs| to the output
   directory so that even if not system-installed, built binaries are likely to
@@ -72,27 +95,6 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
   output directories are already created.
   """
   assert sys.platform.startswith(('win32', 'cygwin'))
-
-  def copy_runtime_impl(target, source):
-    """Copy |source| to |target| if it doesn't already exist or if it need to be
-    updated.
-    """
-    if (os.path.isdir(os.path.dirname(target)) and
-        (not os.path.isfile(target) or
-          os.stat(target).st_mtime != os.stat(source).st_mtime)):
-      print 'Copying %s to %s...' % (source, target)
-      if os.path.exists(target):
-        os.unlink(target)
-      shutil.copy2(source, target)
-
-  def copy_runtime(target_dir, source_dir, dll_pattern):
-    """Copy both the msvcr and msvcp runtime DLLs, only if the target doesn't
-    exist, but the target directory does exist."""
-    for which in ('p', 'r'):
-      dll = dll_pattern % which
-      target = os.path.join(target_dir, dll)
-      source = os.path.join(source_dir, dll)
-      copy_runtime_impl(target, source)
 
   x86, x64 = runtime_dirs
   out_debug = os.path.join(output_dir, 'Debug')
@@ -106,12 +108,12 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
     os.makedirs(out_debug_nacl64)
   if os.path.exists(out_release) and not os.path.exists(out_release_nacl64):
     os.makedirs(out_release_nacl64)
-  copy_runtime(out_debug,          x86, 'msvc%s120d.dll')
-  copy_runtime(out_release,        x86, 'msvc%s120.dll')
-  copy_runtime(out_debug_x64,      x64, 'msvc%s120d.dll')
-  copy_runtime(out_release_x64,    x64, 'msvc%s120.dll')
-  copy_runtime(out_debug_nacl64,   x64, 'msvc%s120d.dll')
-  copy_runtime(out_release_nacl64, x64, 'msvc%s120.dll')
+  _CopyRuntime(out_debug,          x86, 'msvc%s120d.dll')
+  _CopyRuntime(out_release,        x86, 'msvc%s120.dll')
+  _CopyRuntime(out_debug_x64,      x64, 'msvc%s120d.dll')
+  _CopyRuntime(out_release_x64,    x64, 'msvc%s120.dll')
+  _CopyRuntime(out_debug_nacl64,   x64, 'msvc%s120d.dll')
+  _CopyRuntime(out_release_nacl64, x64, 'msvc%s120.dll')
 
   # Copy the PGO runtime library to the release directories.
   if os.environ.get('GYP_MSVS_OVERRIDE_PATH'):
@@ -121,11 +123,31 @@ def CopyVsRuntimeDlls(output_dir, runtime_dirs):
     pgo_runtime_dll = 'pgort120.dll'
     source_x86 = os.path.join(pgo_x86_runtime_dir, pgo_runtime_dll)
     if os.path.exists(source_x86):
-      copy_runtime_impl(os.path.join(out_release, pgo_runtime_dll), source_x86)
+      _CopyRuntimeImpl(os.path.join(out_release, pgo_runtime_dll), source_x86)
     source_x64 = os.path.join(pgo_x64_runtime_dir, pgo_runtime_dll)
     if os.path.exists(source_x64):
-      copy_runtime_impl(os.path.join(out_release_x64, pgo_runtime_dll),
-                        source_x64)
+      _CopyRuntimeImpl(os.path.join(out_release_x64, pgo_runtime_dll),
+                       source_x64)
+
+
+def CopyDlls(target_dir, configuration, cpu_arch):
+  """Copy the VS runtime DLLs into the requested directory as needed.
+
+  configuration is one of 'Debug' or 'Release'.
+  cpu_arch is one of 'x86' or 'x64'.
+
+  The debug configuration gets both the debug and release DLLs; the
+  release config only the latter.
+  """
+  vs2013_runtime_dll_dirs = SetEnvironmentAndGetRuntimeDllDirs()
+  if not vs2013_runtime_dll_dirs:
+    return
+
+  x64_runtime, x86_runtime = vs2013_runtime_dll_dirs
+  runtime_dir = x64_runtime if cpu_arch == 'x64' else x86_runtime
+  _CopyRuntime(target_dir, runtime_dir, 'msvc%s120.dll')
+  if configuration == 'Debug':
+    _CopyRuntime(target_dir, runtime_dir, 'msvc%s120d.dll')
 
 
 def _GetDesiredVsToolchainHashes():
@@ -188,13 +210,12 @@ def main():
   commands = {
       'update': Update,
       'get_toolchain_dir': GetToolchainDir,
-      # TODO(scottmg): Add copy_dlls for GN builds (gyp_chromium calls
-      # CopyVsRuntimeDlls via import, currently).
+      'copy_dlls': CopyDlls,
   }
   if len(sys.argv) < 2 or sys.argv[1] not in commands:
     print >>sys.stderr, 'Expected one of: %s' % ', '.join(commands)
     return 1
-  return commands[sys.argv[1]]()
+  return commands[sys.argv[1]](*sys.argv[2:])
 
 
 if __name__ == '__main__':

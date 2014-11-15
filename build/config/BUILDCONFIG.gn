@@ -34,15 +34,6 @@ declare_args() {
   # to configure warnings.
   is_clang = (os == "mac" || os == "ios" || os == "linux" || os == "chromeos")
 
-  # Forces a 64-bit build on Windows. Does nothing on other platforms. Normally
-  # we build 32-bit on Windows regardless of the current host OS bit depth.
-  # Setting this flag will override this logic and generate 64-bit toolchains.
-  #
-  # Normally this would get set automatically when you specify a target using
-  # the 64-bit toolchain. You can also set this on the command line to convert
-  # the default toolchain to 64-bit.
-  force_win64 = false
-
   # Selects the desired build flavor. Official builds get additional
   # processing to prepare for release. Normally you will want to develop and
   # test with this flag off.
@@ -173,16 +164,6 @@ is_desktop_linux = is_linux && !is_chromeos
 # =============================================================================
 # CPU ARCHITECTURE
 # =============================================================================
-
-if (is_win) {
-  # Always use 32-bit on Windows, even when compiling on a 64-bit host OS,
-  # unless the override flag is specified.
-  if (force_win64) {
-    cpu_arch = "x64"
-  } else {
-    cpu_arch = "x86"
-  }
-}
 
 if (is_android) {
   # TODO(cjhopman): enable this assert once bots are updated to not set
@@ -495,19 +476,14 @@ set_defaults("test") {
 # default toolchain.
 
 if (is_win) {
-  # TODO(brettw) name the toolchains the same as cpu_arch as with Linux below
-  # to eliminate these conditionals.
-  if (build_cpu_arch == "x64") {
+  # On windows we use the same toolchain for host and target by default.
+  # TODO(dpranke): rename the toolchains to x64 and x86 to match cpu_arch.
+  if (cpu_arch == "x64") {
     host_toolchain = "//build/toolchain/win:64"
-  } else if (build_cpu_arch == "x86") {
+  } else if (cpu_arch == "x86") {
     host_toolchain = "//build/toolchain/win:32"
   }
-
-  if (cpu_arch == "x64") {
-    set_default_toolchain("//build/toolchain/win:64")
-  } else if (cpu_arch == "x86") {
-    set_default_toolchain("//build/toolchain/win:32")
-  }
+  set_default_toolchain("$host_toolchain")
 } else if (is_android) {
   # Use clang for the x86/64 Linux host builds.
   if (build_cpu_arch == "x86" || build_cpu_arch == "x64") {
