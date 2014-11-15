@@ -153,8 +153,7 @@ def CopyDlls(target_dir, configuration, cpu_arch):
 def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
-  sha1path = os.path.join(script_dir,
-                          '..', 'buildtools', 'toolchain_vs2013.hash')
+  sha1path = os.path.join(script_dir, 'toolchain_vs2013.hash')
   with open(sha1path, 'rb') as f:
     return f.read().strip().splitlines()
 

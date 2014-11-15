@@ -41,7 +41,7 @@
     ['OS=="win"', {
       'variables': {
         'files': [
-          '<(PRODUCT_DIR)/d3dcompiler_46.dll',
+          '<(PRODUCT_DIR)/d3dcompiler_47.dll',
           '<(PRODUCT_DIR)/libEGL.dll',
           '<(PRODUCT_DIR)/libGLESv2.dll',
           '<(PRODUCT_DIR)/ffmpegsumo.dll',

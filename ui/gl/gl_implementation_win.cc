@@ -33,7 +33,7 @@ namespace gfx {
 
 namespace {
 
-const wchar_t kD3DCompiler[] = L"D3DCompiler_46.dll";
+const wchar_t kD3DCompiler[] = L"D3DCompiler_47.dll";
 
 void GL_BINDING_CALL MarshalClearDepthToClearDepthf(GLclampd depth) {
   glClearDepthf(static_cast<GLclampf>(depth));

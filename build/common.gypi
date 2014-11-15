@@ -1292,6 +1292,11 @@
     # Experimental setting to optimize Chrome's DLLs with PGO.
     'chrome_pgo_phase%': '0',
 
+    # Whether the VS xtree header has been patched to disable warning 4702. If
+    # it has, then we don't need to disable 4702 (unreachable code warning).
+    # The patch is preapplied to the internal toolchain and hence all bots.
+    'msvs_xtree_patched%': '<!pymod_do_main(win_is_xtree_patched)',
+
     # Clang stuff.
     'clang%': '<(clang)',
     'host_clang%': '<(host_clang)',
@@ -1565,7 +1570,7 @@
       ['OS=="win" and "<!pymod_do_main(dir_exists <(windows_sdk_default_path))"=="True"', {
         'windows_sdk_path%': '<(windows_sdk_default_path)',
       }, {
-        'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/8.0',
+        'windows_sdk_path%': 'C:/Program Files (x86)/Windows Kits/8.1',
       }],
       ['OS=="win" and "<!pymod_do_main(dir_exists <(directx_sdk_default_path))"=="True"', {
         'directx_sdk_path%': '<(directx_sdk_default_path)',
@@ -2785,7 +2790,7 @@
           '_SCL_SECURE_NO_DEPRECATE',
           # This define is required to pull in the new Win8 interfaces from
           # system headers like ShObjIdl.h.
-          'NTDDI_VERSION=0x06020000',
+          'NTDDI_VERSION=0x06030000',
           # This is required for ATL to use XP-safe versions of its functions.
           '_USING_V110_SDK71_',
         ],
@@ -5259,8 +5264,8 @@
     ['OS=="win"', {
       'target_defaults': {
         'defines': [
-          '_WIN32_WINNT=0x0602',
-          'WINVER=0x0602',
+          '_WIN32_WINNT=0x0603',
+          'WINVER=0x0603',
           'WIN32',
           '_WINDOWS',
           'NOMINMAX',
@@ -5271,6 +5276,9 @@
           '_ATL_NO_OPENGL',
           # _HAS_EXCEPTIONS must match ExceptionHandling in msvs_settings.
           '_HAS_EXCEPTIONS=0',
+          # Silence some warnings; we can't switch the the 'recommended'
+          # versions as they're not available on old OSs.
+          '_WINSOCK_DEPRECATED_NO_WARNINGS',
         ],
         'conditions': [
           ['buildtype=="Official"', {
@@ -5338,6 +5346,14 @@
               ],
             },
           ],
+          ['msvs_xtree_patched!=1', {
+            # If xtree hasn't been patched, then we disable C4702. Otherwise,
+            # it's enabled. This will generally only be true for system-level
+            # installed Express users.
+            'msvs_disabled_warnings': [
+              4702,
+            ],
+          }],
           ['secure_atl', {
             'defines': [
               '_SECURE_ATL',
@@ -5370,12 +5386,6 @@
                 },
               },
             },
-            # https://code.google.com/p/chromium/issues/detail?id=372451#c20
-            # Warning 4702 ("Unreachable code") should be re-enabled once
-            # Express users are updated to VS2013 Update 2.
-            'msvs_disabled_warnings': [
-              4702
-            ],
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'AdditionalOptions!': [
@@ -5463,6 +5473,7 @@
           4510, # Default constructor could not be generated
           4512, # Assignment operator could not be generated
           4610, # Object can never be instantiated
+          4996, # 'X': was declared deprecated (for GetVersionEx).
         ],
         'msvs_settings': {
           'VCCLCompilerTool': {
