@@ -19,6 +19,9 @@ extern NSString* const kBrowserActionGrippyDragFinishedNotification;
 // Sent before the dragging will resize the container.
 extern NSString* const kBrowserActionGrippyWillDragNotification;
 
+// Sent when the Browser Actions container view is about to animate.
+extern NSString* const kBrowserActionsContainerWillAnimate;
+
 // Key which is used to notify the translation with delta.
 extern NSString* const kTranslationWithDelta;
 

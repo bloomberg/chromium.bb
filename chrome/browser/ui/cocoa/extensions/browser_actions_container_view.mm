@@ -17,6 +17,8 @@ NSString* const kBrowserActionGrippyDragFinishedNotification =
     @"BrowserActionGrippyDragFinishedNotification";
 NSString* const kBrowserActionGrippyWillDragNotification =
     @"BrowserActionGrippyWillDragNotification";
+NSString* const kBrowserActionsContainerWillAnimate =
+    @"BrowserActionsContainerWillAnimate";
 NSString* const kTranslationWithDelta =
     @"TranslationWithDelta";
 
@@ -173,6 +175,10 @@ const CGFloat kMinimumContainerWidth = 10.0;
     [[self animator] setFrame:newFrame];
     [NSAnimationContext endGrouping];
     animationEndFrame_ = newFrame;
+
+    [[NSNotificationCenter defaultCenter]
+        postNotificationName:kBrowserActionsContainerWillAnimate
+                      object:self];
   } else {
     [self setFrame:newFrame];
     [self setNeedsDisplay:YES];
