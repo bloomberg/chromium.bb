@@ -18,10 +18,14 @@ class GURL;
 namespace extensions {
 class Command;
 class Extension;
+class ExtensionRegistry;
 }
 
 // The platform-independent controller for an ExtensionAction that is shown on
 // the toolbar (such as a page or browser action).
+// Since this class doesn't own the extension or extension action in question,
+// be sure to check for validity using ExtensionIsValid() before using those
+// members (see also comments above ExtensionIsValid()).
 class ExtensionActionViewController
     : public ToolbarActionViewController,
       public ExtensionActionIconFactory::Observer,
@@ -78,6 +82,12 @@ class ExtensionActionViewController
   // ExtensionActionIconFactory::Observer:
   void OnIconUpdated() override;
 
+  // Checks if the associated |extension| is still valid by checking its
+  // status in the registry. Since the OnExtensionUnloaded() notifications are
+  // not in a deterministic order, it's possible that the view tries to refresh
+  // itself before we're notified to remove it.
+  bool ExtensionIsValid() const;
+
   // Executes the extension action with |show_action|. If
   // |grant_tab_permissions| is true, this will grant the extension active tab
   // permissions. Only do this if this was done through a user action (and not
@@ -118,6 +128,9 @@ class ExtensionActionViewController
   // An additional observer that we need to notify when the icon of the button
   // has been updated.
   ExtensionActionIconFactory::Observer* icon_observer_;
+
+  // The associated ExtensionRegistry; cached for quick checking.
+  extensions::ExtensionRegistry* extension_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionViewController);
 };
