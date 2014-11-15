@@ -315,7 +315,7 @@ class DeviceUtils(object):
 
     self.adb.Reboot()
     self._cache = {}
-    timeout_retry.WaitFor(device_offline, wait_period=1, max_tries=5)
+    timeout_retry.WaitFor(device_offline, wait_period=1)
     if block:
       self.WaitUntilFullyBooted()
 
