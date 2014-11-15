@@ -4,15 +4,21 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -289,6 +295,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_GrantForChromePages) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// http://crbug.com/177163
 #if (defined(OS_WIN) && !defined(NDEBUG)) || defined(OS_MACOSX)
 // http://crbug.com/326319
 #define MAYBE_CaptureInSplitIncognitoMode DISABLED_CaptureInSplitIncognitoMode
@@ -304,6 +311,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_CaptureInSplitIncognitoMode) {
       << message_;
 }
 
+// http://crbug.com/177163
 #if defined(OS_WIN) && !defined(NDEBUG)
 #define MAYBE_Constraints DISABLED_Constraints
 #else
@@ -313,6 +321,66 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_Constraints) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "constraints.html"))
       << message_;
+}
+
+// http://crbug.com/177163
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_TabIndicator DISABLED_TabIndicator
+#else
+#define MAYBE_TabIndicator TabIndicator
+#endif
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
+  ASSERT_EQ(TAB_MEDIA_STATE_NONE,
+            chrome::GetTabMediaStateForContents(
+                browser()->tab_strip_model()->GetActiveWebContents()));
+
+  // Run an extension test that just turns on tab capture, which should cause
+  // the indicator to turn on.
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "start_tab_capture.html"))
+      << message_;
+
+  // A TabStripModelObserver that quits the MessageLoop whenever the UI's model
+  // is sent an event that changes the indicator status.
+  class IndicatorChangeObserver : public TabStripModelObserver {
+   public:
+    explicit IndicatorChangeObserver(Browser* browser)
+        : last_media_state_(chrome::GetTabMediaStateForContents(
+              browser->tab_strip_model()->GetActiveWebContents())) {}
+
+    TabMediaState last_media_state() const { return last_media_state_; }
+
+    void TabChangedAt(content::WebContents* contents,
+                      int index,
+                      TabChangeType change_type) override {
+      const TabMediaState media_state =
+          chrome::GetTabMediaStateForContents(contents);
+      const bool has_changed = media_state != last_media_state_;
+      last_media_state_ = media_state;
+      if (has_changed) {
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE, base::MessageLoop::QuitClosure());
+      }
+    }
+
+   private:
+    TabMediaState last_media_state_;
+  };
+
+  // Run the browser until the indicator turns on.
+  IndicatorChangeObserver observer(browser());
+  browser()->tab_strip_model()->AddObserver(&observer);
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  while (observer.last_media_state() != TAB_MEDIA_STATE_CAPTURING) {
+    if (base::TimeTicks::Now() - start_time >
+            base::TimeDelta::FromSeconds(10)) {
+      EXPECT_EQ(TAB_MEDIA_STATE_CAPTURING, observer.last_media_state());
+      browser()->tab_strip_model()->RemoveObserver(&observer);
+      return;
+    }
+    content::RunMessageLoop();
+  }
+  browser()->tab_strip_model()->RemoveObserver(&observer);
 }
 
 }  // namespace
