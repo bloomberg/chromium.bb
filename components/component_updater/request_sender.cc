@@ -8,7 +8,8 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "components/component_updater/component_updater_configurator.h"
 #include "components/component_updater/component_updater_utils.h"
 #include "net/url_request/url_fetcher.h"
@@ -19,11 +20,13 @@ RequestSender::RequestSender(const Configurator& config) : config_(config) {
 }
 
 RequestSender::~RequestSender() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void RequestSender::Send(const std::string& request_string,
                          const std::vector<GURL>& urls,
                          const RequestSenderCallback& request_sender_callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (urls.empty()) {
     request_sender_callback.Run(NULL);
     return;
@@ -41,19 +44,21 @@ void RequestSender::Send(const std::string& request_string,
 void RequestSender::SendInternal() {
   DCHECK(cur_url_ != urls_.end());
   DCHECK(cur_url_->is_valid());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   url_fetcher_.reset(SendProtocolRequest(
       *cur_url_, request_string_, this, config_.RequestContext()));
 }
 
 void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (GetFetchError(*source) == 0) {
     request_sender_callback_.Run(source);
     return;
   }
 
   if (++cur_url_ != urls_.end() &&
-      config_.GetSequencedTaskRunner()->PostTask(
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
           base::Bind(&RequestSender::SendInternal, base::Unretained(this)))) {
     return;
