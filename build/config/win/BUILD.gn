@@ -11,13 +11,13 @@ config("sdk") {
 
   defines = [
     "_ATL_NO_OPENGL",
-    "_WIN32_WINNT=0x0602",
+    "_WIN32_WINNT=0x0603",
     "_WINDOWS",
     "CERT_CHAIN_PARA_HAS_EXTRA_FIELDS",
-    "NTDDI_VERSION=0x06020000",
+    "NTDDI_VERSION=0x06030000",
     "PSAPI_VERSION=1",
     "WIN32",
-    "WINVER=0x0602",
+    "WINVER=0x0603",
   ]
 
   # The Windows SDK include directories must be first. They both have a sal.h,
