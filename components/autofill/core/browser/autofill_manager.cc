@@ -590,7 +590,7 @@ void AutofillManager::FillOrPreviewForm(
   if (SectionIsAutofilled(*form_structure, form, autofill_field->section())) {
     for (std::vector<FormFieldData>::iterator iter = result.fields.begin();
          iter != result.fields.end(); ++iter) {
-      if ((*iter) == field) {
+      if (iter->SameFieldAs(field)) {
         base::string16 value = data_model->GetInfoForVariant(
             autofill_field->Type(), variant, app_locale_);
         if (AutofillField::FillFormField(*autofill_field,
@@ -625,7 +625,7 @@ void AutofillManager::FillOrPreviewForm(
     if (form_structure->field(i)->section() != autofill_field->section())
       continue;
 
-    DCHECK_EQ(*form_structure->field(i), result.fields[i]);
+    DCHECK(form_structure->field(i)->SameFieldAs(result.fields[i]));
 
     const AutofillField* cached_field = form_structure->field(i);
     FieldTypeGroup field_group_type = cached_field->Type().group();
@@ -636,7 +636,7 @@ void AutofillManager::FillOrPreviewForm(
       // then take the multi-profile "variant" into account.
       // Otherwise fill with the default (zeroth) variant.
       size_t use_variant = 0;
-      if (result.fields[i] == field ||
+      if (result.fields[i].SameFieldAs(field) ||
           field_group_type == initiating_group_type) {
         use_variant = variant;
       }
@@ -650,7 +650,7 @@ void AutofillManager::FillOrPreviewForm(
       bool should_notify =
           !is_credit_card &&
           !value.empty() &&
-          (result.fields[i] == field ||
+          (result.fields[i].SameFieldAs(field) ||
            result.fields[i].form_control_type == "select-one" ||
            result.fields[i].value.empty());
       if (AutofillField::FillFormField(*cached_field,
@@ -1025,11 +1025,9 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
 
   // Find the AutofillField that corresponds to |field|.
   *autofill_field = NULL;
-  for (std::vector<AutofillField*>::const_iterator iter =
-           (*form_structure)->begin();
-       iter != (*form_structure)->end(); ++iter) {
-    if ((**iter) == field) {
-      *autofill_field = *iter;
+  for (AutofillField* current : **form_structure) {
+    if (current->SameFieldAs(field)) {
+      *autofill_field = current;
       break;
     }
   }
@@ -1046,9 +1044,8 @@ bool AutofillManager::UpdateCachedForm(const FormData& live_form,
   bool needs_update =
       (!cached_form ||
        live_form.fields.size() != cached_form->field_count());
-  for (size_t i = 0; !needs_update && i < cached_form->field_count(); ++i) {
-    needs_update = *cached_form->field(i) != live_form.fields[i];
-  }
+  for (size_t i = 0; !needs_update && i < cached_form->field_count(); ++i)
+    needs_update = !cached_form->field(i)->SameFieldAs(live_form.fields[i]);
 
   if (!needs_update)
     return true;

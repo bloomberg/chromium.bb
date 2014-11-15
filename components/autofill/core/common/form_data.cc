@@ -70,16 +70,18 @@ FormData::FormData(const FormData& data)
 FormData::~FormData() {
 }
 
-bool FormData::operator==(const FormData& form) const {
-  return name == form.name &&
-         origin == form.origin &&
-         action == form.action &&
-         user_submitted == form.user_submitted &&
-         fields == form.fields;
-}
-
-bool FormData::operator!=(const FormData& form) const {
-  return !operator==(form);
+bool FormData::SameFormAs(const FormData& form) const {
+  if (name != form.name ||
+      origin != form.origin ||
+      action != form.action ||
+      user_submitted != form.user_submitted ||
+      fields.size() != form.fields.size())
+    return false;
+  for (size_t i = 0; i < fields.size(); ++i) {
+    if (!fields[i].SameFieldAs(form.fields[i]))
+      return false;
+  }
+  return true;
 }
 
 bool FormData::operator<(const FormData& form) const {

@@ -19,10 +19,9 @@ struct FormData {
   FormData(const FormData& data);
   ~FormData();
 
-  // Used in testing, and in recording metrics and setting preferences, where
-  // false positives/negatives aren't super important.
-  bool operator==(const FormData& form) const;
-  bool operator!=(const FormData& form) const;
+  // Returns true if two forms are the same, not counting the values of the
+  // form elements.
+  bool SameFormAs(const FormData& other) const;
 
   // Allow FormData to be a key in STL containers.
   bool operator<(const FormData& form) const;

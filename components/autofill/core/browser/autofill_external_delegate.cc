@@ -74,7 +74,7 @@ void AutofillExternalDelegate::OnQuery(int query_id,
                                        const FormFieldData& field,
                                        const gfx::RectF& element_bounds,
                                        bool display_warning_if_disabled) {
-  if (query_form_ != form)
+  if (!query_form_.SameFormAs(form))
     has_shown_address_book_prompt = false;
 
   query_form_ = form;

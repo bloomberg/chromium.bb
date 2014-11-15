@@ -63,7 +63,7 @@ FormFieldData::FormFieldData()
 FormFieldData::~FormFieldData() {
 }
 
-bool FormFieldData::operator==(const FormFieldData& field) const {
+bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // A FormFieldData stores a value, but the value is not part of the identity
   // of the field, so we don't want to compare the values.
   return (label == field.label &&
@@ -86,10 +86,6 @@ bool FormFieldData::operator==(const FormFieldData& field) const {
           // should not be considered changes in the structure of the form.
 }
 
-bool FormFieldData::operator!=(const FormFieldData& field) const {
-  return !operator==(field);
-}
-
 bool FormFieldData::operator<(const FormFieldData& field) const {
   // Like operator==, this ignores the value.
   if (label < field.label) return true;
@@ -102,7 +98,7 @@ bool FormFieldData::operator<(const FormFieldData& field) const {
   if (autocomplete_attribute > field.autocomplete_attribute) return false;
   if (max_length < field.max_length) return true;
   if (max_length > field.max_length) return false;
-  // Skip is_checked and is_autofilled as in operator==.
+  // Skip is_checked and is_autofilled as in SameFieldAs.
   if (is_checkable < field.is_checkable) return true;
   if (is_checkable > field.is_checkable) return false;
   if (is_focusable < field.is_focusable) return true;

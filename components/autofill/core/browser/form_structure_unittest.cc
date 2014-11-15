@@ -2296,12 +2296,12 @@ TEST(FormStructureTest, ToFormData) {
   field.form_control_type = "submit";
   form.fields.push_back(field);
 
-  EXPECT_EQ(form, FormStructure(form).ToFormData());
+  EXPECT_TRUE(form.SameFormAs(FormStructure(form).ToFormData()));
 
   // Currently |FormStructure(form_data)ToFormData().user_submitted| is always
   // false. This forces a future author that changes this to update this test.
   form.user_submitted = true;
-  EXPECT_NE(form, FormStructure(form).ToFormData());
+  EXPECT_FALSE(form.SameFormAs(FormStructure(form).ToFormData()));
 }
 
 TEST(FormStructureTest, SkipFieldTest) {

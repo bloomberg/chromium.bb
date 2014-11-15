@@ -21,7 +21,7 @@ FormDataPredictions::~FormDataPredictions() {
 
 bool FormDataPredictions::operator==(
     const FormDataPredictions& predictions) const {
-  return (data == predictions.data &&
+  return (data.SameFormAs(predictions.data) &&
           signature == predictions.signature &&
           experiment_id == predictions.experiment_id &&
           fields == predictions.fields);

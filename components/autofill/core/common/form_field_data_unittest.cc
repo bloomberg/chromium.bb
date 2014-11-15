@@ -37,7 +37,7 @@ TEST(FormFieldDataTest, SerializeAndDeserialize) {
   FormFieldData actual;
   EXPECT_TRUE(DeserializeFormFieldData(&iter, &actual));
 
-  EXPECT_EQ(actual, data);
+  EXPECT_TRUE(actual.SameFieldAs(data));
 }
 
 }  // namespace autofill

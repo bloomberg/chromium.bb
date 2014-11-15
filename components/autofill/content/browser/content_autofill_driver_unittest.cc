@@ -235,7 +235,7 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
       GetAutofillPreviewFormMessage(&output_page_id, &output_form_data));
   EXPECT_TRUE(GetAutofillFillFormMessage(&output_page_id, &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
-  EXPECT_EQ(input_form_data, output_form_data);
+  EXPECT_TRUE(input_form_data.SameFormAs(output_form_data));
 }
 
 TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
@@ -251,7 +251,7 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
   EXPECT_TRUE(
       GetAutofillPreviewFormMessage(&output_page_id, &output_form_data));
   EXPECT_EQ(input_page_id, output_page_id);
-  EXPECT_EQ(input_form_data, output_form_data);
+  EXPECT_TRUE(input_form_data.SameFormAs(output_form_data));
 }
 
 TEST_F(ContentAutofillDriverTest,

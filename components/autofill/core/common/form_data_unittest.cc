@@ -87,7 +87,7 @@ TEST(FormDataTest, SerializeAndDeserialize) {
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
 
-  EXPECT_EQ(actual, data);
+  EXPECT_TRUE(actual.SameFormAs(data));
 }
 
 TEST(FormDataTest, Serialize_v1_Deserialize_vCurrent) {
@@ -130,7 +130,7 @@ TEST(FormDataTest, Serialize_v1_Deserialize_vCurrent) {
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
 
-  EXPECT_EQ(actual, data);
+  EXPECT_TRUE(actual.SameFormAs(data));
 }
 
 TEST(FormDataTest, SerializeIncorrectFormatAndDeserialize) {

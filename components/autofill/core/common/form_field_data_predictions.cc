@@ -23,7 +23,7 @@ FormFieldDataPredictions::~FormFieldDataPredictions() {
 
 bool FormFieldDataPredictions::operator==(
     const FormFieldDataPredictions& predictions) const {
-  return (field == predictions.field &&
+  return (field.SameFieldAs(predictions.field) &&
           signature == predictions.signature &&
           heuristic_type == predictions.heuristic_type &&
           server_type == predictions.server_type &&

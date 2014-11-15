@@ -48,7 +48,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
       blacklisted_by_user == form.blacklisted_by_user &&
       type == form.type &&
       times_used == form.times_used &&
-      form_data == form.form_data &&
+      form_data.SameFormAs(form.form_data) &&
       display_name == form.display_name &&
       avatar_url == form.avatar_url &&
       federation_url == form.federation_url &&
