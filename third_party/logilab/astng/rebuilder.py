@@ -1,27 +1,28 @@
-# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2010 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
+# copyright 2003-2010 Sylvain Thenault, all rights reserved.
+# contact mailto:thenault@gmail.com
 #
-# This file is part of astroid.
+# This file is part of logilab-astng.
 #
-# astroid is free software: you can redistribute it and/or modify it
+# logilab-astng is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# astroid is distributed in the hope that it will be useful, but
+# logilab-astng is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with astroid. If not, see <http://www.gnu.org/licenses/>.
+# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
 """this module contains utilities for rebuilding a _ast tree in
-order to get a single Astroid representation
+order to get a single ASTNG representation
 """
 
 import sys
-from _ast import (
-    Expr as Discard, Str,
+from _ast import (Expr as Discard, Str,
     # binary operators
     Add, Div, FloorDiv,  Mod, Mult, Pow, Sub, BitAnd, BitOr, BitXor,
     LShift, RShift,
@@ -33,7 +34,8 @@ from _ast import (
     Eq, Gt, GtE, In, Is, IsNot, Lt, LtE, NotEq, NotIn,
     )
 
-from astroid import nodes as new
+from logilab.astng.exceptions import ASTNGBuildingException
+from logilab.astng import nodes as new
 
 
 _BIN_OP_CLASSES = {Add: '+',
@@ -47,18 +49,15 @@ _BIN_OP_CLASSES = {Add: '+',
                    Pow: '**',
                    Sub: '-',
                    LShift: '<<',
-                   RShift: '>>',
-                  }
+                   RShift: '>>'}
 
 _BOOL_OP_CLASSES = {And: 'and',
-                    Or: 'or',
-                   }
+                    Or: 'or'}
 
 _UNARY_OP_CLASSES = {UAdd: '+',
                      USub: '-',
                      Not: 'not',
-                     Invert: '~',
-                    }
+                     Invert: '~'}
 
 _CMP_OP_CLASSES = {Eq: '==',
                    Gt: '>',
@@ -69,13 +68,11 @@ _CMP_OP_CLASSES = {Eq: '==',
                    Lt: '<',
                    LtE: '<=',
                    NotEq: '!=',
-                   NotIn: 'not in',
-                  }
+                   NotIn: 'not in'}
 
 CONST_NAME_TRANSFORMS = {'None':  None,
                          'True':  True,
-                         'False': False,
-                        }
+                         'False': False}
 
 REDIRECT = {'arguments': 'Arguments',
             'Attribute': 'Getattr',
@@ -91,9 +88,7 @@ REDIRECT = {'arguments': 'Arguments',
             'ImportFrom': 'From',
             'keyword': 'Keyword',
             'Repr': 'Backquote',
-           }
-PY3K = sys.version_info >= (3, 0)
-PY34 = sys.version_info >= (3, 4)
+            }
 
 def _init_set_doc(node, newnode):
     newnode.doc = None
@@ -121,47 +116,33 @@ def _set_infos(oldnode, newnode, parent):
         newnode.col_offset = oldnode.col_offset
     newnode.set_line_info(newnode.last_child()) # set_line_info accepts None
 
-def _create_yield_node(node, parent, rebuilder, factory):
-    newnode = factory()
-    _lineno_parent(node, newnode, parent)
-    if node.value is not None:
-        newnode.value = rebuilder.visit(node.value, newnode)
-    newnode.set_line_info(newnode.last_child())
-    return newnode
+
 
 
 class TreeRebuilder(object):
-    """Rebuilds the _ast tree to become an Astroid tree"""
+    """Rebuilds the _ast tree to become an ASTNG tree"""
 
-    def __init__(self, manager):
-        self._manager = manager
+    _visit_meths = {}
+    def __init__(self):
+        self.init()
+
+    def init(self):
         self.asscontext = None
+        self._metaclass = ['']
         self._global_names = []
         self._from_nodes = []
         self._delayed_assattr = []
-        self._visit_meths = {}
-        self._transform = manager.transform
-
-    def visit_module(self, node, modname, package):
-        """visit a Module node by returning a fresh instance of it"""
-        newnode = new.Module(modname, None)
-        newnode.package = package
-        _lineno_parent(node, newnode, parent=None)
-        _init_set_doc(node, newnode)
-        newnode.body = [self.visit(child, newnode) for child in node.body]
-        newnode.set_line_info(newnode.last_child())
-        return self._transform(newnode)
 
     def visit(self, node, parent):
         cls = node.__class__
         if cls in self._visit_meths:
-            visit_method = self._visit_meths[cls]
+            return self._visit_meths[cls](node, parent)
         else:
             cls_name = cls.__name__
             visit_name = 'visit_' + REDIRECT.get(cls_name, cls_name).lower()
             visit_method = getattr(self, visit_name)
             self._visit_meths[cls] = visit_method
-        return self._transform(visit_method(node, parent))
+            return visit_method(node, parent)
 
     def _save_assignment(self, node, name=None):
         """save assignement situation since node.parent is not available yet"""
@@ -179,37 +160,13 @@ class TreeRebuilder(object):
         newnode.args = [self.visit(child, newnode) for child in node.args]
         self.asscontext = None
         newnode.defaults = [self.visit(child, newnode) for child in node.defaults]
-        newnode.kwonlyargs = []
-        newnode.kw_defaults = []
-        vararg, kwarg = node.vararg, node.kwarg
-        # change added in 82732 (7c5c678e4164), vararg and kwarg
-        # are instances of `_ast.arg`, not strings
-        if vararg:
-            if PY34:
-                if vararg.annotation:
-                    newnode.varargannotation = self.visit(vararg.annotation,
-                                                          newnode)
-                vararg = vararg.arg
-            elif PY3K and node.varargannotation:
-                newnode.varargannotation = self.visit(node.varargannotation,
-                                                      newnode)
-        if kwarg:
-            if PY34:
-                if kwarg.annotation:
-                    newnode.kwargannotation = self.visit(kwarg.annotation,
-                                                         newnode)
-                kwarg = kwarg.arg
-            elif PY3K:
-                if node.kwargannotation:
-                    newnode.kwargannotation = self.visit(node.kwargannotation,
-                                                         newnode)
-        newnode.vararg = vararg
-        newnode.kwarg = kwarg
+        newnode.vararg = node.vararg
+        newnode.kwarg = node.kwarg
         # save argument names in locals:
-        if vararg:
-            newnode.parent.set_local(vararg, newnode)
-        if kwarg:
-            newnode.parent.set_local(kwarg, newnode)
+        if node.vararg:
+            newnode.parent.set_local(newnode.vararg, newnode)
+        if node.kwarg:
+            newnode.parent.set_local(newnode.kwarg, newnode)
         newnode.set_line_info(newnode.last_child())
         return newnode
 
@@ -245,8 +202,8 @@ class TreeRebuilder(object):
         # set some function or metaclass infos  XXX explain ?
         klass = newnode.parent.frame()
         if (isinstance(klass, new.Class)
-                and isinstance(newnode.value, new.CallFunc)
-                and isinstance(newnode.value.func, new.Name)):
+            and isinstance(newnode.value, new.CallFunc)
+            and isinstance(newnode.value.func, new.Name)):
             func_name = newnode.value.func.name
             for ass_node in newnode.targets:
                 try:
@@ -259,6 +216,9 @@ class TreeRebuilder(object):
                         meth.extra_decorators.append(newnode.value)
                 except (AttributeError, KeyError):
                     continue
+        elif getattr(newnode.targets[0], 'name', None) == '__metaclass__':
+            # XXX check more...
+            self._metaclass[-1] = 'type' # XXX get the actual metaclass
         newnode.set_line_info(newnode.last_child())
         return newnode
 
@@ -330,7 +290,8 @@ class TreeRebuilder(object):
         return newnode
 
     def visit_class(self, node, parent):
-        """visit a Class node to become astroid"""
+        """visit a Class node to become astng"""
+        self._metaclass.append(self._metaclass[-1])
         newnode = new.Class(node.name, None)
         _lineno_parent(node, newnode, parent)
         _init_set_doc(node, newnode)
@@ -339,6 +300,11 @@ class TreeRebuilder(object):
         if 'decorator_list' in node._fields and node.decorator_list:# py >= 2.6
             newnode.decorators = self.visit_decorators(node, newnode)
         newnode.set_line_info(newnode.last_child())
+        metaclass = self._metaclass.pop()
+        if not newnode.bases:
+            # no base classes, detect new / style old style according to
+            # current scope
+            newnode._newstyle = metaclass == 'type'
         newnode.parent.frame().set_local(newnode.name, newnode)
         return newnode
 
@@ -360,7 +326,7 @@ class TreeRebuilder(object):
         _lineno_parent(node, newnode, parent)
         newnode.left = self.visit(node.left, newnode)
         newnode.ops = [(_CMP_OP_CLASSES[op.__class__], self.visit(expr, newnode))
-                       for (op, expr) in zip(node.ops, node.comparators)]
+                    for (op, expr) in zip(node.ops, node.comparators)]
         newnode.set_line_info(newnode.last_child())
         return newnode
 
@@ -379,13 +345,13 @@ class TreeRebuilder(object):
     def visit_decorators(self, node, parent):
         """visit a Decorators node by returning a fresh instance of it"""
         # /!\ node is actually a _ast.Function node while
-        # parent is a astroid.nodes.Function node
+        # parent is a astng.nodes.Function node
         newnode = new.Decorators()
         _lineno_parent(node, newnode, parent)
         if 'decorators' in node._fields: # py < 2.6, i.e. 2.5
             decorators = node.decorators
         else:
-            decorators = node.decorator_list
+            decorators= node.decorator_list
         newnode.nodes = [self.visit(child, newnode) for child in decorators]
         newnode.set_line_info(newnode.last_child())
         return newnode
@@ -405,7 +371,7 @@ class TreeRebuilder(object):
         newnode = new.Dict()
         _lineno_parent(node, newnode, parent)
         newnode.items = [(self.visit(key, newnode), self.visit(value, newnode))
-                         for key, value in zip(node.keys, node.values)]
+                          for key, value in zip(node.keys, node.values)]
         newnode.set_line_info(newnode.last_child())
         return newnode
 
@@ -491,14 +457,14 @@ class TreeRebuilder(object):
     def visit_from(self, node, parent):
         """visit a From node by returning a fresh instance of it"""
         names = [(alias.name, alias.asname) for alias in node.names]
-        newnode = new.From(node.module or '', names, node.level or None)
+        newnode = new.From(node.module or '', names, node.level)
         _set_infos(node, newnode, parent)
         # store From names to add them to locals after building
         self._from_nodes.append(newnode)
         return newnode
 
     def visit_function(self, node, parent):
-        """visit an Function node to become astroid"""
+        """visit an Function node to become astng"""
         self._global_names.append({})
         newnode = new.Function(node.name, None)
         _lineno_parent(node, newnode, parent)
@@ -512,23 +478,21 @@ class TreeRebuilder(object):
         decorators = getattr(node, attr)
         if decorators:
             newnode.decorators = self.visit_decorators(node, newnode)
-        if PY3K and node.returns:
-            newnode.returns = self.visit(node.returns, newnode)
         newnode.set_line_info(newnode.last_child())
         self._global_names.pop()
         frame = newnode.parent.frame()
         if isinstance(frame, new.Class):
             if newnode.name == '__new__':
-                newnode._type = 'classmethod'
+                newnode.type = 'classmethod'
             else:
-                newnode._type = 'method'
+                newnode.type = 'method'
         if newnode.decorators is not None:
             for decorator_expr in newnode.decorators.nodes:
                 if isinstance(decorator_expr, new.Name):
                     if decorator_expr.name in ('classmethod', 'staticmethod'):
-                        newnode._type = decorator_expr.name
+                        newnode.type = decorator_expr.name
                     elif decorator_expr.name == 'classproperty':
-                        newnode._type = 'classmethod'
+                        newnode.type = 'classmethod'
         frame.set_local(newnode.name, newnode)
         return newnode
 
@@ -562,7 +526,7 @@ class TreeRebuilder(object):
         return newnode
 
     def visit_global(self, node, parent):
-        """visit an Global node to become astroid"""
+        """visit an Global node to become astng"""
         newnode = new.Global(node.names)
         _set_infos(node, newnode, parent)
         if self._global_names: # global at the module level, no effect
@@ -642,6 +606,16 @@ class TreeRebuilder(object):
         newnode.elt = self.visit(node.elt, newnode)
         newnode.generators = [self.visit(child, newnode)
                               for child in node.generators]
+        newnode.set_line_info(newnode.last_child())
+        return newnode
+
+    def visit_module(self, node, modname, package):
+        """visit a Module node by returning a fresh instance of it"""
+        newnode = new.Module(modname, None)
+        newnode.package = package
+        _lineno_parent(node, newnode, parent=None)
+        _init_set_doc(node, newnode)
+        newnode.body = [self.visit(child, newnode) for child in node.body]
         newnode.set_line_info(newnode.last_child())
         return newnode
 
@@ -726,7 +700,7 @@ class TreeRebuilder(object):
         return newnode
 
     def visit_set(self, node, parent):
-        """visit a Set node by returning a fresh instance of it"""
+        """visit a Tuple node by returning a fresh instance of it"""
         newnode = new.Set()
         _lineno_parent(node, newnode, parent)
         newnode.elts = [self.visit(child, newnode) for child in node.elts]
@@ -814,23 +788,27 @@ class TreeRebuilder(object):
         return newnode
 
     def visit_with(self, node, parent):
+        """visit a With node by returning a fresh instance of it"""
         newnode = new.With()
         _lineno_parent(node, newnode, parent)
-        expr = self.visit(node.context_expr, newnode)
+        newnode.expr = self.visit(node.context_expr, newnode)
         self.asscontext = "Ass"
         if node.optional_vars is not None:
-            vars = self.visit(node.optional_vars, newnode)
-        else:
-            vars = None
+            newnode.vars = self.visit(node.optional_vars, newnode)
         self.asscontext = None
-        newnode.items = [(expr, vars)]
         newnode.body = [self.visit(child, newnode) for child in node.body]
         newnode.set_line_info(newnode.last_child())
         return newnode
 
     def visit_yield(self, node, parent):
         """visit a Yield node by returning a fresh instance of it"""
-        return _create_yield_node(node, parent, self, new.Yield)
+        newnode = new.Yield()
+        _lineno_parent(node, newnode, parent)
+        if node.value is not None:
+            newnode.value = self.visit(node.value, newnode)
+        newnode.set_line_info(newnode.last_child())
+        return newnode
+
 
 class TreeRebuilder3k(TreeRebuilder):
     """extend and overwrite TreeRebuilder for python3k"""
@@ -838,25 +816,8 @@ class TreeRebuilder3k(TreeRebuilder):
     def visit_arg(self, node, parent):
         """visit a arg node by returning a fresh AssName instance"""
         # the <arg> node is coming from py>=3.0, but we use AssName in py2.x
-        # XXX or we should instead introduce a Arg node in astroid ?
+        # XXX or we should instead introduce a Arg node in astng ?
         return self.visit_assname(node, parent, node.arg)
-
-    def visit_nameconstant(self, node, parent):
-        # in Python 3.4 we have NameConstant for True / False / None
-        newnode = new.Const(node.value)
-        _set_infos(node, newnode, parent)
-        return newnode
-
-    def visit_arguments(self, node, parent):
-        newnode = super(TreeRebuilder3k, self).visit_arguments(node, parent)
-        self.asscontext = "Ass"
-        newnode.kwonlyargs = [self.visit(child, newnode) for child in node.kwonlyargs]
-        self.asscontext = None
-        newnode.kw_defaults = [self.visit(child, newnode) if child else None for child in node.kw_defaults]
-        newnode.annotations = [
-            self.visit(arg.annotation, newnode) if arg.annotation else None
-            for arg in node.args]
-        return newnode
 
     def visit_excepthandler(self, node, parent):
         """visit an ExceptHandler node by returning a fresh instance of it"""
@@ -896,64 +857,6 @@ class TreeRebuilder3k(TreeRebuilder):
         newnode.set_line_info(newnode.last_child())
         return newnode
 
-    def visit_try(self, node, parent):
-        # python 3.3 introduce a new Try node replacing TryFinally/TryExcept nodes
-        if node.finalbody:
-            newnode = new.TryFinally()
-            _lineno_parent(node, newnode, parent)
-            newnode.finalbody = [self.visit(n, newnode) for n in node.finalbody]
-            if node.handlers:
-                excnode = new.TryExcept()
-                _lineno_parent(node, excnode, newnode)
-                excnode.body = [self.visit(child, excnode) for child in node.body]
-                excnode.handlers = [self.visit(child, excnode) for child in node.handlers]
-                excnode.orelse = [self.visit(child, excnode) for child in node.orelse]
-                excnode.set_line_info(excnode.last_child())
-                newnode.body = [excnode]
-            else:
-                newnode.body = [self.visit(child, newnode) for child in node.body]
-        elif node.handlers:
-            newnode = new.TryExcept()
-            _lineno_parent(node, newnode, parent)
-            newnode.body = [self.visit(child, newnode) for child in node.body]
-            newnode.handlers = [self.visit(child, newnode) for child in node.handlers]
-            newnode.orelse = [self.visit(child, newnode) for child in node.orelse]
-        newnode.set_line_info(newnode.last_child())
-        return newnode
-
-    def visit_with(self, node, parent):
-        if 'items' not in node._fields:
-            # python < 3.3
-            return super(TreeRebuilder3k, self).visit_with(node, parent)
-
-        newnode = new.With()
-        _lineno_parent(node, newnode, parent)
-        def visit_child(child):
-            expr = self.visit(child.context_expr, newnode)
-            self.asscontext = 'Ass'
-            if child.optional_vars:
-                var = self.visit(child.optional_vars, newnode)
-            else:
-                var = None
-            self.asscontext = None
-            return expr, var
-        newnode.items = [visit_child(child)
-                         for child in node.items]
-        newnode.body = [self.visit(child, newnode) for child in node.body]
-        newnode.set_line_info(newnode.last_child())
-        return newnode
-
-    def visit_yieldfrom(self, node, parent):
-        return _create_yield_node(node, parent, self, new.YieldFrom)
-
-    def visit_class(self, node, parent):
-        newnode = super(TreeRebuilder3k, self).visit_class(node, parent)
-        newnode._newstyle = True
-        for keyword in node.keywords:
-            if keyword.arg == 'metaclass':
-                newnode._metaclass = self.visit(keyword, newnode).value
-                break
-        return newnode
 
 if sys.version_info >= (3, 0):
     TreeRebuilder = TreeRebuilder3k

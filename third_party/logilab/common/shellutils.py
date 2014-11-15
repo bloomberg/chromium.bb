@@ -1,4 +1,4 @@
-# copyright 2003-2014 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -18,9 +18,6 @@
 """shell/term utilities, useful to write some python scripts instead of shell
 scripts.
 """
-
-from __future__ import print_function
-
 __docformat__ = "restructuredtext en"
 
 import os
@@ -34,15 +31,11 @@ import fnmatch
 import errno
 import string
 import random
-import subprocess
 from os.path import exists, isdir, islink, basename, join
 
-from six import string_types
-from six.moves import range, input as raw_input
-
 from logilab.common import STD_BLACKLIST, _handle_blacklist
+from logilab.common.compat import raw_input
 from logilab.common.compat import str_to_bytes
-from logilab.common.deprecation import deprecated
 
 try:
     from logilab.common.proc import ProcInfo, NoSuchProcess
@@ -120,7 +113,7 @@ def mv(source, destination, _action=shutil.move):
             destination = join(destination, basename(source))
         try:
             _action(source, destination)
-        except OSError as ex:
+        except OSError, ex:
             raise OSError('Unable to move %r to %r (%s)' % (
                 source, destination, ex))
 
@@ -166,7 +159,7 @@ def find(directory, exts, exclude=False, blacklist=STD_BLACKLIST):
     :return:
       the list of all matching files
     """
-    if isinstance(exts, string_types):
+    if isinstance(exts, basestring):
         exts = (exts,)
     if exclude:
         def match(filename, exts):
@@ -231,19 +224,20 @@ def unzip(archive, destdir):
             outfile.write(zfobj.read(name))
             outfile.close()
 
-
 class Execute:
     """This is a deadlock safe version of popen2 (no stdin), that returns
     an object with errorlevel, out and err.
     """
 
     def __init__(self, command):
-        cmd = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        self.out, self.err = cmd.communicate()
-        self.status = os.WEXITSTATUS(cmd.returncode)
-
-Execute = deprecated('Use subprocess.Popen instead')(Execute)
-
+        outfile = tempfile.mktemp()
+        errfile = tempfile.mktemp()
+        self.status = os.system("( %s ) >%s 2>%s" %
+                                (command, outfile, errfile)) >> 8
+        self.out = open(outfile, "r").read()
+        self.err = open(errfile, "r").read()
+        os.remove(outfile)
+        os.remove(errfile)
 
 def acquire_lock(lock_file, max_try=10, delay=10, max_delay=3600):
     """Acquire a lock represented by a file on the file system
@@ -259,7 +253,7 @@ def acquire_lock(lock_file, max_try=10, delay=10, max_delay=3600):
             os.write(fd, str_to_bytes(str(os.getpid())) )
             os.close(fd)
             return True
-        except OSError as e:
+        except OSError, e:
             if e.errno == errno.EEXIST:
                 try:
                     fd = open(lock_file, "r")
@@ -321,22 +315,9 @@ class ProgressBar(object):
 
     text = property(_get_text, _set_text, _del_text)
 
-    def update(self, offset=1, exact=False):
-        """Move FORWARD to new cursor position (cursor will never go backward).
-
-        :offset: fraction of ``size``
-
-        :exact:
-
-          - False: offset relative to current cursor position if True
-          - True: offset as an asbsolute position
-
-        """
-        if exact:
-            self._current = offset
-        else:
-            self._current += offset
-
+    def update(self):
+        """Update the progression bar."""
+        self._current += 1
         progress = int((float(self._current)/float(self._total))*self._size)
         if progress > self._progress:
             self._progress = progress
@@ -344,7 +325,7 @@ class ProgressBar(object):
 
     def refresh(self):
         """Refresh the progression bar display."""
-        self._stream.write(self._fstr % ('=' * min(self._progress, self._size)) )
+        self._stream.write(self._fstr % ('.' * min(self._progress, self._size)) )
         if self._last_text_write_size or self._current_text:
             template = ' %%-%is' % (self._last_text_write_size)
             text = self._current_text
@@ -431,7 +412,7 @@ class RawInput(object):
             if self._print:
                 self._print(msg)
             else:
-                print(msg)
+                print msg
             tries -= 1
         raise Exception('unable to get a sensible answer')
 
@@ -457,6 +438,6 @@ def getlogin():
 def generate_password(length=8, vocab=string.ascii_letters + string.digits):
     """dumb password generation function"""
     pwd = ''
-    for i in range(length):
+    for i in xrange(length):
         pwd += random.choice(vocab)
     return pwd

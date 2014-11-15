@@ -24,8 +24,6 @@ import os
 import sys
 import logging
 
-from six import string_types
-
 from logilab.common.textutils import colorize_ansi
 
 
@@ -114,11 +112,7 @@ def get_handler(debug=False, syslog=False, logfile=None, rotation_parameters=Non
     else:
         try:
             if rotation_parameters is None:
-                if os.name == 'posix' and sys.version_info >= (2, 6):
-                    from logging.handlers import WatchedFileHandler
-                    handler = WatchedFileHandler(logfile)
-                else:
-                    handler = logging.FileHandler(logfile)
+                handler = logging.FileHandler(logfile)
             else:
                 from logging.handlers import TimedRotatingFileHandler
                 handler = TimedRotatingFileHandler(
@@ -133,25 +127,14 @@ def get_threshold(debug=False, logthreshold=None):
             logthreshold = logging.DEBUG
         else:
             logthreshold = logging.ERROR
-    elif isinstance(logthreshold, string_types):
+    elif isinstance(logthreshold, basestring):
         logthreshold = getattr(logging, THRESHOLD_MAP.get(logthreshold,
                                                           logthreshold))
     return logthreshold
 
-def _colorable_terminal():
-    isatty = hasattr(sys.__stdout__, 'isatty') and sys.__stdout__.isatty()
-    if not isatty:
-        return False
-    if os.name == 'nt':
-        try:
-            from colorama import init as init_win32_colors
-        except ImportError:
-            return False
-        init_win32_colors()
-    return True
-
 def get_formatter(logformat=LOG_FORMAT, logdateformat=LOG_DATE_FORMAT):
-    if _colorable_terminal():
+    isatty = hasattr(sys.__stdout__, 'isatty') and sys.__stdout__.isatty()
+    if isatty and sys.platform != 'win32':
         fmt = ColorFormatter(logformat, logdateformat)
         def col_fact(record):
             if 'XXX' in record.message:

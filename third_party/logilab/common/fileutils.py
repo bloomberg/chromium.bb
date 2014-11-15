@@ -23,9 +23,6 @@ get_by_ext, remove_dead_links
 write_open_mode, ensure_fs_mode, export
 :sort: path manipulation, file manipulation
 """
-
-from __future__ import print_function
-
 __docformat__ = "restructuredtext en"
 
 import sys
@@ -35,11 +32,12 @@ from os.path import isabs, isdir, islink, split, exists, normpath, join
 from os.path import abspath
 from os import sep, mkdir, remove, listdir, stat, chmod, walk
 from stat import ST_MODE, S_IWRITE
+from cStringIO import StringIO
 
 from logilab.common import STD_BLACKLIST as BASE_BLACKLIST, IGNORED_EXTENSIONS
 from logilab.common.shellutils import find
 from logilab.common.deprecation import deprecated
-from logilab.common.compat import FileIO
+from logilab.common.compat import FileIO, any
 
 def first_level_directory(path):
     """Return the first level directory of a path.
@@ -377,7 +375,7 @@ def export(from_dir, to_dir,
             src = join(directory, filename)
             dest = to_dir + src[len(from_dir):]
             if verbose:
-                print(src, '->', dest, file=sys.stderr)
+                print >> sys.stderr, src, '->', dest
             if exists(dest):
                 remove(dest)
             shutil.copy2(src, dest)
@@ -399,6 +397,6 @@ def remove_dead_links(directory, verbose=0):
             src = join(dirpath, filename)
             if islink(src) and not exists(src):
                 if verbose:
-                    print('remove dead link', src)
+                    print 'remove dead link', src
                 remove(src)
 

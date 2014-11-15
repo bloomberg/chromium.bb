@@ -25,9 +25,6 @@
 :var IGNORED_EXTENSIONS: file extensions that may usually be ignored
 """
 __docformat__ = "restructuredtext en"
-
-from six.moves import range
-
 from logilab.common.__pkginfo__ import version as __version__
 
 STD_BLACKLIST = ('CVS', '.svn', '.hg', 'debian', 'dist', 'build')
@@ -60,9 +57,8 @@ class dictattr(dict):
 class nullobject(object):
     def __repr__(self):
         return '<nullobject>'
-    def __bool__(self):
+    def __nonzero__(self):
         return False
-    __nonzero__ = __bool__
 
 class tempattr(object):
     def __init__(self, obj, attr, value):

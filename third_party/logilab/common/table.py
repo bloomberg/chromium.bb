@@ -1,4 +1,4 @@
-# copyright 2003-2012 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -16,12 +16,8 @@
 # You should have received a copy of the GNU Lesser General Public License along
 # with logilab-common.  If not, see <http://www.gnu.org/licenses/>.
 """Table management module."""
-
-from __future__ import print_function
-
 __docformat__ = "restructuredtext en"
 
-from six.moves import range
 
 class Table(object):
     """Table defines a data table with column and row names.
@@ -51,8 +47,6 @@ class Table(object):
             return False
         else:
             return list(self) == list(other)
-
-    __hash__ = object.__hash__
 
     def __ne__(self, other):
         return not self == other
@@ -446,7 +440,7 @@ class Table(object):
         # The first cell <=> an empty one
         col_names_line = [' '*col_start]
         for col_name in self.col_names:
-            col_names_line.append(col_name + ' '*5)
+            col_names_line.append(col_name.encode('iso-8859-1') + ' '*5)
         lines.append('|' + '|'.join(col_names_line) + '|')
         max_line_length = len(lines[0])
 
@@ -454,7 +448,7 @@ class Table(object):
         for row_index, row in enumerate(self.data):
             line = []
             # First, build the row_name's cell
-            row_name = self.row_names[row_index]
+            row_name = self.row_names[row_index].encode('iso-8859-1')
             line.append(row_name + ' '*(col_start-len(row_name)))
 
             # Then, build all the table's cell for this line.
@@ -654,7 +648,7 @@ class TableStyleSheet:
                 'table.py', 'exec'))
             self.rules.append(rule)
         except SyntaxError:
-            print("Bad Stylesheet Rule : %s [skipped]" % rule)
+            print "Bad Stylesheet Rule : %s [skipped]"%rule
 
 
     def add_rowsum_rule(self, dest_cell, row_index, start_col, end_col):
@@ -749,14 +743,14 @@ class TableCellRenderer:
     def render_row_cell(self, row_name, table, table_style):
         """Renders the cell for 'row_id' row
         """
-        cell_value = row_name
+        cell_value = row_name.encode('iso-8859-1')
         return self._render_cell_content(cell_value, table_style, 0)
 
 
     def render_col_cell(self, col_name, table, table_style):
         """Renders the cell for 'col_id' row
         """
-        cell_value = col_name
+        cell_value = col_name.encode('iso-8859-1')
         col_index = table.col_names.index(col_name)
         return self._render_cell_content(cell_value, table_style, col_index +1)
 

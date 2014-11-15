@@ -62,7 +62,7 @@ class HTTPGssapiAuthHandler(urllib2.BaseHandler):
                 if result < 1:
                     raise GssapiAuthError("HTTPGssapiAuthHandler: step 2 failed with %d" % result)
             return server_response
-        except GssapiAuthError as exc:
+        except GssapiAuthError, exc:
             logging.error(repr(exc))
         finally:
             self.clean_context()
