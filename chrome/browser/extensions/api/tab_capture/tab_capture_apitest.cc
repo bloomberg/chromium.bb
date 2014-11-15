@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -41,9 +42,37 @@ class TabCaptureApiTest : public ExtensionApiTest {
 
 class TabCaptureApiPixelTest : public TabCaptureApiTest {
  public:
+  void SetUpCommandLine(CommandLine* command_line) override {
+    TabCaptureApiTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(::switches::kWindowSize, "300,300");
+  }
+
   void SetUp() override {
-    EnablePixelOutput();
+    if (!IsTooIntensiveForThisPlatform())
+      EnablePixelOutput();
     TabCaptureApiTest::SetUp();
+  }
+
+ protected:
+  bool IsTooIntensiveForThisPlatform() const {
+#if defined(OS_WIN)
+    if (base::win::GetVersion() < base::win::VERSION_VISTA)
+      return true;
+#endif
+
+    // The tests are too slow to succeed with OSMesa on the bots.
+    if (UsingOSMesa())
+      return true;
+
+#if defined(NDEBUG)
+    return false;
+#else
+    // TODO(miu): Look into enabling these tests for the Debug build bots once
+    // they prove to be stable again on the Release bots.
+    // http://crbug.com/396413
+    return !CommandLine::ForCurrentProcess()->HasSwitch(
+        "run-tab-capture-api-pixel-tests");
+#endif
   }
 };
 
@@ -78,22 +107,30 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTestsAudio) {
       << message_;
 }
 
-// Disabled on ChromeOS for http://crbug.com/406051
-// Disabled on other platforms for http://crbug.com/177163
-// Disabled http://crbug.com/367349
-IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, DISABLED_EndToEnd) {
-#if defined(OS_WIN)
-  // TODO(justinlin): Disabled for WinXP due to timeout issues.
-  if (base::win::GetVersion() < base::win::VERSION_VISTA) {
+// Tests that tab capture video frames can be received in a VIDEO element.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndWithoutRemoting) {
+  if (IsTooIntensiveForThisPlatform()) {
+    LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
     return;
   }
-#endif
-  // This test is too slow to succeed with OSMesa on the bots.
-  if (UsingOSMesa())
-    return;
-
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "end_to_end.html"))
+  ASSERT_TRUE(RunExtensionSubtest(
+      "tab_capture", "end_to_end.html?method=local&colorDeviation=10"))
+      << message_;
+}
+
+// Tests that video frames are captured, transported via WebRTC, and finally
+// received in a VIDEO element.  More allowance is provided for color deviation
+// because of the additional layers of video processing performed within
+// WebRTC.
+IN_PROC_BROWSER_TEST_F(TabCaptureApiPixelTest, EndToEndThroughWebRTC) {
+  if (IsTooIntensiveForThisPlatform()) {
+    LOG(WARNING) << "Skipping this CPU-intensive test on this platform/build.";
+    return;
+  }
+  AddExtensionToCommandLineWhitelist();
+  ASSERT_TRUE(RunExtensionSubtest(
+      "tab_capture", "end_to_end.html?method=webrtc&colorDeviation=50"))
       << message_;
 }
 
