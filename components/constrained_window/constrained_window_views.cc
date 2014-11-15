@@ -154,19 +154,22 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 
 // TODO(gbillock): Replace this with PopupManager calls.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
-                                             gfx::NativeView parent) {
+                                             gfx::NativeWindow parent) {
   DCHECK_NE(ui::MODAL_TYPE_CHILD, dialog->GetModalType());
   DCHECK_NE(ui::MODAL_TYPE_NONE, dialog->GetModalType());
 
+  DCHECK(constrained_window_views_client);
+  gfx::NativeView parent_view =
+      parent ? constrained_window_views_client->GetDialogHostView(parent)
+             : nullptr;
   views::Widget* widget =
-      views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent);
+      views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent_view);
   if (!dialog->UseNewStyleForThisDialog())
     return widget;
-  DCHECK(constrained_window_views_client);
   ModalDialogHost* host = constrained_window_views_client->
       GetModalDialogHost(parent);
   if (host) {
-    DCHECK_EQ(parent, host->GetHostView());
+    DCHECK_EQ(parent_view, host->GetHostView());
     ModalDialogHostObserver* dialog_host_observer =
         new WidgetModalDialogHostObserverViews(
             host, widget, kWidgetModalDialogHostObserverViewsKey);

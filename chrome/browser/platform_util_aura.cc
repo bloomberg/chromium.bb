@@ -17,6 +17,11 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return view->GetToplevelWindow();
 }
 
+gfx::NativeView GetViewForWindow(gfx::NativeWindow window) {
+  DCHECK(window);
+  return window;
+}
+
 gfx::NativeView GetParent(gfx::NativeView view) {
   return view->parent();
 }

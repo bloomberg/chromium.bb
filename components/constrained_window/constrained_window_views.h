@@ -56,7 +56,7 @@ views::Widget* CreateWebModalDialogViews(views::WidgetDelegate* dialog,
 // ui::MODAL_TYPE_SYSTEM or ui::MODAL_TYPE_WINDOW.  This places the
 // dialog appropriately if |parent| is a valid browser window.
 views::Widget* CreateBrowserModalDialogViews(views::DialogDelegate* dialog,
-                                             gfx::NativeView parent);
+                                             gfx::NativeWindow parent);
 
 }  // namespace constrained window
 

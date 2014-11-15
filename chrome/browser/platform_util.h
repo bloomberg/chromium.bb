@@ -37,6 +37,11 @@ void OpenExternal(Profile* profile, const GURL& url);
 // Get the top level window for the native view. This can return NULL.
 gfx::NativeWindow GetTopLevel(gfx::NativeView view);
 
+// Returns a NativeView handle for parenting dialogs off |window|. This can be
+// used to position a dialog using a NativeWindow, when a NativeView (e.g.
+// browser tab) isn't available.
+gfx::NativeView GetViewForWindow(gfx::NativeWindow window);
+
 // Get the direct parent of |view|, may return NULL.
 gfx::NativeView GetParent(gfx::NativeView view);
 

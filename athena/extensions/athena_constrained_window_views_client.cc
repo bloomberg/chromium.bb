@@ -19,7 +19,7 @@
 namespace athena {
 namespace {
 
-// Provides the host envrionment for web modal dialogs. See
+// Provides the host environment for web modal dialogs. See
 // web_modal::WebContentsModalDialogHost, and ModalDialogHost for more
 // details.
 class ModalDialogHostImpl : public web_modal::WebContentsModalDialogHost,
@@ -120,6 +120,9 @@ class AthenaConstrainedWindowViewsClient
     if (activity)
       return ModalDialogHostImpl::Get(parent);
     return nullptr;
+  }
+  gfx::NativeView GetDialogHostView(gfx::NativeWindow parent) override {
+    return parent;
   }
 
   DISALLOW_COPY_AND_ASSIGN(AthenaConstrainedWindowViewsClient);
