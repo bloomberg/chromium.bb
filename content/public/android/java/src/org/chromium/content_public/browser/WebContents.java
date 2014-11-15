@@ -163,6 +163,16 @@ public interface WebContents {
     public void beginExitTransition(String cssSelector);
 
     /**
+     * Hide transition elements.
+     */
+    public void hideTransitionElements(String cssSelector);
+
+    /**
+     * Show transition elements.
+     */
+    public void showTransitionElements(String cssSelector);
+
+    /**
      * Clear the navigation transition data.
      */
     public void clearNavigationTransitionData();

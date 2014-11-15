@@ -198,6 +198,20 @@ import org.chromium.content_public.browser.WebContents;
     }
 
     /**
+     * Hide transition elements.
+     */
+    public void hideTransitionElements(String cssSelector) {
+        nativeHideTransitionElements(mNativeWebContentsAndroid, cssSelector);
+    }
+
+    /**
+     * Show transition elements.
+     */
+    public void showTransitionElements(String cssSelector) {
+        nativeShowTransitionElements(mNativeWebContentsAndroid, cssSelector);
+    }
+
+    /**
      * Clear the navigation transition data.
      */
     @Override
@@ -282,6 +296,10 @@ import org.chromium.content_public.browser.WebContents;
     private native void nativeSetupTransitionView(long nativeWebContentsAndroid,
             String markup);
     private native void nativeBeginExitTransition(long nativeWebContentsAndroid,
+            String cssSelector);
+    private native void nativeHideTransitionElements(long nativeWebContentsAndroid,
+            String cssSelector);
+    private native void nativeShowTransitionElements(long nativeWebContentsAndroid,
             String cssSelector);
     private native void nativeClearNavigationTransitionData(long nativeWebContentsAndroid);
     private native void nativeEvaluateJavaScript(long nativeWebContentsAndroid,

@@ -937,6 +937,10 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnSetEditableSelectionOffsets)
     IPC_MESSAGE_HANDLER(FrameMsg_SetupTransitionView, OnSetupTransitionView)
     IPC_MESSAGE_HANDLER(FrameMsg_BeginExitTransition, OnBeginExitTransition)
+    IPC_MESSAGE_HANDLER(FrameMsg_HideTransitionElements,
+                        OnHideTransitionElements)
+    IPC_MESSAGE_HANDLER(FrameMsg_ShowTransitionElements,
+                        OnShowTransitionElements)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_TextSurroundingSelectionRequest,
                         OnTextSurroundingSelectionRequest)
@@ -1490,6 +1494,18 @@ void RenderFrameImpl::OnSetupTransitionView(const std::string& markup) {
 void RenderFrameImpl::OnBeginExitTransition(const std::string& css_selector) {
   frame_->document().setIsTransitionDocument();
   frame_->document().beginExitTransition(WebString::fromUTF8(css_selector));
+}
+
+void RenderFrameImpl::OnHideTransitionElements(
+    const std::string& css_selector) {
+  frame_->document().setIsTransitionDocument();
+  frame_->document().hideTransitionElements(WebString::fromUTF8(css_selector));
+}
+
+void RenderFrameImpl::OnShowTransitionElements(
+    const std::string& css_selector) {
+  frame_->document().setIsTransitionDocument();
+  frame_->document().showTransitionElements(WebString::fromUTF8(css_selector));
 }
 
 bool RenderFrameImpl::RunJavaScriptMessage(JavaScriptMessageType type,

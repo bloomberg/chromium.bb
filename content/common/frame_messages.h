@@ -439,6 +439,14 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetupTransitionView,
 IPC_MESSAGE_ROUTED1(FrameMsg_BeginExitTransition,
                     std::string /* css_selector */)
 
+// Tell the renderer to hide transition elements.
+IPC_MESSAGE_ROUTED1(FrameMsg_HideTransitionElements,
+                    std::string /* css_selector */)
+
+// Tell the renderer to hide transition elements.
+IPC_MESSAGE_ROUTED1(FrameMsg_ShowTransitionElements,
+                    std::string /* css_selector */)
+
 // Tells the renderer to reload the frame, optionally ignoring the cache while
 // doing so.
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,

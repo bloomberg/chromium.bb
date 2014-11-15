@@ -183,6 +183,25 @@ void WebContentsAndroid::BeginExitTransition(JNIEnv* env,
       ConvertJavaStringToUTF8(env, css_selector)));
 }
 
+void WebContentsAndroid::HideTransitionElements(JNIEnv* env,
+                                                jobject jobj,
+                                                jstring css_selector) {
+  web_contents_->GetMainFrame()->Send(
+      new FrameMsg_HideTransitionElements(
+          web_contents_->GetMainFrame()->GetRoutingID(),
+          ConvertJavaStringToUTF8(env, css_selector)));
+}
+
+void WebContentsAndroid::ShowTransitionElements(JNIEnv* env,
+                                                jobject jobj,
+                                                jstring css_selector) {
+  web_contents_->GetMainFrame()->Send(
+      new FrameMsg_ShowTransitionElements(
+          web_contents_->GetMainFrame()->GetRoutingID(),
+          ConvertJavaStringToUTF8(env, css_selector)));
+}
+
+
 void WebContentsAndroid::ClearNavigationTransitionData(JNIEnv* env,
                                                        jobject jobj) {
   static_cast<WebContentsImpl*>(web_contents_)->ClearNavigationTransitionData();
