@@ -11,6 +11,8 @@
 # installed.
 
 (
+  set -e
+
   dom_distiller_js_path=third_party/dom_distiller_js
   dom_distiller_js_package=$dom_distiller_js_path/package
   readme_chromium=$dom_distiller_js_path/README.chromium
@@ -54,18 +56,23 @@
   cp $tmpdir/LICENSE $dom_distiller_js_path/
   sed -i "s/Version: [0-9a-f]*/Version: $new_gitsha/" $readme_chromium
 
-  echo
-  echo
-  echo "---Generated commit message---"
-  echo
-  echo "Picked up changes:"
-  cat $changes
-  echo
-  cat $bugs
+  gen_message () {
+    echo "Roll DomDistillerJS"
+    echo
+    echo "Picked up changes:"
+    cat $changes
+    echo
+    cat $bugs
+  }
+
+  message=$tmpdir/message
+  gen_message > $message
 
   # Run checklicenses.py on the pulled files, but only print the output on
   # failures.
   tools/checklicenses/checklicenses.py $dom_distiller_js_path > $tmpdir/checklicenses.out || cat $tmpdir/checklicenses.out
+
+  git commit -a -F $message
 
   rm -rf $tmpdir
 )
