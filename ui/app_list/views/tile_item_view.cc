@@ -46,6 +46,7 @@ TileItemView::~TileItemView() {
 }
 
 void TileItemView::SetTitleBackgroundColor(SkColor color) {
+  title_->SetBackgroundColor(color);
   title_->set_background(views::Background::CreateSolidBackground(color));
 }
 
