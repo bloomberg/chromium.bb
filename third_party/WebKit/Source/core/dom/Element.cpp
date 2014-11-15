@@ -1314,7 +1314,7 @@ void Element::attach(const AttachContext& context)
         data->clearComputedStyle();
     }
 
-    RenderTreeBuilder(this, context.resolvedStyle).createRendererForElementIfNeeded();
+    RenderTreeBuilderForElement(this, context.resolvedStyle).createRendererIfNeeded();
 
     addCallbackSelectors();
 

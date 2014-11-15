@@ -239,6 +239,9 @@ PassRefPtrWillBeRawPtr<Node> Text::cloneNode(bool /*deep*/)
 
 bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& parent)
 {
+    if (!parent.canHaveChildren())
+        return false;
+
     if (isEditingText())
         return true;
 
@@ -304,7 +307,12 @@ RenderText* Text::createTextRenderer(RenderStyle* style)
 
 void Text::attach(const AttachContext& context)
 {
-    RenderTreeBuilder(this, context.resolvedStyle).createRendererForTextIfNeeded();
+    if (ContainerNode* renderingParent = NodeRenderingTraversal::parent(this)) {
+        if (RenderObject* parentRenderer = renderingParent->renderer()) {
+            if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
+                RenderTreeBuilderForText(this, parentRenderer).createRenderer();
+        }
+    }
     CharacterData::attach(context);
 }
 
