@@ -60,11 +60,6 @@ namespace blink {
 typedef WillBeHeapHashMap<RawPtrWillBeMember<const RenderBoxModelObject>, RawPtrWillBeMember<RenderBoxModelObject> > ContinuationMap;
 static OwnPtrWillBePersistent<ContinuationMap>* continuationMap = 0;
 
-// This HashMap is similar to the continuation map, but connects first-letter
-// renderers to their remaining text fragments.
-typedef WillBeHeapHashMap<RawPtrWillBeMember<const RenderBoxModelObject>, RawPtrWillBeMember<RenderTextFragment> > FirstLetterRemainingTextMap;
-static OwnPtrWillBePersistent<FirstLetterRemainingTextMap>* firstLetterRemainingTextMap = 0;
-
 void RenderBoxModelObject::setSelectionState(SelectionState state)
 {
     if (state == SelectionInside && selectionState() != SelectionNone)
@@ -112,11 +107,6 @@ void RenderBoxModelObject::willBeDestroyed()
 
     // A continuation of this RenderObject should be destroyed at subclasses.
     ASSERT(!continuation());
-
-    // If this is a first-letter object with a remaining text fragment then the
-    // entry needs to be cleared from the map.
-    if (firstLetterRemainingText())
-        setFirstLetterRemainingText(0);
 
     RenderLayerModelObject::willBeDestroyed();
 }
@@ -490,24 +480,6 @@ void RenderBoxModelObject::computeLayerHitTestRects(LayerHitTestRects& rects) co
     // get picked up already by the tree walk.
     if (continuation())
         continuation()->computeLayerHitTestRects(rects);
-}
-
-RenderTextFragment* RenderBoxModelObject::firstLetterRemainingText() const
-{
-    if (!firstLetterRemainingTextMap)
-        return 0;
-    return (*firstLetterRemainingTextMap)->get(this);
-}
-
-void RenderBoxModelObject::setFirstLetterRemainingText(RenderTextFragment* remainingText)
-{
-    if (remainingText) {
-        if (!firstLetterRemainingTextMap)
-            firstLetterRemainingTextMap = new OwnPtrWillBePersistent<FirstLetterRemainingTextMap>(adoptPtrWillBeNoop(new FirstLetterRemainingTextMap));
-        (*firstLetterRemainingTextMap)->set(this, remainingText);
-    } else if (firstLetterRemainingTextMap) {
-        (*firstLetterRemainingTextMap)->remove(this);
-    }
 }
 
 LayoutRect RenderBoxModelObject::localCaretRectForEmptyElement(LayoutUnit width, LayoutUnit textIndentOffset)

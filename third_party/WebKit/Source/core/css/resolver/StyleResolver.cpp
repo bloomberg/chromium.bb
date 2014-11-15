@@ -68,6 +68,7 @@
 #include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/CSSSelectorWatch.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
@@ -718,16 +719,28 @@ PassRefPtrWillBeRawPtr<AnimatableValue> StyleResolver::createAnimatableValueSnap
     return CSSAnimatableValueFactory::create(property, *state.style());
 }
 
+PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElement(Element* parent, PseudoId pseudoId)
+{
+    if (pseudoId == FIRST_LETTER)
+        return FirstLetterPseudoElement::create(parent);
+    return PseudoElement::create(parent, pseudoId);
+}
+
 PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded(Element& parent, PseudoId pseudoId)
 {
     RenderObject* parentRenderer = parent.renderer();
     if (!parentRenderer)
         return nullptr;
 
-    if (pseudoId < FIRST_INTERNAL_PSEUDOID && !parentRenderer->style()->hasPseudoStyle(pseudoId))
+    // The first letter pseudo element has to look up the tree and see if any
+    // of the ancestors are first letter.
+    if (pseudoId < FIRST_INTERNAL_PSEUDOID && pseudoId != FIRST_LETTER && !parentRenderer->style()->hasPseudoStyle(pseudoId))
         return nullptr;
 
     if (pseudoId == BACKDROP && !parent.isInTopLayer())
+        return nullptr;
+
+    if (pseudoId == FIRST_LETTER && (parent.isSVGElement() || !FirstLetterPseudoElement::firstLetterTextRenderer(parent)))
         return nullptr;
 
     if (!parentRenderer->canHaveGeneratedChildren())
@@ -737,7 +750,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (RenderStyle* cachedStyle = parentStyle->getCachedPseudoStyle(pseudoId)) {
         if (!pseudoElementRendererIsNeeded(cachedStyle))
             return nullptr;
-        return PseudoElement::create(&parent, pseudoId);
+        return createPseudoElement(&parent, pseudoId);
     }
 
     StyleResolverState state(document(), &parent, parentStyle);
@@ -750,7 +763,7 @@ PassRefPtrWillBeRawPtr<PseudoElement> StyleResolver::createPseudoElementIfNeeded
     if (!pseudoElementRendererIsNeeded(style.get()))
         return nullptr;
 
-    RefPtrWillBeRawPtr<PseudoElement> pseudo = PseudoElement::create(&parent, pseudoId);
+    RefPtrWillBeRawPtr<PseudoElement> pseudo = createPseudoElement(&parent, pseudoId);
 
     setAnimationUpdateIfNeeded(state, *pseudo);
     if (ActiveAnimations* activeAnimations = pseudo->activeAnimations())

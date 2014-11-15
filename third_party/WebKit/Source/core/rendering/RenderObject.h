@@ -627,8 +627,8 @@ public:
     void clearNode() { m_node = nullptr; }
 
     // Returns the styled node that caused the generation of this renderer.
-    // This is the same as node() except for renderers of :before and :after
-    // pseudo elements for which their parent node is returned.
+    // This is the same as node() except for renderers of :before, :after and
+    // :first-letter pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
     Document& document() const { return m_node->document(); }

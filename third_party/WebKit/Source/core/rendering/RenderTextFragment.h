@@ -27,6 +27,8 @@
 
 namespace blink {
 
+class FirstLetterPseudoElement;
+
 // Used to represent a text substring of an element, e.g., for text runs that are split because of
 // first letter and that must therefore have different styles (and positions in the render tree).
 // We cache offsets so that text transformations can be applied in such a way that we can recover
@@ -37,6 +39,7 @@ public:
     RenderTextFragment(Node*, StringImpl*);
     virtual ~RenderTextFragment();
     virtual void trace(Visitor*) override;
+    virtual void destroy() override;
 
     virtual bool isTextFragment() const override { return true; }
 
@@ -46,11 +49,14 @@ public:
     unsigned end() const { return m_end; }
     virtual unsigned textStartOffset() const override { return start(); }
 
-    RenderBoxModelObject* firstLetter() const { return m_firstLetter; }
-    void setFirstLetter(RenderBoxModelObject* firstLetter) { m_firstLetter = firstLetter; }
-    RenderText* firstRenderTextInFirstLetter() const;
-
     void setContentString(StringImpl*);
+    StringImpl* contentString() const { return m_contentString.get(); }
+    // The complete text is all of the text in the associated DOM text node.
+    PassRefPtr<StringImpl> completeText() const;
+    // The fragment text is the text which will be used by this RenderTextFragment. For
+    // things like first-letter this may differ from the completeText as we maybe using
+    // only a portion of the text nodes content.
+
     virtual PassRefPtr<StringImpl> originalText() const override;
 
     virtual void setText(PassRefPtr<StringImpl>, bool force = false) override;
@@ -59,20 +65,23 @@ public:
 
     virtual const char* renderName() const override final { return "RenderTextFragment"; }
 
-protected:
-    virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) override;
+    void setFirstLetterPseudoElement(FirstLetterPseudoElement* element) { m_firstLetterPseudoElement = element; }
+    FirstLetterPseudoElement* firstLetterPseudoElement() const { return m_firstLetterPseudoElement; }
+
+    void setIsRemainingTextRenderer() { m_isRemainingTextRenderer = true; }
+    bool isRemainingTextRenderer() const { return m_isRemainingTextRenderer; }
 
 private:
-    virtual void willBeDestroyed() override;
-
-    virtual UChar previousCharacter() const override;
     RenderBlock* blockForAccompanyingFirstLetter() const;
-    virtual void updateHitTestResult(HitTestResult&, const LayoutPoint&) override;
+    virtual UChar previousCharacter() const override;
+
+    Text* associatedTextNode() const;
 
     unsigned m_start;
     unsigned m_end;
+    bool m_isRemainingTextRenderer;
     RefPtr<StringImpl> m_contentString;
-    RawPtrWillBeMember<RenderBoxModelObject> m_firstLetter;
+    RawPtrWillBeMember<FirstLetterPseudoElement> m_firstLetterPseudoElement;
 };
 
 DEFINE_TYPE_CASTS(RenderTextFragment, RenderObject, object, toRenderText(object)->isTextFragment(), toRenderText(object).isTextFragment());

@@ -1,0 +1,309 @@
+/*
+ * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
+ *           (C) 1999 Antti Koivisto (koivisto@kde.org)
+ *           (C) 2007 David Smith (catfish.man@gmail.com)
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; see the file COPYING.LIB.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ */
+
+#include "config.h"
+#include "core/dom/FirstLetterPseudoElement.h"
+
+#include "core/dom/Element.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderObjectInlines.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderTextFragment.h"
+#include "wtf/TemporaryChange.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/unicode/icu/UnicodeIcu.h"
+
+namespace blink {
+
+using namespace WTF;
+using namespace Unicode;
+
+// CSS 2.1 http://www.w3.org/TR/CSS21/selector.html#first-letter
+// "Punctuation (i.e, characters defined in Unicode [UNICODE] in the "open" (Ps), "close" (Pe),
+// "initial" (Pi). "final" (Pf) and "other" (Po) punctuation classes), that precedes or follows the first letter should be included"
+static inline bool isPunctuationForFirstLetter(UChar c)
+{
+    CharCategory charCategory = category(c);
+    return charCategory == Punctuation_Open
+        || charCategory == Punctuation_Close
+        || charCategory == Punctuation_InitialQuote
+        || charCategory == Punctuation_FinalQuote
+        || charCategory == Punctuation_Other;
+}
+
+static inline bool isSpaceForFirstLetter(UChar c)
+{
+    return isSpaceOrNewline(c) || c == noBreakSpace;
+}
+
+unsigned FirstLetterPseudoElement::firstLetterLength(const String& text)
+{
+    unsigned length = 0;
+    unsigned textLength = text.length();
+
+    if (textLength == 0)
+        return length;
+
+    // Account for leading spaces first.
+    while (length < textLength && isSpaceForFirstLetter(text[length]))
+        length++;
+    // Now account for leading punctuation.
+    while (length < textLength && isPunctuationForFirstLetter(text[length]))
+        length++;
+
+    // Bail if we didn't find a letter before the end of the text or before a space.
+    if (isSpaceForFirstLetter(text[length]) || length == textLength)
+        return 0;
+
+    // Account the next character for first letter.
+    length++;
+
+    // Keep looking for allowed punctuation for the :first-letter.
+    for (; length < textLength; ++length) {
+        UChar c = text[length];
+        if (!isPunctuationForFirstLetter(c))
+            break;
+    }
+    return length;
+}
+
+// Once we see any of these renderers we can stop looking for first-letter as
+// they signal the end of the first line of text.
+static bool isInvalidFirstLetterRenderer(const RenderObject* obj)
+{
+    return (obj->isBR() || (obj->isText() && toRenderText(obj)->isWordBreak()));
+}
+
+RenderObject* FirstLetterPseudoElement::firstLetterTextRenderer(const Element& element)
+{
+    RenderObject* parentRenderer = 0;
+
+    // If we are looking at a first letter element then we need to find the
+    // first letter text renderer from the parent node, and not ourselves.
+    if (element.isFirstLetterPseudoElement())
+        parentRenderer = element.parentOrShadowHostElement()->renderer();
+    else
+        parentRenderer = element.renderer();
+
+    if (!parentRenderer
+        || !parentRenderer->style()->hasPseudoStyle(FIRST_LETTER)
+        || !parentRenderer->canHaveGeneratedChildren()
+        || !(parentRenderer->isRenderBlockFlow() || parentRenderer->isRenderButton()))
+        return nullptr;
+
+    // Drill down into our children and look for our first text child.
+    RenderObject* firstLetterTextRenderer = parentRenderer->slowFirstChild();
+    while (firstLetterTextRenderer) {
+        // This can be called when the first letter renderer is already in the tree. We do not
+        // want to consider that renderer for our text renderer so we go to the sibling (which is
+        // the RenderTextFragment for the remaining text).
+        if (firstLetterTextRenderer->style() && firstLetterTextRenderer->style()->styleType() == FIRST_LETTER) {
+            firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
+        } else if (firstLetterTextRenderer->isText()) {
+            // FIXME: If there is leading punctuation in a different RenderText than
+            // the first letter, we'll not apply the correct style to it.
+            RefPtr<StringImpl> str = toRenderText(firstLetterTextRenderer)->isTextFragment() ?
+                toRenderTextFragment(firstLetterTextRenderer)->completeText() :
+                toRenderText(firstLetterTextRenderer)->originalText();
+            if (firstLetterLength(str.get()) || isInvalidFirstLetterRenderer(firstLetterTextRenderer))
+                break;
+            firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
+        } else if (firstLetterTextRenderer->isListMarker()) {
+            firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
+        } else if (firstLetterTextRenderer->isFloatingOrOutOfFlowPositioned()) {
+            if (firstLetterTextRenderer->style()->styleType() == FIRST_LETTER) {
+                firstLetterTextRenderer = firstLetterTextRenderer->slowFirstChild();
+                break;
+            }
+            firstLetterTextRenderer = firstLetterTextRenderer->nextSibling();
+        } else if (firstLetterTextRenderer->isReplaced() || firstLetterTextRenderer->isRenderButton()
+            || firstLetterTextRenderer->isMenuList()) {
+            return nullptr;
+        } else if (firstLetterTextRenderer->isFlexibleBoxIncludingDeprecated() || firstLetterTextRenderer->isRenderGrid()) {
+            return nullptr;
+        } else if (firstLetterTextRenderer->style()->hasPseudoStyle(FIRST_LETTER)
+            && firstLetterTextRenderer->canHaveGeneratedChildren())  {
+            // There is a renderer further down the tree which has FIRST_LETTER set. When that node
+            // is attached we will handle setting up the first letter then.
+            return nullptr;
+        } else {
+            firstLetterTextRenderer = firstLetterTextRenderer->slowFirstChild();
+        }
+    }
+
+    // No first letter text to display, we're done.
+    // FIXME: This black-list of disallowed RenderText subclasses is fragile. crbug.com/422336.
+    // Should counter be on this list? What about RenderTextFragment?
+    if (!firstLetterTextRenderer || !firstLetterTextRenderer->isText() || isInvalidFirstLetterRenderer(firstLetterTextRenderer))
+        return nullptr;
+
+    return firstLetterTextRenderer;
+}
+
+FirstLetterPseudoElement::FirstLetterPseudoElement(Element* parent)
+    : PseudoElement(parent, FIRST_LETTER)
+    , m_remainingTextRenderer(nullptr)
+    , m_needsUpdate(false)
+    , m_isInDetach(false)
+{
+}
+
+FirstLetterPseudoElement::~FirstLetterPseudoElement()
+{
+}
+
+void FirstLetterPseudoElement::trace(Visitor* visitor)
+{
+    visitor->trace(m_remainingTextRenderer);
+    PseudoElement::trace(visitor);
+}
+
+void FirstLetterPseudoElement::setNeedsUpdate()
+{
+    m_needsUpdate = true;
+    bool neededRecalc = needsStyleRecalc();
+    setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::PseudoClass));
+
+    // If style recalc is currently executing, and we have already been recalc'd
+    // we need to tell our parent to do the recalc again because we need to
+    // re-initialize the first letter state. This can happen for things like
+    // RenderQuote where quotes processed later can effect things already styled.
+    if (document().inStyleRecalc() && !m_isInDetach && !neededRecalc && parentNode() && parentNode()->isElementNode())
+        toElement(parentNode())->recalcStyle(UpdatePseudoElements);
+}
+
+void FirstLetterPseudoElement::attach(const AttachContext& context)
+{
+    PseudoElement::attach(context);
+    attachFirstLetterTextRenderers();
+}
+
+void FirstLetterPseudoElement::detach(const AttachContext& context)
+{
+    TemporaryChange<bool> isInDetach(m_isInDetach, true);
+
+    if (m_remainingTextRenderer) {
+        if (m_remainingTextRenderer->node()) {
+            Text* textNode = toText(m_remainingTextRenderer->node());
+            m_remainingTextRenderer->setText(textNode->dataImpl(), true);
+        }
+        m_remainingTextRenderer->setFirstLetterPseudoElement(nullptr);
+    }
+    m_remainingTextRenderer = nullptr;
+
+    PseudoElement::detach(context);
+}
+
+RenderStyle* FirstLetterPseudoElement::styleForFirstLetter(RenderObject* rendererContainer)
+{
+    ASSERT(rendererContainer);
+
+    RenderObject* styleContainer = parentOrShadowHostElement()->renderer();
+    ASSERT(styleContainer);
+
+    // We always force the pseudo style to recompute as the first-letter style
+    // computed by the style container may not have taken the renderers styles
+    // into account.
+    styleContainer->style()->removeCachedPseudoStyle(FIRST_LETTER);
+
+    RenderStyle* pseudoStyle = styleContainer->getCachedPseudoStyle(FIRST_LETTER, rendererContainer->firstLineStyle());
+    ASSERT(pseudoStyle);
+
+    // Force inline display (except for floating first-letters).
+    pseudoStyle->setDisplay(pseudoStyle->isFloating() ? BLOCK : INLINE);
+
+    // CSS2 says first-letter can't be positioned.
+    pseudoStyle->setPosition(StaticPosition);
+
+    return pseudoStyle;
+}
+
+void FirstLetterPseudoElement::attachFirstLetterTextRenderers()
+{
+    RenderObject* nextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*this);
+    ASSERT(nextRenderer);
+    ASSERT(nextRenderer->isText());
+
+    // The original string is going to be either a generated content string or a DOM node's
+    // string. We want the original string before it got transformed in case first-letter has
+    // no text-transform or a different text-transform applied to it.
+    String oldText = toRenderText(nextRenderer)->isTextFragment() ? toRenderTextFragment(nextRenderer)->completeText() : toRenderText(nextRenderer)->originalText();
+    ASSERT(oldText.impl());
+
+    RenderStyle* pseudoStyle = styleForFirstLetter(nextRenderer->parent());
+    renderer()->setStyle(pseudoStyle);
+
+    // FIXME: This would already have been calculated in firstLetterRenderer. Can we pass the length through?
+    unsigned length = FirstLetterPseudoElement::firstLetterLength(oldText);
+
+    // Construct a text fragment for the text after the first letter.
+    // This text fragment might be empty.
+    RenderTextFragment* remainingText =
+        new RenderTextFragment(nextRenderer->node() ? nextRenderer->node() : &nextRenderer->document(), oldText.impl(), length, oldText.length() - length);
+    remainingText->setFirstLetterPseudoElement(this);
+    remainingText->setIsRemainingTextRenderer();
+    remainingText->setStyle(nextRenderer->style());
+
+    if (remainingText->node())
+        remainingText->node()->setRenderer(remainingText);
+
+    m_remainingTextRenderer = remainingText;
+
+    RenderObject* nextSibling = renderer()->nextSibling();
+    renderer()->parent()->addChild(remainingText, nextSibling);
+
+    // Construct text fragment for the first letter.
+    RenderTextFragment* letter = new RenderTextFragment(&nextRenderer->document(), oldText.impl(), 0, length);
+    letter->setFirstLetterPseudoElement(this);
+    letter->setStyle(pseudoStyle);
+    renderer()->addChild(letter);
+
+    nextRenderer->destroy();
+}
+
+void FirstLetterPseudoElement::didRecalcStyle(StyleRecalcChange)
+{
+    if (!renderer())
+        return;
+
+    // The renderers inside pseudo elements are anonymous so they don't get notified of recalcStyle and must have
+    // the style propagated downward manually similar to RenderObject::propagateStyleToAnonymousChildren.
+    RenderObject* renderer = this->renderer();
+    for (RenderObject* child = renderer->nextInPreOrder(renderer); child; child = child->nextInPreOrder(renderer)) {
+        // We need to re-calculate the correct style for the first letter element
+        // and then apply that to the container and the text fragment inside.
+        if (child->style()->styleType() == FIRST_LETTER && m_remainingTextRenderer) {
+            if (RenderStyle* pseudoStyle = styleForFirstLetter(m_remainingTextRenderer->parent()))
+                child->setPseudoStyle(pseudoStyle);
+            continue;
+        }
+
+        // We only manage the style for the generated content items.
+        if (!child->isText() && !child->isQuote() && !child->isImage())
+            continue;
+
+        child->setPseudoStyle(renderer->style());
+    }
+}
+
+} // namespace blink

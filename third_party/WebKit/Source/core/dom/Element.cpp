@@ -56,6 +56,7 @@
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
@@ -66,6 +67,7 @@
 #include "core/dom/RenderTreeBuilder.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/SelectorQuery.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
 #include "core/dom/custom/CustomElement.h"
@@ -104,6 +106,7 @@
 #include "core/page/Page.h"
 #include "core/page/PointerLockController.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/compositing/RenderLayerCompositor.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -1328,6 +1331,11 @@ void Element::attach(const AttachContext& context)
     createPseudoElementIfNeeded(AFTER);
     createPseudoElementIfNeeded(BACKDROP);
 
+    // We create the first-letter element after the :before, :after and
+    // children are attached because the first letter text could come
+    // from any of them.
+    createPseudoElementIfNeeded(FIRST_LETTER);
+
     if (hasRareData() && !renderer()) {
         if (ActiveAnimations* activeAnimations = elementRareData()->activeAnimations()) {
             activeAnimations->cssAnimations().cancel();
@@ -1487,6 +1495,12 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
 
         updatePseudoElement(AFTER, change);
         updatePseudoElement(BACKDROP, change);
+
+        // If our children have changed then we need to force the first-letter
+        // checks as we don't know if they effected the first letter or not.
+        // This can be seen when a child transitions from floating to
+        // non-floating we have to take it into account for the first letter.
+        updatePseudoElement(FIRST_LETTER, childNeedsStyleRecalc() ? Force : change);
 
         clearChildNeedsStyleRecalc();
     }
@@ -2469,7 +2483,10 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
 {
     ASSERT(!needsStyleRecalc());
     PseudoElement* element = pseudoElement(pseudoId);
+
     if (element && (change == UpdatePseudoElements || element->shouldCallRecalcStyle(change))) {
+        if (pseudoId == FIRST_LETTER && updateFirstLetter(element))
+            return;
 
         // Need to clear the cached style if the PseudoElement wants a recalc so it
         // computes a new style.
@@ -2482,14 +2499,41 @@ void Element::updatePseudoElement(PseudoId pseudoId, StyleRecalcChange change)
         element->recalcStyle(change == UpdatePseudoElements ? Force : change);
 
         // Wait until our parent is not displayed or pseudoElementRendererIsNeeded
-        // is false, otherwise we could continously create and destroy PseudoElements
+        // is false, otherwise we could continuously create and destroy PseudoElements
         // when RenderObject::isChildAllowed on our parent returns false for the
         // PseudoElement's renderer for each style recalc.
         if (!renderer() || !pseudoElementRendererIsNeeded(renderer()->getCachedPseudoStyle(pseudoId)))
             elementRareData()->setPseudoElement(pseudoId, nullptr);
+    } else if (pseudoId == FIRST_LETTER && element && change >= UpdatePseudoElements && !FirstLetterPseudoElement::firstLetterTextRenderer(*element)) {
+        // This can happen if we change to a float, for example. We need to cleanup the
+        // first-letter pseudoElement and then fix the text of the original remaining
+        // text renderer.
+        // This can be seen in Test 7 of fast/css/first-letter-removed-added.html
+        elementRareData()->setPseudoElement(pseudoId, nullptr);
     } else if (change >= UpdatePseudoElements) {
         createPseudoElementIfNeeded(pseudoId);
     }
+}
+
+// If we're updating first letter, and the current first letter renderer
+// is not the same as the one we're currently using we need to re-create
+// the first letter renderer.
+bool Element::updateFirstLetter(Element* element)
+{
+    RenderObject* remainingTextRenderer = FirstLetterPseudoElement::firstLetterTextRenderer(*element);
+    if (!remainingTextRenderer || remainingTextRenderer != toFirstLetterPseudoElement(element)->remainingTextRenderer()
+        || toFirstLetterPseudoElement(element)->needsUpdate()) {
+        // We have to clear out the old first letter here because when it is
+        // disposed it will set the original text back on the remaining text
+        // renderer. If we dispose after creating the new one we will get
+        // incorrect results due to setting the first letter back.
+        if (remainingTextRenderer)
+            element->reattach();
+        else
+            elementRareData()->setPseudoElement(FIRST_LETTER, nullptr);
+        return true;
+    }
+    return false;
 }
 
 void Element::createPseudoElementIfNeeded(PseudoId pseudoId)

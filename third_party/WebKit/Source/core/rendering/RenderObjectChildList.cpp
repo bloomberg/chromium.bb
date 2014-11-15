@@ -45,14 +45,16 @@ void RenderObjectChildList::trace(Visitor* visitor)
 void RenderObjectChildList::destroyLeftoverChildren()
 {
     while (firstChild()) {
-        if (firstChild()->isListMarker() || (firstChild()->style()->styleType() == FIRST_LETTER && !firstChild()->isText())) {
-            firstChild()->remove(); // List markers are owned by their enclosing list and so don't get destroyed by this container. Similarly, first letters are destroyed by their remaining text fragment.
-        } else {
-            // Destroy any anonymous children remaining in the render tree, as well as implicit (shadow) DOM elements like those used in the engine-based text fields.
-            if (firstChild()->node())
-                firstChild()->node()->setRenderer(0);
-            firstChild()->destroy();
+        // List markers are owned by their enclosing list and so don't get destroyed by this container.
+        if (firstChild()->isListMarker()) {
+            firstChild()->remove();
+            continue;
         }
+
+        // Destroy any anonymous children remaining in the render tree, as well as implicit (shadow) DOM elements like those used in the engine-based text fields.
+        if (firstChild()->node())
+            firstChild()->node()->setRenderer(0);
+        firstChild()->destroy();
     }
 }
 

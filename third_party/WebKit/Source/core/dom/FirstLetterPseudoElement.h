@@ -1,0 +1,77 @@
+/*
+ * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
+ *           (C) 1999 Antti Koivisto (koivisto@kde.org)
+ *           (C) 2007 David Smith (catfish.man@gmail.com)
+ * Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Apple Inc. All rights reserved.
+ * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; see the file COPYING.LIB.  If not, write to
+ * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+ * Boston, MA 02110-1301, USA.
+ */
+
+#ifndef FirstLetterPseudoElement_h
+#define FirstLetterPseudoElement_h
+
+#include "core/dom/Document.h"
+#include "core/dom/PseudoElement.h"
+#include "wtf/text/WTFString.h"
+
+namespace blink {
+
+class Element;
+class RenderObject;
+class RenderTextFragment;
+
+class FirstLetterPseudoElement final : public PseudoElement {
+    WTF_MAKE_NONCOPYABLE(FirstLetterPseudoElement);
+public:
+    static PassRefPtrWillBeRawPtr<FirstLetterPseudoElement> create(Element* parent)
+    {
+        return adoptRefWillBeNoop(new FirstLetterPseudoElement(parent));
+    }
+
+    virtual ~FirstLetterPseudoElement();
+    virtual void trace(Visitor*) override;
+
+    static RenderObject* firstLetterTextRenderer(const Element&);
+    static unsigned firstLetterLength(const String&);
+
+    void setRemainingTextRenderer(RenderTextFragment* fragment) { m_remainingTextRenderer = fragment; }
+    RenderTextFragment* remainingTextRenderer() const { return m_remainingTextRenderer; }
+
+    void setNeedsUpdate();
+    bool needsUpdate() const { return m_needsUpdate; }
+
+    virtual void attach(const AttachContext& = AttachContext()) override;
+    virtual void detach(const AttachContext& = AttachContext()) override;
+
+private:
+    explicit FirstLetterPseudoElement(Element*);
+
+    virtual void didRecalcStyle(StyleRecalcChange) override;
+
+    void attachFirstLetterTextRenderers();
+    RenderStyle* styleForFirstLetter(RenderObject*);
+
+    RawPtrWillBeMember<RenderTextFragment> m_remainingTextRenderer;
+    bool m_needsUpdate;
+    bool m_isInDetach;
+};
+
+DEFINE_ELEMENT_TYPE_CASTS(FirstLetterPseudoElement, isFirstLetterPseudoElement());
+
+} // namespace blink
+
+#endif // FirstLetterPseudoElement_h

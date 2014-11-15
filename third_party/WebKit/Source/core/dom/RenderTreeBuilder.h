@@ -27,36 +27,21 @@
 #define RenderTreeBuilder_h
 
 #include "core/dom/Document.h"
+#include "core/dom/FirstLetterPseudoElement.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderingTraversal.h"
+#include "core/rendering/RenderObject.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {
 
 class ContainerNode;
-class RenderObject;
 class RenderStyle;
 
 class RenderTreeBuilder {
     STACK_ALLOCATED();
 public:
-    RenderTreeBuilder(Node* node, RenderStyle* style)
-        : m_node(node)
-        , m_renderingParent(nullptr)
-        , m_style(style)
-    {
-        ASSERT(!node->renderer());
-        ASSERT(node->needsAttach());
-        ASSERT(node->document().inStyleRecalc());
-
-        // FIXME: We should be able to ASSERT(node->inActiveDocument()) but childrenChanged is called
-        // before ChildNodeInsertionNotifier in ContainerNode's methods and some implementations
-        // will trigger a layout inside childrenChanged.
-        // Mainly HTMLTextAreaElement::childrenChanged calls HTMLTextFormControlElement::setSelectionRange
-        // which does an updateLayoutIgnorePendingStylesheets.
-
-        m_renderingParent = NodeRenderingTraversal::parent(node, &m_parentDetails);
-    }
+    RenderTreeBuilder(Node*, RenderStyle*);
 
     void createRendererForTextIfNeeded();
     void createRendererForElementIfNeeded();
@@ -68,7 +53,7 @@ private:
     RenderStyle& style() const;
 
     RawPtrWillBeMember<Node> m_node;
-    RawPtrWillBeMember<ContainerNode> m_renderingParent;
+    RawPtrWillBeMember<RenderObject> m_renderingParent;
     NodeRenderingTraversal::ParentDetails m_parentDetails;
     mutable RefPtr<RenderStyle> m_style;
 };

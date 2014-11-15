@@ -32,12 +32,9 @@
 
 namespace blink {
 
-class PseudoElement final : public Element {
+class PseudoElement : public Element {
 public:
-    static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId pseudoId)
-    {
-        return adoptRefWillBeNoop(new PseudoElement(parent, pseudoId));
-    }
+    static PassRefPtrWillBeRawPtr<PseudoElement> create(Element* parent, PseudoId);
 
     virtual PassRefPtr<RenderStyle> customStyleForRenderer() override;
     virtual void attach(const AttachContext& = AttachContext()) override;
@@ -49,11 +46,12 @@ public:
 
     static String pseudoElementNameForEvents(PseudoId);
 
-    void dispose();
+    virtual void dispose();
 
-private:
+protected:
     PseudoElement(Element*, PseudoId);
 
+private:
     virtual void didRecalcStyle(StyleRecalcChange) override;
 
     PseudoId m_pseudoId;
@@ -63,7 +61,13 @@ const QualifiedName& pseudoElementTagName();
 
 inline bool pseudoElementRendererIsNeeded(const RenderStyle* style)
 {
-    return style && style->display() != NONE && (style->styleType() == BACKDROP || style->contentData());
+    if (!style)
+        return false;
+    if (style->display() == NONE)
+        return false;
+    if (style->styleType() == FIRST_LETTER || style->styleType() == BACKDROP)
+        return true;
+    return style->contentData();
 }
 
 DEFINE_ELEMENT_TYPE_CASTS(PseudoElement, isPseudoElement());

@@ -1684,6 +1684,8 @@ static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, 
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
             if (Element* pseudo = element.pseudoElement(AFTER))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
+            if (Element* pseudo = element.pseudoElement(FIRST_LETTER))
+                traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
             if (Element* pseudo = element.pseudoElement(BACKDROP))
                 traverseTreeAndMark(indent.toString(), pseudo, markedNode1, markedLabel1, markedNode2, markedLabel2);
         }
