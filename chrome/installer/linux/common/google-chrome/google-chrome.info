@@ -27,4 +27,4 @@ FULLDESC="Google Chrome is a browser that combines a minimal design with sophist
 # TODO(mmoss) Setup a mailbox for this address
 MAINTNAME="Chrome Linux Team"
 MAINTMAIL="chromium-dev@chromium.org"
-PRODUCTURL="http://chrome.google.com/"
+PRODUCTURL="https://chrome.google.com/"

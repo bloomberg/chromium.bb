@@ -1,7 +1,7 @@
 @@include@@variables.include
 
 # Install the repository signing key (see also:
-# http://www.google.com/linuxrepositories/aboutkey.html)
+# https://www.google.com/linuxrepositories/)
 install_rpm_key() {
   # Check to see if key already exists.
   rpm -q gpg-pubkey-7fac5991-4615767f > /dev/null 2>&1

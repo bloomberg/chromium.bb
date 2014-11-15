@@ -15,7 +15,7 @@ apt_config_val() {
 }
 
 # Install the repository signing key (see also:
-# http://www.google.com/linuxrepositories/aboutkey.html)
+# https://www.google.com/linuxrepositories/)
 install_key() {
   APT_KEY="`which apt-key 2> /dev/null`"
   if [ -x "$APT_KEY" ]; then
