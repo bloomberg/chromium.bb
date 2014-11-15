@@ -185,9 +185,6 @@ public:
     bool hasVisibleNonLayerContent() const { return m_hasVisibleNonLayerContent; }
     bool hasNonCompositedChild() const { ASSERT(isAllowedToQueryCompositingState()); return m_hasNonCompositedChild; }
 
-    bool usedTransparency() const { return m_usedTransparency; }
-    void setUsedTransparency(bool usedTransparency) { m_usedTransparency = usedTransparency; }
-
     // Gets the nearest enclosing positioned ancestor layer (also includes
     // the <html> layer and the root layer).
     RenderLayer* enclosingPositionedAncestor() const;
@@ -606,10 +603,6 @@ private:
     mutable unsigned m_hasSelfPaintingLayerDescendantDirty : 1;
 
     const unsigned m_isRootLayer : 1;
-
-    unsigned m_usedTransparency : 1; // Tracks whether we need to close a transparent layer, i.e., whether
-                                 // we ended up painting this layer or any descendants (and therefore need to
-                                 // blend).
 
     unsigned m_visibleContentStatusDirty : 1;
     unsigned m_hasVisibleContent : 1;

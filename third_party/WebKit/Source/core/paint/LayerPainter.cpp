@@ -75,17 +75,8 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
         if (!layerTransform.isInvertible())
             return;
 
-        // If we have a transparency layer enclosing us and we are the root of a transform, then we need to establish the transparency
-        // layer from the parent now, assuming there is a parent
-        if (paintFlags & PaintLayerHaveTransparency) {
-            // FIXME: can we get rid of this? It would mean transparency starts after clipping in these cases.
-            if (m_renderLayer.parent())
-                LayerPainter(*m_renderLayer.parent()).beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
-            else
-                beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
-        }
-
         if (m_renderLayer.enclosingPaginationLayer()) {
+            // FIXME: unify this one-off path with the code below.
             paintTransformedLayerIntoFragments(context, paintingInfo, paintFlags);
             return;
         }
@@ -116,39 +107,47 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
     paintLayerContentsAndReflection(context, paintingInfo, paintFlags);
 }
 
-bool LayerPainter::shouldCreateTransparencyLayerForBlendMode()
-{
-    return !m_renderLayer.renderer()->isDocumentElement() && m_renderLayer.stackingNode()->isStackingContext() && m_renderLayer.hasNonIsolatedDescendantWithBlendMode();
-}
+class TransparencyLayerHelper {
+public:
+    TransparencyLayerHelper(GraphicsContext* context, RenderLayer& renderLayer, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
+        : m_transparencyLayerInProgress(false)
+        , m_context(context)
+    {
+        // Blending operations must be performed only with the nearest ancestor stacking context.
+        // Note that there is no need to create a transparency layer if we're painting the root.
+        // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
+        bool shouldUseTransparencyLayerForBlendMode = !renderLayer.renderer()->isDocumentElement() && renderLayer.stackingNode()->isStackingContext() && renderLayer.hasNonIsolatedDescendantWithBlendMode();
+        if (!shouldUseTransparencyLayerForBlendMode && !renderLayer.paintsWithTransparency(paintBehavior))
+            return;
 
-void LayerPainter::beginTransparencyLayers(GraphicsContext* context, const RenderLayer* rootLayer, const LayoutRect& paintDirtyRect, const LayoutSize& subPixelAccumulation, PaintBehavior paintBehavior)
-{
-    // Blending operations must be performed only with the nearest ancestor stacking context.
-    // Note that there is no need to create a transparency layer if we're painting the root.
-    // FIXME: this should be unified further into RenderLayer::paintsWithTransparency().
-    if (!m_renderLayer.paintsWithTransparency(paintBehavior) && !shouldCreateTransparencyLayerForBlendMode())
-        return;
+        context->save();
+        LayoutRect clipRect = renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
+        context->clip(clipRect);
 
-    // FIXME: refactor to remove this.
-    if (m_renderLayer.usedTransparency())
-        return;
+        if (renderLayer.renderer()->hasBlendMode())
+            context->setCompositeOperation(context->compositeOperation(), renderLayer.renderer()->style()->blendMode());
 
-    m_renderLayer.setUsedTransparency(true);
-    context->save();
-    LayoutRect clipRect = m_renderLayer.paintingExtent(rootLayer, paintDirtyRect, subPixelAccumulation, paintBehavior);
-    context->clip(clipRect);
+        context->beginTransparencyLayer(renderLayer.renderer()->opacity());
 
-    if (m_renderLayer.renderer()->hasBlendMode())
-        context->setCompositeOperation(context->compositeOperation(), m_renderLayer.renderer()->style()->blendMode());
-
-    context->beginTransparencyLayer(m_renderLayer.renderer()->opacity());
-
-    if (m_renderLayer.renderer()->hasBlendMode())
-        context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
+        if (renderLayer.renderer()->hasBlendMode())
+            context->setCompositeOperation(context->compositeOperation(), WebBlendModeNormal);
 #ifdef REVEAL_TRANSPARENCY_LAYERS
-    context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
+        context->fillRect(clipRect, Color(0.0f, 0.0f, 0.5f, 0.2f));
 #endif
-}
+        m_transparencyLayerInProgress = true;
+    }
+
+    ~TransparencyLayerHelper()
+    {
+        if (m_transparencyLayerInProgress) {
+            m_context->endLayer();
+            m_context->restore();
+        }
+    }
+private:
+    bool m_transparencyLayerInProgress;
+    GraphicsContext* m_context;
+};
 
 void LayerPainter::paintLayerContentsAndReflection(GraphicsContext* context, const LayerPaintingInfo& paintingInfo, PaintLayerFlags paintFlags)
 {
@@ -270,9 +269,10 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
     LayoutRect rootRelativeBounds;
     bool rootRelativeBoundsComputed = false;
 
+    // These helpers output clip and transparency layers using a RAII pattern. Stack-allocated-varibles are destructed in the reverse order of construction,
+    // so they are nested properly.
     ClipPathHelper clipPathHelper(context, m_renderLayer, paintingInfo, rootRelativeBounds, rootRelativeBoundsComputed, offsetFromRoot, paintFlags);
-
-    beginTransparencyLayers(context, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
+    TransparencyLayerHelper transparencyLayerHelper(context, m_renderLayer, paintingInfo.rootLayer, paintingInfo.paintDirtyRect, paintingInfo.subPixelAccumulation, paintingInfo.paintBehavior);
 
     LayerPaintingInfo localPaintingInfo(paintingInfo);
 
@@ -334,25 +334,16 @@ void LayerPainter::paintLayerContents(GraphicsContext* context, const LayerPaint
 
         if (shouldPaintOverlayScrollbars)
             paintOverflowControlsForFragments(layerFragments, context, localPaintingInfo, paintFlags);
-    } // Filter painter block
+    } // FilterPainter block
 
     bool shouldPaintMask = (paintFlags & PaintLayerPaintingCompositingMaskPhase) && shouldPaintContent && m_renderLayer.renderer()->hasMask() && !selectionOnly;
     bool shouldPaintClippingMask = (paintFlags & PaintLayerPaintingChildClippingMaskPhase) && shouldPaintContent && !selectionOnly;
 
     if (shouldPaintMask)
         paintMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer, paintFlags);
-
     if (shouldPaintClippingMask) {
         // Paint the border radius mask for the fragments.
         paintChildClippingMaskForFragments(layerFragments, context, localPaintingInfo, paintingRootForRenderer, paintFlags);
-    }
-
-    // End our transparency layer
-    if (((paintFlags & PaintLayerHaveTransparency) || shouldCreateTransparencyLayerForBlendMode()) && m_renderLayer.usedTransparency()
-        && !(m_renderLayer.reflectionInfo() && m_renderLayer.reflectionInfo()->isPaintingInsideReflection())) {
-        context->endLayer();
-        context->restore();
-        m_renderLayer.setUsedTransparency(false);
     }
 }
 

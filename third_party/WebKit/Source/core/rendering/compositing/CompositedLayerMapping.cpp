@@ -2114,8 +2114,6 @@ void CompositedLayerMapping::doPaintTask(const GraphicsLayerPaintInfo& paintInfo
         context->restore();
     }
 
-    ASSERT(!paintInfo.renderLayer->usedTransparency());
-
     // Manually restore the context to its original state by applying the opposite translation.
     context->translate(offset.width(), offset.height());
 }
