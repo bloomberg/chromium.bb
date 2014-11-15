@@ -26,5 +26,7 @@ function runTest()
     setTimeout(testDone, 500);
 }
 
-setTimeout(runTest, 0);
+window.onload = function() {
+    setTimeout(runTest, 0);
+}
 </script>
