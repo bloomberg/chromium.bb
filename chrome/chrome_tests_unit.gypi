@@ -2884,22 +2884,34 @@
             'android_manifest_path': 'test/android/unit_tests_apk/AndroidManifest.xml',
             'conditions': [
               ['v8_use_external_startup_data==1', {
+                'asset_location': '<(PRODUCT_DIR)/unit_tests_apk/assets',
                 'additional_input_paths': [
+                  '<(PRODUCT_DIR)/unit_tests_apk/assets/natives_blob.bin',
+                  '<(PRODUCT_DIR)/unit_tests_apk/assets/snapshot_blob.bin',
+                ],
+                'inputs': [
                   '<(PRODUCT_DIR)/natives_blob.bin',
                   '<(PRODUCT_DIR)/snapshot_blob.bin',
-                ],
-                'copies': [
-                  {
-                    'destination': '<(PRODUCT_DIR)/unit_tests_apk/assets',
-                    'files': [
-                      '<(PRODUCT_DIR)/natives_blob.bin',
-                      '<(PRODUCT_DIR)/snapshot_blob.bin',
-                    ],
-                  },
                 ],
               }],
             ],
           },
+          'conditions': [
+            ['v8_use_external_startup_data==1', {
+              'dependencies': [
+                '../v8/tools/gyp/v8.gyp:v8_external_snapshot',
+              ],
+              'copies': [
+                {
+                'destination': '<(asset_location)',
+                  'files': [
+                    '<(PRODUCT_DIR)/natives_blob.bin',
+                    '<(PRODUCT_DIR)/snapshot_blob.bin',
+                  ],
+                },
+              ],
+            }],
+          ],
           'includes': [ '../build/apk_test.gypi' ],
         },
       ],
