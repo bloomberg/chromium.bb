@@ -78,6 +78,7 @@
                afterDelay:0];
   } else {
     if (trackingArea_.get()) {
+      self.hoverState = kHoverStateNone;
       [self removeTrackingArea:trackingArea_.get()];
       trackingArea_.reset(nil);
     }
