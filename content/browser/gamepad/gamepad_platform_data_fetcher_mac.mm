@@ -155,7 +155,7 @@ void GamepadPlatformDataFetcherMac::ValueChangedCallback(void* context,
   InstanceFromContext(context)->ValueChanged(ref);
 }
 
-void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
+bool GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
                                                       size_t slot) {
   WebGamepad& pad = data_.items[slot];
   AssociatedData& associated = associated_[slot];
@@ -224,6 +224,8 @@ void GamepadPlatformDataFetcherMac::AddButtonsAndAxes(NSArray* elements,
         break;
     }
   }
+
+  return (pad.axesLength > 0 || pad.buttonsLength > 0);
 }
 
 size_t GamepadPlatformDataFetcherMac::GetEmptySlot() {
@@ -281,6 +283,9 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
   if (slot == WebGamepads::itemsLengthCap)
     return;
 
+  // Clear some state that may have been left behind by previous gamepads
+  memset(&associated_[slot], 0, sizeof(AssociatedData));
+
   NSNumber* vendor_id = CFToNSCast(CFCastStrict<CFNumberRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDVendorIDKey))));
   NSNumber* product_id = CFToNSCast(CFCastStrict<CFNumberRef>(
@@ -318,7 +323,9 @@ void GamepadPlatformDataFetcherMac::DeviceAdd(IOHIDDeviceRef device) {
 
   base::ScopedCFTypeRef<CFArrayRef> elements(
       IOHIDDeviceCopyMatchingElements(device, NULL, kIOHIDOptionsTypeNone));
-  AddButtonsAndAxes(CFToNSCast(elements), slot);
+
+  if (!AddButtonsAndAxes(CFToNSCast(elements), slot))
+    return;
 
   associated_[slot].hid.device_ref = device;
   data_.items[slot].connected = true;

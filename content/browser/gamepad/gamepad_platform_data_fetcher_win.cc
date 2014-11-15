@@ -123,6 +123,8 @@ void GamepadPlatformDataFetcherWin::EnumerateDevices(
         raw_input_fetcher_->EnumerateDevices();
     for (size_t i = 0; i < raw_inputs.size(); ++i) {
       RawGamepadInfo* gamepad = raw_inputs[i];
+      if (gamepad->buttons_length == 0 && gamepad->axes_length == 0)
+        continue;
       if (HasRawInputGamepad(gamepad->handle))
         continue;
       int pad_index = FirstAvailableGamepadId();
