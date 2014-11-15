@@ -224,7 +224,7 @@ ContentBrowserClient::CheckDesktopNotificationPermission(
     const GURL& source_origin,
     ResourceContext* context,
     int render_process_id) {
-  return blink::WebNotificationPermissionAllowed;
+  return blink::WebNotificationPermissionDenied;
 }
 
 void ContentBrowserClient::RequestPermission(

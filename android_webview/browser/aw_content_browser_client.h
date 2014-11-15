@@ -108,17 +108,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
       int render_frame_id,
       net::SSLCertRequestInfo* cert_request_info,
       const base::Callback<void(net::X509Certificate*)>& callback) override;
-  virtual blink::WebNotificationPermission
-      CheckDesktopNotificationPermission(
-          const GURL& source_url,
-          content::ResourceContext* context,
-          int render_process_id) override;
-  virtual void ShowDesktopNotification(
-      const content::ShowDesktopNotificationHostMsgParams& params,
-      content::BrowserContext* browser_context,
-      int render_process_id,
-      scoped_ptr<content::DesktopNotificationDelegate> delegate,
-      base::Closure* cancel_callback) override;
   virtual void RequestPermission(
       content::PermissionType permission,
       content::WebContents* web_contents,

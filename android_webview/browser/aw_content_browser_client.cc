@@ -375,24 +375,6 @@ void AwContentBrowserClient::SelectClientCertificate(
   }
 }
 
-blink::WebNotificationPermission
-    AwContentBrowserClient::CheckDesktopNotificationPermission(
-        const GURL& source_url,
-        content::ResourceContext* context,
-        int render_process_id) {
-  // Android WebView does not support notifications, so return Denied here.
-  return blink::WebNotificationPermissionDenied;
-}
-
-void AwContentBrowserClient::ShowDesktopNotification(
-    const content::ShowDesktopNotificationHostMsgParams& params,
-    content::BrowserContext* browser_context,
-    int render_process_id,
-    scoped_ptr<content::DesktopNotificationDelegate> delegate,
-    base::Closure* cancel_callback) {
-  NOTREACHED() << "Android WebView does not support desktop notifications.";
-}
-
 void AwContentBrowserClient::RequestPermission(
     content::PermissionType permission,
     content::WebContents* web_contents,
