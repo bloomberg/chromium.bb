@@ -22,10 +22,6 @@
 #include "base/win/windows_version.h"
 #endif
 
-#if defined(OS_WIN) && defined(USE_ASH)
-#include "chrome/test/base/test_switches.h"
-#endif
-
 namespace extensions {
 
 namespace {
@@ -77,12 +73,6 @@ class TabCaptureApiPixelTest : public TabCaptureApiTest {
 };
 
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(::switches::kAshBrowserTests))
-    return;
-#endif
-
 #if defined(OS_WIN)
   // TODO(justinlin): Disabled for WinXP due to timeout issues.
   if (base::win::GetVersion() < base::win::VERSION_VISTA) {
