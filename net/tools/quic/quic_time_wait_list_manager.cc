@@ -28,7 +28,7 @@ namespace tools {
 
 namespace {
 
-// Time period for which the connection_id should live in time wait state..
+// Time period for which the connection_id should live in time wait state.
 const int kTimeWaitSeconds = 5;
 
 }  // namespace
@@ -120,7 +120,9 @@ void QuicTimeWaitListManager::AddConnectionIdToTimeWait(
     delete it->second.close_packet;
     connection_id_map_.erase(it);
   }
-  ConnectionIdData data(num_packets, version, clock_.ApproximateNow(),
+  ConnectionIdData data(num_packets,
+                        version,
+                        clock_.ApproximateNow(),
                         close_packet);
   connection_id_map_.insert(make_pair(connection_id, data));
 }
@@ -166,12 +168,12 @@ void QuicTimeWaitListManager::ProcessPacket(
     return;
   }
   if (it->second.close_packet) {
-     QueuedPacket* queued_packet =
-         new QueuedPacket(server_address,
-                          client_address,
-                          it->second.close_packet->Clone());
-     // Takes ownership of the packet.
-     SendOrQueuePacket(queued_packet);
+    QueuedPacket* queued_packet =
+        new QueuedPacket(server_address,
+                         client_address,
+                         it->second.close_packet->Clone());
+    // Takes ownership of the packet.
+    SendOrQueuePacket(queued_packet);
   } else {
     SendPublicReset(server_address,
                     client_address,

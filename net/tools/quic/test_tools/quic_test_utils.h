@@ -86,10 +86,12 @@ class MockConnection : public QuicConnection {
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,
                               const QuicEncryptedPacket& packet) {
-    return QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
+    QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
-  virtual bool OnProtocolVersionMismatch(QuicVersion version) { return false; }
+  virtual bool OnProtocolVersionMismatch(QuicVersion version) override {
+    return false;
+  }
 
  private:
   scoped_ptr<QuicConnectionHelperInterface> helper_;

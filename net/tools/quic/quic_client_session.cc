@@ -25,18 +25,16 @@ QuicClientSession::~QuicClientSession() {
 void QuicClientSession::InitializeSession(
     const QuicServerId& server_id,
     QuicCryptoClientConfig* crypto_config) {
-  QuicClientSessionBase::InitializeSession();
   crypto_stream_.reset(
       new QuicCryptoClientStream(server_id, this, nullptr, crypto_config));
+  QuicClientSessionBase::InitializeSession();
 }
 
 void QuicClientSession::OnProofValid(
-    const QuicCryptoClientConfig::CachedState& /*cached*/) {
-}
+    const QuicCryptoClientConfig::CachedState& /*cached*/) {}
 
 void QuicClientSession::OnProofVerifyDetailsAvailable(
-    const ProofVerifyDetails& /*verify_details*/) {
-}
+    const ProofVerifyDetails& /*verify_details*/) {}
 
 QuicSpdyClientStream* QuicClientSession::CreateOutgoingDataStream() {
   if (!crypto_stream_->encryption_established()) {
