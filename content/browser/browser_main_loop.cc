@@ -231,16 +231,6 @@ void OnStoppedStartupTracing(const base::FilePath& trace_file) {
   VLOG(0) << "Completed startup tracing to " << trace_file.value();
 }
 
-#if defined(USE_AURA)
-bool ShouldInitializeBrowserGpuChannelAndTransportSurface() {
-  return true;
-}
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-bool ShouldInitializeBrowserGpuChannelAndTransportSurface() {
-  return IsDelegatedRendererEnabled();
-}
-#endif
-
 // Disable optimizations for this block of functions so the compiler doesn't
 // merge them all together. This makes it possible to tell what thread was
 // unresponsive by inspecting the callstack.
@@ -809,7 +799,7 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 
 #if defined(USE_AURA) || defined(OS_MACOSX)
-  if (ShouldInitializeBrowserGpuChannelAndTransportSurface()) {
+  {
     TRACE_EVENT0("shutdown",
                  "BrowserMainLoop::Subsystem:ImageTransportFactory");
     ImageTransportFactory::Terminate();
@@ -1006,19 +996,17 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;
 #if defined(USE_AURA) || defined(OS_MACOSX)
-  if (ShouldInitializeBrowserGpuChannelAndTransportSurface()) {
-    established_gpu_channel = true;
-    if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-      established_gpu_channel = always_uses_gpu = false;
-    }
-    BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-    ImageTransportFactory::Initialize();
-#if defined(USE_AURA)
-    if (aura::Env::GetInstance()) {
-      aura::Env::GetInstance()->set_context_factory(GetContextFactory());
-    }
-#endif
+  established_gpu_channel = true;
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
+    established_gpu_channel = always_uses_gpu = false;
   }
+  BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
+  ImageTransportFactory::Initialize();
+#if defined(USE_AURA)
+  if (aura::Env::GetInstance()) {
+    aura::Env::GetInstance()->set_context_factory(GetContextFactory());
+  }
+#endif
 #elif defined(OS_ANDROID)
   established_gpu_channel = true;
   BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
