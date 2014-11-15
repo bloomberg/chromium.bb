@@ -76,7 +76,7 @@ static_library("libusb") {
     ]
   }
 
-  if (is_linux || is_android) {
+  if (is_linux) {
     defines += [
       "HAVE_LIBUDEV=1",
       "OS_LINUX=1",
