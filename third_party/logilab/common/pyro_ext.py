@@ -118,7 +118,7 @@ def ns_unregister(nsid, defaultnsgroup=_MARKER, nshost=None):
     nsgroup, nsid = ns_group_and_id(nsid, defaultnsgroup)
     try:
         nsd = locate_ns(nshost)
-    except errors.PyroError, ex:
+    except errors.PyroError as ex:
         # name server not responding
         _LOGGER.error('can\'t locate pyro name server: %s', ex)
     else:
@@ -159,7 +159,7 @@ def ns_get_proxy(nsid, defaultnsgroup=_MARKER, nshost=None):
     try:
         nsd = locate_ns(nshost)
         pyrouri = nsd.resolve('%s.%s' % (nsgroup, nsid))
-    except errors.ProtocolError, ex:
+    except errors.ProtocolError as ex:
         raise errors.PyroError(
             'Could not connect to the Pyro name server (host: %s)' % nshost)
     except errors.NamingError:

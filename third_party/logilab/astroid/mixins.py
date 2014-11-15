@@ -1,39 +1,25 @@
-# This program is free software; you can redistribute it and/or modify it under
-# the terms of the GNU Lesser General Public License as published by the Free Software
-# Foundation; either version 2 of the License, or (at your option) any later
-# version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License along with
-# this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-# copyright 2003-2010 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
-# copyright 2003-2010 Sylvain Thenault, all rights reserved.
-# contact mailto:thenault@gmail.com
 #
-# This file is part of logilab-astng.
+# This file is part of astroid.
 #
-# logilab-astng is free software: you can redistribute it and/or modify it
+# astroid is free software: you can redistribute it and/or modify it
 # under the terms of the GNU Lesser General Public License as published by the
 # Free Software Foundation, either version 2.1 of the License, or (at your
 # option) any later version.
 #
-# logilab-astng is distributed in the hope that it will be useful, but
+# astroid is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
 # for more details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-astng. If not, see <http://www.gnu.org/licenses/>.
+# with astroid. If not, see <http://www.gnu.org/licenses/>.
 """This module contains some mixins for the different nodes.
 """
 
-from logilab.astng.exceptions import (ASTNGBuildingException, InferenceError,
-                                      NotFoundError)
+from astroid.exceptions import (AstroidBuildingException, InferenceError,
+                                NotFoundError)
 
 
 class BlockRangeMixIn(object):
@@ -54,6 +40,7 @@ class BlockRangeMixIn(object):
                 return lineno, orelse[-1].tolineno
             return lineno, orelse[0].fromlineno - 1
         return lineno, last or self.tolineno
+
 
 class FilterStmtsMixin(object):
     """Mixin for statement filtering and assignment type"""
@@ -92,14 +79,13 @@ class ParentAssignTypeMixin(AssignTypeMixin):
         return self.parent.ass_type()
 
 
-
 class FromImportMixIn(FilterStmtsMixin):
     """MixIn for From and Import Nodes"""
 
     def _infer_name(self, frame, name):
         return name
 
-    def do_import_module(self, modname):
+    def do_import_module(self, modname=None):
         """return the ast for a module whose name is <modname> imported by <self>
         """
         # handle special case where we are on a package node importing a module
@@ -108,6 +94,8 @@ class FromImportMixIn(FilterStmtsMixin):
         # XXX: no more needed ?
         mymodule = self.root()
         level = getattr(self, 'level', None) # Import as no level
+        if modname is None:
+            modname = self.modname
         # XXX we should investigate deeper if we really want to check
         # importing itself: modname and mymodule.name be relative or absolute
         if mymodule.relative_to_absolute_name(modname, level) == mymodule.name:
@@ -115,7 +103,7 @@ class FromImportMixIn(FilterStmtsMixin):
             return mymodule
         try:
             return mymodule.import_module(modname, level=level)
-        except ASTNGBuildingException:
+        except AstroidBuildingException:
             raise InferenceError(modname)
         except SyntaxError, ex:
             raise InferenceError(str(ex))
@@ -131,6 +119,4 @@ class FromImportMixIn(FilterStmtsMixin):
             if asname == _asname:
                 return name
         raise NotFoundError(asname)
-
-
 

@@ -1,21 +1,20 @@
-# -*- coding: utf-8 -*-
-# copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2014 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
-# This file is part of logilab-common.
+# This file is part of astroid.
 #
-# logilab-common is free software: you can redistribute it and/or modify it under
+# astroid is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
 # Software Foundation, either version 2.1 of the License, or (at your option) any
 # later version.
 #
-# logilab-common is distributed in the hope that it will be useful, but WITHOUT
+# astroid is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 # FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more
 # details.
 #
 # You should have received a copy of the GNU Lesser General Public License along
-# with logilab-common.  If not, see <http://www.gnu.org/licenses/>.
+# with astroid.  If not, see <http://www.gnu.org/licenses/>.
 """Python modules manipulation utility functions.
 
 :type PY_SOURCE_EXTS: tuple(str)
@@ -27,17 +26,16 @@
 :type BUILTIN_MODULES: dict
 :var BUILTIN_MODULES: dictionary with builtin module names has key
 """
+from __future__ import with_statement
 
 __docformat__ = "restructuredtext en"
 
 import sys
 import os
-from os.path import splitext, join, abspath, isdir, dirname, exists, basename
+from os.path import splitext, join, abspath, isdir, dirname, exists
 from imp import find_module, load_module, C_BUILTIN, PY_COMPILED, PKG_DIRECTORY
-from distutils.sysconfig import get_config_var, get_python_lib, get_python_version
+from distutils.sysconfig import get_python_lib
 from distutils.errors import DistutilsPlatformError
-
-from six.moves import range
 
 try:
     import zipimport
@@ -46,7 +44,7 @@ except ImportError:
 
 ZIPFILE = object()
 
-from logilab.common import STD_BLACKLIST, _handle_blacklist
+from logilab.common import _handle_blacklist
 
 # Notes about STD_LIB_DIR
 # Consider arch-specific installation for STD_LIB_DIR definition
@@ -78,27 +76,6 @@ class NoSourceFile(Exception):
     """exception raised when we are not able to get a python
     source file for a precompiled file
     """
-
-class LazyObject(object):
-    def __init__(self, module, obj):
-        self.module = module
-        self.obj = obj
-        self._imported = None
-
-    def _getobj(self):
-        if self._imported is None:
-           self._imported = getattr(load_module_from_name(self.module),
-                                    self.obj)
-        return self._imported
-
-    def __getattribute__(self, attr):
-        try:
-            return super(LazyObject, self).__getattribute__(attr)
-        except AttributeError as ex:
-            return getattr(self._getobj(), attr)
-
-    def __call__(self, *args, **kwargs):
-        return self._getobj()(*args, **kwargs)
 
 
 def load_module_from_name(dotted_name, path=None, use_sys=1):
@@ -171,8 +148,8 @@ def load_module_from_modpath(parts, path=None, use_sys=1):
             setattr(prevmodule, part, module)
         _file = getattr(module, '__file__', '')
         if not _file and len(modpath) != len(parts):
-            raise ImportError('no module in %s' % '.'.join(parts[len(modpath):]) )
-        path = [dirname( _file )]
+            raise ImportError('no module in %s' % '.'.join(parts[len(modpath):]))
+        path = [dirname(_file)]
         prevmodule = module
     return module
 
@@ -235,14 +212,14 @@ def modpath_from_file(filename, extrapath=None):
     base = splitext(abspath(filename))[0]
     if extrapath is not None:
         for path_ in extrapath:
-            path = abspath(path_)
+            path = _abspath(path_)
             if path and base[:len(path)] == path:
                 submodpath = [pkg for pkg in base[len(path):].split(os.sep)
                               if pkg]
                 if _check_init(path, submodpath[:-1]):
                     return extrapath[path_].split('.') + submodpath
     for path in sys.path:
-        path = abspath(path)
+        path = _abspath(path)
         if path and base.startswith(path):
             modpath = [pkg for pkg in base[len(path):].split(os.sep) if pkg]
             if _check_init(path, modpath[:-1]):
@@ -349,8 +326,8 @@ def get_module_part(dotted_name, context_file=None):
         context_file = dirname(context_file)
     for i in range(starti, len(parts)):
         try:
-            file_from_modpath(parts[starti:i+1],
-                    path=path, context_file=context_file)
+            file_from_modpath(parts[starti:i+1], path=path,
+                              context_file=context_file)
         except ImportError:
             if not i >= max(1, len(parts) - 2):
                 raise
@@ -358,47 +335,7 @@ def get_module_part(dotted_name, context_file=None):
     return dotted_name
 
 
-def get_modules(package, src_directory, blacklist=STD_BLACKLIST):
-    """given a package directory return a list of all available python
-    modules in the package and its subpackages
-
-    :type package: str
-    :param package: the python name for the package
-
-    :type src_directory: str
-    :param src_directory:
-      path of the directory corresponding to the package
-
-    :type blacklist: list or tuple
-    :param blacklist:
-      optional list of files or directory to ignore, default to
-      the value of `logilab.common.STD_BLACKLIST`
-
-    :rtype: list
-    :return:
-      the list of all available python modules in the package and its
-      subpackages
-    """
-    modules = []
-    for directory, dirnames, filenames in os.walk(src_directory):
-        _handle_blacklist(blacklist, dirnames, filenames)
-        # check for __init__.py
-        if not '__init__.py' in filenames:
-            dirnames[:] = ()
-            continue
-        if directory != src_directory:
-            dir_package = directory[len(src_directory):].replace(os.sep, '.')
-            modules.append(package + dir_package)
-        for filename in filenames:
-            if _is_python_file(filename) and filename != '__init__.py':
-                src = join(directory, filename)
-                module = package + src[len(src_directory):-3]
-                modules.append(module.replace(os.sep, '.'))
-    return modules
-
-
-
-def get_module_files(src_directory, blacklist=STD_BLACKLIST):
+def get_module_files(src_directory, blacklist):
     """given a package directory return a list of all available python
     module's files in the package and its subpackages
 
@@ -454,27 +391,12 @@ def get_source_file(filename, include_no_ext=False):
     raise NoSourceFile(filename)
 
 
-def cleanup_sys_modules(directories):
-    """remove submodules of `directories` from `sys.modules`"""
-    cleaned = []
-    for modname, module in list(sys.modules.items()):
-        modfile = getattr(module, '__file__', None)
-        if modfile:
-            for directory in directories:
-                if modfile.startswith(directory):
-                    cleaned.append(modname)
-                    del sys.modules[modname]
-                    break
-    return cleaned
-
-
 def is_python_source(filename):
     """
     rtype: bool
     return: True if the filename is a python source file
     """
     return splitext(filename)[1][1:] in PY_SOURCE_EXTS
-
 
 
 def is_standard_module(modname, std_path=(STD_LIB_DIR,)):
@@ -497,20 +419,20 @@ def is_standard_module(modname, std_path=(STD_LIB_DIR,)):
     modname = modname.split('.')[0]
     try:
         filename = file_from_modpath([modname])
-    except ImportError as ex:
+    except ImportError:
         # import failed, i'm probably not so wrong by supposing it's
         # not standard...
-        return 0
+        return False
     # modules which are not living in a file are considered standard
     # (sys and __builtin__ for instance)
     if filename is None:
-        return 1
+        return True
     filename = abspath(filename)
     if filename.startswith(EXT_LIB_DIR):
-        return 0
+        return False
     for path in std_path:
-        if filename.startswith(abspath(path)):
-            return 1
+        if filename.startswith(_abspath(path)):
+            return True
     return False
 
 
@@ -574,11 +496,25 @@ def _search_zip(modpath, pic):
     for filepath, importer in pic.items():
         if importer is not None:
             if importer.find_module(modpath[0]):
-                if not importer.find_module('/'.join(modpath)):
+                if not importer.find_module(os.path.sep.join(modpath)):
                     raise ImportError('No module named %s in %s/%s' % (
                         '.'.join(modpath[1:]), filepath, modpath))
-                return ZIPFILE, abspath(filepath) + '/' + '/'.join(modpath), filepath
+                return ZIPFILE, abspath(filepath) + os.path.sep + os.path.sep.join(modpath), filepath
     raise ImportError('No module named %s' % '.'.join(modpath))
+
+
+def _abspath(path, _abspathcache={}): #pylint: disable=dangerous-default-value
+    """abspath with caching"""
+    # _module_file calls abspath on every path in sys.path every time it's
+    # called; on a larger codebase this easily adds up to half a second just
+    # assembling path components. This cache alleviates that.
+    try:
+        return _abspathcache[path]
+    except KeyError:
+        if not path: # don't cache result for ''
+            return abspath(path)
+        _abspathcache[path] = abspath(path)
+        return _abspathcache[path]
 
 try:
     import pkg_resources
@@ -616,10 +552,7 @@ def _module_file(modpath, path=None):
     except AttributeError:
         checkeggs = False
     # pkg_resources support (aka setuptools namespace packages)
-    if (pkg_resources is not None
-            and modpath[0] in pkg_resources._namespace_packages
-            and modpath[0] in sys.modules
-            and len(modpath) > 1):
+    if pkg_resources is not None and modpath[0] in pkg_resources._namespace_packages and len(modpath) > 1:
         # setuptools has added into sys.modules a module object with proper
         # __path__, get back information from there
         module = sys.modules[modpath.pop(0)]
@@ -644,7 +577,7 @@ def _module_file(modpath, path=None):
             raise
         else:
             if checkeggs and mp_filename:
-                fullabspath = [abspath(x) for x in _path]
+                fullabspath = [_abspath(x) for x in _path]
                 try:
                     pathindex = fullabspath.index(dirname(abspath(mp_filename)))
                     emtype, emp_filename, zippath = _search_zip(modpath, pic)

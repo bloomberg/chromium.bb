@@ -1,3 +1,4 @@
+# Copyright (c) 2003-2013 LOGILAB S.A. (Paris, FRANCE).
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation; either version 2 of the License, or (at your option) any later
@@ -9,14 +10,13 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-""" Copyright (c) 2003-2006 LOGILAB S.A. (Paris, FRANCE).
- http://www.logilab.fr/ -- mailto:contact@logilab.fr
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+"""utilities for Pylint configuration :
 
-  utilities for PyLint configuration :
-   _ pylintrc
-   _ pylint.d (PYLINT_HOME)
+* pylintrc
+* pylint.d (PYLINTHOME)
 """
+from __future__ import with_statement
 
 import pickle
 import os
@@ -34,12 +34,6 @@ elif USER_HOME == '~':
     PYLINT_HOME = ".pylint.d"
 else:
     PYLINT_HOME = join(USER_HOME, '.pylint.d')
-        
-if not exists(PYLINT_HOME):
-    try:
-        os.mkdir(PYLINT_HOME)
-    except OSError:
-        print >> sys.stderr, 'Unable to create directory %s' % PYLINT_HOME
 
 def get_pdata_path(base_name, recurs):
     """return the path of the file which should contain old search data for the
@@ -47,29 +41,36 @@ def get_pdata_path(base_name, recurs):
     """
     base_name = base_name.replace(os.sep, '_')
     return join(PYLINT_HOME, "%s%s%s"%(base_name, recurs, '.stats'))
-    
+
 def load_results(base):
     """try to unpickle and return data from file if it exists and is not
     corrupted
-    
+
     return an empty dictionary if it doesn't exists
     """
-    data_file = get_pdata_path(base, 1)        
+    data_file = get_pdata_path(base, 1)
     try:
-        return pickle.load(open(data_file))
+        with open(data_file, _PICK_LOAD) as stream:
+            return pickle.load(stream)
     except:
         return {}
 
 if sys.version_info < (3, 0):
-    _PICK_MOD = 'w'
+    _PICK_DUMP, _PICK_LOAD = 'w', 'r'
 else:
-    _PICK_MOD = 'wb'
+    _PICK_DUMP, _PICK_LOAD = 'wb', 'rb'
 
 def save_results(results, base):
     """pickle results"""
+    if not exists(PYLINT_HOME):
+        try:
+            os.mkdir(PYLINT_HOME)
+        except OSError:
+            print >> sys.stderr, 'Unable to create directory %s' % PYLINT_HOME
     data_file = get_pdata_path(base, 1)
     try:
-        pickle.dump(results, open(data_file, _PICK_MOD))
+        with open(data_file, _PICK_DUMP) as stream:
+            pickle.dump(results, stream)
     except (IOError, OSError), ex:
         print >> sys.stderr, 'Unable to create file %s: %s' % (data_file, ex)
 
@@ -96,6 +97,8 @@ def find_pylintrc():
             pylintrc = ".pylintrc"
         else:
             pylintrc = join(user_home, '.pylintrc')
+            if not isfile(pylintrc):
+                pylintrc = join(user_home, '.config', 'pylintrc')
     if not isfile(pylintrc):
         if isfile('/etc/pylintrc'):
             pylintrc = '/etc/pylintrc'
@@ -106,14 +109,14 @@ def find_pylintrc():
 PYLINTRC = find_pylintrc()
 
 ENV_HELP = '''
-The following environment variables are used :                                 
-    * PYLINTHOME                                                               
-    path to the directory where data of persistent run will be stored. If not
-found, it defaults to ~/.pylint.d/ or .pylint.d (in the current working
-directory).
-    * PYLINTRC                                                                 
-    path to the configuration file. If not found, it will use the first        
-existent file in ~/.pylintrc, /etc/pylintrc.
+The following environment variables are used:                                   
+    * PYLINTHOME                                                                
+    Path to the directory where the persistent for the run will be stored. If 
+not found, it defaults to ~/.pylint.d/ or .pylint.d (in the current working 
+directory).                                                                     
+    * PYLINTRC                                                                  
+    Path to the configuration file. See the documentation for the method used
+to search for configuration file.
 ''' % globals()
 
 # evaluation messages #########################################################

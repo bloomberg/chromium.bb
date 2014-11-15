@@ -1,4 +1,4 @@
-# copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
+# copyright 2003-2014 LOGILAB S.A. (Paris, FRANCE), all rights reserved.
 # contact http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This file is part of logilab-common.
@@ -18,19 +18,19 @@
 """logilab.common packaging information"""
 __docformat__ = "restructuredtext en"
 import sys
+import os
 
 distname = 'logilab-common'
 modname = 'common'
 subpackage_of = 'logilab'
 subpackage_master = True
 
-numversion = (0, 57, 1)
+numversion = (0, 63, 0)
 version = '.'.join([str(num) for num in numversion])
 
 license = 'LGPL' # 2.1 or later
 description = "collection of low-level Python packages and modules used by Logilab projects"
 web = "http://www.logilab.org/project/%s" % distname
-ftp = "ftp://ftp.logilab.org/pub/%s" % modname
 mailinglist = "mailto://python-projects@lists.logilab.org"
 author = "Logilab"
 author_email = "contact@logilab.fr"
@@ -40,6 +40,16 @@ from os.path import join
 scripts = [join('bin', 'pytest')]
 include_dirs = [join('test', 'data')]
 
+install_requires = [
+        'six >= 1.4.0',
+        ]
 if sys.version_info < (2, 7):
-    install_requires = ['unittest2 >= 0.5.1']
+    install_requires.append('unittest2 >= 0.5.1')
+if os.name == 'nt':
+    install_requires.append('colorama')
 
+classifiers = ["Topic :: Utilities",
+               "Programming Language :: Python",
+               "Programming Language :: Python :: 2",
+               "Programming Language :: Python :: 3",
+               ]

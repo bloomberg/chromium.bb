@@ -28,7 +28,8 @@ import os.path as osp
 import os
 import sys
 import tempfile
-from logilab.common.compat import str_encode
+import codecs
+import errno
 
 def escape(value):
     """Make <value> usable in a dot file."""
@@ -63,7 +64,7 @@ class DotBackend:
             assert charset.lower() in ('utf-8', 'iso-8859-1', 'latin1'), \
                    'unsupported charset %s' % charset
             self.emit('charset="%s"' % charset)
-        for param in additionnal_param.iteritems():
+        for param in sorted(additionnal_param.items()):
             self.emit('='.join(param))
 
     def get_source(self):
@@ -106,21 +107,26 @@ class DotBackend:
             ppng, outputfile = tempfile.mkstemp(".png", name)
             os.close(pdot)
             os.close(ppng)
-        pdot = open(dot_sourcepath, 'w')
-        pdot.write(str_encode(self.source, 'utf8'))
+        pdot = codecs.open(dot_sourcepath, 'w', encoding='utf8')
+        pdot.write(self.source)
         pdot.close()
         if target != 'dot':
             if sys.platform == 'win32':
                 use_shell = True
             else:
                 use_shell = False
-            if mapfile:
-                subprocess.call([self.renderer,  '-Tcmapx', '-o', mapfile, '-T', target, dot_sourcepath, '-o', outputfile],
-                                shell=use_shell)
-            else:
-                subprocess.call([self.renderer, '-T',  target,
-                                 dot_sourcepath, '-o',  outputfile],
-                                shell=use_shell)
+            try:
+                if mapfile:
+                    subprocess.call([self.renderer,  '-Tcmapx', '-o', mapfile, '-T', target, dot_sourcepath, '-o', outputfile],
+                                    shell=use_shell)
+                else:
+                    subprocess.call([self.renderer, '-T',  target,
+                                     dot_sourcepath, '-o',  outputfile],
+                                    shell=use_shell)
+            except OSError as e:
+                if e.errno == errno.ENOENT:
+                    e.strerror = 'File not found: {0}'.format(self.renderer)
+                    raise
             os.unlink(dot_sourcepath)
         return outputfile
 
@@ -134,14 +140,14 @@ class DotBackend:
         """
         attrs = ['%s="%s"' % (prop, value) for prop, value in props.items()]
         n_from, n_to = normalize_node_id(name1), normalize_node_id(name2)
-        self.emit('%s -> %s [%s];' % (n_from, n_to, ", ".join(attrs)) )
+        self.emit('%s -> %s [%s];' % (n_from, n_to, ', '.join(sorted(attrs))) )
 
     def emit_node(self, name, **props):
         """emit a node with given properties.
         node properties: see http://www.graphviz.org/doc/info/attrs.html
         """
         attrs = ['%s="%s"' % (prop, value) for prop, value in props.items()]
-        self.emit('%s [%s];' % (normalize_node_id(name), ", ".join(attrs)))
+        self.emit('%s [%s];' % (normalize_node_id(name), ', '.join(sorted(attrs))))
 
 def normalize_node_id(nid):
     """Returns a suitable DOT node id for `nid`."""
@@ -226,10 +232,10 @@ def get_cycles(graph_dict, vertices=None):
     if vertices is None:
         vertices = graph_dict.keys()
     for vertice in vertices:
-        _get_cycles(graph_dict, vertice, [], result)
+        _get_cycles(graph_dict, [], set(), result, vertice)
     return result
 
-def _get_cycles(graph_dict, vertice=None, path=None, result=None):
+def _get_cycles(graph_dict, path, visited, result, vertice):
     """recursive function doing the real work for get_cycles"""
     if vertice in path:
         cycle = [vertice]
@@ -248,7 +254,10 @@ def _get_cycles(graph_dict, vertice=None, path=None, result=None):
     path.append(vertice)
     try:
         for node in graph_dict[vertice]:
-            _get_cycles(graph_dict, node, path, result)
+            # don't check already visited nodes again
+            if node not in visited:
+                _get_cycles(graph_dict, path, visited, result, node)
+                visited.add(node)
     except KeyError:
         pass
     path.pop()

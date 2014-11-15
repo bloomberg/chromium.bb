@@ -20,13 +20,11 @@
 A way to create simple reports using python objects, primarily designed to be
 formatted as text and html.
 """
-from __future__ import generators
 __docformat__ = "restructuredtext en"
 
 import sys
-from cStringIO import StringIO
-from StringIO import StringIO as UStringIO
 
+from logilab.common.compat import StringIO
 from logilab.common.textutils import linesep
 
 
@@ -158,7 +156,7 @@ class BaseWriter(object):
         self.writeln = writeln
         self.__compute_funcs.append((write, writeln))
         for child in layout.children:
-            stream = UStringIO()
+            stream = StringIO()
             child.accept(self)
             yield stream.getvalue()
         self.__compute_funcs.pop()

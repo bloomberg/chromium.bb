@@ -1,3 +1,6 @@
+# Copyright (c) 2003-2013 LOGILAB S.A. (Paris, FRANCE).
+# http://www.logilab.fr/ -- mailto:contact@logilab.fr
+#
 # This program is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free Software
 # Foundation; either version 2 of the License, or (at your option) any later
@@ -9,7 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """ Copyright (c) 2003-2010 LOGILAB S.A. (Paris, FRANCE).
  http://www.logilab.fr/ -- mailto:contact@logilab.fr
 
@@ -24,8 +27,9 @@ import tokenize
 
 from logilab.common.ureports import Table
 
-from pylint.interfaces import IRawChecker
-from pylint.checkers import BaseRawChecker, EmptyReport
+from pylint.interfaces import ITokenChecker
+from pylint.utils import EmptyReport
+from pylint.checkers import BaseTokenChecker
 from pylint.reporters import diff_string
 
 def report_raw_stats(sect, stats, old_stats):
@@ -50,28 +54,28 @@ def report_raw_stats(sect, stats, old_stats):
     sect.append(Table(children=lines, cols=5, rheaders=1))
 
 
-class RawMetricsChecker(BaseRawChecker):
-    """does not check anything but gives some raw metrics :                    
-    * total number of lines                                                    
-    * total number of code lines                                               
-    * total number of docstring lines                                          
-    * total number of comments lines                                           
-    * total number of empty lines                                              
+class RawMetricsChecker(BaseTokenChecker):
+    """does not check anything but gives some raw metrics :
+    * total number of lines
+    * total number of code lines
+    * total number of docstring lines
+    * total number of comments lines
+    * total number of empty lines
     """
 
-    __implements__ = (IRawChecker,)
+    __implements__ = (ITokenChecker,)
 
     # configuration section name
     name = 'metrics'
     # configuration options
-    options = ( )
+    options = ()
     # messages
     msgs = {}
     # reports
-    reports = ( ('RP0701', 'Raw metrics', report_raw_stats), )
+    reports = (('RP0701', 'Raw metrics', report_raw_stats),)
 
     def __init__(self, linter):
-        BaseRawChecker.__init__(self, linter)
+        BaseTokenChecker.__init__(self, linter)
         self.stats = None
 
     def open(self):

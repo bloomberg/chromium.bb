@@ -44,7 +44,8 @@ Example::
 
 __docformat__ = "restructuredtext en"
 
-from logilab.common.compat import raw_input, builtins
+from six.moves import builtins, input
+
 if not hasattr(builtins, '_'):
     builtins._ = str
 
@@ -107,7 +108,7 @@ class CLIHelper:
         """loop on user input, exit on EOF"""
         while True:
             try:
-                line = raw_input('>>> ')
+                line = input('>>> ')
             except EOFError:
                 print
                 break
@@ -194,7 +195,7 @@ class CLIHelper:
                     import traceback
                     traceback.print_exc()
                     print 'ERROR in help method %s'% (
-                        command_help_method.func_name)
+                        command_help_method.__name__)
 
     help_do_help = ("help", "help [topic|command]",
                     _("print help message for the given topic/command or \

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright (c) 2008-2010 LOGILAB S.A. (Paris, FRANCE).
+# Copyright (c) 2008-2013 LOGILAB S.A. (Paris, FRANCE).
 # http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -13,17 +13,15 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-"""
-Utilities for creating VCG and Dot diagrams.
-"""
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+"""Utilities for creating VCG and Dot diagrams"""
 
 from logilab.common.vcgutils import VCGPrinter
 from logilab.common.graph import DotBackend
 
 from pylint.pyreverse.utils import is_exception
 
-class DiagramWriter:
+class DiagramWriter(object):
     """base class for writing project diagrams
     """
     def __init__(self, config, styles):
@@ -46,30 +44,33 @@ class DiagramWriter:
 
     def write_packages(self, diagram):
         """write a package diagram"""
-        for obj in diagram.modules():
-            label = self.get_title(obj)
-            self.printer.emit_node(obj.fig_id, label=label, shape='box')
+        # sorted to get predictable (hence testable) results
+        for i, obj in enumerate(sorted(diagram.modules(), key=lambda x: x.title)):
+            self.printer.emit_node(i, label=self.get_title(obj), shape='box')
+            obj.fig_id = i
         # package dependencies
-        for rel in diagram.relationships.get('depends', ()):
+        for rel in diagram.get_relationships('depends'):
             self.printer.emit_edge(rel.from_object.fig_id, rel.to_object.fig_id,
-                              **self.pkg_edges)
+                                   **self.pkg_edges)
 
     def write_classes(self, diagram):
         """write a class diagram"""
-        for obj in diagram.objects:
-            self.printer.emit_node(obj.fig_id, **self.get_values(obj) )
+        # sorted to get predictable (hence testable) results
+        for i, obj in enumerate(sorted(diagram.objects, key=lambda x: x.title)):
+            self.printer.emit_node(i, **self.get_values(obj))
+            obj.fig_id = i
         # inheritance links
-        for rel in diagram.relationships.get('specialization', ()):
+        for rel in diagram.get_relationships('specialization'):
             self.printer.emit_edge(rel.from_object.fig_id, rel.to_object.fig_id,
-                              **self.inh_edges)
+                                   **self.inh_edges)
         # implementation links
-        for rel in diagram.relationships.get('implements', ()):
+        for rel in diagram.get_relationships('implements'):
             self.printer.emit_edge(rel.from_object.fig_id, rel.to_object.fig_id,
-                              **self.imp_edges)
+                                   **self.imp_edges)
         # generate associations
-        for rel in diagram.relationships.get('association', ()):
+        for rel in diagram.get_relationships('association'):
             self.printer.emit_edge(rel.from_object.fig_id, rel.to_object.fig_id,
-                              label=rel.name, **self.ass_edges)
+                                   label=rel.name, **self.ass_edges)
 
     def set_printer(self, file_name, basename):
         """set printer"""
@@ -93,11 +94,12 @@ class DotWriter(DiagramWriter):
     """
 
     def __init__(self, config):
-        styles = [dict(arrowtail='none', arrowhead="open"), 
-                  dict(arrowtail = "none", arrowhead='empty'), 
-                  dict(arrowtail="node", arrowhead='empty', style='dashed'),
+        styles = [dict(arrowtail='none', arrowhead="open"),
+                  dict(arrowtail='none', arrowhead='empty'),
+                  dict(arrowtail='node', arrowhead='empty', style='dashed'),
                   dict(fontcolor='green', arrowtail='none',
-                       arrowhead='diamond', style='solid') ]
+                       arrowhead='diamond', style='solid'),
+                 ]
         DiagramWriter.__init__(self, config, styles)
 
     def set_printer(self, file_name, basename):
@@ -113,20 +115,20 @@ class DotWriter(DiagramWriter):
 
     def get_values(self, obj):
         """get label and shape for classes.
-        
+
         The label contains all attributes and methods
         """
-        label =  obj.title
+        label = obj.title
         if obj.shape == 'interface':
-            label = "«interface»\\n%s" % label
+            label = u'«interface»\\n%s' % label
         if not self.config.only_classnames:
-            label = "%s|%s\l|" % (label,  r"\l".join(obj.attrs) )
+            label = r'%s|%s\l|' % (label, r'\l'.join(obj.attrs))
             for func in obj.methods:
                 label = r'%s%s()\l' % (label, func.name)
             label = '{%s}' % label
         if is_exception(obj.node):
-            return dict(fontcolor="red", label=label, shape="record")
-        return dict(label=label, shape="record")
+            return dict(fontcolor='red', label=label, shape='record')
+        return dict(label=label, shape='record')
 
     def close_graph(self):
         """print the dot graph into <file_name>"""
@@ -139,12 +141,13 @@ class VCGWriter(DiagramWriter):
     def __init__(self, config):
         styles = [dict(arrowstyle='solid', backarrowstyle='none',
                        backarrowsize=0),
-                  dict(arrowstyle='solid', backarrowstyle='none', 
+                  dict(arrowstyle='solid', backarrowstyle='none',
                        backarrowsize=10),
                   dict(arrowstyle='solid', backarrowstyle='none',
                        linestyle='dotted', backarrowsize=10),
                   dict(arrowstyle='solid', backarrowstyle='none',
-                       textcolor='green') ]
+                       textcolor='green'),
+                 ]
         DiagramWriter.__init__(self, config, styles)
 
     def set_printer(self, file_name, basename):
@@ -163,7 +166,7 @@ class VCGWriter(DiagramWriter):
 
     def get_values(self, obj):
         """get label and shape for classes.
-        
+
         The label contains all attributes and methods
         """
         if is_exception(obj.node):
@@ -179,7 +182,7 @@ class VCGWriter(DiagramWriter):
             methods = [func.name for func in obj.methods]
             # box width for UML like diagram
             maxlen = max(len(name) for name in [obj.title] + methods + attrs)
-            line =  "_" * (maxlen + 2)
+            line = '_' * (maxlen + 2)
             label = r'%s\n\f%s' % (label, line)
             for attr in attrs:
                 label = r'%s\n\f08%s' % (label, attr)

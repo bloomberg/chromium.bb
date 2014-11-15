@@ -1,4 +1,4 @@
-# Copyright (c) 2000-2010 LOGILAB S.A. (Paris, FRANCE).
+# Copyright (c) 2000-2013 LOGILAB S.A. (Paris, FRANCE).
 # http://www.logilab.fr/ -- mailto:contact@logilab.fr
 #
 # This program is free software; you can redistribute it and/or modify it under
@@ -12,22 +12,24 @@
 #
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc.,
-# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 """handle diagram generation options for class diagram or default diagrams
 """
 
 from logilab.common.compat import builtins
-BUILTINS_NAME = builtins.__name__
-from logilab import astng
-from logilab.astng.utils import LocalsVisitor
+
+import astroid
+from astroid.utils import LocalsVisitor
 
 from pylint.pyreverse.diagrams import PackageDiagram, ClassDiagram
 
+BUILTINS_NAME = builtins.__name__
+
 # diagram generators ##########################################################
 
-class DiaDefGenerator:
-    """handle diagram generation options
-    """
+class DiaDefGenerator(object):
+    """handle diagram generation options"""
+
     def __init__(self, linker, handler):
         """common Diagram Handler initialization"""
         self.config = handler.config
@@ -39,7 +41,7 @@ class DiaDefGenerator:
         """get title for objects"""
         title = node.name
         if self.module_names:
-            title =  '%s.%s' % (node.root().name, title)
+            title = '%s.%s' % (node.root().name, title)
         return title
 
     def _set_option(self, option):
@@ -100,9 +102,9 @@ class DiaDefGenerator:
         for ass_nodes in klass_node.instance_attrs_type.values() + \
                          klass_node.locals_type.values():
             for ass_node in ass_nodes:
-                if isinstance(ass_node, astng.Instance):
+                if isinstance(ass_node, astroid.Instance):
                     ass_node = ass_node._proxied
-                if not (isinstance(ass_node, astng.Class) 
+                if not (isinstance(ass_node, astroid.Class)
                         and self.show_node(ass_node)):
                     continue
                 yield ass_node
@@ -132,7 +134,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         LocalsVisitor.__init__(self)
 
     def visit_project(self, node):
-        """visit an astng.Project node
+        """visit an astroid.Project node
 
         create a diagram definition for packages
         """
@@ -144,7 +146,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         self.classdiagram = ClassDiagram('classes %s' % node.name, mode)
 
     def leave_project(self, node):
-        """leave the astng.Project node
+        """leave the astroid.Project node
 
         return the generated diagram definition
         """
@@ -153,7 +155,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         return self.classdiagram,
 
     def visit_module(self, node):
-        """visit an astng.Module node
+        """visit an astroid.Module node
 
         add this class to the package diagram definition
         """
@@ -162,7 +164,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
             self.pkgdiagram.add_object(node.name, node)
 
     def visit_class(self, node):
-        """visit an astng.Class node
+        """visit an astroid.Class node
 
         add this class to the class diagram definition
         """
@@ -170,7 +172,7 @@ class DefaultDiadefGenerator(LocalsVisitor, DiaDefGenerator):
         self.extract_classes(node, anc_level, ass_level)
 
     def visit_from(self, node):
-        """visit astng.From  and catch modules for package diagram
+        """visit astroid.From  and catch modules for package diagram
         """
         if self.pkgdiagram:
             self.pkgdiagram.add_from_depend(node, node.modname)
@@ -204,7 +206,7 @@ class ClassDiadefGenerator(DiaDefGenerator):
 
 # diagram handler #############################################################
 
-class DiadefsHandler:
+class DiadefsHandler(object):
     """handle diagram definitions :
 
     get it from user (i.e. xml files) or generate them
@@ -215,8 +217,8 @@ class DiadefsHandler:
 
     def get_diadefs(self, project, linker):
         """get the diagrams configuration data
-        :param linker: astng.inspector.Linker(IdGeneratorMixIn, LocalsVisitor)
-        :param project: astng.manager.Project        
+        :param linker: astroid.inspector.Linker(IdGeneratorMixIn, LocalsVisitor)
+        :param project: astroid.manager.Project
         """
 
         #  read and interpret diagram definitions (Diadefs)

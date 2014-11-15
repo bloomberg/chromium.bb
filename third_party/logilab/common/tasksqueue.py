@@ -20,7 +20,8 @@
 __docformat__ = "restructuredtext en"
 
 from bisect import insort_left
-from Queue import Queue
+
+from six.moves import queue
 
 LOW = 0
 MEDIUM = 10
@@ -31,11 +32,11 @@ PRIORITY = {
     'MEDIUM': MEDIUM,
     'HIGH': HIGH,
     }
-REVERSE_PRIORITY = dict((values, key) for key, values in PRIORITY.iteritems())
+REVERSE_PRIORITY = dict((values, key) for key, values in PRIORITY.items())
 
 
 
-class PrioritizedTasksQueue(Queue):
+class PrioritizedTasksQueue(queue.Queue):
 
     def _init(self, maxsize):
         """Initialize the queue representation"""
@@ -93,6 +94,8 @@ class Task(object):
 
     def __eq__(self, other):
         return self.id == other.id
+
+    __hash__ = object.__hash__
 
     def merge(self, other):
         pass

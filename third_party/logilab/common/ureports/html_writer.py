@@ -20,6 +20,8 @@ __docformat__ = "restructuredtext en"
 
 from cgi import escape
 
+from six.moves import range
+
 from logilab.common.ureports import BaseWriter
 
 
@@ -32,100 +34,100 @@ class HTMLWriter(BaseWriter):
 
     def handle_attrs(self, layout):
         """get an attribute string from layout member attributes"""
-        attrs = ''
+        attrs = u''
         klass = getattr(layout, 'klass', None)
         if klass:
-            attrs += ' class="%s"' % klass
+            attrs += u' class="%s"' % klass
         nid = getattr(layout, 'id', None)
         if nid:
-            attrs += ' id="%s"' % nid
+            attrs += u' id="%s"' % nid
         return attrs
 
     def begin_format(self, layout):
         """begin to format a layout"""
         super(HTMLWriter, self).begin_format(layout)
         if self.snippet is None:
-            self.writeln('<html>')
-            self.writeln('<body>')
+            self.writeln(u'<html>')
+            self.writeln(u'<body>')
 
     def end_format(self, layout):
         """finished to format a layout"""
         if self.snippet is None:
-            self.writeln('</body>')
-            self.writeln('</html>')
+            self.writeln(u'</body>')
+            self.writeln(u'</html>')
 
 
     def visit_section(self, layout):
         """display a section as html, using div + h[section level]"""
         self.section += 1
-        self.writeln('<div%s>' % self.handle_attrs(layout))
+        self.writeln(u'<div%s>' % self.handle_attrs(layout))
         self.format_children(layout)
-        self.writeln('</div>')
+        self.writeln(u'</div>')
         self.section -= 1
 
     def visit_title(self, layout):
         """display a title using <hX>"""
-        self.write('<h%s%s>' % (self.section, self.handle_attrs(layout)))
+        self.write(u'<h%s%s>' % (self.section, self.handle_attrs(layout)))
         self.format_children(layout)
-        self.writeln('</h%s>' % self.section)
+        self.writeln(u'</h%s>' % self.section)
 
     def visit_table(self, layout):
         """display a table as html"""
-        self.writeln('<table%s>' % self.handle_attrs(layout))
+        self.writeln(u'<table%s>' % self.handle_attrs(layout))
         table_content = self.get_table_content(layout)
         for i in range(len(table_content)):
             row = table_content[i]
             if i == 0 and layout.rheaders:
-                self.writeln('<tr class="header">')
+                self.writeln(u'<tr class="header">')
             elif i+1 == len(table_content) and layout.rrheaders:
-                self.writeln('<tr class="header">')
+                self.writeln(u'<tr class="header">')
             else:
-                self.writeln('<tr class="%s">' % (i%2 and 'even' or 'odd'))
+                self.writeln(u'<tr class="%s">' % (i%2 and 'even' or 'odd'))
             for j in range(len(row)):
-                cell = row[j] or '&#160;'
+                cell = row[j] or u'&#160;'
                 if (layout.rheaders and i == 0) or \
                    (layout.cheaders and j == 0) or \
                    (layout.rrheaders and i+1 == len(table_content)) or \
                    (layout.rcheaders and j+1 == len(row)):
-                    self.writeln('<th>%s</th>' % cell)
+                    self.writeln(u'<th>%s</th>' % cell)
                 else:
-                    self.writeln('<td>%s</td>' % cell)
-            self.writeln('</tr>')
-        self.writeln('</table>')
+                    self.writeln(u'<td>%s</td>' % cell)
+            self.writeln(u'</tr>')
+        self.writeln(u'</table>')
 
     def visit_list(self, layout):
         """display a list as html"""
-        self.writeln('<ul%s>' % self.handle_attrs(layout))
+        self.writeln(u'<ul%s>' % self.handle_attrs(layout))
         for row in list(self.compute_content(layout)):
-            self.writeln('<li>%s</li>' % row)
-        self.writeln('</ul>')
+            self.writeln(u'<li>%s</li>' % row)
+        self.writeln(u'</ul>')
 
     def visit_paragraph(self, layout):
         """display links (using <p>)"""
-        self.write('<p>')
+        self.write(u'<p>')
         self.format_children(layout)
-        self.write('</p>')
+        self.write(u'</p>')
 
     def visit_span(self, layout):
         """display links (using <p>)"""
-        self.write('<span%s>' % self.handle_attrs(layout))
+        self.write(u'<span%s>' % self.handle_attrs(layout))
         self.format_children(layout)
-        self.write('</span>')
+        self.write(u'</span>')
 
     def visit_link(self, layout):
         """display links (using <a>)"""
-        self.write(' <a href="%s"%s>%s</a>' % (layout.url,
-                                               self.handle_attrs(layout),
-                                               layout.label))
+        self.write(u' <a href="%s"%s>%s</a>' % (layout.url,
+                                                self.handle_attrs(layout),
+                                                layout.label))
     def visit_verbatimtext(self, layout):
         """display verbatim text (using <pre>)"""
-        self.write('<pre>')
-        self.write(layout.data.replace('&', '&amp;').replace('<', '&lt;'))
-        self.write('</pre>')
+        self.write(u'<pre>')
+        self.write(layout.data.replace(u'&', u'&amp;').replace(u'<', u'&lt;'))
+        self.write(u'</pre>')
 
     def visit_text(self, layout):
         """add some text"""
         data = layout.data
         if layout.escaped:
-            data = data.replace('&', '&amp;').replace('<', '&lt;')
+            data = data.replace(u'&', u'&amp;').replace(u'<', u'&lt;')
         self.write(data)
