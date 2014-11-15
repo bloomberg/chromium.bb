@@ -2408,20 +2408,6 @@ struct GCInfoTrait<HeapDeque<T, inlineCapacity> > : public GCInfoTrait<Deque<T, 
 template<typename T, typename U, typename V>
 struct GCInfoTrait<HeapHashCountedSet<T, U, V> > : public GCInfoTrait<HashCountedSet<T, U, V, HeapAllocator> > { };
 
-template<typename T>
-struct IfWeakMember;
-
-template<typename T>
-struct IfWeakMember {
-    template<typename U>
-    static bool isDead(Visitor*, const U&) { return false; }
-};
-
-template<typename T>
-struct IfWeakMember<WeakMember<T> > {
-    static bool isDead(Visitor* visitor, const WeakMember<T>& t) { return !visitor->isAlive(t.get()); }
-};
-
 } // namespace blink
 
 #endif // Heap_h
