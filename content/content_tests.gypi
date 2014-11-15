@@ -932,6 +932,7 @@
             'browser/android/java/gin_java_method_invocation_helper_unittest.cc',
             'browser/android/java/java_type_unittest.cc',
             'browser/android/java/jni_helper_unittest.cc',
+            'browser/android/overscroll_refresh_unittest.cc',
             'browser/android/system_ui_resource_manager_impl_unittest.cc',
             'browser/renderer_host/input/motion_event_android_unittest.cc',
             'renderer/java/gin_java_bridge_value_converter_unittest.cc',

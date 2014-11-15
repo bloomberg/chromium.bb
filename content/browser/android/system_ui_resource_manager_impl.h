@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_ANDROID_SYSTEM_UI_RESOURCE_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_ANDROID_SYSTEM_UI_RESOURCE_MANAGER_IMPL_H_
 
+#include "base/android/jni_android.h"
 #include "base/basictypes.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/weak_ptr.h"
@@ -26,22 +27,24 @@ class CONTENT_EXPORT SystemUIResourceManagerImpl
  public:
   explicit SystemUIResourceManagerImpl(
       UIResourceProvider* ui_resource_provider);
-  virtual ~SystemUIResourceManagerImpl();
+  ~SystemUIResourceManagerImpl() override;
 
-  virtual void PreloadResource(ResourceType type) override;
-  virtual cc::UIResourceId GetUIResourceId(ResourceType type) override;
+  void PreloadResource(ui::SystemUIResourceType type) override;
+  cc::UIResourceId GetUIResourceId(ui::SystemUIResourceType type) override;
+
+  static bool RegisterUIResources(JNIEnv* env);
 
  private:
   friend class TestSystemUIResourceManagerImpl;
   class Entry;
 
   // Start loading the resource bitmap.  virtual for testing.
-  virtual void BuildResource(ResourceType type);
+  virtual void BuildResource(ui::SystemUIResourceType type);
 
-  Entry* GetEntry(ResourceType type);
-  void OnFinishedLoadBitmap(ResourceType, SkBitmap* bitmap_holder);
+  Entry* GetEntry(ui::SystemUIResourceType type);
+  void OnFinishedLoadBitmap(ui::SystemUIResourceType, SkBitmap* bitmap_holder);
 
-  scoped_ptr<Entry> resource_map_[RESOURCE_TYPE_LAST + 1];
+  scoped_ptr<Entry> resource_map_[ui::SYSTEM_UI_RESOURCE_TYPE_LAST + 1];
   UIResourceProvider* ui_resource_provider_;
 
   base::WeakPtrFactory<SystemUIResourceManagerImpl> weak_factory_;

@@ -6,11 +6,13 @@ java_cpp_enum("java_enums_srcjar") {
   sources = [
     "../base/page_transition_types.h",
     "../base/window_open_disposition.h",
+    "../base/android/system_ui_resource_type.h",
     "../gfx/android/java_bitmap.h",
   ]
   outputs = [
     "org/chromium/ui/WindowOpenDisposition.java",
     "org/chromium/ui/base/PageTransition.java",
+    "org/chromium/ui/base/SystemUIResourceType.java",
     "org/chromium/ui/gfx/BitmapFormat.java",
   ]
 }

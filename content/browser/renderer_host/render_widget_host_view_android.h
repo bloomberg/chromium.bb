@@ -50,7 +50,7 @@ class WebMouseEvent;
 
 namespace content {
 class ContentViewCoreImpl;
-class OverscrollGlow;
+class OverscrollControllerAndroid;
 class RenderWidgetHost;
 class RenderWidgetHostImpl;
 struct DidOverscrollParams;
@@ -210,6 +210,17 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   virtual void SelectRange(float x1, float y1, float x2, float y2) override;
   virtual void LongPress(base::TimeTicks time, float x, float y) override;
 
+  // TouchSelectionControllerClient implementation.
+  virtual bool SupportsAnimation() const override;
+  virtual void SetNeedsAnimate() override;
+  virtual void MoveCaret(const gfx::PointF& position) override;
+  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
+  virtual void SelectBetweenCoordinates(const gfx::PointF& base,
+                                        const gfx::PointF& extent) override;
+  virtual void OnSelectionEvent(SelectionEventType event,
+                                const gfx::PointF& anchor_position) override;
+  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
+
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
   SkColor GetCachedBackgroundColor() const;
@@ -263,17 +274,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       const TextSurroundingSelectionCallback& callback);
 
  private:
-  // TouchSelectionControllerClient implementation.
-  virtual bool SupportsAnimation() const override;
-  virtual void SetNeedsAnimate() override;
-  virtual void MoveCaret(const gfx::PointF& position) override;
-  virtual void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
-  virtual void SelectBetweenCoordinates(const gfx::PointF& base,
-                                        const gfx::PointF& extent) override;
-  virtual void OnSelectionEvent(SelectionEventType event,
-                                const gfx::PointF& anchor_position) override;
-  virtual scoped_ptr<TouchHandleDrawable> CreateDrawable() override;
-
   void RunAckCallbacks();
 
   void DestroyDelegatedContent();
@@ -372,9 +372,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   std::queue<base::Closure> ack_callbacks_;
 
-  const bool overscroll_effect_enabled_;
-  // Used to render overscroll overlays.
-  scoped_ptr<OverscrollGlow> overscroll_effect_;
+  // Used to control and render overscroll-related effects.
+  const bool overscroll_controller_enabled_;
+  scoped_ptr<OverscrollControllerAndroid> overscroll_controller_;
 
   // Provides gesture synthesis given a stream of touch events (derived from
   // Android MotionEvent's) and touch event acks.

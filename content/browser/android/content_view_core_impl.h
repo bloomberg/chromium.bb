@@ -51,7 +51,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   virtual WebContents* GetWebContents() const override;
   virtual ui::ViewAndroid* GetViewAndroid() const override;
   virtual ui::WindowAndroid* GetWindowAndroid() const override;
-  virtual scoped_refptr<cc::Layer> GetLayer() const override;
+  virtual const scoped_refptr<cc::Layer>& GetLayer() const override;
   virtual void ShowPastePopup(int x, int y) override;
   virtual void GetScaledContentBitmap(
       float scale,
@@ -295,7 +295,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void InitWebContents();
 
-  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid() const;
 
   blink::WebGestureEvent MakeGestureEvent(
       blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;

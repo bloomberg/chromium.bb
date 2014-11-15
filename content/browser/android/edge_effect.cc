@@ -6,6 +6,7 @@
 
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
+#include "content/browser/android/animation_utils.h"
 #include "ui/base/android/system_ui_resource_manager.h"
 
 namespace content {
@@ -52,32 +53,11 @@ const int kVelocityGlowFactor = 12;
 const float kEdgeHeightAtMdpi = 12.f;
 const float kGlowHeightAtMdpi = 128.f;
 
-template <typename T>
-T Lerp(T a, T b, T t) {
-  return a + (b - a) * t;
-}
-
-template <typename T>
-T Clamp(T value, T low, T high) {
-  return value < low ? low : (value > high ? high : value);
-}
-
-template <typename T>
-T Damp(T input, T factor) {
-  T result;
-  if (factor == 1) {
-    result = 1 - (1 - input) * (1 - input);
-  } else {
-    result = 1 - std::pow(1 - input, 2 * factor);
-  }
-  return result;
-}
-
 }  // namespace
 
 class EdgeEffect::EffectLayer {
  public:
-  EffectLayer(ui::SystemUIResourceManager::ResourceType resource_type,
+  EffectLayer(ui::SystemUIResourceType resource_type,
               ui::SystemUIResourceManager* resource_manager)
       : ui_resource_layer_(cc::UIResourceLayer::Create()),
         resource_type_(resource_type),
@@ -108,7 +88,7 @@ class EdgeEffect::EffectLayer {
   }
 
   scoped_refptr<cc::UIResourceLayer> ui_resource_layer_;
-  ui::SystemUIResourceManager::ResourceType resource_type_;
+  ui::SystemUIResourceType resource_type_;
   ui::SystemUIResourceManager* resource_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(EffectLayer);
@@ -116,10 +96,8 @@ class EdgeEffect::EffectLayer {
 
 EdgeEffect::EdgeEffect(ui::SystemUIResourceManager* resource_manager,
                        float device_scale_factor)
-    : edge_(new EffectLayer(ui::SystemUIResourceManager::OVERSCROLL_EDGE,
-                            resource_manager)),
-      glow_(new EffectLayer(ui::SystemUIResourceManager::OVERSCROLL_GLOW,
-                            resource_manager)),
+    : edge_(new EffectLayer(ui::OVERSCROLL_EDGE, resource_manager)),
+      glow_(new EffectLayer(ui::OVERSCROLL_GLOW, resource_manager)),
       base_edge_height_(kEdgeHeightAtMdpi * device_scale_factor),
       base_glow_height_(kGlowHeightAtMdpi * device_scale_factor),
       edge_alpha_(0),
@@ -362,10 +340,8 @@ void EdgeEffect::SetParent(cc::Layer* parent) {
 void EdgeEffect::PreloadResources(
     ui::SystemUIResourceManager* resource_manager) {
   DCHECK(resource_manager);
-  resource_manager->PreloadResource(
-      ui::SystemUIResourceManager::OVERSCROLL_EDGE);
-  resource_manager->PreloadResource(
-      ui::SystemUIResourceManager::OVERSCROLL_GLOW);
+  resource_manager->PreloadResource(ui::OVERSCROLL_EDGE);
+  resource_manager->PreloadResource(ui::OVERSCROLL_GLOW);
 }
 
 }  // namespace content

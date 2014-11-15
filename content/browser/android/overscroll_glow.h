@@ -38,44 +38,36 @@ class OverscrollGlow {
 
   ~OverscrollGlow();
 
-  // Enable the effect. If the effect was previously disabled, it will remain
-  // dormant until subsequent calls to |OnOverscrolled()|.
-  void Enable();
-
-  // Deactivate and detach the effect. Subsequent calls to |OnOverscrolled()| or
-  // |Animate()| will have no effect.
-  void Disable();
-
-  // Effect layers will be attached to |overscrolling_layer| if necessary.
+  // Called when the root content layer overscrolls.
   // |accumulated_overscroll| and |overscroll_delta| are in device pixels, while
   // |velocity| is in device pixels / second.
   // Returns true if the effect still needs animation ticks.
-  bool OnOverscrolled(cc::Layer* overscrolling_layer,
-                      base::TimeTicks current_time,
+  bool OnOverscrolled(base::TimeTicks current_time,
                       gfx::Vector2dF accumulated_overscroll,
                       gfx::Vector2dF overscroll_delta,
                       gfx::Vector2dF velocity,
                       gfx::Vector2dF overscroll_location);
 
-  // Returns true if the effect still needs animation ticks.
+  // Returns true if the effect still needs animation ticks, with effect layers
+  // attached to |parent_layer| if necessary.
   // Note: The effect will detach itself when no further animation is required.
-  bool Animate(base::TimeTicks current_time);
+  bool Animate(base::TimeTicks current_time, cc::Layer* parent_layer);
 
   // Update the effect according to the most recent display parameters,
   // Note: All dimensions are in device pixels.
-  struct DisplayParameters {
-    DisplayParameters();
-    gfx::SizeF size;
-    float edge_offsets[EDGE_COUNT];
-  };
-  void UpdateDisplayParameters(const DisplayParameters& params);
+  void UpdateDisplay(const gfx::SizeF& viewport_size,
+                     const gfx::SizeF& content_size,
+                     const gfx::Vector2dF& content_scroll_offset);
+
+  // Reset the effect to its inactive state, clearing any active effects.
+  void Reset();
 
  private:
   enum Axis { AXIS_X, AXIS_Y };
 
-  // Returns whether the effect is initialized.
+  // Returns whether the effect has been properly initialized.
   bool InitializeIfNecessary();
-  bool NeedsAnimate() const;
+  bool CheckNeedsAnimate();
   void UpdateLayerAttachment(cc::Layer* parent);
   void Detach();
   void Pull(base::TimeTicks current_time,
@@ -92,8 +84,8 @@ class OverscrollGlow {
   EdgeEffectProvider edge_effect_provider_;
   scoped_ptr<EdgeEffectBase> edge_effects_[EDGE_COUNT];
 
-  DisplayParameters display_params_;
-  bool enabled_;
+  gfx::SizeF viewport_size_;
+  float edge_offsets_[EDGE_COUNT];
   bool initialized_;
 
   scoped_refptr<cc::Layer> root_layer_;

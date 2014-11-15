@@ -20,10 +20,9 @@ class TestSystemUIResourceManagerImpl
 
   virtual ~TestSystemUIResourceManagerImpl() {}
 
-  virtual void BuildResource(
-      ui::SystemUIResourceManager::ResourceType type) override {}
+  virtual void BuildResource(ui::SystemUIResourceType type) override {}
 
-  void SetResourceAsLoaded(ui::SystemUIResourceManager::ResourceType type) {
+  void SetResourceAsLoaded(ui::SystemUIResourceType type) {
     SkBitmap small_bitmap;
     SkCanvas canvas(small_bitmap);
     small_bitmap.allocPixels(
@@ -36,8 +35,7 @@ class TestSystemUIResourceManagerImpl
 
 namespace {
 
-const ui::SystemUIResourceManager::ResourceType TEST_RESOURCE_TYPE =
-    ui::SystemUIResourceManager::OVERSCROLL_GLOW;
+const ui::SystemUIResourceType kTestResourceType = ui::OVERSCROLL_GLOW;
 
 class MockUIResourceProvider : public content::UIResourceProvider {
  public:
@@ -100,12 +98,11 @@ class MockUIResourceProvider : public content::UIResourceProvider {
 
 class SystemUIResourceManagerImplTest : public testing::Test {
  public:
-  void PreloadResource(ui::SystemUIResourceManager::ResourceType type) {
+  void PreloadResource(ui::SystemUIResourceType type) {
     ui_resource_provider_.GetSystemUIResourceManager().PreloadResource(type);
   }
 
-  cc::UIResourceId GetUIResourceId(
-      ui::SystemUIResourceManager::ResourceType type) {
+  cc::UIResourceId GetUIResourceId(ui::SystemUIResourceType type) {
     return ui_resource_provider_.GetSystemUIResourceManager().GetUIResourceId(
         type);
   }
@@ -116,7 +113,7 @@ class SystemUIResourceManagerImplTest : public testing::Test {
     ui_resource_provider_.LayerTreeHostReturned();
   }
 
-  void SetResourceAsLoaded(ui::SystemUIResourceManager::ResourceType type) {
+  void SetResourceAsLoaded(ui::SystemUIResourceType type) {
     ui_resource_provider_.GetSystemUIResourceManager().SetResourceAsLoaded(
         type);
   }
@@ -130,40 +127,40 @@ class SystemUIResourceManagerImplTest : public testing::Test {
 };
 
 TEST_F(SystemUIResourceManagerImplTest, GetResourceAfterBitmapLoaded) {
-  SetResourceAsLoaded(TEST_RESOURCE_TYPE);
-  EXPECT_NE(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  SetResourceAsLoaded(kTestResourceType);
+  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
 }
 
 TEST_F(SystemUIResourceManagerImplTest, GetResourceBeforeLoadBitmap) {
-  EXPECT_EQ(0, GetUIResourceId(TEST_RESOURCE_TYPE));
-  SetResourceAsLoaded(TEST_RESOURCE_TYPE);
-  EXPECT_NE(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
+  SetResourceAsLoaded(kTestResourceType);
+  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
 }
 
 TEST_F(SystemUIResourceManagerImplTest, PreloadEnsureResource) {
   // Preloading the resource should trigger bitmap loading, but the actual
   // resource id will not be generated until it is explicitly requested.
   cc::UIResourceId first_resource_id = GetNextUIResourceId();
-  PreloadResource(TEST_RESOURCE_TYPE);
-  SetResourceAsLoaded(TEST_RESOURCE_TYPE);
+  PreloadResource(kTestResourceType);
+  SetResourceAsLoaded(kTestResourceType);
   EXPECT_EQ(first_resource_id, GetNextUIResourceId());
-  EXPECT_NE(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
   EXPECT_NE(first_resource_id, GetNextUIResourceId());
 }
 
 TEST_F(SystemUIResourceManagerImplTest, ResetLayerTreeHost) {
-  EXPECT_EQ(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
   LayerTreeHostCleared();
-  EXPECT_EQ(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
   LayerTreeHostReturned();
-  EXPECT_EQ(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
 
-  SetResourceAsLoaded(TEST_RESOURCE_TYPE);
-  EXPECT_NE(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  SetResourceAsLoaded(kTestResourceType);
+  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
   LayerTreeHostCleared();
-  EXPECT_EQ(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_EQ(0, GetUIResourceId(kTestResourceType));
   LayerTreeHostReturned();
-  EXPECT_NE(0, GetUIResourceId(TEST_RESOURCE_TYPE));
+  EXPECT_NE(0, GetUIResourceId(kTestResourceType));
 }
 
 }  // namespace content

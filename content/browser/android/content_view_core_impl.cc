@@ -337,7 +337,7 @@ void ContentViewCoreImpl::RenderViewHostChanged(RenderViewHost* old_host,
 }
 
 RenderWidgetHostViewAndroid*
-    ContentViewCoreImpl::GetRenderWidgetHostViewAndroid() {
+    ContentViewCoreImpl::GetRenderWidgetHostViewAndroid() const {
   RenderWidgetHostView* rwhv = NULL;
   if (web_contents_) {
     rwhv = web_contents_->GetRenderWidgetHostView();
@@ -798,8 +798,8 @@ ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
   return window_android_;
 }
 
-scoped_refptr<cc::Layer> ContentViewCoreImpl::GetLayer() const {
-  return root_layer_.get();
+const scoped_refptr<cc::Layer>& ContentViewCoreImpl::GetLayer() const {
+  return root_layer_;
 }
 
 // ----------------------------------------------------------------------------

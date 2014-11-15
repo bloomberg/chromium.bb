@@ -22,6 +22,7 @@
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/load_url_params.h"
 #include "content/browser/android/popup_touch_handle_drawable.h"
+#include "content/browser/android/system_ui_resource_manager_impl.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/android/web_contents_observer_android.h"
 #include "content/browser/device_sensors/sensor_manager_android.h"
@@ -61,8 +62,9 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"DateTimePickerAndroid", content::RegisterDateTimeChooserAndroid},
     {"DownloadControllerAndroidImpl",
      content::DownloadControllerAndroidImpl::RegisterDownloadController},
-    {"GamepadList", content::GamepadPlatformDataFetcherAndroid::
-                        RegisterGamepadPlatformDataFetcherAndroid},
+    {"GamepadList",
+     content::GamepadPlatformDataFetcherAndroid::
+         RegisterGamepadPlatformDataFetcherAndroid},
     {"HandleViewResources",
      content::CompositedTouchHandleDrawable::RegisterHandleViewResources},
     {"InterstitialPageDelegateAndroid",
@@ -87,6 +89,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ServiceRegistryAndroid", content::ServiceRegistryAndroid::Register},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
+    {"SystemUIResourceManagerImpl",
+     content::SystemUIResourceManagerImpl::RegisterUIResources},
     {"TimeZoneMonitorAndroid", content::TimeZoneMonitorAndroid::Register},
     {"TouchEventSynthesizer",
      content::SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer},

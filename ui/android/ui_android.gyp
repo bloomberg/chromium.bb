@@ -24,6 +24,14 @@
       'includes': [ '../../build/android/java_cpp_enum.gypi' ],
     },
     {
+      'target_name': 'system_ui_resource_type_java',
+      'type': 'none',
+      'variables': {
+        'source_file': '../base/android/system_ui_resource_type.h',
+      },
+      'includes': [ '../../build/android/java_cpp_enum.gypi' ],
+    },
+    {
       'target_name': 'window_open_disposition_java',
       'type': 'none',
       'variables': {
@@ -44,6 +52,7 @@
         '../../base/base.gyp:base_java',
         'bitmap_format_java',
         'page_transition_types_java',
+        'system_ui_resource_type_java',
         'ui_strings_grd',
         'window_open_disposition_java',
       ],

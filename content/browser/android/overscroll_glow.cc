@@ -77,7 +77,7 @@ gfx::SizeF ComputeSize(OverscrollGlow::Edge edge,
 
 OverscrollGlow::OverscrollGlow(const EdgeEffectProvider& edge_effect_provider)
     : edge_effect_provider_(edge_effect_provider),
-      enabled_(true),
+      edge_offsets_(),
       initialized_(false) {
   DCHECK(!edge_effect_provider_.is_null());
 }
@@ -86,45 +86,30 @@ OverscrollGlow::~OverscrollGlow() {
   Detach();
 }
 
-void OverscrollGlow::Enable() {
-  enabled_ = true;
-}
-
-void OverscrollGlow::Disable() {
-  if (!enabled_)
+void OverscrollGlow::Reset() {
+  if (!initialized_)
     return;
-  enabled_ = false;
-  if (!enabled_ && initialized_) {
-    Detach();
-    for (size_t i = 0; i < EDGE_COUNT; ++i)
-      edge_effects_[i]->Finish();
-  }
+  Detach();
+  for (size_t i = 0; i < EDGE_COUNT; ++i)
+    edge_effects_[i]->Finish();
 }
 
-bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
-                                    base::TimeTicks current_time,
+bool OverscrollGlow::OnOverscrolled(base::TimeTicks current_time,
                                     gfx::Vector2dF accumulated_overscroll,
                                     gfx::Vector2dF overscroll_delta,
                                     gfx::Vector2dF velocity,
                                     gfx::Vector2dF displacement) {
-  DCHECK(overscrolling_layer);
-
-  if (!enabled_)
-    return false;
-
   // The size of the glow determines the relative effect of the inputs; an
   // empty-sized effect is effectively disabled.
-  if (display_params_.size.IsEmpty())
+  if (viewport_size_.IsEmpty())
     return false;
 
   // Ignore sufficiently small values that won't meaningfuly affect animation.
   overscroll_delta = ZeroSmallComponents(overscroll_delta);
   if (overscroll_delta.IsZero()) {
-    if (initialized_) {
+    if (initialized_)
       Release(current_time);
-      UpdateLayerAttachment(overscrolling_layer);
-    }
-    return NeedsAnimate();
+    return CheckNeedsAnimate();
   }
 
   if (!InitializeIfNecessary())
@@ -142,45 +127,55 @@ bool OverscrollGlow::OnOverscrolled(cc::Layer* overscrolling_layer,
   else
     Pull(current_time, overscroll_delta, displacement);
 
-  UpdateLayerAttachment(overscrolling_layer);
-  return NeedsAnimate();
+  return CheckNeedsAnimate();
 }
 
-bool OverscrollGlow::Animate(base::TimeTicks current_time) {
-  if (!NeedsAnimate()) {
-    Detach();
+bool OverscrollGlow::Animate(base::TimeTicks current_time,
+                             cc::Layer* parent_layer) {
+  DCHECK(parent_layer);
+  if (!CheckNeedsAnimate())
     return false;
-  }
+
+  UpdateLayerAttachment(parent_layer);
 
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
     if (edge_effects_[i]->Update(current_time)) {
       Edge edge = static_cast<Edge>(i);
       edge_effects_[i]->ApplyToLayers(
-          ComputeSize(edge, display_params_.size),
-          ComputeTransform(
-              edge, display_params_.size, display_params_.edge_offsets[i]));
+          ComputeSize(edge, viewport_size_),
+          ComputeTransform(edge, viewport_size_, edge_offsets_[i]));
     }
   }
 
-  if (!NeedsAnimate()) {
+  return CheckNeedsAnimate();
+}
+
+void OverscrollGlow::UpdateDisplay(
+    const gfx::SizeF& viewport_size,
+    const gfx::SizeF& content_size,
+    const gfx::Vector2dF& content_scroll_offset) {
+  viewport_size_ = viewport_size;
+  edge_offsets_[OverscrollGlow::EDGE_TOP] = -content_scroll_offset.y();
+  edge_offsets_[OverscrollGlow::EDGE_LEFT] = -content_scroll_offset.x();
+  edge_offsets_[OverscrollGlow::EDGE_BOTTOM] = content_size.height() -
+                                               content_scroll_offset.y() -
+                                               viewport_size.height();
+  edge_offsets_[OverscrollGlow::EDGE_RIGHT] =
+      content_size.width() - content_scroll_offset.x() - viewport_size.width();
+}
+
+bool OverscrollGlow::CheckNeedsAnimate() {
+  if (!initialized_) {
     Detach();
     return false;
   }
 
-  return true;
-}
-
-void OverscrollGlow::UpdateDisplayParameters(const DisplayParameters& params) {
-  display_params_ = params;
-}
-
-bool OverscrollGlow::NeedsAnimate() const {
-  if (!enabled_ || !initialized_)
-    return false;
   for (size_t i = 0; i < EDGE_COUNT; ++i) {
     if (!edge_effects_[i]->IsFinished())
       return true;
   }
+
+  Detach();
   return false;
 }
 
@@ -189,10 +184,8 @@ void OverscrollGlow::UpdateLayerAttachment(cc::Layer* parent) {
   if (!root_layer_.get())
     return;
 
-  if (!NeedsAnimate()) {
-    Detach();
+  if (!CheckNeedsAnimate())
     return;
-  }
 
   if (root_layer_->parent() != parent)
     parent->AddChild(root_layer_);
@@ -207,7 +200,6 @@ void OverscrollGlow::Detach() {
 }
 
 bool OverscrollGlow::InitializeIfNecessary() {
-  DCHECK(enabled_);
   if (initialized_)
     return true;
 
@@ -225,10 +217,11 @@ bool OverscrollGlow::InitializeIfNecessary() {
 void OverscrollGlow::Pull(base::TimeTicks current_time,
                           const gfx::Vector2dF& overscroll_delta,
                           const gfx::Vector2dF& overscroll_location) {
-  DCHECK(enabled_ && initialized_);
+  DCHECK(initialized_);
   DCHECK(!overscroll_delta.IsZero());
-  const float inv_width = 1.f / display_params_.size.width();
-  const float inv_height = 1.f / display_params_.size.height();
+  DCHECK(!viewport_size_.IsEmpty());
+  const float inv_width = 1.f / viewport_size_.width();
+  const float inv_height = 1.f / viewport_size_.height();
 
   gfx::Vector2dF overscroll_pull =
       gfx::ScaleVector2d(overscroll_delta, inv_width, inv_height);
@@ -264,7 +257,7 @@ void OverscrollGlow::Absorb(base::TimeTicks current_time,
                             const gfx::Vector2dF& velocity,
                             bool x_overscroll_started,
                             bool y_overscroll_started) {
-  DCHECK(enabled_ && initialized_);
+  DCHECK(initialized_);
   DCHECK(!velocity.IsZero());
 
   // Only trigger on initial overscroll at a non-zero velocity
@@ -293,10 +286,6 @@ void OverscrollGlow::Release(base::TimeTicks current_time) {
 EdgeEffectBase* OverscrollGlow::GetOppositeEdge(int edge_index) {
   DCHECK(initialized_);
   return edge_effects_[(edge_index + 2) % EDGE_COUNT].get();
-}
-
-OverscrollGlow::DisplayParameters::DisplayParameters() {
-  edge_offsets[0] = edge_offsets[1] = edge_offsets[2] = edge_offsets[3] = 0.f;
 }
 
 }  // namespace content

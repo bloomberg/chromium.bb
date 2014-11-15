@@ -13,6 +13,8 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "content/public/browser/android/ui_resource_client_android.h"
 #include "content/public/browser/android/ui_resource_provider.h"
+#include "jni/UIResources_jni.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
@@ -48,23 +50,44 @@ SkBitmap CreateOverscrollGlowLBitmap(const gfx::Size& screen_size) {
   return glow_bitmap;
 }
 
-void LoadBitmap(ui::SystemUIResourceManager::ResourceType type,
+SkBitmap LoadJavaBitmap(ui::SystemUIResourceType type, const gfx::Size& size) {
+  ScopedJavaLocalRef<jobject> jobj =
+      Java_UIResources_getBitmap(base::android::AttachCurrentThread(),
+                                 base::android::GetApplicationContext(), type,
+                                 size.width(), size.height());
+  if (jobj.is_null())
+    return SkBitmap();
+
+  SkBitmap bitmap = CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jobj.obj()));
+  if (bitmap.isNull())
+    return bitmap;
+
+  if (size.IsEmpty())
+    return bitmap;
+
+  return skia::ImageOperations::Resize(
+      bitmap, skia::ImageOperations::RESIZE_BOX, size.width(), size.height());
+}
+
+void LoadBitmap(ui::SystemUIResourceType type,
                 SkBitmap* bitmap_holder,
                 const gfx::Size& screen_size) {
   TRACE_EVENT1(
       "browser", "SystemUIResourceManagerImpl::LoadBitmap", "type", type);
   SkBitmap bitmap;
   switch (type) {
-    case ui::SystemUIResourceManager::OVERSCROLL_EDGE:
-      bitmap = gfx::CreateSkBitmapFromAndroidResource(
-          "android:drawable/overscroll_edge", gfx::Size(128, 12));
+    case ui::OVERSCROLL_EDGE:
+      bitmap = LoadJavaBitmap(type, gfx::Size(128, 12));
       break;
-    case ui::SystemUIResourceManager::OVERSCROLL_GLOW:
-      bitmap = gfx::CreateSkBitmapFromAndroidResource(
-          "android:drawable/overscroll_glow", gfx::Size(128, 64));
+    case ui::OVERSCROLL_GLOW:
+      bitmap = LoadJavaBitmap(type, gfx::Size(128, 64));
       break;
-    case ui::SystemUIResourceManager::OVERSCROLL_GLOW_L:
+    case ui::OVERSCROLL_GLOW_L:
       bitmap = CreateOverscrollGlowLBitmap(screen_size);
+      break;
+    case ui::OVERSCROLL_REFRESH_IDLE:
+    case ui::OVERSCROLL_REFRESH_ACTIVE:
+      bitmap = LoadJavaBitmap(type, gfx::Size());
       break;
   }
   bitmap.setImmutable();
@@ -80,7 +103,7 @@ class SystemUIResourceManagerImpl::Entry
     DCHECK(provider);
   }
 
-  virtual ~Entry() {
+  ~Entry() override {
     if (id_)
       provider_->DeleteUIResource(id_);
     id_ = 0;
@@ -102,14 +125,14 @@ class SystemUIResourceManagerImpl::Entry
   }
 
   // content::UIResourceClient implementation.
-  virtual cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
-                                         bool resource_lost) override {
+  cc::UIResourceBitmap GetBitmap(cc::UIResourceId uid,
+                                 bool resource_lost) override {
     DCHECK(!bitmap_.empty());
     return cc::UIResourceBitmap(bitmap_);
   }
 
   // content::UIResourceClientAndroid implementation.
-  virtual void UIResourceIsInvalid() override { id_ = 0; }
+  void UIResourceIsInvalid() override { id_ = 0; }
 
   const SkBitmap& bitmap() const { return bitmap_; }
 
@@ -129,19 +152,20 @@ SystemUIResourceManagerImpl::SystemUIResourceManagerImpl(
 SystemUIResourceManagerImpl::~SystemUIResourceManagerImpl() {
 }
 
-void SystemUIResourceManagerImpl::PreloadResource(ResourceType type) {
+void SystemUIResourceManagerImpl::PreloadResource(
+    ui::SystemUIResourceType type) {
   GetEntry(type);
 }
 
 cc::UIResourceId SystemUIResourceManagerImpl::GetUIResourceId(
-    ResourceType type) {
+    ui::SystemUIResourceType type) {
   return GetEntry(type)->GetUIResourceId();
 }
 
 SystemUIResourceManagerImpl::Entry* SystemUIResourceManagerImpl::GetEntry(
-    ResourceType type) {
-  DCHECK_GE(type, RESOURCE_TYPE_FIRST);
-  DCHECK_LE(type, RESOURCE_TYPE_LAST);
+    ui::SystemUIResourceType type) {
+  DCHECK_GE(type, ui::SYSTEM_UI_RESOURCE_TYPE_FIRST);
+  DCHECK_LE(type, ui::SYSTEM_UI_RESOURCE_TYPE_LAST);
   if (!resource_map_[type]) {
     resource_map_[type].reset(new Entry(ui_resource_provider_));
     // Lazily build the resource.
@@ -150,7 +174,7 @@ SystemUIResourceManagerImpl::Entry* SystemUIResourceManagerImpl::GetEntry(
   return resource_map_[type].get();
 }
 
-void SystemUIResourceManagerImpl::BuildResource(ResourceType type) {
+void SystemUIResourceManagerImpl::BuildResource(ui::SystemUIResourceType type) {
   DCHECK(GetEntry(type)->bitmap().empty());
 
   // Instead of blocking the main thread, we post a task to load the bitmap.
@@ -169,10 +193,15 @@ void SystemUIResourceManagerImpl::BuildResource(ResourceType type) {
 }
 
 void SystemUIResourceManagerImpl::OnFinishedLoadBitmap(
-    ResourceType type,
+    ui::SystemUIResourceType type,
     SkBitmap* bitmap_holder) {
   DCHECK(bitmap_holder);
   GetEntry(type)->SetBitmap(*bitmap_holder);
+}
+
+// static
+bool SystemUIResourceManagerImpl::RegisterUIResources(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace content

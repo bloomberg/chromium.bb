@@ -1,0 +1,103 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
+#define CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_
+
+#include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
+#include "content/common/content_export.h"
+#include "ui/gfx/size_f.h"
+#include "ui/gfx/vector2d_f.h"
+
+namespace cc {
+class Layer;
+}
+
+namespace ui {
+class SystemUIResourceManager;
+}
+
+namespace content {
+
+// Allows both page reload activation and page reloading state queries.
+class CONTENT_EXPORT OverscrollRefreshClient {
+ public:
+  virtual ~OverscrollRefreshClient() {}
+
+  // Called when the effect is released beyond the activation threshold. This
+  // should cause a refresh of some kind, e.g., page reload.
+  virtual void TriggerRefresh() = 0;
+
+  // Whether the triggered refresh has yet to complete. The effect will continue
+  // animating until the refresh completes (or it reaches a reasonable timeout).
+  virtual bool IsStillRefreshing() const = 0;
+};
+
+// Simple pull-to-refresh styled effect. Listens to scroll events, conditionally
+// activating when:
+//   1) The scroll begins when the page has no vertical scroll offset.
+//   2) The page doesn't consume the initial scroll events.
+//   3) The initial scroll direction is upward.
+// The actual page reload action is triggered only when the effect is active
+// and beyond a particular threshold when released.
+class CONTENT_EXPORT OverscrollRefresh {
+ public:
+  OverscrollRefresh(ui::SystemUIResourceManager* resource_manager,
+                    OverscrollRefreshClient* client);
+  ~OverscrollRefresh();
+
+  // Scroll event stream listening methods.
+  void OnScrollBegin();
+  void OnScrollEnd(const gfx::Vector2dF& velocity);
+
+  // Scroll ack listener. The effect will only be activated if the initial
+  // updates go unconsumed.
+  void OnScrollUpdateAck(bool was_consumed);
+
+  // Returns true if the effect has consumed the |scroll_delta|.
+  bool WillHandleScrollUpdate(const gfx::Vector2dF& scroll_delta);
+
+  // Returns true if the effect still needs animation ticks, with effect layers
+  // attached to |parent| if necessary.
+  // Note: The effect will detach itself when no further animation is required.
+  bool Animate(base::TimeTicks current_time, cc::Layer* parent_layer);
+
+  // Update the effect according to the most recent display parameters,
+  // Note: All dimensions are in device pixels.
+  void UpdateDisplay(const gfx::SizeF& viewport_size,
+                     const gfx::Vector2dF& content_scroll_offset);
+
+  // Reset the effect to its inactive state, detaching any active effects.
+  void Reset();
+
+  // Returns true if the refresh effect is either being manipulated or animated.
+  bool IsActive() const;
+
+  // Returns true if the effect is waiting for an unconsumed scroll to start.
+  bool IsAwaitingScrollUpdateAck() const;
+
+ private:
+  void Release(bool allow_activation);
+
+  OverscrollRefreshClient* const client_;
+
+  gfx::SizeF viewport_size_;
+  bool scrolled_to_top_;
+
+  enum ScrollConsumptionState {
+    DISABLED,
+    AWAITING_SCROLL_UPDATE_ACK,
+    ENABLED,
+  } scroll_consumption_state_;
+
+  class Effect;
+  scoped_ptr<Effect> effect_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverscrollRefresh);
+};
+
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_ANDROID_OVERSCROLL_REFRESH_H_

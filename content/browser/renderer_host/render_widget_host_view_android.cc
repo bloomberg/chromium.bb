@@ -34,7 +34,7 @@
 #include "content/browser/android/edge_effect.h"
 #include "content/browser/android/edge_effect_l.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
-#include "content/browser/android/overscroll_glow.h"
+#include "content/browser/android/overscroll_controller_android.h"
 #include "content/browser/devtools/render_view_devtools_agent_host.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -88,9 +88,6 @@ const int kUndefinedOutputSurfaceId = -1;
 // V1 saw errors of ~0.065 between computed window and content widths.
 const float kMobileViewportWidthEpsilon = 0.15f;
 
-// Used for conditional creation of EdgeEffect types for overscroll.
-const int kKitKatMR2SDKVersion = 19;
-
 static const char kAsyncReadBackString[] = "Compositing.CopyFromSurfaceTime";
 
 // Sends an acknowledgement to the renderer of a processed IME event.
@@ -138,72 +135,6 @@ ui::LatencyInfo CreateLatencyInfo(const blink::WebInputEvent& event) {
   return latency_info;
 }
 
-OverscrollGlow::DisplayParameters CreateOverscrollDisplayParameters(
-    const cc::CompositorFrameMetadata& frame_metadata) {
-  const float scale_factor =
-      frame_metadata.page_scale_factor * frame_metadata.device_scale_factor;
-
-  // Compute the size and offsets for each edge, where each effect is sized to
-  // the viewport and offset by the distance of each viewport edge to the
-  // respective content edge.
-  OverscrollGlow::DisplayParameters params;
-  params.size = gfx::ScaleSize(
-      frame_metadata.scrollable_viewport_size, scale_factor);
-  params.edge_offsets[OverscrollGlow::EDGE_TOP] =
-      -frame_metadata.root_scroll_offset.y() * scale_factor;
-  params.edge_offsets[OverscrollGlow::EDGE_LEFT] =
-      -frame_metadata.root_scroll_offset.x() * scale_factor;
-  params.edge_offsets[OverscrollGlow::EDGE_BOTTOM] =
-      (frame_metadata.root_layer_size.height() -
-       frame_metadata.root_scroll_offset.y() -
-       frame_metadata.scrollable_viewport_size.height()) *
-      scale_factor;
-  params.edge_offsets[OverscrollGlow::EDGE_RIGHT] =
-      (frame_metadata.root_layer_size.width() -
-       frame_metadata.root_scroll_offset.x() -
-       frame_metadata.scrollable_viewport_size.width()) *
-      scale_factor;
-
-  return params;
-}
-
-bool UseEdgeEffectL() {
-  static bool use_edge_effect_l =
-      base::android::BuildInfo::GetInstance()->sdk_int() > kKitKatMR2SDKVersion;
-  return use_edge_effect_l;
-}
-
-scoped_ptr<EdgeEffectBase> CreateEdgeEffect(
-    ui::SystemUIResourceManager* resource_manager,
-    float device_scale_factor) {
-  DCHECK(resource_manager);
-  if (UseEdgeEffectL())
-    return scoped_ptr<EdgeEffectBase>(new EdgeEffectL(resource_manager));
-
-  return scoped_ptr<EdgeEffectBase>(
-      new EdgeEffect(resource_manager, device_scale_factor));
-}
-
-scoped_ptr<OverscrollGlow> CreateOverscrollEffect(
-    ContentViewCore* content_view_core) {
-  DCHECK(content_view_core);
-  ui::WindowAndroidCompositor* compositor =
-      content_view_core->GetWindowAndroid()->GetCompositor();
-  DCHECK(compositor);
-  ui::SystemUIResourceManager* system_resource_manager =
-      &compositor->GetSystemUIResourceManager();
-
-  if (UseEdgeEffectL())
-    EdgeEffectL::PreloadResources(system_resource_manager);
-  else
-    EdgeEffect::PreloadResources(system_resource_manager);
-
-  return make_scoped_ptr(
-      new OverscrollGlow(base::Bind(&CreateEdgeEffect,
-                                    system_resource_manager,
-                                    content_view_core->GetDpiScale())));
-}
-
 scoped_ptr<TouchSelectionController> CreateSelectionController(
     TouchSelectionControllerClient* client,
     ContentViewCore* content_view_core) {
@@ -215,6 +146,19 @@ scoped_ptr<TouchSelectionController> CreateSelectionController(
       client,
       base::TimeDelta::FromMilliseconds(tap_timeout_ms),
       touch_slop_pixels / content_view_core->GetDpiScale()));
+}
+
+scoped_ptr<OverscrollControllerAndroid> CreateOverscrollController(
+    ContentViewCore* content_view_core) {
+  DCHECK(content_view_core);
+  ui::WindowAndroid* window = content_view_core->GetWindowAndroid();
+  DCHECK(window);
+  ui::WindowAndroidCompositor* compositor = window->GetCompositor();
+  DCHECK(compositor);
+  return make_scoped_ptr(new OverscrollControllerAndroid(
+      content_view_core->GetWebContents(),
+      compositor,
+      content_view_core->GetDpiScale()));
 }
 
 ui::GestureProvider::Config CreateGestureProviderConfig() {
@@ -273,7 +217,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
       last_output_surface_id_(kUndefinedOutputSurfaceId),
-      overscroll_effect_enabled_(
+      overscroll_controller_enabled_(
           !base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableOverscrollEdgeEffect)),
       gesture_provider_(CreateGestureProviderConfig(), this),
@@ -475,15 +419,15 @@ void RenderWidgetHostViewAndroid::MovePluginWindows(
 void RenderWidgetHostViewAndroid::Focus() {
   host_->Focus();
   host_->SetInputMethodActive(true);
-  if (overscroll_effect_)
-    overscroll_effect_->Enable();
+  if (overscroll_controller_)
+    overscroll_controller_->Enable();
 }
 
 void RenderWidgetHostViewAndroid::Blur() {
   host_->SetInputMethodActive(false);
   host_->Blur();
-  if (overscroll_effect_)
-    overscroll_effect_->Disable();
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
 }
 
 bool RenderWidgetHostViewAndroid::HasFocus() const {
@@ -1029,10 +973,6 @@ void RenderWidgetHostViewAndroid::ComputeContentsSize(
       frame_metadata.scrollable_viewport_size,
       frame_metadata.device_scale_factor * frame_metadata.page_scale_factor));
 
-  if (overscroll_effect_) {
-    overscroll_effect_->UpdateDisplayParameters(
-        CreateOverscrollDisplayParameters(frame_metadata));
-  }
 }
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
@@ -1231,6 +1171,9 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (!content_view_core_)
     return;
 
+  if (overscroll_controller_)
+    overscroll_controller_->OnFrameMetadataUpdated(frame_metadata);
+
   if (selection_controller_) {
     selection_controller_->OnSelectionBoundsChanged(
         frame_metadata.selection_start, frame_metadata.selection_end);
@@ -1267,8 +1210,8 @@ void RenderWidgetHostViewAndroid::AttachLayers() {
     return;
 
   content_view_core_->AttachLayer(layer_);
-  if (overscroll_effect_)
-    overscroll_effect_->Enable();
+  if (overscroll_controller_)
+    overscroll_controller_->Enable();
   layer_->SetHideLayerAndSubtree(!is_showing_);
 }
 
@@ -1280,8 +1223,8 @@ void RenderWidgetHostViewAndroid::RemoveLayers() {
     return;
 
   content_view_core_->RemoveLayer(layer_);
-  if (overscroll_effect_)
-    overscroll_effect_->Disable();
+  if (overscroll_controller_)
+    overscroll_controller_->Disable();
 }
 
 void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32 requests) {
@@ -1340,8 +1283,11 @@ void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
 }
 
 bool RenderWidgetHostViewAndroid::Animate(base::TimeTicks frame_time) {
-  bool needs_animate =
-      overscroll_effect_ ? overscroll_effect_->Animate(frame_time) : false;
+  bool needs_animate = false;
+  if (overscroll_controller_) {
+    needs_animate |= overscroll_controller_->Animate(
+        frame_time, content_view_core_->GetLayer().get());
+  }
   if (selection_controller_)
     needs_animate |= selection_controller_->Animate(frame_time);
   return needs_animate;
@@ -1392,12 +1338,8 @@ void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
 void RenderWidgetHostViewAndroid::GestureEventAck(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {
-  // The overscroll effect requires an explicit release signal that may not be
-  // sent from the renderer compositor.
-  if (event.type == blink::WebInputEvent::GestureScrollEnd ||
-      event.type == blink::WebInputEvent::GestureFlingStart) {
-    DidOverscroll(DidOverscrollParams());
-  }
+  if (overscroll_controller_)
+    overscroll_controller_->OnGestureEventAck(event, ack_result);
 
   if (content_view_core_)
     content_view_core_->OnGestureEventAck(event, ack_result);
@@ -1416,6 +1358,13 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
       default:
         break;
     }
+  }
+
+  if (overscroll_controller_ &&
+      blink::WebInputEvent::isGestureEventType(input_event.type) &&
+      overscroll_controller_->WillHandleGestureEvent(
+          static_cast<const blink::WebGestureEvent&>(input_event))) {
+    return INPUT_EVENT_ACK_STATE_CONSUMED;
   }
 
   if (content_view_core_ &&
@@ -1502,8 +1451,8 @@ void RenderWidgetHostViewAndroid::SendMouseWheelEvent(
 void RenderWidgetHostViewAndroid::SendGestureEvent(
     const blink::WebGestureEvent& event) {
   // Sending a gesture that may trigger overscroll should resume the effect.
-  if (overscroll_effect_)
-    overscroll_effect_->Enable();
+  if (overscroll_controller_)
+    overscroll_controller_->Enable();
 
   if (host_)
     host_->ForwardGestureEventWithLatencyInfo(event, CreateLatencyInfo(event));
@@ -1555,23 +1504,8 @@ void RenderWidgetHostViewAndroid::DidOverscroll(
   if (!content_view_core_ || !layer_.get() || !is_showing_)
     return;
 
-  const float device_scale_factor = content_view_core_->GetDpiScale();
-
-  if (overscroll_effect_ &&
-      overscroll_effect_->OnOverscrolled(
-          content_view_core_->GetLayer().get(),
-          base::TimeTicks::Now(),
-          gfx::ScaleVector2d(params.accumulated_overscroll,
-                             device_scale_factor),
-          gfx::ScaleVector2d(params.latest_overscroll_delta,
-                             device_scale_factor),
-          gfx::ScaleVector2d(params.current_fling_velocity,
-                             device_scale_factor),
-          gfx::ScaleVector2d(
-              params.causal_event_viewport_point.OffsetFromOrigin(),
-              device_scale_factor))) {
-    SetNeedsAnimate();
-  }
+  if (overscroll_controller_)
+    overscroll_controller_->OnOverscrolled(params);
 }
 
 void RenderWidgetHostViewAndroid::DidStopFlinging() {
@@ -1586,7 +1520,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   bool resize = false;
   if (content_view_core != content_view_core_) {
-    overscroll_effect_.reset();
+    overscroll_controller_.reset();
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     resize = true;
@@ -1617,9 +1551,10 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!selection_controller_)
     selection_controller_ = CreateSelectionController(this, content_view_core_);
 
-  if (overscroll_effect_enabled_ && !overscroll_effect_ &&
-      content_view_core_->GetWindowAndroid()->GetCompositor())
-    overscroll_effect_ = CreateOverscrollEffect(content_view_core_);
+  if (overscroll_controller_enabled_ && !overscroll_controller_ &&
+      content_view_core_->GetWindowAndroid()->GetCompositor()) {
+    overscroll_controller_ = CreateOverscrollController(content_view_core_);
+  }
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1640,15 +1575,15 @@ void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
-  if (overscroll_effect_enabled_ && !overscroll_effect_)
-    overscroll_effect_ = CreateOverscrollEffect(content_view_core_);
+  if (overscroll_controller_enabled_ && !overscroll_controller_)
+    overscroll_controller_ = CreateOverscrollController(content_view_core_);
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(content_view_core_);
   DCHECK(!using_synchronous_compositor_);
   RunAckCallbacks();
-  overscroll_effect_.reset();
+  overscroll_controller_.reset();
 }
 
 void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,

@@ -5,6 +5,7 @@
 #include "content/browser/android/edge_effect_l.h"
 
 #include "cc/layers/ui_resource_layer.h"
+#include "content/browser/android/animation_utils.h"
 #include "ui/base/android/system_ui_resource_manager.h"
 
 namespace content {
@@ -40,29 +41,7 @@ const float kPullDistanceAlphaGlowFactor = 0.8f;
 
 const int kVelocityGlowFactor = 6;
 
-const ui::SystemUIResourceManager::ResourceType kResourceType =
-    ui::SystemUIResourceManager::OVERSCROLL_GLOW_L;
-
-template <typename T>
-T Lerp(T a, T b, T t) {
-  return a + (b - a) * t;
-}
-
-template <typename T>
-T Clamp(T value, T low, T high) {
-  return value < low ? low : (value > high ? high : value);
-}
-
-template <typename T>
-T Damp(T input, T factor) {
-  T result;
-  if (factor == 1) {
-    result = 1 - (1 - input) * (1 - input);
-  } else {
-    result = 1 - std::pow(1 - input, 2 * factor);
-  }
-  return result;
-}
+const ui::SystemUIResourceType kResourceType = ui::OVERSCROLL_GLOW_L;
 
 }  // namespace
 
