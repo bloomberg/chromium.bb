@@ -25,11 +25,12 @@ ScopedMessagePipeHandle ChannelInit::Init(
   DCHECK(!io_thread_task_runner_.get());  // Should only init once.
   io_thread_task_runner_ = io_thread_task_runner;
   ScopedMessagePipeHandle message_pipe =
-      CreateChannel(
-          ScopedPlatformHandle(PlatformHandle(file)), io_thread_task_runner,
-          base::Bind(&ChannelInit::OnCreatedChannel, weak_factory_.GetWeakPtr(),
-                     io_thread_task_runner),
-          base::MessageLoop::current()->message_loop_proxy()).Pass();
+      CreateChannel(ScopedPlatformHandle(PlatformHandle(file)),
+                    io_thread_task_runner,
+                    base::Bind(&ChannelInit::OnCreatedChannel,
+                               weak_factory_.GetWeakPtr(),
+                               io_thread_task_runner),
+                    base::MessageLoop::current()->message_loop_proxy()).Pass();
   return message_pipe.Pass();
 }
 

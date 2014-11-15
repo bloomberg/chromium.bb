@@ -104,8 +104,9 @@ TEST_F(ChannelTest, InitShutdown) {
   EXPECT_EQ(TRISTATE_TRUE, init_result());
 
   io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                 base::Unretained(this)));
 
   // Okay to destroy |Channel| on not-the-I/O-thread.
   EXPECT_TRUE(channel()->HasOneRef());
@@ -202,8 +203,9 @@ TEST_F(ChannelTest, CloseBeforeRun) {
   channel()->AttachAndRunEndpoint(channel_endpoint, true);
 
   io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                 base::Unretained(this)));
 
   EXPECT_TRUE(channel()->HasOneRef());
 }
@@ -271,8 +273,9 @@ TEST_F(ChannelTest, WaitAfterAttachRunAndShutdown) {
   channel()->AttachAndRunEndpoint(channel_endpoint, true);
 
   io_thread()->PostTaskAndWait(
-      FROM_HERE, base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
-                            base::Unretained(this)));
+      FROM_HERE,
+      base::Bind(&ChannelTest::ShutdownChannelOnIOThread,
+                 base::Unretained(this)));
 
   Waiter waiter;
   waiter.Init();

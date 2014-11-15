@@ -48,14 +48,16 @@ class RemoteMessagePipeTest : public testing::Test {
 
   void SetUp() override {
     io_thread_.PostTaskAndWait(
-        FROM_HERE, base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeTest::SetUpOnIOThread,
+                   base::Unretained(this)));
   }
 
   void TearDown() override {
     io_thread_.PostTaskAndWait(
-        FROM_HERE, base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::Bind(&RemoteMessagePipeTest::TearDownOnIOThread,
+                   base::Unretained(this)));
   }
 
  protected:
@@ -67,7 +69,9 @@ class RemoteMessagePipeTest : public testing::Test {
     io_thread_.PostTaskAndWait(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::BootstrapChannelEndpointsOnIOThread,
-                   base::Unretained(this), ep0, ep1));
+                   base::Unretained(this),
+                   ep0,
+                   ep1));
   }
 
   // This bootstraps |ep| on |channels_[channel_index]|. It assumes/requires
@@ -78,7 +82,9 @@ class RemoteMessagePipeTest : public testing::Test {
     io_thread_.PostTask(
         FROM_HERE,
         base::Bind(&RemoteMessagePipeTest::BootstrapChannelEndpointOnIOThread,
-                   base::Unretained(this), channel_index, ep));
+                   base::Unretained(this),
+                   channel_index,
+                   ep));
   }
 
   void RestoreInitialState() {
@@ -192,10 +198,12 @@ TEST_F(RemoteMessagePipeTest, Basic) {
       mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
   // Write to MP 0, port 0.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(kHello),
+                              sizeof(kHello),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -209,8 +217,11 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -222,10 +233,12 @@ TEST_F(RemoteMessagePipeTest, Basic) {
       MOJO_RESULT_OK,
       mp0->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456, nullptr));
 
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->WriteMessage(1, UserPointer<const void>(kWorld), sizeof(kWorld),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->WriteMessage(1,
+                              UserPointer<const void>(kWorld),
+                              sizeof(kWorld),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(456u, context);
@@ -238,8 +251,11 @@ TEST_F(RemoteMessagePipeTest, Basic) {
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp0->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kWorld, buffer);
@@ -304,8 +320,10 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
       mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp0->WriteMessage(0, UserPointer<const void>(&remote_id),
-                              sizeof(remote_id), nullptr,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(&remote_id),
+                              sizeof(remote_id),
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -320,8 +338,11 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   ChannelEndpointId received_id;
   buffer_size = static_cast<uint32_t>(sizeof(received_id));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, UserPointer<void>(&received_id),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(&received_id),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(received_id), static_cast<size_t>(buffer_size));
   EXPECT_EQ(remote_id, received_id);
@@ -338,10 +359,12 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
       MOJO_RESULT_OK,
       mp3->AddWaiter(0, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, nullptr));
 
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp2->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp2->WriteMessage(0,
+                              UserPointer<const void>(kHello),
+                              sizeof(kHello),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(789u, context);
@@ -355,25 +378,37 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   // Make sure there's nothing on MP 0, port 0 or MP 1, port 1 or MP 2, port 0.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp0->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp0->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp1->ReadMessage(1, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp2->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp2->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Read from MP 3, port 1.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp3->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp3->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -385,10 +420,12 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
       MOJO_RESULT_OK,
       mp1->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 123, nullptr));
 
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp0->WriteMessage(0, UserPointer<const void>(kWorld), sizeof(kWorld),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(kWorld),
+                              sizeof(kWorld),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
   EXPECT_EQ(123u, context);
@@ -402,24 +439,36 @@ TEST_F(RemoteMessagePipeTest, Multiplex) {
   // Make sure there's nothing on the other ports.
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp0->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp0->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp2->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp2->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            mp3->ReadMessage(0, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp3->ReadMessage(0,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kWorld, buffer);
@@ -446,10 +495,12 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeAttachAndRun) {
   scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
 
   // Write to MP 0, port 0.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(kHello),
+                              sizeof(kHello),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Close MP 0, port 0 before it's even been attached to the channel and run.
   mp0->Close(0);
@@ -482,8 +533,11 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeAttachAndRun) {
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -508,10 +562,12 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
   scoped_refptr<MessagePipe> mp0(MessagePipe::CreateLocalProxy(&ep0));
 
   // Write to MP 0, port 0.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                        nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->WriteMessage(0,
+                              UserPointer<const void>(kHello),
+                              sizeof(kHello),
+                              nullptr,
+                              MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   BootstrapChannelEndpointNoWait(0, ep0);
 
@@ -544,8 +600,11 @@ TEST_F(RemoteMessagePipeTest, CloseBeforeConnect) {
 
   // Read from MP 1, port 1.
   EXPECT_EQ(MOJO_RESULT_OK,
-            mp1->ReadMessage(1, UserPointer<void>(buffer),
-                             MakeUserPointer(&buffer_size), nullptr, nullptr,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(buffer),
+                             MakeUserPointer(&buffer_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(buffer_size));
   EXPECT_STREQ(kHello, buffer);
@@ -587,10 +646,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kHello),
+                                sizeof(kHello),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -614,11 +675,13 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->ReadMessage(1, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -632,14 +695,16 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   // Add the waiter now, before it becomes readable to avoid a race.
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 456,
-                                  nullptr));
+            dispatcher->AddWaiter(
+                &waiter, MOJO_HANDLE_SIGNAL_READABLE, 456, nullptr));
 
   // Write to "local_mp", port 1.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      local_mp->WriteMessage(1, UserPointer<const void>(kHello), sizeof(kHello),
-                             nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1,
+                                   UserPointer<const void>(kHello),
+                                   sizeof(kHello),
+                                   nullptr,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // TODO(vtl): FIXME -- We (racily) crash if I close |dispatcher| immediately
   // here. (We don't crash if I sleep and then close.)
@@ -659,21 +724,25 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->ReadMessage(UserPointer<void>(read_buffer),
-                                    MakeUserPointer(&read_buffer_size), 0,
-                                    nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+                                    MakeUserPointer(&read_buffer_size),
+                                    0,
+                                    nullptr,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
 
   // Prepare to wait on "local_mp", port 1.
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            local_mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789,
-                                nullptr));
+            local_mp->AddWaiter(
+                1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, nullptr));
 
   // Write to the dispatcher.
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->WriteMessage(
-                                UserPointer<const void>(kHello), sizeof(kHello),
-                                nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->WriteMessage(UserPointer<const void>(kHello),
+                                     sizeof(kHello),
+                                     nullptr,
+                                     MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -689,9 +758,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassing) {
   memset(read_buffer, 0, sizeof(read_buffer));
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            local_mp->ReadMessage(1, UserPointer<void>(read_buffer),
-                                  MakeUserPointer(&read_buffer_size), nullptr,
-                                  nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+            local_mp->ReadMessage(1,
+                                  UserPointer<void>(read_buffer),
+                                  MakeUserPointer(&read_buffer_size),
+                                  nullptr,
+                                  nullptr,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
 
@@ -724,20 +796,24 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfiable_signals);
   // Write to the other end (|local_mp|, port 1), and then close it.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      local_mp->WriteMessage(1, UserPointer<const void>(kHello), sizeof(kHello),
-                             nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1,
+                                   UserPointer<const void>(kHello),
+                                   sizeof(kHello),
+                                   nullptr,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = local_mp->GetHandleSignalsState(0);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfiable_signals);
   // Then the second message....
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      local_mp->WriteMessage(1, UserPointer<const void>(kWorld), sizeof(kWorld),
-                             nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1,
+                                   UserPointer<const void>(kWorld),
+                                   sizeof(kWorld),
+                                   nullptr,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = local_mp->GetHandleSignalsState(0);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
@@ -767,10 +843,12 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kHello),
+                                sizeof(kHello),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -794,11 +872,13 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->ReadMessage(1, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -818,8 +898,10 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->ReadMessage(UserPointer<void>(read_buffer),
-                                    MakeUserPointer(&read_buffer_size), 0,
-                                    nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+                                    MakeUserPointer(&read_buffer_size),
+                                    0,
+                                    nullptr,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
   // It should still be readable.
@@ -831,8 +913,10 @@ TEST_F(RemoteMessagePipeTest, HandlePassingHalfClosed) {
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->ReadMessage(UserPointer<void>(read_buffer),
-                                    MakeUserPointer(&read_buffer_size), 0,
-                                    nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+                                    MakeUserPointer(&read_buffer_size),
+                                    0,
+                                    nullptr,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kWorld, read_buffer);
   // Now it should no longer be readable.
@@ -866,16 +950,19 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // We'll try to pass this dispatcher.
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  EXPECT_EQ(MOJO_RESULT_OK, SharedBufferDispatcher::Create(
-                                platform_support(),
-                                SharedBufferDispatcher::kDefaultCreateOptions,
-                                100, &dispatcher));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            SharedBufferDispatcher::Create(
+                platform_support(),
+                SharedBufferDispatcher::kDefaultCreateOptions,
+                100,
+                &dispatcher));
   ASSERT_TRUE(dispatcher.get());
 
   // Make a mapping.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping0;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping0));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      dispatcher->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping0));
   ASSERT_TRUE(mapping0);
   ASSERT_TRUE(mapping0->GetBase());
   ASSERT_EQ(100u, mapping0->GetLength());
@@ -898,10 +985,12 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kHello),
+                                sizeof(kHello),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -925,11 +1014,13 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->ReadMessage(1, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -942,8 +1033,9 @@ TEST_F(RemoteMessagePipeTest, MAYBE_SharedBufferPassing) {
 
   // Make another mapping.
   scoped_ptr<embedder::PlatformSharedBufferMapping> mapping1;
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->MapBuffer(
-                                0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping1));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      dispatcher->MapBuffer(0, 100, MOJO_MAP_BUFFER_FLAG_NONE, &mapping1));
   ASSERT_TRUE(mapping1);
   ASSERT_TRUE(mapping1->GetBase());
   ASSERT_EQ(100u, mapping1->GetLength());
@@ -1018,10 +1110,12 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp0->WriteMessage(0, UserPointer<const void>(kWorld), sizeof(kWorld),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kWorld),
+                                sizeof(kWorld),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -1045,11 +1139,13 @@ TEST_F(RemoteMessagePipeTest, MAYBE_PlatformHandlePassing) {
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->ReadMessage(1, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kWorld, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -1156,10 +1252,12 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp0->WriteMessage(0, UserPointer<const void>(kHello), sizeof(kHello),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp0->WriteMessage(0,
+                                UserPointer<const void>(kHello),
+                                sizeof(kHello),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -1183,11 +1281,13 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   uint32_t read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   DispatcherVector read_dispatchers;
   uint32_t read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp1->ReadMessage(1, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp1->ReadMessage(1,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -1216,10 +1316,12 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
 
     std::vector<DispatcherTransport> transports;
     transports.push_back(transport);
-    EXPECT_EQ(
-        MOJO_RESULT_OK,
-        mp1->WriteMessage(1, UserPointer<const void>(kWorld), sizeof(kWorld),
-                          &transports, MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(MOJO_RESULT_OK,
+              mp1->WriteMessage(1,
+                                UserPointer<const void>(kWorld),
+                                sizeof(kWorld),
+                                &transports,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
     transport.End();
 
     // |dispatcher| should have been closed. This is |DCHECK()|ed when the
@@ -1241,11 +1343,13 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   // Read from MP 0, port 0.
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   read_num_dispatchers = 10;  // Maximum to get.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      mp0->ReadMessage(0, UserPointer<void>(read_buffer),
-                       MakeUserPointer(&read_buffer_size), &read_dispatchers,
-                       &read_num_dispatchers, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mp0->ReadMessage(0,
+                             UserPointer<void>(read_buffer),
+                             MakeUserPointer(&read_buffer_size),
+                             &read_dispatchers,
+                             &read_num_dispatchers,
+                             MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kWorld), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kWorld, read_buffer);
   EXPECT_EQ(1u, read_dispatchers.size());
@@ -1260,14 +1364,16 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   // Add the waiter now, before it becomes readable to avoid a race.
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            dispatcher->AddWaiter(&waiter, MOJO_HANDLE_SIGNAL_READABLE, 789,
-                                  nullptr));
+            dispatcher->AddWaiter(
+                &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, nullptr));
 
   // Write to "local_mp", port 1.
-  EXPECT_EQ(
-      MOJO_RESULT_OK,
-      local_mp->WriteMessage(1, UserPointer<const void>(kHello), sizeof(kHello),
-                             nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            local_mp->WriteMessage(1,
+                                   UserPointer<const void>(kHello),
+                                   sizeof(kHello),
+                                   nullptr,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for the dispatcher to become readable.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -1284,21 +1390,25 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
             dispatcher->ReadMessage(UserPointer<void>(read_buffer),
-                                    MakeUserPointer(&read_buffer_size), 0,
-                                    nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+                                    MakeUserPointer(&read_buffer_size),
+                                    0,
+                                    nullptr,
+                                    MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
 
   // Prepare to wait on "local_mp", port 1.
   waiter.Init();
   ASSERT_EQ(MOJO_RESULT_OK,
-            local_mp->AddWaiter(1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789,
-                                nullptr));
+            local_mp->AddWaiter(
+                1, &waiter, MOJO_HANDLE_SIGNAL_READABLE, 789, nullptr));
 
   // Write to the dispatcher.
-  EXPECT_EQ(MOJO_RESULT_OK, dispatcher->WriteMessage(
-                                UserPointer<const void>(kHello), sizeof(kHello),
-                                nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            dispatcher->WriteMessage(UserPointer<const void>(kHello),
+                                     sizeof(kHello),
+                                     nullptr,
+                                     MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait.
   EXPECT_EQ(MOJO_RESULT_OK, waiter.Wait(MOJO_DEADLINE_INDEFINITE, &context));
@@ -1314,9 +1424,12 @@ TEST_F(RemoteMessagePipeTest, PassMessagePipeHandleAcrossAndBack) {
   memset(read_buffer, 0, sizeof(read_buffer));
   read_buffer_size = static_cast<uint32_t>(sizeof(read_buffer));
   EXPECT_EQ(MOJO_RESULT_OK,
-            local_mp->ReadMessage(1, UserPointer<void>(read_buffer),
-                                  MakeUserPointer(&read_buffer_size), nullptr,
-                                  nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+            local_mp->ReadMessage(1,
+                                  UserPointer<void>(read_buffer),
+                                  MakeUserPointer(&read_buffer_size),
+                                  nullptr,
+                                  nullptr,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(sizeof(kHello), static_cast<size_t>(read_buffer_size));
   EXPECT_STREQ(kHello, read_buffer);
 

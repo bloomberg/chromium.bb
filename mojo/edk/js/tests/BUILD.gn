@@ -2,26 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/public/tools/bindings/mojom.gni")
-
-source_set("js_to_cpp_tests") {
-  testonly = true
-
+test("js_unittests") {
   deps = [
-    ":js_to_cpp_bindings",
     "//gin:gin_test",
     "//mojo/edk/js",
+    "//mojo/edk/js:js_unittests",
+    "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
+    "//mojo/public/cpp/environment:standalone",
+    "//mojo/public/cpp/utility",
     "//mojo/public/interfaces/bindings/tests:test_interfaces",
   ]
 
-  sources = [
-    "js_to_cpp_tests.cc",
-  ]
-}
-
-mojom("js_to_cpp_bindings") {
-  sources = [ "js_to_cpp.mojom" ]
+  sources = [ "run_js_tests.cc" ]
 }

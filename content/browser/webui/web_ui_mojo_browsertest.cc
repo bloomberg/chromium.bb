@@ -82,6 +82,9 @@ class PingBrowserTargetImpl : public BrowserTargetImpl {
 
   ~PingBrowserTargetImpl() override {}
 
+  // mojo::InterfaceImpl<BrowserTarget> overrides:
+  void OnConnectionEstablished() override { client()->Ping(); }
+
   // Quit the RunLoop when called.
   void PingResponse() override {
     got_message = true;
@@ -131,7 +134,6 @@ class PingTestWebUIController : public TestWebUIController {
   void CreateHandler(mojo::InterfaceRequest<BrowserTarget> request) {
     browser_target_.reset(mojo::WeakBindToRequest(
         new PingBrowserTargetImpl(run_loop_), &request));
-    browser_target_->client()->Ping();
   }
 
  private:

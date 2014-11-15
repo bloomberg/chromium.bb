@@ -44,24 +44,31 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(Dispatcher::kTypeUnknown, d->GetType());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NullUserPointer(), 0, nullptr,
-                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(
+                NullUserPointer(), 0, nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NullUserPointer(), NullUserPointer(), nullptr,
-                           nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NullUserPointer(), NullUserPointer(),
-                         MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
-                              MOJO_WRITE_DATA_FLAG_NONE));
+            d->ReadMessage(NullUserPointer(),
+                           NullUserPointer(),
+                           nullptr,
+                           nullptr,
+                           MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->WriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginWriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndWriteData(0));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NullUserPointer(), NullUserPointer(),
-                        MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginReadData(NullUserPointer(), NullUserPointer(),
-                             MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->ReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   Waiter w;
   w.Init();
@@ -83,24 +90,31 @@ TEST(DispatcherTest, Basic) {
   EXPECT_EQ(MOJO_RESULT_OK, d->Close());
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteMessage(NullUserPointer(), 0, nullptr,
-                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+            d->WriteMessage(
+                NullUserPointer(), 0, nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadMessage(NullUserPointer(), NullUserPointer(), nullptr,
-                           nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->WriteData(NullUserPointer(), NullUserPointer(),
-                         MOJO_WRITE_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginWriteData(NullUserPointer(), NullUserPointer(),
-                              MOJO_WRITE_DATA_FLAG_NONE));
+            d->ReadMessage(NullUserPointer(),
+                           NullUserPointer(),
+                           nullptr,
+                           nullptr,
+                           MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->WriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginWriteData(
+          NullUserPointer(), NullUserPointer(), MOJO_WRITE_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndWriteData(0));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->ReadData(NullUserPointer(), NullUserPointer(),
-                        MOJO_READ_DATA_FLAG_NONE));
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d->BeginReadData(NullUserPointer(), NullUserPointer(),
-                             MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->ReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
+  EXPECT_EQ(
+      MOJO_RESULT_INVALID_ARGUMENT,
+      d->BeginReadData(
+          NullUserPointer(), NullUserPointer(), MOJO_READ_DATA_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, d->EndReadData(0));
   hss = HandleSignalsState();
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
@@ -158,40 +172,45 @@ class ThreadSafetyStressThread : public base::SimpleThread {
         break;
       }
       case WRITE_MESSAGE:
-        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteMessage(NullUserPointer(), 0, nullptr,
-                                            MOJO_WRITE_MESSAGE_FLAG_NONE));
+        EXPECT_EQ(
+            MOJO_RESULT_INVALID_ARGUMENT,
+            dispatcher_->WriteMessage(
+                NullUserPointer(), 0, nullptr, MOJO_WRITE_MESSAGE_FLAG_NONE));
         break;
       case READ_MESSAGE:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadMessage(NullUserPointer(), NullUserPointer(),
-                                           nullptr, nullptr,
+                  dispatcher_->ReadMessage(NullUserPointer(),
+                                           NullUserPointer(),
+                                           nullptr,
+                                           nullptr,
                                            MOJO_WRITE_MESSAGE_FLAG_NONE));
         break;
       case WRITE_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->WriteData(NullUserPointer(), NullUserPointer(),
+                  dispatcher_->WriteData(NullUserPointer(),
+                                         NullUserPointer(),
                                          MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case BEGIN_WRITE_DATA:
-        EXPECT_EQ(
-            MOJO_RESULT_INVALID_ARGUMENT,
-            dispatcher_->BeginWriteData(NullUserPointer(), NullUserPointer(),
-                                        MOJO_WRITE_DATA_FLAG_NONE));
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->BeginWriteData(NullUserPointer(),
+                                              NullUserPointer(),
+                                              MOJO_WRITE_DATA_FLAG_NONE));
         break;
       case END_WRITE_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher_->EndWriteData(0));
         break;
       case READ_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                  dispatcher_->ReadData(NullUserPointer(), NullUserPointer(),
+                  dispatcher_->ReadData(NullUserPointer(),
+                                        NullUserPointer(),
                                         MOJO_READ_DATA_FLAG_NONE));
         break;
       case BEGIN_READ_DATA:
-        EXPECT_EQ(
-            MOJO_RESULT_INVALID_ARGUMENT,
-            dispatcher_->BeginReadData(NullUserPointer(), NullUserPointer(),
-                                       MOJO_READ_DATA_FLAG_NONE));
+        EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+                  dispatcher_->BeginReadData(NullUserPointer(),
+                                             NullUserPointer(),
+                                             MOJO_READ_DATA_FLAG_NONE));
         break;
       case END_READ_DATA:
         EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, dispatcher_->EndReadData(0));

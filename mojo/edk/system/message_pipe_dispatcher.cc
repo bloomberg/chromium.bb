@@ -8,7 +8,7 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/channel_endpoint.h"
 #include "mojo/edk/system/channel_endpoint_id.h"
-#include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/local_message_pipe_endpoint.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/message_pipe.h"
@@ -173,17 +173,16 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
     uint32_t num_bytes,
     std::vector<DispatcherTransport>* transports,
     MojoWriteMessageFlags flags) {
-  DCHECK(!transports ||
-         (transports->size() > 0 &&
-          transports->size() <= GetConfiguration().max_message_num_handles));
+  DCHECK(!transports || (transports->size() > 0 &&
+                         transports->size() <= kMaxMessageNumHandles));
 
   lock().AssertAcquired();
 
-  if (num_bytes > GetConfiguration().max_message_num_bytes)
+  if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
-  return message_pipe_->WriteMessage(port_, bytes, num_bytes, transports,
-                                     flags);
+  return message_pipe_->WriteMessage(
+      port_, bytes, num_bytes, transports, flags);
 }
 
 MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
@@ -193,8 +192,8 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();
-  return message_pipe_->ReadMessage(port_, bytes, num_bytes, dispatchers,
-                                    num_dispatchers, flags);
+  return message_pipe_->ReadMessage(
+      port_, bytes, num_bytes, dispatchers, num_dispatchers, flags);
 }
 
 HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateImplNoLock()
@@ -209,8 +208,8 @@ MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(
     uint32_t context,
     HandleSignalsState* signals_state) {
   lock().AssertAcquired();
-  return message_pipe_->AddWaiter(port_, waiter, signals, context,
-                                  signals_state);
+  return message_pipe_->AddWaiter(
+      port_, waiter, signals, context, signals_state);
 }
 
 void MessagePipeDispatcher::RemoveWaiterImplNoLock(

@@ -77,7 +77,9 @@ MojoResult DataPipeConsumerDispatcher::ReadDataImplNoLock(
   }
 
   return data_pipe_->ConsumerReadData(
-      elements, num_bytes, !!(flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+      elements,
+      num_bytes,
+      !!(flags & MOJO_READ_DATA_FLAG_ALL_OR_NONE),
       !!(flags & MOJO_READ_DATA_FLAG_PEEK));
 }
 
@@ -89,7 +91,8 @@ MojoResult DataPipeConsumerDispatcher::BeginReadDataImplNoLock(
 
   // These flags may not be used in two-phase mode.
   if ((flags & MOJO_READ_DATA_FLAG_DISCARD) ||
-      (flags & MOJO_READ_DATA_FLAG_QUERY) || (flags & MOJO_READ_DATA_FLAG_PEEK))
+      (flags & MOJO_READ_DATA_FLAG_QUERY) ||
+      (flags & MOJO_READ_DATA_FLAG_PEEK))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   return data_pipe_->ConsumerBeginReadData(

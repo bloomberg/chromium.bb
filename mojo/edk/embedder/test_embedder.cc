@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/edk/embedder/embedder.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/entrypoints.h"
 #include "mojo/edk/system/handle_table.h"
 
 namespace mojo {
@@ -18,17 +18,18 @@ namespace mojo {
 namespace system {
 namespace internal {
 
-bool ShutdownCheckNoLeaks(Core* core) {
+bool ShutdownCheckNoLeaks(Core* core_impl) {
   // No point in taking the lock.
   const HandleTable::HandleToEntryMap& handle_to_entry_map =
-      core->handle_table_.handle_to_entry_map_;
+      core_impl->handle_table_.handle_to_entry_map_;
 
   if (handle_to_entry_map.empty())
     return true;
 
   for (HandleTable::HandleToEntryMap::const_iterator it =
            handle_to_entry_map.begin();
-       it != handle_to_entry_map.end(); ++it) {
+       it != handle_to_entry_map.end();
+       ++it) {
     LOG(ERROR) << "Mojo embedder shutdown: Leaking handle " << (*it).first;
   }
   return false;
@@ -45,9 +46,9 @@ void InitWithSimplePlatformSupport() {
 }
 
 bool Shutdown() {
-  system::Core* core = internal::g_core;
+  system::Core* core = system::entrypoints::GetCore();
   CHECK(core);
-  internal::g_core = nullptr;
+  system::entrypoints::SetCore(nullptr);
 
   bool rv = system::internal::ShutdownCheckNoLeaks(core);
   delete core;

@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/macros.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/process/process_handle.h"
 #include "base/test/multiprocess_test.h"
 #include "base/test/test_timeouts.h"

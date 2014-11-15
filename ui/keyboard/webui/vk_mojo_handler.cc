@@ -14,11 +14,8 @@
 
 namespace keyboard {
 
-VKMojoHandler::VKMojoHandler(
-    mojo::InterfaceRequest<KeyboardUIHandlerMojo> request)
-    : binding_(this, request.Pass()) {
+VKMojoHandler::VKMojoHandler() {
   GetInputMethod()->AddObserver(this);
-  OnTextInputStateChanged(GetInputMethod()->GetTextInputClient());
 }
 
 VKMojoHandler::~VKMojoHandler() {
@@ -27,6 +24,10 @@ VKMojoHandler::~VKMojoHandler() {
 
 ui::InputMethod* VKMojoHandler::GetInputMethod() {
   return KeyboardController::GetInstance()->proxy()->GetInputMethod();
+}
+
+void VKMojoHandler::OnConnectionEstablished() {
+  OnTextInputStateChanged(GetInputMethod()->GetTextInputClient());
 }
 
 void VKMojoHandler::SendKeyEvent(const mojo::String& event_type,
@@ -106,7 +107,7 @@ void VKMojoHandler::OnTextInputStateChanged(
       type_name = "text";
       break;
   }
-  binding_.client()->OnTextInputTypeChanged(type_name);
+  client()->OnTextInputTypeChanged(type_name);
 }
 
 void VKMojoHandler::OnInputMethodDestroyed(

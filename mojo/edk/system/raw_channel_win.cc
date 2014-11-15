@@ -371,9 +371,11 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
   size_t bytes_to_read = 0;
   read_buffer()->GetBuffer(&buffer, &bytes_to_read);
 
-  BOOL result =
-      ReadFile(io_handler_->handle(), buffer, static_cast<DWORD>(bytes_to_read),
-               nullptr, &io_handler_->read_context()->overlapped);
+  BOOL result = ReadFile(io_handler_->handle(),
+                         buffer,
+                         static_cast<DWORD>(bytes_to_read),
+                         nullptr,
+                         &io_handler_->read_context()->overlapped);
   if (!result) {
     DWORD error = GetLastError();
     if (error == ERROR_BROKEN_PIPE)
@@ -386,9 +388,11 @@ RawChannel::IOResult RawChannelWin::Read(size_t* bytes_read) {
 
   if (result && skip_completion_port_on_success_) {
     DWORD bytes_read_dword = 0;
-    BOOL get_size_result = GetOverlappedResult(
-        io_handler_->handle(), &io_handler_->read_context()->overlapped,
-        &bytes_read_dword, FALSE);
+    BOOL get_size_result =
+        GetOverlappedResult(io_handler_->handle(),
+                            &io_handler_->read_context()->overlapped,
+                            &bytes_read_dword,
+                            FALSE);
     DPCHECK(get_size_result);
     *bytes_read = bytes_read_dword;
     return IO_SUCCEEDED;
@@ -422,10 +426,12 @@ RawChannel::IOResult RawChannelWin::ScheduleRead() {
     // |io_handler_| won't go away before the task is run, so it is safe to use
     // |base::Unretained()|.
     message_loop_for_io()->PostTask(
-        FROM_HERE, base::Bind(&RawChannelIOHandler::OnIOCompleted,
-                              base::Unretained(io_handler_),
-                              base::Unretained(io_handler_->read_context()),
-                              static_cast<DWORD>(bytes_read), ERROR_SUCCESS));
+        FROM_HERE,
+        base::Bind(&RawChannelIOHandler::OnIOCompleted,
+                   base::Unretained(io_handler_),
+                   base::Unretained(io_handler_->read_context()),
+                   static_cast<DWORD>(bytes_read),
+                   ERROR_SUCCESS));
     return IO_PENDING;
   }
 
@@ -459,10 +465,11 @@ RawChannel::IOResult RawChannelWin::WriteNoLock(
 
   // TODO(yzshen): Handle multi-segment writes more efficiently.
   DWORD bytes_written_dword = 0;
-  BOOL result =
-      WriteFile(io_handler_->handle(), buffers[0].addr,
-                static_cast<DWORD>(buffers[0].size), &bytes_written_dword,
-                &io_handler_->write_context_no_lock()->overlapped);
+  BOOL result = WriteFile(io_handler_->handle(),
+                          buffers[0].addr,
+                          static_cast<DWORD>(buffers[0].size),
+                          &bytes_written_dword,
+                          &io_handler_->write_context_no_lock()->overlapped);
   if (!result) {
     DWORD error = GetLastError();
     if (error == ERROR_BROKEN_PIPE)
@@ -514,7 +521,8 @@ RawChannel::IOResult RawChannelWin::ScheduleWriteNoLock() {
         base::Bind(&RawChannelIOHandler::OnIOCompleted,
                    base::Unretained(io_handler_),
                    base::Unretained(io_handler_->write_context_no_lock()),
-                   static_cast<DWORD>(bytes_written), ERROR_SUCCESS));
+                   static_cast<DWORD>(bytes_written),
+                   ERROR_SUCCESS));
     return IO_PENDING;
   }
 

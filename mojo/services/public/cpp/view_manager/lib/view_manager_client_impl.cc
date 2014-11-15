@@ -199,9 +199,8 @@ void ViewManagerClientImpl::Embed(
     Id view_id,
     ServiceProviderPtr service_provider) {
   DCHECK(connected_);
-  service_->Embed(url, view_id,
-      MakeRequest<ServiceProvider>(service_provider.PassMessagePipe()),
-      ActionCompletedCallback());
+  service_->Embed(url, view_id, service_provider.Pass(),
+                  ActionCompletedCallback());
 }
 
 void ViewManagerClientImpl::AddView(View* view) {

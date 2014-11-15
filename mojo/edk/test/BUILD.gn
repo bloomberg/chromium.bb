@@ -56,8 +56,6 @@ source_set("test_support_impl") {
   testonly = true
   deps = [
     "//base",
-    "//base/test:test_support",
-    "//mojo/public/c/test_support",
   ]
 
   sources = [

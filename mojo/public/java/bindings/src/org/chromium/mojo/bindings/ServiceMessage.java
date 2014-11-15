@@ -57,7 +57,7 @@ public class ServiceMessage extends Message {
         if (mPayload == null) {
             ByteBuffer truncatedBuffer =
                     ((ByteBuffer) getData().position(getHeader().getSize())).slice();
-            truncatedBuffer.order(ByteOrder.LITTLE_ENDIAN);
+            truncatedBuffer.order(ByteOrder.nativeOrder());
             mPayload = new Message(truncatedBuffer, getHandles());
         }
         return mPayload;

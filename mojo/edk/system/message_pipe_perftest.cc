@@ -47,23 +47,31 @@ class MultiprocessMessagePipePerfTest
 
  protected:
   void WriteWaitThenRead(scoped_refptr<MessagePipe> mp) {
-    CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(payload_.data()),
-                              static_cast<uint32_t>(payload_.size()), nullptr,
+    CHECK_EQ(mp->WriteMessage(0,
+                              UserPointer<const void>(payload_.data()),
+                              static_cast<uint32_t>(payload_.size()),
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     HandleSignalsState hss;
     CHECK_EQ(test::WaitIfNecessary(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss),
              MOJO_RESULT_OK);
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer_.size());
-    CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&read_buffer_[0]),
-                             MakeUserPointer(&read_buffer_size), nullptr,
-                             nullptr, MOJO_READ_MESSAGE_FLAG_NONE),
+    CHECK_EQ(mp->ReadMessage(0,
+                             UserPointer<void>(&read_buffer_[0]),
+                             MakeUserPointer(&read_buffer_size),
+                             nullptr,
+                             nullptr,
+                             MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     CHECK_EQ(read_buffer_size, static_cast<uint32_t>(payload_.size()));
   }
 
   void SendQuitMessage(scoped_refptr<MessagePipe> mp) {
-    CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(""), 0, nullptr,
+    CHECK_EQ(mp->WriteMessage(0,
+                              UserPointer<const void>(""),
+                              0,
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }
@@ -73,7 +81,8 @@ class MultiprocessMessagePipePerfTest
     WriteWaitThenRead(mp);
 
     std::string test_name =
-        base::StringPrintf("IPC_Perf_%dx_%u", message_count_,
+        base::StringPrintf("IPC_Perf_%dx_%u",
+                           message_count_,
                            static_cast<unsigned>(message_size_));
     base::PerfTimeLogger logger(test_name.c_str());
 
@@ -118,8 +127,11 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
     }
 
     uint32_t read_size = static_cast<uint32_t>(buffer.size());
-    CHECK_EQ(mp->ReadMessage(0, UserPointer<void>(&buffer[0]),
-                             MakeUserPointer(&read_size), nullptr, nullptr,
+    CHECK_EQ(mp->ReadMessage(0,
+                             UserPointer<void>(&buffer[0]),
+                             MakeUserPointer(&read_size),
+                             nullptr,
+                             nullptr,
                              MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
 
@@ -127,8 +139,10 @@ MOJO_MULTIPROCESS_TEST_CHILD_MAIN(PingPongClient) {
     if (0 == read_size)
       break;
 
-    CHECK_EQ(mp->WriteMessage(0, UserPointer<const void>(&buffer[0]),
-                              static_cast<uint32_t>(read_size), nullptr,
+    CHECK_EQ(mp->WriteMessage(0,
+                              UserPointer<const void>(&buffer[0]),
+                              static_cast<uint32_t>(read_size),
+                              nullptr,
                               MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }

@@ -18,6 +18,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/memory.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"

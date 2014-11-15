@@ -5,6 +5,6 @@
 module mojo;
 
 interface CookieStore {
-  Get(string url) => (string cookies);
-  Set(string url, string cookie) => (bool success);
+  Get(string? url) => (string? cookies);
+  Set(string? url, string? cookie) => (bool success);
 };

@@ -23,7 +23,8 @@ namespace {
 
 std::wstring GeneratePipeName() {
   return base::StringPrintf(L"\\\\.\\pipe\\mojo.%u.%u.%I64u",
-                            GetCurrentProcessId(), GetCurrentThreadId(),
+                            GetCurrentProcessId(),
+                            GetCurrentThreadId(),
                             base::RandUint64());
 }
 
@@ -36,7 +37,9 @@ PlatformChannelPair::PlatformChannelPair() {
       PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED | FILE_FLAG_FIRST_PIPE_INSTANCE;
   const DWORD kPipeMode = PIPE_TYPE_BYTE | PIPE_READMODE_BYTE;
   server_handle_.reset(PlatformHandle(
-      CreateNamedPipeW(pipe_name.c_str(), kOpenMode, kPipeMode,
+      CreateNamedPipeW(pipe_name.c_str(),
+                       kOpenMode,
+                       kPipeMode,
                        1,           // Max instances.
                        4096,        // Out buffer size.
                        4096,        // In buffer size.
@@ -53,9 +56,12 @@ PlatformChannelPair::PlatformChannelPair() {
   SECURITY_ATTRIBUTES security_attributes = {
       sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
   client_handle_.reset(
-      PlatformHandle(CreateFileW(pipe_name.c_str(), kDesiredAccess,
+      PlatformHandle(CreateFileW(pipe_name.c_str(),
+                                 kDesiredAccess,
                                  0,  // No sharing.
-                                 &security_attributes, OPEN_EXISTING, kFlags,
+                                 &security_attributes,
+                                 OPEN_EXISTING,
+                                 kFlags,
                                  nullptr)));  // No template file.
   PCHECK(client_handle_.is_valid());
 

@@ -28,7 +28,8 @@ class MojoDemuxerStreamImpl : public mojo::InterfaceImpl<mojo::DemuxerStream> {
                                       mojo::MediaDecoderBufferPtr)>& callback)
       override;
 
-  void DidConnect();
+  // mojo::InterfaceImpl overrides.
+  void OnConnectionEstablished() override;
 
  private:
   // |callback| is the callback that was passed to the initiating Read()

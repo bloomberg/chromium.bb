@@ -1,5 +1,4 @@
 include_rules = [
-  "+base",
   "+gin",
   "+v8",
 ]

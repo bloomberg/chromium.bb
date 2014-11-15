@@ -5,7 +5,10 @@
 #ifndef MOJO_EDK_SYSTEM_TEST_UTILS_H_
 #define MOJO_EDK_SYSTEM_TEST_UTILS_H_
 
+#include <stdint.h>
+
 #include "base/callback_forward.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"

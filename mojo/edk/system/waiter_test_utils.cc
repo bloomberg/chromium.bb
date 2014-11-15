@@ -55,8 +55,8 @@ WaiterThread::~WaiterThread() {
 void WaiterThread::Run() {
   waiter_.Init();
 
-  *result_out_ = dispatcher_->AddWaiter(&waiter_, handle_signals_, context_,
-                                        signals_state_out_);
+  *result_out_ = dispatcher_->AddWaiter(
+      &waiter_, handle_signals_, context_, signals_state_out_);
   if (*result_out_ != MOJO_RESULT_OK)
     return;
 

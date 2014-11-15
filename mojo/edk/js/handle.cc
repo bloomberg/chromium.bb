@@ -4,6 +4,7 @@
 
 #include "mojo/edk/js/handle.h"
 
+#include <sstream>
 #include "mojo/edk/js/handle_close_observer.h"
 
 namespace mojo {
@@ -17,6 +18,23 @@ HandleWrapper::HandleWrapper(MojoHandle handle)
 
 HandleWrapper::~HandleWrapper() {
   NotifyCloseObservers();
+}
+
+std::string HandleWrapper::ToString() {
+  std::ostringstream oss;
+  oss << "[mojo::Handle ";
+  if (handle_.is_valid())
+    oss << handle_.get().value();
+  else
+    oss << "null";
+  oss << "]";
+  return oss.str();
+}
+
+gin::ObjectTemplateBuilder HandleWrapper::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return Wrappable<HandleWrapper>::GetObjectTemplateBuilder(isolate)
+      .SetMethod("toString", &HandleWrapper::ToString);
 }
 
 void HandleWrapper::Close() {

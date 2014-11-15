@@ -48,7 +48,7 @@ namespace test {
 
 // Test helper. We need to declare it here so we can friend it.
 MOJO_SYSTEM_IMPL_EXPORT DispatcherTransport
-DispatcherTryStartTransport(Dispatcher* dispatcher);
+    DispatcherTryStartTransport(Dispatcher* dispatcher);
 
 }  // namespace test
 

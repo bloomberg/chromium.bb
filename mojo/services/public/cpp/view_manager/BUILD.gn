@@ -19,8 +19,6 @@ source_set("view_manager") {
     "view_manager_context.h",
     "view_manager_delegate.h",
     "view_observer.h",
-    "view_tracker.cc",
-    "view_tracker.h",
     "window_manager_delegate.h",
   ]
 

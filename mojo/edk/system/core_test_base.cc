@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
-#include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/memory.h"
@@ -50,7 +50,7 @@ class MockDispatcher : public Dispatcher {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
 
-    if (num_bytes > GetConfiguration().max_message_num_bytes)
+    if (num_bytes > kMaxMessageNumBytes)
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
     if (transports)

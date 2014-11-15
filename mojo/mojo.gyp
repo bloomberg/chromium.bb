@@ -12,7 +12,7 @@
       'target_name': 'mojo',
       'type': 'none',
       'dependencies': [
-        'edk/mojo_edk_tests.gyp:mojo_edk_tests',
+        'edk/mojo_edk.gyp:mojo_edk',
         'mojo_base.gyp:mojo_base',
         'mojo_geometry_converters.gyp:mojo_geometry_lib',
         'mojo_input_events_converters.gyp:mojo_input_events_lib',

@@ -112,15 +112,15 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveData) {
     std::string send_string(1 << i, 'A' + i);
 
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()),
-              PlatformChannelWrite(server_handle.get(), send_string.data(),
-                                   send_string.size()));
+              PlatformChannelWrite(
+                  server_handle.get(), send_string.data(), send_string.size()));
 
     WaitReadable(client_handle.get());
 
     char buf[10000] = {};
     std::deque<PlatformHandle> received_handles;
-    ssize_t result = PlatformChannelRecvmsg(client_handle.get(), buf,
-                                            sizeof(buf), &received_handles);
+    ssize_t result = PlatformChannelRecvmsg(
+        client_handle.get(), buf, sizeof(buf), &received_handles);
     EXPECT_EQ(static_cast<ssize_t>(send_string.size()), result);
     EXPECT_EQ(send_string, std::string(buf, static_cast<size_t>(result)));
     EXPECT_TRUE(received_handles.empty());
@@ -155,7 +155,9 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     struct iovec iov = {const_cast<char*>(kHello), sizeof(kHello)};
     // We assume that the |sendmsg()| actually sends all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-              PlatformChannelSendmsgWithHandles(server_handle.get(), &iov, 1,
+              PlatformChannelSendmsgWithHandles(server_handle.get(),
+                                                &iov,
+                                                1,
                                                 &platform_handles[0],
                                                 platform_handles.size()));
 
@@ -165,8 +167,8 @@ TEST_F(PlatformChannelPairPosixTest, SendReceiveFDs) {
     std::deque<PlatformHandle> received_handles;
     // We assume that the |recvmsg()| actually reads all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-              PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
-                                     &received_handles));
+              PlatformChannelRecvmsg(
+                  client_handle.get(), buf, sizeof(buf), &received_handles));
     EXPECT_STREQ(kHello, buf);
     EXPECT_EQ(i, received_handles.size());
 
@@ -212,7 +214,9 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
     struct iovec iov = {const_cast<char*>(kHello), sizeof(kHello)};
     // We assume that the |sendmsg()| actually sends all the data.
     EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-              PlatformChannelSendmsgWithHandles(server_handle.get(), &iov, 1,
+              PlatformChannelSendmsgWithHandles(server_handle.get(),
+                                                &iov,
+                                                1,
                                                 &platform_handles[0],
                                                 platform_handles.size()));
   }
@@ -226,8 +230,8 @@ TEST_F(PlatformChannelPairPosixTest, AppendReceivedFDs) {
   char buf[100] = {};
   // We assume that the |recvmsg()| actually reads all the data.
   EXPECT_EQ(static_cast<ssize_t>(sizeof(kHello)),
-            PlatformChannelRecvmsg(client_handle.get(), buf, sizeof(buf),
-                                   &received_handles));
+            PlatformChannelRecvmsg(
+                client_handle.get(), buf, sizeof(buf), &received_handles));
   EXPECT_STREQ(kHello, buf);
   ASSERT_EQ(2u, received_handles.size());
   EXPECT_FALSE(received_handles[0].is_valid());

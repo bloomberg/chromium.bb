@@ -17,9 +17,9 @@ import "mojo/services/public/interfaces/network/web_socket.mojom";
 // high-level origin-build requests like WebSockets and HTTP, and the other for
 // non-origin-bound low-level stuff like DNS, UDP, and TCP.
 interface NetworkService {
-  CreateURLLoader(URLLoader& loader);
+  CreateURLLoader(URLLoader&? loader);
 
-  GetCookieStore(CookieStore& cookie_store);
+  GetCookieStore(CookieStore&? cookie_store);
 
   CreateWebSocket(WebSocket& socket);
 

@@ -60,8 +60,8 @@ int MultiprocessTestHelper::WaitForChildShutdown() {
   CHECK_NE(test_child_handle_, base::kNullProcessHandle);
 
   int rv = -1;
-  CHECK(base::WaitForExitCodeWithTimeout(test_child_handle_, &rv,
-                                         TestTimeouts::action_timeout()));
+  CHECK(base::WaitForExitCodeWithTimeout(
+      test_child_handle_, &rv, TestTimeouts::action_timeout()));
   base::CloseProcessHandle(test_child_handle_);
   test_child_handle_ = base::kNullProcessHandle;
   return rv;

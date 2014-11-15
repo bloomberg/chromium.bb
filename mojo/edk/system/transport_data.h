@@ -84,10 +84,10 @@ class MOJO_SYSTEM_IMPL_EXPORT TransportData {
   static const size_t kMaxSerializedDispatcherPlatformHandles = 2;
 
   // The maximum possible size of a valid transport data buffer.
-  static size_t GetMaxBufferSize();
+  static const size_t kMaxBufferSize;
 
   // The maximum total number of platform handles that may be attached.
-  static size_t GetMaxPlatformHandles();
+  static const size_t kMaxPlatformHandles;
 
   TransportData(scoped_ptr<DispatcherVector> dispatchers, Channel* channel);
 

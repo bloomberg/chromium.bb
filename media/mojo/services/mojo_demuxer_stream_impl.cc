@@ -51,7 +51,7 @@ void MojoDemuxerStreamImpl::OnBufferReady(
                mojo::MediaDecoderBuffer::From(buffer));
 }
 
-void MojoDemuxerStreamImpl::DidConnect() {
+void MojoDemuxerStreamImpl::OnConnectionEstablished() {
   // This is called when our DemuxerStreamClient has connected itself and is
   // ready to receive messages.  Send an initial config and notify it that
   // we are now ready for business.

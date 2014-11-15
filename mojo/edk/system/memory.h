@@ -53,13 +53,13 @@ void MOJO_SYSTEM_IMPL_EXPORT CheckUserPointer(const void* pointer);
 // a buffer of |count| elements of the given size and alignment (both in bytes).
 template <size_t size, size_t alignment>
 void MOJO_SYSTEM_IMPL_EXPORT
-CheckUserPointerWithCount(const void* pointer, size_t count);
+    CheckUserPointerWithCount(const void* pointer, size_t count);
 
 // Checks (insofar as appropriate/possible) that |pointer| is a valid pointer to
 // a buffer of the given size and alignment (both in bytes).
 template <size_t alignment>
 void MOJO_SYSTEM_IMPL_EXPORT
-CheckUserPointerWithSize(const void* pointer, size_t size);
+    CheckUserPointerWithSize(const void* pointer, size_t size);
 
 }  // namespace internal
 

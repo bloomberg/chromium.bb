@@ -30,9 +30,9 @@ const size_t kPlatformChannelMaxNumHandles = 7;
 // never raise |SIGPIPE|. (Note: On Mac, the suppression of |SIGPIPE| is set up
 // by |PlatformChannelPair|.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelWrite(PlatformHandle h, const void* bytes, size_t num_bytes);
+    PlatformChannelWrite(PlatformHandle h, const void* bytes, size_t num_bytes);
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelWritev(PlatformHandle h, struct iovec* iov, size_t num_iov);
+    PlatformChannelWritev(PlatformHandle h, struct iovec* iov, size_t num_iov);
 
 // Writes data, and the given set of |PlatformHandle|s (i.e., file descriptors)
 // over the Unix domain socket given by |h| (e.g., created using
@@ -43,11 +43,11 @@ PlatformChannelWritev(PlatformHandle h, struct iovec* iov, size_t num_iov);
 // specified by |iov|). (The handles are not closed, regardless of success or
 // failure.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelSendmsgWithHandles(PlatformHandle h,
-                                  struct iovec* iov,
-                                  size_t num_iov,
-                                  PlatformHandle* platform_handles,
-                                  size_t num_platform_handles);
+    PlatformChannelSendmsgWithHandles(PlatformHandle h,
+                                      struct iovec* iov,
+                                      size_t num_iov,
+                                      PlatformHandle* platform_handles,
+                                      size_t num_platform_handles);
 
 // TODO(vtl): Remove this once I've switched things over to
 // |PlatformChannelSendmsgWithHandles()|.
@@ -65,10 +65,10 @@ MOJO_SYSTEM_IMPL_EXPORT bool PlatformChannelSendHandles(PlatformHandle h,
 // (in the control message) to |PlatformHandle|s (and append them to
 // |platform_handles|). (This also handles |EINTR|.)
 MOJO_SYSTEM_IMPL_EXPORT ssize_t
-PlatformChannelRecvmsg(PlatformHandle h,
-                       void* buf,
-                       size_t num_bytes,
-                       std::deque<PlatformHandle>* platform_handles);
+    PlatformChannelRecvmsg(PlatformHandle h,
+                           void* buf,
+                           size_t num_bytes,
+                           std::deque<PlatformHandle>* platform_handles);
 
 }  // namespace embedder
 }  // namespace mojo

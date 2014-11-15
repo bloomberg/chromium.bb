@@ -247,73 +247,69 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
       &g_wrapper_info);
 
   if (templ.IsEmpty()) {
-    templ =
-        gin::ObjectTemplateBuilder(isolate)
-            // TODO(mpcomplete): Should these just be methods on the JS Handle
-            // object?
-            .SetMethod("close", CloseHandle)
-            .SetMethod("wait", WaitHandle)
-            .SetMethod("waitMany", WaitMany)
-            .SetMethod("createMessagePipe", CreateMessagePipe)
-            .SetMethod("writeMessage", WriteMessage)
-            .SetMethod("readMessage", ReadMessage)
-            .SetMethod("createDataPipe", CreateDataPipe)
-            .SetMethod("writeData", WriteData)
-            .SetMethod("readData", ReadData)
-            .SetMethod("drainData", DoDrainData)
+     templ = gin::ObjectTemplateBuilder(isolate)
+        // TODO(mpcomplete): Should these just be methods on the JS Handle
+        // object?
+        .SetMethod("close", CloseHandle)
+        .SetMethod("wait", WaitHandle)
+        .SetMethod("waitMany", WaitMany)
+        .SetMethod("createMessagePipe", CreateMessagePipe)
+        .SetMethod("writeMessage", WriteMessage)
+        .SetMethod("readMessage", ReadMessage)
+        .SetMethod("createDataPipe", CreateDataPipe)
+        .SetMethod("writeData", WriteData)
+        .SetMethod("readData", ReadData)
+        .SetMethod("drainData", DoDrainData)
 
-            .SetValue("RESULT_OK", MOJO_RESULT_OK)
-            .SetValue("RESULT_CANCELLED", MOJO_RESULT_CANCELLED)
-            .SetValue("RESULT_UNKNOWN", MOJO_RESULT_UNKNOWN)
-            .SetValue("RESULT_INVALID_ARGUMENT", MOJO_RESULT_INVALID_ARGUMENT)
-            .SetValue("RESULT_DEADLINE_EXCEEDED", MOJO_RESULT_DEADLINE_EXCEEDED)
-            .SetValue("RESULT_NOT_FOUND", MOJO_RESULT_NOT_FOUND)
-            .SetValue("RESULT_ALREADY_EXISTS", MOJO_RESULT_ALREADY_EXISTS)
-            .SetValue("RESULT_PERMISSION_DENIED", MOJO_RESULT_PERMISSION_DENIED)
-            .SetValue("RESULT_RESOURCE_EXHAUSTED",
-                      MOJO_RESULT_RESOURCE_EXHAUSTED)
-            .SetValue("RESULT_FAILED_PRECONDITION",
-                      MOJO_RESULT_FAILED_PRECONDITION)
-            .SetValue("RESULT_ABORTED", MOJO_RESULT_ABORTED)
-            .SetValue("RESULT_OUT_OF_RANGE", MOJO_RESULT_OUT_OF_RANGE)
-            .SetValue("RESULT_UNIMPLEMENTED", MOJO_RESULT_UNIMPLEMENTED)
-            .SetValue("RESULT_INTERNAL", MOJO_RESULT_INTERNAL)
-            .SetValue("RESULT_UNAVAILABLE", MOJO_RESULT_UNAVAILABLE)
-            .SetValue("RESULT_DATA_LOSS", MOJO_RESULT_DATA_LOSS)
-            .SetValue("RESULT_BUSY", MOJO_RESULT_BUSY)
-            .SetValue("RESULT_SHOULD_WAIT", MOJO_RESULT_SHOULD_WAIT)
+        .SetValue("RESULT_OK", MOJO_RESULT_OK)
+        .SetValue("RESULT_CANCELLED", MOJO_RESULT_CANCELLED)
+        .SetValue("RESULT_UNKNOWN", MOJO_RESULT_UNKNOWN)
+        .SetValue("RESULT_INVALID_ARGUMENT", MOJO_RESULT_INVALID_ARGUMENT)
+        .SetValue("RESULT_DEADLINE_EXCEEDED", MOJO_RESULT_DEADLINE_EXCEEDED)
+        .SetValue("RESULT_NOT_FOUND", MOJO_RESULT_NOT_FOUND)
+        .SetValue("RESULT_ALREADY_EXISTS", MOJO_RESULT_ALREADY_EXISTS)
+        .SetValue("RESULT_PERMISSION_DENIED", MOJO_RESULT_PERMISSION_DENIED)
+        .SetValue("RESULT_RESOURCE_EXHAUSTED", MOJO_RESULT_RESOURCE_EXHAUSTED)
+        .SetValue("RESULT_FAILED_PRECONDITION", MOJO_RESULT_FAILED_PRECONDITION)
+        .SetValue("RESULT_ABORTED", MOJO_RESULT_ABORTED)
+        .SetValue("RESULT_OUT_OF_RANGE", MOJO_RESULT_OUT_OF_RANGE)
+        .SetValue("RESULT_UNIMPLEMENTED", MOJO_RESULT_UNIMPLEMENTED)
+        .SetValue("RESULT_INTERNAL", MOJO_RESULT_INTERNAL)
+        .SetValue("RESULT_UNAVAILABLE", MOJO_RESULT_UNAVAILABLE)
+        .SetValue("RESULT_DATA_LOSS", MOJO_RESULT_DATA_LOSS)
+        .SetValue("RESULT_BUSY", MOJO_RESULT_BUSY)
+        .SetValue("RESULT_SHOULD_WAIT", MOJO_RESULT_SHOULD_WAIT)
 
-            .SetValue("DEADLINE_INDEFINITE", MOJO_DEADLINE_INDEFINITE)
+        .SetValue("DEADLINE_INDEFINITE", MOJO_DEADLINE_INDEFINITE)
 
-            .SetValue("HANDLE_SIGNAL_NONE", MOJO_HANDLE_SIGNAL_NONE)
-            .SetValue("HANDLE_SIGNAL_READABLE", MOJO_HANDLE_SIGNAL_READABLE)
-            .SetValue("HANDLE_SIGNAL_WRITABLE", MOJO_HANDLE_SIGNAL_WRITABLE)
+        .SetValue("HANDLE_SIGNAL_NONE", MOJO_HANDLE_SIGNAL_NONE)
+        .SetValue("HANDLE_SIGNAL_READABLE", MOJO_HANDLE_SIGNAL_READABLE)
+        .SetValue("HANDLE_SIGNAL_WRITABLE", MOJO_HANDLE_SIGNAL_WRITABLE)
 
-            .SetValue("CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE",
-                      MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE)
+        .SetValue("CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE",
+                  MOJO_CREATE_MESSAGE_PIPE_OPTIONS_FLAG_NONE)
 
-            .SetValue("WRITE_MESSAGE_FLAG_NONE", MOJO_WRITE_MESSAGE_FLAG_NONE)
+        .SetValue("WRITE_MESSAGE_FLAG_NONE", MOJO_WRITE_MESSAGE_FLAG_NONE)
 
-            .SetValue("READ_MESSAGE_FLAG_NONE", MOJO_READ_MESSAGE_FLAG_NONE)
-            .SetValue("READ_MESSAGE_FLAG_MAY_DISCARD",
-                      MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)
+        .SetValue("READ_MESSAGE_FLAG_NONE", MOJO_READ_MESSAGE_FLAG_NONE)
+        .SetValue("READ_MESSAGE_FLAG_MAY_DISCARD",
+                  MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)
 
-            .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_NONE",
-                      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE)
-            .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD",
-                      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD)
+        .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_NONE",
+                  MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE)
+        .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD",
+                  MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_MAY_DISCARD)
 
-            .SetValue("WRITE_DATA_FLAG_NONE", MOJO_WRITE_DATA_FLAG_NONE)
-            .SetValue("WRITE_DATA_FLAG_ALL_OR_NONE",
-                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE)
+        .SetValue("WRITE_DATA_FLAG_NONE", MOJO_WRITE_DATA_FLAG_NONE)
+        .SetValue("WRITE_DATA_FLAG_ALL_OR_NONE",
+                  MOJO_WRITE_DATA_FLAG_ALL_OR_NONE)
 
-            .SetValue("READ_DATA_FLAG_NONE", MOJO_READ_DATA_FLAG_NONE)
-            .SetValue("READ_DATA_FLAG_ALL_OR_NONE",
-                      MOJO_READ_DATA_FLAG_ALL_OR_NONE)
-            .SetValue("READ_DATA_FLAG_DISCARD", MOJO_READ_DATA_FLAG_DISCARD)
-            .SetValue("READ_DATA_FLAG_QUERY", MOJO_READ_DATA_FLAG_QUERY)
-            .SetValue("READ_DATA_FLAG_PEEK", MOJO_READ_DATA_FLAG_PEEK)
-            .Build();
+        .SetValue("READ_DATA_FLAG_NONE", MOJO_READ_DATA_FLAG_NONE)
+        .SetValue("READ_DATA_FLAG_ALL_OR_NONE",
+                  MOJO_READ_DATA_FLAG_ALL_OR_NONE)
+        .SetValue("READ_DATA_FLAG_DISCARD", MOJO_READ_DATA_FLAG_DISCARD)
+        .SetValue("READ_DATA_FLAG_QUERY", MOJO_READ_DATA_FLAG_QUERY)
+        .Build();
 
     data->SetObjectTemplate(&g_wrapper_info, templ);
   }

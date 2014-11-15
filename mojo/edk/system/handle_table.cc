@@ -4,10 +4,9 @@
 
 #include "mojo/edk/system/handle_table.h"
 
-#include <limits>
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/constants.h"
 #include "mojo/edk/system/dispatcher.h"
 
 namespace mojo {
@@ -60,7 +59,7 @@ MojoResult HandleTable::GetAndRemoveDispatcher(
 
 MojoHandle HandleTable::AddDispatcher(
     const scoped_refptr<Dispatcher>& dispatcher) {
-  if (handle_to_entry_map_.size() >= GetConfiguration().max_handle_table_size)
+  if (handle_to_entry_map_.size() >= kMaxHandleTableSize)
     return MOJO_HANDLE_INVALID;
   return AddDispatcherNoSizeCheck(dispatcher);
 }
@@ -68,8 +67,7 @@ MojoHandle HandleTable::AddDispatcher(
 std::pair<MojoHandle, MojoHandle> HandleTable::AddDispatcherPair(
     const scoped_refptr<Dispatcher>& dispatcher0,
     const scoped_refptr<Dispatcher>& dispatcher1) {
-  if (handle_to_entry_map_.size() + 1 >=
-      GetConfiguration().max_handle_table_size)
+  if (handle_to_entry_map_.size() + 1 >= kMaxHandleTableSize)
     return std::make_pair(MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID);
   return std::make_pair(AddDispatcherNoSizeCheck(dispatcher0),
                         AddDispatcherNoSizeCheck(dispatcher1));
@@ -77,17 +75,17 @@ std::pair<MojoHandle, MojoHandle> HandleTable::AddDispatcherPair(
 
 bool HandleTable::AddDispatcherVector(const DispatcherVector& dispatchers,
                                       MojoHandle* handles) {
-  size_t max_message_num_handles = GetConfiguration().max_message_num_handles;
-  size_t max_handle_table_size = GetConfiguration().max_handle_table_size;
-
-  DCHECK_LE(dispatchers.size(), max_message_num_handles);
+  DCHECK_LE(dispatchers.size(), kMaxMessageNumHandles);
   DCHECK(handles);
-  DCHECK_LT(
-      static_cast<uint64_t>(max_handle_table_size) + max_message_num_handles,
-      std::numeric_limits<size_t>::max())
-      << "Addition may overflow";
+  // TODO(vtl): |std::numeric_limits<size_t>::max()| isn't a compile-time
+  // expression in C++03.
+  static_assert(
+      static_cast<uint64_t>(kMaxHandleTableSize) + kMaxMessageNumHandles <
+          (sizeof(size_t) == 8 ? kuint64max
+                               : static_cast<uint64_t>(kuint32max)),
+      "Addition may overflow");
 
-  if (handle_to_entry_map_.size() + dispatchers.size() > max_handle_table_size)
+  if (handle_to_entry_map_.size() + dispatchers.size() > kMaxHandleTableSize)
     return false;
 
   for (size_t i = 0; i < dispatchers.size(); i++) {
@@ -108,7 +106,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
     std::vector<DispatcherTransport>* transports) {
   DCHECK_NE(disallowed_handle, MOJO_HANDLE_INVALID);
   DCHECK(handles);
-  DCHECK_LE(num_handles, GetConfiguration().max_message_num_handles);
+  DCHECK_LE(num_handles, kMaxMessageNumHandles);
   DCHECK(transports);
   DCHECK_EQ(transports->size(), num_handles);
 
@@ -189,8 +187,7 @@ MojoResult HandleTable::MarkBusyAndStartTransport(
 MojoHandle HandleTable::AddDispatcherNoSizeCheck(
     const scoped_refptr<Dispatcher>& dispatcher) {
   DCHECK(dispatcher.get());
-  DCHECK_LT(handle_to_entry_map_.size(),
-            GetConfiguration().max_handle_table_size);
+  DCHECK_LT(handle_to_entry_map_.size(), kMaxHandleTableSize);
   DCHECK_NE(next_handle_, MOJO_HANDLE_INVALID);
 
   // TODO(vtl): Maybe we want to do something different/smarter. (Or maybe try
@@ -215,7 +212,7 @@ MojoHandle HandleTable::AddDispatcherNoSizeCheck(
 void HandleTable::RemoveBusyHandles(const MojoHandle* handles,
                                     uint32_t num_handles) {
   DCHECK(handles);
-  DCHECK_LE(num_handles, GetConfiguration().max_message_num_handles);
+  DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
   for (uint32_t i = 0; i < num_handles; i++) {
     HandleToEntryMap::iterator it = handle_to_entry_map_.find(handles[i]);
@@ -229,7 +226,7 @@ void HandleTable::RemoveBusyHandles(const MojoHandle* handles,
 void HandleTable::RestoreBusyHandles(const MojoHandle* handles,
                                      uint32_t num_handles) {
   DCHECK(handles);
-  DCHECK_LE(num_handles, GetConfiguration().max_message_num_handles);
+  DCHECK_LE(num_handles, kMaxMessageNumHandles);
 
   for (uint32_t i = 0; i < num_handles; i++) {
     HandleToEntryMap::iterator it = handle_to_entry_map_.find(handles[i]);

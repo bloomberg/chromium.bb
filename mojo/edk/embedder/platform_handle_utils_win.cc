@@ -15,8 +15,12 @@ ScopedPlatformHandle DuplicatePlatformHandle(PlatformHandle platform_handle) {
   DCHECK(platform_handle.is_valid());
 
   HANDLE new_handle;
-  if (!DuplicateHandle(GetCurrentProcess(), platform_handle.handle,
-                       GetCurrentProcess(), &new_handle, 0, TRUE,
+  if (!DuplicateHandle(GetCurrentProcess(),
+                       platform_handle.handle,
+                       GetCurrentProcess(),
+                       &new_handle,
+                       0,
+                       TRUE,
                        DUPLICATE_SAME_ACCESS))
     return ScopedPlatformHandle();
   DCHECK_NE(new_handle, INVALID_HANDLE_VALUE);
