@@ -396,6 +396,5 @@ TEST_F(ViewDisplayListTest, ViewDisplayListTest_UpdateClip)
         TestDisplayItem(secondRenderer, DisplayItem::EndClip));
 }
 
-}
-
-}
+} // anonymous namespace
+} // namespace blink

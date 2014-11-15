@@ -146,6 +146,8 @@ WTF::String DisplayItem::typeAsDebugString(DisplayItem::Type type)
     case DisplayItem::ClipLayerFragmentSelection: return "ClipLayerFragmentSelection";
     case DisplayItem::ClipLayerFragmentChildBlockBackgrounds: return "ClipLayerFragmentChildBlockBackgrounds";
     case DisplayItem::EndClip: return "EndClip";
+    case DisplayItem::BeginFilter: return "BeginFilter";
+    case DisplayItem::EndFilter: return "EndFilter";
     }
     ASSERT_NOT_REACHED();
     return "Unknown";
