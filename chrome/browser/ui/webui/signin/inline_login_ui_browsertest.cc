@@ -91,7 +91,7 @@ class InlineLoginUIBrowserTest : public InProcessBrowserTest {
   InlineLoginUIBrowserTest() {}
 };
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_WIN)
 // crbug.com/422868
 #define MAYBE_DifferentStorageId DISABLED_DifferentStorageId
 #else
