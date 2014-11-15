@@ -1361,16 +1361,6 @@ public:
     // Apple-specific property setters
     void setPointerEvents(EPointerEvents p) { inherited_flags._pointerEvents = p; }
 
-    void clearAnimations()
-    {
-        rareNonInheritedData.access()->m_animations.clear();
-    }
-
-    void clearTransitions()
-    {
-        rareNonInheritedData.access()->m_transitions.clear();
-    }
-
     void setTransformStyle3D(ETransformStyle3D b) { SET_VAR(rareNonInheritedData, m_transformStyle3D, b); }
     void setBackfaceVisibility(EBackfaceVisibility b) { SET_VAR(rareNonInheritedData, m_backfaceVisibility, b); }
     void setPerspective(float p) { SET_VAR(rareNonInheritedData, m_perspective, p); }
