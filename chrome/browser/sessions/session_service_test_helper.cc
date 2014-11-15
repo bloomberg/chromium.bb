@@ -7,6 +7,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/sessions/session_service.h"
+#include "components/sessions/base_session_service_test_helper.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/session_backend.h"
 #include "components/sessions/session_id.h"
@@ -60,8 +61,9 @@ void SessionServiceTestHelper::ReadWindows(
     SessionID::id_type* active_window_id) {
   Time last_time;
   ScopedVector<sessions::SessionCommand> read_commands;
-  service()->GetBaseSessionServiceForTest()->ReadLastSessionCommandsForTest(
-      &read_commands);
+  sessions::BaseSessionServiceTestHelper test_helper(
+      service_->GetBaseSessionServiceForTest());
+  test_helper.ReadLastSessionCommands(&read_commands);
   RestoreSessionFromCommands(read_commands, windows, active_window_id);
   service()->RemoveUnusedRestoreWindows(windows);
 }
@@ -111,9 +113,14 @@ void SessionServiceTestHelper::SetService(SessionService* service) {
   content::RunAllBlockingPoolTasksUntilIdle();
 }
 
+SessionService* SessionServiceTestHelper::ReleaseService() {
+  return service_.release();
+}
+
 void SessionServiceTestHelper::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  service_->GetBaseSessionServiceForTest()->RunTaskOnBackendThread(from_here,
-                                                                   task);
+  sessions::BaseSessionServiceTestHelper test_helper(
+      service_->GetBaseSessionServiceForTest());
+  test_helper.RunTaskOnBackendThread(from_here, task);
 }

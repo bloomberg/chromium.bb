@@ -63,6 +63,13 @@ static_library("test_support") {
   if (!is_android || !is_android_webview_build) {
     deps += [ "//sync" ]
   }
+
+  if (!is_android && !is_ios) {
+    sources += [
+      "base_session_service_test_helper.cc",
+      "base_session_service_test_helper.h",
+    ]
+  }
 }
 
 if (!is_ios) {

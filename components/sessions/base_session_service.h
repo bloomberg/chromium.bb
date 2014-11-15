@@ -15,9 +15,6 @@
 #include "components/sessions/sessions_export.h"
 #include "url/gurl.h"
 
-class BetterSessionRestoreCrashTest;
-class SessionServiceTestHelper;
-class NoStartupWindowTest;
 
 namespace sessions {
 class BaseSessionServiceDelegate;
@@ -104,23 +101,12 @@ class SESSIONS_EXPORT BaseSessionService {
       base::CancelableTaskTracker* tracker);
 
  private:
-  // TODO(skuhne): move these test accessors out into a separate testing
-  // framework - and / or the tests here.
-  friend class ::BetterSessionRestoreCrashTest;
-  friend class ::SessionServiceTestHelper;
-  friend class ::NoStartupWindowTest;
+  friend class BaseSessionServiceTestHelper;
 
   // This posts the task to the SequencedWorkerPool, or run immediately
   // if the SequencedWorkerPool has been shutdown.
   void RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
-
-  // Returns true if any commands got processed yet - saved or queued (used by
-  // unit tests).
-  bool ProcessedAnyCommandsForTest();
-
-  // Read the last session commands directly from file.
-  bool ReadLastSessionCommandsForTest(ScopedVector<SessionCommand>* commands);
 
   // The backend object which reads and saves commands.
   scoped_refptr<SessionBackend> backend_;

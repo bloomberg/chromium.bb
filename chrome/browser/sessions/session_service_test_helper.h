@@ -75,7 +75,7 @@ class SessionServiceTestHelper {
       size_t nav_count);
 
   void SetService(SessionService* service);
-  SessionService* ReleaseService() { return service_.release(); }
+  SessionService* ReleaseService();
   SessionService* service() { return service_.get(); }
 
   void RunTaskOnBackendThread(const tracked_objects::Location& from_here,

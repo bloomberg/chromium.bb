@@ -152,7 +152,6 @@ class ProfileImpl : public Profile {
   friend class chromeos::SupervisedUserTestBase;
 #endif
   friend class Profile;
-  friend class BetterSessionRestoreCrashTest;
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,
                            ProfilesLaunchedAfterCrash);
   FRIEND_TEST_ALL_PREFIXES(ProfileBrowserTest, DISABLED_ProfileReadmeCreated);

@@ -60,6 +60,8 @@
         }],
         ['OS!="ios" and OS!="android"', {
          'sources': [
+           'sessions/base_session_service_test_helper.cc',
+           'sessions/base_session_service_test_helper.h',
            'sessions/session_backend.cc',
            'sessions/session_backend.h',
           ]

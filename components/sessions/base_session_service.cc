@@ -180,13 +180,4 @@ void BaseSessionService::RunTaskOnBackendThread(
   }
 }
 
-bool BaseSessionService::ProcessedAnyCommandsForTest() {
-  return backend_->inited() || !pending_commands().empty();
-}
-
-bool BaseSessionService::ReadLastSessionCommandsForTest(
-    ScopedVector<SessionCommand>* commands) {
-  return backend_->ReadLastSessionCommandsImpl(commands);
-}
-
 }  // namespace sessions

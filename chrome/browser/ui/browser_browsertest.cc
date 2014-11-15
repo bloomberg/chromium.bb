@@ -60,6 +60,7 @@
 #include "components/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "components/app_modal_dialogs/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/sessions/base_session_service_test_helper.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "content/public/browser/favicon_status.h"
@@ -2210,7 +2211,8 @@ class NoStartupWindowTest : public BrowserTest {
   // Returns true if any commands were processed.
   bool ProcessedAnyCommands(
       sessions::BaseSessionService* base_session_service) {
-    return base_session_service->ProcessedAnyCommandsForTest();
+    sessions::BaseSessionServiceTestHelper test_helper(base_session_service);
+    return test_helper.ProcessedAnyCommands();
   }
 };
 
