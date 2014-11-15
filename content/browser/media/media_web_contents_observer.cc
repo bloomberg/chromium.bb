@@ -30,10 +30,10 @@ MediaWebContentsObserver::~MediaWebContentsObserver() {
 
 void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
+#if defined(OS_ANDROID)
   uintptr_t key = reinterpret_cast<uintptr_t>(render_frame_host);
   // Always destroy the media players before CDMs because we do not support
   // detaching CDMs from media players yet. See http://crbug.com/330324
-#if defined(OS_ANDROID)
   media_player_managers_.erase(key);
 #endif
   // TODO(xhwang): Currently MediaWebContentsObserver, BrowserMediaPlayerManager
