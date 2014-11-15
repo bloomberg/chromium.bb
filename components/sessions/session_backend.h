@@ -17,6 +17,7 @@ namespace base {
 class File;
 }
 
+namespace sessions {
 // SessionBackend -------------------------------------------------------------
 
 // SessionBackend is the backend used by BaseSessionService. It is responsible
@@ -30,7 +31,6 @@ class File;
 // BaseSessionService. A command consists of a unique id and a stream of bytes.
 // SessionBackend does not use the id in anyway, that is used by
 // BaseSessionService.
-// TODO(skuhne): Move into sessions space.
 class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
  public:
   typedef sessions::SessionCommand::id_type id_type;
@@ -137,5 +137,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
 
   DISALLOW_COPY_AND_ASSIGN(SessionBackend);
 };
+
+}  // namespace sessions
 
 #endif  // COMPONENTS_SESSIONS_SESSION_BACKEND_H_

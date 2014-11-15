@@ -15,7 +15,6 @@
 #include "components/sessions/sessions_export.h"
 #include "url/gurl.h"
 
-class SessionBackend;
 class BetterSessionRestoreCrashTest;
 class SessionServiceTestHelper;
 class NoStartupWindowTest;
@@ -24,6 +23,7 @@ namespace sessions {
 class BaseSessionServiceDelegate;
 class SerializedNavigationEntry;
 class SessionCommand;
+class SessionBackend;
 
 // BaseSessionService is the super class of both tab restore service and
 // session service. It contains commonality needed by both, in particular

@@ -9,6 +9,7 @@
 #include "components/sessions/session_backend.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace sessions {
 namespace {
 
 typedef ScopedVector<sessions::SessionCommand> SessionCommands;
@@ -204,3 +205,5 @@ TEST_F(SessionBackendTest, Truncate) {
 
   commands.clear();
 }
+
+}  // namespace sessions

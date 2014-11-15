@@ -14,6 +14,8 @@
 
 using base::TimeTicks;
 
+namespace sessions {
+
 // File version number.
 static const int32 kFileCurrentVersion = 1;
 
@@ -401,3 +403,5 @@ base::FilePath SessionBackend::GetCurrentSessionPath() {
     path = path.AppendASCII(kCurrentSessionFileName);
   return path;
 }
+
+}  // namespace sessions
