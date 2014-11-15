@@ -93,9 +93,7 @@ std::string GetFrontendUrl() {
 
 }  // namespace
 
-RemoteDebuggingServer::RemoteDebuggingServer()
-    : devtools_http_handler_(NULL),
-      port_(0) {
+RemoteDebuggingServer::RemoteDebuggingServer() : port_(0) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   pref_port_.Init(prefs::kRemoteDebuggingPort,
                   ChromecastConfig::GetInstance()->pref_service(),
