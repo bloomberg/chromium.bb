@@ -167,7 +167,7 @@ class StatsEventSubscriber : public RawEventSubscriber {
     PACKET_LATENCY_MS_HISTO,
     FRAME_LATENCY_MS_HISTO,
     E2E_LATENCY_MS_HISTO,
-    PLAYOUT_DELAY_MS_HISTO
+    LATE_FRAME_MS_HISTO
   };
 
   struct FrameInfo {

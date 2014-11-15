@@ -154,11 +154,12 @@ void StatsEventSubscriber::OnReceiveFrameEvent(const FrameEvent& frame_event) {
   } else if (type == FRAME_PLAYOUT) {
     RecordE2ELatency(frame_event);
     base::TimeDelta delay_delta = frame_event.delay_delta;
-    histograms_[PLAYOUT_DELAY_MS_HISTO]->Add(delay_delta.InMillisecondsF());
 
     // Positive delay_delta means the frame is late.
-    if (delay_delta > base::TimeDelta())
+    if (delay_delta > base::TimeDelta()) {
       num_frames_late_++;
+      histograms_[LATE_FRAME_MS_HISTO]->Add(delay_delta.InMillisecondsF());
+    }
   }
 
   if (is_receiver_event)
@@ -315,7 +316,7 @@ const char* StatsEventSubscriber::CastStatToString(CastStat stat) {
     STAT_ENUM_TO_STRING(PACKET_LATENCY_MS_HISTO);
     STAT_ENUM_TO_STRING(FRAME_LATENCY_MS_HISTO);
     STAT_ENUM_TO_STRING(E2E_LATENCY_MS_HISTO);
-    STAT_ENUM_TO_STRING(PLAYOUT_DELAY_MS_HISTO);
+    STAT_ENUM_TO_STRING(LATE_FRAME_MS_HISTO);
   }
   NOTREACHED();
   return "";
@@ -348,9 +349,9 @@ void StatsEventSubscriber::InitHistograms() {
   histograms_[FRAME_LATENCY_MS_HISTO].reset(
       new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
                           kDefaultBucketWidthMs));
-  histograms_[PLAYOUT_DELAY_MS_HISTO].reset(
-      new SimpleHistogram(0, kSmallMaxLatencyBucketMs,
-                          kSmallBucketWidthMs));
+  histograms_[LATE_FRAME_MS_HISTO].reset(
+      new SimpleHistogram(0, kDefaultMaxLatencyBucketMs,
+                          kDefaultBucketWidthMs));
   histograms_[CAPTURE_LATENCY_MS_HISTO].reset(
       new SimpleHistogram(0, kSmallMaxLatencyBucketMs,
                           kSmallBucketWidthMs));

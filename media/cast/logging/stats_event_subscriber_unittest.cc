@@ -585,6 +585,14 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
                                                     123);
   }
 
+  cast_environment_->Logging()->InsertFrameEventWithDelay(
+      receiver_clock_.NowTicks(),
+      FRAME_PLAYOUT,
+      VIDEO_EVENT,
+      rtp_timestamp,
+      frame_id,
+      base::TimeDelta::FromMilliseconds(100));
+
   StatsEventSubscriber::SimpleHistogram* histogram;
   scoped_ptr<base::ListValue> values;
 
@@ -621,6 +629,12 @@ TEST_F(StatsEventSubscriberTest, Histograms) {
   ASSERT_TRUE(histogram);
   values = histogram->GetHistogram().Pass();
   EXPECT_TRUE(CheckHistogramHasValue(values.get(), "400-419", 3));
+
+  histogram = subscriber_->GetHistogramForTesting(
+      StatsEventSubscriber::LATE_FRAME_MS_HISTO);
+  ASSERT_TRUE(histogram);
+  values = histogram->GetHistogram().Pass();
+  EXPECT_TRUE(CheckHistogramHasValue(values.get(), "100-119", 1));
 }
 
 }  // namespace cast
