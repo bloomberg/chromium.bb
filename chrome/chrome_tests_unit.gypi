@@ -1962,7 +1962,8 @@
       'msvs_settings': {
         'VCLinkerTool': {
           'conditions': [
-            ['incremental_chrome_dll==1', {
+            # Incremental linking on x64 causes LNK1248.
+            ['incremental_chrome_dll==1 and target_arch!="x64"', {
               'UseLibraryDependencyInputs': "true",
             }],
           ],
