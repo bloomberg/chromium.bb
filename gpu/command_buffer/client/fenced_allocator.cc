@@ -14,23 +14,22 @@ namespace gpu {
 
 namespace {
 
-// Allocation alignment, must be a power of two.
-const unsigned int kAllocAlignment = 16;
-
 // Round down to the largest multiple of kAllocAlignment no greater than |size|.
 unsigned int RoundDown(unsigned int size) {
-  return size & ~(kAllocAlignment - 1);
+  return size & ~(FencedAllocator::kAllocAlignment - 1);
 }
 
 // Round up to the smallest multiple of kAllocAlignment no smaller than |size|.
 unsigned int RoundUp(unsigned int size) {
-  return (size + (kAllocAlignment - 1)) & ~(kAllocAlignment - 1);
+  return (size + (FencedAllocator::kAllocAlignment - 1)) &
+      ~(FencedAllocator::kAllocAlignment - 1);
 }
 
 }  // namespace
 
 #ifndef _MSC_VER
 const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
+const unsigned int FencedAllocator::kAllocAlignment;
 #endif
 
 FencedAllocator::FencedAllocator(unsigned int size,

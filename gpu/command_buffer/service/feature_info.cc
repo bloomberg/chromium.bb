@@ -858,12 +858,14 @@ void FeatureInfo::InitializeFeatures() {
   UMA_HISTOGRAM_BOOLEAN("GPU.FenceSupport", ui_gl_fence_works);
 
   feature_flags_.map_buffer_range =
-      is_es3 || extensions.Contains("GL_ARB_map_buffer_range");
+      is_es3 || extensions.Contains("GL_ARB_map_buffer_range") ||
+      extensions.Contains("GL_EXT_map_buffer_range");
 
   // Really it's part of core OpenGL 2.1 and up, but let's assume the
   // extension is still advertised.
   bool has_pixel_buffers =
-      is_es3 || extensions.Contains("GL_ARB_pixel_buffer_object");
+      is_es3 || extensions.Contains("GL_ARB_pixel_buffer_object") ||
+      extensions.Contains("GL_NV_pixel_buffer_object");
 
   // We will use either glMapBuffer() or glMapBufferRange() for async readbacks.
   if (has_pixel_buffers && ui_gl_fence_works &&

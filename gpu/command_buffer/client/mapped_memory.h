@@ -135,6 +135,7 @@ class GPU_EXPORT MappedMemoryManager {
   }
 
   void set_chunk_size_multiple(unsigned int multiple) {
+    DCHECK(multiple % FencedAllocator::kAllocAlignment == 0);
     chunk_size_multiple_ = multiple;
   }
 
@@ -201,4 +202,3 @@ class GPU_EXPORT MappedMemoryManager {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_MAPPED_MEMORY_H_
-

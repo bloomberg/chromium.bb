@@ -7578,6 +7578,11 @@ void GLES2DecoderImpl::FinishReadPixels(
     } else {
       data = glMapBuffer(GL_PIXEL_PACK_BUFFER_ARB, GL_READ_ONLY);
     }
+    if (!data) {
+      LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glMapBuffer",
+                         "Unable to map memory for readback.");
+      return;
+    }
     memcpy(pixels, data, pixels_size);
     // GL_PIXEL_PACK_BUFFER_ARB is currently unused, so we don't
     // have to restore the state.
@@ -7779,7 +7784,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32 immediate_data_size,
       GLuint buffer = 0;
       glGenBuffersARB(1, &buffer);
       glBindBuffer(GL_PIXEL_PACK_BUFFER_ARB, buffer);
-      glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, GL_STREAM_READ);
+      // For ANGLE client version 2, GL_STREAM_READ is not available.
+      const GLenum usage_hint =
+          features().is_angle ? GL_STATIC_DRAW : GL_STREAM_READ;
+      glBufferData(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL, usage_hint);
       GLenum error = glGetError();
       if (error == GL_NO_ERROR) {
         glReadPixels(x, y, width, height, format, type, 0);
