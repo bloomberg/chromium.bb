@@ -663,8 +663,10 @@ void NetInternalsMessageHandler::OnGetPrerenderInfo(
 void NetInternalsMessageHandler::OnGetHistoricNetworkStats(
     const base::ListValue* list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  Profile* profile = Profile::FromWebUI(web_ui());
   base::Value* historic_network_info =
-      ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue();
+      ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue(
+          profile->GetPrefs());
   SendJavascriptCommand("receivedHistoricNetworkStats", historic_network_info);
 }
 

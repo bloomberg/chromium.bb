@@ -209,7 +209,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   // Creates a Value summary of the persistent state of the network session.
   // The caller is responsible for deleting the returned value.
   // Must be called on the UI thread.
-  static base::Value* HistoricNetworkStatsInfoToValue();
+  static base::Value* HistoricNetworkStatsInfoToValue(PrefService* prefs);
 
   // Creates a Value summary of the state of the network session. The caller is
   // responsible for deleting the returned value.

@@ -334,9 +334,9 @@ void ChromeNetworkDelegate::AllowAccessToAllFiles() {
 // static
 // TODO(megjablon): Use data_reduction_proxy_delayed_pref_service to read prefs.
 // Until updated the pref values may be up to an hour behind on desktop.
-base::Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue() {
+base::Value* ChromeNetworkDelegate::HistoricNetworkStatsInfoToValue(
+    PrefService* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  PrefService* prefs = g_browser_process->local_state();
   int64 total_received = prefs->GetInt64(
       data_reduction_proxy::prefs::kHttpReceivedContentLength);
   int64 total_original = prefs->GetInt64(
