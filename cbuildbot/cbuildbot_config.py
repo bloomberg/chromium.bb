@@ -1114,57 +1114,12 @@ incremental.add_config('x32-generic-incremental',
   vm_tests=[],
 )
 
-paladin.add_config('x86-generic-paladin',
-  boards=['x86-generic'],
-  paladin_builder_name='x86-generic paladin',
-  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-)
-
-paladin.add_config('amd64-generic-paladin',
-  boards=['amd64-generic'],
-  paladin_builder_name='amd64-generic paladin',
-  vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
-)
-
-paladin.add_config('amd64-generic_freon-paladin',
-  boards=['amd64-generic_freon'],
-  paladin_builder_name='amd64-generic_freon paladin',
-  important=False,
-  vm_tests=[],
-)
-
-paladin.add_config('x32-generic-paladin',
-  boards=['x32-generic'],
-  paladin_builder_name='x32-generic paladin',
-  important=False,
-)
-
-paladin.add_config('arm-generic-paladin',
-  non_testable_builder,
-  boards=['arm-generic'],
-  paladin_builder_name='arm-generic paladin',
-  important=False,
-)
-
-paladin.add_config('arm-generic_freon-paladin',
-  boards=['arm-generic_freon'],
-  paladin_builder_name='arm-generic_freon paladin',
-  important=False,
-)
-
 paladin.add_config('x86-generic-asan-paladin',
   asan,
   boards=['x86-generic'],
   paladin_builder_name='x86-generic asan-paladin',
   description='Paladin build with Address Sanitizer (Clang)',
   important=False,
-)
-
-paladin.add_config('mipsel-o32-generic-paladin',
-  brillo,
-  non_testable_builder,
-  boards=['mipsel-o32-generic'],
-  paladin_builder_name='mipsel-o32-generic paladin',
 )
 
 incremental.add_config('amd64-generic-asan-paladin',
@@ -1400,7 +1355,10 @@ chromium_info_daisy.add_config('daisy-webrtc-chromium-pfq-informational',
   archive_build_debug=True,
 )
 
-_arm_release_boards = frozenset([
+# Base per-board configuration.
+# Every board must appear in exactly 1 of the following sets.
+
+_arm_internal_release_boards = frozenset([
   'daisy',
   'daisy_freon',
   'daisy_skate',
@@ -1417,13 +1375,20 @@ _arm_release_boards = frozenset([
   'veyron_jerry',
   'veyron_pinky',
 ])
-_arm_full_boards = _arm_release_boards | frozenset([
+
+_arm_external_boards = frozenset([
   'arm-generic',
   'arm-generic_freon',
   'arm64-generic',
 ])
 
-_x86_release_boards = frozenset([
+# TODO(akeshet) eliminate the need for this.
+_arm_internal_non_release_boards = frozenset([
+  'storm',
+  'whirlwind',
+])
+
+_x86_internal_release_boards = frozenset([
   'auron',
   'auron_yuna',
   'auron_paine',
@@ -1474,7 +1439,8 @@ _x86_release_boards = frozenset([
   'x86-zgb_he',
   'zako',
 ])
-_x86_full_boards = _x86_release_boards | frozenset([
+
+_x86_external_boards = frozenset([
   'amd64-generic',
   'amd64-generic_freon',
   'gizmo',
@@ -1483,9 +1449,17 @@ _x86_full_boards = _x86_release_boards | frozenset([
   'x86-pineview',
 ])
 
-_mips_release_boards = frozenset([
+# TODO(akeshet) eliminate the need for this.
+_x86_internal_non_release_boards = frozenset([
+  'duck',
+  'stumpy_moblab',
+  'fox_wtm2',
 ])
-_mips_full_boards = _mips_release_boards | frozenset([
+
+_mips_internal_release_boards = frozenset([
+])
+
+_mips_external_boards = frozenset([
   'mipseb-n32-generic',
   'mipseb-n64-generic',
   'mipseb-o32-generic',
@@ -1494,16 +1468,125 @@ _mips_full_boards = _mips_release_boards | frozenset([
   'mipsel-o32-generic',
 ])
 
+# TODO(akeshet) eliminate the need for this.
+_mips_internal_non_release_boards = frozenset([
+  'urara',
+])
+
+# Every board should be in only 1 of the above sets.
+_distinct_board_sets = [
+    _arm_internal_release_boards,
+    _arm_external_boards,
+    _arm_internal_non_release_boards,
+    _x86_internal_release_boards,
+    _x86_external_boards,
+    _x86_internal_non_release_boards,
+    _mips_internal_release_boards,
+    _mips_external_boards,
+    _mips_internal_non_release_boards,
+]
+
+_arm_full_boards = (_arm_internal_release_boards |
+                    _arm_external_boards)
+_x86_full_boards = (_x86_internal_release_boards |
+                    _x86_external_boards)
+_mips_full_boards = (_mips_internal_release_boards |
+                     _mips_external_boards)
+
+_arm_boards = (_arm_full_boards | _arm_internal_non_release_boards)
+_x86_boards = (_x86_full_boards | _x86_internal_non_release_boards)
+_mips_boards = (_mips_full_boards | _mips_internal_non_release_boards)
+
 _all_release_boards = (
-    _arm_release_boards |
-    _x86_release_boards |
-    _mips_release_boards
+    _arm_internal_release_boards |
+    _x86_internal_release_boards |
+    _mips_internal_release_boards
 )
 _all_full_boards = (
     _arm_full_boards |
     _x86_full_boards |
     _mips_full_boards
 )
+_all_boards = (
+    _x86_boards |
+    _arm_boards |
+    _mips_boards
+)
+
+# Every board should be in exactly one of the distinct board sets.
+def _EnforceDistinctSets():
+  for board in _all_boards:
+    found = False
+    for s in _distinct_board_sets:
+      if board in s:
+        if found:
+          assert False, '%s in multiple board sets.' % board
+        else:
+          found = True
+    if not found:
+      assert False, '%s in no board sets' % board
+  for s in _distinct_board_sets:
+    for board in s - _all_boards:
+      assert False, '%s in _distinct_board_sets but not in _all_boards' % board
+
+_EnforceDistinctSets()
+
+_arm_release_boards = _arm_internal_release_boards
+_x86_release_boards = _x86_internal_release_boards
+_mips_release_boards = _mips_internal_release_boards
+
+# TODO(akeshet) eliminate non-release internal sets.
+_internal_boards = (
+    _all_release_boards |
+    _arm_internal_non_release_boards |
+    _x86_internal_non_release_boards |
+    _mips_internal_non_release_boards
+)
+
+# Board can appear in 1 or more of the following sets.
+_brillo_boards = frozenset([
+  'cosmos',
+  'duck',
+  'gizmo',
+  'kayle',
+  'lemmings',
+  'mipsel-o32-generic',
+  'panther_embedded',
+  'storm',
+  'urara',
+  'whirlwind',
+])
+
+_moblab_boards = frozenset([
+  'stumpy_moblab',
+  'panther_moblab',
+])
+
+_minimal_profile_boards = frozenset([
+  'bobcat',
+])
+
+# A base config for each board.
+_base_configs = dict()
+
+def _CreateBaseConfigs():
+  for board in _all_boards:
+    base = dict()
+    if board in _internal_boards:
+      base.update(internal)
+      base.update(official_chrome)
+      base.update(manifest=constants.OFFICIAL_MANIFEST)
+    if board not in _x86_boards:
+      base.update(non_testable_builder)
+    if board in _brillo_boards:
+      base.update(brillo)
+    if board in _moblab_boards:
+      base.update(moblab)
+    if board in _minimal_profile_boards:
+      base.update(profile='minimal')
+    _base_configs[board] = _config(base, boards=[board])
+
+_CreateBaseConfigs()
 
 def _AddFullConfigs():
   """Add x86 and arm full configs."""
@@ -1845,124 +1928,161 @@ internal_paladin.add_config('wolf-tot-paladin',
   hw_tests=HWTestConfig.DefaultListCQ(pool=constants.HWTEST_TOT_PALADIN_POOL),
 )
 
-internal_paladin.add_config('x86-mario-paladin',
-  boards=['x86-mario'],
-  paladin_builder_name='x86-mario paladin',
-  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
-)
+# Autogeneration of paladin configs.
+# TODO(akeshet) create paladin configs for all boards.
+# List of boards to not create a regular paladin for.
+_non_paladin_boards = frozenset([
+  'arm64-generic',
+  'auron_paine',
+  'auron_yuna',
+  'bayleybay',
+  'falco_li',
+  'mccloud',
+  'mipseb-n32-generic',
+  'mipseb-n64-generic',
+  'mipseb-o32-generic',
+  'mipsel-n32-generic',
+  'mipsel-n64-generic',
+  'nyan_big',
+  'nyan_blaze',
+  'nyan_kitty',
+  'panther_freon',
+  'parrot_ivb',
+  'peach_pi',
+  'peppy_freon',
+  'rush',
+  'tricky',
+  'veyron_jerry',
+  'x86-alex_he',
+  'x86-pineview',
+  'x86-zgb_he',
+  'zako',
+])
 
-internal_paladin.add_config('x86-alex-paladin',
-  boards=['x86-alex'],
-  paladin_builder_name='x86-alex paladin',
-  # Note: x86-zgb-paladin runs bvt-inline while x86-alex-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
+_paladin_boards = frozenset(_all_boards - _non_paladin_boards)
 
-internal_paladin.add_config('beltino-paladin',
-  boards=['beltino'],
-  paladin_builder_name='beltino paladin',
-  important=False,
-)
+# List of paladin boards where the regular paladin config is important.
+_paladin_important_boards = frozenset([
+  'amd64-generic',
+  'auron',
+  'beaglebone',
+  'butterfly',
+  'daisy',
+  'daisy_spring',
+  'duck',
+  'falco',
+  'gizmo',
+  'kayle',
+  'leon',
+  'link',
+  'link_freon',
+  'lumpy',
+  'monroe',
+  'mipsel-o32-generic',
+  'nyan',
+  'panther',
+  'panther_moblab',
+  'parrot',
+  'peach_pit',
+  'peppy',
+  'rambi',
+  'rush_ryu',
+  'samus',
+  'storm',
+  'stout',
+  'stumpy',
+  'stumpy_moblab',
+  'veyron_pinky',
+  'wolf',
+  'x86-alex',
+  'x86-generic',
+  'x86-mario',
+  'x86-zgb',
+])
 
-internal_paladin.add_config('auron-paladin',
-  boards=['auron'],
-  paladin_builder_name='auron paladin',
-)
+_paladin_simple_vmtest_boards = frozenset([
+  'rambi',
+  'x86-mario',
+])
 
-internal_paladin.add_config('bobcat-paladin',
-  boards=['bobcat'],
-  paladin_builder_name='bobcat paladin',
-  profile='minimal',
-  important=False,
-)
+_paladin_devmode_vmtest_boards = frozenset([
+  'parrot',
+])
 
-internal_paladin.add_config('butterfly-paladin',
-  boards=['butterfly'],
-  paladin_builder_name='butterfly paladin',
-  # Test replacing the chroot (amd64)
-  chroot_replace=True,
-)
+_paladin_cros_vmtest_boards = frozenset([
+  'stout',
+])
 
-internal_paladin.add_config('candy-paladin',
-  boards=['candy'],
-  paladin_builder_name='candy paladin',
-  important=False,
-)
+_paladin_smoke_vmtest_boards = frozenset([
+  'amd64-generic',
+  'x86-generic',
+])
 
-internal_paladin.add_config('cranky-paladin',
-  boards=['cranky'],
-  paladin_builder_name='cranky paladin',
-  important=False,
-)
+_paladin_default_vmtest_boards = frozenset([
+  'x32-generic',
+])
 
-internal_paladin.add_config('clapper-paladin',
-  boards=['clapper'],
-  paladin_builder_name='clapper paladin',
-  important=False,
-)
+_paladin_hwtest_boards = frozenset([
+  'daisy',
+  'link',
+  'lumpy',
+  'peach_pit',
+  'peppy',
+  'stumpy',
+  'wolf',
+  'x86-alex',
+  'x86-zgb',
+])
 
-internal_paladin.add_config('enguarde-paladin',
-  boards=['enguarde'],
-  paladin_builder_name='enguarde paladin',
-  important=False,
-)
+_paladin_chroot_replace_boards = frozenset([
+  'butterfly',
+  'daisy_spring',
+])
 
-internal_paladin.add_config('expresso-paladin',
-  boards=['expresso'],
-  paladin_builder_name='expresso paladin',
-  important=False,
-)
+_paladin_full_boards = frozenset([
+  'falco',
+  'nyan',
+])
 
-# amd64 full compile
-internal_paladin.add_config('falco-paladin',
-  full_paladin,
-  boards=['falco'],
-  paladin_builder_name='falco paladin',
-)
+def _CreatePaladinConfigs():
+  for board in _paladin_boards:
+    if not board in _base_configs:
+      continue
+    config_name = '%s-%s' % (board, constants.PALADIN_TYPE)
+    paladin_builder_name = '%s %s' % (board, constants.PALADIN_TYPE)
+    base_config = _base_configs[board].copy()
+    if board in _paladin_hwtest_boards:
+      base_config.update(hw_tests=HWTestConfig.DefaultListCQ())
+    if board not in _paladin_important_boards:
+      base_config.update(important=False)
+    if board in _paladin_chroot_replace_boards:
+      base_config.update(chroot_replace=True)
+    if board in _paladin_full_boards:
+      base_config.update(full_paladin)
 
-internal_paladin.add_config('fox_wtm2-paladin',
-  boards=['fox_wtm2'],
-  paladin_builder_name='fox_wtm2 paladin',
-  important=False,
-)
+    if board not in _paladin_default_vmtest_boards:
+      vm_tests = []
+      if board in _paladin_simple_vmtest_boards:
+        vm_tests.append(constants.SIMPLE_AU_TEST_TYPE)
+      if board in _paladin_cros_vmtest_boards:
+        vm_tests.append(constants.CROS_VM_TEST_TYPE)
+      if board in _paladin_devmode_vmtest_boards:
+        vm_tests.append(constants.DEV_MODE_TEST_TYPE)
+      if board in _paladin_smoke_vmtest_boards:
+        vm_tests.append(constants.SMOKE_SUITE_TEST_TYPE)
+      base_config.update(vm_tests=vm_tests)
 
-internal_paladin.add_config('glimmer-paladin',
-  boards=['glimmer'],
-  paladin_builder_name='glimmer paladin',
-  important=False,
-)
+    if base_config.get('internal'):
+      base_config.update(prebuilts=constants.PRIVATE,
+                         description=paladin['description'] + ' (internal)')
+    else:
+      base_config.update(prebuilts=constants.PUBLIC)
+    paladin.add_config(config_name,
+                       base_config,
+                       paladin_builder_name=paladin_builder_name)
 
-internal_paladin.add_config('gnawty-paladin',
-  boards=['gnawty'],
-  paladin_builder_name='gnawty paladin',
-  important=False,
-)
+_CreatePaladinConfigs()
 
-internal_paladin.add_config('kip-paladin',
-  boards=['kip'],
-  paladin_builder_name='kip paladin',
-  important=False,
-)
-
-internal_paladin.add_config('leon-paladin',
-  boards=['leon'],
-  paladin_builder_name='leon paladin',
-)
-
-internal_paladin.add_config('link-paladin',
-  boards=['link'],
-  paladin_builder_name='link paladin',
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_paladin.add_config('lumpy-paladin',
-  boards=['lumpy'],
-  paladin_builder_name='lumpy paladin',
-  # Note: lumpy-paladin runs bvt-inline while stumpy-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
 
 internal_paladin.add_config('lumpy-incremental-paladin',
   boards=['lumpy'],
@@ -1974,157 +2094,9 @@ internal_paladin.add_config('lumpy-incremental-paladin',
   unittests=False,
 )
 
-internal_paladin.add_config('parrot-paladin',
-  boards=['parrot'],
-  paladin_builder_name='parrot paladin',
-  vm_tests=[constants.DEV_MODE_TEST_TYPE],
-)
-
-internal_paladin.add_config('parry-paladin',
-  boards=['parry'],
-  paladin_builder_name='parry paladin',
-  important=False,
-)
-
-internal_paladin.add_config('rambi-paladin',
-  boards=['rambi'],
-  paladin_builder_name='rambi paladin',
-  vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
-)
-
-internal_paladin.add_config('samus-paladin',
-  boards=['samus'],
-  paladin_builder_name='samus paladin',
-)
-
-internal_paladin.add_config('squawks-paladin',
-  boards=['squawks'],
-  paladin_builder_name='squawks paladin',
-  important=False,
-)
-
-internal_paladin.add_config('swanky-paladin',
-  boards=['swanky'],
-  paladin_builder_name='swanky paladin',
-  important=False,
-)
-
-internal_paladin.add_config('quawks-paladin',
-  boards=['quawks'],
-  paladin_builder_name='quawks paladin',
-  important=False,
-)
-
-internal_paladin.add_config('peppy-paladin',
-  boards=['peppy'],
-  paladin_builder_name='peppy paladin',
-  # Note: wolf-paladin runs bvt-inline while peppy-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_paladin.add_config('slippy-paladin',
-  boards=['slippy'],
-  paladin_builder_name='slippy paladin',
-  important=False,
-)
-
-internal_paladin.add_config('monroe-paladin',
-  boards=['monroe'],
-  paladin_builder_name='monroe paladin',
-)
-
-internal_paladin.add_config('panther-paladin',
-  boards=['panther'],
-  paladin_builder_name='panther paladin',
-)
-
-internal_paladin.add_config('stout-paladin',
-  boards=['stout'],
-  paladin_builder_name='stout paladin',
-  vm_tests=[constants.CROS_VM_TEST_TYPE],
-)
-
-internal_paladin.add_config('stumpy-paladin',
-  boards=['stumpy'],
-  paladin_builder_name='stumpy paladin',
-  # Note: lumpy-paladin runs bvt-inline while stumpy-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_paladin.add_config('winky-paladin',
-  boards=['winky'],
-  paladin_builder_name='winky paladin',
-  important=False,
-)
-
-internal_paladin.add_config('wolf-paladin',
-  boards=['wolf'],
-  paladin_builder_name='wolf paladin',
-  # Note: wolf-paladin runs bvt-inline while peppy-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_paladin.add_config('x86-zgb-paladin',
-  boards=['x86-zgb'],
-  paladin_builder_name='x86-zgb paladin',
-  # Note: x86-zgb-paladin runs bvt-inline while x86-alex-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_paladin.add_config('link_freon-paladin',
-  boards=['link_freon'],
-  hw_tests=[],
-  # This build can't run vm_tests, bug 387507
-  vm_tests=[],
-  paladin_builder_name='link_freon paladin',
-)
-
-internal_paladin.add_config('stumpy_moblab-paladin',
-  moblab,
-  boards=['stumpy_moblab'],
-  paladin_builder_name='stumpy_moblab paladin',
-)
-
-internal_paladin.add_config('panther_moblab-paladin',
-  moblab,
-  boards=['panther_moblab'],
-  paladin_builder_name='panther_moblab paladin',
-)
-
 ### Paladins (CQ builders) which do not run VM or Unit tests on the builder
 ### itself.
 internal_notest_paladin = internal_paladin.derive(non_testable_builder)
-
-internal_notest_paladin.add_config('daisy-paladin',
-  boards=['daisy'],
-  paladin_builder_name='daisy paladin',
-  # Note: daisy-paladin runs bvt-inline while peach_pit-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-internal_notest_paladin.add_config('daisy_freon-paladin',
-  boards=['daisy_freon'],
-  important=False,
-  paladin_builder_name='daisy_freon paladin',
-)
-
-internal_notest_paladin.add_config('daisy_spring-paladin',
-  boards=['daisy_spring'],
-  paladin_builder_name='daisy_spring paladin',
-  # Test replacing the chroot (arm)
-  chroot_replace=True,
-)
-
-internal_notest_paladin.add_config('daisy_skate-paladin',
-  boards=['daisy_skate'],
-  paladin_builder_name='daisy_skate paladin',
-  important=False,
-)
 
 internal_notest_paladin.add_config('kayle-paladin',
   brillo,
@@ -2136,81 +2108,9 @@ internal_notest_paladin.add_config('kayle-paladin',
   factory_install_netboot=False,
 )
 
-internal_notest_paladin.add_config('peach_pit-paladin',
-  boards=['peach_pit'],
-  paladin_builder_name='peach_pit paladin',
-  # Note: daisy-paladin runs bvt-inline while peach_pit-paladin runs bvt-cq.
-  # See ShardHWTestsBetweenBuilders below.
-  hw_tests=HWTestConfig.DefaultListCQ(),
-)
-
-# arm full compile
-internal_notest_paladin.add_config('nyan-paladin',
-  full_paladin,
-  boards=['nyan'],
-  paladin_builder_name='nyan paladin',
-)
-
-internal_notest_paladin.add_config('rush_ryu-paladin',
-  boards=['rush_ryu'],
-  paladin_builder_name='rush_ryu paladin',
-)
-
-internal_notest_paladin.add_config('storm-paladin',
-  brillo,
-  boards=['storm'],
-  paladin_builder_name='storm paladin',
-)
-
-internal_notest_paladin.add_config('urara-paladin',
-  brillo,
-  boards=['urara'],
-  paladin_builder_name='urara paladin',
-  important=False,
-)
-
-internal_notest_paladin.add_config('whirlwind-paladin',
-  brillo,
-  boards=['whirlwind'],
-  paladin_builder_name='whirlwind paladin',
-  important=False
-)
-
-internal_notest_paladin.add_config('veyron_pinky-paladin',
-  boards=['veyron_pinky'],
-  paladin_builder_name='veyron_pinky paladin',
-)
-
-internal_notest_paladin.add_config('nyan_freon-paladin',
-  boards=['nyan_freon'],
-  paladin_builder_name='nyan_freon paladin',
-  important=False,
-)
-
 internal_brillo_paladin = internal_paladin.derive(brillo)
 
-internal_brillo_paladin.add_config('duck-paladin',
-  boards=['duck'],
-  paladin_builder_name='duck paladin',
-  trybot_list=True,
-)
-
-internal_brillo_paladin.add_config('lemmings-paladin',
-  boards=['lemmings'],
-  paladin_builder_name='lemmings paladin',
-  trybot_list=True,
-  important=False,
-)
-
 external_brillo_paladin = paladin.derive(brillo)
-
-external_brillo_paladin.add_config('gizmo-paladin',
-  boards=['gizmo'],
-  paladin_builder_name='gizmo paladin',
-  trybot_list=True,
-  important=True,
-  vm_tests=None,
-)
 
 external_brillo_paladin.add_config('panther_embedded-minimal-paladin',
   boards=['panther_embedded'],

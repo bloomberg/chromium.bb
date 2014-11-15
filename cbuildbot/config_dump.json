@@ -597,8 +597,11 @@
         "name": "arm-generic_freon-paladin",
         "paladin_builder_name": "arm-generic_freon paladin",
         "prebuilts": "public",
+        "tests_supported": false,
         "trybot_list": true,
-        "upload_standalone_images": false
+        "unittests": false,
+        "upload_standalone_images": false,
+        "vm_tests": []
     },
     "arm-generic_freon-tot-chromium-pfq-informational": {
         "boards": [
@@ -11832,7 +11835,7 @@
         "sync_chrome": false,
         "trybot_list": true,
         "upload_standalone_images": false,
-        "vm_tests": null
+        "vm_tests": []
     },
     "gizmo-release": {
         "archive_build_debug": true,
