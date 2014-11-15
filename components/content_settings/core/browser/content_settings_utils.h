@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/compiler_specific.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -29,7 +30,7 @@ typedef std::pair<ContentSettingsPattern, ContentSettingsPattern> PatternPair;
 std::string GetTypeName(ContentSettingsType type);
 
 bool GetTypeFromName(const std::string& name,
-                     ContentSettingsType* return_setting);
+                     ContentSettingsType* return_setting) WARN_UNUSED_RESULT;
 
 std::string ContentSettingToString(ContentSetting setting);
 
