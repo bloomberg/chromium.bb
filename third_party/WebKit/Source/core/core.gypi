@@ -1450,6 +1450,8 @@
             'paint/DrawingRecorder.h',
             'paint/EllipsisBoxPainter.cpp',
             'paint/EllipsisBoxPainter.h',
+            'paint/FieldsetPainter.h',
+            'paint/FieldsetPainter.cpp',
             'paint/FileUploadControlPainter.cpp',
             'paint/FileUploadControlPainter.h',
             'paint/FilterPainter.cpp',
