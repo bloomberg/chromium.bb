@@ -48186,6 +48186,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1703709912" label="enable-new-ntp"/>
   <int value="-1703308540" label="disable-webaudio"/>
   <int value="-1696366449" label="disable-permissions-bubbles"/>
+  <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1662447331" label="wake-on-packets"/>
   <int value="-1654344175" label="disable-extension-info-dialog"/>
   <int value="-1619757314" label="touch-scrolling-mode"/>
@@ -48425,6 +48426,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1752168018" label="enable-stale-while-revalidate"/>
   <int value="1775475563" label="malware-interstitial-v3"/>
   <int value="1776475705" label="show-composited-layer-borders"/>
+  <int value="1777059507" label="trust-autofill-server-name-types"/>
   <int value="1783293530" label="disallow-autofill-sync-credential"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1814671708" label="disable-password-manager-reauthentication"/>

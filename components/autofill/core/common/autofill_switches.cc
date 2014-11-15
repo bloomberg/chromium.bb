@@ -11,6 +11,10 @@ namespace switches {
 // account creation.
 const char kDisablePasswordGeneration[]     = "disable-password-generation";
 
+// Local heuristics override server predictions for name types.
+const char kDisambiguateAutofillServerNameTypes[] =
+    "disambiguate-autofill-server-name-types";
+
 // Enables password generation when we detect that the user is going through
 // account creation.
 const char kEnablePasswordGeneration[]      = "enable-password-generation";
@@ -26,6 +30,9 @@ const char kLocalHeuristicsOnlyForPasswordGeneration[] =
 
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
+
+// Always trust server predictions for name types.
+const char kTrustAutofillServerNameTypes[] = "trust-autofill-server-name-types";
 
 // Secure service URL for Online Wallet service. Used as the base url to escrow
 // credit card numbers.

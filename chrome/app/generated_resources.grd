@@ -5883,6 +5883,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_AUTOFILL_TYPE_PREDICTIONS_DESCRIPTION" desc="Description for the flag to show Autofill field type predictions for all forms">
         Annotates web forms with Autofill field type predictions as placeholder text.
       </message>
+      <message name="IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_NAME" desc="Title for a flag">
+        Improve Autofill type predictions for names
+      </message>
+      <message name="IDS_FLAGS_DISAMBIGUATE_SERVER_NAME_TYPES_DESCRIPTION" desc="Description for a flag">
+        Uses local heuristics to help determine the correct Autofill type when the Autofill server classifies a field as either CREDIT_CARD_NAME or NAME_FULL
+      </message>
       <message name="IDS_FLAGS_ENABLE_TCP_FAST_OPEN_NAME" desc="Name of the flag that enables TCP Fast Open.">
         Enable TCP Fast Open
       </message>

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -40,6 +41,23 @@ const char* const kMonthsFull[] = {
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 };
+
+bool ShouldDisambiguateServerNameTypes() {
+  std::string group_name =
+      base::FieldTrialList::FindFullName("DisambiguateAutofillServerNameTypes");
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisambiguateAutofillServerNameTypes)) {
+    return true;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTrustAutofillServerNameTypes)) {
+    return false;
+  }
+
+  return group_name == "Enabled";
+}
 
 // Returns true if the value was successfully set, meaning |value| was found in
 // the list of select options in |field|.
@@ -455,8 +473,16 @@ AutofillType AutofillField::Type() const {
   if (html_type_ != HTML_TYPE_UNKNOWN)
     return AutofillType(html_type_, html_mode_);
 
-  if (server_type_ != NO_SERVER_DATA)
-    return AutofillType(server_type_);
+  if (server_type_ != NO_SERVER_DATA) {
+    bool believe_server = true;
+    if (ShouldDisambiguateServerNameTypes()) {
+      believe_server =
+          !(server_type_ == NAME_FULL && heuristic_type_ == CREDIT_CARD_NAME) &&
+          !(server_type_ == CREDIT_CARD_NAME && heuristic_type_ == NAME_FULL);
+    }
+    if (believe_server)
+      return AutofillType(server_type_);
+  }
 
   return AutofillType(heuristic_type_);
 }

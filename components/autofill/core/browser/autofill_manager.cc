@@ -1147,8 +1147,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
 
     form_structure->DetermineHeuristicTypes(*metric_logger_);
 
-    // Set aside forms with method GET or author-specified types, so that they
-    // are not included in the query to the server.
     if (form_structure->ShouldBeCrowdsourced())
       form_structures_.push_back(form_structure.release());
     else
@@ -1156,9 +1154,9 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   }
 
   if (!form_structures_.empty() && download_manager_) {
-    // Query the server if we have at least one of the forms were parsed.
+    // Query the server if at least one of the forms was parsed.
     download_manager_->StartQueryRequest(form_structures_.get(),
-                                        *metric_logger_);
+                                         *metric_logger_);
   }
 
   for (std::vector<FormStructure*>::const_iterator iter =
