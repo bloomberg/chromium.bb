@@ -7,12 +7,6 @@ import page_sets
 from telemetry import benchmark
 
 
-class PageCyclerBloat(benchmark.Benchmark):
-  test = page_cycler.PageCycler
-  page_set = page_sets.BloatPageSet
-  options = {'pageset_repeat': 10}
-
-
 class PageCyclerDhtml(benchmark.Benchmark):
   test = page_cycler.PageCycler
   page_set = page_sets.DhtmlPageSet
