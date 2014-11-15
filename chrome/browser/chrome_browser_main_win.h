@@ -34,7 +34,6 @@ class ChromeBrowserMainPartsWin : public ChromeBrowserMainParts {
 
   // ChromeBrowserMainParts overrides.
   virtual void ShowMissingLocaleMessageBox() override;
-  virtual void PostProfileInit() override;
   virtual void PostBrowserStart() override;
 
   // Prepares the localized strings that are going to be displayed to

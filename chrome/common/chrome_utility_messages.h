@@ -184,6 +184,4 @@ IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetSaveFileName_Failed)
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetSaveFileName_Result,
                      base::FilePath /* path */,
                      int /* one_based_filter_index  */)
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_BuildDirectWriteFontCache,
-                     base::FilePath /* cache file path */)
 #endif  // defined(OS_WIN)

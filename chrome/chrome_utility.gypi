@@ -19,8 +19,6 @@
       'utility/printing_handler.h',
       'utility/shell_handler_win.cc',
       'utility/shell_handler_win.h',
-      'utility/font_cache_handler_win.cc',
-      'utility/font_cache_handler_win.h',
       'utility/utility_message_handler.h',
       'utility/web_resource_unpacker.cc',
       'utility/web_resource_unpacker.h',
