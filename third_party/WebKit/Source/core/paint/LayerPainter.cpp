@@ -104,7 +104,7 @@ void LayerPainter::paintLayer(GraphicsContext* context, const LayerPaintingInfo&
             if (needsToClip(paintingInfo, clipRect)) {
                 clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.parent()->renderer(), context, DisplayItem::ClipLayerParent, clipRect));
                 if (clipRect.hasRadius())
-                    applyRoundedRectClips(*m_renderLayer.parent(), paintingInfo, context, paintFlags, *clipRecorder);
+                    applyRoundedRectClips(*m_renderLayer.parent(), paintingInfo, context, LayoutPoint(), paintFlags, *clipRecorder);
             }
         }
 
@@ -375,8 +375,7 @@ bool LayerPainter::needsToClip(const LayerPaintingInfo& localPaintingInfo, const
     return clipRect.rect() != localPaintingInfo.paintDirtyRect || clipRect.hasRadius();
 }
 
-void LayerPainter::applyRoundedRectClips(RenderLayer& renderLayer, const LayerPaintingInfo& localPaintingInfo, GraphicsContext* context,
-    PaintLayerFlags paintFlags, ClipRecorder& clipRecorder, BorderRadiusClippingRule rule)
+void LayerPainter::applyRoundedRectClips(RenderLayer& renderLayer, const LayerPaintingInfo& localPaintingInfo, GraphicsContext* context, const LayoutPoint& fragmentOffset, PaintLayerFlags paintFlags, ClipRecorder& clipRecorder, BorderRadiusClippingRule rule)
 {
     // If the clip rect has been tainted by a border radius, then we have to walk up our layer chain applying the clips from
     // any layers with overflow. The condition for being able to apply these clips is that the overflow object be in our
@@ -390,7 +389,7 @@ void LayerPainter::applyRoundedRectClips(RenderLayer& renderLayer, const LayerPa
             break;
 
         if (layer->renderer()->hasOverflowClip() && layer->renderer()->style()->hasBorderRadius() && inContainingBlockChain(&renderLayer, layer)) {
-            LayoutPoint delta;
+            LayoutPoint delta(fragmentOffset);
             layer->convertToLayerCoords(localPaintingInfo.rootLayer, delta);
             clipRecorder.addRoundedRectClip(layer->renderer()->style()->getRoundedInnerBorderFor(LayoutRect(delta, layer->size())));
         }
@@ -505,7 +504,7 @@ void LayerPainter::paintOverflowControlsForFragments(const LayerFragments& layer
         if (needsToClip(localPaintingInfo, fragment.backgroundRect)) {
             clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerOverflowControls, fragment.backgroundRect));
             if (fragment.backgroundRect.hasRadius())
-                applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, paintFlags, *clipRecorder);
+                applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, fragment.paginationOffset, paintFlags, *clipRecorder);
         }
         if (RenderLayerScrollableArea* scrollableArea = m_renderLayer.scrollableArea())
             scrollableArea->paintOverflowControls(context, roundedIntPoint(toPoint(fragment.layerBounds.location() - m_renderLayer.renderBoxLocation() + subPixelAccumulationIfNeeded(localPaintingInfo.subPixelAccumulation, m_renderLayer.compositingState()))), pixelSnappedIntRect(fragment.backgroundRect.rect()), true);
@@ -694,7 +693,7 @@ void LayerPainter::paintFragmentWithPhase(PaintPhase phase, const LayerFragment&
 
         clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, clipType, clipRect));
         if (clipRect.hasRadius())
-            applyRoundedRectClips(m_renderLayer, paintingInfo, context, paintFlags, *clipRecorder, clippingRule);
+            applyRoundedRectClips(m_renderLayer, paintingInfo, context, fragment.paginationOffset, paintFlags, *clipRecorder, clippingRule);
     }
 
     PaintInfo paintInfo(context, pixelSnappedIntRect(clipRect.rect()), phase, paintBehavior, paintingRootForRenderer, 0, paintingInfo.rootLayer->renderer());
@@ -721,7 +720,7 @@ void LayerPainter::paintForegroundForFragments(const LayerFragments& layerFragme
     if (shouldClip && needsToClip(localPaintingInfo, layerFragments[0].foregroundRect)) {
         clipRecorder = adoptPtr(new ClipRecorder(m_renderLayer.renderer(), context, DisplayItem::ClipLayerForeground, layerFragments[0].foregroundRect));
         if (layerFragments[0].foregroundRect.hasRadius())
-            applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, paintFlags, *clipRecorder);
+            applyRoundedRectClips(m_renderLayer, localPaintingInfo, context, layerFragments[0].paginationOffset, paintFlags, *clipRecorder);
         clipState = HasClipped;
     }
 

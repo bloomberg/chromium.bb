@@ -30,7 +30,15 @@ public:
     void paintOverlayScrollbars(GraphicsContext*, const LayoutRect& damageRect, PaintBehavior, RenderObject* paintingRoot = 0);
 
     enum BorderRadiusClippingRule { IncludeSelfForBorderRadius, DoNotIncludeSelfForBorderRadius };
-    static void applyRoundedRectClips(RenderLayer&, const LayerPaintingInfo&, GraphicsContext*, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
+
+    // Set rounded clip rectangles defined by border radii all the way from the LayerPaintingInfo
+    // "root" layer down to the specified layer (or the parent of said layer, in case
+    // BorderRadiusClippingRule says to skip self). fragmentOffset is used for multicol, to specify
+    // the translation required to get from flow thread coordinates to visual coordinates for a
+    // certain column.
+    // FIXME: The BorderRadiusClippingRule parameter is really useless now. If we want to skip self,
+    // why not just supply the parent layer as the first parameter instead?
+    static void applyRoundedRectClips(RenderLayer&, const LayerPaintingInfo&, GraphicsContext*, const LayoutPoint& fragmentOffset, PaintLayerFlags, ClipRecorder&, BorderRadiusClippingRule = IncludeSelfForBorderRadius);
 
 private:
     enum ClipState { HasNotClipped, HasClipped };
