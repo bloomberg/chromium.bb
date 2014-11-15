@@ -174,6 +174,10 @@ class NET_EXPORT URLRequestContextBuilder {
     throttling_enabled_ = throttling_enabled;
   }
 
+  void set_channel_id_enabled(bool enable) {
+    channel_id_enabled_ = enable;
+  }
+
   URLRequestContext* Build();
 
  private:
@@ -200,6 +204,7 @@ class NET_EXPORT URLRequestContextBuilder {
 #endif
   bool http_cache_enabled_;
   bool throttling_enabled_;
+  bool channel_id_enabled_;
 
   HttpCacheParams http_cache_params_;
   HttpNetworkSessionParams http_network_session_params_;

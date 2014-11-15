@@ -211,6 +211,7 @@ void AwURLRequestContextGetter::InitializeURLRequestContext() {
   builder.set_accept_language(net::HttpUtil::GenerateAcceptLanguageHeader(
       AwContentBrowserClient::GetAcceptLangsImpl()));
   builder.set_net_log(net_log_.get());
+  builder.set_channel_id_enabled(false);
   ApplyCmdlineOverridesToURLRequestContextBuilder(&builder);
 
   url_request_context_.reset(builder.Build());
