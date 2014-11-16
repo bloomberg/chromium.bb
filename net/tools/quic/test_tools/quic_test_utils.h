@@ -39,6 +39,17 @@ static const uint32 kInitialSessionFlowControlWindowForTest =
 QuicAckFrame MakeAckFrameWithNackRanges(size_t num_nack_ranges,
                                         QuicPacketSequenceNumber least_unacked);
 
+class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
+ public:
+  NiceMockPacketWriterFactory() {}
+  ~NiceMockPacketWriterFactory() override {}
+
+  QuicPacketWriter* Create(QuicConnection* /*connection*/) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NiceMockPacketWriterFactory);
+};
+
 class MockConnection : public QuicConnection {
  public:
   // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.

@@ -920,11 +920,10 @@ TEST_P(EndToEndTest, LimitMaxOpenStreams) {
   EXPECT_EQ(2u, client_negotiated_config->MaxStreamsPerConnection());
 }
 
-TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
-  // Client tries to request twice the server's max initial window, and the
-  // server limits it to the max.
-  client_config_.SetInitialCongestionWindowToSend(2 * kMaxInitialWindow);
-  client_config_.SetInitialRoundTripTimeUsToSend(20000);
+TEST_P(EndToEndTest, ClientSuggestsRTT) {
+  // Client suggests initial RTT, verify it is used.
+  const uint32 kInitialRTT = 20000;
+  client_config_.SetInitialRoundTripTimeUsToSend(kInitialRTT);
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
@@ -940,12 +939,6 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
   const QuicSentPacketManager& server_sent_packet_manager =
       *GetSentPacketManagerFromFirstServerSession();
 
-  // The client shouldn't set its initial window based on the negotiated value.
-  EXPECT_EQ(kDefaultInitialWindow,
-            client_sent_packet_manager.GetCongestionWindowInTcpMss());
-  EXPECT_EQ(kMaxInitialWindow,
-            server_sent_packet_manager.GetCongestionWindowInTcpMss());
-
   // BBR automatically enables pacing.
   EXPECT_EQ(GetParam().use_pacing ||
             (FLAGS_quic_allow_bbr &&
@@ -956,24 +949,11 @@ TEST_P(EndToEndTest, LimitCongestionWindowAndRTT) {
              GetParam().congestion_control_tag == kTBBR),
             client_sent_packet_manager.using_pacing());
 
-  // The client *should* set the intitial RTT, but it's increased to 10ms.
-  EXPECT_EQ(20000u, client_sent_packet_manager.GetRttStats()->initial_rtt_us());
-  EXPECT_EQ(20000u, server_sent_packet_manager.GetRttStats()->initial_rtt_us());
-
-  // Now use the negotiated limits with packet loss.
-  SetPacketLossPercentage(30);
-
-  // 10 KB body.
-  string body;
-  GenerateBody(&body, 1024 * 10);
-
-  HTTPMessage request(HttpConstants::HTTP_1_1,
-                      HttpConstants::POST, "/foo");
-  request.AddBody(body, true);
-
+  EXPECT_EQ(kInitialRTT,
+            client_sent_packet_manager.GetRttStats()->initial_rtt_us());
+  EXPECT_EQ(kInitialRTT,
+            server_sent_packet_manager.GetRttStats()->initial_rtt_us());
   server_thread_->Resume();
-
-  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
 TEST_P(EndToEndTest, MaxInitialRTT) {
@@ -1032,7 +1012,7 @@ TEST_P(EndToEndTest, MinInitialRTT) {
   EXPECT_FALSE(
       client_sent_packet_manager.GetRttStats()->smoothed_rtt().IsInfinite());
   // Expect the default rtt of 100ms.
-  EXPECT_EQ(static_cast<int64>(100 * base::Time::kMicrosecondsPerMillisecond),
+  EXPECT_EQ(static_cast<int64>(100 * kNumMicrosPerMilli),
             server_sent_packet_manager.GetRttStats()->initial_rtt_us());
   // Ensure the bandwidth is valid.
   client_sent_packet_manager.BandwidthEstimate();

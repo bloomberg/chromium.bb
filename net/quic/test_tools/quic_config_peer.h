@@ -15,9 +15,6 @@ namespace test {
 
 class QuicConfigPeer {
  public:
-  static void SetReceivedInitialWindow(QuicConfig* config,
-                                       size_t initial_window);
-
   static void SetReceivedSocketReceiveBuffer(QuicConfig* config,
                                              uint32 receive_buffer_bytes);
 

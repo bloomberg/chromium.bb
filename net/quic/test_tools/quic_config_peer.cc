@@ -10,12 +10,6 @@ namespace net {
 namespace test {
 
 // static
-void QuicConfigPeer::SetReceivedInitialWindow(QuicConfig* config,
-                                              size_t initial_window) {
-  config->initial_congestion_window_.SetReceivedValue(initial_window);
-}
-
-// static
 void QuicConfigPeer::SetReceivedSocketReceiveBuffer(
     QuicConfig* config,
     uint32 receive_buffer_bytes) {

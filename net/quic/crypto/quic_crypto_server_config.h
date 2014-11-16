@@ -15,11 +15,11 @@
 #include "base/synchronization/lock.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_handshake_message.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/crypto_secret_boxer.h"
-#include "net/quic/crypto/source_address_token.h"
 #include "net/quic/quic_time.h"
 
 namespace net {

@@ -265,6 +265,17 @@ class MockHelper : public QuicConnectionHelperInterface {
   DISALLOW_COPY_AND_ASSIGN(MockHelper);
 };
 
+class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
+ public:
+  NiceMockPacketWriterFactory() {}
+  ~NiceMockPacketWriterFactory() override {}
+
+  QuicPacketWriter* Create(QuicConnection* /*connection*/) const override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NiceMockPacketWriterFactory);
+};
+
 class MockConnection : public QuicConnection {
  public:
   // Uses a MockHelper, ConnectionId of 42, and 127.0.0.1:123.

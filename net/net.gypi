@@ -791,6 +791,8 @@
       'quic/crypto/aes_128_gcm_12_encrypter.h',
       'quic/crypto/aes_128_gcm_12_encrypter_nss.cc',
       'quic/crypto/aes_128_gcm_12_encrypter_openssl.cc',
+      'quic/crypto/cached_network_parameters.cc',
+      'quic/crypto/cached_network_parameters.h',
       'quic/crypto/cert_compressor.cc',
       'quic/crypto/cert_compressor.h',
       'quic/crypto/chacha20_poly1305_decrypter.h',

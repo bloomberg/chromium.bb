@@ -34,6 +34,7 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   TcpCubicSender(const QuicClock* clock,
                  const RttStats* rtt_stats,
                  bool reno,
+                 QuicPacketCount initial_tcp_congestion_window,
                  QuicPacketCount max_tcp_congestion_window,
                  QuicConnectionStats* stats);
   ~TcpCubicSender() override;

@@ -52,8 +52,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
     HANDSHAKE_CONFIRMED,
   };
 
-  QuicSession(QuicConnection* connection,
-              const QuicConfig& config);
+  QuicSession(QuicConnection* connection, const QuicConfig& config);
   void InitializeSession();
 
   ~QuicSession() override;

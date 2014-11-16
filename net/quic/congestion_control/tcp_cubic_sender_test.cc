@@ -21,7 +21,12 @@ using std::min;
 namespace net {
 namespace test {
 
-const uint32 kDefaultWindowTCP = kDefaultInitialWindow * kDefaultTCPMSS;
+// TODO(ianswett): A number of theses tests were written with the assumption of
+// an initial CWND of 10. They have carefully calculated values which should be
+// updated to be based on kInitialCongestionWindowInsecure.
+const uint32 kInitialCongestionWindowPackets = 10;
+const uint32 kDefaultWindowTCP =
+    kInitialCongestionWindowPackets * kDefaultTCPMSS;
 const float kRenoBeta = 0.7f;  // Reno backoff factor.
 
 class TcpCubicSenderPeer : public TcpCubicSender {
@@ -30,7 +35,8 @@ class TcpCubicSenderPeer : public TcpCubicSender {
                      bool reno,
                      QuicPacketCount max_tcp_congestion_window)
       : TcpCubicSender(
-            clock, &rtt_stats_, reno, max_tcp_congestion_window, &stats_) {
+            clock, &rtt_stats_, reno, kInitialCongestionWindowPackets,
+            max_tcp_congestion_window, &stats_) {
   }
 
   QuicPacketCount congestion_window() {
@@ -302,7 +308,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
 
 TEST_F(TcpCubicSenderTest, NoPRRWhenLessThanOnePacketInFlight) {
   SendAvailableSendWindow();
-  LoseNPackets(kDefaultInitialWindow - 1);
+  LoseNPackets(kInitialCongestionWindowPackets - 1);
   AckNPackets(1);
   // PRR will allow 2 packets for every ack during recovery.
   EXPECT_EQ(2, SendAvailableSendWindow());
@@ -571,24 +577,16 @@ TEST_F(TcpCubicSenderTest, DontTrackAckPackets) {
 }
 
 TEST_F(TcpCubicSenderTest, ConfigureMaxInitialWindow) {
-  QuicPacketCount congestion_window = sender_->congestion_window();
   QuicConfig config;
-  QuicConfigPeer::SetReceivedInitialWindow(&config, 2 * congestion_window);
 
-  sender_->SetFromConfig(config,
-                         /* is_server= */ true,
-                         /* using_pacing= */ false);
-  EXPECT_EQ(2 * congestion_window, sender_->congestion_window());
-
-  // Verify that kCOPT: kIW10 forces the congestion window to the
-  // default of 10 regardless of ReceivedInitialWindow.
+  // Verify that kCOPT: kIW10 forces the congestion window to the default of 10.
   QuicTagVector options;
   options.push_back(kIW10);
   QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
   sender_->SetFromConfig(config,
                          /* is_server= */ true,
                          /* using_pacing= */ false);
-  EXPECT_EQ(congestion_window, sender_->congestion_window());
+  EXPECT_EQ(10u, sender_->congestion_window());
 }
 
 TEST_F(TcpCubicSenderTest, DisableAckTrainDetectionWithPacing) {

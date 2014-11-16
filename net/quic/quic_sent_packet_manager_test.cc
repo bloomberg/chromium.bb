@@ -45,7 +45,7 @@ class MockDebugDelegate : public QuicSentPacketManager::DebugDelegate {
 class QuicSentPacketManagerTest : public ::testing::TestWithParam<bool> {
  protected:
   QuicSentPacketManagerTest()
-      : manager_(true, &clock_, &stats_, kCubic, kNack),
+      : manager_(true, &clock_, &stats_, kCubic, kNack, false),
         send_algorithm_(new StrictMock<MockSendAlgorithm>),
         network_change_visitor_(new StrictMock<MockNetworkChangeVisitor>) {
     QuicSentPacketManagerPeer::SetSendAlgorithm(&manager_, send_algorithm_);
@@ -1080,12 +1080,12 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeCryptoHandshake) {
 
   // Check the min.
   RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
-  rtt_stats->set_initial_rtt_us(1 * base::Time::kMicrosecondsPerMillisecond);
+  rtt_stats->set_initial_rtt_us(1 * kNumMicrosPerMilli);
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  rtt_stats->set_initial_rtt_us(100 * base::Time::kMicrosecondsPerMillisecond);
+  rtt_stats->set_initial_rtt_us(100 * kNumMicrosPerMilli);
 
   QuicTime::Delta srtt =
       QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
@@ -1109,12 +1109,12 @@ TEST_F(QuicSentPacketManagerTest, GetTransmissionTimeTailLossProbe) {
 
   // Check the min.
   RttStats* rtt_stats = QuicSentPacketManagerPeer::GetRttStats(&manager_);
-  rtt_stats->set_initial_rtt_us(1 * base::Time::kMicrosecondsPerMillisecond);
+  rtt_stats->set_initial_rtt_us(1 * kNumMicrosPerMilli);
   EXPECT_EQ(clock_.Now().Add(QuicTime::Delta::FromMilliseconds(10)),
             manager_.GetRetransmissionTime());
 
   // Test with a standard smoothed RTT.
-  rtt_stats->set_initial_rtt_us(100 * base::Time::kMicrosecondsPerMillisecond);
+  rtt_stats->set_initial_rtt_us(100 * kNumMicrosPerMilli);
   QuicTime::Delta srtt =
       QuicTime::Delta::FromMicroseconds(rtt_stats->initial_rtt_us());
   QuicTime::Delta expected_tlp_delay = srtt.Multiply(2);

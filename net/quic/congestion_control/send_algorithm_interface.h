@@ -29,10 +29,12 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
   typedef std::vector<std::pair<QuicPacketSequenceNumber, TransmissionInfo>>
       CongestionVector;
 
-  static SendAlgorithmInterface* Create(const QuicClock* clock,
-                                        const RttStats* rtt_stats,
-                                        CongestionControlType type,
-                                        QuicConnectionStats* stats);
+  static SendAlgorithmInterface* Create(
+      const QuicClock* clock,
+      const RttStats* rtt_stats,
+      CongestionControlType type,
+      QuicConnectionStats* stats,
+      QuicPacketCount initial_congestion_window);
 
   virtual ~SendAlgorithmInterface() {}
 

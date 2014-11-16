@@ -319,13 +319,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32 ReceivedBytesForConnectionId() const;
 
-  // Sets the peer's default initial congestion window in packets.
-  void SetInitialCongestionWindowToSend(size_t initial_window);
-
-  bool HasReceivedInitialCongestionWindow() const;
-
-  uint32 ReceivedInitialCongestionWindow() const;
-
   // Sets an estimated initial round trip time in us.
   void SetInitialRoundTripTimeUsToSend(size_t rtt_us);
 
@@ -413,8 +406,6 @@ class NET_EXPORT_PRIVATE QuicConfig {
   QuicNegotiableUint32 max_streams_per_connection_;
   // The number of bytes required for the connection ID.
   QuicFixedUint32 bytes_for_connection_id_;
-  // Initial congestion window in packets.
-  QuicFixedUint32 initial_congestion_window_;
   // Initial round trip time estimate in microseconds.
   QuicFixedUint32 initial_round_trip_time_us_;
 

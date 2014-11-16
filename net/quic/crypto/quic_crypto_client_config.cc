@@ -847,8 +847,9 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
       break;
     }
   }
-  if (i == canonical_suffixes_.size())
+  if (i == canonical_suffixes_.size()) {
     return false;
+  }
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
                                 server_id.is_https(),

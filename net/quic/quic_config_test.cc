@@ -81,8 +81,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
       QuicTime::Delta::FromSeconds(kMaximumIdleTimeoutSecs));
   client_config.SetMaxStreamsPerConnection(
       2 * kDefaultMaxStreamsPerConnection, kDefaultMaxStreamsPerConnection);
-  client_config.SetInitialRoundTripTimeUsToSend(
-      10 * base::Time::kMicrosecondsPerMillisecond);
+  client_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
   client_config.SetInitialFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
   client_config.SetInitialStreamFlowControlWindowToSend(
@@ -107,8 +106,7 @@ TEST_F(QuicConfigTest, ProcessClientHello) {
   EXPECT_EQ(kDefaultMaxStreamsPerConnection,
             config_.MaxStreamsPerConnection());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.KeepaliveTimeout());
-  EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
-            config_.ReceivedInitialRoundTripTimeUs());
+  EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_TRUE(config_.HasReceivedConnectionOptions());
   EXPECT_EQ(2u, config_.ReceivedConnectionOptions().size());
   EXPECT_EQ(config_.ReceivedConnectionOptions()[0], kTBBR);
@@ -134,9 +132,7 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
   server_config.SetMaxStreamsPerConnection(
       kDefaultMaxStreamsPerConnection / 2,
       kDefaultMaxStreamsPerConnection / 2);
-  server_config.SetInitialCongestionWindowToSend(kDefaultInitialWindow / 2);
-  server_config.SetInitialRoundTripTimeUsToSend(
-      10 * base::Time::kMicrosecondsPerMillisecond);
+  server_config.SetInitialRoundTripTimeUsToSend(10 * kNumMicrosPerMilli);
   server_config.SetInitialFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
   server_config.SetInitialStreamFlowControlWindowToSend(
@@ -156,11 +152,8 @@ TEST_F(QuicConfigTest, ProcessServerHello) {
             config_.IdleConnectionStateLifetime());
   EXPECT_EQ(kDefaultMaxStreamsPerConnection / 2,
             config_.MaxStreamsPerConnection());
-  EXPECT_EQ(kDefaultInitialWindow / 2,
-            config_.ReceivedInitialCongestionWindow());
   EXPECT_EQ(QuicTime::Delta::FromSeconds(0), config_.KeepaliveTimeout());
-  EXPECT_EQ(10 * base::Time::kMicrosecondsPerMillisecond,
-            config_.ReceivedInitialRoundTripTimeUs());
+  EXPECT_EQ(10 * kNumMicrosPerMilli, config_.ReceivedInitialRoundTripTimeUs());
   EXPECT_EQ(config_.ReceivedInitialFlowControlWindowBytes(),
             2 * kInitialSessionFlowControlWindowForTest);
   EXPECT_EQ(config_.ReceivedInitialStreamFlowControlWindowBytes(),

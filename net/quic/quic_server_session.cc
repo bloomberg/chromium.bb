@@ -5,7 +5,7 @@
 #include "net/quic/quic_server_session.h"
 
 #include "base/logging.h"
-#include "net/quic/crypto/source_address_token.h"
+#include "net/quic/crypto/cached_network_parameters.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_spdy_server_stream.h"

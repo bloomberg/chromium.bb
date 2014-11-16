@@ -521,6 +521,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketSequenceNumber sequence_number_of_last_sent_packet() const {
     return sequence_number_of_last_sent_packet_;
   }
+  const QuicPacketWriter* writer() const { return writer_; }
 
   bool is_secure() const { return is_secure_; }
 
@@ -560,7 +561,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool SelectMutualVersion(const QuicVersionVector& available_versions);
 
   QuicPacketWriter* writer() { return writer_; }
-  const QuicPacketWriter* writer() const { return writer_; }
 
   bool peer_port_changed() const { return peer_port_changed_; }
 

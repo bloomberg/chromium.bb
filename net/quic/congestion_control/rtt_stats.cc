@@ -28,7 +28,7 @@ RttStats::RttStats()
       min_rtt_(QuicTime::Delta::Zero()),
       smoothed_rtt_(QuicTime::Delta::Zero()),
       mean_deviation_(QuicTime::Delta::Zero()),
-      initial_rtt_us_(kInitialRttMs * base::Time::kMicrosecondsPerMillisecond),
+      initial_rtt_us_(kInitialRttMs * kNumMicrosPerMilli),
       num_min_rtt_samples_remaining_(0),
       recent_min_rtt_window_(QuicTime::Delta::Infinite()) {}
 

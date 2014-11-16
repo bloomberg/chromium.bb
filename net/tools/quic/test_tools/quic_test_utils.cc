@@ -18,21 +18,10 @@ namespace net {
 namespace tools {
 namespace test {
 
-namespace {
-class NiceMockPacketWriterFactory
-    : public QuicConnection::PacketWriterFactory {
- public:
-  NiceMockPacketWriterFactory() {}
-  ~NiceMockPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* /*connection*/) const override {
-    return new testing::NiceMock<MockPacketWriter>();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NiceMockPacketWriterFactory);
-};
-}  // namespace
+QuicPacketWriter* NiceMockPacketWriterFactory::Create(
+    QuicConnection* /*connection*/) const {
+  return new testing::NiceMock<MockPacketWriter>();
+}
 
 MockConnection::MockConnection(bool is_server)
     : QuicConnection(kTestConnectionId,

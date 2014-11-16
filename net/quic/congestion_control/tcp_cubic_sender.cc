@@ -31,6 +31,7 @@ TcpCubicSender::TcpCubicSender(
     const QuicClock* clock,
     const RttStats* rtt_stats,
     bool reno,
+    QuicPacketCount initial_tcp_congestion_window,
     QuicPacketCount max_tcp_congestion_window,
     QuicConnectionStats* stats)
     : hybrid_slow_start_(clock),
@@ -43,7 +44,7 @@ TcpCubicSender::TcpCubicSender(
       largest_sent_sequence_number_(0),
       largest_acked_sequence_number_(0),
       largest_sent_at_last_cutback_(0),
-      congestion_window_(kDefaultInitialWindow),
+      congestion_window_(initial_tcp_congestion_window),
       previous_congestion_window_(0),
       slowstart_threshold_(max_tcp_congestion_window),
       previous_slowstart_threshold_(0),
@@ -61,16 +62,8 @@ void TcpCubicSender::SetFromConfig(const QuicConfig& config,
   if (is_server) {
     if (config.HasReceivedConnectionOptions() &&
         ContainsQuicTag(config.ReceivedConnectionOptions(), kIW10)) {
-      // Initial window experiment.  Ignore the initial congestion
-      // window suggested by the client and use the default ICWND of
-      // 10 instead.
-      congestion_window_ = kDefaultInitialWindow;
-    } else if (config.HasReceivedInitialCongestionWindow()) {
-      // Set the initial window size.
-      congestion_window_ = max(kMinimumCongestionWindow,
-          min(kMaxInitialWindow,
-              static_cast<QuicPacketCount>(
-                  config.ReceivedInitialCongestionWindow())));
+      // Initial window experiment.
+      congestion_window_ = 10;
     }
     if (using_pacing) {
       // Disable the ack train mode in hystart when pacing is enabled, since it
