@@ -2263,8 +2263,11 @@ bool EventHandler::handleGestureTap(const GestureEventWithHitTestResults& target
     bool swallowMouseDownEvent = !dispatchMouseEvent(EventTypeNames::mousedown, currentHitTest.innerNode(), gestureEvent.tapCount(), fakeMouseDown, true);
     if (!swallowMouseDownEvent)
         swallowMouseDownEvent = handleMouseFocus(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
-    if (!swallowMouseDownEvent)
+    if (!swallowMouseDownEvent) {
         swallowMouseDownEvent = handleMousePressEvent(MouseEventWithHitTestResults(fakeMouseDown, currentHitTest));
+        // m_selectionInitiationState is initialized after dispatching mousedown event.
+        m_selectionInitiationState = HaveNotStartedSelection;
+    }
 
     // FIXME: Use a hit-test cache to avoid unnecessary hit tests. http://crbug.com/398920
     if (currentHitTest.innerNode())
