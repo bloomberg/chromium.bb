@@ -110,7 +110,7 @@
     <request name="cursor_position">
       <description summary="set cursor to a new position">
         Sets the cursor and anchor to a new position. Index is the new cursor
-        position in bytess (when >= 0 relative to the end of inserted text
+        position in bytes (when >= 0 relative to the end of inserted text
         else relative to beginning of inserted text). Anchor is the new anchor
         position in bytes (when >= 0 relative to the end of inserted text, else
         relative to beginning of inserted text). When there should be no

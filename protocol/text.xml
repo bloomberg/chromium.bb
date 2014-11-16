@@ -214,7 +214,7 @@
 	(for example on unfocus).
 
 	The text input should also handle all preedit_style and preedit_cursor
-	events occuring directly before preedit_string.
+	events occurring directly before preedit_string.
       </description>
       <arg name="serial" type="uint" summary="serial of the latest known text input state"/>
       <arg name="text" type="string"/>

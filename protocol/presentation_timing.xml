@@ -105,7 +105,7 @@
         able to query the current clock value directly, not by asking
         the compositor.
 
-        On Linux/glibc, the identifer value is one of the clockid_t
+        On Linux/glibc, the identifier value is one of the clockid_t
         values accepted by clock_gettime(). clock_gettime() is defined
         by POSIX.1-2001.
 
@@ -183,7 +183,7 @@
         completion events from the system, and the latency of the
         physical display path if known.
 
-        This event is preceeded by all related sync_output events
+        This event is preceded by all related sync_output events
         telling which output's refresh cycle the feedback corresponds
         to, i.e. the main output for the surface. Compositors are
         recommended to choose the output containing the largest part
