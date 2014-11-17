@@ -151,6 +151,13 @@ cr.define('hotword', function() {
         hotword.constants.UmaMediaStreamOpenResult.INVALID_SECURITY_ORIGIN
   };
 
+  var UmaTriggerSources_ = {
+    'launcher': hotword.constants.UmaTriggerSource.LAUNCHER,
+    'ntp': hotword.constants.UmaTriggerSource.NTP_GOOGLE_COM,
+    'always': hotword.constants.UmaTriggerSource.ALWAYS_ON,
+    'training': hotword.constants.UmaTriggerSource.TRAINING
+  };
+
   StateManager.prototype = {
     /**
      * Request status details update. Intended to be called from the
@@ -396,8 +403,12 @@ cr.define('hotword', function() {
       // order to restart the detector.
       if (this.sessions_.length) {
         var session = this.sessions_.pop();
-        if (session.triggerCb_)
-          session.triggerCb_(event.log);
+        session.triggerCb_(event.log);
+
+        hotword.metrics.recordEnum(
+            hotword.constants.UmaMetrics.TRIGGER_SOURCE,
+            UmaTriggerSources_[session.source_],
+            hotword.constants.UmaTriggerSource.MAX);
       }
     },
 

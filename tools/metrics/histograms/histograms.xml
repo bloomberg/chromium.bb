@@ -10207,6 +10207,16 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   </summary>
 </histogram>
 
+<histogram name="Hotword.HotwordTriggerSource" enum="HotwordTriggerSource">
+  <owner>amistry@chromium.org</owner>
+  <owner>rlp@chromium.org</owner>
+  <owner>somast@chromium.org</owner>
+  <summary>
+    Location of hotword trigger. Emitted every time the hotword is triggered by
+    the user saying 'Ok Google'.
+  </summary>
+</histogram>
+
 <histogram name="HttpCache.AsyncValidationDuration" units="milliseconds">
   <owner>ricea@chromium.org</owner>
   <summary>
@@ -46760,6 +46770,13 @@ Therefore, the affected-histogram name has to have at least one dot in it.
   <int value="0" label="Preference not set"/>
   <int value="1" label="Hotwording enabled"/>
   <int value="2" label="Hotwording disabled"/>
+</enum>
+
+<enum name="HotwordTriggerSource" type="int">
+  <int value="0" label="Launcher (except when always-on is enabled)"/>
+  <int value="1" label="NTP or google.com"/>
+  <int value="2" label="Always-On"/>
+  <int value="3" label="Training Mode"/>
 </enum>
 
 <enum name="Hresult" type="int">

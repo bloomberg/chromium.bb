@@ -163,7 +163,8 @@ var UmaMetrics = {
   TRIGGER: 'Hotword.HotwordTrigger',
   MEDIA_STREAM_RESULT: 'Hotword.HotwordMediaStreamResult',
   NACL_PLUGIN_LOAD_RESULT: 'Hotword.HotwordNaClPluginLoadResult',
-  NACL_MESSAGE_TIMEOUT: 'Hotword.HotwordNaClMessageTimeout'
+  NACL_MESSAGE_TIMEOUT: 'Hotword.HotwordNaClMessageTimeout',
+  TRIGGER_SOURCE: 'Hotword.HotwordTriggerSource'
 };
 
 /**
@@ -195,6 +196,19 @@ var UmaNaClPluginLoadResult = {
 };
 
 /**
+ * Source of hotword triggering, to be reported via UMA.
+ * DO NOT remove or renumber values in this enum. Only add new ones.
+ * @enum {number}
+ */
+var UmaTriggerSource = {
+  LAUNCHER: 0,
+  NTP_GOOGLE_COM: 1,
+  ALWAYS_ON: 2,
+  TRAINING: 3,
+  MAX: 3
+};
+
+/**
  * The browser UI language.
  * @const {string}
  */
@@ -219,7 +233,8 @@ return {
   UmaMediaStreamOpenResult: UmaMediaStreamOpenResult,
   UmaMetrics: UmaMetrics,
   UmaNaClMessageTimeout: UmaNaClMessageTimeout,
-  UmaNaClPluginLoadResult: UmaNaClPluginLoadResult
+  UmaNaClPluginLoadResult: UmaNaClPluginLoadResult,
+  UmaTriggerSource: UmaTriggerSource
 };
 
 });
