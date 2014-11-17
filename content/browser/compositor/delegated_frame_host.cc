@@ -590,7 +590,8 @@ static void CopyFromCompositingSurfaceFinished(
   bool lost_resource = sync_point == 0;
   release_callback->Run(sync_point, lost_resource);
 
-  callback.Run(*bitmap, content::READBACK_SUCCESS);
+  callback.Run(*bitmap,
+               result ? content::READBACK_SUCCESS : content::READBACK_FAILED);
 }
 
 // static
