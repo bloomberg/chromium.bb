@@ -4448,6 +4448,217 @@ TEST_F(SyncerTest, GetKeyEmpty) {
   }
 }
 
+// Tests specifically related to bookmark (and therefore no client tags) sync
+// logic. Entities without client tags have custom logic in parts of the code,
+// and hence are not covered by e.g. the Undeletion tests below.
+class SyncerBookmarksTest : public SyncerTest {
+ public:
+  SyncerBookmarksTest() : metahandle_(syncable::kInvalidMetaHandle) {
+  }
+
+  void Create() {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry bookmark(
+        &trans, CREATE, BOOKMARKS, ids_.root(), "clientname");
+    ASSERT_TRUE(bookmark.good());
+    bookmark.PutIsUnsynced(true);
+    bookmark.PutSyncing(false);
+    bookmark.PutSpecifics(DefaultBookmarkSpecifics());
+    EXPECT_FALSE(bookmark.GetIsUnappliedUpdate());
+    EXPECT_FALSE(bookmark.GetId().ServerKnows());
+    metahandle_ = bookmark.GetMetahandle();
+    local_id_ = bookmark.GetId();
+  }
+
+  void Delete() {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&trans, GET_BY_HANDLE, metahandle_);
+    ASSERT_TRUE(entry.good());
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    // The order of setting IS_UNSYNCED vs IS_DEL matters. See
+    // WriteNode::Tombstone().
+    entry.PutIsUnsynced(true);
+    entry.PutIsDel(true);
+    entry.PutSyncing(false);
+  }
+
+  void Undelete() {
+    WriteTransaction trans(FROM_HERE, UNITTEST, directory());
+    MutableEntry entry(&trans, GET_BY_HANDLE, metahandle_);
+    ASSERT_TRUE(entry.good());
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_TRUE(entry.GetIsDel());
+    entry.PutIsDel(false);
+    entry.PutIsUnsynced(true);
+    entry.PutSyncing(false);
+  }
+
+  int64 GetMetahandleOfTag() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+    EXPECT_TRUE(entry.good());
+    if (!entry.good()) {
+      return syncable::kInvalidMetaHandle;
+    }
+    return entry.GetMetahandle();
+  }
+
+  Id GetServerId() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+    EXPECT_TRUE(entry.good());
+    if (!entry.good()) {
+      return Id();
+    }
+    return entry.GetId();
+  }
+
+  void ExpectUnsyncedCreation() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_FALSE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());  // Never been committed.
+    EXPECT_LT(entry.GetBaseVersion(), 0);
+    EXPECT_TRUE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+  }
+
+  void ExpectUnsyncedUndeletion() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_FALSE(entry.GetIsDel());
+    EXPECT_TRUE(entry.GetServerIsDel());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_TRUE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_TRUE(entry.GetId().ServerKnows());
+  }
+
+  void ExpectUnsyncedEdit() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_FALSE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_TRUE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_TRUE(entry.GetId().ServerKnows());
+  }
+
+  void ExpectUnsyncedDeletion() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_TRUE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());
+    EXPECT_TRUE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_GE(entry.GetServerVersion(), 0);
+  }
+
+  void ExpectSyncedAndCreated() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_FALSE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_EQ(entry.GetBaseVersion(), entry.GetServerVersion());
+    EXPECT_FALSE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+  }
+
+  void ExpectSyncedAndDeleted() {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_TRUE(entry.GetIsDel());
+    EXPECT_TRUE(entry.GetServerIsDel());
+    EXPECT_FALSE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_GE(entry.GetServerVersion(), 0);
+  }
+
+ protected:
+  syncable::Id local_id_;
+  int64 metahandle_;
+};
+
+TEST_F(SyncerBookmarksTest, CreateSyncThenDeleteSync) {
+  Create();
+  ExpectUnsyncedCreation();
+  SyncShareNudge();
+  ExpectSyncedAndCreated();
+  Delete();
+  ExpectUnsyncedDeletion();
+  SyncShareNudge();
+  ExpectSyncedAndDeleted();
+}
+
+TEST_F(SyncerBookmarksTest, CreateThenDeleteBeforeSync) {
+  Create();
+  ExpectUnsyncedCreation();
+  Delete();
+
+  // Deleting before the initial commit should result in not needing to send
+  // the delete to the server. It will still be in an unsynced state, but with
+  // IS_UNSYNCED set to false.
+  {
+    syncable::ReadTransaction trans(FROM_HERE, directory());
+    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
+
+    EXPECT_EQ(metahandle_, entry.GetMetahandle());
+    EXPECT_TRUE(entry.GetIsDel());
+    EXPECT_FALSE(entry.GetServerIsDel());
+    EXPECT_FALSE(entry.GetIsUnsynced());
+    EXPECT_FALSE(entry.GetIsUnappliedUpdate());
+    EXPECT_EQ(entry.GetBaseVersion(), -1);
+    EXPECT_EQ(entry.GetServerVersion(), 0);
+  }
+}
+
+TEST_F(SyncerBookmarksTest, LocalDeleteRemoteChangeConflict) {
+  Create();
+  ExpectUnsyncedCreation();
+  SyncShareNudge();
+  ExpectSyncedAndCreated();
+  Delete();
+  ExpectUnsyncedDeletion();
+
+  // Trigger a getupdates that modifies the bookmark. The update should  be
+  // clobbered by the local delete.
+  mock_server_->AddUpdateBookmark(GetServerId(), Id(), "dummy", 10, 10,
+                                  local_cache_guid(), local_id_.GetServerId());
+
+  SyncShareNudge();
+  ExpectSyncedAndDeleted();
+}
+
+TEST_F(SyncerBookmarksTest, CreateThenDeleteDuringCommit) {
+  Create();
+  ExpectUnsyncedCreation();
+
+  // In the middle of the initial creation commit, perform a deletion.
+  // This should trigger performing two consecutive commit cycles, resulting
+  // in the bookmark being both deleted and synced.
+  mock_server_->SetMidCommitCallback(
+      base::Bind(&SyncerBookmarksTest::Delete, base::Unretained(this)));
+
+  SyncShareNudge();
+  ExpectSyncedAndDeleted();
+}
+
 // Test what happens if a client deletes, then recreates, an object very
 // quickly.  It is possible that the deletion gets sent as a commit, and
 // the undelete happens during the commit request.  The principle here
@@ -4477,12 +4688,12 @@ class SyncerUndeletionTest : public SyncerTest {
   void Create() {
     WriteTransaction trans(FROM_HERE, UNITTEST, directory());
     MutableEntry perm_folder(
-        &trans, CREATE, BOOKMARKS, ids_.root(), "clientname");
+        &trans, CREATE, PREFERENCES, ids_.root(), "clientname");
     ASSERT_TRUE(perm_folder.good());
     perm_folder.PutUniqueClientTag(client_tag_);
     perm_folder.PutIsUnsynced(true);
     perm_folder.PutSyncing(false);
-    perm_folder.PutSpecifics(DefaultBookmarkSpecifics());
+    perm_folder.PutSpecifics(DefaultPreferencesSpecifics());
     EXPECT_FALSE(perm_folder.GetIsUnappliedUpdate());
     EXPECT_FALSE(perm_folder.GetId().ServerKnows());
     metahandle_ = perm_folder.GetMetahandle();
@@ -4494,8 +4705,10 @@ class SyncerUndeletionTest : public SyncerTest {
     MutableEntry entry(&trans, GET_BY_CLIENT_TAG, client_tag_);
     ASSERT_TRUE(entry.good());
     EXPECT_EQ(metahandle_, entry.GetMetahandle());
-    entry.PutIsDel(true);
+    // The order of setting IS_UNSYNCED vs IS_DEL matters. See
+    // WriteNode::Tombstone().
     entry.PutIsUnsynced(true);
+    entry.PutIsDel(true);
     entry.PutSyncing(false);
   }
 
@@ -4527,7 +4740,7 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_EQ(metahandle_, entry.GetMetahandle());
     EXPECT_FALSE(entry.GetIsDel());
     EXPECT_FALSE(entry.GetServerIsDel());  // Never been committed.
-    EXPECT_GE(0, entry.GetBaseVersion());
+    EXPECT_LT(entry.GetBaseVersion(), 0);
     EXPECT_TRUE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
   }
@@ -4539,7 +4752,7 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_EQ(metahandle_, entry.GetMetahandle());
     EXPECT_FALSE(entry.GetIsDel());
     EXPECT_TRUE(entry.GetServerIsDel());
-    EXPECT_EQ(0, entry.GetBaseVersion());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
     EXPECT_TRUE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
     EXPECT_TRUE(entry.GetId().ServerKnows());
@@ -4552,7 +4765,7 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_EQ(metahandle_, entry.GetMetahandle());
     EXPECT_FALSE(entry.GetIsDel());
     EXPECT_FALSE(entry.GetServerIsDel());
-    EXPECT_LT(0, entry.GetBaseVersion());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
     EXPECT_TRUE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
     EXPECT_TRUE(entry.GetId().ServerKnows());
@@ -4567,8 +4780,8 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_FALSE(entry.GetServerIsDel());
     EXPECT_TRUE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
-    EXPECT_LT(0, entry.GetBaseVersion());
-    EXPECT_LT(0, entry.GetServerVersion());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_GE(entry.GetServerVersion(), 0);
   }
 
   void ExpectSyncedAndCreated() {
@@ -4578,7 +4791,7 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_EQ(metahandle_, entry.GetMetahandle());
     EXPECT_FALSE(entry.GetIsDel());
     EXPECT_FALSE(entry.GetServerIsDel());
-    EXPECT_LT(0, entry.GetBaseVersion());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
     EXPECT_EQ(entry.GetBaseVersion(), entry.GetServerVersion());
     EXPECT_FALSE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
@@ -4593,8 +4806,8 @@ class SyncerUndeletionTest : public SyncerTest {
     EXPECT_TRUE(entry.GetServerIsDel());
     EXPECT_FALSE(entry.GetIsUnsynced());
     EXPECT_FALSE(entry.GetIsUnappliedUpdate());
-    EXPECT_GE(0, entry.GetBaseVersion());
-    EXPECT_GE(0, entry.GetServerVersion());
+    EXPECT_GE(entry.GetBaseVersion(), 0);
+    EXPECT_GE(entry.GetServerVersion(), 0);
   }
 
  protected:
@@ -4793,7 +5006,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletes) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    mock_server_->AddUpdateTombstone(entry.GetId());
+    mock_server_->AddUpdateTombstone(entry.GetId(), PREFERENCES);
   }
   SyncShareNudge();
 
@@ -4835,7 +5048,7 @@ TEST_F(SyncerUndeletionTest, UndeleteAfterOtherClientDeletesImmediately) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    mock_server_->AddUpdateTombstone(entry.GetId());
+    mock_server_->AddUpdateTombstone(entry.GetId(), PREFERENCES);
   }
   SyncShareNudge();
 
@@ -4903,22 +5116,16 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletes) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    mock_server_->AddUpdateBookmark(
-        entry.GetId(),
-        entry.GetParentId(),
-        "Thadeusz", 100, 1000,
-        local_cache_guid(), local_id_.GetServerId());
+    mock_server_->AddUpdatePref(
+        entry.GetId().GetServerId(),
+        entry.GetParentId().GetServerId(),
+        client_tag_, 100, 1000);
   }
   mock_server_->SetLastUpdateClientTag(client_tag_);
   SyncShareNudge();
   EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    EXPECT_EQ("Thadeusz", entry.GetNonUniqueName());
-  }
 }
 
 TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
@@ -4958,22 +5165,16 @@ TEST_F(SyncerUndeletionTest, OtherClientUndeletesImmediately) {
   {
     syncable::ReadTransaction trans(FROM_HERE, directory());
     Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    mock_server_->AddUpdateBookmark(
-        entry.GetId(),
-        entry.GetParentId(),
-        "Thadeusz", 100, 1000,
-        local_cache_guid(), local_id_.GetServerId());
+    mock_server_->AddUpdatePref(
+        entry.GetId().GetServerId(),
+        entry.GetParentId().GetServerId(),
+        client_tag_, 100, 1000);
   }
   mock_server_->SetLastUpdateClientTag(client_tag_);
   SyncShareNudge();
   EXPECT_EQ(0, session_->status_controller().TotalNumConflictingItems());
   EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
   ExpectSyncedAndCreated();
-  {
-    syncable::ReadTransaction trans(FROM_HERE, directory());
-    Entry entry(&trans, GET_BY_HANDLE, metahandle_);
-    EXPECT_EQ("Thadeusz", entry.GetNonUniqueName());
-  }
 }
 
 enum {

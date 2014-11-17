@@ -170,7 +170,9 @@ void MutableEntry::PutIsDel(bool value) {
     // - Let us delete this entry permanently through
     //   DirectoryBackingStore::DropDeletedEntries() when we next restart sync.
     //   This will save memory and avoid crbug.com/125381.
-    if (!GetId().ServerKnows()) {
+    // Note: do not unset IsUnsynced if the syncer is in the middle of
+    // attempting to commit this entity.
+    if (!GetId().ServerKnows() && !GetSyncing()) {
       PutIsUnsynced(false);
     }
   }

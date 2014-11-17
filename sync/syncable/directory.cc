@@ -1280,14 +1280,11 @@ bool Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
                       trans))
         return false;
     }
-    // Server-unknown items that are locally deleted should not be sent up to
-    // the server.  They must be !IS_UNSYNCED.
-    if (!SyncAssert(!(!id.ServerKnows() && e.GetIsDel() && e.GetIsUnsynced()),
-                    FROM_HERE,
-                    "Locally deleted item must not be unsynced.",
-                    trans)) {
-      return false;
-    }
+
+    // Previously we would assert that locally deleted items that have never
+    // been synced must not be sent to the server (IS_UNSYNCED must be false).
+    // This is not always true in the case that an item is deleted while the
+    // initial commit is in flight. See crbug.com/426865.
   }
   return true;
 }
