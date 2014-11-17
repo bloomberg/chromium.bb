@@ -1408,14 +1408,11 @@ vunpcklpd Wpdx Hpdx Vpdx, 0xc4 RXB.00001 x.src.L.01 0x14, CPUFeature_AVX
 unpcklps Wps Vps, 0x0f 0x14, CPUFeature_SSE
 vunpcklps Wpsx Hpsx Vpsx, 0xc4 RXB.00001 x.src.L.00 0x14, CPUFeature_AVX
 ######## VBROADCASTF128 ########################################################
-vbroadcastf128 Mo Vdo, 0xc4 RXB.00010 0.1111.1.01 0x1a,
-    CPUFeature_AVX disabled_untested
+vbroadcastf128 Mo Vdo, 0xc4 RXB.00010 0.1111.1.01 0x1a, CPUFeature_AVX
 ######## VBROADCASTSD ##########################################################
-vbroadcastsd Msd Vdo, 0xc4 RXB.00010 0.1111.1.01 0x19,
-    CPUFeature_AVX disabled_untested
+vbroadcastsd Msd Vdo, 0xc4 RXB.00010 0.1111.1.01 0x19, CPUFeature_AVX
 ######## VBROADCASTSS ##########################################################
-vbroadcastss Mss Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x18,
-    CPUFeature_AVX disabled_untested
+vbroadcastss Mss Vpsx, 0xc4 RXB.00010 0.1111.L.01 0x18, CPUFeature_AVX
 ######## VCVTPH2PS #############################################################
 vcvtph2ps Wph Vpsx, 0xc4 RXB.02 0.1111.L.01 0x13, CPUFeature_F16C
 ######## VCVTPS2PH #############################################################
