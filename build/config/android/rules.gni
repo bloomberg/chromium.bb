@@ -993,7 +993,10 @@ template("android_apk") {
           " Chromium linker.")
     }
 
-    _native_libs = invoker.native_libs
+    _native_libs = process_file_template(
+        invoker.native_libs,
+        "$root_build_dir/lib.stripped/{{source_file_part}}")
+
     _native_libs_dir = base_path + "/libs"
 
     if (_use_chromium_linker) {
@@ -1220,10 +1223,9 @@ template("android_apk") {
 #     resource dependencies of the apk.
 #   unittests_dep: This should be the label of the gtest native target. This
 #     target must be defined previously in the same file.
-#   unittests_binary: The name of the binary produced by the unittests_dep
-#     target, relative to the root build directory. If unspecified, it assumes
-#     the name of the unittests_dep target (which will be correct unless that
-#     target specifies an "output_name".
+#   unittests_binary: The basename of the library produced by the unittests_dep
+#     target. If unspecified, it assumes the name of the unittests_dep target
+#     (which will be correct unless that target specifies an "output_name".
 #     TODO(brettw) make this automatic by allowing get_target_outputs to
 #     support executables.
 #
@@ -1240,9 +1242,9 @@ template("unittest_apk") {
   test_suite_name = get_label_info(invoker.unittests_dep, "name")
 
   if (defined(invoker.unittests_binary)) {
-    unittests_binary = root_out_dir + "/" + invoker.unittests_binary
+    unittests_binary = invoker.unittests_binary
   } else {
-    unittests_binary = root_out_dir + "/lib.stripped/lib" + test_suite_name + ".so"
+    unittests_binary = "lib" + test_suite_name + ".so"
   }
 
   android_apk(target_name) {
@@ -1252,8 +1254,7 @@ template("unittest_apk") {
       "//testing/android/java/src/org/chromium/native_test/ChromeNativeTestActivity.java"
     ]
     android_manifest = "//testing/android/java/AndroidManifest.xml"
-    unittests_outputs = [ unittests_binary ]
-    native_libs = [unittests_outputs[0]]
+    native_libs = [ unittests_binary ]
     deps = [ "//base:base_java" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps

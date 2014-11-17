@@ -118,7 +118,7 @@ android_apk("content_shell_apk") {
   apk_name = "ContentShell"
   android_manifest = "shell_apk/AndroidManifest.xml"
   native_libs = [
-    "$root_build_dir/lib.stripped/libcontent_shell_content_view.so"
+    "libcontent_shell_content_view.so"
   ]
   asset_location = content_shell_assets_dir
 
@@ -182,7 +182,7 @@ if (cpu_arch != "x64" && cpu_arch != "arm64") {
     apk_name = "ChromiumLinkerTest"
     DEPRECATED_java_in_dir = "linker_test_apk/src"
     native_libs = [
-      "$root_build_dir/lib.stripped/liblinker_test.so"
+      "liblinker_test.so"
     ]
     use_chromium_linker = true
     enable_chromium_linker_tests = true

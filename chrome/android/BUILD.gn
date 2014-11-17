@@ -333,7 +333,7 @@ android_apk("chrome_shell_apk") {
   apk_name = "ChromeShell"
   android_manifest = chrome_shell_manifest
   native_libs = [
-    "$root_build_dir/lib.stripped/libchrome_shell.so"
+    "libchrome_shell.so"
   ]
   asset_location = chrome_shell_assets_dir
 
@@ -362,7 +362,7 @@ android_apk("chrome_sync_shell_apk") {
   apk_name = "ChromeSyncShell"
   android_manifest = "sync_shell/java/AndroidManifest.xml"
   native_libs = [
-    "$root_build_dir/lib.stripped/libchrome_sync_shell.so"
+    "libchrome_sync_shell.so"
   ]
   asset_location = chrome_shell_assets_dir
 }
