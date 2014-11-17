@@ -29,8 +29,6 @@ typedef enum {
   AUTOFILL_PROFILES_RESULT,    // WDResult<std::vector<AutofillProfile*>>
   AUTOFILL_CREDITCARD_RESULT,  // WDResult<CreditCard>
   AUTOFILL_CREDITCARDS_RESULT, // WDResult<std::vector<CreditCard*>>
-  WEB_INTENTS_RESULT,          // WDResult<std::vector<WebIntentServiceData>>
-  WEB_INTENTS_DEFAULTS_RESULT, // WDResult<std::vector<DefaultWebIntentService>>
 } WDResultType;
 
 
