@@ -125,9 +125,19 @@ class Policy(object):
   def components(self):
     return self._components
 
-  def find_rule(self, component_name):
-    """Finds a rule whose name is |component_name|. """
+  def find_rule(self, component_name, after_rule=None):
+    """Finds a rule whose name is |component_name|.
+
+    If there are multiple rules with same component name,
+    use |after_rule| to search the rule after it.
+    """
+    found_after_rule = False
     for rule in self._rules:
+      if after_rule and not found_after_rule:
+        if rule == after_rule:
+          found_after_rule = True
+        continue
+
       if rule.name == component_name:
         return rule
     return None

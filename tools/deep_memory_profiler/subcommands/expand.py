@@ -87,52 +87,60 @@ class ExpandCommand(SubCommand):
 
   @staticmethod
   def _accumulate(dump, policy, bucket_set, component_name, depth, sizes):
-    rule = policy.find_rule(component_name)
-    if not rule:
-      pass
-    elif rule.allocator_type == 'malloc':
-      for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
-        bucket = bucket_set.get(bucket_id)
-        if not bucket or bucket.allocator_type == 'malloc':
-          component_match = policy.find_malloc(bucket)
-        elif bucket.allocator_type == 'mmap':
-          continue
-        else:
-          assert False
-        if component_match == component_name:
-          precedence = ''
-          precedence += '(alloc=%d) ' % allocs
-          precedence += '(free=%d) ' % frees
-          if bucket.typeinfo:
-            precedence += '(type=%s) ' % bucket.symbolized_typeinfo
-            precedence += '(type.name=%s) ' % bucket.typeinfo_name
-          ExpandCommand._add_size(precedence, bucket, depth, committed, sizes)
-    elif rule.allocator_type == 'mmap':
-      for _, region in dump.iter_map:
-        if region[0] != 'hooked':
-          continue
-        component_match, bucket = policy.find_mmap(region, bucket_set)
-        if component_match == component_name:
-          ExpandCommand._add_size('', bucket, depth,
-                                  region[1]['committed'], sizes)
-    elif rule.allocator_type == 'unhooked':
-      for addr, region in dump.iter_map:
-        if region[0] != 'unhooked':
-          continue
-        component_match = policy.find_unhooked(region)
-        if component_match == component_name:
-          precedence = ''
-          precedence += '%s-' % hex(addr[0])[2:]
-          precedence += '%s' % hex(addr[1])[2:]
-          precedence += ' %s' % region[1]['vma']['readable']
-          precedence += '%s' % region[1]['vma']['writable']
-          precedence += '%s' % region[1]['vma']['executable']
-          precedence += '%s' % region[1]['vma']['private']
-          precedence += ' %s' % region[1]['vma']['offset']
-          precedence += ' %s:' % region[1]['vma']['major']
-          precedence += '%s' % region[1]['vma']['minor']
-          precedence += ' %s' % region[1]['vma']['inode']
-          precedence += '   %s' % region[1]['vma']['name']
-          if not precedence in sizes:
-            sizes[precedence] = 0
-          sizes[precedence] += region[1]['committed']
+    allocator_type = []
+    rule = None
+    while True:
+      rule = policy.find_rule(component_name, rule)
+      if not rule:
+        break
+      if rule.allocator_type not in allocator_type:
+        allocator_type.append(rule.allocator_type)
+      else:
+        continue
+
+      if rule.allocator_type == 'malloc':
+        for bucket_id, _, committed, allocs, frees in dump.iter_stacktrace:
+          bucket = bucket_set.get(bucket_id)
+          if not bucket or bucket.allocator_type == 'malloc':
+            component_match = policy.find_malloc(bucket)
+          elif bucket.allocator_type == 'mmap':
+            continue
+          else:
+            assert False
+          if component_match == component_name:
+            precedence = ''
+            precedence += '(alloc=%d) ' % allocs
+            precedence += '(free=%d) ' % frees
+            if bucket.typeinfo:
+              precedence += '(type=%s) ' % bucket.symbolized_typeinfo
+              precedence += '(type.name=%s) ' % bucket.typeinfo_name
+            ExpandCommand._add_size(precedence, bucket, depth, committed, sizes)
+      elif rule.allocator_type == 'mmap':
+        for _, region in dump.iter_map:
+          if region[0] != 'hooked':
+            continue
+          component_match, bucket = policy.find_mmap(region, bucket_set)
+          if component_match == component_name:
+            ExpandCommand._add_size('', bucket, depth,
+                                    region[1]['committed'], sizes)
+      elif rule.allocator_type == 'unhooked':
+        for addr, region in dump.iter_map:
+          if region[0] != 'unhooked':
+            continue
+          component_match = policy.find_unhooked(region)
+          if component_match == component_name:
+            precedence = ''
+            precedence += '%s-' % hex(addr[0])[2:]
+            precedence += '%s' % hex(addr[1])[2:]
+            precedence += ' %s' % region[1]['vma']['readable']
+            precedence += '%s' % region[1]['vma']['writable']
+            precedence += '%s' % region[1]['vma']['executable']
+            precedence += '%s' % region[1]['vma']['private']
+            precedence += ' %s' % region[1]['vma']['offset']
+            precedence += ' %s:' % region[1]['vma']['major']
+            precedence += '%s' % region[1]['vma']['minor']
+            precedence += ' %s' % region[1]['vma']['inode']
+            precedence += '   %s' % region[1]['vma']['name']
+            if not precedence in sizes:
+              sizes[precedence] = 0
+            sizes[precedence] += region[1]['committed']
