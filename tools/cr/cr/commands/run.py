@@ -30,7 +30,10 @@ class RunCommand(cr.Command):
     return parser
 
   def Run(self):
-    targets = cr.Target.GetTargets()
+    original_targets = cr.Target.GetTargets()
+    targets = original_targets[:]
+    for target in original_targets:
+      targets.extend(target.GetRunDependencies())
     test_targets = [target for target in targets if target.is_test]
     run_targets = [target for target in targets if not target.is_test]
     if cr.Installer.Skipping():
@@ -46,5 +49,5 @@ class RunCommand(cr.Command):
     else:
       cr.Runner.Kill(run_targets, [])
       cr.Installer.Reinstall(run_targets, [])
-      cr.Runner.Invoke(targets, cr.context.remains)
+      cr.Runner.Invoke(original_targets, cr.context.remains)
 

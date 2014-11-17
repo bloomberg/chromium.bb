@@ -45,6 +45,7 @@ class Target(cr.base.context.Context, cr.AutoExport):
             '{CR_TARGET}{CR_TARGET_SUFFIX}', '{CR_TARGET}'),
         CR_RUN_ARGUMENTS='',
         CR_TEST_TYPE=test_type,
+        CR_RUN_DEPENDENCIES=[],
     )
     self._data = cr.context.data
     self.AddChildren(config, cr.context)
@@ -54,6 +55,9 @@ class Target(cr.base.context.Context, cr.AutoExport):
       self.Set(CR_TARGET_SUFFIX='')
     self.test_type = self.Find('CR_TEST_TYPE')
     self.target_name = self.Find('CR_TARGET_NAME')
+
+  def GetRunDependencies(self):
+    return map(Target.CreateTarget, self.Get('CR_RUN_DEPENDENCIES'))
 
   @property
   def build_target(self):
