@@ -86,15 +86,28 @@ class MyTarFile(tarfile.TarFile):
   def set_remove_nonessential_files(self, remove):
     self.__remove_nonessential_files = remove
 
+  def set_verbose(self, verbose):
+    self.__verbose = verbose
+
+  def __report_skipped(self, name):
+    if self.__verbose:
+      print 'D\t%s' % name
+
+  def __report_added(self, name):
+    if self.__verbose:
+      print 'A\t%s' % name
+
   def add(self, name, arcname=None, recursive=True, exclude=None, filter=None):
     head, tail = os.path.split(name)
     if tail in ('.svn', '.git'):
+      self.__report_skipped(name)
       return
 
     if self.__remove_nonessential_files:
       # WebKit change logs take quite a lot of space. This saves ~10 MB
       # in a bzip2-compressed tarball.
       if 'ChangeLog' in name:
+        self.__report_skipped(name)
         return
 
       # Remove contents of non-essential directories, but preserve gyp files,
@@ -104,8 +117,10 @@ class MyTarFile(tarfile.TarFile):
         if (name.startswith(dir_path) and
             os.path.isfile(name) and
             'gyp' not in name):
+          self.__report_skipped(name)
           return
 
+    self.__report_added(name)
     tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
 
 
@@ -118,6 +133,7 @@ def main(argv):
   parser.add_option("--test-data", action="store_true")
   # TODO(phajdan.jr): Remove --xz option when it's not needed for compatibility.
   parser.add_option("--xz", action="store_true")
+  parser.add_option("--verbose", action="store_true", default=False)
 
   options, args = parser.parse_args(argv)
 
@@ -147,6 +163,7 @@ def main(argv):
 
   archive = MyTarFile.open(output_fullname, 'w')
   archive.set_remove_nonessential_files(options.remove_nonessential_files)
+  archive.set_verbose(options.verbose)
   try:
     if options.test_data:
       for directory in TESTDIRS:
