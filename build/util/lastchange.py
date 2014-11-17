@@ -108,7 +108,7 @@ def FetchGitRevision(directory):
   if not hsh:
     return None
   pos = ''
-  proc = RunGitCommand(directory, ['show', '-s', '--format=%B', 'HEAD'])
+  proc = RunGitCommand(directory, ['cat-file', 'commit', 'HEAD'])
   if proc:
     output = proc.communicate()[0]
     if proc.returncode == 0 and output:
