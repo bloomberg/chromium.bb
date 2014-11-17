@@ -4,8 +4,8 @@ layer at (0,0) size 800x454
   RenderBlock {HTML} at (0,0) size 800x454
     RenderBody {BODY} at (8,16) size 784x430 [color=#0000FF]
       RenderBlock {P} at (0,0) size 784x237
-        RenderInline (generated) at (0,0) size 88x159 [color=#00FFFF]
-          RenderTextFragment {#text} at (0,3) size 88x159
+        RenderInline {<pseudo:first-letter>} at (0,0) size 88x159 [color=#00FFFF]
+          RenderTextFragment at (0,3) size 88x159
             text run at (0,3) width 88: "T"
         RenderTextFragment {#text} at (87,88) size 59x53
           text run at (87,88) width 59: "he "
@@ -48,8 +48,8 @@ layer at (0,0) size 800x454
           text run at (0,219) width 57: "on more "
           text run at (56,219) width 149: "than one line. (TEST1)"
       RenderBlock {P} at (0,253) size 784x73
-        RenderInline (generated) at (0,0) size 33x36 [color=#00FFFF]
-          RenderTextFragment {#text} at (0,0) size 33x36
+        RenderInline {<pseudo:first-letter>} at (0,0) size 33x36 [color=#00FFFF]
+          RenderTextFragment at (0,0) size 33x36
             text run at (0,0) width 33: "\"T"
         RenderTextFragment {#text} at (32,15) size 99x17
           text run at (32,15) width 99: "est\": The first "
@@ -85,8 +85,8 @@ layer at (0,0) size 800x454
           text run at (0,55) width 323: "Remember that in order to ensure a complete test, "
           text run at (322,55) width 416: "the paragraph must be displayed on more than one line. (TEST2)"
       RenderBlock {P} at (0,342) size 784x54
-        RenderInline (generated) at (0,0) size 10x17 [color=#00FFFF]
-          RenderTextFragment {#text} at (0,0) size 10x17
+        RenderInline {<pseudo:first-letter>} at (0,0) size 10x17 [color=#00FFFF]
+          RenderTextFragment at (0,0) size 10x17
             text run at (0,0) width 10: "T"
         RenderTextFragment {#text} at (9,0) size 20x17
           text run at (9,0) width 20: "he "

@@ -6,8 +6,8 @@ layer at (0,0) size 800x8
       RenderBlock {DIV} at (0,0) size 784x0
 layer at (20,36) size 424x241
   RenderBlock (positioned) {P} at (20,36) size 424x241 [border: (2px solid #000000)]
-    RenderBlock (floating) at (2,2) size 24.02x36
-      RenderTextFragment {#text} at (0,0) size 25x36
+    RenderBlock (floating) {<pseudo:first-letter>} at (2,2) size 24.02x36
+      RenderTextFragment at (0,0) size 25x36
         text run at (0,0) width 25: "L"
     RenderTextFragment {#text} at (30,2) size 200x438
       text run at (30,2) width 172: "orem ipsum dolor sit"

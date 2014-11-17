@@ -11,8 +11,8 @@ layer at (0,0) size 800x264
         RenderText {#text} at (1,-1) size 280x16
           text run at (1,-1) width 280: "this block should hug the lowercase glyphs."
       RenderBlock {P} at (0,192) size 784x48
-        RenderBlock (floating) at (0,0) size 22x24
-          RenderTextFragment {#text} at (0,-4) size 22x36
+        RenderBlock (floating) {<pseudo:first-letter>} at (0,0) size 22x24
+          RenderTextFragment at (0,-4) size 22x36
             text run at (0,-4) width 22: "T"
         RenderTextFragment {#text} at (24,0) size 419x16
           text run at (24,0) width 419: "he first letter here should look nicer because it uses glyph bounds"

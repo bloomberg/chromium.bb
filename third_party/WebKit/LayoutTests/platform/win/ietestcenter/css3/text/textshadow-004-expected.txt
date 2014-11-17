@@ -7,8 +7,8 @@ layer at (0,0) size 800x76
         RenderText {#text} at (0,0) size 305x17
           text run at (0,0) width 305: "Test passes if there is green visible on the page."
       RenderBlock {DIV} at (0,34) size 784x18
-        RenderInline (generated) at (0,0) size 9x17
-          RenderTextFragment {#text} at (0,0) size 9x17
+        RenderInline {<pseudo:first-letter>} at (0,0) size 9x17
+          RenderTextFragment at (0,0) size 9x17
             text run at (0,0) width 9: "F"
         RenderTextFragment {#text} at (8,0) size 60x17
           text run at (8,0) width 60: "iller Text"
