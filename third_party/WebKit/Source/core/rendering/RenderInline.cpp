@@ -802,7 +802,7 @@ private:
 
 bool RenderInline::hitTestCulledInline(const HitTestRequest& request, HitTestResult& result, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset)
 {
-    ASSERT(result.isRectBasedTest() && !alwaysCreateLineBoxes());
+    ASSERT(!alwaysCreateLineBoxes());
     if (!visibleToHitTestRequest(request))
         return false;
 
