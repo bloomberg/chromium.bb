@@ -119,7 +119,8 @@ class PageHandler {
   int capture_retry_count_;
   bool has_last_compositor_frame_metadata_;
   cc::CompositorFrameMetadata last_compositor_frame_metadata_;
-  base::TimeTicks last_frame_time_;
+  int screencast_frame_sent_;
+  int screencast_frame_acked_;
 
   scoped_ptr<ColorPicker> color_picker_;
 

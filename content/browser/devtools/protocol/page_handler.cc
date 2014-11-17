@@ -44,8 +44,9 @@ namespace {
 static const char kPng[] = "png";
 static const char kJpeg[] = "jpeg";
 static int kDefaultScreenshotQuality = 80;
-static int kFrameRateThresholdMs = 100;
+static int kFrameRetryDelayMs = 100;
 static int kCaptureRetryLimit = 2;
+static int kMaxScreencastFramesInFlight = 4;
 
 void QueryUsageAndQuotaCompletedOnIOThread(
     const UsageAndQuotaQuery::Callback& callback,
@@ -78,6 +79,8 @@ PageHandler::PageHandler()
       screencast_max_height_(-1),
       capture_retry_count_(0),
       has_last_compositor_frame_metadata_(false),
+      screencast_frame_sent_(0),
+      screencast_frame_acked_(0),
       color_picker_(new ColorPicker(base::Bind(
           &PageHandler::OnColorPicked, base::Unretained(this)))),
       host_(nullptr),
@@ -346,13 +349,13 @@ Response PageHandler::StartScreencast(const std::string* format,
 }
 
 Response PageHandler::StopScreencast() {
-  last_frame_time_ = base::TimeTicks();
   screencast_enabled_ = false;
   UpdateTouchEventEmulationState();
   return Response::FallThrough();
 }
 
 Response PageHandler::ScreencastFrameAck(int frame_number) {
+  screencast_frame_acked_ = frame_number;
   return Response::OK();
 }
 
@@ -429,15 +432,13 @@ void PageHandler::NotifyScreencastVisibility(bool visible) {
 }
 
 void PageHandler::InnerSwapCompositorFrame() {
-  if ((base::TimeTicks::Now() - last_frame_time_).InMilliseconds() <
-          kFrameRateThresholdMs) {
+  if (screencast_frame_sent_ - screencast_frame_acked_ >
+      kMaxScreencastFramesInFlight) {
     return;
   }
 
   if (!host_ || !host_->GetView())
     return;
-
-  last_frame_time_ = base::TimeTicks::Now();
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
       host_->GetView());
@@ -496,7 +497,7 @@ void PageHandler::ScreencastFrameCaptured(
           FROM_HERE,
           base::Bind(&PageHandler::InnerSwapCompositorFrame,
                      weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromMilliseconds(kFrameRateThresholdMs));
+          base::TimeDelta::FromMilliseconds(kFrameRetryDelayMs));
     }
     return;
   }
@@ -552,7 +553,8 @@ void PageHandler::ScreencastFrameCaptured(
           ->set_scroll_offset_y(metadata.root_scroll_offset.y());
   client_->ScreencastFrame(ScreencastFrameParams::Create()
       ->set_data(base_64_data)
-      ->set_metadata(param_metadata));
+      ->set_metadata(param_metadata)
+      ->set_frame_number(++screencast_frame_sent_));
 }
 
 void PageHandler::ScreenshotCaptured(
