@@ -38,17 +38,16 @@ Follow the steps below to download and install the Native Client SDK.
 Prerequisites
 -------------
 
-.. _python26-27:
+.. _python27:
 
 Python 2.7
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^
 
 Make sure that the Python executable is in your ``PATH`` variable. Python 3.x is
 not yet supported.
   
 * On Mac and Linux, Python is likely preinstalled. Run the command ``python -V``
-  in a terminal window, and make sure that the version you have is 2.6.x or
-  2.7.x.
+  in a terminal window, and make sure that the version you have is 2.7.x.
 * On Windows, you may need to install Python. Go to `http://www.python.org/
   download/ <http://www.python.org/download/>`_ and select the latest 2.x
   version. In addition, be sure to add the Python directory (for example,

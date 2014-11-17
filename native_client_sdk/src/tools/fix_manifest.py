@@ -40,8 +40,8 @@ import optparse
 import os
 import sys
 
-if sys.version_info < (2, 6, 0):
-  sys.stderr.write("python 2.6 or later is required run this script\n")
+if sys.version_info < (2, 7, 0):
+  sys.stderr.write("python 2.7 or later is required run this script\n")
   sys.exit(1)
 
 
