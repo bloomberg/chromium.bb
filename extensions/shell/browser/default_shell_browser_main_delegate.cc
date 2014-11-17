@@ -8,9 +8,9 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/string_tokenizer.h"
+#include "extensions/common/switches.h"
 #include "extensions/shell/browser/shell_desktop_controller.h"
 #include "extensions/shell/browser/shell_extension_system.h"
-#include "extensions/shell/common/switches.h"
 
 namespace extensions {
 
@@ -23,17 +23,20 @@ DefaultShellBrowserMainDelegate::~DefaultShellBrowserMainDelegate() {
 void DefaultShellBrowserMainDelegate::Start(
     content::BrowserContext* browser_context) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAppShellAppPath)) {
+  if (command_line->HasSwitch(switches::kLoadApps)) {
     ShellExtensionSystem* extension_system = static_cast<ShellExtensionSystem*>(
         ExtensionSystem::Get(browser_context));
     extension_system->Init();
 
     CommandLine::StringType path_list =
-        command_line->GetSwitchValueNative(switches::kAppShellAppPath);
+        command_line->GetSwitchValueNative(switches::kLoadApps);
 
     base::StringTokenizerT<CommandLine::StringType,
                            CommandLine::StringType::const_iterator>
         tokenizer(path_list, FILE_PATH_LITERAL(","));
+
+
+    std::string launch_id;
     while (tokenizer.GetNext()) {
       base::FilePath app_absolute_dir =
           base::MakeAbsoluteFilePath(base::FilePath(tokenizer.token()));
@@ -41,10 +44,16 @@ void DefaultShellBrowserMainDelegate::Start(
       const Extension* extension = extension_system->LoadApp(app_absolute_dir);
       if (!extension)
         continue;
-      extension_system->LaunchApp(extension->id());
+      if (launch_id.empty())
+        launch_id = extension->id();
     }
+
+    if (!launch_id.empty())
+      extension_system->LaunchApp(launch_id);
+    else
+      LOG(ERROR) << "Could not load any apps.";
   } else {
-    LOG(ERROR) << "--" << switches::kAppShellAppPath
+    LOG(ERROR) << "--" << switches::kLoadApps
                << " unset; boredom is in your future";
   }
 }

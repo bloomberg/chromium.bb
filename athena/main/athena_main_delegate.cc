@@ -15,6 +15,7 @@
 #include "components/pdf/renderer/ppb_pdf_impl.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/switches.h"
 #include "extensions/shell/browser/desktop_controller.h"
 #include "extensions/shell/browser/shell_browser_main_delegate.h"
 #include "extensions/shell/browser/shell_content_browser_client.h"
@@ -75,9 +76,9 @@ class AthenaBrowserMainDelegate : public extensions::ShellBrowserMainDelegate {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
     base::FilePath app_dir = base::FilePath::FromUTF8Unsafe(
-        command_line->HasSwitch(extensions::switches::kAppShellAppPath)
+        command_line->HasSwitch(extensions::switches::kLoadApps)
             ? command_line->GetSwitchValueNative(
-                  extensions::switches::kAppShellAppPath)
+                  extensions::switches::kLoadApps)
             : kDefaultAppPath);
 
     base::FilePath app_absolute_dir = base::MakeAbsoluteFilePath(app_dir);

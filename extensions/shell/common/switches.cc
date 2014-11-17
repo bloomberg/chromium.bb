@@ -7,9 +7,6 @@
 namespace extensions {
 namespace switches {
 
-// Path to an app to load at startup.
-const char kAppShellAppPath[] = "app-shell-app-path";
-
 // Bounds for the host window to create (i.e. "800x600").
 const char kAppShellHostWindowBounds[] = "app-shell-host-window-bounds";
 

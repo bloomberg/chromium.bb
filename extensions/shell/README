@@ -10,8 +10,13 @@ app_shell is only officially supported on Chrome OS.
 
 # How to run
 
-$ app_shell --app-shell-app-path=/path/to/extension
+$ app_shell --load-apps=/path/to/extension
 
 # For example, you can try the calculator app:
 
-$ app_shell --app-shell-app-path=chrome/common/extensions/docs/examples/apps/calculator/app/
+$ app_shell --load-apps=chrome/common/extensions/docs/examples/apps/calculator/app/
+
+# To load multiple apps, specify them in a comma separated list.  The first app
+# will be launched:
+
+$ app_shell --load-apps=/path/to/extension1,/path/to/extension2
