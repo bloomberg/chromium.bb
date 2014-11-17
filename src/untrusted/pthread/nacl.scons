@@ -21,7 +21,7 @@ if env.Bit('nonsfi_nacl'):
   if env.Bit('target_x86_32'):
     env.Append(CCFLAGS=['--target=i686-nacl'])
   elif env.Bit('target_arm'):
-    env.Append(CCFLAGS=['--target=arm-nacl', '-mfloat-abi=hard'])
+    env.Append(CCFLAGS=['--target=arm-nacl-gnueabihf', '-mfloat-abi=hard'])
   else:
     raise Exception('Unsupported architecture')
 
