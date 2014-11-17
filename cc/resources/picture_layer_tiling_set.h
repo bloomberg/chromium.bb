@@ -75,6 +75,13 @@ class CC_EXPORT PictureLayerTilingSet {
   // Remove all tiles; keep all tilings.
   void RemoveAllTiles();
 
+  // Update the rects and priorities for tiles based on the given information.
+  bool UpdateTilePriorities(const gfx::Rect& required_rect_in_layer_space,
+                            float ideal_contents_scale,
+                            double current_frame_time_in_seconds,
+                            const Occlusion& occlusion_in_layer_space,
+                            bool can_require_tiles_for_activation);
+
   // For a given rect, iterates through tiles that can fill it.  If no
   // set of tiles with resources can fill the rect, then it will iterate
   // through null tiles with valid geometry_rect() until the rect is full.

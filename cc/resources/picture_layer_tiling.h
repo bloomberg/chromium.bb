@@ -260,8 +260,7 @@ class CC_EXPORT PictureLayerTiling {
 
   void Reset();
 
-  void ComputeTilePriorityRects(WhichTree tree,
-                                const gfx::Rect& viewport_in_layer_space,
+  void ComputeTilePriorityRects(const gfx::Rect& viewport_in_layer_space,
                                 float ideal_contents_scale,
                                 double current_frame_time_in_seconds,
                                 const Occlusion& occlusion_in_layer_space);

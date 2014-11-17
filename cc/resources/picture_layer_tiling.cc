@@ -537,7 +537,6 @@ gfx::Rect PictureLayerTiling::ComputeSkewport(
 }
 
 void PictureLayerTiling::ComputeTilePriorityRects(
-    WhichTree tree,
     const gfx::Rect& viewport_in_layer_space,
     float ideal_contents_scale,
     double current_frame_time_in_seconds,

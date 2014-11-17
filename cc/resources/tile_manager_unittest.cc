@@ -203,14 +203,14 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
-  pending_layer_->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  active_layer_->HighResTiling()->ComputeTilePriorityRects(
-      ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
-  active_layer_->LowResTiling()->ComputeTilePriorityRects(
-      ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+  pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                            Occlusion());
+  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
+  active_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
+  active_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                          Occlusion());
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();
@@ -451,14 +451,14 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(50, 50, 100, 100);
-  pending_layer_->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  active_layer_->HighResTiling()->ComputeTilePriorityRects(
-      ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
-  active_layer_->LowResTiling()->ComputeTilePriorityRects(
-      ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+  pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                            Occlusion());
+  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
+  active_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
+  active_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                          Occlusion());
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();
@@ -593,14 +593,14 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(layer_bounds);
-  pending_layer_->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+  pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                            Occlusion());
+  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
   pending_child_layer->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+      viewport, 1.0f, 1.0, Occlusion());
   pending_child_layer->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+      viewport, 1.0f, 1.0, Occlusion());
 
   // Populate all tiles directly from the tilings.
   all_tiles.clear();
@@ -696,14 +696,14 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   // Renew all of the tile priorities.
   gfx::Rect viewport(layer_bounds);
-  pending_layer_->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
-  pending_layer_->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+  pending_layer_->HighResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                            Occlusion());
+  pending_layer_->LowResTiling()->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                           Occlusion());
   pending_child_layer->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+      viewport, 1.0f, 1.0, Occlusion());
   pending_child_layer->LowResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, viewport, 1.0f, 1.0, Occlusion());
+      viewport, 1.0f, 1.0, Occlusion());
 
   // Populate all tiles directly from the tilings.
   std::set<Tile*> all_pending_tiles;

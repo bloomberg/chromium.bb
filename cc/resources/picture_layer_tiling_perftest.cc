@@ -75,7 +75,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     timer_.Reset();
     do {
       picture_layer_tiling_->ComputeTilePriorityRects(
-          PENDING_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
+          viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 
@@ -101,7 +101,7 @@ class PictureLayerTilingPerfTest : public testing::Test {
     timer_.Reset();
     do {
       picture_layer_tiling_->ComputeTilePriorityRects(
-          PENDING_TREE, viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
+          viewport_rect, 1.f, timer_.NumLaps() + 1, Occlusion());
 
       viewport_rect = gfx::Rect(viewport_rect.x() + xoffsets[offsetIndex],
                                 viewport_rect.y() + yoffsets[offsetIndex],
@@ -129,8 +129,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(
-        ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                    Occlusion());
 
     timer_.Reset();
     do {
@@ -154,8 +154,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(
-        ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                    Occlusion());
 
     timer_.Reset();
     do {
@@ -184,8 +184,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(
-        ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                    Occlusion());
 
     timer_.Reset();
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
@@ -216,8 +216,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
     picture_layer_tiling_ =
         PictureLayerTiling::Create(1, bounds, &picture_layer_tiling_client_);
     picture_layer_tiling_client_.set_tree(ACTIVE_TREE);
-    picture_layer_tiling_->ComputeTilePriorityRects(
-        ACTIVE_TREE, viewport, 1.0f, 1.0, Occlusion());
+    picture_layer_tiling_->ComputeTilePriorityRects(viewport, 1.0f, 1.0,
+                                                    Occlusion());
 
     TreePriority priorities[] = {SAME_PRIORITY_FOR_BOTH_TREES,
                                  SMOOTHNESS_TAKES_PRIORITY,

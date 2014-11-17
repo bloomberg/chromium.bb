@@ -2027,7 +2027,7 @@ TEST_F(PictureLayerImplTest, HighResRequiredWhenActiveHasDifferentBounds) {
   // TODO(vmpstr): This is confusing. Rework the test to create different bounds
   // on different trees instead of fudging tilings.
   pending_layer_->HighResTiling()->ComputeTilePriorityRects(
-      PENDING_TREE, gfx::Rect(pending_layer_bounds), 1.f, 1.f, Occlusion());
+      gfx::Rect(pending_layer_bounds), 1.f, 1.f, Occlusion());
 
   pending_layer_->HighResTiling()->UpdateAllTilePrioritiesForTesting();
   active_layer_->SetAllTilesReady();
@@ -2117,8 +2117,7 @@ TEST_F(PictureLayerImplTest, ShareTilesOnNextFrame) {
 
   // Drop the tiles on the active tree and recreate them. The same tiles
   // should be shared or not.
-  active_tiling->ComputeTilePriorityRects(
-      ACTIVE_TREE, gfx::Rect(), 1.f, 1.0, Occlusion());
+  active_tiling->ComputeTilePriorityRects(gfx::Rect(), 1.f, 1.0, Occlusion());
   EXPECT_TRUE(active_tiling->AllTilesForTesting().empty());
   active_tiling->CreateAllTilesForTesting();
 
