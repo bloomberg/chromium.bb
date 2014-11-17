@@ -123,6 +123,8 @@ def GetBotStepMap():
   std_test_steps = ['extract_build']
   std_tests = ['ui', 'unit']
   telemetry_tests = ['telemetry_perf_unittests']
+  telemetry_tests_user_build = ['telemetry_unittests',
+                                'telemetry_perf_unittests']
   flakiness_server = (
       '--flakiness-server=%s' % constants.UPSTREAM_FLAKINESS_SERVER)
   experimental = ['--experimental']
@@ -171,6 +173,8 @@ def GetBotStepMap():
                       ['--experimental', flakiness_server,
                       '--coverage-bucket', CHROMIUM_COVERAGE_BUCKET,
                       '--cleanup'])),
+      B('user-build-fyi-tests-dbg', H(std_test_steps),
+        T(telemetry_tests_user_build)),
       B('fyi-component-builder-tests-dbg',
         H(compile_step, extra_gyp='component=shared_library'),
         T(std_tests, ['--experimental', flakiness_server])),
