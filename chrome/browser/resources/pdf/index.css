@@ -9,6 +9,7 @@ body {
 
 viewer-toolbar {
   visibility: hidden;
+  white-space: nowrap;
   z-index: 3;
 }
 

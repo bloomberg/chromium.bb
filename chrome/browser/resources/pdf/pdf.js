@@ -342,7 +342,6 @@ PDFViewer.prototype = {
       case 'documentDimensions':
         this.documentDimensions_ = message.data;
         this.viewport_.setDocumentDimensions(this.documentDimensions_);
-        this.toolbar_.style.visibility = 'visible';
         // If we received the document dimensions, the password was good so we
         // can dismiss the password screen.
         if (this.passwordScreen_.active)
@@ -477,6 +476,11 @@ PDFViewer.prototype = {
       toolbarBottom -= scrollbarWidth;
     this.toolbar_.style.right = toolbarRight + 'px';
     this.toolbar_.style.bottom = toolbarBottom + 'px';
+    // Hide the toolbar if it doesn't fit in the viewport.
+    if (this.toolbar_.offsetLeft < 0 || this.toolbar_.offsetTop < 0)
+      this.toolbar_.style.visibility = 'hidden';
+    else
+      this.toolbar_.style.visibility = 'visible';
 
     // Update the page indicator.
     var visiblePage = this.viewport_.getMostVisiblePage();
