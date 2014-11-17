@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright 2014 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<grit-part>
+  <file path="resources/address_input_strings_am.xtb" lang="am" />
+  <file path="resources/address_input_strings_ar.xtb" lang="ar" />
+  <file path="resources/address_input_strings_bg.xtb" lang="bg" />
+  <file path="resources/address_input_strings_bn.xtb" lang="bn" />
+  <file path="resources/address_input_strings_ca.xtb" lang="ca" />
+  <file path="resources/address_input_strings_cs.xtb" lang="cs" />
+  <file path="resources/address_input_strings_da.xtb" lang="da" />
+  <file path="resources/address_input_strings_de.xtb" lang="de" />
+  <file path="resources/address_input_strings_el.xtb" lang="el" />
+  <file path="resources/address_input_strings_en-GB.xtb" lang="en-GB" />
+  <file path="resources/address_input_strings_es.xtb" lang="es" />
+  <file path="resources/address_input_strings_es-419.xtb" lang="es-419" />
+  <file path="resources/address_input_strings_et.xtb" lang="et" />
+  <file path="resources/address_input_strings_fa.xtb" lang="fa" />
+  <file path="resources/address_input_strings_fi.xtb" lang="fi" />
+  <file path="resources/address_input_strings_fil.xtb" lang="fil" />
+  <file path="resources/address_input_strings_fr.xtb" lang="fr" />
+  <file path="resources/address_input_strings_gu.xtb" lang="gu" />
+  <file path="resources/address_input_strings_hi.xtb" lang="hi" />
+  <file path="resources/address_input_strings_hr.xtb" lang="hr" />
+  <file path="resources/address_input_strings_hu.xtb" lang="hu" />
+  <file path="resources/address_input_strings_id.xtb" lang="id" />
+  <file path="resources/address_input_strings_it.xtb" lang="it" />
+  <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
+  <file path="resources/address_input_strings_iw.xtb" lang="he" />
+  <file path="resources/address_input_strings_ja.xtb" lang="ja" />
+  <file path="resources/address_input_strings_kn.xtb" lang="kn" />
+  <file path="resources/address_input_strings_ko.xtb" lang="ko" />
+  <file path="resources/address_input_strings_lt.xtb" lang="lt" />
+  <file path="resources/address_input_strings_lv.xtb" lang="lv" />
+  <file path="resources/address_input_strings_ml.xtb" lang="ml" />
+  <file path="resources/address_input_strings_mr.xtb" lang="mr" />
+  <file path="resources/address_input_strings_ms.xtb" lang="ms" />
+  <file path="resources/address_input_strings_nl.xtb" lang="nl" />
+  <file path="resources/address_input_strings_no.xtb" lang="no" />
+  <file path="resources/address_input_strings_pl.xtb" lang="pl" />
+  <file path="resources/address_input_strings_pt-BR.xtb" lang="pt-BR" />
+  <file path="resources/address_input_strings_pt-PT.xtb" lang="pt-PT" />
+  <file path="resources/address_input_strings_ro.xtb" lang="ro" />
+  <file path="resources/address_input_strings_ru.xtb" lang="ru" />
+  <file path="resources/address_input_strings_sk.xtb" lang="sk" />
+  <file path="resources/address_input_strings_sl.xtb" lang="sl" />
+  <file path="resources/address_input_strings_sr.xtb" lang="sr" />
+  <file path="resources/address_input_strings_sv.xtb" lang="sv" />
+  <file path="resources/address_input_strings_sw.xtb" lang="sw" />
+  <file path="resources/address_input_strings_ta.xtb" lang="ta" />
+  <file path="resources/address_input_strings_te.xtb" lang="te" />
+  <file path="resources/address_input_strings_th.xtb" lang="th" />
+  <file path="resources/address_input_strings_tr.xtb" lang="tr" />
+  <file path="resources/address_input_strings_uk.xtb" lang="uk" />
+  <file path="resources/address_input_strings_vi.xtb" lang="vi" />
+  <file path="resources/address_input_strings_zh-CN.xtb" lang="zh-CN" />
+  <file path="resources/address_input_strings_zh-TW.xtb" lang="zh-TW" />
+</grit-part>

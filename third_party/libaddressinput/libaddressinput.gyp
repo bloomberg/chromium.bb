@@ -165,6 +165,18 @@
     ['OS=="android"', {
       'targets': [
         {
+          # GN: //third_party/libaddressinput:libaddressinput_android_strings_grd
+          'target_name': 'libaddressinput_android_strings_grd',
+          'type': 'none',
+          'android_unmangled_name': 1,
+          'variables': {
+            'grd_file': '../../chrome/app/address_input_strings_android.grd',
+          },
+          'includes': [
+            '../../build/java_strings_grd.gypi',
+          ],
+        },
+        {
           # GN: //third_party/libaddressinput:android_addressinput_widget_java
           'target_name': 'android_addressinput_widget',
           'type': 'none',
@@ -178,6 +190,9 @@
           },
           'includes': [
             '../../build/java.gypi',
+          ],
+          'dependencies': [
+            'libaddressinput_android_strings_grd',
           ],
         },
       ],

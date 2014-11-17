@@ -128,6 +128,57 @@ static_library("util") {
 if (is_android) {
   import("//build/config/android/rules.gni")
 
+  # GYP: //third_party/libaddressinput/libaddressinput.gyp:libaddressinput_android_strings_grd
+  java_strings_grd("libaddressinput_android_strings_grd") {
+    grd_file = "//chrome/app/address_input_strings_android.grd"
+    outputs = [
+      "values-am/address_input_strings.xml",
+      "values-ar/address_input_strings.xml",
+      "values-bg/address_input_strings.xml",
+      "values-ca/address_input_strings.xml",
+      "values-cs/address_input_strings.xml",
+      "values-da/address_input_strings.xml",
+      "values-de/address_input_strings.xml",
+      "values-el/address_input_strings.xml",
+      "values-en-rGB/address_input_strings.xml",
+      "values-es-rUS/address_input_strings.xml",
+      "values-es/address_input_strings.xml",
+      "values-fa/address_input_strings.xml",
+      "values-fi/address_input_strings.xml",
+      "values-fr/address_input_strings.xml",
+      "values-hi/address_input_strings.xml",
+      "values-hr/address_input_strings.xml",
+      "values-hu/address_input_strings.xml",
+      "values-in/address_input_strings.xml",
+      "values-it/address_input_strings.xml",
+      "values-iw/address_input_strings.xml",
+      "values-ja/address_input_strings.xml",
+      "values-ko/address_input_strings.xml",
+      "values-lt/address_input_strings.xml",
+      "values-lv/address_input_strings.xml",
+      "values-nb/address_input_strings.xml",
+      "values-nl/address_input_strings.xml",
+      "values-pl/address_input_strings.xml",
+      "values-pt-rBR/address_input_strings.xml",
+      "values-pt-rPT/address_input_strings.xml",
+      "values-ro/address_input_strings.xml",
+      "values-ru/address_input_strings.xml",
+      "values-sk/address_input_strings.xml",
+      "values-sl/address_input_strings.xml",
+      "values-sr/address_input_strings.xml",
+      "values-sv/address_input_strings.xml",
+      "values-sw/address_input_strings.xml",
+      "values-th/address_input_strings.xml",
+      "values-tl/address_input_strings.xml",
+      "values-tr/address_input_strings.xml",
+      "values-uk/address_input_strings.xml",
+      "values-vi/address_input_strings.xml",
+      "values-zh-rCN/address_input_strings.xml",
+      "values-zh-rTW/address_input_strings.xml",
+      "values/address_input_strings.xml",
+    ]
+  }
+
   android_resources("android_addressinput_widget_resources") {
     custom_package = "com.android.i18n.addressinput"
     resource_dirs = [ "src/java/res" ]
@@ -137,7 +188,10 @@ if (is_android) {
   # GYP: //third_party/libaddressinput/libaddressinput.gyp:android_addressinput_widget
   android_library("android_addressinput_widget_java") {
     DEPRECATED_java_in_dir = "src/java/src"
-    deps = [ ":android_addressinput_widget_resources" ]
+    deps = [
+      ":android_addressinput_widget_resources",
+      ":libaddressinput_android_strings_grd",
+    ]
   }
 } else {
   # The list of files in libaddressinput.gypi.
