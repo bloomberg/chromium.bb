@@ -39,6 +39,7 @@ cr.define('options', function() {
   /** @const */ var keyPageUp = 33;
   /** @const */ var keyPeriod = 190;
   /** @const */ var keyRight = 39;
+  /** @const */ var keySpace = 32;
   /** @const */ var keyTab = 9;
   /** @const */ var keyUp = 38;
 
@@ -74,6 +75,7 @@ cr.define('options', function() {
            keyCode == keyPageUp ||
            keyCode == keyPeriod ||
            keyCode == keyRight ||
+           keyCode == keySpace ||
            keyCode == keyTab ||
            keyCode == keyUp ||
            (keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
@@ -87,62 +89,66 @@ cr.define('options', function() {
    * @return {string} The keystroke as a string.
    */
   function keystrokeToString(event) {
-    var output = '';
+    var output = [];
     if (cr.isMac && event.metaKey)
-      output = 'Command+';
+      output.push('Command');
+    if (cr.isChromeOS && event.metaKey)
+      output.push('Search');
     if (event.ctrlKey)
-      output = 'Ctrl+';
+      output.push('Ctrl');
     if (!event.ctrlKey && event.altKey)
-      output += 'Alt+';
+      output.push('Alt');
     if (event.shiftKey)
-      output += 'Shift+';
+      output.push('Shift');
 
     var keyCode = event.keyCode;
     if (validChar(keyCode)) {
       if ((keyCode >= 'A'.charCodeAt(0) && keyCode <= 'Z'.charCodeAt(0)) ||
           (keyCode >= '0'.charCodeAt(0) && keyCode <= '9'.charCodeAt(0))) {
-        output += String.fromCharCode('A'.charCodeAt(0) + keyCode - 65);
+        output.push(String.fromCharCode('A'.charCodeAt(0) + keyCode - 65));
       } else {
         switch (keyCode) {
           case keyComma:
-            output += 'Comma'; break;
+            output.push('Comma'); break;
           case keyDel:
-            output += 'Delete'; break;
+            output.push('Delete'); break;
           case keyDown:
-            output += 'Down'; break;
+            output.push('Down'); break;
           case keyEnd:
-            output += 'End'; break;
+            output.push('End'); break;
           case keyHome:
-            output += 'Home'; break;
+            output.push('Home'); break;
           case keyIns:
-            output += 'Insert'; break;
+            output.push('Insert'); break;
           case keyLeft:
-            output += 'Left'; break;
+            output.push('Left'); break;
           case keyMediaNextTrack:
-            output += 'MediaNextTrack'; break;
+            output.push('MediaNextTrack'); break;
           case keyMediaPlayPause:
-            output += 'MediaPlayPause'; break;
+            output.push('MediaPlayPause'); break;
           case keyMediaPrevTrack:
-            output += 'MediaPrevTrack'; break;
+            output.push('MediaPrevTrack'); break;
           case keyMediaStop:
-            output += 'MediaStop'; break;
+            output.push('MediaStop'); break;
           case keyPageDown:
-            output += 'PageDown'; break;
+            output.push('PageDown'); break;
           case keyPageUp:
-            output += 'PageUp'; break;
+            output.push('PageUp'); break;
           case keyPeriod:
-            output += 'Period'; break;
+            output.push('Period'); break;
           case keyRight:
-            output += 'Right'; break;
+            output.push('Right'); break;
+          case keySpace:
+            output.push('Space'); break;
           case keyTab:
-            output += 'Tab'; break;
+            output.push('Tab'); break;
           case keyUp:
-            output += 'Up'; break;
+            output.push('Up'); break;
         }
       }
     }
 
-    return output;
+    return output.join('+');
   }
 
   /**
@@ -174,6 +180,7 @@ cr.define('options', function() {
    */
   function hasModifier(event, countShiftAsModifier) {
     return event.ctrlKey || event.altKey || (cr.isMac && event.metaKey) ||
+           (cr.isChromeOS && event.metaKey) ||
            (countShiftAsModifier && event.shiftKey);
   }
 
@@ -437,7 +444,8 @@ cr.define('options', function() {
       // you have a valid combination, we won't change it until the next
       // KeyDown message arrives).
       if (!this.currentKeyEvent_ || !validChar(this.currentKeyEvent_.keyCode)) {
-        if (!event.ctrlKey && !event.altKey) {
+        if (!event.ctrlKey && !event.altKey ||
+            ((cr.isMac || cr.isChromeOS) && !event.metaKey)) {
           // If neither Ctrl nor Alt is pressed then it is not a valid shortcut.
           // That means we're back at the starting point so we should restart
           // capture.

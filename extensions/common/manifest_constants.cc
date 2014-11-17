@@ -215,6 +215,7 @@ const char kKeyRight[] = "Right";
 const char kKeySearch[] = "Search";
 const char kKeySeparator[] = "+";
 const char kKeyShift[] = "Shift";
+const char kKeySpace[] = "Space";
 const char kKeyTab[] = "Tab";
 const char kKeyUp[] = "Up";
 const char kRunAtDocumentStart[] = "document_start";

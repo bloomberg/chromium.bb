@@ -1319,6 +1319,9 @@ chrome.automation.AutomationNode.prototype.removeEventListener =
     function(eventType, callback, capture) {};
 
 
+chrome.automation.AutomationNode.prototype.doDefault = function() {};
+
+
 chrome.automation.AutomationNode.prototype.focus = function() {};
 
 

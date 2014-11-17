@@ -117,6 +117,9 @@ base::string16 Accelerator::GetShortcutText() const {
     case ui::VKEY_ESCAPE:
       string_id = IDS_APP_ESC_KEY;
       break;
+    case ui::VKEY_SPACE:
+      string_id = IDS_APP_SPACE_KEY;
+      break;
     case ui::VKEY_PRIOR:
       string_id = IDS_APP_PAGEUP_KEY;
       break;
@@ -226,8 +229,15 @@ base::string16 Accelerator::GetShortcutText() const {
   else if (IsAltDown())
     shortcut = l10n_util::GetStringFUTF16(IDS_APP_ALT_MODIFIER, shortcut);
 
-  if (IsCmdDown())
+  if (IsCmdDown()) {
+#if defined(OS_MACOSX)
     shortcut = l10n_util::GetStringFUTF16(IDS_APP_COMMAND_MODIFIER, shortcut);
+#elif defined(OS_CHROMEOS)
+    shortcut = l10n_util::GetStringFUTF16(IDS_APP_SEARCH_MODIFIER, shortcut);
+#else
+    NOTREACHED();
+#endif
+  }
 
   // For some reason, menus in Windows ignore standard Unicode directionality
   // marks (such as LRE, PDF, etc.). On RTL locales, we use RTL menus and

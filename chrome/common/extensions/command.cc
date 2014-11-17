@@ -139,6 +139,7 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
                tokens[i] == values::kKeyEnd ||
                tokens[i] == values::kKeyPgUp ||
                tokens[i] == values::kKeyPgDwn ||
+               tokens[i] == values::kKeySpace ||
                tokens[i] == values::kKeyTab ||
                tokens[i] == values::kKeyMediaNextTrack ||
                tokens[i] == values::kKeyMediaPlayPause ||
@@ -174,6 +175,8 @@ ui::Accelerator ParseImpl(const std::string& accelerator,
         key = ui::VKEY_PRIOR;
       } else if (tokens[i] == values::kKeyPgDwn) {
         key = ui::VKEY_NEXT;
+      } else if (tokens[i] == values::kKeySpace) {
+        key = ui::VKEY_SPACE;
       } else if (tokens[i] == values::kKeyTab) {
         key = ui::VKEY_TAB;
       } else if (tokens[i] == values::kKeyMediaNextTrack &&
@@ -385,6 +388,9 @@ std::string Command::AcceleratorToString(const ui::Accelerator& accelerator) {
         break;
       case ui::VKEY_NEXT:
         shortcut += values::kKeyPgDwn;
+        break;
+      case ui::VKEY_SPACE:
+        shortcut += values::kKeySpace;
         break;
       case ui::VKEY_TAB:
         shortcut += values::kKeyTab;

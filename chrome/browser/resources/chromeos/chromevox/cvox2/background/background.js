@@ -194,19 +194,24 @@ Background.prototype = {
         current = current.move(cursors.Unit.NODE, Dir.BACKWARD);
         break;
       case 'goToBeginning':
-      var node = AutomationUtil.findNodePost(current.getStart().getNode().root,
-            Dir.FORWARD,
-            AutomationPredicate.leaf);
-      if (node)
-        current = cursors.Range.fromNode(node);
-        break;
-      case 'goToEnd':
       var node =
           AutomationUtil.findNodePost(current.getStart().getNode().root,
-            Dir.BACKWARD,
-            AutomationPredicate.leaf);
-      if (node)
-        current = cursors.Range.fromNode(node);
+                                      Dir.FORWARD,
+                                      AutomationPredicate.leaf);
+        if (node)
+          current = cursors.Range.fromNode(node);
+        break;
+      case 'goToEnd':
+        var node =
+            AutomationUtil.findNodePost(current.getStart().getNode().root,
+                                        Dir.BACKWARD,
+                                        AutomationPredicate.leaf);
+        if (node)
+          current = cursors.Range.fromNode(node);
+        break;
+      case 'doDefault':
+        if (this.currentRange_)
+          this.currentRange_.getStart().getNode().doDefault();
         break;
     }
 

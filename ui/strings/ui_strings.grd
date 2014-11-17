@@ -2019,6 +2019,9 @@ need to be translated for each locale.-->
       <message name="IDS_APP_ENTER_KEY" desc="Enter key">
         Enter
       </message>
+      <message name="IDS_APP_SPACE_KEY" desc="Space bar key">
+        Space
+      </message>
       <message name="IDS_APP_F1_KEY" desc="F1 key">
         F1
       </message>
@@ -2059,6 +2062,9 @@ need to be translated for each locale.-->
       </message>
       <message name="IDS_APP_COMMAND_MODIFIER" desc="Command key shortcut modifier">
         Command+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
+      </message>
+      <message name="IDS_APP_SEARCH_MODIFIER" desc="Search key shortcut modifier">
+        Search+<ph name="KEY_COMBO_NAME">$1<ex>C</ex></ph>
       </message>
 
       <!-- Byte size units -->
