@@ -996,8 +996,8 @@
 
         # TODO(baixo): Enable v8_use_external_startup_data
         # http://crbug.com/421063
-        ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0', {
-          'v8_use_external_startup_data': 0,
+        ['android_webview_build==0 and android_webview_telemetry_build==0 and chromecast==0 and OS=="android"', {
+          'v8_use_external_startup_data': 1,
         }, {
           'v8_use_external_startup_data': 0,
         }],
