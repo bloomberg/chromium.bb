@@ -186,6 +186,14 @@
         "DigiCertEVRoot",
         "FacebookBackup"
       ]
+    },
+    {
+      "name": "spideroak",
+      "static_spki_hashes": [
+        "RapidSSL",
+        "SpiderOak1",
+        "SpiderOak2"
+      ]
     }
   ],
 
@@ -1266,7 +1274,7 @@
     { "name": "ravchat.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "sciencex.com", "include_subdomains": true, "mode": "force-https" },
     { "name": "shiinko.com", "include_subdomains": true, "mode": "force-https" },
-    { "name": "spideroak.com", "include_subdomains": true, "mode": "force-https" },
+    { "name": "spideroak.com", "include_subdomains": true, "mode": "force-https", "pins": "spideroak" },
     { "name": "thorncreek.net", "include_subdomains": true, "mode": "force-https" },
     { "name": "tno.io", "include_subdomains": true, "mode": "force-https" },
     { "name": "translatoruk.co.uk", "include_subdomains": true, "mode": "force-https" },
@@ -1777,6 +1785,7 @@
     "DROPBOX_COM",
     "YOUTUBE_NOCOOKIE_COM",
     "2MDN_NET",
-    "FACEBOOK_COM"
+    "FACEBOOK_COM",
+    "SPIDEROAK_COM"
   ]
 }
