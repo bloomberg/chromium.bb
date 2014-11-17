@@ -1,0 +1,22 @@
+{
+  "bounds": [785, 5052],
+  "children": [
+    {
+      "bounds": [785, 5052],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "children": [
+        {
+          "position": [8, 24],
+          "bounds": [769, 2126],
+          "drawsContent": true,
+          "backfaceVisibility": "hidden",
+          "repaintRects": [
+            [10, 1576, 150, 550]
+          ]
+        }
+      ]
+    }
+  ]
+}
+

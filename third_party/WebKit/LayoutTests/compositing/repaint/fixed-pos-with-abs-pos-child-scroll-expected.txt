@@ -1,12 +1,14 @@
+Hi!
 {
-  "bounds": [800, 2016],
+  "bounds": [785, 4021],
   "children": [
     {
-      "bounds": [800, 2016],
+      "bounds": [785, 4021],
       "contentsOpaque": true,
       "drawsContent": true,
       "repaintRects": [
-        [8, 100, 100, 200]
+        [425, 480, 360, 590],
+        [425, -20, 360, 590]
       ]
     }
   ]
