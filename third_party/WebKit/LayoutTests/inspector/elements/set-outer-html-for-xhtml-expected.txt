@@ -163,3 +163,6 @@ Event NodeRemoved: h3
 
 
 
+Running: testInvalidDocumentDoesNotCrash
+PASS: No crash
+

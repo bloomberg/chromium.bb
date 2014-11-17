@@ -85,6 +85,8 @@ void DOMPatchSupport::patchDocument(const String& markup)
     RefPtrWillBeRawPtr<Document> newDocument = nullptr;
     if (document().isHTMLDocument())
         newDocument = HTMLDocument::create();
+    else if (document().isSVGDocument())
+        newDocument = XMLDocument::createSVG();
     else if (document().isXHTMLDocument())
         newDocument = XMLDocument::createXHTML();
     else if (document().isXMLDocument())
@@ -92,16 +94,18 @@ void DOMPatchSupport::patchDocument(const String& markup)
 
     ASSERT(newDocument);
     newDocument->setContextFeatures(document().contextFeatures());
-    RefPtrWillBeRawPtr<DocumentParser> parser = nullptr;
-    if (document().isHTMLDocument())
-        parser = HTMLDocumentParser::create(toHTMLDocument(*newDocument), false);
-    else
-        parser = XMLDocumentParser::create(*newDocument, 0);
-    parser->pinToMainThread();
-    parser->insert(markup); // Use insert() so that the parser will not yield.
-    parser->finish();
-    parser->detach();
+    if (!document().isHTMLDocument()) {
+        RefPtrWillBeRawPtr<DocumentParser> parser = XMLDocumentParser::create(*newDocument, nullptr);
+        parser->pinToMainThread();
+        parser->append(markup.impl());
+        parser->finish();
+        parser->detach();
 
+        // Avoid breakage on non-well-formed documents.
+        if (!static_cast<XMLDocumentParser*>(parser.get())->wellFormed())
+            return;
+    }
+    newDocument->setContent(markup);
     OwnPtr<Digest> oldInfo = createDigest(document().documentElement(), 0);
     OwnPtr<Digest> newInfo = createDigest(newDocument->documentElement(), &m_unusedNodesMap);
 

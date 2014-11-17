@@ -1,4 +1,4 @@
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html id="html" xmlns="http://www.w3.org/1999/xhtml">
 <head>
 
 <script src="../../http/tests/inspector/inspector-test.js"></script>
@@ -44,6 +44,18 @@ function test()
         function testChangeNodeName(next)
         {
             InspectorTest.patchOuterHTML("<h2>Getting involved</h2>", "<h3>Getting involved</h3>", next);
+        },
+
+        function testInvalidDocumentDoesNotCrash(next)
+        {
+            var htmlId = InspectorTest.expandedNodeWithId("html").id;
+            DOMAgent.setOuterHTML(htmlId, "foo", callback);
+
+            function callback()
+            {
+                InspectorTest.addResult("PASS: No crash");
+                next();
+            }
         }
     ]);
 }
