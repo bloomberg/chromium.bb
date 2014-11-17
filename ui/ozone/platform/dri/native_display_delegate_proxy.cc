@@ -15,6 +15,7 @@
 #include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/common/display_util.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -24,8 +25,27 @@ namespace {
 
 const int64_t kDummyDisplayId = 1;
 
+class DriDisplaySnapshotProxy : public DisplaySnapshotProxy {
+ public:
+  DriDisplaySnapshotProxy(const DisplaySnapshot_Params& params,
+                          DisplayManager* display_manager)
+      : DisplaySnapshotProxy(params), display_manager_(display_manager) {
+    display_manager_->RegisterDisplay(this);
+  }
+
+  ~DriDisplaySnapshotProxy() override {
+    display_manager_->UnregisterDisplay(this);
+  }
+
+ private:
+  DisplayManager* display_manager_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(DriDisplaySnapshotProxy);
+};
+
 DisplaySnapshotProxy* CreateSnapshotFromSpec(const std::string& spec,
-                                             const std::string& physical_spec) {
+                                             const std::string& physical_spec,
+                                             DisplayManager* display_manager) {
   if (spec.empty())
     return nullptr;
 
@@ -55,15 +75,18 @@ DisplaySnapshotProxy* CreateSnapshotFromSpec(const std::string& spec,
   display_param.has_native_mode = true;
   display_param.native_mode = mode_param;
 
-  return new DisplaySnapshotProxy(display_param);
+  return new DriDisplaySnapshotProxy(display_param, display_manager);
 }
 
 }  // namespace
 
 NativeDisplayDelegateProxy::NativeDisplayDelegateProxy(
     DriGpuPlatformSupportHost* proxy,
-    DeviceManager* device_manager)
-    : proxy_(proxy), device_manager_(device_manager) {
+    DeviceManager* device_manager,
+    DisplayManager* display_manager)
+    : proxy_(proxy),
+      device_manager_(device_manager),
+      display_manager_(display_manager) {
   proxy_->RegisterHandler(this);
 }
 
@@ -84,7 +107,8 @@ void NativeDisplayDelegateProxy::Initialize() {
   CommandLine* cmd = CommandLine::ForCurrentProcess();
   DisplaySnapshotProxy* display = CreateSnapshotFromSpec(
       cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayBounds),
-      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayPhysicalSizeMm));
+      cmd->GetSwitchValueASCII(switches::kOzoneInitialDisplayPhysicalSizeMm),
+      display_manager_);
   if (display)
     displays_.push_back(display);
 }
@@ -217,7 +241,8 @@ void NativeDisplayDelegateProxy::OnUpdateNativeDisplays(
     const std::vector<DisplaySnapshot_Params>& displays) {
   displays_.clear();
   for (size_t i = 0; i < displays.size(); ++i)
-    displays_.push_back(new DisplaySnapshotProxy(displays[i]));
+    displays_.push_back(
+        new DriDisplaySnapshotProxy(displays[i], display_manager_));
 
   FOR_EACH_OBSERVER(NativeDisplayObserver, observers_,
                     OnConfigurationChanged());

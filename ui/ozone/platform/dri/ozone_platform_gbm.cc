@@ -13,6 +13,7 @@
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
@@ -98,15 +99,18 @@ class OzonePlatformGbm : public OzonePlatform {
       const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate, bounds, gpu_platform_support_host_.get(),
-                      event_factory_ozone_.get(), window_manager_.get()));
+                      event_factory_ozone_.get(), window_manager_.get(),
+                      display_manager_.get()));
     platform_window->Initialize();
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
-        gpu_platform_support_host_.get(), device_manager_.get()));
+        gpu_platform_support_host_.get(), device_manager_.get(),
+        display_manager_.get()));
   }
   void InitializeUI() override {
+    display_manager_.reset(new DisplayManager());
     // Needed since the browser process creates the accelerated widgets and that
     // happens through SFO.
     surface_factory_ozone_.reset(new GbmSurfaceFactory(use_surfaceless_));
@@ -159,6 +163,7 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<DriWindowDelegateManager> window_delegate_manager_;
   // Browser side object only.
   scoped_ptr<DriWindowManager> window_manager_;
+  scoped_ptr<DisplayManager> display_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformGbm);
 };

@@ -5,11 +5,14 @@
 #include "ui/ozone/platform/dri/dri_window.h"
 
 #include "base/bind.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/display.h"
 #include "ui/ozone/common/gpu/ozone_gpu_messages.h"
+#include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support_host.h"
 #include "ui/ozone/platform/dri/dri_window_manager.h"
@@ -17,15 +20,39 @@
 
 namespace ui {
 
+namespace {
+
+void RewriteTouchEvent(TouchEvent* event) {
+  float x = event->location_f().x();
+  float y = event->location_f().y();
+  double radius_x = event->radius_x();
+  double radius_y = event->radius_y();
+
+  DeviceDataManager::GetInstance()->ApplyTouchTransformer(
+      event->source_device_id(), &x, &y);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
+      event->source_device_id(), &radius_x);
+  DeviceDataManager::GetInstance()->ApplyTouchRadiusScale(
+      event->source_device_id(), &radius_y);
+
+  event->set_location(gfx::PointF(x, y));
+  event->set_radius_x(radius_x);
+  event->set_radius_y(radius_y);
+}
+
+}  // namespace
+
 DriWindow::DriWindow(PlatformWindowDelegate* delegate,
                      const gfx::Rect& bounds,
                      DriGpuPlatformSupportHost* sender,
                      EventFactoryEvdev* event_factory,
-                     DriWindowManager* window_manager)
+                     DriWindowManager* window_manager,
+                     DisplayManager* display_manager)
     : delegate_(delegate),
       sender_(sender),
       event_factory_(event_factory),
       window_manager_(window_manager),
+      display_manager_(display_manager),
       bounds_(bounds),
       widget_(window_manager->NextAcceleratedWidget()) {
   window_manager_->AddWindow(widget_, this);
@@ -106,10 +133,37 @@ bool DriWindow::CanDispatchEvent(const PlatformEvent& ne) {
   if (event->IsMouseEvent() || event->IsScrollEvent())
     return window_manager_->cursor()->GetCursorWindow() == widget_;
 
+  if (event->IsTouchEvent()) {
+    int64_t display_id =
+        DeviceDataManager::GetInstance()->GetDisplayForTouchDevice(
+            event->source_device_id());
+
+    if (display_id == gfx::Display::kInvalidDisplayID)
+      return false;
+
+    DisplaySnapshot* snapshot = display_manager_->GetDisplay(display_id);
+    if (!snapshot || !snapshot->current_mode())
+      return false;
+
+    // Touchscreens are associated with a specific display. Since windows can
+    // move between displays we want to make sure that the window is on the
+    // correct display.
+    gfx::Rect display_bounds(snapshot->origin(),
+                             snapshot->current_mode()->size());
+
+    return display_bounds == bounds_;
+  }
+
   return true;
 }
 
 uint32_t DriWindow::DispatchEvent(const PlatformEvent& native_event) {
+  DCHECK(native_event);
+
+  Event* event = static_cast<Event*>(native_event);
+  if (event->IsTouchEvent())
+    RewriteTouchEvent(static_cast<TouchEvent*>(event));
+
   DispatchEventFromNativeUiEvent(
       native_event, base::Bind(&PlatformWindowDelegate::DispatchEvent,
                                base::Unretained(delegate_)));

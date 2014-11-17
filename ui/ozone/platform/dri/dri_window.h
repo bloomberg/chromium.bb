@@ -6,6 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_DRI_WINDOW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -14,6 +15,7 @@
 
 namespace ui {
 
+class DisplayManager;
 class DriWindowDelegate;
 class DriWindowManager;
 class EventFactoryEvdev;
@@ -27,7 +29,8 @@ class DriWindow : public PlatformWindow,
             const gfx::Rect& bounds,
             DriGpuPlatformSupportHost* sender,
             EventFactoryEvdev* event_factory,
-            DriWindowManager* window_manager);
+            DriWindowManager* window_manager,
+            DisplayManager* display_manager);
   ~DriWindow() override;
 
   void Initialize();
@@ -60,6 +63,7 @@ class DriWindow : public PlatformWindow,
   DriGpuPlatformSupportHost* sender_;  // Not owned.
   EventFactoryEvdev* event_factory_;   // Not owned.
   DriWindowManager* window_manager_;   // Not owned.
+  DisplayManager* display_manager_;    // Not owned.
 
   gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;

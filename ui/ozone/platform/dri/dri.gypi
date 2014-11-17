@@ -38,6 +38,8 @@
         'channel_observer.h',
         'crtc_controller.cc',
         'crtc_controller.h',
+        'display_manager.cc',
+        'display_manager.h',
         'display_mode_dri.cc',
         'display_mode_dri.h',
         'display_snapshot_dri.cc',

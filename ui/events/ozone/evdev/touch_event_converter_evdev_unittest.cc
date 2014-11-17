@@ -63,6 +63,7 @@ class MockTouchEventConverterEvdev : public TouchEventConverterEvdev {
     dispatched_events_.push_back(event.release());
   }
 
+  void Initialize(const EventDeviceInfo& device_info) override {}
   bool Reinitialize() override { return true; }
 
  private:
@@ -80,17 +81,16 @@ MockTouchEventConverterEvdev::MockTouchEventConverterEvdev(int fd,
           fd,
           path,
           1,
-          EventDeviceInfo(),
           base::Bind(&MockTouchEventConverterEvdev::DispatchCallback,
                      base::Unretained(this))) {
   pressure_min_ = 30;
   pressure_max_ = 60;
 
   // TODO(rjkroege): Check test axes.
-  x_min_pixels_ = x_min_tuxels_ = 0;
-  x_num_pixels_ = x_num_tuxels_ = std::numeric_limits<int>::max();
-  y_min_pixels_ = y_min_tuxels_ = 0;
-  y_num_pixels_ = y_num_tuxels_ = std::numeric_limits<int>::max();
+  x_min_tuxels_ = 0;
+  x_num_tuxels_ = std::numeric_limits<int>::max();
+  y_min_tuxels_ = 0;
+  y_num_tuxels_ = std::numeric_limits<int>::max();
 
   int fds[2];
 

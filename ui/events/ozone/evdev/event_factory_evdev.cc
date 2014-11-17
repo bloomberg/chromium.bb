@@ -90,9 +90,12 @@ scoped_ptr<EventConverterEvdev> CreateConverter(
 #endif
 
   // Touchscreen: use TouchEventConverterEvdev.
-  if (devinfo.HasMTAbsXY())
-    return make_scoped_ptr<EventConverterEvdev>(new TouchEventConverterEvdev(
-        fd, params.path, params.id, devinfo, params.dispatch_callback));
+  if (devinfo.HasMTAbsXY()) {
+    scoped_ptr<TouchEventConverterEvdev> converter(new TouchEventConverterEvdev(
+        fd, params.path, params.id, params.dispatch_callback));
+    converter->Initialize(devinfo);
+    return converter.Pass();
+  }
 
   // Everything else: use EventConverterEvdevImpl.
   return make_scoped_ptr<EventConverterEvdevImpl>(
@@ -302,7 +305,7 @@ void EventFactoryEvdev::NotifyHotplugEventObserver(
   for (auto it = converters_.begin(); it != converters_.end(); ++it) {
     if (it->second->HasTouchscreen()) {
       InputDeviceType device_type = InputDeviceType::INPUT_DEVICE_EXTERNAL;
-      if (converter.IsInternal())
+      if (it->second->IsInternal())
         device_type = InputDeviceType::INPUT_DEVICE_INTERNAL;
 
       touchscreens.push_back(

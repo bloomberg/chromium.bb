@@ -28,7 +28,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   TouchEventConverterEvdev(int fd,
                            base::FilePath path,
                            int id,
-                           const EventDeviceInfo& info,
                            const EventDispatchCallback& dispatch);
   ~TouchEventConverterEvdev() override;
 
@@ -37,11 +36,12 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   gfx::Size GetTouchscreenSize() const override;
   bool IsInternal() const override;
 
+  // Unsafe part of initialization.
+  virtual void Initialize(const EventDeviceInfo& info);
+
  private:
   friend class MockTouchEventConverterEvdev;
 
-  // Unsafe part of initialization.
-  void Init(const EventDeviceInfo& info);
 
   // Overidden from base::MessagePumpLibevent::Watcher.
   void OnFileCanReadWithoutBlocking(int fd) override;
@@ -74,14 +74,6 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
   // Input range for y-axis.
   float y_min_tuxels_;
   float y_num_tuxels_;
-
-  // Output range for x-axis.
-  float x_min_pixels_;
-  float x_num_pixels_;
-
-  // Output range for y-axis.
-  float y_min_pixels_;
-  float y_num_pixels_;
 
   // Size of the touchscreen as reported by the driver.
   gfx::Size native_size_;

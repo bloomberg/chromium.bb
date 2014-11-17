@@ -15,6 +15,7 @@
 namespace ui {
 
 class DeviceManager;
+class DisplayManager;
 class DriGpuPlatformSupportHost;
 
 struct DisplaySnapshot_Params;
@@ -24,7 +25,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
                                    public GpuPlatformSupportHost {
  public:
   NativeDisplayDelegateProxy(DriGpuPlatformSupportHost* proxy,
-                             DeviceManager* device_manager);
+                             DeviceManager* device_manager,
+                             DisplayManager* display_manager);
   ~NativeDisplayDelegateProxy() override;
 
   // NativeDisplayDelegate overrides:
@@ -67,6 +69,8 @@ class NativeDisplayDelegateProxy : public NativeDisplayDelegate,
 
   DriGpuPlatformSupportHost* proxy_;  // Not owned.
   DeviceManager* device_manager_;     // Not owned.
+  DisplayManager* display_manager_;   // Not owned.
+
   ScopedVector<DisplaySnapshot> displays_;
   ObserverList<NativeDisplayObserver> observers_;
 

@@ -9,6 +9,7 @@
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/cursor_delegate_evdev.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
+#include "ui/ozone/platform/dri/display_manager.h"
 #include "ui/ozone/platform/dri/dri_buffer.h"
 #include "ui/ozone/platform/dri/dri_cursor.h"
 #include "ui/ozone/platform/dri/dri_gpu_platform_support.h"
@@ -65,16 +66,19 @@ class OzonePlatformDri : public OzonePlatform {
       const gfx::Rect& bounds) override {
     scoped_ptr<DriWindow> platform_window(
         new DriWindow(delegate, bounds, gpu_platform_support_host_.get(),
-                      event_factory_ozone_.get(), window_manager_.get()));
+                      event_factory_ozone_.get(), window_manager_.get(),
+                      display_manager_.get()));
     platform_window->Initialize();
     return platform_window.Pass();
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return scoped_ptr<NativeDisplayDelegate>(new NativeDisplayDelegateProxy(
-        gpu_platform_support_host_.get(), device_manager_.get()));
+        gpu_platform_support_host_.get(), device_manager_.get(),
+        display_manager_.get()));
   }
   void InitializeUI() override {
     dri_->Initialize();
+    display_manager_.reset(new DisplayManager());
     surface_factory_ozone_.reset(new DriSurfaceFactory(
         dri_.get(), screen_manager_.get(), &window_delegate_manager_));
     gpu_platform_support_.reset(new DriGpuPlatformSupport(
@@ -108,6 +112,7 @@ class OzonePlatformDri : public OzonePlatform {
   scoped_ptr<EventFactoryEvdev> event_factory_ozone_;
 
   scoped_ptr<DriWindowManager> window_manager_;
+  scoped_ptr<DisplayManager> display_manager_;
 
   scoped_ptr<DriGpuPlatformSupport> gpu_platform_support_;
   scoped_ptr<DriGpuPlatformSupportHost> gpu_platform_support_host_;
