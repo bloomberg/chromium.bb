@@ -1108,16 +1108,8 @@ public:
     void setTableLayout(ETableLayout v) { noninherited_flags.tableLayout = v; }
 
     bool setFontDescription(const FontDescription&);
-    // Only used for blending font sizes when animating and for text autosizing.
-    void setFontSize(float);
-    void setFontStretch(FontStretch);
-    void setFontWeight(FontWeight);
 
-    void setTextAutosizingMultiplier(float v)
-    {
-        SET_VAR(inherited, textAutosizingMultiplier, v);
-        setFontSize(fontDescription().specifiedSize());
-    }
+    void setTextAutosizingMultiplier(float);
 
     void setColor(const Color&);
     void setTextIndent(const Length& v) { SET_VAR(rareInheritedData, indent, v); }

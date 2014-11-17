@@ -259,6 +259,12 @@ FontWeight animatableValueToFontWeight(const AnimatableValue* value)
     return weights[index];
 }
 
+FontDescription::Size animatableValueToFontSize(const AnimatableValue* value)
+{
+    float size = clampTo<float>(toAnimatableDouble(value)->toDouble(), 0);
+    return FontDescription::Size(0, size, true);
+}
+
 } // namespace
 
 // FIXME: Generate this function.
@@ -382,13 +388,13 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setFloodOpacity(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0, 1));
         return;
     case CSSPropertyFontSize:
-        style->setFontSize(clampTo<float>(toAnimatableDouble(value)->toDouble(), 0));
+        state.fontBuilder().setSize(animatableValueToFontSize(value));
         return;
     case CSSPropertyFontStretch:
-        style->setFontStretch(animatableValueToFontStretch(value));
+        state.fontBuilder().setStretch(animatableValueToFontStretch(value));
         return;
     case CSSPropertyFontWeight:
-        style->setFontWeight(animatableValueToFontWeight(value));
+        state.fontBuilder().setWeight(animatableValueToFontWeight(value));
         return;
     case CSSPropertyHeight:
         style->setHeight(animatableValueToLength(value, state, ValueRangeNonNegative));

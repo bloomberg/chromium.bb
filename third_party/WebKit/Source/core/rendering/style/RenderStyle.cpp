@@ -1223,10 +1223,11 @@ void RenderStyle::setLetterSpacing(float letterSpacing)
     font().update(currentFontSelector);
 }
 
-void RenderStyle::setFontSize(float size)
+void RenderStyle::setTextAutosizingMultiplier(float multiplier)
 {
-    // size must be specifiedSize if Text Autosizing is enabled, but computedSize if text
-    // zoom is enabled (if neither is enabled it's irrelevant as they're probably the same).
+    SET_VAR(inherited, textAutosizingMultiplier, multiplier);
+
+    float size = specifiedFontSize();
 
     ASSERT(std::isfinite(size));
     if (!std::isfinite(size) || size < 0)
@@ -1239,21 +1240,11 @@ void RenderStyle::setFontSize(float size)
     desc.setSpecifiedSize(size);
     desc.setComputedSize(size);
 
-    float multiplier = textAutosizingMultiplier();
     if (multiplier > 1) {
         float autosizedFontSize = TextAutosizer::computeAutosizedFontSize(size, multiplier);
         desc.setComputedSize(std::min(maximumAllowedFontSize, autosizedFontSize));
     }
 
-    setFontDescription(desc);
-    font().update(currentFontSelector);
-}
-
-void RenderStyle::setFontWeight(FontWeight weight)
-{
-    FontSelector* currentFontSelector = font().fontSelector();
-    FontDescription desc(fontDescription());
-    desc.setWeight(weight);
     setFontDescription(desc);
     font().update(currentFontSelector);
 }
@@ -1313,15 +1304,6 @@ void RenderStyle::clearMultiCol()
 {
     rareNonInheritedData.access()->m_multiCol = nullptr;
     rareNonInheritedData.access()->m_multiCol.init();
-}
-
-void RenderStyle::setFontStretch(FontStretch stretch)
-{
-    FontSelector* currentFontSelector = font().fontSelector();
-    FontDescription desc(fontDescription());
-    desc.setStretch(stretch);
-    setFontDescription(desc);
-    font().update(currentFontSelector);
 }
 
 void RenderStyle::getShadowExtent(const ShadowList* shadowList, LayoutUnit &top, LayoutUnit &right, LayoutUnit &bottom, LayoutUnit &left) const
