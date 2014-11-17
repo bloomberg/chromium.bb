@@ -157,27 +157,12 @@
           ],
         }],
       ],
-      'actions': [
-        {
-          'action_name': 'fix_rpaths',
-          'inputs': [
-            'fix_rpaths.sh',
-          ],
-          'outputs': [
-            '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)/rpaths.fixed.txt',
-          ],
-          'action': [
-            './fix_rpaths.sh',
-            '<(PRODUCT_DIR)/instrumented_libraries/<(_sanitizer_type)'
-          ],
-        },
-      ],
       'direct_dependent_settings': {
         'target_conditions': [
           ['_toolset=="target"', {
             'ldflags': [
               # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
-              '-Wl,-R,\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/lib/:\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/usr/lib/x86_64-linux-gnu/',
+              '-Wl,-R,\$$ORIGIN/instrumented_libraries/<(_sanitizer_type)/lib/',
               '-Wl,-z,origin',
             ],
           }],

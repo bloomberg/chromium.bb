@@ -4,19 +4,22 @@
 # found in the LICENSE file.
 
 # Changes all RPATHs in a given directory from XORIGIN to $ORIGIN
-# See the comment about XORIGIN in download_build_install.py
+# See the comment about XORIGIN in instrumented_libraries.gyp
 
 # Fixes rpath from XORIGIN to $ORIGIN in a single file $1.
 function fix_rpath {
-  chrpath -r $(chrpath $1 | cut -d " " -f 2 | sed s/XORIGIN/\$ORIGIN/g \
-    | sed s/RPATH=//g) $1 > /dev/null
+  if [ -w "$1" ]
+  then
+    echo "fix_rpaths.sh: fixing $1"
+    chrpath -r $(chrpath $1 | cut -d " " -f 2 | sed s/XORIGIN/\$ORIGIN/g \
+      | sed s/RPATH=//g) $1 > /dev/null
+  else
+    # FIXME(earthdok): libcups2 DSOs are created non-writable, causing this
+    # script to fail. As a temporary measure, ignore non-writable files.
+    echo "fix_rpaths.sh: skipping non-writable file $1"
+  fi
 }
 
-for i in $(find $1 | grep "\.so$"); do
+for i in $(find $1 | grep -P "\.so(.\d+)*$"); do
   fix_rpath $i
 done
-
-# Mark that rpaths are fixed.
-# This file is used by GYP as 'output' to mark that RPATHs are already fixed
-# for incremental builds.
-touch $1/rpaths.fixed.txt

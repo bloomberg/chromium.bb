@@ -14,6 +14,8 @@ import shutil
 import subprocess
 import sys
 
+SCRIPT_ABSOLUTE_PATH = os.path.dirname(os.path.abspath(__file__))
+
 class ScopedChangeDirectory(object):
   """Changes current working directory and restores it back automatically."""
 
@@ -28,11 +30,6 @@ class ScopedChangeDirectory(object):
 
   def __exit__(self, exc_type, exc_value, traceback):
     os.chdir(self.old_path)
-
-
-def get_script_absolute_path():
-  return os.path.dirname(os.path.abspath(__file__))
-
 
 def get_package_build_dependencies(package):
   command = 'apt-get -s build-dep %s | grep Inst | cut -d " " -f 2' % package
@@ -86,6 +83,11 @@ def run_shell_commands(commands, verbose=False, environment=None):
     shell_call(command, verbose, environment)
 
 
+def fix_rpaths(destdir):
+  # TODO(earthdok): reimplement fix_rpaths.sh in Python.
+  shell_call("%s/fix_rpaths.sh %s/lib" % (SCRIPT_ABSOLUTE_PATH, destdir))
+
+
 def destdir_configure_make_install(parsed_arguments, environment,
                                    install_prefix):
   configure_command = './configure %s' % parsed_arguments.extra_configure_flags
@@ -95,17 +97,22 @@ def destdir_configure_make_install(parsed_arguments, environment,
   destdir = '%s/debian/instrumented_build' % os.getcwd()
   # Some makefiles use BUILDROOT instead of DESTDIR.
   make_command = 'make DESTDIR=%s BUILDROOT=%s' % (destdir, destdir)
-  run_shell_commands([
-      configure_command,
-      '%s -j%s' % (make_command, parsed_arguments.jobs),
-      # Parallel install is flaky for some packages.
-      '%s install -j1' % make_command,
-      # Kill the .la files. They contain absolute paths, and will cause build
-      # errors in dependent libraries.
-      'rm %s/lib/*.la -f' % destdir,
-      # Now move the contents of the temporary destdir to their final place.
-      'cp %s/* %s/ -rdf' % (destdir, install_prefix)],
+  build_and_install_in_destdir = [
+    configure_command,
+    '%s -j%s' % (make_command, parsed_arguments.jobs),
+    # Parallel install is flaky for some packages.
+    '%s install -j1' % make_command,
+    # Kill the .la files. They contain absolute paths, and will cause build
+    # errors in dependent libraries.
+    'rm %s/lib/*.la -f' % destdir
+  ]
+  run_shell_commands(build_and_install_in_destdir,
                      parsed_arguments.verbose, environment)
+  fix_rpaths(destdir)
+  shell_call(
+      # Now move the contents of the temporary destdir to their final place.
+      'cp %s/* %s/ -rdf' % (destdir, install_prefix),
+      parsed_arguments.verbose, environment)
 
 
 def nss_make_and_copy(parsed_arguments, environment, install_prefix):
@@ -136,6 +143,7 @@ def nss_make_and_copy(parsed_arguments, environment, install_prefix):
     # -j is not supported
     shell_call('make %s' % ' '.join(make_args), parsed_arguments.verbose,
                environment)
+    fix_rpaths(os.getcwd())
     # 'make install' is not supported. Copy the DSOs manually.
     install_dir = '%s/lib/' % install_prefix
     for (dirpath, dirnames, filenames) in os.walk('./lib/'):
@@ -154,8 +162,9 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
       for name in['CC', 'CXX', 'CFLAGS', 'CXXFLAGS', 'LDFLAGS']]
   shell_call('make -j%s %s' % (parsed_arguments.jobs, ' '.join(make_args)),
              parsed_arguments.verbose, environment)
+  destdir = '%s/debian/instrumented_build' % os.getcwd()
   install_args = [
-      'DESTDIR=%s' % install_prefix,
+      'DESTDIR=%s' % destdir,
       # Do not install in lib64/.
       'lib=lib',
       # Skip a step that requires sudo.
@@ -164,6 +173,11 @@ def libcap2_make_install(parsed_arguments, environment, install_prefix):
   shell_call('make -j%s install %s' %
              (parsed_arguments.jobs, ' '.join(install_args)),
              parsed_arguments.verbose, environment)
+  fix_rpaths(destdir)
+  shell_call([
+      # Now move the contents of the temporary destdir to their final place.
+      'cp %s/* %s/ -rdf' % (destdir, install_prefix)],
+                     parsed_arguments.verbose, environment)
 
 
 def libpci3_make_install(parsed_arguments, environment, install_prefix):
@@ -203,6 +217,7 @@ def libpci3_make_install(parsed_arguments, environment, install_prefix):
           parsed_arguments.jobs,
           ' '.join(install_args + paths))],
                      parsed_arguments.verbose, environment)
+  fix_rpaths(destdir)
   # Now move the contents of the temporary destdir to their final place.
   run_shell_commands([
       'cp %s/* %s/ -rd' % (destdir, install_prefix),
@@ -245,7 +260,7 @@ def build_environment(parsed_arguments, product_directory, install_prefix):
   cflags = unescape_flags(parsed_arguments.cflags)
   if parsed_arguments.sanitizer_blacklist:
     cflags += ' -fsanitize-blacklist=%s/%s' % (
-        get_script_absolute_path(),
+        SCRIPT_ABSOLUTE_PATH,
         parsed_arguments.sanitizer_blacklist)
   environment['CFLAGS'] = cflags
   environment['CXXFLAGS'] = cflags
@@ -268,7 +283,7 @@ def build_environment(parsed_arguments, product_directory, install_prefix):
 
 def download_build_install(parsed_arguments):
   product_directory = os.path.normpath('%s/%s' % (
-      get_script_absolute_path(),
+      SCRIPT_ABSOLUTE_PATH,
       parsed_arguments.product_directory))
 
   install_prefix = '%s/instrumented_libraries/%s' % (
@@ -371,7 +386,7 @@ def main():
   parsed_arguments = argument_parser.parse_args(
       [arg for arg in sys.argv[1:] if len(arg) != 0])
   # Ensure current working directory is this script directory.
-  os.chdir(get_script_absolute_path())
+  os.chdir(SCRIPT_ABSOLUTE_PATH)
   # Ensure all build dependencies are installed.
   if parsed_arguments.check_build_deps:
     check_package_build_dependencies(parsed_arguments.package)
