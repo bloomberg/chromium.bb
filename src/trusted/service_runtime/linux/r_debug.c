@@ -4,12 +4,10 @@
  * found in the LICENSE file.
  */
 
-#if !NACL_ANDROID
 #include <link.h>
-#endif
 #include <stdlib.h>
 
-#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
+#include "native_client/src/include/portability.h"
 
 /*
  * If we are started by the bootstrap program rather than in the

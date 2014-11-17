@@ -2660,7 +2660,7 @@ def SetUpAndroidEnv(env):
                                                'ndk_experimental')
   android_sdk_root = os.path.join('${SOURCE_ROOT}', 'third_party',
                                   'android_tools', 'sdk')
-  android_sdk_version = 19
+  android_sdk_version = 21
   android_stlport_root = os.path.join(android_ndk_root, 'sources', 'cxx-stl',
                                       'stlport')
   ndk_host_os_map = {
@@ -2691,7 +2691,7 @@ def SetUpAndroidEnv(env):
                                        'android-14', 'arch-x86')
     android_ndk_lib_dir = os.path.join('usr', 'lib')
     android_toolchain = os.path.join(android_ndk_root, 'toolchains',
-                                     'x86-4.6', 'prebuilt',
+                                     'x86-4.8', 'prebuilt',
                                      '%s-x86_64' % host_os, 'bin')
     arch_cflags += ['-m32', '-msse2']
   # TODO(sehr): add other android architecture platform settings here.

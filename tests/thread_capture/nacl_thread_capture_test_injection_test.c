@@ -7,13 +7,10 @@
 #include <signal.h>
 #include <stdio.h>
 #include <string.h>
-#if !NACL_ANDROID
 #include <sys/ucontext.h>
-#endif
 
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_main.h"
 #include "native_client/src/trusted/fault_injection/test_injection.h"

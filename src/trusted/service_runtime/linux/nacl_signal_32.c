@@ -6,11 +6,8 @@
 
 #include <signal.h>
 #include <string.h>
-#if !NACL_ANDROID
 #include <sys/ucontext.h>
-#endif
 
-#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 
 /*

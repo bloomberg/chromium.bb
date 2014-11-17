@@ -3,9 +3,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-#include "native_client/src/trusted/service_runtime/linux/android_compat.h"
-
 #include <errno.h>
+#if NACL_ANDROID
+/* Android uses a non-canonical futex.h version that requires __user be set. */
+#include <linux/compiler.h>
+#endif
 #include <linux/futex.h>
 #include <signal.h>
 #include <sys/syscall.h>
@@ -20,6 +22,12 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/thread_suspension.h"
 
+#if !defined(FUTEX_WAIT_PRIVATE)
+# define FUTEX_WAIT_PRIVATE FUTEX_WAIT
+#endif /* !defined(FUTEX_WAIT_PRIVATE) */
+#if !defined(FUTEX_WAKE_PRIVATE)
+# define FUTEX_WAKE_PRIVATE FUTEX_WAKE
+#endif /* !defined(FUTEX_WAKE_PRIVATE) */
 
 struct NaClAppThreadSuspendedRegisters {
   struct NaClSignalContext context;
@@ -40,7 +48,7 @@ struct NaClAppThreadSuspendedRegisters {
  * which is very out-of-date.)
  */
 static void FutexWait(Atomic32 *addr, Atomic32 value) {
-  if (syscall(SYS_futex, addr, FUTEX_WAIT_PRIVATE, value, 0, 0, 0) != 0) {
+  if (syscall(__NR_futex, addr, FUTEX_WAIT_PRIVATE, value, 0, 0, 0) != 0) {
     /*
      * We get EWOULDBLOCK if *addr != value (EAGAIN is a synonym).
      * We get EINTR if interrupted by a signal.
@@ -56,7 +64,7 @@ static void FutexWait(Atomic32 *addr, Atomic32 value) {
  * |waiters| is the maximum number of threads that will be woken up.
  */
 static void FutexWake(Atomic32 *addr, int waiters) {
-  if (syscall(SYS_futex, addr, FUTEX_WAKE_PRIVATE, waiters, 0, 0, 0) < 0) {
+  if (syscall(__NR_futex, addr, FUTEX_WAKE_PRIVATE, waiters, 0, 0, 0) < 0) {
     NaClLog(LOG_FATAL, "FutexWake: futex() failed with error %d\n", errno);
   }
 }

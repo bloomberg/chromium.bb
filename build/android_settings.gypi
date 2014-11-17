@@ -17,8 +17,8 @@
         'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
         'android_host_arch%': '<!(uname -m)',
         # Android API-level of the SDK used for compilation.
-        'android_sdk_version%': '19',
-        'android_sdk_build_tools_version%': '19.0.0',
+        'android_sdk_version%': '21',
+        'android_sdk_build_tools_version%': '21.0.1',
         'host_os%': "<!(uname -s | sed -e 's/Linux/linux/;s/Darwin/mac/')",
       },
       # Copy conditionally-set variables out one scope.
@@ -41,7 +41,7 @@
           'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-x86/gdbserver/gdbserver',
           'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-x86',
           'android_ndk_lib_dir%': 'usr/lib',
-          'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
+          'android_toolchain%': '<(android_ndk_root)/toolchains/x86-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
         }],
         ['target_arch == "x64"', {
           'android_app_abi%': 'x86_64',
@@ -77,7 +77,7 @@
           'android_gdbserver%': '<(android_ndk_root)/prebuilt/android-mips/gdbserver/gdbserver',
           'android_ndk_sysroot%': '<(android_ndk_root)/platforms/android-14/arch-mips',
           'android_ndk_lib_dir%': 'usr/lib',
-          'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.6/prebuilt/<(host_os)-<(android_host_arch)/bin',
+          'android_toolchain%': '<(android_ndk_root)/toolchains/mipsel-linux-android-4.8/prebuilt/<(host_os)-<(android_host_arch)/bin',
         }],
       ],
     },
