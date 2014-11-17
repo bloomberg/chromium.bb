@@ -1,7 +1,7 @@
 .. _cds2014_python:
 
 ########################################
-What a difference Python Makes - Codelab
+What a Difference Python Makes - Codelab
 ########################################
 
 Introduction

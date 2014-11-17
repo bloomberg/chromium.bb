@@ -19,7 +19,7 @@ Codelab #1 - What a difference Python Makes
 
 .. include:: python_summary.inc
 
-`Click here for Codelab #1 - Python on the Web <python>`_
+`Click here for Codelab #1 - What a Difference Python Makes <python>`_
 
 
 Codelab #2 - A Saga of Fire and Water
@@ -27,4 +27,4 @@ Codelab #2 - A Saga of Fire and Water
 
 .. include:: cpp_summary.inc
 
-`Click here for Codelab #2 - Compile for Speed <cpp>`_
+`Click here for Codelab #2 - A Saga of Fire and Water <cpp>`_
