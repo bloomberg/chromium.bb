@@ -1949,13 +1949,6 @@
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
           }],
-          ['MSVS_VERSION=="2013e"', {
-            'msvs_express%': 1,
-            'secure_atl%': 0,
-          },{
-            'msvs_express%': 0,
-            'secure_atl%': 1,
-          }],
         ],
         'nacl_win64_defines': [
           # This flag is used to minimize dependencies when building
@@ -5274,6 +5267,7 @@
           'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
           'WIN32_LEAN_AND_MEAN',
           '_ATL_NO_OPENGL',
+          '_SECURE_ATL',
           # _HAS_EXCEPTIONS must match ExceptionHandling in msvs_settings.
           '_HAS_EXCEPTIONS=0',
           # Silence some warnings; we can't switch the the 'recommended'
@@ -5352,62 +5346,6 @@
             # installed Express users.
             'msvs_disabled_warnings': [
               4702,
-            ],
-          }],
-          ['secure_atl', {
-            'defines': [
-              '_SECURE_ATL',
-            ],
-          }],
-          ['msvs_express', {
-            'configurations': {
-              'x86_Base': {
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    'AdditionalLibraryDirectories':
-                      ['<(windows_driver_kit_path)/lib/ATL/i386'],
-                  },
-                  'VCLibrarianTool': {
-                    'AdditionalLibraryDirectories':
-                      ['<(windows_driver_kit_path)/lib/ATL/i386'],
-                  },
-                },
-              },
-              'x64_Base': {
-                'msvs_settings': {
-                  'VCLibrarianTool': {
-                    'AdditionalLibraryDirectories':
-                      ['<(windows_driver_kit_path)/lib/ATL/amd64'],
-                  },
-                  'VCLinkerTool': {
-                    'AdditionalLibraryDirectories':
-                      ['<(windows_driver_kit_path)/lib/ATL/amd64'],
-                  },
-                },
-              },
-            },
-            'msvs_settings': {
-              'VCCLCompilerTool': {
-                'AdditionalOptions!': [
-                    '/Zc:inline',  # Not supported on non-updated Express.
-                ],
-              },
-              'VCLinkerTool': {
-                # Explicitly required when using the ATL with express
-                'AdditionalDependencies': ['atlthunk.lib'],
-
-                # ATL 8.0 included in WDK 7.1 makes the linker to generate
-                # almost eight hundred LNK4254 and LNK4078 warnings:
-                #   - warning LNK4254: section 'ATL' (50000040) merged into
-                #     '.rdata' (40000040) with different attributes
-                #   - warning LNK4078: multiple 'ATL' sections found with
-                #     different attributes
-                'AdditionalOptions': ['/ignore:4254', '/ignore:4078'],
-              },
-            },
-            'msvs_system_include_dirs': [
-              '<(windows_driver_kit_path)/inc/atl71',
-              '<(windows_driver_kit_path)/inc/mfc42',
             ],
           }],
         ],

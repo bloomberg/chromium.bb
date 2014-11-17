@@ -47,7 +47,7 @@
             'src/transform-sse1.c',
           ],
         }],
-        ['OS == "win" and (MSVS_VERSION == "2013" or MSVS_VERSION == "2013e")', {
+        ['OS == "win"', {
           'msvs_disabled_warnings': [
             4056,  # overflow in floating-point constant arithmetic (INFINITY)
             4756,  # overflow in constant arithmetic (INFINITY)
