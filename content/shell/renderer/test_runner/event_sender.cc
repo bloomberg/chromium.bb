@@ -93,6 +93,12 @@ int GetKeyModifier(const std::string& modifier_name) {
 #else
     return WebInputEvent::ControlKey;
 #endif
+  } else if (!strcmp(characters, "leftButton")) {
+    return WebInputEvent::LeftButtonDown;
+  } else if (!strcmp(characters, "middleButton")) {
+    return WebInputEvent::MiddleButtonDown;
+  } else if (!strcmp(characters, "rightButton")) {
+    return WebInputEvent::RightButtonDown;
   }
 
   return 0;
