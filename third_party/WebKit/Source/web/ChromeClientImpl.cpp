@@ -229,6 +229,8 @@ Page* ChromeClientImpl::createWindow(LocalFrame* frame, const FrameLoadRequest& 
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy() != WebNavigationPolicyNewBackgroundTab)
+        policy = WebNavigationPolicyNewForegroundTab;
 
     ASSERT(frame->document());
     Fullscreen::fullyExitFullscreen(*frame->document());
@@ -301,6 +303,8 @@ void ChromeClientImpl::show(NavigationPolicy navigationPolicy)
     WebNavigationPolicy policy = static_cast<WebNavigationPolicy>(navigationPolicy);
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
+    else if (policy == WebNavigationPolicyNewBackgroundTab && getNavigationPolicy() != WebNavigationPolicyNewBackgroundTab)
+        policy = WebNavigationPolicyNewForegroundTab;
     m_webView->client()->show(policy);
 }
 
