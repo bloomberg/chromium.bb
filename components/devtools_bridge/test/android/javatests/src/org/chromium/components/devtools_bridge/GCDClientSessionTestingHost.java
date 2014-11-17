@@ -33,7 +33,7 @@ public class GCDClientSessionTestingHost {
     public GCDClientSessionTestingHost(
             String oAuthToken, String socketName, String remoteInstanceId) throws IOException {
         mClientFactory = new TestApiaryClientFactory();
-        mFactory = new SessionDependencyFactory();
+        mFactory = SessionDependencyFactory.newInstance();
         mIOExecutor = new LocalSessionBridge.ThreadedExecutor();
 
         String sessionId = Integer.toString(sRandom.nextInt());

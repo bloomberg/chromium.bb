@@ -77,7 +77,7 @@ public class DevToolsBridgeServerSandbox {
     private void createConnections() {
         assert mClientSession1 == null;
         assert mClientSession2 == null;
-        mFactory = new SessionDependencyFactory();
+        mFactory = SessionDependencyFactory.newInstance();
 
         String pid = Integer.toString(Process.myPid());
         try {
@@ -98,12 +98,12 @@ public class DevToolsBridgeServerSandbox {
     }
 
     private void stopInternal() {
-       Log.d(TAG, "Service disconnected. Stopping client sessions");
-       mClientSession1.dispose();
-       mClientSession2.dispose();
-       mFactory.dispose();
-       mClientSession1 = null;
-       mClientSession2 = null;
-       mFactory = null;
+        Log.d(TAG, "Service disconnected. Stopping client sessions");
+        mClientSession1.dispose();
+        mClientSession2.dispose();
+        mFactory.dispose();
+        mClientSession1 = null;
+        mClientSession2 = null;
+        mFactory = null;
     }
 }

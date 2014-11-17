@@ -19,8 +19,10 @@
       'target_name': 'devtools_bridge',
       'type': 'static_library',
       'sources': [
-        'devtools_bridge/android/session_dependency_factory_native.h',
-        'devtools_bridge/android/session_dependency_factory_native.cc',
+        'devtools_bridge/android/session_dependency_factory_android.cc',
+        'devtools_bridge/android/session_dependency_factory_android.h',
+        'devtools_bridge/session_dependency_factory.cc',
+        'devtools_bridge/session_dependency_factory.h',
       ],
       'dependencies': [
         '../base/base.gyp:base',

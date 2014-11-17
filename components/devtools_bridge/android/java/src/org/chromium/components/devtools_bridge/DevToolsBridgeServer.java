@@ -39,7 +39,7 @@ public class DevToolsBridgeServer implements SignalingReceiver {
     private final String mSocketName;
     private final ServiceUIFactory mServiceUIFactory;
     private final LooperExecutor mExecutor;
-    private final SessionDependencyFactory mFactory = new SessionDependencyFactory();
+    private final SessionDependencyFactory mFactory = SessionDependencyFactory.newInstance();
     private final Map<String, ServerSession> mSessions = new HashMap<String, ServerSession>();
     private PowerManager.WakeLock mWakeLock;
     private Runnable mForegroundCompletionCallback;

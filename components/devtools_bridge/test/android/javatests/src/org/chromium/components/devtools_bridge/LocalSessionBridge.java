@@ -25,7 +25,7 @@ public class LocalSessionBridge {
 
     private volatile int mDelayMs = 0;
 
-    private final SessionDependencyFactory mFactory = new SessionDependencyFactory();
+    private final SessionDependencyFactory mFactory = SessionDependencyFactory.newInstance();
 
     private final ThreadedExecutor mServerExecutor = new ThreadedExecutor();
     private final ThreadedExecutor mClientExecutor = new ThreadedExecutor();

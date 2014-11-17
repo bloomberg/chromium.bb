@@ -20,25 +20,45 @@ import java.util.List;
 /**
  * Implements AbstractDataChannel and AbstractPeerConnection on top of org.webrtc.* API.
  * Isolation is needed because some configuration of DevTools bridge may not be based on
- * Java API. Native implementation of SessionDependencyFactory will be added for this case.
+ * Java API.
  * In addition abstraction layer isolates SessionBase from complexity of underlying API
  * beside used features.
  */
-public class SessionDependencyFactory {
-    private final PeerConnectionFactory mFactory = new PeerConnectionFactory();
+public abstract class SessionDependencyFactory {
+    public static SessionDependencyFactory newInstance() {
+        return new JavaImpl();
+    }
 
-    public AbstractPeerConnection createPeerConnection(
-            RTCConfiguration config, AbstractPeerConnection.Observer observer) {
+    public abstract AbstractPeerConnection createPeerConnection(
+            RTCConfiguration config, AbstractPeerConnection.Observer observer);
+
+    public abstract void dispose();
+
+    private static class JavaImpl extends SessionDependencyFactory {
+        private final PeerConnectionFactory mFactory = new PeerConnectionFactory();
+
+        @Override
+        public AbstractPeerConnection createPeerConnection(
+                RTCConfiguration config, AbstractPeerConnection.Observer observer) {
+            return new PeerConnectionAdapter(
+                    mFactory.createPeerConnection(
+                            convert(config),
+                            createPeerConnectionConstraints(),
+                            new PeerConnnectionObserverAdapter(observer)),
+                            observer);
+        }
+
+        @Override
+        public void dispose() {
+            mFactory.dispose();
+        }
+    }
+
+    private static MediaConstraints createPeerConnectionConstraints() {
         MediaConstraints constraints = new MediaConstraints();
         constraints.mandatory.add(
                 new MediaConstraints.KeyValuePair("DtlsSrtpKeyAgreement", "true"));
-        return new PeerConnectionAdapter(
-                mFactory.createPeerConnection(convert(config), constraints,
-                        new PeerConnnectionObserverAdapter(observer)), observer);
-    }
-
-    public void dispose() {
-        mFactory.dispose();
+        return constraints;
     }
 
     private static AbstractPeerConnection.SessionDescriptionType convertType(
@@ -139,8 +159,8 @@ public class SessionDependencyFactory {
 
         @Override
         public void onStateChange() {
-            AbstractDataChannel.State state = mDataChannel.state() == DataChannel.State.OPEN ?
-                    AbstractDataChannel.State.OPEN : AbstractDataChannel.State.CLOSED;
+            AbstractDataChannel.State state = mDataChannel.state() == DataChannel.State.OPEN
+                    ? AbstractDataChannel.State.OPEN : AbstractDataChannel.State.CLOSED;
             if (mState != state) {
                 mState = state;
                 mAdaptee.onStateChange(state);
@@ -190,6 +210,7 @@ public class SessionDependencyFactory {
 
         @Override
         public void onCreateSuccess(final SessionDescription localDescription) {
+            // TODO(serya): |mConnection| could be disposed, synchronization needed.
             mConnection.setLocalDescriptionOnSignalingThread(localDescription);
         }
 

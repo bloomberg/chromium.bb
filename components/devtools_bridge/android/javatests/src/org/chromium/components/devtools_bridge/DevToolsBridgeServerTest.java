@@ -43,7 +43,7 @@ public class DevToolsBridgeServerTest extends ServiceTestCase<LocalBindingTestSe
     protected void setUp() throws Exception {
         super.setUp();
         setupService();
-        mFactory = new SessionDependencyFactory();
+        mFactory = SessionDependencyFactory.newInstance();
     }
 
     @Override
