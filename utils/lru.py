@@ -7,9 +7,6 @@
 import collections
 import json
 
-# Monkey patch collections to contain OrderedDict on python 2.6.
-from third_party.chromium import python26_polyfill  # pylint: disable=W0611
-
 
 class LRUDict(object):
   """Dictionary that can evict least recently used items.
