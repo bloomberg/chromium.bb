@@ -855,6 +855,9 @@ AccessibilityOrientation AXRenderObject::orientation() const
     if (equalIgnoringCase(ariaOrientation, "vertical"))
         return AccessibilityOrientationVertical;
 
+    if (isScrollbar())
+        return AccessibilityOrientationVertical;
+
     return AXObject::orientation();
 }
 
