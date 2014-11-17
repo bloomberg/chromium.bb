@@ -427,8 +427,8 @@ wl_proxy_add_listener(struct wl_proxy *proxy,
  * Gets the address to the proxy's listener; which is the listener set with
  * \ref wl_proxy_add_listener.
  *
- * This function is useful in client with multiple listeners on the same
- * interface to allow the identification of which code to eexecute.
+ * This function is useful in clients with multiple listeners on the same
+ * interface to allow the identification of which code to execute.
  *
  * \memberof wl_proxy
  */
