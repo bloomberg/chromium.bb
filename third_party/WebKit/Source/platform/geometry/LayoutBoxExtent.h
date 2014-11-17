@@ -69,12 +69,6 @@ public:
     void setStart(WritingMode, TextDirection, LayoutUnit);
     void setEnd(WritingMode, TextDirection, LayoutUnit);
 
-    LayoutUnit& mutableLogicalLeft(WritingMode);
-    LayoutUnit& mutableLogicalRight(WritingMode);
-
-    LayoutUnit& mutableBefore(WritingMode);
-    LayoutUnit& mutableAfter(WritingMode);
-
 private:
     LayoutUnit m_top;
     LayoutUnit m_right;

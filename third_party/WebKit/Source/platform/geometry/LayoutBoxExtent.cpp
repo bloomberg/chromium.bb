@@ -173,28 +173,4 @@ void LayoutBoxExtent::setEnd(WritingMode writingMode, TextDirection direction, L
     }
 }
 
-LayoutUnit& LayoutBoxExtent::mutableLogicalLeft(WritingMode writingMode)
-{
-    return isHorizontalWritingMode(writingMode) ? m_left : m_top;
-}
-
-LayoutUnit& LayoutBoxExtent::mutableLogicalRight(WritingMode writingMode)
-{
-    return isHorizontalWritingMode(writingMode) ? m_right : m_bottom;
-}
-
-LayoutUnit& LayoutBoxExtent::mutableBefore(WritingMode writingMode)
-{
-    return isHorizontalWritingMode(writingMode) ?
-        (isFlippedBlocksWritingMode(writingMode) ? m_bottom : m_top) :
-        (isFlippedBlocksWritingMode(writingMode) ? m_right: m_left);
-}
-
-LayoutUnit& LayoutBoxExtent::mutableAfter(WritingMode writingMode)
-{
-    return isHorizontalWritingMode(writingMode) ?
-        (isFlippedBlocksWritingMode(writingMode) ? m_top : m_bottom) :
-        (isFlippedBlocksWritingMode(writingMode) ? m_left: m_right);
-}
-
 } // namespace blink
