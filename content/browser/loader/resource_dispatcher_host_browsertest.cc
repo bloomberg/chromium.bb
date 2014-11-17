@@ -10,6 +10,9 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_dispatcher_host.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
@@ -470,6 +473,51 @@ IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest, CookiePolicy) {
   ShellNetworkDelegate::SetAcceptAllCookies(false);
 
   CheckTitleTest(url, "cookie set");
+}
+
+class PageTransitionResourceDispatcherHostDelegate
+    : public ResourceDispatcherHostDelegate {
+ public:
+  PageTransitionResourceDispatcherHostDelegate(GURL watch_url)
+    : watch_url_(watch_url) {}
+
+  // ResourceDispatcherHostDelegate implementation:
+  void RequestBeginning(net::URLRequest* request,
+                        ResourceContext* resource_context,
+                        AppCacheService* appcache_service,
+                        ResourceType resource_type,
+                        ScopedVector<ResourceThrottle>* throttles) override {
+    if (request->url() == watch_url_) {
+      const ResourceRequestInfo* info =
+          ResourceRequestInfo::ForRequest(request);
+      page_transition_ = info->GetPageTransition();
+    }
+  }
+
+  ui::PageTransition page_transition() { return page_transition_; }
+
+ private:
+  GURL watch_url_;
+  ui::PageTransition page_transition_;
+};
+
+// Test that ui::PAGE_TRANSITION_CLIENT_REDIRECT is correctly set
+// when encountering a meta refresh tag.
+IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
+                       PageTransitionClientRedirect) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+
+  PageTransitionResourceDispatcherHostDelegate delegate(
+      embedded_test_server()->GetURL("/title1.html"));
+  ResourceDispatcherHost::Get()->SetDelegate(&delegate);
+
+  NavigateToURLBlockUntilNavigationsComplete(
+      shell(),
+      embedded_test_server()->GetURL("/client_redirect.html"),
+      2);
+
+  EXPECT_TRUE(
+      delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 }
 
 }  // namespace content

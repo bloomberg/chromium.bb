@@ -2785,6 +2785,11 @@ void RenderFrameImpl::willSendRequest(
       InternalDocumentStateData::FromDocumentState(document_state);
   NavigationState* navigation_state = document_state->navigation_state();
   ui::PageTransition transition_type = navigation_state->transition_type();
+  WebDataSource* frame_ds = frame->provisionalDataSource();
+  if (frame_ds && frame_ds->isClientRedirect()) {
+    transition_type = ui::PageTransitionFromInt(
+        transition_type | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  }
 
   GURL request_url(request.url());
   GURL new_url;
