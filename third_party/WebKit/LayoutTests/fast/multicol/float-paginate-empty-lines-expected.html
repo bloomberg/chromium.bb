@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <style>
     .columns {
-        -webkit-column-count: 2;
-        -webkit-column-gap: 0px;
-        column-fill: auto;
         height: 300px;
         border: 2px solid black;
         line-height: 20px;
     }
     .dashed {
         border: 10px dashed maroon;
+        width: 50%;
+        float: left;
+        box-sizing: border-box;
     }
     img {
         float: right;
         width: 100px;
         height: 200px;
         background-color: #cccccc;
+        margin-right: 10px;
     }
 </style>
 <p>This test is ensuring we don't grow the height of a block improperly when a float has no line association (e.g., when it's at the end of a
@@ -26,6 +27,6 @@ block). The complete dashed border should be in the first column, with none of i
         This is some text.<br>This is some text.<br>This is some text.<br>
         This is some text.<br>This is some text.<br>This is some text.<br>
         This is some text.<br>This is some text.<br>This is some text.<br>
-        <img>
     </div>
+    <img>
 </div>
