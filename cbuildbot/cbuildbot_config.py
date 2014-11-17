@@ -1164,7 +1164,6 @@ paladin.add_config('mipsel-o32-generic-paladin',
   brillo,
   non_testable_builder,
   boards=['mipsel-o32-generic'],
-  important=False,
   paladin_builder_name='mipsel-o32-generic paladin',
 )
 
