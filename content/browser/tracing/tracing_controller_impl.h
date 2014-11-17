@@ -43,8 +43,8 @@ class TracingControllerImpl : public TracingController {
       base::debug::TraceOptions* out_trace_options) override;
   bool CaptureMonitoringSnapshot(
       const scoped_refptr<TraceDataSink>& sink) override;
-  bool GetTraceBufferPercentFull(
-      const GetTraceBufferPercentFullCallback& callback) override;
+  bool GetTraceBufferUsage(
+      const GetTraceBufferUsageCallback& callback) override;
   bool SetWatchEvent(const std::string& category_name,
                      const std::string& event_name,
                      const WatchEventCallback& callback) override;
@@ -78,8 +78,8 @@ class TracingControllerImpl : public TracingController {
     return is_monitoring_ && !monitoring_data_sink_.get();
   }
 
-  bool can_get_trace_buffer_percent_full() const {
-    return pending_trace_buffer_percent_full_callback_.is_null();
+  bool can_get_trace_buffer_usage() const {
+    return pending_trace_buffer_usage_callback_.is_null();
   }
 
   bool can_cancel_watch_event() const {
@@ -116,9 +116,8 @@ class TracingControllerImpl : public TracingController {
   void OnCaptureMonitoringSnapshotAcked(
       TraceMessageFilter* trace_message_filter);
 
-  void OnTraceBufferPercentFullReply(
-      TraceMessageFilter* trace_message_filter,
-      float percent_full);
+  void OnTraceLogStatusReply(TraceMessageFilter* trace_message_filter,
+                             const base::debug::TraceLogStatus& status);
 
   void OnWatchEventMatched();
 
@@ -148,10 +147,11 @@ class TracingControllerImpl : public TracingController {
   // Pending acks for CaptureMonitoringSnapshot.
   int pending_capture_monitoring_snapshot_ack_count_;
   TraceMessageFilterSet pending_capture_monitoring_filters_;
-  // Pending acks for GetTraceBufferPercentFull.
-  int pending_trace_buffer_percent_full_ack_count_;
-  TraceMessageFilterSet pending_trace_buffer_percent_full_filters_;
-  float maximum_trace_buffer_percent_full_;
+  // Pending acks for GetTraceLogStatus.
+  int pending_trace_log_status_ack_count_;
+  TraceMessageFilterSet pending_trace_log_status_filters_;
+  float maximum_trace_buffer_usage_;
+  size_t approximate_event_count_;
 
 #if defined(OS_CHROMEOS) || defined(OS_WIN)
   bool is_system_tracing_;
@@ -161,7 +161,7 @@ class TracingControllerImpl : public TracingController {
   base::debug::TraceOptions trace_options_;
 
   GetCategoriesDoneCallback pending_get_categories_done_callback_;
-  GetTraceBufferPercentFullCallback pending_trace_buffer_percent_full_callback_;
+  GetTraceBufferUsageCallback pending_trace_buffer_usage_callback_;
 
   std::string watch_category_name_;
   std::string watch_event_name_;

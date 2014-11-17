@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/debug/trace_event_impl.h"
 #include "base/sync_socket.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -14,6 +15,11 @@
 #include "ipc/ipc_platform_file.h"
 
 #define IPC_MESSAGE_START TracingMsgStart
+
+IPC_STRUCT_TRAITS_BEGIN(base::debug::TraceLogStatus)
+IPC_STRUCT_TRAITS_MEMBER(event_capacity)
+IPC_STRUCT_TRAITS_MEMBER(event_count)
+IPC_STRUCT_TRAITS_END()
 
 // Sent to all child processes to enable trace event recording.
 IPC_MESSAGE_CONTROL3(TracingMsg_BeginTracing,
@@ -37,7 +43,7 @@ IPC_MESSAGE_CONTROL0(TracingMsg_DisableMonitoring)
 IPC_MESSAGE_CONTROL0(TracingMsg_CaptureMonitoringSnapshot)
 
 // Sent to all child processes to get trace buffer fullness.
-IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceBufferPercentFull)
+IPC_MESSAGE_CONTROL0(TracingMsg_GetTraceLogStatus)
 
 // Sent to all child processes to set watch event.
 IPC_MESSAGE_CONTROL2(TracingMsg_SetWatchEvent,
@@ -69,7 +75,6 @@ IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceDataCollected,
 IPC_MESSAGE_CONTROL1(TracingHostMsg_MonitoringTraceDataCollected,
                      std::string /*json trace data*/)
 
-// Reply to TracingMsg_GetTraceBufferPercentFull.
-IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceBufferPercentFullReply,
-                     float /*trace buffer percent full*/)
-
+// Reply to TracingMsg_GetTraceLogStatus.
+IPC_MESSAGE_CONTROL1(TracingHostMsg_TraceLogStatusReply,
+                     base::debug::TraceLogStatus /*status of the trace log*/)

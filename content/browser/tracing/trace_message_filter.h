@@ -31,7 +31,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
                             const base::debug::TraceOptions& options);
   void SendDisableMonitoring();
   void SendCaptureMonitoringSnapshot();
-  void SendGetTraceBufferPercentFull();
+  void SendGetTraceLogStatus();
   void SendSetWatchEvent(const std::string& category_name,
                          const std::string& event_name);
   void SendCancelWatchEvent();
@@ -45,7 +45,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnEndTracingAck(const std::vector<std::string>& known_categories);
   void OnCaptureMonitoringSnapshotAcked();
   void OnWatchEventMatched();
-  void OnTraceBufferPercentFullReply(float percent_full);
+  void OnTraceLogStatusReply(const base::debug::TraceLogStatus& status);
   void OnTraceDataCollected(const std::string& data);
   void OnMonitoringTraceDataCollected(const std::string& data);
 
@@ -56,7 +56,7 @@ class TraceMessageFilter : public BrowserMessageFilter {
   bool is_awaiting_end_ack_;
   // Awaiting ack for previously sent SendCaptureMonitoringSnapshot
   bool is_awaiting_capture_monitoring_snapshot_ack_;
-  // Awaiting ack for previously sent SendGetTraceBufferPercentFull
+  // Awaiting ack for previously sent SendGetTraceLogStatus
   bool is_awaiting_buffer_percent_full_ack_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceMessageFilter);

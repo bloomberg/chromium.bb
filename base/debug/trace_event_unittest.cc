@@ -1366,8 +1366,7 @@ TEST_F(TraceEventTestFixture, AsyncBeginEndPointerMangling) {
 TEST_F(TraceEventTestFixture, StaticStringVsString) {
   TraceLog* tracer = TraceLog::GetInstance();
   // Make sure old events are flushed:
-  EndTraceAndFlush();
-  EXPECT_EQ(0u, tracer->GetEventsSize());
+  EXPECT_EQ(0u, tracer->GetStatus().event_count);
   const unsigned char* category_group_enabled =
       TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED("cat");
 
@@ -1384,8 +1383,7 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2", 0, 0,
             "arg1", TRACE_STR_COPY("argval"),
             "arg2", TRACE_STR_COPY("argval"));
-    size_t num_events = tracer->GetEventsSize();
-    EXPECT_GT(num_events, 1u);
+    EXPECT_GT(tracer->GetStatus().event_count, 1u);
     const TraceEvent* event1 = tracer->GetEventByHandle(handle1);
     const TraceEvent* event2 = tracer->GetEventByHandle(handle2);
     ASSERT_TRUE(event1);
@@ -1414,8 +1412,7 @@ TEST_F(TraceEventTestFixture, StaticStringVsString) {
             TRACE_EVENT_PHASE_INSTANT, category_group_enabled, "name2", 0, 0,
             "arg1", TRACE_STR_COPY(str1),
             "arg2", TRACE_STR_COPY(str2));
-    size_t num_events = tracer->GetEventsSize();
-    EXPECT_GT(num_events, 1u);
+    EXPECT_GT(tracer->GetStatus().event_count, 1u);
     const TraceEvent* event1 = tracer->GetEventByHandle(handle1);
     const TraceEvent* event2 = tracer->GetEventByHandle(handle2);
     ASSERT_TRUE(event1);

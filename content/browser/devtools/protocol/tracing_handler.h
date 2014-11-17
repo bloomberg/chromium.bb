@@ -49,7 +49,7 @@ class TracingHandler {
 
  private:
   void OnRecordingEnabled(scoped_refptr<DevToolsProtocol::Command> command);
-  void OnBufferUsage(float usage);
+  void OnBufferUsage(float percent_full, size_t approximate_event_count);
 
   void OnCategoriesReceived(scoped_refptr<DevToolsProtocol::Command> command,
                             const std::set<std::string>& category_set);

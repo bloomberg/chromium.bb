@@ -39,7 +39,7 @@ class ChildTraceMessageFilter : public IPC::MessageFilter {
                           const std::string& options);
   void OnDisableMonitoring();
   void OnCaptureMonitoringSnapshot();
-  void OnGetTraceBufferPercentFull();
+  void OnGetTraceLogStatus();
   void OnSetWatchEvent(const std::string& category_name,
                        const std::string& event_name);
   void OnCancelWatchEvent();

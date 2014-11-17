@@ -36,8 +36,7 @@ bool ChildTraceMessageFilter::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(TracingMsg_DisableMonitoring, OnDisableMonitoring)
     IPC_MESSAGE_HANDLER(TracingMsg_CaptureMonitoringSnapshot,
                         OnCaptureMonitoringSnapshot)
-    IPC_MESSAGE_HANDLER(TracingMsg_GetTraceBufferPercentFull,
-                        OnGetTraceBufferPercentFull)
+    IPC_MESSAGE_HANDLER(TracingMsg_GetTraceLogStatus, OnGetTraceLogStatus)
     IPC_MESSAGE_HANDLER(TracingMsg_SetWatchEvent, OnSetWatchEvent)
     IPC_MESSAGE_HANDLER(TracingMsg_CancelWatchEvent, OnCancelWatchEvent)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -105,10 +104,9 @@ void ChildTraceMessageFilter::OnCaptureMonitoringSnapshot() {
                  this));
 }
 
-void ChildTraceMessageFilter::OnGetTraceBufferPercentFull() {
-  float bpf = TraceLog::GetInstance()->GetBufferPercentFull();
-
-  sender_->Send(new TracingHostMsg_TraceBufferPercentFullReply(bpf));
+void ChildTraceMessageFilter::OnGetTraceLogStatus() {
+  sender_->Send(new TracingHostMsg_TraceLogStatusReply(
+      TraceLog::GetInstance()->GetStatus()));
 }
 
 void ChildTraceMessageFilter::OnSetWatchEvent(const std::string& category_name,

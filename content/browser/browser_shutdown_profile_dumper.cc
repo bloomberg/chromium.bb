@@ -29,14 +29,20 @@ BrowserShutdownProfileDumper::~BrowserShutdownProfileDumper() {
   WriteTracesToDisc();
 }
 
+static float GetTraceBufferPercentFull() {
+  base::debug::TraceLogStatus status =
+      base::debug::TraceLog::GetInstance()->GetStatus();
+  return 100 * static_cast<float>(static_cast<double>(status.event_count) /
+                                  status.event_capacity);
+}
+
 void BrowserShutdownProfileDumper::WriteTracesToDisc() {
   // Note: I have seen a usage of 0.000xx% when dumping - which fits easily.
   // Since the tracer stops when the trace buffer is filled, we'd rather save
   // what we have than nothing since we might see from the amount of events
   // that caused the problem.
-  DVLOG(1) << "Flushing shutdown traces to disc. The buffer is %" <<
-      base::debug::TraceLog::GetInstance()->GetBufferPercentFull() <<
-      " full.";
+  DVLOG(1) << "Flushing shutdown traces to disc. The buffer is "
+           << GetTraceBufferPercentFull() << "% full.";
   DCHECK(!dump_file_);
   dump_file_ = base::OpenFile(dump_file_name_, "w+");
   if (!IsFileValid()) {

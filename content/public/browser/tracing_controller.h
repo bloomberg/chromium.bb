@@ -161,11 +161,11 @@ class TracingController {
       const scoped_refptr<TraceDataSink>& trace_data_sink) = 0;
 
   // Get the maximum across processes of trace buffer percent full state.
-  // When the TraceBufferPercentFull value is determined, the callback is
+  // When the TraceBufferUsage value is determined, the callback is
   // called.
-  typedef base::Callback<void(float)> GetTraceBufferPercentFullCallback;
-  virtual bool GetTraceBufferPercentFull(
-      const GetTraceBufferPercentFullCallback& callback) = 0;
+  typedef base::Callback<void(float, size_t)> GetTraceBufferUsageCallback;
+  virtual bool GetTraceBufferUsage(
+      const GetTraceBufferUsageCallback& callback) = 0;
 
   // |callback| will will be called every time the given event occurs on any
   // process.

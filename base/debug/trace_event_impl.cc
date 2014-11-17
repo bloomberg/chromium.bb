@@ -1185,6 +1185,12 @@ void TraceLog::ThreadLocalEventBuffer::FlushWhileLocked() {
   // find the generation mismatch and delete this buffer soon.
 }
 
+TraceLogStatus::TraceLogStatus() : event_capacity(0), event_count(0) {
+}
+
+TraceLogStatus::~TraceLogStatus() {
+}
+
 // static
 TraceLog* TraceLog::GetInstance() {
   return Singleton<TraceLog, LeakySingletonTraits<TraceLog> >::get();
@@ -1586,10 +1592,12 @@ bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
   return it != enabled_state_observer_list_.end();
 }
 
-float TraceLog::GetBufferPercentFull() const {
+TraceLogStatus TraceLog::GetStatus() const {
   AutoLock lock(lock_);
-  return static_cast<float>(static_cast<double>(logged_events_->Size()) /
-                            logged_events_->Capacity());
+  TraceLogStatus result;
+  result.event_capacity = logged_events_->Capacity();
+  result.event_count = logged_events_->Size();
+  return result;
 }
 
 bool TraceLog::BufferIsFull() const {

@@ -129,10 +129,26 @@ void OnRecordingEnabledAck(const WebUIDataSource::GotDataCallback& callback) {
   callback.Run(res);
 }
 
-void OnTraceBufferPercentFullResult(
-    const WebUIDataSource::GotDataCallback& callback, float result) {
-  std::string str = base::DoubleToString(result);
+void OnTraceBufferUsageResult(const WebUIDataSource::GotDataCallback& callback,
+                              float percent_full,
+                              size_t approximate_event_count) {
+  std::string str = base::DoubleToString(percent_full);
   callback.Run(base::RefCountedString::TakeString(&str));
+}
+
+void OnTraceBufferStatusResult(const WebUIDataSource::GotDataCallback& callback,
+                               float percent_full,
+                               size_t approximate_event_count) {
+  scoped_ptr<base::DictionaryValue> status(new base::DictionaryValue());
+  status->SetDouble("percentFull", percent_full);
+  status->SetInteger("approximateEventCount", approximate_event_count);
+
+  std::string status_json;
+  base::JSONWriter::Write(status.get(), &status_json);
+
+  base::RefCountedString* status_base64 = new base::RefCountedString();
+  base::Base64Encode(status_json, &status_base64->data());
+  callback.Run(status_base64);
 }
 
 void OnMonitoringEnabledAck(const WebUIDataSource::GotDataCallback& callback);
@@ -205,8 +221,12 @@ bool OnBeginJSONRequest(const std::string& path,
     return BeginRecording(data, callback);
   }
   if (path == "json/get_buffer_percent_full") {
-    return TracingController::GetInstance()->GetTraceBufferPercentFull(
-        base::Bind(OnTraceBufferPercentFullResult, callback));
+    return TracingController::GetInstance()->GetTraceBufferUsage(
+        base::Bind(OnTraceBufferUsageResult, callback));
+  }
+  if (path == "json/get_buffer_status") {
+    return TracingController::GetInstance()->GetTraceBufferUsage(
+        base::Bind(OnTraceBufferStatusResult, callback));
   }
   if (path == "json/end_recording") {
     return TracingController::GetInstance()->DisableRecording(

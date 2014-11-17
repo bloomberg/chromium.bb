@@ -142,8 +142,9 @@ void TracingHandler::OnRecordingEnabled(
   client_->SendStartResponse(command, StartResponse::Create());
 }
 
-void TracingHandler::OnBufferUsage(float usage) {
-  client_->BufferUsage(BufferUsageParams::Create()->set_value(usage));
+void TracingHandler::OnBufferUsage(float percent_full,
+                                   size_t approximate_event_count) {
+  client_->BufferUsage(BufferUsageParams::Create()->set_value(percent_full));
 }
 
 void TracingHandler::OnCategoriesReceived(
@@ -189,13 +190,11 @@ void TracingHandler::SetupTimer(double usage_reporting_interval) {
   base::TimeDelta interval = base::TimeDelta::FromMilliseconds(
       std::ceil(usage_reporting_interval));
   buffer_usage_poll_timer_.reset(new base::Timer(
-      FROM_HERE,
-      interval,
-      base::Bind(
-          base::IgnoreResult(&TracingController::GetTraceBufferPercentFull),
-          base::Unretained(TracingController::GetInstance()),
-          base::Bind(&TracingHandler::OnBufferUsage,
-                     weak_factory_.GetWeakPtr())),
+      FROM_HERE, interval,
+      base::Bind(base::IgnoreResult(&TracingController::GetTraceBufferUsage),
+                 base::Unretained(TracingController::GetInstance()),
+                 base::Bind(&TracingHandler::OnBufferUsage,
+                            weak_factory_.GetWeakPtr())),
       true));
   buffer_usage_poll_timer_->Reset();
 }
