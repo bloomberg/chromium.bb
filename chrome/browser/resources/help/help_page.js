@@ -187,7 +187,7 @@ cr.define('help', function() {
      */
     setMoreInfoVisible_: function(visible) {
       var moreInfo = $('more-info-container');
-      if (visible == moreInfo.classList.contains('visible'))
+      if (!moreInfo || visible == moreInfo.classList.contains('visible'))
         return;
 
       moreInfo.classList.toggle('visible', visible);
