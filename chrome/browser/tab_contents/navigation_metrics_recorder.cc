@@ -29,7 +29,8 @@ NavigationMetricsRecorder::~NavigationMetricsRecorder() {
 void NavigationMetricsRecorder::DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) {
-  navigation_metrics::RecordMainFrameNavigation(details.entry->GetVirtualURL());
+  navigation_metrics::RecordMainFrameNavigation(details.entry->GetVirtualURL(),
+                                                details.is_in_page);
 }
 
 void NavigationMetricsRecorder::DidStartLoading(
