@@ -1737,7 +1737,9 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_NAME,
     IDS_FLAGS_IGNORE_AUTOCOMPLETE_OFF_AUTOFILL_DESCRIPTION,
     kOsCrOS | kOsMac | kOsWin | kOsLinux,
-    SINGLE_VALUE_TYPE(autofill::switches::kIgnoreAutocompleteOffForAutofill)
+    ENABLE_DISABLE_VALUE_TYPE(
+        autofill::switches::kIgnoreAutocompleteOffForAutofill,
+        autofill::switches::kRespectAutocompleteOffForAutofill)
   },
   {
     "enable-permissions-bubbles",

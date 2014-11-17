@@ -48,8 +48,8 @@ namespace {
 
 bool ShouldAutofill(const FormFieldData& form_field) {
   return form_field.should_autocomplete ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kIgnoreAutocompleteOffForAutofill);
+         !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kRespectAutocompleteOffForAutofill);
 }
 
 }  // namespace

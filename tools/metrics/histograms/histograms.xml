@@ -48364,6 +48364,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-512971943" label="disable-one-copy"/>
   <int value="-510488450" label="disable-pnacl"/>
   <int value="-508143738" label="disable-accelerated-fixed-root-background"/>
+  <int value="-506706655" label="respect-autocomplete-off-autofill"/>
   <int value="-495585885" label="enable-spdy-proxy-dev-auth-origin"/>
   <int value="-478462945" label="enable-ephemeral-apps"/>
   <int value="-462205750" label="enable-service-worker-sync"/>

@@ -2462,7 +2462,12 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestionsWhenAutofillDisabled) {
       expected_labels, expected_icons, expected_unique_ids);
 }
 
+// Duplicate of the below test with the respect-autocomplete-off-autofill
+// switch.
 TEST_F(AutofillManagerTest, AutocompleteOffRespected) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kRespectAutocompleteOffForAutofill);
+
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, NULL));
@@ -2490,11 +2495,7 @@ TEST_F(AutofillManagerTest, AutocompleteOffRespected) {
   GetAutofillSuggestions(form, *field);
 }
 
-// Duplicate of the above test with the ignore-autocomplete-off-autofill switch.
 TEST_F(AutofillManagerTest, AutocompleteOffRespectedWithFlag) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kIgnoreAutocompleteOffForAutofill);
-
   TestAutofillClient client;
   autofill_manager_.reset(
       new TestAutofillManager(autofill_driver_.get(), &client, NULL));

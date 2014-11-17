@@ -133,14 +133,14 @@ TEST(FormStructureTest, AutofillCount) {
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_EQ(1U, form_structure->autofill_count());
+  EXPECT_EQ(2U, form_structure->autofill_count());
 
   CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kIgnoreAutocompleteOffForAutofill);
+      switches::kRespectAutocompleteOffForAutofill);
 
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_EQ(2U, form_structure->autofill_count());
+  EXPECT_EQ(1U, form_structure->autofill_count());
 }
 
 TEST(FormStructureTest, SourceURL) {

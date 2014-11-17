@@ -28,6 +28,10 @@ const char kIgnoreAutocompleteOffForAutofill[] =
 const char kLocalHeuristicsOnlyForPasswordGeneration[] =
     "local-heuristics-only-for-password-generation";
 
+// The "disable" flag for kIgnoreAutocompleteOffForAutofill.
+const char kRespectAutocompleteOffForAutofill[] =
+    "respect-autocomplete-off-autofill";
+
 // Annotates forms with Autofill field type predictions.
 const char kShowAutofillTypePredictions[]   = "show-autofill-type-predictions";
 

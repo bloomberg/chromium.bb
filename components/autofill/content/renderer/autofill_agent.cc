@@ -645,8 +645,8 @@ void AutofillAgent::QueryAutofillSuggestions(
       element.autoComplete() ? REQUIRE_AUTOCOMPLETE : REQUIRE_NONE;
 
   // If we're ignoring autocomplete="off", always extract everything.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIgnoreAutocompleteOffForAutofill)) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRespectAutocompleteOffForAutofill)) {
     requirements = REQUIRE_NONE;
   }
 

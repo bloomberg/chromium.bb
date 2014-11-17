@@ -67,9 +67,9 @@ enum FieldFilterMask {
 
 RequirementsMask ExtractionRequirements() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kIgnoreAutocompleteOffForAutofill)
-             ? REQUIRE_NONE
-             : REQUIRE_AUTOCOMPLETE;
+             switches::kRespectAutocompleteOffForAutofill)
+             ? REQUIRE_AUTOCOMPLETE
+             : REQUIRE_NONE;
 }
 
 bool IsOptionElement(const WebElement& element) {

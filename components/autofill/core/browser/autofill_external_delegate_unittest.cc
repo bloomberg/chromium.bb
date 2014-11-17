@@ -332,6 +332,11 @@ TEST_F(AutofillExternalDelegateUnitTest, AutofillWarnings) {
 // Autofill is disabled for a website when there are no Autofill suggestions.
 // Regression test for http://crbug.com/105636
 TEST_F(AutofillExternalDelegateUnitTest, NoAutofillWarningsWithoutSuggestions) {
+  // This test only makes sense if we're respecting autocomplete="off".
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kRespectAutocompleteOffForAutofill))
+    return;
+
   const FormData form;
   FormFieldData field;
   field.is_focusable = true;
@@ -425,6 +430,9 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kRespectAutocompleteOffForAutofill);
+
   // Set up a field that shouldn't get autocompleted or display warnings.
   const FormData form;
   FormFieldData field;
@@ -451,9 +459,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateHideWarning) {
 }
 
 TEST_F(AutofillExternalDelegateUnitTest, IgnoreAutocompleteOffForAutofill) {
-  CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kIgnoreAutocompleteOffForAutofill);
-
   const FormData form;
   FormFieldData field;
   field.is_focusable = true;

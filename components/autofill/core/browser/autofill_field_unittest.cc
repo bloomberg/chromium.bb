@@ -131,9 +131,9 @@ TEST(AutofillFieldTest, IsFieldFillable) {
   field.set_server_type(NAME_LAST);
   EXPECT_TRUE(field.IsFieldFillable());
 
-  // Field has autocomplete="off" set.
+  // Field has autocomplete="off" set. Chrome ignores the attribute.
   field.should_autocomplete = false;
-  EXPECT_FALSE(field.IsFieldFillable());
+  EXPECT_TRUE(field.IsFieldFillable());
 }
 
 TEST(AutofillFieldTest, FillPhoneNumber) {
