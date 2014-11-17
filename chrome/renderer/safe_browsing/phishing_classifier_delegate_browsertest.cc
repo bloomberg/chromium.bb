@@ -608,7 +608,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, PhishingDetectionDone) {
+// Test flakes with LSAN enabled. See http://crbug.com/373155.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_PhishingDetectionDone DISABLED_PhishingDetectionDone
+#else
+#define MAYBE_PhishingDetectionDone PhishingDetectionDone
+#endif
+IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
+                       MAYBE_PhishingDetectionDone) {
   // Tests that a PhishingDetectionDone IPC is sent to the browser
   // whenever we finish classification.
   MockScorer scorer;
