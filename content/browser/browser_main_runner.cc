@@ -119,8 +119,8 @@ void InstallSha256LegacyHooks() {
 
 void MaybeEnableDirectWriteFontRendering() {
   if (gfx::win::ShouldUseDirectWrite() &&
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableDirectWriteForUI) &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDirectWriteForUI) &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableHarfBuzzRenderText)) {
     typedef decltype(DWriteCreateFactory)* DWriteCreateFactoryProc;
