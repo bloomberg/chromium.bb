@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.profiles;
 
 import org.chromium.base.CalledByNative;
+import org.chromium.base.VisibleForTesting;
 
 /**
  * Wrapper that allows passing a Profile reference around in the Java layer.
@@ -49,6 +50,7 @@ public class Profile {
     /**
      * @return Whether or not the native side profile exists.
      */
+    @VisibleForTesting
     public boolean isNativeInitialized() {
         return mNativeProfileAndroid != 0;
     }
