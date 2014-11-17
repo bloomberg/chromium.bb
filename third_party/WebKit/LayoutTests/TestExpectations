@@ -1350,6 +1350,12 @@ crbug.com/426543 fast/js/mozilla/strict/15.4.4.13.html [ Pass Failure ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content-to-inscope.html [ Pass Timeout ]
 crbug.com/401377 [ Win Release ] http/tests/serviceworker/fetch-mixed-content-to-outscope.html [ Pass Timeout ]
 
+crbug.com/426507 fast/layers/scroll-descendant-with-cached-cliprects.html [ NeedsRebaseline ]
+crbug.com/426507 fast/repaint/fixed-scroll-simple.html [ NeedsRebaseline ]
+crbug.com/426507 fast/repaint/scroll-stacking-context-backface-visiblity-leaves-traces.html [ NeedsRebaseline ]
+crbug.com/426507 compositing/repaint/fixed-pos-inside-composited-intermediate-layer.html [ NeedsRebaseline ]
+crbug.com/426507 compositing/repaint/fixed-pos-with-abs-pos-child-scroll.html [ NeedsRebaseline ]
+
 crbug.com/426078 [ Win7 ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Pass Timeout ]
 
 crbug.com/430557 [ Win Linux Mac ] inspector/layers/layer-canvas-log.html [ Failure ]

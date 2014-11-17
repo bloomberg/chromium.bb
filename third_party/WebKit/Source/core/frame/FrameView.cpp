@@ -1344,6 +1344,19 @@ static void setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(c
     }
 }
 
+LayoutRect paintInvalidationRectIncludingNonCompositingDescendants(RenderLayer* layer)
+{
+    LayoutRect paintInvalidationRect = layer->renderer()->previousPaintInvalidationRect();
+    for (RenderLayer* child = layer->firstChild(); child; child = child->nextSibling()) {
+        // Don't include paint invalidation rects for composited child layers; they will paint themselves and have a different origin.
+        if (child->isPaintInvalidationContainer())
+            continue;
+
+        paintInvalidationRect.unite(paintInvalidationRectIncludingNonCompositingDescendants(child));
+    }
+    return paintInvalidationRect;
+}
+
 bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
 {
     if (!contentsInCompositedLayer() || hasSlowRepaintObjects())
@@ -1354,6 +1367,7 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         return true;
     }
 
+    Region regionToUpdate;
     for (const auto& viewportConstrainedObject : *m_viewportConstrainedObjects) {
         RenderObject* renderer = viewportConstrainedObject;
         ASSERT(renderer->style()->hasViewportConstrainedPosition());
@@ -1371,10 +1385,39 @@ bool FrameView::scrollContentsFastPath(const IntSize& scrollDelta)
         if (layer->hasAncestorWithFilterOutsets())
             return false;
 
-        setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants(layer);
+        IntRect updateRect = pixelSnappedIntRect(paintInvalidationRectIncludingNonCompositingDescendants(layer));
+
+        const RenderLayerModelObject* repaintContainer = layer->renderer()->containerForPaintInvalidation();
+        if (repaintContainer && !repaintContainer->isRenderView()) {
+            // Invalidate the old and new locations of fixed position elements that are not drawn into the RenderView.
+            updateRect.moveBy(scrollPosition());
+            IntRect previousRect = updateRect;
+            previousRect.move(scrollDelta);
+            // FIXME: Rather than uniting the rects, we should just issue both invalidations.
+            updateRect.unite(previousRect);
+            layer->renderer()->invalidatePaintUsingContainer(repaintContainer, updateRect, PaintInvalidationScroll);
+        } else {
+            // Coalesce the paint invalidations that will be issued to the renderView.
+            updateRect = contentsToRootView(updateRect);
+            if (!updateRect.isEmpty())
+                regionToUpdate.unite(updateRect);
+        }
     }
 
     InspectorInstrumentation::didScroll(page());
+
+    // Invalidate the old and new locations of fixed position elements that are drawn into the RenderView.
+    Vector<IntRect> subRectsToUpdate = regionToUpdate.rects();
+    size_t viewportConstrainedObjectsCount = subRectsToUpdate.size();
+    for (size_t i = 0; i < viewportConstrainedObjectsCount; ++i) {
+        IntRect updateRect = subRectsToUpdate[i];
+        IntRect scrolledRect = updateRect;
+        scrolledRect.move(-scrollDelta);
+        updateRect.unite(scrolledRect);
+        // FIXME: We should be able to issue these invalidations separately and before we actually scroll.
+        renderView()->setBackingNeedsPaintInvalidationInRect(rootViewToContents(updateRect), PaintInvalidationScroll);
+    }
+
     return true;
 }
 
@@ -2557,12 +2600,11 @@ void FrameView::updateLayoutAndStyleForPainting()
         updateCompositedSelectionBoundsIfNeeded();
 
         InspectorInstrumentation::didUpdateLayerTree(m_frame.get());
-    }
 
-    scrollContentsIfNeededRecursive();
+        scrollContentsIfNeededRecursive();
 
-    if (view)
         invalidateTreeIfNeededRecursive();
+    }
 
     ASSERT(lifecycle().state() == DocumentLifecycle::PaintInvalidationClean);
 }
