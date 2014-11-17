@@ -37,7 +37,10 @@ def GetReportKind(report):
   if 'googFrameRateSent' in report or 'googFrameRateReceived' in report:
     return 'video'
 
-  logging.error('Did not recognize report batch: %s.', report.keys())
+  logging.debug('Did not recognize report batch: %s.', report.keys())
+  # There are other kinds of reports, such as bwestats, which we don't care
+  # about here. For these cases just return 'unknown' which will ignore the
+  # report
   return 'unknown'
 
 
@@ -55,6 +58,8 @@ def SortStatsIntoTimeSeries(report_batches):
     for report in report_batch:
       for stat_name, value in report.iteritems():
         if stat_name not in INTERESTING_METRICS:
+          continue
+        if GetReportKind(report) == 'unknown':
           continue
         full_stat_name = DistinguishAudioAndVideo(report, stat_name)
         time_series.setdefault(full_stat_name, []).append(float(value))
