@@ -268,6 +268,7 @@
       'common/gpu/client/gpu_memory_buffer_impl_android.cc',
       'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
       'common/gpu/client/gpu_memory_buffer_impl_mac.cc',
+      'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
       'common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc',
       'common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h',
       'common/gpu/client/gpu_memory_buffer_impl_shared_memory.cc',
@@ -916,12 +917,18 @@
         '../ui/ozone/ozone.gyp:ozone',
         '../ui/ozone/gpu/ozone_gpu.gyp:ozone_gpu',
       ],
-      'sources': [
-        'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
-      ],
       'sources!': [
         'common/gpu/client/gpu_memory_buffer_impl_linux.cc',
         'common/gpu/gpu_memory_buffer_factory_linux.cc',
+      ],
+    }, {  # use_ozone!=1
+      'sources!': [
+        'common/cursors/webcursor_ozone.cc',
+        'common/font_list_ozone.cc',
+        'common/gpu/client/gpu_memory_buffer_impl_ozone.cc',
+        'common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc',
+        'common/gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h',
+        'common/gpu/gpu_memory_buffer_factory_ozone.cc',
       ],
     }],
   ],

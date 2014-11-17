@@ -7,6 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -20,7 +21,7 @@ class ImageFactory;
 
 namespace content {
 
-class GpuMemoryBufferFactory {
+class CONTENT_EXPORT GpuMemoryBufferFactory {
  public:
   GpuMemoryBufferFactory() {}
   virtual ~GpuMemoryBufferFactory() {}

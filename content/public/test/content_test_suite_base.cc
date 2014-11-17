@@ -37,6 +37,10 @@
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 #endif
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 #ifdef V8_USE_EXTERNAL_STARTUP_DATA
 #include "gin/public/isolate_holder.h"
 #endif
@@ -79,7 +83,12 @@ void ContentTestSuiteBase::Initialize() {
   media::RegisterJni(env);
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
+  ui::gl::android::RegisterJni(env);
   ui::shell_dialogs::RegisterJni(env);
+#endif
+
+#if defined(USE_OZONE)
+  ui::OzonePlatform::InitializeForUI();
 #endif
 
   testing::UnitTest::GetInstance()->listeners().Append(

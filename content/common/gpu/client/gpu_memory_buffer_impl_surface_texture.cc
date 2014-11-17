@@ -158,12 +158,6 @@ bool GpuMemoryBufferImplSurfaceTexture::IsUsageSupported(Usage usage) {
 }
 
 // static
-bool GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(Format format,
-                                                                 Usage usage) {
-  return IsFormatSupported(format) && IsUsageSupported(usage);
-}
-
-// static
 int GpuMemoryBufferImplSurfaceTexture::WindowFormat(Format format) {
   switch (format) {
     case RGBA_8888:

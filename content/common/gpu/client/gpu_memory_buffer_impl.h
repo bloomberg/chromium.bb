@@ -5,15 +5,18 @@
 #ifndef CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 #define CONTENT_COMMON_GPU_CLIENT_GPU_MEMORY_BUFFER_IMPL_H_
 
+#include <vector>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
+#include "content/common/content_export.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/size.h"
 
 namespace content {
 
 // Provides common implementation of a GPU memory buffer.
-class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
+class CONTENT_EXPORT GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
  public:
   typedef base::Callback<void(scoped_ptr<GpuMemoryBufferImpl> buffer)>
       CreationCallback;
@@ -23,9 +26,28 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
 
   ~GpuMemoryBufferImpl() override;
 
+  // Gets system supported GPU memory buffer types. Preferred type at the front
+  // of vector.
+  static void GetSupportedTypes(std::vector<gfx::GpuMemoryBufferType>* types);
+
+  // Sets the preferred GPU memory buffer type. This overrides the default
+  // preferred type. Can only be called once prior to GetPreferredType().
+  // Caller is responsible for correct ordering.
+  static void SetPreferredType(gfx::GpuMemoryBufferType type);
+
+  // Gets the preferred discardable memory type.
+  static gfx::GpuMemoryBufferType GetPreferredType();
+
+  // Returns true if |format| and |usage| is a supported configuration for
+  // |type|. |type| must be a supported GPU memory buffer type.
+  static bool IsConfigurationSupported(gfx::GpuMemoryBufferType type,
+                                       Format format,
+                                       Usage usage);
+
   // Creates a GPU memory buffer instance with |size| and |format| for |usage|
   // by the current process and |client_id|.
-  static void Create(gfx::GpuMemoryBufferId id,
+  static void Create(gfx::GpuMemoryBufferType type,
+                     gfx::GpuMemoryBufferId id,
                      const gfx::Size& size,
                      Format format,
                      Usage usage,
@@ -35,7 +57,8 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   // Allocates a GPU memory buffer with |size| and |internalformat| for |usage|
   // by |child_process| and |child_client_id|. The |handle| returned can be
   // used by the |child_process| to create an instance of this class.
-  static void AllocateForChildProcess(gfx::GpuMemoryBufferId id,
+  static void AllocateForChildProcess(gfx::GpuMemoryBufferType type,
+                                      gfx::GpuMemoryBufferId id,
                                       const gfx::Size& size,
                                       Format format,
                                       Usage usage,
@@ -89,6 +112,7 @@ class GpuMemoryBufferImpl : public gfx::GpuMemoryBuffer {
   bool mapped_;
   uint32 destruction_sync_point_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };
 

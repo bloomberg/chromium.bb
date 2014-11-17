@@ -16,6 +16,27 @@
 namespace content {
 namespace {
 
+// Note: To keep things simple this function will only return one out of two
+// types; the preferred GPU memory buffer type or the shared memory type.
+gfx::GpuMemoryBufferType GetPreferredGpuMemoryBufferTypeForConfiguration(
+    gfx::GpuMemoryBuffer::Format format,
+    gfx::GpuMemoryBuffer::Usage usage) {
+  // First check if this configuration is supported by the preferred type.
+  if (GpuMemoryBufferImpl::IsConfigurationSupported(
+          GpuMemoryBufferImpl::GetPreferredType(), format, usage)) {
+    return GpuMemoryBufferImpl::GetPreferredType();
+  }
+
+  // If configuration is not supported by the preferred type, use shared
+  // memory type if it supports this configuration.
+  if (GpuMemoryBufferImpl::IsConfigurationSupported(
+          gfx::SHARED_MEMORY_BUFFER, format, usage)) {
+    return gfx::SHARED_MEMORY_BUFFER;
+  }
+
+  return gfx::EMPTY_BUFFER;
+}
+
 BrowserGpuMemoryBufferManager* g_gpu_memory_buffer_manager = nullptr;
 
 // Global atomic to generate gpu memory buffer unique IDs.
@@ -88,6 +109,15 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     const AllocationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
+  // Determine what GPU memory buffer type to use and early out if |format| and
+  // |usage| configuration is not supported.
+  gfx::GpuMemoryBufferType type =
+      GetPreferredGpuMemoryBufferTypeForConfiguration(format, usage);
+  if (type == gfx::EMPTY_BUFFER) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
+
   gfx::GpuMemoryBufferId new_id = g_next_gpu_memory_buffer_id.GetNext();
 
   BufferMap& buffers = clients_[child_client_id];
@@ -100,6 +130,7 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
   buffers[new_id] = gfx::EMPTY_BUFFER;
 
   GpuMemoryBufferImpl::AllocateForChildProcess(
+      type,
       new_id,
       size,
       format,
@@ -228,6 +259,8 @@ void BrowserGpuMemoryBufferManager::GpuMemoryBufferAllocatedForChildProcess(
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferOnIO(
     AllocateGpuMemoryBufferRequest* request) {
   GpuMemoryBufferImpl::Create(
+      GetPreferredGpuMemoryBufferTypeForConfiguration(
+          request->format, request->usage),
       g_next_gpu_memory_buffer_id.GetNext(),
       request->size,
       request->format,

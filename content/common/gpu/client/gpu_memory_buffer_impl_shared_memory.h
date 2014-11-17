@@ -31,10 +31,6 @@ class GpuMemoryBufferImplSharedMemory : public GpuMemoryBufferImpl {
 
   static bool IsFormatSupported(Format format);
   static bool IsUsageSupported(Usage usage);
-  static bool IsLayoutSupported(const gfx::Size& size, Format format);
-  static bool IsConfigurationSupported(const gfx::Size& size,
-                                       Format format,
-                                       Usage usage);
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override;

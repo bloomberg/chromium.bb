@@ -320,16 +320,13 @@ void ChildProcessHostImpl::OnAllocateGpuMemoryBuffer(
     gfx::GpuMemoryBuffer::Format format,
     gfx::GpuMemoryBuffer::Usage usage,
     IPC::Message* reply) {
-  base::CheckedNumeric<int> size = width;
-  size *= height;
-  if (!size.IsValid()) {
-    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
   // TODO(reveman): Add support for other types of GpuMemoryBuffers.
-  if (!GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
-          gfx::Size(width, height), format, usage)) {
+
+  // AllocateForChildProcess() will check if |width| and |height| are valid
+  // and handle failure in a controlled way when not. We just need to make
+  // sure |format| and |usage| are supported here.
+  if (!GpuMemoryBufferImplSharedMemory::IsFormatSupported(format) ||
+      !GpuMemoryBufferImplSharedMemory::IsUsageSupported(usage)) {
     GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
     return;
   }

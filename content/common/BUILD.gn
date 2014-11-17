@@ -149,18 +149,22 @@ source_set("common") {
     assert(false, "Need to add lots of conditions here")
   }
 
-  if (!use_ozone) {
+  if (use_ozone) {
     sources -= [
-      "cursors/webcursor_ozone.cc",
-      "font_list_ozone.cc",
-      "gpu/gpu_memory_buffer_factory_ozone.cc",
-    ]
-  } else {
-    sources -= [
+      "gpu/client/gpu_memory_buffer_impl_linux.cc",
       "gpu/gpu_memory_buffer_factory_linux.cc",
     ]
     deps += [
       "//ui/ozone/gpu",
+    ]
+  } else {
+    sources -= [
+      "cursors/webcursor_ozone.cc",
+      "font_list_ozone.cc",
+      "gpu/client/gpu_memory_buffer_impl_ozone.cc",
+      "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.cc",
+      "gpu/client/gpu_memory_buffer_impl_ozone_native_buffer.h",
+      "gpu/gpu_memory_buffer_factory_ozone.cc",
     ]
   }
 

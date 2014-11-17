@@ -39,8 +39,6 @@ class GpuMemoryBufferImplIOSurface : public GpuMemoryBufferImpl {
 
   static bool IsFormatSupported(Format format);
   static bool IsUsageSupported(Usage usage);
-  static bool IsConfigurationSupported(Format format, Usage usage);
-  static uint32 PixelFormat(Format format);
 
   // Overridden from gfx::GpuMemoryBuffer:
   void* Map() override;

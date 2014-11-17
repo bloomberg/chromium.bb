@@ -146,27 +146,6 @@ bool GpuMemoryBufferImplIOSurface::IsUsageSupported(Usage usage) {
   return false;
 }
 
-// static
-bool GpuMemoryBufferImplIOSurface::IsConfigurationSupported(Format format,
-                                                            Usage usage) {
-  return IsFormatSupported(format) && IsUsageSupported(usage);
-}
-
-// static
-uint32 GpuMemoryBufferImplIOSurface::PixelFormat(Format format) {
-  switch (format) {
-    case BGRA_8888:
-      return 'BGRA';
-    case RGBA_8888:
-    case RGBX_8888:
-      NOTREACHED();
-      return 0;
-  }
-
-  NOTREACHED();
-  return 0;
-}
-
 void* GpuMemoryBufferImplIOSurface::Map() {
   DCHECK(!mapped_);
   IOSurfaceLock(io_surface_, 0, NULL);

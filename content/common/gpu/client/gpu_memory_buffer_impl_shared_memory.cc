@@ -34,7 +34,7 @@ void GpuMemoryBufferImplSharedMemory::Create(gfx::GpuMemoryBufferId id,
                                              const gfx::Size& size,
                                              Format format,
                                              const CreationCallback& callback) {
-  DCHECK(IsLayoutSupported(size, format));
+  DCHECK(IsFormatSupported(format));
 
   scoped_ptr<base::SharedMemory> shared_memory(new base::SharedMemory());
   if (!shared_memory->CreateAnonymous(size.GetArea() * BytesPerPixel(format))) {
@@ -54,10 +54,17 @@ void GpuMemoryBufferImplSharedMemory::AllocateForChildProcess(
     Format format,
     base::ProcessHandle child_process,
     const AllocationCallback& callback) {
-  DCHECK(IsLayoutSupported(size, format));
+  DCHECK(IsFormatSupported(format));
 
+  base::CheckedNumeric<int> buffer_size = size.width();
+  buffer_size *= size.height();
+  buffer_size *= BytesPerPixel(format);
+  if (!buffer_size.IsValid()) {
+    callback.Run(gfx::GpuMemoryBufferHandle());
+    return;
+  }
   base::SharedMemory shared_memory;
-  if (!shared_memory.CreateAnonymous(size.GetArea() * BytesPerPixel(format))) {
+  if (!shared_memory.CreateAnonymous(buffer_size.ValueOrDie())) {
     callback.Run(gfx::GpuMemoryBufferHandle());
     return;
   }
@@ -75,7 +82,7 @@ GpuMemoryBufferImplSharedMemory::CreateFromHandle(
     const gfx::Size& size,
     Format format,
     const DestructionCallback& callback) {
-  DCHECK(IsLayoutSupported(size, format));
+  DCHECK(IsFormatSupported(format));
 
   if (!base::SharedMemory::IsHandleValid(handle.handle))
     return scoped_ptr<GpuMemoryBufferImpl>();
@@ -114,26 +121,6 @@ bool GpuMemoryBufferImplSharedMemory::IsUsageSupported(Usage usage) {
 
   NOTREACHED();
   return false;
-}
-
-// static
-bool GpuMemoryBufferImplSharedMemory::IsLayoutSupported(const gfx::Size& size,
-                                                        Format format) {
-  if (!IsFormatSupported(format))
-    return false;
-
-  base::CheckedNumeric<int> buffer_size = size.width();
-  buffer_size *= size.height();
-  buffer_size *= BytesPerPixel(format);
-  return buffer_size.IsValid();
-}
-
-// static
-bool GpuMemoryBufferImplSharedMemory::IsConfigurationSupported(
-    const gfx::Size& size,
-    Format format,
-    Usage usage) {
-  return IsLayoutSupported(size, format) && IsUsageSupported(usage);
 }
 
 void* GpuMemoryBufferImplSharedMemory::Map() {

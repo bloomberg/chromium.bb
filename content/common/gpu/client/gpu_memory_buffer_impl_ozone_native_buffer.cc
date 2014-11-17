@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "content/common/gpu/client/gpu_memory_buffer_factory_host.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/ozone/public/surface_factory_ozone.h"
 
 namespace content {
 namespace {
@@ -135,18 +136,12 @@ bool GpuMemoryBufferImplOzoneNativeBuffer::IsUsageSupported(Usage usage) {
     case MAP:
       return false;
     case SCANOUT:
-      return true;
+      return ui::SurfaceFactoryOzone::GetInstance()->CanCreateNativePixmap(
+          ui::SurfaceFactoryOzone::SCANOUT);
   }
 
   NOTREACHED();
   return false;
-}
-
-// static
-bool GpuMemoryBufferImplOzoneNativeBuffer::IsConfigurationSupported(
-    Format format,
-    Usage usage) {
-  return IsFormatSupported(format) && IsUsageSupported(usage);
 }
 
 void* GpuMemoryBufferImplOzoneNativeBuffer::Map() {

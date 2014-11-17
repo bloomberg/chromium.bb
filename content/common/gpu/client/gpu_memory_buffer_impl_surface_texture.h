@@ -38,14 +38,12 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
 
   static bool IsFormatSupported(Format format);
   static bool IsUsageSupported(Usage usage);
-  static bool IsConfigurationSupported(Format format, Usage usage);
-  static int WindowFormat(Format format);
 
   // Overridden from gfx::GpuMemoryBuffer:
-  virtual void* Map() override;
-  virtual void Unmap() override;
-  virtual gfx::GpuMemoryBufferHandle GetHandle() const override;
-  virtual uint32 GetStride() const override;
+  void* Map() override;
+  void Unmap() override;
+  gfx::GpuMemoryBufferHandle GetHandle() const override;
+  uint32 GetStride() const override;
 
  private:
   GpuMemoryBufferImplSurfaceTexture(gfx::GpuMemoryBufferId id,
@@ -53,7 +51,9 @@ class GpuMemoryBufferImplSurfaceTexture : public GpuMemoryBufferImpl {
                                     Format format,
                                     const DestructionCallback& callback,
                                     ANativeWindow* native_window);
-  virtual ~GpuMemoryBufferImplSurfaceTexture();
+  ~GpuMemoryBufferImplSurfaceTexture() override;
+
+  static int WindowFormat(Format format);
 
   ANativeWindow* native_window_;
   size_t stride_;

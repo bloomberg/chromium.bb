@@ -27,6 +27,20 @@ void AddIntegerValue(CFMutableDictionaryRef dictionary,
   CFDictionaryAddValue(dictionary, key, number.get());
 }
 
+int32 PixelFormat(gfx::GpuMemoryBuffer::Format format) {
+  switch (format) {
+    case gfx::GpuMemoryBuffer::BGRA_8888:
+      return 'BGRA';
+    case gfx::GpuMemoryBuffer::RGBA_8888:
+    case gfx::GpuMemoryBuffer::RGBX_8888:
+      NOTREACHED();
+      return 0;
+  }
+
+  NOTREACHED();
+  return 0;
+}
+
 }  // namespace
 
 GpuMemoryBufferFactoryIOSurface::GpuMemoryBufferFactoryIOSurface() {
@@ -51,9 +65,7 @@ GpuMemoryBufferFactoryIOSurface::CreateGpuMemoryBuffer(
   AddIntegerValue(properties,
                   kIOSurfaceBytesPerElement,
                   GpuMemoryBufferImpl::BytesPerPixel(format));
-  AddIntegerValue(properties,
-                  kIOSurfacePixelFormat,
-                  GpuMemoryBufferImplIOSurface::PixelFormat(format));
+  AddIntegerValue(properties, kIOSurfacePixelFormat, PixelFormat(format));
   // TODO(reveman): Remove this when using a mach_port_t to transfer
   // IOSurface to browser and renderer process. crbug.com/323304
   AddBooleanValue(properties, kIOSurfaceIsGlobal, true);
