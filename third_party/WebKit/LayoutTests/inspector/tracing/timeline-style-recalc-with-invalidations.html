@@ -4,18 +4,40 @@
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/timeline-test.js"></script>
 <script>
-function display(callback)
+function changeStylesAndDisplay(callback)
 {
     requestAnimationFrame(function() {
-        document.body.style.backgroundColor = "peachpuff";
-        document.getElementById("testElement").style.width = "100px";
+        document.getElementById("testElementOne").style.color = "red";
+        document.getElementById("testElementTwo").style.color = "blue";
         var forceLayout = document.body.offsetTop;
         if (window.testRunner)
             testRunner.displayAsyncThen(callback);
     });
 }
 
-function updateSubframeAndDisplay(callback)
+function changeMultipleStylesAndDisplay(callback)
+{
+    requestAnimationFrame(function() {
+        var elementOne = document.getElementById("testElementOne");
+        var elementTwo = document.getElementById("testElementTwo");
+        var elementThree = document.getElementById("testElementThree");
+
+        elementOne.style.backgroundColor = "orangered";
+        var forceStyleRecalc1 = document.body.offsetTop;
+        elementOne.style.color = "mediumvioletred";
+        elementTwo.style.color = "deepskyblue";
+        var forceStyleRecalc2 = document.body.offsetTop;
+        elementOne.style.color = "tomato";
+        elementTwo.style.color = "mediumslateblue";
+        elementThree.style.color = "mediumspringgreen";
+        var forceStyleRecalc3 = document.body.offsetTop;
+
+        if (window.testRunner)
+            testRunner.displayAsyncThen(callback);
+    });
+}
+
+function changeSubframeStylesAndDisplay(callback)
 {
     requestAnimationFrame(function() {
         frames[0].document.body.style.backgroundColor = "papayawhip";
@@ -35,8 +57,69 @@ function test()
     InspectorTest.runTestSuite([
         function testLocalFrame(next)
         {
-            InspectorTest.invokeAsyncWithTimeline("display", function() {
+            InspectorTest.invokeAsyncWithTimeline("changeStylesAndDisplay", function() {
                 var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles);
+                var invalidations = record._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(invalidations.length, 2);
+                InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[0].nodeName, "DIV id='testElementOne'");
+                InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(invalidations[0].stackTrace.length, 1);
+                InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElementTwo'");
+                InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(invalidations[1].stackTrace.length, 1);
+                next();
+            });
+        },
+
+        function multipleStyleRecalcs(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("changeMultipleStylesAndDisplay", function() {
+                var firstRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 0);
+                var firstInvalidations = firstRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(firstInvalidations.length, 1);
+                InspectorTest.assertEquals(firstInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(firstInvalidations[0].nodeName, "DIV id='testElementOne'");
+                InspectorTest.assertEquals(firstInvalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(firstInvalidations[0].stackTrace.length, 1);
+
+                var secondRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 1);
+                var secondInvalidations = secondRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(secondInvalidations.length, 2);
+                InspectorTest.assertEquals(secondInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[0].nodeName, "DIV id='testElementOne'");
+                InspectorTest.assertEquals(secondInvalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[0].stackTrace.length, 1);
+                InspectorTest.assertEquals(secondInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(secondInvalidations[1].nodeName, "DIV id='testElementTwo'");
+                InspectorTest.assertEquals(secondInvalidations[1].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(secondInvalidations[1].stackTrace.length, 1);
+
+                var thirdRecord = InspectorTest.findTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles, 2);
+                var thirdInvalidations = thirdRecord._event.invalidationTrackingEvents;
+                InspectorTest.assertEquals(thirdInvalidations.length, 3);
+                InspectorTest.assertEquals(thirdInvalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(thirdInvalidations[0].nodeName, "DIV id='testElementOne'");
+                InspectorTest.assertEquals(thirdInvalidations[0].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(thirdInvalidations[0].stackTrace.length, 1);
+                InspectorTest.assertEquals(thirdInvalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(thirdInvalidations[1].nodeName, "DIV id='testElementTwo'");
+                InspectorTest.assertEquals(thirdInvalidations[1].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(thirdInvalidations[1].stackTrace.length, 1);
+                InspectorTest.assertEquals(thirdInvalidations[2].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
+                InspectorTest.assertEquals(thirdInvalidations[2].nodeName, "DIV id='testElementThree'");
+                InspectorTest.assertEquals(thirdInvalidations[2].reason, "StyleSheetChange");
+                InspectorTest.assertGreaterOrEqual(thirdInvalidations[2].stackTrace.length, 1);
+                next();
+            });
+        },
+
+        function testSubframe(next)
+        {
+            InspectorTest.invokeAsyncWithTimeline("changeSubframeStylesAndDisplay", function() {
+                var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles);
+
                 var invalidations = record._event.invalidationTrackingEvents;
                 InspectorTest.assertEquals(invalidations.length, 2);
                 InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
@@ -44,28 +127,11 @@ function test()
                 InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
                 InspectorTest.assertGreaterOrEqual(invalidations[0].stackTrace.length, 1);
                 InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-                InspectorTest.assertEquals(invalidations[1].nodeName, "DIV id='testElement'");
+                InspectorTest.assertEquals(invalidations[1].nodeName, "DIV");
                 InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
                 InspectorTest.assertGreaterOrEqual(invalidations[1].stackTrace.length, 1);
-                InspectorTest.invokeAsyncWithTimeline("updateSubframeAndDisplay", next);
+                next();
             });
-        },
-
-        function testSubframe(next)
-        {
-            var record = InspectorTest.findFirstTimelineRecord(WebInspector.TimelineModel.RecordType.RecalculateStyles);
-
-            var invalidations = record._event.invalidationTrackingEvents;
-            InspectorTest.assertEquals(invalidations.length, 2);
-            InspectorTest.assertEquals(invalidations[0].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-            InspectorTest.assertEquals(invalidations[0].nodeName, "BODY");
-            InspectorTest.assertEquals(invalidations[0].reason, "StyleSheetChange");
-            InspectorTest.assertGreaterOrEqual(invalidations[0].stackTrace.length, 1);
-            InspectorTest.assertEquals(invalidations[1].type, WebInspector.TimelineModel.RecordType.StyleRecalcInvalidationTracking);
-            InspectorTest.assertEquals(invalidations[1].nodeName, "DIV");
-            InspectorTest.assertEquals(invalidations[1].reason, "StyleSheetChange");
-            InspectorTest.assertGreaterOrEqual(invalidations[1].stackTrace.length, 1);
-            next();
         }
     ]);
 }
@@ -73,7 +139,7 @@ function test()
 </head>
 <body onload="runTest()">
 <p>Tests the Timeline API instrumentation of style recalc events with invalidations.</p>
-<div id="testElement">PASS</div>
+<div id="testElementOne">PASS</div><div id="testElementTwo">PASS</div><div id="testElementThree">PASS</div>
 <iframe src="resources/timeline-iframe-paint.html" style="position: absolute; left: 40px; top: 40px; width: 100px; height: 100px; border: none"></iframe>
 </body>
 </html>

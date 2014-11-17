@@ -1,9 +1,13 @@
 Tests the Timeline API instrumentation of style recalc events with invalidations.
 
 PASS
+PASS
+PASS
 
 
 Running: testLocalFrame
+
+Running: multipleStyleRecalcs
 
 Running: testSubframe
 
