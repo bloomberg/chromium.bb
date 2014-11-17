@@ -7,10 +7,16 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 #include "net/url_request/url_range_request_job.h"
+
+namespace base {
+class RefCountedMemory;
+}
 
 namespace net {
 
@@ -28,7 +34,8 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
  protected:
   ~URLRequestSimpleJob() override;
 
-  // Subclasses must override the way response data is determined.
+  // Subclasses must override either GetData or GetRefCountedData to define the
+  // way response data is determined.
   // The return value should be:
   //  - OK if data is obtained;
   //  - ERR_IO_PENDING if async processing is needed to finish obtaining data.
@@ -41,9 +48,15 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
   virtual int GetData(std::string* mime_type,
                       std::string* charset,
                       std::string* data,
-                      const CompletionCallback& callback) const = 0;
+                      const CompletionCallback& callback) const;
 
- protected:
+  // Similar to GetData(), except |*data| can share ownership of the bytes
+  // instead of copying them into a std::string.
+  virtual int GetRefCountedData(std::string* mime_type,
+                                std::string* charset,
+                                scoped_refptr<base::RefCountedMemory>* data,
+                                const CompletionCallback& callback) const;
+
   void StartAsync();
 
  private:
@@ -52,7 +65,7 @@ class NET_EXPORT URLRequestSimpleJob : public URLRangeRequestJob {
   HttpByteRange byte_range_;
   std::string mime_type_;
   std::string charset_;
-  std::string data_;
+  scoped_refptr<base::RefCountedMemory> data_;
   int data_offset_;
   base::WeakPtrFactory<URLRequestSimpleJob> weak_factory_;
 };

@@ -134,6 +134,10 @@ struct TestFunctionDescription {
   const char* function_name;
 };
 
+bool IsStringUTF8(const std::string& str) {
+  return base::IsStringUTF8(base::StringPiece(str));
+}
+
 // IsString7Bit is intentionally placed last so it can be excluded easily.
 const TestFunctionDescription kTestFunctions[] = {
     {&StreamingUtf8Validator::Validate, "StreamingUtf8Validator"},

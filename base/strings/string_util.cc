@@ -406,7 +406,7 @@ bool IsStringASCII(const std::wstring& str) {
 }
 #endif
 
-bool IsStringUTF8(const std::string& str) {
+bool IsStringUTF8(const StringPiece& str) {
   const char *src = str.data();
   int32 src_len = static_cast<int32>(str.length());
   int32 char_index = 0;
