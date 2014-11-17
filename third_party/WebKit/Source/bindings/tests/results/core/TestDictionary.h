@@ -53,12 +53,12 @@ public:
     void setTestInterfaceOrNullMember(PassRefPtr<TestInterfaceImplementation> value) { m_testInterfaceOrNullMember = value; }
 
     bool hasTestInterfaceGarbageCollectedMember() const { return m_testInterfaceGarbageCollectedMember; }
-    RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedMember() const { return m_testInterfaceGarbageCollectedMember; }
-    void setTestInterfaceGarbageCollectedMember(RawPtr<TestInterfaceGarbageCollected> value) { m_testInterfaceGarbageCollectedMember = value; }
+    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const { return m_testInterfaceGarbageCollectedMember; }
+    void setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected* value) { m_testInterfaceGarbageCollectedMember = value; }
 
     bool hasTestInterfaceGarbageCollectedOrNullMember() const { return m_testInterfaceGarbageCollectedOrNullMember; }
-    RawPtr<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedOrNullMember() const { return m_testInterfaceGarbageCollectedOrNullMember; }
-    void setTestInterfaceGarbageCollectedOrNullMember(RawPtr<TestInterfaceGarbageCollected> value) { m_testInterfaceGarbageCollectedOrNullMember = value; }
+    TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const { return m_testInterfaceGarbageCollectedOrNullMember; }
+    void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) { m_testInterfaceGarbageCollectedOrNullMember = value; }
 
     bool hasTestInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }
     PassRefPtrWillBeRawPtr<TestInterfaceWillBeGarbageCollected> testInterfaceWillBeGarbageCollectedMember() const { return m_testInterfaceWillBeGarbageCollectedMember; }

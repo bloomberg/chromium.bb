@@ -327,8 +327,8 @@ public:
     bool isNull() const { return m_type == SpecificTypeNone; }
 
     bool isTestInterfaceGarbageCollected() const { return m_type == SpecificTypeTestInterfaceGarbageCollected; }
-    RawPtr<TestInterfaceGarbageCollected> getAsTestInterfaceGarbageCollected() const;
-    void setTestInterfaceGarbageCollected(RawPtr<TestInterfaceGarbageCollected>);
+    TestInterfaceGarbageCollected* getAsTestInterfaceGarbageCollected() const;
+    void setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected*);
 
     bool isString() const { return m_type == SpecificTypeString; }
     String getAsString() const;

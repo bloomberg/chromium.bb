@@ -104,7 +104,7 @@ bool NavigatorBeacon::sendBeacon(ExecutionContext* context, Navigator& navigator
     if (data.isArrayBufferView())
         allowed = BeaconLoader::sendBeacon(navigator.frame(), allowance, url, data.getAsArrayBufferView()->view(), bytes);
     else if (data.isBlob())
-        allowed = BeaconLoader::sendBeacon(navigator.frame(), allowance, url, data.getAsBlob().get(), bytes);
+        allowed = BeaconLoader::sendBeacon(navigator.frame(), allowance, url, data.getAsBlob(), bytes);
     else if (data.isString())
         allowed = BeaconLoader::sendBeacon(navigator.frame(), allowance, url, data.getAsString(), bytes);
     else if (data.isFormData())

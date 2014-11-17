@@ -535,13 +535,13 @@ TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString()
 {
 }
 
-RawPtr<TestInterfaceGarbageCollected> TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const
+TestInterfaceGarbageCollected* TestInterfaceGarbageCollectedOrString::getAsTestInterfaceGarbageCollected() const
 {
     ASSERT(isTestInterfaceGarbageCollected());
     return m_testInterfaceGarbageCollected;
 }
 
-void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(RawPtr<TestInterfaceGarbageCollected> value)
+void TestInterfaceGarbageCollectedOrString::setTestInterfaceGarbageCollected(TestInterfaceGarbageCollected* value)
 {
     ASSERT(isNull());
     m_testInterfaceGarbageCollected = value;

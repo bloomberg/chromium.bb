@@ -185,7 +185,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return idl_type.implemented_as + '*'
     if idl_type.is_interface_type:
         implemented_as_class = idl_type.implemented_as
-        if raw_type:
+        if raw_type or (used_as_rvalue_type and idl_type.is_garbage_collected):
             return implemented_as_class + '*'
         new_type = 'Member' if used_in_cpp_sequence else 'RawPtr'
         ptr_type = cpp_ptr_type(('PassRefPtr' if used_as_rvalue_type else 'RefPtr'), new_type, idl_type.gc_type)
