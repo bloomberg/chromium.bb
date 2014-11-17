@@ -56,6 +56,7 @@ public:
     void updateTextRenderer(unsigned offsetOfReplacedData, unsigned lengthOfReplacedData, RecalcStyleBehavior = DoNotRecalcStyle);
 
     virtual void attach(const AttachContext& = AttachContext()) override final;
+    void reattachIfNeeded(const AttachContext& = AttachContext());
 
     virtual bool canContainRangeEndPoint() const override final { return true; }
     virtual NodeType nodeType() const override;

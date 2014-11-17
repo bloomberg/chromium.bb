@@ -1509,7 +1509,7 @@ void Element::recalcStyle(StyleRecalcChange change, Text* nextTextSibling)
         didRecalcStyle(change);
 
     if (change == Reattach)
-        reattachWhitespaceSiblings(nextTextSibling);
+        reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
 }
 
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)

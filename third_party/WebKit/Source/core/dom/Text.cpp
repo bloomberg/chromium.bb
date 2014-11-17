@@ -279,7 +279,7 @@ bool Text::textRendererIsNeeded(const RenderStyle& style, const RenderObject& pa
         RenderObject* first = parent.slowFirstChild();
         while (first && first->isFloatingOrOutOfFlowPositioned() && maxSiblingsToVisit--)
             first = first->nextSibling();
-        if (!first || NodeRenderingTraversal::nextSiblingRenderer(this) == first)
+        if (!first || first == renderer() || NodeRenderingTraversal::nextSiblingRenderer(this) == first)
             // Whitespace at the start of a block just goes away.  Don't even
             // make a render object for this text.
             return false;
@@ -316,6 +316,32 @@ void Text::attach(const AttachContext& context)
     CharacterData::attach(context);
 }
 
+void Text::reattachIfNeeded(const AttachContext& context)
+{
+    bool rendererIsNeeded = false;
+    ContainerNode* renderingParent = NodeRenderingTraversal::parent(this);
+    if (renderingParent) {
+        if (RenderObject* parentRenderer = renderingParent->renderer()) {
+            if (textRendererIsNeeded(*parentRenderer->style(), *parentRenderer))
+                rendererIsNeeded = true;
+        }
+    }
+
+    if (rendererIsNeeded == !!renderer())
+        return;
+
+    // The following is almost the same as Node::reattach() except that we create renderer only if needed.
+    // Not calling reattach() to avoid repeated calls to Text::textRendererIsNeeded().
+    AttachContext reattachContext(context);
+    reattachContext.performingReattach = true;
+
+    if (styleChangeType() < NeedsReattachStyleChange)
+        detach(reattachContext);
+    if (rendererIsNeeded)
+        RenderTreeBuilderForText(this, renderingParent->renderer()).createRenderer();
+    CharacterData::attach(reattachContext);
+}
+
 void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
 {
     if (RenderText* renderer = this->renderer()) {
@@ -327,7 +353,7 @@ void Text::recalcTextStyle(StyleRecalcChange change, Text* nextTextSibling)
     } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
         reattach();
         if (this->renderer())
-            reattachWhitespaceSiblings(nextTextSibling);
+            reattachWhitespaceSiblingsIfNeeded(nextTextSibling);
     }
 }
 
