@@ -87,8 +87,10 @@ class CONTENT_EXPORT TaskQueueManager {
   // sequence number for it.
   void DidQueueTask(base::PendingTask* pending_task);
 
-  // Post a task to call DoWork() on the main task runner.
-  void PostDoWorkOnMainRunner();
+  // Post a task to call DoWork() on the main task runner, unless DoWork() is
+  // executing a task.  This check prevents the number of DoWork tasks from
+  // exploding.
+  void MaybePostDoWorkOnMainRunner();
 
   // Use the selector to choose a pending task and run it.
   void DoWork();
@@ -128,6 +130,9 @@ class CONTENT_EXPORT TaskQueueManager {
 
   base::WeakPtr<TaskQueueManager> task_queue_manager_weak_ptr_;
   base::WeakPtrFactory<TaskQueueManager> weak_factory_;
+
+  // Only the main thread can access this member.
+  bool executing_task_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManager);
 };

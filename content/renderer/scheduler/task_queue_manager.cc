@@ -4,6 +4,7 @@
 
 #include "content/renderer/scheduler/task_queue_manager.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/trace_event.h"
 #include "base/debug/trace_event_argument.h"
@@ -168,7 +169,7 @@ void TaskQueue::EnqueueTaskLocked(const base::PendingTask& pending_task) {
   if (!task_queue_manager_)
     return;
   if (auto_pump_ && incoming_queue_.empty())
-    task_queue_manager_->PostDoWorkOnMainRunner();
+    task_queue_manager_->MaybePostDoWorkOnMainRunner();
   incoming_queue_.push(pending_task);
 }
 
@@ -189,7 +190,7 @@ void TaskQueue::PumpQueueLocked() {
     incoming_queue_.pop();
   }
   if (!work_queue_.empty())
-    task_queue_manager_->PostDoWorkOnMainRunner();
+    task_queue_manager_->MaybePostDoWorkOnMainRunner();
 }
 
 void TaskQueue::PumpQueue() {
@@ -247,7 +248,8 @@ TaskQueueManager::TaskQueueManager(
     TaskQueueSelector* selector)
     : main_task_runner_(main_task_runner),
       selector_(selector),
-      weak_factory_(this) {
+      weak_factory_(this),
+      executing_task_(false) {
   DCHECK(main_task_runner->RunsTasksOnCurrentThread());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "TaskQueueManager",
@@ -312,7 +314,14 @@ bool TaskQueueManager::UpdateWorkQueues() {
   return has_work;
 }
 
-void TaskQueueManager::PostDoWorkOnMainRunner() {
+void TaskQueueManager::MaybePostDoWorkOnMainRunner() {
+  // DoWork needs to re-post itself, but we do not want the payload task to
+  // cause yet another DoWork to be posted, or we risk an explosion of DoWork
+  // tasks.
+  if (main_task_runner_->BelongsToCurrentThread() && executing_task_) {
+    return;
+  }
+
   main_task_runner_->PostTask(
       FROM_HERE, Bind(&TaskQueueManager::DoWork, task_queue_manager_weak_ptr_));
 }
@@ -325,7 +334,9 @@ void TaskQueueManager::DoWork() {
   size_t queue_index;
   if (!SelectWorkQueueToService(&queue_index))
     return;
-  PostDoWorkOnMainRunner();
+  MaybePostDoWorkOnMainRunner();
+
+  base::AutoReset<bool> resetter(&executing_task_, true);
   RunTaskFromWorkQueue(queue_index);
 }
 

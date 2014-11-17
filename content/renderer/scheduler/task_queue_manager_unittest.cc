@@ -357,5 +357,28 @@ TEST_F(TaskQueueManagerTest, PostFromThread) {
   EXPECT_EQ(1, run_order[0]);
 }
 
+void RePostingTestTask(scoped_refptr<base::SingleThreadTaskRunner> runner) {
+  runner->PostTask(
+      FROM_HERE, Bind(&RePostingTestTask, base::Unretained(runner.get())));
+}
+
+TEST_F(TaskQueueManagerTest, DoWorkCantPostItselfMultipleTimes) {
+  Initialize(1u);
+
+  scoped_refptr<base::SingleThreadTaskRunner> runner =
+      manager_->TaskRunnerForQueue(0);
+
+  runner->PostTask(FROM_HERE, base::Bind(&RePostingTestTask, runner));
+
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+  selector_->AppendQueueToService(0);
+
+  test_task_runner_->RunPendingTasks();
+  // NOTE without the executing_task_ check in MaybePostDoWorkOnMainRunner there
+  // will be two tasks here.
+  EXPECT_EQ(1u, test_task_runner_->GetPendingTasks().size());
+}
+
 }  // namespace
 }  // namespace content
