@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/platform_thread.h"
 
 namespace dbus {
@@ -44,7 +45,8 @@ class CrosDBusService {
   };
 
   // Initializes the global instance.
-  static void Initialize();
+  static void Initialize(
+      ScopedVector<ServiceProviderInterface> service_providers);
   // Destroys the global instance.
   static void Shutdown();
 
@@ -52,14 +54,14 @@ class CrosDBusService {
   virtual ~CrosDBusService();
 
  private:
-  // Initializes the global instance for testing. Takes ownership of
-  // |proxy_resolution_service|.
   friend class CrosDBusServiceTest;
+
+  // Initializes the global instance for testing.
   static void InitializeForTesting(
       dbus::Bus* bus,
-      ServiceProviderInterface* proxy_resolution_service);
+      ScopedVector<ServiceProviderInterface> service_providers);
 };
 
-}  // namespace
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_DBUS_CROS_DBUS_SERVICE_H_

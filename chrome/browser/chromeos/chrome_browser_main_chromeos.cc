@@ -29,7 +29,13 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chrome/browser/chromeos/dbus/console_service_provider.h"
 #include "chrome/browser/chromeos/dbus/cros_dbus_service.h"
+#include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
+#include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
+#include "chrome/browser/chromeos/dbus/printer_service_provider.h"
+#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
+#include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/device/input_service_proxy.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
@@ -164,7 +170,19 @@ class DBusServices {
     DBusThreadManager::Initialize();
     PowerPolicyController::Initialize(
         DBusThreadManager::Get()->GetPowerManagerClient());
-    CrosDBusService::Initialize();
+
+    ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
+    service_providers.push_back(ProxyResolutionServiceProvider::Create());
+#if !defined(USE_ATHENA)
+    // crbug.com/413897
+    service_providers.push_back(new DisplayPowerServiceProvider);
+    // crbug.com/401285
+    service_providers.push_back(new PrinterServiceProvider);
+#endif
+    service_providers.push_back(new LivenessServiceProvider);
+    service_providers.push_back(new ScreenLockServiceProvider);
+    service_providers.push_back(new ConsoleServiceProvider);
+    CrosDBusService::Initialize(service_providers.Pass());
 
     // Initialize PowerDataCollector after DBusThreadManager is initialized.
     PowerDataCollector::Initialize();

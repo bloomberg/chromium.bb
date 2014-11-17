@@ -8,12 +8,6 @@
 #include "base/stl_util.h"
 #include "base/sys_info.h"
 #include "base/threading/platform_thread.h"
-#include "chrome/browser/chromeos/dbus/console_service_provider.h"
-#include "chrome/browser/chromeos/dbus/display_power_service_provider.h"
-#include "chrome/browser/chromeos/dbus/liveness_service_provider.h"
-#include "chrome/browser/chromeos/dbus/printer_service_provider.h"
-#include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
-#include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -31,14 +25,15 @@ CrosDBusService* g_cros_dbus_service = NULL;
 // The CrosDBusService implementation used in production, and unit tests.
 class CrosDBusServiceImpl : public CrosDBusService {
  public:
-  explicit CrosDBusServiceImpl(dbus::Bus* bus)
+  CrosDBusServiceImpl(dbus::Bus* bus,
+                      ScopedVector<ServiceProviderInterface> service_providers)
       : service_started_(false),
         origin_thread_id_(base::PlatformThread::CurrentId()),
-        bus_(bus) {
+        bus_(bus),
+        service_providers_(service_providers.Pass()) {
   }
 
-  virtual ~CrosDBusServiceImpl() {
-    STLDeleteElements(&service_providers_);
+  ~CrosDBusServiceImpl() override {
   }
 
   // Starts the D-Bus service.
@@ -75,12 +70,6 @@ class CrosDBusServiceImpl : public CrosDBusService {
     VLOG(1) << "CrosDBusServiceImpl started.";
   }
 
-  // Registers a service provider. This must be done before Start().
-  // |provider| will be owned by CrosDBusService.
-  void RegisterServiceProvider(ServiceProviderInterface* provider) {
-    service_providers_.push_back(provider);
-  }
-
  private:
   // Returns true if the current thread is on the origin thread.
   bool OnOriginThread() {
@@ -99,7 +88,7 @@ class CrosDBusServiceImpl : public CrosDBusService {
   scoped_refptr<dbus::ExportedObject> exported_object_;
 
   // Service providers that form CrosDBusService.
-  std::vector<ServiceProviderInterface*> service_providers_;
+  ScopedVector<ServiceProviderInterface> service_providers_;
 };
 
 // The stub CrosDBusService implementation used on Linux desktop,
@@ -114,24 +103,15 @@ class CrosDBusServiceStubImpl : public CrosDBusService {
 };
 
 // static
-void CrosDBusService::Initialize() {
+void CrosDBusService::Initialize(
+    ScopedVector<ServiceProviderInterface> service_providers) {
   if (g_cros_dbus_service) {
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;
   }
   dbus::Bus* bus = DBusThreadManager::Get()->GetSystemBus();
   if (base::SysInfo::IsRunningOnChromeOS() && bus) {
-    CrosDBusServiceImpl* service = new CrosDBusServiceImpl(bus);
-    service->RegisterServiceProvider(ProxyResolutionServiceProvider::Create());
-#if !defined(USE_ATHENA)
-    // crbug.com/413897
-    service->RegisterServiceProvider(new DisplayPowerServiceProvider);
-    // crbug.com/401285
-    service->RegisterServiceProvider(new PrinterServiceProvider);
-#endif
-    service->RegisterServiceProvider(new LivenessServiceProvider);
-    service->RegisterServiceProvider(new ScreenLockServiceProvider);
-    service->RegisterServiceProvider(new ConsoleServiceProvider);
+    auto* service = new CrosDBusServiceImpl(bus, service_providers.Pass());
     g_cros_dbus_service = service;
     service->Start();
   } else {
@@ -143,13 +123,12 @@ void CrosDBusService::Initialize() {
 // static
 void CrosDBusService::InitializeForTesting(
     dbus::Bus* bus,
-    ServiceProviderInterface* proxy_resolution_service) {
+    ScopedVector<ServiceProviderInterface> service_providers) {
   if (g_cros_dbus_service) {
     LOG(WARNING) << "CrosDBusService was already initialized";
     return;
   }
-  CrosDBusServiceImpl* service =  new CrosDBusServiceImpl(bus);
-  service->RegisterServiceProvider(proxy_resolution_service);
+  auto* service = new CrosDBusServiceImpl(bus, service_providers.Pass());
   service->Start();
   g_cros_dbus_service = service;
   VLOG(1) << "CrosDBusService initialized";

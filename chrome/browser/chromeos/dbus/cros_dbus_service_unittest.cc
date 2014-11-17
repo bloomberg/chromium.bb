@@ -64,8 +64,10 @@ class CrosDBusServiceTest : public testing::Test {
     EXPECT_CALL(*mock_proxy_resolution_service_provider,
                 Start(Eq(mock_exported_object_))).WillOnce(Return());
     // Initialize the cros service with the mocks injected.
+    ScopedVector<CrosDBusService::ServiceProviderInterface> service_providers;
+    service_providers.push_back(mock_proxy_resolution_service_provider);
     CrosDBusService::InitializeForTesting(
-        mock_bus_.get(), mock_proxy_resolution_service_provider);
+        mock_bus_.get(), service_providers.Pass());
   }
 
   virtual void TearDown() {
