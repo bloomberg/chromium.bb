@@ -231,6 +231,13 @@ remoting.ClientPlugin.prototype.setDesktopSizeUpdateHandler =
     function(handler) {};
 
 /**
+ * @param {function():void} handler Callback for desktop shape change
+ *     notifications.
+ */
+remoting.ClientPlugin.prototype.setDesktopShapeUpdateHandler =
+    function(handler) {};
+
+/**
  * @param {function(!Array.<string>):void} handler Callback to inform of
  *     capabilities negotiated between host and client.
  */

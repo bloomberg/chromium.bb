@@ -83,6 +83,7 @@
     ],
     # UI JavaScript files.
     'remoting_webapp_js_ui_files': [
+      'webapp/base/js/window_shape.js',
       'webapp/crd/js/butter_bar.js',
       'webapp/crd/js/connection_stats.js',
       'webapp/crd/js/feedback.js',

@@ -32,6 +32,7 @@ function consentRequired_(authContinue) {
     dialog.hidden = true;
     button.removeEventListener('click', consentGranted, false);
     authContinue();
+    remoting.windowShape.updateClientWindowShape();
   };
   dialog.hidden = false;
   button.addEventListener('click', consentGranted, false);
@@ -106,6 +107,8 @@ remoting.init = function() {
     }
   }
   remoting.identity.getEmail(remoting.onEmail, onGetEmailError);
+
+  remoting.windowShape.updateClientWindowShape();
 
   remoting.showOrHideIT2MeUi();
   remoting.showOrHideMe2MeUi();

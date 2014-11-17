@@ -553,6 +553,8 @@ remoting.ClientSession.prototype.onPluginInitialized_ = function(initialized) {
       this.onConnectionStatusUpdate_.bind(this));
   this.plugin_.setRouteChangedHandler(this.onRouteChanged_.bind(this));
   this.plugin_.setConnectionReadyHandler(this.onConnectionReady_.bind(this));
+  this.plugin_.setDesktopShapeUpdateHandler(
+      this.onDesktopShapeChanged_.bind(this));
   this.plugin_.setDesktopSizeUpdateHandler(
       this.onDesktopSizeChanged_.bind(this));
   this.plugin_.setCapabilitiesHandler(this.onSetCapabilities_.bind(this));
@@ -1161,6 +1163,30 @@ remoting.ClientSession.prototype.onDesktopSizeChanged_ = function() {
               this.plugin_.getDesktopYDpi() + ' DPI');
   this.updateDimensions();
   this.updateScrollbarVisibility();
+};
+
+/**
+ * Sets the non-click-through area of the client in response to notifications
+ * from the plugin of desktop shape changes.
+ *
+ * @private
+ * @param {Array.<Array.<number>>} rects List of rectangles comprising the
+ *     desktop shape.
+ * @return {void} Nothing.
+ */
+remoting.ClientSession.prototype.onDesktopShapeChanged_ = function(rects) {
+  // Build the list of rects for the input region.
+  var inputRegion = [];
+  for (var i = 0; i < rects.length; ++i) {
+    var rect = {};
+    rect.left = rects[i][0];
+    rect.top = rects[i][1];
+    rect.width = rects[i][2];
+    rect.height = rects[i][3];
+    inputRegion.push(rect);
+  }
+
+  remoting.windowShape.setDesktopRects(inputRegion);
 };
 
 /**

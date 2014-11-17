@@ -81,6 +81,11 @@ remoting.ClientPluginImpl = function(container, onExtensionMessage) {
   /** @private */
   this.onDesktopSizeUpdateHandler_ = function () {};
   /**
+   * @param {Array.<Array.<number>>} rects
+   * @private
+   */
+  this.onDesktopShapeUpdateHandler_ = function (rects) {};
+  /**
    * @param {!Array.<string>} capabilities The negotiated capabilities.
    * @private
    */
@@ -256,6 +261,14 @@ remoting.ClientPluginImpl.prototype.setDesktopSizeUpdateHandler =
 };
 
 /**
+ * @param {function():void} handler
+ */
+remoting.ClientPluginImpl.prototype.setDesktopShapeUpdateHandler =
+    function(handler) {
+  this.onDesktopShapeUpdateHandler_ = handler;
+};
+
+/**
  * @param {function(!Array.<string>):void} handler
  */
 remoting.ClientPluginImpl.prototype.setCapabilitiesHandler = function(handler) {
@@ -425,6 +438,17 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     this.desktopXDpi_ = getNumberAttr(message.data, 'x_dpi', 96);
     this.desktopYDpi_ = getNumberAttr(message.data, 'y_dpi', 96);
     this.onDesktopSizeUpdateHandler_();
+
+  } else if (message.method == 'onDesktopShape') {
+    var rects = getArrayAttr(message.data, 'rects');
+    for (var i = 0; i < rects.length; ++i) {
+      /** @type {Array.<number>} */
+      var rect = rects[i];
+      if (typeof rect != 'object' || rect.length != 4) {
+        throw 'Received invalid onDesktopShape message';
+      }
+    }
+    this.onDesktopShapeUpdateHandler_(rects);
 
   } else if (message.method == 'onPerfStats') {
     // Return value is ignored. These calls will throw an error if the value

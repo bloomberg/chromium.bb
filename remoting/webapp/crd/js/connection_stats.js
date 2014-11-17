@@ -14,6 +14,7 @@ var remoting = remoting || {};
 
 /**
  * @constructor
+ * @implements {remoting.WindowShape.ClientUI}
  * @param {Element} statsElement The HTML div to which to update stats.
  */
 remoting.ConnectionStats = function(statsElement) {
@@ -27,6 +28,8 @@ remoting.ConnectionStats = function(statsElement) {
    * @private
    */
   this.mostRecent_ = null
+
+  remoting.windowShape.addCallback(this);
 };
 
 /**
@@ -42,6 +45,19 @@ remoting.ConnectionStats.prototype.mostRecent = function() {
  */
 remoting.ConnectionStats.prototype.toggle = function() {
   this.statsElement_.hidden = !this.statsElement_.hidden;
+};
+
+/**
+ * If the stats panel is visible, add its bounding rectangle to the specified
+ * region.
+ * @param {Array.<{left: number, top: number, width: number, height: number}>}
+ *     rects List of rectangles.
+ */
+
+remoting.ConnectionStats.prototype.addToRegion = function(rects) {
+  if (!this.statsElement_.hidden) {
+    rects.push(this.statsElement_.getBoundingClientRect());
+  }
 };
 
 /**
