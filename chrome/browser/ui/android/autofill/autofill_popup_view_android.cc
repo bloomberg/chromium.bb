@@ -91,7 +91,9 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
 void AutofillPopupViewAndroid::SuggestionSelected(JNIEnv* env,
                                                   jobject obj,
                                                   jint list_index) {
-  controller_->AcceptSuggestion(list_index);
+  // Race: Hide() may have already run.
+  if (controller_)
+    controller_->AcceptSuggestion(list_index);
 }
 
 void AutofillPopupViewAndroid::PopupDismissed(JNIEnv* env, jobject obj) {
