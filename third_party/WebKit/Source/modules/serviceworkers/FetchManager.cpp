@@ -40,9 +40,9 @@ public:
 
 private:
     void performBasicFetch();
-    void performNetworkError();
+    void performNetworkError(const String& message);
     void performHTTPFetch();
-    void failed();
+    void failed(const String& message);
     void notifyFinished();
 
     ExecutionContext* m_executionContext;
@@ -120,17 +120,17 @@ void FetchManager::Loader::didFinishLoading(unsigned long, double)
 
 void FetchManager::Loader::didFail(const ResourceError& error)
 {
-    failed();
+    failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
 }
 
 void FetchManager::Loader::didFailAccessControlCheck(const ResourceError& error)
 {
-    failed();
+    failed("Fetch API cannot load " + error.failingURL() + ". " + error.localizedDescription());
 }
 
 void FetchManager::Loader::didFailRedirectCheck()
 {
-    failed();
+    failed("Fetch API cannot load " + m_request->url().string() + ". Redirects are not yet supported.");
 }
 
 void FetchManager::Loader::didDownloadData(int dataLength)
@@ -179,7 +179,7 @@ void FetchManager::Loader::start()
     // "- |request|'s mode is |same-origin|"
     if (m_request->mode() == WebURLRequest::FetchRequestModeSameOrigin) {
         // "A network error."
-        performNetworkError();
+        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". Request mode is \"same-origin\" but the URL\'s origin is not same as the request origin " + m_request->origin()->toString() + ".");
         return;
     }
 
@@ -195,7 +195,7 @@ void FetchManager::Loader::start()
     // "- |request|'s url's scheme is not one of 'http' and 'https'"
     if (!m_request->url().protocolIsInHTTPFamily()) {
         // "A network error."
-        performNetworkError();
+        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme must be \"http\" or \"https\" for CORS request.");
         return;
     }
 
@@ -249,13 +249,13 @@ void FetchManager::Loader::performBasicFetch()
         performHTTPFetch();
     } else {
         // FIXME: implement other protocols.
-        performNetworkError();
+        performNetworkError("Fetch API cannot load " + m_request->url().string() + ". URL scheme \"" + m_request->url().protocol() + "\" is not supported.");
     }
 }
 
-void FetchManager::Loader::performNetworkError()
+void FetchManager::Loader::performNetworkError(const String& message)
 {
-    failed();
+    failed(message);
 }
 
 void FetchManager::Loader::performHTTPFetch()
@@ -322,7 +322,7 @@ void FetchManager::Loader::performHTTPFetch()
     m_loader = ThreadableLoader::create(*m_executionContext, this, request, threadableLoaderOptions, resourceLoaderOptions);
 }
 
-void FetchManager::Loader::failed()
+void FetchManager::Loader::failed(const String& message)
 {
     if (m_failed)
         return;
@@ -331,7 +331,7 @@ void FetchManager::Loader::failed()
     m_failed = true;
     ScriptState* state = m_resolver->scriptState();
     ScriptState::Scope scope(state);
-    m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), "Failed to fetch"));
+    m_resolver->reject(V8ThrowException::createTypeError(state->isolate(), message));
     notifyFinished();
 }
 
