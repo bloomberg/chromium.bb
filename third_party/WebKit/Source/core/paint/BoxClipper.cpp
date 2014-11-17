@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "config.h"
-#include "core/rendering/RenderBoxClipper.h"
+#include "core/paint/BoxClipper.h"
 
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"
@@ -11,7 +11,7 @@
 
 namespace blink {
 
-RenderBoxClipper::RenderBoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
+BoxClipper::BoxClipper(RenderBox& box, PaintInfo& paintInfo, const LayoutPoint& accumulatedOffset, ContentsClipBehavior contentsClipBehavior)
     : m_pushedClip(false)
     , m_accumulatedOffset(accumulatedOffset)
     , m_paintInfo(paintInfo)
@@ -62,7 +62,7 @@ RenderBoxClipper::RenderBoxClipper(RenderBox& box, PaintInfo& paintInfo, const L
     m_pushedClip = true;
 }
 
-RenderBoxClipper::~RenderBoxClipper()
+BoxClipper::~BoxClipper()
 {
     if (!m_pushedClip)
         return;

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef RenderBoxClipper_h
-#define RenderBoxClipper_h
+#ifndef BoxClipper_h
+#define BoxClipper_h
 
 #include "core/rendering/PaintPhase.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -15,10 +15,10 @@ struct PaintInfo;
 
 enum ContentsClipBehavior { ForceContentsClip, SkipContentsClipIfPossible };
 
-class RenderBoxClipper {
+class BoxClipper {
 public:
-    RenderBoxClipper(RenderBox&, PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
-    ~RenderBoxClipper();
+    BoxClipper(RenderBox&, PaintInfo&, const LayoutPoint& accumulatedOffset, ContentsClipBehavior);
+    ~BoxClipper();
 
     bool pushedClip() { return m_pushedClip; }
 private:
@@ -31,4 +31,4 @@ private:
 
 } // namespace blink
 
-#endif // RenderBoxClipper_h
+#endif // BoxClipper_h

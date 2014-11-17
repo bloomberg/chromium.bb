@@ -10,6 +10,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DrawingRecorder.h"
 #include "core/paint/InlinePainter.h"
@@ -17,7 +18,6 @@
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBlock.h"
-#include "core/rendering/RenderBoxClipper.h"
 #include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderLayer.h"
@@ -56,7 +56,7 @@ void BlockPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     {
-        RenderBoxClipper boxClipper(m_renderBlock, paintInfo, adjustedPaintOffset, contentsClipBehavior);
+        BoxClipper boxClipper(m_renderBlock, paintInfo, adjustedPaintOffset, contentsClipBehavior);
         GraphicsContextCullSaver cullSaver(*paintInfo.context);
         // Cull if we have more than one child and we didn't already clip.
         bool shouldCull = m_renderBlock.document().settings()->containerCullingEnabled() && !boxClipper.pushedClip() && !m_renderBlock.isDocumentElement()

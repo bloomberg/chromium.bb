@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/TablePainter.h"
 
+#include "core/paint/BoxClipper.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/DrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderBoxClipper.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableSection.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
@@ -31,7 +31,7 @@ void TablePainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset)
             return;
     }
 
-    RenderBoxClipper boxClipper(m_renderTable, paintInfo, adjustedPaintOffset, ForceContentsClip);
+    BoxClipper boxClipper(m_renderTable, paintInfo, adjustedPaintOffset, ForceContentsClip);
     paintObject(paintInfo, adjustedPaintOffset);
 }
 

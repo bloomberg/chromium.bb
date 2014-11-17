@@ -5,12 +5,12 @@
 #include "config.h"
 #include "core/paint/TableSectionPainter.h"
 
+#include "core/paint/BoxClipper.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/TableCellPainter.h"
 #include "core/paint/TableRowPainter.h"
 #include "core/rendering/GraphicsContextAnnotator.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderBoxClipper.h"
 #include "core/rendering/RenderTable.h"
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTableCol.h"
@@ -36,7 +36,7 @@ void TableSectionPainter::paint(PaintInfo& paintInfo, const LayoutPoint& paintOf
     LayoutPoint adjustedPaintOffset = paintOffset + m_renderTableSection.location();
 
     {
-        RenderBoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
+        BoxClipper boxClipper(m_renderTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
         paintObject(paintInfo, adjustedPaintOffset);
     }
 
