@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<div id="description"></div>
+<div id="console"></div>
+
+<input id="input1">
+<object id="plugin1" type="application/x-fake-plugin"></object>
+
+<script>
+description('Ensures that elements within a plugin placeholder can be keyboard focused.');
+
+// Close buttons are focusable, so we expect focus to move into and out of the placeholder.
+var input1 = document.getElementById("input1");
+var plugin1 = document.getElementById("plugin1");
+internals.forcePluginPlaceholder(plugin1, { closeable: true });
+var shadowRoot1 = internals.youngestShadowRoot(plugin1);
+input1.focus();
+shouldBe("document.activeElement", "input1");
+shouldBeNull("shadowRoot1.activeElement");
+eventSender.keyDown("\t");
+shouldBe("document.activeElement", "plugin1");
+shouldBeNonNull("shadowRoot1.activeElement");
+eventSender.keyDown("\t", ["shiftKey"]);
+shouldBe("document.activeElement", "input1");
+shouldBeNull("shadowRoot1.activeElement");
+document.activeElement.blur();
+</script>
