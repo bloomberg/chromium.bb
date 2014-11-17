@@ -1295,7 +1295,7 @@ const Experiment kExperiments[] = {
     "enable-offline-load-stale-cache",
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_NAME,
     IDS_FLAGS_ENABLE_OFFLINE_LOAD_STALE_DESCRIPTION,
-    kOsLinux | kOsMac | kOsWin | kOsAndroid,
+    kOsAll,
     ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOfflineLoadStaleCache,
                               switches::kDisableOfflineLoadStaleCache)
   },
