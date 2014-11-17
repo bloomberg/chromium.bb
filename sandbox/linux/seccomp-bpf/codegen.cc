@@ -15,6 +15,11 @@
 
 namespace sandbox {
 
+// Unfortunately this needs to be defined out-of-line because inline
+// initializing a static member to "nullptr" requires "constexpr",
+// which is currently banned by the Chromium style guide.
+const CodeGen::Node CodeGen::kNullNode = nullptr;
+
 CodeGen::CodeGen() : compiled_(false) {}
 
 CodeGen::~CodeGen() {
@@ -30,47 +35,28 @@ CodeGen::~CodeGen() {
   }
 }
 
-Instruction* CodeGen::MakeInstruction(uint16_t code,
-                                      uint32_t k,
-                                      Instruction* next) {
-  // We can handle non-jumping instructions and "always" jumps. Both of
-  // them are followed by exactly one "next" instruction.
-  // We allow callers to defer specifying "next", but then they must call
-  // "joinInstructions" later.
-  if (BPF_CLASS(code) == BPF_JMP && BPF_OP(code) != BPF_JA) {
-    SANDBOX_DIE(
-        "Must provide both \"true\" and \"false\" branch "
-        "for a BPF_JMP");
-  }
-  if (next && BPF_CLASS(code) == BPF_RET) {
-    SANDBOX_DIE("Cannot append instructions after a return statement");
-  }
+CodeGen::Node CodeGen::MakeInstruction(uint16_t code,
+                                       uint32_t k,
+                                       Node jt,
+                                       Node jf) {
+  Node insn;
   if (BPF_CLASS(code) == BPF_JMP) {
-    // "Always" jumps use the "true" branch target, only.
-    Instruction* insn = new Instruction(code, 0, next, NULL);
-    instructions_.push_back(insn);
-    return insn;
+    CHECK_NE(kNullNode, jt);
+    if (BPF_OP(code) == BPF_JA) {
+      CHECK_EQ(kNullNode, jf);
+    } else {
+      CHECK_NE(kNullNode, jf);
+    }
+    insn = new Instruction(code, k, jt, jf);
   } else {
-    // Non-jumping instructions do not use any of the branch targets.
-    Instruction* insn = new Instruction(code, k, next);
-    instructions_.push_back(insn);
-    return insn;
+    if (BPF_CLASS(code) == BPF_RET) {
+      CHECK_EQ(kNullNode, jt);
+    } else {
+      CHECK_NE(kNullNode, jt);
+    }
+    CHECK_EQ(kNullNode, jf);
+    insn = new Instruction(code, k, jt);
   }
-}
-
-Instruction* CodeGen::MakeInstruction(uint16_t code,
-                                      uint32_t k,
-                                      Instruction* jt,
-                                      Instruction* jf) {
-  // We can handle all conditional jumps. They are followed by both a
-  // "true" and a "false" branch.
-  if (BPF_CLASS(code) != BPF_JMP || BPF_OP(code) == BPF_JA) {
-    SANDBOX_DIE("Expected a BPF_JMP instruction");
-  }
-  if (!jt || !jf) {
-    SANDBOX_DIE("Branches must jump to a valid instruction");
-  }
-  Instruction* insn = new Instruction(code, k, jt, jf);
   instructions_.push_back(insn);
   return insn;
 }

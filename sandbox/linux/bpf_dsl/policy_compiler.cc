@@ -18,7 +18,6 @@
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
-#include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
@@ -146,7 +145,7 @@ scoped_ptr<CodeGen::Program> PolicyCompiler::Compile() {
   return program.Pass();
 }
 
-Instruction* PolicyCompiler::AssemblePolicy() {
+CodeGen::Node PolicyCompiler::AssemblePolicy() {
   // A compiled policy consists of three logical parts:
   //   1. Check that the "arch" field matches the expected architecture.
   //   2. If the policy involves unsafe traps, check if the syscall was
@@ -156,7 +155,7 @@ Instruction* PolicyCompiler::AssemblePolicy() {
   return CheckArch(MaybeAddEscapeHatch(DispatchSyscall()));
 }
 
-Instruction* PolicyCompiler::CheckArch(Instruction* passed) {
+CodeGen::Node PolicyCompiler::CheckArch(CodeGen::Node passed) {
   // If the architecture doesn't match SECCOMP_ARCH, disallow the
   // system call.
   return gen_.MakeInstruction(
@@ -169,7 +168,7 @@ Instruction* PolicyCompiler::CheckArch(Instruction* passed) {
           RetExpression(Kill("Invalid audit architecture in BPF filter"))));
 }
 
-Instruction* PolicyCompiler::MaybeAddEscapeHatch(Instruction* rest) {
+CodeGen::Node PolicyCompiler::MaybeAddEscapeHatch(CodeGen::Node rest) {
   // If no unsafe traps, then simply return |rest|.
   if (!has_unsafe_traps_) {
     return rest;
@@ -206,14 +205,14 @@ Instruction* PolicyCompiler::MaybeAddEscapeHatch(Instruction* rest) {
           rest));
 }
 
-Instruction* PolicyCompiler::DispatchSyscall() {
+CodeGen::Node PolicyCompiler::DispatchSyscall() {
   // Evaluate all possible system calls and group their ErrorCodes into
   // ranges of identical codes.
   Ranges ranges;
   FindRanges(&ranges);
 
   // Compile the system call ranges to an optimized BPF jumptable
-  Instruction* jumptable = AssembleJumpTable(ranges.begin(), ranges.end());
+  CodeGen::Node jumptable = AssembleJumpTable(ranges.begin(), ranges.end());
 
   // Grab the system call number, so that we can check it and then
   // execute the jump table.
@@ -221,11 +220,11 @@ Instruction* PolicyCompiler::DispatchSyscall() {
       BPF_LD + BPF_W + BPF_ABS, SECCOMP_NR_IDX, CheckSyscallNumber(jumptable));
 }
 
-Instruction* PolicyCompiler::CheckSyscallNumber(Instruction* passed) {
+CodeGen::Node PolicyCompiler::CheckSyscallNumber(CodeGen::Node passed) {
   if (kIsIntel) {
     // On Intel architectures, verify that system call numbers are in the
     // expected number range.
-    Instruction* invalidX32 =
+    CodeGen::Node invalidX32 =
         RetExpression(Kill("Illegal mixing of system call ABIs"));
     if (kIsX32) {
       // The newer x32 API always sets bit 30.
@@ -268,8 +267,8 @@ void PolicyCompiler::FindRanges(Ranges* ranges) {
   ranges->push_back(Range(old_sysnum, old_err));
 }
 
-Instruction* PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,
-                                               Ranges::const_iterator stop) {
+CodeGen::Node PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,
+                                                Ranges::const_iterator stop) {
   // We convert the list of system call ranges into jump table that performs
   // a binary search over the ranges.
   // As a sanity check, we need to have at least one distinct ranges for us
@@ -289,12 +288,12 @@ Instruction* PolicyCompiler::AssembleJumpTable(Ranges::const_iterator start,
   Ranges::const_iterator mid = start + (stop - start) / 2;
 
   // Sub-divide the list of ranges and continue recursively.
-  Instruction* jf = AssembleJumpTable(start, mid);
-  Instruction* jt = AssembleJumpTable(mid, stop);
+  CodeGen::Node jf = AssembleJumpTable(start, mid);
+  CodeGen::Node jt = AssembleJumpTable(mid, stop);
   return gen_.MakeInstruction(BPF_JMP + BPF_JGE + BPF_K, mid->from, jt, jf);
 }
 
-Instruction* PolicyCompiler::RetExpression(const ErrorCode& err) {
+CodeGen::Node PolicyCompiler::RetExpression(const ErrorCode& err) {
   switch (err.error_type()) {
     case ErrorCode::ET_COND:
       return CondExpression(err);
@@ -306,7 +305,7 @@ Instruction* PolicyCompiler::RetExpression(const ErrorCode& err) {
   }
 }
 
-Instruction* PolicyCompiler::CondExpression(const ErrorCode& cond) {
+CodeGen::Node PolicyCompiler::CondExpression(const ErrorCode& cond) {
   // Sanity check that |cond| makes sense.
   if (cond.argno_ < 0 || cond.argno_ >= 6) {
     SANDBOX_DIE("sandbox_bpf: invalid argument number");
@@ -328,8 +327,8 @@ Instruction* PolicyCompiler::CondExpression(const ErrorCode& cond) {
   // TODO(mdempsky): Reject TP_64BIT on 32-bit platforms. For now we allow it
   // because some SandboxBPF unit tests exercise it.
 
-  Instruction* passed = RetExpression(*cond.passed_);
-  Instruction* failed = RetExpression(*cond.failed_);
+  CodeGen::Node passed = RetExpression(*cond.passed_);
+  CodeGen::Node failed = RetExpression(*cond.failed_);
 
   // We want to emit code to check "(arg & mask) == value" where arg, mask, and
   // value are 64-bit values, but the BPF machine is only 32-bit. We implement
@@ -341,16 +340,16 @@ Instruction* PolicyCompiler::CondExpression(const ErrorCode& cond) {
                             failed);
 }
 
-Instruction* PolicyCompiler::CondExpressionHalf(const ErrorCode& cond,
-                                                ArgHalf half,
-                                                Instruction* passed,
-                                                Instruction* failed) {
+CodeGen::Node PolicyCompiler::CondExpressionHalf(const ErrorCode& cond,
+                                                 ArgHalf half,
+                                                 CodeGen::Node passed,
+                                                 CodeGen::Node failed) {
   if (cond.width_ == ErrorCode::TP_32BIT && half == UpperHalf) {
     // Special logic for sanity checking the upper 32-bits of 32-bit system
     // call arguments.
 
     // TODO(mdempsky): Compile Unexpected64bitArgument() just per program.
-    Instruction* invalid_64bit = RetExpression(Unexpected64bitArgument());
+    CodeGen::Node invalid_64bit = RetExpression(Unexpected64bitArgument());
 
     const uint32_t upper = SECCOMP_ARG_MSB_IDX(cond.argno_);
     const uint32_t lower = SECCOMP_ARG_LSB_IDX(cond.argno_);

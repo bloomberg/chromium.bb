@@ -34,7 +34,7 @@ enum {
 };
 
 using ProgramTestFunc = void (*)(CodeGenUnittestHelper* gen,
-                                 Instruction* head,
+                                 CodeGen::Node head,
                                  int flags);
 
 class ProgramTest : public ::testing::TestWithParam<ProgramTestFunc> {
@@ -43,38 +43,27 @@ class ProgramTest : public ::testing::TestWithParam<ProgramTestFunc> {
 
   // RunTest runs the test function argument.  It should be called at
   // the end of each program test case.
-  void RunTest(Instruction* head, int flags) { GetParam()(&gen_, head, flags); }
-
-  Instruction* MakeInstruction(uint16_t code,
-                               uint32_t k,
-                               Instruction* next = nullptr) {
-    Instruction* ret = gen_.MakeInstruction(code, k, next);
-    EXPECT_NE(nullptr, ret);
-    EXPECT_EQ(code, ret->code);
-    EXPECT_EQ(k, ret->k);
-    if (code == BPF_JMP + BPF_JA) {
-      // Annoying inconsistency.
-      EXPECT_EQ(nullptr, ret->next);
-      EXPECT_EQ(next, ret->jt_ptr);
-    } else {
-      EXPECT_EQ(next, ret->next);
-      EXPECT_EQ(nullptr, ret->jt_ptr);
-    }
-    EXPECT_EQ(nullptr, ret->jf_ptr);
-    return ret;
+  void RunTest(CodeGen::Node head, int flags) {
+    GetParam()(&gen_, head, flags);
   }
 
-  Instruction* MakeInstruction(uint16_t code,
-                               uint32_t k,
-                               Instruction* jt,
-                               Instruction* jf) {
-    Instruction* ret = gen_.MakeInstruction(code, k, jt, jf);
+  CodeGen::Node MakeInstruction(uint16_t code,
+                                uint32_t k,
+                                CodeGen::Node jt = nullptr,
+                                CodeGen::Node jf = nullptr) {
+    CodeGen::Node ret = gen_.MakeInstruction(code, k, jt, jf);
     EXPECT_NE(nullptr, ret);
     EXPECT_EQ(code, ret->code);
     EXPECT_EQ(k, ret->k);
-    EXPECT_EQ(nullptr, ret->next);
-    EXPECT_EQ(jt, ret->jt_ptr);
-    EXPECT_EQ(jf, ret->jf_ptr);
+    if (BPF_CLASS(code) == BPF_JMP) {
+      EXPECT_EQ(nullptr, ret->next);
+      EXPECT_EQ(jt, ret->jt_ptr);
+      EXPECT_EQ(jf, ret->jf_ptr);
+    } else {
+      EXPECT_EQ(jt, ret->next);
+      EXPECT_EQ(nullptr, ret->jt_ptr);
+      EXPECT_EQ(nullptr, ret->jf_ptr);
+    }
     return ret;
   }
 
@@ -85,7 +74,7 @@ class ProgramTest : public ::testing::TestWithParam<ProgramTestFunc> {
 TEST_P(ProgramTest, OneInstruction) {
   // Create the most basic valid BPF program:
   //    RET 0
-  Instruction* head = MakeInstruction(BPF_RET + BPF_K, 0);
+  CodeGen::Node head = MakeInstruction(BPF_RET + BPF_K, 0);
   RunTest(head, NO_FLAGS);
 }
 
@@ -94,10 +83,9 @@ TEST_P(ProgramTest, SimpleBranch) {
   //    JUMP if eq 42 then $0 else $1
   // 0: RET 1
   // 1: RET 0
-  Instruction* head = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K,
-                                      42,
-                                      MakeInstruction(BPF_RET + BPF_K, 1),
-                                      MakeInstruction(BPF_RET + BPF_K, 0));
+  CodeGen::Node head = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42,
+                                       MakeInstruction(BPF_RET + BPF_K, 1),
+                                       MakeInstruction(BPF_RET + BPF_K, 0));
   RunTest(head, NO_FLAGS);
 }
 
@@ -106,8 +94,8 @@ TEST_P(ProgramTest, AtypicalBranch) {
   //    JUMP if eq 42 then $0 else $0
   // 0: RET 0
 
-  Instruction* ret = MakeInstruction(BPF_RET + BPF_K, 0);
-  Instruction* head = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, ret, ret);
+  CodeGen::Node ret = MakeInstruction(BPF_RET + BPF_K, 0);
+  CodeGen::Node head = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, ret, ret);
 
   // N.B.: As the instructions in both sides of the branch are already
   //       the same object, we do not actually have any "mergeable" branches.
@@ -125,18 +113,18 @@ TEST_P(ProgramTest, Complex) {
   //    RET 42                           (insn0)
   // 4: LD 42                            (insn3)
   //    RET 42                           (insn3+)
-  Instruction* insn0 = MakeInstruction(BPF_RET + BPF_K, 42);
-  Instruction* insn1 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42, insn0);
-  Instruction* insn2 = MakeInstruction(BPF_JMP + BPF_JA, 0, insn1);
+  CodeGen::Node insn0 = MakeInstruction(BPF_RET + BPF_K, 42);
+  CodeGen::Node insn1 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42, insn0);
+  CodeGen::Node insn2 = MakeInstruction(BPF_JMP + BPF_JA, 0, insn1);
 
   // We explicitly duplicate instructions so that MergeTails() can coalesce
   // them later.
-  Instruction* insn3 = MakeInstruction(
-      BPF_LD + BPF_W + BPF_ABS, 42, MakeInstruction(BPF_RET + BPF_K, 42));
+  CodeGen::Node insn3 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 42,
+                                        MakeInstruction(BPF_RET + BPF_K, 42));
 
-  Instruction* insn4 =
+  CodeGen::Node insn4 =
       MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn2, insn3);
-  Instruction* insn5 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 23, insn4);
+  CodeGen::Node insn5 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 23, insn4);
 
   // Force a basic block that ends in neither a jump instruction nor a return
   // instruction. It only contains "insn5". This exercises one of the less
@@ -144,7 +132,7 @@ TEST_P(ProgramTest, Complex) {
   // This also gives us a diamond-shaped pattern in our graph, which stresses
   // another aspect of the topo-sort algorithm (namely, the ability to
   // correctly count the incoming branches for subtrees that are not disjunct).
-  Instruction* insn6 =
+  CodeGen::Node insn6 =
       MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 42, insn5, insn4);
 
   RunTest(insn6, HAS_MERGEABLE_TAILS);
@@ -169,14 +157,14 @@ TEST_P(ProgramTest, ConfusingTails) {
   //  6) RET 0
   //  7) RET 1
 
-  Instruction* i7 = MakeInstruction(BPF_RET + BPF_K, 1);
-  Instruction* i6 = MakeInstruction(BPF_RET + BPF_K, 0);
-  Instruction* i5 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
-  Instruction* i4 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
-  Instruction* i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
-  Instruction* i2 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
-  Instruction* i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
-  Instruction* i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+  CodeGen::Node i7 = MakeInstruction(BPF_RET + BPF_K, 1);
+  CodeGen::Node i6 = MakeInstruction(BPF_RET + BPF_K, 0);
+  CodeGen::Node i5 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
+  CodeGen::Node i4 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
+  CodeGen::Node i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  CodeGen::Node i2 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
+  CodeGen::Node i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  CodeGen::Node i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
 
   RunTest(i0, NO_FLAGS);
 }
@@ -193,12 +181,12 @@ TEST_P(ProgramTest, ConfusingTailsBasic) {
   // 4) LOAD 0  // System call number
   // 5) RET 1
 
-  Instruction* i5 = MakeInstruction(BPF_RET + BPF_K, 1);
-  Instruction* i4 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
-  Instruction* i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
-  Instruction* i2 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
-  Instruction* i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
-  Instruction* i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+  CodeGen::Node i5 = MakeInstruction(BPF_RET + BPF_K, 1);
+  CodeGen::Node i4 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i5);
+  CodeGen::Node i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  CodeGen::Node i2 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 0, i3);
+  CodeGen::Node i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  CodeGen::Node i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
 
   RunTest(i0, NO_FLAGS);
 }
@@ -219,24 +207,25 @@ TEST_P(ProgramTest, ConfusingTailsMergeable) {
   // 6) RET 0
   // 7) RET 1
 
-  Instruction* i7 = MakeInstruction(BPF_RET + BPF_K, 1);
-  Instruction* i6 = MakeInstruction(BPF_RET + BPF_K, 0);
-  Instruction* i5 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
-  Instruction* i4 = MakeInstruction(BPF_RET + BPF_K, 42);
-  Instruction* i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
-  Instruction* i2 = MakeInstruction(BPF_RET + BPF_K, 42);
-  Instruction* i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
-  Instruction* i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
+  CodeGen::Node i7 = MakeInstruction(BPF_RET + BPF_K, 1);
+  CodeGen::Node i6 = MakeInstruction(BPF_RET + BPF_K, 0);
+  CodeGen::Node i5 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i6, i7);
+  CodeGen::Node i4 = MakeInstruction(BPF_RET + BPF_K, 42);
+  CodeGen::Node i3 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 2, i4, i5);
+  CodeGen::Node i2 = MakeInstruction(BPF_RET + BPF_K, 42);
+  CodeGen::Node i1 = MakeInstruction(BPF_JMP + BPF_JEQ + BPF_K, 1, i2, i3);
+  CodeGen::Node i0 = MakeInstruction(BPF_LD + BPF_W + BPF_ABS, 1, i1);
 
   RunTest(i0, HAS_MERGEABLE_TAILS);
 }
 
 void MakeInstruction(CodeGenUnittestHelper* codegen,
-                     Instruction* program, int) {
+                     CodeGen::Node program,
+                     int) {
   // Nothing to do here
 }
 
-void FindBranchTargets(CodeGenUnittestHelper* codegen, Instruction* prg, int) {
+void FindBranchTargets(CodeGenUnittestHelper* codegen, CodeGen::Node prg, int) {
   BranchTargets branch_targets;
   codegen->FindBranchTargets(*prg, &branch_targets);
 
@@ -246,11 +235,11 @@ void FindBranchTargets(CodeGenUnittestHelper* codegen, Instruction* prg, int) {
   // targets of BPF_JMP instructions are represented in the "branch_targets".
   // At the same time, compute a set of both the branch targets and all the
   // instructions in the program.
-  std::vector<Instruction*> stack;
-  std::set<Instruction*> all_instructions;
-  std::set<Instruction*> target_instructions;
+  std::vector<CodeGen::Node> stack;
+  std::set<CodeGen::Node> all_instructions;
+  std::set<CodeGen::Node> target_instructions;
   BranchTargets::const_iterator end = branch_targets.end();
-  for (Instruction* insn = prg;;) {
+  for (CodeGen::Node insn = prg;;) {
     all_instructions.insert(insn);
     if (BPF_CLASS(insn->code) == BPF_JMP) {
       target_instructions.insert(insn->jt_ptr);
@@ -296,7 +285,7 @@ void FindBranchTargets(CodeGenUnittestHelper* codegen, Instruction* prg, int) {
 }
 
 void CutGraphIntoBasicBlocks(CodeGenUnittestHelper* codegen,
-                             Instruction* prg,
+                             CodeGen::Node prg,
                              int) {
   BranchTargets branch_targets;
   codegen->FindBranchTargets(*prg, &branch_targets);
@@ -305,7 +294,7 @@ void CutGraphIntoBasicBlocks(CodeGenUnittestHelper* codegen,
       codegen->CutGraphIntoBasicBlocks(prg, branch_targets, &all_blocks);
   ASSERT_TRUE(first_block != NULL);
   ASSERT_TRUE(first_block->instructions.size() > 0);
-  Instruction* first_insn = first_block->instructions[0];
+  CodeGen::Node first_insn = first_block->instructions[0];
 
   // Basic blocks are supposed to start with a branch target and end with
   // either a jump or a return instruction. It can also end, if the next
@@ -317,7 +306,7 @@ void CutGraphIntoBasicBlocks(CodeGenUnittestHelper* codegen,
     BasicBlock* bb = bb_iter->second;
     ASSERT_TRUE(bb != NULL);
     ASSERT_TRUE(bb->instructions.size() > 0);
-    Instruction* insn = bb->instructions[0];
+    CodeGen::Node insn = bb->instructions[0];
     ASSERT_TRUE(insn == first_insn ||
                 branch_targets.find(insn) != branch_targets.end());
     for (Instructions::const_iterator insn_iter = bb->instructions.begin();;) {
@@ -336,7 +325,7 @@ void CutGraphIntoBasicBlocks(CodeGenUnittestHelper* codegen,
   }
 }
 
-void MergeTails(CodeGenUnittestHelper* codegen, Instruction* prg, int flags) {
+void MergeTails(CodeGenUnittestHelper* codegen, CodeGen::Node prg, int flags) {
   BranchTargets branch_targets;
   codegen->FindBranchTargets(*prg, &branch_targets);
   TargetsToBlocks all_blocks;
@@ -380,7 +369,7 @@ void MergeTails(CodeGenUnittestHelper* codegen, Instruction* prg, int flags) {
       // Depth-first traversal of the graph. We only ever need to look at the
       // very last instruction in the basic block, as that is the only one that
       // can change code flow.
-      Instruction* insn = bb->instructions.back();
+      CodeGen::Node insn = bb->instructions.back();
       if (BPF_CLASS(insn->code) == BPF_JMP) {
         // For jump instructions, we need to remember the "false" branch while
         // traversing the "true" branch. This is not necessary for BPF_JA which
@@ -416,7 +405,7 @@ void MergeTails(CodeGenUnittestHelper* codegen, Instruction* prg, int flags) {
   }
 }
 
-void CompileAndCompare(CodeGenUnittestHelper* codegen, Instruction* prg, int) {
+void CompileAndCompare(CodeGenUnittestHelper* codegen, CodeGen::Node prg, int) {
   // TopoSortBasicBlocks() has internal checks that cause it to fail, if it
   // detects a problem. Typically, if anything goes wrong, this looks to the
   // TopoSort algorithm as if there had been cycles in the input data.

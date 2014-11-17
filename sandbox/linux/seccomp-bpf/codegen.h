@@ -24,17 +24,18 @@ typedef std::map<const Instruction*, int> BranchTargets;
 typedef std::map<const Instruction*, BasicBlock*> TargetsToBlocks;
 typedef std::map<const BasicBlock*, int> IncomingBranches;
 
-// The code generator instantiates a basic compiler that can convert a
-// graph of BPF instructions into a well-formed stream of BPF instructions.
-// Most notably, it ensures that jumps are always forward and don't exceed
-// the limit of 255 instructions imposed by the instruction set.
+// The code generator implements a basic assembler that can convert a
+// graph of BPF instructions into a well-formed array of BPF
+// instructions.  Most notably, it ensures that jumps are always
+// forward and don't exceed the limit of 255 instructions imposed by
+// the instruction set.
 //
-// Callers would typically create a new CodeGen object and then use it to
-// build a DAG of Instructions. They'll eventually call Compile() to convert
-// this DAG to a Program.
+// Callers would typically create a new CodeGen object and then use it
+// to build a DAG of instruction nodes. They'll eventually call
+// Compile() to convert this DAG to a Program.
 //
 //   CodeGen gen;
-//   Instruction *allow, *branch, *dag;
+//   CodeGen::Node allow, branch, dag;
 //
 //   allow =
 //     gen.MakeInstruction(BPF_RET+BPF_K,
@@ -60,25 +61,32 @@ class SANDBOX_EXPORT CodeGen {
   // program in the kernel.
   typedef std::vector<struct sock_filter> Program;
 
+  // Node represents a node within the instruction DAG being compiled.
+  // Nodes are owned by the CodeGen object and need not be explicitly
+  // deleted.
+  using Node = Instruction*;
+
+  // kNullNode represents the "null" node; i.e., the reserved node
+  // value guaranteed to not equal any actual nodes.
+  static const Node kNullNode;
+
   CodeGen();
   ~CodeGen();
 
-  // Create a new instruction. Instructions form a DAG. The instruction objects
-  // are owned by the CodeGen object. They do not need to be explicitly
-  // deleted.
-  // For details on the possible parameters refer to <linux/filter.h>
-  Instruction* MakeInstruction(uint16_t code,
-                               uint32_t k,
-                               Instruction* next = nullptr);
-  Instruction* MakeInstruction(uint16_t code,
-                               uint32_t k,
-                               Instruction* jt,
-                               Instruction* jf);
+  // MakeInstruction creates a node representing the specified
+  // instruction. For details on the possible parameters refer to
+  // https://www.kernel.org/doc/Documentation/networking/filter.txt.
+  // TODO(mdempsky): Reconsider using default arguments here.
+  Node MakeInstruction(uint16_t code,
+                       uint32_t k,
+                       Node jt = kNullNode,
+                       Node jf = kNullNode);
 
-  // Compiles the graph of instructions into a BPF program that can be passed
-  // to the kernel. Please note that this function modifies the graph in place
-  // and must therefore only be called once per graph.
-  void Compile(Instruction* instructions, Program* program);
+  // Compile linearizes the instruction DAG into a BPF program that
+  // can be executed by a BPF virtual machine. Please note that this
+  // function modifies the graph in place and must therefore only be
+  // called once per graph.
+  void Compile(Node head, Program* program);
 
  private:
   friend class CodeGenUnittestHelper;

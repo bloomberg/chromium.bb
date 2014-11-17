@@ -18,8 +18,6 @@
 #include "sandbox/sandbox_export.h"
 
 namespace sandbox {
-struct Instruction;
-
 namespace bpf_dsl {
 class Policy;
 
@@ -101,28 +99,28 @@ class SANDBOX_EXPORT PolicyCompiler {
   };
 
   // Compile the configured policy into a complete instruction sequence.
-  Instruction* AssemblePolicy();
+  CodeGen::Node AssemblePolicy();
 
   // Return an instruction sequence that checks the
   // arch_seccomp_data's "arch" field is valid, and then passes
   // control to |passed| if so.
-  Instruction* CheckArch(Instruction* passed);
+  CodeGen::Node CheckArch(CodeGen::Node passed);
 
   // If |has_unsafe_traps_| is true, returns an instruction sequence
   // that allows all system calls from Syscall::Call(), and otherwise
   // passes control to |rest|. Otherwise, simply returns |rest|.
-  Instruction* MaybeAddEscapeHatch(Instruction* rest);
+  CodeGen::Node MaybeAddEscapeHatch(CodeGen::Node rest);
 
   // Return an instruction sequence that loads and checks the system
   // call number, performs a binary search, and then dispatches to an
   // appropriate instruction sequence compiled from the current
   // policy.
-  Instruction* DispatchSyscall();
+  CodeGen::Node DispatchSyscall();
 
   // Return an instruction sequence that checks the system call number
   // (expected to be loaded in register A) and if valid, passes
   // control to |passed| (with register A still valid).
-  Instruction* CheckSyscallNumber(Instruction* passed);
+  CodeGen::Node CheckSyscallNumber(CodeGen::Node passed);
 
   // Finds all the ranges of system calls that need to be handled. Ranges are
   // sorted in ascending order of system call numbers. There are no gaps in the
@@ -132,28 +130,28 @@ class SANDBOX_EXPORT PolicyCompiler {
 
   // Returns a BPF program snippet that implements a jump table for the
   // given range of system call numbers. This function runs recursively.
-  Instruction* AssembleJumpTable(Ranges::const_iterator start,
-                                 Ranges::const_iterator stop);
+  CodeGen::Node AssembleJumpTable(Ranges::const_iterator start,
+                                  Ranges::const_iterator stop);
 
   // Returns a BPF program snippet that makes the BPF filter program exit
   // with the given ErrorCode "err". N.B. the ErrorCode may very well be a
   // conditional expression; if so, this function will recursively call
   // CondExpression() and possibly RetExpression() to build a complex set of
   // instructions.
-  Instruction* RetExpression(const ErrorCode& err);
+  CodeGen::Node RetExpression(const ErrorCode& err);
 
   // Returns a BPF program that evaluates the conditional expression in
   // "cond" and returns the appropriate value from the BPF filter program.
   // This function recursively calls RetExpression(); it should only ever be
   // called from RetExpression().
-  Instruction* CondExpression(const ErrorCode& cond);
+  CodeGen::Node CondExpression(const ErrorCode& cond);
 
   // Returns a BPF program that evaluates half of a conditional expression;
   // it should only ever be called from CondExpression().
-  Instruction* CondExpressionHalf(const ErrorCode& cond,
-                                  ArgHalf half,
-                                  Instruction* passed,
-                                  Instruction* failed);
+  CodeGen::Node CondExpressionHalf(const ErrorCode& cond,
+                                   ArgHalf half,
+                                   CodeGen::Node passed,
+                                   CodeGen::Node failed);
 
   // MakeTrap is the common implementation for Trap and UnsafeTrap.
   ErrorCode MakeTrap(TrapRegistry::TrapFnc fnc, const void* aux, bool safe);
