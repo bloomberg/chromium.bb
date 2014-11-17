@@ -248,6 +248,10 @@ NET_EXPORT base::string16 StripWWW(const base::string16& text);
 // Runs |url|'s host through StripWWW().  |url| must be valid.
 NET_EXPORT base::string16 StripWWWFromHost(const GURL& url);
 
+// Checks if |port| is in the valid range (0 to 65535, though 0 is technically
+// reserved).  Should be used before casting a port to a uint16.
+NET_EXPORT bool IsPortValid(int port);
+
 // Checks |port| against a list of ports which are restricted by default.
 // Returns true if |port| is allowed, false if it is restricted.
 NET_EXPORT bool IsPortAllowedByDefault(int port);

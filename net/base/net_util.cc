@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <limits>
 #include <set>
 
 #include "build/build_config.h"
@@ -292,6 +293,10 @@ base::string16 StripWWW(const base::string16& text) {
 base::string16 StripWWWFromHost(const GURL& url) {
   DCHECK(url.is_valid());
   return StripWWW(base::ASCIIToUTF16(url.host()));
+}
+
+bool IsPortValid(int port) {
+  return port >= 0 && port <= std::numeric_limits<uint16>::max();
 }
 
 bool IsPortAllowedByDefault(int port) {

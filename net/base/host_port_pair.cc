@@ -10,6 +10,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
+#include "net/base/net_util.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -36,7 +37,8 @@ HostPortPair HostPortPair::FromString(const std::string& str) {
   int port;
   if (!base::StringToInt(key_port[1], &port))
     return HostPortPair();
-  DCHECK_LT(port, 1 << 16);
+  if (!IsPortValid(port))
+    return HostPortPair();
   HostPortPair host_port_pair;
   host_port_pair.set_host(key_port[0]);
   host_port_pair.set_port(port);

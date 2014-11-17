@@ -37,13 +37,19 @@ TEST(HostPortPairTest, Parsing) {
 }
 
 TEST(HostPortPairTest, BadString) {
-  HostPortPair foo = HostPortPair::FromString("foo.com:2:3");
-  EXPECT_TRUE(foo.host().empty());
-  EXPECT_EQ(0, foo.port());
+  const char* kBadStrings[] = {
+    "foo.com:2:3",
+    "bar.com:two",
+    "www.google.com:-1",
+    "127.0.0.1:65536",
+    "[2001:db8::42]:65536",
+  };
 
-  HostPortPair bar = HostPortPair::FromString("bar.com:two");
-  EXPECT_TRUE(bar.host().empty());
-  EXPECT_EQ(0, bar.port());
+  for (size_t index = 0; index < arraysize(kBadStrings); ++index) {
+    HostPortPair foo = HostPortPair::FromString(kBadStrings[index]);
+    EXPECT_TRUE(foo.host().empty());
+    EXPECT_EQ(0, foo.port());
+  }
 }
 
 TEST(HostPortPairTest, Emptiness) {
