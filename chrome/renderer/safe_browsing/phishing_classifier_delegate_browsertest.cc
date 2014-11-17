@@ -539,8 +539,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
   EXPECT_CALL(*classifier_, CancelPendingClassification());
 }
 
+// Test flakes with LSAN enabled. See http://crbug.com/373155.
+#if defined(LEAK_SANITIZER)
+#define MAYBE_IgnorePreliminaryCapture DISABLED_IgnorePreliminaryCapture
+#else
+#define MAYBE_IgnorePreliminaryCapture IgnorePreliminaryCapture
+#endif
 IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest,
-                       IgnorePreliminaryCapture) {
+                       MAYBE_IgnorePreliminaryCapture) {
   // Tests that preliminary PageCaptured notifications are ignored.
   MockScorer scorer;
   delegate_->SetPhishingScorer(&scorer);
