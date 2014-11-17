@@ -31,12 +31,6 @@ void ChromiumApplication::OpenProtectedContentSettings() {
       base::android::GetApplicationContext());
 }
 
-void ChromiumApplication::ShowSyncSettings() {
-  Java_ChromiumApplication_showSyncSettings(
-      base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext());
-}
-
 void ChromiumApplication::ShowAutofillSettings() {
   Java_ChromiumApplication_showAutofillSettings(
       base::android::AttachCurrentThread(),
@@ -45,12 +39,6 @@ void ChromiumApplication::ShowAutofillSettings() {
 
 void ChromiumApplication::ShowPasswordSettings() {
   Java_ChromiumApplication_showPasswordSettings(
-      base::android::AttachCurrentThread(),
-      base::android::GetApplicationContext());
-}
-
-void ChromiumApplication::ShowTermsOfServiceDialog() {
-  Java_ChromiumApplication_showTermsOfServiceDialog(
       base::android::AttachCurrentThread(),
       base::android::GetApplicationContext());
 }
