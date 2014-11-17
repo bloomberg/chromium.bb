@@ -731,6 +731,10 @@
               {
                 "title": "Part 2: SDK Build System and Chrome Apps",
                 "href": "/native-client/devguide/tutorial/tutorial-part2"
+              },
+              {
+                "title": "Chrome Dev Summit 2014 - Codelabs",
+                "href": "/native-client/cds2014"
               }
             ]
           },
