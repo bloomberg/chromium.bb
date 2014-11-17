@@ -591,7 +591,9 @@ bool ResourceFetcher::canRequest(Resource::Type type, const ResourceRequest& res
             effectiveFrame = toLocalFrame(frame()->tree().parent());
     }
 
-    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url);
+    MixedContentChecker::ReportingStatus mixedContentReporting = forPreload ?
+        MixedContentChecker::SuppressReport : MixedContentChecker::SendReport;
+    return !MixedContentChecker::shouldBlockFetch(effectiveFrame, resourceRequest, url, mixedContentReporting);
 }
 
 bool ResourceFetcher::canAccessResource(Resource* resource, SecurityOrigin* sourceOrigin, const KURL& url) const
@@ -674,7 +676,8 @@ void ResourceFetcher::maybeNotifyInsecureContent(const Resource* resource) const
     // As a side effect browser will be notified.
     MixedContentChecker::shouldBlockFetch(frame(),
                                           resource->lastResourceRequest(),
-                                          resource->lastResourceRequest().url());
+                                          resource->lastResourceRequest().url(),
+                                          MixedContentChecker::SendReport);
 }
 
 // Limit the number of URLs in m_validatedURLs to avoid memory bloat.
@@ -1261,8 +1264,7 @@ void ResourceFetcher::preload(Resource::Type type, FetchRequest& request, const 
     // Loading images involves several special cases, so use dedicated fetch method instead.
     if (type == Resource::Image)
         resource = fetchImage(request);
-
-    if (!resource)
+    else
         resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
         return;

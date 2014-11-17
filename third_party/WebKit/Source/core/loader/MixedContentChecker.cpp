@@ -213,7 +213,7 @@ void MixedContentChecker::logToConsole(LocalFrame* frame, const KURL& url, WebUR
 }
 
 // static
-bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url)
+bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequest& resourceRequest, const KURL& url, MixedContentChecker::ReportingStatus reportingStatus)
 {
     // No frame, no mixed content:
     if (!frame)
@@ -228,7 +228,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
             return false;
 
         LocalFrame* localTop = toLocalFrame(top);
-        if (frame != localTop && shouldBlockFetch(localTop, resourceRequest, url))
+        if (frame != localTop && shouldBlockFetch(localTop, resourceRequest, url, reportingStatus))
             return true;
     }
 
@@ -280,7 +280,8 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, const ResourceRequ
         return true;
     };
 
-    logToConsole(frame, url, resourceRequest.requestContext(), allowed);
+    if (reportingStatus == SendReport)
+        logToConsole(frame, url, resourceRequest.requestContext(), allowed);
     return !allowed;
 }
 

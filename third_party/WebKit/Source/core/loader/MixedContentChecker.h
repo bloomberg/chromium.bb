@@ -48,7 +48,8 @@ class MixedContentChecker final {
 public:
     explicit MixedContentChecker(LocalFrame*);
 
-    static bool shouldBlockFetch(LocalFrame*, const ResourceRequest&, const KURL&);
+    enum ReportingStatus { SendReport, SuppressReport };
+    static bool shouldBlockFetch(LocalFrame*, const ResourceRequest&, const KURL&, ReportingStatus);
 
     bool canDisplayInsecureContent(SecurityOrigin* securityOrigin, const KURL& url) const
     {
