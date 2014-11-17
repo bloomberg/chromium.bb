@@ -10,11 +10,11 @@ import os
 import pickle
 import re
 import sys
+import tempfile
 
 from pylib import cmd_helper
 from pylib import constants
 from pylib.device import device_utils
-from pylib.utils import proguard
 
 sys.path.insert(0,
                 os.path.join(constants.DIR_SOURCE_ROOT,
@@ -23,7 +23,7 @@ sys.path.insert(0,
 import unittest_util # pylint: disable=F0401
 
 # If you change the cached output of proguard, increment this number
-PICKLE_FORMAT_VERSION = 4
+PICKLE_FORMAT_VERSION = 3
 
 
 class TestJar(object):
@@ -86,30 +86,111 @@ class TestJar(object):
   def _GetProguardData(self):
     logging.info('Retrieving test methods via proguard.')
 
-    p = proguard.Dump(self._jar_path)
+    with tempfile.NamedTemporaryFile() as proguard_output:
+      cmd_helper.RunCmd(['java', '-jar',
+                         self._PROGUARD_PATH,
+                         '-injars', self._jar_path,
+                         '-dontshrink',
+                         '-dontoptimize',
+                         '-dontobfuscate',
+                         '-dontpreverify',
+                         '-dump', proguard_output.name])
 
-    class_lookup = dict((c['class'], c) for c in p['classes'])
-    def recursive_get_annotations(c):
-      s = c['superclass']
-      if s in class_lookup:
-        a = recursive_get_annotations(class_lookup[s])
-      else:
-        a = {}
-      a.update(c['annotations'])
-      return a
+      clazzez = {}
 
-    test_classes = (c for c in p['classes']
-                    if c['class'].endswith('Test'))
-    for c in test_classes:
-      class_annotations = recursive_get_annotations(c)
-      test_methods = (m for m in c['methods']
-                      if m['method'].startswith('test'))
-      for m in test_methods:
-        qualified_method = '%s#%s' % (c['class'], m['method'])
-        annotations = dict(class_annotations)
-        annotations.update(m['annotations'])
-        self._test_methods[qualified_method] = m
-        self._test_methods[qualified_method]['annotations'] = annotations
+      annotation = None
+      annotation_has_value = False
+      clazz = None
+      method = None
+
+      for line in proguard_output:
+        if len(line) == 0:
+          annotation = None
+          annotation_has_value = False
+          method = None
+          continue
+
+        m = self._PROGUARD_CLASS_RE.match(line)
+        if m:
+          clazz = m.group(1).replace('/', '.')
+          clazzez[clazz] = {
+            'methods': {},
+            'annotations': {}
+          }
+          annotation = None
+          annotation_has_value = False
+          method = None
+          continue
+
+        if not clazz:
+          continue
+
+        m = self._PROGUARD_SUPERCLASS_RE.match(line)
+        if m:
+          clazzez[clazz]['superclass'] = m.group(1).replace('/', '.')
+          continue
+
+        if clazz.endswith('Test'):
+          m = self._PROGUARD_METHOD_RE.match(line)
+          if m:
+            method = m.group(1)
+            clazzez[clazz]['methods'][method] = {'annotations': {}}
+            annotation = None
+            annotation_has_value = False
+            continue
+
+        m = self._PROGUARD_ANNOTATION_RE.match(line)
+        if m:
+          # Ignore the annotation package.
+          annotation = m.group(1).split('/')[-1]
+          if method:
+            clazzez[clazz]['methods'][method]['annotations'][annotation] = None
+          else:
+            clazzez[clazz]['annotations'][annotation] = None
+          continue
+
+        if annotation:
+          if not annotation_has_value:
+            m = self._PROGUARD_ANNOTATION_CONST_RE.match(line)
+            annotation_has_value = bool(m)
+          else:
+            m = self._PROGUARD_ANNOTATION_VALUE_RE.match(line)
+            if m:
+              if method:
+                clazzez[clazz]['methods'][method]['annotations'][annotation] = (
+                    m.group(1))
+              else:
+                clazzez[clazz]['annotations'][annotation] = m.group(1)
+            annotation_has_value = None
+
+    test_clazzez = ((n, i) for n, i in clazzez.items() if n.endswith('Test'))
+    for clazz_name, clazz_info in test_clazzez:
+      logging.info('Processing %s' % clazz_name)
+      c = clazz_name
+      min_sdk_level = None
+
+      while c in clazzez:
+        c_info = clazzez[c]
+        if not min_sdk_level:
+          min_sdk_level = c_info['annotations'].get('MinAndroidSdkLevel', None)
+        c = c_info.get('superclass', None)
+
+      for method_name, method_info in clazz_info['methods'].items():
+        if method_name.startswith('test'):
+          qualified_method = '%s#%s' % (clazz_name, method_name)
+          method_annotations = []
+          for annotation_name, annotation_value in (
+              method_info['annotations'].items()):
+            method_annotations.append(annotation_name)
+            if annotation_value:
+              method_annotations.append(
+                  annotation_name + ':' + annotation_value)
+          self._test_methods[qualified_method] = {
+            'annotations': method_annotations
+          }
+          if min_sdk_level is not None:
+            self._test_methods[qualified_method]['min_sdk_level'] = (
+                int(min_sdk_level))
 
     logging.info('Storing proguard output to %s', self._pickled_proguard_name)
     d = {'VERSION': PICKLE_FORMAT_VERSION,
@@ -117,6 +198,7 @@ class TestJar(object):
          'JAR_MD5SUM': self._CalculateMd5(self._jar_path)}
     with open(self._pickled_proguard_name, 'w') as f:
       f.write(pickle.dumps(d))
+
 
   @staticmethod
   def _IsTestMethod(test):
@@ -127,8 +209,7 @@ class TestJar(object):
     """Returns a list of all annotations for the given |test|. May be empty."""
     if not self._IsTestMethod(test) or not test in self._test_methods:
       return []
-    return [('%s:%s' % (k, v) if v else k)
-            for k, v in self._test_methods[test]['annotations'].iteritems()]
+    return self._test_methods[test]['annotations']
 
   @staticmethod
   def _AnnotationsMatchFilters(annotation_filter_list, annotations):
@@ -149,9 +230,9 @@ class TestJar(object):
 
   def GetAnnotatedTests(self, annotation_filter_list):
     """Returns a list of all tests that match the given annotation filters."""
-    return [test for test in self.GetTestMethods()
+    return [test for test, attr in self.GetTestMethods().iteritems()
             if self._IsTestMethod(test) and self._AnnotationsMatchFilters(
-                annotation_filter_list, self.GetTestAnnotations(test))]
+                annotation_filter_list, attr['annotations'])]
 
   def GetTestMethods(self):
     """Returns a dict of all test methods and relevant attributes.
@@ -171,8 +252,8 @@ class TestJar(object):
     return sorted(tests_missing_annotations)
 
   def _IsTestValidForSdkRange(self, test_name, attached_min_sdk_level):
-    annotations = self.GetTestMethods()[test_name]['annotations']
-    required_min_sdk_level = int(annotations.get('MinAndroidSdkLevel', 0))
+    required_min_sdk_level = self.GetTestMethods()[test_name].get(
+        'min_sdk_level', None)
     return (required_min_sdk_level is None or
             attached_min_sdk_level >= required_min_sdk_level)
 
