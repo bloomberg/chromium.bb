@@ -61,7 +61,7 @@ class DepsWhitelist(object):
       'third_party/sfntly/cpp/src',
       'third_party/skia',
       'third_party/smhasher/src',
-      'third_party/snappy',
+      'third_party/snappy/src',
       'third_party/usrsctp/usrsctplib',
       'third_party/webrtc',
       'third_party/yasm/source/patched-yasm',
