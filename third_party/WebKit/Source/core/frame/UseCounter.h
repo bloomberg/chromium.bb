@@ -120,7 +120,6 @@ public:
         PrefixedMediaAddKey = 71,
         PrefixedMediaGenerateKeyRequest = 72,
         DocumentClear = 74,
-        SVGFontElement = 76,
         XMLDocument = 77,
         XSLProcessingInstruction = 78,
         XSLTProcessor = 79,
@@ -175,11 +174,9 @@ public:
         DOMNodeInsertedIntoDocumentEvent = 147,
         DOMCharacterDataModifiedEvent = 148,
         DocumentAllLegacyCall = 150,
-        HTMLAppletElementLegacyCall = 151, // Removed
         HTMLEmbedElementLegacyCall = 152,
         HTMLObjectElementLegacyCall = 153,
         GetMatchedCSSRules = 155,
-        SVGFontInCSS = 156,
         AttributeOwnerElement = 160, // Removed in DOM4.
         AttributeSpecified = 162, // Removed in DOM4.
         PrefixedAudioDecodedByteCount = 164,
@@ -231,7 +228,6 @@ public:
         // The above items are available in M33 branch.
 
         InitMessageEvent = 222,
-        CSSStyleDeclarationGetPropertyCSSValue = 225,
         PrefixedMediaCancelKeyRequest = 229,
         DOMImplementationHasFeature = 230,
         DOMImplementationHasFeatureReturnFalse = 231,
@@ -241,7 +237,6 @@ public:
         PrefixedMinDevicePixelRatioMediaFeature = 235,
         PrefixedTransform3dMediaFeature = 237,
         PrefixedStorageQuota = 240,
-        ContentSecurityPolicyReportOnlyInMeta = 241,
         ResetReferrerPolicy = 243,
         CaseInsensitiveAttrSelectorMatch = 244, // Case-insensitivity dropped from specification.
         FormNameAccessForImageElement = 246,
@@ -407,9 +402,6 @@ public:
         FocusInOutEvent = 433,
         MouseEventMovementX = 434,
         MouseEventMovementY = 435,
-        MixedContentRaw = 437,
-        MixedContentImage = 438,
-        MixedContentMedia = 439,
         DocumentFonts = 440,
         MixedContentFormsSubmitted = 441,
         FormsSubmitted = 442,
