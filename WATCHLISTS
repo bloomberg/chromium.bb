@@ -259,6 +259,10 @@
       'filepath': 'net/cookies/|'\
                   'chrome/browser/net/sqlite_persistent_cookie_store',
     },
+    'custom_handlers': {
+      'filepath': 'chrome/browser/custom_handlers/|'\
+                  'chrome/common/custom_handlers/',
+    },
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
@@ -859,6 +863,7 @@
     'content_shell': ['jochen+watch@chromium.org',
                       'mkwst+moarreviews-shell@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
+    'custom_handlers': ['vabr@chromium.org'],
     'deep_memory_profiler': ['dmikurube@chromium.org'],
     'device_sensors': ['timvolodine@chromium.org', 'mvanouwerkerk@chromium.org', 'rijubrata.bhaumik@intel.com'],
     'devtools': ['pfeldman@chromium.org', 'yurys@chromium.org',
