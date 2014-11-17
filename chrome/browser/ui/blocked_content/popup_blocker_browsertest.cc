@@ -249,8 +249,9 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
       DontCheckTitle);
 }
 
+// Temporary. http://crbug.com/431335
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       PopupBlockedFakeClickOnAnchor) {
+                       DISABLED_PopupBlockedFakeClickOnAnchor) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -451,7 +452,8 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ClosableAfterNavigation) {
   close_observer.Wait();
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
+// Temporary. http://crbug.com/431335
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, DISABLED_OpenerSuppressed) {
   RunCheckTest(browser(),
                "/popup_blocker/popup-openersuppressed.html",
                ExpectTab,
