@@ -74,11 +74,17 @@ void RespondWithObserver::contextDestroyed()
     m_state = Done;
 }
 
-void RespondWithObserver::didDispatchEvent()
+void RespondWithObserver::didDispatchEvent(bool defaultPrevented)
 {
     ASSERT(executionContext());
     if (m_state != Initial)
         return;
+
+    if (defaultPrevented) {
+        responseWasRejected();
+        return;
+    }
+
     ServiceWorkerGlobalScopeClient::from(executionContext())->didHandleFetchEvent(m_eventID);
     m_state = Done;
 }

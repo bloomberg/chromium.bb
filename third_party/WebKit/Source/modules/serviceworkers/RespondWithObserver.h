@@ -24,7 +24,7 @@ public:
 
     virtual void contextDestroyed() override;
 
-    void didDispatchEvent();
+    void didDispatchEvent(bool defaultPrevented);
 
     // Observes the promise and delays calling didHandleFetchEvent() until the
     // given promise is resolved or rejected.

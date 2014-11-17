@@ -195,9 +195,9 @@ bool EventTarget::dispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
     event->setTarget(this);
     event->setCurrentTarget(this);
     event->setEventPhase(Event::AT_TARGET);
-    bool defaultPrevented = fireEventListeners(event.get());
+    bool defaultWasNotPrevented = fireEventListeners(event.get());
     event->setEventPhase(0);
-    return defaultPrevented;
+    return defaultWasNotPrevented;
 }
 
 void EventTarget::uncaughtExceptionInEventHandler()

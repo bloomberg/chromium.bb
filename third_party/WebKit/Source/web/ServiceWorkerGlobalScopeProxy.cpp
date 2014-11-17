@@ -82,8 +82,9 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
 {
     ASSERT(m_workerGlobalScope);
     RespondWithObserver* observer = RespondWithObserver::create(m_workerGlobalScope, eventID, webRequest.mode(), webRequest.frameType());
+    bool defaultPrevented = false;
     if (!RuntimeEnabledFeatures::serviceWorkerOnFetchEnabled()) {
-        observer->didDispatchEvent();
+        observer->didDispatchEvent(defaultPrevented);
         return;
     }
 
@@ -91,8 +92,8 @@ void ServiceWorkerGlobalScopeProxy::dispatchFetchEvent(int eventID, const WebSer
     request->headers()->setGuard(Headers::ImmutableGuard);
     RefPtrWillBeRawPtr<FetchEvent> fetchEvent(FetchEvent::create(observer, request));
     fetchEvent->setIsReload(webRequest.isReload());
-    m_workerGlobalScope->dispatchEvent(fetchEvent.release());
-    observer->didDispatchEvent();
+    defaultPrevented = !m_workerGlobalScope->dispatchEvent(fetchEvent.release());
+    observer->didDispatchEvent(defaultPrevented);
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchGeofencingEvent(int eventID, WebGeofencingEventType eventType, const WebString& regionID, const WebCircularGeofencingRegion& region)
