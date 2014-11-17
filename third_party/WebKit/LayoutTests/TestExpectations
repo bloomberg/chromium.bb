@@ -1409,3 +1409,7 @@ crbug.com/432790 [ XP ] virtual/prefer_compositing_to_lcd_text/compositing/overf
 crbug.com/431152 inspector/audits/audits-panel-functional.html [ Pass Failure ]
 crbug.com/431778 [ Win7 Linux Debug ] http/tests/security/shape-image-cors.html [ Pass Crash ]
 crbug.com/431643 [ Win ] http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_cross_origin_redirect_chain_allow_timing.html [ Pass Failure ]
+
+# Temporarily skip tests and rebaseline after next V8 roll.
+crbug.com/427868 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
+crbug.com/427868 inspector/console/console-format-es6.html [ NeedsManualRebaseline ]
