@@ -481,5 +481,23 @@ TEST_F(InputMethodUtilTest, TestInputMethodIDMigration) {
   }
 }
 
+// Test getting hardware input method IDs.
+TEST_F(InputMethodUtilTest, TestHardwareInputMethodIDs) {
+  util_.SetHardwareKeyboardLayoutForTesting("xkb:ru::rus");
+  std::vector<std::string> input_method_ids = util_.GetHardwareInputMethodIds();
+  std::vector<std::string> login_input_method_ids =
+      util_.GetHardwareLoginInputMethodIds();
+
+  EXPECT_EQ(2U, input_method_ids.size());
+  EXPECT_EQ(1U, login_input_method_ids.size());
+
+  EXPECT_EQ("xkb:us::eng", extension_ime_util::GetComponentIDByInputMethodID(
+      input_method_ids[0]));
+  EXPECT_EQ("xkb:ru::rus", extension_ime_util::GetComponentIDByInputMethodID(
+      input_method_ids[1]));
+  EXPECT_EQ("xkb:us::eng", extension_ime_util::GetComponentIDByInputMethodID(
+      login_input_method_ids[0]));
+}
+
 }  // namespace input_method
 }  // namespace chromeos

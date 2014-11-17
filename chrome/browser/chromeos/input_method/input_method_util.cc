@@ -527,15 +527,17 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
     if (IsLoginKeyboard(hardware_layouts_[i]))
       hardware_login_layouts_.push_back(hardware_layouts_[i]);
   }
-  if (hardware_layouts_.empty()) {
-    // This is totally fine if it's empty. The hardware keyboard layout is
-    // not stored if startup_manifest.json (OEM customization data) is not
-    // present (ex. Cr48 doen't have that file).
-    hardware_layouts_.push_back(GetFallbackInputMethodDescriptor().id());
-  }
 
-  if (hardware_login_layouts_.empty())
-    hardware_login_layouts_.push_back(GetFallbackInputMethodDescriptor().id());
+  if (hardware_login_layouts_.empty()) {
+    // This is totally fine if |hardware_layouts_| is empty. The hardware
+    // keyboard layout is not stored if startup_manifest.json
+    // (OEM customization data) is not present (ex. Cr48 doen't have that file).
+    // So need to make sure |hardware_login_layouts_| is not empty, and
+    // |hardware_layouts_| contains at least one login layout.
+    std::string fallback_id = GetFallbackInputMethodDescriptor().id();
+    hardware_layouts_.insert(hardware_layouts_.begin(), fallback_id);
+    hardware_login_layouts_.push_back(fallback_id);
+  }
 }
 
 void InputMethodUtil::SetHardwareKeyboardLayoutForTesting(
