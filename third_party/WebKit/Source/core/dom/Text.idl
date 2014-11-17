@@ -25,7 +25,7 @@
     [RaisesException] Text splitText(unsigned long offset);
 
     // Introduced in DOM Level 3:
-    readonly attribute DOMString       wholeText;
+    [MeasureAs=TextWholeText] readonly attribute DOMString wholeText;
     [MeasureAs=TextReplaceWholeText] Text replaceWholeText(DOMString content); // Removed from DOM4.
 
     // Shadow DOM API
