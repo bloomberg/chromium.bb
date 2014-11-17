@@ -21,12 +21,12 @@ namespace {
 TEST(PictureLayerTilingSetTest, NoResources) {
   FakePictureLayerTilingClient client;
   gfx::Size layer_bounds(1000, 800);
-  PictureLayerTilingSet set(&client);
+  auto set = PictureLayerTilingSet::Create(&client);
   client.SetTileSize(gfx::Size(256, 256));
 
-  set.AddTiling(1.0, layer_bounds);
-  set.AddTiling(1.5, layer_bounds);
-  set.AddTiling(2.0, layer_bounds);
+  set->AddTiling(1.0, layer_bounds);
+  set->AddTiling(1.5, layer_bounds);
+  set->AddTiling(2.0, layer_bounds);
 
   float contents_scale = 2.0;
   gfx::Size content_bounds(
@@ -34,11 +34,8 @@ TEST(PictureLayerTilingSetTest, NoResources) {
   gfx::Rect content_rect(content_bounds);
 
   Region remaining(content_rect);
-  PictureLayerTilingSet::CoverageIterator iter(
-      &set,
-      contents_scale,
-      content_rect,
-      contents_scale);
+  PictureLayerTilingSet::CoverageIterator iter(set.get(), contents_scale,
+                                               content_rect, contents_scale);
   for (; iter; ++iter) {
     gfx::Rect geometry_rect = iter.geometry_rect();
     EXPECT_TRUE(content_rect.Contains(geometry_rect));
@@ -62,125 +59,124 @@ TEST(PictureLayerTilingSetTest, TilingRange) {
   PictureLayerTiling* high_res_tiling;
   PictureLayerTiling* low_res_tiling;
 
-  PictureLayerTilingSet set(&client);
-  set.AddTiling(2.0, layer_bounds);
-  high_res_tiling = set.AddTiling(1.0, layer_bounds);
+  auto set = PictureLayerTilingSet::Create(&client);
+  set->AddTiling(2.0, layer_bounds);
+  high_res_tiling = set->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set.AddTiling(0.5, layer_bounds);
-  low_res_tiling = set.AddTiling(0.25, layer_bounds);
+  set->AddTiling(0.5, layer_bounds);
+  low_res_tiling = set->AddTiling(0.25, layer_bounds);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
-  set.AddTiling(0.125, layer_bounds);
+  set->AddTiling(0.125, layer_bounds);
 
   higher_than_high_res_range =
-      set.GetTilingRange(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
+      set->GetTilingRange(PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
   EXPECT_EQ(0u, higher_than_high_res_range.start);
   EXPECT_EQ(1u, higher_than_high_res_range.end);
 
-  high_res_range = set.GetTilingRange(PictureLayerTilingSet::HIGH_RES);
+  high_res_range = set->GetTilingRange(PictureLayerTilingSet::HIGH_RES);
   EXPECT_EQ(1u, high_res_range.start);
   EXPECT_EQ(2u, high_res_range.end);
 
   between_high_and_low_res_range =
-      set.GetTilingRange(PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
+      set->GetTilingRange(PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
   EXPECT_EQ(2u, between_high_and_low_res_range.start);
   EXPECT_EQ(3u, between_high_and_low_res_range.end);
 
-  low_res_range = set.GetTilingRange(PictureLayerTilingSet::LOW_RES);
+  low_res_range = set->GetTilingRange(PictureLayerTilingSet::LOW_RES);
   EXPECT_EQ(3u, low_res_range.start);
   EXPECT_EQ(4u, low_res_range.end);
 
   lower_than_low_res_range =
-      set.GetTilingRange(PictureLayerTilingSet::LOWER_THAN_LOW_RES);
+      set->GetTilingRange(PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(4u, lower_than_low_res_range.start);
   EXPECT_EQ(5u, lower_than_low_res_range.end);
 
-  PictureLayerTilingSet set_without_low_res(&client);
-  set_without_low_res.AddTiling(2.0, layer_bounds);
-  high_res_tiling = set_without_low_res.AddTiling(1.0, layer_bounds);
+  auto set_without_low_res = PictureLayerTilingSet::Create(&client);
+  set_without_low_res->AddTiling(2.0, layer_bounds);
+  high_res_tiling = set_without_low_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  set_without_low_res.AddTiling(0.5, layer_bounds);
-  set_without_low_res.AddTiling(0.25, layer_bounds);
+  set_without_low_res->AddTiling(0.5, layer_bounds);
+  set_without_low_res->AddTiling(0.25, layer_bounds);
 
-  higher_than_high_res_range = set_without_low_res.GetTilingRange(
+  higher_than_high_res_range = set_without_low_res->GetTilingRange(
       PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
   EXPECT_EQ(0u, higher_than_high_res_range.start);
   EXPECT_EQ(1u, higher_than_high_res_range.end);
 
   high_res_range =
-      set_without_low_res.GetTilingRange(PictureLayerTilingSet::HIGH_RES);
+      set_without_low_res->GetTilingRange(PictureLayerTilingSet::HIGH_RES);
   EXPECT_EQ(1u, high_res_range.start);
   EXPECT_EQ(2u, high_res_range.end);
 
-  between_high_and_low_res_range = set_without_low_res.GetTilingRange(
+  between_high_and_low_res_range = set_without_low_res->GetTilingRange(
       PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
   EXPECT_EQ(2u, between_high_and_low_res_range.start);
   EXPECT_EQ(4u, between_high_and_low_res_range.end);
 
   low_res_range =
-      set_without_low_res.GetTilingRange(PictureLayerTilingSet::LOW_RES);
+      set_without_low_res->GetTilingRange(PictureLayerTilingSet::LOW_RES);
   EXPECT_EQ(0u, low_res_range.end - low_res_range.start);
 
-  lower_than_low_res_range = set_without_low_res.GetTilingRange(
+  lower_than_low_res_range = set_without_low_res->GetTilingRange(
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  PictureLayerTilingSet set_with_only_high_and_low_res(&client);
-  high_res_tiling = set_with_only_high_and_low_res.AddTiling(1.0, layer_bounds);
+  auto set_with_only_high_and_low_res = PictureLayerTilingSet::Create(&client);
+  high_res_tiling =
+      set_with_only_high_and_low_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
-  low_res_tiling = set_with_only_high_and_low_res.AddTiling(0.5, layer_bounds);
+  low_res_tiling = set_with_only_high_and_low_res->AddTiling(0.5, layer_bounds);
   low_res_tiling->set_resolution(LOW_RESOLUTION);
 
-  higher_than_high_res_range = set_with_only_high_and_low_res.GetTilingRange(
+  higher_than_high_res_range = set_with_only_high_and_low_res->GetTilingRange(
       PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
   EXPECT_EQ(0u,
             higher_than_high_res_range.end - higher_than_high_res_range.start);
 
-  high_res_range = set_with_only_high_and_low_res.GetTilingRange(
+  high_res_range = set_with_only_high_and_low_res->GetTilingRange(
       PictureLayerTilingSet::HIGH_RES);
   EXPECT_EQ(0u, high_res_range.start);
   EXPECT_EQ(1u, high_res_range.end);
 
   between_high_and_low_res_range =
-      set_with_only_high_and_low_res.GetTilingRange(
+      set_with_only_high_and_low_res->GetTilingRange(
           PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
-  EXPECT_EQ(0u,
-            between_high_and_low_res_range.end -
-                between_high_and_low_res_range.start);
+  EXPECT_EQ(0u, between_high_and_low_res_range.end -
+                    between_high_and_low_res_range.start);
 
-  low_res_range = set_with_only_high_and_low_res.GetTilingRange(
+  low_res_range = set_with_only_high_and_low_res->GetTilingRange(
       PictureLayerTilingSet::LOW_RES);
   EXPECT_EQ(1u, low_res_range.start);
   EXPECT_EQ(2u, low_res_range.end);
 
-  lower_than_low_res_range = set_with_only_high_and_low_res.GetTilingRange(
+  lower_than_low_res_range = set_with_only_high_and_low_res->GetTilingRange(
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 
-  PictureLayerTilingSet set_with_only_high_res(&client);
-  high_res_tiling = set_with_only_high_res.AddTiling(1.0, layer_bounds);
+  auto set_with_only_high_res = PictureLayerTilingSet::Create(&client);
+  high_res_tiling = set_with_only_high_res->AddTiling(1.0, layer_bounds);
   high_res_tiling->set_resolution(HIGH_RESOLUTION);
 
-  higher_than_high_res_range = set_with_only_high_res.GetTilingRange(
+  higher_than_high_res_range = set_with_only_high_res->GetTilingRange(
       PictureLayerTilingSet::HIGHER_THAN_HIGH_RES);
   EXPECT_EQ(0u,
             higher_than_high_res_range.end - higher_than_high_res_range.start);
 
   high_res_range =
-      set_with_only_high_res.GetTilingRange(PictureLayerTilingSet::HIGH_RES);
+      set_with_only_high_res->GetTilingRange(PictureLayerTilingSet::HIGH_RES);
   EXPECT_EQ(0u, high_res_range.start);
   EXPECT_EQ(1u, high_res_range.end);
 
-  between_high_and_low_res_range = set_with_only_high_res.GetTilingRange(
+  between_high_and_low_res_range = set_with_only_high_res->GetTilingRange(
       PictureLayerTilingSet::BETWEEN_HIGH_AND_LOW_RES);
-  EXPECT_EQ(0u,
-            between_high_and_low_res_range.end -
-                between_high_and_low_res_range.start);
+  EXPECT_EQ(0u, between_high_and_low_res_range.end -
+                    between_high_and_low_res_range.start);
 
   low_res_range =
-      set_with_only_high_res.GetTilingRange(PictureLayerTilingSet::LOW_RES);
+      set_with_only_high_res->GetTilingRange(PictureLayerTilingSet::LOW_RES);
   EXPECT_EQ(0u, low_res_range.end - low_res_range.start);
 
-  lower_than_low_res_range = set_with_only_high_res.GetTilingRange(
+  lower_than_low_res_range = set_with_only_high_res->GetTilingRange(
       PictureLayerTilingSet::LOWER_THAN_LOW_RES);
   EXPECT_EQ(0u, lower_than_low_res_range.end - lower_than_low_res_range.start);
 }
@@ -213,11 +209,11 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
     client.SetTileSize(gfx::Size(256, 256));
     client.set_tree(PENDING_TREE);
     gfx::Size layer_bounds(1000, 800);
-    PictureLayerTilingSet set(&client);
+    auto set = PictureLayerTilingSet::Create(&client);
 
     float scale = min_scale;
     for (int i = 0; i < num_tilings; ++i, scale += scale_increment) {
-      PictureLayerTiling* tiling = set.AddTiling(scale, layer_bounds);
+      PictureLayerTiling* tiling = set->AddTiling(scale, layer_bounds);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
       client.tile_manager()->InitializeTilesWithResourcesForTesting(tiles);
@@ -230,10 +226,7 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
 
     Region remaining(content_rect);
     PictureLayerTilingSet::CoverageIterator iter(
-        &set,
-        max_contents_scale,
-        content_rect,
-        ideal_contents_scale);
+        set.get(), max_contents_scale, content_rect, ideal_contents_scale);
     for (; iter; ++iter) {
       gfx::Rect geometry_rect = iter.geometry_rect();
       EXPECT_TRUE(content_rect.Contains(geometry_rect));
@@ -295,8 +288,8 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     source_client_.set_tree(PENDING_TREE);
     target_client_.SetTileSize(tile_size_);
     target_client_.set_tree(PENDING_TREE);
-    source_.reset(new PictureLayerTilingSet(&source_client_));
-    target_.reset(new PictureLayerTilingSet(&target_client_));
+    source_ = PictureLayerTilingSet::Create(&source_client_);
+    target_ = PictureLayerTilingSet::Create(&target_client_);
   }
 
   // Sync from source to target.
@@ -308,8 +301,8 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     for (size_t i = 0; i < target_->num_tilings(); ++i)
       target_->tiling_at(i)->CreateAllTilesForTesting();
 
-    target_->SyncTilings(
-        *source_.get(), new_bounds, invalidation, minimum_scale);
+    target_->SyncTilings(*source_.get(), new_bounds, invalidation,
+                         minimum_scale, target_client_.raster_source());
   }
   void SyncTilings(const gfx::Size& new_bounds) {
     Region invalidation;
@@ -354,7 +347,7 @@ class PictureLayerTilingSetSyncTest : public testing::Test {
     }
 
     for (size_t i = 0; i < target_->num_tilings(); ++i)
-      ValidateTiling(target_->tiling_at(i), target_client_.GetRasterSource());
+      ValidateTiling(target_->tiling_at(i), target_client_.raster_source());
   }
 
   void ValidateTiling(const PictureLayerTiling* tiling,

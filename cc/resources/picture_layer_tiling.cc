@@ -168,6 +168,7 @@ void PictureLayerTiling::CreateMissingTilesInLiveTilesRect() {
 }
 
 void PictureLayerTiling::UpdateTilesToCurrentRasterSource(
+    RasterSource* raster_source,
     const Region& layer_invalidation,
     const gfx::Size& new_layer_bounds) {
   DCHECK(!new_layer_bounds.IsEmpty());
@@ -249,7 +250,6 @@ void PictureLayerTiling::UpdateTilesToCurrentRasterSource(
     Invalidate(layer_invalidation);
   }
 
-  RasterSource* raster_source = client_->GetRasterSource();
   for (TileMap::const_iterator it = tiles_.begin(); it != tiles_.end(); ++it)
     it->second->set_raster_source(raster_source);
   VerifyLiveTilesRect();

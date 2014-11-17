@@ -124,7 +124,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->UpdateRasterSource(raster_source_);
 
-  DCHECK(!raster_source_->IsSolidColor() || !tilings_->num_tilings());
+  DCHECK_IMPLIES(raster_source_->IsSolidColor(), tilings_->num_tilings() == 0);
   // Tilings would be expensive to push, so we swap.
   layer_impl->tilings_.swap(tilings_);
   layer_impl->tilings_->SetClient(layer_impl);
@@ -632,10 +632,6 @@ scoped_refptr<Tile> PictureLayerImpl::CreateTile(PictureLayerTiling* tiling,
       flags);
 }
 
-RasterSource* PictureLayerImpl::GetRasterSource() {
-  return raster_source_.get();
-}
-
 const Region* PictureLayerImpl::GetPendingInvalidation() {
   if (layer_tree_impl()->IsPendingTree())
     return &invalidation_;
@@ -788,9 +784,9 @@ void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
 
   bool synced_high_res_tiling = false;
   if (CanHaveTilings()) {
-    synced_high_res_tiling =
-        tilings_->SyncTilings(*other->tilings_, raster_source_->GetSize(),
-                              invalidation_, MinimumContentsScale());
+    synced_high_res_tiling = tilings_->SyncTilings(
+        *other->tilings_, raster_source_->GetSize(), invalidation_,
+        MinimumContentsScale(), raster_source_.get());
   } else {
     RemoveAllTilings();
   }
@@ -865,7 +861,7 @@ void PictureLayerImpl::DoPostCommitInitialization() {
   DCHECK(layer_tree_impl()->IsPendingTree());
 
   if (!tilings_)
-    tilings_ = make_scoped_ptr(new PictureLayerTilingSet(this));
+    tilings_ = PictureLayerTilingSet::Create(this);
 
   PictureLayerImpl* twin_layer = GetPendingOrActiveTwinLayer();
   if (twin_layer) {

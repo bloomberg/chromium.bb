@@ -49,10 +49,6 @@ scoped_refptr<Tile> FakePictureLayerTilingClient::CreateTile(
   return tile_manager_->CreateTile(pile_.get(), tile_size_, rect, 1, 0, 0, 0);
 }
 
-RasterSource* FakePictureLayerTilingClient::GetRasterSource() {
-  return pile_.get();
-}
-
 void FakePictureLayerTilingClient::SetTileSize(const gfx::Size& tile_size) {
   tile_size_ = tile_size;
 }

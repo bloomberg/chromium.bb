@@ -34,7 +34,9 @@ class CC_EXPORT PictureLayerTilingSet {
     size_t end;
   };
 
-  explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
+  static scoped_ptr<PictureLayerTilingSet> Create(
+      PictureLayerTilingClient* client);
+
   ~PictureLayerTilingSet();
 
   void SetClient(PictureLayerTilingClient* client);
@@ -50,7 +52,8 @@ class CC_EXPORT PictureLayerTilingSet {
   bool SyncTilings(const PictureLayerTilingSet& other,
                    const gfx::Size& new_layer_bounds,
                    const Region& layer_invalidation,
-                   float minimum_contents_scale);
+                   float minimum_contents_scale,
+                   RasterSource* raster_source);
 
   PictureLayerTiling* AddTiling(float contents_scale,
                                 const gfx::Size& layer_bounds);
@@ -123,6 +126,8 @@ class CC_EXPORT PictureLayerTilingSet {
   TilingRange GetTilingRange(TilingRangeType type) const;
 
  private:
+  explicit PictureLayerTilingSet(PictureLayerTilingClient* client);
+
   PictureLayerTilingClient* client_;
   ScopedPtrVector<PictureLayerTiling> tilings_;
 

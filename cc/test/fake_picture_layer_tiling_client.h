@@ -23,7 +23,6 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   // PictureLayerTilingClient implementation.
   scoped_refptr<Tile> CreateTile(PictureLayerTiling* tiling,
                                  const gfx::Rect& rect) override;
-  RasterSource* GetRasterSource() override;
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override;
   TilePriority::PriorityBin GetMaxTilePriorityBin() const override;
   size_t GetMaxTilesForInterestArea() const override;
@@ -61,6 +60,7 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
     skewport_extrapolation_limit_in_content_pixels_ = limit;
   }
   void set_tree(WhichTree tree) { tree_ = tree; }
+  RasterSource* raster_source() { return pile_.get(); }
 
   TileManager* tile_manager() const {
     return tile_manager_.get();

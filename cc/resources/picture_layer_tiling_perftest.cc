@@ -58,7 +58,8 @@ class PictureLayerTilingPerfTest : public testing::Test {
     timer_.Reset();
     do {
       picture_layer_tiling_->UpdateTilesToCurrentRasterSource(
-          region, picture_layer_tiling_->tiling_size());
+          picture_layer_tiling_client_.raster_source(), region,
+          picture_layer_tiling_->tiling_size());
       timer_.NextLap();
     } while (!timer_.HasTimeLimitExpired());
 

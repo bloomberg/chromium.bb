@@ -194,9 +194,9 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterTilePriorityQueue) {
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
-      invalidation, gfx::Size(1000, 1000));
+      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
   pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
-      invalidation, gfx::Size(1000, 1000));
+      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
 
   active_layer_->ResetAllTilesPriorities();
   pending_layer_->ResetAllTilesPriorities();
@@ -442,9 +442,9 @@ TEST_F(TileManagerTilePriorityQueueTest, EvictionTilePriorityQueue) {
   // Invalidate the pending tree.
   pending_layer_->set_invalidation(invalidation);
   pending_layer_->HighResTiling()->UpdateTilesToCurrentRasterSource(
-      invalidation, gfx::Size(1000, 1000));
+      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
   pending_layer_->LowResTiling()->UpdateTilesToCurrentRasterSource(
-      invalidation, gfx::Size(1000, 1000));
+      pending_layer_->raster_source(), invalidation, gfx::Size(1000, 1000));
 
   active_layer_->ResetAllTilesPriorities();
   pending_layer_->ResetAllTilesPriorities();

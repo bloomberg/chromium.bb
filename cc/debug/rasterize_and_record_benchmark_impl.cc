@@ -99,10 +99,6 @@ class FixedInvalidationPictureLayerTilingClient
     return base_client_->CreateTile(tiling, content_rect);
   }
 
-  RasterSource* GetRasterSource() override {
-    return base_client_->GetRasterSource();
-  }
-
   gfx::Size CalculateTileSize(const gfx::Size& content_bounds) const override {
     return base_client_->CalculateTileSize(content_bounds);
   }
@@ -217,10 +213,10 @@ void RasterizeAndRecordBenchmarkImpl::RunOnLayer(PictureLayerImpl* layer) {
 
   FixedInvalidationPictureLayerTilingClient client(
       layer, gfx::Rect(layer->content_bounds()));
-  PictureLayerTilingSet tiling_set(&client);
+  auto tiling_set = PictureLayerTilingSet::Create(&client);
 
   PictureLayerTiling* tiling =
-      tiling_set.AddTiling(layer->contents_scale_x(), layer->bounds());
+      tiling_set->AddTiling(layer->contents_scale_x(), layer->bounds());
   tiling->CreateAllTilesForTesting();
   for (PictureLayerTiling::CoverageIterator it(
            tiling, layer->contents_scale_x(), layer->visible_content_rect());

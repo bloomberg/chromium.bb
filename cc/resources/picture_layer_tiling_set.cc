@@ -19,6 +19,12 @@ class LargestToSmallestScaleFunctor {
 
 }  // namespace
 
+// static
+scoped_ptr<PictureLayerTilingSet> PictureLayerTilingSet::Create(
+    PictureLayerTilingClient* client) {
+  return make_scoped_ptr(new PictureLayerTilingSet(client));
+}
+
 PictureLayerTilingSet::PictureLayerTilingSet(PictureLayerTilingClient* client)
     : client_(client) {
 }
@@ -40,7 +46,8 @@ void PictureLayerTilingSet::RemoveTilesInRegion(const Region& region) {
 bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
                                         const gfx::Size& new_layer_bounds,
                                         const Region& layer_invalidation,
-                                        float minimum_contents_scale) {
+                                        float minimum_contents_scale,
+                                        RasterSource* raster_source) {
   if (new_layer_bounds.IsEmpty()) {
     RemoveAllTilings();
     return false;
@@ -69,8 +76,8 @@ bool PictureLayerTilingSet::SyncTilings(const PictureLayerTilingSet& other,
     if (PictureLayerTiling* this_tiling = TilingAtScale(contents_scale)) {
       this_tiling->set_resolution(other.tilings_[i]->resolution());
 
-      this_tiling->UpdateTilesToCurrentRasterSource(layer_invalidation,
-                                                    new_layer_bounds);
+      this_tiling->UpdateTilesToCurrentRasterSource(
+          raster_source, layer_invalidation, new_layer_bounds);
       this_tiling->CreateMissingTilesInLiveTilesRect();
       if (this_tiling->resolution() == HIGH_RESOLUTION)
         have_high_res_tiling = true;

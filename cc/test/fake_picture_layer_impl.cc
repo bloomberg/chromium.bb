@@ -105,7 +105,7 @@ void FakePictureLayerImpl::SetRasterSource(
   if (tilings()) {
     for (size_t i = 0; i < num_tilings(); ++i) {
       tilings()->tiling_at(i)->UpdateTilesToCurrentRasterSource(
-          Region(), raster_source_->GetSize());
+          raster_source_.get(), Region(), raster_source_->GetSize());
     }
   }
 }
