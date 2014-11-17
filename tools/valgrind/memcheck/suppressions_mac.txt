@@ -233,4 +233,12 @@
    fun:_ZN15tracked_objects10ThreadData11TallyADeathERKNS_6BirthsEiRKNS_13TaskStopwatchE
    fun:_ZN15tracked_objects10ThreadData31TallyRunOnNamedThreadIfTrackingERKN4base12TrackingInfoERKNS_13TaskStopwatchE
 }
-
+{
+   bug_431906
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content21PluginLoaderPosixTestC2Ev
+   fun:_ZN7content45PluginLoaderPosixTest_PluginLaunchFailed_TestC2Ev
+   fun:_ZN7content45PluginLoaderPosixTest_PluginLaunchFailed_TestC1Ev
+   fun:_ZN7testing8internal15TestFactoryImplIN7content45PluginLoaderPosixTest_PluginLaunchFailed_TestEE10CreateTestEv
+}
