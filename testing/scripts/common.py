@@ -68,6 +68,7 @@ def run_runtest(cmd_args, runtest_args):
       '--builder-name', cmd_args.properties['buildername'],
       '--slave-name', cmd_args.properties['slavename'],
       '--build-number', str(cmd_args.properties['buildnumber']),
+      '--build-properties', json.dumps(cmd_args.properties),
   ] + runtest_args)
 
 
