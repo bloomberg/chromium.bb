@@ -266,10 +266,6 @@ private:
 
     Document& document() { return *m_document; }
 
-    // FIXME: This likely belongs on RuleSet.
-    typedef WillBeHeapHashMap<StringImpl*, RefPtrWillBeMember<StyleRuleKeyframes> > KeyframesRuleMap;
-    KeyframesRuleMap m_keyframesRuleMap;
-
     static RenderStyle* s_styleNotYetAvailable;
 
     void cacheBorderAndBackground();

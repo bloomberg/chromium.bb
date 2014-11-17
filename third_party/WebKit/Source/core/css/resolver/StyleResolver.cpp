@@ -1595,7 +1595,6 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const
 void StyleResolver::trace(Visitor* visitor)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_keyframesRuleMap);
     visitor->trace(m_matchedPropertiesCache);
     visitor->trace(m_viewportDependentMediaQueryResults);
     visitor->trace(m_selectorFilter);
