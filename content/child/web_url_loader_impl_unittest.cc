@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "content/child/request_extra_data.h"
 #include "content/child/request_info.h"
@@ -134,8 +135,10 @@ class TestResourceDispatcher : public ResourceDispatcher {
 
 class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
  public:
-  TestWebURLLoaderClient(ResourceDispatcher* dispatcher)
-      : loader_(new WebURLLoaderImpl(dispatcher)),
+  TestWebURLLoaderClient(
+      ResourceDispatcher* dispatcher,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : loader_(new WebURLLoaderImpl(dispatcher, task_runner)),
         expect_multipart_response_(false),
         delete_on_receive_redirect_(false),
         delete_on_receive_response_(false),
@@ -144,8 +147,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
         delete_on_fail_(false),
         did_receive_redirect_(false),
         did_receive_response_(false),
-        did_finish_(false) {
-  }
+        did_finish_(false) {}
 
   virtual ~TestWebURLLoaderClient() {}
 
@@ -284,7 +286,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
 class WebURLLoaderImplTest : public testing::Test {
  public:
-  explicit WebURLLoaderImplTest() : client_(&dispatcher_) {}
+  explicit WebURLLoaderImplTest()
+      : client_(&dispatcher_, message_loop_.task_runner()) {}
   ~WebURLLoaderImplTest() override {}
 
   void DoStartAsyncRequest() {
@@ -379,10 +382,9 @@ class WebURLLoaderImplTest : public testing::Test {
   base::MessageLoop* message_loop() { return &message_loop_; }
 
  private:
+  base::MessageLoop message_loop_;
   TestResourceDispatcher dispatcher_;
   TestWebURLLoaderClient client_;
-
-  base::MessageLoop message_loop_;
 };
 
 TEST_F(WebURLLoaderImplTest, Success) {

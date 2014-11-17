@@ -12,6 +12,12 @@
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
 #include "url/gurl.h"
 
+namespace base {
+
+class SingleThreadTaskRunner;
+
+}  // namespace base
+
 namespace content {
 
 class ResourceDispatcher;
@@ -29,7 +35,9 @@ struct StreamOverrideParameters {
 class CONTENT_EXPORT WebURLLoaderImpl
     : public NON_EXPORTED_BASE(blink::WebURLLoader) {
  public:
-  explicit WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher);
+  explicit WebURLLoaderImpl(
+      ResourceDispatcher* resource_dispatcher,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   virtual ~WebURLLoaderImpl();
 
   static blink::WebURLError CreateError(const blink::WebURL& unreachable_url,

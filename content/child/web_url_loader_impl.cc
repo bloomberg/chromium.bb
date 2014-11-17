@@ -13,7 +13,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "content/child/ftp_directory_listing_response_delegate.h"
@@ -294,7 +294,9 @@ RequestContextType GetRequestContextType(const WebURLRequest& request) {
 class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
                                   public RequestPeer {
  public:
-  Context(WebURLLoaderImpl* loader, ResourceDispatcher* resource_dispatcher);
+  Context(WebURLLoaderImpl* loader,
+          ResourceDispatcher* resource_dispatcher,
+          scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   WebURLLoaderClient* client() const { return client_; }
   void set_client(WebURLLoaderClient* client) { client_ = client; }
@@ -339,6 +341,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   WebURLRequest request_;
   WebURLLoaderClient* client_;
   ResourceDispatcher* resource_dispatcher_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   WebReferrerPolicy referrer_policy_;
   scoped_ptr<ResourceLoaderBridge> bridge_;
   scoped_ptr<FtpDirectoryListingResponseDelegate> ftp_listing_delegate_;
@@ -353,11 +356,14 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
   bool got_all_stream_body_data_;
 };
 
-WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader,
-                                   ResourceDispatcher* resource_dispatcher)
+WebURLLoaderImpl::Context::Context(
+    WebURLLoaderImpl* loader,
+    ResourceDispatcher* resource_dispatcher,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : loader_(loader),
       client_(NULL),
       resource_dispatcher_(resource_dispatcher),
+      task_runner_(task_runner),
       referrer_policy_(blink::WebReferrerPolicyDefault),
       got_all_stream_body_data_(false) {
 }
@@ -434,8 +440,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
           GetInfoFromDataURL(sync_load_response->url, sync_load_response,
                              &sync_load_response->data);
     } else {
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE, base::Bind(&Context::HandleDataURL, this));
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&Context::HandleDataURL, this));
     }
     return;
   }
@@ -952,8 +958,10 @@ void WebURLLoaderImpl::Context::OnHandleGotWritable(MojoResult result) {
 
 // WebURLLoaderImpl -----------------------------------------------------------
 
-WebURLLoaderImpl::WebURLLoaderImpl(ResourceDispatcher* resource_dispatcher)
-    : context_(new Context(this, resource_dispatcher)) {
+WebURLLoaderImpl::WebURLLoaderImpl(
+    ResourceDispatcher* resource_dispatcher,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : context_(new Context(this, resource_dispatcher, task_runner)) {
 }
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {

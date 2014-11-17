@@ -458,7 +458,8 @@ WebURLLoader* BlinkPlatformImpl::createURLLoader() {
   // There may be no child thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return new WebURLLoaderImpl(
-      child_thread ? child_thread->resource_dispatcher() : NULL);
+      child_thread ? child_thread->resource_dispatcher() : NULL,
+      MainTaskRunnerForCurrentThread());
 }
 
 blink::WebSocketHandle* BlinkPlatformImpl::createWebSocketHandle() {
@@ -506,14 +507,8 @@ blink::WebThread* BlinkPlatformImpl::currentThread() {
   if (thread)
     return (thread);
 
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner;
-  if (main_thread_task_runner_.get() &&
-      main_thread_task_runner_->BelongsToCurrentThread()) {
-    task_runner = main_thread_task_runner_;
-  } else {
-    task_runner = base::MessageLoopProxy::current();
-  }
-
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      MainTaskRunnerForCurrentThread();
   if (!task_runner.get())
     return NULL;
 
@@ -1202,6 +1197,16 @@ void BlinkPlatformImpl::ResumeSharedTimer() {
     shared_timer_fire_time_was_set_while_suspended_ = false;
     setSharedTimerFireInterval(
         shared_timer_fire_time_ - monotonicallyIncreasingTime());
+  }
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+BlinkPlatformImpl::MainTaskRunnerForCurrentThread() {
+  if (main_thread_task_runner_.get() &&
+      main_thread_task_runner_->BelongsToCurrentThread()) {
+    return main_thread_task_runner_;
+  } else {
+    return base::MessageLoopProxy::current();
   }
 }
 

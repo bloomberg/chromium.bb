@@ -159,9 +159,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
   void ResumeSharedTimer();
   virtual void OnStartSharedTimer(base::TimeDelta delay) {}
 
- protected:
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
  private:
   static void DestroyCurrentThread(void*);
 
@@ -172,6 +169,9 @@ class CONTENT_EXPORT BlinkPlatformImpl
 
   void InternalInit();
 
+  scoped_refptr<base::SingleThreadTaskRunner> MainTaskRunnerForCurrentThread();
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   WebThemeEngineImpl native_theme_engine_;
   WebFallbackThemeEngineImpl fallback_theme_engine_;
   base::OneShotTimer<BlinkPlatformImpl> shared_timer_;
