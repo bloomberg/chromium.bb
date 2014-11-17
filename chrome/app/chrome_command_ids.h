@@ -207,12 +207,11 @@
 #define IDC_RECENT_TABS_MENU            40239
 #define IDC_RECENT_TABS_NO_DEVICE_TABS  40240
 #define IDC_SHOW_SETTINGS_RESET_BUBBLE  40241
-#define IDC_TAKE_SCREENSHOT             40242
-#define IDC_SHOW_SYNC_ERROR             40243
-#define IDC_DISTILL_PAGE                40244
-#define IDC_HELP_MENU                   40245
-#define IDC_EXTENSIONS_OVERFLOW_MENU    40246
-#define IDC_SHOW_SRT_BUBBLE             40247
+#define IDC_SHOW_SYNC_ERROR             40242
+#define IDC_DISTILL_PAGE                40243
+#define IDC_HELP_MENU                   40244
+#define IDC_EXTENSIONS_OVERFLOW_MENU    40245
+#define IDC_SHOW_SRT_BUBBLE             40246
 
 // Spell-check
 // Insert any additional suggestions before _LAST; these have to be consecutive.

@@ -114,8 +114,6 @@
       'browser/ui/bookmarks/bookmark_utils.h',
       'browser/ui/bookmarks/recently_used_folders_combo_model.cc',
       'browser/ui/bookmarks/recently_used_folders_combo_model.h',
-      'browser/ui/browser_commands_chromeos.cc',
-      'browser/ui/browser_commands_chromeos.h',
       'browser/ui/browser_commands_mac.cc',
       'browser/ui/browser_commands_mac.h',
       'browser/ui/browser_content_translate_driver_observer.cc',
