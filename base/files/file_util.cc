@@ -47,12 +47,6 @@ bool Move(const FilePath& from_path, const FilePath& to_path) {
   return internal::MoveUnsafe(from_path, to_path);
 }
 
-bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
-  if (from_path.ReferencesParent() || to_path.ReferencesParent())
-    return false;
-  return internal::CopyFileUnsafe(from_path, to_path);
-}
-
 bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {
   // We open the file in binary format even if they are text files because
   // we are just comparing that bytes are exactly same in both files and not

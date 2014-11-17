@@ -845,6 +845,56 @@ bool GetShmemTempDir(bool executable, FilePath* path) {
 }
 #endif  // !defined(OS_ANDROID)
 
+#if !defined(OS_MACOSX)
+// Mac has its own implementation, this is for all other Posix systems.
+bool CopyFile(const FilePath& from_path, const FilePath& to_path) {
+  ThreadRestrictions::AssertIOAllowed();
+  File infile;
+#if defined(OS_ANDROID)
+  if (from_path.IsContentUri()) {
+    infile = OpenContentUriForRead(from_path);
+  } else {
+    infile = File(from_path, File::FLAG_OPEN | File::FLAG_READ);
+  }
+#else
+  infile = File(from_path, File::FLAG_OPEN | File::FLAG_READ);
+#endif
+  if (!infile.IsValid())
+    return false;
+
+  File outfile(to_path, File::FLAG_WRITE | File::FLAG_CREATE_ALWAYS);
+  if (!outfile.IsValid())
+    return false;
+
+  const size_t kBufferSize = 32768;
+  std::vector<char> buffer(kBufferSize);
+  bool result = true;
+
+  while (result) {
+    ssize_t bytes_read = infile.ReadAtCurrentPos(&buffer[0], buffer.size());
+    if (bytes_read < 0) {
+      result = false;
+      break;
+    }
+    if (bytes_read == 0)
+      break;
+    // Allow for partial writes
+    ssize_t bytes_written_per_read = 0;
+    do {
+      ssize_t bytes_written_partial = outfile.WriteAtCurrentPos(
+          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
+      if (bytes_written_partial < 0) {
+        result = false;
+        break;
+      }
+      bytes_written_per_read += bytes_written_partial;
+    } while (bytes_written_per_read < bytes_read);
+  }
+
+  return result;
+}
+#endif  // !defined(OS_MACOSX)
+
 // -----------------------------------------------------------------------------
 
 namespace internal {
@@ -873,56 +923,6 @@ bool MoveUnsafe(const FilePath& from_path, const FilePath& to_path) {
   DeleteFile(from_path, true);
   return true;
 }
-
-#if !defined(OS_MACOSX)
-// Mac has its own implementation, this is for all other Posix systems.
-bool CopyFileUnsafe(const FilePath& from_path, const FilePath& to_path) {
-  ThreadRestrictions::AssertIOAllowed();
-  int infile = HANDLE_EINTR(open(from_path.value().c_str(), O_RDONLY));
-  if (infile < 0)
-    return false;
-
-  int outfile = HANDLE_EINTR(creat(to_path.value().c_str(), 0666));
-  if (outfile < 0) {
-    close(infile);
-    return false;
-  }
-
-  const size_t kBufferSize = 32768;
-  std::vector<char> buffer(kBufferSize);
-  bool result = true;
-
-  while (result) {
-    ssize_t bytes_read = HANDLE_EINTR(read(infile, &buffer[0], buffer.size()));
-    if (bytes_read < 0) {
-      result = false;
-      break;
-    }
-    if (bytes_read == 0)
-      break;
-    // Allow for partial writes
-    ssize_t bytes_written_per_read = 0;
-    do {
-      ssize_t bytes_written_partial = HANDLE_EINTR(write(
-          outfile,
-          &buffer[bytes_written_per_read],
-          bytes_read - bytes_written_per_read));
-      if (bytes_written_partial < 0) {
-        result = false;
-        break;
-      }
-      bytes_written_per_read += bytes_written_partial;
-    } while (bytes_written_per_read < bytes_read);
-  }
-
-  if (IGNORE_EINTR(close(infile)) < 0)
-    result = false;
-  if (IGNORE_EINTR(close(outfile)) < 0)
-    result = false;
-
-  return result;
-}
-#endif  // !defined(OS_MACOSX)
 
 }  // namespace internal
 

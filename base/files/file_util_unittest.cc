@@ -1471,30 +1471,29 @@ TEST_F(FileUtilTest, CopyFile) {
   FilePath dest_file = dir_name_from.Append(FILE_PATH_LITERAL("DestFile.txt"));
   ASSERT_TRUE(CopyFile(file_name_from, dest_file));
 
-  // Copy the file to another location using '..' in the path.
+  // Try to copy the file to another location using '..' in the path.
   FilePath dest_file2(dir_name_from);
   dest_file2 = dest_file2.AppendASCII("..");
   dest_file2 = dest_file2.AppendASCII("DestFile.txt");
   ASSERT_FALSE(CopyFile(file_name_from, dest_file2));
-  ASSERT_TRUE(internal::CopyFileUnsafe(file_name_from, dest_file2));
 
   FilePath dest_file2_test(dir_name_from);
   dest_file2_test = dest_file2_test.DirName();
   dest_file2_test = dest_file2_test.AppendASCII("DestFile.txt");
 
-  // Check everything has been copied.
+  // Check expected copy results.
   EXPECT_TRUE(PathExists(file_name_from));
   EXPECT_TRUE(PathExists(dest_file));
   const std::wstring read_contents = ReadTextFile(dest_file);
   EXPECT_EQ(file_contents, read_contents);
-  EXPECT_TRUE(PathExists(dest_file2_test));
-  EXPECT_TRUE(PathExists(dest_file2));
+  EXPECT_FALSE(PathExists(dest_file2_test));
+  EXPECT_FALSE(PathExists(dest_file2));
 }
 
 TEST_F(FileUtilTest, CopyFileACL) {
   // While FileUtilTest.CopyFile asserts the content is correctly copied over,
   // this test case asserts the access control bits are meeting expectations in
-  // CopyFileUnsafe().
+  // CopyFile().
   FilePath src = temp_dir_.path().Append(FILE_PATH_LITERAL("src.txt"));
   const std::wstring file_contents(L"Gooooooooooooooooooooogle");
   CreateTextFile(src, file_contents);

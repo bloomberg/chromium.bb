@@ -421,11 +421,6 @@ namespace internal {
 BASE_EXPORT bool MoveUnsafe(const FilePath& from_path,
                             const FilePath& to_path);
 
-// Same as CopyFile but allows paths with traversal components.
-// Use only with extreme care.
-BASE_EXPORT bool CopyFileUnsafe(const FilePath& from_path,
-                                const FilePath& to_path);
-
 #if defined(OS_WIN)
 // Copy from_path to to_path recursively and then delete from_path recursively.
 // Returns true if all operations succeed.
