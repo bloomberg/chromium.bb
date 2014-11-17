@@ -573,7 +573,9 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
    * @param {!FileManager} fileManager FileManager to use.
    */
   canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.shouldShowDriveSettings();
+    event.canExecute = fileManager.shouldShowDriveSettings() &&
+        fileManager.volumeManager.getDriveConnectionState().
+        hasCellularNetworkAccess;
     event.command.setHidden(!event.canExecute);
   }
 });

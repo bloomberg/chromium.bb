@@ -458,6 +458,10 @@ dictionary DriveConnectionState {
 
   // Reasons of offline.
   DOMString? reason;
+
+  // Whether the device has a cellular network access or not. i.e. the |type|
+  // can be 'metered' or not.
+  boolean hasCellularNetworkAccess;
 };
 
 // Device event dispatched to listeners of onDeviceChaged.  See also
