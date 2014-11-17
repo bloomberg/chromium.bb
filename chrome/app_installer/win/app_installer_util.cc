@@ -6,7 +6,9 @@
 
 #include <windows.h>
 #include <urlmon.h>
+#include <winhttp.h>
 #pragma comment(lib, "urlmon.lib")
+#pragma comment(lib, "winhttp.lib")
 
 #include "base/base_paths.h"
 #include "base/basictypes.h"
@@ -19,6 +21,8 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_util.h"
@@ -46,10 +50,11 @@ const wchar_t kDialogDimensions[] = L"dialogWidth:750px;dialogHeight:500px";
 // The page includes the EULA and returns a download URL.
 class DownloadAndEulaHTMLDialog {
  public:
-  explicit DownloadAndEulaHTMLDialog(bool is_canary) {
+  explicit DownloadAndEulaHTMLDialog(bool is_canary,
+                                     const std::string& dialog_arguments) {
     dialog_.reset(installer::CreateNativeHTMLDialog(
         is_canary ? kSxSDownloadAndEulaPage : kDownloadAndEulaPage,
-        base::string16()));
+        base::SysUTF8ToWide(dialog_arguments)));
   }
   ~DownloadAndEulaHTMLDialog() {}
 
@@ -97,6 +102,77 @@ bool IsLegalDataKeyChar(int c) {
 bool IsDataKeyValid(const std::string& key) {
   return std::find_if_not(key.begin(), key.end(), IsLegalDataKeyChar) ==
          key.end();
+}
+
+struct WinHttpHandleTraits {
+  typedef HINTERNET Handle;
+  static bool CloseHandle(Handle handle) {
+    return WinHttpCloseHandle(handle) != FALSE;
+  }
+  static bool IsHandleValid(Handle handle) { return !!handle; }
+  static Handle NullHandle() { return 0; }
+
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WinHttpHandleTraits);
+};
+typedef base::win::GenericScopedHandle<WinHttpHandleTraits,
+                                       base::win::DummyVerifierTraits>
+    ScopedWinHttpHandle;
+
+// Reads the data portion of an HTTP response. WinHttpReceiveResponse() must
+// have already succeeded on this request.
+bool ReadHttpData(HINTERNET request_handle,
+                  std::vector<uint8_t>* response_data) {
+  BOOL result = TRUE;
+  do {
+    // Check for available data.
+    DWORD bytes_available = 0;
+    result = WinHttpQueryDataAvailable(request_handle, &bytes_available);
+    if (!result) {
+      PLOG(ERROR);
+      break;
+    }
+
+    if (bytes_available == 0)
+      break;
+
+    do {
+      // Allocate space for the buffer.
+      size_t offset = response_data->size();
+      response_data->resize(offset + bytes_available);
+
+      // Read the data.
+      DWORD bytes_read = 0;
+      result = WinHttpReadData(request_handle, &((*response_data)[offset]),
+                               bytes_available, &bytes_read);
+      // MSDN for WinHttpQueryDataAvailable says:
+      //   The amount of data that remains is not recalculated until all
+      //   available data indicated by the call to WinHttpQueryDataAvailable is
+      //   read.
+      // So we should either read all of |bytes_available| or bail out here.
+      if (!result) {
+        PLOG(ERROR);
+        response_data->resize(offset);
+        return false;
+      }
+
+      // MSDN for WinHttpReadData says:
+      //   If you are using WinHttpReadData synchronously, and the return value
+      //   is TRUE and the number of bytes read is zero, the transfer has been
+      //   completed and there are no more bytes to read on the handle.
+      // Not sure if that's possible while |bytes_available| > 0, but better to
+      // check and break out of both loops in this case.
+      if (!bytes_read) {
+        response_data->resize(offset);
+        return true;
+      }
+
+      response_data->resize(offset + bytes_read);
+      bytes_available -= bytes_read;
+    } while (bytes_available);
+  } while (true);
+
+  return result != FALSE;
 }
 
 }  // namespace
@@ -166,15 +242,60 @@ bool IsValidAppId(const std::string& app_id) {
   return true;
 }
 
+bool FetchUrl(const base::string16& user_agent,
+              const base::string16& server_name,
+              uint16_t server_port,
+              const base::string16& object_name,
+              std::vector<uint8_t>* response_data) {
+  DCHECK(response_data);
+
+  ScopedWinHttpHandle session_handle(
+      WinHttpOpen(user_agent.c_str(), WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+                  WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0));
+  if (!session_handle.IsValid()) {
+    PLOG(ERROR);
+    return false;
+  }
+
+  ScopedWinHttpHandle connection_handle(WinHttpConnect(
+      session_handle.Get(), server_name.c_str(), server_port, 0));
+  if (!connection_handle.IsValid()) {
+    PLOG(ERROR);
+    return false;
+  }
+
+  ScopedWinHttpHandle request_handle(WinHttpOpenRequest(
+      connection_handle.Get(), L"GET", object_name.c_str(), NULL,
+      WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE));
+  if (!request_handle.IsValid()) {
+    PLOG(ERROR);
+    return false;
+  }
+
+  if (!WinHttpSendRequest(request_handle.Get(), WINHTTP_NO_ADDITIONAL_HEADERS,
+                          0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0)) {
+    PLOG(ERROR);
+    return false;
+  }
+
+  if (!WinHttpReceiveResponse(request_handle.Get(), NULL)) {
+    PLOG(ERROR);
+    return false;
+  }
+
+  response_data->clear();
+  return ReadHttpData(request_handle.Get(), response_data);
+}
+
 base::FilePath GetChromeExePath(bool is_canary) {
   return is_canary ? chrome_launcher_support::GetAnyChromeSxSPath()
                    : chrome_launcher_support::GetAnyChromePath();
 }
 
-ExitCode GetChrome(bool is_canary) {
+ExitCode GetChrome(bool is_canary, const std::string& inline_install_json) {
   // Show UI to install Chrome. The UI returns a download URL.
   base::string16 download_url =
-      DownloadAndEulaHTMLDialog(is_canary).ShowModal();
+      DownloadAndEulaHTMLDialog(is_canary, inline_install_json).ShowModal();
   if (download_url.empty())
     return EULA_CANCELLED;
 

@@ -20,6 +20,8 @@ enum ExitCode {
   COULD_NOT_READ_TAG,
   COULD_NOT_PARSE_TAG,
   INVALID_APP_ID,
+  COULD_NOT_FETCH_INLINE_INSTALL_DATA,
+  COULD_NOT_PARSE_INLINE_INSTALL_DATA,
   EULA_CANCELLED,
   COULD_NOT_FIND_CHROME,
   COULD_NOT_GET_TMP_FILE_PATH,
@@ -40,11 +42,19 @@ bool ParseTag(const std::string& tag,
 
 bool IsValidAppId(const std::string& app_id);
 
+// Uses WinHTTP to make a GET request. |server_port| can be zero to use the
+// default port (80 or 443).
+bool FetchUrl(const base::string16& user_agent,
+              const base::string16& server_name,
+              uint16_t server_port,
+              const base::string16& object_name,
+              std::vector<uint8_t>* response_data);
+
 base::FilePath GetChromeExePath(bool is_canary);
 
 // Shows UI to download and install Chrome. Returns a failure code, or SUCCESS
 // if the installation completed successfully.
-ExitCode GetChrome(bool is_canary);
+ExitCode GetChrome(bool is_canary, const std::string& inline_install_json);
 
 }  // namespace app_installer
 

@@ -10,11 +10,13 @@
           'target_name': 'app_installer_util',
           'type': 'static_library',
           'dependencies': [
+            'common',
             'installer_util',
             'installer_util_strings',
             'launcher_support',
             'common_constants.gyp:common_constants',
             '../base/base.gyp:base',
+            '../content/content.gyp:content_common',
             '../third_party/omaha/omaha.gyp:omaha_extractor',
           ],
           'include_dirs': [
@@ -60,6 +62,7 @@
             'app_installer_util',
             '../base/base.gyp:base',
             '../base/base.gyp:run_all_unittests',
+            '../net/net.gyp:net_test_support',
             '../testing/gtest.gyp:gtest',
           ],
           'include_dirs': [

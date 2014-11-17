@@ -9,13 +9,19 @@
 #include "base/base_paths.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/i18n/streaming_utf8_validator.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/logging_win.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/values.h"
 #include "chrome/app_installer/win/app_installer_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/installer/util/util_constants.h"
+#include "content/public/common/user_agent.h"
 
 namespace app_installer {
 
@@ -28,6 +34,10 @@ DEFINE_GUID(kAppInstallerLogProvider,
             0xbacd,
             0x4625,
             0x82, 0x82, 0x4d, 0x57, 0x0c, 0x4d, 0xad, 0x12);
+
+const wchar_t kChromeServer[] = L"chrome.google.com";
+
+const wchar_t kInlineInstallDetail[] = L"/webstore/inlineinstall/detail/";
 
 }  // namespace
 
@@ -83,10 +93,38 @@ int WINAPI wWinMain(HINSTANCE instance,
   if (!IsValidAppId(app_id))
     return INVALID_APP_ID;
 
+  // Get the inline install data for this app. We need to set the user agent
+  // string to be Chrome's, otherwise webstore will serve a different response
+  // (since inline installs don't work on non-Chrome).
+  std::vector<uint8_t> response_data;
+  if (!FetchUrl(base::SysUTF8ToWide(content::BuildUserAgentFromProduct(
+                    chrome::VersionInfo().ProductNameAndVersionForUserAgent())),
+                kChromeServer, 0,
+                kInlineInstallDetail + base::SysUTF8ToWide(app_id),
+                &response_data) ||
+      response_data.empty()) {
+    return COULD_NOT_FETCH_INLINE_INSTALL_DATA;
+  }
+
+  // Check that the response is valid UTF-8.
+  std::string inline_install_json(response_data.begin(), response_data.end());
+  if (!base::StreamingUtf8Validator::Validate(inline_install_json))
+    return COULD_NOT_PARSE_INLINE_INSTALL_DATA;
+
+  // Parse the data to check it's valid JSON. The download page will just eval
+  // it.
+  base::JSONReader json_reader;
+  scoped_ptr<base::Value> inline_install_data(
+      json_reader.ReadToValue(inline_install_json));
+  if (!inline_install_data) {
+    LOG(ERROR) << json_reader.GetErrorMessage();
+    return COULD_NOT_PARSE_INLINE_INSTALL_DATA;
+  }
+
   base::FilePath chrome_path = GetChromeExePath(is_canary);
   // If none found, show EULA, download, and install Chrome.
   if (chrome_path.empty()) {
-    ExitCode get_chrome_result = GetChrome(is_canary);
+    ExitCode get_chrome_result = GetChrome(is_canary, inline_install_json);
     if (get_chrome_result != SUCCESS)
       return get_chrome_result;
 
