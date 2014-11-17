@@ -789,15 +789,15 @@ IntSize RenderLayer::size() const
 LayoutPoint RenderLayer::location() const
 {
     LayoutPoint localPoint;
-    LayoutSize inlineBoundingBoxOffset; // We don't put this into the RenderLayer x/y for inlines, so we need to subtract it out when done.
+    LayoutPoint inlineBoundingBoxOffset; // We don't put this into the RenderLayer x/y for inlines, so we need to subtract it out when done.
 
     if (renderer()->isInline() && renderer()->isRenderInline()) {
         RenderInline* inlineFlow = toRenderInline(renderer());
         IntRect lineBox = inlineFlow->linesBoundingBox();
-        inlineBoundingBoxOffset = toSize(lineBox.location());
-        localPoint += inlineBoundingBoxOffset;
+        inlineBoundingBoxOffset = lineBox.location();
+        localPoint.moveBy(inlineBoundingBoxOffset);
     } else if (RenderBox* box = renderBox()) {
-        localPoint += box->topLeftLocationOffset();
+        localPoint.moveBy(box->topLeftLocation());
     }
 
     if (!renderer()->isOutOfFlowPositioned() && renderer()->parent()) {
@@ -808,13 +808,13 @@ LayoutPoint RenderLayer::location() const
             if (curr->isBox() && !curr->isTableRow()) {
                 // Rows and cells share the same coordinate space (that of the section).
                 // Omit them when computing our xpos/ypos.
-                localPoint += toRenderBox(curr)->topLeftLocationOffset();
+                localPoint.moveBy(toRenderBox(curr)->topLeftLocation());
             }
             curr = curr->parent();
         }
         if (curr->isBox() && curr->isTableRow()) {
             // Put ourselves into the row coordinate space.
-            localPoint -= toRenderBox(curr)->topLeftLocationOffset();
+            localPoint.moveBy(-toRenderBox(curr)->topLeftLocation());
         }
     }
 
@@ -855,7 +855,7 @@ LayoutPoint RenderLayer::location() const
     localPoint.move(offsetForInFlowPosition());
 
     // FIXME: We'd really like to just get rid of the concept of a layer rectangle and rely on the renderers.
-    localPoint -= inlineBoundingBoxOffset;
+    localPoint.moveBy(-inlineBoundingBoxOffset);
 
     return localPoint;
 }

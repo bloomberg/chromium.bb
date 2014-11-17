@@ -4323,21 +4323,12 @@ LayoutPoint RenderBox::flipForWritingModeIncludingColumns(const LayoutPoint& poi
 
 LayoutPoint RenderBox::topLeftLocation() const
 {
+    if (!UNLIKELY(document().containsAnyRareWritingMode()))
+        return location();
     RenderBlock* containerBlock = containingBlock();
     if (!containerBlock || containerBlock == this)
         return location();
     return containerBlock->flipForWritingModeForChild(this, location());
-}
-
-LayoutSize RenderBox::topLeftLocationOffset() const
-{
-    RenderBlock* containerBlock = containingBlock();
-    if (!containerBlock || containerBlock == this)
-        return locationOffset();
-
-    LayoutRect rect(frameRect());
-    containerBlock->flipForWritingMode(rect); // FIXME: This is wrong if we are an absolutely positioned object enclosed by a relative-positioned inline.
-    return LayoutSize(rect.x(), rect.y());
 }
 
 bool RenderBox::hasRelativeLogicalHeight() const
