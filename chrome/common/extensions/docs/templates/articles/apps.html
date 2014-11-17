@@ -4,15 +4,15 @@
 <p class="warning">
 <b>Warning: </b>
 All content in this doc refers to the legacy version of packaged apps.
-Your legacy packaged apps will still work,
-but you won't have access to any of the new APIs.
-Check out the new version of
-<a href="../apps/about_apps">Chrome Apps</a>;
-otherwise, you're missing out!
+Legacy packaged apps are discontinued, and Chrome will <strong>stop loading them
+</strong> in June 2015.
+Check out the new version of <a href="../apps/about_apps">Chrome Apps</a> or
+read the <a href="https://developer.chrome.com/webstore/migrating">migration
+tutorial for legacy packaged apps</a>.
 </p>
 
 <p>
-This page talks about packaged apps&mdash;how
+This page talks about legacy packaged apps &mdash; how
 you implement them,
 and how they're different from
 extensions and ordinary web apps.
@@ -21,61 +21,33 @@ extensions and ordinary web apps.
 <h2 id="overview">Overview</h2>
 
 <p>
-A packaged app is a web app
-that's bundled into a <code>.crx</code> file
-and can use Chrome extension features.
-You build a packaged app just like you build an extension,
-except that a packaged app can't include a
-<a href="browserAction">browser action</a> or
-<a href="pageAction">page action</a>.
-Instead, a packaged app includes at least one HTML file
-within its <code>.crx</code> file
-that provides the app's user interface.
+A legacy packaged app is a web app that's bundled into a <code>.crx</code> file.
+In the past, legacy packaged apps could use most of the extension APIs, but
+<a href="https://blog.chromium.org/2012/11/restricting-extension-apis-in-legacy.html">
+since November 2012</a>, the feature set of legacy packaged apps was reduced.
+And in June 2014, discontinuation of legacy packaged apps
+<a href="https://blog.chromium.org/2014/06/migrate-your-legacy-packaged-apps-to.html">
+was announced</a>; support for them will be removed from Chrome in June 2015.
 </p>
 
 <p>
-Packaged apps are a type of
-<a href="http://code.google.com/chrome/apps/">installable web app</a>&mdash;a
-web app that can be installed in Chrome.
-The other type of installable web app is a
-<a href="http://code.google.com/chrome/apps/docs/developers_guide">hosted app</a>,
-which is an ordinary web app with a bit of additional metadata.
+The term "packaged app" used to refer to the "legacy packaged app" as described
+in this document, but
+<a href="https://blog.chromium.org/2012/08/the-evolution-of-chrome-packaged-apps.html">
+since the introduction of Chrome Apps in August 2012</a>, the term "packaged
+app" is also used to refer to <a href="../apps/about_apps">Chrome Apps</a>.
+Keep this in mind when you read about "packaged apps" in online resources.
 </p>
 
 <p>
-If you're developing a web app for the Chrome Web Store,
-you might want to use a packaged app
-instead of a hosted app if any of the following are true:
+A close alternative to legacy packaged apps are
+<a href="https://developers.google.com/chrome/apps/docs/developers_guide">hosted
+apps</a>, which are ordinary web apps with a bit of additional metadata.
+To learn more about extensions, packaged apps, and hosted apps, read
+<a href="https://developer.chrome.com/webstore/choosing">Choosing an App Type</a>.
 </p>
 
-<ul>
-  <li>
-    You don't want to run a service to host your app.
-  </li>
-  <li>
-    You want to build an app that works really well offline.
-  </li>
-  <li>
-    You want tighter integration with Chrome,
-    using the extension APIs.
-  </li>
-</ul>
-
-<p>
-To learn more about
-the differences between web apps and websites,
-extensions and packaged apps, and packaged apps and hosted apps,
-read these:
-</p>
-
-<ul>
-  <li> <a href="http://code.google.com/chrome/webstore/docs/choosing.html">Choosing an App Type</a> </li>
-  <li> <a href="http://code.google.com/chrome/apps/articles/thinking_in_web_apps.html">Thinking in Web Apps</a> </li>
-  <li> <a href="http://code.google.com/chrome/webstore/articles/apps_vs_extensions.html">Extensions, Packaged Apps, and Hosted Apps in the Chrome Web Store</a> </li>
-</ul>
-
-
-<h2 id="manifest"> The manifest </h2>
+<h2 id="manifest">The manifest</h2>
 
 <p>
 A packaged app's manifest can have any field
