@@ -5391,10 +5391,6 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
   LayerTreeHostTestCrispUpAfterPinchEnds()
       : playback_allowed_event_(true, true) {}
 
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->impl_side_painting = true;
-  }
-
   void SetupTree() override {
     frame_ = 1;
     posted_ = false;
@@ -5461,30 +5457,38 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         PostNextAfterDraw(host_impl);
         break;
       case 2:
+        // Wait for any activations that need to occur due to starting a pinch,
+        // and drawing with a non-identity transform (for eg. LCD text being
+        // disabled).
+        if (host_impl->pending_tree())
+          break;
         if (quad_scale_delta != 1.f)
           break;
-        // Drew at page scale 2.2 after pinching in.
-        EXPECT_EQ(2.2f, host_impl->active_tree()->total_page_scale_factor());
+        // Drew at page scale 1.5 after pinching in.
+        EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
         PostNextAfterDraw(host_impl);
         break;
       case 3:
-        if (quad_scale_delta != 2.2f)
+        // By pinching out, we will create a new tiling and raster it. This may
+        // cause some additional draws, though we should still be drawing with
+        // the old 1.5 tiling.
+        if (frame_data->has_no_damage)
           break;
-        // Drew at page scale 1 with the 2.2 tiling while pinching out.
+        // Drew at page scale 1 with the 1.5 tiling while pinching out.
         EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
-        EXPECT_EQ(2.2f, quad_scale_delta);
-        PostNextAfterDraw(host_impl);
+        EXPECT_EQ(1.5f, quad_scale_delta);
+        // We don't PostNextAfterDraw here, instead we wait for the new tiling
+        // to finish rastering so we don't get any noise in further steps.
         break;
       case 4:
-        // Drew at page scale 1 with the 2.2 tiling after pinching out completed
+        // Drew at page scale 1 with the 1.5 tiling after pinching out completed
         // while waiting for texture uploads to complete.
         EXPECT_EQ(1.f, host_impl->active_tree()->total_page_scale_factor());
         // This frame will not have any damage, since it's actually the same as
         // the last frame, and should contain no incomplete tiles. We just want
         // to make sure we drew here at least once after the pinch ended to be
         // sure that drawing after pinch doesn't leave us at the wrong scale
-        // forever.
         EXPECT_TRUE(frame_data->has_no_damage);
         PostNextAfterDraw(host_impl);
         break;
@@ -5510,7 +5514,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
         // Use a delay to allow raster/upload to happen in between frames. This
         // should cause flakiness if we fail to block raster/upload when
         // desired.
-        base::TimeDelta::FromMilliseconds(16 * 6));
+        base::TimeDelta::FromMilliseconds(16 * 4));
   }
 
   void Next(LayerTreeHostImpl* host_impl) {
@@ -5520,13 +5524,13 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       case 2:
         // Pinch zoom in.
         host_impl->PinchGestureBegin();
-        host_impl->PinchGestureUpdate(2.2f, gfx::Point(100, 100));
+        host_impl->PinchGestureUpdate(1.5f, gfx::Point(100, 100));
         host_impl->PinchGestureEnd();
         break;
       case 3:
         // Pinch zoom back to 1.f but don't end it.
         host_impl->PinchGestureBegin();
-        host_impl->PinchGestureUpdate(1.f / 2.2f, gfx::Point(100, 100));
+        host_impl->PinchGestureUpdate(1.f / 1.5f, gfx::Point(100, 100));
         break;
       case 4:
         // End the pinch, but delay tile production.
@@ -5542,11 +5546,18 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
 
   void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
                                       const Tile* tile) override {
+    if (frame_ == 3) {
+      // On frame 3, we will have a lower res tile complete for the pinch-out
+      // gesture even though it's not displayed. We wait for it here to prevent
+      // flakiness.
+      EXPECT_EQ(0.75f, tile->contents_scale());
+      PostNextAfterDraw(host_impl);
+    }
     // On frame_ == 4, we are preventing texture uploads from completing,
     // so this verifies they are not completing before frame_ == 5.
     // Flaky failures here indicate we're failing to prevent uploads from
     // completing.
-    EXPECT_NE(4, frame_);
+    EXPECT_NE(4, frame_) << tile->contents_scale();
   }
 
   void AfterTest() override {}
@@ -5557,14 +5568,12 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
   base::WaitableEvent playback_allowed_event_;
 };
 
-// TODO(danakj): Disabled for flake: crbug.com/433208
-// MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestCrispUpAfterPinchEnds);
 
 class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
     : public LayerTreeHostTestCrispUpAfterPinchEnds {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->impl_side_painting = true;
     settings->use_one_copy = true;
   }
 
@@ -5582,10 +5591,7 @@ class LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy
   }
 };
 
-// TODO(danakj): Disabled for flake: crbug.com/433208
-#if !defined(OS_LINUX) || defined(NDEBUG)
-MULTI_THREAD_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
-#endif
+MULTI_THREAD_IMPL_TEST_F(LayerTreeHostTestCrispUpAfterPinchEndsWithOneCopy);
 
 class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
     : public LayerTreeHostTest {
@@ -5600,6 +5606,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
   void SetupTree() override {
     step_ = 1;
     continuous_draws_ = 0;
+    expect_draw_ = false;
     client_.set_fill_with_nonsolid_color(true);
 
     scoped_refptr<Layer> root = Layer::Create();
@@ -5677,20 +5684,20 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
         // Drew at scale 1.5 when all the tiles completed.
         EXPECT_EQ(1.5f, host_impl->active_tree()->total_page_scale_factor());
         EXPECT_EQ(1.f, quad_scale_delta);
-
-        // We should not continue to draw any more. End the test after a timeout
-        // to watch for any extraneous draws.
-        // TODO(brianderson): We could remove this delay and instead wait until
-        // the BeginFrameSource decides it doesn't need to send frames anymore,
-        // or test that it already doesn't here.
-        EndTestAfterDelayMs(16 * 4);
-        ++step_;
         break;
       case 5:
-        ADD_FAILURE()
-            << "No draws should happen once we have a complete frame.";
+        // TODO(danakj): We may get one more draw because the NotifyReadyToDraw
+        // is asynchronous from the previous draw and happens late.
+        break;
+      case 6:
+        // We may get another draw if we activate due to the pinch (eg LCD text
+        // gets disabled).
+        if (expect_draw_)
+          break;
+        NOTREACHED() << "No draws should happen once we have a complete frame.";
         break;
     }
+    expect_draw_ = false;
     return draw_result;
   }
 
@@ -5717,7 +5724,29 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
           ++step_;
         }
         break;
+      case 4:
+        // TODO(danakj): Now we wait for NotifyReadyToDraw to avoid flakiness
+        // since it happens asynchronously.
+        ++step_;
+        break;
     }
+  }
+
+  void NotifyReadyToDrawOnThread(LayerTreeHostImpl* host_impl) override {
+    if (step_ == 5) {
+      // We should not continue to draw any more. End the test after a timeout
+      // to watch for any extraneous draws.
+      // TODO(brianderson): We could remove this delay and instead wait until
+      // the BeginFrameSource decides it doesn't need to send frames anymore,
+      // or test that it already doesn't here.
+      EndTestAfterDelayMs(16 * 4);
+      ++step_;
+      expect_draw_ = true;
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    expect_draw_ = true;
   }
 
   void NotifyTileStateChangedOnThread(LayerTreeHostImpl* host_impl,
@@ -5734,6 +5763,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
   FakeContentLayerClient client_;
   int step_;
   int continuous_draws_;
+  bool expect_draw_;
   base::WaitableEvent playback_allowed_event_;
 };
 
