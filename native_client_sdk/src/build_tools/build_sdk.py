@@ -933,7 +933,7 @@ def main(args):
     pass
 
   global options
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
   if args:
     parser.error("Unexpected arguments: %s" % str(args))
 
@@ -1068,6 +1068,6 @@ def main(args):
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('build_sdk: interrupted')

@@ -936,7 +936,6 @@ def main(args):
       extra_archives = [('naclports.tar.bz2', '27.0.0.0')]
       Run(delegate, ('mac', 'win', 'linux'), extra_archives,
           fixed_bundle_versions)
-      return 0
     except Exception:
       if options.mailfrom and options.mailto:
         traceback.print_exc()
@@ -957,6 +956,7 @@ def main(args):
     sys.stderr.write(str(e) + '\n')
     return 1
 
+  return 0
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

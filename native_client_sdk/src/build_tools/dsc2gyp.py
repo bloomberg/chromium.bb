@@ -372,7 +372,8 @@ def main(args):
 
   assert len(args) == 1
   ProcessDSC(args[0], options.output)
+  return 0
 
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  sys.exit(main(sys.argv[1:]))

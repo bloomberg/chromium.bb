@@ -35,7 +35,7 @@ def main(args):
                     help='Install Directory',
                     dest='install_dir',
                     default='naclmono')
-  (options, args) = parser.parse_args(args[1:])
+  (options, args) = parser.parse_args(args)
 
   assert sys.platform.find('linux') != -1
 
@@ -140,4 +140,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

@@ -54,12 +54,12 @@ def DoMain(argv):
   parser.error('No action specified')
 
 
-def main(argv):
-  print DoMain(argv[1:])
+def main(args):
+  print DoMain(args)
 
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     Error('interrupted')

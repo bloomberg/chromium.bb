@@ -183,7 +183,7 @@ def main(args):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
 
   pepper_ver = str(int(build_version.ChromeMajorVersion()))
   pepperdir = os.path.join(OUT_DIR, 'pepper_' + pepper_ver)
@@ -233,6 +233,6 @@ def main(args):
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     buildbot_common.ErrorExit('test_sdk: interrupted')

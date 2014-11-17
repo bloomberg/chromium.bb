@@ -252,7 +252,7 @@ def main(argv):
       help='Build using toolchain. Can be passed more than once.',
       action='append')
 
-  options, args = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(argv)
   filters = {}
 
   load_from_dir = '.'
@@ -279,4 +279,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

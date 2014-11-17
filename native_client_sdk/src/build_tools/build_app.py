@@ -90,7 +90,7 @@ def main(args):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
 
   if options.channel:
     if options.channel not in ('Dev', 'Beta'):
@@ -181,4 +181,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

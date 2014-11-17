@@ -100,6 +100,7 @@ def main(argv):
   FixupDepFile(input_filename, output_filename)
   if options.clean and input_filename != output_filename:
     os.remove(input_filename)
+  return 0
 
 
 if __name__ == '__main__':

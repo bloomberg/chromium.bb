@@ -42,7 +42,7 @@ def main(args):
 
   if options.expect_to_be_killed:
     PrintAndFlush('Done sleeping. Expected to be killed.')
-  sys.exit(0)
+  return 0
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

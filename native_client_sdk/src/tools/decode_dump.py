@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -134,7 +134,6 @@ class CoreDecoder(object):
       frame['scopes'] = self._Addr2Line(core['segments'], frame['prog_ctr'])
     return core
 
-
   def LoadAndDecode(self, core_path):
     """Given a core.json file, load and embellish with decoded addresses.
 
@@ -176,7 +175,7 @@ class CoreDecoder(object):
           scope['lineno']))
 
 
-def Main(args):
+def main(args):
   parser = optparse.OptionParser(
       usage='USAGE: %prog [options] <core.json>')
   parser.add_option('-m', '--main-nexe', dest='main_nexe',
@@ -203,7 +202,8 @@ def Main(args):
   info = decoder.LoadAndDecode(args[0])
   trace = decoder.StackTrace(info)
   decoder.PrintTrace(trace, sys.stdout)
+  return 0
 
 
 if __name__ == '__main__':
-  Main(sys.argv[1:])
+  sys.exit(main(sys.argv[1:]))

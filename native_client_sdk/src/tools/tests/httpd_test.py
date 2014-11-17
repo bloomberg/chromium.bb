@@ -53,8 +53,7 @@ class RunTest(unittest.TestCase):
 
   def _Run(self, args=None, timeout=None):
     args = args or []
-    run_py = os.path.join(TOOLS_DIR, 'run.py')
-    cmd = [sys.executable, run_py, '--port=5555']
+    cmd = [sys.executable, os.path.join(TOOLS_DIR, 'run.py'), '--port=5555']
     cmd.extend(args)
     self.process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE)
@@ -87,16 +86,17 @@ class RunTest(unittest.TestCase):
 
   def testQuit(self):
     args = self._GetChromeMockArgs('?quit=1', 'get', sleep=10)
-    _, stdout, _ = self._Run(args, timeout=20)
-    self.assertTrue('Starting' in stdout)
-    self.assertTrue('Expected to be killed' not in stdout)
+    rtn, stdout, _ = self._Run(args, timeout=20)
+    self.assertEqual(rtn, 0)
+    self.assertIn('Starting', stdout)
+    self.assertNotIn('Expected to be killed', stdout)
 
   def testSubprocessDies(self):
     args = self._GetChromeMockArgs(page=None, http_request_type=None, sleep=0,
                                    expect_to_be_killed=False)
     returncode, stdout, _ = self._Run(args, timeout=10)
     self.assertNotEqual(-1, returncode)
-    self.assertTrue('Starting' in stdout)
+    self.assertIn('Starting', stdout)
 
 
 if __name__ == '__main__':

@@ -6,6 +6,8 @@
 """Top level script for running all python unittests in the NaCl SDK
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import subprocess
@@ -70,6 +72,7 @@ def main(args):
   options = parser.parse_args(args)
 
   # Some of the unit tests use parts of toolchains. Extract to TOOLCHAIN_OUT.
+  print('Extracting toolchains...')
   ExtractToolchains()
 
   suite = unittest.TestSuite()
@@ -81,6 +84,8 @@ def main(args):
     verbosity = 2
   else:
     verbosity = 1
+
+  print('Running unittests...')
   result = unittest.TextTestRunner(verbosity=verbosity).run(suite)
   return int(not result.wasSuccessful())
 

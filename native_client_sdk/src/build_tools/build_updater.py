@@ -180,7 +180,7 @@ def main(args):
   parser.add_option('-r', '--revision', help='revision number of this updater',
       dest='revision', default=None)
   parser.add_option('-v', '--verbose', help='verbose output')
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
 
   buildbot_common.verbose = options.verbose
 
@@ -190,4 +190,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

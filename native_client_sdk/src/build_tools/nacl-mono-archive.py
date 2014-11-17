@@ -33,7 +33,7 @@ def main(args):
                     help='Skips upload step',
                     action="store_true",
                     dest='skip_upload')
-  (options, args) = parser.parse_args(args[1:])
+  (options, args) = parser.parse_args(args)
 
   if not options.upload_path:
     buildbot_common.ErrorExit('--upload-path is required')
@@ -63,4 +63,4 @@ def main(args):
         cwd=os.path.dirname(os.path.abspath(options.tar_path)))
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

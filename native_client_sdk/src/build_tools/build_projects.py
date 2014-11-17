@@ -275,7 +275,7 @@ def main(argv):
   except ImportError:
     pass
 
-  options, args = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(argv)
 
   global verbose
   if options.verbose:
@@ -346,7 +346,7 @@ def main(argv):
 if __name__ == '__main__':
   script_name = os.path.basename(sys.argv[0])
   try:
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv[1:]))
   except parse_dsc.ValidationError as e:
     buildbot_common.ErrorExit('%s: %s' % (script_name, e))
   except KeyboardInterrupt:

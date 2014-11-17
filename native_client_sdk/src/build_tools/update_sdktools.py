@@ -110,7 +110,7 @@ def main(args):
   parser = optparse.OptionParser(description=__doc__)
   parser.add_option('-r', '--revision',
       help='set revision manually, rather than using the latest version')
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
   if len(args) != 0:
     parser.error('Unexpected args: %s' % ', '.join(args))
 
@@ -123,7 +123,8 @@ def main(args):
 
   UpdateManifestFileToRevision('json/naclsdk_manifest0.json', revision)
   UpdateManifestFileToRevision('json/naclsdk_manifest2.json', revision)
+  return 0
 
 
 if __name__ == '__main__':
-  sys.exit(main(sys.argv))
+  sys.exit(main(sys.argv[1:]))

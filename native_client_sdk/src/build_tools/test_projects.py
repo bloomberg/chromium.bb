@@ -327,7 +327,7 @@ def main(args):
       help='Number of types to retry on failure (Default: %default)',
           type='int', default=1)
 
-  options, args = parser.parse_args(args[1:])
+  options, args = parser.parse_args(args)
 
   if not options.toolchain:
     options.toolchain = ['newlib', 'glibc', 'pnacl', 'host']
@@ -365,7 +365,7 @@ def main(args):
 if __name__ == '__main__':
   script_name = os.path.basename(sys.argv[0])
   try:
-    sys.exit(main(sys.argv))
+    sys.exit(main(sys.argv[1:]))
   except parse_dsc.ValidationError as e:
     buildbot_common.ErrorExit('%s: %s' % (script_name, e))
   except KeyboardInterrupt:
