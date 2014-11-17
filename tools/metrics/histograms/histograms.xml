@@ -10083,6 +10083,9 @@ Therefore, the affected-histogram name has to have at least one dot in it.
 </histogram>
 
 <histogram name="History.TopSitesVisitsByRank" units="rank">
+  <obsolete>
+    Deprecated as of 11/2014.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>
     Page visits to each of a user's top 50 sites. Visits to all other sites go

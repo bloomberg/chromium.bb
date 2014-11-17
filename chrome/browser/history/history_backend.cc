@@ -78,14 +78,6 @@ void RunUnlessCanceled(
 }
 }  // namespace
 
-#if defined(OS_ANDROID)
-// How long we keep segment data for in days. Currently 3 months.
-// This value needs to be greater or equal to
-// MostVisitedModel::kMostVisitedScope but we don't want to introduce a direct
-// dependency between MostVisitedModel and the history backend.
-const int kSegmentDataRetention = 90;
-#endif
-
 // How long we'll wait to do a commit, so that things are batched together.
 const int kCommitIntervalSeconds = 10;
 
@@ -99,11 +91,6 @@ const int kMaxRedirectCount = 32;
 // The number of days old a history entry can be before it is considered "old"
 // and is deleted.
 const int kExpireDaysThreshold = 90;
-
-#if defined(OS_ANDROID)
-// The maximum number of top sites to track when recording top page visit stats.
-const size_t kPageVisitStatsMaxTopSites = 50;
-#endif
 
 // Converts from PageUsageData to MostVisitedURL. |redirects| is a
 // list of redirects for this URL. Empty list means no redirects.
@@ -250,9 +237,6 @@ void HistoryBackend::Init(const std::string& languages, bool force_fail) {
   typed_url_syncable_service_.reset(new TypedUrlSyncableService(this));
   memory_pressure_listener_.reset(new base::MemoryPressureListener(
       base::Bind(&HistoryBackend::OnMemoryPressure, base::Unretained(this))));
-#if defined(OS_ANDROID)
-  PopulateMostVisitedURLMap();
-#endif
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(base::MessageLoop* message_loop,
@@ -751,15 +735,6 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
       !ui::PageTransitionIsRedirect(transition)) ||
       transition_type == ui::PAGE_TRANSITION_KEYWORD_GENERATED)
     typed_increment = 1;
-
-#if defined(OS_ANDROID)
-  // Only count the page visit if it came from user browsing and only count it
-  // once when cycling through a redirect chain.
-  if (visit_source == SOURCE_BROWSED &&
-      (transition & ui::PAGE_TRANSITION_CHAIN_END) != 0) {
-    RecordTopPageVisitStats(url);
-  }
-#endif
 
   // See if this URL is already in the DB.
   URLRow url_info(url);
@@ -2720,29 +2695,5 @@ void HistoryBackend::NotifyVisitObservers(const VisitRow& visit) {
   if (delegate_)
     delegate_->NotifyAddVisit(info);
 }
-
-#if defined(OS_ANDROID)
-void HistoryBackend::PopulateMostVisitedURLMap() {
-  MostVisitedURLList most_visited_urls;
-  QueryMostVisitedURLs(
-      kPageVisitStatsMaxTopSites, kSegmentDataRetention, &most_visited_urls);
-
-  DCHECK_LE(most_visited_urls.size(), kPageVisitStatsMaxTopSites);
-  for (size_t i = 0; i < most_visited_urls.size(); ++i) {
-    most_visited_urls_map_[most_visited_urls[i].url] = i;
-    for (size_t j = 0; j < most_visited_urls[i].redirects.size(); ++j)
-      most_visited_urls_map_[most_visited_urls[i].redirects[j]] = i;
-  }
-}
-
-void HistoryBackend::RecordTopPageVisitStats(const GURL& url) {
-  int rank = kPageVisitStatsMaxTopSites;
-  std::map<GURL, int>::const_iterator it = most_visited_urls_map_.find(url);
-  if (it != most_visited_urls_map_.end())
-    rank = (*it).second;
-  UMA_HISTOGRAM_ENUMERATION("History.TopSitesVisitsByRank",
-                            rank, kPageVisitStatsMaxTopSites + 1);
-}
-#endif
 
 }  // namespace history

@@ -596,18 +596,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 #if defined(OS_ANDROID)
   // Returns the name of android cache database.
   base::FilePath GetAndroidCacheFileName() const;
-
-  // Populate a map from a |MostVisitedURLList|. The map assigns a rank to each
-  // top URL and its redirects. This should only be done once at backend
-  // initialization.
-  // This can be removed for M31. (See issue 248761.)
-
-  void PopulateMostVisitedURLMap();
-  // Record counts of page visits by rank. If a url is not ranked, record the
-  // page visit in a slot corresponding to |max_top_url_count|, which should
-  // be one greater than the largest rank of any url in |top_urls|.
-  // This can be removed for M31. (See issue 248761.)
-  void RecordTopPageVisitStats(const GURL& url);
 #endif
 
   class URLQuerier;
@@ -908,12 +896,6 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 #if defined(OS_ANDROID)
   // Used to provide the Android ContentProvider APIs.
   scoped_ptr<AndroidProviderBackend> android_provider_backend_;
-
-  // Used to provide UMA on the number of page visits that are to the most
-  // visited URLs. This is here because the backend both has access to this
-  // information and is notified of page visits. The top sites service should
-  // be used instead whenever possible.
-  std::map<GURL, int> most_visited_urls_map_;
 #endif
 
   // Used to manage syncing of the typed urls datatype. This will be NULL
