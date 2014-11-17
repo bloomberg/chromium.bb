@@ -170,7 +170,9 @@ class InitSDKStage(generic_stages.BuilderStage):
     if os.path.isdir(self._build_root) and not replace:
       try:
         pre_ver = cros_build_lib.GetChrootVersion(chroot=chroot_path)
-        commands.RunChrootUpgradeHooks(self._build_root)
+        commands.RunChrootUpgradeHooks(
+            self._build_root, chrome_root=self._run.options.chrome_root,
+            extra_env=self._portage_extra_env)
       except failures_lib.BuildScriptFailure:
         cros_build_lib.PrintBuildbotStepText('Replacing broken chroot')
         cros_build_lib.PrintBuildbotStepWarnings()

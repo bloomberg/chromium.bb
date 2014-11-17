@@ -260,14 +260,20 @@ def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   RunBuildScript(buildroot, cmd, extra_env=extra_env)
 
 
-def RunChrootUpgradeHooks(buildroot, chrome_root=None):
-  """Run the chroot upgrade hooks in the chroot."""
+def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
+  """Run the chroot upgrade hooks in the chroot.
+
+  Args:
+    buildroot: Root directory where build occurs.
+    chrome_root: The directory where chrome is stored.
+    extra_env: A dictionary of environment variables to set.
+  """
   chroot_args = []
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
-  RunBuildScript(buildroot, ['./run_chroot_version_hooks'],
-                 enter_chroot=True, chroot_args=chroot_args)
+  RunBuildScript(buildroot, ['./run_chroot_version_hooks'], enter_chroot=True,
+                 chroot_args=chroot_args, extra_env=extra_env)
 
 
 def RefreshPackageStatus(buildroot, boards, debug):
