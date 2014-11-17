@@ -182,6 +182,7 @@ def interface_context(interface):
         'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
+        'event_target_inheritance': 'InheritFromEventTarget' if is_event_target else 'NotInheritFromEventTarget',
         'gc_type': this_gc_type,
         # FIXME: Remove 'EventTarget' special handling, http://crbug.com/383699
         'has_access_check_callbacks': (is_check_security and
@@ -196,7 +197,6 @@ def interface_context(interface):
         'is_active_dom_object': is_active_dom_object,
         'is_array_buffer_or_view': is_array_buffer_or_view,
         'is_check_security': is_check_security,
-        'is_dependent_lifetime': is_dependent_lifetime,
         'is_event_target': is_event_target,
         'is_exception': interface.is_exception,
         'is_node': inherits_interface(interface.name, 'Node'),

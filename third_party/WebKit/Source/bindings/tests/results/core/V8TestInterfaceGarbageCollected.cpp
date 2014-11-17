@@ -22,7 +22,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, V8TestInterfaceGarbageCollected::trace, 0, V8TestInterfaceGarbageCollected::toEventTarget, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
+const WrapperTypeInfo V8TestInterfaceGarbageCollected::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestInterfaceGarbageCollected::domTemplate, V8TestInterfaceGarbageCollected::refObject, V8TestInterfaceGarbageCollected::derefObject, V8TestInterfaceGarbageCollected::trace, 0, 0, V8TestInterfaceGarbageCollected::installConditionallyEnabledMethods, V8TestInterfaceGarbageCollected::installConditionallyEnabledProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::ObjectClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Independent, WrapperTypeInfo::GarbageCollectedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestInterfaceGarbageCollected.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -162,11 +162,6 @@ v8::Handle<v8::Object> V8TestInterfaceGarbageCollected::findInstanceInPrototypeC
 TestInterfaceGarbageCollected* V8TestInterfaceGarbageCollected::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestInterfaceGarbageCollected>() : 0;
-}
-
-EventTarget* V8TestInterfaceGarbageCollected::toEventTarget(v8::Handle<v8::Object> object)
-{
-    return toImpl(object);
 }
 
 void V8TestInterfaceGarbageCollected::refObject(ScriptWrappableBase* scriptWrappableBase)

@@ -15,8 +15,6 @@
 namespace blink {
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
-{% set to_event_target = '%s::toEventTarget' % v8_class
-                         if is_event_target else '0' %}
 {% set visit_dom_wrapper = '%s::visitDOMWrapper' % v8_class
                            if has_visit_dom_wrapper else '0' %}
 {% set parent_wrapper_type_info = '&V8%s::wrapperTypeInfo' % parent_interface
@@ -27,7 +25,7 @@ namespace blink {
 
 {% set wrapper_type_info_const = '' if has_partial_interface else 'const ' %}
 {% if not is_partial %}
-{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+{{wrapper_type_info_const}}WrapperTypeInfo {{v8_class}}::wrapperTypeInfo = { gin::kEmbedderBlink, {{dom_template}}, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{visit_dom_wrapper}}, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, {{parent_wrapper_type_info}}, WrapperTypeInfo::{{wrapper_type_prototype}}, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in {{cpp_class}}.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -452,7 +450,6 @@ static void install{{v8_class}}Template(v8::Handle<v8::FunctionTemplate> functio
 {% endblock %}
 {##############################################################################}
 {% block to_active_dom_object %}{% endblock %}
-{% block to_event_target %}{% endblock %}
 {% block get_shadow_object_template %}{% endblock %}
 {% block deref_object_and_to_v8_no_inline %}{% endblock %}
 {% for method in methods if method.is_implemented_in_private_script %}

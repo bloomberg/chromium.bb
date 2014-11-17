@@ -42,7 +42,6 @@ public:
         visitor->trace(scriptWrappableBase->toImpl<TestInterfaceEventTarget>());
 #endif
     }
-    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static inline ScriptWrappableBase* toScriptWrappableBase(TestInterfaceEventTarget* impl)

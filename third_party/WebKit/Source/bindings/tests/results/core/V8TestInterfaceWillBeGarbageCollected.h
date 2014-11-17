@@ -42,7 +42,6 @@ public:
         visitor->trace(scriptWrappableBase->toImpl<TestInterfaceWillBeGarbageCollected>());
 #endif
     }
-    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void constructorCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static const int eventListenerCacheIndex = v8DefaultWrapperInternalFieldCount + 0;
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;

@@ -53,7 +53,6 @@ typedef void (*RefObjectFunction)(ScriptWrappableBase*);
 typedef void (*DerefObjectFunction)(ScriptWrappableBase*);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappableBase*);
 typedef ActiveDOMObject* (*ToActiveDOMObjectFunction)(v8::Handle<v8::Object>);
-typedef EventTarget* (*ToEventTargetFunction)(v8::Handle<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(v8::Isolate*, ScriptWrappableBase*, const v8::Persistent<v8::Object>&);
 typedef void (*InstallConditionallyEnabledMethodsFunction)(v8::Handle<v8::Object>, v8::Isolate*);
 typedef void (*InstallConditionallyEnabledPropertiesFunction)(v8::Handle<v8::Object>, v8::Isolate*);
@@ -77,6 +76,11 @@ struct WrapperTypeInfo {
         ObjectClassId,
     };
 
+    enum EventTargetInheritance {
+        NotInheritFromEventTarget,
+        InheritFromEventTarget,
+    };
+
     enum Lifetime {
         Dependent,
         Independent,
@@ -92,7 +96,6 @@ struct WrapperTypeInfo {
     {
         return reinterpret_cast<const WrapperTypeInfo*>(v8::External::Cast(*typeInfoWrapper)->Value());
     }
-
 
     bool equals(const WrapperTypeInfo* that) const
     {
@@ -158,12 +161,7 @@ struct WrapperTypeInfo {
         return toActiveDOMObjectFunction(object);
     }
 
-    EventTarget* toEventTarget(v8::Handle<v8::Object> object) const
-    {
-        if (!toEventTargetFunction)
-            return 0;
-        return toEventTargetFunction(object);
-    }
+    EventTarget* toEventTarget(v8::Handle<v8::Object>) const;
 
     void visitDOMWrapper(v8::Isolate* isolate, ScriptWrappableBase* scriptWrappableBase, const v8::Persistent<v8::Object>& wrapper) const
     {
@@ -181,15 +179,15 @@ struct WrapperTypeInfo {
     const DerefObjectFunction derefObjectFunction;
     const TraceFunction traceFunction;
     const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
-    const ToEventTargetFunction toEventTargetFunction;
     const ResolveWrapperReachabilityFunction visitDOMWrapperFunction;
     InstallConditionallyEnabledMethodsFunction installConditionallyEnabledMethodsFunction;
     const InstallConditionallyEnabledPropertiesFunction installConditionallyEnabledPropertiesFunction;
     const WrapperTypeInfo* parentClass;
-    const WrapperTypePrototype wrapperTypePrototype;
-    const WrapperClassId wrapperClassId;
-    const Lifetime lifetime;
-    const GCType gcType;
+    const unsigned wrapperTypePrototype : 1; // WrapperTypePrototype
+    const unsigned wrapperClassId : 2; // WrapperClassId
+    const unsigned eventTargetInheritance : 1; // EventTargetInheritance
+    const unsigned lifetime : 1; // Lifetime
+    const unsigned gcType : 2; // GCType
 };
 
 COMPILE_ASSERT(offsetof(struct WrapperTypeInfo, ginEmbedder) == offsetof(struct gin::WrapperInfo, embedder), wrapper_type_info_compatible_to_gin);

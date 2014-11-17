@@ -77,9 +77,6 @@ public:
     {% if is_active_dom_object %}
     static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
     {% endif %}
-    {% if is_event_target %}
-    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
-    {% endif %}
     {% if interface_name == 'Window' %}
     static v8::Handle<v8::ObjectTemplate> getShadowObjectTemplate(v8::Isolate*);
     {% endif %}

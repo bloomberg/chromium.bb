@@ -21,7 +21,7 @@
 
 namespace blink {
 
-const WrapperTypeInfo V8TestNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNode::domTemplate, V8TestNode::refObject, V8TestNode::derefObject, V8TestNode::trace, 0, V8TestNode::toEventTarget, 0, V8TestNode::installConditionallyEnabledMethods, V8TestNode::installConditionallyEnabledProperties, &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
+const WrapperTypeInfo V8TestNode::wrapperTypeInfo = { gin::kEmbedderBlink, V8TestNode::domTemplate, V8TestNode::refObject, V8TestNode::derefObject, V8TestNode::trace, 0, 0, V8TestNode::installConditionallyEnabledMethods, V8TestNode::installConditionallyEnabledProperties, &V8Node::wrapperTypeInfo, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::NodeClassId, WrapperTypeInfo::InheritFromEventTarget, WrapperTypeInfo::Dependent, WrapperTypeInfo::WillBeGarbageCollectedObject };
 
 // This static member must be declared by DEFINE_WRAPPERTYPEINFO in TestNode.h.
 // For details, see the comment of DEFINE_WRAPPERTYPEINFO in
@@ -222,11 +222,6 @@ v8::Handle<v8::Object> V8TestNode::findInstanceInPrototypeChain(v8::Handle<v8::V
 TestNode* V8TestNode::toImplWithTypeCheck(v8::Isolate* isolate, v8::Handle<v8::Value> value)
 {
     return hasInstance(value, isolate) ? blink::toScriptWrappableBase(v8::Handle<v8::Object>::Cast(value))->toImpl<TestNode>() : 0;
-}
-
-EventTarget* V8TestNode::toEventTarget(v8::Handle<v8::Object> object)
-{
-    return toImpl(object);
 }
 
 void V8TestNode::refObject(ScriptWrappableBase* scriptWrappableBase)

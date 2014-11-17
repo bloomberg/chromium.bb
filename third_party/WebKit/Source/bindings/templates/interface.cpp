@@ -432,9 +432,7 @@ static void {{cpp_class}}OriginSafeMethodSetterCallback(v8::Local<v8::String> na
 {% if named_constructor %}
 {% set to_active_dom_object = '%s::toActiveDOMObject' % v8_class
                               if is_active_dom_object else '0' %}
-{% set to_event_target = '%s::toEventTarget' % v8_class
-                         if is_event_target else '0' %}
-const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, {{to_event_target}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
+const WrapperTypeInfo {{v8_class}}Constructor::wrapperTypeInfo = { gin::kEmbedderBlink, {{v8_class}}Constructor::domTemplate, {{v8_class}}::refObject, {{v8_class}}::derefObject, {{v8_class}}::trace, {{to_active_dom_object}}, 0, {{v8_class}}::installConditionallyEnabledMethods, {{v8_class}}::installConditionallyEnabledProperties, 0, WrapperTypeInfo::WrapperTypeObjectPrototype, WrapperTypeInfo::{{wrapper_class_id}}, WrapperTypeInfo::{{event_target_inheritance}}, WrapperTypeInfo::{{lifetime}}, WrapperTypeInfo::{{gc_type}} };
 
 {{generate_constructor(named_constructor)}}
 v8::Handle<v8::FunctionTemplate> {{v8_class}}Constructor::domTemplate(v8::Isolate* isolate)
@@ -889,18 +887,6 @@ void {{v8_class}}::installConditionallyEnabledProperties(v8::Handle<v8::Object> 
 ActiveDOMObject* {{v8_class}}::toActiveDOMObject(v8::Handle<v8::Object> wrapper)
 {
     return toImpl(wrapper);
-}
-
-{% endif %}
-{% endblock %}
-
-
-{##############################################################################}
-{% block to_event_target %}
-{% if is_event_target %}
-EventTarget* {{v8_class}}::toEventTarget(v8::Handle<v8::Object> object)
-{
-    return toImpl(object);
 }
 
 {% endif %}
