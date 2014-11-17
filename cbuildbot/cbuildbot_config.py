@@ -1546,7 +1546,7 @@ _toolchain_major = _cros_sdk.add_config('toolchain-major',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
-  gcc_githash='svn-mirror/google/gcc-4_9-mobile',
+  gcc_githash='svn-mirror/google/gcc-main',
   description='Test next major toolchain revision',
 )
 
@@ -1554,7 +1554,7 @@ _toolchain_minor = _cros_sdk.add_config('toolchain-minor',
   latest_toolchain=True,
   prebuilts=False,
   trybot_list=False,
-  gcc_githash='gcc.gnu.org/branches/google/gcc-4_8-mobile',
+  gcc_githash='gcc.gnu.org/branches/google/gcc-4_9',
   description='Test next minor toolchain revision',
 )
 

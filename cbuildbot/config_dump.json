@@ -13035,7 +13035,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Test next major toolchain revision (internal)",
-        "gcc_githash": "svn-mirror/google/gcc-4_9-mobile",
+        "gcc_githash": "svn-mirror/google/gcc-main",
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -13067,7 +13067,7 @@
         "chromeos_official": true,
         "chroot_replace": true,
         "description": "Test next minor toolchain revision (internal)",
-        "gcc_githash": "gcc.gnu.org/branches/google/gcc-4_8-mobile",
+        "gcc_githash": "gcc.gnu.org/branches/google/gcc-4_9",
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -34948,7 +34948,7 @@
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Test next major toolchain revision",
-        "gcc_githash": "svn-mirror/google/gcc-4_9-mobile",
+        "gcc_githash": "svn-mirror/google/gcc-main",
         "git_sync": true,
         "image_test": true,
         "images": [
@@ -34973,7 +34973,7 @@
         "chrome_sdk": true,
         "chroot_replace": true,
         "description": "Test next minor toolchain revision",
-        "gcc_githash": "gcc.gnu.org/branches/google/gcc-4_8-mobile",
+        "gcc_githash": "gcc.gnu.org/branches/google/gcc-4_9",
         "git_sync": true,
         "image_test": true,
         "images": [
