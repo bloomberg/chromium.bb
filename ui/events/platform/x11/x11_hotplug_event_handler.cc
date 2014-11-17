@@ -161,13 +161,18 @@ bool IsTestKeyboard(const std::string& name) {
   return name.find("XTEST") != std::string::npos;
 }
 
-base::FilePath GetDevicePath(XDisplay* dpy, int device_id) {
+base::FilePath GetDevicePath(XDisplay* dpy, const XIDeviceInfo& device) {
 #if !defined(OS_CHROMEOS)
   return base::FilePath();
 #else
   if (!base::SysInfo::IsRunningOnChromeOS())
     return base::FilePath();
 #endif
+
+  // Skip the main pointer and keyboard since XOpenDevice() generates a
+  // BadDevice error when passed these devices.
+  if (device.use == XIMasterPointer || device.use == XIMasterKeyboard)
+    return base::FilePath();
 
   // Input device has a property "Device Node" pointing to its dev input node,
   // e.g.   Device Node (250): "/dev/input/event8"
@@ -179,7 +184,7 @@ base::FilePath GetDevicePath(XDisplay* dpy, int device_id) {
   int actual_format;
   unsigned long nitems, bytes_after;
   unsigned char* data;
-  XDevice* dev = XOpenDevice(dpy, device_id);
+  XDevice* dev = XOpenDevice(dpy, device.deviceid);
   if (!dev)
     return base::FilePath();
 
@@ -339,9 +344,10 @@ void X11HotplugEventHandler::OnHotplugEvent() {
   Display* display = gfx::GetXDisplay();
 
   std::vector<DeviceInfo> device_infos;
-  for (int i = 0; i < device_list.count; ++i)
-    device_infos.push_back(DeviceInfo(
-        device_list[i], GetDevicePath(display, device_list[i].deviceid)));
+  for (int i = 0; i < device_list.count; ++i) {
+    const XIDeviceInfo& device = device_list[i];
+    device_infos.push_back(DeviceInfo(device, GetDevicePath(display, device)));
+  }
 
   // X11 is not thread safe, so first get all the required state.
   DisplayState display_state;
