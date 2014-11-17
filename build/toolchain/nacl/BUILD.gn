@@ -65,8 +65,7 @@ nacl_toolchain("clang_newlib_x86") {
   package = "pnacl_newlib"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
-
-  asm_flags = "-no-integrated-as"
+  is_clang = true
 
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
@@ -78,8 +77,7 @@ nacl_toolchain("clang_newlib_x64") {
   package = "pnacl_newlib"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
-
-  asm_flags = "-no-integrated-as"
+  is_clang = true
 
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
@@ -93,8 +91,7 @@ nacl_toolchain("irt_x86") {
   package = "pnacl_newlib"
   toolchain_cpu_arch = "x86"
   toolprefix = "toolchain/${os}_x86/${package}/bin/i686-nacl-"
-
-  asm_flags = "-no-integrated-as"
+  is_clang = true
 
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
@@ -113,8 +110,7 @@ nacl_toolchain("irt_x64") {
   package = "pnacl_newlib"
   toolchain_cpu_arch = "x64"
   toolprefix = "toolchain/${os}_x86/${package}/bin/x86_64-nacl-"
-
-  asm_flags = "-no-integrated-as"
+  is_clang = true
 
   cc = toolprefix + "clang"
   cxx = toolprefix + "clang++"
@@ -141,7 +137,6 @@ nacl_toolchain("irt_arm") {
   readelf = toolprefix + "readelf"
   # Link with cc to avoid including any C++ libs.
   ld = "${python_path} ${link_irt} --tls-edit=tls_edit --link-cmd=${cc} --readelf-cmd=${readelf}"
-
 
   # TODO(ncbray): depend on link script
   deps = [

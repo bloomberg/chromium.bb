@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//native_client/build/toolchain/gcc_toolchain.gni")
+
 # This template defines a NaCl toolchain.
 #
 # The template defines both a "raw" and "cooked" toolchain.  These toolchains
@@ -17,192 +19,6 @@
 #  - toolchain_cpu_arch  (What "cpu_arch" should be set to when invoking a
 #                         build using this toolchain.)
 
-template("base_nacl_toolchain") {
-  toolchain(target_name) {
-    # We can't do string interpolation ($ in strings) on things with dots in
-    # them. To allow us to use $cc below, for example, we create copies of
-    # these values in our scope.
-    cc = invoker.cc
-    cxx = invoker.cxx
-    ar = invoker.ar
-    ld = invoker.ld
-
-    if (defined(invoker.asm_flags)) {
-      asm_flags = invoker.asm_flags + " "
-    } else {
-      asm_flags = ""
-    }
-    executable_extension = invoker.executable_extension
-
-    # Bring these into our scope for string interpolation with default values.
-    if (defined(invoker.libs_section_prefix)) {
-      libs_section_prefix = invoker.libs_section_prefix
-    } else {
-      libs_section_prefix = ""
-    }
-
-    if (defined(invoker.libs_section_postfix)) {
-      libs_section_postfix = invoker.libs_section_postfix
-    } else {
-      libs_section_postfix = ""
-    }
-
-    if (defined(invoker.solink_libs_section_prefix)) {
-      solink_libs_section_prefix = invoker.solink_libs_section_prefix
-    } else {
-      solink_libs_section_prefix = ""
-    }
-
-    if (defined(invoker.solink_libs_section_postfix)) {
-      solink_libs_section_postfix = invoker.solink_libs_section_postfix
-    } else {
-      solink_libs_section_postfix = ""
-    }
-
-    # These library switches can apply to all tools below.
-    lib_switch = "-l"
-    lib_dir_switch = "-L"
-
-    tool("cc") {
-      depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
-      depsformat = "gcc"
-      description = "CC ($target_name) {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-      ]
-    }
-
-    tool("cxx") {
-      depfile = "{{output}}.d"
-      command = "$cxx -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
-      depsformat = "gcc"
-      description = "CXX ($target_name) {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-      ]
-    }
-
-    tool("asm") {
-      # For GCC we can just use the C compiler to compile assembly.
-      depfile = "{{output}}.d"
-      command = "$cc -MMD -MF $depfile ${asm_flags}{{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
-      depsformat = "gcc"
-      description = "ASM ($target_name) {{output}}"
-      outputs = [
-        "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-      ]
-    }
-
-    tool("alink") {
-      rspfile = "{{output}}.rsp"
-      command = "rm -f {{output}} && $ar rcs {{output}} @$rspfile"
-      description = "AR ($target_name) {{output}}"
-      rspfile_content = "{{inputs}}"
-      outputs = [
-        "{{target_out_dir}}/{{target_output_name}}{{output_extension}}"
-      ]
-      default_output_extension = ".a"
-      output_prefix = "lib"
-    }
-
-    tool("solink") {
-      soname = "{{target_output_name}}{{output_extension}}"  # e.g. "libfoo.so".
-      sofile = "{{root_out_dir}}/$soname"  # Possibly including toolchain dir.
-      rspfile = sofile + ".rsp"
-
-      # These variables are not built into GN but are helpers that implement
-      # (1) linking to produce a .so, (2) extracting the symbols from that file
-      # to a temporary file, (3) if the temporary file has differences from the
-      # existing .TOC file, overwrite it, otherwise, don't change it.
-      tocfile = sofile + ".TOC"
-      temporary_tocname = sofile + ".tmp"
-      link_command = "$ld -shared {{ldflags}} -o $sofile -Wl,-soname=$soname @$rspfile"
-      toc_command = "{ readelf -d $sofile | grep SONAME ; nm -gD -f p $soname | cut -f1-2 -d' '; } > $temporary_tocname"
-      replace_command = "if ! cmp -s $temporary_tocname $tocfile; then mv $temporary_tocname $tocfile; fi"
-
-      command = "$link_command && $toc_command && $replace_command"
-      if (defined(invoker.postsolink)) {
-        command += " && " + invoker.postsolink
-      }
-      rspfile_content = "-Wl,--whole-archive {{inputs}} {{solibs}} -Wl,--no-whole-archive $solink_libs_section_prefix {{libs}} $solink_libs_section_postfix"
-
-      description = "SOLINK ($target_name) $sofile"
-
-      # Use this for {{output_extension}} expansions unless a target manually
-      # overrides it (in which case {{output_extension}} will be what the target
-      # specifies).
-      default_output_extension = ".so"
-
-      output_prefix = "lib"
-
-      # Since the above commands only updates the .TOC file when it changes, ask
-      # Ninja to check if the timestamp actually changed to know if downstream
-      # dependencies should be recompiled.
-      restat = true
-
-      # Tell GN about the output files. It will link to the sofile but use the
-      # tocfile for dependency management.
-      outputs = [
-        sofile,
-        tocfile,
-      ]
-      if (defined(invoker.solink_outputs)) {
-        outputs += invoker.solink_outputs
-      }
-      link_output = sofile
-      depend_output = tocfile
-    }
-
-    tool("link") {
-      default_output_extension = executable_extension
-
-      outfile = "{{root_out_dir}}/{{target_output_name}}{{output_extension}}"
-      rspfile = "$outfile.rsp"
-      command = "$ld {{ldflags}} -o $outfile -Wl,--start-group @$rspfile {{solibs}} -Wl,--end-group $libs_section_prefix {{libs}} $libs_section_postfix"
-      if (defined(invoker.postlink)) {
-        command += " && " + invoker.postlink
-      }
-      description = "LINK ($target_name) $outfile"
-      rspfile_content = "{{inputs}}"
-      outputs = [ outfile ]
-      if (defined(invoker.link_outputs)) {
-        outputs += invoker.link_outputs
-      }
-    }
-    if (is_win) {
-      tool("stamp") {
-        command = "$python_path gyp-win-tool stamp {{output}}"
-        description = "STAMP {{output}}"
-      }
-    } else {
-      tool("stamp") {
-        command = "touch {{output}}"
-        description = "STAMP {{output}}"
-      }
-    }
-
-    tool("copy") {
-      command = "ln -f {{source}} {{output}} 2>/dev/null || (rm -rf {{output}} && cp -af {{source}} {{output}})"
-      description = "COPY {{source}} {{output}}"
-    }
-
-    # When invoking this toolchain not as the default one, these args will be
-    # passed to the build. They are ignored when this is the default toolchain.
-    toolchain_args() {
-      cpu_arch = invoker.toolchain_cpu_arch
-      os = invoker.toolchain_os
-      if (defined(invoker.is_clang)) {
-        is_clang = invoker.is_clang
-      }
-    }
-
-    if (defined(invoker.deps)) {
-      deps = invoker.deps
-    }
-  }
-}
-
 template("nacl_toolchain") {
   assert(defined(invoker.cc), "nacl_toolchain() must specify a \"cc\" value")
   assert(defined(invoker.cxx), "nacl_toolchain() must specify a \"cxx\" value")
@@ -214,8 +30,8 @@ template("nacl_toolchain") {
          "nacl_toolchain() must specify a \"package\" value")
 
   toolchain_os = "nacl"
-  if (defined(invoker.asm_flags)) {
-    asm_flags = invoker.asm_flags
+  if (defined(invoker.is_clang)) {
+    is_clang = invoker.is_clang
   }
   if (defined(invoker.executable_extension)) {
     executable_extension = invoker.executable_extension
@@ -230,13 +46,13 @@ template("nacl_toolchain") {
   ar = invoker.ar
   ld = invoker.ld
 
-  base_nacl_toolchain("raw_" + target_name) {
+  gcc_toolchain("raw_" + target_name) {
     deps = [
       "//native_client/build/toolchain:${package}_untar(//native_client/build/toolchain/nacl:toolchain_prep)",
       "//native_client/build/toolchain:${package}_copies(//native_client/build/toolchain/nacl:toolchain_prep)"
     ]
   }
-  base_nacl_toolchain(target_name) {
+  gcc_toolchain(target_name) {
     deps = [
       "//native_client/build/toolchain:prep_${package}(//native_client/build/toolchain/nacl:toolchain_prep)"
     ]

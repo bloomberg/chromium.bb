@@ -8,11 +8,22 @@
 # when referencing a toolchain.
 #
 
+config("asm_hack") {
+  # HACK this will be wrong for PNaCl, but we don't support PNaCl, yet, and
+  # this is a temporary workaround.
+  if (is_clang) {
+    cflags = [
+      "-no-integrated-as"
+    ]
+  }
+}
+
 #
 # Source sets for the various crtX.o files which can be used by multiple
 # nacl toolchains.
 #
 source_set("crt_x86_32") {
+  configs += [ ":asm_hack" ]
   sources = [
     "//native_client/src/untrusted/stubs/crti_x86_32.S",
     "//native_client/src/untrusted/stubs/crtn_x86_32.S",
@@ -20,6 +31,7 @@ source_set("crt_x86_32") {
 }
 
 source_set("crt_x86_64") {
+  configs += [ ":asm_hack" ]
   sources = [
     "//native_client/src/untrusted/stubs/crti_x86_64.S",
     "//native_client/src/untrusted/stubs/crtn_x86_64.S",
@@ -27,6 +39,7 @@ source_set("crt_x86_64") {
 }
 
 source_set("crt_arm") {
+  configs += [ ":asm_hack" ]
   sources = [
     "//native_client/src/untrusted/stubs/crti_arm.S",
     "//native_client/src/untrusted/stubs/crtn_arm.S",
