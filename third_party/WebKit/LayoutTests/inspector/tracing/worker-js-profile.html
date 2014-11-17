@@ -1,0 +1,77 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/timeline-test.js"></script>
+<script src="../tracing-test.js"></script>
+<script>
+
+// Save references to the worker objects to make sure they are not GC'ed.
+var worker1;
+var worker2;
+
+function startWorkerAndRunTest()
+{
+    worker1 = new Worker("resources/worker.js");
+    worker1.postMessage("");
+
+    if (window.testRunner) {
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
+    }
+
+    worker1.onmessage = function(event)
+    {
+        worker1.onmessage = null;
+        runTest();
+    }
+}
+
+function startSecondWorker(onActionComplete)
+{
+    // FIXME: add a payload to the worker to make it produce a JSFrame.
+    worker2 = new Worker("resources/worker.js");
+    worker2.postMessage("");
+    worker2.onmessage = function(event)
+    {
+        onActionComplete();
+        worker2.onmessage = null;
+    }
+}
+
+function test()
+{
+    InspectorTest.invokeWithTracing("startSecondWorker", processTracingEvents,
+        "disabled-by-default-devtools.timeline.stack", true);
+
+    var seenFunctions = new Set();
+    function processTracingEvents()
+    {
+        InspectorTest.addResult("Main thread");
+        InspectorTest.tracingTimelineModel()._mainThreadEvents.forEach(processEvent);
+        var threads = InspectorTest.tracingTimelineModel()._virtualThreads;
+        for (var i = 0; i < threads.length; ++i) {
+            InspectorTest.addResult(threads[i].name);
+            threads[i].events.forEach(processEvent);
+        }
+        InspectorTest.assertTrue(seenFunctions.has("startSecondWorker"));
+        InspectorTest.assertTrue(seenFunctions.has("worker2.onmessage"));
+        InspectorTest.completeTest();
+    }
+
+    function processEvent(event)
+    {
+        if (event.name !== WebInspector.TimelineModel.RecordType.JSFrame)
+            return;
+        seenFunctions.add(event.args.data.functionName);
+    }
+}
+
+</script>
+</head>
+
+<body onload="startWorkerAndRunTest()">
+<p>
+Tests js cpu profile in timeline.
+</p>
+</body>
+</html>

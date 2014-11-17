@@ -27,13 +27,13 @@ InspectorTest.tracingTimelineModel = function()
     return InspectorTest._tracingTimelineModel;
 }
 
-InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories)
+InspectorTest.invokeWithTracing = function(functionName, callback, additionalCategories, enableJSSampling)
 {
     InspectorTest.tracingTimelineModel().addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, onTracingStarted, this);
     var categories = "-*,disabled-by-default-devtools.timeline*";
     if (additionalCategories)
         categories += "," + additionalCategories;
-    InspectorTest.tracingTimelineModel()._startRecordingWithCategories(categories);
+    InspectorTest.tracingTimelineModel()._startRecordingWithCategories(categories, enableJSSampling);
 
     function onTracingStarted(event)
     {

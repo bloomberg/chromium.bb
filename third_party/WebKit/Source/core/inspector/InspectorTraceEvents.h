@@ -254,7 +254,7 @@ public:
 
 class InspectorTracingSessionIdForWorkerEvent {
 public:
-    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, WorkerThread*);
+    static PassRefPtr<TraceEvent::ConvertableToTraceFormat> data(const String& sessionId, int workerId, WorkerThread*);
 };
 
 } // namespace blink

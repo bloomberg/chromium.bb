@@ -33,9 +33,9 @@ public:
     void connectToInspector(PageInspector*);
     void disconnectFromInspector();
     void sendMessageToInspector(const String&);
-    void writeTimelineStartedEvent(const String& sessionId);
+    void writeTimelineStartedEvent(const String& sessionId, int workerId);
 
-    PageInspector* pageInspector() const { return m_pageInspector; };
+    PageInspector* pageInspector() const { return m_pageInspector; }
 
 private:
     WorkerInspectorProxy();

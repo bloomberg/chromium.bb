@@ -72,17 +72,25 @@ public:
 private:
     InspectorWorkerAgent();
     void createWorkerFrontendChannelsForExistingWorkers();
-    void createWorkerFrontendChannel(WorkerInspectorProxy*, const String& url);
+    void createWorkerFrontendChannel(WorkerInspectorProxy*, const String& url, int id);
     void destroyWorkerFrontendChannels();
 
     InspectorFrontend::Worker* m_frontend;
 
+    class WorkerInfo {
+    public:
+        WorkerInfo() : id(0) { }
+        WorkerInfo(const String& url, int id) : url(url), id(id) { }
+        String url;
+        int id;
+    };
     class WorkerFrontendChannel;
     typedef HashMap<int, WorkerFrontendChannel*> WorkerChannels;
     WorkerChannels m_idToChannel;
-    typedef HashMap<WorkerInspectorProxy*, String> WorkerIds;
-    WorkerIds m_workerIds;
+    typedef HashMap<WorkerInspectorProxy*, WorkerInfo> WorkerInfos;
+    WorkerInfos m_workerInfos;
     String m_tracingSessionId;
+    int m_nextId;
 };
 
 } // namespace blink
