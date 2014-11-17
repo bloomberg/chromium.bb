@@ -30,7 +30,7 @@ class TestRenderFrameHostFactory : public RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,
-      bool is_swapped_out) override;
+      int flags) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestRenderFrameHostFactory);

@@ -86,11 +86,9 @@ void RenderFrameHostManager::Init(BrowserContext* browser_context,
   if (!site_instance)
     site_instance = SiteInstance::Create(browser_context);
 
-  SetRenderFrameHost(CreateRenderFrameHost(site_instance,
-                                           view_routing_id,
-                                           frame_routing_id,
-                                           false,
-                                           delegate_->IsHidden()));
+  int flags = delegate_->IsHidden() ? CREATE_RF_HIDDEN : 0;
+  SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
+                                           frame_routing_id, flags));
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -996,6 +994,9 @@ void RenderFrameHostManager::CreateRenderFrameHostForNewSiteInstance(
     SiteInstance* old_instance,
     SiteInstance* new_instance,
     bool is_main_frame) {
+  int create_render_frame_flags = 0;
+  if (is_main_frame)
+    create_render_frame_flags |= CREATE_RF_FOR_MAIN_FRAME_NAVIGATION;
   // Ensure that we have created RFHs for the new RFH's opener chain if
   // we are staying in the same BrowsingInstance. This allows the new RFH
   // to send cross-process script calls to its opener(s).
@@ -1012,10 +1013,12 @@ void RenderFrameHostManager::CreateRenderFrameHostForNewSiteInstance(
     }
   }
 
+  if (delegate_->IsHidden())
+    create_render_frame_flags |= CREATE_RF_HIDDEN;
+
   // Create a non-swapped-out RFH with the given opener.
-  int route_id = CreateRenderFrame(
-      new_instance, opener_route_id, false, is_main_frame,
-      delegate_->IsHidden());
+  int route_id = CreateRenderFrame(new_instance, opener_route_id,
+                                   create_render_frame_flags);
   if (route_id == MSG_ROUTING_NONE) {
     pending_render_frame_host_.reset();
     return;
@@ -1026,10 +1029,12 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
     SiteInstance* site_instance,
     int view_routing_id,
     int frame_routing_id,
-    bool swapped_out,
-    bool hidden) {
+    int flags) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
+
+  bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
+  bool hidden = !!(flags & CREATE_RF_HIDDEN);
 
   // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
@@ -1045,22 +1050,19 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
 
   // TODO(creis): Pass hidden to RFH.
   scoped_ptr<RenderFrameHostImpl> render_frame_host =
-      make_scoped_ptr(RenderFrameHostFactory::Create(render_view_host,
-                                                     render_frame_delegate_,
-                                                     frame_tree,
-                                                     frame_tree_node_,
-                                                     frame_routing_id,
-                                                     swapped_out).release());
+      make_scoped_ptr(RenderFrameHostFactory::Create(
+                          render_view_host, render_frame_delegate_, frame_tree,
+                          frame_tree_node_, frame_routing_id, flags).release());
   return render_frame_host.Pass();
 }
 
 int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
                                               int opener_route_id,
-                                              bool swapped_out,
-                                              bool for_main_frame_navigation,
-                                              bool hidden) {
+                                              int flags) {
+  bool swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   CHECK(instance);
-  DCHECK(!swapped_out || hidden); // Swapped out views should always be hidden.
+  // Swapped out views should always be hidden.
+  DCHECK(!swapped_out || (flags & CREATE_RF_HIDDEN));
 
   // TODO(nasko): Remove the following CHECK once cross-site navigation no
   // longer relies on swapped out RFH for the top-level frame.
@@ -1108,8 +1110,8 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
     }
   } else {
     // Create a new RenderFrameHost if we don't find an existing one.
-    new_render_frame_host = CreateRenderFrameHost(
-        instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, swapped_out, hidden);
+    new_render_frame_host = CreateRenderFrameHost(instance, MSG_ROUTING_NONE,
+                                                  MSG_ROUTING_NONE, flags);
     RenderViewHostImpl* render_view_host =
         new_render_frame_host->render_view_host();
     int proxy_routing_id = MSG_ROUTING_NONE;
@@ -1127,10 +1129,9 @@ int RenderFrameHostManager::CreateRenderFrame(SiteInstance* instance,
         proxy->TakeFrameHostOwnership(new_render_frame_host.Pass());
     }
 
-    bool success = InitRenderView(render_view_host,
-                                  opener_route_id,
-                                  proxy_routing_id,
-                                  for_main_frame_navigation);
+    bool success =
+        InitRenderView(render_view_host, opener_route_id, proxy_routing_id,
+                       !!(flags & CREATE_RF_FOR_MAIN_FRAME_NAVIGATION));
     if (success) {
       if (frame_tree_node_->IsMainFrame()) {
         // Don't show the main frame's view until we get a DidNavigate from it.

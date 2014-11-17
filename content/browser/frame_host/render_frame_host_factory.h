@@ -30,7 +30,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,
-      bool is_swapped_out);
+      int flags);
 
   // Returns true if there is currently a globally-registered factory.
   static bool has_factory() { return !!factory_; }
@@ -47,7 +47,7 @@ class CONTENT_EXPORT RenderFrameHostFactory {
       FrameTree* frame_tree,
       FrameTreeNode* frame_tree_node,
       int routing_id,
-      bool is_swapped_out) = 0;
+      int flags) = 0;
 
   // Registers a factory to be called when new RenderFrameHostImpls are created.
   // We have only one global factory, so there must be no factory registered

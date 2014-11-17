@@ -173,7 +173,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int routing_id,
-                                         bool is_swapped_out)
+                                         int flags)
     : render_view_host_(render_view_host),
       delegate_(delegate),
       cross_process_frame_connector_(NULL),
@@ -189,6 +189,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(RenderViewHostImpl* render_view_host,
       accessibility_reset_count_(0),
       no_create_browser_accessibility_manager_for_testing_(false),
       weak_ptr_factory_(this) {
+  bool is_swapped_out = !!(flags & CREATE_RF_SWAPPED_OUT);
   frame_tree_->RegisterRenderFrameHost(this);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(

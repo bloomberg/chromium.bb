@@ -32,13 +32,13 @@ TestRenderFrameHost::TestRenderFrameHost(RenderViewHostImpl* render_view_host,
                                          FrameTree* frame_tree,
                                          FrameTreeNode* frame_tree_node,
                                          int routing_id,
-                                         bool is_swapped_out)
+                                         int flags)
     : RenderFrameHostImpl(render_view_host,
                           delegate,
                           frame_tree,
                           frame_tree_node,
                           routing_id,
-                          is_swapped_out),
+                          flags),
       child_creation_observer_(delegate ? delegate->GetAsWebContents() : NULL),
       contents_mime_type_("text/html"),
       simulate_history_list_was_cleared_(false) {

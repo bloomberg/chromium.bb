@@ -40,7 +40,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int routing_id,
-                      bool is_swapped_out);
+                      int flags);
   ~TestRenderFrameHost() override;
 
   // RenderFrameHostImpl overrides (same values, but in Test* types)

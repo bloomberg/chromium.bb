@@ -20,18 +20,15 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostFactory::Create(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int routing_id,
-    bool is_swapped_out) {
+    int flags) {
   if (factory_) {
-    return factory_->CreateRenderFrameHost(render_view_host,
-                                           delegate,
-                                           frame_tree,
-                                           frame_tree_node,
-                                           routing_id,
-                                           is_swapped_out).Pass();
+    return factory_->CreateRenderFrameHost(render_view_host, delegate,
+                                           frame_tree, frame_tree_node,
+                                           routing_id, flags).Pass();
   }
-  return make_scoped_ptr(new RenderFrameHostImpl(
-      render_view_host, delegate, frame_tree, frame_tree_node, routing_id,
-      is_swapped_out));
+  return make_scoped_ptr(new RenderFrameHostImpl(render_view_host, delegate,
+                                                 frame_tree, frame_tree_node,
+                                                 routing_id, flags));
 }
 
 // static

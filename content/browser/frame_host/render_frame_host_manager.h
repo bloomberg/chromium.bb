@@ -297,14 +297,11 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   // Called when a renderer sets its opener to null.
   void DidDisownOpener(RenderFrameHost* render_frame_host);
 
-  // Helper method to create and initialize a RenderFrameHost.  If |swapped_out|
-  // is true, it will be initially placed on the swapped out hosts list.
+  // Helper method to create and initialize a RenderFrameHost.  If |flags|
+  // has the CREATE_RF_SWAPPED_OUT bit set from the CreateRenderFrameFlags
+  // enum, it will initially be placed on the swapped out hosts list.
   // Returns the routing id of the *view* associated with the frame.
-  int CreateRenderFrame(SiteInstance* instance,
-                        int opener_route_id,
-                        bool swapped_out,
-                        bool for_main_frame_navigation,
-                        bool hidden);
+  int CreateRenderFrame(SiteInstance* instance, int opener_route_id, int flags);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
   // its routing id.
@@ -449,8 +446,7 @@ class CONTENT_EXPORT RenderFrameHostManager : public NotificationObserver {
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrameHost(SiteInstance* instance,
                                                         int view_routing_id,
                                                         int frame_routing_id,
-                                                        bool swapped_out,
-                                                        bool hidden);
+                                                        int flags);
 
   // Sets up the necessary state for a new RenderViewHost with the given opener,
   // if necessary.  It creates a RenderFrameProxy in the target renderer process

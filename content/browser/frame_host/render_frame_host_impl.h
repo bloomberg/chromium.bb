@@ -70,6 +70,17 @@ struct ResourceResponse;
 struct ShowDesktopNotificationHostMsgParams;
 struct TransitionLayerData;
 
+// Flag arguments for RenderFrameHost creation.
+enum CreateRenderFrameFlags {
+  // The RFH will be initially placed on the swapped out hosts list.
+  CREATE_RF_SWAPPED_OUT = 1 << 0,
+  // The new RenderFrame is being created for a navigation of the
+  // top-level frame.
+  CREATE_RF_FOR_MAIN_FRAME_NAVIGATION = 1 << 1,
+  // The RenderFrame is initially hidden.
+  CREATE_RF_HIDDEN = 1 << 2
+};
+
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
       public BrowserAccessibilityDelegate {
@@ -378,6 +389,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
  protected:
   friend class RenderFrameHostFactory;
 
+  // |flags| is a combination of CreateRenderFrameFlags.
   // TODO(nasko): Remove dependency on RenderViewHost here. RenderProcessHost
   // should be the abstraction needed here, but we need RenderViewHost to pass
   // into WebContentsObserver::FrameDetached for now.
@@ -386,7 +398,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       FrameTree* frame_tree,
                       FrameTreeNode* frame_tree_node,
                       int routing_id,
-                      bool is_swapped_out);
+                      int flags);
 
  private:
   friend class TestRenderFrameHost;
