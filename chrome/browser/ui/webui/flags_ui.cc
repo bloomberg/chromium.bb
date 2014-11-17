@@ -291,9 +291,10 @@ FlagsUI::FlagsUI(content::WebUI* web_ui)
   web_ui->AddMessageHandler(handler);
 
 #if defined(OS_CHROMEOS)
-  chromeos::OwnerSettingsServiceChromeOS* service =
-      chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile);
-  if (service) {
+  if (base::SysInfo::IsRunningOnChromeOS() &&
+      chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile)) {
+    chromeos::OwnerSettingsServiceChromeOS* service =
+        chromeos::OwnerSettingsServiceChromeOSFactory::GetForProfile(profile);
     service->IsOwnerAsync(base::Bind(
         &FinishInitialization, weak_factory_.GetWeakPtr(), profile, handler));
   } else {
