@@ -40,12 +40,6 @@ class StackTrace;
 }  // namespace debug
 }  // namespace base
 
-// Temporary layering violation to allow existing users of a deprecated
-// interface.
-namespace content {
-class AppCacheInterceptor;
-}
-
 namespace net {
 
 class ChunkedUploadDataStream;
@@ -118,58 +112,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   enum FirstPartyURLPolicy {
     NEVER_CHANGE_FIRST_PARTY_URL,
     UPDATE_FIRST_PARTY_URL_ON_REDIRECT,
-  };
-
-  // This class handles network interception.  Use with
-  // (Un)RegisterRequestInterceptor.
-  class NET_EXPORT Interceptor {
-   public:
-    virtual ~Interceptor() {}
-
-    // Called for every request made.  Should return a new job to handle the
-    // request if it should be intercepted, or NULL to allow the request to
-    // be handled in the normal manner.
-    virtual URLRequestJob* MaybeIntercept(
-        URLRequest* request, NetworkDelegate* network_delegate) = 0;
-
-    // Called after having received a redirect response, but prior to the
-    // the request delegate being informed of the redirect. Can return a new
-    // job to replace the existing job if it should be intercepted, or NULL
-    // to allow the normal handling to continue. If a new job is provided,
-    // the delegate never sees the original redirect response, instead the
-    // response produced by the intercept job will be returned.
-    virtual URLRequestJob* MaybeInterceptRedirect(
-        URLRequest* request,
-        NetworkDelegate* network_delegate,
-        const GURL& location);
-
-    // Called after having received a final response, but prior to the
-    // the request delegate being informed of the response. This is also
-    // called when there is no server response at all to allow interception
-    // on dns or network errors. Can return a new job to replace the existing
-    // job if it should be intercepted, or NULL to allow the normal handling to
-    // continue. If a new job is provided, the delegate never sees the original
-    // response, instead the response produced by the intercept job will be
-    // returned.
-    virtual URLRequestJob* MaybeInterceptResponse(
-        URLRequest* request, NetworkDelegate* network_delegate);
-  };
-
-  // Deprecated interfaces in net::URLRequest. They have been moved to
-  // URLRequest's private section to prevent new uses. Existing uses are
-  // explicitly friended here and should be removed over time.
-  class NET_EXPORT Deprecated {
-   private:
-    // TODO(willchan): Kill off these friend declarations.
-    friend class TestInterceptor;
-    friend class content::AppCacheInterceptor;
-
-    // TODO(pauljensen): Remove this when AppCacheInterceptor is a
-    // ProtocolHandler, see crbug.com/161547.
-    static void RegisterRequestInterceptor(Interceptor* interceptor);
-    static void UnregisterRequestInterceptor(Interceptor* interceptor);
-
-    DISALLOW_IMPLICIT_CONSTRUCTORS(Deprecated);
   };
 
   // The delegate's methods are called from the message loop of the thread
@@ -716,10 +658,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
              const URLRequestContext* context,
              CookieStore* cookie_store,
              NetworkDelegate* network_delegate);
-
-  // Registers or unregisters a network interception class.
-  static void RegisterRequestInterceptor(Interceptor* interceptor);
-  static void UnregisterRequestInterceptor(Interceptor* interceptor);
 
   // Resumes or blocks a request paused by the NetworkDelegate::OnBeforeRequest
   // handler. If |blocked| is true, the request is blocked and an error page is

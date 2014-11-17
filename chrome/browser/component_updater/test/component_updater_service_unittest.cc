@@ -27,7 +27,6 @@
 #include "libxml/globals.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
 #include "url/gurl.h"
@@ -59,12 +58,9 @@ ComponentUpdaterTest::ComponentUpdaterTest()
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN),
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO));
   component_updater_.reset(ComponentUpdateServiceFactory(test_config_));
-
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 }
 
 ComponentUpdaterTest::~ComponentUpdaterTest() {
-  net::URLFetcher::SetEnableInterceptionForTests(false);
 }
 
 void ComponentUpdaterTest::SetUp() {

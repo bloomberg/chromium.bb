@@ -8,7 +8,6 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace extensions {
 namespace image_writer {
@@ -77,7 +76,6 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
     ImageWriterUnitTestBase::SetUp();
 
     // Turn on interception and set up our dummy file.
-    net::URLFetcher::SetEnableInterceptionForTests(true);
     get_interceptor_.reset(new GetInterceptor(
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
         BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
@@ -88,9 +86,6 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
 
   void TearDown() override {
     ImageWriterUnitTestBase::TearDown();
-
-    // Remember to turn off global interception.
-    net::URLFetcher::SetEnableInterceptionForTests(false);
   }
 
   scoped_refptr<OperationForTest> CreateOperation(const GURL& url,

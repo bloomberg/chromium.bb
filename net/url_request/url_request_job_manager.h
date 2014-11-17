@@ -51,12 +51,7 @@ class URLRequestJobManager {
   // Returns true if the manager has a built-in handler for |scheme|.
   static bool SupportsScheme(const std::string& scheme);
 
-  // Register/unregister a request interceptor.
-  void RegisterRequestInterceptor(URLRequest::Interceptor* interceptor);
-  void UnregisterRequestInterceptor(URLRequest::Interceptor* interceptor);
-
  private:
-  typedef std::vector<URLRequest::Interceptor*> InterceptorList;
   friend struct DefaultSingletonTraits<URLRequestJobManager>;
 
   URLRequestJobManager();
@@ -92,7 +87,6 @@ class URLRequestJobManager {
 #endif
 
   mutable base::Lock lock_;
-  InterceptorList interceptors_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestJobManager);
 };

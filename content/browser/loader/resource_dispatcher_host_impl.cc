@@ -889,7 +889,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
 
 void ResourceDispatcherHostImpl::OnInit() {
   scheduler_.reset(new ResourceScheduler);
-  AppCacheInterceptor::EnsureRegistered();
 }
 
 void ResourceDispatcherHostImpl::OnShutdown() {

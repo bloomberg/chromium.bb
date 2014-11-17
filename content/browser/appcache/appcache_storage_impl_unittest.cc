@@ -163,11 +163,10 @@ class IOThread : public base::Thread {
     factory->SetProtocolHandler(
         "http",
         new MockHttpServerJobFactory(
-            AppCacheInterceptor::CreateStartInterceptor()));
+            make_scoped_ptr(new AppCacheInterceptor())));
     job_factory_ = factory.Pass();
     request_context_.reset(new net::TestURLRequestContext());
     request_context_->set_job_factory(job_factory_.get());
-    AppCacheInterceptor::EnsureRegistered();
   }
 
   void CleanUp() override {

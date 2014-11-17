@@ -31,7 +31,6 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/url_request/test_url_request_interceptor.h"
-#include "net/url_request/url_fetcher.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -288,7 +287,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -377,7 +375,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -446,7 +443,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalUrlUpdate) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -542,7 +538,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),
@@ -626,7 +621,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
       BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
           base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/manifest"),

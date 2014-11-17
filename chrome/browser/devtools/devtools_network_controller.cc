@@ -8,7 +8,6 @@
 #include "chrome/browser/devtools/devtools_network_interceptor.h"
 #include "chrome/browser/devtools/devtools_network_transaction.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/load_flags.h"
 #include "net/http/http_request_info.h"
 
 using content::BrowserThread;
@@ -30,9 +29,6 @@ DevToolsNetworkController::GetInterceptor(
 
   if (!interceptors_.size())
     return default_interceptor_->GetWeakPtr();
-
-  if (transaction->request()->load_flags & net::LOAD_DISABLE_INTERCEPT)
-    return appcache_interceptor_->GetWeakPtr();
 
   transaction->ProcessRequest();
 

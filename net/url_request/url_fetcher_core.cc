@@ -34,7 +34,6 @@ namespace {
 
 const int kBufferSize = 4096;
 const int kUploadProgressTimerInterval = 100;
-bool g_interception_enabled = false;
 bool g_ignore_certificate_requests = false;
 
 void EmptyCompletionCallback(int result) {}
@@ -470,10 +469,6 @@ int URLFetcherCore::GetNumFetcherCores() {
   return g_registry.Get().size();
 }
 
-void URLFetcherCore::SetEnableInterceptionForTests(bool enabled) {
-  g_interception_enabled = enabled;
-}
-
 void URLFetcherCore::SetIgnoreCertificateRequests(bool ignored) {
   g_ignore_certificate_requests = ignored;
 }
@@ -514,8 +509,6 @@ void URLFetcherCore::StartURLRequest() {
       original_url_, DEFAULT_PRIORITY, this, NULL);
   request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
-  if (!g_interception_enabled)
-    flags = flags | LOAD_DISABLE_INTERCEPT;
 
   if (is_chunked_upload_)
     request_->EnableChunkedUpload();

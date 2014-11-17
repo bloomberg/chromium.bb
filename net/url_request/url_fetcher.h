@@ -119,11 +119,6 @@ class NET_EXPORT URLFetcher {
   // thread though, even though the task won't ever run.
   static void CancelAll();
 
-  // Normally interception is disabled for URLFetcher, but you can use this
-  // to enable it for tests. Also see ScopedURLFetcherFactory for another way
-  // of testing code that uses an URLFetcher.
-  static void SetEnableInterceptionForTests(bool enabled);
-
   // Normally, URLFetcher will abort loads that request SSL client certificate
   // authentication, but this method may be used to cause URLFetchers to ignore
   // requests for client certificates and continue anonymously. Because such

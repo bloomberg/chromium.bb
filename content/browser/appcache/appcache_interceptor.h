@@ -5,12 +5,16 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_INTERCEPTOR_H_
 
-#include "base/memory/singleton.h"
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "url/gurl.h"
+
+class GURL;
+
+namespace net {
+class URLRequest;
+}
 
 namespace content {
 class AppCacheRequestHandler;
@@ -18,15 +22,8 @@ class AppCacheServiceImpl;
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.
-class CONTENT_EXPORT AppCacheInterceptor
-    : public net::URLRequest::Interceptor {
+class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
  public:
-  // Registers a singleton instance with the net library.
-  // Should be called early in the IO thread prior to initiating requests.
-  static void EnsureRegistered() {
-    CHECK(GetInstance());
-  }
-
   // Must be called to make a request eligible for retrieval from an appcache.
   static void SetExtraRequestInfo(net::URLRequest* request,
                                   AppCacheServiceImpl* service,
@@ -47,36 +44,23 @@ class CONTENT_EXPORT AppCacheInterceptor
                                         int new_process_id,
                                         int new_host_id);
 
-  static AppCacheInterceptor* GetInstance();
-
-  // The appcache system employs two different interceptors. The singleton
-  // AppCacheInterceptor derives URLRequest::Interceptor and is used
-  // to hijack request handling upon receipt of the response or a redirect.
-  // A separate URLRequestInterceptor derivative is used to hijack handling
-  // at the very start of request processing. The separate handler allows the
-  // content lib to order its collection of net::URLRequestInterceptors.
-  static scoped_ptr<net::URLRequestInterceptor> CreateStartInterceptor();
-
- protected:
-  // Override from net::URLRequest::Interceptor:
-  net::URLRequestJob* MaybeIntercept(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) override;
-  net::URLRequestJob* MaybeInterceptResponse(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) override;
-  net::URLRequestJob* MaybeInterceptRedirect(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate,
-      const GURL& location) override;
-
- private:
-  friend struct DefaultSingletonTraits<AppCacheInterceptor>;
-  class StartInterceptor;
-
   AppCacheInterceptor();
   ~AppCacheInterceptor() override;
 
+ protected:
+  // Override from net::URLRequestInterceptor:
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+  net::URLRequestJob* MaybeInterceptResponse(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override;
+  net::URLRequestJob* MaybeInterceptRedirect(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate,
+      const GURL& location) const override;
+
+ private:
   static void SetHandler(net::URLRequest* request,
                          AppCacheRequestHandler* handler);
   static AppCacheRequestHandler* GetHandler(net::URLRequest* request);

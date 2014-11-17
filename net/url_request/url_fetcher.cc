@@ -36,11 +36,6 @@ void net::URLFetcher::CancelAll() {
 }
 
 // static
-void net::URLFetcher::SetEnableInterceptionForTests(bool enabled) {
-  URLFetcherImpl::SetEnableInterceptionForTests(enabled);
-}
-
-// static
 void net::URLFetcher::SetIgnoreCertificateRequests(bool ignored) {
   URLFetcherImpl::SetIgnoreCertificateRequests(ignored);
 }

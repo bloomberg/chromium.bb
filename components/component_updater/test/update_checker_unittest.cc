@@ -17,7 +17,6 @@
 #include "components/component_updater/test/test_configurator.h"
 #include "components/component_updater/test/url_request_post_interceptor.h"
 #include "components/component_updater/update_checker.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -76,11 +75,9 @@ class UpdateCheckerTest : public testing::Test {
 };
 
 UpdateCheckerTest::UpdateCheckerTest() : post_interceptor_(NULL), error_(0) {
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 }
 
 UpdateCheckerTest::~UpdateCheckerTest() {
-  net::URLFetcher::SetEnableInterceptionForTests(false);
 }
 
 void UpdateCheckerTest::SetUp() {

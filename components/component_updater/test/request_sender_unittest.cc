@@ -60,11 +60,9 @@ RequestSenderTest::RequestSenderTest()
     : post_interceptor_1(NULL),
       post_interceptor_2(NULL),
       url_fetcher_source_(NULL) {
-  net::URLFetcher::SetEnableInterceptionForTests(true);
 }
 
 RequestSenderTest::~RequestSenderTest() {
-  net::URLFetcher::SetEnableInterceptionForTests(false);
 }
 
 void RequestSenderTest::SetUp() {

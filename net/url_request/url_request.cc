@@ -142,31 +142,6 @@ void ConvertRealLoadTimesToBlockingTimes(
 
 }  // namespace
 
-void URLRequest::Deprecated::RegisterRequestInterceptor(
-    Interceptor* interceptor) {
-  URLRequest::RegisterRequestInterceptor(interceptor);
-}
-
-void URLRequest::Deprecated::UnregisterRequestInterceptor(
-    Interceptor* interceptor) {
-  URLRequest::UnregisterRequestInterceptor(interceptor);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// URLRequest::Interceptor
-
-URLRequestJob* URLRequest::Interceptor::MaybeInterceptRedirect(
-    URLRequest* request,
-    NetworkDelegate* network_delegate,
-    const GURL& location) {
-  return NULL;
-}
-
-URLRequestJob* URLRequest::Interceptor::MaybeInterceptResponse(
-    URLRequest* request, NetworkDelegate* network_delegate) {
-  return NULL;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // URLRequest::Delegate
 
@@ -622,17 +597,6 @@ URLRequest::URLRequest(const GURL& url,
 
   context->url_requests()->insert(this);
   net_log_.BeginEvent(NetLog::TYPE_REQUEST_ALIVE);
-}
-
-// static
-void URLRequest::RegisterRequestInterceptor(Interceptor* interceptor) {
-  URLRequestJobManager::GetInstance()->RegisterRequestInterceptor(interceptor);
-}
-
-// static
-void URLRequest::UnregisterRequestInterceptor(Interceptor* interceptor) {
-  URLRequestJobManager::GetInstance()->UnregisterRequestInterceptor(
-      interceptor);
 }
 
 void URLRequest::BeforeRequestComplete(int error) {

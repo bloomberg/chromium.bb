@@ -193,11 +193,6 @@ void URLFetcherImpl::CancelAll() {
 }
 
 // static
-void URLFetcherImpl::SetEnableInterceptionForTests(bool enabled) {
-  URLFetcherCore::SetEnableInterceptionForTests(enabled);
-}
-
-// static
 void URLFetcherImpl::SetIgnoreCertificateRequests(bool ignored) {
   URLFetcherCore::SetIgnoreCertificateRequests(ignored);
 }
