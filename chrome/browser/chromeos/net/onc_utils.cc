@@ -243,10 +243,10 @@ void ImportNetworksForUser(const user_manager::User* user,
           NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
               NetworkTypePattern::Ethernet());
       if (ethernet) {
-        config_handler->SetProperties(ethernet->path(),
-                                      *shill_dict,
-                                      base::Closure(),
-                                      network_handler::ErrorCallback());
+        config_handler->SetProperties(
+            ethernet->path(), *shill_dict,
+            NetworkConfigurationObserver::SOURCE_USER_ACTION, base::Closure(),
+            network_handler::ErrorCallback());
       } else {
         ethernet_not_found = true;
       }
@@ -254,6 +254,7 @@ void ImportNetworksForUser(const user_manager::User* user,
     } else {
       config_handler->CreateConfiguration(
           *shill_dict,
+          NetworkConfigurationObserver::SOURCE_USER_ACTION,
           network_handler::StringResultCallback(),
           network_handler::ErrorCallback());
     }

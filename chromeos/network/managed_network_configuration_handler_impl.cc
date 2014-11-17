@@ -299,7 +299,9 @@ void ManagedNetworkConfigurationHandlerImpl::SetProperties(
                                             validated_user_settings.get()));
 
   network_configuration_handler_->SetProperties(
-      service_path, *shill_dictionary, callback, error_callback);
+      service_path, *shill_dictionary,
+      NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
+      error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
@@ -341,7 +343,8 @@ void ManagedNetworkConfigurationHandlerImpl::CreateConfiguration(
                                             &properties));
 
   network_configuration_handler_->CreateConfiguration(
-      *shill_dictionary, callback, error_callback);
+      *shill_dictionary, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      callback, error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
@@ -349,7 +352,8 @@ void ManagedNetworkConfigurationHandlerImpl::RemoveConfiguration(
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) const {
   network_configuration_handler_->RemoveConfiguration(
-      service_path, callback, error_callback);
+      service_path, NetworkConfigurationObserver::SOURCE_USER_ACTION, callback,
+      error_callback);
 }
 
 void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
@@ -485,7 +489,7 @@ void ManagedNetworkConfigurationHandlerImpl::OnProfileRemoved(
 void ManagedNetworkConfigurationHandlerImpl::CreateConfigurationFromPolicy(
     const base::DictionaryValue& shill_properties) {
   network_configuration_handler_->CreateConfiguration(
-      shill_properties,
+      shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
           weak_ptr_factory_.GetWeakPtr()),
@@ -522,7 +526,7 @@ void ManagedNetworkConfigurationHandlerImpl::
   shill_properties.MergeDictionary(&new_properties);
 
   network_configuration_handler_->CreateConfiguration(
-      shill_properties,
+      shill_properties, NetworkConfigurationObserver::SOURCE_POLICY,
       base::Bind(
           &ManagedNetworkConfigurationHandlerImpl::OnPolicyAppliedToNetwork,
           weak_ptr_factory_.GetWeakPtr()),

@@ -316,6 +316,8 @@ void MobileActivator::GetPropertiesAndContinueActivation(
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path_,
       auto_connect_property,
+      // Activation is triggered by the UI.
+      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       network_handler::ErrorCallback());
   StartActivation();

@@ -172,6 +172,7 @@ void SetNetworkProperty(const std::string& service_path,
   properties.SetWithoutPathExpansion(property, value);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path, properties,
+      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       base::Bind(&ShillError, "SetNetworkProperty"));
 }
@@ -453,6 +454,7 @@ void InternetOptionsHandler::SetApnProperties(
   properties.SetWithoutPathExpansion(shill::kCellularApnProperty, apn_dict);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path, properties,
+      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&base::DoNothing),
       base::Bind(&ShillError, "SetApnProperties"));
 }
@@ -834,6 +836,7 @@ void InternetOptionsHandler::SetIPConfigProperties(
     NetworkHandler::Get()->network_configuration_handler()->SetProperties(
         service_path,
         properties_to_set,
+        NetworkConfigurationObserver::SOURCE_USER_ACTION,
         base::Bind(&base::DoNothing),
         base::Bind(&ShillError, "SetIPConfigProperties"));
   }

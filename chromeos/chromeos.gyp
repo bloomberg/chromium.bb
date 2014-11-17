@@ -323,6 +323,7 @@
       'network/network_change_notifier_factory_chromeos.h',
       'network/network_configuration_handler.cc',
       'network/network_configuration_handler.h',
+      'network/network_configuration_observer.h',
       'network/network_connection_handler.cc',
       'network/network_connection_handler.h',
       'network/network_device_handler.cc',

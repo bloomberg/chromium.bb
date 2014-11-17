@@ -503,6 +503,7 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     configuration_handler_->SetProperties(
         service_path,
         config_properties,
+        NetworkConfigurationObserver::SOURCE_USER_ACTION,
         base::Bind(&NetworkConnectionHandler::CallShillConnect,
                    AsWeakPtr(),
                    service_path),
@@ -670,6 +671,7 @@ void NetworkConnectionHandler::CheckPendingRequest(
       configuration_handler_->SetNetworkProfile(
           service_path,
           request->profile_path,
+          NetworkConfigurationObserver::SOURCE_USER_ACTION,
           base::Bind(&base::DoNothing),
           chromeos::network_handler::ErrorCallback());
     }

@@ -30,6 +30,7 @@
 
 using chromeos::DeviceState;
 using chromeos::NetworkConfigurationHandler;
+using chromeos::NetworkConfigurationObserver;
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
 using chromeos::NetworkProfile;
@@ -308,8 +309,9 @@ void NetworkConnectImpl::CallCreateConfiguration(
   properties->SetStringWithoutPathExpansion(shill::kProfileProperty,
                                             profile_path);
   NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
-      *properties, base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
-                              weak_factory_.GetWeakPtr(), connect_on_configure),
+      *properties, NetworkConfigurationObserver::SOURCE_USER_ACTION,
+      base::Bind(&NetworkConnectImpl::OnConfigureSucceeded,
+                 weak_factory_.GetWeakPtr(), connect_on_configure),
       base::Bind(&NetworkConnectImpl::OnConfigureFailed,
                  weak_factory_.GetWeakPtr()));
 }
@@ -362,6 +364,7 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
   SetPropertiesToClear(properties_to_set.get(), &properties_to_clear);
   NetworkHandler::Get()->network_configuration_handler()->SetProperties(
       service_path, *properties_to_set,
+      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConnectImpl::ClearPropertiesAndConnect,
                  weak_factory_.GetWeakPtr(), service_path, properties_to_clear),
       base::Bind(&NetworkConnectImpl::SetPropertiesFailed,
@@ -505,6 +508,7 @@ void NetworkConnectImpl::ConfigureNetworkAndConnect(
   }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
       service_path, profile_path,
+      NetworkConfigurationObserver::SOURCE_USER_ACTION,
       base::Bind(&NetworkConnectImpl::ConfigureSetProfileSucceeded,
                  weak_factory_.GetWeakPtr(), service_path,
                  base::Passed(&properties_to_set)),

@@ -78,7 +78,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // |service_path|. A network can be initially configured by calling
   // CreateConfiguration or if it is managed by a policy. The given properties
   // will be merged with the existing settings, and it won't clear any existing
-  // properties.
+  // properties. This method is expected to be called by a user initiated
+  // action (see NetworkConfigurationObserver::Source).
   virtual void SetProperties(
       const std::string& service_path,
       const base::DictionaryValue& user_settings,
@@ -89,7 +90,9 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // and returns the new identifier to |callback| if successful. Fails if the
   // network was already configured by a call to this function or because of a
   // policy. The new configuration will be owned by user |userhash|. If
-  // |userhash| is empty, the new configuration will be shared.
+  // |userhash| is empty, the new configuration will be shared. This method is
+  // expected to be called by a user initiated action (see
+  // NetworkConfigurationObserver::Source).
   virtual void CreateConfiguration(
       const std::string& userhash,
       const base::DictionaryValue& properties,
@@ -99,6 +102,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler {
   // Removes the user's configuration from the network with |service_path|. The
   // network may still show up in the visible networks after this, but no user
   // configuration will remain. If it was managed, it will still be configured.
+  // This method is expected to be called by a user initiated action (see
+  // NetworkConfigurationObserver::Source).
   virtual void RemoveConfiguration(
       const std::string& service_path,
       const base::Closure& callback,
