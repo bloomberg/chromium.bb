@@ -77,4 +77,27 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, InterruptedAutoStartEnrollment) {
   OobeScreenWaiter(OobeDisplay::SCREEN_OOBE_NETWORK).Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(LoginUITest, OobeNoExceptions) {
+  JSExpect("cr.ErrorStore.getInstance().length == 0");
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUITest, PRE_LoginNoExceptions) {
+  RegisterUser(kTestUser1);
+  RegisterUser(kTestUser2);
+  StartupUtils::MarkOobeCompleted();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUITest, LoginNoExceptions) {
+  OobeScreenWaiter(OobeDisplay::SCREEN_ACCOUNT_PICKER).Wait();
+  JSExpect("cr.ErrorStore.getInstance().length == 0");
+}
+
+IN_PROC_BROWSER_TEST_F(LoginUITest, OobeCatchException) {
+  JSExpect("cr.ErrorStore.getInstance().length == 0");
+  js_checker().Execute("aelrt('misprint')");
+  JSExpect("cr.ErrorStore.getInstance().length == 1");
+  js_checker().Execute("consle.error('Some error')");
+  JSExpect("cr.ErrorStore.getInstance().length == 2");
+}
+
 }  // namespace chromeos

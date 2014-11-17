@@ -29,7 +29,7 @@ class LoginManagerTest : public MixinBasedBrowserTest {
  public:
   explicit LoginManagerTest(bool should_launch_browser);
 
-  // Overriden from InProcessBrowserTest.
+  // Overridden from InProcessBrowserTest.
   virtual void TearDownOnMainThread() override;
   virtual void SetUpCommandLine(base::CommandLine* command_line) override;
   virtual void SetUpInProcessBrowserTestFixture() override;

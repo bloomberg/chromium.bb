@@ -24,6 +24,9 @@ class JSChecker {
   // Evaluates |expression|.
   void Evaluate(const std::string& expression);
 
+  // Executes |expression|. Doesn't require a correct command.
+  void Execute(const std::string& expression);
+
   // Evaluates |expression| and returns its result.
   bool GetBool(const std::string& expression);
   int GetInt(const std::string& expression);

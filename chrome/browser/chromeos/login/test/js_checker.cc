@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 
+#include "base/strings/utf_string_conversions.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,6 +31,13 @@ JSChecker::JSChecker(content::WebContents* web_contents)
 void JSChecker::Evaluate(const std::string& expression) {
   CHECK(web_contents_);
   ASSERT_TRUE(content::ExecuteScript(web_contents_, expression));
+}
+
+void JSChecker::Execute(const std::string& expression) {
+  CHECK(web_contents_);
+  std::string new_script = expression + ";";
+  web_contents_->GetMainFrame()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(new_script));
 }
 
 bool JSChecker::GetBool(const std::string& expression) {
