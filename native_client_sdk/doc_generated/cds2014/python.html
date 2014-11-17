@@ -43,7 +43,7 @@ if (!('application/x-pnacl' in navigator.mimeTypes)) {
 <h2 id="setup">Setup</h2>
 <p>For this codelab, you will need to point your web browser at
 the Beta preview of our in-browser NaCl Dev Environment.</p>
-<a href="https://naclports.storage.googleapis.com/builds/pepper_41/trunk-169-gc77aece/publish/devenv/pnacl/app/bash.html"
+<a href="https://naclports.storage.googleapis.com/builds/pepper_41/trunk-176-g9b9e342/publish/devenv/pnacl/app/bash.html"
 target="_blank">Click here to open the environment.</a><p>While no installation is needed, the first load of the page will
 require you to agree to allow the page unlimited storage
 (Click &#8220;Ok&#8221; in the bar at the top of your browser window.)</p>
@@ -191,15 +191,17 @@ Just one thing is missing, that whole diffing thing...</p>
 <pre class="prettyprint">
 make
 </pre>
-<p>This will copy the sample to /tmp/differ (clobbering whatever is already
-there). It will also attempt to open the sample, but will be blocked by
-a popup blocker. Click on the URL to accept the popup.</p>
+<p>This will attempt to open the sample, but will be blocked by
+a popup blocker the first time. Click on the URL to accept the popup.
+It also clobbers /tmp/differ for good measure.</p>
 <p>As you can see, this isn&#8217;t quite what we&#8217;re going for.</p>
 <p>You&#8217;ll want to modify diff.py, using the editor you selected earlier.
 You&#8217;ll probably want to consult the <a href="https://docs.python.org/2/library/difflib.html"
  target="_blank">difflib</a> documentation.
 I would suggest you check out the HtmlDiff class and make use of
-the make_file member function. I would also suggest the splitlines
+the make_file member function. Note our goal is to create a
+full HTML diff, so the make_table function is insufficient.
+I would also suggest the splitlines
 function may come in handy.</p>
 <p>You can test diff.py manually as you would in a normal UNIX environment.
 It can be run like this:</p>
@@ -207,7 +209,7 @@ It can be run like this:</p>
 ./diff.py before.txt after.txt out.html
 </pre>
 <p>Once everything is working diff.html will contain an html diff.
-Run <cite>make</cite> again to deploy and test the full app.</p>
+After the initial <cite>make</cite> you can hit &#8220;Run&#8221; to test your changes.</p>
 <p>Now get to it, and good luck!</p>
 <h2 id="what-you-ve-learned">What you&#8217;ve learned</h2>
 <p>While the details of building and packaging Python have been

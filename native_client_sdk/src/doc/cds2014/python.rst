@@ -62,16 +62,18 @@ To see where things stand, deploy the sample like this::
 
   make
 
-This will copy the sample to /tmp/differ (clobbering whatever is already
-there). It will also attempt to open the sample, but will be blocked by
-a popup blocker. Click on the URL to accept the popup.
+This will attempt to open the sample, but will be blocked by
+a popup blocker the first time. Click on the URL to accept the popup.
+It also clobbers /tmp/differ for good measure.
 
 As you can see, this isn't quite what we're going for.
 
 You'll want to modify diff.py, using the editor you selected earlier.
 You'll probably want to consult the |difflib| documentation.
 I would suggest you check out the HtmlDiff class and make use of
-the make_file member function. I would also suggest the splitlines
+the make_file member function. Note our goal is to create a
+full HTML diff, so the make_table function is insufficient.
+I would also suggest the splitlines
 function may come in handy.
 
 You can test diff.py manually as you would in a normal UNIX environment.
@@ -80,7 +82,7 @@ It can be run like this::
   ./diff.py before.txt after.txt out.html
 
 Once everything is working diff.html will contain an html diff.
-Run `make` again to deploy and test the full app.
+After the initial `make` you can hit "Run" to test your changes.
 
 Now get to it, and good luck!
 

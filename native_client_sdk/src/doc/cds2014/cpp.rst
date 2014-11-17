@@ -73,6 +73,8 @@ Before you begin, you'll want to copy our fire program to a new name,
 since you might decide later that you like fire better, I know I do::
 
   cp fire.cc water.cc
+  git add water.cc
+  git commit -am "adding water"
 
 For this codelab, you'll only need to change `water.cc`.
 
@@ -93,7 +95,7 @@ our flame effect is actually monochrome. A single intensity
 value is used in the flame simulation. This is then converted
 to color based on a multi-color gradient.
 To alter the color-scheme, locate this palette, and exchange
-the red component for blue.
+the red component (first) with blue (third).
 
 Hint: Focus your energies on the CreatePalette function.
 
@@ -111,14 +113,6 @@ The simulation of fire loops over each pixel,
 bottom row to top row,
 diffusing "fire stuff" behind the sweep.
 You'll want to reverse this.
-Note the simulation buffer is stored in |row_major| from bottom to top.
-Accesses of + width and - width are used to reach rows above and below
-the current line.
-
-.. |row_major| raw:: html
-
-  <a href="http://en.wikipedia.org/wiki/Row-major_order"
-   target="_blank">Row-major order</a>
 
 Hint: You'll need to change the y loop direction in the UpdateFlames function.
 

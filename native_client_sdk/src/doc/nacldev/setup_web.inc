@@ -6,7 +6,7 @@ the Beta preview of our in-browser NaCl Dev Environment.
 
 .. raw:: html
 
-  <a href="https://naclports.storage.googleapis.com/builds/pepper_41/trunk-169-gc77aece/publish/devenv/pnacl/app/bash.html"
+  <a href="https://naclports.storage.googleapis.com/builds/pepper_41/trunk-176-g9b9e342/publish/devenv/pnacl/app/bash.html"
   target="_blank">Click here to open the environment.</a>
 
 While no installation is needed, the first load of the page will

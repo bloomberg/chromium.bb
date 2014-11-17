@@ -204,6 +204,8 @@ This will require digging into some C++ code.</p>
 since you might decide later that you like fire better, I know I do:</p>
 <pre class="prettyprint">
 cp fire.cc water.cc
+git add water.cc
+git commit -am &quot;adding water&quot;
 </pre>
 <p>For this codelab, you&#8217;ll only need to change <cite>water.cc</cite>.</p>
 <p>The task of turning fire into water involves two key challenges:</p>
@@ -222,7 +224,7 @@ our flame effect is actually monochrome. A single intensity
 value is used in the flame simulation. This is then converted
 to color based on a multi-color gradient.
 To alter the color-scheme, locate this palette, and exchange
-the red component for blue.</p>
+the red component (first) with blue (third).</p>
 <p>Hint: Focus your energies on the CreatePalette function.</p>
 <p>You can test you changes at any time with:</p>
 <pre class="prettyprint">
@@ -234,11 +236,7 @@ While smoke, and well flame, rises, we want our water to go down.</p>
 <p>The simulation of fire loops over each pixel,
 bottom row to top row,
 diffusing &#8220;fire stuff&#8221; behind the sweep.
-You&#8217;ll want to reverse this.
-Note the simulation buffer is stored in <a href="http://en.wikipedia.org/wiki/Row-major_order"
- target="_blank">Row-major order</a> from bottom to top.
-Accesses of + width and - width are used to reach rows above and below
-the current line.</p>
+You&#8217;ll want to reverse this.</p>
 <p>Hint: You&#8217;ll need to change the y loop direction in the UpdateFlames function.</p>
 <h3 id="up-high-down-low">Up high, down low</h3>
 <p>While you can now use the mouse to inject a trickle of water.
