@@ -28,6 +28,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
       SkColor background_color,
       bool contents_opaque,
       bool contents_fill_bounds_completely,
+      bool can_use_lcd_text,
       const gfx::Size& layer_size,
       const gfx::Rect& visible_layer_rect,
       int frame_number,
@@ -101,6 +102,7 @@ class CC_EXPORT PicturePile : public RecordingSource {
   int slow_down_raster_scale_factor_for_debug_;
   bool contents_opaque_;
   bool contents_fill_bounds_completely_;
+  bool can_use_lcd_text_;
   bool clear_canvas_with_debug_color_;
   // A hint about whether there are any recordings. This may be a false
   // positive.

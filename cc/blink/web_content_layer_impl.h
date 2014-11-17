@@ -40,7 +40,6 @@ class WebContentLayerImpl : public blink::WebContentLayer,
                      const gfx::Rect& clip,
                      ContentLayerClient::GraphicsContextStatus
                          graphics_context_status) override;
-  void DidChangeLayerCanUseLCDText() override;
   bool FillsBoundsCompletely() const override;
 
   scoped_ptr<WebLayerImpl> layer_;

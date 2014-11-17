@@ -93,6 +93,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // TODO(vmpstr): This should be a layer property.
   virtual bool IsMask() const = 0;
 
+  // Return true if LCD anti-aliasing may be used when rastering text.
+  virtual bool CanUseLCDText() const = 0;
+
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 

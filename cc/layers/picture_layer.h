@@ -50,7 +50,7 @@ class CC_EXPORT PictureLayer : public Layer {
   ~PictureLayer() override;
 
   bool HasDrawableContent() const override;
-  void UpdateCanUseLCDText();
+  bool UpdateCanUseLCDText();
 
  private:
   ContentLayerClient* client_;
@@ -64,7 +64,7 @@ class CC_EXPORT PictureLayer : public Layer {
   gfx::Rect last_updated_visible_content_rect_;
 
   int update_source_frame_number_;
-  bool can_use_lcd_text_last_frame_;
+  bool can_use_lcd_text_for_update_;
 
   DISALLOW_COPY_AND_ASSIGN(PictureLayer);
 };
