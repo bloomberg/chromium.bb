@@ -22,4 +22,17 @@ ChromeUserManager* ChromeUserManager::Get() {
   return user_manager ? static_cast<ChromeUserManager*>(user_manager) : NULL;
 }
 
+// static
+user_manager::UserList
+ChromeUserManager::GetUsersAllowedAsSupervisedUserManagers(
+    const user_manager::UserList& user_list) {
+  user_manager::UserList result;
+  for (user_manager::User* user : user_list) {
+    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
+      result.push_back(user);
+    }
+  }
+  return result;
+}
+
 }  // namespace chromeos

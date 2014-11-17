@@ -17,6 +17,7 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_manager_export.h"
+#include "components/user_manager/user_type.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -78,6 +79,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
                                     const std::string& display_email) override;
   virtual std::string GetUserDisplayEmail(
       const std::string& user_id) const override;
+  virtual void SaveUserType(const std::string& user_id,
+                            const UserType& user_type) override;
   virtual void UpdateUserAccountData(
       const std::string& user_id,
       const UserAccountData& account_data) override;

@@ -113,6 +113,11 @@ user_manager::UserList FakeUserManager::GetUsersAllowedForMultiProfile() const {
   return result;
 }
 
+user_manager::UserList
+FakeUserManager::GetUsersAllowedForSupervisedUsersCreation() const {
+  return ChromeUserManager::GetUsersAllowedAsSupervisedUserManagers(user_list_);
+}
+
 const user_manager::UserList& FakeUserManager::GetLoggedInUsers() const {
   return logged_in_users_;
 }

@@ -28,6 +28,8 @@ class MockUserManager : public ChromeUserManager {
   MOCK_METHOD0(Shutdown, void(void));
   MOCK_CONST_METHOD0(GetUsersAllowedForMultiProfile,
                      user_manager::UserList(void));
+  MOCK_CONST_METHOD0(GetUsersAllowedForSupervisedUsersCreation,
+                     user_manager::UserList(void));
   MOCK_CONST_METHOD0(GetLoggedInUsers, const user_manager::UserList&(void));
   MOCK_CONST_METHOD0(GetLRULoggedInUsers, const user_manager::UserList&(void));
   MOCK_METHOD3(UserLoggedIn, void(

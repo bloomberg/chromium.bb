@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_USERS_CHROME_USER_MANAGER_H_
 
 #include "base/basictypes.h"
+#include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_base.h"
 
 namespace base {
@@ -29,6 +30,11 @@ class ChromeUserManager : public user_manager::UserManagerBase {
   // Returns current ChromeUserManager or NULL if instance hasn't been
   // yet initialized.
   static ChromeUserManager* Get();
+
+  // Helper method for sorting out of user list only users that can create
+  // supervised users.
+  static user_manager::UserList GetUsersAllowedAsSupervisedUserManagers(
+      const user_manager::UserList& user_list);
 
   virtual MultiProfileUserController* GetMultiProfileUserController() = 0;
   virtual UserImageManager* GetUserImageManager(const std::string& user_id) = 0;

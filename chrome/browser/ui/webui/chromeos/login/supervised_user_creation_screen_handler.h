@@ -75,7 +75,6 @@ class SupervisedUserCreationScreenHandler : public BaseScreenHandler {
   void ShowManagerPasswordError();
 
   void ShowIntroPage();
-  void ShowManagerSelectionPage();
   void ShowUsernamePage();
 
   // Shows progress or error message close in the button area. |is_progress| is

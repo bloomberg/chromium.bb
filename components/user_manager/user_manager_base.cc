@@ -57,6 +57,9 @@ const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 // authentication against GAIA should be enforced during the next sign-in.
 const char kUserForceOnlineSignin[] = "UserForceOnlineSignin";
 
+// A dictionary that maps user ID to the user type.
+const char kUserType[] = "UserType";
+
 // A string pref containing the ID of the last user who logged in if it was
 // a user with gaia account (regular) or an empty string if it was another type
 // of user (guest, kiosk, public account, etc.).
@@ -99,6 +102,7 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserDisplayEmail);
   registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserForceOnlineSignin);
+  registry->RegisterDictionaryPref(kUserType);
   registry->RegisterStringPref(kLastActiveUser, std::string());
 }
 
@@ -473,6 +477,27 @@ std::string UserManagerBase::GetUserDisplayEmail(
   return user ? user->display_email() : user_id;
 }
 
+void UserManagerBase::SaveUserType(const std::string& user_id,
+                                   const UserType& user_type) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  User* user = FindUserAndModify(user_id);
+  if (!user) {
+    LOG(ERROR) << "User not found: " << user_id;
+    return;  // Ignore if there is no such user.
+  }
+
+  // Do not update local state if data stored or cached outside the user's
+  // cryptohome is to be treated as ephemeral.
+  if (IsUserNonCryptohomeDataEphemeral(user_id))
+    return;
+
+  DictionaryPrefUpdate user_type_update(GetLocalState(), kUserType);
+  user_type_update->SetWithoutPathExpansion(
+      user_id, new base::FundamentalValue(static_cast<int>(user_type)));
+  GetLocalState()->CommitPendingWrite();
+}
+
 void UserManagerBase::UpdateUserAccountData(
     const std::string& user_id,
     const UserAccountData& account_data) {
@@ -734,6 +759,8 @@ void UserManagerBase::EnsureUsersLoaded() {
       local_state->GetDictionary(kUserGivenName);
   const base::DictionaryValue* prefs_display_emails =
       local_state->GetDictionary(kUserDisplayEmail);
+  const base::DictionaryValue* prefs_user_types =
+      local_state->GetDictionary(kUserType);
 
   // Load public sessions first.
   std::set<std::string> public_sessions_set;
@@ -751,10 +778,16 @@ void UserManagerBase::EnsureUsersLoaded() {
        ++it) {
     User* user = NULL;
     const std::string domain = gaia::ExtractDomainName(*it);
-    if (domain == chromeos::login::kSupervisedUserDomain)
+    if (domain == chromeos::login::kSupervisedUserDomain) {
       user = User::CreateSupervisedUser(*it);
-    else
+    } else {
       user = User::CreateRegularUser(*it);
+      int user_type;
+      if (prefs_user_types->GetIntegerWithoutPathExpansion(*it, &user_type) &&
+          user_type == USER_TYPE_REGULAR_SUPERVISED) {
+        ChangeUserSupervisedStatus(user, true /* is supervised */);
+      }
+    }
     user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     user->set_force_online_signin(LoadForceOnlineSignin(*it));
     users_.push_back(user);
@@ -961,6 +994,9 @@ void UserManagerBase::ChangeUserSupervisedStatus(User* user,
                                                  bool is_supervised) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   user->SetIsSupervised(is_supervised);
+  SaveUserType(user->email(), is_supervised
+                                  ? user_manager::USER_TYPE_REGULAR_SUPERVISED
+                                  : user_manager::USER_TYPE_REGULAR);
   FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
                     session_state_observer_list_,
                     UserChangedSupervisedStatus(user));
@@ -968,7 +1004,7 @@ void UserManagerBase::ChangeUserSupervisedStatus(User* user,
 
 void UserManagerBase::UpdateLoginState() {
   if (!chromeos::LoginState::IsInitialized())
-    return;  // LoginState may not be intialized in tests.
+    return;  // LoginState may not be initialized in tests.
 
   chromeos::LoginState::LoggedInState logged_in_state;
   logged_in_state = active_user_ ? chromeos::LoginState::LOGGED_IN_ACTIVE

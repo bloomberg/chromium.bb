@@ -75,6 +75,13 @@ void UpdateAuthParams(base::DictionaryValue* params,
     supervised_users_can_create = false;
     message_id = IDS_CREATE_SUPERVISED_USER_CREATION_RESTRICTED_TEXT;
   }
+  if (supervised_users_can_create &&
+      user_manager::UserManager::Get()
+          ->GetUsersAllowedForSupervisedUsersCreation()
+          .empty()) {
+    supervised_users_can_create = false;
+    message_id = IDS_CREATE_SUPERVISED_USER_NO_MANAGER_EXCEPT_SUPERVISED_TEXT;
+  }
 
   params->SetBoolean("supervisedUsersEnabled", supervised_users_allowed);
   params->SetBoolean("supervisedUsersCanCreate", supervised_users_can_create);

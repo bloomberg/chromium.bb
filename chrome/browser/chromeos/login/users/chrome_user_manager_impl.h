@@ -77,6 +77,8 @@ class ChromeUserManagerImpl
   virtual void Shutdown() override;
   virtual user_manager::UserList GetUsersAllowedForMultiProfile()
       const override;
+  virtual user_manager::UserList GetUsersAllowedForSupervisedUsersCreation()
+      const override;
   virtual user_manager::UserList GetUnlockUsers() const override;
   virtual void SessionStarted() override;
   virtual void SaveUserOAuthStatus(
