@@ -1,1 +1,5 @@
-#<skip - need to generate expectation>
+android.webkit.WebView focusable focused scrollable
+    android.view.View name='Fig.1 - A green Box'
+        android.view.View
+            android.widget.Image clickable name='This is a green box.'
+        android.view.View clickable name='Fig.1 - A green Box'

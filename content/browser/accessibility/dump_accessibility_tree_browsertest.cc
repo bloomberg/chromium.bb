@@ -710,10 +710,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFieldset) {
   RunTest(FILE_PATH_LITERAL("fieldset.html"));
 }
 
-//Disabled because of https://codereview.chromium.org/713873002 temporarily.
-//After blink code is merged, it will be enabled.
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       DISABLED_AccessibilityFigcaption) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityFigcaption) {
   RunTest(FILE_PATH_LITERAL("figcaption.html"));
 }
 
