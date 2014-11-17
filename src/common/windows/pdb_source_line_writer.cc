@@ -496,6 +496,8 @@ bool PDBSourceLineWriter::PrintFunctions() {
   return true;
 }
 
+#undef max
+
 bool PDBSourceLineWriter::PrintFrameDataUsingPDB() {
   // It would be nice if it were possible to output frame data alongside the
   // associated function, as is done with line numbers, but the DIA API
