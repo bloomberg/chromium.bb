@@ -151,6 +151,10 @@ def main(argv):
   if options.platform_list:
     platforms = open(options.platform_list, 'r').read().strip().split('\n')
 
+  if not platforms:
+    sys.stderr.write('No platforms are selected!')
+    sys.exit(1)
+
   # Write to standard output or file specified by --output_cc.
   out_cc = sys.stdout
   if options.output_cc:
