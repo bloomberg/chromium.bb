@@ -649,7 +649,7 @@ crbug.com/335710 virtual/gpu/canvas/philip/tests/2d.text.draw.fontface.notinpage
 crbug.com/335710 canvas/philip/tests/2d.text.draw.fontface.notinpage.html [ Pass Failure ]
 
 crbug.com/433710 [ Mac SnowLeopard XP ] http/tests/navigation/back-send-referrer.html [ Timeout ]
-crbug.com/433711 [ Lion SnowLeopard Win7 Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout ]
+crbug.com/433711 [ Debug ] virtual/gpu/fast/canvas/canvas-composite-image.html [ Timeout ]
 
 # Started failing after r162705.
 crbug.com/324369 compositing/video/video-reflection.html [ Failure ]
