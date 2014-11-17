@@ -540,29 +540,16 @@ void PageHandler::ScreencastFrameCaptured(
   if (!view)
     return;
 
-  gfx::SizeF viewport_size_dip = gfx::ScaleSize(
-      metadata.scrollable_viewport_size, metadata.page_scale_factor);
   gfx::SizeF screen_size_dip = gfx::ScaleSize(
       view->GetPhysicalBackingSize(), 1 / metadata.device_scale_factor);
   scoped_refptr<ScreencastFrameMetadata> param_metadata =
       ScreencastFrameMetadata::Create()
-          ->set_device_scale_factor(metadata.device_scale_factor)
           ->set_page_scale_factor(metadata.page_scale_factor)
-          ->set_page_scale_factor_min(metadata.min_page_scale_factor)
-          ->set_page_scale_factor_max(metadata.max_page_scale_factor)
           ->set_offset_top(metadata.location_bar_content_translation.y())
-          ->set_offset_bottom(screen_size_dip.height() -
-                              metadata.location_bar_content_translation.y() -
-                              viewport_size_dip.height())
           ->set_device_width(screen_size_dip.width())
           ->set_device_height(screen_size_dip.height())
           ->set_scroll_offset_x(metadata.root_scroll_offset.x())
-          ->set_scroll_offset_y(metadata.root_scroll_offset.y())
-          ->set_viewport(dom::Rect::Create()
-              ->set_x(metadata.root_scroll_offset.x())
-              ->set_y(metadata.root_scroll_offset.y())
-              ->set_width(metadata.scrollable_viewport_size.width())
-              ->set_height(metadata.scrollable_viewport_size.height()));
+          ->set_scroll_offset_y(metadata.root_scroll_offset.y());
   client_->ScreencastFrame(ScreencastFrameParams::Create()
       ->set_data(base_64_data)
       ->set_metadata(param_metadata));
