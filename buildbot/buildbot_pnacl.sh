@@ -466,7 +466,7 @@ tc-tests-all() {
 
   # All the SCons tests (the same ones run by the main waterfall bot)
   for arch in 32 64 arm; do
-    buildbot/buildbot_pnacl.py opt "${arch}" pnacl
+    buildbot/buildbot_pnacl.py opt "${arch}" pnacl || handle-error
   done
 
   # Run the GCC torture tests just for x86-32.  Testing a single
